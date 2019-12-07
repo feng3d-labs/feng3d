@@ -93,16 +93,18 @@ namespace feng3d
          */
         static getTexture(gl: GL, data: Texture)
         {
-            var texture = this._textureMap.get(gl);
+            var texture = gl.cache.textures.get(data);
             if (!texture)
             {
-                var newtexture = gl.createTexture();   // Create a texture object
-                if (!newtexture)
+                texture = gl.createTexture();   // Create a texture object
+                if (!texture)
                 {
                     console.error("createTexture 失败！");
                     throw "";
                 }
-                texture = newtexture;
+                gl.cache.textures.set(data, texture);
+
+                //
                 var textureType = gl[data.textureType];
                 var format = gl[data.format];
                 var type = gl[data.type];
@@ -134,7 +136,6 @@ namespace feng3d
                         break;
                     case gl.TEXTURE_2D:
                         var _pixel: TexImageSource = <any>data.activePixels;
-                        var textureType = gl[data.textureType];
                         if (data.isRenderTarget)
                         {
                             gl.texImage2D(textureType, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
@@ -150,9 +151,26 @@ namespace feng3d
                 {
                     gl.generateMipmap(textureType);
                 }
-                this._textureMap.set(gl, texture);
             }
             return texture;
+        }
+
+        /**
+         * 清除纹理
+         * 
+         * @param data 
+         */
+        static clear(data: Texture)
+        {
+            GL.glList.forEach(gl =>
+            {
+                var tex = gl.cache.textures.get(data);
+                if (tex)
+                {
+                    gl.deleteTexture(tex);
+                    gl.cache.textures.delete(data);
+                }
+            });
         }
     }
 }

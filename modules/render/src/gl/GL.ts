@@ -91,11 +91,6 @@ namespace feng3d
         cache: GLCache;
     }
 
-    export interface GLCache
-    {
-        compileShaderResults: { [key: string]: CompileShaderResult }
-    }
-
     export class GL
     {
         static glList: GL[] = [];
@@ -122,13 +117,12 @@ namespace feng3d
             }
             if (!gl)
                 throw "无法初始化WEBGL";
-            gl.cache = { compileShaderResults: {} };
             //
+            new GLCache(gl);
             new GLExtension(gl);
-            //
             new GLCapabilities(gl);
-            //
             new Renderer(gl);
+            //
             gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             gl.clearDepth(1.0);                 // Clear everything
             gl.enable(gl.DEPTH_TEST);           // Enable depth testing

@@ -9952,11 +9952,6 @@ declare namespace feng3d {
          */
         cache: GLCache;
     }
-    interface GLCache {
-        compileShaderResults: {
-            [key: string]: CompileShaderResult;
-        };
-    }
     class GL {
         static glList: GL[];
         /**
@@ -9965,6 +9960,19 @@ declare namespace feng3d {
          * @param contextAttributes
          */
         static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): GL;
+    }
+}
+declare namespace feng3d {
+    /**
+     * GL 缓存
+     */
+    class GLCache {
+        compileShaderResults: {
+            [key: string]: CompileShaderResult;
+        };
+        private _gl;
+        textures: Map<Texture, WebGLTexture>;
+        constructor(gl: GL);
     }
 }
 declare namespace feng3d {
@@ -10517,132 +10525,30 @@ declare namespace feng3d {
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
         anisotropy: number;
-    }
-    class TextureUtil {
-        static active(gl: GL, texture: Texture): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 纹理信息
-     */
-    abstract class TextureInfo extends AssetData implements Texture {
-        /**
-         * 纹理类型
-         */
-        textureType: TextureType;
-        /**
-         * 格式
-         */
-        get format(): TextureFormat;
-        set format(v: TextureFormat);
-        private _format;
-        /**
-         * 数据类型
-         */
-        get type(): TextureDataType;
-        set type(v: TextureDataType);
-        private _type;
-        /**
-         * 是否生成mipmap
-         */
-        get generateMipmap(): boolean;
-        set generateMipmap(v: boolean);
-        private _generateMipmap;
-        /**
-         * 对图像进行Y轴反转。默认值为false
-         */
-        get flipY(): boolean;
-        set flipY(v: boolean);
-        private _flipY;
-        /**
-         * 将图像RGB颜色值得每一个分量乘以A。默认为false
-         */
-        get premulAlpha(): boolean;
-        set premulAlpha(v: boolean);
-        private _premulAlpha;
-        minFilter: TextureMinFilter;
-        magFilter: TextureMagFilter;
-        /**
-         * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
-         */
-        wrapS: TextureWrap;
-        /**
-         * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
-         */
-        wrapT: TextureWrap;
-        /**
-         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
-         */
-        anisotropy: number;
-        /**
-         * 需要使用的贴图数据
-         */
-        protected _pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
-        /**
-         * 当贴图数据未加载好等情况时代替使用
-         */
-        noPixels: string | string[];
         /**
          * 当前使用的贴图数据
          */
-        protected _activePixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
+        activePixels: TexImageSource | TexImageSource[];
         /**
          * 是否为渲染目标纹理
          */
-        protected _isRenderTarget: boolean;
-        protected get OFFSCREEN_WIDTH(): number;
-        protected set OFFSCREEN_WIDTH(v: number);
-        protected _OFFSCREEN_WIDTH: number;
-        protected get OFFSCREEN_HEIGHT(): number;
-        protected set OFFSCREEN_HEIGHT(v: number);
-        protected _OFFSCREEN_HEIGHT: number;
-        /**
-         * 纹理缓冲
-         */
-        protected _textureMap: Map<GL, WebGLTexture>;
-        /**
-         * 是否失效
-         */
-        private _invalid;
-        private _isPowerOfTwo;
-        /**
-         * 是否为2的幂贴图
-         */
-        private isPowerOfTwo;
-        /**
-         * 纹理尺寸
-         */
-        getSize(): Vector2;
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        private checkRenderData;
-        /**
-         * 使纹理失效
-         */
-        invalidate(): void;
-        get activePixels(): HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData | (HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData)[];
-        /**
-         *
-         */
-        get dataURL(): string;
-        private _dataURL;
-        private updateActivePixels;
-        /**
-         * 激活纹理
-         * @param gl
-         */
-        active(gl: GL): WebGLTexture;
+        isRenderTarget: boolean;
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+    }
+    class TextureUtil {
+        static active(gl: GL, data: Texture): WebGLTexture;
         /**
          * 获取顶点属性缓冲
          * @param data  数据
          */
-        getTexture(gl: GL): WebGLTexture;
+        static getTexture(gl: GL, data: Texture): WebGLTexture;
         /**
-         * 清理纹理
+         * 清除纹理
+         *
+         * @param data
          */
-        private clear;
+        static clear(data: Texture): void;
     }
 }
 declare namespace feng3d {
@@ -11139,6 +11045,110 @@ declare namespace feng3d {
         u_lightPosition: Vector3;
         u_shadowCameraNear: number;
         u_shadowCameraFar: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 纹理信息
+     */
+    abstract class TextureInfo extends AssetData implements Texture {
+        /**
+         * 纹理类型
+         */
+        textureType: TextureType;
+        /**
+         * 格式
+         */
+        get format(): TextureFormat;
+        set format(v: TextureFormat);
+        private _format;
+        /**
+         * 数据类型
+         */
+        get type(): TextureDataType;
+        set type(v: TextureDataType);
+        private _type;
+        /**
+         * 是否生成mipmap
+         */
+        get generateMipmap(): boolean;
+        set generateMipmap(v: boolean);
+        private _generateMipmap;
+        /**
+         * 对图像进行Y轴反转。默认值为false
+         */
+        get flipY(): boolean;
+        set flipY(v: boolean);
+        private _flipY;
+        /**
+         * 将图像RGB颜色值得每一个分量乘以A。默认为false
+         */
+        get premulAlpha(): boolean;
+        set premulAlpha(v: boolean);
+        private _premulAlpha;
+        minFilter: TextureMinFilter;
+        magFilter: TextureMagFilter;
+        /**
+         * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
+         */
+        get wrapS(): TextureWrap.REPEAT | TextureWrap;
+        set wrapS(v: TextureWrap);
+        private _wrapS;
+        /**
+         * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
+         */
+        get wrapT(): TextureWrap.REPEAT | TextureWrap;
+        set wrapT(v: TextureWrap);
+        private _wrapT;
+        /**
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
+         */
+        anisotropy: number;
+        /**
+         * 需要使用的贴图数据
+         */
+        protected _pixels: TexImageSource | TexImageSource[];
+        /**
+         * 当贴图数据未加载好等情况时代替使用
+         */
+        noPixels: string | string[];
+        /**
+         * 当前使用的贴图数据
+         */
+        protected _activePixels: TexImageSource | TexImageSource[];
+        /**
+         * 是否为渲染目标纹理
+         */
+        isRenderTarget: boolean;
+        get OFFSCREEN_WIDTH(): number;
+        set OFFSCREEN_WIDTH(v: number);
+        protected _OFFSCREEN_WIDTH: number;
+        get OFFSCREEN_HEIGHT(): number;
+        set OFFSCREEN_HEIGHT(v: number);
+        protected _OFFSCREEN_HEIGHT: number;
+        /**
+         * 是否为2的幂贴图
+         */
+        get isPowerOfTwo(): boolean;
+        /**
+         * 纹理尺寸
+         */
+        getSize(): Vector2;
+        /**
+         * 判断数据是否满足渲染需求
+         */
+        private checkRenderData;
+        /**
+         * 使纹理失效
+         */
+        invalidate(): void;
+        get activePixels(): HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas | ImageData | TexImageSource[];
+        /**
+         *
+         */
+        get dataURL(): string;
+        private _dataURL;
+        private updateActivePixels;
     }
 }
 declare namespace feng3d {
@@ -13842,6 +13852,10 @@ declare namespace feng3d {
      */
     class Texture2D extends TextureInfo {
         __class__: "feng3d.Texture2D";
+        /**
+         * 纹理类型
+         */
+        textureType: TextureType;
         assetType: AssetType;
         /**
          * 当贴图数据未加载好等情况时代替使用
@@ -13870,10 +13884,6 @@ declare namespace feng3d {
          */
         onLoadCompleted(callback: () => void): void;
         private _source;
-        /**
-         * 纹理类型
-         */
-        protected _textureType: TextureType;
         /**
          * 默认贴图
          */
@@ -13937,7 +13947,7 @@ declare namespace feng3d {
         format: TextureFormat;
         minFilter: TextureMinFilter;
         magFilter: TextureMagFilter;
-        protected _isRenderTarget: boolean;
+        isRenderTarget: boolean;
     }
 }
 declare namespace feng3d {
@@ -13960,6 +13970,7 @@ declare namespace feng3d {
      */
     class TextureCube extends TextureInfo {
         __class__: "feng3d.TextureCube";
+        textureType: TextureType;
         assetType: AssetType;
         static ImageNames: TextureCubeImageName[];
         OAVCubeMap: string;
@@ -13983,7 +13994,6 @@ declare namespace feng3d {
         private _rawData;
         noPixels: ImageDatas[];
         protected _pixels: any[];
-        protected _textureType: TextureType;
         /**
          * 是否加载完成
          */

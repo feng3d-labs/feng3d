@@ -52,7 +52,7 @@ namespace feng3d
         @oav()
         get generateMipmap()
         {
-            return this._generateMipmap && this._isPowerOfTwo;
+            return this._generateMipmap && this.isPowerOfTwo;
         }
         set generateMipmap(v)
         {
@@ -110,7 +110,7 @@ namespace feng3d
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureWrap } })
         get wrapS()
         {
-            if (!this._isPowerOfTwo)
+            if (!this.isPowerOfTwo)
                 return TextureWrap.CLAMP_TO_EDGE;
             return this._wrapS;
         }
@@ -127,7 +127,7 @@ namespace feng3d
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureWrap } })
         get wrapT()
         {
-            if (!this._isPowerOfTwo)
+            if (!this.isPowerOfTwo)
                 return TextureWrap.CLAMP_TO_EDGE;
             return this._wrapT;
         }
@@ -164,11 +164,11 @@ namespace feng3d
          */
         isRenderTarget = false;
 
-        protected get OFFSCREEN_WIDTH()
+        get OFFSCREEN_WIDTH()
         {
             return this._OFFSCREEN_WIDTH;
         }
-        protected set OFFSCREEN_WIDTH(v)
+        set OFFSCREEN_WIDTH(v)
         {
             if (this._OFFSCREEN_WIDTH == v) return;
             this._OFFSCREEN_WIDTH = v;
@@ -176,11 +176,11 @@ namespace feng3d
         }
         protected _OFFSCREEN_WIDTH = 1024;
 
-        protected get OFFSCREEN_HEIGHT()
+        get OFFSCREEN_HEIGHT()
         {
             return this._OFFSCREEN_HEIGHT;
         }
-        protected set OFFSCREEN_HEIGHT(v)
+        set OFFSCREEN_HEIGHT(v)
         {
             if (this._OFFSCREEN_HEIGHT == v) return;
             this._OFFSCREEN_HEIGHT = v;
@@ -189,20 +189,9 @@ namespace feng3d
         protected _OFFSCREEN_HEIGHT = 1024;
 
         /**
-         * 纹理缓冲
-         */
-        protected _textureMap = new Map<GL, WebGLTexture>();
-        /**
-         * 是否失效
-         */
-        private _invalid = true;
-
-        private _isPowerOfTwo = false;
-
-        /**
          * 是否为2的幂贴图
          */
-        private isPowerOfTwo(pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[])
+        get isPowerOfTwo()
         {
             if (this.isRenderTarget)
             {
@@ -212,6 +201,7 @@ namespace feng3d
                     return false;
                 return true;
             }
+            var pixels = this.activePixels;
             if (!pixels) return false;
             if (!Array.isArray(pixels))
                 pixels = [pixels];
@@ -272,7 +262,7 @@ namespace feng3d
          */
         invalidate()
         {
-            this._invalid = true;
+            TextureUtil.clear(this);
         }
 
         get activePixels()
@@ -317,34 +307,6 @@ namespace feng3d
                 }
             }
             if (old != this._activePixels) this._dataURL = null;
-        }
-
-        /**
-         * 激活纹理
-         * @param gl 
-         */
-        active(gl: GL)
-        {
-            if (this._invalid)
-            {
-                this.clear();
-                this._invalid = false;
-                this.updateActivePixels();
-
-                this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
-            }
-        }
-
-        /**
-         * 清理纹理
-         */
-        private clear()
-        {
-            this._textureMap.forEach((v, k) =>
-            {
-                k.deleteTexture(v);
-            });
-            this._textureMap.clear();
         }
     }
 }

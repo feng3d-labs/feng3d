@@ -35,6 +35,6 @@ namespace feng3d
 
         magFilter = TextureMagFilter.NEAREST;
 
-        protected _isRenderTarget = true;
+        isRenderTarget = true;
     }
 }

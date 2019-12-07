@@ -161,6 +161,7 @@
         "modules/render/src/gl/enums/AttributeUsage.ts",
         "modules/render/src/gl/enums/DepthFunc.ts",
         "modules/render/src/gl/GL.ts",
+        "modules/render/src/gl/GLCache.ts",
         "modules/render/src/gl/GLExtension.ts",
         "modules/render/src/gl/GLCapabilities.ts",
         //
@@ -171,7 +172,6 @@
         "modules/render/src/data/Index.ts",
         "modules/render/src/data/Attribute.ts",
         "modules/render/src/data/Texture.ts",
-        "modules/render/src/data/TextureInfo.ts",
         "modules/render/src/data/FrameBuffer.ts",
         //
         "modules/render/src/RenderBuffer.ts",
@@ -183,6 +183,7 @@
         "modules/render/src/renderer/Renderer.ts",
         //
         "src/render/data/Uniform.ts",
+        "src/render/data/TextureInfo.ts",
         "src/render/shader/ShaderLib.ts",
         "src/render/FrameBufferObject.ts",
         //

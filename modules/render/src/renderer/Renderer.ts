@@ -223,10 +223,9 @@ namespace feng3d
                         break;
                     case gl.SAMPLER_2D:
                     case gl.SAMPLER_CUBE:
-                        var textureInfo = <TextureInfo>data;
+                        var textureInfo = <Texture>data;
                         //激活纹理编号
                         gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
-                        textureInfo.active(gl);
                         TextureUtil.active(gl, textureInfo);
                         //设置纹理所在采样编号
                         gl.uniform1i(location, activeInfo.textureID);

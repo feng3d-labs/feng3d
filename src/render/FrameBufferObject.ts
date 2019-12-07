@@ -87,7 +87,7 @@ namespace feng3d
             if (!obj)
             {
                 var framebuffer = this.frameBuffer.active(gl);
-                var texture = this.texture.active(gl);
+                var texture = TextureUtil.active(gl, this.texture);
                 var depthBuffer = this.depthBuffer.active(gl);
 
                 // 绑定帧缓冲区对象

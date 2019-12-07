@@ -57,6 +57,11 @@ namespace feng3d
     {
         __class__: "feng3d.Texture2D";
 
+        /**
+         * 纹理类型
+         */
+        textureType = TextureType.TEXTURE_2D;
+
         assetType = AssetType.texture;
 
         /**
@@ -139,11 +144,6 @@ namespace feng3d
         }
 
         private _source: { url: string };
-
-        /**
-         * 纹理类型
-         */
-        protected _textureType = TextureType.TEXTURE_2D;
 
         /**
          * 默认贴图

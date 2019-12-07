@@ -26,6 +26,8 @@ namespace feng3d
     {
         __class__: "feng3d.TextureCube";
 
+        textureType = TextureType.TEXTURE_CUBE_MAP;
+        
         assetType = AssetType.texturecube;
 
         static ImageNames: TextureCubeImageName[] = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"];
@@ -52,8 +54,6 @@ namespace feng3d
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 
         protected _pixels = [null, null, null, null, null, null];
-
-        protected _textureType = TextureType.TEXTURE_CUBE_MAP;
 
         /**
          * 是否加载完成
