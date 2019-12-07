@@ -10,6 +10,8 @@ namespace feng3d
         private _gl: GL;
 
         textures = new Map<Texture, WebGLTexture>();
+        
+        attributes = new Map<Attribute, WebGLBuffer>();
 
         constructor(gl: GL)
         {

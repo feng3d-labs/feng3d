@@ -20541,6 +20541,7 @@ var feng3d;
         function GLCache(gl) {
             this.compileShaderResults = {};
             this.textures = new Map();
+            this.attributes = new Map();
             gl.cache = this;
             this._gl = gl;
         }
@@ -21218,11 +21219,7 @@ var feng3d;
             /**
              * 是否失效
              */
-            this._invalid = true;
-            /**
-             * 顶点数据缓冲
-             */
-            this._indexBufferMap = new Map();
+            this.invalid = true;
             this.name = name;
             this.data = data;
             this.size = size;
@@ -21246,50 +21243,52 @@ var feng3d;
          * 使数据失效
          */
         Attribute.prototype.invalidate = function () {
-            this._invalid = true;
+            this.invalid = true;
         };
         /**
          *
          * @param gl
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
-        Attribute.prototype.active = function (gl, location) {
-            if (this._invalid) {
-                this.clear();
-                this._invalid = false;
-            }
+        Attribute.active = function (gl, location, attribute) {
             gl.enableVertexAttribArray(location);
-            var buffer = this.getBuffer(gl);
+            var buffer = Attribute.getBuffer(gl, attribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.vertexAttribPointer(location, this.size, gl[this.type], this.normalized, this.stride, this.offset);
-            gl.vertexAttribDivisor(location, this.divisor);
+            gl.vertexAttribPointer(location, attribute.size, gl[attribute.type], attribute.normalized, attribute.stride, attribute.offset);
+            gl.vertexAttribDivisor(location, attribute.divisor);
         };
         /**
          * 获取缓冲
          */
-        Attribute.prototype.getBuffer = function (gl) {
-            var buffer = this._indexBufferMap.get(gl);
+        Attribute.getBuffer = function (gl, attribute) {
+            if (attribute.invalid) {
+                this.clear(attribute);
+                attribute.invalid = false;
+            }
+            var buffer = gl.cache.attributes.get(attribute);
             if (!buffer) {
-                var newbuffer = gl.createBuffer();
-                if (!newbuffer) {
+                var buffer = gl.createBuffer();
+                if (!buffer) {
                     console.error("createBuffer 失败！");
                     throw "";
                 }
-                buffer = newbuffer;
+                gl.cache.attributes.set(attribute, buffer);
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
-                this._indexBufferMap.set(gl, buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attribute.data), gl.STATIC_DRAW);
             }
             return buffer;
         };
         /**
          * 清理缓冲
          */
-        Attribute.prototype.clear = function () {
-            this._indexBufferMap.forEach(function (value, key, map) {
-                key.deleteBuffer(value);
+        Attribute.clear = function (attribute) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var buffer = gl.cache.attributes.get(attribute);
+                if (buffer) {
+                    gl.deleteBuffer(buffer);
+                    gl.cache.attributes.delete(attribute);
+                }
             });
-            this._indexBufferMap.clear();
         };
         __decorate([
             feng3d.serialize
@@ -21774,7 +21773,7 @@ var feng3d;
                 for (var name in attributeInfos) {
                     var activeInfo = attributeInfos[name];
                     var buffer = renderAtomic.attributes[name];
-                    buffer.active(gl, activeInfo.location);
+                    feng3d.Attribute.active(gl, activeInfo.location, buffer);
                     activeAttributes.push(activeInfo.location);
                     Array.delete(preActiveAttributes, activeInfo.location);
                 }

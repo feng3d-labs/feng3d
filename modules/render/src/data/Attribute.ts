@@ -130,12 +130,7 @@ namespace feng3d
         /**
          * 是否失效
          */
-        private _invalid = true;
-
-        /**
-         * 顶点数据缓冲
-         */
-        private _indexBufferMap = new Map<GL, WebGLBuffer>();
+        invalid = true;
 
         constructor(name: string, data: number[], size = 3, divisor = 0)
         {
@@ -150,7 +145,7 @@ namespace feng3d
          */
         invalidate()
         {
-            this._invalid = true;
+            this.invalid = true;
         }
 
         /**
@@ -158,40 +153,39 @@ namespace feng3d
          * @param gl 
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
-        active(gl: GL, location: number)
+        static active(gl: GL, location: number, attribute: Attribute)
         {
-            if (this._invalid)
-            {
-                this.clear();
-                this._invalid = false;
-            }
-
             gl.enableVertexAttribArray(location);
-            var buffer = this.getBuffer(gl);
+            var buffer = Attribute.getBuffer(gl, attribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.vertexAttribPointer(location, this.size, gl[this.type], this.normalized, this.stride, this.offset);
+            gl.vertexAttribPointer(location, attribute.size, gl[attribute.type], attribute.normalized, attribute.stride, attribute.offset);
 
-            gl.vertexAttribDivisor(location, this.divisor);
+            gl.vertexAttribDivisor(location, attribute.divisor);
         }
 
         /**
          * 获取缓冲
          */
-        private getBuffer(gl: GL)
+        static getBuffer(gl: GL, attribute: Attribute)
         {
-            var buffer = this._indexBufferMap.get(gl);
+            if (attribute.invalid)
+            {
+                this.clear(attribute);
+                attribute.invalid = false;
+            }
+            var buffer = gl.cache.attributes.get(attribute);
             if (!buffer)
             {
-                var newbuffer = gl.createBuffer();
-                if (!newbuffer)
+                var buffer = gl.createBuffer();
+                if (!buffer)
                 {
                     console.error("createBuffer 失败！");
                     throw "";
                 }
-                buffer = newbuffer;
+                gl.cache.attributes.set(attribute, buffer);
+
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
-                this._indexBufferMap.set(gl, buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attribute.data), gl.STATIC_DRAW);
             }
             return buffer;
         }
@@ -199,13 +193,17 @@ namespace feng3d
         /**
          * 清理缓冲
          */
-        private clear()
+        static clear(attribute: Attribute)
         {
-            this._indexBufferMap.forEach((value, key, map) =>
+            GL.glList.forEach(gl =>
             {
-                key.deleteBuffer(value)
+                var buffer = gl.cache.attributes.get(attribute);
+                if (buffer)
+                {
+                    gl.deleteBuffer(buffer);
+                    gl.cache.attributes.delete(attribute);
+                }
             });
-            this._indexBufferMap.clear();
         }
     }
 }

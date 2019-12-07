@@ -160,7 +160,7 @@ namespace feng3d
                 {
                     var activeInfo = attributeInfos[name];
                     var buffer: Attribute = renderAtomic.attributes[name];
-                    buffer.active(gl, activeInfo.location);
+                    Attribute.active(gl, activeInfo.location, buffer);
                     activeAttributes.push(activeInfo.location);
                     Array.delete(preActiveAttributes, activeInfo.location);
                 }

@@ -485,6 +485,7 @@ declare namespace feng3d {
         };
         private _gl;
         textures: Map<Texture, WebGLTexture>;
+        attributes: Map<Attribute, WebGLBuffer>;
         constructor(gl: GL);
     }
 }
@@ -972,11 +973,7 @@ declare namespace feng3d {
         /**
          * 是否失效
          */
-        private _invalid;
-        /**
-         * 顶点数据缓冲
-         */
-        private _indexBufferMap;
+        invalid: boolean;
         constructor(name: string, data: number[], size?: number, divisor?: number);
         /**
          * 使数据失效
@@ -987,15 +984,15 @@ declare namespace feng3d {
          * @param gl
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
-        active(gl: GL, location: number): void;
+        static active(gl: GL, location: number, attribute: Attribute): void;
         /**
          * 获取缓冲
          */
-        private getBuffer;
+        static getBuffer(gl: GL, attribute: Attribute): WebGLBuffer;
         /**
          * 清理缓冲
          */
-        private clear;
+        static clear(attribute: Attribute): void;
     }
 }
 declare namespace feng3d {
