@@ -7629,6 +7629,60 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * Ported from Stefan Gustavson's java implementation
+     * http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
+     * Read Stefan's excellent paper for details on how this code works.
+     *
+     * Sean McCullough banksean@gmail.com
+     *
+     * Added 4D noise
+     * Joshua Koo zz85nus@gmail.com
+     *
+     * @see https://github.com/mrdoob/three.js/blob/dev/examples/js/math/SimplexNoise.js
+     */
+    class SimplexNoise {
+        private _grad3;
+        private _grad4;
+        private _p;
+        private _perm;
+        private _simplex;
+        /**
+         * You can pass in a random number generator object if you like.
+         * It is assumed to have a random() method.
+         */
+        constructor(r?: {
+            random: () => number;
+        });
+        private _dot;
+        private _dot3;
+        private _dot4;
+        /**
+         *
+         * @param xin
+         * @param yin
+         */
+        noise(xin: number, yin: number): number;
+        /**
+         * 3D simplex noise
+         *
+         * @param xin
+         * @param yin
+         * @param zin
+         */
+        noise3d(xin: number, yin: number, zin: number): number;
+        /**
+         * 4D simplex noise
+         *
+         * @param x
+         * @param y
+         * @param z
+         * @param w
+         */
+        noise4d(x: number, y: number, z: number, w: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
      * 代理 EventTarget, 处理js事件中this关键字问题
      */
     class EventProxy extends EventDispatcher {
@@ -15816,6 +15870,33 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The quality of the generated noise.
+     *
+     * 产生的噪音的质量。
+     */
+    enum ParticleSystemNoiseQuality {
+        /**
+         * Low quality 1D noise.
+         *
+         * 低质量的一维噪声。
+         */
+        Low = 0,
+        /**
+         * Medium quality 2D noise.
+         *
+         * 中等质量2D噪音。
+         */
+        Medium = 1,
+        /**
+         * High quality 3D noise.
+         *
+         * 高品质3D噪音。
+         */
+        High = 2
+    }
+}
+declare namespace feng3d {
+    /**
      * 粒子系统 发射形状
      */
     class ParticleSystemShape {
@@ -17315,6 +17396,135 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         updateParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Script interface for the Noise Module.
+     *
+     * The Noise Module allows you to apply turbulence to the movement of your particles. Use the low quality settings to create computationally efficient Noise, or simulate smoother, richer Noise with the higher quality settings. You can also choose to define the behavior of the Noise individually for each axis.
+     *
+     * 噪声模块
+     *
+     * 噪声模块允许你将湍流应用到粒子的运动中。使用低质量设置来创建计算效率高的噪声，或者使用高质量设置来模拟更平滑、更丰富的噪声。您还可以选择为每个轴分别定义噪声的行为。
+     */
+    class ParticleNoiseModule extends ParticleModule {
+        /**
+         * Control the noise separately for each axis.
+         *
+         * 分别控制每个轴的噪声。
+         */
+        separateAxes: boolean;
+        /**
+         * How strong the overall noise effect is.
+         *
+         * 整体噪音效应有多强。
+         */
+        get strength(): MinMaxCurve;
+        set strength(v: MinMaxCurve);
+        /**
+         * How strong the overall noise effect is.
+         *
+         * 整体噪音效应有多强。
+         */
+        strength3D: MinMaxCurveVector3;
+        /**
+         * Define the strength of the effect on the X axis, when using separateAxes option.
+         *
+         * 在使用分别控制每个轴时，在X轴上定义效果的强度。
+         */
+        get strengthX(): MinMaxCurve;
+        set strengthX(v: MinMaxCurve);
+        /**
+         * Define the strength of the effect on the Y axis, when using separateAxes option.
+         *
+         * 在使用分别控制每个轴时，在Y轴上定义效果的强度。
+         */
+        get strengthY(): MinMaxCurve;
+        set strengthY(v: MinMaxCurve);
+        /**
+         * Define the strength of the effect on the Z axis, when using separateAxes option.
+         *
+         * 在使用分别控制每个轴时，在Z轴上定义效果的强度。
+         */
+        get strengthZ(): MinMaxCurve;
+        set strengthZ(v: MinMaxCurve);
+        /**
+         * Low values create soft, smooth noise, and high values create rapidly changing noise.
+         *
+         * 低值产生柔和、平滑的噪声，高值产生快速变化的噪声。
+         */
+        frequency: number;
+        /**
+         * Scroll the noise map over the particle system.
+         *
+         * 在粒子系统上滚动噪声图。
+         */
+        scrollSpeed: MinMaxCurve;
+        /**
+         * Layers of noise that combine to produce final noise.
+         *
+         * 一层一层的噪声组合在一起产生最终的噪声。
+         */
+        octaveCount: number;
+        /**
+         * When combining each octave, scale the intensity by this amount.
+         *
+         * 当组合每个八度时，按这个比例调整强度。
+         */
+        octaveMultiplier: number;
+        /**
+         * When combining each octave, zoom in by this amount.
+         *
+         * 当组合每个八度时，放大这个数字。
+         */
+        octaveScale: number;
+        /**
+         * Generate 1D, 2D or 3D noise.
+         *
+         * 生成一维、二维或三维噪声。
+         */
+        quality: ParticleSystemNoiseQuality;
+        /**
+         * Enable remapping of the final noise values, allowing for noise values to be translated into different values.
+         *
+         * 允许重新映射最终的噪声值，允许将噪声值转换为不同的值。
+         */
+        remapEnabled: boolean;
+        /**
+         * Define how the noise values are remapped.
+         *
+         * 定义如何重新映射噪声值。
+         */
+        get remap(): MinMaxCurve;
+        set remap(v: MinMaxCurve);
+        /**
+         * Define how the noise values are remapped.
+         *
+         * 定义如何重新映射噪声值。
+         */
+        remap3D: MinMaxCurveVector3;
+        /**
+         * Define how the noise values are remapped on the X axis, when using the ParticleSystem.NoiseModule.separateAxes option.
+         *
+         * 在使用分别控制每个轴时，如何在X轴上重新映射噪声值。
+         */
+        get remapX(): MinMaxCurve;
+        set remapX(v: MinMaxCurve);
+        /**
+         * Define how the noise values are remapped on the Y axis, when using the ParticleSystem.NoiseModule.separateAxes option.
+         *
+         * 在使用分别控制每个轴时，如何在Y轴上重新映射噪声值。
+         */
+        get remapY(): MinMaxCurve;
+        set remapY(v: MinMaxCurve);
+        /**
+         * Define how the noise values are remapped on the Z axis, when using the ParticleSystem.NoiseModule.separateAxes option.
+         *
+         * 在使用分别控制每个轴时，如何在Z轴上重新映射噪声值。
+         */
+        get remapZ(): MinMaxCurve;
+        set remapZ(v: MinMaxCurve);
     }
 }
 declare namespace feng3d {

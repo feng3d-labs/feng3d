@@ -4020,4 +4020,58 @@ declare namespace feng3d {
         getValue(time: number, randomBetween?: number): Vector3;
     }
 }
+declare namespace feng3d {
+    /**
+     * Ported from Stefan Gustavson's java implementation
+     * http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
+     * Read Stefan's excellent paper for details on how this code works.
+     *
+     * Sean McCullough banksean@gmail.com
+     *
+     * Added 4D noise
+     * Joshua Koo zz85nus@gmail.com
+     *
+     * @see https://github.com/mrdoob/three.js/blob/dev/examples/js/math/SimplexNoise.js
+     */
+    class SimplexNoise {
+        private _grad3;
+        private _grad4;
+        private _p;
+        private _perm;
+        private _simplex;
+        /**
+         * You can pass in a random number generator object if you like.
+         * It is assumed to have a random() method.
+         */
+        constructor(r?: {
+            random: () => number;
+        });
+        private _dot;
+        private _dot3;
+        private _dot4;
+        /**
+         *
+         * @param xin
+         * @param yin
+         */
+        noise(xin: number, yin: number): number;
+        /**
+         * 3D simplex noise
+         *
+         * @param xin
+         * @param yin
+         * @param zin
+         */
+        noise3d(xin: number, yin: number, zin: number): number;
+        /**
+         * 4D simplex noise
+         *
+         * @param x
+         * @param y
+         * @param z
+         * @param w
+         */
+        noise4d(x: number, y: number, z: number, w: number): number;
+    }
+}
 //# sourceMappingURL=math.d.ts.map
