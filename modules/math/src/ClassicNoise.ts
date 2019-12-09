@@ -1,14 +1,18 @@
 namespace feng3d
 {
-    // Ported from Stefan Gustavson's java implementation
-    // http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
-    // Read Stefan's excellent paper for details on how this code works.
-    //
-    // Sean McCullough banksean@gmail.com
-    //
-    // Added 4D noise
-    // Joshua Koo zz85nus@gmail.com
 
+    /**
+     * Ported from Stefan Gustavson's java implementation
+     * http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
+     * Read Stefan's excellent paper for details on how this code works.
+     * 
+     * Sean McCullough banksean@gmail.com
+     * 
+     * Added 4D noise
+     * Joshua Koo zz85nus@gmail.com
+     * 
+     * @see https://github.com/mrdoob/three.js/blob/dev/examples/js/math/SimplexNoise.js
+     */
     export class SimplexNoise
     {
         grad3: number[][];
@@ -40,17 +44,13 @@ namespace feng3d
             this.p = [];
             for (var i = 0; i < 256; i++)
             {
-
                 this.p[i] = Math.floor(r.random() * 256);
-
             }
             // To remove the need for index wrapping, double the permutation table length
             this.perm = [];
             for (var i = 0; i < 512; i++)
             {
-
                 this.perm[i] = this.p[i & 255];
-
             }
 
             // A lookup table to traverse the simplex around a given point in 4D.
@@ -64,33 +64,25 @@ namespace feng3d
                 [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0],
                 [2, 0, 1, 3], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [3, 0, 1, 2], [3, 0, 2, 1], [0, 0, 0, 0], [3, 1, 2, 0],
                 [2, 1, 0, 3], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [3, 1, 0, 2], [0, 0, 0, 0], [3, 2, 0, 1], [3, 2, 1, 0]];
-
-        };
+        }
 
         dot(g, x, y)
         {
-
             return g[0] * x + g[1] * y;
-
-        };
+        }
 
         dot3(g, x, y, z)
         {
-
             return g[0] * x + g[1] * y + g[2] * z;
-
-        };
+        }
 
         dot4(g, x, y, z, w)
         {
-
             return g[0] * x + g[1] * y + g[2] * z + g[3] * w;
-
-        };
+        }
 
         noise(xin, yin)
         {
-
             var n0, n1, n2; // Noise contributions from the three corners
             // Skew the input space to determine which simplex cell we're in
             var F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
@@ -108,17 +100,13 @@ namespace feng3d
             var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
             if (x0 > y0)
             {
-
                 i1 = 1; j1 = 0;
-
                 // lower triangle, XY order: (0,0)->(1,0)->(1,1)
-
             } else
             {
-
                 i1 = 0; j1 = 1;
-
-            } // upper triangle, YX order: (0,0)->(0,1)->(1,1)
+            }
+            // upper triangle, YX order: (0,0)->(0,1)->(1,1)
             // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
             // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
             // c = (3-sqrt(3))/6
@@ -137,39 +125,31 @@ namespace feng3d
             if (t0 < 0) n0 = 0.0;
             else
             {
-
                 t0 *= t0;
                 n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0); // (x,y) of grad3 used for 2D gradient
-
             }
             var t1 = 0.5 - x1 * x1 - y1 * y1;
             if (t1 < 0) n1 = 0.0;
             else
             {
-
                 t1 *= t1;
                 n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1);
-
             }
             var t2 = 0.5 - x2 * x2 - y2 * y2;
             if (t2 < 0) n2 = 0.0;
             else
             {
-
                 t2 *= t2;
                 n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2);
-
             }
             // Add contributions from each corner to get the final noise value.
             // The result is scaled to return values in the interval [-1,1].
             return 70.0 * (n0 + n1 + n2);
-
         }
 
         // 3D simplex noise
         noise3d(xin, yin, zin)
         {
-
             var n0, n1, n2, n3; // Noise contributions from the four corners
             // Skew the input space to determine which simplex cell we're in
             var F3 = 1.0 / 3.0;
@@ -191,52 +171,33 @@ namespace feng3d
             var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
             if (x0 >= y0)
             {
-
                 if (y0 >= z0)
                 {
-
                     i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0;
-
                     // X Y Z order
-
                 } else if (x0 >= z0)
                 {
-
                     i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1;
-
                     // X Z Y order
-
                 } else
                 {
-
                     i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1;
-
                 } // Z X Y order
-
             } else
             { // x0<y0
 
                 if (y0 < z0)
                 {
-
                     i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1;
-
                     // Z Y X order
-
                 } else if (x0 < z0)
                 {
-
                     i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1;
-
                     // Y Z X order
-
                 } else
                 {
-
                     i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0;
-
                 } // Y X Z order
-
             }
             // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
             // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
@@ -264,48 +225,38 @@ namespace feng3d
             if (t0 < 0) n0 = 0.0;
             else
             {
-
                 t0 *= t0;
                 n0 = t0 * t0 * this.dot3(this.grad3[gi0], x0, y0, z0);
-
             }
             var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
             if (t1 < 0) n1 = 0.0;
             else
             {
-
                 t1 *= t1;
                 n1 = t1 * t1 * this.dot3(this.grad3[gi1], x1, y1, z1);
-
             }
             var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
             if (t2 < 0) n2 = 0.0;
             else
             {
-
                 t2 *= t2;
                 n2 = t2 * t2 * this.dot3(this.grad3[gi2], x2, y2, z2);
-
             }
             var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
             if (t3 < 0) n3 = 0.0;
             else
             {
-
                 t3 *= t3;
                 n3 = t3 * t3 * this.dot3(this.grad3[gi3], x3, y3, z3);
-
             }
             // Add contributions from each corner to get the final noise value.
             // The result is scaled to stay just inside [-1,1]
             return 32.0 * (n0 + n1 + n2 + n3);
-
-        };
+        }
 
         // 4D simplex noise
         noise4d(x, y, z, w)
         {
-
             // For faster and easier lookups
             var grad4 = this.grad4;
             var simplex = this.simplex;
@@ -399,51 +350,39 @@ namespace feng3d
             if (t0 < 0) n0 = 0.0;
             else
             {
-
                 t0 *= t0;
                 n0 = t0 * t0 * this.dot4(grad4[gi0], x0, y0, z0, w0);
-
             }
             var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
             if (t1 < 0) n1 = 0.0;
             else
             {
-
                 t1 *= t1;
                 n1 = t1 * t1 * this.dot4(grad4[gi1], x1, y1, z1, w1);
-
             }
             var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
             if (t2 < 0) n2 = 0.0;
             else
             {
-
                 t2 *= t2;
                 n2 = t2 * t2 * this.dot4(grad4[gi2], x2, y2, z2, w2);
-
-            } var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
+            }
+            var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
             if (t3 < 0) n3 = 0.0;
             else
             {
-
                 t3 *= t3;
                 n3 = t3 * t3 * this.dot4(grad4[gi3], x3, y3, z3, w3);
-
             }
             var t4 = 0.6 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
             if (t4 < 0) n4 = 0.0;
             else
             {
-
                 t4 *= t4;
                 n4 = t4 * t4 * this.dot4(grad4[gi4], x4, y4, z4, w4);
-
             }
             // Sum up and scale the result to cover the range [-1,1]
             return 27.0 * (n0 + n1 + n2 + n3 + n4);
-
         }
     }
-
-
 }
