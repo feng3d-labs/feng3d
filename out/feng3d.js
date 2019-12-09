@@ -16087,7 +16087,7 @@ var feng3d;
      *
      * @see https://github.com/mrdoob/three.js/blob/dev/examples/js/math/SimplexNoise.js
      *
-     * 另外参考 https://github.com/WardBenjamin/SimplexNoise
+     * 另外参考 https://github.com/WardBenjamin/SimplexNoise    https://github.com/sarveshsvaran/Procedural-Volumetric-Particles-from-3d-4d-noise/blob/master/Assets/Noise.cs
      */
     var SimplexNoise = /** @class */ (function () {
         /**
