@@ -16086,6 +16086,8 @@ var feng3d;
      * Joshua Koo zz85nus@gmail.com
      *
      * @see https://github.com/mrdoob/three.js/blob/dev/examples/js/math/SimplexNoise.js
+     *
+     * 另外参考 https://github.com/WardBenjamin/SimplexNoise
      */
     var SimplexNoise = /** @class */ (function () {
         /**
