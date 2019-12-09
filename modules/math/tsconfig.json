@@ -55,6 +55,8 @@
         "src/curve/MinMaxCurveMode.ts",
         "src/curve/MinMaxCurve.ts",
         "src/curve/MinMaxCurveVector3.ts",
+        //
+        "src/ClassicNoise.ts",
     ],
     "references": [
         {
