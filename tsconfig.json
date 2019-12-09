@@ -304,6 +304,7 @@
         "src/animators/particle/enums/ParticleSystemShapeType1.ts",
         "src/animators/particle/enums/ParticleSystemMeshShapeType.ts",
         "src/animators/particle/enums/ParticleSystemInheritVelocityMode.ts",
+        "src/animators/particle/enums/ParticleSystemNoiseQuality.ts",
         //
         "src/animators/particle/shapes/ParticleSystemShape.ts",
         "src/animators/particle/shapes/ParticleSystemShapeSphere.ts",
@@ -327,6 +328,7 @@
         "src/animators/particle/modules/ParticleSizeBySpeedModule.ts",
         "src/animators/particle/modules/ParticleRotationOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleRotationBySpeedModule.ts",
+        "src/animators/particle/modules/ParticleNoiseModule.ts",
         "src/animators/particle/modules/ParticleTextureSheetAnimationModule.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
