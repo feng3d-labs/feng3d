@@ -9,26 +9,8 @@ namespace feng3d
          * 资源对象
          */
         @oav({ component: "OAVObjectView" })
-        get data()
-        {
-            return this._data;
-        }
-        set data(v)
-        {
-            if (this._data == v) return;
-            if (this._data)
-            {
-                objectevent.off(this._data, "propertyValueChanged", this._onDataChanged, this);
-            }
-            this._data = v;
-            if (this._data)
-            {
-                objectevent.on(this._data, "propertyValueChanged", this._onDataChanged, this);
-            }
-
-        }
-
-        private _data: AssetData;
+        @watch("_dataChanged")
+        data: AssetData;
 
         saveFile(callback?: (err: Error) => void)
         {
@@ -56,6 +38,18 @@ namespace feng3d
                     callback && callback(err);
                 });
             });
+        }
+
+        private _dataChanged(property, oldValue, newValue)
+        {
+            if (oldValue)
+            {
+                objectevent.off(oldValue, "propertyValueChanged", this._onDataChanged, this);
+            }
+            if (newValue)
+            {
+                objectevent.on(newValue, "propertyValueChanged", this._onDataChanged, this);
+            }
         }
 
         private _onDataChanged()

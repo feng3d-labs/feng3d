@@ -27,7 +27,7 @@ namespace feng3d
         __class__: "feng3d.TextureCube";
 
         textureType = TextureType.TEXTURE_CUBE_MAP;
-        
+
         assetType = AssetType.texturecube;
 
         static ImageNames: TextureCubeImageName[] = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"];
@@ -39,17 +39,8 @@ namespace feng3d
          * 原始数据
          */
         @serialize
-        get rawData()
-        {
-            return this._rawData;
-        }
-        set rawData(v)
-        {
-            if (this._rawData == v) return;
-            this._rawData = v;
-            this._rawDataChanged();
-        }
-        private _rawData: { type: "texture", textures: Texture2D[] } | { type: "path", paths: string[] };
+        @watch("_rawDataChanged")
+        rawData: { type: "texture", textures: Texture2D[] } | { type: "path", paths: string[] };
 
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 

@@ -6,65 +6,20 @@ namespace feng3d
      */
     export class FrameBufferObject
     {
-        get OFFSCREEN_WIDTH()
-        {
-            return this._OFFSCREEN_WIDTH;
-        }
-        set OFFSCREEN_WIDTH(v)
-        {
-            if (this._OFFSCREEN_WIDTH == v) return;
-            this._OFFSCREEN_WIDTH = v;
-            this.invalidateSize();
-        }
-        private _OFFSCREEN_WIDTH = 1024;
+        @watch("invalidateSize")
+        OFFSCREEN_WIDTH = 1024;
 
-        get OFFSCREEN_HEIGHT()
-        {
-            return this._OFFSCREEN_HEIGHT;
-        }
-        set OFFSCREEN_HEIGHT(v)
-        {
-            if (this._OFFSCREEN_HEIGHT == v) return;
-            this._OFFSCREEN_HEIGHT = v;
-            this.invalidateSize();
-        }
-        private _OFFSCREEN_HEIGHT = 1024;
+        @watch("invalidateSize")
+        OFFSCREEN_HEIGHT = 1024;
 
-        get frameBuffer()
-        {
-            return this._frameBuffer;
-        }
-        set frameBuffer(v)
-        {
-            if (this._frameBuffer == v) return;
-            this._frameBuffer = v;
-            this.invalidate();
-        }
-        private _frameBuffer: FrameBuffer;
+        @watch("invalidate")
+        frameBuffer: FrameBuffer;
 
-        get texture()
-        {
-            return this._texture;
-        }
-        set texture(v)
-        {
-            if (this._texture == v) return;
-            this._texture = v;
-            this.invalidate();
-        }
-        private _texture: RenderTargetTexture2D;
+        @watch("invalidate")
+        texture: RenderTargetTexture2D;
 
-        get depthBuffer()
-        {
-            return this._depthBuffer;
-        }
-        set depthBuffer(v)
-        {
-            if (this._depthBuffer == v) return;
-            this._depthBuffer = v;
-            this.invalidate();
-        }
-        private _depthBuffer: RenderBuffer;
+        @watch("invalidate")
+        depthBuffer: RenderBuffer;
 
         constructor(width = 1024, height = 1024)
         {

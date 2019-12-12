@@ -17,36 +17,16 @@ namespace feng3d
         get single() { return true; }
 
         @oav({ component: "OAVEnum", componentParam: { enumClass: Projection } })
-        get projection()
-        {
-            return this._projection;
-        }
-        set projection(v)
-        {
-            if (this._projection == v) return;
-            this._projection = v;
-            this.onProjectionChanged();
-        }
-        private _projection = Projection.Perspective;
+        @watch("_onProjectionChanged")
+        projection = Projection.Perspective;
 
         /**
 		 * 镜头
 		 */
         @serialize
         @oav({ component: "OAVObjectView" })
-        get lens()
-        {
-            return this._lens;
-        }
-        set lens(v)
-        {
-            if (this._lens == v) return;
-            if (this._lens) this._lens.off("lensChanged", <any>this.onLensChanged, this);
-            this._lens = v;
-            if (this._lens) this._lens.on("lensChanged", <any>this.onLensChanged, this);
-
-            this.onLensChanged();
-        }
+        @watch("_onLensChanged")
+        lens: LensBase;
 
 		/**
 		 * 场景投影矩阵，世界空间转投影空间
@@ -58,7 +38,7 @@ namespace feng3d
                 //场景空间转摄像机空间
                 this._viewProjection.copyFrom(this.transform.worldToLocalMatrix);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
-                this._viewProjection.append(this._lens.matrix);
+                this._viewProjection.append(this.lens.matrix);
                 this._viewProjectionInvalid = false;
             }
 
@@ -72,7 +52,7 @@ namespace feng3d
         {
             if (this._viewBoxInvalid)
             {
-                this.updateViewBox();
+                this._updateViewBox();
                 this._viewBoxInvalid = false;
             }
             return this._viewBox;
@@ -86,8 +66,8 @@ namespace feng3d
             super.init();
             this.lens = this.lens || new PerspectiveLens();
             //
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this._viewProjectionInvalid = true;
+            this.on("scenetransformChanged", this._onScenetransformChanged, this);
+            this._onScenetransformChanged();
         }
 
         /**
@@ -153,13 +133,12 @@ namespace feng3d
         /**
          * 处理场景变换改变事件
          */
-        protected onScenetransformChanged()
+        protected _onScenetransformChanged()
         {
             this._viewProjectionInvalid = true;
         }
 
         //
-        private _lens: LensBase;
         private _viewProjection: Matrix4x4 = new Matrix4x4();
         private _viewProjectionInvalid = true;
         private _viewBox = new AABB();
@@ -169,7 +148,7 @@ namespace feng3d
         /**
          * 更新可视区域顶点
          */
-        private updateViewBox()
+        private _updateViewBox()
         {
             this._viewBox.copy(this.lens.viewBox);
             this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
@@ -178,9 +157,12 @@ namespace feng3d
 		/**
 		 * 处理镜头变化事件
 		 */
-        private onLensChanged()
+        private _onLensChanged(property: string, oldValue: LensBase, value: LensBase)
         {
             this._viewProjectionInvalid = true;
+
+            if (oldValue) oldValue.off("lensChanged", <any>this._onLensChanged, this);
+            if (value) value.on("lensChanged", <any>this._onLensChanged, this);
 
             if (this.lens instanceof PerspectiveLens)
             {
@@ -190,12 +172,15 @@ namespace feng3d
                 this.projection = Projection.Orthographic;
             }
 
-            this.dispatch("refreshView");
+            if (oldValue != value)
+            {
+                this.dispatch("refreshView");
+            }
 
             this.dispatch("lensChanged");
         }
 
-        private onProjectionChanged()
+        private _onProjectionChanged()
         {
             var aspect = 1;
             var near = 0.3;

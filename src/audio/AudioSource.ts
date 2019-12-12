@@ -34,34 +34,16 @@ namespace feng3d
         private buffer: AudioBuffer;
         private gain: GainNode;
 
-        get enabled()
-        {
-            return this._enabled;
-        }
-        set enabled(v)
-        {
-            if (this._enabled == v) return;
-            this._enabled = v;
-            this.enabledChanged();
-        }
-        private _enabled = true;
+        @watch("_enabledChanged")
+        enabled = true;
 
         /**
          * 声音文件路径
          */
         @serialize
         @oav({ component: "OAVPick", tooltip: "声音文件路径", componentParam: { accepttype: "audio" } })
-        get url()
-        {
-            return this._url;
-        }
-        set url(v)
-        {
-            if (this._url == v) return;
-            this._url = v;
-            this.onUrlChanged();
-        }
-        private _url = "";
+        @watch("_onUrlChanged")
+        url = "";
 
         /**
          * 是否循环播放
@@ -106,9 +88,9 @@ namespace feng3d
         }
         set enablePosition(v)
         {
-            this.disconnect();
+            this._disconnect();
             this._enablePosition = v;
-            this.connect();
+            this._connect();
         }
         private _enablePosition = true;;
 
@@ -242,7 +224,7 @@ namespace feng3d
         {
             super();
             this.panner = createPanner();
-            this.panningModel = <any>'HRTF';
+            this.panningModel = 'HRTF';
             this.distanceModel = DistanceModelType.inverse;
             this.refDistance = 1;
             this.maxDistance = 10000;
@@ -254,17 +236,42 @@ namespace feng3d
             this.gain = audioCtx.createGain();
             this.volume = 1;
             //
-            this.enabledChanged()
-            this.connect();
+            this._enabledChanged()
+            this._connect();
         }
 
         init()
         {
             super.init();
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.on("scenetransformChanged", this._onScenetransformChanged, this);
         }
 
-        private onScenetransformChanged()
+        @oav()
+        play()
+        {
+            this.stop();
+            if (this.buffer)
+            {
+                this.source = audioCtx.createBufferSource();
+                this.source.buffer = this.buffer;
+                this._connect();
+                this.source.loop = this.loop;
+                this.source.start(0);
+            }
+        }
+
+        @oav()
+        stop()
+        {
+            if (this.source)
+            {
+                this.source.stop(0);
+                this._disconnect();
+                this.source = null;
+            }
+        }
+
+        private _onScenetransformChanged()
         {
             var localToWorldMatrix = this.transform.localToWorldMatrix;
             var scenePosition = localToWorldMatrix.getPosition();
@@ -286,7 +293,7 @@ namespace feng3d
             }
         }
 
-        private onUrlChanged()
+        private _onUrlChanged()
         {
             this.stop();
             if (this.url)
@@ -309,50 +316,25 @@ namespace feng3d
             }
         }
 
-        @oav()
-        play()
+        private _connect()
         {
-            this.stop();
-            if (this.buffer)
-            {
-                this.source = audioCtx.createBufferSource();
-                this.source.buffer = this.buffer;
-                this.connect();
-                this.source.loop = this.loop;
-                this.source.start(0);
-            }
-        }
-
-        @oav()
-        stop()
-        {
-            if (this.source)
-            {
-                this.source.stop(0);
-                this.disconnect();
-                this.source = null;
-            }
-        }
-
-        private connect()
-        {
-            var arr = this.getAudioNodes();
+            var arr = this._getAudioNodes();
             for (let i = 0; i < arr.length - 1; i++)
             {
                 arr[i + 1].connect(arr[i]);
             }
         }
 
-        private disconnect()
+        private _disconnect()
         {
-            var arr = this.getAudioNodes();
+            var arr = this._getAudioNodes();
             for (let i = 0; i < arr.length - 1; i++)
             {
                 arr[i + 1].disconnect(arr[i]);
             }
         }
 
-        private getAudioNodes()
+        private _getAudioNodes()
         {
             var arr: AudioNode[] = [];
             arr.push(this.gain);
@@ -363,7 +345,7 @@ namespace feng3d
             return arr;
         }
 
-        private enabledChanged()
+        private _enabledChanged()
         {
             if (!this.gain)
                 return;
@@ -375,8 +357,8 @@ namespace feng3d
 
         dispose()
         {
-            this.off("scenetransformChanged", this.onScenetransformChanged, this);
-            this.disconnect();
+            this.off("scenetransformChanged", this._onScenetransformChanged, this);
+            this._disconnect();
             super.dispose();
         }
     }

@@ -1240,26 +1240,10 @@ var feng3d;
             /**
              * 是否失效
              */
-            this.invalid = true;
+            this._invalid = true;
         }
-        Object.defineProperty(Index.prototype, "indices", {
-            /**
-             * 索引数据
-             */
-            get: function () {
-                return this._indices;
-            },
-            set: function (v) {
-                if (this._indices == v)
-                    return;
-                this._indices = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
         Index.prototype.invalidate = function () {
-            this.invalid = true;
+            this._invalid = true;
         };
         Object.defineProperty(Index.prototype, "count", {
             /**
@@ -1278,17 +1262,17 @@ var feng3d;
          * @param gl
          */
         Index.prototype.active = function (gl) {
-            if (this.invalid) {
-                this.clear();
-                this.invalid = false;
+            if (this._invalid) {
+                this._clear();
+                this._invalid = false;
             }
-            var buffer = this.getBuffer(gl);
+            var buffer = this._getBuffer(gl);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
         };
         /**
          * 获取缓冲
          */
-        Index.prototype.getBuffer = function (gl) {
+        Index.prototype._getBuffer = function (gl) {
             var buffer = this._indexBufferMap.get(gl);
             if (!buffer) {
                 buffer = gl.createBuffer();
@@ -1305,12 +1289,15 @@ var feng3d;
         /**
          * 清理缓冲
          */
-        Index.prototype.clear = function () {
+        Index.prototype._clear = function () {
             this._indexBufferMap.forEach(function (value, key) {
                 key.deleteBuffer(value);
             });
             this._indexBufferMap.clear();
         };
+        __decorate([
+            feng3d.watch("invalidate")
+        ], Index.prototype, "indices", void 0);
         return Index;
     }());
     feng3d.Index = Index;
@@ -1382,20 +1369,6 @@ var feng3d;
             this.size = size;
             this.divisor = divisor;
         }
-        Object.defineProperty(Attribute.prototype, "data", {
-            /**
-             * 属性数据
-             */
-            get: function () {
-                return this._data;
-            },
-            set: function (v) {
-                this._data = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 使数据失效
          */
@@ -1451,8 +1424,9 @@ var feng3d;
             feng3d.serialize
         ], Attribute.prototype, "name", void 0);
         __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "data", null);
+            feng3d.serialize,
+            feng3d.watch("invalidate")
+        ], Attribute.prototype, "data", void 0);
         __decorate([
             feng3d.serialize
         ], Attribute.prototype, "size", void 0);
@@ -1605,40 +1579,14 @@ var feng3d;
 (function (feng3d) {
     var RenderBuffer = /** @class */ (function () {
         function RenderBuffer() {
-            this._OFFSCREEN_WIDTH = 1024;
-            this._OFFSCREEN_HEIGHT = 1024;
+            this.OFFSCREEN_WIDTH = 1024;
+            this.OFFSCREEN_HEIGHT = 1024;
             this._depthBufferMap = new Map();
             /**
              * 是否失效
              */
             this._invalid = true;
         }
-        Object.defineProperty(RenderBuffer.prototype, "OFFSCREEN_WIDTH", {
-            get: function () {
-                return this._OFFSCREEN_WIDTH;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_WIDTH == v)
-                    return;
-                this._OFFSCREEN_WIDTH = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(RenderBuffer.prototype, "OFFSCREEN_HEIGHT", {
-            get: function () {
-                return this._OFFSCREEN_HEIGHT;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_HEIGHT == v)
-                    return;
-                this._OFFSCREEN_HEIGHT = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 使失效
          */
@@ -1677,6 +1625,12 @@ var feng3d;
             });
             this._depthBufferMap.clear();
         };
+        __decorate([
+            feng3d.watch("invalidate")
+        ], RenderBuffer.prototype, "OFFSCREEN_WIDTH", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], RenderBuffer.prototype, "OFFSCREEN_HEIGHT", void 0);
         return RenderBuffer;
     }());
     feng3d.RenderBuffer = RenderBuffer;

@@ -60,6 +60,9 @@
             "path": "../serialization"
         },
         {
+            "path": "../watcher"
+        },
+        {
             "path": "../objectview"
         },
     ]

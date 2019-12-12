@@ -15,85 +15,40 @@ namespace feng3d
          */
         @oav()
         @serialize
-        get width()
-        {
-            return this._width;
-        }
-        set width(v)
-        {
-            if (this._width == v) return;
-            this._width = v;
-            this.invalidateGeometry();
-        }
-        private _width = 1;
+        @watch("invalidateGeometry")
+        width = 1;
 
         /**
          * 高度
          */
         @oav()
         @serialize
-        get height()
-        {
-            return this._height;
-        }
-        set height(v)
-        {
-            if (this._height == v) return;
-            this._height = v;
-            this.invalidateGeometry();
-        }
-        private _height = 1;
+        @watch("invalidateGeometry")
+        height = 1;
 
         /**
          * 横向分割数
          */
         @oav()
         @serialize
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(v)
-        {
-            if (this._segmentsW == v) return;
-            this._segmentsW = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 1;
+        @watch("invalidateGeometry")
+        segmentsW = 1;
 
         /**
          * 纵向分割数
          */
         @oav()
         @serialize
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(v)
-        {
-            if (this._segmentsH == v) return;
-            this._segmentsH = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 1;
+        @watch("invalidateGeometry")
+        segmentsH = 1;
 
         /**
          * 是否朝上
          */
         @oav()
         @serialize
-        get yUp()
-        {
-            return this._yUp;
-        }
-        set yUp(v)
-        {
-            if (this._yUp == v) return;
-            this._yUp = v;
-            this.invalidateGeometry();
-        }
-        private _yUp = true;
+        @watch("invalidateGeometry")
+        yUp = true;
 
         name = "Plane";
 

@@ -25,11 +25,13 @@ namespace feng3d
                 this.${onChange}("${property}", oldValue, value);
             })`);
 
+            console.assert(target[onChange], `在对象 ${target} 上找不到方法 ${onChange}`)
+
             Object.defineProperty(target, property, {
                 get: get,
                 set: set,
                 enumerable: true,
-                configurable: true
+                configurable: true,
             });
         }
     }
@@ -48,7 +50,7 @@ namespace feng3d
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值 
          */
-        watch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler: (object: T, property: string, oldvalue: V) => void, thisObject?: any)
+        watch<T, K extends PropertyNames<T>, V extends T[K]>(object: T, property: K, handler: (object: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
             if (!Object.getOwnPropertyDescriptor(object, __watchs__))
             {
@@ -59,24 +61,25 @@ namespace feng3d
                     writable: false,
                 });
             }
+            var _property: string = <any>property;
             var watchs: Watchs = object[__watchs__];
-            if (!watchs[property])
+            if (!watchs[_property])
             {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, property);
-                watchs[property] = { value: object[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, _property);
+                watchs[_property] = { value: object[_property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data: PropertyDescriptor = Object.getPropertyDescriptor(object, property);
+                var data: PropertyDescriptor = Object.getPropertyDescriptor(object, _property);
                 if (data && data.set && data.get)
                 {
                     data = <any>{ enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
                     data.set = function (value: any)
                     {
-                        var oldvalue = this[<any>property];
+                        var oldvalue = this[<any>_property];
                         if (oldvalue != value)
                         {
                             orgSet && orgSet.call(this, value);
-                            notifyListener(this, property, oldvalue);
+                            notifyListener(this, _property, oldvalue);
                         }
                     };
                 }
@@ -85,27 +88,27 @@ namespace feng3d
                     data = <any>{ enumerable: true, configurable: true };
                     data.get = function (): any
                     {
-                        return this[__watchs__][property].value;
+                        return this[__watchs__][_property].value;
                     };
                     data.set = function (value: any)
                     {
-                        var oldvalue = this[__watchs__][property].value;
+                        var oldvalue = this[__watchs__][_property].value;
                         if (oldvalue != value)
                         {
-                            this[__watchs__][property].value = value;
-                            notifyListener(this, property, oldvalue);
+                            this[__watchs__][_property].value = value;
+                            notifyListener(this, _property, oldvalue);
                         }
                     };
                 }
                 else
                 {
-                    console.warn(`watch ${object} . ${property} 失败！`);
+                    console.warn(`watch ${object} . ${_property} 失败！`);
                     return;
                 }
-                Object.defineProperty(object, property, data);
+                Object.defineProperty(object, _property, data);
             }
 
-            var propertywatchs = watchs[property];
+            var propertywatchs = watchs[_property];
             var has = propertywatchs.handlers.reduce((v, item) => { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
             if (!has)
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
@@ -119,13 +122,14 @@ namespace feng3d
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        unwatch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler?: (object: T, property: string, oldvalue: V) => void, thisObject?: any)
+        unwatch<T, K extends PropertyNames<T>, V extends T[K]>(object: T, property: K, handler?: (object: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
             var watchs: Watchs = object[__watchs__];
             if (!watchs) return;
-            if (watchs[property])
+            var _property: string = <any>property;
+            if (watchs[_property])
             {
-                var handlers = watchs[property].handlers;
+                var handlers = watchs[_property].handlers;
                 if (handler === undefined)
                     handlers.length = 0;
                 for (var i = handlers.length - 1; i >= 0; i--)
@@ -135,12 +139,12 @@ namespace feng3d
                 }
                 if (handlers.length == 0)
                 {
-                    var value = object[property];
-                    delete object[property];
-                    if (watchs[property].oldPropertyDescriptor)
-                        Object.defineProperty(object, property, watchs[property].oldPropertyDescriptor);
-                    object[property] = value;
-                    delete watchs[property];
+                    var value = object[_property];
+                    delete object[_property];
+                    if (watchs[_property].oldPropertyDescriptor)
+                        Object.defineProperty(object, _property, watchs[_property].oldPropertyDescriptor);
+                    object[_property] = value;
+                    delete watchs[_property];
                 }
                 if (Object.keys(watchs).length == 0)
                 {

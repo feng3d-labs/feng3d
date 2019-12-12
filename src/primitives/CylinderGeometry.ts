@@ -16,153 +16,72 @@ namespace feng3d
          */
         @serialize
         @oav()
-        get topRadius()
-        {
-            return this._topRadius;
-        }
-        set topRadius(v)
-        {
-            if (this._topRadius == v) return;
-            this._topRadius = v;
-            this.invalidateGeometry();
-        }
-        private _topRadius = 0.5;
+		@watch("invalidateGeometry")
+        topRadius = 0.5;
 
         /**
          * 底部半径
          */
         @serialize
         @oav()
-        get bottomRadius()
-        {
-            return this._bottomRadius;
-        }
-        set bottomRadius(v)
-        {
-            if (this._bottomRadius == v) return;
-            this._bottomRadius = v;
-            this.invalidateGeometry();
-        }
-        private _bottomRadius = 0.5;
+		@watch("invalidateGeometry")
+        bottomRadius = 0.5;
 
         /**
          * 高度
          */
         @serialize
         @oav()
-        get height()
-        {
-            return this._height;
-        }
-        set height(v)
-        {
-            if (this._height == v) return;
-            this._height = v;
-            this.invalidateGeometry();
-        }
-        private _height = 2;
+		@watch("invalidateGeometry")
+        height = 2;
 
         /**
          * 横向分割数
          */
         @serialize
         @oav()
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(v)
-        {
-            if (this._segmentsW == v) return;
-            this._segmentsW = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 16;
+		@watch("invalidateGeometry")
+        segmentsW = 16;
 
         /**
          * 纵向分割数
          */
         @serialize
         @oav()
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(v)
-        {
-            if (this._segmentsH == v) return;
-            this._segmentsH = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 1;
+		@watch("invalidateGeometry")
+        segmentsH = 1;
 
         /**
          * 顶部是否封口
          */
         @oav()
         @serialize
-        get topClosed()
-        {
-            return this._topClosed;
-        }
-        set topClosed(v)
-        {
-            if (this._topClosed == v) return;
-            this._topClosed = v;
-            this.invalidateGeometry();
-        }
-        private _topClosed = true;
+		@watch("invalidateGeometry")
+        topClosed = true;
 
         /**
          * 底部是否封口
          */
         @oav()
         @serialize
-        get bottomClosed()
-        {
-            return this._bottomClosed;
-        }
-        set bottomClosed(v)
-        {
-            if (this._bottomClosed == v) return;
-            this._bottomClosed = v;
-            this.invalidateGeometry;
-        }
-        private _bottomClosed = true;
+		@watch("invalidateGeometry")
+        bottomClosed = true;
 
         /**
          * 侧面是否封口
          */
         @oav()
         @serialize
-        get surfaceClosed()
-        {
-            return this._surfaceClosed;
-        }
-        set surfaceClosed(v)
-        {
-            if (this._surfaceClosed == v) return;
-            this._surfaceClosed = v;
-            this.invalidateGeometry();
-        }
-        private _surfaceClosed = true;
+		@watch("invalidateGeometry")
+        surfaceClosed = true;
 
         /**
          * 是否朝上
          */
         @serialize
         @oav()
-        get yUp()
-        {
-            return this._yUp;
-        }
-        set yUp(v)
-        {
-            if (this._yUp == v) return;
-            this._yUp = v;
-            this.invalidateGeometry();
-        }
-        private _yUp = true;
+		@watch("invalidateGeometry")
+        yUp = true;
 
         name = "Cylinder";
 

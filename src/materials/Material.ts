@@ -38,17 +38,8 @@ namespace feng3d
          */
         @oav({ component: "OAVMaterialName" })
         @serialize
-        get shaderName()
-        {
-            return this._shaderName;
-        }
-        set shaderName(v)
-        {
-            if (this._shaderName == v) return;
-            this._shaderName = v;
-            this.onShaderChanged();
-        }
-        private _shaderName: ShaderNames;
+        @watch("_onShaderChanged")
+        shaderName: ShaderNames;
 
         @oav({ editable: false })
         @serialize
@@ -59,39 +50,21 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        get uniforms()
-        {
-            return this._uniforms;
-        }
-        set uniforms(v)
-        {
-            if (this._uniforms == v) return;
-            this._uniforms = v;
-            this.onUniformsChanged();
-        }
-        private _uniforms: UniformsData;
+        @watch("_onUniformsChanged")
+        uniforms: UniformsData;
 
         /**
          * 渲染参数
          */
         @serialize
         @oav({ block: "渲染参数", component: "OAVObjectView" })
-        get renderParams()
-        {
-            return this._renderParams;
-        }
-        set renderParams(v)
-        {
-            if (this._renderParams == v) return;
-            this._renderParams = v;
-            this.onRenderParamsChanged();
-        }
-        private _renderParams: RenderParams;
+        @watch("_onRenderParamsChanged")
+        renderParams: RenderParams;
 
         constructor()
         {
             super();
-            globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            globalDispatcher.on("asset.shaderChanged", this._onShaderChanged, this);
             this.shaderName = "standard";
             this.uniforms = new StandardUniforms();
             this.renderParams = new RenderParams();
@@ -150,7 +123,7 @@ namespace feng3d
             if (loadingNum == 0) callback();
         }
 
-        private onShaderChanged()
+        private _onShaderChanged()
         {
             var cls = shaderConfig.shaders[this.shaderName].cls;
             if (cls)
@@ -171,12 +144,12 @@ namespace feng3d
             this.renderAtomic.shader = new Shader(this.shaderName);
         }
 
-        private onUniformsChanged()
+        private _onUniformsChanged()
         {
             this.renderAtomic.uniforms = <any>this.uniforms;
         }
 
-        private onRenderParamsChanged()
+        private _onRenderParamsChanged()
         {
             this.renderAtomic.renderParams = this.renderParams;
         }

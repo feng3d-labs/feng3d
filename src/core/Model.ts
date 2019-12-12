@@ -13,42 +13,16 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serialize
-        get geometry()
-        {
-            return this._geometry;
-        }
-        set geometry(v)
-        {
-            if (this._geometry == v) return;
-            if (this._geometry)
-            {
-                this._geometry.off("boundsInvalid", this.onBoundsInvalid, this);
-            }
-            this._geometry = v;
-            if (this._geometry)
-            {
-                this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
-            }
-            this.geometry = this.geometry || Geometry.getDefault("Cube");
-            this.onBoundsInvalid();
-        }
-        private _geometry: Geometrys = Geometry.getDefault("Cube");
+        @watch("_onGeometryChanged")
+        geometry: Geometrys = Geometry.getDefault("Cube");
 
         /**
          * 材质
          */
         @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
         @serialize
-        get material()
-        {
-            return this._material;
-        }
-        set material(v)
-        {
-            this._material = v;
-            this._material = this._material || Material.getDefault("Default-Material");
-        }
-        private _material = Material.getDefault("Default-Material");
+        @watch("_onMaterialChanged")
+        material = Material.getDefault("Default-Material");
 
         @oav({ tooltip: "是否投射阴影" })
         @serialize
@@ -64,7 +38,7 @@ namespace feng3d
         get selfLocalBounds()
         {
             if (!this._selfLocalBounds)
-                this.updateBounds();
+                this._updateBounds();
 
             return this._selfLocalBounds;
         }
@@ -75,7 +49,7 @@ namespace feng3d
         get selfWorldBounds()
         {
             if (!this._selfWorldBounds)
-                this.updateWorldBounds();
+                this._updateWorldBounds();
 
             return this._selfWorldBounds;
         }
@@ -89,7 +63,7 @@ namespace feng3d
         init()
         {
             super.init();
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
+            this.on("scenetransformChanged", this._onScenetransformChanged, this);
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
@@ -168,7 +142,26 @@ namespace feng3d
         private _selfLocalBounds: AABB;
         private _selfWorldBounds: AABB;
 
-        private onScenetransformChanged()
+        private _onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
+        {
+            if (oldValue)
+            {
+                oldValue.off("boundsInvalid", this._onBoundsInvalid, this);
+            }
+            if (value)
+            {
+                value.on("boundsInvalid", this._onBoundsInvalid, this);
+            }
+            this.geometry = this.geometry || Geometry.getDefault("Cube");
+            this._onBoundsInvalid();
+        }
+
+        private _onMaterialChanged()
+        {
+            this.material = this.material || Material.getDefault("Default-Material");
+        }
+
+        private _onScenetransformChanged()
         {
             this._selfWorldBounds = null;
         }
@@ -176,7 +169,7 @@ namespace feng3d
 		/**
 		 * 更新世界边界
 		 */
-        private updateWorldBounds()
+        private _updateWorldBounds()
         {
             this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
         }
@@ -184,16 +177,13 @@ namespace feng3d
         /**
          * 处理包围盒变换事件
          */
-        private onBoundsInvalid()
+        private _onBoundsInvalid()
         {
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
         }
 
-        /**
-		 * @inheritDoc
-		 */
-        private updateBounds()
+        private _updateBounds()
         {
             this._selfLocalBounds = this.geometry.bounding;
         }

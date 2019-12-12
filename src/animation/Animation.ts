@@ -7,17 +7,8 @@ namespace feng3d
     {
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
         @serialize
-        get animation()
-        {
-            return this._animation;
-        }
-        set animation(v)
-        {
-            if (this._animation == v) return;
-            this._animation = v;
-            this.onAnimationChanged();
-        }
-        private _animation: AnimationClip;
+        @watch("_onAnimationChanged")
+        animation: AnimationClip;
 
         @oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
         @serialize
@@ -27,17 +18,8 @@ namespace feng3d
          * 动画事件，单位为ms
          */
         @oav()
-        get time()
-        {
-            return this._time;
-        }
-        set time(v)
-        {
-            if (this._time == v) return;
-            this._time = v;
-            this.onTimeChanged();
-        }
-        private _time = 0;
+        @watch("_onTimeChanged")
+        time = 0;
 
         @oav()
         @serialize
@@ -83,7 +65,7 @@ namespace feng3d
         private _fps = 24;
         private _objectCache = new Map();
 
-        private updateAni()
+        private _updateAni()
         {
             if (!this.animation) return;
             if ((this.num++) % 2 != 0) return;
@@ -138,14 +120,14 @@ namespace feng3d
             return propertyHost;
         }
 
-        private onAnimationChanged()
+        private _onAnimationChanged()
         {
             this.time = 0;
         }
 
-        private onTimeChanged()
+        private _onTimeChanged()
         {
-            this.updateAni();
+            this._updateAni();
         }
     }
     var autoobjectCacheID = 1;

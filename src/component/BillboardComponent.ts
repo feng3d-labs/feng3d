@@ -11,33 +11,29 @@ namespace feng3d
          * 相机
          */
         @oav()
-        get camera()
-        {
-            return this._camera;
-        }
-        set camera(v)
-        {
-            if (this._camera == v) return;
-            if (this._camera) this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            this._camera = v;
-            if (this._camera) this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            this.invalidHoldSizeMatrix();
-        }
-        private _camera: Camera;
+        @watch("_onCameraChanged")
+        camera: Camera;
 
         init()
         {
             super.init();
-            this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
-            this.invalidHoldSizeMatrix();
+            this.transform.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this._invalidHoldSizeMatrix();
         }
 
-        private invalidHoldSizeMatrix()
+        private _onCameraChanged(property: string, oldValue: Camera, value: Camera)
+        {
+            if (oldValue) oldValue.off("scenetransformChanged", this._invalidHoldSizeMatrix, this);
+            if (value) value.on("scenetransformChanged", this._invalidHoldSizeMatrix, this);
+            this._invalidHoldSizeMatrix();
+        }
+
+        private _invalidHoldSizeMatrix()
         {
             if (this._gameObject) this.transform["_invalidateSceneTransform"]();
         }
 
-        private updateLocalToWorldMatrix()
+        private _onUpdateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
             if (_localToWorldMatrix && this.camera)
@@ -52,7 +48,7 @@ namespace feng3d
         dispose()
         {
             this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.transform.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             super.dispose();
         }
     }

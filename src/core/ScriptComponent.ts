@@ -11,18 +11,9 @@ namespace feng3d
         runEnvironment = RunEnvironment.feng3d;
 
         @serialize
+        @watch("_invalidateScriptInstance")
         @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
-        get scriptName()
-        {
-            return this._scriptName;
-        }
-        set scriptName(v)
-        {
-            if (this._scriptName == v) return;
-            this._scriptName = v;
-            this.invalidateScriptInstance();
-        }
-        private _scriptName: string;
+        scriptName: string;
 
         /**
          * 脚本对象
@@ -30,7 +21,7 @@ namespace feng3d
         @serialize
         get scriptInstance()
         {
-            if (this._invalid) this.updateScriptInstance();
+            if (this._invalid) this._updateScriptInstance();
             return this._scriptInstance;
         }
         private _scriptInstance: Script;
@@ -42,10 +33,10 @@ namespace feng3d
         init()
         {
             super.init();
-            feng3d.globalDispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
+            globalDispatcher.on("asset.scriptChanged", this._invalidateScriptInstance, this);
         }
 
-        private updateScriptInstance()
+        private _updateScriptInstance()
         {
             var oldInstance = this._scriptInstance;
             this._scriptInstance = null;
@@ -72,7 +63,7 @@ namespace feng3d
             this._invalid = false;
         }
 
-        private invalidateScriptInstance()
+        private _invalidateScriptInstance()
         {
             this._invalid = true;
         }
@@ -106,7 +97,7 @@ namespace feng3d
             }
             super.dispose();
 
-            feng3d.globalDispatcher.off("asset.scriptChanged", this.invalidateScriptInstance, this);
+            globalDispatcher.off("asset.scriptChanged", this._invalidateScriptInstance, this);
         }
     }
 }

@@ -12,64 +12,46 @@ namespace feng3d
          * 保持缩放尺寸
          */
         @oav()
-        get holdSize()
-        {
-            return this._holdSize;
-        }
-        set holdSize(v)
-        {
-            if (this._holdSize == v) return;
-            this._holdSize = v;
-            this.onHoldSizeChanged();
-        }
-        private _holdSize = 1;
+        @watch("_invalidateSceneTransform")
+        holdSize = 1;
 
         /**
          * 相机
          */
         @oav()
-        get camera()
-        {
-            return this._camera;
-        }
-        set camera(v)
-        {
-            if (this._camera == v) return;
-            if (this._camera) this._camera.off("scenetransformChanged", this.invalidateSceneTransform, this);
-            this._camera = v;
-            if (this._camera) this._camera.on("scenetransformChanged", this.invalidateSceneTransform, this);
-            this.invalidateSceneTransform();
-        }
-        private _camera: Camera;
+        @watch("_onCameraChanged")
+        camera: Camera;
 
         init()
         {
-            this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.transform.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
         }
 
         dispose()
         {
             this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.transform.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             super.dispose();
         }
 
-        private onHoldSizeChanged()
+        private _onCameraChanged(property: string, oldValue: Camera, value: Camera)
         {
-            this.invalidateSceneTransform();
+            if (oldValue) oldValue.off("scenetransformChanged", this._invalidateSceneTransform, this);
+            if (value) value.on("scenetransformChanged", this._invalidateSceneTransform, this);
+            this._invalidateSceneTransform();
         }
 
-        private invalidateSceneTransform()
+        private _invalidateSceneTransform()
         {
             if (this._gameObject) this.transform["_invalidateSceneTransform"]();
         }
 
-        private updateLocalToWorldMatrix()
+        private _onUpdateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
             if (this.holdSize && this.camera && _localToWorldMatrix)
             {
-                var depthScale = this.getDepthScale(this.camera);
+                var depthScale = this._getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scaleNumber(depthScale * this.holdSize);
                 _localToWorldMatrix.recompose(vec[0], vec[1], vec[2]);
@@ -78,7 +60,7 @@ namespace feng3d
             }
         }
 
-        private getDepthScale(camera: Camera)
+        private _getDepthScale(camera: Camera)
         {
             var cameraTranform = camera.transform.localToWorldMatrix;
             var distance = this.transform.worldPosition.subTo(cameraTranform.getPosition());

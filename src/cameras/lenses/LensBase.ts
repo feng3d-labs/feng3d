@@ -17,49 +17,22 @@ namespace feng3d
 		 */
 		@serialize
 		@oav()
-		get near()
-		{
-			return this._near;
-		}
-		set near(v)
-		{
-			if (this._near == v) return;
-			this._near = v;
-			this.invalidate();
-		}
-		protected _near: number;
+		@watch("invalidate")
+		near: number;
 
 		/**
 		 * 最远距离
 		 */
+		@watch("invalidate")
 		@serialize
 		@oav()
-		get far()
-		{
-			return this._far;
-		}
-		set far(v)
-		{
-			if (this._far == v) return;
-			this._far = v;
-			this.invalidate();
-		}
-		protected _far: number;
+		far: number;
 
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		get aspect()
-		{
-			return this._aspect;
-		}
-		set aspect(v)
-		{
-			if (this._aspect == v) return;
-			this._aspect = v;
-			this.invalidate();
-		}
-		protected _aspect: number;
+		@watch("invalidate")
+		aspect: number;
 
 		/**
 		 * 创建一个摄像机镜头
@@ -79,7 +52,7 @@ namespace feng3d
 		{
 			if (this._matrixInvalid)
 			{
-				this.updateMatrix();
+				this._updateMatrix();
 				this._matrixInvalid = false;
 			}
 			return this._matrix;
@@ -108,7 +81,7 @@ namespace feng3d
 		{
 			if (this._viewBoxInvalid)
 			{
-				this.updateViewBox();
+				this._updateViewBox();
 				this._viewBoxInvalid = false;
 			}
 			return this._viewBox;
@@ -201,12 +174,12 @@ namespace feng3d
 		/**
 		 * 更新投影矩阵
 		 */
-		protected abstract updateMatrix(): void;
+		protected abstract _updateMatrix(): void;
 
 		/**
 		 * 更新最小包围盒
 		 */
-		protected abstract updateViewBox(): void;
+		protected abstract _updateViewBox(): void;
 
 		/**
 		 * 克隆

@@ -61,16 +61,8 @@ namespace feng3d
          * 属性数据
          */
         @serialize
-        get data()
-        {
-            return this._data;
-        }
-        set data(v)
-        {
-            this._data = v;
-            this.invalidate();
-        }
-        private _data: number[];
+        @watch("invalidate")
+        data: number[];
 
         /**
          * 数据尺寸

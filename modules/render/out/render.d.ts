@@ -847,10 +847,8 @@ declare namespace feng3d {
         /**
          * 索引数据
          */
-        get indices(): number[];
-        set indices(v: number[]);
-        private _indices;
-        private invalidate;
+        indices: number[];
+        invalidate(): void;
         /**
          * 渲染数量
          */
@@ -870,7 +868,7 @@ declare namespace feng3d {
         /**
          * 是否失效
          */
-        invalid: boolean;
+        private _invalid;
         /**
          * 激活缓冲
          * @param gl
@@ -879,11 +877,11 @@ declare namespace feng3d {
         /**
          * 获取缓冲
          */
-        private getBuffer;
+        private _getBuffer;
         /**
          * 清理缓冲
          */
-        private clear;
+        private _clear;
     }
 }
 declare namespace feng3d {
@@ -934,9 +932,7 @@ declare namespace feng3d {
         /**
          * 属性数据
          */
-        get data(): number[];
-        set data(v: number[]);
-        private _data;
+        data: number[];
         /**
          * 数据尺寸
          *
@@ -1087,12 +1083,8 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class RenderBuffer {
-        get OFFSCREEN_WIDTH(): number;
-        set OFFSCREEN_WIDTH(v: number);
-        private _OFFSCREEN_WIDTH;
-        get OFFSCREEN_HEIGHT(): number;
-        set OFFSCREEN_HEIGHT(v: number);
-        private _OFFSCREEN_HEIGHT;
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
         protected _depthBufferMap: Map<GL, WebGLRenderbuffer>;
         /**
          * 是否失效

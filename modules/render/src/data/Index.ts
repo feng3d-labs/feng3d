@@ -10,21 +10,12 @@ namespace feng3d
         /**
          * 索引数据
          */
-        get indices()
-        {
-            return this._indices;
-        }
-        set indices(v)
-        {
-            if (this._indices == v) return;
-            this._indices = v;
-            this.invalidate();
-        }
-        private _indices: number[];
+        @watch("invalidate")
+        indices: number[];
 
-        private invalidate()
+        invalidate()
         {
-            this.invalid = true;
+            this._invalid = true;
         }
 
         /**
@@ -53,7 +44,7 @@ namespace feng3d
         /**
          * 是否失效
          */
-        invalid = true;
+        private _invalid = true;
 
         /**
          * 激活缓冲
@@ -61,19 +52,19 @@ namespace feng3d
          */
         active(gl: GL)
         {
-            if (this.invalid)
+            if (this._invalid)
             {
-                this.clear();
-                this.invalid = false;
+                this._clear();
+                this._invalid = false;
             }
-            var buffer = this.getBuffer(gl);
+            var buffer = this._getBuffer(gl);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
         }
 
         /**
          * 获取缓冲
          */
-        private getBuffer(gl: GL)
+        private _getBuffer(gl: GL)
         {
             var buffer = this._indexBufferMap.get(gl);
             if (!buffer)
@@ -94,7 +85,7 @@ namespace feng3d
         /**
          * 清理缓冲
          */
-        private clear()
+        private _clear()
         {
             this._indexBufferMap.forEach((value, key) =>
             {

@@ -15,86 +15,40 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureFormat } })
-        get format()
-        {
-            return this._format;
-        }
-        set format(v)
-        {
-            if (this._format == v) return;
-            this._format = v;
-            this.invalidate();
-        }
-        private _format = TextureFormat.RGB;
+        @watch("invalidate")
+        format = TextureFormat.RGB;
 
         /**
          * 数据类型
          */
         @serialize
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureDataType } })
-
-        get type()
-        {
-            return this._type;
-        }
-        set type(v)
-        {
-            if (this._type == v) return;
-            this._type = v;
-            this.invalidate();
-        }
-        private _type = TextureDataType.UNSIGNED_BYTE;
+        @watch("invalidate")
+        type = TextureDataType.UNSIGNED_BYTE;
 
         /**
          * 是否生成mipmap
          */
         @serialize
         @oav()
-        get generateMipmap()
-        {
-            return this._generateMipmap && this.isPowerOfTwo;
-        }
-        set generateMipmap(v)
-        {
-            if (this._generateMipmap == v) return;
-            this._generateMipmap = v;
-            this.invalidate();
-        }
-        private _generateMipmap = false;
+        @watch("invalidate")
+        generateMipmap = false;
 
         /**
          * 对图像进行Y轴反转。默认值为false
          */
         @serialize
         @oav()
-        get flipY()
-        {
-            return this._flipY;
-        }
-        set flipY(v)
-        {
-            if (this._flipY == v) return;
-            this._flipY = v;
-            this.invalidate();
-        }
-        private _flipY = false;
+        @watch("invalidate")
+        flipY = false;
 
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
         @serialize
         @oav()
-        get premulAlpha()
-        {
-            return this._premulAlpha;
-        }
-        set premulAlpha(v)
-        {
-            if (this._premulAlpha == v) return;
-            this._premulAlpha = v;
-            this.invalidate();
-        }
-        private _premulAlpha = false;
+        @watch("invalidate")
+        premulAlpha = false;
 
         @serialize
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureMinFilter } })
@@ -166,29 +120,11 @@ namespace feng3d
          */
         isRenderTarget = false;
 
-        get OFFSCREEN_WIDTH()
-        {
-            return this._OFFSCREEN_WIDTH;
-        }
-        set OFFSCREEN_WIDTH(v)
-        {
-            if (this._OFFSCREEN_WIDTH == v) return;
-            this._OFFSCREEN_WIDTH = v;
-            this.invalidate();
-        }
-        protected _OFFSCREEN_WIDTH = 1024;
+        @watch("invalidate")
+        OFFSCREEN_WIDTH = 1024;
 
-        get OFFSCREEN_HEIGHT()
-        {
-            return this._OFFSCREEN_HEIGHT;
-        }
-        set OFFSCREEN_HEIGHT(v)
-        {
-            if (this._OFFSCREEN_HEIGHT == v) return;
-            this._OFFSCREEN_HEIGHT = v;
-            this.invalidate();
-        }
-        protected _OFFSCREEN_HEIGHT = 1024;
+        @watch("invalidate")
+        OFFSCREEN_HEIGHT = 1024;
 
         /**
          * 是否为2的幂贴图

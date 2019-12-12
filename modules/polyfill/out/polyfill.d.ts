@@ -55,6 +55,10 @@ declare namespace feng3d {
         [K in keyof T]: T[K] extends KT ? K : never;
     }[keyof T];
     /**
+     * 选取T类型中值为非函数类型的所有键
+     */
+    type PropertyNames<T> = NonTypePropertyNames<T, Function>;
+    /**
      * 选取T类型中值为函数的所有键
      *
      * ```

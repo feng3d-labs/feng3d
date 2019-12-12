@@ -15,11 +15,12 @@ var feng3d;
             var key = "_" + property;
             var get = eval("(function (){return this." + key + "})");
             var set = eval("(function (value){\n                if (this." + key + " == value)\n                    return;\n                var oldValue = this." + key + ";\n                this." + key + " = value;\n                this." + onChange + "(\"" + property + "\", oldValue, value);\n            })");
+            console.assert(target[onChange], "\u5728\u5BF9\u8C61 " + target + " \u4E0A\u627E\u4E0D\u5230\u65B9\u6CD5 " + onChange);
             Object.defineProperty(target, property, {
                 get: get,
                 set: set,
                 enumerable: true,
-                configurable: true
+                configurable: true,
             });
         };
     }
@@ -46,43 +47,44 @@ var feng3d;
                     writable: false,
                 });
             }
+            var _property = property;
             var watchs = object[feng3d.__watchs__];
-            if (!watchs[property]) {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, property);
-                watchs[property] = { value: object[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+            if (!watchs[_property]) {
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, _property);
+                watchs[_property] = { value: object[_property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data = Object.getPropertyDescriptor(object, property);
+                var data = Object.getPropertyDescriptor(object, _property);
                 if (data && data.set && data.get) {
                     data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
                     data.set = function (value) {
-                        var oldvalue = this[property];
+                        var oldvalue = this[_property];
                         if (oldvalue != value) {
                             orgSet && orgSet.call(this, value);
-                            notifyListener(this, property, oldvalue);
+                            notifyListener(this, _property, oldvalue);
                         }
                     };
                 }
                 else if (!data || (!data.get && !data.set)) {
                     data = { enumerable: true, configurable: true };
                     data.get = function () {
-                        return this[feng3d.__watchs__][property].value;
+                        return this[feng3d.__watchs__][_property].value;
                     };
                     data.set = function (value) {
-                        var oldvalue = this[feng3d.__watchs__][property].value;
+                        var oldvalue = this[feng3d.__watchs__][_property].value;
                         if (oldvalue != value) {
-                            this[feng3d.__watchs__][property].value = value;
-                            notifyListener(this, property, oldvalue);
+                            this[feng3d.__watchs__][_property].value = value;
+                            notifyListener(this, _property, oldvalue);
                         }
                     };
                 }
                 else {
-                    console.warn("watch " + object + " . " + property + " \u5931\u8D25\uFF01");
+                    console.warn("watch " + object + " . " + _property + " \u5931\u8D25\uFF01");
                     return;
                 }
-                Object.defineProperty(object, property, data);
+                Object.defineProperty(object, _property, data);
             }
-            var propertywatchs = watchs[property];
+            var propertywatchs = watchs[_property];
             var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
             if (!has)
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
@@ -99,8 +101,9 @@ var feng3d;
             var watchs = object[feng3d.__watchs__];
             if (!watchs)
                 return;
-            if (watchs[property]) {
-                var handlers = watchs[property].handlers;
+            var _property = property;
+            if (watchs[_property]) {
+                var handlers = watchs[_property].handlers;
                 if (handler === undefined)
                     handlers.length = 0;
                 for (var i = handlers.length - 1; i >= 0; i--) {
@@ -108,12 +111,12 @@ var feng3d;
                         handlers.splice(i, 1);
                 }
                 if (handlers.length == 0) {
-                    var value = object[property];
-                    delete object[property];
-                    if (watchs[property].oldPropertyDescriptor)
-                        Object.defineProperty(object, property, watchs[property].oldPropertyDescriptor);
-                    object[property] = value;
-                    delete watchs[property];
+                    var value = object[_property];
+                    delete object[_property];
+                    if (watchs[_property].oldPropertyDescriptor)
+                        Object.defineProperty(object, _property, watchs[_property].oldPropertyDescriptor);
+                    object[_property] = value;
+                    delete watchs[_property];
                 }
                 if (Object.keys(watchs).length == 0) {
                     delete object[feng3d.__watchs__];

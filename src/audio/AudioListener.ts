@@ -11,17 +11,8 @@ namespace feng3d
     {
         gain: GainNode;
 
-        get enabled()
-        {
-            return this._enabled;
-        }
-        set enabled(v)
-        {
-            if (this._enabled == v) return;
-            this._enabled = v;
-            this.enabledChanged();
-        }
-        private _enabled = true;
+        @watch("_enabledChanged")
+        enabled = true;
 
         /**
          * 音量
@@ -44,17 +35,17 @@ namespace feng3d
             super();
             this.gain = audioCtx.createGain();
             this.gain.connect(audioCtx.destination);
-            this.enabledChanged();
+            this._enabledChanged();
         }
 
         init()
         {
             super.init();
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this.onScenetransformChanged();
+            this.on("scenetransformChanged", this._onScenetransformChanged, this);
+            this._onScenetransformChanged();
         }
 
-        private onScenetransformChanged()
+        private _onScenetransformChanged()
         {
             var localToWorldMatrix = this.transform.localToWorldMatrix;
             var position = localToWorldMatrix.getPosition();
@@ -74,7 +65,7 @@ namespace feng3d
             listener.upZ.value = -up.z;
         }
 
-        private enabledChanged()
+        private _enabledChanged()
         {
             if (!this.gain) return;
             if (this.enabled)
@@ -88,7 +79,7 @@ namespace feng3d
 
         dispose()
         {
-            this.off("scenetransformChanged", this.onScenetransformChanged, this);
+            this.off("scenetransformChanged", this._onScenetransformChanged, this);
             super.dispose();
         }
     }

@@ -18,17 +18,8 @@ namespace feng3d
 		 */
         @serialize
         @oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: () => { return new Segment(); } } })
-        get segments()
-        {
-            return this._segments;
-        }
-        set segments(v)
-        {
-            if (this._segments == v) return;
-            this._segments = v;
-            this.invalidateGeometry();
-        }
-        private _segments: Segment[] = [];
+        @watch("invalidateGeometry")
+        segments: Segment[] = [];
 
         /**
          * 添加线段

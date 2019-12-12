@@ -5,30 +5,8 @@ namespace feng3d
      */
     export class Mouse3DManager
     {
-        get mouseInput()
-        {
-            return this._mouseInput;
-        }
-        set mouseInput(v)
-        {
-            if (this._mouseInput == v) return;
-            if (this._mouseInput)
-            {
-                mouseEventTypes.forEach(element =>
-                {
-                    this._mouseInput.off(element, this.onMouseEvent, this);
-                });
-            }
-            this._mouseInput = v;
-            if (this._mouseInput)
-            {
-                mouseEventTypes.forEach(element =>
-                {
-                    this._mouseInput.on(element, this.onMouseEvent, this);
-                });
-            }
-        }
-        private _mouseInput: MouseInput;
+        @watch("_mouseInputChanged")
+        mouseInput: MouseInput;
 
         get selectedGameObject()
         {
@@ -78,6 +56,24 @@ namespace feng3d
          * 统计处理click次数，判断是否达到dblclick
          */
         private gameObjectClickNum: number;
+
+        private _mouseInputChanged(property: string, oldValue: MouseInput, newValue: MouseInput)
+        {
+            if (oldValue)
+            {
+                mouseEventTypes.forEach(element =>
+                {
+                    oldValue.off(element, this.onMouseEvent, this);
+                });
+            }
+            if (newValue)
+            {
+                mouseEventTypes.forEach(element =>
+                {
+                    newValue.on(element, this.onMouseEvent, this);
+                });
+            }
+        }
 
         private dispatch(type)
         {
