@@ -20587,6 +20587,18 @@ var feng3d;
              * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
              */
             this.attributes = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.indices = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.renderBuffers = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.frameBuffers = new Map();
             gl.cache = this;
             this._gl = gl;
         }
@@ -21122,10 +21134,6 @@ var feng3d;
              */
             this.offset = 0;
             /**
-             * 缓冲
-             */
-            this._indexBufferMap = new Map();
-            /**
              * 是否失效
              */
             this._invalid = true;
@@ -21149,39 +21157,42 @@ var feng3d;
          * 激活缓冲
          * @param gl
          */
-        Index.prototype.active = function (gl) {
-            if (this._invalid) {
-                this._clear();
-                this._invalid = false;
-            }
-            var buffer = this._getBuffer(gl);
+        Index.active = function (gl, index) {
+            var buffer = Index.getBuffer(gl, index);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
         };
         /**
          * 获取缓冲
          */
-        Index.prototype._getBuffer = function (gl) {
-            var buffer = this._indexBufferMap.get(gl);
+        Index.getBuffer = function (gl, index) {
+            if (index._invalid) {
+                this.clear(index);
+                index._invalid = false;
+            }
+            var buffer = gl.cache.indices.get(index);
             if (!buffer) {
                 buffer = gl.createBuffer();
                 if (!buffer) {
                     console.error("createBuffer 失败！");
                     throw "";
                 }
+                gl.cache.indices.set(index, buffer);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
-                this._indexBufferMap.set(gl, buffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
             }
             return buffer;
         };
         /**
          * 清理缓冲
          */
-        Index.prototype._clear = function () {
-            this._indexBufferMap.forEach(function (value, key) {
-                key.deleteBuffer(value);
+        Index.clear = function (index) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var buffer = gl.cache.indices.get(index);
+                if (buffer) {
+                    gl.deleteBuffer(buffer);
+                    gl.cache.indices.delete(index);
+                }
             });
-            this._indexBufferMap.clear();
         };
         __decorate([
             feng3d.watch("invalidate")
@@ -21427,37 +21438,39 @@ var feng3d;
 (function (feng3d) {
     var FrameBuffer = /** @class */ (function () {
         function FrameBuffer() {
-            this._framebufferMap = new Map();
             /**
              * 是否失效
              */
             this._invalid = true;
         }
-        FrameBuffer.prototype.active = function (gl) {
-            if (this._invalid) {
-                this._invalid = false;
-                this.clear();
+        FrameBuffer.active = function (gl, frameBuffer) {
+            if (frameBuffer._invalid) {
+                frameBuffer._invalid = false;
+                this.clear(frameBuffer);
             }
             // Create a framebuffer object (FBO)
-            var framebuffer = this._framebufferMap.get(gl);
-            if (!framebuffer) {
-                framebuffer = gl.createFramebuffer();
-                if (!framebuffer) {
+            var buffer = gl.cache.frameBuffers.get(frameBuffer);
+            if (!buffer) {
+                buffer = gl.createFramebuffer();
+                if (!buffer) {
                     alert('Failed to create frame buffer object');
                     return null;
                 }
-                this._framebufferMap.set(gl, framebuffer);
+                gl.cache.frameBuffers.set(frameBuffer, buffer);
             }
-            return framebuffer;
+            return buffer;
         };
         /**
          * 清理缓存
          */
-        FrameBuffer.prototype.clear = function () {
-            this._framebufferMap.forEach(function (v, k) {
-                k.deleteFramebuffer(v);
+        FrameBuffer.clear = function (frameBuffer) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var buffer = gl.cache.frameBuffers.get(frameBuffer);
+                if (buffer) {
+                    gl.deleteFramebuffer(buffer);
+                    gl.cache.frameBuffers.delete(frameBuffer);
+                }
             });
-            this._framebufferMap.clear();
         };
         return FrameBuffer;
     }());
@@ -21469,7 +21482,6 @@ var feng3d;
         function RenderBuffer() {
             this.OFFSCREEN_WIDTH = 1024;
             this.OFFSCREEN_HEIGHT = 1024;
-            this._depthBufferMap = new Map();
             /**
              * 是否失效
              */
@@ -21485,33 +21497,36 @@ var feng3d;
          * 激活
          * @param gl
          */
-        RenderBuffer.prototype.active = function (gl) {
-            if (this._invalid) {
-                this.clear();
-                this._invalid = false;
+        RenderBuffer.active = function (gl, renderBuffer) {
+            if (renderBuffer._invalid) {
+                this.clear(renderBuffer);
+                renderBuffer._invalid = false;
             }
-            var depthBuffer = this._depthBufferMap.get(gl);
-            if (!depthBuffer) {
+            var buffer = gl.cache.renderBuffers.get(renderBuffer);
+            if (!buffer) {
                 // Create a renderbuffer object and Set its size and parameters
-                depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
-                if (!depthBuffer) {
+                buffer = gl.createRenderbuffer(); // Create a renderbuffer object
+                if (!buffer) {
                     alert('Failed to create renderbuffer object');
                     return;
                 }
-                this._depthBufferMap.set(gl, depthBuffer);
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+                gl.cache.renderBuffers.set(renderBuffer, buffer);
+                gl.bindRenderbuffer(gl.RENDERBUFFER, buffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, renderBuffer.OFFSCREEN_WIDTH, renderBuffer.OFFSCREEN_HEIGHT);
             }
-            return depthBuffer;
+            return buffer;
         };
         /**
          * 清理纹理
          */
-        RenderBuffer.prototype.clear = function () {
-            this._depthBufferMap.forEach(function (v, k) {
-                k.deleteRenderbuffer(v);
+        RenderBuffer.clear = function (renderBuffer) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var buffer = gl.cache.renderBuffers.get(renderBuffer);
+                if (buffer) {
+                    gl.deleteRenderbuffer(buffer);
+                    gl.cache.renderBuffers.delete(renderBuffer);
+                }
             });
-            this._depthBufferMap.clear();
         };
         __decorate([
             feng3d.watch("invalidate")
@@ -21846,7 +21861,7 @@ var feng3d;
                 var indexBuffer = renderAtomic.indexBuffer;
                 var vertexNum = 0;
                 if (indexBuffer) {
-                    indexBuffer.active(gl);
+                    feng3d.Index.active(gl, indexBuffer);
                     var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0) {
                         // console.warn(`顶点索引为0，不进行渲染！`);
@@ -22143,7 +22158,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 帧缓冲对象
-
      */
     var FrameBufferObject = /** @class */ (function () {
         function FrameBufferObject(width, height) {
@@ -22155,23 +22169,23 @@ var feng3d;
              * 是否失效
              */
             this._invalid = true;
-            this._map = new Map();
             this.frameBuffer = new feng3d.FrameBuffer();
             this.texture = new feng3d.RenderTargetTexture2D();
             this.depthBuffer = new feng3d.RenderBuffer();
             this.OFFSCREEN_WIDTH = width;
             this.OFFSCREEN_HEIGHT = height;
         }
-        FrameBufferObject.prototype.active = function (gl) {
-            if (this._invalid) {
-                this._invalid = false;
-                this.clear();
+        FrameBufferObject.active = function (gl, frameBufferObject) {
+            if (frameBufferObject._invalid) {
+                frameBufferObject._invalid = false;
+                this.clear(frameBufferObject);
             }
-            var obj = this._map.get(gl);
+            gl.cache.frameBufferObjects = gl.cache.frameBufferObjects || new Map();
+            var obj = gl.cache.frameBufferObjects.get(frameBufferObject);
             if (!obj) {
-                var framebuffer = this.frameBuffer.active(gl);
-                var texture = feng3d.Texture.active(gl, this.texture);
-                var depthBuffer = this.depthBuffer.active(gl);
+                var framebuffer = feng3d.FrameBuffer.active(gl, frameBufferObject.frameBuffer);
+                var texture = feng3d.Texture.active(gl, frameBufferObject.texture);
+                var depthBuffer = feng3d.RenderBuffer.active(gl, frameBufferObject.depthBuffer);
                 // 绑定帧缓冲区对象
                 gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
                 // 设置颜色关联对象
@@ -22187,7 +22201,7 @@ var feng3d;
                 gl.bindTexture(gl.TEXTURE_2D, null);
                 gl.bindRenderbuffer(gl.RENDERBUFFER, null);
                 obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
-                this._map.set(gl, obj);
+                gl.cache.frameBufferObjects.set(frameBufferObject, obj);
             }
             else {
                 gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
@@ -22214,8 +22228,14 @@ var feng3d;
             }
             this._invalid = true;
         };
-        FrameBufferObject.prototype.clear = function () {
-            this._map.clear();
+        FrameBufferObject.clear = function (frameBufferObject) {
+            feng3d.GL.glList.forEach(function (gl) {
+                gl.cache.frameBufferObjects = gl.cache.frameBufferObjects || new Map();
+                var buffer = gl.cache.frameBufferObjects.get(frameBufferObject);
+                if (buffer) {
+                    gl.cache.frameBufferObjects.delete(frameBufferObject);
+                }
+            });
         };
         __decorate([
             feng3d.watch("invalidateSize")
@@ -22392,7 +22412,7 @@ var feng3d;
         };
         ShadowRenderer.prototype.drawForSpotLight = function (gl, light, scene3d, camera) {
             var _this = this;
-            light.frameBufferObject.active(gl);
+            feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -22425,7 +22445,7 @@ var feng3d;
         };
         ShadowRenderer.prototype.drawForPointLight = function (gl, light, scene3d, camera) {
             var _this = this;
-            light.frameBufferObject.active(gl);
+            feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -22492,7 +22512,7 @@ var feng3d;
             // 筛选投射阴影的渲染对象
             var castShadowsModels = models.filter(function (i) { return i.castShadows; });
             light.updateShadowByCamera(scene3d, camera, models);
-            light.frameBufferObject.active(gl);
+            feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -31340,7 +31360,7 @@ var feng3d;
             var eye = camera.transform.worldPosition;
             // 
             var frameBufferObject = this.frameBufferObject;
-            frameBufferObject.active(gl);
+            feng3d.FrameBufferObject.active(gl, frameBufferObject);
             //
             gl.viewport(0, 0, frameBufferObject.OFFSCREEN_WIDTH, frameBufferObject.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);

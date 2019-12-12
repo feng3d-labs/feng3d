@@ -19,6 +19,21 @@ namespace feng3d
          */
         attributes = new Map<Attribute, WebGLBuffer>();
 
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
+        indices = new Map<Index, WebGLBuffer>();
+
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
+        renderBuffers = new Map<RenderBuffer, WebGLBuffer>();
+
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
+        frameBuffers = new Map<FrameBuffer, WebGLFramebuffer>();
+
         constructor(gl: GL)
         {
             gl.cache = this;

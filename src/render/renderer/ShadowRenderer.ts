@@ -39,7 +39,7 @@ namespace feng3d
 
         private drawForSpotLight(gl: GL, light: SpotLight, scene3d: Scene3D, camera: Camera): any
         {
-            light.frameBufferObject.active(gl);
+            FrameBufferObject.active(gl, light.frameBufferObject);
 
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -82,7 +82,7 @@ namespace feng3d
 
         private drawForPointLight(gl: GL, light: PointLight, scene3d: Scene3D, camera: Camera): any
         {
-            light.frameBufferObject.active(gl);
+            FrameBufferObject.active(gl, light.frameBufferObject);
 
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -167,7 +167,7 @@ namespace feng3d
 
             light.updateShadowByCamera(scene3d, camera, models);
 
-            light.frameBufferObject.active(gl);
+            FrameBufferObject.active(gl, light.frameBufferObject);
 
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);

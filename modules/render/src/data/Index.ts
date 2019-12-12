@@ -37,10 +37,7 @@ namespace feng3d
          * 索引偏移
          */
         offset = 0;
-        /**
-         * 缓冲
-         */
-        private _indexBufferMap = new Map<GL, WebGLBuffer>();
+
         /**
          * 是否失效
          */
@@ -50,23 +47,23 @@ namespace feng3d
          * 激活缓冲
          * @param gl 
          */
-        active(gl: GL)
+        static active(gl: GL, index: Index)
         {
-            if (this._invalid)
-            {
-                this._clear();
-                this._invalid = false;
-            }
-            var buffer = this._getBuffer(gl);
+            var buffer = Index.getBuffer(gl, index);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
         }
 
         /**
          * 获取缓冲
          */
-        private _getBuffer(gl: GL)
+        static getBuffer(gl: GL, index: Index)
         {
-            var buffer = this._indexBufferMap.get(gl);
+            if (index._invalid)
+            {
+                this.clear(index);
+                index._invalid = false;
+            }
+            var buffer = gl.cache.indices.get(index);
             if (!buffer)
             {
                 buffer = <any>gl.createBuffer();
@@ -75,9 +72,10 @@ namespace feng3d
                     console.error("createBuffer 失败！");
                     throw "";
                 }
+                gl.cache.indices.set(index, buffer);
+
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
-                this._indexBufferMap.set(gl, buffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
             }
             return buffer;
         }
@@ -85,13 +83,17 @@ namespace feng3d
         /**
          * 清理缓冲
          */
-        private _clear()
+        static clear(index: Index)
         {
-            this._indexBufferMap.forEach((value, key) =>
+            GL.glList.forEach(gl =>
             {
-                key.deleteBuffer(value);
+                var buffer = gl.cache.indices.get(index);
+                if (buffer)
+                {
+                    gl.deleteBuffer(buffer);
+                    gl.cache.indices.delete(index);
+                }
             });
-            this._indexBufferMap.clear();
         }
     }
 }

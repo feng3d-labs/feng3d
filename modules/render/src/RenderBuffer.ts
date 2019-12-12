@@ -9,8 +9,6 @@ namespace feng3d
         @watch("invalidate")
         OFFSCREEN_HEIGHT = 1024;
 
-        protected _depthBufferMap = new Map<GL, WebGLRenderbuffer>();
-
         /**
          * 是否失效
          */
@@ -28,41 +26,45 @@ namespace feng3d
          * 激活
          * @param gl 
          */
-        active(gl: GL)
+        static active(gl: GL, renderBuffer: RenderBuffer)
         {
-            if (this._invalid)
+            if (renderBuffer._invalid)
             {
-                this.clear();
-                this._invalid = false;
+                this.clear(renderBuffer);
+                renderBuffer._invalid = false;
             }
 
-            var depthBuffer = this._depthBufferMap.get(gl);
-            if (!depthBuffer)
+            var buffer = gl.cache.renderBuffers.get(renderBuffer);
+            if (!buffer)
             {
                 // Create a renderbuffer object and Set its size and parameters
-                depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
-                if (!depthBuffer)
+                buffer = gl.createRenderbuffer(); // Create a renderbuffer object
+                if (!buffer)
                 {
                     alert('Failed to create renderbuffer object');
                     return;
                 }
-                this._depthBufferMap.set(gl, depthBuffer);
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+                gl.cache.renderBuffers.set(renderBuffer, buffer);
+                gl.bindRenderbuffer(gl.RENDERBUFFER, buffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, renderBuffer.OFFSCREEN_WIDTH, renderBuffer.OFFSCREEN_HEIGHT);
             }
-            return depthBuffer;
+            return buffer;
         }
 
         /**
          * 清理纹理
          */
-        private clear()
+        static clear(renderBuffer: RenderBuffer)
         {
-            this._depthBufferMap.forEach((v, k) =>
+            GL.glList.forEach(gl =>
             {
-                k.deleteRenderbuffer(v);
+                var buffer = gl.cache.renderBuffers.get(renderBuffer);
+                if (buffer)
+                {
+                    gl.deleteRenderbuffer(buffer);
+                    gl.cache.renderBuffers.delete(renderBuffer);
+                }
             });
-            this._depthBufferMap.clear();
         }
     }
 }

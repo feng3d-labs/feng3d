@@ -100,7 +100,7 @@ namespace feng3d
 
             // 
             var frameBufferObject = this.frameBufferObject;
-            frameBufferObject.active(gl);
+            FrameBufferObject.active(gl, frameBufferObject);
 
             //
             gl.viewport(0, 0, frameBufferObject.OFFSCREEN_WIDTH, frameBufferObject.OFFSCREEN_HEIGHT);

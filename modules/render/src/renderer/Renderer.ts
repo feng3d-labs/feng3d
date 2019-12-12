@@ -245,7 +245,7 @@ namespace feng3d
                 var vertexNum = 0;
                 if (indexBuffer)
                 {
-                    indexBuffer.active(gl);
+                    Index.active(gl, indexBuffer);
                     var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0)
                     {

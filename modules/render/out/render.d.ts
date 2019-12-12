@@ -492,6 +492,18 @@ declare namespace feng3d {
          * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
          */
         attributes: Map<Attribute, WebGLBuffer>;
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
+        indices: Map<Index, WebGLBuffer>;
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
+        renderBuffers: Map<RenderBuffer, WebGLBuffer>;
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
+        frameBuffers: Map<FrameBuffer, WebGLFramebuffer>;
         constructor(gl: GL);
     }
 }
@@ -862,10 +874,6 @@ declare namespace feng3d {
          */
         offset: number;
         /**
-         * 缓冲
-         */
-        private _indexBufferMap;
-        /**
          * 是否失效
          */
         private _invalid;
@@ -873,15 +881,15 @@ declare namespace feng3d {
          * 激活缓冲
          * @param gl
          */
-        active(gl: GL): void;
+        static active(gl: GL, index: Index): void;
         /**
          * 获取缓冲
          */
-        private _getBuffer;
+        static getBuffer(gl: GL, index: Index): WebGLBuffer;
         /**
          * 清理缓冲
          */
-        private _clear;
+        static clear(index: Index): void;
     }
 }
 declare namespace feng3d {
@@ -1069,23 +1077,21 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class FrameBuffer {
-        protected _framebufferMap: Map<GL, WebGLFramebuffer>;
         /**
          * 是否失效
          */
         private _invalid;
-        active(gl: GL): WebGLFramebuffer;
+        static active(gl: GL, frameBuffer: FrameBuffer): WebGLFramebuffer;
         /**
          * 清理缓存
          */
-        private clear;
+        static clear(frameBuffer: FrameBuffer): void;
     }
 }
 declare namespace feng3d {
     class RenderBuffer {
         OFFSCREEN_WIDTH: number;
         OFFSCREEN_HEIGHT: number;
-        protected _depthBufferMap: Map<GL, WebGLRenderbuffer>;
         /**
          * 是否失效
          */
@@ -1098,11 +1104,11 @@ declare namespace feng3d {
          * 激活
          * @param gl
          */
-        active(gl: GL): WebGLRenderbuffer;
+        static active(gl: GL, renderBuffer: RenderBuffer): WebGLBuffer;
         /**
          * 清理纹理
          */
-        private clear;
+        static clear(renderBuffer: RenderBuffer): void;
     }
 }
 declare namespace feng3d {

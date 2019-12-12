@@ -2,46 +2,48 @@ namespace feng3d
 {
     export class FrameBuffer
     {
-        protected _framebufferMap = new Map<GL, WebGLFramebuffer>();
-
         /**
          * 是否失效
          */
         private _invalid = true;
 
-        active(gl: GL)
+        static active(gl: GL, frameBuffer: FrameBuffer)
         {
-            if (this._invalid)
+            if (frameBuffer._invalid)
             {
-                this._invalid = false;
-                this.clear();
+                frameBuffer._invalid = false;
+                this.clear(frameBuffer);
             }
 
             // Create a framebuffer object (FBO)
-            var framebuffer = this._framebufferMap.get(gl);
-            if (!framebuffer)
+            var buffer = gl.cache.frameBuffers.get(frameBuffer);
+            if (!buffer)
             {
-                framebuffer = gl.createFramebuffer();
-                if (!framebuffer)
+                buffer = gl.createFramebuffer();
+                if (!buffer)
                 {
                     alert('Failed to create frame buffer object');
                     return null;
                 }
-                this._framebufferMap.set(gl, framebuffer);
+                gl.cache.frameBuffers.set(frameBuffer, buffer);
             }
-            return framebuffer;
+            return buffer;
         }
 
         /**
          * 清理缓存
          */
-        private clear()
+        static clear(frameBuffer: FrameBuffer)
         {
-            this._framebufferMap.forEach((v, k) =>
+            GL.glList.forEach(gl =>
             {
-                k.deleteFramebuffer(v);
+                var buffer = gl.cache.frameBuffers.get(frameBuffer);
+                if (buffer)
+                {
+                    gl.deleteFramebuffer(buffer);
+                    gl.cache.frameBuffers.delete(frameBuffer);
+                }
             });
-            this._framebufferMap.clear();
         }
     }
 }
