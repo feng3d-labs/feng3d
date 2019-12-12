@@ -11995,16 +11995,15 @@ var feng3d;
             var yAxis = new feng3d.Vector3();
             var zAxis = new feng3d.Vector3();
             upAxis = upAxis || feng3d.Vector3.Y_AXIS;
-            var p = this.getPosition();
-            zAxis.x = target.x - p.x;
-            zAxis.y = target.y - p.y;
-            zAxis.z = target.z - p.z;
+            zAxis.x = target.x - position.x;
+            zAxis.y = target.y - position.y;
+            zAxis.z = target.z - position.z;
             zAxis.normalize();
             xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
             xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
             xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
             xAxis.normalize();
-            if (xAxis.length < .05) {
+            if (xAxis.lengthSquared < .005) {
                 xAxis.x = upAxis.y;
                 xAxis.y = upAxis.x;
                 xAxis.z = 0;

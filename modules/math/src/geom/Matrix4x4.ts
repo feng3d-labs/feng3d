@@ -1134,17 +1134,15 @@ namespace feng3d
             var scale = vec[2];
 
             //
-            var xAxis: Vector3 = new Vector3();
-            var yAxis: Vector3 = new Vector3();
-            var zAxis: Vector3 = new Vector3();
+            var xAxis = new Vector3();
+            var yAxis = new Vector3();
+            var zAxis = new Vector3();
 
             upAxis = upAxis || Vector3.Y_AXIS;
 
-            var p = this.getPosition();
-
-            zAxis.x = target.x - p.x;
-            zAxis.y = target.y - p.y;
-            zAxis.z = target.z - p.z;
+            zAxis.x = target.x - position.x;
+            zAxis.y = target.y - position.y;
+            zAxis.z = target.z - position.z;
             zAxis.normalize();
 
             xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
@@ -1152,7 +1150,7 @@ namespace feng3d
             xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
             xAxis.normalize();
 
-            if (xAxis.length < .05)
+            if (xAxis.lengthSquared < .005)
             {
                 xAxis.x = upAxis.y;
                 xAxis.y = upAxis.x;
