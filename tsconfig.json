@@ -145,8 +145,6 @@
         "modules/shortcut/src/handle/ShortCutCapture.ts",
         "modules/shortcut/src/handle/ShortCutEvent.ts",
         "modules/shortcut/src/ShortCut.ts",
-        // 加载模块
-        "src/net/load.ts",
         //
         "modules/render/src/gl/enums/RenderMode.ts",
         "modules/render/src/gl/enums/TextureType.ts",
