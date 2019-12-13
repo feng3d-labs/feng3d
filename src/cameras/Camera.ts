@@ -45,19 +45,6 @@ namespace feng3d
             return this._viewProjection;
         }
 
-        /**
-         * 可视包围盒
-         */
-        get viewBox()
-        {
-            if (this._viewBoxInvalid)
-            {
-                this._updateViewBox();
-                this._viewBoxInvalid = false;
-            }
-            return this._viewBox;
-        }
-
 		/**
 		 * 创建一个摄像机
 		 */
@@ -129,18 +116,7 @@ namespace feng3d
         //
         private _viewProjection: Matrix4x4 = new Matrix4x4();
         private _viewProjectionInvalid = true;
-        private _viewBox = new AABB();
-        private _viewBoxInvalid = true;
         private _backups = { fov: 60, size: 1 };
-
-        /**
-         * 更新可视区域顶点
-         */
-        private _updateViewBox()
-        {
-            this._viewBox.copy(this.lens.viewBox);
-            this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
-        }
 
 		/**
 		 * 处理镜头变化事件

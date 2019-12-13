@@ -26941,13 +26941,11 @@ var feng3d;
             if (far === void 0) { far = 1000; }
             var _this = _super.call(this) || this;
             //
-            _this._matrixInvalid = true;
-            _this._invertMatrixInvalid = true;
             _this._inverseMatrix = new feng3d.Matrix4x4();
-            _this._viewBoxInvalid = true;
+            _this._invertMatrixInvalid = true;
             //
-            _this._viewBox = new feng3d.AABB();
             _this._matrix = new feng3d.Matrix4x4();
+            _this._matrixInvalid = true;
             _this.aspect = aspectRatio;
             _this.near = near;
             _this.far = far;
@@ -26973,27 +26971,10 @@ var feng3d;
              */
             get: function () {
                 if (this._invertMatrixInvalid) {
-                    this._inverseMatrix.copyFrom(this.matrix);
-                    this._inverseMatrix.invert();
-                    this._matrixInvalid = false;
+                    this._updateInverseMatrix();
+                    this._invertMatrixInvalid = false;
                 }
                 return this._inverseMatrix;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LensBase.prototype, "viewBox", {
-            /**
-             * 可视包围盒
-             *
-             * 一个包含可视空间的最小包围盒
-             */
-            get: function () {
-                if (this._viewBoxInvalid) {
-                    this._updateViewBox();
-                    this._viewBoxInvalid = false;
-                }
-                return this._viewBox;
             },
             enumerable: true,
             configurable: true
@@ -27063,8 +27044,11 @@ var feng3d;
             console.assert(!isNaN(this.aspect));
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
-            this._viewBoxInvalid = true;
             this.dispatch("lensChanged", this);
+        };
+        LensBase.prototype._updateInverseMatrix = function () {
+            this._inverseMatrix.copyFrom(this.matrix);
+            this._inverseMatrix.invert();
         };
         __decorate([
             feng3d.serialize,
@@ -27105,24 +27089,6 @@ var feng3d;
         }
         OrthographicLens.prototype._updateMatrix = function () {
             this._matrix.setOrtho(-this.size, this.size, this.size, -this.size, this.near, this.far);
-        };
-        OrthographicLens.prototype._updateViewBox = function () {
-            var left = -this.size * this.aspect;
-            var right = this.size * this.aspect;
-            var top = this.size;
-            var bottom = -this.size;
-            var near = this.near;
-            var far = this.far;
-            this._viewBox.fromPoints([
-                new feng3d.Vector3(left, bottom, near),
-                new feng3d.Vector3(left, bottom, far),
-                new feng3d.Vector3(left, top, near),
-                new feng3d.Vector3(left, top, far),
-                new feng3d.Vector3(right, bottom, near),
-                new feng3d.Vector3(right, bottom, far),
-                new feng3d.Vector3(right, top, near),
-                new feng3d.Vector3(right, top, far),
-            ]);
         };
         OrthographicLens.prototype.clone = function () {
             return new OrthographicLens(this.size, this.aspect, this.near, this.far);
@@ -27216,23 +27182,6 @@ var feng3d;
         PerspectiveLens.prototype._updateMatrix = function () {
             this._matrix.setPerspectiveFromFOV(this.fov, this.aspect, this.near, this.far);
         };
-        PerspectiveLens.prototype._updateViewBox = function () {
-            var fov = this.fov;
-            var aspect = this.aspect;
-            var near = this.near;
-            var far = this.far;
-            var tan = Math.tan(fov * Math.PI / 360);
-            this._viewBox.fromPoints([
-                new feng3d.Vector3(-tan * near * aspect, -tan * near, near),
-                new feng3d.Vector3(-tan * far * aspect, -tan * far, far),
-                new feng3d.Vector3(-tan * near * aspect, tan * near, near),
-                new feng3d.Vector3(-tan * far * aspect, tan * far, far),
-                new feng3d.Vector3(tan * near * aspect, -tan * near, near),
-                new feng3d.Vector3(tan * far * aspect, -tan * far, far),
-                new feng3d.Vector3(tan * near * aspect, tan * near, near),
-                new feng3d.Vector3(tan * far * aspect, tan * far, far)
-            ]);
-        };
         PerspectiveLens.prototype.clone = function () {
             return new PerspectiveLens(this.fov, this.aspect, this.near, this.far);
         };
@@ -27275,8 +27224,6 @@ var feng3d;
             //
             _this._viewProjection = new feng3d.Matrix4x4();
             _this._viewProjectionInvalid = true;
-            _this._viewBox = new feng3d.AABB();
-            _this._viewBoxInvalid = true;
             _this._backups = { fov: 60, size: 1 };
             return _this;
         }
@@ -27298,20 +27245,6 @@ var feng3d;
                     this._viewProjectionInvalid = false;
                 }
                 return this._viewProjection;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Camera.prototype, "viewBox", {
-            /**
-             * 可视包围盒
-             */
-            get: function () {
-                if (this._viewBoxInvalid) {
-                    this._updateViewBox();
-                    this._viewBoxInvalid = false;
-                }
-                return this._viewBox;
             },
             enumerable: true,
             configurable: true
@@ -27374,13 +27307,6 @@ var feng3d;
          */
         Camera.prototype._onScenetransformChanged = function () {
             this._viewProjectionInvalid = true;
-        };
-        /**
-         * 更新可视区域顶点
-         */
-        Camera.prototype._updateViewBox = function () {
-            this._viewBox.copy(this.lens.viewBox);
-            this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
         };
         /**
          * 处理镜头变化事件

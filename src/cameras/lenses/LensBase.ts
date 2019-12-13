@@ -65,26 +65,10 @@ namespace feng3d
 		{
 			if (this._invertMatrixInvalid)
 			{
-				this._inverseMatrix.copyFrom(this.matrix);
-				this._inverseMatrix.invert();
-				this._matrixInvalid = false;
+				this._updateInverseMatrix();
+				this._invertMatrixInvalid = false;
 			}
 			return this._inverseMatrix;
-		}
-
-		/**
-		 * 可视包围盒
-		 * 
-		 * 一个包含可视空间的最小包围盒
-		 */
-		get viewBox()
-		{
-			if (this._viewBoxInvalid)
-			{
-				this._updateViewBox();
-				this._viewBoxInvalid = false;
-			}
-			return this._viewBox;
 		}
 
 		/**
@@ -150,13 +134,11 @@ namespace feng3d
 		}
 
 		//
-		private _matrixInvalid = true;
-		private _invertMatrixInvalid = true;
 		private _inverseMatrix = new Matrix4x4();
-		private _viewBoxInvalid = true;
+		private _invertMatrixInvalid = true;
 		//
-		protected _viewBox = new AABB();
 		protected _matrix = new Matrix4x4();
+		private _matrixInvalid = true;
 
 		/**
 		 * 投影矩阵失效
@@ -167,19 +149,19 @@ namespace feng3d
 
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
-			this._viewBoxInvalid = true;
 			this.dispatch("lensChanged", this);
+		}
+
+		private _updateInverseMatrix()
+		{
+			this._inverseMatrix.copyFrom(this.matrix);
+			this._inverseMatrix.invert();
 		}
 
 		/**
 		 * 更新投影矩阵
 		 */
 		protected abstract _updateMatrix(): void;
-
-		/**
-		 * 更新最小包围盒
-		 */
-		protected abstract _updateViewBox(): void;
 
 		/**
 		 * 克隆

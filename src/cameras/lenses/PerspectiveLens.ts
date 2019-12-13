@@ -88,25 +88,6 @@ namespace feng3d
             this._matrix.setPerspectiveFromFOV(this.fov, this.aspect, this.near, this.far);
         }
 
-        protected _updateViewBox()
-        {
-            var fov = this.fov;
-            var aspect = this.aspect;
-            var near = this.near;
-            var far = this.far;
-            var tan = Math.tan(fov * Math.PI / 360);
-
-            this._viewBox.fromPoints([
-                new Vector3(-tan * near * aspect, -tan * near, near),
-                new Vector3(-tan * far * aspect, -tan * far, far),
-                new Vector3(-tan * near * aspect, tan * near, near),
-                new Vector3(-tan * far * aspect, tan * far, far),
-                new Vector3(tan * near * aspect, -tan * near, near),
-                new Vector3(tan * far * aspect, -tan * far, far),
-                new Vector3(tan * near * aspect, tan * near, near),
-                new Vector3(tan * far * aspect, tan * far, far)]);
-        }
-
         clone()
         {
             return new PerspectiveLens(this.fov, this.aspect, this.near, this.far);

@@ -13098,12 +13098,6 @@ declare namespace feng3d {
          */
         get inverseMatrix(): Matrix4x4;
         /**
-         * 可视包围盒
-         *
-         * 一个包含可视空间的最小包围盒
-         */
-        get viewBox(): AABB;
-        /**
          * 摄像机空间坐标投影到GPU空间坐标
          * @param point3d 摄像机空间坐标
          * @param v GPU空间坐标
@@ -13138,24 +13132,19 @@ declare namespace feng3d {
          * @return 摄像机空间坐标
          */
         unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
-        private _matrixInvalid;
-        private _invertMatrixInvalid;
         private _inverseMatrix;
-        private _viewBoxInvalid;
-        protected _viewBox: AABB;
+        private _invertMatrixInvalid;
         protected _matrix: Matrix4x4;
+        private _matrixInvalid;
         /**
          * 投影矩阵失效
          */
         protected invalidate(): void;
+        private _updateInverseMatrix;
         /**
          * 更新投影矩阵
          */
         protected abstract _updateMatrix(): void;
-        /**
-         * 更新最小包围盒
-         */
-        protected abstract _updateViewBox(): void;
         /**
          * 克隆
          */
@@ -13177,7 +13166,6 @@ declare namespace feng3d {
          */
         constructor(size?: number, aspect?: number, near?: number, far?: number);
         protected _updateMatrix(): void;
-        protected _updateViewBox(): void;
         clone(): OrthographicLens;
     }
 }
@@ -13223,7 +13211,6 @@ declare namespace feng3d {
          */
         unproject(point3d: Vector3, v?: Vector3): Vector3;
         protected _updateMatrix(): void;
-        protected _updateViewBox(): void;
         clone(): PerspectiveLens;
     }
 }
@@ -13265,10 +13252,6 @@ declare namespace feng3d {
          */
         get viewProjection(): Matrix4x4;
         /**
-         * 可视包围盒
-         */
-        get viewBox(): AABB;
-        /**
          * 创建一个摄像机
          */
         init(): void;
@@ -13306,13 +13289,7 @@ declare namespace feng3d {
         protected _onScenetransformChanged(): void;
         private _viewProjection;
         private _viewProjectionInvalid;
-        private _viewBox;
-        private _viewBoxInvalid;
         private _backups;
-        /**
-         * 更新可视区域顶点
-         */
-        private _updateViewBox;
         /**
          * 处理镜头变化事件
          */
