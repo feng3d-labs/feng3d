@@ -146,12 +146,12 @@ namespace feng3d
 		 * 
 		 * @param point 
 		 */
-		containsPoint(point: Vector3)
+		containsPoint(point: Vector3, precision = Math.PRECISION)
 		{
 			var planes = this.planes;
 			for (var i = 0; i < 6; i++)
 			{
-				if (planes[i].distanceWithPoint(point) < 0)
+				if (planes[i].distanceWithPoint(point) < -precision)
 				{
 					return false;
 				}

@@ -6883,7 +6883,7 @@ declare namespace feng3d {
          *
          * @param point
          */
-        containsPoint(point: Vector3): boolean;
+        containsPoint(point: Vector3, precision?: number): boolean;
     }
 }
 declare namespace feng3d {

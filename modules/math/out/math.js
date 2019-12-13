@@ -7010,10 +7010,11 @@ var feng3d;
          *
          * @param point
          */
-        Frustum.prototype.containsPoint = function (point) {
+        Frustum.prototype.containsPoint = function (point, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
             var planes = this.planes;
             for (var i = 0; i < 6; i++) {
-                if (planes[i].distanceWithPoint(point) < 0) {
+                if (planes[i].distanceWithPoint(point) < -precision) {
                     return false;
                 }
             }
