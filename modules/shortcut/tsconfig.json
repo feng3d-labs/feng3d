@@ -13,8 +13,16 @@
             "DOM",
         ],
     },
-    "include": [
-        "src/**/*.ts",
+    "files": [
+        "src/EventProxy.ts",
+        "src/WindowEventProxy.ts",
+        //
+        "src/Keyboard.ts",
+        "src/handle/KeyCapture.ts",
+        "src/handle/KeyState.ts",
+        "src/handle/ShortCutCapture.ts",
+        "src/handle/ShortCutEvent.ts",
+        "src/ShortCut.ts",
     ],
     "references": [
         {

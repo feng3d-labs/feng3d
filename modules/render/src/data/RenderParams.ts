@@ -1,11 +1,3 @@
-/// <reference path="../gl/enums/FrontFace.ts" />
-/// <reference path="../gl/enums/ColorMask.ts" />
-/// <reference path="../gl/enums/BlendFactor.ts" />
-/// <reference path="../gl/enums/BlendEquation.ts" />
-/// <reference path="../gl/enums/DepthFunc.ts" />
-/// <reference path="../gl/enums/RenderMode.ts" />
-/// <reference path="../gl/enums/CullFace.ts" />
-
 namespace feng3d
 {
 

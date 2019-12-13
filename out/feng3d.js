@@ -14770,7 +14770,6 @@ var feng3d;
          */
         Frustum.prototype.intersectsBox = function (box) {
             var planes = this.planes;
-            var _vector = new feng3d.Vector3();
             for (var i = 0; i < 6; i++) {
                 var plane = planes[i];
                 // corner at max distance
@@ -14802,6 +14801,7 @@ var feng3d;
         return Frustum;
     }());
     feng3d.Frustum = Frustum;
+    var _vector = new feng3d.Vector3();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -21118,13 +21118,6 @@ var feng3d;
     }());
     feng3d.Shader = Shader;
 })(feng3d || (feng3d = {}));
-/// <reference path="../gl/enums/FrontFace.ts" />
-/// <reference path="../gl/enums/ColorMask.ts" />
-/// <reference path="../gl/enums/BlendFactor.ts" />
-/// <reference path="../gl/enums/BlendEquation.ts" />
-/// <reference path="../gl/enums/DepthFunc.ts" />
-/// <reference path="../gl/enums/RenderMode.ts" />
-/// <reference path="../gl/enums/CullFace.ts" />
 var feng3d;
 (function (feng3d) {
     /**

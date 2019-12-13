@@ -13,7 +13,12 @@
             "DOM",
         ],
     },
-    "include": [
-        "src/**/*.ts",
-    ],
+    "files": [
+        "src/Types.ts",
+        "src/Object.ts",
+        "src/ClassUtils.ts",
+        "src/Map.ts",
+        "src/Array.ts",
+        "src/Math.ts",
+    ]
 }

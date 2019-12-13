@@ -13,8 +13,21 @@
             "DOM",
         ],
     },
-    "include": [
-        "src/**/*.ts",
+    "files": [
+        "src/PathUtils.ts",
+        //
+        "src/base/Loader.ts",
+        "src/base/LoaderDataFormat.ts",
+        "src/base/_IndexedDB.ts",
+        //
+        "src/FSType.ts",
+        "src/IReadFS.ts",
+        "src/ReadFS.ts",
+        "src/IReadWriteFS.ts",
+        "src/ReadWriteFS.ts",
+        //
+        "src/IndexedDBFS.ts",
+        "src/HttpFS.ts",
     ],
     // "references": [
     //     {

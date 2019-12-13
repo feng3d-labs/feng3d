@@ -57,118 +57,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class KeyBoard {
-        /**
-         * 获取键盘按键名称
-         * @param code   按键值
-         */
-        static getKey(code: number): string;
-        /**
-         * 获取按键值
-         * @param key 按键
-         */
-        static getCode(key: string): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 快捷键
-     */
-    var shortcut: ShortCut;
-    /**
-     * 初始化快捷键模块
-     *
-     * <pre>
-var shortcuts:Array = [ //
-//在按下key1时触发命令command1
-    {key: "key1", command: "command1", when: ""}, //
-     //在按下key1时触发状态命令改变stateCommand1为激活状态
-    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
-     //处于state1状态时按下key1触发命令command1
-    {key: "key1", command: "command1", when: "state1"}, //
-    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
-    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
-    ];
-//添加快捷键
-shortCut.addShortCuts(shortcuts);
-//监听命令
-Event.on(shortCut,<any>"run", function(e:Event):void
-{
-    trace("接受到命令：" + e.type);
-});
-     * </pre>
-     */
-    class ShortCut extends EventDispatcher {
-        /**
-         * 按键状态
-         */
-        keyState: KeyState;
-        /**
-         * 状态字典
-         */
-        stateDic: {};
-        /**
-         * 按键捕获
-         */
-        keyCapture: KeyCapture;
-        /**
-         * 捕获字典
-         */
-        captureDic: {};
-        /**
-         * 启动
-         */
-        enable: boolean;
-        /**
-         * 初始化快捷键模块
-         */
-        constructor();
-        /**
-         * 添加快捷键
-         * @param shortcuts		快捷键列表
-         */
-        addShortCuts(shortcuts: {
-            key: string;
-            command?: string;
-            stateCommand?: string;
-            when?: string;
-        }[]): void;
-        /**
-         * 删除快捷键
-         * @param shortcuts		快捷键列表
-         */
-        removeShortCuts(shortcuts: {
-            key: string;
-            command?: string;
-            stateCommand?: string;
-            when?: string;
-        }[]): void;
-        /**
-         * 移除所有快捷键
-         */
-        removeAllShortCuts(): void;
-        /**
-         * 激活状态
-         * @param state 状态名称
-         */
-        activityState(state: string): void;
-        /**
-         * 取消激活状态
-         * @param state 状态名称
-         */
-        deactivityState(state: string): void;
-        /**
-         * 获取状态
-         * @param state 状态名称
-         */
-        getState(state: string): boolean;
-        /**
-         * 获取快捷键唯一字符串
-         */
-        private getShortcutUniqueKey;
-    }
-}
-declare namespace feng3d {
     interface WindowEventProxy {
         once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
@@ -189,6 +77,20 @@ declare namespace feng3d {
      * 键盘鼠标输入
      */
     var windowEventProxy: IEventProxy<WindowEventMap> & EventProxy;
+}
+declare namespace feng3d {
+    class KeyBoard {
+        /**
+         * 获取键盘按键名称
+         * @param code   按键值
+         */
+        static getKey(code: number): string;
+        /**
+         * 获取按键值
+         * @param key 按键
+         */
+        static getCode(key: string): number;
+    }
 }
 declare namespace feng3d {
     /**
@@ -375,5 +277,103 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+}
+declare namespace feng3d {
+    /**
+     * 快捷键
+     */
+    var shortcut: ShortCut;
+    /**
+     * 初始化快捷键模块
+     *
+     * <pre>
+var shortcuts:Array = [ //
+//在按下key1时触发命令command1
+    {key: "key1", command: "command1", when: ""}, //
+     //在按下key1时触发状态命令改变stateCommand1为激活状态
+    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
+     //处于state1状态时按下key1触发命令command1
+    {key: "key1", command: "command1", when: "state1"}, //
+    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
+    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
+    ];
+//添加快捷键
+shortCut.addShortCuts(shortcuts);
+//监听命令
+Event.on(shortCut,<any>"run", function(e:Event):void
+{
+    trace("接受到命令：" + e.type);
+});
+     * </pre>
+     */
+    class ShortCut extends EventDispatcher {
+        /**
+         * 按键状态
+         */
+        keyState: KeyState;
+        /**
+         * 状态字典
+         */
+        stateDic: {};
+        /**
+         * 按键捕获
+         */
+        keyCapture: KeyCapture;
+        /**
+         * 捕获字典
+         */
+        captureDic: {};
+        /**
+         * 启动
+         */
+        enable: boolean;
+        /**
+         * 初始化快捷键模块
+         */
+        constructor();
+        /**
+         * 添加快捷键
+         * @param shortcuts		快捷键列表
+         */
+        addShortCuts(shortcuts: {
+            key: string;
+            command?: string;
+            stateCommand?: string;
+            when?: string;
+        }[]): void;
+        /**
+         * 删除快捷键
+         * @param shortcuts		快捷键列表
+         */
+        removeShortCuts(shortcuts: {
+            key: string;
+            command?: string;
+            stateCommand?: string;
+            when?: string;
+        }[]): void;
+        /**
+         * 移除所有快捷键
+         */
+        removeAllShortCuts(): void;
+        /**
+         * 激活状态
+         * @param state 状态名称
+         */
+        activityState(state: string): void;
+        /**
+         * 取消激活状态
+         * @param state 状态名称
+         */
+        deactivityState(state: string): void;
+        /**
+         * 获取状态
+         * @param state 状态名称
+         */
+        getState(state: string): boolean;
+        /**
+         * 获取快捷键唯一字符串
+         */
+        private getShortcutUniqueKey;
+    }
 }
 //# sourceMappingURL=shortcut.d.ts.map

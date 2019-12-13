@@ -13,8 +13,8 @@
             "DOM",
         ],
     },
-    "include": [
-        "src/**/*.ts",
+    "files": [ 
+        "src/ObjectView.ts",
     ],
     "references": [
         {
