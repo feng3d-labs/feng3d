@@ -34,7 +34,7 @@
         "src/geom/Line3.ts",
         "src/geom/Segment3.ts",
         "src/geom/Ray3D.ts",
-        "src/geom/Triangle3D.ts",
+        "src/geom/Triangle3.ts",
         "src/geom/AABB.ts",
         "src/geom/Sphere.ts",
         "src/geom/Plane.ts",

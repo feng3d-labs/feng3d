@@ -571,7 +571,7 @@ namespace feng3d
          * 是否与三角形相交
          * @param triangle 三角形 
          */
-        intersectsTriangle(triangle: Triangle3D)
+        intersectsTriangle(triangle: Triangle3)
         {
             if (this.isEmpty())
             {
@@ -617,29 +617,29 @@ namespace feng3d
         /**
          * 转换为三角形列表
          */
-        toTriangles(triangles: Triangle3D[] = [])
+        toTriangles(triangles: Triangle3[] = [])
         {
             var min = this.min;
             var max = this.max;
             triangles.push(
                 // 前
-                Triangle3D.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, min.z)),
-                Triangle3D.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, min.y, min.z)),
+                Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, min.z)),
+                Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, min.y, min.z)),
                 // 后
-                Triangle3D.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, max.y, max.z)),
-                Triangle3D.fromPoints(new Vector3(max.x, min.y, max.z), new Vector3(max.x, max.y, max.z), new Vector3(min.x, max.y, max.z)),
+                Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, max.y, max.z)),
+                Triangle3.fromPoints(new Vector3(max.x, min.y, max.z), new Vector3(max.x, max.y, max.z), new Vector3(min.x, max.y, max.z)),
                 // 右
-                Triangle3D.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, max.y, max.z)),
-                Triangle3D.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, min.y, max.z)),
+                Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, max.y, max.z)),
+                Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, min.y, max.z)),
                 // 左
-                Triangle3D.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, min.z)),
-                Triangle3D.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, max.z), new Vector3(min.x, max.y, min.z)),
+                Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, min.z)),
+                Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, max.z), new Vector3(min.x, max.y, min.z)),
                 // 上
-                Triangle3D.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, max.y, min.z)),
-                Triangle3D.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(min.x, max.y, max.z), new Vector3(max.x, max.y, max.z)),
+                Triangle3.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, max.y, min.z)),
+                Triangle3.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(min.x, max.y, max.z), new Vector3(max.x, max.y, max.z)),
                 // 下
-                Triangle3D.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z), new Vector3(min.x, min.y, max.z)),
-                Triangle3D.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z)),
+                Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z), new Vector3(min.x, min.y, max.z)),
+                Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z)),
             );
             return triangles;
         }

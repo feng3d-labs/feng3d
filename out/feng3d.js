@@ -13174,8 +13174,8 @@ var feng3d;
     /**
      * 三角形
      */
-    var Triangle3D = /** @class */ (function () {
-        function Triangle3D(p0, p1, p2) {
+    var Triangle3 = /** @class */ (function () {
+        function Triangle3(p0, p1, p2) {
             if (p0 === void 0) { p0 = new feng3d.Vector3(); }
             if (p1 === void 0) { p1 = new feng3d.Vector3(); }
             if (p2 === void 0) { p2 = new feng3d.Vector3(); }
@@ -13189,54 +13189,54 @@ var feng3d;
          * @param p1		点1
          * @param p2		点2
          */
-        Triangle3D.fromPoints = function (p0, p1, p2) {
-            return new Triangle3D().fromPoints(p0, p1, p2);
+        Triangle3.fromPoints = function (p0, p1, p2) {
+            return new Triangle3().fromPoints(p0, p1, p2);
         };
         /**
          * 从顶点数据初始化三角形
          * @param positions 顶点数据
          */
-        Triangle3D.fromPositions = function (positions) {
-            return new Triangle3D().fromPositions(positions);
+        Triangle3.fromPositions = function (positions) {
+            return new Triangle3().fromPositions(positions);
         };
         /**
          * 随机三角形
          * @param size 尺寸
          */
-        Triangle3D.random = function (size) {
+        Triangle3.random = function (size) {
             if (size === void 0) { size = 1; }
-            return new Triangle3D(feng3d.Vector3.random(size), feng3d.Vector3.random(size), feng3d.Vector3.random(size));
+            return new Triangle3(feng3d.Vector3.random(size), feng3d.Vector3.random(size), feng3d.Vector3.random(size));
         };
         /**
          * 三角形三个点
          */
-        Triangle3D.prototype.getPoints = function () {
+        Triangle3.prototype.getPoints = function () {
             return [this.p0, this.p1, this.p2];
         };
         /**
          * 三边
          */
-        Triangle3D.prototype.getSegments = function () {
+        Triangle3.prototype.getSegments = function () {
             return [feng3d.Segment3.fromPoints(this.p0, this.p1), feng3d.Segment3.fromPoints(this.p1, this.p2), feng3d.Segment3.fromPoints(this.p2, this.p0)];
         };
         /**
          * 三角形所在平面
          */
-        Triangle3D.prototype.getPlane3d = function (pout) {
+        Triangle3.prototype.getPlane3d = function (pout) {
             if (pout === void 0) { pout = new feng3d.Plane(); }
             return pout.fromPoints(this.p0, this.p1, this.p2);
         };
         /**
          * 获取法线
          */
-        Triangle3D.prototype.getNormal = function (vout) {
+        Triangle3.prototype.getNormal = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return vout.copy(this.p1).sub(this.p0).cross(this.p2.subTo(this.p1)).normalize();
         };
         /**
          * 重心,三条中线相交的点叫做重心。
          */
-        Triangle3D.prototype.getBarycenter = function (pout) {
+        Triangle3.prototype.getBarycenter = function (pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             return pout.copy(this.p0).add(this.p1).add(this.p2).scaleNumber(1 / 3);
         };
@@ -13244,7 +13244,7 @@ var feng3d;
          * 外心，外切圆心,三角形三边的垂直平分线的交点，称为三角形外心。
          * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
          */
-        Triangle3D.prototype.getCircumcenter = function (pout) {
+        Triangle3.prototype.getCircumcenter = function (pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             var a = this.p2.subTo(this.p1);
             var b = this.p0.subTo(this.p2);
@@ -13259,7 +13259,7 @@ var feng3d;
          * 外心，内切圆心,三角形内心为三角形三条内角平分线的交点。
          * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
          */
-        Triangle3D.prototype.getInnercenter = function (pout) {
+        Triangle3.prototype.getInnercenter = function (pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             var a = this.p2.subTo(this.p1).length;
             var b = this.p0.subTo(this.p2).length;
@@ -13270,7 +13270,7 @@ var feng3d;
          * 垂心，三角形三边上的三条高或其延长线交于一点，称为三角形垂心。
          * @see https://baike.baidu.com/item/%E4%B8%89%E8%A7%92%E5%BD%A2%E4%BA%94%E5%BF%83/218867
          */
-        Triangle3D.prototype.getOrthocenter = function (pout) {
+        Triangle3.prototype.getOrthocenter = function (pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             var a = this.p2.subTo(this.p1);
             var b = this.p0.subTo(this.p2);
@@ -13286,7 +13286,7 @@ var feng3d;
          * @param p1		点1
          * @param p2		点2
          */
-        Triangle3D.prototype.fromPoints = function (p0, p1, p2) {
+        Triangle3.prototype.fromPoints = function (p0, p1, p2) {
             this.p0 = p0;
             this.p1 = p1;
             this.p2 = p2;
@@ -13296,7 +13296,7 @@ var feng3d;
          * 从顶点数据初始化三角形
          * @param positions 顶点数据
          */
-        Triangle3D.prototype.fromPositions = function (positions) {
+        Triangle3.prototype.fromPositions = function (positions) {
             this.p0.set(positions[0], positions[1], positions[2]);
             this.p1.set(positions[3], positions[4], positions[5]);
             this.p2.set(positions[6], positions[7], positions[8]);
@@ -13307,7 +13307,7 @@ var feng3d;
          * @param p 三点的权重
          * @param pout 输出点
          */
-        Triangle3D.prototype.getPoint = function (p, pout) {
+        Triangle3.prototype.getPoint = function (p, pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             return pout.copy(this.p0).scaleNumber(p.x).add(this.p1.scaleNumberTo(p.y)).add(this.p2.scaleNumberTo(p.z));
         };
@@ -13315,7 +13315,7 @@ var feng3d;
          * 获取三角形内随机点
          * @param pout 输出点
          */
-        Triangle3D.prototype.randomPoint = function (pout) {
+        Triangle3.prototype.randomPoint = function (pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             var a = Math.random();
             var b = Math.random() * (1 - a);
@@ -13325,7 +13325,7 @@ var feng3d;
         /**
          * 获取与直线相交，当直线与三角形不相交时返回null
          */
-        Triangle3D.prototype.intersectionWithLine = function (line) {
+        Triangle3.prototype.intersectionWithLine = function (line) {
             var plane3d = this.getPlane3d();
             var normal = plane3d.getNormal();
             var cross = plane3d.intersectWithLine3D(line);
@@ -13363,7 +13363,7 @@ var feng3d;
         /**
          * 获取与线段相交
          */
-        Triangle3D.prototype.intersectionWithSegment = function (segment) {
+        Triangle3.prototype.intersectionWithSegment = function (segment) {
             var r = this.intersectionWithLine(segment.getLine());
             if (!r)
                 return null;
@@ -13385,7 +13385,7 @@ var feng3d;
          * @param p 点
          * @param precision 精度，如果距离小于精度则判定为在三角形上
          */
-        Triangle3D.prototype.onWithPoint = function (p, precision) {
+        Triangle3.prototype.onWithPoint = function (p, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             var plane3d = this.getPlane3d();
             if (plane3d.classifyPoint(p, precision) != feng3d.PlaneClassification.INTERSECT)
@@ -13397,18 +13397,18 @@ var feng3d;
             if (feng3d.Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
             var n = this.getNormal();
-            if (new Triangle3D(this.p0, this.p1, p).getNormal().dot(n) < 0)
+            if (new Triangle3(this.p0, this.p1, p).getNormal().dot(n) < 0)
                 return false;
-            if (new Triangle3D(this.p1, this.p2, p).getNormal().dot(n) < 0)
+            if (new Triangle3(this.p1, this.p2, p).getNormal().dot(n) < 0)
                 return false;
-            if (new Triangle3D(this.p2, this.p0, p).getNormal().dot(n) < 0)
+            if (new Triangle3(this.p2, this.p0, p).getNormal().dot(n) < 0)
                 return false;
             return true;
         };
         /**
          * 获取指定点分别占三个点的混合值
          */
-        Triangle3D.prototype.blendWithPoint = function (p) {
+        Triangle3.prototype.blendWithPoint = function (p) {
             var n = this.p1.subTo(this.p0).crossTo(this.p2.subTo(this.p1));
             var area = n.length;
             n.normalize();
@@ -13432,7 +13432,7 @@ var feng3d;
         /**
          * 是否与盒子相交
          */
-        Triangle3D.prototype.intersectsBox = function (box) {
+        Triangle3.prototype.intersectsBox = function (box) {
             return box.intersectsTriangle(this);
         };
         /**
@@ -13440,7 +13440,7 @@ var feng3d;
          * @param point 点
          * @param vout 输出点
          */
-        Triangle3D.prototype.closestPointWithPoint = function (point, vout) {
+        Triangle3.prototype.closestPointWithPoint = function (point, vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             this.getPlane3d().closestPointWithPoint(point, vout);
             if (this.onWithPoint(vout))
@@ -13452,36 +13452,36 @@ var feng3d;
          * 与点最近距离
          * @param point 点
          */
-        Triangle3D.prototype.distanceWithPoint = function (point) {
+        Triangle3.prototype.distanceWithPoint = function (point) {
             return this.closestPointWithPoint(point).distance(point);
         };
         /**
          * 与点最近距离平方
          * @param point 点
          */
-        Triangle3D.prototype.distanceSquaredWithPoint = function (point) {
+        Triangle3.prototype.distanceSquaredWithPoint = function (point) {
             return this.closestPointWithPoint(point).distanceSquared(point);
         };
         /**
          * 用点分解（切割）三角形
          */
-        Triangle3D.prototype.decomposeWithPoint = function (p) {
+        Triangle3.prototype.decomposeWithPoint = function (p) {
             if (!this.onWithPoint(p))
                 return [this];
             if (this.p0.equals(p) || this.p1.equals(p) || this.p2.equals(p))
                 return [this];
             if (feng3d.Segment3.fromPoints(this.p0, this.p1).onWithPoint(p))
-                return [Triangle3D.fromPoints(this.p0, p, this.p2), Triangle3D.fromPoints(p, this.p1, this.p2)];
+                return [Triangle3.fromPoints(this.p0, p, this.p2), Triangle3.fromPoints(p, this.p1, this.p2)];
             if (feng3d.Segment3.fromPoints(this.p1, this.p2).onWithPoint(p))
-                return [Triangle3D.fromPoints(this.p1, p, this.p0), Triangle3D.fromPoints(p, this.p2, this.p0)];
+                return [Triangle3.fromPoints(this.p1, p, this.p0), Triangle3.fromPoints(p, this.p2, this.p0)];
             if (feng3d.Segment3.fromPoints(this.p2, this.p0).onWithPoint(p))
-                return [Triangle3D.fromPoints(this.p2, p, this.p1), Triangle3D.fromPoints(p, this.p0, this.p1)];
-            return [Triangle3D.fromPoints(p, this.p0, this.p1), Triangle3D.fromPoints(p, this.p1, this.p2), Triangle3D.fromPoints(p, this.p2, this.p0)];
+                return [Triangle3.fromPoints(this.p2, p, this.p1), Triangle3.fromPoints(p, this.p0, this.p1)];
+            return [Triangle3.fromPoints(p, this.p0, this.p1), Triangle3.fromPoints(p, this.p1, this.p2), Triangle3.fromPoints(p, this.p2, this.p0)];
         };
         /**
          * 用点分解（切割）三角形
          */
-        Triangle3D.prototype.decomposeWithPoints = function (ps) {
+        Triangle3.prototype.decomposeWithPoints = function (ps) {
             // 遍历顶点分割三角形
             var ts = ps.reduce(function (v, p) {
                 // 使用点分割所有三角形
@@ -13496,7 +13496,7 @@ var feng3d;
          * 用线段分解（切割）三角形
          * @param segment 线段
          */
-        Triangle3D.prototype.decomposeWithSegment = function (segment) {
+        Triangle3.prototype.decomposeWithSegment = function (segment) {
             var r = this.intersectionWithSegment(segment);
             if (!r)
                 return [this];
@@ -13510,7 +13510,7 @@ var feng3d;
          * 用直线分解（切割）三角形
          * @param line 直线
          */
-        Triangle3D.prototype.decomposeWithLine = function (line) {
+        Triangle3.prototype.decomposeWithLine = function (line) {
             var r = this.intersectionWithLine(line);
             if (!r)
                 return [this];
@@ -13523,13 +13523,13 @@ var feng3d;
         /**
          * 面积
          */
-        Triangle3D.prototype.area = function () {
+        Triangle3.prototype.area = function () {
             return this.p1.subTo(this.p0).crossTo(this.p2.subTo(this.p1)).length * 0.5;
         };
         /**
          * 栅格化，点阵化为XYZ轴间距为1的点阵
          */
-        Triangle3D.prototype.rasterize = function () {
+        Triangle3.prototype.rasterize = function () {
             var aabb = feng3d.AABB.fromPoints([this.p0, this.p1, this.p2]);
             aabb.min.round();
             aabb.max.round();
@@ -13552,7 +13552,7 @@ var feng3d;
          * 平移
          * @param v 向量
          */
-        Triangle3D.prototype.translateVector3 = function (v) {
+        Triangle3.prototype.translateVector3 = function (v) {
             this.p0.add(v);
             this.p1.add(v);
             this.p2.add(v);
@@ -13562,7 +13562,7 @@ var feng3d;
          * 缩放
          * @param v 缩放量
          */
-        Triangle3D.prototype.scaleVector3 = function (v) {
+        Triangle3.prototype.scaleVector3 = function (v) {
             this.p0.scale(v);
             this.p1.scale(v);
             this.p2.scale(v);
@@ -13573,7 +13573,7 @@ var feng3d;
          * @param voxelSize 体素尺寸，点阵XYZ轴间距
          * @param origin 原点，点阵中的某点正处于原点上，因此可以用作体素范围内的偏移
          */
-        Triangle3D.prototype.rasterizeCustom = function (voxelSize, origin) {
+        Triangle3.prototype.rasterizeCustom = function (voxelSize, origin) {
             if (voxelSize === void 0) { voxelSize = new feng3d.Vector3(1, 1, 1); }
             if (origin === void 0) { origin = new feng3d.Vector3(); }
             var tri = this.clone().translateVector3(origin.negateTo()).scaleVector3(voxelSize.inverseTo());
@@ -13592,7 +13592,7 @@ var feng3d;
          * 复制
          * @param triangle 三角形
          */
-        Triangle3D.prototype.copy = function (triangle) {
+        Triangle3.prototype.copy = function (triangle) {
             this.p0.copy(triangle.p0);
             this.p1.copy(triangle.p1);
             this.p2.copy(triangle.p2);
@@ -13601,12 +13601,12 @@ var feng3d;
         /**
          * 克隆
          */
-        Triangle3D.prototype.clone = function () {
-            return new Triangle3D().copy(this);
+        Triangle3.prototype.clone = function () {
+            return new Triangle3().copy(this);
         };
-        return Triangle3D;
+        return Triangle3;
     }());
-    feng3d.Triangle3D = Triangle3D;
+    feng3d.Triangle3 = Triangle3;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14117,17 +14117,17 @@ var feng3d;
             var max = this.max;
             triangles.push(
             // 前
-            feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, min.y, min.z)), 
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, min.y, min.z)), 
             // 后
-            feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), 
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), 
             // 右
-            feng3d.Triangle3D.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, min.y, max.z)), 
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, min.y, max.z)), 
             // 左
-            feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, min.y, min.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, min.z)), 
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, min.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, min.z)), 
             // 上
-            feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, max.z)), 
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, max.z)), 
             // 下
-            feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(min.x, min.y, max.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, min.y, max.z)));
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(min.x, min.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, min.y, max.z)));
             return triangles;
         };
         return AABB;

@@ -6162,24 +6162,24 @@ declare namespace feng3d {
     /**
      * 三角形
      */
-    class Triangle3D {
+    class Triangle3 {
         /**
          * 通过3顶点定义一个三角形
          * @param p0		点0
          * @param p1		点1
          * @param p2		点2
          */
-        static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Triangle3D;
+        static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Triangle3;
         /**
          * 从顶点数据初始化三角形
          * @param positions 顶点数据
          */
-        static fromPositions(positions: number[]): Triangle3D;
+        static fromPositions(positions: number[]): Triangle3;
         /**
          * 随机三角形
          * @param size 尺寸
          */
-        static random(size?: number): Triangle3D;
+        static random(size?: number): Triangle3;
         /**
          * 三角形0号点
          */
@@ -6292,21 +6292,21 @@ declare namespace feng3d {
         /**
          * 用点分解（切割）三角形
          */
-        decomposeWithPoint(p: Vector3): Triangle3D[];
+        decomposeWithPoint(p: Vector3): Triangle3[];
         /**
          * 用点分解（切割）三角形
          */
-        decomposeWithPoints(ps: Vector3[]): Triangle3D[];
+        decomposeWithPoints(ps: Vector3[]): Triangle3[];
         /**
          * 用线段分解（切割）三角形
          * @param segment 线段
          */
-        decomposeWithSegment(segment: Segment3): Triangle3D[];
+        decomposeWithSegment(segment: Segment3): Triangle3[];
         /**
          * 用直线分解（切割）三角形
          * @param line 直线
          */
-        decomposeWithLine(line: Line3): Triangle3D[];
+        decomposeWithLine(line: Line3): Triangle3[];
         /**
          * 面积
          */
@@ -6342,11 +6342,11 @@ declare namespace feng3d {
          * 复制
          * @param triangle 三角形
          */
-        copy(triangle: Triangle3D): this;
+        copy(triangle: Triangle3): this;
         /**
          * 克隆
          */
-        clone(): Triangle3D;
+        clone(): Triangle3;
     }
 }
 declare namespace feng3d {
@@ -6550,11 +6550,11 @@ declare namespace feng3d {
          * 是否与三角形相交
          * @param triangle 三角形
          */
-        intersectsTriangle(triangle: Triangle3D): boolean;
+        intersectsTriangle(triangle: Triangle3): boolean;
         /**
          * 转换为三角形列表
          */
-        toTriangles(triangles?: Triangle3D[]): Triangle3D[];
+        toTriangles(triangles?: Triangle3[]): Triangle3[];
     }
 }
 declare namespace feng3d {
@@ -6918,8 +6918,8 @@ declare namespace feng3d {
          * @param box 盒子
          */
         static fromBox(box: AABB): TriangleGeometry;
-        triangles: Triangle3D[];
-        constructor(triangles?: Triangle3D[]);
+        triangles: Triangle3[];
+        constructor(triangles?: Triangle3[]);
         /**
          * 从盒子初始化
          * @param box 盒子
@@ -6967,7 +6967,7 @@ declare namespace feng3d {
          * @param triangle 三角形
          * @return 三角形相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
          */
-        classifyTriangle(triangle: Triangle3D): void;
+        classifyTriangle(triangle: Triangle3): void;
         /**
          * 与直线碰撞
          * @param line3d 直线
@@ -6989,7 +6989,7 @@ declare namespace feng3d {
          * 分解三角形
          * @param triangle 三角形
          */
-        decomposeTriangle(triangle: Triangle3D): void;
+        decomposeTriangle(triangle: Triangle3): void;
         /**
          * 拷贝
          */

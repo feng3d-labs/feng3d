@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 三角形
      */
-    export class Triangle3D
+    export class Triangle3
     {
         /**
 		 * 通过3顶点定义一个三角形
@@ -13,7 +13,7 @@ namespace feng3d
 		 */
         static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
         {
-            return new Triangle3D().fromPoints(p0, p1, p2);
+            return new Triangle3().fromPoints(p0, p1, p2);
         }
 
         /**
@@ -22,7 +22,7 @@ namespace feng3d
          */
         static fromPositions(positions: number[])
         {
-            return new Triangle3D().fromPositions(positions);
+            return new Triangle3().fromPositions(positions);
         }
 
         /**
@@ -31,7 +31,7 @@ namespace feng3d
          */
         static random(size = 1)
         {
-            return new Triangle3D(Vector3.random(size), Vector3.random(size), Vector3.random(size));
+            return new Triangle3(Vector3.random(size), Vector3.random(size), Vector3.random(size));
         }
 
         /**
@@ -271,11 +271,11 @@ namespace feng3d
                 return true;
 
             var n = this.getNormal();
-            if (new Triangle3D(this.p0, this.p1, p).getNormal().dot(n) < 0)
+            if (new Triangle3(this.p0, this.p1, p).getNormal().dot(n) < 0)
                 return false;
-            if (new Triangle3D(this.p1, this.p2, p).getNormal().dot(n) < 0)
+            if (new Triangle3(this.p1, this.p2, p).getNormal().dot(n) < 0)
                 return false;
-            if (new Triangle3D(this.p2, this.p0, p).getNormal().dot(n) < 0)
+            if (new Triangle3(this.p2, this.p0, p).getNormal().dot(n) < 0)
                 return false;
 
             return true;
@@ -357,12 +357,12 @@ namespace feng3d
             if (this.p0.equals(p) || this.p1.equals(p) || this.p2.equals(p))
                 return [this];
             if (Segment3.fromPoints(this.p0, this.p1).onWithPoint(p))
-                return [Triangle3D.fromPoints(this.p0, p, this.p2), Triangle3D.fromPoints(p, this.p1, this.p2)];
+                return [Triangle3.fromPoints(this.p0, p, this.p2), Triangle3.fromPoints(p, this.p1, this.p2)];
             if (Segment3.fromPoints(this.p1, this.p2).onWithPoint(p))
-                return [Triangle3D.fromPoints(this.p1, p, this.p0), Triangle3D.fromPoints(p, this.p2, this.p0)];
+                return [Triangle3.fromPoints(this.p1, p, this.p0), Triangle3.fromPoints(p, this.p2, this.p0)];
             if (Segment3.fromPoints(this.p2, this.p0).onWithPoint(p))
-                return [Triangle3D.fromPoints(this.p2, p, this.p1), Triangle3D.fromPoints(p, this.p0, this.p1)];
-            return [Triangle3D.fromPoints(p, this.p0, this.p1), Triangle3D.fromPoints(p, this.p1, this.p2), Triangle3D.fromPoints(p, this.p2, this.p0)];
+                return [Triangle3.fromPoints(this.p2, p, this.p1), Triangle3.fromPoints(p, this.p0, this.p1)];
+            return [Triangle3.fromPoints(p, this.p0, this.p1), Triangle3.fromPoints(p, this.p1, this.p2), Triangle3.fromPoints(p, this.p2, this.p0)];
         }
 
         /**
@@ -371,10 +371,10 @@ namespace feng3d
         decomposeWithPoints(ps: Vector3[])
         {
             // 遍历顶点分割三角形
-            var ts = ps.reduce((v: Triangle3D[], p) =>
+            var ts = ps.reduce((v: Triangle3[], p) =>
             {
                 // 使用点分割所有三角形
-                v = v.reduce((v0: Triangle3D[], t) =>
+                v = v.reduce((v0: Triangle3[], t) =>
                 {
                     return v0.concat(t.decomposeWithPoint(p));
                 }, []);
@@ -501,7 +501,7 @@ namespace feng3d
          * 复制
          * @param triangle 三角形
          */
-        copy(triangle: Triangle3D)
+        copy(triangle: Triangle3)
         {
             this.p0.copy(triangle.p0);
             this.p1.copy(triangle.p1);
@@ -514,7 +514,7 @@ namespace feng3d
          */
         clone()
         {
-            return new Triangle3D().copy(this);
+            return new Triangle3().copy(this);
         }
     }
 }

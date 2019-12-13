@@ -17,9 +17,9 @@ namespace feng3d
             return new TriangleGeometry().fromBox(box);
         }
 
-        triangles: Triangle3D[];
+        triangles: Triangle3[];
 
-        constructor(triangles: Triangle3D[] = [])
+        constructor(triangles: Triangle3[] = [])
         {
             this.triangles = triangles;
         }
@@ -157,7 +157,7 @@ namespace feng3d
          * @param triangle 三角形
          * @return 三角形相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
          */
-        classifyTriangle(triangle: Triangle3D)
+        classifyTriangle(triangle: Triangle3)
         {
 
         }
@@ -225,7 +225,7 @@ namespace feng3d
          * 分解三角形
          * @param triangle 三角形
          */
-        decomposeTriangle(triangle: Triangle3D)
+        decomposeTriangle(triangle: Triangle3)
         {
 
         }
