@@ -330,8 +330,6 @@ declare namespace feng3d {
     const __watchchains__ = "__watchchains__";
 }
 declare namespace feng3d {
-}
-declare namespace feng3d {
     /**
      * 让T中以及所有键值中的所有键都是可选的
      */
@@ -825,143 +823,6 @@ interface Math {
      * @see https://en.wikipedia.org/wiki/Least_common_multiple
      */
     lcm(a: number, b: number): number;
-}
-declare namespace feng3d {
-    /**
-     * 函数经
-     *
-     * 包装函数，以及对应的拆包
-     */
-    class FunctionWrap {
-        /**
-         * 扩展继承函数
-         *
-         * 可用于扩展原型中原有API中的实现
-         *
-         * ```
-        class A
-        {
-            a = "a";
-
-            f(p: string = "p", p1: string = "")
-            {
-                return p + p1;
-            }
-
-            extendF: (p?: string, p1?: string) => string;
-            oldf: (p?: string, p1?: string) => string;
-        }
-
-        var a = new A();
-        a.oldf = a.f;
-        a.extendF = function (p: string = "p", p1: string = "")
-        {
-            return ["polyfill", this.a, this.oldf()].join("-")
-        }
-        feng3d.functionwrap.extendFunction(a, "f", function (r)
-        {
-            return ["polyfill", this.a, r].join("-");
-        });
-        // 验证 被扩展的a.f方法是否等价于 a.extendF
-        assert.ok(a.f() == a.extendF()); //true
-        
-         * ```
-         *
-         * @param object 被扩展函数所属对象或者原型
-         * @param funcName 被扩展函数名称
-         * @param extendFunc 在函数执行后执行的扩展函数
-         */
-        extendFunction<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>): void;
-        /**
-         * 包装函数
-         *
-         * 一般用于调试
-         * 使用场景示例：
-         * 1. 在函数执行前后记录时间来计算函数执行时间。
-         * 1. 在console.error调用前使用 debugger 进行断点调试。
-         *
-         * @param object 函数所属对象或者原型
-         * @param funcName 函数名称
-         * @param beforeFunc 在函数执行前执行的函数
-         * @param afterFunc 在函数执行后执行的函数
-         */
-        wrap<T, K extends FunctionPropertyNames<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F): void;
-        /**
-         * 取消包装函数
-         *
-         * 与wrap函数对应
-         *
-         * @param object 函数所属对象或者原型
-         * @param funcName 函数名称
-         * @param wrapFunc 在函数执行前执行的函数
-         * @param before 运行在原函数之前
-         */
-        unwrap<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V): void;
-        /**
-         * 包装一个异步函数，使其避免重复执行
-         *
-         * 使用场景示例：同时加载同一资源时，使其只加载一次，完成后调用所有相关回调函数。
-         *
-         * @param funcHost 函数所属对象
-         * @param func 函数
-         * @param params 函数除callback外的参数列表
-         * @param callback 完成回调函数
-         */
-        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any[]) => void): void;
-        private _wrapFResult;
-        private _state;
-    }
-    const __functionwrap__ = "__functionwrap__";
-    const functionwrap: FunctionWrap;
-}
-declare namespace feng3d {
-    /**
-     * 通用唯一标识符（Universally Unique Identifier）
-     *
-     * 用于给所有对象分配一个通用唯一标识符
-     */
-    class Uuid {
-        /**
-         * 获取数组 通用唯一标识符
-         *
-         * @param arr 数组
-         * @param separator 分割符
-         */
-        getArrayUuid(arr: any[], separator?: string): string;
-        /**
-         * 获取对象 通用唯一标识符
-         *
-         * 当参数object非Object对象时强制转换为字符串返回
-         *
-         * @param object 对象
-         */
-        getObjectUuid(object: Object): any;
-        objectUuid: WeakMap<Object, string>;
-    }
-    const __uuid__ = "__uuid__";
-    const uuid: Uuid;
-}
-declare namespace feng3d {
-    /**
-     * 调试工具
-     */
-    var debug: Debug;
-    /**
-     * 是否开启调试
-     */
-    var debuger: boolean;
-    /**
-     * 调试工具
-     */
-    class Debug {
-        constructor();
-        /**
-         * 测试代码运行时间
-         * @param fn 被测试的方法
-         * @param labal 标签
-         */
-        time(fn: Function, labal?: string): void;
-    }
 }
 declare namespace feng3d {
     /**
@@ -1514,724 +1375,6 @@ declare namespace feng3d {
          */
         editable?: boolean;
     };
-}
-declare namespace feng3d {
-    interface OAVComponentParamMap {
-        OAVDefault: OAVDefaultParam;
-        OAVArray: OAVArrayParam;
-        OAVPick: OAVPickParam;
-        OAVEnum: OAVEnumParam;
-        OAVCubeMap: {
-            component: "OAVCubeMap";
-            componentParam: Object;
-        };
-        OAVImage: {
-            component: "OAVImage";
-            componentParam: Object;
-        };
-        OAVObjectView: {
-            component: "OAVObjectView";
-            componentParam: Object;
-        };
-        OAVParticleComponentList: {
-            component: "OAVParticleComponentList";
-            componentParam: Object;
-        };
-        OAVComponentList: {
-            component: "OAVComponentList";
-            componentParam: Object;
-        };
-        OAVGameObjectName: {
-            component: "OAVGameObjectName";
-            componentParam: Object;
-        };
-        OAVMaterialName: {
-            component: "OAVMaterialName";
-            componentParam: Object;
-        };
-        OAVMultiText: {
-            component: "OAVMultiText";
-            componentParam: Object;
-        };
-        OAVFeng3dPreView: {
-            component: "OAVFeng3dPreView";
-            componentParam: Object;
-        };
-        OAVAccordionObjectView: {
-            component: "OAVAccordionObjectView";
-            componentParam: Object;
-        };
-        OAVVector3: OAVVector3Param;
-    }
-    /**
-     * OAVVector3 组件参数
-     */
-    interface OAVVector3Param {
-        component: "OAVVector3";
-        componentParam: {
-            label?: string;
-            /**
-             * 步长，精度
-             */
-            step?: number;
-            /**
-             * 键盘上下方向键步长
-             */
-            stepDownup?: number;
-            /**
-             * 移动一个像素时增加的步长数量
-             */
-            stepScale?: number;
-            /**
-             * 最小值
-             */
-            minValue?: number;
-            /**
-             * 最小值
-             */
-            maxValue?: number;
-            editable?: boolean;
-        };
-    }
-    /**
-     * OAVDefault 组件参数
-     */
-    interface OAVDefaultParam {
-        component: "OAVDefault";
-        componentParam: {
-            /**
-             * 拾取参数
-             */
-            dragparam?: {
-                /**
-                 * 可接受数据类型
-                 */
-                accepttype: string;
-                /**
-                 * 提供数据类型
-                 */
-                datatype?: string;
-            };
-        };
-    }
-    /**
-     * OAVArray 组件参数
-     */
-    interface OAVArrayParam {
-        component: "OAVArray";
-        componentParam: {
-            /**
-             * 拾取参数
-             */
-            dragparam?: {
-                /**
-                 * 可接受数据类型
-                 */
-                accepttype: string;
-                /**
-                 * 提供数据类型
-                 */
-                datatype?: string;
-            };
-            /**
-             * 添加item时默认数据，赋值 ()=>any
-             */
-            defaultItem: any;
-        };
-    }
-    /**
-     * OAVPick 组件参数
-     */
-    interface OAVPickParam {
-        component: "OAVPick";
-        componentParam: {
-            /**
-             * 可接受数据类型
-             */
-            accepttype: string;
-            /**
-             * 提供数据类型
-             */
-            datatype?: string;
-        };
-    }
-    /**
-     * OAVEnum 组件参数
-     */
-    interface OAVEnumParam {
-        component: "OAVEnum";
-        componentParam: {
-            /**
-             * 枚举类型
-             */
-            enumClass: any;
-        };
-    }
-}
-declare namespace feng3d {
-    /**
-     * 心跳计时器
-     */
-    var ticker: Ticker;
-    /**
-     * 心跳计时器
-     */
-    class Ticker {
-        /**
-         * 帧率
-         */
-        frameRate: number;
-        /**
-         * 注册帧函数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        onframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 下一帧执行方法
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        nextframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 注销帧函数（只执行一次）
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        offframe(func: (interval: number) => void, thisObject?: Object): this;
-        /**
-         * 注册周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 注册周期函数（只执行一次）
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 注销周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         */
-        off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object): this;
-        /**
-         * 重复指定次数 执行函数
-         * @param interval  执行周期，以ms为单位
-         * @param 	repeatCount     执行次数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number): Timer;
-    }
-    class Timer {
-        private ticker;
-        private interval;
-        private priority;
-        private func;
-        private thisObject;
-        /**
-         * 计时器从 0 开始后触发的总次数。
-         */
-        currentCount: number;
-        /**
-         * 计时器事件间的延迟（以毫秒为单位）。
-         */
-        delay: number;
-        /**
-         * 设置的计时器运行总次数。
-         */
-        repeatCount: number;
-        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number);
-        /**
-         * 如果计时器尚未运行，则启动计时器。
-         */
-        start(): this;
-        /**
-         * 停止计时器。
-         */
-        stop(): this;
-        /**
-         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
-         */
-        reset(): this;
-        private runfunc;
-    }
-}
-/**
- * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
- * @param str A string to be decoded.
- * @return A new string in which certain characters have been unescaped.
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
- */
-declare function unescape(str: string): string;
-/**
- * The escape() function computes a new string in which certain characters have been replaced by a hexadecimal escape sequence.
- * @param str A string to be encoded.
- * @return A new string in which certain characters have been escaped.
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape
- */
-declare function escape(str: string): string;
-declare namespace feng3d {
-    /**
-     * 数据类型转换
-     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
-     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
-     */
-    var dataTransform: DataTransform;
-    /**
-     * 数据类型转换
-     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
-     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
-     */
-    class DataTransform {
-        /**
-         * Blob to ArrayBuffer
-         */
-        blobToArrayBuffer(blob: Blob, callback: (arrayBuffer: ArrayBuffer) => void): void;
-        /**
-         * ArrayBuffer to Blob
-         */
-        arrayBufferToBlob(arrayBuffer: ArrayBuffer): Blob;
-        /**
-         * ArrayBuffer to Uint8
-         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        arrayBufferToUint8(arrayBuffer: ArrayBuffer): Uint8Array;
-        /**
-         * Uint8 to ArrayBuffer
-         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        uint8ToArrayBuffer(uint8Array: Uint8Array): ArrayBuffer;
-        /**
-         * Array to ArrayBuffer
-         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
-         */
-        arrayToArrayBuffer(array: number[]): ArrayBuffer;
-        /**
-         * TypeArray to Array
-         */
-        uint8ArrayToArray(u8a: Uint8Array): number[];
-        /**
-         * canvas转换为dataURL
-         */
-        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg"): string;
-        /**
-         * canvas转换为图片
-         */
-        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg", callback: (img: HTMLImageElement) => void): void;
-        /**
-         * File、Blob对象转换为dataURL
-         * File对象也是一个Blob对象，二者的处理相同。
-         */
-        blobToDataURL(blob: Blob, callback: (dataurl: string) => void): void;
-        /**
-         * dataURL转换为Blob对象
-         */
-        dataURLtoBlob(dataurl: string): Blob;
-        /**
-         * dataURL图片数据转换为HTMLImageElement
-         * dataURL图片数据绘制到canvas
-         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
-         */
-        dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void): void;
-        dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
-        arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
-        dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
-        imageToDataURL(img: HTMLImageElement): string;
-        imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
-        imageToArrayBuffer(img: HTMLImageElement, callback: (arraybuffer: ArrayBuffer) => void): void;
-        imageDataToDataURL(imageData: ImageData): string;
-        imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
-        imagedataToImage(imageData: ImageData, callback: (img: HTMLImageElement) => void): void;
-        arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
-        blobToText(blob: Blob, callback: (content: string) => void): void;
-        stringToArrayBuffer(str: string): ArrayBuffer;
-        arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
-        /**
-         * ArrayBuffer 转换为 对象
-         *
-         * @param arrayBuffer
-         * @param callback
-         */
-        arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void): void;
-        stringToUint8Array(str: string): Uint8Array;
-        uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 图片相关工具
-     */
-    class ImageUtil {
-        imageData: ImageData;
-        /**
-         * 获取图片数据
-         * @param image 加载完成的图片元素
-         */
-        static fromImage(image: HTMLImageElement): ImageUtil;
-        /**
-         * 创建ImageData
-         * @param width 数据宽度
-         * @param height 数据高度
-         * @param fillcolor 填充颜色
-         */
-        constructor(width?: number, height?: number, fillcolor?: Color4);
-        /**
-         * 初始化
-         * @param width 宽度
-         * @param height 高度
-         * @param fillcolor 填充颜色
-         */
-        init(width?: number, height?: number, fillcolor?: Color4): void;
-        /**
-         * 获取图片数据
-         * @param image 加载完成的图片元素
-         */
-        fromImage(image: HTMLImageElement): this;
-        /**
-         * 绘制图片数据指定位置颜色
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        drawPixel(x: number, y: number, color: Color4): this;
-        /**
-         * 获取图片指定位置颜色值
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         */
-        getPixel(x: number, y: number): Color4;
-        /**
-         * 设置指定位置颜色值
-         * @param imageData 图片数据
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        setPixel(x: number, y: number, color: Color4): this;
-        /**
-         * 清理图片数据
-         * @param clearColor 清理时填充颜色
-         */
-        clear(clearColor?: Color4): void;
-        /**
-         * 填充矩形
-         * @param rect 填充的矩形
-         * @param fillcolor 填充颜色
-         */
-        fillRect(rect: Rectangle, fillcolor?: Color4): void;
-        /**
-         * 绘制线条
-         * @param start 起始坐标
-         * @param end 终止坐标
-         * @param color 线条颜色
-         */
-        drawLine(start: Vector2, end: Vector2, color: Color4): this;
-        /**
-         * 绘制点
-         * @param x x坐标
-         * @param y y坐标
-         * @param color 颜色
-         * @param size 尺寸
-         */
-        drawPoint(x: number, y: number, color: Color4, size?: number): this;
-        /**
-         * 绘制图片数据
-         * @param imageData 图片数据
-         * @param x x坐标
-         * @param y y坐标
-         */
-        drawImageData(imageData: ImageData, x: number, y: number): this;
-        /**
-         * 转换为DataUrl字符串数据
-         */
-        toDataURL(): string;
-        /**
-         * 创建默认粒子贴图
-         * @param size 尺寸
-         */
-        drawDefaultParticle(size?: number): this;
-        /**
-         * 创建颜色拾取矩形
-         * @param color 基色
-         * @param width 宽度
-         * @param height 高度
-         */
-        drawColorPickerRect(color: number): this;
-        drawColorRect(color: Color4): this;
-        /**
-         *
-         * @param gradient
-         * @param dirw true为横向条带，否则纵向条带
-         */
-        drawMinMaxGradient(gradient: Gradient, dirw?: boolean): this;
-        /**
-         * 绘制曲线
-         * @param curve 曲线
-         * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
-         * @param color 曲线颜色
-         */
-        drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4, rect?: any): this;
-        /**
-         * 绘制双曲线
-         * @param curve 曲线
-         * @param curve1 曲线
-         * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
-         * @param curveColor 颜色
-         */
-        drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4, rect?: any): this;
-        /**
-         * 清理背景颜色，目前仅用于特定的抠图，例如 editor\resource\assets\3d\terrain\terrain_brushes.png
-         * @param backColor 背景颜色
-         */
-        clearBackColor(backColor: Color4): void;
-    }
-}
-/**
- * @author mrdoob / http://mrdoob.com/
- */
-interface Performance {
-    memory: any;
-}
-declare namespace feng3d {
-    class Stats {
-        static instance: Stats;
-        static init(parent?: HTMLElement): void;
-        REVISION: number;
-        dom: HTMLDivElement;
-        domElement: HTMLDivElement;
-        addPanel: (panel: StatsPanel) => StatsPanel;
-        showPanel: (id: number) => void;
-        setMode: (id: number) => void;
-        begin: () => void;
-        end: () => number;
-        update: () => void;
-        constructor();
-    }
-    class StatsPanel {
-        dom: HTMLCanvasElement;
-        update: (value: number, maxValue: number) => void;
-        constructor(name: string, fg: string, bg: string);
-    }
-}
-declare namespace feng3d {
-    /**
-     * 路径
-     *
-     * 从nodeJs的path移植
-     *
-     * @see http://nodejs.cn/api/path.html
-     * @see https://github.com/nodejs/node/blob/master/lib/path.js
-     */
-    var path: Path;
-    /**
-     * 路径
-     */
-    interface Path {
-        /**
-         * 规范化字符串路径，减少'.'和'.'的部分。当发现多个斜杠时，它们被单个斜杠替换;当路径包含尾部斜杠时，它将被保留。在Windows上使用反斜杠。
-         *
-         * @param p 要规范化的字符串路径。
-         */
-        normalize(p: string): string;
-        /**
-         * 将所有参数连接在一起，并规范化生成的路径。参数必须是字符串。在v0.8中，非字符串参数被悄悄地忽略。在v0.10及以上版本中，会抛出异常。
-         *
-         * @param paths 用于连接的路径列表
-         */
-        join(...paths: string[]): string;
-        /**
-         * 最右边的参数被认为是{to}。其他参数被认为是{from}的数组。
-         *
-         * 从最左边的{from}参数开始，将{to}解析为一个绝对路径。
-         *
-         * 如果{to}还不是绝对的，则{from}参数将按从右到左的顺序预先设置，直到找到绝对路径为止。如果在使用所有{from}路径之后仍然没有找到绝对路径，则还将使用当前工作目录。得到的路径是规范化的，除非路径被解析到根目录，否则尾部斜杠将被删除。
-         *
-         * @param pathSegments 要连接的字符串路径。非字符串参数将被忽略。
-         */
-        resolve(...pathSegments: string[]): string;
-        /**
-         * 确定{path}是否是一个绝对路径。无论工作目录如何，绝对路径总是解析到相同的位置。
-         *
-         * @param path 用于测试的路径。
-         */
-        isAbsolute(path: string): boolean;
-        /**
-         * 解决从{from}到{to}的相对路径。有时我们有两条绝对路径，我们需要推导出一条到另一条的相对路径。这实际上是path.resolve的逆变换。
-         *
-         * @param from 起始路径
-         * @param to 目标路径
-         */
-        relative(from: string, to: string): string;
-        /**
-         * 返回路径的目录名。类似于Unix的dirname命令。
-         *
-         * @param p 求值的路径。
-         */
-        dirname(p: string): string;
-        /**
-         * 返回路径的最后一部分。类似于Unix basename命令。通常用于从完全限定的路径中提取文件名。
-         *
-         * @param p 求值的路径。
-         * @param ext 可选地，从结果中删除的扩展。
-         */
-        basename(p: string, ext?: string): string;
-        /**
-         * 返回路径的扩展名，在路径的最后一部分从最后一个'.'到字符串末尾。如果在路径的最后部分没有'.'或者最后一个字符时'.'则返回一个空字符串。
-         *
-         * @param p 求值的路径。
-         */
-        extname(p: string): string;
-        /**
-         * 特定平台的文件分隔符。'\\'或'/'。
-         */
-        sep: '\\' | '/';
-        /**
-         * 特定平台的文件分隔符。 ';' 或者 ':'.
-         */
-        delimiter: ';' | ':';
-        /**
-         * 从路径字符串返回一个对象 —— 与format()相反。
-         *
-         * @param pathString 路径字符串。
-         */
-        parse(pathString: string): ParsedPath;
-        /**
-         * 从对象返回路径字符串——与parse()相反。
-         *
-         * @param pathObject 路径对象。
-         */
-        format(pathObject: FormatInputPathObject): string;
-        win32: Path;
-        posix: Path;
-    }
-    /**
-     * 由path.parse()生成或由path.format()使用的已解析路径对象。
-     */
-    interface ParsedPath {
-        /**
-         * 路径的根，如'/'或'c:\'
-         */
-        root: string;
-        /**
-         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
-         */
-        dir: string;
-        /**
-         * 包含扩展名(如有)的文件名，如'index.html'
-         */
-        base: string;
-        /**
-         * 文件扩展名(如果有)，如'.html'
-         */
-        ext: string;
-        /**
-         * 没有扩展名(如果有)的文件名，如'index'
-         */
-        name: string;
-    }
-    interface FormatInputPathObject {
-        /**
-         * 路径的根，如'/'或'c:\'
-         */
-        root?: string;
-        /**
-         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
-         */
-        dir?: string;
-        /**
-         * 包含扩展名(如有)的文件名，如'index.html'
-         */
-        base?: string;
-        /**
-         * 文件扩展名(如果有)，如'.html'
-         */
-        ext?: string;
-        /**
-         * 没有扩展名(如果有)的文件名，如'index'
-         */
-        name?: string;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 常用正则表示式
-     */
-    var regExps: RegExps;
-    /**
-     * 常用正则表示式
-     */
-    class RegExps {
-        /**
-         * json文件
-         */
-        json: RegExp;
-        /**
-         * 图片
-         */
-        image: RegExp;
-        /**
-         * 声音
-         */
-        audio: RegExp;
-        /**
-         * 命名空间
-         */
-        namespace: RegExp;
-        /**
-         * 类
-         */
-        classReg: RegExp;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 对象池
-     *
-     * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
-     *
-     * js虚拟机会在对象没有被引用时自动释放内存，谨慎使用对象池。
-     *
-     */
-    class Pool<T> {
-        private _objects;
-        private _type;
-        constructor(type: Constructor<T>);
-        /**
-         * 获取对象
-         */
-        get(): T;
-        /**
-         * 释放对象
-         *
-         * @param args 被释放对象列表
-         */
-        release(...args: T[]): void;
-        /**
-         * 获取指定数量的对象
-         *
-         * @param num 数量
-         */
-        getArray(num: number): T[];
-        /**
-         * 释放对象
-         *
-         * @param objects 被释放对象列表
-         */
-        releaseArray(objects: T[]): void;
-    }
 }
 declare namespace feng3d {
     type CompareFunction<T> = (a: T, b: T) => number;
@@ -7848,227 +6991,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 全局事件
-     */
-    var globalDispatcher: IEventDispatcher<GlobalEvents>;
-    /**
-     * 事件列表
-     */
-    interface GlobalEvents {
-        /**
-         * shader资源发生变化
-         */
-        "asset.shaderChanged": any;
-        /**
-         * 脚本发生变化
-         */
-        "asset.scriptChanged": any;
-        /**
-         * 图片资源发生变化
-         */
-        "asset.imageAssetChanged": {
-            url: string;
-        };
-        /**
-         * 解析出资源
-         */
-        "asset.parsed": any;
-        /**
-         * 删除文件
-         */
-        "fs.delete": string;
-        /**
-         * 写文件
-         */
-        "fs.write": string;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 任务，用于处理任务之间依赖
-     */
-    export var task: Task;
-    /**
-     * 任务函数
-     */
-    export interface TaskFunction {
-        /**
-         * 函数自身名称
-         */
-        readonly name?: string;
-        /**
-         * 函数自身
-         */
-        (callback: () => void): void;
-    }
-    /**
-     * 任务
-     *
-     * 处理 异步任务(函数)串联并联执行功能
-     */
-    class Task {
-        /**
-         * 并联多个异步函数为一个函数
-         *
-         * 这些异步函数同时执行
-         *
-         * @param fns 一组异步函数
-         */
-        parallel(fns: TaskFunction[]): TaskFunction;
-        /**
-         * 串联多个异步函数为一个函数
-         *
-         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
-         *
-         * @param fns 一组异步函数
-         */
-        series(fns: TaskFunction[]): TaskFunction;
-        /**
-         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
-        /**
-         * 创建一组串联同类任务，例如排序加载一组资源
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
-    }
-    export {};
-}
-declare namespace feng3d {
-    /**
-     * 所有feng3d对象的基类
-     */
-    class Feng3dObject extends EventDispatcher implements IDisposable {
-        /**
-         * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
-         */
-        hideFlags: HideFlags;
-        /**
-         * 通用唯一标识符（Universally Unique Identifier）
-         */
-        readonly uuid: string;
-        /**
-         * 是否已销毁
-         */
-        readonly disposed: boolean;
-        /**
-         * 构建
-         *
-         * 新增不可修改属性 guid
-         */
-        constructor();
-        /**
-         * 销毁
-         */
-        dispose(): void;
-        /**
-         * 获取对象
-         *
-         * @param uuid 通用唯一标识符
-         */
-        static getObject(uuid: string): Feng3dObject;
-        /**
-         * 获取对象
-         *
-         * @param type
-         */
-        static getObjects<T extends Feng3dObject>(type?: Constructor<T>): T[];
-        /**
-         * 对象库
-         */
-        private static objectLib;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 资源数据
-     *
-     * 该对象可由资源文件中读取，或者保存为资源
-     */
-    class AssetData extends Feng3dObject {
-        /**
-         * 资源名称
-         */
-        get name(): string;
-        set name(v: string);
-        private _name;
-        /**
-         * 资源编号
-         */
-        get assetId(): string;
-        set assetId(v: string);
-        private _assetId;
-        /**
-         * 资源类型，由具体对象类型决定
-         */
-        assetType: AssetType;
-        /**
-         * 新增资源数据
-         *
-         * @param assetId 资源编号
-         * @param data 资源数据
-         */
-        static addAssetData<T extends AssetData>(assetId: string, data: T): T;
-        /**
-         * 删除资源数据
-         *
-         * @param data 资源数据
-         */
-        static deleteAssetData(data: AssetData): void;
-        static deleteAssetDataById(assetId: string): void;
-        private static _delete;
-        /**
-         * 判断是否为资源数据
-         *
-         * @param asset 可能的资源数据
-         */
-        static isAssetData(asset: any): asset is AssetData;
-        /**
-         * 资源属性标记名称
-         */
-        private static assetPropertySign;
-        /**
-         * 序列化
-         *
-         * @param asset 资源数据
-         */
-        static serialize(asset: AssetData): any;
-        /**
-         * 反序列化
-         *
-         * @param object 资源对象
-         */
-        static deserialize(object: any): AssetData;
-        /**
-         * 获取已加载的资源数据
-         *
-         * @param assetId 资源编号
-         */
-        static getLoadedAssetData(assetId: string): AssetData;
-        /**
-         * 获取所有已加载资源数据
-         */
-        static getAllLoadedAssetDatas(): AssetData[];
-        /**
-         * 资源与编号对应表
-         */
-        static assetMap: Map<AssetData, string>;
-        /**
-         * 编号与资源对应表
-         */
-        static idAssetMap: Map<string, AssetData>;
-    }
-}
-declare namespace feng3d {
-    /**
      * 路径工具
      */
     var pathUtils: PathUtils;
@@ -8831,454 +7753,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         getAbsolutePath(path: string): string;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 资源元标签
-     */
-    interface AssetMeta {
-        /**
-         * 资源编号
-         */
-        guid: string;
-        /**
-         * 修改时间（单位为ms）
-         */
-        mtimeMs: number;
-        /**
-         * 创建时间（单位为ms）
-         */
-        birthtimeMs: number;
-        /**
-         * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
-         */
-        assetType: AssetType;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 资源扩展名
-     */
-    enum AssetType {
-        /**
-         * 文件夹
-         */
-        folder = "folder",
-        /**
-         * 音频
-         */
-        audio = "audio",
-        /**
-         * ts文件
-         */
-        ts = "ts",
-        /**
-         * js文件
-         */
-        js = "js",
-        /**
-         * 文本文件
-         */
-        txt = "txt",
-        /**
-         * json文件
-         */
-        json = "json",
-        /**
-         * OBJ模型资源附带的材质文件
-         */
-        mtl = "mtl",
-        /**
-         * OBJ模型文件
-         */
-        obj = "obj",
-        /**
-         * MD5模型文件
-         */
-        md5mesh = "md5mesh",
-        /**
-         * MD5动画
-         */
-        md5anim = "md5anim",
-        /**
-         * 魔兽MDL模型
-         */
-        mdl = "mdl",
-        /**
-         * 纹理
-         */
-        texture = "texture",
-        /**
-         * 立方体纹理
-         */
-        texturecube = "texturecube",
-        /**
-         * 材质
-         */
-        material = "material",
-        /**
-         * 几何体
-         */
-        geometry = "geometry",
-        /**
-         * 游戏对象
-         */
-        gameobject = "gameobject",
-        /**
-         * 场景
-         */
-        scene = "scene",
-        /**
-         * 动画
-         */
-        anim = "anim",
-        /**
-         * 着色器
-         */
-        shader = "shader",
-        /**
-         * 脚本
-         */
-        script = "script"
-    }
-}
-declare namespace feng3d {
-    /**
-     * feng3d资源
-     */
-    abstract class FileAsset {
-        /**
-         * 资源编号
-         */
-        assetId: string;
-        /**
-         * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
-         *
-         * 并且该对象还会用于存储主文件无法存储的数据，比如 TextureAsset 中存储了 Texture2D 信息
-         */
-        meta: AssetMeta;
-        /**
-         * 资源系统
-         *
-         * 加载或者创建该资源的资源系统
-         */
-        rs: ReadWriteRS;
-        /**
-         * 资源类型，由具体对象类型决定
-         */
-        assetType: AssetType;
-        /**
-         * 是否已加载
-         */
-        isLoaded: boolean;
-        /**
-         * 是否正在加载中
-         */
-        isLoading: boolean;
-        /**
-         * 文件后缀
-         */
-        get extenson(): string;
-        /**
-         * 父资源
-         */
-        parentAsset: FolderAsset;
-        /**
-         * 文件名称
-         *
-         * 不包含后缀
-         */
-        get fileName(): string;
-        /**
-         * 资源路径
-         */
-        assetPath: string;
-        /**
-         * 资源对象
-         */
-        data: AssetData;
-        /**
-         * 初始化资源
-         */
-        initAsset(): void;
-        /**
-         * 获取资源数据
-         *
-         * @param callback 完成回调，当资源已加载时会立即调用回调，否则在资源加载完成后调用。
-         */
-        getAssetData(callback?: (result: feng3d.AssetData) => void): AssetData;
-        /**
-         * 资源已加载时获取资源数据，内部使用
-         */
-        protected _getAssetData(): AssetData;
-        /**
-         * 读取资源
-         *
-         * @param callback 完成回调
-         */
-        read(callback: (err?: Error) => void): void;
-        /**
-         * 写入资源
-         *
-         * @param callback 完成回调
-         */
-        write(callback?: (err: Error) => void): void;
-        /**
-         * 删除资源
-         *
-         * @param callback 完成回调
-         */
-        delete(callback?: (err?: Error) => void): void;
-        /**
-         * 读取资源预览图标
-         *
-         * @param callback 完成回调
-         */
-        readPreview(callback: (err: Error, image: HTMLImageElement) => void): void;
-        /**
-         * 读取资源预览图标
-         *
-         * @param image 预览图
-         * @param callback 完成回调
-         */
-        writePreview(image: HTMLImageElement, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源预览图标
-         *
-         * @param callback 完成回调
-         */
-        deletePreview(callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         *
-         * @param callback 完成回调
-         */
-        abstract readFile(callback?: (err: Error) => void): void;
-        /**
-         * 保存文件
-         *
-         * @param callback 完成回调
-         */
-        abstract saveFile(callback?: (err: Error) => void): void;
-        /**
-         * 删除文件
-         *
-         * @param callback 完成回调
-         */
-        protected deleteFile(callback?: (err: Error) => void): void;
-        /**
-         * 元标签路径
-         */
-        protected get metaPath(): string;
-        /**
-         * 读取元标签
-         *
-         * @param callback 完成回调
-         */
-        protected readMeta(callback?: (err?: Error) => void): void;
-        /**
-         * 写元标签
-         *
-         * @param callback 完成回调
-         */
-        protected writeMeta(callback?: (err: Error) => void): void;
-        /**
-         * 删除元标签
-         *
-         * @param callback 完成回调
-         */
-        protected deleteMeta(callback?: (err: Error) => void): void;
-        /**
-         * 预览图
-         */
-        private _preview;
-        /**
-         * 预览图路径
-         */
-        private get previewPath();
-    }
-}
-declare namespace feng3d {
-    /**
-     * 默认资源系统
-     */
-    var rs: ReadRS;
-    /**
-     * 可读资源系统
-     */
-    class ReadRS {
-        /**
-         * 文件系统
-         */
-        get fs(): ReadFS;
-        private _fs;
-        /**
-         * 根文件夹
-         */
-        get root(): FolderAsset;
-        private _root;
-        /**
-         * 资源编号映射
-         */
-        idMap: {
-            [id: string]: FileAsset;
-        };
-        /**
-         * 资源路径映射
-         */
-        pathMap: {
-            [path: string]: FileAsset;
-        };
-        /**
-         * 资源树保存路径
-         */
-        protected resources: string;
-        /**
-         * 构建可读资源系统
-         *
-         * @param fs 可读文件系统
-         */
-        constructor(fs?: ReadFS);
-        /**
-         * 初始化
-         *
-         * @param callback 完成回调
-         */
-        init(callback?: () => void): void;
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param fileName 文件名称
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
-        /**
-         * 获取有效子文件名称
-         *
-         * @param parent 父文件夹
-         * @param fileName 文件名称
-         */
-        getValidChildName(parent: FolderAsset, fileName: string): string;
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        readAsset(id: string, callback: (err: Error, asset: FileAsset) => void): void;
-        /**
-         * 读取资源数据
-         *
-         * @param id 资源编号
-         * @param callback 完成回调
-         */
-        readAssetData(id: string, callback: (err: Error, data: AssetData) => void): void;
-        /**
-         * 读取资源数据列表
-         *
-         * @param assetids 资源编号列表
-         * @param callback 完成回调
-         */
-        readAssetDatas(assetids: string[], callback: (err: Error, data: AssetData[]) => void): void;
-        /**
-         * 获取指定类型资源
-         *
-         * @param type 资源类型
-         */
-        getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[];
-        /**
-         * 获取指定类型资源数据
-         *
-         * @param type 资源类型
-         */
-        getLoadedAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[];
-        /**
-         * 获取资源
-         *
-         * @param assetId 资源编号
-         */
-        getAsset(assetId: string): FileAsset;
-        /**
-         * 获取所有资源
-         */
-        getAllAssets(): FileAsset[];
-        /**
-         * 获取需要反序列化对象中的资源id列表
-         */
-        getAssetsWithObject(object: any, assetids?: string[]): string[];
-        /**
-         * 反序列化包含资源的对象
-         *
-         * @param object 反序列化的对象
-         * @param callback 完成回调
-         */
-        deserializeWithAssets(object: any, callback: (result: any) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 可读写资源系统
-     */
-    class ReadWriteRS extends ReadRS {
-        /**
-         * 文件系统
-         */
-        fs: ReadWriteFS;
-        /**
-         * 延迟保存执行函数
-         */
-        private laterSaveFunc;
-        /**
-         * 延迟保存，避免多次操作时频繁调用保存
-         */
-        private laterSave;
-        /**
-         * 构建可读写资源系统
-         *
-         * @param fs 可读写文件系统
-         */
-        constructor(fs?: ReadWriteFS);
-        /**
-         * 在更改资源结构（新增，移动，删除）时会自动保存
-         *
-         * @param callback 完成回调
-         */
-        private save;
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param fileName 文件名称
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
-        /**
-         * 写（保存）资源
-         *
-         * @param asset 资源对象
-         * @param callback 完成回调
-         */
-        writeAsset(asset: FileAsset, callback?: (err: Error) => void): void;
-        /**
-         * 移动资源到指定文件夹
-         *
-         * @param asset 被移动资源
-         * @param folder 目标文件夹
-         * @param callback 完成回调
-         */
-        moveAsset(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源
-         *
-         * @param asset 资源
-         * @param callback 完成回调
-         */
-        deleteAsset(asset: FileAsset, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -10889,6 +9363,1532 @@ declare namespace feng3d {
          */
         readonly draw: (renderAtomic: RenderAtomic) => void;
         constructor(gl: GL);
+    }
+}
+declare namespace feng3d {
+    /**
+     * 全局事件
+     */
+    var globalDispatcher: IEventDispatcher<GlobalEvents>;
+    /**
+     * 事件列表
+     */
+    interface GlobalEvents {
+        /**
+         * shader资源发生变化
+         */
+        "asset.shaderChanged": any;
+        /**
+         * 脚本发生变化
+         */
+        "asset.scriptChanged": any;
+        /**
+         * 图片资源发生变化
+         */
+        "asset.imageAssetChanged": {
+            url: string;
+        };
+        /**
+         * 解析出资源
+         */
+        "asset.parsed": any;
+        /**
+         * 删除文件
+         */
+        "fs.delete": string;
+        /**
+         * 写文件
+         */
+        "fs.write": string;
+    }
+}
+declare namespace feng3d {
+}
+declare namespace feng3d {
+    /**
+     * 函数经
+     *
+     * 包装函数，以及对应的拆包
+     */
+    class FunctionWrap {
+        /**
+         * 扩展继承函数
+         *
+         * 可用于扩展原型中原有API中的实现
+         *
+         * ```
+        class A
+        {
+            a = "a";
+
+            f(p: string = "p", p1: string = "")
+            {
+                return p + p1;
+            }
+
+            extendF: (p?: string, p1?: string) => string;
+            oldf: (p?: string, p1?: string) => string;
+        }
+
+        var a = new A();
+        a.oldf = a.f;
+        a.extendF = function (p: string = "p", p1: string = "")
+        {
+            return ["polyfill", this.a, this.oldf()].join("-")
+        }
+        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        {
+            return ["polyfill", this.a, r].join("-");
+        });
+        // 验证 被扩展的a.f方法是否等价于 a.extendF
+        assert.ok(a.f() == a.extendF()); //true
+        
+         * ```
+         *
+         * @param object 被扩展函数所属对象或者原型
+         * @param funcName 被扩展函数名称
+         * @param extendFunc 在函数执行后执行的扩展函数
+         */
+        extendFunction<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>): void;
+        /**
+         * 包装函数
+         *
+         * 一般用于调试
+         * 使用场景示例：
+         * 1. 在函数执行前后记录时间来计算函数执行时间。
+         * 1. 在console.error调用前使用 debugger 进行断点调试。
+         *
+         * @param object 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param beforeFunc 在函数执行前执行的函数
+         * @param afterFunc 在函数执行后执行的函数
+         */
+        wrap<T, K extends FunctionPropertyNames<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F): void;
+        /**
+         * 取消包装函数
+         *
+         * 与wrap函数对应
+         *
+         * @param object 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param wrapFunc 在函数执行前执行的函数
+         * @param before 运行在原函数之前
+         */
+        unwrap<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V): void;
+        /**
+         * 包装一个异步函数，使其避免重复执行
+         *
+         * 使用场景示例：同时加载同一资源时，使其只加载一次，完成后调用所有相关回调函数。
+         *
+         * @param funcHost 函数所属对象
+         * @param func 函数
+         * @param params 函数除callback外的参数列表
+         * @param callback 完成回调函数
+         */
+        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any[]) => void): void;
+        private _wrapFResult;
+        private _state;
+    }
+    const __functionwrap__ = "__functionwrap__";
+    const functionwrap: FunctionWrap;
+}
+declare namespace feng3d {
+    /**
+     * 通用唯一标识符（Universally Unique Identifier）
+     *
+     * 用于给所有对象分配一个通用唯一标识符
+     */
+    class Uuid {
+        /**
+         * 获取数组 通用唯一标识符
+         *
+         * @param arr 数组
+         * @param separator 分割符
+         */
+        getArrayUuid(arr: any[], separator?: string): string;
+        /**
+         * 获取对象 通用唯一标识符
+         *
+         * 当参数object非Object对象时强制转换为字符串返回
+         *
+         * @param object 对象
+         */
+        getObjectUuid(object: Object): any;
+        objectUuid: WeakMap<Object, string>;
+    }
+    const __uuid__ = "__uuid__";
+    const uuid: Uuid;
+}
+declare namespace feng3d {
+    /**
+     * 调试工具
+     */
+    var debug: Debug;
+    /**
+     * 是否开启调试
+     */
+    var debuger: boolean;
+    /**
+     * 调试工具
+     */
+    class Debug {
+        constructor();
+        /**
+         * 测试代码运行时间
+         * @param fn 被测试的方法
+         * @param labal 标签
+         */
+        time(fn: Function, labal?: string): void;
+    }
+}
+declare namespace feng3d {
+    interface OAVComponentParamMap {
+        OAVDefault: OAVDefaultParam;
+        OAVArray: OAVArrayParam;
+        OAVPick: OAVPickParam;
+        OAVEnum: OAVEnumParam;
+        OAVCubeMap: {
+            component: "OAVCubeMap";
+            componentParam: Object;
+        };
+        OAVImage: {
+            component: "OAVImage";
+            componentParam: Object;
+        };
+        OAVObjectView: {
+            component: "OAVObjectView";
+            componentParam: Object;
+        };
+        OAVParticleComponentList: {
+            component: "OAVParticleComponentList";
+            componentParam: Object;
+        };
+        OAVComponentList: {
+            component: "OAVComponentList";
+            componentParam: Object;
+        };
+        OAVGameObjectName: {
+            component: "OAVGameObjectName";
+            componentParam: Object;
+        };
+        OAVMaterialName: {
+            component: "OAVMaterialName";
+            componentParam: Object;
+        };
+        OAVMultiText: {
+            component: "OAVMultiText";
+            componentParam: Object;
+        };
+        OAVFeng3dPreView: {
+            component: "OAVFeng3dPreView";
+            componentParam: Object;
+        };
+        OAVAccordionObjectView: {
+            component: "OAVAccordionObjectView";
+            componentParam: Object;
+        };
+        OAVVector3: OAVVector3Param;
+    }
+    /**
+     * OAVVector3 组件参数
+     */
+    interface OAVVector3Param {
+        component: "OAVVector3";
+        componentParam: {
+            label?: string;
+            /**
+             * 步长，精度
+             */
+            step?: number;
+            /**
+             * 键盘上下方向键步长
+             */
+            stepDownup?: number;
+            /**
+             * 移动一个像素时增加的步长数量
+             */
+            stepScale?: number;
+            /**
+             * 最小值
+             */
+            minValue?: number;
+            /**
+             * 最小值
+             */
+            maxValue?: number;
+            editable?: boolean;
+        };
+    }
+    /**
+     * OAVDefault 组件参数
+     */
+    interface OAVDefaultParam {
+        component: "OAVDefault";
+        componentParam: {
+            /**
+             * 拾取参数
+             */
+            dragparam?: {
+                /**
+                 * 可接受数据类型
+                 */
+                accepttype: string;
+                /**
+                 * 提供数据类型
+                 */
+                datatype?: string;
+            };
+        };
+    }
+    /**
+     * OAVArray 组件参数
+     */
+    interface OAVArrayParam {
+        component: "OAVArray";
+        componentParam: {
+            /**
+             * 拾取参数
+             */
+            dragparam?: {
+                /**
+                 * 可接受数据类型
+                 */
+                accepttype: string;
+                /**
+                 * 提供数据类型
+                 */
+                datatype?: string;
+            };
+            /**
+             * 添加item时默认数据，赋值 ()=>any
+             */
+            defaultItem: any;
+        };
+    }
+    /**
+     * OAVPick 组件参数
+     */
+    interface OAVPickParam {
+        component: "OAVPick";
+        componentParam: {
+            /**
+             * 可接受数据类型
+             */
+            accepttype: string;
+            /**
+             * 提供数据类型
+             */
+            datatype?: string;
+        };
+    }
+    /**
+     * OAVEnum 组件参数
+     */
+    interface OAVEnumParam {
+        component: "OAVEnum";
+        componentParam: {
+            /**
+             * 枚举类型
+             */
+            enumClass: any;
+        };
+    }
+}
+declare namespace feng3d {
+    /**
+     * 心跳计时器
+     */
+    var ticker: Ticker;
+    /**
+     * 心跳计时器
+     */
+    class Ticker {
+        /**
+         * 帧率
+         */
+        frameRate: number;
+        /**
+         * 注册帧函数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        onframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 下一帧执行方法
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        nextframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注销帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        offframe(func: (interval: number) => void, thisObject?: Object): this;
+        /**
+         * 注册周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注册周期函数（只执行一次）
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注销周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         */
+        off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object): this;
+        /**
+         * 重复指定次数 执行函数
+         * @param interval  执行周期，以ms为单位
+         * @param 	repeatCount     执行次数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number): Timer;
+    }
+    class Timer {
+        private ticker;
+        private interval;
+        private priority;
+        private func;
+        private thisObject;
+        /**
+         * 计时器从 0 开始后触发的总次数。
+         */
+        currentCount: number;
+        /**
+         * 计时器事件间的延迟（以毫秒为单位）。
+         */
+        delay: number;
+        /**
+         * 设置的计时器运行总次数。
+         */
+        repeatCount: number;
+        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number);
+        /**
+         * 如果计时器尚未运行，则启动计时器。
+         */
+        start(): this;
+        /**
+         * 停止计时器。
+         */
+        stop(): this;
+        /**
+         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
+         */
+        reset(): this;
+        private runfunc;
+    }
+}
+/**
+ * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
+ * @param str A string to be decoded.
+ * @return A new string in which certain characters have been unescaped.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
+ */
+declare function unescape(str: string): string;
+/**
+ * The escape() function computes a new string in which certain characters have been replaced by a hexadecimal escape sequence.
+ * @param str A string to be encoded.
+ * @return A new string in which certain characters have been escaped.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape
+ */
+declare function escape(str: string): string;
+declare namespace feng3d {
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    var dataTransform: DataTransform;
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    class DataTransform {
+        /**
+         * Blob to ArrayBuffer
+         */
+        blobToArrayBuffer(blob: Blob, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * ArrayBuffer to Blob
+         */
+        arrayBufferToBlob(arrayBuffer: ArrayBuffer): Blob;
+        /**
+         * ArrayBuffer to Uint8
+         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        arrayBufferToUint8(arrayBuffer: ArrayBuffer): Uint8Array;
+        /**
+         * Uint8 to ArrayBuffer
+         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        uint8ToArrayBuffer(uint8Array: Uint8Array): ArrayBuffer;
+        /**
+         * Array to ArrayBuffer
+         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
+         */
+        arrayToArrayBuffer(array: number[]): ArrayBuffer;
+        /**
+         * TypeArray to Array
+         */
+        uint8ArrayToArray(u8a: Uint8Array): number[];
+        /**
+         * canvas转换为dataURL
+         */
+        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg"): string;
+        /**
+         * canvas转换为图片
+         */
+        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg", callback: (img: HTMLImageElement) => void): void;
+        /**
+         * File、Blob对象转换为dataURL
+         * File对象也是一个Blob对象，二者的处理相同。
+         */
+        blobToDataURL(blob: Blob, callback: (dataurl: string) => void): void;
+        /**
+         * dataURL转换为Blob对象
+         */
+        dataURLtoBlob(dataurl: string): Blob;
+        /**
+         * dataURL图片数据转换为HTMLImageElement
+         * dataURL图片数据绘制到canvas
+         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
+         */
+        dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void): void;
+        dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
+        arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
+        dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
+        imageToDataURL(img: HTMLImageElement): string;
+        imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
+        imageToArrayBuffer(img: HTMLImageElement, callback: (arraybuffer: ArrayBuffer) => void): void;
+        imageDataToDataURL(imageData: ImageData): string;
+        imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
+        imagedataToImage(imageData: ImageData, callback: (img: HTMLImageElement) => void): void;
+        arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
+        blobToText(blob: Blob, callback: (content: string) => void): void;
+        stringToArrayBuffer(str: string): ArrayBuffer;
+        arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void): void;
+        stringToUint8Array(str: string): Uint8Array;
+        uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 图片相关工具
+     */
+    class ImageUtil {
+        imageData: ImageData;
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        static fromImage(image: HTMLImageElement): ImageUtil;
+        /**
+         * 创建ImageData
+         * @param width 数据宽度
+         * @param height 数据高度
+         * @param fillcolor 填充颜色
+         */
+        constructor(width?: number, height?: number, fillcolor?: Color4);
+        /**
+         * 初始化
+         * @param width 宽度
+         * @param height 高度
+         * @param fillcolor 填充颜色
+         */
+        init(width?: number, height?: number, fillcolor?: Color4): void;
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        fromImage(image: HTMLImageElement): this;
+        /**
+         * 绘制图片数据指定位置颜色
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        drawPixel(x: number, y: number, color: Color4): this;
+        /**
+         * 获取图片指定位置颜色值
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         */
+        getPixel(x: number, y: number): Color4;
+        /**
+         * 设置指定位置颜色值
+         * @param imageData 图片数据
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        setPixel(x: number, y: number, color: Color4): this;
+        /**
+         * 清理图片数据
+         * @param clearColor 清理时填充颜色
+         */
+        clear(clearColor?: Color4): void;
+        /**
+         * 填充矩形
+         * @param rect 填充的矩形
+         * @param fillcolor 填充颜色
+         */
+        fillRect(rect: Rectangle, fillcolor?: Color4): void;
+        /**
+         * 绘制线条
+         * @param start 起始坐标
+         * @param end 终止坐标
+         * @param color 线条颜色
+         */
+        drawLine(start: Vector2, end: Vector2, color: Color4): this;
+        /**
+         * 绘制点
+         * @param x x坐标
+         * @param y y坐标
+         * @param color 颜色
+         * @param size 尺寸
+         */
+        drawPoint(x: number, y: number, color: Color4, size?: number): this;
+        /**
+         * 绘制图片数据
+         * @param imageData 图片数据
+         * @param x x坐标
+         * @param y y坐标
+         */
+        drawImageData(imageData: ImageData, x: number, y: number): this;
+        /**
+         * 转换为DataUrl字符串数据
+         */
+        toDataURL(): string;
+        /**
+         * 创建默认粒子贴图
+         * @param size 尺寸
+         */
+        drawDefaultParticle(size?: number): this;
+        /**
+         * 创建颜色拾取矩形
+         * @param color 基色
+         * @param width 宽度
+         * @param height 高度
+         */
+        drawColorPickerRect(color: number): this;
+        drawColorRect(color: Color4): this;
+        /**
+         *
+         * @param gradient
+         * @param dirw true为横向条带，否则纵向条带
+         */
+        drawMinMaxGradient(gradient: Gradient, dirw?: boolean): this;
+        /**
+         * 绘制曲线
+         * @param curve 曲线
+         * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param color 曲线颜色
+         */
+        drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4, rect?: any): this;
+        /**
+         * 绘制双曲线
+         * @param curve 曲线
+         * @param curve1 曲线
+         * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param curveColor 颜色
+         */
+        drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4, rect?: any): this;
+        /**
+         * 清理背景颜色，目前仅用于特定的抠图，例如 editor\resource\assets\3d\terrain\terrain_brushes.png
+         * @param backColor 背景颜色
+         */
+        clearBackColor(backColor: Color4): void;
+    }
+}
+/**
+ * @author mrdoob / http://mrdoob.com/
+ */
+interface Performance {
+    memory: any;
+}
+declare namespace feng3d {
+    class Stats {
+        static instance: Stats;
+        static init(parent?: HTMLElement): void;
+        REVISION: number;
+        dom: HTMLDivElement;
+        domElement: HTMLDivElement;
+        addPanel: (panel: StatsPanel) => StatsPanel;
+        showPanel: (id: number) => void;
+        setMode: (id: number) => void;
+        begin: () => void;
+        end: () => number;
+        update: () => void;
+        constructor();
+    }
+    class StatsPanel {
+        dom: HTMLCanvasElement;
+        update: (value: number, maxValue: number) => void;
+        constructor(name: string, fg: string, bg: string);
+    }
+}
+declare namespace feng3d {
+    /**
+     * 路径
+     *
+     * 从nodeJs的path移植
+     *
+     * @see http://nodejs.cn/api/path.html
+     * @see https://github.com/nodejs/node/blob/master/lib/path.js
+     */
+    var path: Path;
+    /**
+     * 路径
+     */
+    interface Path {
+        /**
+         * 规范化字符串路径，减少'.'和'.'的部分。当发现多个斜杠时，它们被单个斜杠替换;当路径包含尾部斜杠时，它将被保留。在Windows上使用反斜杠。
+         *
+         * @param p 要规范化的字符串路径。
+         */
+        normalize(p: string): string;
+        /**
+         * 将所有参数连接在一起，并规范化生成的路径。参数必须是字符串。在v0.8中，非字符串参数被悄悄地忽略。在v0.10及以上版本中，会抛出异常。
+         *
+         * @param paths 用于连接的路径列表
+         */
+        join(...paths: string[]): string;
+        /**
+         * 最右边的参数被认为是{to}。其他参数被认为是{from}的数组。
+         *
+         * 从最左边的{from}参数开始，将{to}解析为一个绝对路径。
+         *
+         * 如果{to}还不是绝对的，则{from}参数将按从右到左的顺序预先设置，直到找到绝对路径为止。如果在使用所有{from}路径之后仍然没有找到绝对路径，则还将使用当前工作目录。得到的路径是规范化的，除非路径被解析到根目录，否则尾部斜杠将被删除。
+         *
+         * @param pathSegments 要连接的字符串路径。非字符串参数将被忽略。
+         */
+        resolve(...pathSegments: string[]): string;
+        /**
+         * 确定{path}是否是一个绝对路径。无论工作目录如何，绝对路径总是解析到相同的位置。
+         *
+         * @param path 用于测试的路径。
+         */
+        isAbsolute(path: string): boolean;
+        /**
+         * 解决从{from}到{to}的相对路径。有时我们有两条绝对路径，我们需要推导出一条到另一条的相对路径。这实际上是path.resolve的逆变换。
+         *
+         * @param from 起始路径
+         * @param to 目标路径
+         */
+        relative(from: string, to: string): string;
+        /**
+         * 返回路径的目录名。类似于Unix的dirname命令。
+         *
+         * @param p 求值的路径。
+         */
+        dirname(p: string): string;
+        /**
+         * 返回路径的最后一部分。类似于Unix basename命令。通常用于从完全限定的路径中提取文件名。
+         *
+         * @param p 求值的路径。
+         * @param ext 可选地，从结果中删除的扩展。
+         */
+        basename(p: string, ext?: string): string;
+        /**
+         * 返回路径的扩展名，在路径的最后一部分从最后一个'.'到字符串末尾。如果在路径的最后部分没有'.'或者最后一个字符时'.'则返回一个空字符串。
+         *
+         * @param p 求值的路径。
+         */
+        extname(p: string): string;
+        /**
+         * 特定平台的文件分隔符。'\\'或'/'。
+         */
+        sep: '\\' | '/';
+        /**
+         * 特定平台的文件分隔符。 ';' 或者 ':'.
+         */
+        delimiter: ';' | ':';
+        /**
+         * 从路径字符串返回一个对象 —— 与format()相反。
+         *
+         * @param pathString 路径字符串。
+         */
+        parse(pathString: string): ParsedPath;
+        /**
+         * 从对象返回路径字符串——与parse()相反。
+         *
+         * @param pathObject 路径对象。
+         */
+        format(pathObject: FormatInputPathObject): string;
+        win32: Path;
+        posix: Path;
+    }
+    /**
+     * 由path.parse()生成或由path.format()使用的已解析路径对象。
+     */
+    interface ParsedPath {
+        /**
+         * 路径的根，如'/'或'c:\'
+         */
+        root: string;
+        /**
+         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
+         */
+        dir: string;
+        /**
+         * 包含扩展名(如有)的文件名，如'index.html'
+         */
+        base: string;
+        /**
+         * 文件扩展名(如果有)，如'.html'
+         */
+        ext: string;
+        /**
+         * 没有扩展名(如果有)的文件名，如'index'
+         */
+        name: string;
+    }
+    interface FormatInputPathObject {
+        /**
+         * 路径的根，如'/'或'c:\'
+         */
+        root?: string;
+        /**
+         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
+         */
+        dir?: string;
+        /**
+         * 包含扩展名(如有)的文件名，如'index.html'
+         */
+        base?: string;
+        /**
+         * 文件扩展名(如果有)，如'.html'
+         */
+        ext?: string;
+        /**
+         * 没有扩展名(如果有)的文件名，如'index'
+         */
+        name?: string;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 常用正则表示式
+     */
+    var regExps: RegExps;
+    /**
+     * 常用正则表示式
+     */
+    class RegExps {
+        /**
+         * json文件
+         */
+        json: RegExp;
+        /**
+         * 图片
+         */
+        image: RegExp;
+        /**
+         * 声音
+         */
+        audio: RegExp;
+        /**
+         * 命名空间
+         */
+        namespace: RegExp;
+        /**
+         * 类
+         */
+        classReg: RegExp;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 对象池
+     *
+     * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
+     *
+     * js虚拟机会在对象没有被引用时自动释放内存，谨慎使用对象池。
+     *
+     */
+    class Pool<T> {
+        private _objects;
+        private _type;
+        constructor(type: Constructor<T>);
+        /**
+         * 获取对象
+         */
+        get(): T;
+        /**
+         * 释放对象
+         *
+         * @param args 被释放对象列表
+         */
+        release(...args: T[]): void;
+        /**
+         * 获取指定数量的对象
+         *
+         * @param num 数量
+         */
+        getArray(num: number): T[];
+        /**
+         * 释放对象
+         *
+         * @param objects 被释放对象列表
+         */
+        releaseArray(objects: T[]): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 任务，用于处理任务之间依赖
+     */
+    export var task: Task;
+    /**
+     * 任务函数
+     */
+    export interface TaskFunction {
+        /**
+         * 函数自身名称
+         */
+        readonly name?: string;
+        /**
+         * 函数自身
+         */
+        (callback: () => void): void;
+    }
+    /**
+     * 任务
+     *
+     * 处理 异步任务(函数)串联并联执行功能
+     */
+    class Task {
+        /**
+         * 并联多个异步函数为一个函数
+         *
+         * 这些异步函数同时执行
+         *
+         * @param fns 一组异步函数
+         */
+        parallel(fns: TaskFunction[]): TaskFunction;
+        /**
+         * 串联多个异步函数为一个函数
+         *
+         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
+         *
+         * @param fns 一组异步函数
+         */
+        series(fns: TaskFunction[]): TaskFunction;
+        /**
+         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
+        /**
+         * 创建一组串联同类任务，例如排序加载一组资源
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
+    }
+    export {};
+}
+declare namespace feng3d {
+    /**
+     * 所有feng3d对象的基类
+     */
+    class Feng3dObject extends EventDispatcher implements IDisposable {
+        /**
+         * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
+         */
+        hideFlags: HideFlags;
+        /**
+         * 通用唯一标识符（Universally Unique Identifier）
+         */
+        readonly uuid: string;
+        /**
+         * 是否已销毁
+         */
+        readonly disposed: boolean;
+        /**
+         * 构建
+         *
+         * 新增不可修改属性 guid
+         */
+        constructor();
+        /**
+         * 销毁
+         */
+        dispose(): void;
+        /**
+         * 获取对象
+         *
+         * @param uuid 通用唯一标识符
+         */
+        static getObject(uuid: string): Feng3dObject;
+        /**
+         * 获取对象
+         *
+         * @param type
+         */
+        static getObjects<T extends Feng3dObject>(type?: Constructor<T>): T[];
+        /**
+         * 对象库
+         */
+        private static objectLib;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源数据
+     *
+     * 该对象可由资源文件中读取，或者保存为资源
+     */
+    class AssetData extends Feng3dObject {
+        /**
+         * 资源名称
+         */
+        get name(): string;
+        set name(v: string);
+        private _name;
+        /**
+         * 资源编号
+         */
+        get assetId(): string;
+        set assetId(v: string);
+        private _assetId;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        assetType: AssetType;
+        /**
+         * 新增资源数据
+         *
+         * @param assetId 资源编号
+         * @param data 资源数据
+         */
+        static addAssetData<T extends AssetData>(assetId: string, data: T): T;
+        /**
+         * 删除资源数据
+         *
+         * @param data 资源数据
+         */
+        static deleteAssetData(data: AssetData): void;
+        static deleteAssetDataById(assetId: string): void;
+        private static _delete;
+        /**
+         * 判断是否为资源数据
+         *
+         * @param asset 可能的资源数据
+         */
+        static isAssetData(asset: any): asset is AssetData;
+        /**
+         * 资源属性标记名称
+         */
+        private static assetPropertySign;
+        /**
+         * 序列化
+         *
+         * @param asset 资源数据
+         */
+        static serialize(asset: AssetData): any;
+        /**
+         * 反序列化
+         *
+         * @param object 资源对象
+         */
+        static deserialize(object: any): AssetData;
+        /**
+         * 获取已加载的资源数据
+         *
+         * @param assetId 资源编号
+         */
+        static getLoadedAssetData(assetId: string): AssetData;
+        /**
+         * 获取所有已加载资源数据
+         */
+        static getAllLoadedAssetDatas(): AssetData[];
+        /**
+         * 资源与编号对应表
+         */
+        static assetMap: Map<AssetData, string>;
+        /**
+         * 编号与资源对应表
+         */
+        static idAssetMap: Map<string, AssetData>;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源元标签
+     */
+    interface AssetMeta {
+        /**
+         * 资源编号
+         */
+        guid: string;
+        /**
+         * 修改时间（单位为ms）
+         */
+        mtimeMs: number;
+        /**
+         * 创建时间（单位为ms）
+         */
+        birthtimeMs: number;
+        /**
+         * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
+         */
+        assetType: AssetType;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源扩展名
+     */
+    enum AssetType {
+        /**
+         * 文件夹
+         */
+        folder = "folder",
+        /**
+         * 音频
+         */
+        audio = "audio",
+        /**
+         * ts文件
+         */
+        ts = "ts",
+        /**
+         * js文件
+         */
+        js = "js",
+        /**
+         * 文本文件
+         */
+        txt = "txt",
+        /**
+         * json文件
+         */
+        json = "json",
+        /**
+         * OBJ模型资源附带的材质文件
+         */
+        mtl = "mtl",
+        /**
+         * OBJ模型文件
+         */
+        obj = "obj",
+        /**
+         * MD5模型文件
+         */
+        md5mesh = "md5mesh",
+        /**
+         * MD5动画
+         */
+        md5anim = "md5anim",
+        /**
+         * 魔兽MDL模型
+         */
+        mdl = "mdl",
+        /**
+         * 纹理
+         */
+        texture = "texture",
+        /**
+         * 立方体纹理
+         */
+        texturecube = "texturecube",
+        /**
+         * 材质
+         */
+        material = "material",
+        /**
+         * 几何体
+         */
+        geometry = "geometry",
+        /**
+         * 游戏对象
+         */
+        gameobject = "gameobject",
+        /**
+         * 场景
+         */
+        scene = "scene",
+        /**
+         * 动画
+         */
+        anim = "anim",
+        /**
+         * 着色器
+         */
+        shader = "shader",
+        /**
+         * 脚本
+         */
+        script = "script"
+    }
+}
+declare namespace feng3d {
+    /**
+     * feng3d资源
+     */
+    abstract class FileAsset {
+        /**
+         * 资源编号
+         */
+        assetId: string;
+        /**
+         * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
+         *
+         * 并且该对象还会用于存储主文件无法存储的数据，比如 TextureAsset 中存储了 Texture2D 信息
+         */
+        meta: AssetMeta;
+        /**
+         * 资源系统
+         *
+         * 加载或者创建该资源的资源系统
+         */
+        rs: ReadWriteRS;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        assetType: AssetType;
+        /**
+         * 是否已加载
+         */
+        isLoaded: boolean;
+        /**
+         * 是否正在加载中
+         */
+        isLoading: boolean;
+        /**
+         * 文件后缀
+         */
+        get extenson(): string;
+        /**
+         * 父资源
+         */
+        parentAsset: FolderAsset;
+        /**
+         * 文件名称
+         *
+         * 不包含后缀
+         */
+        get fileName(): string;
+        /**
+         * 资源路径
+         */
+        assetPath: string;
+        /**
+         * 资源对象
+         */
+        data: AssetData;
+        /**
+         * 初始化资源
+         */
+        initAsset(): void;
+        /**
+         * 获取资源数据
+         *
+         * @param callback 完成回调，当资源已加载时会立即调用回调，否则在资源加载完成后调用。
+         */
+        getAssetData(callback?: (result: feng3d.AssetData) => void): AssetData;
+        /**
+         * 资源已加载时获取资源数据，内部使用
+         */
+        protected _getAssetData(): AssetData;
+        /**
+         * 读取资源
+         *
+         * @param callback 完成回调
+         */
+        read(callback: (err?: Error) => void): void;
+        /**
+         * 写入资源
+         *
+         * @param callback 完成回调
+         */
+        write(callback?: (err: Error) => void): void;
+        /**
+         * 删除资源
+         *
+         * @param callback 完成回调
+         */
+        delete(callback?: (err?: Error) => void): void;
+        /**
+         * 读取资源预览图标
+         *
+         * @param callback 完成回调
+         */
+        readPreview(callback: (err: Error, image: HTMLImageElement) => void): void;
+        /**
+         * 读取资源预览图标
+         *
+         * @param image 预览图
+         * @param callback 完成回调
+         */
+        writePreview(image: HTMLImageElement, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源预览图标
+         *
+         * @param callback 完成回调
+         */
+        deletePreview(callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         *
+         * @param callback 完成回调
+         */
+        abstract readFile(callback?: (err: Error) => void): void;
+        /**
+         * 保存文件
+         *
+         * @param callback 完成回调
+         */
+        abstract saveFile(callback?: (err: Error) => void): void;
+        /**
+         * 删除文件
+         *
+         * @param callback 完成回调
+         */
+        protected deleteFile(callback?: (err: Error) => void): void;
+        /**
+         * 元标签路径
+         */
+        protected get metaPath(): string;
+        /**
+         * 读取元标签
+         *
+         * @param callback 完成回调
+         */
+        protected readMeta(callback?: (err?: Error) => void): void;
+        /**
+         * 写元标签
+         *
+         * @param callback 完成回调
+         */
+        protected writeMeta(callback?: (err: Error) => void): void;
+        /**
+         * 删除元标签
+         *
+         * @param callback 完成回调
+         */
+        protected deleteMeta(callback?: (err: Error) => void): void;
+        /**
+         * 预览图
+         */
+        private _preview;
+        /**
+         * 预览图路径
+         */
+        private get previewPath();
+    }
+}
+declare namespace feng3d {
+    /**
+     * 默认资源系统
+     */
+    var rs: ReadRS;
+    /**
+     * 可读资源系统
+     */
+    class ReadRS {
+        /**
+         * 文件系统
+         */
+        get fs(): ReadFS;
+        private _fs;
+        /**
+         * 根文件夹
+         */
+        get root(): FolderAsset;
+        private _root;
+        /**
+         * 资源编号映射
+         */
+        idMap: {
+            [id: string]: FileAsset;
+        };
+        /**
+         * 资源路径映射
+         */
+        pathMap: {
+            [path: string]: FileAsset;
+        };
+        /**
+         * 资源树保存路径
+         */
+        protected resources: string;
+        /**
+         * 构建可读资源系统
+         *
+         * @param fs 可读文件系统
+         */
+        constructor(fs?: ReadFS);
+        /**
+         * 初始化
+         *
+         * @param callback 完成回调
+         */
+        init(callback?: () => void): void;
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param fileName 文件名称
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        /**
+         * 获取有效子文件名称
+         *
+         * @param parent 父文件夹
+         * @param fileName 文件名称
+         */
+        getValidChildName(parent: FolderAsset, fileName: string): string;
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAsset(id: string, callback: (err: Error, asset: FileAsset) => void): void;
+        /**
+         * 读取资源数据
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        readAssetData(id: string, callback: (err: Error, data: AssetData) => void): void;
+        /**
+         * 读取资源数据列表
+         *
+         * @param assetids 资源编号列表
+         * @param callback 完成回调
+         */
+        readAssetDatas(assetids: string[], callback: (err: Error, data: AssetData[]) => void): void;
+        /**
+         * 获取指定类型资源
+         *
+         * @param type 资源类型
+         */
+        getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[];
+        /**
+         * 获取指定类型资源数据
+         *
+         * @param type 资源类型
+         */
+        getLoadedAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[];
+        /**
+         * 获取资源
+         *
+         * @param assetId 资源编号
+         */
+        getAsset(assetId: string): FileAsset;
+        /**
+         * 获取所有资源
+         */
+        getAllAssets(): FileAsset[];
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        getAssetsWithObject(object: any, assetids?: string[]): string[];
+        /**
+         * 反序列化包含资源的对象
+         *
+         * @param object 反序列化的对象
+         * @param callback 完成回调
+         */
+        deserializeWithAssets(object: any, callback: (result: any) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 可读写资源系统
+     */
+    class ReadWriteRS extends ReadRS {
+        /**
+         * 文件系统
+         */
+        fs: ReadWriteFS;
+        /**
+         * 延迟保存执行函数
+         */
+        private laterSaveFunc;
+        /**
+         * 延迟保存，避免多次操作时频繁调用保存
+         */
+        private laterSave;
+        /**
+         * 构建可读写资源系统
+         *
+         * @param fs 可读写文件系统
+         */
+        constructor(fs?: ReadWriteFS);
+        /**
+         * 在更改资源结构（新增，移动，删除）时会自动保存
+         *
+         * @param callback 完成回调
+         */
+        private save;
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param fileName 文件名称
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        /**
+         * 写（保存）资源
+         *
+         * @param asset 资源对象
+         * @param callback 完成回调
+         */
+        writeAsset(asset: FileAsset, callback?: (err: Error) => void): void;
+        /**
+         * 移动资源到指定文件夹
+         *
+         * @param asset 被移动资源
+         * @param folder 目标文件夹
+         * @param callback 完成回调
+         */
+        moveAsset(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源
+         *
+         * @param asset 资源
+         * @param callback 完成回调
+         */
+        deleteAsset(asset: FileAsset, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

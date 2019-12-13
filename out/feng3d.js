@@ -622,121 +622,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.shaderConfig = {
-        "shaders": {
-            "color": {
-                "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_diffuseInput;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = u_diffuseInput;\r\n}\r\n",
-                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main()\r\n{\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
-            },
-            "mouse": {
-                "fragment": "precision highp float;\r\n\r\nuniform int u_objectID;\r\n\r\nvoid main()\r\n{\r\n    //支持 255*255*255*255 个索引\r\n    const float invColor = 1.0/255.0;\r\n    float temp = float(u_objectID);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.x = fract(temp);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.y = fract(temp);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.z = fract(temp);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.w = fract(temp);\r\n}",
-                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main()\r\n{\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
-            },
-            "outline": {
-                "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_outlineColor;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = u_outlineColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec3 a_normal;\r\n\r\n#include<uv_pars_vert>\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform vec3 u_cameraPos;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\nuniform float u_outlineMorphFactor;\r\n\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n\r\nuniform float u_outlineSize;\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n\r\n    #include<uv_vert>\r\n\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //全局法线\r\n    vec3 globalNormal = normalize((u_ITModelMatrix * vec4(normal, 0.0)).xyz);\r\n\r\n    float depth = distance(worldPosition.xyz , u_cameraPos.xyz);\r\n    \r\n    vec3 offsetDir = mix(globalNormal, normalize(worldPosition.xyz), u_outlineMorphFactor);\r\n    //摄像机远近保持粗细一致\r\n    offsetDir = offsetDir * depth * u_scaleByDepth;\r\n    //描边宽度\r\n    offsetDir = offsetDir * u_outlineSize;\r\n\r\n    worldPosition.xyz = worldPosition.xyz + offsetDir;//\r\n\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
-            },
-            "particle": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    #include<particle_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
-            },
-            "Particles_Additive": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 _TintColor;\r\nuniform sampler2D _MainTex;\r\nuniform vec4 _MainTex_ST;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    #include<particle_frag>\r\n\r\n    vec2 uv = v_uv;\r\n    uv = uv * _MainTex_ST.xy + _MainTex_ST.zw;\r\n    finalColor = 2.0 * finalColor * _TintColor * texture2D(_MainTex, uv);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
-            },
-            "Particles_AlphaBlendedPremultiply": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform sampler2D _MainTex;\r\nuniform vec4 _MainTex_ST;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    #include<particle_frag>\r\n\r\n    vec2 uv = v_uv;\r\n    uv = uv * _MainTex_ST.xy + _MainTex_ST.zw;\r\n\r\n    finalColor = finalColor *  texture2D(_MainTex, uv) * finalColor.a;\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
-            },
-            "point": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\nuniform vec4 u_color;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = v_color * u_color;\r\n}\r\n",
-                "vertex": "attribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform float u_PointSize;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() \r\n{\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    gl_PointSize = u_PointSize;\r\n\r\n    v_color = a_color;\r\n}"
-            },
-            "segment": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\nuniform vec4 u_segmentColor;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = v_color * u_segmentColor;\r\n}",
-                "vertex": "attribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() \r\n{\r\n    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);\r\n    v_color = a_color;\r\n}"
-            },
-            "shadow": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec3 v_worldPosition;\r\n\r\nuniform int u_lightType;\r\nuniform vec3 u_lightPosition;\r\nuniform float u_shadowCameraNear;\r\nuniform float u_shadowCameraFar;\r\n\r\n// @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/packing.glsl\r\nconst float PackUpscale = 256. / 255.; // fraction -> 0..1 (including 1)\r\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\r\nconst float ShiftRight8 = 1. / 256.;\r\nvec4 packDepthToRGBA( const in float v ) \r\n{\r\n\tvec4 r = vec4( fract( v * PackFactors ), v );\r\n\tr.yzw -= r.xyz * ShiftRight8; // tidy overflow\r\n\treturn r * PackUpscale;\r\n}\r\n\r\nvoid main() \r\n{\r\n    vec3 lightToPosition = (v_worldPosition - u_lightPosition);\r\n    float dp = ( length( lightToPosition ) - u_shadowCameraNear ) / ( u_shadowCameraFar - u_shadowCameraNear ); // need to clamp?\r\n    gl_FragColor = packDepthToRGBA( dp );\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\nattribute vec3 a_position;\r\n\r\n#include<uv_pars_vert>\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n\r\nvarying vec3 v_worldPosition;\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n\r\n    #include<uv_vert>\r\n\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    v_worldPosition = worldPosition.xyz;\r\n}"
-            },
-            "skybox": {
-                "fragment": "precision highp float;\r\n\r\nuniform samplerCube s_skyboxTexture;\r\nuniform vec3 u_cameraPos;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main()\r\n{\r\n    vec3 cameraDir = normalize(u_cameraPos.xyz - v_worldPos);\r\n    gl_FragColor = textureCube(s_skyboxTexture, -cameraDir);\r\n}",
-                "vertex": "attribute vec3 a_position;\r\n\r\nuniform vec3 u_cameraPos;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform float u_skyBoxSize;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main()\r\n{\r\n    vec3 worldPos = a_position.xyz * u_skyBoxSize + u_cameraPos.xyz;\r\n    gl_Position = u_viewProjection * vec4(worldPos.xyz, 1.0);\r\n    v_worldPos = worldPos;\r\n}"
-            },
-            "standard": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nuniform vec3 u_cameraPos;\r\n\r\n#include<normal_pars_frag>\r\n#include<diffuse_pars_frag>\r\n#include<alphatest_pars_frag>\r\n\r\n#include<ambient_pars_frag>\r\n#include<specular_pars_frag>\r\n#include<lights_pars_frag>\r\n\r\n#include<envmap_pars_frag>\r\n#include<particle_pars_frag>\r\n#include<fog_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    #include<normal_frag>\r\n    #include<diffuse_frag>\r\n    #include<alphatest_frag>\r\n\r\n    #include<ambient_frag>\r\n    #include<specular_frag>\r\n    #include<lights_frag>\r\n\r\n    #include<envmap_frag>\r\n    #include<particle_frag>\r\n    #include<fog_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n#include<position_pars_vert>\r\n#include<normal_pars_vert>\r\n#include<tangent_pars_vert>\r\n//\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n//\r\n#include<worldposition_pars_vert>\r\n#include<project_pars_vert>\r\n//\r\n#include<uv_pars_vert>\r\n#include<normalmap_pars_vert>\r\n//\r\n#include<lights_pars_vert>\r\n#include<pointsize_pars_vert>\r\n\r\nvoid main()\r\n{\r\n    // 初始化\r\n    #include<position_vert>\r\n    #include<normal_vert>\r\n    #include<tangent_vert>\r\n    #include<uv_vert>\r\n    // 动画\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n    // 投影\r\n    #include<worldposition_vert>\r\n    #include<project_vert>\r\n    // \r\n    #include<normalmap_vert>\r\n    //\r\n    #include<lights_vert>\r\n    #include<pointsize_vert>\r\n}"
-            },
-            "terrain": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nuniform vec3 u_cameraPos;\r\n\r\n#include<normal_pars_frag>\r\n#include<diffuse_pars_frag>\r\n#include<alphatest_pars_frag>\r\n\r\n#include<terrain_pars_frag>\r\n\r\n#include<ambient_pars_frag>\r\n#include<specular_pars_frag>\r\n#include<lights_pars_frag>\r\n\r\n#include<envmap_pars_frag>\r\n#include<fog_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    #include<normal_frag>\r\n    #include<diffuse_frag>\r\n    #include<alphatest_frag>\r\n\r\n    #include<terrain_frag>\r\n\r\n    #include<ambient_frag>\r\n    #include<specular_frag>\r\n    #include<lights_frag>\r\n\r\n    #include<envmap_frag>\r\n    #include<fog_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n#include<position_pars_vert>\r\n#include<normal_pars_vert>\r\n#include<tangent_pars_vert>\r\n#include<uv_pars_vert>\r\n//\r\n#include<worldposition_pars_vert>\r\n#include<project_pars_vert>\r\n//\r\n#include<normalmap_pars_vert>\r\n//\r\n#include<lights_pars_vert>\r\n#include<pointsize_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    // 初始化\r\n    #include<position_vert>\r\n    #include<normal_vert>\r\n    #include<tangent_vert>\r\n    #include<uv_vert>\r\n    // 投影\r\n    #include<worldposition_vert>\r\n    #include<project_vert>\r\n    // \r\n    #include<normalmap_vert>\r\n    //\r\n    #include<lights_vert>\r\n    #include<pointsize_vert>\r\n}"
-            },
-            "texture": {
-                "fragment": "precision mediump float;\r\n\r\nuniform sampler2D s_texture;\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 u_color;\r\n\r\nvoid main() {\r\n\r\n    vec4 color = texture2D(s_texture, v_uv);\r\n    gl_FragColor = color * u_color;\r\n}\r\n",
-                "vertex": "attribute vec3 a_position;\r\nattribute vec2 a_uv;\r\n\r\nvarying vec2 v_uv;\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main() \r\n{\r\n    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);\r\n    v_uv = a_uv;\r\n}"
-            },
-            "water": {
-                "fragment": "precision mediump float;  \r\n\r\nuniform vec3 u_cameraPos;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nuniform sampler2D s_mirrorSampler;\r\nuniform sampler2D s_normalSampler;\r\n\r\nuniform float u_alpha;\r\nuniform float u_time;\r\nuniform float u_size;\r\nuniform float u_distortionScale;\r\nuniform vec3 u_sunColor;\r\nuniform vec3 u_sunDirection;\r\nuniform vec3 u_waterColor;\r\n\r\nvec4 getNoise( vec2 uv ) \r\n{\r\n\tvec2 uv0 = ( uv / 103.0 ) + vec2(u_time / 17.0, u_time / 29.0);\r\n\tvec2 uv1 = uv / 107.0-vec2( u_time / -19.0, u_time / 31.0 );\r\n\tvec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( u_time / 101.0, u_time / 97.0 );\r\n\tvec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( u_time / 109.0, u_time / -113.0 );\r\n\tvec4 noise = texture2D( s_normalSampler, uv0 ) +\r\n\t\ttexture2D( s_normalSampler, uv1 ) +\r\n\t\ttexture2D( s_normalSampler, uv2 ) +\r\n\t\ttexture2D( s_normalSampler, uv3 );\r\n\treturn noise * 0.5 - 1.0;\r\n}\r\n\r\nvoid sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor ) \r\n{\r\n\tvec3 reflection = normalize( reflect( -u_sunDirection, surfaceNormal ) );\r\n\tfloat direction = max( 0.0, dot( eyeDirection, reflection ) );\r\n\tspecularColor += pow( direction, shiny ) * u_sunColor * spec;\r\n\tdiffuseColor += max( dot( u_sunDirection, surfaceNormal ), 0.0 ) * u_sunColor * diffuse;\r\n}\r\n\r\nvoid main() \r\n{\r\n\tvec4 noise = getNoise( v_worldPosition.xz * u_size );\r\n\tvec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );\r\n\tvec3 diffuseLight = vec3(0.0);\r\n\tvec3 specularLight = vec3(0.0);\r\n\tvec3 worldToEye = u_cameraPos-v_worldPosition.xyz;\r\n\tvec3 eyeDirection = normalize( worldToEye );\r\n\tsunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );\r\n\tfloat distance = length(worldToEye);\r\n\tvec2 distortion = surfaceNormal.xz * ( 0.001 + 1.0 / distance ) * u_distortionScale;\r\n\tvec3 reflectionSample = vec3( texture2D( s_mirrorSampler, v_mirrorCoord.xy / v_mirrorCoord.z + distortion ) );\r\n\tfloat theta = max( dot( eyeDirection, surfaceNormal ), 0.0 );\r\n\tfloat rf0 = 0.3;\r\n\tfloat reflectance = rf0 + ( 1.0 - rf0 ) * pow( ( 1.0 - theta ), 5.0 );\r\n\tvec3 scatter = max( 0.0, dot( surfaceNormal, eyeDirection ) ) * u_waterColor;\r\n\r\n\tfloat shadowMask = 1.0;\r\n\t// float shadowMask = getShadowMask();\r\n\r\n\tvec3 albedo = mix( ( u_sunColor * diffuseLight * 0.3 + scatter ) * shadowMask, ( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight ), reflectance);\r\n\tvec3 outgoingLight = albedo;\r\n\tgl_FragColor = vec4( outgoingLight, u_alpha );\r\n\r\n\t// debug\r\n\t// gl_FragColor = texture2D( s_mirrorSampler, (v_mirrorCoord.xy / v_mirrorCoord.z + 1.0) / 2.0 );\r\n\t// gl_FragColor = vec4( reflectionSample, 1.0 );\r\n\t// gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );\r\n}",
-                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform mat4 u_textureMatrix;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nvoid main() \r\n{\r\n\tvec4 position = vec4(a_position, 1.0);\r\n\t//获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\t\r\n\tv_worldPosition = worldPosition;\r\n\tv_mirrorCoord = u_textureMatrix * worldPosition;\r\n}"
-            },
-            "wireframe": {
-                "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_wireframeColor;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = u_wireframeColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\nattribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\n#include<uv_pars_vert>\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n\r\n    #include<uv_vert>\r\n\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n\r\n    gl_Position = u_viewProjection * u_modelMatrix * position;\r\n}"
-            }
-        },
-        "modules": {
-            "alphatest_frag": "if(diffuseColor.w < u_alphaThreshold) discard;",
-            "alphatest_pars_frag": "uniform float u_alphaThreshold;",
-            "ambient_frag": "//环境光\r\nvec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\nambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;",
-            "ambient_pars_frag": "uniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;",
-            "cartoon_pars_frag": "#ifdef IS_CARTOON\r\n    #ifdef cartoon_Anti_aliasing\r\n        #extension GL_OES_standard_derivatives : enable\r\n    #endif\r\n\r\n    uniform vec4 u_diffuseSegment;\r\n    uniform vec4 u_diffuseSegmentValue;\r\n    uniform float u_specularSegment;\r\n\r\n    //漫反射\r\n    float cartoonLightDiffuse(vec3 normal,vec3 lightDir)\r\n    {\r\n        float diff = dot(normal, lightDir);\r\n        diff = diff * 0.5 + 0.5;\r\n\r\n        #ifdef cartoon_Anti_aliasing\r\n            float w = fwidth(diff) * 2.0;\r\n            if (diff < u_diffuseSegment.x + w) \r\n            {\r\n                diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, smoothstep(u_diffuseSegment.x - w, u_diffuseSegment.x + w, diff));\r\n            //  diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, clamp(0.5 * (diff - u_diffuseSegment.x) / w, 0, 1));\r\n            } else if (diff < u_diffuseSegment.y + w) \r\n            {\r\n                diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, smoothstep(u_diffuseSegment.y - w, u_diffuseSegment.y + w, diff));\r\n            //  diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, clamp(0.5 * (diff - u_diffuseSegment.y) / w, 0, 1));\r\n            } else if (diff < u_diffuseSegment.z + w) \r\n            {\r\n                diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, smoothstep(u_diffuseSegment.z - w, u_diffuseSegment.z + w, diff));\r\n            //  diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, clamp(0.5 * (diff - u_diffuseSegment.z) / w, 0, 1));\r\n            } else \r\n            {\r\n                diff = u_diffuseSegment.w;\r\n            }\r\n        #else\r\n            if (diff < u_diffuseSegment.x) \r\n            {\r\n                diff = u_diffuseSegmentValue.x;\r\n            } else if (diff < u_diffuseSegment.y) \r\n            {\r\n                diff = u_diffuseSegmentValue.y;\r\n            } else if (diff < u_diffuseSegment.z) \r\n            {\r\n                diff = u_diffuseSegmentValue.z;\r\n            } else \r\n            {\r\n                diff = u_diffuseSegmentValue.w;\r\n            }\r\n        #endif\r\n\r\n        return diff;\r\n    }\r\n\r\n    //镜面反射漫反射\r\n    float cartoonLightSpecular(vec3 normal,vec3 lightDir,vec3 cameraDir,float glossiness)\r\n    {\r\n        vec3 halfVec = normalize(lightDir + cameraDir);\r\n        float specComp = max(dot(normal,halfVec),0.0);\r\n        specComp = pow(specComp, glossiness);\r\n\r\n        #ifdef cartoon_Anti_aliasing\r\n            float w = fwidth(specComp);\r\n            if (specComp < u_specularSegment + w) \r\n            {\r\n                specComp = mix(0.0, 1.0, smoothstep(u_specularSegment - w, u_specularSegment + w, specComp));\r\n                // specComp = smoothstep(u_specularSegment - w, u_specularSegment + w, specComp);\r\n            } else \r\n            {\r\n                specComp = 1.0;\r\n            }\r\n        #else\r\n            if(specComp < u_specularSegment)\r\n            {\r\n                specComp = 0.0;\r\n            }else\r\n            {\r\n                specComp = 1.0;\r\n            }\r\n        #endif\r\n\r\n        return specComp;\r\n    }\r\n#endif",
-            "diffuse_frag": "//获取漫反射基本颜色\r\nvec4 diffuseColor = u_diffuse;\r\ndiffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\nfinalColor = diffuseColor;",
-            "diffuse_pars_frag": "//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;",
-            "envmap_frag": "finalColor = envmapMethod(finalColor);",
-            "envmap_pars_frag": "uniform samplerCube s_envMap;\r\nuniform float u_reflectivity;\r\n\r\nvec4 envmapMethod(vec4 finalColor)\r\n{\r\n    vec3 cameraToVertex = normalize( v_worldPosition - u_cameraPos );\r\n    vec3 reflectVec = reflect( cameraToVertex, v_normal );\r\n    vec4 envColor = textureCube( s_envMap, reflectVec );\r\n    finalColor.xyz *= envColor.xyz * u_reflectivity;\r\n    return finalColor;\r\n}",
-            "fog_frag": "finalColor = fogMethod(finalColor);",
-            "fog_pars_frag": "#define FOGMODE_NONE    0.\r\n#define FOGMODE_EXP     1.\r\n#define FOGMODE_EXP2    2.\r\n#define FOGMODE_LINEAR  3.\r\n#define E 2.71828\r\n\r\nuniform float u_fogMode;\r\nuniform float u_fogMinDistance;\r\nuniform float u_fogMaxDistance;\r\nuniform float u_fogDensity;\r\nuniform vec3 u_fogColor;\r\n\r\nfloat CalcFogFactor(float fogDistance)\r\n{\r\n\tfloat fogCoeff = 1.0;\r\n\tif (FOGMODE_LINEAR == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = (u_fogMaxDistance - fogDistance) / (u_fogMaxDistance - u_fogMinDistance);\r\n\t}\r\n\telse if (FOGMODE_EXP == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fogDistance * u_fogDensity);\r\n\t}\r\n\telse if (FOGMODE_EXP2 == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fogDistance * fogDistance * u_fogDensity * u_fogDensity);\r\n\t}\r\n\r\n\treturn clamp(fogCoeff, 0.0, 1.0);\r\n}\r\n\r\nvec4 fogMethod(vec4 color)\r\n{\r\n    vec3 fogDistance = u_cameraPos - v_worldPosition.xyz;\r\n\tfloat fog = CalcFogFactor(length(fogDistance));\r\n\tcolor.rgb = fog * color.rgb + (1.0 - fog) * u_fogColor;\r\n    return color;\r\n}",
-            "lights_frag": "//渲染灯光\r\n#if NUM_LIGHT > 0\r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n#endif",
-            "lights_pars_frag": "#if NUM_POINTLIGHT > 0\r\n    // 点光源\r\n    struct PointLight\r\n    {\r\n        // 位置\r\n        vec3 position;\r\n        // 颜色\r\n        vec3 color;\r\n        // 强度\r\n        float intensity;\r\n        // 范围\r\n        float range;\r\n    };\r\n    // 点光源列表\r\n    uniform PointLight u_pointLights[NUM_POINTLIGHT];\r\n#endif\r\n\r\n#if NUM_SPOT_LIGHTS > 0\r\n    // 聚光灯\r\n    struct SpotLight\r\n    {\r\n        // 位置\r\n        vec3 position;\r\n        // 颜色\r\n        vec3 color;\r\n        // 强度\r\n        float intensity;\r\n        // 范围\r\n        float range;\r\n        // 方向\r\n        vec3 direction;\r\n        // 椎体cos值\r\n        float coneCos;\r\n        // 半影cos\r\n        float penumbraCos;\r\n    };\r\n    // 方向光源列表\r\n    uniform SpotLight u_spotLights[ NUM_SPOT_LIGHTS ];\r\n#endif\r\n\r\n#if NUM_DIRECTIONALLIGHT > 0\r\n    // 方向光源\r\n    struct DirectionalLight\r\n    {\r\n        // 方向\r\n        vec3 direction;\r\n        // 颜色\r\n        vec3 color;\r\n        // 强度\r\n        float intensity;\r\n    };\r\n    // 方向光源列表\r\n    uniform DirectionalLight u_directionalLights[ NUM_DIRECTIONALLIGHT ];\r\n#endif\r\n\r\n//卡通\r\n#include<cartoon_pars_frag>\r\n\r\n#include<shadowmap_pars_frag>\r\n\r\n//计算光照漫反射系数\r\nfloat calculateLightDiffuse(vec3 normal,vec3 lightDir)\r\n{\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightDiffuse(normal,lightDir);\r\n    #else\r\n        return clamp(dot(normal,lightDir),0.0,1.0);\r\n    #endif\r\n}\r\n\r\n//计算光照镜面反射系数\r\nfloat calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness)\r\n{\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightSpecular(normal,lightDir,viewDir,glossiness);\r\n    #else\r\n        vec3 halfVec = normalize(lightDir + viewDir);\r\n        float specComp = max(dot(normal,halfVec),0.0);\r\n        specComp = pow(specComp, glossiness);\r\n\r\n        return specComp;\r\n    #endif\r\n}\r\n\r\n//根据距离计算衰减\r\nfloat computeDistanceLightFalloff(float lightDistance, float range)\r\n{\r\n    #ifdef USEPHYSICALLIGHTFALLOFF\r\n        float lightDistanceFalloff = 1.0 / ((lightDistance * lightDistance + 0.0001));\r\n    #else\r\n        float lightDistanceFalloff = max(0., 1.0 - lightDistance / range);\r\n    #endif\r\n    \r\n    return lightDistanceFalloff;\r\n}\r\n\r\n//渲染点光源\r\nvec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambientColor, float glossiness)\r\n{\r\n    //视线方向\r\n    vec3 viewDir = normalize(u_cameraPos - v_worldPosition);\r\n\r\n    vec3 resultColor = vec3(0.0,0.0,0.0);\r\n    \r\n    #if NUM_POINTLIGHT > 0\r\n        PointLight pointLight;\r\n        for(int i = 0;i<NUM_POINTLIGHT;i++)\r\n        {\r\n            pointLight = u_pointLights[i];\r\n            //\r\n            vec3 lightOffset = pointLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            //灯光颜色\r\n            vec3 lightColor = pointLight.color;\r\n            //灯光强度\r\n            float lightIntensity = pointLight.intensity;\r\n            float falloff = computeDistanceLightFalloff(length(lightOffset), pointLight.range);\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            float shadow = 1.0;\r\n            \r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    #if NUM_POINTLIGHT_CASTSHADOW > 0\r\n        CastShadowPointLight castShadowPointLight;\r\n        for(int i = 0;i<NUM_POINTLIGHT_CASTSHADOW;i++)\r\n        {\r\n            castShadowPointLight = u_castShadowPointLights[i];\r\n            //\r\n            vec3 lightOffset = castShadowPointLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            //灯光颜色\r\n            vec3 lightColor = castShadowPointLight.color;\r\n            //灯光强度\r\n            float lightIntensity = castShadowPointLight.intensity;\r\n            float falloff = computeDistanceLightFalloff(length(lightOffset), castShadowPointLight.range);\r\n            // 计算阴影\r\n            float shadow = getPointShadow( u_pointShadowMaps[ i ], castShadowPointLight.shadowType, castShadowPointLight.shadowMapSize, castShadowPointLight.shadowBias, castShadowPointLight.shadowRadius, -lightOffset, castShadowPointLight.shadowCameraNear, castShadowPointLight.shadowCameraFar );\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            //\r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    #if NUM_SPOT_LIGHTS > 0\r\n        SpotLight spotLight;\r\n        for(int i = 0; i < NUM_SPOT_LIGHTS; i++)\r\n        {\r\n            spotLight = u_spotLights[i];\r\n            //\r\n            vec3 lightOffset = spotLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            float angleCos = dot(lightDir, -spotLight.direction);\r\n            if(angleCos > spotLight.coneCos)\r\n            {\r\n                float spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );\r\n                \r\n                //灯光颜色\r\n                vec3 lightColor = spotLight.color;\r\n                //灯光强度\r\n                float lightIntensity = spotLight.intensity;\r\n                float falloff = computeDistanceLightFalloff(length(lightOffset) * angleCos, spotLight.range);\r\n                float diffuse = calculateLightDiffuse(normal, lightDir);\r\n                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n                float shadow = 1.0;\r\n                \r\n                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;\r\n            }            \r\n        }\r\n    #endif\r\n    \r\n    #if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n        CastShadowSpotLight castShadowSpotLight;\r\n        for(int i = 0; i < NUM_SPOT_LIGHTS_CASTSHADOW; i++)\r\n        {\r\n            castShadowSpotLight = u_castShadowSpotLights[i];\r\n            //\r\n            vec3 lightOffset = castShadowSpotLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            float angleCos = dot(lightDir, -castShadowSpotLight.direction);\r\n            if(angleCos > castShadowSpotLight.coneCos)\r\n            {\r\n                float spotEffect = smoothstep( castShadowSpotLight.coneCos, castShadowSpotLight.penumbraCos, angleCos );\r\n                \r\n                //灯光颜色\r\n                vec3 lightColor = castShadowSpotLight.color;\r\n                //灯光强度\r\n                float lightIntensity = castShadowSpotLight.intensity;\r\n                float falloff = computeDistanceLightFalloff(length(lightOffset) * angleCos, castShadowSpotLight.range);\r\n                float diffuse = calculateLightDiffuse(normal, lightDir);\r\n                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n                // 计算阴影\r\n                float shadow = getShadow( u_spotShadowMaps[i], castShadowSpotLight.shadowType, castShadowSpotLight.shadowMapSize, castShadowSpotLight.shadowBias, castShadowSpotLight.shadowRadius, v_spotShadowCoord[ i ], -lightOffset, castShadowSpotLight.shadowCameraNear, castShadowSpotLight.shadowCameraFar);\r\n                \r\n                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;\r\n            }            \r\n        }\r\n    #endif\r\n\r\n    #if NUM_DIRECTIONALLIGHT > 0\r\n        DirectionalLight directionalLight;\r\n        for(int i = 0;i<NUM_DIRECTIONALLIGHT;i++)\r\n        {\r\n            directionalLight = u_directionalLights[i];\r\n            //光照方向\r\n            vec3 lightDir = normalize(-directionalLight.direction);\r\n            //灯光颜色\r\n            vec3 lightColor = directionalLight.color;\r\n            //灯光强度\r\n            float lightIntensity = directionalLight.intensity;\r\n\r\n            float falloff = 1.0;\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            float shadow = 1.0;\r\n            //\r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n        CastShadowDirectionalLight castShadowDirectionalLight;\r\n        for(int i = 0;i<NUM_DIRECTIONALLIGHT_CASTSHADOW;i++)\r\n        {\r\n            castShadowDirectionalLight = u_castShadowDirectionalLights[i];\r\n            //\r\n            vec3 lightOffset = castShadowDirectionalLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(-castShadowDirectionalLight.direction);\r\n            //灯光颜色\r\n            vec3 lightColor = castShadowDirectionalLight.color;\r\n            //灯光强度\r\n            float lightIntensity = castShadowDirectionalLight.intensity;\r\n            // 计算阴影\r\n            float shadow = getShadow( u_directionalShadowMaps[i], castShadowDirectionalLight.shadowType, castShadowDirectionalLight.shadowMapSize, castShadowDirectionalLight.shadowBias, castShadowDirectionalLight.shadowRadius, v_directionalShadowCoord[ i ], -lightOffset, castShadowDirectionalLight.shadowCameraNear, castShadowDirectionalLight.shadowCameraFar);\r\n            \r\n            float falloff = 1.0;\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            //\r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    resultColor += ambientColor * diffuseColor;\r\n    return resultColor;\r\n}",
-            "lights_pars_vert": "// 灯光声明\r\n\r\n#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n    // 方向光源投影矩阵列表\r\n    uniform mat4 u_directionalShadowMatrixs[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];\r\n    // 方向光源投影uv列表\r\n    varying vec4 v_directionalShadowCoord[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];\r\n#endif\r\n\r\n#if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n    // 聚光灯投影矩阵列表\r\n    uniform mat4 u_spotShadowMatrix[ NUM_SPOT_LIGHTS_CASTSHADOW ];\r\n    // 聚光灯投影uv列表\r\n    varying vec4 v_spotShadowCoord[ NUM_SPOT_LIGHTS_CASTSHADOW ];\r\n#endif",
-            "lights_vert": "#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n    for ( int i = 0; i < NUM_DIRECTIONALLIGHT_CASTSHADOW; i ++ ) \r\n    {\r\n        v_directionalShadowCoord[ i ] = u_directionalShadowMatrixs[ i ] * worldPosition;\r\n    }\r\n#endif\r\n\r\n#if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n    for ( int i = 0; i < NUM_SPOT_LIGHTS_CASTSHADOW; i ++ ) \r\n    {\r\n        v_spotShadowCoord[ i ] = u_spotShadowMatrix[ i ] * worldPosition;\r\n    }\r\n#endif",
-            "normalmap_pars_vert": "uniform mat4 u_ITModelMatrix;\r\n\r\nvarying vec3 v_normal;\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;",
-            "normalmap_vert": "//计算法线\r\nv_normal = normalize((u_ITModelMatrix * vec4(normal, 0.0)).xyz);\r\nv_tangent = normalize((u_modelMatrix * vec4(tangent, 0.0)).xyz);\r\nv_bitangent = cross(v_normal, v_tangent);",
-            "normal_frag": "//获取法线\r\nvec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\nnormal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);",
-            "normal_pars_frag": "varying vec3 v_normal;\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;",
-            "normal_pars_vert": "attribute vec3 a_normal;",
-            "normal_vert": "vec3 normal = a_normal;",
-            "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
-            "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        color.xyz = color.xyz * v_particle_color.xyz;\r\n        color.xyz = color.xyz * v_particle_color.www;\r\n        return color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    uniform mat3 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    #define RotationOrder_XYZ 0\r\n    #define RotationOrder_ZXY 1\r\n    #define RotationOrder_ZYX 2\r\n    #define RotationOrder_YXZ 3\r\n    #define RotationOrder_YZX 4\r\n    #define RotationOrder_XZY 5\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sinX = sin(rx);\r\n        float cosX = cos(rx);\r\n        float sinY = sin(ry);\r\n        float cosY = cos(ry);\r\n        float sinZ = sin(rz);\r\n        float cosZ = cos(rz);\r\n\r\n        mat3 tmp;\r\n        #ifdef RotationOrder\r\n            #if RotationOrder == RotationOrder_XYZ\r\n                float ae = cosX * cosZ;\r\n                float af = cosX * sinZ;\r\n                float be = sinX * cosZ;\r\n                float bf = sinX * sinZ;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = - cosY * sinZ;\r\n                float te8 = sinY;\r\n\r\n                float te1 = af + be * sinY;\r\n                float te5 = ae - bf * sinY;\r\n                float te9 = - sinX * cosY;\r\n\r\n                float te2 = bf - ae * sinY;\r\n                float te6 = be + af * sinY;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_YXZ\r\n                float ce = cosY * cosZ;\r\n                float cf = cosY * sinZ;\r\n                float de = sinY * cosZ;\r\n                float df = sinY * sinZ;\r\n\r\n                float te0 = ce + df * sinX;\r\n                float te4 = de * sinX - cf;\r\n                float te8 = cosX * sinY;\r\n\r\n                float te1 = cosX * sinZ;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = - sinX;\r\n\r\n                float te2 = cf * sinX - de;\r\n                float te6 = df + ce * sinX;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_ZXY\r\n                float ce = cosY * cosZ;\r\n                float cf = cosY * sinZ;\r\n                float de = sinY * cosZ;\r\n                float df = sinY * sinZ;\r\n\r\n                float te0 = ce - df * sinX;\r\n                float te4 = - cosX * sinZ;\r\n                float te8 = de + cf * sinX;\r\n\r\n                float te1 = cf + de * sinX;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = df - ce * sinX;\r\n\r\n                float te2 = - cosX * sinY;\r\n                float te6 = sinX;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_ZYX\r\n                float ae = cosX * cosZ;\r\n                float af = cosX * sinZ;\r\n                float be = sinX * cosZ;\r\n                float bf = sinX * sinZ;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = be * sinY - af;\r\n                float te8 = ae * sinY + bf;\r\n\r\n                float te1 = cosY * sinZ;\r\n                float te5 = bf * sinY + ae;\r\n                float te9 = af * sinY - be;\r\n\r\n                float te2 = - sinY;\r\n                float te6 = sinX * cosY;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_YZX\r\n                float ac = cosX * cosY;\r\n                float ad = cosX * sinY;\r\n                float bc = sinX * cosY;\r\n                float bd = sinX * sinY;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = bd - ac * sinZ;\r\n                float te8 = bc * sinZ + ad;\r\n\r\n                float te1 = sinZ;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = - sinX * cosZ;\r\n\r\n                float te2 = - sinY * cosZ;\r\n                float te6 = ad * sinZ + bc;\r\n                float te10 = ac - bd * sinZ;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_XZY\r\n                float ac = cosX * cosY;\r\n                float ad = cosX * sinY;\r\n                float bc = sinX * cosY;\r\n                float bd = sinX * sinY;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = - sinZ;\r\n                float te8 = sinY * cosZ;\r\n\r\n                float te1 = ac * sinZ + bd;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = ad * sinZ - bc;\r\n\r\n                float te2 = bc * sinZ - ad;\r\n                float te6 = sinX * cosZ;\r\n                float te10 = bd * sinZ + ac;\r\n            #endif\r\n        #else\r\n            // YXZ\r\n            float ce = cosY * cosZ;\r\n            float cf = cosY * sinZ;\r\n            float de = sinY * cosZ;\r\n            float df = sinY * sinZ;\r\n\r\n            float te0 = ce + df * sinX;\r\n            float te4 = de * sinX - cf;\r\n            float te8 = cosX * sinY;\r\n\r\n            float te1 = cosX * sinZ;\r\n            float te5 = cosX * cosZ;\r\n            float te9 = - sinX;\r\n\r\n            float te2 = cf * sinX - de;\r\n            float te6 = df + ce * sinX;\r\n            float te10 = cosX * cosY;\r\n        #endif\r\n        \r\n        tmp[0] = vec3(te0, te1, te2);\r\n        tmp[1] = vec3(te4, te5, te6);\r\n        tmp[2] = vec3(te8, te9, te10);\r\n        \r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n        position.xyz = u_particle_billboardMatrix * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
-            "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
-            "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
-            "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
-            "position_pars_vert": "attribute vec3 a_position;",
-            "position_vert": "vec4 position = vec4(a_position, 1.0);",
-            "project_pars_vert": "uniform mat4 u_viewProjection;",
-            "project_vert": "//计算投影坐标\r\ngl_Position = u_viewProjection * worldPosition;",
-            "shadowmap_pars_frag": "#if (NUM_POINTLIGHT_CASTSHADOW > 0) ||  (NUM_DIRECTIONALLIGHT_CASTSHADOW > 0) ||  (NUM_SPOT_LIGHTS_CASTSHADOW > 0)\r\n    #if NUM_POINTLIGHT_CASTSHADOW > 0\r\n        // 投影的点光源\r\n        struct CastShadowPointLight\r\n        {\r\n            // 位置\r\n            vec3 position;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 范围\r\n            float range;\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的点光源列表\r\n        uniform CastShadowPointLight u_castShadowPointLights[NUM_POINTLIGHT_CASTSHADOW];\r\n        // 点光源阴影图\r\n        uniform sampler2D u_pointShadowMaps[NUM_POINTLIGHT_CASTSHADOW];\r\n    #endif\r\n\r\n    #if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n        // 投影的聚光灯\r\n        struct CastShadowSpotLight\r\n        {\r\n            // 位置\r\n            vec3 position;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 范围\r\n            float range;\r\n            // 方向\r\n            vec3 direction;\r\n            // 椎体cos值\r\n            float coneCos;\r\n            // 半影cos\r\n            float penumbraCos;\r\n\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的投影的聚光灯列表\r\n        uniform CastShadowSpotLight u_castShadowSpotLights[NUM_SPOT_LIGHTS_CASTSHADOW];\r\n        // 投影的聚光灯阴影图\r\n        uniform sampler2D u_spotShadowMaps[NUM_SPOT_LIGHTS_CASTSHADOW];\r\n        // 方向光源投影uv列表\r\n        varying vec4 v_spotShadowCoord[ NUM_SPOT_LIGHTS_CASTSHADOW ];\r\n    #endif\r\n\r\n    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n        // 投影的方向光源\r\n        struct CastShadowDirectionalLight\r\n        {\r\n            // 方向\r\n            vec3 direction;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            // 位置\r\n            vec3 position;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的方向光源列表\r\n        uniform CastShadowDirectionalLight u_castShadowDirectionalLights[NUM_DIRECTIONALLIGHT_CASTSHADOW];\r\n        // 方向光源阴影图\r\n        uniform sampler2D u_directionalShadowMaps[NUM_DIRECTIONALLIGHT_CASTSHADOW];\r\n        // 方向光源投影uv列表\r\n        varying vec4 v_directionalShadowCoord[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];\r\n    #endif\r\n\r\n    // @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/packing.glsl\r\n    const float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\r\n    const vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\r\n    const vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\r\n    float unpackRGBAToDepth( const in vec4 v ) \r\n    {\r\n        return dot( v, UnpackFactors );\r\n    }\r\n\r\n    float texture2DCompare( sampler2D depths, vec2 uv, float compare ) \r\n    {\r\n        return step( compare, unpackRGBAToDepth( texture2D( depths, uv ) ) );\r\n    }\r\n\r\n    float texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare ) \r\n    {\r\n        const vec2 offset = vec2( 0.0, 1.0 );\r\n\r\n        vec2 texelSize = vec2( 1.0 ) / size;\r\n        vec2 centroidUV = floor( uv * size + 0.5 ) / size;\r\n\r\n        float lb = texture2DCompare( depths, centroidUV + texelSize * offset.xx, compare );\r\n        float lt = texture2DCompare( depths, centroidUV + texelSize * offset.xy, compare );\r\n        float rb = texture2DCompare( depths, centroidUV + texelSize * offset.yx, compare );\r\n        float rt = texture2DCompare( depths, centroidUV + texelSize * offset.yy, compare );\r\n\r\n        vec2 f = fract( uv * size + 0.5 );\r\n\r\n        float a = mix( lb, lt, f.y );\r\n        float b = mix( rb, rt, f.y );\r\n        float c = mix( a, b, f.x );\r\n\r\n        return c;\r\n    }\r\n\r\n    // 计算阴影值 @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/shadowmap_pars_fragment.glsl\r\n    float getShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar) \r\n    {\r\n        float shadow = 1.0;\r\n\r\n        shadowCoord.xy /= shadowCoord.w;\r\n        shadowCoord.xy = (shadowCoord.xy + 1.0) / 2.0;\r\n\r\n        // dp = normalized distance from light to fragment position\r\n        float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?\r\n        dp += shadowBias;\r\n        shadowCoord.z = dp;\r\n\r\n        // if ( something && something ) breaks ATI OpenGL shader compiler\r\n        // if ( all( something, something ) ) using this instead\r\n\r\n        bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );\r\n        bool inFrustum = all( inFrustumVec );\r\n\r\n        bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );\r\n\r\n        bool frustumTest = all( frustumTestVec );\r\n\r\n        if ( frustumTest ) \r\n        {\r\n            if (shadowType == 2)\r\n            {\r\n                // PCF\r\n                vec2 texelSize = vec2( 1.0 ) / shadowMapSize;\r\n\r\n                float dx0 = - texelSize.x * shadowRadius;\r\n                float dy0 = - texelSize.y * shadowRadius;\r\n                float dx1 = + texelSize.x * shadowRadius;\r\n                float dy1 = + texelSize.y * shadowRadius;\r\n\r\n                shadow = (\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\r\n                ) * ( 1.0 / 9.0 );\r\n            }\r\n            else if(shadowType == 3)\r\n            {\r\n                // PCF soft\r\n                vec2 texelSize = vec2( 1.0 ) / shadowMapSize;\r\n\r\n                float dx0 = - texelSize.x * shadowRadius;\r\n                float dy0 = - texelSize.y * shadowRadius;\r\n                float dx1 = + texelSize.x * shadowRadius;\r\n                float dy1 = + texelSize.y * shadowRadius;\r\n\r\n                shadow = (\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy, shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\r\n                ) * ( 1.0 / 9.0 );\r\n            }\r\n            else\r\n            {\r\n                shadow = texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );\r\n            }\r\n        }\r\n\r\n        return shadow;\r\n    }\r\n\r\n    // cubeToUV() maps a 3D direction vector suitable for cube texture mapping to a 2D\r\n    // vector suitable for 2D texture mapping. This code uses the following layout for the\r\n    // 2D texture:\r\n    //\r\n    // xzXZ\r\n    //  y Y\r\n    //\r\n    // Y - Positive y direction\r\n    // y - Negative y direction\r\n    // X - Positive x direction\r\n    // x - Negative x direction\r\n    // Z - Positive z direction\r\n    // z - Negative z direction\r\n    //\r\n    // Source and test bed:\r\n    // https://gist.github.com/tschw/da10c43c467ce8afd0c4\r\n\r\n    vec2 cubeToUV( vec3 v, float texelSizeY ) \r\n    {\r\n        // Number of texels to avoid at the edge of each square\r\n        vec3 absV = abs( v );\r\n\r\n        // Intersect unit cube\r\n        float scaleToCube = 1.0 / max( absV.x, max( absV.y, absV.z ) );\r\n        absV *= scaleToCube;\r\n\r\n        // Apply scale to avoid seams\r\n\r\n        // two texels less per square (one texel will do for NEAREST)\r\n        v *= scaleToCube * ( 1.0 - 2.0 * texelSizeY );\r\n\r\n        // Unwrap\r\n\r\n        // space: -1 ... 1 range for each square\r\n        //\r\n        // #X##\t\tdim    := ( 1/4 , 1/2 )\r\n        //  # #\t\tcenter := ( 1/2 , 1/2 )\r\n        vec2 planar;\r\n        float almostOne = 1.0 - 1.5 * texelSizeY;\r\n        if ( absV.z >= almostOne ) \r\n        {\r\n            if ( v.z > 0.0 )\r\n            {\r\n                planar.x = (0.5 + v.x * 0.5) * 0.25 + 0.75;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }else\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }\r\n        } else if ( absV.x >= almostOne ) \r\n        {\r\n            if( v.x > 0.0)\r\n            {\r\n                planar.x = (0.5 - v.z * 0.5) * 0.25 + 0.5;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }else\r\n            {\r\n                planar.x = (0.5 + v.z * 0.5) * 0.25 + 0.0;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }\r\n        } else if ( absV.y >= almostOne ) \r\n        {\r\n            if( v.y > 0.0)\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.75;\r\n                planar.y = (0.5 + v.z * 0.5) * 0.5 + 0.0;\r\n            }else\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;\r\n                planar.y = (0.5 - v.z * 0.5) * 0.5 + 0.0;\r\n            }\r\n        }\r\n        return planar;\r\n    }\r\n\r\n    float getPointShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) \r\n    {\r\n        vec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );\r\n\r\n        // for point lights, the uniform @vShadowCoord is re-purposed to hold\r\n        // the vector from the light to the world-space position of the fragment.\r\n        // vec3 lightToPosition = shadowCoord.xyz;\r\n\r\n        // dp = normalized distance from light to fragment position\r\n        float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?\r\n        dp += shadowBias;\r\n\r\n        // bd3D = base direction 3D\r\n        vec3 bd3D = normalize( lightToPosition );\r\n\r\n        if(shadowType == 2 || shadowType == 3)\r\n        {\r\n            vec2 offset = vec2( - 1, 1 ) * shadowRadius * texelSize.y;\r\n\r\n            return (\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxx, texelSize.y ), dp )\r\n            ) * ( 1.0 / 9.0 );\r\n        }else\r\n        {\r\n            return texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp );\r\n        }\r\n    }\r\n#endif",
-            "skeleton_pars_vert": "#ifdef HAS_SKELETON_ANIMATION\r\n\r\n    attribute vec4 a_jointindex0;\r\n    attribute vec4 a_jointweight0;\r\n\r\n    #ifdef HAS_a_jointindex1\r\n        attribute vec4 a_jointindex1;\r\n        attribute vec4 a_jointweight1;\r\n    #endif\r\n\r\n    #ifdef NUM_SKELETONJOINT\r\n        uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];\r\n    #endif\r\n\r\n    vec4 skeletonAnimation(vec4 position) \r\n    {\r\n        vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);\r\n        for(int i = 0; i < 4; i++)\r\n        {\r\n            totalPosition += u_skeletonGlobalMatriices[int(a_jointindex0[i])] * position * a_jointweight0[i];\r\n        }\r\n        #ifdef HAS_a_jointindex1\r\n            for(int i = 0; i < 4; i++)\r\n            {\r\n                totalPosition += u_skeletonGlobalMatriices[int(a_jointindex1[i])] * position * a_jointweight1[i];\r\n            }\r\n        #endif\r\n        position.xyz = totalPosition.xyz;\r\n        return position;\r\n    }\r\n#endif",
-            "skeleton_vert": "#ifdef HAS_SKELETON_ANIMATION\r\n    position = skeletonAnimation(position);\r\n#endif",
-            "specular_frag": "//获取高光值\r\nfloat glossiness = u_glossiness;\r\n//获取镜面反射基本颜色\r\nvec3 specularColor = u_specular;\r\nvec4 specularMapColor = texture2D(s_specular, v_uv);\r\nspecularColor.xyz = specularMapColor.xyz;\r\nglossiness = glossiness * specularMapColor.w;",
-            "specular_pars_frag": "//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;",
-            "tangent_pars_vert": "attribute vec3 a_tangent;",
-            "tangent_vert": "vec3 tangent = a_tangent;",
-            "terrainDefault_pars_frag": "uniform sampler2D s_splatTexture1;\r\nuniform sampler2D s_splatTexture2;\r\nuniform sampler2D s_splatTexture3;\r\n\r\nuniform sampler2D s_blendTexture;\r\nuniform vec4 u_splatRepeats;\r\n\r\nvec4 terrainMethod(vec4 diffuseColor,vec2 v_uv) \r\n{\r\n    vec4 blend = texture2D(s_blendTexture, v_uv);\r\n\r\n    vec2 t_uv = v_uv.xy * u_splatRepeats.y;\r\n    vec4 tColor = texture2D(s_splatTexture1, t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.x + diffuseColor;\r\n\r\n    t_uv = v_uv.xy * u_splatRepeats.z;\r\n    tColor = texture2D(s_splatTexture2, t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.y + diffuseColor;\r\n\r\n    t_uv = v_uv.xy * u_splatRepeats.w;\r\n    tColor = texture2D(s_splatTexture3, t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.z + diffuseColor;\r\n\r\n    return diffuseColor;\r\n}",
-            "terrainMerge_pars_frag": "//代码实现lod以及线性插值 feng\r\n#extension GL_EXT_shader_texture_lod : enable\r\n#extension GL_OES_standard_derivatives : enable\r\n\r\n#define LOD_LINEAR\r\n\r\nuniform sampler2D s_splatMergeTexture;\r\nuniform sampler2D s_blendTexture;\r\nuniform vec4 u_splatRepeats;\r\n\r\nuniform vec2 u_imageSize;\r\nuniform vec4 u_tileOffset[3];\r\nuniform vec4 u_lod0vec;\r\nuniform vec2 u_tileSize;\r\nuniform float u_maxLod;\r\nuniform float u_scaleByDepth;\r\nuniform float u_uvPositionScale;\r\n\r\n\r\nvec4 terrainTexture2DLod(sampler2D s_splatMergeTexture,vec2 uv,float lod,vec4 offset){\r\n\r\n    //计算不同lod像素缩放以及起始坐标\r\n    vec4 lodvec = u_lod0vec;\r\n    lodvec.x = lodvec.x * pow(0.5,lod);\r\n    lodvec.y = lodvec.x * 2.0;\r\n    lodvec.z = 1.0 - lodvec.y;\r\n\r\n    //lod块尺寸\r\n    vec2 lodSize = u_imageSize * lodvec.xy;\r\n    vec2 lodPixelOffset = 1.0 / lodSize * 2.0;\r\n\r\n    // uv = uv - 1.0 / lodPixelOffset;\r\n    vec2 mixFactor = mod(uv, lodPixelOffset) / lodPixelOffset;\r\n\r\n    //lod块中像素索引\r\n    vec2 t_uv = fract(uv + lodPixelOffset * vec2(0.0, 0.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor00 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    t_uv = fract(uv + lodPixelOffset * vec2(1.0, 0.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor10 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    t_uv = fract(uv + lodPixelOffset * vec2(0.0, 1.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor01 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    t_uv = fract(uv + lodPixelOffset * vec2(1.0, 1.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor11 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    vec4 tColor0 = mix(tColor00,tColor10,mixFactor.x);\r\n    vec4 tColor1 = mix(tColor01,tColor11,mixFactor.x);\r\n    vec4 tColor = mix(tColor0,tColor1,mixFactor.y);\r\n\r\n    return tColor;\r\n\r\n    // return vec4(mixFactor.x,mixFactor.y,0.0,1.0);\r\n    // return vec4(mixFactor.x + 0.5,mixFactor.y + 0.5,0.0,1.0);\r\n}\r\n\r\n//参考 http://blog.csdn.net/cgwbr/article/details/6620318\r\n//计算MipMap层函数：\r\nfloat mipmapLevel(vec2 uv)\r\n{\r\n    vec2 dx = dFdx(uv);\r\n    vec2 dy = dFdy(uv);\r\n    float d = max(dot(dx, dx), dot(dy, dy));\r\n    return 0.5 * log2(d);\r\n}\r\n\r\n//根据距离以及法线计算MipMap层函数：\r\nfloat mipmapLevel1(vec2 uv)\r\n{\r\n    //视线方向\r\n    vec3 cameraDir = u_cameraPos - v_worldPosition.xyz;\r\n    float fogDistance = length(cameraDir);\r\n    float value = u_scaleByDepth * fogDistance * u_uvPositionScale;//uv变化率与距离成正比，0.001为顶点位置与uv的变化比率\r\n    cameraDir = normalize(cameraDir);\r\n    float dd = clamp(dot(cameraDir, v_normal),0.05,1.0);//取法线与视线余弦值的倒数，余弦值越大（朝向摄像机时uv变化程度越低）lod越小\r\n    value = value / dd;\r\n    value = value * 0.5;//还没搞懂0.5的来历\r\n    return log2(value);\r\n}\r\n\r\nvec4 terrainTexture2D(sampler2D s_splatMergeTexture, vec2 t_uv, float lod, vec4 offset){\r\n \r\n    #ifdef LOD_LINEAR\r\n        vec4 tColor = mix(terrainTexture2DLod(s_splatMergeTexture, t_uv, floor(lod), offset),terrainTexture2DLod(s_splatMergeTexture, t_uv, ceil(lod), offset), fract(lod));\r\n    #else\r\n        vec4 tColor = terrainTexture2DLod(s_splatMergeTexture, t_uv, ceil(lod), offset);\r\n    #endif\r\n\r\n    return tColor;\r\n}\r\n\r\nvec4 terrainMethod(vec4 diffuseColor, vec2 v_uv) \r\n{\r\n    float lod = 0.0;\r\n    vec4 blend = texture2D(s_blendTexture, v_uv);\r\n    for(int i = 0; i < 3; i++)\r\n    {\r\n        vec2 t_uv = v_uv * u_splatRepeats[i];\r\n        // lod = mipmapLevel(v_uv) + log2(u_tileSize.x * u_splatRepeats[i]);\r\n        lod = mipmapLevel1(v_uv) + log2(u_tileSize.x * u_splatRepeats[i]);\r\n        lod = clamp(lod, 0.0, u_maxLod);\r\n        vec4 tColor = terrainTexture2D(s_splatMergeTexture, t_uv, lod, u_tileOffset[i]);\r\n        diffuseColor = (tColor - diffuseColor) * blend[i] + diffuseColor;\r\n    }\r\n\r\n    // diffuseColor.xyz = vec3(1.0,0.0,0.0);\r\n    // diffuseColor.xyz = vec3(lod/u_maxLod,0.0,0.0);\r\n    // diffuseColor.xyz = vec3(floor(lod)/u_maxLod,0.0,0.0);\r\n    return diffuseColor;\r\n}",
-            "terrain_frag": "diffuseColor = terrainMethod(diffuseColor, v_uv);",
-            "terrain_pars_frag": "#ifdef USE_TERRAIN_MERGE\r\n    #include<terrainMerge_pars_frag>\r\n#else\r\n    #include<terrainDefault_pars_frag>\r\n#endif",
-            "uv_pars_vert": "attribute vec2 a_uv;\r\n\r\nvarying vec2 v_uv;",
-            "uv_vert": "v_uv = a_uv;\r\n#ifdef SCALEU\r\n    #ifdef SCALEV\r\n    v_uv = v_uv * vec2(SCALEU,SCALEV);\r\n    #endif\r\n#endif",
-            "worldposition_pars_vert": "uniform mat4 u_modelMatrix;\r\n\r\nvarying vec3 v_worldPosition;",
-            "worldposition_vert": "//获取全局坐标\r\nvec4 worldPosition = u_modelMatrix * position;\r\n//输出全局坐标\r\nv_worldPosition = worldPosition.xyz;"
-        }
-    };
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     feng3d.lazy = {
         getvalue: function (lazyItem) {
             if (typeof lazyItem == "function")
@@ -1407,275 +1292,6 @@ Math.gcd = Math.gcd || function (a, b) {
 Math.lcm = Math.lcm || function (a, b) {
     return a * b / Math.gcd(a, b);
 };
-var feng3d;
-(function (feng3d) {
-    /**
-     * 函数经
-     *
-     * 包装函数，以及对应的拆包
-     */
-    var FunctionWrap = /** @class */ (function () {
-        function FunctionWrap() {
-            this._wrapFResult = {};
-            this._state = {};
-        }
-        /**
-         * 扩展继承函数
-         *
-         * 可用于扩展原型中原有API中的实现
-         *
-         * ```
-        class A
-        {
-            a = "a";
-
-            f(p: string = "p", p1: string = "")
-            {
-                return p + p1;
-            }
-
-            extendF: (p?: string, p1?: string) => string;
-            oldf: (p?: string, p1?: string) => string;
-        }
-
-        var a = new A();
-        a.oldf = a.f;
-        a.extendF = function (p: string = "p", p1: string = "")
-        {
-            return ["polyfill", this.a, this.oldf()].join("-")
-        }
-        feng3d.functionwrap.extendFunction(a, "f", function (r)
-        {
-            return ["polyfill", this.a, r].join("-");
-        });
-        // 验证 被扩展的a.f方法是否等价于 a.extendF
-        assert.ok(a.f() == a.extendF()); //true
-        
-         * ```
-         *
-         * @param object 被扩展函数所属对象或者原型
-         * @param funcName 被扩展函数名称
-         * @param extendFunc 在函数执行后执行的扩展函数
-         */
-        FunctionWrap.prototype.extendFunction = function (object, funcName, extendFunc) {
-            var oldFun = object[funcName];
-            object[funcName] = (function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                var r = oldFun.apply(this, args);
-                var args1 = args.concat();
-                args1.unshift(r);
-                r = extendFunc.apply(this, args1);
-                return r;
-            });
-        };
-        /**
-         * 包装函数
-         *
-         * 一般用于调试
-         * 使用场景示例：
-         * 1. 在函数执行前后记录时间来计算函数执行时间。
-         * 1. 在console.error调用前使用 debugger 进行断点调试。
-         *
-         * @param object 函数所属对象或者原型
-         * @param funcName 函数名称
-         * @param beforeFunc 在函数执行前执行的函数
-         * @param afterFunc 在函数执行后执行的函数
-         */
-        FunctionWrap.prototype.wrap = function (object, funcName, beforeFunc, afterFunc) {
-            if (!beforeFunc && !afterFunc)
-                return;
-            if (!Object.getOwnPropertyDescriptor(object, feng3d.__functionwrap__)) {
-                Object.defineProperty(object, feng3d.__functionwrap__, { value: {}, configurable: true, enumerable: false, writable: false });
-            }
-            var functionwraps = object[feng3d.__functionwrap__];
-            var info = functionwraps[funcName];
-            if (!info) {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
-                var original = object[funcName];
-                functionwraps[funcName] = info = { space: object, funcName: funcName, oldPropertyDescriptor: oldPropertyDescriptor, original: original, funcs: [original] };
-                //
-                object[funcName] = function () {
-                    var _this = this;
-                    var args = arguments;
-                    info.funcs.forEach(function (f) {
-                        f.apply(_this, args);
-                    });
-                };
-            }
-            var funcs = info.funcs;
-            if (beforeFunc) {
-                Array.delete(funcs, beforeFunc);
-                funcs.unshift(beforeFunc);
-            }
-            if (afterFunc) {
-                Array.delete(funcs, afterFunc);
-                funcs.push(afterFunc);
-            }
-        };
-        /**
-         * 取消包装函数
-         *
-         * 与wrap函数对应
-         *
-         * @param object 函数所属对象或者原型
-         * @param funcName 函数名称
-         * @param wrapFunc 在函数执行前执行的函数
-         * @param before 运行在原函数之前
-         */
-        FunctionWrap.prototype.unwrap = function (object, funcName, wrapFunc) {
-            var functionwraps = object[feng3d.__functionwrap__];
-            var info = functionwraps[funcName];
-            if (!info)
-                return;
-            if (wrapFunc == undefined) {
-                info.funcs = [info.original];
-            }
-            else {
-                Array.delete(info.funcs, wrapFunc);
-            }
-            if (info.funcs.length == 1) {
-                delete object[funcName];
-                if (info.oldPropertyDescriptor)
-                    Object.defineProperty(object, funcName, info.oldPropertyDescriptor);
-                delete functionwraps[funcName];
-                if (Object.keys(functionwraps).length == 0) {
-                    delete object[feng3d.__functionwrap__];
-                }
-            }
-        };
-        /**
-         * 包装一个异步函数，使其避免重复执行
-         *
-         * 使用场景示例：同时加载同一资源时，使其只加载一次，完成后调用所有相关回调函数。
-         *
-         * @param funcHost 函数所属对象
-         * @param func 函数
-         * @param params 函数除callback外的参数列表
-         * @param callback 完成回调函数
-         */
-        FunctionWrap.prototype.wrapAsyncFunc = function (funcHost, func, params, callback) {
-            var _this = this;
-            // 获取唯一编号
-            var cuuid = feng3d.uuid.getArrayUuid([func].concat(params));
-            // 检查是否执行过
-            var result = this._wrapFResult[cuuid];
-            if (result) {
-                callback.apply(null, result);
-                return;
-            }
-            // 监听执行完成事件
-            feng3d.event.once(this, cuuid, function () {
-                // 完成时重新执行函数
-                _this.wrapAsyncFunc(funcHost, func, params, callback);
-            });
-            // 正在执行时直接返回等待完成事件
-            if (this._state[cuuid])
-                return;
-            // 标记正在执行中
-            this._state[cuuid] = true;
-            // 执行函数
-            func.apply(funcHost, params.concat(function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                // 清理执行标记
-                delete _this._state[cuuid];
-                // 保存执行结果
-                _this._wrapFResult[cuuid] = args;
-                // 通知执行完成
-                feng3d.event.dispatch(_this, cuuid);
-            }));
-        };
-        return FunctionWrap;
-    }());
-    feng3d.FunctionWrap = FunctionWrap;
-    feng3d.__functionwrap__ = "__functionwrap__";
-    feng3d.functionwrap = new FunctionWrap();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 通用唯一标识符（Universally Unique Identifier）
-     *
-     * 用于给所有对象分配一个通用唯一标识符
-     */
-    var Uuid = /** @class */ (function () {
-        function Uuid() {
-            this.objectUuid = new WeakMap();
-        }
-        /**
-         * 获取数组 通用唯一标识符
-         *
-         * @param arr 数组
-         * @param separator 分割符
-         */
-        Uuid.prototype.getArrayUuid = function (arr, separator) {
-            var _this = this;
-            if (separator === void 0) { separator = "$__uuid__$"; }
-            var uuids = arr.map(function (v) { return _this.getObjectUuid(v); });
-            var groupUuid = uuids.join(separator);
-            return groupUuid;
-        };
-        /**
-         * 获取对象 通用唯一标识符
-         *
-         * 当参数object非Object对象时强制转换为字符串返回
-         *
-         * @param object 对象
-         */
-        Uuid.prototype.getObjectUuid = function (object) {
-            if (Object.isBaseType(object)) {
-                return String(object);
-            }
-            if (!object[feng3d.__uuid__]) {
-                Object.defineProperty(object, feng3d.__uuid__, { value: Math.uuid() });
-            }
-            return object[feng3d.__uuid__];
-        };
-        return Uuid;
-    }());
-    feng3d.Uuid = Uuid;
-    feng3d.__uuid__ = "__uuid__";
-    feng3d.uuid = new Uuid();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 是否开启调试
-     */
-    feng3d.debuger = true;
-    /**
-     * 调试工具
-     */
-    var Debug = /** @class */ (function () {
-        function Debug() {
-            // 断言失败前进入断点调试
-            feng3d.functionwrap.wrap(console, "assert", function (test) { if (!test)
-                debugger; });
-            // 输出错误前进入断点调试
-            feng3d.functionwrap.wrap(console, "error", function () { debugger; });
-            feng3d.functionwrap.wrap(console, "warn", function () { debugger; });
-        }
-        /**
-         * 测试代码运行时间
-         * @param fn 被测试的方法
-         * @param labal 标签
-         */
-        Debug.prototype.time = function (fn, labal) {
-            labal = labal || fn["name"] || "Anonymous function " + Math.random();
-            console.time(labal);
-            fn();
-            console.timeEnd(labal);
-        };
-        return Debug;
-    }());
-    feng3d.Debug = Debug;
-    feng3d.debug = new Debug();
-})(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
@@ -2678,2573 +2294,6 @@ var feng3d;
         }
         return objectBlockInfos;
     }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 心跳计时器
-     */
-    var Ticker = /** @class */ (function () {
-        function Ticker() {
-            /**
-             * 帧率
-             */
-            this.frameRate = 60;
-        }
-        /**
-         * 注册帧函数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.onframe = function (func, thisObject, priority) {
-            var _this = this;
-            if (priority === void 0) { priority = 0; }
-            this.on(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
-            return this;
-        };
-        /**
-         * 下一帧执行方法
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.nextframe = function (func, thisObject, priority) {
-            var _this = this;
-            if (priority === void 0) { priority = 0; }
-            this.once(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
-            return this;
-        };
-        /**
-         * 注销帧函数（只执行一次）
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.offframe = function (func, thisObject) {
-            var _this = this;
-            this.off(function () { return 1000 / _this.frameRate; }, func, thisObject);
-            return this;
-        };
-        /**
-         * 注册周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.on = function (interval, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: false });
-            return this;
-        };
-        /**
-         * 注册周期函数（只执行一次）
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.once = function (interval, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: true });
-            return this;
-        };
-        /**
-         * 注销周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         */
-        Ticker.prototype.off = function (interval, func, thisObject) {
-            removeTickerFunc({ interval: interval, func: func, thisObject: thisObject });
-            return this;
-        };
-        /**
-         * 重复指定次数 执行函数
-         * @param interval  执行周期，以ms为单位
-         * @param 	repeatCount     执行次数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.repeat = function (interval, repeatCount, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            repeatCount = ~~repeatCount;
-            if (repeatCount < 1)
-                return;
-            var timer = new Timer(this, interval, repeatCount, func, thisObject, priority);
-            return timer;
-        };
-        return Ticker;
-    }());
-    feng3d.Ticker = Ticker;
-    feng3d.ticker = new Ticker();
-    var Timer = /** @class */ (function () {
-        function Timer(ticker, interval, repeatCount, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            /**
-             * 计时器从 0 开始后触发的总次数。
-             */
-            this.currentCount = 0;
-            this.ticker = ticker;
-            this.interval = interval;
-            this.func = func;
-            this.thisObject = thisObject;
-            this.priority = priority;
-        }
-        /**
-         * 如果计时器尚未运行，则启动计时器。
-         */
-        Timer.prototype.start = function () {
-            this.ticker.on(this.interval, this.runfunc, this, this.priority);
-            return this;
-        };
-        /**
-         * 停止计时器。
-         */
-        Timer.prototype.stop = function () {
-            this.ticker.off(this.interval, this.runfunc, this);
-            return this;
-        };
-        /**
-         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
-         */
-        Timer.prototype.reset = function () {
-            this.stop();
-            this.currentCount = 0;
-            return this;
-        };
-        Timer.prototype.runfunc = function () {
-            this.currentCount++;
-            this.repeatCount--;
-            this.func.call(this.thisObject, feng3d.lazy.getvalue(this.interval));
-            if (this.repeatCount < 1)
-                this.stop();
-        };
-        return Timer;
-    }());
-    feng3d.Timer = Timer;
-    var tickerFuncs = [];
-    function addTickerFunc(item) {
-        if (running) {
-            affers.push([addTickerFunc, [item]]);
-            return;
-        }
-        // removeTickerFunc(item);
-        if (item.priority == undefined)
-            item.priority = 0;
-        item.runtime = Date.now() + feng3d.lazy.getvalue(item.interval);
-        tickerFuncs.push(item);
-    }
-    function removeTickerFunc(item) {
-        if (running) {
-            affers.push([removeTickerFunc, [item]]);
-            return;
-        }
-        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
-            var element = tickerFuncs[i];
-            if (feng3d.lazy.getvalue(element.interval) == feng3d.lazy.getvalue(item.interval)
-                && element.func == item.func
-                && element.thisObject == item.thisObject) {
-                tickerFuncs.splice(i, 1);
-            }
-        }
-    }
-    var running = false;
-    var affers = [];
-    function runTickerFuncs() {
-        running = true;
-        //倒序，优先级高的排在后面
-        tickerFuncs.sort(function (a, b) {
-            return a.priority - b.priority;
-        });
-        var currenttime = Date.now();
-        var needTickerFuncItems = [];
-        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
-            var element = tickerFuncs[i];
-            if (element.runtime < currenttime) {
-                needTickerFuncItems.push(element);
-                if (element.once) {
-                    tickerFuncs.splice(i, 1);
-                    continue;
-                }
-                element.runtime = nextRuntime(element.runtime, feng3d.lazy.getvalue(element.interval));
-            }
-        }
-        needTickerFuncItems.reverse();
-        // 相同的函数只执行一个
-        Array.unique(needTickerFuncItems, function (a, b) { return (a.func == b.func && a.thisObject == b.thisObject); });
-        needTickerFuncItems.forEach(function (v) {
-            // try
-            // {
-            v.func.call(v.thisObject, feng3d.lazy.getvalue(v.interval));
-            // } catch (error)
-            // {
-            //     console.warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
-            //     var index = tickerFuncs.indexOf(v);
-            //     if (index != -1) tickerFuncs.splice(index, 1);
-            // }
-        });
-        running = false;
-        for (var i = 0; i < affers.length; i++) {
-            var affer = affers[i];
-            affer[0].apply(null, affer[1]);
-        }
-        affers.length = 0;
-        localrequestAnimationFrame(runTickerFuncs);
-        function nextRuntime(runtime, interval) {
-            return runtime + Math.ceil((currenttime - runtime) / interval) * interval;
-        }
-    }
-    var localrequestAnimationFrame;
-    if (typeof requestAnimationFrame == "undefined") {
-        var _global;
-        var global;
-        if (typeof window != "undefined") {
-            _global = window;
-            localrequestAnimationFrame =
-                window["requestAnimationFrame"] ||
-                    window["webkitRequestAnimationFrame"] ||
-                    window["mozRequestAnimationFrame"] ||
-                    window["oRequestAnimationFrame"] ||
-                    window["msRequestAnimationFrame"];
-        }
-        else if (typeof global != "undefined") {
-            _global = global;
-        }
-        if (localrequestAnimationFrame == undefined) {
-            localrequestAnimationFrame = function (callback) {
-                return _global.setTimeout(callback, 1000 / feng3d.ticker.frameRate);
-            };
-        }
-    }
-    else {
-        localrequestAnimationFrame = requestAnimationFrame;
-    }
-    runTickerFuncs();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 数据类型转换
-     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
-     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
-     */
-    var DataTransform = /** @class */ (function () {
-        function DataTransform() {
-        }
-        /**
-         * Blob to ArrayBuffer
-         */
-        DataTransform.prototype.blobToArrayBuffer = function (blob, callback) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                callback(e.target["result"]);
-            };
-            reader.readAsArrayBuffer(blob);
-        };
-        /**
-         * ArrayBuffer to Blob
-         */
-        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer) {
-            var blob = new Blob([arrayBuffer]); // 注意必须包裹[]
-            return blob;
-        };
-        /**
-         * ArrayBuffer to Uint8
-         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer) {
-            var u8 = new Uint8Array(arrayBuffer);
-            return u8;
-        };
-        /**
-         * Uint8 to ArrayBuffer
-         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array) {
-            var buffer = uint8Array.buffer;
-            return buffer;
-        };
-        /**
-         * Array to ArrayBuffer
-         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
-         */
-        DataTransform.prototype.arrayToArrayBuffer = function (array) {
-            var uint8 = new Uint8Array(array);
-            var buffer = uint8.buffer;
-            return buffer;
-        };
-        /**
-         * TypeArray to Array
-         */
-        DataTransform.prototype.uint8ArrayToArray = function (u8a) {
-            var arr = [];
-            for (var i = 0; i < u8a.length; i++) {
-                arr.push(u8a[i]);
-            }
-            return arr;
-        };
-        /**
-         * canvas转换为dataURL
-         */
-        DataTransform.prototype.canvasToDataURL = function (canvas, type) {
-            if (type === void 0) { type = "png"; }
-            if (type == "png")
-                return canvas.toDataURL("image/png");
-            return canvas.toDataURL("image/jpeg", 0.8);
-        };
-        /**
-         * canvas转换为图片
-         */
-        DataTransform.prototype.canvasToImage = function (canvas, type, callback) {
-            if (type === void 0) { type = "png"; }
-            var dataURL = this.canvasToDataURL(canvas, type);
-            this.dataURLToImage(dataURL, callback);
-        };
-        /**
-         * File、Blob对象转换为dataURL
-         * File对象也是一个Blob对象，二者的处理相同。
-         */
-        DataTransform.prototype.blobToDataURL = function (blob, callback) {
-            var a = new FileReader();
-            a.onload = function (e) {
-                callback(e.target["result"]);
-            };
-            a.readAsDataURL(blob);
-        };
-        /**
-         * dataURL转换为Blob对象
-         */
-        DataTransform.prototype.dataURLtoBlob = function (dataurl) {
-            var arr = dataurl.split(","), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            var blob = new Blob([u8arr], { type: mime });
-            return blob;
-        };
-        /**
-         * dataURL图片数据转换为HTMLImageElement
-         * dataURL图片数据绘制到canvas
-         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
-         */
-        DataTransform.prototype.dataURLDrawCanvas = function (dataurl, canvas, callback) {
-            this.dataURLToImage(dataurl, function (img) {
-                // canvas.drawImage(img);
-                callback(img);
-            });
-        };
-        DataTransform.prototype.dataURLToArrayBuffer = function (dataurl, callback) {
-            var blob = this.dataURLtoBlob(dataurl);
-            this.blobToArrayBuffer(blob, callback);
-        };
-        DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
-            var blob = this.arrayBufferToBlob(arrayBuffer);
-            this.blobToDataURL(blob, callback);
-        };
-        DataTransform.prototype.dataURLToImage = function (dataurl, callback) {
-            var img = new Image();
-            img.onload = function () {
-                callback(img);
-            };
-            img.src = dataurl;
-        };
-        DataTransform.prototype.imageToDataURL = function (img) {
-            var canvas = this.imageToCanvas(img);
-            var dataurl = this.canvasToDataURL(canvas, "png");
-            return dataurl;
-        };
-        DataTransform.prototype.imageToCanvas = function (img) {
-            var canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            var ctxt = canvas.getContext('2d');
-            ctxt.drawImage(img, 0, 0);
-            return canvas;
-        };
-        DataTransform.prototype.imageToArrayBuffer = function (img, callback) {
-            if (img["arraybuffer"]) {
-                callback(img["arraybuffer"]);
-                return;
-            }
-            var dataUrl = this.imageToDataURL(img);
-            this.dataURLToArrayBuffer(dataUrl, function (arraybuffer) {
-                img["arraybuffer"] = arraybuffer;
-                arraybuffer["img"] = img;
-                callback(arraybuffer);
-            });
-        };
-        DataTransform.prototype.imageDataToDataURL = function (imageData) {
-            var canvas = this.imageDataToCanvas(imageData);
-            var dataurl = this.canvasToDataURL(canvas, "png");
-            return dataurl;
-        };
-        DataTransform.prototype.imageDataToCanvas = function (imageData) {
-            var canvas = document.createElement("canvas");
-            canvas.width = imageData.width;
-            canvas.height = imageData.height;
-            var ctxt = canvas.getContext('2d');
-            ctxt.putImageData(imageData, 0, 0);
-            return canvas;
-        };
-        DataTransform.prototype.imagedataToImage = function (imageData, callback) {
-            var dataUrl = this.imageDataToDataURL(imageData);
-            this.dataURLToImage(dataUrl, callback);
-        };
-        DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
-            var _this = this;
-            if (arrayBuffer["image"]) {
-                callback(arrayBuffer["image"]);
-                return;
-            }
-            this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
-                _this.dataURLToImage(dataurl, function (img) {
-                    img["arraybuffer"] = arrayBuffer;
-                    arrayBuffer["image"] = img;
-                    callback(img);
-                });
-            });
-        };
-        DataTransform.prototype.blobToText = function (blob, callback) {
-            var a = new FileReader();
-            a.onload = function (e) { callback(e.target["result"]); };
-            a.readAsText(blob);
-        };
-        DataTransform.prototype.stringToArrayBuffer = function (str) {
-            var uint8Array = this.stringToUint8Array(str);
-            var buffer = this.uint8ToArrayBuffer(uint8Array);
-            return buffer;
-        };
-        DataTransform.prototype.arrayBufferToString = function (arrayBuffer, callback) {
-            var blob = this.arrayBufferToBlob(arrayBuffer);
-            this.blobToText(blob, callback);
-        };
-        /**
-         * ArrayBuffer 转换为 对象
-         *
-         * @param arrayBuffer
-         * @param callback
-         */
-        DataTransform.prototype.arrayBufferToObject = function (arrayBuffer, callback) {
-            this.arrayBufferToString(arrayBuffer, function (str) {
-                var obj = JSON.parse(str);
-                callback(obj);
-            });
-        };
-        DataTransform.prototype.stringToUint8Array = function (str) {
-            var utf8 = unescape(encodeURIComponent(str));
-            var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
-                return item.charCodeAt(0);
-            }));
-            return uint8Array;
-        };
-        DataTransform.prototype.uint8ArrayToString = function (arr, callback) {
-            // or [].slice.apply(arr)
-            // var utf8 = Array.from(arr).map(function (item)
-            var utf8 = [].slice.apply(arr).map(function (item) {
-                return String.fromCharCode(item);
-            }).join('');
-            var str = decodeURIComponent(escape(utf8));
-            callback(str);
-        };
-        return DataTransform;
-    }());
-    feng3d.DataTransform = DataTransform;
-    feng3d.dataTransform = new DataTransform();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 图片相关工具
-     */
-    var ImageUtil = /** @class */ (function () {
-        /**
-         * 创建ImageData
-         * @param width 数据宽度
-         * @param height 数据高度
-         * @param fillcolor 填充颜色
-         */
-        function ImageUtil(width, height, fillcolor) {
-            if (width === void 0) { width = 1; }
-            if (height === void 0) { height = 1; }
-            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(0, 0, 0, 0); }
-            this.init(width, height, fillcolor);
-        }
-        /**
-         * 获取图片数据
-         * @param image 加载完成的图片元素
-         */
-        ImageUtil.fromImage = function (image) {
-            return new ImageUtil().fromImage(image);
-        };
-        /**
-         * 初始化
-         * @param width 宽度
-         * @param height 高度
-         * @param fillcolor 填充颜色
-         */
-        ImageUtil.prototype.init = function (width, height, fillcolor) {
-            if (width === void 0) { width = 1; }
-            if (height === void 0) { height = 1; }
-            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(0, 0, 0, 0); }
-            if (typeof document == "undefined")
-                return;
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle = feng3d.Color3.fromColor4(fillcolor).toHexString();
-            var backAlpha = ctx.globalAlpha;
-            ctx.globalAlpha = fillcolor.a;
-            ctx.fillRect(0, 0, width, height);
-            ctx.globalAlpha = backAlpha;
-            this.imageData = ctx.getImageData(0, 0, width, height);
-        };
-        /**
-         * 获取图片数据
-         * @param image 加载完成的图片元素
-         */
-        ImageUtil.prototype.fromImage = function (image) {
-            if (!image)
-                return null;
-            var canvasImg = document.createElement("canvas");
-            canvasImg.width = image.width;
-            canvasImg.height = image.height;
-            var ctxt = canvasImg.getContext('2d');
-            console.assert(!!ctxt);
-            ctxt.drawImage(image, 0, 0);
-            this.imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
-            return this;
-        };
-        /**
-         * 绘制图片数据指定位置颜色
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        ImageUtil.prototype.drawPixel = function (x, y, color) {
-            var oldColor = this.getPixel(x, y);
-            oldColor.mix(color, color.a);
-            this.setPixel(x, y, oldColor);
-            return this;
-        };
-        /**
-         * 获取图片指定位置颜色值
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         */
-        ImageUtil.prototype.getPixel = function (x, y) {
-            var pos = (x + y * this.imageData.width) * 4;
-            var color = new feng3d.Color4(this.imageData.data[pos] / 255, this.imageData.data[pos + 1] / 255, this.imageData.data[pos + 2] / 255, this.imageData.data[pos + 3] / 255);
-            return color;
-        };
-        /**
-         * 设置指定位置颜色值
-         * @param imageData 图片数据
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        ImageUtil.prototype.setPixel = function (x, y, color) {
-            x = Math.round(x);
-            y = Math.round(y);
-            var pos = (x + y * this.imageData.width) * 4;
-            this.imageData.data[pos] = color.r * 255;
-            this.imageData.data[pos + 1] = color.g * 255;
-            this.imageData.data[pos + 2] = color.b * 255;
-            this.imageData.data[pos + 3] = color.a * 255;
-            return this;
-        };
-        /**
-         * 清理图片数据
-         * @param clearColor 清理时填充颜色
-         */
-        ImageUtil.prototype.clear = function (clearColor) {
-            if (clearColor === void 0) { clearColor = new feng3d.Color4(0, 0, 0, 0); }
-            for (var i = 0; i < this.imageData.width; i++) {
-                for (var j = 0; j < this.imageData.height; j++) {
-                    this.setPixel(i, j, clearColor);
-                }
-            }
-        };
-        /**
-         * 填充矩形
-         * @param rect 填充的矩形
-         * @param fillcolor 填充颜色
-         */
-        ImageUtil.prototype.fillRect = function (rect, fillcolor) {
-            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(); }
-            for (var i = rect.x > 0 ? rect.x : 0; i < this.imageData.width && i < rect.x + rect.width; i++) {
-                for (var j = rect.y > 0 ? rect.y : 0; j < this.imageData.height && j < rect.y + rect.height; j++) {
-                    this.setPixel(i, j, fillcolor);
-                }
-            }
-        };
-        /**
-         * 绘制线条
-         * @param start 起始坐标
-         * @param end 终止坐标
-         * @param color 线条颜色
-         */
-        ImageUtil.prototype.drawLine = function (start, end, color) {
-            var length = end.subTo(start).length;
-            var p = new feng3d.Vector2();
-            for (var i = 0; i <= length; i++) {
-                start.lerpNumberTo(end, i / length, p);
-                this.setPixel(p.x, p.y, color);
-            }
-            return this;
-        };
-        /**
-         * 绘制点
-         * @param x x坐标
-         * @param y y坐标
-         * @param color 颜色
-         * @param size 尺寸
-         */
-        ImageUtil.prototype.drawPoint = function (x, y, color, size) {
-            if (size === void 0) { size = 1; }
-            var half = Math.floor(size / 2);
-            //
-            var sx = x - half;
-            if (sx < 0)
-                sx = 0;
-            var ex = x - half + size;
-            if (ex > this.imageData.width)
-                ex = this.imageData.width;
-            var sy = y - half;
-            if (sy < 0)
-                sy = 0;
-            var ey = y - half + size;
-            if (ey > this.imageData.height)
-                ey = this.imageData.height;
-            //
-            for (var i = sx; i < ex; i++) {
-                for (var j = sy; j < ey; j++) {
-                    this.setPixel(i, j, color);
-                }
-            }
-            return this;
-        };
-        /**
-         * 绘制图片数据
-         * @param imageData 图片数据
-         * @param x x坐标
-         * @param y y坐标
-         */
-        ImageUtil.prototype.drawImageData = function (imageData, x, y) {
-            var rect = new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height).intersection(new feng3d.Rectangle(x, y, imageData.width, imageData.height));
-            var imageUtil = new ImageUtil();
-            imageUtil.imageData = imageData;
-            for (var i = rect.x; i < rect.x + rect.width; i++) {
-                for (var j = rect.y; j < rect.y + rect.height; j++) {
-                    var c = imageUtil.getPixel(i - x, j - y);
-                    this.drawPixel(i, j, c);
-                }
-            }
-            return this;
-        };
-        /**
-         * 转换为DataUrl字符串数据
-         */
-        ImageUtil.prototype.toDataURL = function () {
-            return feng3d.dataTransform.imageDataToDataURL(this.imageData);
-        };
-        /**
-         * 创建默认粒子贴图
-         * @param size 尺寸
-         */
-        ImageUtil.prototype.drawDefaultParticle = function (size) {
-            if (size === void 0) { size = 64; }
-            var canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, size, size);
-            var half = size / 2;
-            for (var i = 0; i < size; i++) {
-                for (var j = 0; j < size; j++) {
-                    var l = Math.clamp(new feng3d.Vector2(i - half, j - half).length, 0, half) / half;
-                    // l = l * l;
-                    var f = 1 - l;
-                    f = f * f;
-                    // f = f * f * f;
-                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
-                    var pos = (i + j * size) * 4;
-                    imageData.data[pos] = f * 255;
-                    imageData.data[pos + 1] = f * 255;
-                    imageData.data[pos + 2] = f * 255;
-                    imageData.data[pos + 3] = 255;
-                }
-            }
-            this.imageData = imageData;
-            return this;
-        };
-        /**
-         * 创建颜色拾取矩形
-         * @param color 基色
-         * @param width 宽度
-         * @param height 高度
-         */
-        ImageUtil.prototype.drawColorPickerRect = function (color) {
-            Image;
-            var leftTop = new feng3d.Color3(1, 1, 1);
-            var rightTop = new feng3d.Color3().fromUnit(color);
-            var leftBottom = new feng3d.Color3(0, 0, 0);
-            var rightBottom = new feng3d.Color3(0, 0, 0);
-            //
-            for (var i = 0; i < this.imageData.width; i++) {
-                for (var j = 0; j < this.imageData.height; j++) {
-                    var top = leftTop.mixTo(rightTop, i / this.imageData.width);
-                    var bottom = leftBottom.mixTo(rightBottom, i / this.imageData.width);
-                    var v = top.mixTo(bottom, j / this.imageData.height);
-                    this.setPixel(i, j, v.toColor4());
-                }
-            }
-            return this;
-        };
-        ImageUtil.prototype.drawColorRect = function (color) {
-            var colorHeight = Math.floor(this.imageData.height * 0.8);
-            var alphaWidth = Math.floor(color.a * this.imageData.width);
-            var color4 = color.clone();
-            color4.a = 1;
-            var white = new feng3d.Color4(1, 1, 1);
-            var black = new feng3d.Color4(0, 0, 0);
-            //
-            for (var i = 0; i < this.imageData.width; i++) {
-                for (var j = 0; j < this.imageData.height; j++) {
-                    //
-                    if (j <= colorHeight) {
-                        this.setPixel(i, j, color4);
-                    }
-                    else {
-                        this.setPixel(i, j, i < alphaWidth ? white : black);
-                    }
-                }
-            }
-            return this;
-        };
-        /**
-         *
-         * @param gradient
-         * @param dirw true为横向条带，否则纵向条带
-         */
-        ImageUtil.prototype.drawMinMaxGradient = function (gradient, dirw) {
-            if (dirw === void 0) { dirw = true; }
-            //
-            for (var i = 0; i < this.imageData.width; i++) {
-                for (var j = 0; j < this.imageData.height; j++) {
-                    var c = gradient.getValue(dirw ? i / (this.imageData.width - 1) : j / (this.imageData.height - 1));
-                    this.setPixel(i, j, c);
-                }
-            }
-            return this;
-        };
-        /**
-         * 绘制曲线
-         * @param curve 曲线
-         * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
-         * @param color 曲线颜色
-         */
-        ImageUtil.prototype.drawCurve = function (curve, between0And1, color, rect) {
-            if (rect === void 0) { rect = null; }
-            rect = rect || new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height);
-            var range = between0And1 ? [1, 0] : [1, -1];
-            //
-            for (var i = 0; i < rect.width; i++) {
-                //
-                var y = curve.getValue(i / (rect.width - 1));
-                y = Math.mapLinear(y, range[0], range[1], 0, 1);
-                var j = Math.round(y * (rect.height - 1));
-                this.setPixel(rect.x + i, rect.y + j, color);
-            }
-            return this;
-        };
-        /**
-         * 绘制双曲线
-         * @param curve 曲线
-         * @param curve1 曲线
-         * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
-         * @param curveColor 颜色
-         */
-        ImageUtil.prototype.drawBetweenTwoCurves = function (curve, curve1, between0And1, curveColor, fillcolor, rect) {
-            if (curveColor === void 0) { curveColor = new feng3d.Color4(); }
-            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(1, 1, 1, 0.5); }
-            if (rect === void 0) { rect = null; }
-            rect = rect || new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height);
-            var range = between0And1 ? [1, 0] : [1, -1];
-            //
-            for (var i = 0; i < rect.width; i++) {
-                //
-                var y0 = curve.getValue(i / (rect.width - 1));
-                var y1 = curve1.getValue(i / (rect.width - 1));
-                y0 = Math.mapLinear(y0, range[0], range[1], 0, 1);
-                y1 = Math.mapLinear(y1, range[0], range[1], 0, 1);
-                y0 = Math.round(y0 * (rect.height - 1));
-                y1 = Math.round(y1 * (rect.height - 1));
-                this.drawLine(new feng3d.Vector2(rect.x + i, rect.y + y0), new feng3d.Vector2(rect.x + i, rect.y + y1), fillcolor);
-                this.drawPixel(rect.x + i, rect.y + y0, curveColor);
-                this.drawPixel(rect.x + i, rect.y + y1, curveColor);
-            }
-            return this;
-        };
-        /**
-         * 清理背景颜色，目前仅用于特定的抠图，例如 editor\resource\assets\3d\terrain\terrain_brushes.png
-         * @param backColor 背景颜色
-         */
-        ImageUtil.prototype.clearBackColor = function (backColor) {
-            for (var i = 0; i < this.imageData.width; i++) {
-                for (var j = 0; j < this.imageData.height; j++) {
-                    var t = this.getPixel(i, j);
-                    var a = 1 - t.r / backColor.r;
-                    t.r = t.g = t.b = 0;
-                    t.a = a;
-                    this.setPixel(i, j, t);
-                }
-            }
-        };
-        return ImageUtil;
-    }());
-    feng3d.ImageUtil = ImageUtil;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var Stats = /** @class */ (function () {
-        function Stats() {
-            var _this = this;
-            var mode = 0;
-            if (typeof document == "undefined")
-                return;
-            var container = document.createElement('div');
-            container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;';
-            container.addEventListener('click', function (event) {
-                event.preventDefault();
-                showPanel(++mode % container.children.length);
-            }, false);
-            //
-            function addPanel(panel) {
-                container.appendChild(panel.dom);
-                return panel;
-            }
-            function showPanel(id) {
-                for (var i = 0; i < container.children.length; i++) {
-                    container.children[i].style.display = i === id ? 'block' : 'none';
-                }
-                mode = id;
-            }
-            //
-            var beginTime = (performance || Date).now(), prevTime = beginTime, frames = 0;
-            var fpsPanel = addPanel(new StatsPanel('FPS', '#0ff', '#002'));
-            var msPanel = addPanel(new StatsPanel('MS', '#0f0', '#020'));
-            if (self.performance && self.performance.memory) {
-                var memPanel = addPanel(new StatsPanel('MB', '#f08', '#201'));
-            }
-            showPanel(0);
-            this.REVISION = 16;
-            this.dom = container;
-            this.addPanel = addPanel;
-            this.showPanel = showPanel;
-            this.begin = function () {
-                beginTime = (performance || Date).now();
-            };
-            this.end = function () {
-                frames++;
-                var time = (performance || Date).now();
-                msPanel.update(time - beginTime, 200);
-                if (time > prevTime + 1000) {
-                    fpsPanel.update((frames * 1000) / (time - prevTime), 100);
-                    prevTime = time;
-                    frames = 0;
-                    if (memPanel) {
-                        var memory = performance.memory;
-                        memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
-                    }
-                }
-                return time;
-            };
-            this.update = function () {
-                beginTime = _this.end();
-            };
-            // Backwards Compatibility
-            this.domElement = container;
-            this.setMode = showPanel;
-        }
-        Stats.init = function (parent) {
-            if (!this.instance) {
-                this.instance = new Stats();
-                parent = parent || document.body;
-                parent.appendChild(this.instance.dom);
-            }
-            feng3d.ticker.onframe(this.instance.update, this.instance);
-        };
-        ;
-        return Stats;
-    }());
-    feng3d.Stats = Stats;
-    var StatsPanel = /** @class */ (function () {
-        function StatsPanel(name, fg, bg) {
-            var min = Infinity, max = 0, round = Math.round;
-            var PR = round(window.devicePixelRatio || 1);
-            var WIDTH = 80 * PR, HEIGHT = 48 * PR, TEXT_X = 3 * PR, TEXT_Y = 2 * PR, GRAPH_X = 3 * PR, GRAPH_Y = 15 * PR, GRAPH_WIDTH = 74 * PR, GRAPH_HEIGHT = 30 * PR;
-            var canvas = document.createElement('canvas');
-            canvas.width = WIDTH;
-            canvas.height = HEIGHT;
-            canvas.style.cssText = 'width:80px;height:48px';
-            var context0 = canvas.getContext('2d');
-            if (context0 == null) {
-                console.log("\u65E0\u6CD5\u521B\u5EFA CanvasRenderingContext2D ");
-                return;
-            }
-            var context = context0;
-            context.font = 'bold ' + (9 * PR) + 'px Helvetica,Arial,sans-serif';
-            context.textBaseline = 'top';
-            context.fillStyle = bg;
-            context.fillRect(0, 0, WIDTH, HEIGHT);
-            context.fillStyle = fg;
-            context.fillText(name, TEXT_X, TEXT_Y);
-            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
-            context.fillStyle = bg;
-            context.globalAlpha = 0.9;
-            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
-            this.dom = canvas;
-            this.update = function (value, maxValue) {
-                min = Math.min(min, value);
-                max = Math.max(max, value);
-                context.fillStyle = bg;
-                context.globalAlpha = 1;
-                context.fillRect(0, 0, WIDTH, GRAPH_Y);
-                context.fillStyle = fg;
-                context.fillText(round(value) + ' ' + name + ' (' + round(min) + '-' + round(max) + ')', TEXT_X, TEXT_Y);
-                context.drawImage(canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
-                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
-                context.fillStyle = bg;
-                context.globalAlpha = 0.9;
-                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - (value / maxValue)) * GRAPH_HEIGHT));
-            };
-        }
-        return StatsPanel;
-    }());
-    feng3d.StatsPanel = StatsPanel;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * .
-     */
-    var CHAR_DOT = 46;
-    /**
-     * :
-     */
-    var CHAR_COLON = 58;
-    /**
-     * ?
-     */
-    var CHAR_QUESTION_MARK = 63;
-    /**
-     * A
-     */
-    var CHAR_UPPERCASE_A = 65;
-    /**
-     * Z
-     */
-    var CHAR_UPPERCASE_Z = 90;
-    /**
-     * a
-     */
-    var CHAR_LOWERCASE_A = 97;
-    /**
-     * z
-     */
-    var CHAR_LOWERCASE_Z = 122;
-    /**
-     * /
-     */
-    var CHAR_FORWARD_SLASH = 47;
-    /**
-     * \
-     */
-    var CHAR_BACKWARD_SLASH = 92;
-    /**
-     * 未实现其功能
-     */
-    var process = {
-        platform: 'win32',
-        env: {},
-        cwd: function () { return ""; },
-    };
-    var ERR_INVALID_ARG_TYPE = /** @class */ (function (_super) {
-        __extends(ERR_INVALID_ARG_TYPE, _super);
-        function ERR_INVALID_ARG_TYPE(name, expected, actual) {
-            var _this = this;
-            assert(typeof name === 'string', "'name' must be a string");
-            // determiner: 'must be' or 'must not be'
-            var determiner;
-            if (typeof expected === 'string' && expected.startsWith('not ')) {
-                determiner = 'must not be';
-                expected = expected.replace(/^not /, '');
-            }
-            else {
-                determiner = 'must be';
-            }
-            var msg;
-            if (name.endsWith(' argument')) {
-                // For cases like 'first argument'
-                msg = "The " + name + " " + determiner + " " + oneOf(expected, 'type');
-            }
-            else {
-                var type = name.includes('.') ? 'property' : 'argument';
-                msg = "The \"" + name + "\" " + type + " " + determiner + " " + oneOf(expected, 'type');
-            }
-            // TODO(BridgeAR): Improve the output by showing `null` and similar.
-            msg += ". Received type " + typeof actual;
-            _this = _super.call(this, msg) || this;
-            return _this;
-        }
-        return ERR_INVALID_ARG_TYPE;
-    }(TypeError));
-    function oneOf(expected, thing) {
-        assert(typeof thing === 'string', '`thing` has to be of type string');
-        if (Array.isArray(expected)) {
-            var len = expected.length;
-            assert(len > 0, 'At least one expected value needs to be specified');
-            expected = expected.map(function (i) { return String(i); });
-            if (len > 2) {
-                return "one of " + thing + " " + expected.slice(0, len - 1).join(', ') + ", or " +
-                    expected[len - 1];
-            }
-            else if (len === 2) {
-                return "one of " + thing + " " + expected[0] + " or " + expected[1];
-            }
-            else {
-                return "of " + thing + " " + expected[0];
-            }
-        }
-        else {
-            return "of " + thing + " " + String(expected);
-        }
-    }
-    function assert(b, msg) {
-        if (!b)
-            throw msg;
-    }
-    function validateString(value, name) {
-        if (typeof value !== 'string')
-            throw new ERR_INVALID_ARG_TYPE(name, 'string', value);
-    }
-    function isPathSeparator(code) {
-        return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
-    }
-    function isPosixPathSeparator(code) {
-        return code === CHAR_FORWARD_SLASH;
-    }
-    function isWindowsDeviceRoot(code) {
-        return code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z ||
-            code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z;
-    }
-    // Resolves . and .. elements in a path with directory names
-    function normalizeString(path, allowAboveRoot, separator, isPathSeparator) {
-        var res = '';
-        var lastSegmentLength = 0;
-        var lastSlash = -1;
-        var dots = 0;
-        var code = -1;
-        for (var i = 0; i <= path.length; ++i) {
-            if (i < path.length)
-                code = path.charCodeAt(i);
-            else if (isPathSeparator(code))
-                break;
-            else
-                code = CHAR_FORWARD_SLASH;
-            if (isPathSeparator(code)) {
-                if (lastSlash === i - 1 || dots === 1) {
-                    // NOOP
-                }
-                else if (lastSlash !== i - 1 && dots === 2) {
-                    if (res.length < 2 || lastSegmentLength !== 2 ||
-                        res.charCodeAt(res.length - 1) !== CHAR_DOT ||
-                        res.charCodeAt(res.length - 2) !== CHAR_DOT) {
-                        if (res.length > 2) {
-                            var lastSlashIndex = res.lastIndexOf(separator);
-                            if (lastSlashIndex === -1) {
-                                res = '';
-                                lastSegmentLength = 0;
-                            }
-                            else {
-                                res = res.slice(0, lastSlashIndex);
-                                lastSegmentLength = res.length - 1 - res.lastIndexOf(separator);
-                            }
-                            lastSlash = i;
-                            dots = 0;
-                            continue;
-                        }
-                        else if (res.length === 2 || res.length === 1) {
-                            res = '';
-                            lastSegmentLength = 0;
-                            lastSlash = i;
-                            dots = 0;
-                            continue;
-                        }
-                    }
-                    if (allowAboveRoot) {
-                        if (res.length > 0)
-                            res += separator + "..";
-                        else
-                            res = '..';
-                        lastSegmentLength = 2;
-                    }
-                }
-                else {
-                    if (res.length > 0)
-                        res += separator + path.slice(lastSlash + 1, i);
-                    else
-                        res = path.slice(lastSlash + 1, i);
-                    lastSegmentLength = i - lastSlash - 1;
-                }
-                lastSlash = i;
-                dots = 0;
-            }
-            else if (code === CHAR_DOT && dots !== -1) {
-                ++dots;
-            }
-            else {
-                dots = -1;
-            }
-        }
-        return res;
-    }
-    function _format(sep, pathObject) {
-        var dir = pathObject.dir || pathObject.root;
-        var base = pathObject.base ||
-            ((pathObject.name || '') + (pathObject.ext || ''));
-        if (!dir) {
-            return base;
-        }
-        if (dir === pathObject.root) {
-            return dir + base;
-        }
-        return dir + sep + base;
-    }
-    var Win32Path = /** @class */ (function () {
-        function Win32Path() {
-            this.sep = '\\';
-            this.delimiter = ';';
-            this.win32 = null;
-            this.posix = null;
-        }
-        // path.resolve([from ...], to)
-        Win32Path.prototype.resolve = function () {
-            var pathSegments = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                pathSegments[_i] = arguments[_i];
-            }
-            var resolvedDevice = '';
-            var resolvedTail = '';
-            var resolvedAbsolute = false;
-            for (var i = arguments.length - 1; i >= -1; i--) {
-                var path;
-                if (i >= 0) {
-                    path = arguments[i];
-                }
-                else if (!resolvedDevice) {
-                    path = process.cwd();
-                }
-                else {
-                    // Windows has the concept of drive-specific current working
-                    // directories. If we've resolved a drive letter but not yet an
-                    // absolute path, get cwd for that drive, or the process cwd if
-                    // the drive cwd is not available. We're sure the device is not
-                    // a UNC path at this points, because UNC paths are always absolute.
-                    path = process.env['=' + resolvedDevice] || process.cwd();
-                    // Verify that a cwd was found and that it actually points
-                    // to our drive. If not, default to the drive's root.
-                    if (path === undefined ||
-                        path.slice(0, 3).toLowerCase() !==
-                            resolvedDevice.toLowerCase() + '\\') {
-                        path = resolvedDevice + '\\';
-                    }
-                }
-                validateString(path, 'path');
-                // Skip empty entries
-                if (path.length === 0) {
-                    continue;
-                }
-                var len = path.length;
-                var rootEnd = 0;
-                var device = '';
-                var isAbsolute = false;
-                var code = path.charCodeAt(0);
-                // Try to match a root
-                if (len > 1) {
-                    if (isPathSeparator(code)) {
-                        // Possible UNC root
-                        // If we started with a separator, we know we at least have an
-                        // absolute path of some kind (UNC or otherwise)
-                        isAbsolute = true;
-                        if (isPathSeparator(path.charCodeAt(1))) {
-                            // Matched double path separator at beginning
-                            var j = 2;
-                            var last = j;
-                            // Match 1 or more non-path separators
-                            for (; j < len; ++j) {
-                                if (isPathSeparator(path.charCodeAt(j)))
-                                    break;
-                            }
-                            if (j < len && j !== last) {
-                                var firstPart = path.slice(last, j);
-                                // Matched!
-                                last = j;
-                                // Match 1 or more path separators
-                                for (; j < len; ++j) {
-                                    if (!isPathSeparator(path.charCodeAt(j)))
-                                        break;
-                                }
-                                if (j < len && j !== last) {
-                                    // Matched!
-                                    last = j;
-                                    // Match 1 or more non-path separators
-                                    for (; j < len; ++j) {
-                                        if (isPathSeparator(path.charCodeAt(j)))
-                                            break;
-                                    }
-                                    if (j === len) {
-                                        // We matched a UNC root only
-                                        device = '\\\\' + firstPart + '\\' + path.slice(last);
-                                        rootEnd = j;
-                                    }
-                                    else if (j !== last) {
-                                        // We matched a UNC root with leftovers
-                                        device = '\\\\' + firstPart + '\\' + path.slice(last, j);
-                                        rootEnd = j;
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            rootEnd = 1;
-                        }
-                    }
-                    else if (isWindowsDeviceRoot(code)) {
-                        // Possible device root
-                        if (path.charCodeAt(1) === CHAR_COLON) {
-                            device = path.slice(0, 2);
-                            rootEnd = 2;
-                            if (len > 2) {
-                                if (isPathSeparator(path.charCodeAt(2))) {
-                                    // Treat separator following drive name as an absolute path
-                                    // indicator
-                                    isAbsolute = true;
-                                    rootEnd = 3;
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (isPathSeparator(code)) {
-                    // `path` contains just a path separator
-                    rootEnd = 1;
-                    isAbsolute = true;
-                }
-                if (device.length > 0 &&
-                    resolvedDevice.length > 0 &&
-                    device.toLowerCase() !== resolvedDevice.toLowerCase()) {
-                    // This path points to another device so it is not applicable
-                    continue;
-                }
-                if (resolvedDevice.length === 0 && device.length > 0) {
-                    resolvedDevice = device;
-                }
-                if (!resolvedAbsolute) {
-                    resolvedTail = path.slice(rootEnd) + '\\' + resolvedTail;
-                    resolvedAbsolute = isAbsolute;
-                }
-                if (resolvedDevice.length > 0 && resolvedAbsolute) {
-                    break;
-                }
-            }
-            // At this point the path should be resolved to a full absolute path,
-            // but handle relative paths to be safe (might happen when process.cwd()
-            // fails)
-            // Normalize the tail path
-            resolvedTail = normalizeString(resolvedTail, !resolvedAbsolute, '\\', isPathSeparator);
-            return (resolvedDevice + (resolvedAbsolute ? '\\' : '') + resolvedTail) ||
-                '.';
-        };
-        Win32Path.prototype.normalize = function (path) {
-            validateString(path, 'path');
-            var len = path.length;
-            if (len === 0)
-                return '.';
-            var rootEnd = 0;
-            var device;
-            var isAbsolute = false;
-            var code = path.charCodeAt(0);
-            // Try to match a root
-            if (len > 1) {
-                if (isPathSeparator(code)) {
-                    // Possible UNC root
-                    // If we started with a separator, we know we at least have an absolute
-                    // path of some kind (UNC or otherwise)
-                    isAbsolute = true;
-                    if (isPathSeparator(path.charCodeAt(1))) {
-                        // Matched double path separator at beginning
-                        var j = 2;
-                        var last = j;
-                        // Match 1 or more non-path separators
-                        for (; j < len; ++j) {
-                            if (isPathSeparator(path.charCodeAt(j)))
-                                break;
-                        }
-                        if (j < len && j !== last) {
-                            var firstPart = path.slice(last, j);
-                            // Matched!
-                            last = j;
-                            // Match 1 or more path separators
-                            for (; j < len; ++j) {
-                                if (!isPathSeparator(path.charCodeAt(j)))
-                                    break;
-                            }
-                            if (j < len && j !== last) {
-                                // Matched!
-                                last = j;
-                                // Match 1 or more non-path separators
-                                for (; j < len; ++j) {
-                                    if (isPathSeparator(path.charCodeAt(j)))
-                                        break;
-                                }
-                                if (j === len) {
-                                    // We matched a UNC root only
-                                    // Return the normalized version of the UNC root since there
-                                    // is nothing left to process
-                                    return '\\\\' + firstPart + '\\' + path.slice(last) + '\\';
-                                }
-                                else if (j !== last) {
-                                    // We matched a UNC root with leftovers
-                                    device = '\\\\' + firstPart + '\\' + path.slice(last, j);
-                                    rootEnd = j;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        rootEnd = 1;
-                    }
-                }
-                else if (isWindowsDeviceRoot(code)) {
-                    // Possible device root
-                    if (path.charCodeAt(1) === CHAR_COLON) {
-                        device = path.slice(0, 2);
-                        rootEnd = 2;
-                        if (len > 2) {
-                            if (isPathSeparator(path.charCodeAt(2))) {
-                                // Treat separator following drive name as an absolute path
-                                // indicator
-                                isAbsolute = true;
-                                rootEnd = 3;
-                            }
-                        }
-                    }
-                }
-            }
-            else if (isPathSeparator(code)) {
-                // `path` contains just a path separator, exit early to avoid unnecessary
-                // work
-                return '\\';
-            }
-            var tail;
-            if (rootEnd < len) {
-                tail = normalizeString(path.slice(rootEnd), !isAbsolute, '\\', isPathSeparator);
-            }
-            else {
-                tail = '';
-            }
-            if (tail.length === 0 && !isAbsolute)
-                tail = '.';
-            if (tail.length > 0 && isPathSeparator(path.charCodeAt(len - 1)))
-                tail += '\\';
-            if (device === undefined) {
-                if (isAbsolute) {
-                    if (tail.length > 0)
-                        return '\\' + tail;
-                    else
-                        return '\\';
-                }
-                else if (tail.length > 0) {
-                    return tail;
-                }
-                else {
-                    return '';
-                }
-            }
-            else if (isAbsolute) {
-                if (tail.length > 0)
-                    return device + '\\' + tail;
-                else
-                    return device + '\\';
-            }
-            else if (tail.length > 0) {
-                return device + tail;
-            }
-            else {
-                return device;
-            }
-        };
-        Win32Path.prototype.isAbsolute = function (path) {
-            validateString(path, 'path');
-            var len = path.length;
-            if (len === 0)
-                return false;
-            var code = path.charCodeAt(0);
-            if (isPathSeparator(code)) {
-                return true;
-            }
-            else if (isWindowsDeviceRoot(code)) {
-                // Possible device root
-                if (len > 2 && path.charCodeAt(1) === CHAR_COLON) {
-                    if (isPathSeparator(path.charCodeAt(2)))
-                        return true;
-                }
-            }
-            return false;
-        };
-        Win32Path.prototype.join = function () {
-            if (arguments.length === 0)
-                return '.';
-            var joined;
-            var firstPart;
-            for (var i = 0; i < arguments.length; ++i) {
-                var arg = arguments[i];
-                validateString(arg, 'path');
-                if (arg.length > 0) {
-                    if (joined === undefined)
-                        joined = firstPart = arg;
-                    else
-                        joined += '\\' + arg;
-                }
-            }
-            if (joined === undefined)
-                return '.';
-            // Make sure that the joined path doesn't start with two slashes, because
-            // normalize() will mistake it for an UNC path then.
-            //
-            // This step is skipped when it is very clear that the user actually
-            // intended to point at an UNC path. This is assumed when the first
-            // non-empty string arguments starts with exactly two slashes followed by
-            // at least one more non-slash character.
-            //
-            // Note that for normalize() to treat a path as an UNC path it needs to
-            // have at least 2 components, so we don't filter for that here.
-            // This means that the user can use join to construct UNC paths from
-            // a server name and a share name; for example:
-            //   path.join('//server', 'share') -> '\\\\server\\share\\')
-            var needsReplace = true;
-            var slashCount = 0;
-            if (isPathSeparator(firstPart.charCodeAt(0))) {
-                ++slashCount;
-                var firstLen = firstPart.length;
-                if (firstLen > 1) {
-                    if (isPathSeparator(firstPart.charCodeAt(1))) {
-                        ++slashCount;
-                        if (firstLen > 2) {
-                            if (isPathSeparator(firstPart.charCodeAt(2)))
-                                ++slashCount;
-                            else {
-                                // We matched a UNC path in the first part
-                                needsReplace = false;
-                            }
-                        }
-                    }
-                }
-            }
-            if (needsReplace) {
-                // Find any more consecutive slashes we need to replace
-                for (; slashCount < joined.length; ++slashCount) {
-                    if (!isPathSeparator(joined.charCodeAt(slashCount)))
-                        break;
-                }
-                // Replace the slashes if needed
-                if (slashCount >= 2)
-                    joined = '\\' + joined.slice(slashCount);
-            }
-            return win32.normalize(joined);
-        };
-        // It will solve the relative path from `from` to `to`, for instance:
-        //  from = 'C:\\orandea\\test\\aaa'
-        //  to = 'C:\\orandea\\impl\\bbb'
-        // The output of the function should be: '..\\..\\impl\\bbb'
-        Win32Path.prototype.relative = function (from, to) {
-            validateString(from, 'from');
-            validateString(to, 'to');
-            if (from === to)
-                return '';
-            var fromOrig = win32.resolve(from);
-            var toOrig = win32.resolve(to);
-            if (fromOrig === toOrig)
-                return '';
-            from = fromOrig.toLowerCase();
-            to = toOrig.toLowerCase();
-            if (from === to)
-                return '';
-            // Trim any leading backslashes
-            var fromStart = 0;
-            for (; fromStart < from.length; ++fromStart) {
-                if (from.charCodeAt(fromStart) !== CHAR_BACKWARD_SLASH)
-                    break;
-            }
-            // Trim trailing backslashes (applicable to UNC paths only)
-            var fromEnd = from.length;
-            for (; fromEnd - 1 > fromStart; --fromEnd) {
-                if (from.charCodeAt(fromEnd - 1) !== CHAR_BACKWARD_SLASH)
-                    break;
-            }
-            var fromLen = (fromEnd - fromStart);
-            // Trim any leading backslashes
-            var toStart = 0;
-            for (; toStart < to.length; ++toStart) {
-                if (to.charCodeAt(toStart) !== CHAR_BACKWARD_SLASH)
-                    break;
-            }
-            // Trim trailing backslashes (applicable to UNC paths only)
-            var toEnd = to.length;
-            for (; toEnd - 1 > toStart; --toEnd) {
-                if (to.charCodeAt(toEnd - 1) !== CHAR_BACKWARD_SLASH)
-                    break;
-            }
-            var toLen = (toEnd - toStart);
-            // Compare paths to find the longest common path from root
-            var length = (fromLen < toLen ? fromLen : toLen);
-            var lastCommonSep = -1;
-            var i = 0;
-            for (; i <= length; ++i) {
-                if (i === length) {
-                    if (toLen > length) {
-                        if (to.charCodeAt(toStart + i) === CHAR_BACKWARD_SLASH) {
-                            // We get here if `from` is the exact base path for `to`.
-                            // For example: from='C:\\foo\\bar'; to='C:\\foo\\bar\\baz'
-                            return toOrig.slice(toStart + i + 1);
-                        }
-                        else if (i === 2) {
-                            // We get here if `from` is the device root.
-                            // For example: from='C:\\'; to='C:\\foo'
-                            return toOrig.slice(toStart + i);
-                        }
-                    }
-                    if (fromLen > length) {
-                        if (from.charCodeAt(fromStart + i) === CHAR_BACKWARD_SLASH) {
-                            // We get here if `to` is the exact base path for `from`.
-                            // For example: from='C:\\foo\\bar'; to='C:\\foo'
-                            lastCommonSep = i;
-                        }
-                        else if (i === 2) {
-                            // We get here if `to` is the device root.
-                            // For example: from='C:\\foo\\bar'; to='C:\\'
-                            lastCommonSep = 3;
-                        }
-                    }
-                    break;
-                }
-                var fromCode = from.charCodeAt(fromStart + i);
-                var toCode = to.charCodeAt(toStart + i);
-                if (fromCode !== toCode)
-                    break;
-                else if (fromCode === CHAR_BACKWARD_SLASH)
-                    lastCommonSep = i;
-            }
-            // We found a mismatch before the first common path separator was seen, so
-            // return the original `to`.
-            if (i !== length && lastCommonSep === -1) {
-                return toOrig;
-            }
-            var out = '';
-            if (lastCommonSep === -1)
-                lastCommonSep = 0;
-            // Generate the relative path based on the path difference between `to` and
-            // `from`
-            for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
-                if (i === fromEnd || from.charCodeAt(i) === CHAR_BACKWARD_SLASH) {
-                    if (out.length === 0)
-                        out += '..';
-                    else
-                        out += '\\..';
-                }
-            }
-            // Lastly, append the rest of the destination (`to`) path that comes after
-            // the common path parts
-            if (out.length > 0)
-                return out + toOrig.slice(toStart + lastCommonSep, toEnd);
-            else {
-                toStart += lastCommonSep;
-                if (toOrig.charCodeAt(toStart) === CHAR_BACKWARD_SLASH)
-                    ++toStart;
-                return toOrig.slice(toStart, toEnd);
-            }
-        };
-        Win32Path.prototype.toNamespacedPath = function (path) {
-            // Note: this will *probably* throw somewhere.
-            if (typeof path !== 'string')
-                return path;
-            if (path.length === 0) {
-                return '';
-            }
-            var resolvedPath = win32.resolve(path);
-            if (resolvedPath.length >= 3) {
-                if (resolvedPath.charCodeAt(0) === CHAR_BACKWARD_SLASH) {
-                    // Possible UNC root
-                    if (resolvedPath.charCodeAt(1) === CHAR_BACKWARD_SLASH) {
-                        var code = resolvedPath.charCodeAt(2);
-                        if (code !== CHAR_QUESTION_MARK && code !== CHAR_DOT) {
-                            // Matched non-long UNC root, convert the path to a long UNC path
-                            return '\\\\?\\UNC\\' + resolvedPath.slice(2);
-                        }
-                    }
-                }
-                else if (isWindowsDeviceRoot(resolvedPath.charCodeAt(0))) {
-                    // Possible device root
-                    if (resolvedPath.charCodeAt(1) === CHAR_COLON &&
-                        resolvedPath.charCodeAt(2) === CHAR_BACKWARD_SLASH) {
-                        // Matched device root, convert the path to a long UNC path
-                        return '\\\\?\\' + resolvedPath;
-                    }
-                }
-            }
-            return path;
-        };
-        Win32Path.prototype.dirname = function (path) {
-            validateString(path, 'path');
-            var len = path.length;
-            if (len === 0)
-                return '.';
-            var rootEnd = -1;
-            var end = -1;
-            var matchedSlash = true;
-            var offset = 0;
-            var code = path.charCodeAt(0);
-            // Try to match a root
-            if (len > 1) {
-                if (isPathSeparator(code)) {
-                    // Possible UNC root
-                    rootEnd = offset = 1;
-                    if (isPathSeparator(path.charCodeAt(1))) {
-                        // Matched double path separator at beginning
-                        var j = 2;
-                        var last = j;
-                        // Match 1 or more non-path separators
-                        for (; j < len; ++j) {
-                            if (isPathSeparator(path.charCodeAt(j)))
-                                break;
-                        }
-                        if (j < len && j !== last) {
-                            // Matched!
-                            last = j;
-                            // Match 1 or more path separators
-                            for (; j < len; ++j) {
-                                if (!isPathSeparator(path.charCodeAt(j)))
-                                    break;
-                            }
-                            if (j < len && j !== last) {
-                                // Matched!
-                                last = j;
-                                // Match 1 or more non-path separators
-                                for (; j < len; ++j) {
-                                    if (isPathSeparator(path.charCodeAt(j)))
-                                        break;
-                                }
-                                if (j === len) {
-                                    // We matched a UNC root only
-                                    return path;
-                                }
-                                if (j !== last) {
-                                    // We matched a UNC root with leftovers
-                                    // Offset by 1 to include the separator after the UNC root to
-                                    // treat it as a "normal root" on top of a (UNC) root
-                                    rootEnd = offset = j + 1;
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (isWindowsDeviceRoot(code)) {
-                    // Possible device root
-                    if (path.charCodeAt(1) === CHAR_COLON) {
-                        rootEnd = offset = 2;
-                        if (len > 2) {
-                            if (isPathSeparator(path.charCodeAt(2)))
-                                rootEnd = offset = 3;
-                        }
-                    }
-                }
-            }
-            else if (isPathSeparator(code)) {
-                // `path` contains just a path separator, exit early to avoid
-                // unnecessary work
-                return path;
-            }
-            for (var i = len - 1; i >= offset; --i) {
-                if (isPathSeparator(path.charCodeAt(i))) {
-                    if (!matchedSlash) {
-                        end = i;
-                        break;
-                    }
-                }
-                else {
-                    // We saw the first non-path separator
-                    matchedSlash = false;
-                }
-            }
-            if (end === -1) {
-                if (rootEnd === -1)
-                    return '.';
-                else
-                    end = rootEnd;
-            }
-            return path.slice(0, end);
-        };
-        Win32Path.prototype.basename = function (path, ext) {
-            if (ext !== undefined)
-                validateString(ext, 'ext');
-            validateString(path, 'path');
-            var start = 0;
-            var end = -1;
-            var matchedSlash = true;
-            var i;
-            // Check for a drive letter prefix so as not to mistake the following
-            // path separator as an extra separator at the end of the path that can be
-            // disregarded
-            if (path.length >= 2) {
-                var drive = path.charCodeAt(0);
-                if (isWindowsDeviceRoot(drive)) {
-                    if (path.charCodeAt(1) === CHAR_COLON)
-                        start = 2;
-                }
-            }
-            if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
-                if (ext.length === path.length && ext === path)
-                    return '';
-                var extIdx = ext.length - 1;
-                var firstNonSlashEnd = -1;
-                for (i = path.length - 1; i >= start; --i) {
-                    var code = path.charCodeAt(i);
-                    if (isPathSeparator(code)) {
-                        // If we reached a path separator that was not part of a set of path
-                        // separators at the end of the string, stop now
-                        if (!matchedSlash) {
-                            start = i + 1;
-                            break;
-                        }
-                    }
-                    else {
-                        if (firstNonSlashEnd === -1) {
-                            // We saw the first non-path separator, remember this index in case
-                            // we need it if the extension ends up not matching
-                            matchedSlash = false;
-                            firstNonSlashEnd = i + 1;
-                        }
-                        if (extIdx >= 0) {
-                            // Try to match the explicit extension
-                            if (code === ext.charCodeAt(extIdx)) {
-                                if (--extIdx === -1) {
-                                    // We matched the extension, so mark this as the end of our path
-                                    // component
-                                    end = i;
-                                }
-                            }
-                            else {
-                                // Extension does not match, so our result is the entire path
-                                // component
-                                extIdx = -1;
-                                end = firstNonSlashEnd;
-                            }
-                        }
-                    }
-                }
-                if (start === end)
-                    end = firstNonSlashEnd;
-                else if (end === -1)
-                    end = path.length;
-                return path.slice(start, end);
-            }
-            else {
-                for (i = path.length - 1; i >= start; --i) {
-                    if (isPathSeparator(path.charCodeAt(i))) {
-                        // If we reached a path separator that was not part of a set of path
-                        // separators at the end of the string, stop now
-                        if (!matchedSlash) {
-                            start = i + 1;
-                            break;
-                        }
-                    }
-                    else if (end === -1) {
-                        // We saw the first non-path separator, mark this as the end of our
-                        // path component
-                        matchedSlash = false;
-                        end = i + 1;
-                    }
-                }
-                if (end === -1)
-                    return '';
-                return path.slice(start, end);
-            }
-        };
-        Win32Path.prototype.extname = function (path) {
-            validateString(path, 'path');
-            var start = 0;
-            var startDot = -1;
-            var startPart = 0;
-            var end = -1;
-            var matchedSlash = true;
-            // Track the state of characters (if any) we see before our first dot and
-            // after any path separator we find
-            var preDotState = 0;
-            // Check for a drive letter prefix so as not to mistake the following
-            // path separator as an extra separator at the end of the path that can be
-            // disregarded
-            if (path.length >= 2 &&
-                path.charCodeAt(1) === CHAR_COLON &&
-                isWindowsDeviceRoot(path.charCodeAt(0))) {
-                start = startPart = 2;
-            }
-            for (var i = path.length - 1; i >= start; --i) {
-                var code = path.charCodeAt(i);
-                if (isPathSeparator(code)) {
-                    // If we reached a path separator that was not part of a set of path
-                    // separators at the end of the string, stop now
-                    if (!matchedSlash) {
-                        startPart = i + 1;
-                        break;
-                    }
-                    continue;
-                }
-                if (end === -1) {
-                    // We saw the first non-path separator, mark this as the end of our
-                    // extension
-                    matchedSlash = false;
-                    end = i + 1;
-                }
-                if (code === CHAR_DOT) {
-                    // If this is our first dot, mark it as the start of our extension
-                    if (startDot === -1)
-                        startDot = i;
-                    else if (preDotState !== 1)
-                        preDotState = 1;
-                }
-                else if (startDot !== -1) {
-                    // We saw a non-dot and non-path separator before our dot, so we should
-                    // have a good chance at having a non-empty extension
-                    preDotState = -1;
-                }
-            }
-            if (startDot === -1 ||
-                end === -1 ||
-                // We saw a non-dot character immediately before the dot
-                preDotState === 0 ||
-                // The (right-most) trimmed path component is exactly '..'
-                (preDotState === 1 &&
-                    startDot === end - 1 &&
-                    startDot === startPart + 1)) {
-                return '';
-            }
-            return path.slice(startDot, end);
-        };
-        Win32Path.prototype.format = function (pathObject) {
-            if (pathObject === null || typeof pathObject !== 'object') {
-                throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
-            }
-            return _format('\\', pathObject);
-        };
-        Win32Path.prototype.parse = function (path) {
-            validateString(path, 'path');
-            var ret = { root: '', dir: '', base: '', ext: '', name: '' };
-            if (path.length === 0)
-                return ret;
-            var len = path.length;
-            var rootEnd = 0;
-            var code = path.charCodeAt(0);
-            // Try to match a root
-            if (len > 1) {
-                if (isPathSeparator(code)) {
-                    // Possible UNC root
-                    rootEnd = 1;
-                    if (isPathSeparator(path.charCodeAt(1))) {
-                        // Matched double path separator at beginning
-                        var j = 2;
-                        var last = j;
-                        // Match 1 or more non-path separators
-                        for (; j < len; ++j) {
-                            if (isPathSeparator(path.charCodeAt(j)))
-                                break;
-                        }
-                        if (j < len && j !== last) {
-                            // Matched!
-                            last = j;
-                            // Match 1 or more path separators
-                            for (; j < len; ++j) {
-                                if (!isPathSeparator(path.charCodeAt(j)))
-                                    break;
-                            }
-                            if (j < len && j !== last) {
-                                // Matched!
-                                last = j;
-                                // Match 1 or more non-path separators
-                                for (; j < len; ++j) {
-                                    if (isPathSeparator(path.charCodeAt(j)))
-                                        break;
-                                }
-                                if (j === len) {
-                                    // We matched a UNC root only
-                                    rootEnd = j;
-                                }
-                                else if (j !== last) {
-                                    // We matched a UNC root with leftovers
-                                    rootEnd = j + 1;
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (isWindowsDeviceRoot(code)) {
-                    // Possible device root
-                    if (path.charCodeAt(1) === CHAR_COLON) {
-                        rootEnd = 2;
-                        if (len > 2) {
-                            if (isPathSeparator(path.charCodeAt(2))) {
-                                if (len === 3) {
-                                    // `path` contains just a drive root, exit early to avoid
-                                    // unnecessary work
-                                    ret.root = ret.dir = path;
-                                    return ret;
-                                }
-                                rootEnd = 3;
-                            }
-                        }
-                        else {
-                            // `path` contains just a drive root, exit early to avoid
-                            // unnecessary work
-                            ret.root = ret.dir = path;
-                            return ret;
-                        }
-                    }
-                }
-            }
-            else if (isPathSeparator(code)) {
-                // `path` contains just a path separator, exit early to avoid
-                // unnecessary work
-                ret.root = ret.dir = path;
-                return ret;
-            }
-            if (rootEnd > 0)
-                ret.root = path.slice(0, rootEnd);
-            var startDot = -1;
-            var startPart = rootEnd;
-            var end = -1;
-            var matchedSlash = true;
-            var i = path.length - 1;
-            // Track the state of characters (if any) we see before our first dot and
-            // after any path separator we find
-            var preDotState = 0;
-            // Get non-dir info
-            for (; i >= rootEnd; --i) {
-                code = path.charCodeAt(i);
-                if (isPathSeparator(code)) {
-                    // If we reached a path separator that was not part of a set of path
-                    // separators at the end of the string, stop now
-                    if (!matchedSlash) {
-                        startPart = i + 1;
-                        break;
-                    }
-                    continue;
-                }
-                if (end === -1) {
-                    // We saw the first non-path separator, mark this as the end of our
-                    // extension
-                    matchedSlash = false;
-                    end = i + 1;
-                }
-                if (code === CHAR_DOT) {
-                    // If this is our first dot, mark it as the start of our extension
-                    if (startDot === -1)
-                        startDot = i;
-                    else if (preDotState !== 1)
-                        preDotState = 1;
-                }
-                else if (startDot !== -1) {
-                    // We saw a non-dot and non-path separator before our dot, so we should
-                    // have a good chance at having a non-empty extension
-                    preDotState = -1;
-                }
-            }
-            if (startDot === -1 ||
-                end === -1 ||
-                // We saw a non-dot character immediately before the dot
-                preDotState === 0 ||
-                // The (right-most) trimmed path component is exactly '..'
-                (preDotState === 1 &&
-                    startDot === end - 1 &&
-                    startDot === startPart + 1)) {
-                if (end !== -1) {
-                    ret.base = ret.name = path.slice(startPart, end);
-                }
-            }
-            else {
-                ret.name = path.slice(startPart, startDot);
-                ret.base = path.slice(startPart, end);
-                ret.ext = path.slice(startDot, end);
-            }
-            // If the directory is the root, use the entire root as the `dir` including
-            // the trailing slash if any (`C:\abc` -> `C:\`). Otherwise, strip out the
-            // trailing slash (`C:\abc\def` -> `C:\abc`).
-            if (startPart > 0 && startPart !== rootEnd)
-                ret.dir = path.slice(0, startPart - 1);
-            else
-                ret.dir = ret.root;
-            return ret;
-        };
-        return Win32Path;
-    }());
-    ;
-    var PosixPath = /** @class */ (function () {
-        function PosixPath() {
-            this.sep = '/';
-            this.delimiter = ':';
-            this.win32 = null;
-            this.posix = null;
-        }
-        // path.resolve([from ...], to)
-        PosixPath.prototype.resolve = function () {
-            var pathSegments = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                pathSegments[_i] = arguments[_i];
-            }
-            var resolvedPath = '';
-            var resolvedAbsolute = false;
-            for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-                var path;
-                if (i >= 0)
-                    path = arguments[i];
-                else {
-                    path = process.cwd();
-                }
-                validateString(path, 'path');
-                // Skip empty entries
-                if (path.length === 0) {
-                    continue;
-                }
-                resolvedPath = path + '/' + resolvedPath;
-                resolvedAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
-            }
-            // At this point the path should be resolved to a full absolute path, but
-            // handle relative paths to be safe (might happen when process.cwd() fails)
-            // Normalize the path
-            resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, '/', isPosixPathSeparator);
-            if (resolvedAbsolute) {
-                if (resolvedPath.length > 0)
-                    return '/' + resolvedPath;
-                else
-                    return '/';
-            }
-            else if (resolvedPath.length > 0) {
-                return resolvedPath;
-            }
-            else {
-                return '.';
-            }
-        };
-        PosixPath.prototype.normalize = function (path) {
-            validateString(path, 'path');
-            if (path.length === 0)
-                return '.';
-            var isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
-            var trailingSeparator = path.charCodeAt(path.length - 1) === CHAR_FORWARD_SLASH;
-            // Normalize the path
-            path = normalizeString(path, !isAbsolute, '/', isPosixPathSeparator);
-            if (path.length === 0 && !isAbsolute)
-                path = '.';
-            if (path.length > 0 && trailingSeparator)
-                path += '/';
-            if (isAbsolute)
-                return '/' + path;
-            return path;
-        };
-        PosixPath.prototype.isAbsolute = function (path) {
-            validateString(path, 'path');
-            return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
-        };
-        PosixPath.prototype.join = function () {
-            if (arguments.length === 0)
-                return '.';
-            var joined;
-            for (var i = 0; i < arguments.length; ++i) {
-                var arg = arguments[i];
-                validateString(arg, 'path');
-                if (arg.length > 0) {
-                    if (joined === undefined)
-                        joined = arg;
-                    else
-                        joined += '/' + arg;
-                }
-            }
-            if (joined === undefined)
-                return '.';
-            return posix.normalize(joined);
-        };
-        PosixPath.prototype.relative = function (from, to) {
-            validateString(from, 'from');
-            validateString(to, 'to');
-            if (from === to)
-                return '';
-            from = posix.resolve(from);
-            to = posix.resolve(to);
-            if (from === to)
-                return '';
-            // Trim any leading backslashes
-            var fromStart = 1;
-            for (; fromStart < from.length; ++fromStart) {
-                if (from.charCodeAt(fromStart) !== CHAR_FORWARD_SLASH)
-                    break;
-            }
-            var fromEnd = from.length;
-            var fromLen = (fromEnd - fromStart);
-            // Trim any leading backslashes
-            var toStart = 1;
-            for (; toStart < to.length; ++toStart) {
-                if (to.charCodeAt(toStart) !== CHAR_FORWARD_SLASH)
-                    break;
-            }
-            var toEnd = to.length;
-            var toLen = (toEnd - toStart);
-            // Compare paths to find the longest common path from root
-            var length = (fromLen < toLen ? fromLen : toLen);
-            var lastCommonSep = -1;
-            var i = 0;
-            for (; i <= length; ++i) {
-                if (i === length) {
-                    if (toLen > length) {
-                        if (to.charCodeAt(toStart + i) === CHAR_FORWARD_SLASH) {
-                            // We get here if `from` is the exact base path for `to`.
-                            // For example: from='/foo/bar'; to='/foo/bar/baz'
-                            return to.slice(toStart + i + 1);
-                        }
-                        else if (i === 0) {
-                            // We get here if `from` is the root
-                            // For example: from='/'; to='/foo'
-                            return to.slice(toStart + i);
-                        }
-                    }
-                    else if (fromLen > length) {
-                        if (from.charCodeAt(fromStart + i) === CHAR_FORWARD_SLASH) {
-                            // We get here if `to` is the exact base path for `from`.
-                            // For example: from='/foo/bar/baz'; to='/foo/bar'
-                            lastCommonSep = i;
-                        }
-                        else if (i === 0) {
-                            // We get here if `to` is the root.
-                            // For example: from='/foo'; to='/'
-                            lastCommonSep = 0;
-                        }
-                    }
-                    break;
-                }
-                var fromCode = from.charCodeAt(fromStart + i);
-                var toCode = to.charCodeAt(toStart + i);
-                if (fromCode !== toCode)
-                    break;
-                else if (fromCode === CHAR_FORWARD_SLASH)
-                    lastCommonSep = i;
-            }
-            var out = '';
-            // Generate the relative path based on the path difference between `to`
-            // and `from`
-            for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
-                if (i === fromEnd || from.charCodeAt(i) === CHAR_FORWARD_SLASH) {
-                    if (out.length === 0)
-                        out += '..';
-                    else
-                        out += '/..';
-                }
-            }
-            // Lastly, append the rest of the destination (`to`) path that comes after
-            // the common path parts
-            if (out.length > 0)
-                return out + to.slice(toStart + lastCommonSep);
-            else {
-                toStart += lastCommonSep;
-                if (to.charCodeAt(toStart) === CHAR_FORWARD_SLASH)
-                    ++toStart;
-                return to.slice(toStart);
-            }
-        };
-        PosixPath.prototype.toNamespacedPath = function (path) {
-            // Non-op on posix systems
-            return path;
-        };
-        PosixPath.prototype.dirname = function (path) {
-            validateString(path, 'path');
-            if (path.length === 0)
-                return '.';
-            var hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
-            var end = -1;
-            var matchedSlash = true;
-            for (var i = path.length - 1; i >= 1; --i) {
-                if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
-                    if (!matchedSlash) {
-                        end = i;
-                        break;
-                    }
-                }
-                else {
-                    // We saw the first non-path separator
-                    matchedSlash = false;
-                }
-            }
-            if (end === -1)
-                return hasRoot ? '/' : '.';
-            if (hasRoot && end === 1)
-                return '//';
-            return path.slice(0, end);
-        };
-        PosixPath.prototype.basename = function (path, ext) {
-            if (ext !== undefined)
-                validateString(ext, 'ext');
-            validateString(path, 'path');
-            var start = 0;
-            var end = -1;
-            var matchedSlash = true;
-            var i;
-            if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
-                if (ext.length === path.length && ext === path)
-                    return '';
-                var extIdx = ext.length - 1;
-                var firstNonSlashEnd = -1;
-                for (i = path.length - 1; i >= 0; --i) {
-                    var code = path.charCodeAt(i);
-                    if (code === CHAR_FORWARD_SLASH) {
-                        // If we reached a path separator that was not part of a set of path
-                        // separators at the end of the string, stop now
-                        if (!matchedSlash) {
-                            start = i + 1;
-                            break;
-                        }
-                    }
-                    else {
-                        if (firstNonSlashEnd === -1) {
-                            // We saw the first non-path separator, remember this index in case
-                            // we need it if the extension ends up not matching
-                            matchedSlash = false;
-                            firstNonSlashEnd = i + 1;
-                        }
-                        if (extIdx >= 0) {
-                            // Try to match the explicit extension
-                            if (code === ext.charCodeAt(extIdx)) {
-                                if (--extIdx === -1) {
-                                    // We matched the extension, so mark this as the end of our path
-                                    // component
-                                    end = i;
-                                }
-                            }
-                            else {
-                                // Extension does not match, so our result is the entire path
-                                // component
-                                extIdx = -1;
-                                end = firstNonSlashEnd;
-                            }
-                        }
-                    }
-                }
-                if (start === end)
-                    end = firstNonSlashEnd;
-                else if (end === -1)
-                    end = path.length;
-                return path.slice(start, end);
-            }
-            else {
-                for (i = path.length - 1; i >= 0; --i) {
-                    if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
-                        // If we reached a path separator that was not part of a set of path
-                        // separators at the end of the string, stop now
-                        if (!matchedSlash) {
-                            start = i + 1;
-                            break;
-                        }
-                    }
-                    else if (end === -1) {
-                        // We saw the first non-path separator, mark this as the end of our
-                        // path component
-                        matchedSlash = false;
-                        end = i + 1;
-                    }
-                }
-                if (end === -1)
-                    return '';
-                return path.slice(start, end);
-            }
-        };
-        PosixPath.prototype.extname = function (path) {
-            validateString(path, 'path');
-            var startDot = -1;
-            var startPart = 0;
-            var end = -1;
-            var matchedSlash = true;
-            // Track the state of characters (if any) we see before our first dot and
-            // after any path separator we find
-            var preDotState = 0;
-            for (var i = path.length - 1; i >= 0; --i) {
-                var code = path.charCodeAt(i);
-                if (code === CHAR_FORWARD_SLASH) {
-                    // If we reached a path separator that was not part of a set of path
-                    // separators at the end of the string, stop now
-                    if (!matchedSlash) {
-                        startPart = i + 1;
-                        break;
-                    }
-                    continue;
-                }
-                if (end === -1) {
-                    // We saw the first non-path separator, mark this as the end of our
-                    // extension
-                    matchedSlash = false;
-                    end = i + 1;
-                }
-                if (code === CHAR_DOT) {
-                    // If this is our first dot, mark it as the start of our extension
-                    if (startDot === -1)
-                        startDot = i;
-                    else if (preDotState !== 1)
-                        preDotState = 1;
-                }
-                else if (startDot !== -1) {
-                    // We saw a non-dot and non-path separator before our dot, so we should
-                    // have a good chance at having a non-empty extension
-                    preDotState = -1;
-                }
-            }
-            if (startDot === -1 ||
-                end === -1 ||
-                // We saw a non-dot character immediately before the dot
-                preDotState === 0 ||
-                // The (right-most) trimmed path component is exactly '..'
-                (preDotState === 1 &&
-                    startDot === end - 1 &&
-                    startDot === startPart + 1)) {
-                return '';
-            }
-            return path.slice(startDot, end);
-        };
-        PosixPath.prototype.format = function (pathObject) {
-            if (pathObject === null || typeof pathObject !== 'object') {
-                throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
-            }
-            return _format('/', pathObject);
-        };
-        PosixPath.prototype.parse = function (path) {
-            validateString(path, 'path');
-            var ret = { root: '', dir: '', base: '', ext: '', name: '' };
-            if (path.length === 0)
-                return ret;
-            var isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
-            var start;
-            if (isAbsolute) {
-                ret.root = '/';
-                start = 1;
-            }
-            else {
-                start = 0;
-            }
-            var startDot = -1;
-            var startPart = 0;
-            var end = -1;
-            var matchedSlash = true;
-            var i = path.length - 1;
-            // Track the state of characters (if any) we see before our first dot and
-            // after any path separator we find
-            var preDotState = 0;
-            // Get non-dir info
-            for (; i >= start; --i) {
-                var code = path.charCodeAt(i);
-                if (code === CHAR_FORWARD_SLASH) {
-                    // If we reached a path separator that was not part of a set of path
-                    // separators at the end of the string, stop now
-                    if (!matchedSlash) {
-                        startPart = i + 1;
-                        break;
-                    }
-                    continue;
-                }
-                if (end === -1) {
-                    // We saw the first non-path separator, mark this as the end of our
-                    // extension
-                    matchedSlash = false;
-                    end = i + 1;
-                }
-                if (code === CHAR_DOT) {
-                    // If this is our first dot, mark it as the start of our extension
-                    if (startDot === -1)
-                        startDot = i;
-                    else if (preDotState !== 1)
-                        preDotState = 1;
-                }
-                else if (startDot !== -1) {
-                    // We saw a non-dot and non-path separator before our dot, so we should
-                    // have a good chance at having a non-empty extension
-                    preDotState = -1;
-                }
-            }
-            if (startDot === -1 ||
-                end === -1 ||
-                // We saw a non-dot character immediately before the dot
-                preDotState === 0 ||
-                // The (right-most) trimmed path component is exactly '..'
-                (preDotState === 1 &&
-                    startDot === end - 1 &&
-                    startDot === startPart + 1)) {
-                if (end !== -1) {
-                    if (startPart === 0 && isAbsolute)
-                        ret.base = ret.name = path.slice(1, end);
-                    else
-                        ret.base = ret.name = path.slice(startPart, end);
-                }
-            }
-            else {
-                if (startPart === 0 && isAbsolute) {
-                    ret.name = path.slice(1, startDot);
-                    ret.base = path.slice(1, end);
-                }
-                else {
-                    ret.name = path.slice(startPart, startDot);
-                    ret.base = path.slice(startPart, end);
-                }
-                ret.ext = path.slice(startDot, end);
-            }
-            if (startPart > 0)
-                ret.dir = path.slice(0, startPart - 1);
-            else if (isAbsolute)
-                ret.dir = '/';
-            return ret;
-        };
-        return PosixPath;
-    }());
-    ;
-    var win32 = new Win32Path();
-    var posix = new PosixPath();
-    posix.win32 = win32.win32 = win32;
-    posix.posix = win32.posix = posix;
-    // Legacy internal API, docs-only deprecated: DEP0080
-    // win32._makeLong = win32.toNamespacedPath;
-    // posix._makeLong = posix.toNamespacedPath;
-    // if (process.platform === 'win32')
-    //     module.exports = win32;
-    // else
-    //     module.exports = posix;
-    // 
-    if (process.platform === 'win32')
-        feng3d.path = win32;
-    else
-        feng3d.path = posix;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 常用正则表示式
-     */
-    var RegExps = /** @class */ (function () {
-        function RegExps() {
-            /**
-             * json文件
-             */
-            this.json = /(\.json)\b/i;
-            /**
-             * 图片
-             */
-            this.image = /(\.jpg|\.png|\.jpeg|\.gif)\b/i;
-            /**
-             * 声音
-             */
-            this.audio = /(\.ogg|\.mp3|\.wav)\b/i;
-            /**
-             * 命名空间
-             */
-            this.namespace = /namespace\s+([\w$_\d\.]+)/;
-            /**
-             * 类
-             */
-            this.classReg = /(export\s+)?(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d\.]+))?/;
-        }
-        return RegExps;
-    }());
-    feng3d.RegExps = RegExps;
-    feng3d.regExps = new RegExps();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 对象池
-     *
-     * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
-     *
-     * js虚拟机会在对象没有被引用时自动释放内存，谨慎使用对象池。
-     *
-     */
-    var Pool = /** @class */ (function () {
-        function Pool(type) {
-            this._objects = [];
-            this._type = type;
-        }
-        /**
-         * 获取对象
-         */
-        Pool.prototype.get = function () {
-            var obj = this._objects.pop();
-            if (obj)
-                return obj;
-            return new this._type();
-        };
-        /**
-         * 释放对象
-         *
-         * @param args 被释放对象列表
-         */
-        Pool.prototype.release = function () {
-            var _this = this;
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            args.forEach(function (element) {
-                _this._objects.push(element);
-            });
-        };
-        /**
-         * 获取指定数量的对象
-         *
-         * @param num 数量
-         */
-        Pool.prototype.getArray = function (num) {
-            var arr;
-            if (this._objects.length <= num) {
-                arr = this._objects.concat();
-                this._objects.length = 0;
-            }
-            else {
-                arr = this._objects.splice(0, num);
-            }
-            while (arr.length < num) {
-                arr.push(new this._type());
-            }
-            return arr;
-        };
-        /**
-         * 释放对象
-         *
-         * @param objects 被释放对象列表
-         */
-        Pool.prototype.releaseArray = function (objects) {
-            var _this = this;
-            objects.forEach(function (element) {
-                _this._objects.push(element);
-            });
-        };
-        return Pool;
-    }());
-    feng3d.Pool = Pool;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16853,457 +13902,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 全局事件
-     */
-    feng3d.globalDispatcher = new feng3d.EventDispatcher();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 任务
-     *
-     * 处理 异步任务(函数)串联并联执行功能
-     */
-    var Task = /** @class */ (function () {
-        function Task() {
-        }
-        /**
-         * 并联多个异步函数为一个函数
-         *
-         * 这些异步函数同时执行
-         *
-         * @param fns 一组异步函数
-         */
-        Task.prototype.parallel = function (fns) {
-            var result = function (callback) {
-                if (fns.length == 0) {
-                    callback();
-                    return;
-                }
-                var index = 0;
-                fns.forEach(function (fn) {
-                    var callbackNum = 0;
-                    fn(function () {
-                        callbackNum++;
-                        if (callbackNum == 1) {
-                            index++;
-                            if (index == fns.length) {
-                                callback();
-                            }
-                        }
-                        else {
-                            console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callbackNum);
-                        }
-                    });
-                });
-            };
-            return result;
-        };
-        /**
-         * 串联多个异步函数为一个函数
-         *
-         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
-         *
-         * @param fns 一组异步函数
-         */
-        Task.prototype.series = function (fns) {
-            var result = function (callback) {
-                if (fns.length == 0) {
-                    callback();
-                    return;
-                }
-                var index = 0;
-                var next = function () {
-                    var fn = fns[index];
-                    var callbackNum = 0;
-                    fn(function () {
-                        callbackNum++;
-                        if (callbackNum == 1) {
-                            index++;
-                            if (index < fns.length) {
-                                next();
-                            }
-                            else {
-                                callback && callback();
-                            }
-                        }
-                        else {
-                            console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callbackNum);
-                        }
-                    });
-                };
-                next();
-            };
-            return result;
-        };
-        /**
-         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        Task.prototype.parallelResults = function (ps, fn, done) {
-            var map = new Map();
-            // 包装函数
-            var fns = ps.map(function (p) { return function (callback) {
-                fn(p, function (r) {
-                    map.set(p, r);
-                    callback();
-                });
-            }; });
-            this.parallel(fns)(function () {
-                var results = ps.map(function (p) {
-                    return map.get(p);
-                });
-                map.clear();
-                done(results);
-            });
-        };
-        /**
-         * 创建一组串联同类任务，例如排序加载一组资源
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        Task.prototype.seriesResults = function (ps, fn, done) {
-            var map = new Map();
-            // 包装函数
-            var fns = ps.map(function (p) { return function (callback) {
-                fn(p, function (r) {
-                    map.set(p, r);
-                    callback();
-                });
-            }; });
-            this.series(fns)(function () {
-                var results = ps.map(function (p) {
-                    return map.get(p);
-                });
-                map.clear();
-                done(results);
-            });
-        };
-        return Task;
-    }());
-    feng3d.task = new Task();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 所有feng3d对象的基类
-     */
-    var Feng3dObject = /** @class */ (function (_super) {
-        __extends(Feng3dObject, _super);
-        /**
-         * 构建
-         *
-         * 新增不可修改属性 guid
-         */
-        function Feng3dObject() {
-            var _this = _super.call(this) || this;
-            /**
-             * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
-             */
-            _this.hideFlags = feng3d.HideFlags.None;
-            Object.defineProperty(_this, "uuid", { value: Math.uuid() });
-            Object.defineProperty(_this, "disposed", { value: false, configurable: true });
-            console.assert(!Feng3dObject.objectLib[_this.uuid], "\u552F\u4E00\u6807\u8BC6\u7B26\u5B58\u5728\u91CD\u590D\uFF01\uFF1F");
-            Feng3dObject.objectLib[_this.uuid] = _this;
-            return _this;
-        }
-        /**
-         * 销毁
-         */
-        Feng3dObject.prototype.dispose = function () {
-            Object.defineProperty(this, "disposed", { value: true, configurable: false });
-        };
-        /**
-         * 获取对象
-         *
-         * @param uuid 通用唯一标识符
-         */
-        Feng3dObject.getObject = function (uuid) {
-            return this.objectLib[uuid];
-        };
-        /**
-         * 获取对象
-         *
-         * @param type
-         */
-        Feng3dObject.getObjects = function (type) {
-            var _this = this;
-            var objects = Object.keys(this.objectLib).map(function (v) { return _this.objectLib[v]; });
-            //
-            var filterResult = objects;
-            if (type) {
-                filterResult = objects.filter(function (v) { return v instanceof type; });
-            }
-            return filterResult;
-        };
-        __decorate([
-            feng3d.serialize
-        ], Feng3dObject.prototype, "hideFlags", void 0);
-        return Feng3dObject;
-    }(feng3d.EventDispatcher));
-    feng3d.Feng3dObject = Feng3dObject;
-    Object.defineProperty(Feng3dObject, "objectLib", { value: {} });
-    feng3d.serialization.serializeHandlers.push(
-    // 处理 Feng3dObject
-    {
-        priority: 0,
-        handler: function (target, source, property) {
-            var spv = source[property];
-            if (spv instanceof Feng3dObject && (spv.hideFlags & feng3d.HideFlags.DontSave)) {
-                return true;
-            }
-            return false;
-        }
-    });
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 资源数据
-     *
-     * 该对象可由资源文件中读取，或者保存为资源
-     */
-    var AssetData = /** @class */ (function (_super) {
-        __extends(AssetData, _super);
-        function AssetData() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        Object.defineProperty(AssetData.prototype, "name", {
-            /**
-             * 资源名称
-             */
-            get: function () {
-                var asset = feng3d.rs.getAsset(this.assetId);
-                if (asset)
-                    this._name = asset.fileName;
-                return this._name;
-            },
-            set: function (v) { this._name = v; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AssetData.prototype, "assetId", {
-            /**
-             * 资源编号
-             */
-            get: function () {
-                return this._assetId;
-            },
-            set: function (v) {
-                if (this._assetId == v)
-                    return;
-                if (this._assetId != undefined) {
-                    console.error("\u4E0D\u5141\u8BB8\u4FEE\u6539 assetId");
-                    return;
-                }
-                this._assetId = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 新增资源数据
-         *
-         * @param assetId 资源编号
-         * @param data 资源数据
-         */
-        AssetData.addAssetData = function (assetId, data) {
-            if (!data)
-                return;
-            if (data.assetId != assetId)
-                console.warn("\u540C\u4E00\u4E2A\u6750\u8D28\u88AB\u4FDD\u5B58\u5728\u591A\u4E2A\u8D44\u6E90\u4E2D\uFF01");
-            this.assetMap.set(data, assetId);
-            this.idAssetMap.set(assetId, data);
-            return data;
-        };
-        /**
-         * 删除资源数据
-         *
-         * @param data 资源数据
-         */
-        AssetData.deleteAssetData = function (data) {
-            if (!data)
-                return;
-            console.assert(this.assetMap.has(data));
-            var assetId = this.assetMap.get(data);
-            this._delete(assetId, data);
-        };
-        AssetData.deleteAssetDataById = function (assetId) {
-            console.assert(this.idAssetMap.has(assetId));
-            var data = this.idAssetMap.get(assetId);
-            this._delete(assetId, data);
-        };
-        AssetData._delete = function (assetId, data) {
-            this.assetMap.delete(data);
-            this.idAssetMap.delete(assetId);
-        };
-        /**
-         * 判断是否为资源数据
-         *
-         * @param asset 可能的资源数据
-         */
-        AssetData.isAssetData = function (asset) {
-            if (!asset || asset.assetId == undefined)
-                return false;
-            if (asset instanceof AssetData)
-                return true;
-            if (feng3d.classUtils.getDefaultInstanceByName(asset[feng3d.CLASS_KEY]) instanceof AssetData)
-                return true;
-        };
-        /**
-         * 序列化
-         *
-         * @param asset 资源数据
-         */
-        AssetData.serialize = function (asset) {
-            var obj = {};
-            obj[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(asset);
-            obj.assetId = asset.assetId;
-            return obj;
-        };
-        /**
-         * 反序列化
-         *
-         * @param object 资源对象
-         */
-        AssetData.deserialize = function (object) {
-            var result = this.getLoadedAssetData(object.assetId);
-            console.assert(!!result, "\u8D44\u6E90 " + object.assetId + " \u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 ReadRS.deserializeWithAssets \u8FDB\u884C\u5E8F\u5217\u5316\u5305\u542B\u52A0\u8F7D\u7684\u8D44\u6E90\u5BF9\u8C61\u3002");
-            return result;
-        };
-        /**
-         * 获取已加载的资源数据
-         *
-         * @param assetId 资源编号
-         */
-        AssetData.getLoadedAssetData = function (assetId) {
-            return this.idAssetMap.get(assetId);
-        };
-        /**
-         * 获取所有已加载资源数据
-         */
-        AssetData.getAllLoadedAssetDatas = function () {
-            return Map.getKeys(this.assetMap);
-        };
-        /**
-         * 资源属性标记名称
-         */
-        AssetData.assetPropertySign = "assetId";
-        /**
-         * 资源与编号对应表
-         */
-        AssetData.assetMap = new Map();
-        /**
-         * 编号与资源对应表
-         */
-        AssetData.idAssetMap = new Map();
-        __decorate([
-            feng3d.serialize
-        ], AssetData.prototype, "name", null);
-        __decorate([
-            feng3d.serialize
-        ], AssetData.prototype, "assetId", null);
-        return AssetData;
-    }(feng3d.Feng3dObject));
-    feng3d.AssetData = AssetData;
-    /**
-     * 设置函数列表
-     */
-    feng3d.serialization.setValueHandlers.push(
-    // 处理资源
-    {
-        priority: 0,
-        handler: function (target, source, property, handlers, serialization) {
-            var tpv = target[property];
-            var spv = source[property];
-            if (AssetData.isAssetData(spv)) {
-                // 此处需要反序列化资源完整数据
-                if (property == "__root__") {
-                    return false;
-                }
-                target[property] = AssetData.deserialize(spv);
-                return true;
-            }
-            if (AssetData.isAssetData(tpv)) {
-                if (spv.__class__ == null) {
-                    var className = feng3d.classUtils.getQualifiedClassName(tpv);
-                    var inst = feng3d.classUtils.getInstanceByName(className);
-                    serialization.setValue(inst, spv);
-                    target[property] = inst;
-                }
-                else {
-                    target[property] = serialization.deserialize(spv);
-                }
-                return true;
-            }
-            return false;
-        }
-    });
-    feng3d.serialization.serializeHandlers.push(
-    // 处理资源
-    {
-        priority: 0,
-        handler: function (target, source, property) {
-            var spv = source[property];
-            if (AssetData.isAssetData(spv)) {
-                // 此处需要反序列化资源完整数据
-                if (property == "__root__") {
-                    return false;
-                }
-                target[property] = AssetData.serialize(spv);
-                return true;
-            }
-            return false;
-        }
-    });
-    feng3d.serialization.deserializeHandlers.push(
-    // 处理资源
-    {
-        priority: 0,
-        handler: function (target, source, property, handlers, serialization) {
-            var tpv = target[property];
-            var spv = source[property];
-            if (AssetData.isAssetData(spv)) {
-                // 此处需要反序列化资源完整数据
-                if (property == "__root__") {
-                    return false;
-                }
-                target[property] = AssetData.deserialize(spv);
-                return true;
-            }
-            if (AssetData.isAssetData(tpv)) {
-                target[property] = serialization.deserialize(spv);
-                return true;
-            }
-            return false;
-        }
-    });
-    feng3d.serialization.differentHandlers.push(
-    // 资源
-    {
-        priority: 0,
-        handler: function (target, source, property, different, handlers, serialization) {
-            var tpv = target[property];
-            if (AssetData.isAssetData(tpv)) {
-                // 此处需要反序列化资源完整数据
-                if (property == "__root__") {
-                    return false;
-                }
-                different[property] = AssetData.serialize(tpv);
-                return true;
-            }
-            return false;
-        }
-    });
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 路径工具
      */
     var PathUtils = /** @class */ (function () {
@@ -18707,836 +15305,6 @@ var feng3d;
     }());
     feng3d.HttpFS = HttpFS;
     feng3d.basefs = new HttpFS();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 资源扩展名
-     */
-    var AssetType;
-    (function (AssetType) {
-        /**
-         * 文件夹
-         */
-        AssetType["folder"] = "folder";
-        /**
-         * 音频
-         */
-        AssetType["audio"] = "audio";
-        /**
-         * ts文件
-         */
-        AssetType["ts"] = "ts";
-        /**
-         * js文件
-         */
-        AssetType["js"] = "js";
-        /**
-         * 文本文件
-         */
-        AssetType["txt"] = "txt";
-        /**
-         * json文件
-         */
-        AssetType["json"] = "json";
-        /**
-         * OBJ模型资源附带的材质文件
-         */
-        AssetType["mtl"] = "mtl";
-        /**
-         * OBJ模型文件
-         */
-        AssetType["obj"] = "obj";
-        /**
-         * MD5模型文件
-         */
-        AssetType["md5mesh"] = "md5mesh";
-        /**
-         * MD5动画
-         */
-        AssetType["md5anim"] = "md5anim";
-        /**
-         * 魔兽MDL模型
-         */
-        AssetType["mdl"] = "mdl";
-        // -- feng3d中的类型
-        /**
-         * 纹理
-         */
-        AssetType["texture"] = "texture";
-        /**
-         * 立方体纹理
-         */
-        AssetType["texturecube"] = "texturecube";
-        /**
-         * 材质
-         */
-        AssetType["material"] = "material";
-        /**
-         * 几何体
-         */
-        AssetType["geometry"] = "geometry";
-        /**
-         * 游戏对象
-         */
-        AssetType["gameobject"] = "gameobject";
-        /**
-         * 场景
-         */
-        AssetType["scene"] = "scene";
-        /**
-         * 动画
-         */
-        AssetType["anim"] = "anim";
-        /**
-         * 着色器
-         */
-        AssetType["shader"] = "shader";
-        /**
-         * 脚本
-         */
-        AssetType["script"] = "script";
-    })(AssetType = feng3d.AssetType || (feng3d.AssetType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * feng3d资源
-     */
-    var FileAsset = /** @class */ (function () {
-        function FileAsset() {
-            /**
-             * 是否已加载
-             */
-            this.isLoaded = false;
-            /**
-             * 是否正在加载中
-             */
-            this.isLoading = false;
-        }
-        Object.defineProperty(FileAsset.prototype, "extenson", {
-            /**
-             * 文件后缀
-             */
-            get: function () {
-                console.assert(!!this.assetPath);
-                var ext = feng3d.pathUtils.extname(this.assetPath);
-                return ext;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FileAsset.prototype, "fileName", {
-            /**
-             * 文件名称
-             *
-             * 不包含后缀
-             */
-            get: function () {
-                console.assert(!!this.assetPath);
-                var fn = feng3d.pathUtils.getName(this.assetPath);
-                return fn;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 初始化资源
-         */
-        FileAsset.prototype.initAsset = function () {
-        };
-        /**
-         * 获取资源数据
-         *
-         * @param callback 完成回调，当资源已加载时会立即调用回调，否则在资源加载完成后调用。
-         */
-        FileAsset.prototype.getAssetData = function (callback) {
-            var _this = this;
-            if (!this.isLoaded) {
-                if (callback) {
-                    this.read(function (err) {
-                        console.assert(!err);
-                        _this.getAssetData(callback);
-                    });
-                }
-                return null;
-            }
-            var assetData = this._getAssetData();
-            callback && callback(assetData);
-            return assetData;
-        };
-        /**
-         * 资源已加载时获取资源数据，内部使用
-         */
-        FileAsset.prototype._getAssetData = function () {
-            return this.data;
-        };
-        /**
-         * 读取资源
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.read = function (callback) {
-            var _this = this;
-            if (this.isLoaded) {
-                callback();
-                return;
-            }
-            var eventtype = "loaded";
-            feng3d.event.once(this, eventtype, function () {
-                _this.isLoaded = true;
-                _this.isLoading = false;
-                callback();
-            });
-            if (this.isLoading)
-                return;
-            this.isLoading = true;
-            this.readMeta(function (err) {
-                if (err) {
-                    feng3d.event.dispatch(_this, eventtype);
-                    return;
-                }
-                _this.readFile(function (err) {
-                    feng3d.event.dispatch(_this, eventtype);
-                });
-            });
-        };
-        /**
-         * 写入资源
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.write = function (callback) {
-            var _this = this;
-            this.meta.mtimeMs = Date.now();
-            this.writeMeta(function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.saveFile(function (err) {
-                    callback && callback(err);
-                });
-            });
-        };
-        /**
-         * 删除资源
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.delete = function (callback) {
-            var _this = this;
-            // 删除 meta 文件
-            this.deleteMeta(function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.deleteFile(function (err) {
-                    // 删除父子资源关系
-                    if (_this.parentAsset) {
-                        Array.delete(_this.parentAsset.childrenAssets, _this);
-                        _this.parentAsset = null;
-                    }
-                    // 删除映射
-                    delete feng3d.rs.idMap[_this.assetId];
-                    delete feng3d.rs.pathMap[_this.assetPath];
-                    callback && callback();
-                });
-            });
-        };
-        /**
-         * 读取资源预览图标
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.readPreview = function (callback) {
-            var _this = this;
-            if (this._preview) {
-                callback(null, this._preview);
-                return;
-            }
-            this.rs.fs.readImage(this.previewPath, function (err, image) {
-                _this._preview = image;
-                callback(err, image);
-            });
-        };
-        /**
-         * 读取资源预览图标
-         *
-         * @param image 预览图
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.writePreview = function (image, callback) {
-            if (this._preview == image) {
-                callback && callback(null);
-                return;
-            }
-            this._preview = image;
-            this.rs.fs.writeImage(this.previewPath, image, callback);
-        };
-        /**
-         * 删除资源预览图标
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.deletePreview = function (callback) {
-            this.rs.fs.deleteFile(this.previewPath, callback);
-        };
-        /**
-         * 删除文件
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.deleteFile = function (callback) {
-            var _this = this;
-            this.rs.fs.deleteFile(this.assetPath, callback);
-            // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
-            feng3d.ticker.once(1000, function () {
-                if (_this.rs.getAsset(_this.assetId) == null) {
-                    _this.deletePreview();
-                }
-            });
-        };
-        Object.defineProperty(FileAsset.prototype, "metaPath", {
-            /**
-             * 元标签路径
-             */
-            get: function () {
-                return this.assetPath + ".meta";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取元标签
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.readMeta = function (callback) {
-            var _this = this;
-            this.rs.fs.readObject(this.metaPath, function (err, meta) {
-                _this.meta = meta;
-                callback && callback(err);
-            });
-        };
-        /**
-         * 写元标签
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.writeMeta = function (callback) {
-            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
-        };
-        /**
-         * 删除元标签
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype.deleteMeta = function (callback) {
-            this.rs.fs.deleteFile(this.metaPath, callback);
-        };
-        Object.defineProperty(FileAsset.prototype, "previewPath", {
-            /**
-             * 预览图路径
-             */
-            get: function () {
-                return "previews/" + this.assetId + ".png";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        __decorate([
-            feng3d.serialize
-        ], FileAsset.prototype, "assetId", void 0);
-        __decorate([
-            feng3d.serialize
-        ], FileAsset.prototype, "assetPath", void 0);
-        return FileAsset;
-    }());
-    feng3d.FileAsset = FileAsset;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 可读资源系统
-     */
-    var ReadRS = /** @class */ (function () {
-        /**
-         * 构建可读资源系统
-         *
-         * @param fs 可读文件系统
-         */
-        function ReadRS(fs) {
-            /**
-             * 资源编号映射
-             */
-            this.idMap = {};
-            /**
-             * 资源路径映射
-             */
-            this.pathMap = {};
-            /**
-             * 资源树保存路径
-             */
-            this.resources = "resource.json";
-            this._fs = fs;
-        }
-        Object.defineProperty(ReadRS.prototype, "fs", {
-            /**
-             * 文件系统
-             */
-            get: function () { return this._fs || feng3d.fs; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ReadRS.prototype, "root", {
-            /**
-             * 根文件夹
-             */
-            get: function () { return this._root; },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 初始化
-         *
-         * @param callback 完成回调
-         */
-        ReadRS.prototype.init = function (callback) {
-            var _this = this;
-            this.fs.readObject(this.resources, function (err, object) {
-                if (object) {
-                    var data = feng3d.serialization.deserialize(object);
-                    _this._root = data;
-                    //
-                    var assets = [data];
-                    var index = 0;
-                    while (index < assets.length) {
-                        var asset = assets[index];
-                        // 设置资源系统
-                        asset.rs = _this;
-                        // 新增映射
-                        _this.idMap[asset.assetId] = asset;
-                        _this.pathMap[asset.assetPath] = asset;
-                        // 
-                        if (asset instanceof feng3d.FolderAsset) {
-                            for (var i = 0; i < asset.childrenAssets.length; i++) {
-                                var v = asset.childrenAssets[i];
-                                // 处理资源父子关系
-                                v.parentAsset = asset;
-                                //
-                                assets.push(v);
-                            }
-                        }
-                        index++;
-                    }
-                    callback();
-                }
-                else {
-                    _this.createAsset(feng3d.FolderAsset, "Assets", null, null, function (err, asset) {
-                        _this._root = asset;
-                        callback();
-                    });
-                }
-            });
-        };
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param fileName 文件名称
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        ReadRS.prototype.createAsset = function (cls, fileName, value, parent, callback) {
-            parent = parent || this._root;
-            //
-            var asset = new cls();
-            var assetId = Math.uuid();
-            // 初始化
-            asset.rs = this;
-            feng3d.serialization.setValue(asset, value);
-            asset.assetId = assetId;
-            asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
-            asset.initAsset();
-            feng3d.AssetData.addAssetData(asset.assetId, asset.data);
-            //
-            var extenson = feng3d.pathUtils.extname(fileName);
-            fileName = feng3d.pathUtils.getName(fileName);
-            // 设置默认名称
-            fileName = fileName || "new " + asset.assetType;
-            if (parent) {
-                // 计算有效名称
-                fileName = this.getValidChildName(parent, fileName);
-                // 处理资源父子关系
-                parent.childrenAssets.push(asset);
-                asset.parentAsset = parent;
-            }
-            // 计算路径
-            if (extenson == "")
-                extenson = cls["extenson"];
-            console.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
-            var path = fileName + extenson;
-            if (asset.parentAsset)
-                path = asset.parentAsset.assetPath + "/" + path;
-            asset.assetPath = path;
-            // 新增映射
-            this.idMap[asset.assetId] = asset;
-            this.pathMap[asset.assetPath] = asset;
-            //
-            asset.write(function (err) {
-                callback && callback(null, asset);
-            });
-        };
-        /**
-         * 获取有效子文件名称
-         *
-         * @param parent 父文件夹
-         * @param fileName 文件名称
-         */
-        ReadRS.prototype.getValidChildName = function (parent, fileName) {
-            var childrenNames = parent.childrenAssets.map(function (v) { return v.fileName; });
-            var newName = fileName;
-            var index = 1;
-            while (childrenNames.indexOf(newName) != -1) {
-                newName = fileName + index;
-                index++;
-            }
-            return newName;
-        };
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        ReadRS.prototype.readAsset = function (id, callback) {
-            var asset = this.idMap[id];
-            if (!asset) {
-                callback(new Error("\u4E0D\u5B58\u5728\u8D44\u6E90 " + id), asset);
-                return;
-            }
-            asset.read(function (err) {
-                if (asset)
-                    feng3d.AssetData.addAssetData(asset.assetId, asset.data);
-                callback(err, asset);
-            });
-        };
-        /**
-         * 读取资源数据
-         *
-         * @param id 资源编号
-         * @param callback 完成回调
-         */
-        ReadRS.prototype.readAssetData = function (id, callback) {
-            var asset = feng3d.AssetData.getLoadedAssetData(id);
-            if (asset) {
-                callback(null, asset);
-                return;
-            }
-            this.readAsset(id, function (err, asset) {
-                callback(err, asset && asset.getAssetData());
-            });
-        };
-        /**
-         * 读取资源数据列表
-         *
-         * @param assetids 资源编号列表
-         * @param callback 完成回调
-         */
-        ReadRS.prototype.readAssetDatas = function (assetids, callback) {
-            var result = [];
-            var fns = assetids.map(function (v) { return function (callback) {
-                feng3d.rs.readAssetData(v, function (err, data) {
-                    console.assert(!!data);
-                    result.push(data);
-                    callback();
-                });
-            }; });
-            feng3d.task.parallel(fns)(function () {
-                console.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
-                callback(null, result);
-            });
-        };
-        /**
-         * 获取指定类型资源
-         *
-         * @param type 资源类型
-         */
-        ReadRS.prototype.getAssetsByType = function (type) {
-            var _this = this;
-            var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
-            return assets.filter(function (v) { return v instanceof type; });
-        };
-        /**
-         * 获取指定类型资源数据
-         *
-         * @param type 资源类型
-         */
-        ReadRS.prototype.getLoadedAssetDatasByType = function (type) {
-            var assets = feng3d.AssetData.getAllLoadedAssetDatas();
-            return assets.filter(function (v) { return v instanceof type; });
-        };
-        /**
-         * 获取资源
-         *
-         * @param assetId 资源编号
-         */
-        ReadRS.prototype.getAsset = function (assetId) {
-            return this.idMap[assetId];
-        };
-        /**
-         * 获取所有资源
-         */
-        ReadRS.prototype.getAllAssets = function () {
-            var _this = this;
-            var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
-            return assets;
-        };
-        /**
-         * 获取需要反序列化对象中的资源id列表
-         */
-        ReadRS.prototype.getAssetsWithObject = function (object, assetids) {
-            var _this = this;
-            if (assetids === void 0) { assetids = []; }
-            if (Object.isBaseType(object))
-                return [];
-            //
-            if (feng3d.AssetData.isAssetData(object))
-                assetids.push(object.assetId);
-            //
-            if (Object.isObject(object) || Array.isArray(object)) {
-                var keys = Object.keys(object);
-                keys.forEach(function (k) {
-                    _this.getAssetsWithObject(object[k], assetids);
-                });
-            }
-            return assetids;
-        };
-        /**
-         * 反序列化包含资源的对象
-         *
-         * @param object 反序列化的对象
-         * @param callback 完成回调
-         */
-        ReadRS.prototype.deserializeWithAssets = function (object, callback) {
-            // 获取所包含的资源列表
-            var assetids = this.getAssetsWithObject(object);
-            // 不需要加载本资源，移除自身资源
-            Array.delete(assetids, object.assetId);
-            // 加载包含的资源数据
-            this.readAssetDatas(assetids, function (err, result) {
-                // 创建资源数据实例
-                var assetData = feng3d.classUtils.getInstanceByName(object[feng3d.CLASS_KEY]);
-                //默认反序列
-                feng3d.serialization.setValue(assetData, object);
-                callback(assetData);
-            });
-        };
-        return ReadRS;
-    }());
-    feng3d.ReadRS = ReadRS;
-    feng3d.rs = new ReadRS();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 可读写资源系统
-     */
-    var ReadWriteRS = /** @class */ (function (_super) {
-        __extends(ReadWriteRS, _super);
-        /**
-         * 构建可读写资源系统
-         *
-         * @param fs 可读写文件系统
-         */
-        function ReadWriteRS(fs) {
-            var _this = _super.call(this, fs) || this;
-            /**
-             * 延迟保存执行函数
-             */
-            _this.laterSaveFunc = function (interval) { _this.save(); };
-            /**
-             * 延迟保存，避免多次操作时频繁调用保存
-             */
-            _this.laterSave = function () { feng3d.ticker.nextframe(_this.laterSaveFunc, _this); };
-            return _this;
-        }
-        /**
-         * 在更改资源结构（新增，移动，删除）时会自动保存
-         *
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.save = function (callback) {
-            var object = feng3d.serialization.serialize(this.root);
-            this.fs.writeObject(this.resources, object, callback);
-        };
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param fileName 文件名称
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        ReadWriteRS.prototype.createAsset = function (cls, fileName, value, parent, callback) {
-            var _this = this;
-            // 新建资源
-            _super.prototype.createAsset.call(this, cls, fileName, value, parent, function (err, asset) {
-                if (asset) {
-                    // 保存资源
-                    _this.writeAsset(asset, function (err) {
-                        callback && callback(err, asset);
-                        // 保存资源库
-                        _this.laterSave();
-                    });
-                }
-                else {
-                    callback && callback(err, null);
-                }
-            });
-        };
-        /**
-         * 写（保存）资源
-         *
-         * @param asset 资源对象
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.writeAsset = function (asset, callback) {
-            asset.write(callback);
-        };
-        /**
-         * 移动资源到指定文件夹
-         *
-         * @param asset 被移动资源
-         * @param folder 目标文件夹
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.moveAsset = function (asset, folder, callback) {
-            var _this = this;
-            var filename = asset.fileName + asset.extenson;
-            var cnames = folder.childrenAssets.map(function (v) { return v.fileName + v.extenson; });
-            if (cnames.indexOf(filename) != -1) {
-                callback && callback(new Error("\u76EE\u6807\u6587\u4EF6\u5939\u4E2D\u5B58\u5728\u540C\u540D\u6587\u4EF6\uFF08\u5939\uFF09\uFF0C\u65E0\u6CD5\u79FB\u52A8"));
-                return;
-            }
-            var fp = folder;
-            while (fp) {
-                if (fp == asset) {
-                    callback && callback(new Error("\u65E0\u6CD5\u79FB\u52A8\u8FBE\u5230\u5B50\u6587\u4EF6\u5939\u4E2D"));
-                    return;
-                }
-                fp = fp.parentAsset;
-            }
-            // 重新设置父子资源关系
-            var index = asset.parentAsset.childrenAssets.indexOf(asset);
-            asset.parentAsset.childrenAssets.splice(index, 1);
-            folder.childrenAssets.push(asset);
-            asset.parentAsset = folder;
-            // 获取需要移动的资源列表
-            var assets = [asset];
-            var index = 0;
-            while (index < assets.length) {
-                var ca = assets[index];
-                if (ca instanceof feng3d.FolderAsset) {
-                    assets = assets.concat(ca.childrenAssets);
-                }
-                index++;
-            }
-            // 最后根据 parentAsset 修复 childrenAssets
-            var copyassets = assets.concat();
-            // 移动最后一个资源
-            var moveLastAsset = function () {
-                if (assets.length == 0) {
-                    // 修复 childrenAssets
-                    copyassets.forEach(function (v) {
-                        v.parentAsset.childrenAssets.push(v);
-                    });
-                    callback && callback(null);
-                    // 保存资源库
-                    _this.laterSave();
-                    return;
-                }
-                var la = assets.pop();
-                // 读取资源
-                _this.readAsset(la.assetId, function (err, a) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    // 备份父资源
-                    var pla = la.parentAsset;
-                    // 从原路径上删除资源
-                    _this.deleteAsset(la, function (err) {
-                        if (err) {
-                            callback && callback(err);
-                            return;
-                        }
-                        // 修复删除资源时破坏的父资源引用
-                        la.parentAsset = pla;
-                        // 计算资源新路径
-                        var np = la.fileName + la.extenson;
-                        var p = la.parentAsset;
-                        while (p) {
-                            np = p.fileName + "/" + np;
-                            p = p.parentAsset;
-                        }
-                        la.assetPath = np;
-                        // 新增映射
-                        _this.idMap[la.assetId] = la;
-                        _this.pathMap[la.assetPath] = la;
-                        // 保存资源到新路径
-                        _this.writeAsset(la, function (err) {
-                            if (err) {
-                                callback && callback(err);
-                                return;
-                            }
-                            moveLastAsset();
-                        });
-                    });
-                });
-            };
-            moveLastAsset();
-        };
-        /**
-         * 删除资源
-         *
-         * @param asset 资源
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.deleteAsset = function (asset, callback) {
-            var _this = this;
-            // 获取需要移动的资源列表
-            var assets = [asset];
-            var index = 0;
-            while (index < assets.length) {
-                var ca = assets[index];
-                if (ca instanceof feng3d.FolderAsset) {
-                    assets = assets.concat(ca.childrenAssets);
-                }
-                index++;
-            }
-            // 删除最后一个资源
-            var deleteLastAsset = function () {
-                if (assets.length == 0) {
-                    callback && callback(null);
-                    // 保存资源库
-                    _this.laterSave();
-                    return;
-                }
-                var la = assets.pop();
-                la.delete(function () {
-                    feng3d.AssetData.deleteAssetData(la.data);
-                    deleteLastAsset();
-                });
-            };
-            deleteLastAsset();
-        };
-        return ReadWriteRS;
-    }(feng3d.ReadRS));
-    feng3d.ReadWriteRS = ReadWriteRS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -22093,6 +17861,4238 @@ var feng3d;
         return Renderer;
     }());
     feng3d.Renderer = Renderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 全局事件
+     */
+    feng3d.globalDispatcher = new feng3d.EventDispatcher();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    feng3d.shaderConfig = {
+        "shaders": {
+            "color": {
+                "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_diffuseInput;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = u_diffuseInput;\r\n}\r\n",
+                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main()\r\n{\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
+            },
+            "mouse": {
+                "fragment": "precision highp float;\r\n\r\nuniform int u_objectID;\r\n\r\nvoid main()\r\n{\r\n    //支持 255*255*255*255 个索引\r\n    const float invColor = 1.0/255.0;\r\n    float temp = float(u_objectID);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.x = fract(temp);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.y = fract(temp);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.z = fract(temp);\r\n    temp = floor(temp) * invColor;\r\n    gl_FragColor.w = fract(temp);\r\n}",
+                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main()\r\n{\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
+            },
+            "outline": {
+                "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_outlineColor;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = u_outlineColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec3 a_normal;\r\n\r\n#include<uv_pars_vert>\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform vec3 u_cameraPos;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\nuniform float u_outlineMorphFactor;\r\n\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n\r\nuniform float u_outlineSize;\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n\r\n    #include<uv_vert>\r\n\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //全局法线\r\n    vec3 globalNormal = normalize((u_ITModelMatrix * vec4(normal, 0.0)).xyz);\r\n\r\n    float depth = distance(worldPosition.xyz , u_cameraPos.xyz);\r\n    \r\n    vec3 offsetDir = mix(globalNormal, normalize(worldPosition.xyz), u_outlineMorphFactor);\r\n    //摄像机远近保持粗细一致\r\n    offsetDir = offsetDir * depth * u_scaleByDepth;\r\n    //描边宽度\r\n    offsetDir = offsetDir * u_outlineSize;\r\n\r\n    worldPosition.xyz = worldPosition.xyz + offsetDir;//\r\n\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
+            },
+            "particle": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    #include<particle_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
+            },
+            "Particles_Additive": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 _TintColor;\r\nuniform sampler2D _MainTex;\r\nuniform vec4 _MainTex_ST;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    #include<particle_frag>\r\n\r\n    vec2 uv = v_uv;\r\n    uv = uv * _MainTex_ST.xy + _MainTex_ST.zw;\r\n    finalColor = 2.0 * finalColor * _TintColor * texture2D(_MainTex, uv);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
+            },
+            "Particles_AlphaBlendedPremultiply": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform sampler2D _MainTex;\r\nuniform vec4 _MainTex_ST;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    #include<particle_frag>\r\n\r\n    vec2 uv = v_uv;\r\n    uv = uv * _MainTex_ST.xy + _MainTex_ST.zw;\r\n\r\n    finalColor = finalColor *  texture2D(_MainTex, uv) * finalColor.a;\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n}"
+            },
+            "point": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\nuniform vec4 u_color;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = v_color * u_color;\r\n}\r\n",
+                "vertex": "attribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform float u_PointSize;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() \r\n{\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    gl_PointSize = u_PointSize;\r\n\r\n    v_color = a_color;\r\n}"
+            },
+            "segment": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\nuniform vec4 u_segmentColor;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = v_color * u_segmentColor;\r\n}",
+                "vertex": "attribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() \r\n{\r\n    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);\r\n    v_color = a_color;\r\n}"
+            },
+            "shadow": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec3 v_worldPosition;\r\n\r\nuniform int u_lightType;\r\nuniform vec3 u_lightPosition;\r\nuniform float u_shadowCameraNear;\r\nuniform float u_shadowCameraFar;\r\n\r\n// @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/packing.glsl\r\nconst float PackUpscale = 256. / 255.; // fraction -> 0..1 (including 1)\r\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\r\nconst float ShiftRight8 = 1. / 256.;\r\nvec4 packDepthToRGBA( const in float v ) \r\n{\r\n\tvec4 r = vec4( fract( v * PackFactors ), v );\r\n\tr.yzw -= r.xyz * ShiftRight8; // tidy overflow\r\n\treturn r * PackUpscale;\r\n}\r\n\r\nvoid main() \r\n{\r\n    vec3 lightToPosition = (v_worldPosition - u_lightPosition);\r\n    float dp = ( length( lightToPosition ) - u_shadowCameraNear ) / ( u_shadowCameraFar - u_shadowCameraNear ); // need to clamp?\r\n    gl_FragColor = packDepthToRGBA( dp );\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\nattribute vec3 a_position;\r\n\r\n#include<uv_pars_vert>\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n\r\nvarying vec3 v_worldPosition;\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n\r\n    #include<uv_vert>\r\n\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    v_worldPosition = worldPosition.xyz;\r\n}"
+            },
+            "skybox": {
+                "fragment": "precision highp float;\r\n\r\nuniform samplerCube s_skyboxTexture;\r\nuniform vec3 u_cameraPos;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main()\r\n{\r\n    vec3 cameraDir = normalize(u_cameraPos.xyz - v_worldPos);\r\n    gl_FragColor = textureCube(s_skyboxTexture, -cameraDir);\r\n}",
+                "vertex": "attribute vec3 a_position;\r\n\r\nuniform vec3 u_cameraPos;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform float u_skyBoxSize;\r\n\r\nvarying vec3 v_worldPos;\r\n\r\nvoid main()\r\n{\r\n    vec3 worldPos = a_position.xyz * u_skyBoxSize + u_cameraPos.xyz;\r\n    gl_Position = u_viewProjection * vec4(worldPos.xyz, 1.0);\r\n    v_worldPos = worldPos;\r\n}"
+            },
+            "standard": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nuniform vec3 u_cameraPos;\r\n\r\n#include<normal_pars_frag>\r\n#include<diffuse_pars_frag>\r\n#include<alphatest_pars_frag>\r\n\r\n#include<ambient_pars_frag>\r\n#include<specular_pars_frag>\r\n#include<lights_pars_frag>\r\n\r\n#include<envmap_pars_frag>\r\n#include<particle_pars_frag>\r\n#include<fog_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    #include<normal_frag>\r\n    #include<diffuse_frag>\r\n    #include<alphatest_frag>\r\n\r\n    #include<ambient_frag>\r\n    #include<specular_frag>\r\n    #include<lights_frag>\r\n\r\n    #include<envmap_frag>\r\n    #include<particle_frag>\r\n    #include<fog_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n#include<position_pars_vert>\r\n#include<normal_pars_vert>\r\n#include<tangent_pars_vert>\r\n//\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n//\r\n#include<worldposition_pars_vert>\r\n#include<project_pars_vert>\r\n//\r\n#include<uv_pars_vert>\r\n#include<normalmap_pars_vert>\r\n//\r\n#include<lights_pars_vert>\r\n#include<pointsize_pars_vert>\r\n\r\nvoid main()\r\n{\r\n    // 初始化\r\n    #include<position_vert>\r\n    #include<normal_vert>\r\n    #include<tangent_vert>\r\n    #include<uv_vert>\r\n    // 动画\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n    // 投影\r\n    #include<worldposition_vert>\r\n    #include<project_vert>\r\n    // \r\n    #include<normalmap_vert>\r\n    //\r\n    #include<lights_vert>\r\n    #include<pointsize_vert>\r\n}"
+            },
+            "terrain": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nuniform vec3 u_cameraPos;\r\n\r\n#include<normal_pars_frag>\r\n#include<diffuse_pars_frag>\r\n#include<alphatest_pars_frag>\r\n\r\n#include<terrain_pars_frag>\r\n\r\n#include<ambient_pars_frag>\r\n#include<specular_pars_frag>\r\n#include<lights_pars_frag>\r\n\r\n#include<envmap_pars_frag>\r\n#include<fog_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    #include<normal_frag>\r\n    #include<diffuse_frag>\r\n    #include<alphatest_frag>\r\n\r\n    #include<terrain_frag>\r\n\r\n    #include<ambient_frag>\r\n    #include<specular_frag>\r\n    #include<lights_frag>\r\n\r\n    #include<envmap_frag>\r\n    #include<fog_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n#include<position_pars_vert>\r\n#include<normal_pars_vert>\r\n#include<tangent_pars_vert>\r\n#include<uv_pars_vert>\r\n//\r\n#include<worldposition_pars_vert>\r\n#include<project_pars_vert>\r\n//\r\n#include<normalmap_pars_vert>\r\n//\r\n#include<lights_pars_vert>\r\n#include<pointsize_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    // 初始化\r\n    #include<position_vert>\r\n    #include<normal_vert>\r\n    #include<tangent_vert>\r\n    #include<uv_vert>\r\n    // 投影\r\n    #include<worldposition_vert>\r\n    #include<project_vert>\r\n    // \r\n    #include<normalmap_vert>\r\n    //\r\n    #include<lights_vert>\r\n    #include<pointsize_vert>\r\n}"
+            },
+            "texture": {
+                "fragment": "precision mediump float;\r\n\r\nuniform sampler2D s_texture;\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 u_color;\r\n\r\nvoid main() {\r\n\r\n    vec4 color = texture2D(s_texture, v_uv);\r\n    gl_FragColor = color * u_color;\r\n}\r\n",
+                "vertex": "attribute vec3 a_position;\r\nattribute vec2 a_uv;\r\n\r\nvarying vec2 v_uv;\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvoid main() \r\n{\r\n    gl_Position = u_viewProjection * u_modelMatrix * vec4(a_position, 1.0);\r\n    v_uv = a_uv;\r\n}"
+            },
+            "water": {
+                "fragment": "precision mediump float;  \r\n\r\nuniform vec3 u_cameraPos;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nuniform sampler2D s_mirrorSampler;\r\nuniform sampler2D s_normalSampler;\r\n\r\nuniform float u_alpha;\r\nuniform float u_time;\r\nuniform float u_size;\r\nuniform float u_distortionScale;\r\nuniform vec3 u_sunColor;\r\nuniform vec3 u_sunDirection;\r\nuniform vec3 u_waterColor;\r\n\r\nvec4 getNoise( vec2 uv ) \r\n{\r\n\tvec2 uv0 = ( uv / 103.0 ) + vec2(u_time / 17.0, u_time / 29.0);\r\n\tvec2 uv1 = uv / 107.0-vec2( u_time / -19.0, u_time / 31.0 );\r\n\tvec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( u_time / 101.0, u_time / 97.0 );\r\n\tvec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( u_time / 109.0, u_time / -113.0 );\r\n\tvec4 noise = texture2D( s_normalSampler, uv0 ) +\r\n\t\ttexture2D( s_normalSampler, uv1 ) +\r\n\t\ttexture2D( s_normalSampler, uv2 ) +\r\n\t\ttexture2D( s_normalSampler, uv3 );\r\n\treturn noise * 0.5 - 1.0;\r\n}\r\n\r\nvoid sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor ) \r\n{\r\n\tvec3 reflection = normalize( reflect( -u_sunDirection, surfaceNormal ) );\r\n\tfloat direction = max( 0.0, dot( eyeDirection, reflection ) );\r\n\tspecularColor += pow( direction, shiny ) * u_sunColor * spec;\r\n\tdiffuseColor += max( dot( u_sunDirection, surfaceNormal ), 0.0 ) * u_sunColor * diffuse;\r\n}\r\n\r\nvoid main() \r\n{\r\n\tvec4 noise = getNoise( v_worldPosition.xz * u_size );\r\n\tvec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );\r\n\tvec3 diffuseLight = vec3(0.0);\r\n\tvec3 specularLight = vec3(0.0);\r\n\tvec3 worldToEye = u_cameraPos-v_worldPosition.xyz;\r\n\tvec3 eyeDirection = normalize( worldToEye );\r\n\tsunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );\r\n\tfloat distance = length(worldToEye);\r\n\tvec2 distortion = surfaceNormal.xz * ( 0.001 + 1.0 / distance ) * u_distortionScale;\r\n\tvec3 reflectionSample = vec3( texture2D( s_mirrorSampler, v_mirrorCoord.xy / v_mirrorCoord.z + distortion ) );\r\n\tfloat theta = max( dot( eyeDirection, surfaceNormal ), 0.0 );\r\n\tfloat rf0 = 0.3;\r\n\tfloat reflectance = rf0 + ( 1.0 - rf0 ) * pow( ( 1.0 - theta ), 5.0 );\r\n\tvec3 scatter = max( 0.0, dot( surfaceNormal, eyeDirection ) ) * u_waterColor;\r\n\r\n\tfloat shadowMask = 1.0;\r\n\t// float shadowMask = getShadowMask();\r\n\r\n\tvec3 albedo = mix( ( u_sunColor * diffuseLight * 0.3 + scatter ) * shadowMask, ( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight ), reflectance);\r\n\tvec3 outgoingLight = albedo;\r\n\tgl_FragColor = vec4( outgoingLight, u_alpha );\r\n\r\n\t// debug\r\n\t// gl_FragColor = texture2D( s_mirrorSampler, (v_mirrorCoord.xy / v_mirrorCoord.z + 1.0) / 2.0 );\r\n\t// gl_FragColor = vec4( reflectionSample, 1.0 );\r\n\t// gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );\r\n}",
+                "vertex": "attribute vec3 a_position;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nuniform mat4 u_textureMatrix;\r\n\r\nvarying vec4 v_mirrorCoord;\r\nvarying vec4 v_worldPosition;\r\n\r\nvoid main() \r\n{\r\n\tvec4 position = vec4(a_position, 1.0);\r\n\t//获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\t\r\n\tv_worldPosition = worldPosition;\r\n\tv_mirrorCoord = u_textureMatrix * worldPosition;\r\n}"
+            },
+            "wireframe": {
+                "fragment": "precision mediump float;\r\n\r\nuniform vec4 u_wireframeColor;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = u_wireframeColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\nattribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\n#include<uv_pars_vert>\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\n#include<skeleton_pars_vert>\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n\r\n    #include<uv_vert>\r\n\r\n    #include<skeleton_vert>\r\n    #include<particle_vert>\r\n\r\n    gl_Position = u_viewProjection * u_modelMatrix * position;\r\n}"
+            }
+        },
+        "modules": {
+            "alphatest_frag": "if(diffuseColor.w < u_alphaThreshold) discard;",
+            "alphatest_pars_frag": "uniform float u_alphaThreshold;",
+            "ambient_frag": "//环境光\r\nvec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\nambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;",
+            "ambient_pars_frag": "uniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;",
+            "cartoon_pars_frag": "#ifdef IS_CARTOON\r\n    #ifdef cartoon_Anti_aliasing\r\n        #extension GL_OES_standard_derivatives : enable\r\n    #endif\r\n\r\n    uniform vec4 u_diffuseSegment;\r\n    uniform vec4 u_diffuseSegmentValue;\r\n    uniform float u_specularSegment;\r\n\r\n    //漫反射\r\n    float cartoonLightDiffuse(vec3 normal,vec3 lightDir)\r\n    {\r\n        float diff = dot(normal, lightDir);\r\n        diff = diff * 0.5 + 0.5;\r\n\r\n        #ifdef cartoon_Anti_aliasing\r\n            float w = fwidth(diff) * 2.0;\r\n            if (diff < u_diffuseSegment.x + w) \r\n            {\r\n                diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, smoothstep(u_diffuseSegment.x - w, u_diffuseSegment.x + w, diff));\r\n            //  diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, clamp(0.5 * (diff - u_diffuseSegment.x) / w, 0, 1));\r\n            } else if (diff < u_diffuseSegment.y + w) \r\n            {\r\n                diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, smoothstep(u_diffuseSegment.y - w, u_diffuseSegment.y + w, diff));\r\n            //  diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, clamp(0.5 * (diff - u_diffuseSegment.y) / w, 0, 1));\r\n            } else if (diff < u_diffuseSegment.z + w) \r\n            {\r\n                diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, smoothstep(u_diffuseSegment.z - w, u_diffuseSegment.z + w, diff));\r\n            //  diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, clamp(0.5 * (diff - u_diffuseSegment.z) / w, 0, 1));\r\n            } else \r\n            {\r\n                diff = u_diffuseSegment.w;\r\n            }\r\n        #else\r\n            if (diff < u_diffuseSegment.x) \r\n            {\r\n                diff = u_diffuseSegmentValue.x;\r\n            } else if (diff < u_diffuseSegment.y) \r\n            {\r\n                diff = u_diffuseSegmentValue.y;\r\n            } else if (diff < u_diffuseSegment.z) \r\n            {\r\n                diff = u_diffuseSegmentValue.z;\r\n            } else \r\n            {\r\n                diff = u_diffuseSegmentValue.w;\r\n            }\r\n        #endif\r\n\r\n        return diff;\r\n    }\r\n\r\n    //镜面反射漫反射\r\n    float cartoonLightSpecular(vec3 normal,vec3 lightDir,vec3 cameraDir,float glossiness)\r\n    {\r\n        vec3 halfVec = normalize(lightDir + cameraDir);\r\n        float specComp = max(dot(normal,halfVec),0.0);\r\n        specComp = pow(specComp, glossiness);\r\n\r\n        #ifdef cartoon_Anti_aliasing\r\n            float w = fwidth(specComp);\r\n            if (specComp < u_specularSegment + w) \r\n            {\r\n                specComp = mix(0.0, 1.0, smoothstep(u_specularSegment - w, u_specularSegment + w, specComp));\r\n                // specComp = smoothstep(u_specularSegment - w, u_specularSegment + w, specComp);\r\n            } else \r\n            {\r\n                specComp = 1.0;\r\n            }\r\n        #else\r\n            if(specComp < u_specularSegment)\r\n            {\r\n                specComp = 0.0;\r\n            }else\r\n            {\r\n                specComp = 1.0;\r\n            }\r\n        #endif\r\n\r\n        return specComp;\r\n    }\r\n#endif",
+            "diffuse_frag": "//获取漫反射基本颜色\r\nvec4 diffuseColor = u_diffuse;\r\ndiffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\nfinalColor = diffuseColor;",
+            "diffuse_pars_frag": "//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;",
+            "envmap_frag": "finalColor = envmapMethod(finalColor);",
+            "envmap_pars_frag": "uniform samplerCube s_envMap;\r\nuniform float u_reflectivity;\r\n\r\nvec4 envmapMethod(vec4 finalColor)\r\n{\r\n    vec3 cameraToVertex = normalize( v_worldPosition - u_cameraPos );\r\n    vec3 reflectVec = reflect( cameraToVertex, v_normal );\r\n    vec4 envColor = textureCube( s_envMap, reflectVec );\r\n    finalColor.xyz *= envColor.xyz * u_reflectivity;\r\n    return finalColor;\r\n}",
+            "fog_frag": "finalColor = fogMethod(finalColor);",
+            "fog_pars_frag": "#define FOGMODE_NONE    0.\r\n#define FOGMODE_EXP     1.\r\n#define FOGMODE_EXP2    2.\r\n#define FOGMODE_LINEAR  3.\r\n#define E 2.71828\r\n\r\nuniform float u_fogMode;\r\nuniform float u_fogMinDistance;\r\nuniform float u_fogMaxDistance;\r\nuniform float u_fogDensity;\r\nuniform vec3 u_fogColor;\r\n\r\nfloat CalcFogFactor(float fogDistance)\r\n{\r\n\tfloat fogCoeff = 1.0;\r\n\tif (FOGMODE_LINEAR == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = (u_fogMaxDistance - fogDistance) / (u_fogMaxDistance - u_fogMinDistance);\r\n\t}\r\n\telse if (FOGMODE_EXP == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fogDistance * u_fogDensity);\r\n\t}\r\n\telse if (FOGMODE_EXP2 == u_fogMode)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fogDistance * fogDistance * u_fogDensity * u_fogDensity);\r\n\t}\r\n\r\n\treturn clamp(fogCoeff, 0.0, 1.0);\r\n}\r\n\r\nvec4 fogMethod(vec4 color)\r\n{\r\n    vec3 fogDistance = u_cameraPos - v_worldPosition.xyz;\r\n\tfloat fog = CalcFogFactor(length(fogDistance));\r\n\tcolor.rgb = fog * color.rgb + (1.0 - fog) * u_fogColor;\r\n    return color;\r\n}",
+            "lights_frag": "//渲染灯光\r\n#if NUM_LIGHT > 0\r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n#endif",
+            "lights_pars_frag": "#if NUM_POINTLIGHT > 0\r\n    // 点光源\r\n    struct PointLight\r\n    {\r\n        // 位置\r\n        vec3 position;\r\n        // 颜色\r\n        vec3 color;\r\n        // 强度\r\n        float intensity;\r\n        // 范围\r\n        float range;\r\n    };\r\n    // 点光源列表\r\n    uniform PointLight u_pointLights[NUM_POINTLIGHT];\r\n#endif\r\n\r\n#if NUM_SPOT_LIGHTS > 0\r\n    // 聚光灯\r\n    struct SpotLight\r\n    {\r\n        // 位置\r\n        vec3 position;\r\n        // 颜色\r\n        vec3 color;\r\n        // 强度\r\n        float intensity;\r\n        // 范围\r\n        float range;\r\n        // 方向\r\n        vec3 direction;\r\n        // 椎体cos值\r\n        float coneCos;\r\n        // 半影cos\r\n        float penumbraCos;\r\n    };\r\n    // 方向光源列表\r\n    uniform SpotLight u_spotLights[ NUM_SPOT_LIGHTS ];\r\n#endif\r\n\r\n#if NUM_DIRECTIONALLIGHT > 0\r\n    // 方向光源\r\n    struct DirectionalLight\r\n    {\r\n        // 方向\r\n        vec3 direction;\r\n        // 颜色\r\n        vec3 color;\r\n        // 强度\r\n        float intensity;\r\n    };\r\n    // 方向光源列表\r\n    uniform DirectionalLight u_directionalLights[ NUM_DIRECTIONALLIGHT ];\r\n#endif\r\n\r\n//卡通\r\n#include<cartoon_pars_frag>\r\n\r\n#include<shadowmap_pars_frag>\r\n\r\n//计算光照漫反射系数\r\nfloat calculateLightDiffuse(vec3 normal,vec3 lightDir)\r\n{\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightDiffuse(normal,lightDir);\r\n    #else\r\n        return clamp(dot(normal,lightDir),0.0,1.0);\r\n    #endif\r\n}\r\n\r\n//计算光照镜面反射系数\r\nfloat calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness)\r\n{\r\n    #ifdef IS_CARTOON\r\n        return cartoonLightSpecular(normal,lightDir,viewDir,glossiness);\r\n    #else\r\n        vec3 halfVec = normalize(lightDir + viewDir);\r\n        float specComp = max(dot(normal,halfVec),0.0);\r\n        specComp = pow(specComp, glossiness);\r\n\r\n        return specComp;\r\n    #endif\r\n}\r\n\r\n//根据距离计算衰减\r\nfloat computeDistanceLightFalloff(float lightDistance, float range)\r\n{\r\n    #ifdef USEPHYSICALLIGHTFALLOFF\r\n        float lightDistanceFalloff = 1.0 / ((lightDistance * lightDistance + 0.0001));\r\n    #else\r\n        float lightDistanceFalloff = max(0., 1.0 - lightDistance / range);\r\n    #endif\r\n    \r\n    return lightDistanceFalloff;\r\n}\r\n\r\n//渲染点光源\r\nvec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambientColor, float glossiness)\r\n{\r\n    //视线方向\r\n    vec3 viewDir = normalize(u_cameraPos - v_worldPosition);\r\n\r\n    vec3 resultColor = vec3(0.0,0.0,0.0);\r\n    \r\n    #if NUM_POINTLIGHT > 0\r\n        PointLight pointLight;\r\n        for(int i = 0;i<NUM_POINTLIGHT;i++)\r\n        {\r\n            pointLight = u_pointLights[i];\r\n            //\r\n            vec3 lightOffset = pointLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            //灯光颜色\r\n            vec3 lightColor = pointLight.color;\r\n            //灯光强度\r\n            float lightIntensity = pointLight.intensity;\r\n            float falloff = computeDistanceLightFalloff(length(lightOffset), pointLight.range);\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            float shadow = 1.0;\r\n            \r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    #if NUM_POINTLIGHT_CASTSHADOW > 0\r\n        CastShadowPointLight castShadowPointLight;\r\n        for(int i = 0;i<NUM_POINTLIGHT_CASTSHADOW;i++)\r\n        {\r\n            castShadowPointLight = u_castShadowPointLights[i];\r\n            //\r\n            vec3 lightOffset = castShadowPointLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            //灯光颜色\r\n            vec3 lightColor = castShadowPointLight.color;\r\n            //灯光强度\r\n            float lightIntensity = castShadowPointLight.intensity;\r\n            float falloff = computeDistanceLightFalloff(length(lightOffset), castShadowPointLight.range);\r\n            // 计算阴影\r\n            float shadow = getPointShadow( u_pointShadowMaps[ i ], castShadowPointLight.shadowType, castShadowPointLight.shadowMapSize, castShadowPointLight.shadowBias, castShadowPointLight.shadowRadius, -lightOffset, castShadowPointLight.shadowCameraNear, castShadowPointLight.shadowCameraFar );\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            //\r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    #if NUM_SPOT_LIGHTS > 0\r\n        SpotLight spotLight;\r\n        for(int i = 0; i < NUM_SPOT_LIGHTS; i++)\r\n        {\r\n            spotLight = u_spotLights[i];\r\n            //\r\n            vec3 lightOffset = spotLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            float angleCos = dot(lightDir, -spotLight.direction);\r\n            if(angleCos > spotLight.coneCos)\r\n            {\r\n                float spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );\r\n                \r\n                //灯光颜色\r\n                vec3 lightColor = spotLight.color;\r\n                //灯光强度\r\n                float lightIntensity = spotLight.intensity;\r\n                float falloff = computeDistanceLightFalloff(length(lightOffset) * angleCos, spotLight.range);\r\n                float diffuse = calculateLightDiffuse(normal, lightDir);\r\n                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n                float shadow = 1.0;\r\n                \r\n                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;\r\n            }            \r\n        }\r\n    #endif\r\n    \r\n    #if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n        CastShadowSpotLight castShadowSpotLight;\r\n        for(int i = 0; i < NUM_SPOT_LIGHTS_CASTSHADOW; i++)\r\n        {\r\n            castShadowSpotLight = u_castShadowSpotLights[i];\r\n            //\r\n            vec3 lightOffset = castShadowSpotLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(lightOffset);\r\n            float angleCos = dot(lightDir, -castShadowSpotLight.direction);\r\n            if(angleCos > castShadowSpotLight.coneCos)\r\n            {\r\n                float spotEffect = smoothstep( castShadowSpotLight.coneCos, castShadowSpotLight.penumbraCos, angleCos );\r\n                \r\n                //灯光颜色\r\n                vec3 lightColor = castShadowSpotLight.color;\r\n                //灯光强度\r\n                float lightIntensity = castShadowSpotLight.intensity;\r\n                float falloff = computeDistanceLightFalloff(length(lightOffset) * angleCos, castShadowSpotLight.range);\r\n                float diffuse = calculateLightDiffuse(normal, lightDir);\r\n                float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n                // 计算阴影\r\n                float shadow = getShadow( u_spotShadowMaps[i], castShadowSpotLight.shadowType, castShadowSpotLight.shadowMapSize, castShadowSpotLight.shadowBias, castShadowSpotLight.shadowRadius, v_spotShadowCoord[ i ], -lightOffset, castShadowSpotLight.shadowCameraNear, castShadowSpotLight.shadowCameraFar);\r\n                \r\n                resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow * spotEffect;\r\n            }            \r\n        }\r\n    #endif\r\n\r\n    #if NUM_DIRECTIONALLIGHT > 0\r\n        DirectionalLight directionalLight;\r\n        for(int i = 0;i<NUM_DIRECTIONALLIGHT;i++)\r\n        {\r\n            directionalLight = u_directionalLights[i];\r\n            //光照方向\r\n            vec3 lightDir = normalize(-directionalLight.direction);\r\n            //灯光颜色\r\n            vec3 lightColor = directionalLight.color;\r\n            //灯光强度\r\n            float lightIntensity = directionalLight.intensity;\r\n\r\n            float falloff = 1.0;\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            float shadow = 1.0;\r\n            //\r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n        CastShadowDirectionalLight castShadowDirectionalLight;\r\n        for(int i = 0;i<NUM_DIRECTIONALLIGHT_CASTSHADOW;i++)\r\n        {\r\n            castShadowDirectionalLight = u_castShadowDirectionalLights[i];\r\n            //\r\n            vec3 lightOffset = castShadowDirectionalLight.position - v_worldPosition;\r\n            //光照方向\r\n            vec3 lightDir = normalize(-castShadowDirectionalLight.direction);\r\n            //灯光颜色\r\n            vec3 lightColor = castShadowDirectionalLight.color;\r\n            //灯光强度\r\n            float lightIntensity = castShadowDirectionalLight.intensity;\r\n            // 计算阴影\r\n            float shadow = getShadow( u_directionalShadowMaps[i], castShadowDirectionalLight.shadowType, castShadowDirectionalLight.shadowMapSize, castShadowDirectionalLight.shadowBias, castShadowDirectionalLight.shadowRadius, v_directionalShadowCoord[ i ], -lightOffset, castShadowDirectionalLight.shadowCameraNear, castShadowDirectionalLight.shadowCameraFar);\r\n            \r\n            float falloff = 1.0;\r\n            float diffuse = calculateLightDiffuse(normal, lightDir);\r\n            float specular = calculateLightSpecular(normal, lightDir, viewDir, glossiness);\r\n            //\r\n            resultColor += (diffuse * diffuseColor + specular * specularColor) * lightColor * lightIntensity * falloff * shadow;\r\n        }\r\n    #endif\r\n\r\n    resultColor += ambientColor * diffuseColor;\r\n    return resultColor;\r\n}",
+            "lights_pars_vert": "// 灯光声明\r\n\r\n#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n    // 方向光源投影矩阵列表\r\n    uniform mat4 u_directionalShadowMatrixs[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];\r\n    // 方向光源投影uv列表\r\n    varying vec4 v_directionalShadowCoord[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];\r\n#endif\r\n\r\n#if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n    // 聚光灯投影矩阵列表\r\n    uniform mat4 u_spotShadowMatrix[ NUM_SPOT_LIGHTS_CASTSHADOW ];\r\n    // 聚光灯投影uv列表\r\n    varying vec4 v_spotShadowCoord[ NUM_SPOT_LIGHTS_CASTSHADOW ];\r\n#endif",
+            "lights_vert": "#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n    for ( int i = 0; i < NUM_DIRECTIONALLIGHT_CASTSHADOW; i ++ ) \r\n    {\r\n        v_directionalShadowCoord[ i ] = u_directionalShadowMatrixs[ i ] * worldPosition;\r\n    }\r\n#endif\r\n\r\n#if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n    for ( int i = 0; i < NUM_SPOT_LIGHTS_CASTSHADOW; i ++ ) \r\n    {\r\n        v_spotShadowCoord[ i ] = u_spotShadowMatrix[ i ] * worldPosition;\r\n    }\r\n#endif",
+            "normalmap_pars_vert": "uniform mat4 u_ITModelMatrix;\r\n\r\nvarying vec3 v_normal;\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;",
+            "normalmap_vert": "//计算法线\r\nv_normal = normalize((u_ITModelMatrix * vec4(normal, 0.0)).xyz);\r\nv_tangent = normalize((u_modelMatrix * vec4(tangent, 0.0)).xyz);\r\nv_bitangent = cross(v_normal, v_tangent);",
+            "normal_frag": "//获取法线\r\nvec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\nnormal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);",
+            "normal_pars_frag": "varying vec3 v_normal;\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;",
+            "normal_pars_vert": "attribute vec3 a_normal;",
+            "normal_vert": "vec3 normal = a_normal;",
+            "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
+            "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        color.xyz = color.xyz * v_particle_color.xyz;\r\n        color.xyz = color.xyz * v_particle_color.www;\r\n        return color;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    uniform mat3 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    #define RotationOrder_XYZ 0\r\n    #define RotationOrder_ZXY 1\r\n    #define RotationOrder_ZYX 2\r\n    #define RotationOrder_YXZ 3\r\n    #define RotationOrder_YZX 4\r\n    #define RotationOrder_XZY 5\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sinX = sin(rx);\r\n        float cosX = cos(rx);\r\n        float sinY = sin(ry);\r\n        float cosY = cos(ry);\r\n        float sinZ = sin(rz);\r\n        float cosZ = cos(rz);\r\n\r\n        mat3 tmp;\r\n        #ifdef RotationOrder\r\n            #if RotationOrder == RotationOrder_XYZ\r\n                float ae = cosX * cosZ;\r\n                float af = cosX * sinZ;\r\n                float be = sinX * cosZ;\r\n                float bf = sinX * sinZ;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = - cosY * sinZ;\r\n                float te8 = sinY;\r\n\r\n                float te1 = af + be * sinY;\r\n                float te5 = ae - bf * sinY;\r\n                float te9 = - sinX * cosY;\r\n\r\n                float te2 = bf - ae * sinY;\r\n                float te6 = be + af * sinY;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_YXZ\r\n                float ce = cosY * cosZ;\r\n                float cf = cosY * sinZ;\r\n                float de = sinY * cosZ;\r\n                float df = sinY * sinZ;\r\n\r\n                float te0 = ce + df * sinX;\r\n                float te4 = de * sinX - cf;\r\n                float te8 = cosX * sinY;\r\n\r\n                float te1 = cosX * sinZ;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = - sinX;\r\n\r\n                float te2 = cf * sinX - de;\r\n                float te6 = df + ce * sinX;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_ZXY\r\n                float ce = cosY * cosZ;\r\n                float cf = cosY * sinZ;\r\n                float de = sinY * cosZ;\r\n                float df = sinY * sinZ;\r\n\r\n                float te0 = ce - df * sinX;\r\n                float te4 = - cosX * sinZ;\r\n                float te8 = de + cf * sinX;\r\n\r\n                float te1 = cf + de * sinX;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = df - ce * sinX;\r\n\r\n                float te2 = - cosX * sinY;\r\n                float te6 = sinX;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_ZYX\r\n                float ae = cosX * cosZ;\r\n                float af = cosX * sinZ;\r\n                float be = sinX * cosZ;\r\n                float bf = sinX * sinZ;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = be * sinY - af;\r\n                float te8 = ae * sinY + bf;\r\n\r\n                float te1 = cosY * sinZ;\r\n                float te5 = bf * sinY + ae;\r\n                float te9 = af * sinY - be;\r\n\r\n                float te2 = - sinY;\r\n                float te6 = sinX * cosY;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_YZX\r\n                float ac = cosX * cosY;\r\n                float ad = cosX * sinY;\r\n                float bc = sinX * cosY;\r\n                float bd = sinX * sinY;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = bd - ac * sinZ;\r\n                float te8 = bc * sinZ + ad;\r\n\r\n                float te1 = sinZ;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = - sinX * cosZ;\r\n\r\n                float te2 = - sinY * cosZ;\r\n                float te6 = ad * sinZ + bc;\r\n                float te10 = ac - bd * sinZ;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_XZY\r\n                float ac = cosX * cosY;\r\n                float ad = cosX * sinY;\r\n                float bc = sinX * cosY;\r\n                float bd = sinX * sinY;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = - sinZ;\r\n                float te8 = sinY * cosZ;\r\n\r\n                float te1 = ac * sinZ + bd;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = ad * sinZ - bc;\r\n\r\n                float te2 = bc * sinZ - ad;\r\n                float te6 = sinX * cosZ;\r\n                float te10 = bd * sinZ + ac;\r\n            #endif\r\n        #else\r\n            // YXZ\r\n            float ce = cosY * cosZ;\r\n            float cf = cosY * sinZ;\r\n            float de = sinY * cosZ;\r\n            float df = sinY * sinZ;\r\n\r\n            float te0 = ce + df * sinX;\r\n            float te4 = de * sinX - cf;\r\n            float te8 = cosX * sinY;\r\n\r\n            float te1 = cosX * sinZ;\r\n            float te5 = cosX * cosZ;\r\n            float te9 = - sinX;\r\n\r\n            float te2 = cf * sinX - de;\r\n            float te6 = df + ce * sinX;\r\n            float te10 = cosX * cosY;\r\n        #endif\r\n        \r\n        tmp[0] = vec3(te0, te1, te2);\r\n        tmp[1] = vec3(te4, te5, te6);\r\n        tmp[2] = vec3(te8, te9, te10);\r\n        \r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n        position.xyz = u_particle_billboardMatrix * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
+            "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
+            "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
+            "position_pars_vert": "attribute vec3 a_position;",
+            "position_vert": "vec4 position = vec4(a_position, 1.0);",
+            "project_pars_vert": "uniform mat4 u_viewProjection;",
+            "project_vert": "//计算投影坐标\r\ngl_Position = u_viewProjection * worldPosition;",
+            "shadowmap_pars_frag": "#if (NUM_POINTLIGHT_CASTSHADOW > 0) ||  (NUM_DIRECTIONALLIGHT_CASTSHADOW > 0) ||  (NUM_SPOT_LIGHTS_CASTSHADOW > 0)\r\n    #if NUM_POINTLIGHT_CASTSHADOW > 0\r\n        // 投影的点光源\r\n        struct CastShadowPointLight\r\n        {\r\n            // 位置\r\n            vec3 position;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 范围\r\n            float range;\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的点光源列表\r\n        uniform CastShadowPointLight u_castShadowPointLights[NUM_POINTLIGHT_CASTSHADOW];\r\n        // 点光源阴影图\r\n        uniform sampler2D u_pointShadowMaps[NUM_POINTLIGHT_CASTSHADOW];\r\n    #endif\r\n\r\n    #if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n        // 投影的聚光灯\r\n        struct CastShadowSpotLight\r\n        {\r\n            // 位置\r\n            vec3 position;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 范围\r\n            float range;\r\n            // 方向\r\n            vec3 direction;\r\n            // 椎体cos值\r\n            float coneCos;\r\n            // 半影cos\r\n            float penumbraCos;\r\n\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的投影的聚光灯列表\r\n        uniform CastShadowSpotLight u_castShadowSpotLights[NUM_SPOT_LIGHTS_CASTSHADOW];\r\n        // 投影的聚光灯阴影图\r\n        uniform sampler2D u_spotShadowMaps[NUM_SPOT_LIGHTS_CASTSHADOW];\r\n        // 方向光源投影uv列表\r\n        varying vec4 v_spotShadowCoord[ NUM_SPOT_LIGHTS_CASTSHADOW ];\r\n    #endif\r\n\r\n    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n        // 投影的方向光源\r\n        struct CastShadowDirectionalLight\r\n        {\r\n            // 方向\r\n            vec3 direction;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            // 位置\r\n            vec3 position;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的方向光源列表\r\n        uniform CastShadowDirectionalLight u_castShadowDirectionalLights[NUM_DIRECTIONALLIGHT_CASTSHADOW];\r\n        // 方向光源阴影图\r\n        uniform sampler2D u_directionalShadowMaps[NUM_DIRECTIONALLIGHT_CASTSHADOW];\r\n        // 方向光源投影uv列表\r\n        varying vec4 v_directionalShadowCoord[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];\r\n    #endif\r\n\r\n    // @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/packing.glsl\r\n    const float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\r\n    const vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\r\n    const vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\r\n    float unpackRGBAToDepth( const in vec4 v ) \r\n    {\r\n        return dot( v, UnpackFactors );\r\n    }\r\n\r\n    float texture2DCompare( sampler2D depths, vec2 uv, float compare ) \r\n    {\r\n        return step( compare, unpackRGBAToDepth( texture2D( depths, uv ) ) );\r\n    }\r\n\r\n    float texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare ) \r\n    {\r\n        const vec2 offset = vec2( 0.0, 1.0 );\r\n\r\n        vec2 texelSize = vec2( 1.0 ) / size;\r\n        vec2 centroidUV = floor( uv * size + 0.5 ) / size;\r\n\r\n        float lb = texture2DCompare( depths, centroidUV + texelSize * offset.xx, compare );\r\n        float lt = texture2DCompare( depths, centroidUV + texelSize * offset.xy, compare );\r\n        float rb = texture2DCompare( depths, centroidUV + texelSize * offset.yx, compare );\r\n        float rt = texture2DCompare( depths, centroidUV + texelSize * offset.yy, compare );\r\n\r\n        vec2 f = fract( uv * size + 0.5 );\r\n\r\n        float a = mix( lb, lt, f.y );\r\n        float b = mix( rb, rt, f.y );\r\n        float c = mix( a, b, f.x );\r\n\r\n        return c;\r\n    }\r\n\r\n    // 计算阴影值 @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/shadowmap_pars_fragment.glsl\r\n    float getShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar) \r\n    {\r\n        float shadow = 1.0;\r\n\r\n        shadowCoord.xy /= shadowCoord.w;\r\n        shadowCoord.xy = (shadowCoord.xy + 1.0) / 2.0;\r\n\r\n        // dp = normalized distance from light to fragment position\r\n        float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?\r\n        dp += shadowBias;\r\n        shadowCoord.z = dp;\r\n\r\n        // if ( something && something ) breaks ATI OpenGL shader compiler\r\n        // if ( all( something, something ) ) using this instead\r\n\r\n        bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );\r\n        bool inFrustum = all( inFrustumVec );\r\n\r\n        bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );\r\n\r\n        bool frustumTest = all( frustumTestVec );\r\n\r\n        if ( frustumTest ) \r\n        {\r\n            if (shadowType == 2)\r\n            {\r\n                // PCF\r\n                vec2 texelSize = vec2( 1.0 ) / shadowMapSize;\r\n\r\n                float dx0 = - texelSize.x * shadowRadius;\r\n                float dy0 = - texelSize.y * shadowRadius;\r\n                float dx1 = + texelSize.x * shadowRadius;\r\n                float dy1 = + texelSize.y * shadowRadius;\r\n\r\n                shadow = (\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\r\n                ) * ( 1.0 / 9.0 );\r\n            }\r\n            else if(shadowType == 3)\r\n            {\r\n                // PCF soft\r\n                vec2 texelSize = vec2( 1.0 ) / shadowMapSize;\r\n\r\n                float dx0 = - texelSize.x * shadowRadius;\r\n                float dy0 = - texelSize.y * shadowRadius;\r\n                float dx1 = + texelSize.x * shadowRadius;\r\n                float dy1 = + texelSize.y * shadowRadius;\r\n\r\n                shadow = (\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy, shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\r\n                ) * ( 1.0 / 9.0 );\r\n            }\r\n            else\r\n            {\r\n                shadow = texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );\r\n            }\r\n        }\r\n\r\n        return shadow;\r\n    }\r\n\r\n    // cubeToUV() maps a 3D direction vector suitable for cube texture mapping to a 2D\r\n    // vector suitable for 2D texture mapping. This code uses the following layout for the\r\n    // 2D texture:\r\n    //\r\n    // xzXZ\r\n    //  y Y\r\n    //\r\n    // Y - Positive y direction\r\n    // y - Negative y direction\r\n    // X - Positive x direction\r\n    // x - Negative x direction\r\n    // Z - Positive z direction\r\n    // z - Negative z direction\r\n    //\r\n    // Source and test bed:\r\n    // https://gist.github.com/tschw/da10c43c467ce8afd0c4\r\n\r\n    vec2 cubeToUV( vec3 v, float texelSizeY ) \r\n    {\r\n        // Number of texels to avoid at the edge of each square\r\n        vec3 absV = abs( v );\r\n\r\n        // Intersect unit cube\r\n        float scaleToCube = 1.0 / max( absV.x, max( absV.y, absV.z ) );\r\n        absV *= scaleToCube;\r\n\r\n        // Apply scale to avoid seams\r\n\r\n        // two texels less per square (one texel will do for NEAREST)\r\n        v *= scaleToCube * ( 1.0 - 2.0 * texelSizeY );\r\n\r\n        // Unwrap\r\n\r\n        // space: -1 ... 1 range for each square\r\n        //\r\n        // #X##\t\tdim    := ( 1/4 , 1/2 )\r\n        //  # #\t\tcenter := ( 1/2 , 1/2 )\r\n        vec2 planar;\r\n        float almostOne = 1.0 - 1.5 * texelSizeY;\r\n        if ( absV.z >= almostOne ) \r\n        {\r\n            if ( v.z > 0.0 )\r\n            {\r\n                planar.x = (0.5 + v.x * 0.5) * 0.25 + 0.75;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }else\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }\r\n        } else if ( absV.x >= almostOne ) \r\n        {\r\n            if( v.x > 0.0)\r\n            {\r\n                planar.x = (0.5 - v.z * 0.5) * 0.25 + 0.5;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }else\r\n            {\r\n                planar.x = (0.5 + v.z * 0.5) * 0.25 + 0.0;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }\r\n        } else if ( absV.y >= almostOne ) \r\n        {\r\n            if( v.y > 0.0)\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.75;\r\n                planar.y = (0.5 + v.z * 0.5) * 0.5 + 0.0;\r\n            }else\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;\r\n                planar.y = (0.5 - v.z * 0.5) * 0.5 + 0.0;\r\n            }\r\n        }\r\n        return planar;\r\n    }\r\n\r\n    float getPointShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) \r\n    {\r\n        vec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );\r\n\r\n        // for point lights, the uniform @vShadowCoord is re-purposed to hold\r\n        // the vector from the light to the world-space position of the fragment.\r\n        // vec3 lightToPosition = shadowCoord.xyz;\r\n\r\n        // dp = normalized distance from light to fragment position\r\n        float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?\r\n        dp += shadowBias;\r\n\r\n        // bd3D = base direction 3D\r\n        vec3 bd3D = normalize( lightToPosition );\r\n\r\n        if(shadowType == 2 || shadowType == 3)\r\n        {\r\n            vec2 offset = vec2( - 1, 1 ) * shadowRadius * texelSize.y;\r\n\r\n            return (\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxx, texelSize.y ), dp )\r\n            ) * ( 1.0 / 9.0 );\r\n        }else\r\n        {\r\n            return texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp );\r\n        }\r\n    }\r\n#endif",
+            "skeleton_pars_vert": "#ifdef HAS_SKELETON_ANIMATION\r\n\r\n    attribute vec4 a_jointindex0;\r\n    attribute vec4 a_jointweight0;\r\n\r\n    #ifdef HAS_a_jointindex1\r\n        attribute vec4 a_jointindex1;\r\n        attribute vec4 a_jointweight1;\r\n    #endif\r\n\r\n    #ifdef NUM_SKELETONJOINT\r\n        uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];\r\n    #endif\r\n\r\n    vec4 skeletonAnimation(vec4 position) \r\n    {\r\n        vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);\r\n        for(int i = 0; i < 4; i++)\r\n        {\r\n            totalPosition += u_skeletonGlobalMatriices[int(a_jointindex0[i])] * position * a_jointweight0[i];\r\n        }\r\n        #ifdef HAS_a_jointindex1\r\n            for(int i = 0; i < 4; i++)\r\n            {\r\n                totalPosition += u_skeletonGlobalMatriices[int(a_jointindex1[i])] * position * a_jointweight1[i];\r\n            }\r\n        #endif\r\n        position.xyz = totalPosition.xyz;\r\n        return position;\r\n    }\r\n#endif",
+            "skeleton_vert": "#ifdef HAS_SKELETON_ANIMATION\r\n    position = skeletonAnimation(position);\r\n#endif",
+            "specular_frag": "//获取高光值\r\nfloat glossiness = u_glossiness;\r\n//获取镜面反射基本颜色\r\nvec3 specularColor = u_specular;\r\nvec4 specularMapColor = texture2D(s_specular, v_uv);\r\nspecularColor.xyz = specularMapColor.xyz;\r\nglossiness = glossiness * specularMapColor.w;",
+            "specular_pars_frag": "//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;",
+            "tangent_pars_vert": "attribute vec3 a_tangent;",
+            "tangent_vert": "vec3 tangent = a_tangent;",
+            "terrainDefault_pars_frag": "uniform sampler2D s_splatTexture1;\r\nuniform sampler2D s_splatTexture2;\r\nuniform sampler2D s_splatTexture3;\r\n\r\nuniform sampler2D s_blendTexture;\r\nuniform vec4 u_splatRepeats;\r\n\r\nvec4 terrainMethod(vec4 diffuseColor,vec2 v_uv) \r\n{\r\n    vec4 blend = texture2D(s_blendTexture, v_uv);\r\n\r\n    vec2 t_uv = v_uv.xy * u_splatRepeats.y;\r\n    vec4 tColor = texture2D(s_splatTexture1, t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.x + diffuseColor;\r\n\r\n    t_uv = v_uv.xy * u_splatRepeats.z;\r\n    tColor = texture2D(s_splatTexture2, t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.y + diffuseColor;\r\n\r\n    t_uv = v_uv.xy * u_splatRepeats.w;\r\n    tColor = texture2D(s_splatTexture3, t_uv);\r\n    diffuseColor = (tColor - diffuseColor) * blend.z + diffuseColor;\r\n\r\n    return diffuseColor;\r\n}",
+            "terrainMerge_pars_frag": "//代码实现lod以及线性插值 feng\r\n#extension GL_EXT_shader_texture_lod : enable\r\n#extension GL_OES_standard_derivatives : enable\r\n\r\n#define LOD_LINEAR\r\n\r\nuniform sampler2D s_splatMergeTexture;\r\nuniform sampler2D s_blendTexture;\r\nuniform vec4 u_splatRepeats;\r\n\r\nuniform vec2 u_imageSize;\r\nuniform vec4 u_tileOffset[3];\r\nuniform vec4 u_lod0vec;\r\nuniform vec2 u_tileSize;\r\nuniform float u_maxLod;\r\nuniform float u_scaleByDepth;\r\nuniform float u_uvPositionScale;\r\n\r\n\r\nvec4 terrainTexture2DLod(sampler2D s_splatMergeTexture,vec2 uv,float lod,vec4 offset){\r\n\r\n    //计算不同lod像素缩放以及起始坐标\r\n    vec4 lodvec = u_lod0vec;\r\n    lodvec.x = lodvec.x * pow(0.5,lod);\r\n    lodvec.y = lodvec.x * 2.0;\r\n    lodvec.z = 1.0 - lodvec.y;\r\n\r\n    //lod块尺寸\r\n    vec2 lodSize = u_imageSize * lodvec.xy;\r\n    vec2 lodPixelOffset = 1.0 / lodSize * 2.0;\r\n\r\n    // uv = uv - 1.0 / lodPixelOffset;\r\n    vec2 mixFactor = mod(uv, lodPixelOffset) / lodPixelOffset;\r\n\r\n    //lod块中像素索引\r\n    vec2 t_uv = fract(uv + lodPixelOffset * vec2(0.0, 0.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor00 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    t_uv = fract(uv + lodPixelOffset * vec2(1.0, 0.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor10 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    t_uv = fract(uv + lodPixelOffset * vec2(0.0, 1.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor01 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    t_uv = fract(uv + lodPixelOffset * vec2(1.0, 1.0));\r\n    t_uv = t_uv * offset.xy + offset.zw;\r\n    //添加lod起始坐标\r\n    t_uv = t_uv * lodvec.xy + lodvec.zw;\r\n    //取整像素\r\n    t_uv = floor(t_uv * u_imageSize) / u_imageSize;\r\n    vec4 tColor11 = texture2D(s_splatMergeTexture,t_uv);\r\n\r\n    vec4 tColor0 = mix(tColor00,tColor10,mixFactor.x);\r\n    vec4 tColor1 = mix(tColor01,tColor11,mixFactor.x);\r\n    vec4 tColor = mix(tColor0,tColor1,mixFactor.y);\r\n\r\n    return tColor;\r\n\r\n    // return vec4(mixFactor.x,mixFactor.y,0.0,1.0);\r\n    // return vec4(mixFactor.x + 0.5,mixFactor.y + 0.5,0.0,1.0);\r\n}\r\n\r\n//参考 http://blog.csdn.net/cgwbr/article/details/6620318\r\n//计算MipMap层函数：\r\nfloat mipmapLevel(vec2 uv)\r\n{\r\n    vec2 dx = dFdx(uv);\r\n    vec2 dy = dFdy(uv);\r\n    float d = max(dot(dx, dx), dot(dy, dy));\r\n    return 0.5 * log2(d);\r\n}\r\n\r\n//根据距离以及法线计算MipMap层函数：\r\nfloat mipmapLevel1(vec2 uv)\r\n{\r\n    //视线方向\r\n    vec3 cameraDir = u_cameraPos - v_worldPosition.xyz;\r\n    float fogDistance = length(cameraDir);\r\n    float value = u_scaleByDepth * fogDistance * u_uvPositionScale;//uv变化率与距离成正比，0.001为顶点位置与uv的变化比率\r\n    cameraDir = normalize(cameraDir);\r\n    float dd = clamp(dot(cameraDir, v_normal),0.05,1.0);//取法线与视线余弦值的倒数，余弦值越大（朝向摄像机时uv变化程度越低）lod越小\r\n    value = value / dd;\r\n    value = value * 0.5;//还没搞懂0.5的来历\r\n    return log2(value);\r\n}\r\n\r\nvec4 terrainTexture2D(sampler2D s_splatMergeTexture, vec2 t_uv, float lod, vec4 offset){\r\n \r\n    #ifdef LOD_LINEAR\r\n        vec4 tColor = mix(terrainTexture2DLod(s_splatMergeTexture, t_uv, floor(lod), offset),terrainTexture2DLod(s_splatMergeTexture, t_uv, ceil(lod), offset), fract(lod));\r\n    #else\r\n        vec4 tColor = terrainTexture2DLod(s_splatMergeTexture, t_uv, ceil(lod), offset);\r\n    #endif\r\n\r\n    return tColor;\r\n}\r\n\r\nvec4 terrainMethod(vec4 diffuseColor, vec2 v_uv) \r\n{\r\n    float lod = 0.0;\r\n    vec4 blend = texture2D(s_blendTexture, v_uv);\r\n    for(int i = 0; i < 3; i++)\r\n    {\r\n        vec2 t_uv = v_uv * u_splatRepeats[i];\r\n        // lod = mipmapLevel(v_uv) + log2(u_tileSize.x * u_splatRepeats[i]);\r\n        lod = mipmapLevel1(v_uv) + log2(u_tileSize.x * u_splatRepeats[i]);\r\n        lod = clamp(lod, 0.0, u_maxLod);\r\n        vec4 tColor = terrainTexture2D(s_splatMergeTexture, t_uv, lod, u_tileOffset[i]);\r\n        diffuseColor = (tColor - diffuseColor) * blend[i] + diffuseColor;\r\n    }\r\n\r\n    // diffuseColor.xyz = vec3(1.0,0.0,0.0);\r\n    // diffuseColor.xyz = vec3(lod/u_maxLod,0.0,0.0);\r\n    // diffuseColor.xyz = vec3(floor(lod)/u_maxLod,0.0,0.0);\r\n    return diffuseColor;\r\n}",
+            "terrain_frag": "diffuseColor = terrainMethod(diffuseColor, v_uv);",
+            "terrain_pars_frag": "#ifdef USE_TERRAIN_MERGE\r\n    #include<terrainMerge_pars_frag>\r\n#else\r\n    #include<terrainDefault_pars_frag>\r\n#endif",
+            "uv_pars_vert": "attribute vec2 a_uv;\r\n\r\nvarying vec2 v_uv;",
+            "uv_vert": "v_uv = a_uv;\r\n#ifdef SCALEU\r\n    #ifdef SCALEV\r\n    v_uv = v_uv * vec2(SCALEU,SCALEV);\r\n    #endif\r\n#endif",
+            "worldposition_pars_vert": "uniform mat4 u_modelMatrix;\r\n\r\nvarying vec3 v_worldPosition;",
+            "worldposition_vert": "//获取全局坐标\r\nvec4 worldPosition = u_modelMatrix * position;\r\n//输出全局坐标\r\nv_worldPosition = worldPosition.xyz;"
+        }
+    };
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 函数经
+     *
+     * 包装函数，以及对应的拆包
+     */
+    var FunctionWrap = /** @class */ (function () {
+        function FunctionWrap() {
+            this._wrapFResult = {};
+            this._state = {};
+        }
+        /**
+         * 扩展继承函数
+         *
+         * 可用于扩展原型中原有API中的实现
+         *
+         * ```
+        class A
+        {
+            a = "a";
+
+            f(p: string = "p", p1: string = "")
+            {
+                return p + p1;
+            }
+
+            extendF: (p?: string, p1?: string) => string;
+            oldf: (p?: string, p1?: string) => string;
+        }
+
+        var a = new A();
+        a.oldf = a.f;
+        a.extendF = function (p: string = "p", p1: string = "")
+        {
+            return ["polyfill", this.a, this.oldf()].join("-")
+        }
+        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        {
+            return ["polyfill", this.a, r].join("-");
+        });
+        // 验证 被扩展的a.f方法是否等价于 a.extendF
+        assert.ok(a.f() == a.extendF()); //true
+        
+         * ```
+         *
+         * @param object 被扩展函数所属对象或者原型
+         * @param funcName 被扩展函数名称
+         * @param extendFunc 在函数执行后执行的扩展函数
+         */
+        FunctionWrap.prototype.extendFunction = function (object, funcName, extendFunc) {
+            var oldFun = object[funcName];
+            object[funcName] = (function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var r = oldFun.apply(this, args);
+                var args1 = args.concat();
+                args1.unshift(r);
+                r = extendFunc.apply(this, args1);
+                return r;
+            });
+        };
+        /**
+         * 包装函数
+         *
+         * 一般用于调试
+         * 使用场景示例：
+         * 1. 在函数执行前后记录时间来计算函数执行时间。
+         * 1. 在console.error调用前使用 debugger 进行断点调试。
+         *
+         * @param object 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param beforeFunc 在函数执行前执行的函数
+         * @param afterFunc 在函数执行后执行的函数
+         */
+        FunctionWrap.prototype.wrap = function (object, funcName, beforeFunc, afterFunc) {
+            if (!beforeFunc && !afterFunc)
+                return;
+            if (!Object.getOwnPropertyDescriptor(object, feng3d.__functionwrap__)) {
+                Object.defineProperty(object, feng3d.__functionwrap__, { value: {}, configurable: true, enumerable: false, writable: false });
+            }
+            var functionwraps = object[feng3d.__functionwrap__];
+            var info = functionwraps[funcName];
+            if (!info) {
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
+                var original = object[funcName];
+                functionwraps[funcName] = info = { space: object, funcName: funcName, oldPropertyDescriptor: oldPropertyDescriptor, original: original, funcs: [original] };
+                //
+                object[funcName] = function () {
+                    var _this = this;
+                    var args = arguments;
+                    info.funcs.forEach(function (f) {
+                        f.apply(_this, args);
+                    });
+                };
+            }
+            var funcs = info.funcs;
+            if (beforeFunc) {
+                Array.delete(funcs, beforeFunc);
+                funcs.unshift(beforeFunc);
+            }
+            if (afterFunc) {
+                Array.delete(funcs, afterFunc);
+                funcs.push(afterFunc);
+            }
+        };
+        /**
+         * 取消包装函数
+         *
+         * 与wrap函数对应
+         *
+         * @param object 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param wrapFunc 在函数执行前执行的函数
+         * @param before 运行在原函数之前
+         */
+        FunctionWrap.prototype.unwrap = function (object, funcName, wrapFunc) {
+            var functionwraps = object[feng3d.__functionwrap__];
+            var info = functionwraps[funcName];
+            if (!info)
+                return;
+            if (wrapFunc == undefined) {
+                info.funcs = [info.original];
+            }
+            else {
+                Array.delete(info.funcs, wrapFunc);
+            }
+            if (info.funcs.length == 1) {
+                delete object[funcName];
+                if (info.oldPropertyDescriptor)
+                    Object.defineProperty(object, funcName, info.oldPropertyDescriptor);
+                delete functionwraps[funcName];
+                if (Object.keys(functionwraps).length == 0) {
+                    delete object[feng3d.__functionwrap__];
+                }
+            }
+        };
+        /**
+         * 包装一个异步函数，使其避免重复执行
+         *
+         * 使用场景示例：同时加载同一资源时，使其只加载一次，完成后调用所有相关回调函数。
+         *
+         * @param funcHost 函数所属对象
+         * @param func 函数
+         * @param params 函数除callback外的参数列表
+         * @param callback 完成回调函数
+         */
+        FunctionWrap.prototype.wrapAsyncFunc = function (funcHost, func, params, callback) {
+            var _this = this;
+            // 获取唯一编号
+            var cuuid = feng3d.uuid.getArrayUuid([func].concat(params));
+            // 检查是否执行过
+            var result = this._wrapFResult[cuuid];
+            if (result) {
+                callback.apply(null, result);
+                return;
+            }
+            // 监听执行完成事件
+            feng3d.event.once(this, cuuid, function () {
+                // 完成时重新执行函数
+                _this.wrapAsyncFunc(funcHost, func, params, callback);
+            });
+            // 正在执行时直接返回等待完成事件
+            if (this._state[cuuid])
+                return;
+            // 标记正在执行中
+            this._state[cuuid] = true;
+            // 执行函数
+            func.apply(funcHost, params.concat(function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                // 清理执行标记
+                delete _this._state[cuuid];
+                // 保存执行结果
+                _this._wrapFResult[cuuid] = args;
+                // 通知执行完成
+                feng3d.event.dispatch(_this, cuuid);
+            }));
+        };
+        return FunctionWrap;
+    }());
+    feng3d.FunctionWrap = FunctionWrap;
+    feng3d.__functionwrap__ = "__functionwrap__";
+    feng3d.functionwrap = new FunctionWrap();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 通用唯一标识符（Universally Unique Identifier）
+     *
+     * 用于给所有对象分配一个通用唯一标识符
+     */
+    var Uuid = /** @class */ (function () {
+        function Uuid() {
+            this.objectUuid = new WeakMap();
+        }
+        /**
+         * 获取数组 通用唯一标识符
+         *
+         * @param arr 数组
+         * @param separator 分割符
+         */
+        Uuid.prototype.getArrayUuid = function (arr, separator) {
+            var _this = this;
+            if (separator === void 0) { separator = "$__uuid__$"; }
+            var uuids = arr.map(function (v) { return _this.getObjectUuid(v); });
+            var groupUuid = uuids.join(separator);
+            return groupUuid;
+        };
+        /**
+         * 获取对象 通用唯一标识符
+         *
+         * 当参数object非Object对象时强制转换为字符串返回
+         *
+         * @param object 对象
+         */
+        Uuid.prototype.getObjectUuid = function (object) {
+            if (Object.isBaseType(object)) {
+                return String(object);
+            }
+            if (!object[feng3d.__uuid__]) {
+                Object.defineProperty(object, feng3d.__uuid__, { value: Math.uuid() });
+            }
+            return object[feng3d.__uuid__];
+        };
+        return Uuid;
+    }());
+    feng3d.Uuid = Uuid;
+    feng3d.__uuid__ = "__uuid__";
+    feng3d.uuid = new Uuid();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 是否开启调试
+     */
+    feng3d.debuger = true;
+    /**
+     * 调试工具
+     */
+    var Debug = /** @class */ (function () {
+        function Debug() {
+            // 断言失败前进入断点调试
+            feng3d.functionwrap.wrap(console, "assert", function (test) { if (!test)
+                debugger; });
+            // 输出错误前进入断点调试
+            feng3d.functionwrap.wrap(console, "error", function () { debugger; });
+            feng3d.functionwrap.wrap(console, "warn", function () { debugger; });
+        }
+        /**
+         * 测试代码运行时间
+         * @param fn 被测试的方法
+         * @param labal 标签
+         */
+        Debug.prototype.time = function (fn, labal) {
+            labal = labal || fn["name"] || "Anonymous function " + Math.random();
+            console.time(labal);
+            fn();
+            console.timeEnd(labal);
+        };
+        return Debug;
+    }());
+    feng3d.Debug = Debug;
+    feng3d.debug = new Debug();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 心跳计时器
+     */
+    var Ticker = /** @class */ (function () {
+        function Ticker() {
+            /**
+             * 帧率
+             */
+            this.frameRate = 60;
+        }
+        /**
+         * 注册帧函数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.onframe = function (func, thisObject, priority) {
+            var _this = this;
+            if (priority === void 0) { priority = 0; }
+            this.on(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
+            return this;
+        };
+        /**
+         * 下一帧执行方法
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.nextframe = function (func, thisObject, priority) {
+            var _this = this;
+            if (priority === void 0) { priority = 0; }
+            this.once(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
+            return this;
+        };
+        /**
+         * 注销帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.offframe = function (func, thisObject) {
+            var _this = this;
+            this.off(function () { return 1000 / _this.frameRate; }, func, thisObject);
+            return this;
+        };
+        /**
+         * 注册周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.on = function (interval, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: false });
+            return this;
+        };
+        /**
+         * 注册周期函数（只执行一次）
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.once = function (interval, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: true });
+            return this;
+        };
+        /**
+         * 注销周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         */
+        Ticker.prototype.off = function (interval, func, thisObject) {
+            removeTickerFunc({ interval: interval, func: func, thisObject: thisObject });
+            return this;
+        };
+        /**
+         * 重复指定次数 执行函数
+         * @param interval  执行周期，以ms为单位
+         * @param 	repeatCount     执行次数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.repeat = function (interval, repeatCount, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            repeatCount = ~~repeatCount;
+            if (repeatCount < 1)
+                return;
+            var timer = new Timer(this, interval, repeatCount, func, thisObject, priority);
+            return timer;
+        };
+        return Ticker;
+    }());
+    feng3d.Ticker = Ticker;
+    feng3d.ticker = new Ticker();
+    var Timer = /** @class */ (function () {
+        function Timer(ticker, interval, repeatCount, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            /**
+             * 计时器从 0 开始后触发的总次数。
+             */
+            this.currentCount = 0;
+            this.ticker = ticker;
+            this.interval = interval;
+            this.func = func;
+            this.thisObject = thisObject;
+            this.priority = priority;
+        }
+        /**
+         * 如果计时器尚未运行，则启动计时器。
+         */
+        Timer.prototype.start = function () {
+            this.ticker.on(this.interval, this.runfunc, this, this.priority);
+            return this;
+        };
+        /**
+         * 停止计时器。
+         */
+        Timer.prototype.stop = function () {
+            this.ticker.off(this.interval, this.runfunc, this);
+            return this;
+        };
+        /**
+         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
+         */
+        Timer.prototype.reset = function () {
+            this.stop();
+            this.currentCount = 0;
+            return this;
+        };
+        Timer.prototype.runfunc = function () {
+            this.currentCount++;
+            this.repeatCount--;
+            this.func.call(this.thisObject, feng3d.lazy.getvalue(this.interval));
+            if (this.repeatCount < 1)
+                this.stop();
+        };
+        return Timer;
+    }());
+    feng3d.Timer = Timer;
+    var tickerFuncs = [];
+    function addTickerFunc(item) {
+        if (running) {
+            affers.push([addTickerFunc, [item]]);
+            return;
+        }
+        // removeTickerFunc(item);
+        if (item.priority == undefined)
+            item.priority = 0;
+        item.runtime = Date.now() + feng3d.lazy.getvalue(item.interval);
+        tickerFuncs.push(item);
+    }
+    function removeTickerFunc(item) {
+        if (running) {
+            affers.push([removeTickerFunc, [item]]);
+            return;
+        }
+        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
+            var element = tickerFuncs[i];
+            if (feng3d.lazy.getvalue(element.interval) == feng3d.lazy.getvalue(item.interval)
+                && element.func == item.func
+                && element.thisObject == item.thisObject) {
+                tickerFuncs.splice(i, 1);
+            }
+        }
+    }
+    var running = false;
+    var affers = [];
+    function runTickerFuncs() {
+        running = true;
+        //倒序，优先级高的排在后面
+        tickerFuncs.sort(function (a, b) {
+            return a.priority - b.priority;
+        });
+        var currenttime = Date.now();
+        var needTickerFuncItems = [];
+        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
+            var element = tickerFuncs[i];
+            if (element.runtime < currenttime) {
+                needTickerFuncItems.push(element);
+                if (element.once) {
+                    tickerFuncs.splice(i, 1);
+                    continue;
+                }
+                element.runtime = nextRuntime(element.runtime, feng3d.lazy.getvalue(element.interval));
+            }
+        }
+        needTickerFuncItems.reverse();
+        // 相同的函数只执行一个
+        Array.unique(needTickerFuncItems, function (a, b) { return (a.func == b.func && a.thisObject == b.thisObject); });
+        needTickerFuncItems.forEach(function (v) {
+            // try
+            // {
+            v.func.call(v.thisObject, feng3d.lazy.getvalue(v.interval));
+            // } catch (error)
+            // {
+            //     console.warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
+            //     var index = tickerFuncs.indexOf(v);
+            //     if (index != -1) tickerFuncs.splice(index, 1);
+            // }
+        });
+        running = false;
+        for (var i = 0; i < affers.length; i++) {
+            var affer = affers[i];
+            affer[0].apply(null, affer[1]);
+        }
+        affers.length = 0;
+        localrequestAnimationFrame(runTickerFuncs);
+        function nextRuntime(runtime, interval) {
+            return runtime + Math.ceil((currenttime - runtime) / interval) * interval;
+        }
+    }
+    var localrequestAnimationFrame;
+    if (typeof requestAnimationFrame == "undefined") {
+        var _global;
+        var global;
+        if (typeof window != "undefined") {
+            _global = window;
+            localrequestAnimationFrame =
+                window["requestAnimationFrame"] ||
+                    window["webkitRequestAnimationFrame"] ||
+                    window["mozRequestAnimationFrame"] ||
+                    window["oRequestAnimationFrame"] ||
+                    window["msRequestAnimationFrame"];
+        }
+        else if (typeof global != "undefined") {
+            _global = global;
+        }
+        if (localrequestAnimationFrame == undefined) {
+            localrequestAnimationFrame = function (callback) {
+                return _global.setTimeout(callback, 1000 / feng3d.ticker.frameRate);
+            };
+        }
+    }
+    else {
+        localrequestAnimationFrame = requestAnimationFrame;
+    }
+    runTickerFuncs();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    var DataTransform = /** @class */ (function () {
+        function DataTransform() {
+        }
+        /**
+         * Blob to ArrayBuffer
+         */
+        DataTransform.prototype.blobToArrayBuffer = function (blob, callback) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                callback(e.target["result"]);
+            };
+            reader.readAsArrayBuffer(blob);
+        };
+        /**
+         * ArrayBuffer to Blob
+         */
+        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer) {
+            var blob = new Blob([arrayBuffer]); // 注意必须包裹[]
+            return blob;
+        };
+        /**
+         * ArrayBuffer to Uint8
+         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer) {
+            var u8 = new Uint8Array(arrayBuffer);
+            return u8;
+        };
+        /**
+         * Uint8 to ArrayBuffer
+         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array) {
+            var buffer = uint8Array.buffer;
+            return buffer;
+        };
+        /**
+         * Array to ArrayBuffer
+         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
+         */
+        DataTransform.prototype.arrayToArrayBuffer = function (array) {
+            var uint8 = new Uint8Array(array);
+            var buffer = uint8.buffer;
+            return buffer;
+        };
+        /**
+         * TypeArray to Array
+         */
+        DataTransform.prototype.uint8ArrayToArray = function (u8a) {
+            var arr = [];
+            for (var i = 0; i < u8a.length; i++) {
+                arr.push(u8a[i]);
+            }
+            return arr;
+        };
+        /**
+         * canvas转换为dataURL
+         */
+        DataTransform.prototype.canvasToDataURL = function (canvas, type) {
+            if (type === void 0) { type = "png"; }
+            if (type == "png")
+                return canvas.toDataURL("image/png");
+            return canvas.toDataURL("image/jpeg", 0.8);
+        };
+        /**
+         * canvas转换为图片
+         */
+        DataTransform.prototype.canvasToImage = function (canvas, type, callback) {
+            if (type === void 0) { type = "png"; }
+            var dataURL = this.canvasToDataURL(canvas, type);
+            this.dataURLToImage(dataURL, callback);
+        };
+        /**
+         * File、Blob对象转换为dataURL
+         * File对象也是一个Blob对象，二者的处理相同。
+         */
+        DataTransform.prototype.blobToDataURL = function (blob, callback) {
+            var a = new FileReader();
+            a.onload = function (e) {
+                callback(e.target["result"]);
+            };
+            a.readAsDataURL(blob);
+        };
+        /**
+         * dataURL转换为Blob对象
+         */
+        DataTransform.prototype.dataURLtoBlob = function (dataurl) {
+            var arr = dataurl.split(","), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            var blob = new Blob([u8arr], { type: mime });
+            return blob;
+        };
+        /**
+         * dataURL图片数据转换为HTMLImageElement
+         * dataURL图片数据绘制到canvas
+         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
+         */
+        DataTransform.prototype.dataURLDrawCanvas = function (dataurl, canvas, callback) {
+            this.dataURLToImage(dataurl, function (img) {
+                // canvas.drawImage(img);
+                callback(img);
+            });
+        };
+        DataTransform.prototype.dataURLToArrayBuffer = function (dataurl, callback) {
+            var blob = this.dataURLtoBlob(dataurl);
+            this.blobToArrayBuffer(blob, callback);
+        };
+        DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToDataURL(blob, callback);
+        };
+        DataTransform.prototype.dataURLToImage = function (dataurl, callback) {
+            var img = new Image();
+            img.onload = function () {
+                callback(img);
+            };
+            img.src = dataurl;
+        };
+        DataTransform.prototype.imageToDataURL = function (img) {
+            var canvas = this.imageToCanvas(img);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
+        };
+        DataTransform.prototype.imageToCanvas = function (img) {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.drawImage(img, 0, 0);
+            return canvas;
+        };
+        DataTransform.prototype.imageToArrayBuffer = function (img, callback) {
+            if (img["arraybuffer"]) {
+                callback(img["arraybuffer"]);
+                return;
+            }
+            var dataUrl = this.imageToDataURL(img);
+            this.dataURLToArrayBuffer(dataUrl, function (arraybuffer) {
+                img["arraybuffer"] = arraybuffer;
+                arraybuffer["img"] = img;
+                callback(arraybuffer);
+            });
+        };
+        DataTransform.prototype.imageDataToDataURL = function (imageData) {
+            var canvas = this.imageDataToCanvas(imageData);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
+        };
+        DataTransform.prototype.imageDataToCanvas = function (imageData) {
+            var canvas = document.createElement("canvas");
+            canvas.width = imageData.width;
+            canvas.height = imageData.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.putImageData(imageData, 0, 0);
+            return canvas;
+        };
+        DataTransform.prototype.imagedataToImage = function (imageData, callback) {
+            var dataUrl = this.imageDataToDataURL(imageData);
+            this.dataURLToImage(dataUrl, callback);
+        };
+        DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
+            var _this = this;
+            if (arrayBuffer["image"]) {
+                callback(arrayBuffer["image"]);
+                return;
+            }
+            this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
+                _this.dataURLToImage(dataurl, function (img) {
+                    img["arraybuffer"] = arrayBuffer;
+                    arrayBuffer["image"] = img;
+                    callback(img);
+                });
+            });
+        };
+        DataTransform.prototype.blobToText = function (blob, callback) {
+            var a = new FileReader();
+            a.onload = function (e) { callback(e.target["result"]); };
+            a.readAsText(blob);
+        };
+        DataTransform.prototype.stringToArrayBuffer = function (str) {
+            var uint8Array = this.stringToUint8Array(str);
+            var buffer = this.uint8ToArrayBuffer(uint8Array);
+            return buffer;
+        };
+        DataTransform.prototype.arrayBufferToString = function (arrayBuffer, callback) {
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToText(blob, callback);
+        };
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        DataTransform.prototype.arrayBufferToObject = function (arrayBuffer, callback) {
+            this.arrayBufferToString(arrayBuffer, function (str) {
+                var obj = JSON.parse(str);
+                callback(obj);
+            });
+        };
+        DataTransform.prototype.stringToUint8Array = function (str) {
+            var utf8 = unescape(encodeURIComponent(str));
+            var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
+                return item.charCodeAt(0);
+            }));
+            return uint8Array;
+        };
+        DataTransform.prototype.uint8ArrayToString = function (arr, callback) {
+            // or [].slice.apply(arr)
+            // var utf8 = Array.from(arr).map(function (item)
+            var utf8 = [].slice.apply(arr).map(function (item) {
+                return String.fromCharCode(item);
+            }).join('');
+            var str = decodeURIComponent(escape(utf8));
+            callback(str);
+        };
+        return DataTransform;
+    }());
+    feng3d.DataTransform = DataTransform;
+    feng3d.dataTransform = new DataTransform();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 图片相关工具
+     */
+    var ImageUtil = /** @class */ (function () {
+        /**
+         * 创建ImageData
+         * @param width 数据宽度
+         * @param height 数据高度
+         * @param fillcolor 填充颜色
+         */
+        function ImageUtil(width, height, fillcolor) {
+            if (width === void 0) { width = 1; }
+            if (height === void 0) { height = 1; }
+            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(0, 0, 0, 0); }
+            this.init(width, height, fillcolor);
+        }
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        ImageUtil.fromImage = function (image) {
+            return new ImageUtil().fromImage(image);
+        };
+        /**
+         * 初始化
+         * @param width 宽度
+         * @param height 高度
+         * @param fillcolor 填充颜色
+         */
+        ImageUtil.prototype.init = function (width, height, fillcolor) {
+            if (width === void 0) { width = 1; }
+            if (height === void 0) { height = 1; }
+            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(0, 0, 0, 0); }
+            if (typeof document == "undefined")
+                return;
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = feng3d.Color3.fromColor4(fillcolor).toHexString();
+            var backAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = fillcolor.a;
+            ctx.fillRect(0, 0, width, height);
+            ctx.globalAlpha = backAlpha;
+            this.imageData = ctx.getImageData(0, 0, width, height);
+        };
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        ImageUtil.prototype.fromImage = function (image) {
+            if (!image)
+                return null;
+            var canvasImg = document.createElement("canvas");
+            canvasImg.width = image.width;
+            canvasImg.height = image.height;
+            var ctxt = canvasImg.getContext('2d');
+            console.assert(!!ctxt);
+            ctxt.drawImage(image, 0, 0);
+            this.imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
+            return this;
+        };
+        /**
+         * 绘制图片数据指定位置颜色
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        ImageUtil.prototype.drawPixel = function (x, y, color) {
+            var oldColor = this.getPixel(x, y);
+            oldColor.mix(color, color.a);
+            this.setPixel(x, y, oldColor);
+            return this;
+        };
+        /**
+         * 获取图片指定位置颜色值
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         */
+        ImageUtil.prototype.getPixel = function (x, y) {
+            var pos = (x + y * this.imageData.width) * 4;
+            var color = new feng3d.Color4(this.imageData.data[pos] / 255, this.imageData.data[pos + 1] / 255, this.imageData.data[pos + 2] / 255, this.imageData.data[pos + 3] / 255);
+            return color;
+        };
+        /**
+         * 设置指定位置颜色值
+         * @param imageData 图片数据
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        ImageUtil.prototype.setPixel = function (x, y, color) {
+            x = Math.round(x);
+            y = Math.round(y);
+            var pos = (x + y * this.imageData.width) * 4;
+            this.imageData.data[pos] = color.r * 255;
+            this.imageData.data[pos + 1] = color.g * 255;
+            this.imageData.data[pos + 2] = color.b * 255;
+            this.imageData.data[pos + 3] = color.a * 255;
+            return this;
+        };
+        /**
+         * 清理图片数据
+         * @param clearColor 清理时填充颜色
+         */
+        ImageUtil.prototype.clear = function (clearColor) {
+            if (clearColor === void 0) { clearColor = new feng3d.Color4(0, 0, 0, 0); }
+            for (var i = 0; i < this.imageData.width; i++) {
+                for (var j = 0; j < this.imageData.height; j++) {
+                    this.setPixel(i, j, clearColor);
+                }
+            }
+        };
+        /**
+         * 填充矩形
+         * @param rect 填充的矩形
+         * @param fillcolor 填充颜色
+         */
+        ImageUtil.prototype.fillRect = function (rect, fillcolor) {
+            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(); }
+            for (var i = rect.x > 0 ? rect.x : 0; i < this.imageData.width && i < rect.x + rect.width; i++) {
+                for (var j = rect.y > 0 ? rect.y : 0; j < this.imageData.height && j < rect.y + rect.height; j++) {
+                    this.setPixel(i, j, fillcolor);
+                }
+            }
+        };
+        /**
+         * 绘制线条
+         * @param start 起始坐标
+         * @param end 终止坐标
+         * @param color 线条颜色
+         */
+        ImageUtil.prototype.drawLine = function (start, end, color) {
+            var length = end.subTo(start).length;
+            var p = new feng3d.Vector2();
+            for (var i = 0; i <= length; i++) {
+                start.lerpNumberTo(end, i / length, p);
+                this.setPixel(p.x, p.y, color);
+            }
+            return this;
+        };
+        /**
+         * 绘制点
+         * @param x x坐标
+         * @param y y坐标
+         * @param color 颜色
+         * @param size 尺寸
+         */
+        ImageUtil.prototype.drawPoint = function (x, y, color, size) {
+            if (size === void 0) { size = 1; }
+            var half = Math.floor(size / 2);
+            //
+            var sx = x - half;
+            if (sx < 0)
+                sx = 0;
+            var ex = x - half + size;
+            if (ex > this.imageData.width)
+                ex = this.imageData.width;
+            var sy = y - half;
+            if (sy < 0)
+                sy = 0;
+            var ey = y - half + size;
+            if (ey > this.imageData.height)
+                ey = this.imageData.height;
+            //
+            for (var i = sx; i < ex; i++) {
+                for (var j = sy; j < ey; j++) {
+                    this.setPixel(i, j, color);
+                }
+            }
+            return this;
+        };
+        /**
+         * 绘制图片数据
+         * @param imageData 图片数据
+         * @param x x坐标
+         * @param y y坐标
+         */
+        ImageUtil.prototype.drawImageData = function (imageData, x, y) {
+            var rect = new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height).intersection(new feng3d.Rectangle(x, y, imageData.width, imageData.height));
+            var imageUtil = new ImageUtil();
+            imageUtil.imageData = imageData;
+            for (var i = rect.x; i < rect.x + rect.width; i++) {
+                for (var j = rect.y; j < rect.y + rect.height; j++) {
+                    var c = imageUtil.getPixel(i - x, j - y);
+                    this.drawPixel(i, j, c);
+                }
+            }
+            return this;
+        };
+        /**
+         * 转换为DataUrl字符串数据
+         */
+        ImageUtil.prototype.toDataURL = function () {
+            return feng3d.dataTransform.imageDataToDataURL(this.imageData);
+        };
+        /**
+         * 创建默认粒子贴图
+         * @param size 尺寸
+         */
+        ImageUtil.prototype.drawDefaultParticle = function (size) {
+            if (size === void 0) { size = 64; }
+            var canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, size, size);
+            var half = size / 2;
+            for (var i = 0; i < size; i++) {
+                for (var j = 0; j < size; j++) {
+                    var l = Math.clamp(new feng3d.Vector2(i - half, j - half).length, 0, half) / half;
+                    // l = l * l;
+                    var f = 1 - l;
+                    f = f * f;
+                    // f = f * f * f;
+                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
+                    var pos = (i + j * size) * 4;
+                    imageData.data[pos] = f * 255;
+                    imageData.data[pos + 1] = f * 255;
+                    imageData.data[pos + 2] = f * 255;
+                    imageData.data[pos + 3] = 255;
+                }
+            }
+            this.imageData = imageData;
+            return this;
+        };
+        /**
+         * 创建颜色拾取矩形
+         * @param color 基色
+         * @param width 宽度
+         * @param height 高度
+         */
+        ImageUtil.prototype.drawColorPickerRect = function (color) {
+            Image;
+            var leftTop = new feng3d.Color3(1, 1, 1);
+            var rightTop = new feng3d.Color3().fromUnit(color);
+            var leftBottom = new feng3d.Color3(0, 0, 0);
+            var rightBottom = new feng3d.Color3(0, 0, 0);
+            //
+            for (var i = 0; i < this.imageData.width; i++) {
+                for (var j = 0; j < this.imageData.height; j++) {
+                    var top = leftTop.mixTo(rightTop, i / this.imageData.width);
+                    var bottom = leftBottom.mixTo(rightBottom, i / this.imageData.width);
+                    var v = top.mixTo(bottom, j / this.imageData.height);
+                    this.setPixel(i, j, v.toColor4());
+                }
+            }
+            return this;
+        };
+        ImageUtil.prototype.drawColorRect = function (color) {
+            var colorHeight = Math.floor(this.imageData.height * 0.8);
+            var alphaWidth = Math.floor(color.a * this.imageData.width);
+            var color4 = color.clone();
+            color4.a = 1;
+            var white = new feng3d.Color4(1, 1, 1);
+            var black = new feng3d.Color4(0, 0, 0);
+            //
+            for (var i = 0; i < this.imageData.width; i++) {
+                for (var j = 0; j < this.imageData.height; j++) {
+                    //
+                    if (j <= colorHeight) {
+                        this.setPixel(i, j, color4);
+                    }
+                    else {
+                        this.setPixel(i, j, i < alphaWidth ? white : black);
+                    }
+                }
+            }
+            return this;
+        };
+        /**
+         *
+         * @param gradient
+         * @param dirw true为横向条带，否则纵向条带
+         */
+        ImageUtil.prototype.drawMinMaxGradient = function (gradient, dirw) {
+            if (dirw === void 0) { dirw = true; }
+            //
+            for (var i = 0; i < this.imageData.width; i++) {
+                for (var j = 0; j < this.imageData.height; j++) {
+                    var c = gradient.getValue(dirw ? i / (this.imageData.width - 1) : j / (this.imageData.height - 1));
+                    this.setPixel(i, j, c);
+                }
+            }
+            return this;
+        };
+        /**
+         * 绘制曲线
+         * @param curve 曲线
+         * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param color 曲线颜色
+         */
+        ImageUtil.prototype.drawCurve = function (curve, between0And1, color, rect) {
+            if (rect === void 0) { rect = null; }
+            rect = rect || new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height);
+            var range = between0And1 ? [1, 0] : [1, -1];
+            //
+            for (var i = 0; i < rect.width; i++) {
+                //
+                var y = curve.getValue(i / (rect.width - 1));
+                y = Math.mapLinear(y, range[0], range[1], 0, 1);
+                var j = Math.round(y * (rect.height - 1));
+                this.setPixel(rect.x + i, rect.y + j, color);
+            }
+            return this;
+        };
+        /**
+         * 绘制双曲线
+         * @param curve 曲线
+         * @param curve1 曲线
+         * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param curveColor 颜色
+         */
+        ImageUtil.prototype.drawBetweenTwoCurves = function (curve, curve1, between0And1, curveColor, fillcolor, rect) {
+            if (curveColor === void 0) { curveColor = new feng3d.Color4(); }
+            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(1, 1, 1, 0.5); }
+            if (rect === void 0) { rect = null; }
+            rect = rect || new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height);
+            var range = between0And1 ? [1, 0] : [1, -1];
+            //
+            for (var i = 0; i < rect.width; i++) {
+                //
+                var y0 = curve.getValue(i / (rect.width - 1));
+                var y1 = curve1.getValue(i / (rect.width - 1));
+                y0 = Math.mapLinear(y0, range[0], range[1], 0, 1);
+                y1 = Math.mapLinear(y1, range[0], range[1], 0, 1);
+                y0 = Math.round(y0 * (rect.height - 1));
+                y1 = Math.round(y1 * (rect.height - 1));
+                this.drawLine(new feng3d.Vector2(rect.x + i, rect.y + y0), new feng3d.Vector2(rect.x + i, rect.y + y1), fillcolor);
+                this.drawPixel(rect.x + i, rect.y + y0, curveColor);
+                this.drawPixel(rect.x + i, rect.y + y1, curveColor);
+            }
+            return this;
+        };
+        /**
+         * 清理背景颜色，目前仅用于特定的抠图，例如 editor\resource\assets\3d\terrain\terrain_brushes.png
+         * @param backColor 背景颜色
+         */
+        ImageUtil.prototype.clearBackColor = function (backColor) {
+            for (var i = 0; i < this.imageData.width; i++) {
+                for (var j = 0; j < this.imageData.height; j++) {
+                    var t = this.getPixel(i, j);
+                    var a = 1 - t.r / backColor.r;
+                    t.r = t.g = t.b = 0;
+                    t.a = a;
+                    this.setPixel(i, j, t);
+                }
+            }
+        };
+        return ImageUtil;
+    }());
+    feng3d.ImageUtil = ImageUtil;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var Stats = /** @class */ (function () {
+        function Stats() {
+            var _this = this;
+            var mode = 0;
+            if (typeof document == "undefined")
+                return;
+            var container = document.createElement('div');
+            container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;';
+            container.addEventListener('click', function (event) {
+                event.preventDefault();
+                showPanel(++mode % container.children.length);
+            }, false);
+            //
+            function addPanel(panel) {
+                container.appendChild(panel.dom);
+                return panel;
+            }
+            function showPanel(id) {
+                for (var i = 0; i < container.children.length; i++) {
+                    container.children[i].style.display = i === id ? 'block' : 'none';
+                }
+                mode = id;
+            }
+            //
+            var beginTime = (performance || Date).now(), prevTime = beginTime, frames = 0;
+            var fpsPanel = addPanel(new StatsPanel('FPS', '#0ff', '#002'));
+            var msPanel = addPanel(new StatsPanel('MS', '#0f0', '#020'));
+            if (self.performance && self.performance.memory) {
+                var memPanel = addPanel(new StatsPanel('MB', '#f08', '#201'));
+            }
+            showPanel(0);
+            this.REVISION = 16;
+            this.dom = container;
+            this.addPanel = addPanel;
+            this.showPanel = showPanel;
+            this.begin = function () {
+                beginTime = (performance || Date).now();
+            };
+            this.end = function () {
+                frames++;
+                var time = (performance || Date).now();
+                msPanel.update(time - beginTime, 200);
+                if (time > prevTime + 1000) {
+                    fpsPanel.update((frames * 1000) / (time - prevTime), 100);
+                    prevTime = time;
+                    frames = 0;
+                    if (memPanel) {
+                        var memory = performance.memory;
+                        memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
+                    }
+                }
+                return time;
+            };
+            this.update = function () {
+                beginTime = _this.end();
+            };
+            // Backwards Compatibility
+            this.domElement = container;
+            this.setMode = showPanel;
+        }
+        Stats.init = function (parent) {
+            if (!this.instance) {
+                this.instance = new Stats();
+                parent = parent || document.body;
+                parent.appendChild(this.instance.dom);
+            }
+            feng3d.ticker.onframe(this.instance.update, this.instance);
+        };
+        ;
+        return Stats;
+    }());
+    feng3d.Stats = Stats;
+    var StatsPanel = /** @class */ (function () {
+        function StatsPanel(name, fg, bg) {
+            var min = Infinity, max = 0, round = Math.round;
+            var PR = round(window.devicePixelRatio || 1);
+            var WIDTH = 80 * PR, HEIGHT = 48 * PR, TEXT_X = 3 * PR, TEXT_Y = 2 * PR, GRAPH_X = 3 * PR, GRAPH_Y = 15 * PR, GRAPH_WIDTH = 74 * PR, GRAPH_HEIGHT = 30 * PR;
+            var canvas = document.createElement('canvas');
+            canvas.width = WIDTH;
+            canvas.height = HEIGHT;
+            canvas.style.cssText = 'width:80px;height:48px';
+            var context0 = canvas.getContext('2d');
+            if (context0 == null) {
+                console.log("\u65E0\u6CD5\u521B\u5EFA CanvasRenderingContext2D ");
+                return;
+            }
+            var context = context0;
+            context.font = 'bold ' + (9 * PR) + 'px Helvetica,Arial,sans-serif';
+            context.textBaseline = 'top';
+            context.fillStyle = bg;
+            context.fillRect(0, 0, WIDTH, HEIGHT);
+            context.fillStyle = fg;
+            context.fillText(name, TEXT_X, TEXT_Y);
+            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+            context.fillStyle = bg;
+            context.globalAlpha = 0.9;
+            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+            this.dom = canvas;
+            this.update = function (value, maxValue) {
+                min = Math.min(min, value);
+                max = Math.max(max, value);
+                context.fillStyle = bg;
+                context.globalAlpha = 1;
+                context.fillRect(0, 0, WIDTH, GRAPH_Y);
+                context.fillStyle = fg;
+                context.fillText(round(value) + ' ' + name + ' (' + round(min) + '-' + round(max) + ')', TEXT_X, TEXT_Y);
+                context.drawImage(canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
+                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
+                context.fillStyle = bg;
+                context.globalAlpha = 0.9;
+                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - (value / maxValue)) * GRAPH_HEIGHT));
+            };
+        }
+        return StatsPanel;
+    }());
+    feng3d.StatsPanel = StatsPanel;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * .
+     */
+    var CHAR_DOT = 46;
+    /**
+     * :
+     */
+    var CHAR_COLON = 58;
+    /**
+     * ?
+     */
+    var CHAR_QUESTION_MARK = 63;
+    /**
+     * A
+     */
+    var CHAR_UPPERCASE_A = 65;
+    /**
+     * Z
+     */
+    var CHAR_UPPERCASE_Z = 90;
+    /**
+     * a
+     */
+    var CHAR_LOWERCASE_A = 97;
+    /**
+     * z
+     */
+    var CHAR_LOWERCASE_Z = 122;
+    /**
+     * /
+     */
+    var CHAR_FORWARD_SLASH = 47;
+    /**
+     * \
+     */
+    var CHAR_BACKWARD_SLASH = 92;
+    /**
+     * 未实现其功能
+     */
+    var process = {
+        platform: 'win32',
+        env: {},
+        cwd: function () { return ""; },
+    };
+    var ERR_INVALID_ARG_TYPE = /** @class */ (function (_super) {
+        __extends(ERR_INVALID_ARG_TYPE, _super);
+        function ERR_INVALID_ARG_TYPE(name, expected, actual) {
+            var _this = this;
+            assert(typeof name === 'string', "'name' must be a string");
+            // determiner: 'must be' or 'must not be'
+            var determiner;
+            if (typeof expected === 'string' && expected.startsWith('not ')) {
+                determiner = 'must not be';
+                expected = expected.replace(/^not /, '');
+            }
+            else {
+                determiner = 'must be';
+            }
+            var msg;
+            if (name.endsWith(' argument')) {
+                // For cases like 'first argument'
+                msg = "The " + name + " " + determiner + " " + oneOf(expected, 'type');
+            }
+            else {
+                var type = name.includes('.') ? 'property' : 'argument';
+                msg = "The \"" + name + "\" " + type + " " + determiner + " " + oneOf(expected, 'type');
+            }
+            // TODO(BridgeAR): Improve the output by showing `null` and similar.
+            msg += ". Received type " + typeof actual;
+            _this = _super.call(this, msg) || this;
+            return _this;
+        }
+        return ERR_INVALID_ARG_TYPE;
+    }(TypeError));
+    function oneOf(expected, thing) {
+        assert(typeof thing === 'string', '`thing` has to be of type string');
+        if (Array.isArray(expected)) {
+            var len = expected.length;
+            assert(len > 0, 'At least one expected value needs to be specified');
+            expected = expected.map(function (i) { return String(i); });
+            if (len > 2) {
+                return "one of " + thing + " " + expected.slice(0, len - 1).join(', ') + ", or " +
+                    expected[len - 1];
+            }
+            else if (len === 2) {
+                return "one of " + thing + " " + expected[0] + " or " + expected[1];
+            }
+            else {
+                return "of " + thing + " " + expected[0];
+            }
+        }
+        else {
+            return "of " + thing + " " + String(expected);
+        }
+    }
+    function assert(b, msg) {
+        if (!b)
+            throw msg;
+    }
+    function validateString(value, name) {
+        if (typeof value !== 'string')
+            throw new ERR_INVALID_ARG_TYPE(name, 'string', value);
+    }
+    function isPathSeparator(code) {
+        return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
+    }
+    function isPosixPathSeparator(code) {
+        return code === CHAR_FORWARD_SLASH;
+    }
+    function isWindowsDeviceRoot(code) {
+        return code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z ||
+            code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z;
+    }
+    // Resolves . and .. elements in a path with directory names
+    function normalizeString(path, allowAboveRoot, separator, isPathSeparator) {
+        var res = '';
+        var lastSegmentLength = 0;
+        var lastSlash = -1;
+        var dots = 0;
+        var code = -1;
+        for (var i = 0; i <= path.length; ++i) {
+            if (i < path.length)
+                code = path.charCodeAt(i);
+            else if (isPathSeparator(code))
+                break;
+            else
+                code = CHAR_FORWARD_SLASH;
+            if (isPathSeparator(code)) {
+                if (lastSlash === i - 1 || dots === 1) {
+                    // NOOP
+                }
+                else if (lastSlash !== i - 1 && dots === 2) {
+                    if (res.length < 2 || lastSegmentLength !== 2 ||
+                        res.charCodeAt(res.length - 1) !== CHAR_DOT ||
+                        res.charCodeAt(res.length - 2) !== CHAR_DOT) {
+                        if (res.length > 2) {
+                            var lastSlashIndex = res.lastIndexOf(separator);
+                            if (lastSlashIndex === -1) {
+                                res = '';
+                                lastSegmentLength = 0;
+                            }
+                            else {
+                                res = res.slice(0, lastSlashIndex);
+                                lastSegmentLength = res.length - 1 - res.lastIndexOf(separator);
+                            }
+                            lastSlash = i;
+                            dots = 0;
+                            continue;
+                        }
+                        else if (res.length === 2 || res.length === 1) {
+                            res = '';
+                            lastSegmentLength = 0;
+                            lastSlash = i;
+                            dots = 0;
+                            continue;
+                        }
+                    }
+                    if (allowAboveRoot) {
+                        if (res.length > 0)
+                            res += separator + "..";
+                        else
+                            res = '..';
+                        lastSegmentLength = 2;
+                    }
+                }
+                else {
+                    if (res.length > 0)
+                        res += separator + path.slice(lastSlash + 1, i);
+                    else
+                        res = path.slice(lastSlash + 1, i);
+                    lastSegmentLength = i - lastSlash - 1;
+                }
+                lastSlash = i;
+                dots = 0;
+            }
+            else if (code === CHAR_DOT && dots !== -1) {
+                ++dots;
+            }
+            else {
+                dots = -1;
+            }
+        }
+        return res;
+    }
+    function _format(sep, pathObject) {
+        var dir = pathObject.dir || pathObject.root;
+        var base = pathObject.base ||
+            ((pathObject.name || '') + (pathObject.ext || ''));
+        if (!dir) {
+            return base;
+        }
+        if (dir === pathObject.root) {
+            return dir + base;
+        }
+        return dir + sep + base;
+    }
+    var Win32Path = /** @class */ (function () {
+        function Win32Path() {
+            this.sep = '\\';
+            this.delimiter = ';';
+            this.win32 = null;
+            this.posix = null;
+        }
+        // path.resolve([from ...], to)
+        Win32Path.prototype.resolve = function () {
+            var pathSegments = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                pathSegments[_i] = arguments[_i];
+            }
+            var resolvedDevice = '';
+            var resolvedTail = '';
+            var resolvedAbsolute = false;
+            for (var i = arguments.length - 1; i >= -1; i--) {
+                var path;
+                if (i >= 0) {
+                    path = arguments[i];
+                }
+                else if (!resolvedDevice) {
+                    path = process.cwd();
+                }
+                else {
+                    // Windows has the concept of drive-specific current working
+                    // directories. If we've resolved a drive letter but not yet an
+                    // absolute path, get cwd for that drive, or the process cwd if
+                    // the drive cwd is not available. We're sure the device is not
+                    // a UNC path at this points, because UNC paths are always absolute.
+                    path = process.env['=' + resolvedDevice] || process.cwd();
+                    // Verify that a cwd was found and that it actually points
+                    // to our drive. If not, default to the drive's root.
+                    if (path === undefined ||
+                        path.slice(0, 3).toLowerCase() !==
+                            resolvedDevice.toLowerCase() + '\\') {
+                        path = resolvedDevice + '\\';
+                    }
+                }
+                validateString(path, 'path');
+                // Skip empty entries
+                if (path.length === 0) {
+                    continue;
+                }
+                var len = path.length;
+                var rootEnd = 0;
+                var device = '';
+                var isAbsolute = false;
+                var code = path.charCodeAt(0);
+                // Try to match a root
+                if (len > 1) {
+                    if (isPathSeparator(code)) {
+                        // Possible UNC root
+                        // If we started with a separator, we know we at least have an
+                        // absolute path of some kind (UNC or otherwise)
+                        isAbsolute = true;
+                        if (isPathSeparator(path.charCodeAt(1))) {
+                            // Matched double path separator at beginning
+                            var j = 2;
+                            var last = j;
+                            // Match 1 or more non-path separators
+                            for (; j < len; ++j) {
+                                if (isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                var firstPart = path.slice(last, j);
+                                // Matched!
+                                last = j;
+                                // Match 1 or more path separators
+                                for (; j < len; ++j) {
+                                    if (!isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j < len && j !== last) {
+                                    // Matched!
+                                    last = j;
+                                    // Match 1 or more non-path separators
+                                    for (; j < len; ++j) {
+                                        if (isPathSeparator(path.charCodeAt(j)))
+                                            break;
+                                    }
+                                    if (j === len) {
+                                        // We matched a UNC root only
+                                        device = '\\\\' + firstPart + '\\' + path.slice(last);
+                                        rootEnd = j;
+                                    }
+                                    else if (j !== last) {
+                                        // We matched a UNC root with leftovers
+                                        device = '\\\\' + firstPart + '\\' + path.slice(last, j);
+                                        rootEnd = j;
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            rootEnd = 1;
+                        }
+                    }
+                    else if (isWindowsDeviceRoot(code)) {
+                        // Possible device root
+                        if (path.charCodeAt(1) === CHAR_COLON) {
+                            device = path.slice(0, 2);
+                            rootEnd = 2;
+                            if (len > 2) {
+                                if (isPathSeparator(path.charCodeAt(2))) {
+                                    // Treat separator following drive name as an absolute path
+                                    // indicator
+                                    isAbsolute = true;
+                                    rootEnd = 3;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (isPathSeparator(code)) {
+                    // `path` contains just a path separator
+                    rootEnd = 1;
+                    isAbsolute = true;
+                }
+                if (device.length > 0 &&
+                    resolvedDevice.length > 0 &&
+                    device.toLowerCase() !== resolvedDevice.toLowerCase()) {
+                    // This path points to another device so it is not applicable
+                    continue;
+                }
+                if (resolvedDevice.length === 0 && device.length > 0) {
+                    resolvedDevice = device;
+                }
+                if (!resolvedAbsolute) {
+                    resolvedTail = path.slice(rootEnd) + '\\' + resolvedTail;
+                    resolvedAbsolute = isAbsolute;
+                }
+                if (resolvedDevice.length > 0 && resolvedAbsolute) {
+                    break;
+                }
+            }
+            // At this point the path should be resolved to a full absolute path,
+            // but handle relative paths to be safe (might happen when process.cwd()
+            // fails)
+            // Normalize the tail path
+            resolvedTail = normalizeString(resolvedTail, !resolvedAbsolute, '\\', isPathSeparator);
+            return (resolvedDevice + (resolvedAbsolute ? '\\' : '') + resolvedTail) ||
+                '.';
+        };
+        Win32Path.prototype.normalize = function (path) {
+            validateString(path, 'path');
+            var len = path.length;
+            if (len === 0)
+                return '.';
+            var rootEnd = 0;
+            var device;
+            var isAbsolute = false;
+            var code = path.charCodeAt(0);
+            // Try to match a root
+            if (len > 1) {
+                if (isPathSeparator(code)) {
+                    // Possible UNC root
+                    // If we started with a separator, we know we at least have an absolute
+                    // path of some kind (UNC or otherwise)
+                    isAbsolute = true;
+                    if (isPathSeparator(path.charCodeAt(1))) {
+                        // Matched double path separator at beginning
+                        var j = 2;
+                        var last = j;
+                        // Match 1 or more non-path separators
+                        for (; j < len; ++j) {
+                            if (isPathSeparator(path.charCodeAt(j)))
+                                break;
+                        }
+                        if (j < len && j !== last) {
+                            var firstPart = path.slice(last, j);
+                            // Matched!
+                            last = j;
+                            // Match 1 or more path separators
+                            for (; j < len; ++j) {
+                                if (!isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                // Matched!
+                                last = j;
+                                // Match 1 or more non-path separators
+                                for (; j < len; ++j) {
+                                    if (isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j === len) {
+                                    // We matched a UNC root only
+                                    // Return the normalized version of the UNC root since there
+                                    // is nothing left to process
+                                    return '\\\\' + firstPart + '\\' + path.slice(last) + '\\';
+                                }
+                                else if (j !== last) {
+                                    // We matched a UNC root with leftovers
+                                    device = '\\\\' + firstPart + '\\' + path.slice(last, j);
+                                    rootEnd = j;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        rootEnd = 1;
+                    }
+                }
+                else if (isWindowsDeviceRoot(code)) {
+                    // Possible device root
+                    if (path.charCodeAt(1) === CHAR_COLON) {
+                        device = path.slice(0, 2);
+                        rootEnd = 2;
+                        if (len > 2) {
+                            if (isPathSeparator(path.charCodeAt(2))) {
+                                // Treat separator following drive name as an absolute path
+                                // indicator
+                                isAbsolute = true;
+                                rootEnd = 3;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (isPathSeparator(code)) {
+                // `path` contains just a path separator, exit early to avoid unnecessary
+                // work
+                return '\\';
+            }
+            var tail;
+            if (rootEnd < len) {
+                tail = normalizeString(path.slice(rootEnd), !isAbsolute, '\\', isPathSeparator);
+            }
+            else {
+                tail = '';
+            }
+            if (tail.length === 0 && !isAbsolute)
+                tail = '.';
+            if (tail.length > 0 && isPathSeparator(path.charCodeAt(len - 1)))
+                tail += '\\';
+            if (device === undefined) {
+                if (isAbsolute) {
+                    if (tail.length > 0)
+                        return '\\' + tail;
+                    else
+                        return '\\';
+                }
+                else if (tail.length > 0) {
+                    return tail;
+                }
+                else {
+                    return '';
+                }
+            }
+            else if (isAbsolute) {
+                if (tail.length > 0)
+                    return device + '\\' + tail;
+                else
+                    return device + '\\';
+            }
+            else if (tail.length > 0) {
+                return device + tail;
+            }
+            else {
+                return device;
+            }
+        };
+        Win32Path.prototype.isAbsolute = function (path) {
+            validateString(path, 'path');
+            var len = path.length;
+            if (len === 0)
+                return false;
+            var code = path.charCodeAt(0);
+            if (isPathSeparator(code)) {
+                return true;
+            }
+            else if (isWindowsDeviceRoot(code)) {
+                // Possible device root
+                if (len > 2 && path.charCodeAt(1) === CHAR_COLON) {
+                    if (isPathSeparator(path.charCodeAt(2)))
+                        return true;
+                }
+            }
+            return false;
+        };
+        Win32Path.prototype.join = function () {
+            if (arguments.length === 0)
+                return '.';
+            var joined;
+            var firstPart;
+            for (var i = 0; i < arguments.length; ++i) {
+                var arg = arguments[i];
+                validateString(arg, 'path');
+                if (arg.length > 0) {
+                    if (joined === undefined)
+                        joined = firstPart = arg;
+                    else
+                        joined += '\\' + arg;
+                }
+            }
+            if (joined === undefined)
+                return '.';
+            // Make sure that the joined path doesn't start with two slashes, because
+            // normalize() will mistake it for an UNC path then.
+            //
+            // This step is skipped when it is very clear that the user actually
+            // intended to point at an UNC path. This is assumed when the first
+            // non-empty string arguments starts with exactly two slashes followed by
+            // at least one more non-slash character.
+            //
+            // Note that for normalize() to treat a path as an UNC path it needs to
+            // have at least 2 components, so we don't filter for that here.
+            // This means that the user can use join to construct UNC paths from
+            // a server name and a share name; for example:
+            //   path.join('//server', 'share') -> '\\\\server\\share\\')
+            var needsReplace = true;
+            var slashCount = 0;
+            if (isPathSeparator(firstPart.charCodeAt(0))) {
+                ++slashCount;
+                var firstLen = firstPart.length;
+                if (firstLen > 1) {
+                    if (isPathSeparator(firstPart.charCodeAt(1))) {
+                        ++slashCount;
+                        if (firstLen > 2) {
+                            if (isPathSeparator(firstPart.charCodeAt(2)))
+                                ++slashCount;
+                            else {
+                                // We matched a UNC path in the first part
+                                needsReplace = false;
+                            }
+                        }
+                    }
+                }
+            }
+            if (needsReplace) {
+                // Find any more consecutive slashes we need to replace
+                for (; slashCount < joined.length; ++slashCount) {
+                    if (!isPathSeparator(joined.charCodeAt(slashCount)))
+                        break;
+                }
+                // Replace the slashes if needed
+                if (slashCount >= 2)
+                    joined = '\\' + joined.slice(slashCount);
+            }
+            return win32.normalize(joined);
+        };
+        // It will solve the relative path from `from` to `to`, for instance:
+        //  from = 'C:\\orandea\\test\\aaa'
+        //  to = 'C:\\orandea\\impl\\bbb'
+        // The output of the function should be: '..\\..\\impl\\bbb'
+        Win32Path.prototype.relative = function (from, to) {
+            validateString(from, 'from');
+            validateString(to, 'to');
+            if (from === to)
+                return '';
+            var fromOrig = win32.resolve(from);
+            var toOrig = win32.resolve(to);
+            if (fromOrig === toOrig)
+                return '';
+            from = fromOrig.toLowerCase();
+            to = toOrig.toLowerCase();
+            if (from === to)
+                return '';
+            // Trim any leading backslashes
+            var fromStart = 0;
+            for (; fromStart < from.length; ++fromStart) {
+                if (from.charCodeAt(fromStart) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            // Trim trailing backslashes (applicable to UNC paths only)
+            var fromEnd = from.length;
+            for (; fromEnd - 1 > fromStart; --fromEnd) {
+                if (from.charCodeAt(fromEnd - 1) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            var fromLen = (fromEnd - fromStart);
+            // Trim any leading backslashes
+            var toStart = 0;
+            for (; toStart < to.length; ++toStart) {
+                if (to.charCodeAt(toStart) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            // Trim trailing backslashes (applicable to UNC paths only)
+            var toEnd = to.length;
+            for (; toEnd - 1 > toStart; --toEnd) {
+                if (to.charCodeAt(toEnd - 1) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            var toLen = (toEnd - toStart);
+            // Compare paths to find the longest common path from root
+            var length = (fromLen < toLen ? fromLen : toLen);
+            var lastCommonSep = -1;
+            var i = 0;
+            for (; i <= length; ++i) {
+                if (i === length) {
+                    if (toLen > length) {
+                        if (to.charCodeAt(toStart + i) === CHAR_BACKWARD_SLASH) {
+                            // We get here if `from` is the exact base path for `to`.
+                            // For example: from='C:\\foo\\bar'; to='C:\\foo\\bar\\baz'
+                            return toOrig.slice(toStart + i + 1);
+                        }
+                        else if (i === 2) {
+                            // We get here if `from` is the device root.
+                            // For example: from='C:\\'; to='C:\\foo'
+                            return toOrig.slice(toStart + i);
+                        }
+                    }
+                    if (fromLen > length) {
+                        if (from.charCodeAt(fromStart + i) === CHAR_BACKWARD_SLASH) {
+                            // We get here if `to` is the exact base path for `from`.
+                            // For example: from='C:\\foo\\bar'; to='C:\\foo'
+                            lastCommonSep = i;
+                        }
+                        else if (i === 2) {
+                            // We get here if `to` is the device root.
+                            // For example: from='C:\\foo\\bar'; to='C:\\'
+                            lastCommonSep = 3;
+                        }
+                    }
+                    break;
+                }
+                var fromCode = from.charCodeAt(fromStart + i);
+                var toCode = to.charCodeAt(toStart + i);
+                if (fromCode !== toCode)
+                    break;
+                else if (fromCode === CHAR_BACKWARD_SLASH)
+                    lastCommonSep = i;
+            }
+            // We found a mismatch before the first common path separator was seen, so
+            // return the original `to`.
+            if (i !== length && lastCommonSep === -1) {
+                return toOrig;
+            }
+            var out = '';
+            if (lastCommonSep === -1)
+                lastCommonSep = 0;
+            // Generate the relative path based on the path difference between `to` and
+            // `from`
+            for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
+                if (i === fromEnd || from.charCodeAt(i) === CHAR_BACKWARD_SLASH) {
+                    if (out.length === 0)
+                        out += '..';
+                    else
+                        out += '\\..';
+                }
+            }
+            // Lastly, append the rest of the destination (`to`) path that comes after
+            // the common path parts
+            if (out.length > 0)
+                return out + toOrig.slice(toStart + lastCommonSep, toEnd);
+            else {
+                toStart += lastCommonSep;
+                if (toOrig.charCodeAt(toStart) === CHAR_BACKWARD_SLASH)
+                    ++toStart;
+                return toOrig.slice(toStart, toEnd);
+            }
+        };
+        Win32Path.prototype.toNamespacedPath = function (path) {
+            // Note: this will *probably* throw somewhere.
+            if (typeof path !== 'string')
+                return path;
+            if (path.length === 0) {
+                return '';
+            }
+            var resolvedPath = win32.resolve(path);
+            if (resolvedPath.length >= 3) {
+                if (resolvedPath.charCodeAt(0) === CHAR_BACKWARD_SLASH) {
+                    // Possible UNC root
+                    if (resolvedPath.charCodeAt(1) === CHAR_BACKWARD_SLASH) {
+                        var code = resolvedPath.charCodeAt(2);
+                        if (code !== CHAR_QUESTION_MARK && code !== CHAR_DOT) {
+                            // Matched non-long UNC root, convert the path to a long UNC path
+                            return '\\\\?\\UNC\\' + resolvedPath.slice(2);
+                        }
+                    }
+                }
+                else if (isWindowsDeviceRoot(resolvedPath.charCodeAt(0))) {
+                    // Possible device root
+                    if (resolvedPath.charCodeAt(1) === CHAR_COLON &&
+                        resolvedPath.charCodeAt(2) === CHAR_BACKWARD_SLASH) {
+                        // Matched device root, convert the path to a long UNC path
+                        return '\\\\?\\' + resolvedPath;
+                    }
+                }
+            }
+            return path;
+        };
+        Win32Path.prototype.dirname = function (path) {
+            validateString(path, 'path');
+            var len = path.length;
+            if (len === 0)
+                return '.';
+            var rootEnd = -1;
+            var end = -1;
+            var matchedSlash = true;
+            var offset = 0;
+            var code = path.charCodeAt(0);
+            // Try to match a root
+            if (len > 1) {
+                if (isPathSeparator(code)) {
+                    // Possible UNC root
+                    rootEnd = offset = 1;
+                    if (isPathSeparator(path.charCodeAt(1))) {
+                        // Matched double path separator at beginning
+                        var j = 2;
+                        var last = j;
+                        // Match 1 or more non-path separators
+                        for (; j < len; ++j) {
+                            if (isPathSeparator(path.charCodeAt(j)))
+                                break;
+                        }
+                        if (j < len && j !== last) {
+                            // Matched!
+                            last = j;
+                            // Match 1 or more path separators
+                            for (; j < len; ++j) {
+                                if (!isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                // Matched!
+                                last = j;
+                                // Match 1 or more non-path separators
+                                for (; j < len; ++j) {
+                                    if (isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j === len) {
+                                    // We matched a UNC root only
+                                    return path;
+                                }
+                                if (j !== last) {
+                                    // We matched a UNC root with leftovers
+                                    // Offset by 1 to include the separator after the UNC root to
+                                    // treat it as a "normal root" on top of a (UNC) root
+                                    rootEnd = offset = j + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (isWindowsDeviceRoot(code)) {
+                    // Possible device root
+                    if (path.charCodeAt(1) === CHAR_COLON) {
+                        rootEnd = offset = 2;
+                        if (len > 2) {
+                            if (isPathSeparator(path.charCodeAt(2)))
+                                rootEnd = offset = 3;
+                        }
+                    }
+                }
+            }
+            else if (isPathSeparator(code)) {
+                // `path` contains just a path separator, exit early to avoid
+                // unnecessary work
+                return path;
+            }
+            for (var i = len - 1; i >= offset; --i) {
+                if (isPathSeparator(path.charCodeAt(i))) {
+                    if (!matchedSlash) {
+                        end = i;
+                        break;
+                    }
+                }
+                else {
+                    // We saw the first non-path separator
+                    matchedSlash = false;
+                }
+            }
+            if (end === -1) {
+                if (rootEnd === -1)
+                    return '.';
+                else
+                    end = rootEnd;
+            }
+            return path.slice(0, end);
+        };
+        Win32Path.prototype.basename = function (path, ext) {
+            if (ext !== undefined)
+                validateString(ext, 'ext');
+            validateString(path, 'path');
+            var start = 0;
+            var end = -1;
+            var matchedSlash = true;
+            var i;
+            // Check for a drive letter prefix so as not to mistake the following
+            // path separator as an extra separator at the end of the path that can be
+            // disregarded
+            if (path.length >= 2) {
+                var drive = path.charCodeAt(0);
+                if (isWindowsDeviceRoot(drive)) {
+                    if (path.charCodeAt(1) === CHAR_COLON)
+                        start = 2;
+                }
+            }
+            if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
+                if (ext.length === path.length && ext === path)
+                    return '';
+                var extIdx = ext.length - 1;
+                var firstNonSlashEnd = -1;
+                for (i = path.length - 1; i >= start; --i) {
+                    var code = path.charCodeAt(i);
+                    if (isPathSeparator(code)) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else {
+                        if (firstNonSlashEnd === -1) {
+                            // We saw the first non-path separator, remember this index in case
+                            // we need it if the extension ends up not matching
+                            matchedSlash = false;
+                            firstNonSlashEnd = i + 1;
+                        }
+                        if (extIdx >= 0) {
+                            // Try to match the explicit extension
+                            if (code === ext.charCodeAt(extIdx)) {
+                                if (--extIdx === -1) {
+                                    // We matched the extension, so mark this as the end of our path
+                                    // component
+                                    end = i;
+                                }
+                            }
+                            else {
+                                // Extension does not match, so our result is the entire path
+                                // component
+                                extIdx = -1;
+                                end = firstNonSlashEnd;
+                            }
+                        }
+                    }
+                }
+                if (start === end)
+                    end = firstNonSlashEnd;
+                else if (end === -1)
+                    end = path.length;
+                return path.slice(start, end);
+            }
+            else {
+                for (i = path.length - 1; i >= start; --i) {
+                    if (isPathSeparator(path.charCodeAt(i))) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else if (end === -1) {
+                        // We saw the first non-path separator, mark this as the end of our
+                        // path component
+                        matchedSlash = false;
+                        end = i + 1;
+                    }
+                }
+                if (end === -1)
+                    return '';
+                return path.slice(start, end);
+            }
+        };
+        Win32Path.prototype.extname = function (path) {
+            validateString(path, 'path');
+            var start = 0;
+            var startDot = -1;
+            var startPart = 0;
+            var end = -1;
+            var matchedSlash = true;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            // Check for a drive letter prefix so as not to mistake the following
+            // path separator as an extra separator at the end of the path that can be
+            // disregarded
+            if (path.length >= 2 &&
+                path.charCodeAt(1) === CHAR_COLON &&
+                isWindowsDeviceRoot(path.charCodeAt(0))) {
+                start = startPart = 2;
+            }
+            for (var i = path.length - 1; i >= start; --i) {
+                var code = path.charCodeAt(i);
+                if (isPathSeparator(code)) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                return '';
+            }
+            return path.slice(startDot, end);
+        };
+        Win32Path.prototype.format = function (pathObject) {
+            if (pathObject === null || typeof pathObject !== 'object') {
+                throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
+            }
+            return _format('\\', pathObject);
+        };
+        Win32Path.prototype.parse = function (path) {
+            validateString(path, 'path');
+            var ret = { root: '', dir: '', base: '', ext: '', name: '' };
+            if (path.length === 0)
+                return ret;
+            var len = path.length;
+            var rootEnd = 0;
+            var code = path.charCodeAt(0);
+            // Try to match a root
+            if (len > 1) {
+                if (isPathSeparator(code)) {
+                    // Possible UNC root
+                    rootEnd = 1;
+                    if (isPathSeparator(path.charCodeAt(1))) {
+                        // Matched double path separator at beginning
+                        var j = 2;
+                        var last = j;
+                        // Match 1 or more non-path separators
+                        for (; j < len; ++j) {
+                            if (isPathSeparator(path.charCodeAt(j)))
+                                break;
+                        }
+                        if (j < len && j !== last) {
+                            // Matched!
+                            last = j;
+                            // Match 1 or more path separators
+                            for (; j < len; ++j) {
+                                if (!isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                // Matched!
+                                last = j;
+                                // Match 1 or more non-path separators
+                                for (; j < len; ++j) {
+                                    if (isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j === len) {
+                                    // We matched a UNC root only
+                                    rootEnd = j;
+                                }
+                                else if (j !== last) {
+                                    // We matched a UNC root with leftovers
+                                    rootEnd = j + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (isWindowsDeviceRoot(code)) {
+                    // Possible device root
+                    if (path.charCodeAt(1) === CHAR_COLON) {
+                        rootEnd = 2;
+                        if (len > 2) {
+                            if (isPathSeparator(path.charCodeAt(2))) {
+                                if (len === 3) {
+                                    // `path` contains just a drive root, exit early to avoid
+                                    // unnecessary work
+                                    ret.root = ret.dir = path;
+                                    return ret;
+                                }
+                                rootEnd = 3;
+                            }
+                        }
+                        else {
+                            // `path` contains just a drive root, exit early to avoid
+                            // unnecessary work
+                            ret.root = ret.dir = path;
+                            return ret;
+                        }
+                    }
+                }
+            }
+            else if (isPathSeparator(code)) {
+                // `path` contains just a path separator, exit early to avoid
+                // unnecessary work
+                ret.root = ret.dir = path;
+                return ret;
+            }
+            if (rootEnd > 0)
+                ret.root = path.slice(0, rootEnd);
+            var startDot = -1;
+            var startPart = rootEnd;
+            var end = -1;
+            var matchedSlash = true;
+            var i = path.length - 1;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            // Get non-dir info
+            for (; i >= rootEnd; --i) {
+                code = path.charCodeAt(i);
+                if (isPathSeparator(code)) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                if (end !== -1) {
+                    ret.base = ret.name = path.slice(startPart, end);
+                }
+            }
+            else {
+                ret.name = path.slice(startPart, startDot);
+                ret.base = path.slice(startPart, end);
+                ret.ext = path.slice(startDot, end);
+            }
+            // If the directory is the root, use the entire root as the `dir` including
+            // the trailing slash if any (`C:\abc` -> `C:\`). Otherwise, strip out the
+            // trailing slash (`C:\abc\def` -> `C:\abc`).
+            if (startPart > 0 && startPart !== rootEnd)
+                ret.dir = path.slice(0, startPart - 1);
+            else
+                ret.dir = ret.root;
+            return ret;
+        };
+        return Win32Path;
+    }());
+    ;
+    var PosixPath = /** @class */ (function () {
+        function PosixPath() {
+            this.sep = '/';
+            this.delimiter = ':';
+            this.win32 = null;
+            this.posix = null;
+        }
+        // path.resolve([from ...], to)
+        PosixPath.prototype.resolve = function () {
+            var pathSegments = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                pathSegments[_i] = arguments[_i];
+            }
+            var resolvedPath = '';
+            var resolvedAbsolute = false;
+            for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+                var path;
+                if (i >= 0)
+                    path = arguments[i];
+                else {
+                    path = process.cwd();
+                }
+                validateString(path, 'path');
+                // Skip empty entries
+                if (path.length === 0) {
+                    continue;
+                }
+                resolvedPath = path + '/' + resolvedPath;
+                resolvedAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            }
+            // At this point the path should be resolved to a full absolute path, but
+            // handle relative paths to be safe (might happen when process.cwd() fails)
+            // Normalize the path
+            resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, '/', isPosixPathSeparator);
+            if (resolvedAbsolute) {
+                if (resolvedPath.length > 0)
+                    return '/' + resolvedPath;
+                else
+                    return '/';
+            }
+            else if (resolvedPath.length > 0) {
+                return resolvedPath;
+            }
+            else {
+                return '.';
+            }
+        };
+        PosixPath.prototype.normalize = function (path) {
+            validateString(path, 'path');
+            if (path.length === 0)
+                return '.';
+            var isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            var trailingSeparator = path.charCodeAt(path.length - 1) === CHAR_FORWARD_SLASH;
+            // Normalize the path
+            path = normalizeString(path, !isAbsolute, '/', isPosixPathSeparator);
+            if (path.length === 0 && !isAbsolute)
+                path = '.';
+            if (path.length > 0 && trailingSeparator)
+                path += '/';
+            if (isAbsolute)
+                return '/' + path;
+            return path;
+        };
+        PosixPath.prototype.isAbsolute = function (path) {
+            validateString(path, 'path');
+            return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+        };
+        PosixPath.prototype.join = function () {
+            if (arguments.length === 0)
+                return '.';
+            var joined;
+            for (var i = 0; i < arguments.length; ++i) {
+                var arg = arguments[i];
+                validateString(arg, 'path');
+                if (arg.length > 0) {
+                    if (joined === undefined)
+                        joined = arg;
+                    else
+                        joined += '/' + arg;
+                }
+            }
+            if (joined === undefined)
+                return '.';
+            return posix.normalize(joined);
+        };
+        PosixPath.prototype.relative = function (from, to) {
+            validateString(from, 'from');
+            validateString(to, 'to');
+            if (from === to)
+                return '';
+            from = posix.resolve(from);
+            to = posix.resolve(to);
+            if (from === to)
+                return '';
+            // Trim any leading backslashes
+            var fromStart = 1;
+            for (; fromStart < from.length; ++fromStart) {
+                if (from.charCodeAt(fromStart) !== CHAR_FORWARD_SLASH)
+                    break;
+            }
+            var fromEnd = from.length;
+            var fromLen = (fromEnd - fromStart);
+            // Trim any leading backslashes
+            var toStart = 1;
+            for (; toStart < to.length; ++toStart) {
+                if (to.charCodeAt(toStart) !== CHAR_FORWARD_SLASH)
+                    break;
+            }
+            var toEnd = to.length;
+            var toLen = (toEnd - toStart);
+            // Compare paths to find the longest common path from root
+            var length = (fromLen < toLen ? fromLen : toLen);
+            var lastCommonSep = -1;
+            var i = 0;
+            for (; i <= length; ++i) {
+                if (i === length) {
+                    if (toLen > length) {
+                        if (to.charCodeAt(toStart + i) === CHAR_FORWARD_SLASH) {
+                            // We get here if `from` is the exact base path for `to`.
+                            // For example: from='/foo/bar'; to='/foo/bar/baz'
+                            return to.slice(toStart + i + 1);
+                        }
+                        else if (i === 0) {
+                            // We get here if `from` is the root
+                            // For example: from='/'; to='/foo'
+                            return to.slice(toStart + i);
+                        }
+                    }
+                    else if (fromLen > length) {
+                        if (from.charCodeAt(fromStart + i) === CHAR_FORWARD_SLASH) {
+                            // We get here if `to` is the exact base path for `from`.
+                            // For example: from='/foo/bar/baz'; to='/foo/bar'
+                            lastCommonSep = i;
+                        }
+                        else if (i === 0) {
+                            // We get here if `to` is the root.
+                            // For example: from='/foo'; to='/'
+                            lastCommonSep = 0;
+                        }
+                    }
+                    break;
+                }
+                var fromCode = from.charCodeAt(fromStart + i);
+                var toCode = to.charCodeAt(toStart + i);
+                if (fromCode !== toCode)
+                    break;
+                else if (fromCode === CHAR_FORWARD_SLASH)
+                    lastCommonSep = i;
+            }
+            var out = '';
+            // Generate the relative path based on the path difference between `to`
+            // and `from`
+            for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
+                if (i === fromEnd || from.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+                    if (out.length === 0)
+                        out += '..';
+                    else
+                        out += '/..';
+                }
+            }
+            // Lastly, append the rest of the destination (`to`) path that comes after
+            // the common path parts
+            if (out.length > 0)
+                return out + to.slice(toStart + lastCommonSep);
+            else {
+                toStart += lastCommonSep;
+                if (to.charCodeAt(toStart) === CHAR_FORWARD_SLASH)
+                    ++toStart;
+                return to.slice(toStart);
+            }
+        };
+        PosixPath.prototype.toNamespacedPath = function (path) {
+            // Non-op on posix systems
+            return path;
+        };
+        PosixPath.prototype.dirname = function (path) {
+            validateString(path, 'path');
+            if (path.length === 0)
+                return '.';
+            var hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            var end = -1;
+            var matchedSlash = true;
+            for (var i = path.length - 1; i >= 1; --i) {
+                if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+                    if (!matchedSlash) {
+                        end = i;
+                        break;
+                    }
+                }
+                else {
+                    // We saw the first non-path separator
+                    matchedSlash = false;
+                }
+            }
+            if (end === -1)
+                return hasRoot ? '/' : '.';
+            if (hasRoot && end === 1)
+                return '//';
+            return path.slice(0, end);
+        };
+        PosixPath.prototype.basename = function (path, ext) {
+            if (ext !== undefined)
+                validateString(ext, 'ext');
+            validateString(path, 'path');
+            var start = 0;
+            var end = -1;
+            var matchedSlash = true;
+            var i;
+            if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
+                if (ext.length === path.length && ext === path)
+                    return '';
+                var extIdx = ext.length - 1;
+                var firstNonSlashEnd = -1;
+                for (i = path.length - 1; i >= 0; --i) {
+                    var code = path.charCodeAt(i);
+                    if (code === CHAR_FORWARD_SLASH) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else {
+                        if (firstNonSlashEnd === -1) {
+                            // We saw the first non-path separator, remember this index in case
+                            // we need it if the extension ends up not matching
+                            matchedSlash = false;
+                            firstNonSlashEnd = i + 1;
+                        }
+                        if (extIdx >= 0) {
+                            // Try to match the explicit extension
+                            if (code === ext.charCodeAt(extIdx)) {
+                                if (--extIdx === -1) {
+                                    // We matched the extension, so mark this as the end of our path
+                                    // component
+                                    end = i;
+                                }
+                            }
+                            else {
+                                // Extension does not match, so our result is the entire path
+                                // component
+                                extIdx = -1;
+                                end = firstNonSlashEnd;
+                            }
+                        }
+                    }
+                }
+                if (start === end)
+                    end = firstNonSlashEnd;
+                else if (end === -1)
+                    end = path.length;
+                return path.slice(start, end);
+            }
+            else {
+                for (i = path.length - 1; i >= 0; --i) {
+                    if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else if (end === -1) {
+                        // We saw the first non-path separator, mark this as the end of our
+                        // path component
+                        matchedSlash = false;
+                        end = i + 1;
+                    }
+                }
+                if (end === -1)
+                    return '';
+                return path.slice(start, end);
+            }
+        };
+        PosixPath.prototype.extname = function (path) {
+            validateString(path, 'path');
+            var startDot = -1;
+            var startPart = 0;
+            var end = -1;
+            var matchedSlash = true;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            for (var i = path.length - 1; i >= 0; --i) {
+                var code = path.charCodeAt(i);
+                if (code === CHAR_FORWARD_SLASH) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                return '';
+            }
+            return path.slice(startDot, end);
+        };
+        PosixPath.prototype.format = function (pathObject) {
+            if (pathObject === null || typeof pathObject !== 'object') {
+                throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
+            }
+            return _format('/', pathObject);
+        };
+        PosixPath.prototype.parse = function (path) {
+            validateString(path, 'path');
+            var ret = { root: '', dir: '', base: '', ext: '', name: '' };
+            if (path.length === 0)
+                return ret;
+            var isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            var start;
+            if (isAbsolute) {
+                ret.root = '/';
+                start = 1;
+            }
+            else {
+                start = 0;
+            }
+            var startDot = -1;
+            var startPart = 0;
+            var end = -1;
+            var matchedSlash = true;
+            var i = path.length - 1;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            // Get non-dir info
+            for (; i >= start; --i) {
+                var code = path.charCodeAt(i);
+                if (code === CHAR_FORWARD_SLASH) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                if (end !== -1) {
+                    if (startPart === 0 && isAbsolute)
+                        ret.base = ret.name = path.slice(1, end);
+                    else
+                        ret.base = ret.name = path.slice(startPart, end);
+                }
+            }
+            else {
+                if (startPart === 0 && isAbsolute) {
+                    ret.name = path.slice(1, startDot);
+                    ret.base = path.slice(1, end);
+                }
+                else {
+                    ret.name = path.slice(startPart, startDot);
+                    ret.base = path.slice(startPart, end);
+                }
+                ret.ext = path.slice(startDot, end);
+            }
+            if (startPart > 0)
+                ret.dir = path.slice(0, startPart - 1);
+            else if (isAbsolute)
+                ret.dir = '/';
+            return ret;
+        };
+        return PosixPath;
+    }());
+    ;
+    var win32 = new Win32Path();
+    var posix = new PosixPath();
+    posix.win32 = win32.win32 = win32;
+    posix.posix = win32.posix = posix;
+    // Legacy internal API, docs-only deprecated: DEP0080
+    // win32._makeLong = win32.toNamespacedPath;
+    // posix._makeLong = posix.toNamespacedPath;
+    // if (process.platform === 'win32')
+    //     module.exports = win32;
+    // else
+    //     module.exports = posix;
+    // 
+    if (process.platform === 'win32')
+        feng3d.path = win32;
+    else
+        feng3d.path = posix;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 常用正则表示式
+     */
+    var RegExps = /** @class */ (function () {
+        function RegExps() {
+            /**
+             * json文件
+             */
+            this.json = /(\.json)\b/i;
+            /**
+             * 图片
+             */
+            this.image = /(\.jpg|\.png|\.jpeg|\.gif)\b/i;
+            /**
+             * 声音
+             */
+            this.audio = /(\.ogg|\.mp3|\.wav)\b/i;
+            /**
+             * 命名空间
+             */
+            this.namespace = /namespace\s+([\w$_\d\.]+)/;
+            /**
+             * 类
+             */
+            this.classReg = /(export\s+)?(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d\.]+))?/;
+        }
+        return RegExps;
+    }());
+    feng3d.RegExps = RegExps;
+    feng3d.regExps = new RegExps();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 对象池
+     *
+     * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
+     *
+     * js虚拟机会在对象没有被引用时自动释放内存，谨慎使用对象池。
+     *
+     */
+    var Pool = /** @class */ (function () {
+        function Pool(type) {
+            this._objects = [];
+            this._type = type;
+        }
+        /**
+         * 获取对象
+         */
+        Pool.prototype.get = function () {
+            var obj = this._objects.pop();
+            if (obj)
+                return obj;
+            return new this._type();
+        };
+        /**
+         * 释放对象
+         *
+         * @param args 被释放对象列表
+         */
+        Pool.prototype.release = function () {
+            var _this = this;
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            args.forEach(function (element) {
+                _this._objects.push(element);
+            });
+        };
+        /**
+         * 获取指定数量的对象
+         *
+         * @param num 数量
+         */
+        Pool.prototype.getArray = function (num) {
+            var arr;
+            if (this._objects.length <= num) {
+                arr = this._objects.concat();
+                this._objects.length = 0;
+            }
+            else {
+                arr = this._objects.splice(0, num);
+            }
+            while (arr.length < num) {
+                arr.push(new this._type());
+            }
+            return arr;
+        };
+        /**
+         * 释放对象
+         *
+         * @param objects 被释放对象列表
+         */
+        Pool.prototype.releaseArray = function (objects) {
+            var _this = this;
+            objects.forEach(function (element) {
+                _this._objects.push(element);
+            });
+        };
+        return Pool;
+    }());
+    feng3d.Pool = Pool;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 任务
+     *
+     * 处理 异步任务(函数)串联并联执行功能
+     */
+    var Task = /** @class */ (function () {
+        function Task() {
+        }
+        /**
+         * 并联多个异步函数为一个函数
+         *
+         * 这些异步函数同时执行
+         *
+         * @param fns 一组异步函数
+         */
+        Task.prototype.parallel = function (fns) {
+            var result = function (callback) {
+                if (fns.length == 0) {
+                    callback();
+                    return;
+                }
+                var index = 0;
+                fns.forEach(function (fn) {
+                    var callbackNum = 0;
+                    fn(function () {
+                        callbackNum++;
+                        if (callbackNum == 1) {
+                            index++;
+                            if (index == fns.length) {
+                                callback();
+                            }
+                        }
+                        else {
+                            console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callbackNum);
+                        }
+                    });
+                });
+            };
+            return result;
+        };
+        /**
+         * 串联多个异步函数为一个函数
+         *
+         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
+         *
+         * @param fns 一组异步函数
+         */
+        Task.prototype.series = function (fns) {
+            var result = function (callback) {
+                if (fns.length == 0) {
+                    callback();
+                    return;
+                }
+                var index = 0;
+                var next = function () {
+                    var fn = fns[index];
+                    var callbackNum = 0;
+                    fn(function () {
+                        callbackNum++;
+                        if (callbackNum == 1) {
+                            index++;
+                            if (index < fns.length) {
+                                next();
+                            }
+                            else {
+                                callback && callback();
+                            }
+                        }
+                        else {
+                            console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callbackNum);
+                        }
+                    });
+                };
+                next();
+            };
+            return result;
+        };
+        /**
+         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        Task.prototype.parallelResults = function (ps, fn, done) {
+            var map = new Map();
+            // 包装函数
+            var fns = ps.map(function (p) { return function (callback) {
+                fn(p, function (r) {
+                    map.set(p, r);
+                    callback();
+                });
+            }; });
+            this.parallel(fns)(function () {
+                var results = ps.map(function (p) {
+                    return map.get(p);
+                });
+                map.clear();
+                done(results);
+            });
+        };
+        /**
+         * 创建一组串联同类任务，例如排序加载一组资源
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        Task.prototype.seriesResults = function (ps, fn, done) {
+            var map = new Map();
+            // 包装函数
+            var fns = ps.map(function (p) { return function (callback) {
+                fn(p, function (r) {
+                    map.set(p, r);
+                    callback();
+                });
+            }; });
+            this.series(fns)(function () {
+                var results = ps.map(function (p) {
+                    return map.get(p);
+                });
+                map.clear();
+                done(results);
+            });
+        };
+        return Task;
+    }());
+    feng3d.task = new Task();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 所有feng3d对象的基类
+     */
+    var Feng3dObject = /** @class */ (function (_super) {
+        __extends(Feng3dObject, _super);
+        /**
+         * 构建
+         *
+         * 新增不可修改属性 guid
+         */
+        function Feng3dObject() {
+            var _this = _super.call(this) || this;
+            /**
+             * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
+             */
+            _this.hideFlags = feng3d.HideFlags.None;
+            Object.defineProperty(_this, "uuid", { value: Math.uuid() });
+            Object.defineProperty(_this, "disposed", { value: false, configurable: true });
+            console.assert(!Feng3dObject.objectLib[_this.uuid], "\u552F\u4E00\u6807\u8BC6\u7B26\u5B58\u5728\u91CD\u590D\uFF01\uFF1F");
+            Feng3dObject.objectLib[_this.uuid] = _this;
+            return _this;
+        }
+        /**
+         * 销毁
+         */
+        Feng3dObject.prototype.dispose = function () {
+            Object.defineProperty(this, "disposed", { value: true, configurable: false });
+        };
+        /**
+         * 获取对象
+         *
+         * @param uuid 通用唯一标识符
+         */
+        Feng3dObject.getObject = function (uuid) {
+            return this.objectLib[uuid];
+        };
+        /**
+         * 获取对象
+         *
+         * @param type
+         */
+        Feng3dObject.getObjects = function (type) {
+            var _this = this;
+            var objects = Object.keys(this.objectLib).map(function (v) { return _this.objectLib[v]; });
+            //
+            var filterResult = objects;
+            if (type) {
+                filterResult = objects.filter(function (v) { return v instanceof type; });
+            }
+            return filterResult;
+        };
+        __decorate([
+            feng3d.serialize
+        ], Feng3dObject.prototype, "hideFlags", void 0);
+        return Feng3dObject;
+    }(feng3d.EventDispatcher));
+    feng3d.Feng3dObject = Feng3dObject;
+    Object.defineProperty(Feng3dObject, "objectLib", { value: {} });
+    feng3d.serialization.serializeHandlers.push(
+    // 处理 Feng3dObject
+    {
+        priority: 0,
+        handler: function (target, source, property) {
+            var spv = source[property];
+            if (spv instanceof Feng3dObject && (spv.hideFlags & feng3d.HideFlags.DontSave)) {
+                return true;
+            }
+            return false;
+        }
+    });
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源数据
+     *
+     * 该对象可由资源文件中读取，或者保存为资源
+     */
+    var AssetData = /** @class */ (function (_super) {
+        __extends(AssetData, _super);
+        function AssetData() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(AssetData.prototype, "name", {
+            /**
+             * 资源名称
+             */
+            get: function () {
+                var asset = feng3d.rs.getAsset(this.assetId);
+                if (asset)
+                    this._name = asset.fileName;
+                return this._name;
+            },
+            set: function (v) { this._name = v; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AssetData.prototype, "assetId", {
+            /**
+             * 资源编号
+             */
+            get: function () {
+                return this._assetId;
+            },
+            set: function (v) {
+                if (this._assetId == v)
+                    return;
+                if (this._assetId != undefined) {
+                    console.error("\u4E0D\u5141\u8BB8\u4FEE\u6539 assetId");
+                    return;
+                }
+                this._assetId = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 新增资源数据
+         *
+         * @param assetId 资源编号
+         * @param data 资源数据
+         */
+        AssetData.addAssetData = function (assetId, data) {
+            if (!data)
+                return;
+            if (data.assetId != assetId)
+                console.warn("\u540C\u4E00\u4E2A\u6750\u8D28\u88AB\u4FDD\u5B58\u5728\u591A\u4E2A\u8D44\u6E90\u4E2D\uFF01");
+            this.assetMap.set(data, assetId);
+            this.idAssetMap.set(assetId, data);
+            return data;
+        };
+        /**
+         * 删除资源数据
+         *
+         * @param data 资源数据
+         */
+        AssetData.deleteAssetData = function (data) {
+            if (!data)
+                return;
+            console.assert(this.assetMap.has(data));
+            var assetId = this.assetMap.get(data);
+            this._delete(assetId, data);
+        };
+        AssetData.deleteAssetDataById = function (assetId) {
+            console.assert(this.idAssetMap.has(assetId));
+            var data = this.idAssetMap.get(assetId);
+            this._delete(assetId, data);
+        };
+        AssetData._delete = function (assetId, data) {
+            this.assetMap.delete(data);
+            this.idAssetMap.delete(assetId);
+        };
+        /**
+         * 判断是否为资源数据
+         *
+         * @param asset 可能的资源数据
+         */
+        AssetData.isAssetData = function (asset) {
+            if (!asset || asset.assetId == undefined)
+                return false;
+            if (asset instanceof AssetData)
+                return true;
+            if (feng3d.classUtils.getDefaultInstanceByName(asset[feng3d.CLASS_KEY]) instanceof AssetData)
+                return true;
+        };
+        /**
+         * 序列化
+         *
+         * @param asset 资源数据
+         */
+        AssetData.serialize = function (asset) {
+            var obj = {};
+            obj[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(asset);
+            obj.assetId = asset.assetId;
+            return obj;
+        };
+        /**
+         * 反序列化
+         *
+         * @param object 资源对象
+         */
+        AssetData.deserialize = function (object) {
+            var result = this.getLoadedAssetData(object.assetId);
+            console.assert(!!result, "\u8D44\u6E90 " + object.assetId + " \u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 ReadRS.deserializeWithAssets \u8FDB\u884C\u5E8F\u5217\u5316\u5305\u542B\u52A0\u8F7D\u7684\u8D44\u6E90\u5BF9\u8C61\u3002");
+            return result;
+        };
+        /**
+         * 获取已加载的资源数据
+         *
+         * @param assetId 资源编号
+         */
+        AssetData.getLoadedAssetData = function (assetId) {
+            return this.idAssetMap.get(assetId);
+        };
+        /**
+         * 获取所有已加载资源数据
+         */
+        AssetData.getAllLoadedAssetDatas = function () {
+            return Map.getKeys(this.assetMap);
+        };
+        /**
+         * 资源属性标记名称
+         */
+        AssetData.assetPropertySign = "assetId";
+        /**
+         * 资源与编号对应表
+         */
+        AssetData.assetMap = new Map();
+        /**
+         * 编号与资源对应表
+         */
+        AssetData.idAssetMap = new Map();
+        __decorate([
+            feng3d.serialize
+        ], AssetData.prototype, "name", null);
+        __decorate([
+            feng3d.serialize
+        ], AssetData.prototype, "assetId", null);
+        return AssetData;
+    }(feng3d.Feng3dObject));
+    feng3d.AssetData = AssetData;
+    /**
+     * 设置函数列表
+     */
+    feng3d.serialization.setValueHandlers.push(
+    // 处理资源
+    {
+        priority: 0,
+        handler: function (target, source, property, handlers, serialization) {
+            var tpv = target[property];
+            var spv = source[property];
+            if (AssetData.isAssetData(spv)) {
+                // 此处需要反序列化资源完整数据
+                if (property == "__root__") {
+                    return false;
+                }
+                target[property] = AssetData.deserialize(spv);
+                return true;
+            }
+            if (AssetData.isAssetData(tpv)) {
+                if (spv.__class__ == null) {
+                    var className = feng3d.classUtils.getQualifiedClassName(tpv);
+                    var inst = feng3d.classUtils.getInstanceByName(className);
+                    serialization.setValue(inst, spv);
+                    target[property] = inst;
+                }
+                else {
+                    target[property] = serialization.deserialize(spv);
+                }
+                return true;
+            }
+            return false;
+        }
+    });
+    feng3d.serialization.serializeHandlers.push(
+    // 处理资源
+    {
+        priority: 0,
+        handler: function (target, source, property) {
+            var spv = source[property];
+            if (AssetData.isAssetData(spv)) {
+                // 此处需要反序列化资源完整数据
+                if (property == "__root__") {
+                    return false;
+                }
+                target[property] = AssetData.serialize(spv);
+                return true;
+            }
+            return false;
+        }
+    });
+    feng3d.serialization.deserializeHandlers.push(
+    // 处理资源
+    {
+        priority: 0,
+        handler: function (target, source, property, handlers, serialization) {
+            var tpv = target[property];
+            var spv = source[property];
+            if (AssetData.isAssetData(spv)) {
+                // 此处需要反序列化资源完整数据
+                if (property == "__root__") {
+                    return false;
+                }
+                target[property] = AssetData.deserialize(spv);
+                return true;
+            }
+            if (AssetData.isAssetData(tpv)) {
+                target[property] = serialization.deserialize(spv);
+                return true;
+            }
+            return false;
+        }
+    });
+    feng3d.serialization.differentHandlers.push(
+    // 资源
+    {
+        priority: 0,
+        handler: function (target, source, property, different, handlers, serialization) {
+            var tpv = target[property];
+            if (AssetData.isAssetData(tpv)) {
+                // 此处需要反序列化资源完整数据
+                if (property == "__root__") {
+                    return false;
+                }
+                different[property] = AssetData.serialize(tpv);
+                return true;
+            }
+            return false;
+        }
+    });
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源扩展名
+     */
+    var AssetType;
+    (function (AssetType) {
+        /**
+         * 文件夹
+         */
+        AssetType["folder"] = "folder";
+        /**
+         * 音频
+         */
+        AssetType["audio"] = "audio";
+        /**
+         * ts文件
+         */
+        AssetType["ts"] = "ts";
+        /**
+         * js文件
+         */
+        AssetType["js"] = "js";
+        /**
+         * 文本文件
+         */
+        AssetType["txt"] = "txt";
+        /**
+         * json文件
+         */
+        AssetType["json"] = "json";
+        /**
+         * OBJ模型资源附带的材质文件
+         */
+        AssetType["mtl"] = "mtl";
+        /**
+         * OBJ模型文件
+         */
+        AssetType["obj"] = "obj";
+        /**
+         * MD5模型文件
+         */
+        AssetType["md5mesh"] = "md5mesh";
+        /**
+         * MD5动画
+         */
+        AssetType["md5anim"] = "md5anim";
+        /**
+         * 魔兽MDL模型
+         */
+        AssetType["mdl"] = "mdl";
+        // -- feng3d中的类型
+        /**
+         * 纹理
+         */
+        AssetType["texture"] = "texture";
+        /**
+         * 立方体纹理
+         */
+        AssetType["texturecube"] = "texturecube";
+        /**
+         * 材质
+         */
+        AssetType["material"] = "material";
+        /**
+         * 几何体
+         */
+        AssetType["geometry"] = "geometry";
+        /**
+         * 游戏对象
+         */
+        AssetType["gameobject"] = "gameobject";
+        /**
+         * 场景
+         */
+        AssetType["scene"] = "scene";
+        /**
+         * 动画
+         */
+        AssetType["anim"] = "anim";
+        /**
+         * 着色器
+         */
+        AssetType["shader"] = "shader";
+        /**
+         * 脚本
+         */
+        AssetType["script"] = "script";
+    })(AssetType = feng3d.AssetType || (feng3d.AssetType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * feng3d资源
+     */
+    var FileAsset = /** @class */ (function () {
+        function FileAsset() {
+            /**
+             * 是否已加载
+             */
+            this.isLoaded = false;
+            /**
+             * 是否正在加载中
+             */
+            this.isLoading = false;
+        }
+        Object.defineProperty(FileAsset.prototype, "extenson", {
+            /**
+             * 文件后缀
+             */
+            get: function () {
+                console.assert(!!this.assetPath);
+                var ext = feng3d.pathUtils.extname(this.assetPath);
+                return ext;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FileAsset.prototype, "fileName", {
+            /**
+             * 文件名称
+             *
+             * 不包含后缀
+             */
+            get: function () {
+                console.assert(!!this.assetPath);
+                var fn = feng3d.pathUtils.getName(this.assetPath);
+                return fn;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 初始化资源
+         */
+        FileAsset.prototype.initAsset = function () {
+        };
+        /**
+         * 获取资源数据
+         *
+         * @param callback 完成回调，当资源已加载时会立即调用回调，否则在资源加载完成后调用。
+         */
+        FileAsset.prototype.getAssetData = function (callback) {
+            var _this = this;
+            if (!this.isLoaded) {
+                if (callback) {
+                    this.read(function (err) {
+                        console.assert(!err);
+                        _this.getAssetData(callback);
+                    });
+                }
+                return null;
+            }
+            var assetData = this._getAssetData();
+            callback && callback(assetData);
+            return assetData;
+        };
+        /**
+         * 资源已加载时获取资源数据，内部使用
+         */
+        FileAsset.prototype._getAssetData = function () {
+            return this.data;
+        };
+        /**
+         * 读取资源
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.read = function (callback) {
+            var _this = this;
+            if (this.isLoaded) {
+                callback();
+                return;
+            }
+            var eventtype = "loaded";
+            feng3d.event.once(this, eventtype, function () {
+                _this.isLoaded = true;
+                _this.isLoading = false;
+                callback();
+            });
+            if (this.isLoading)
+                return;
+            this.isLoading = true;
+            this.readMeta(function (err) {
+                if (err) {
+                    feng3d.event.dispatch(_this, eventtype);
+                    return;
+                }
+                _this.readFile(function (err) {
+                    feng3d.event.dispatch(_this, eventtype);
+                });
+            });
+        };
+        /**
+         * 写入资源
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.write = function (callback) {
+            var _this = this;
+            this.meta.mtimeMs = Date.now();
+            this.writeMeta(function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.saveFile(function (err) {
+                    callback && callback(err);
+                });
+            });
+        };
+        /**
+         * 删除资源
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.delete = function (callback) {
+            var _this = this;
+            // 删除 meta 文件
+            this.deleteMeta(function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.deleteFile(function (err) {
+                    // 删除父子资源关系
+                    if (_this.parentAsset) {
+                        Array.delete(_this.parentAsset.childrenAssets, _this);
+                        _this.parentAsset = null;
+                    }
+                    // 删除映射
+                    delete feng3d.rs.idMap[_this.assetId];
+                    delete feng3d.rs.pathMap[_this.assetPath];
+                    callback && callback();
+                });
+            });
+        };
+        /**
+         * 读取资源预览图标
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.readPreview = function (callback) {
+            var _this = this;
+            if (this._preview) {
+                callback(null, this._preview);
+                return;
+            }
+            this.rs.fs.readImage(this.previewPath, function (err, image) {
+                _this._preview = image;
+                callback(err, image);
+            });
+        };
+        /**
+         * 读取资源预览图标
+         *
+         * @param image 预览图
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.writePreview = function (image, callback) {
+            if (this._preview == image) {
+                callback && callback(null);
+                return;
+            }
+            this._preview = image;
+            this.rs.fs.writeImage(this.previewPath, image, callback);
+        };
+        /**
+         * 删除资源预览图标
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.deletePreview = function (callback) {
+            this.rs.fs.deleteFile(this.previewPath, callback);
+        };
+        /**
+         * 删除文件
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.deleteFile = function (callback) {
+            var _this = this;
+            this.rs.fs.deleteFile(this.assetPath, callback);
+            // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
+            feng3d.ticker.once(1000, function () {
+                if (_this.rs.getAsset(_this.assetId) == null) {
+                    _this.deletePreview();
+                }
+            });
+        };
+        Object.defineProperty(FileAsset.prototype, "metaPath", {
+            /**
+             * 元标签路径
+             */
+            get: function () {
+                return this.assetPath + ".meta";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取元标签
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.readMeta = function (callback) {
+            var _this = this;
+            this.rs.fs.readObject(this.metaPath, function (err, meta) {
+                _this.meta = meta;
+                callback && callback(err);
+            });
+        };
+        /**
+         * 写元标签
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.writeMeta = function (callback) {
+            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
+        };
+        /**
+         * 删除元标签
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.deleteMeta = function (callback) {
+            this.rs.fs.deleteFile(this.metaPath, callback);
+        };
+        Object.defineProperty(FileAsset.prototype, "previewPath", {
+            /**
+             * 预览图路径
+             */
+            get: function () {
+                return "previews/" + this.assetId + ".png";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        __decorate([
+            feng3d.serialize
+        ], FileAsset.prototype, "assetId", void 0);
+        __decorate([
+            feng3d.serialize
+        ], FileAsset.prototype, "assetPath", void 0);
+        return FileAsset;
+    }());
+    feng3d.FileAsset = FileAsset;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 可读资源系统
+     */
+    var ReadRS = /** @class */ (function () {
+        /**
+         * 构建可读资源系统
+         *
+         * @param fs 可读文件系统
+         */
+        function ReadRS(fs) {
+            /**
+             * 资源编号映射
+             */
+            this.idMap = {};
+            /**
+             * 资源路径映射
+             */
+            this.pathMap = {};
+            /**
+             * 资源树保存路径
+             */
+            this.resources = "resource.json";
+            this._fs = fs;
+        }
+        Object.defineProperty(ReadRS.prototype, "fs", {
+            /**
+             * 文件系统
+             */
+            get: function () { return this._fs || feng3d.fs; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReadRS.prototype, "root", {
+            /**
+             * 根文件夹
+             */
+            get: function () { return this._root; },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 初始化
+         *
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.init = function (callback) {
+            var _this = this;
+            this.fs.readObject(this.resources, function (err, object) {
+                if (object) {
+                    var data = feng3d.serialization.deserialize(object);
+                    _this._root = data;
+                    //
+                    var assets = [data];
+                    var index = 0;
+                    while (index < assets.length) {
+                        var asset = assets[index];
+                        // 设置资源系统
+                        asset.rs = _this;
+                        // 新增映射
+                        _this.idMap[asset.assetId] = asset;
+                        _this.pathMap[asset.assetPath] = asset;
+                        // 
+                        if (asset instanceof feng3d.FolderAsset) {
+                            for (var i = 0; i < asset.childrenAssets.length; i++) {
+                                var v = asset.childrenAssets[i];
+                                // 处理资源父子关系
+                                v.parentAsset = asset;
+                                //
+                                assets.push(v);
+                            }
+                        }
+                        index++;
+                    }
+                    callback();
+                }
+                else {
+                    _this.createAsset(feng3d.FolderAsset, "Assets", null, null, function (err, asset) {
+                        _this._root = asset;
+                        callback();
+                    });
+                }
+            });
+        };
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param fileName 文件名称
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        ReadRS.prototype.createAsset = function (cls, fileName, value, parent, callback) {
+            parent = parent || this._root;
+            //
+            var asset = new cls();
+            var assetId = Math.uuid();
+            // 初始化
+            asset.rs = this;
+            feng3d.serialization.setValue(asset, value);
+            asset.assetId = assetId;
+            asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+            asset.initAsset();
+            feng3d.AssetData.addAssetData(asset.assetId, asset.data);
+            //
+            var extenson = feng3d.pathUtils.extname(fileName);
+            fileName = feng3d.pathUtils.getName(fileName);
+            // 设置默认名称
+            fileName = fileName || "new " + asset.assetType;
+            if (parent) {
+                // 计算有效名称
+                fileName = this.getValidChildName(parent, fileName);
+                // 处理资源父子关系
+                parent.childrenAssets.push(asset);
+                asset.parentAsset = parent;
+            }
+            // 计算路径
+            if (extenson == "")
+                extenson = cls["extenson"];
+            console.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
+            var path = fileName + extenson;
+            if (asset.parentAsset)
+                path = asset.parentAsset.assetPath + "/" + path;
+            asset.assetPath = path;
+            // 新增映射
+            this.idMap[asset.assetId] = asset;
+            this.pathMap[asset.assetPath] = asset;
+            //
+            asset.write(function (err) {
+                callback && callback(null, asset);
+            });
+        };
+        /**
+         * 获取有效子文件名称
+         *
+         * @param parent 父文件夹
+         * @param fileName 文件名称
+         */
+        ReadRS.prototype.getValidChildName = function (parent, fileName) {
+            var childrenNames = parent.childrenAssets.map(function (v) { return v.fileName; });
+            var newName = fileName;
+            var index = 1;
+            while (childrenNames.indexOf(newName) != -1) {
+                newName = fileName + index;
+                index++;
+            }
+            return newName;
+        };
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        ReadRS.prototype.readAsset = function (id, callback) {
+            var asset = this.idMap[id];
+            if (!asset) {
+                callback(new Error("\u4E0D\u5B58\u5728\u8D44\u6E90 " + id), asset);
+                return;
+            }
+            asset.read(function (err) {
+                if (asset)
+                    feng3d.AssetData.addAssetData(asset.assetId, asset.data);
+                callback(err, asset);
+            });
+        };
+        /**
+         * 读取资源数据
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.readAssetData = function (id, callback) {
+            var asset = feng3d.AssetData.getLoadedAssetData(id);
+            if (asset) {
+                callback(null, asset);
+                return;
+            }
+            this.readAsset(id, function (err, asset) {
+                callback(err, asset && asset.getAssetData());
+            });
+        };
+        /**
+         * 读取资源数据列表
+         *
+         * @param assetids 资源编号列表
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.readAssetDatas = function (assetids, callback) {
+            var result = [];
+            var fns = assetids.map(function (v) { return function (callback) {
+                feng3d.rs.readAssetData(v, function (err, data) {
+                    console.assert(!!data);
+                    result.push(data);
+                    callback();
+                });
+            }; });
+            feng3d.task.parallel(fns)(function () {
+                console.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
+                callback(null, result);
+            });
+        };
+        /**
+         * 获取指定类型资源
+         *
+         * @param type 资源类型
+         */
+        ReadRS.prototype.getAssetsByType = function (type) {
+            var _this = this;
+            var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
+            return assets.filter(function (v) { return v instanceof type; });
+        };
+        /**
+         * 获取指定类型资源数据
+         *
+         * @param type 资源类型
+         */
+        ReadRS.prototype.getLoadedAssetDatasByType = function (type) {
+            var assets = feng3d.AssetData.getAllLoadedAssetDatas();
+            return assets.filter(function (v) { return v instanceof type; });
+        };
+        /**
+         * 获取资源
+         *
+         * @param assetId 资源编号
+         */
+        ReadRS.prototype.getAsset = function (assetId) {
+            return this.idMap[assetId];
+        };
+        /**
+         * 获取所有资源
+         */
+        ReadRS.prototype.getAllAssets = function () {
+            var _this = this;
+            var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
+            return assets;
+        };
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        ReadRS.prototype.getAssetsWithObject = function (object, assetids) {
+            var _this = this;
+            if (assetids === void 0) { assetids = []; }
+            if (Object.isBaseType(object))
+                return [];
+            //
+            if (feng3d.AssetData.isAssetData(object))
+                assetids.push(object.assetId);
+            //
+            if (Object.isObject(object) || Array.isArray(object)) {
+                var keys = Object.keys(object);
+                keys.forEach(function (k) {
+                    _this.getAssetsWithObject(object[k], assetids);
+                });
+            }
+            return assetids;
+        };
+        /**
+         * 反序列化包含资源的对象
+         *
+         * @param object 反序列化的对象
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.deserializeWithAssets = function (object, callback) {
+            // 获取所包含的资源列表
+            var assetids = this.getAssetsWithObject(object);
+            // 不需要加载本资源，移除自身资源
+            Array.delete(assetids, object.assetId);
+            // 加载包含的资源数据
+            this.readAssetDatas(assetids, function (err, result) {
+                // 创建资源数据实例
+                var assetData = feng3d.classUtils.getInstanceByName(object[feng3d.CLASS_KEY]);
+                //默认反序列
+                feng3d.serialization.setValue(assetData, object);
+                callback(assetData);
+            });
+        };
+        return ReadRS;
+    }());
+    feng3d.ReadRS = ReadRS;
+    feng3d.rs = new ReadRS();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 可读写资源系统
+     */
+    var ReadWriteRS = /** @class */ (function (_super) {
+        __extends(ReadWriteRS, _super);
+        /**
+         * 构建可读写资源系统
+         *
+         * @param fs 可读写文件系统
+         */
+        function ReadWriteRS(fs) {
+            var _this = _super.call(this, fs) || this;
+            /**
+             * 延迟保存执行函数
+             */
+            _this.laterSaveFunc = function (interval) { _this.save(); };
+            /**
+             * 延迟保存，避免多次操作时频繁调用保存
+             */
+            _this.laterSave = function () { feng3d.ticker.nextframe(_this.laterSaveFunc, _this); };
+            return _this;
+        }
+        /**
+         * 在更改资源结构（新增，移动，删除）时会自动保存
+         *
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.save = function (callback) {
+            var object = feng3d.serialization.serialize(this.root);
+            this.fs.writeObject(this.resources, object, callback);
+        };
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param fileName 文件名称
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        ReadWriteRS.prototype.createAsset = function (cls, fileName, value, parent, callback) {
+            var _this = this;
+            // 新建资源
+            _super.prototype.createAsset.call(this, cls, fileName, value, parent, function (err, asset) {
+                if (asset) {
+                    // 保存资源
+                    _this.writeAsset(asset, function (err) {
+                        callback && callback(err, asset);
+                        // 保存资源库
+                        _this.laterSave();
+                    });
+                }
+                else {
+                    callback && callback(err, null);
+                }
+            });
+        };
+        /**
+         * 写（保存）资源
+         *
+         * @param asset 资源对象
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.writeAsset = function (asset, callback) {
+            asset.write(callback);
+        };
+        /**
+         * 移动资源到指定文件夹
+         *
+         * @param asset 被移动资源
+         * @param folder 目标文件夹
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.moveAsset = function (asset, folder, callback) {
+            var _this = this;
+            var filename = asset.fileName + asset.extenson;
+            var cnames = folder.childrenAssets.map(function (v) { return v.fileName + v.extenson; });
+            if (cnames.indexOf(filename) != -1) {
+                callback && callback(new Error("\u76EE\u6807\u6587\u4EF6\u5939\u4E2D\u5B58\u5728\u540C\u540D\u6587\u4EF6\uFF08\u5939\uFF09\uFF0C\u65E0\u6CD5\u79FB\u52A8"));
+                return;
+            }
+            var fp = folder;
+            while (fp) {
+                if (fp == asset) {
+                    callback && callback(new Error("\u65E0\u6CD5\u79FB\u52A8\u8FBE\u5230\u5B50\u6587\u4EF6\u5939\u4E2D"));
+                    return;
+                }
+                fp = fp.parentAsset;
+            }
+            // 重新设置父子资源关系
+            var index = asset.parentAsset.childrenAssets.indexOf(asset);
+            asset.parentAsset.childrenAssets.splice(index, 1);
+            folder.childrenAssets.push(asset);
+            asset.parentAsset = folder;
+            // 获取需要移动的资源列表
+            var assets = [asset];
+            var index = 0;
+            while (index < assets.length) {
+                var ca = assets[index];
+                if (ca instanceof feng3d.FolderAsset) {
+                    assets = assets.concat(ca.childrenAssets);
+                }
+                index++;
+            }
+            // 最后根据 parentAsset 修复 childrenAssets
+            var copyassets = assets.concat();
+            // 移动最后一个资源
+            var moveLastAsset = function () {
+                if (assets.length == 0) {
+                    // 修复 childrenAssets
+                    copyassets.forEach(function (v) {
+                        v.parentAsset.childrenAssets.push(v);
+                    });
+                    callback && callback(null);
+                    // 保存资源库
+                    _this.laterSave();
+                    return;
+                }
+                var la = assets.pop();
+                // 读取资源
+                _this.readAsset(la.assetId, function (err, a) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    // 备份父资源
+                    var pla = la.parentAsset;
+                    // 从原路径上删除资源
+                    _this.deleteAsset(la, function (err) {
+                        if (err) {
+                            callback && callback(err);
+                            return;
+                        }
+                        // 修复删除资源时破坏的父资源引用
+                        la.parentAsset = pla;
+                        // 计算资源新路径
+                        var np = la.fileName + la.extenson;
+                        var p = la.parentAsset;
+                        while (p) {
+                            np = p.fileName + "/" + np;
+                            p = p.parentAsset;
+                        }
+                        la.assetPath = np;
+                        // 新增映射
+                        _this.idMap[la.assetId] = la;
+                        _this.pathMap[la.assetPath] = la;
+                        // 保存资源到新路径
+                        _this.writeAsset(la, function (err) {
+                            if (err) {
+                                callback && callback(err);
+                                return;
+                            }
+                            moveLastAsset();
+                        });
+                    });
+                });
+            };
+            moveLastAsset();
+        };
+        /**
+         * 删除资源
+         *
+         * @param asset 资源
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.deleteAsset = function (asset, callback) {
+            var _this = this;
+            // 获取需要移动的资源列表
+            var assets = [asset];
+            var index = 0;
+            while (index < assets.length) {
+                var ca = assets[index];
+                if (ca instanceof feng3d.FolderAsset) {
+                    assets = assets.concat(ca.childrenAssets);
+                }
+                index++;
+            }
+            // 删除最后一个资源
+            var deleteLastAsset = function () {
+                if (assets.length == 0) {
+                    callback && callback(null);
+                    // 保存资源库
+                    _this.laterSave();
+                    return;
+                }
+                var la = assets.pop();
+                la.delete(function () {
+                    feng3d.AssetData.deleteAssetData(la.data);
+                    deleteLastAsset();
+                });
+            };
+            deleteLastAsset();
+        };
+        return ReadWriteRS;
+    }(feng3d.ReadRS));
+    feng3d.ReadWriteRS = ReadWriteRS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

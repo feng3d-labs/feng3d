@@ -19,8 +19,6 @@
         "modules/events/src/EventDispatcher.ts",
         //
         "modules/watcher/src/Watcher.ts",
-        // 自动生成文件
-        "src/autofiles/ShaderConfig.ts",
         // Polyfill
         "modules/polyfill/src/Types.ts",
         "modules/polyfill/src/Object.ts",
@@ -28,23 +26,10 @@
         "modules/polyfill/src/Map.ts",
         "modules/polyfill/src/Array.ts",
         "modules/polyfill/src/Math.ts",
-        //基础工具
-        "src/utils/FunctionWarp.ts",
-        "src/utils/Uuid.ts",
-        "src/utils/debug.ts",
         //
         "modules/serialization/src/Serialization.ts",
         //
         "modules/objectview/src/ObjectView.ts",
-        "src/utils/ObjectViewDefinitions.ts",
-        //
-        "src/utils/Ticker.ts",
-        "src/utils/DataTransform.ts",
-        "src/utils/ImageUtil.ts",
-        "src/utils/Stats.ts",
-        "src/utils/Path.ts",
-        "src/utils/RegExps.ts",
-        "src/utils/Pool.ts",
         // 数据结构
         "modules/ds/src/utils/Comparator.ts",
         "modules/ds/src/LinkedList.ts",
@@ -112,12 +97,6 @@
         // 事件
         "modules/shortcut/src/EventProxy.ts",
         "modules/shortcut/src/WindowEventProxy.ts",
-        "src/event/GlobalDispatcher.ts",
-        //
-        "src/utils/Task.ts",
-        //
-        "src/core/Feng3dObject.ts",
-        "src/core/AssetData.ts",
         //
         "modules/fs/src/PathUtils.ts",
         //
@@ -133,12 +112,6 @@
         //
         "modules/fs/src/IndexedDBFS.ts",
         "modules/fs/src/HttpFS.ts",
-        //
-        "src/assets/AssetMeta.ts",
-        "src/assets/AssetType.ts",
-        "src/assets/FileAsset.ts",
-        "src/assets/rs/ReadRS.ts",
-        "src/assets/rs/ReadWriteRS.ts",
         // 快捷键
         "modules/shortcut/src/Keyboard.ts",
         "modules/shortcut/src/handle/KeyCapture.ts",
@@ -183,6 +156,35 @@
         "modules/render/src/shader/ShaderLib.ts",
         //
         "modules/render/src/renderer/Renderer.ts",
+        //
+        //
+        "src/event/GlobalDispatcher.ts",
+        // 自动生成文件
+        "src/autofiles/ShaderConfig.ts",
+        //基础工具
+        "src/utils/FunctionWarp.ts",
+        "src/utils/Uuid.ts",
+        "src/utils/debug.ts",
+        "src/utils/ObjectViewDefinitions.ts",
+        //
+        "src/utils/Ticker.ts",
+        "src/utils/DataTransform.ts",
+        "src/utils/ImageUtil.ts",
+        "src/utils/Stats.ts",
+        "src/utils/Path.ts",
+        "src/utils/RegExps.ts",
+        "src/utils/Pool.ts",
+        //
+        "src/utils/Task.ts",
+        //
+        "src/core/Feng3dObject.ts",
+        "src/core/AssetData.ts",
+        //
+        "src/assets/AssetMeta.ts",
+        "src/assets/AssetType.ts",
+        "src/assets/FileAsset.ts",
+        "src/assets/rs/ReadRS.ts",
+        "src/assets/rs/ReadWriteRS.ts",
         //
         "src/render/data/Uniform.ts",
         "src/render/data/TextureInfo.ts",
