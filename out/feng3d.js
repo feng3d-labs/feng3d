@@ -14399,6 +14399,21 @@ var feng3d;
             return new Plane3D(normal.x, normal.y, normal.z, Math.random());
         };
         /**
+         * 设置
+         *
+         * @param a		A系数
+         * @param b		B系数
+         * @param c		C系数
+         * @param d		D系数
+         */
+        Plane3D.prototype.set = function (a, b, c, d) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+            return this;
+        };
+        /**
          * 原点在平面上的投影
          * @param vout 输出点
          */
@@ -14553,6 +14568,24 @@ var feng3d;
             return new feng3d.Line3D(new feng3d.Vector3(x, y, z), direction);
         };
         /**
+         * 标准化
+         */
+        Plane3D.prototype.normalize = function () {
+            var a = this.a, b = this.b, c = this.c, d = this.d;
+            var s = a * a + b * b + c * c;
+            if (s > 0) {
+                var invLen = 1 / Math.sqrt(s);
+                this.a = a * invLen;
+                this.b = b * invLen;
+                this.c = c * invLen;
+                this.d = d * invLen;
+            }
+            else {
+                console.warn("\u65E0\u6548\u5E73\u9762 " + this);
+            }
+            return this;
+        };
+        /**
          * 翻转平面
          */
         Plane3D.prototype.negate = function () {
@@ -14607,6 +14640,137 @@ var feng3d;
     // var v0 = new Vector3();
     // var v1 = new Vector3();
     // var v2 = new Vector3();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 截头锥体
+     *
+     * Frustums are used to determine what is inside the camera's field of view. They help speed up the rendering process.
+     *
+     * Frustums用于确定摄像机的视场范围。它们有助于加速渲染过程。
+     *
+     * @author mrdoob / http://mrdoob.com/
+     * @author alteredq / http://alteredqualia.com/
+     * @author bhouston / http://clara.io
+     */
+    var Frustum = /** @class */ (function () {
+        /**
+         * 初始化截头锥体
+         *
+         * @param p0
+         * @param p1
+         * @param p2
+         * @param p3
+         * @param p4
+         * @param p5
+         */
+        function Frustum(p0, p1, p2, p3, p4, p5) {
+            if (p0 === void 0) { p0 = new feng3d.Plane3D(); }
+            if (p1 === void 0) { p1 = new feng3d.Plane3D(); }
+            if (p2 === void 0) { p2 = new feng3d.Plane3D(); }
+            if (p3 === void 0) { p3 = new feng3d.Plane3D(); }
+            if (p4 === void 0) { p4 = new feng3d.Plane3D(); }
+            if (p5 === void 0) { p5 = new feng3d.Plane3D(); }
+            this.planes = [
+                p0, p1, p2, p3, p4, p5
+            ];
+        }
+        Frustum.prototype.set = function (p0, p1, p2, p3, p4, p5) {
+            var planes = this.planes;
+            planes[0].copy(p0);
+            planes[1].copy(p1);
+            planes[2].copy(p2);
+            planes[3].copy(p3);
+            planes[4].copy(p4);
+            planes[5].copy(p5);
+            return this;
+        };
+        Frustum.prototype.clone = function () {
+            return new Frustum().copy(this);
+        };
+        Frustum.prototype.copy = function (frustum) {
+            var planes = this.planes;
+            for (var i = 0; i < 6; i++) {
+                planes[i].copy(frustum.planes[i]);
+            }
+            return this;
+        };
+        /**
+         * 从矩阵初始化
+         *
+         * @param m 矩阵
+         */
+        Frustum.prototype.fromMatrix = function (m) {
+            var planes = this.planes;
+            var me = m.rawData;
+            var me0 = me[0], me1 = me[1], me2 = me[2], me3 = me[3];
+            var me4 = me[4], me5 = me[5], me6 = me[6], me7 = me[7];
+            var me8 = me[8], me9 = me[9], me10 = me[10], me11 = me[11];
+            var me12 = me[12], me13 = me[13], me14 = me[14], me15 = me[15];
+            planes[0].set(me3 - me0, me7 - me4, me11 - me8, me15 - me12).normalize();
+            planes[1].set(me3 + me0, me7 + me4, me11 + me8, me15 + me12).normalize();
+            planes[2].set(me3 + me1, me7 + me5, me11 + me9, me15 + me13).normalize();
+            planes[3].set(me3 - me1, me7 - me5, me11 - me9, me15 - me13).normalize();
+            planes[4].set(me3 - me2, me7 - me6, me11 - me10, me15 - me14).normalize();
+            planes[5].set(me3 + me2, me7 + me6, me11 + me10, me15 + me14).normalize();
+            return this;
+        };
+        /**
+         * 是否与球体相交
+         *
+         * @param sphere 球体
+         */
+        Frustum.prototype.intersectsSphere = function (sphere) {
+            var planes = this.planes;
+            var center = sphere.center;
+            var negRadius = -sphere.radius;
+            for (var i = 0; i < 6; i++) {
+                var distance = planes[i].distanceWithPoint(center);
+                if (distance < negRadius) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        /**
+         * 是否与长方体相交
+         *
+         * @param box 长方体
+         */
+        Frustum.prototype.intersectsBox = function (box) {
+            var planes = this.planes;
+            for (var i = 0; i < 6; i++) {
+                var plane = planes[i];
+                // corner at max distance
+                var normal = plane.getNormal();
+                _vector.x = normal.x > 0 ? box.max.x : box.min.x;
+                _vector.y = normal.y > 0 ? box.max.y : box.min.y;
+                _vector.z = normal.z > 0 ? box.max.z : box.min.z;
+                if (plane.distanceWithPoint(_vector) < 0) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        /**
+         * 与点是否相交
+         *
+         * @param point
+         */
+        Frustum.prototype.containsPoint = function (point) {
+            var planes = this.planes;
+            for (var i = 0; i < 6; i++) {
+                if (planes[i].distanceWithPoint(point) < 0) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        return Frustum;
+    }());
+    feng3d.Frustum = Frustum;
+    var _vector = new feng3d.Vector3();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25517,10 +25681,11 @@ var feng3d;
          * @param camera
          */
         Scene3D.prototype.getModelsByCamera = function (camera) {
+            var frustum = new feng3d.Frustum().fromMatrix(camera.viewProjection);
             var results = this.visibleAndEnabledModels.filter(function (i) {
                 var model = i.getComponent(feng3d.Model);
                 if (model.selfWorldBounds) {
-                    if (camera.intersectsBox(model.selfWorldBounds))
+                    if (frustum.intersectsBox(model.selfWorldBounds))
                         return true;
                 }
                 return false;
@@ -25565,6 +25730,7 @@ var feng3d;
                 if (this._activeModels)
                     return this._activeModels;
                 var models = this._activeModels = [];
+                var frustum = new feng3d.Frustum().fromMatrix(this.camera.viewProjection);
                 var gameObjects = [this.scene.gameObject];
                 while (gameObjects.length > 0) {
                     var gameObject = gameObjects.pop();
@@ -25573,7 +25739,7 @@ var feng3d;
                     var model = gameObject.getComponent(feng3d.Model);
                     if (model && model.enabled) {
                         if (model.selfWorldBounds) {
-                            if (this.camera.intersectsBox(model.selfWorldBounds))
+                            if (frustum.intersectsBox(model.selfWorldBounds))
                                 models.push(model);
                         }
                     }
@@ -27202,17 +27368,6 @@ var feng3d;
             var rb = this.unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
             var scale = lt.subTo(rb).length;
             return scale;
-        };
-        /**
-         * 是否与盒子相交
-         * @param box 盒子
-         */
-        Camera.prototype.intersectsBox = function (box) {
-            var _this = this;
-            // 投影后的包围盒
-            var box0 = feng3d.AABB.fromPoints(box.toPoints().map(function (v) { return _this.lens.project(_this.transform.worldToLocalMatrix.transformVector(v)); }));
-            var intersects = box0.intersects(visibleBox);
-            return intersects;
         };
         /**
          * 处理场景变换改变事件

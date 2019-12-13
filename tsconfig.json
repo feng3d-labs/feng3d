@@ -89,6 +89,7 @@
         "modules/math/src/geom/AABB.ts",
         "modules/math/src/geom/Sphere.ts",
         "modules/math/src/geom/Plane3D.ts",
+        "modules/math/src/geom/Frustum.ts",
         "modules/math/src/geom/PlaneClassification.ts",
         "modules/math/src/geom/TriangleGeometry.ts",
         // 颜色渐变

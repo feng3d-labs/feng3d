@@ -36,6 +36,7 @@ namespace feng3d
                 return this._activeModels;
 
             var models: Model[] = this._activeModels = [];
+            var frustum = new Frustum().fromMatrix(this.camera.viewProjection);
 
             var gameObjects = [this.scene.gameObject];
             while (gameObjects.length > 0)
@@ -49,7 +50,7 @@ namespace feng3d
                 {
                     if (model.selfWorldBounds)
                     {
-                        if (this.camera.intersectsBox(model.selfWorldBounds))
+                        if (frustum.intersectsBox(model.selfWorldBounds))
                             models.push(model);
                     }
                 }

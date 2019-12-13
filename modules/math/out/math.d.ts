@@ -3102,6 +3102,15 @@ declare namespace feng3d {
          */
         constructor(a?: number, b?: number, c?: number, d?: number);
         /**
+         * 设置
+         *
+         * @param a		A系数
+         * @param b		B系数
+         * @param c		C系数
+         * @param d		D系数
+         */
+        set(a: number, b: number, c: number, d: number): this;
+        /**
          * 原点在平面上的投影
          * @param vout 输出点
          */
@@ -3166,6 +3175,10 @@ declare namespace feng3d {
          */
         intersectWithPlane3D(plane3D: Plane3D): Line3D;
         /**
+         * 标准化
+         */
+        normalize(): this;
+        /**
          * 翻转平面
          */
         negate(): this;
@@ -3192,6 +3205,60 @@ declare namespace feng3d {
          * 输出字符串
          */
         toString(): string;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 截头锥体
+     *
+     * Frustums are used to determine what is inside the camera's field of view. They help speed up the rendering process.
+     *
+     * Frustums用于确定摄像机的视场范围。它们有助于加速渲染过程。
+     *
+     * @author mrdoob / http://mrdoob.com/
+     * @author alteredq / http://alteredqualia.com/
+     * @author bhouston / http://clara.io
+     */
+    class Frustum {
+        planes: Plane3D[];
+        /**
+         * 初始化截头锥体
+         *
+         * @param p0
+         * @param p1
+         * @param p2
+         * @param p3
+         * @param p4
+         * @param p5
+         */
+        constructor(p0?: Plane3D, p1?: Plane3D, p2?: Plane3D, p3?: Plane3D, p4?: Plane3D, p5?: Plane3D);
+        set(p0: Plane3D, p1: Plane3D, p2: Plane3D, p3: Plane3D, p4: Plane3D, p5: Plane3D): this;
+        clone(): Frustum;
+        copy(frustum: Frustum): this;
+        /**
+         * 从矩阵初始化
+         *
+         * @param m 矩阵
+         */
+        fromMatrix(m: Matrix4x4): this;
+        /**
+         * 是否与球体相交
+         *
+         * @param sphere 球体
+         */
+        intersectsSphere(sphere: Sphere): boolean;
+        /**
+         * 是否与长方体相交
+         *
+         * @param box 长方体
+         */
+        intersectsBox(box: AABB): boolean;
+        /**
+         * 与点是否相交
+         *
+         * @param point
+         */
+        containsPoint(point: Vector3): boolean;
     }
 }
 declare namespace feng3d {

@@ -119,18 +119,6 @@ namespace feng3d
         }
 
         /**
-         * 是否与盒子相交
-         * @param box 盒子
-         */
-        intersectsBox(box: AABB)
-        {
-            // 投影后的包围盒
-            var box0 = AABB.fromPoints(box.toPoints().map(v => this.lens.project(this.transform.worldToLocalMatrix.transformVector(v))));
-            var intersects = box0.intersects(visibleBox);
-            return intersects;
-        }
-
-        /**
          * 处理场景变换改变事件
          */
         protected _onScenetransformChanged()

@@ -244,12 +244,14 @@ namespace feng3d
          */
         getModelsByCamera(camera: Camera)
         {
+            var frustum = new Frustum().fromMatrix(camera.viewProjection);
+
             var results = this.visibleAndEnabledModels.filter(i =>
             {
                 var model = i.getComponent(Model);
                 if (model.selfWorldBounds)
                 {
-                    if (camera.intersectsBox(model.selfWorldBounds))
+                    if (frustum.intersectsBox(model.selfWorldBounds))
                         return true;
                 }
                 return false;

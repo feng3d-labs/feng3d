@@ -76,6 +76,23 @@ namespace feng3d
         }
 
         /**
+         * 设置
+         * 
+		 * @param a		A系数
+		 * @param b		B系数
+		 * @param c		C系数
+		 * @param d		D系数
+         */
+        set(a: number, b: number, c: number, d: number)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+            return this;
+        }
+
+        /**
          * 原点在平面上的投影
          * @param vout 输出点
          */
@@ -253,6 +270,29 @@ namespace feng3d
         }
 
         /**
+         * 标准化
+         */
+        normalize()
+        {
+            var a = this.a, b = this.b, c = this.c, d = this.d;
+
+            var s = a * a + b * b + c * c;
+            if (s > 0)
+            {
+                var invLen = 1 / Math.sqrt(s);
+                this.a = a * invLen;
+                this.b = b * invLen;
+                this.c = c * invLen;
+                this.d = d * invLen;
+            } else
+            {
+                console.warn(`无效平面 ${this}`)
+            }
+            return this;
+
+        }
+
+        /**
          * 翻转平面
          */
         negate()
@@ -303,9 +343,9 @@ namespace feng3d
             return new Plane3D().copy(this);
         }
 
-		/**
-		 * 输出字符串
-		 */
+        /**
+         * 输出字符串
+         */
         toString(): string
         {
             return "Plane3D [this.a:" + this.a + ", this.b:" + this.b + ", this.c:" + this.c + ", this.d:" + this.d + "]";

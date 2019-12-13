@@ -38,6 +38,7 @@
         "src/geom/AABB.ts",
         "src/geom/Sphere.ts",
         "src/geom/Plane3D.ts",
+        "src/geom/Frustum.ts",
         "src/geom/PlaneClassification.ts",
         "src/geom/TriangleGeometry.ts",
         // 颜色渐变
