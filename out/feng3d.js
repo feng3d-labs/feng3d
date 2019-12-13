@@ -14778,7 +14778,7 @@ var feng3d;
                 _vector.x = normal.x > 0 ? box.max.x : box.min.x;
                 _vector.y = normal.y > 0 ? box.max.y : box.min.y;
                 _vector.z = normal.z > 0 ? box.max.z : box.min.z;
-                if (plane.onWithPoint(_vector, precision)) {
+                if (plane.distanceWithPoint(_vector) < -precision) {
                     return false;
                 }
             }
@@ -14793,7 +14793,7 @@ var feng3d;
             if (precision === void 0) { precision = Math.PRECISION; }
             var planes = this.planes;
             for (var i = 0; i < 6; i++) {
-                if (planes[i].onWithPoint(point, precision)) {
+                if (planes[i].distanceWithPoint(point) < -precision) {
                     return false;
                 }
             }
