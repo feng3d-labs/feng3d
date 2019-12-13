@@ -5943,23 +5943,23 @@ declare namespace feng3d {
     /**
      * 3d直线
      */
-    class Line3D {
+    class Line3 {
         /**
          * 根据直线上两点初始化直线
          * @param p0 Vector3
          * @param p1 Vector3
          */
-        static fromPoints(p0: Vector3, p1: Vector3): Line3D;
+        static fromPoints(p0: Vector3, p1: Vector3): Line3;
         /**
          * 根据直线某点与方向初始化直线
          * @param position 直线上某点
          * @param direction 直线的方向
          */
-        static fromPosAndDir(position: Vector3, direction: Vector3): Line3D;
+        static fromPosAndDir(position: Vector3, direction: Vector3): Line3;
         /**
          * 随机直线，比如用于单元测试
          */
-        static random(): Line3D;
+        static random(): Line3;
         /**
          * 直线上某一点
          */
@@ -6028,7 +6028,7 @@ declare namespace feng3d {
          * 与直线相交
          * @param line3D 直线
          */
-        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D;
+        intersectWithLine3D(line3D: Line3): Vector3 | Line3;
         /**
          * 应用矩阵
          * @param mat 矩阵
@@ -6040,16 +6040,16 @@ declare namespace feng3d {
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        equals(line: Line3D, precision?: number): boolean;
+        equals(line: Line3, precision?: number): boolean;
         /**
          * 拷贝
          * @param line 直线
          */
-        copy(line: Line3D): this;
+        copy(line: Line3): this;
         /**
          * 克隆
          */
-        clone(): Line3D;
+        clone(): Line3;
     }
 }
 declare namespace feng3d {
@@ -6079,7 +6079,7 @@ declare namespace feng3d {
         /**
          * 获取线段所在直线
          */
-        getLine(line?: Line3D): Line3D;
+        getLine(line?: Line3): Line3;
         /**
          * 获取指定位置上的点，当position=0时返回p0，当position=1时返回p1
          * @param position 线段上的位置
@@ -6119,7 +6119,7 @@ declare namespace feng3d {
          * 与直线相交
          * @param line 直线
          */
-        intersectionWithLine(line: Line3D): Vector3 | Segment3D;
+        intersectionWithLine(line: Line3): Vector3 | Segment3D;
         /**
          * 与线段相交
          * @param segment 直线
@@ -6154,7 +6154,7 @@ declare namespace feng3d {
      * 3D射线
 
      */
-    class Ray3D extends Line3D {
+    class Ray3D extends Line3 {
         constructor(position?: Vector3, direction?: Vector3);
     }
 }
@@ -6254,7 +6254,7 @@ declare namespace feng3d {
         /**
          * 获取与直线相交，当直线与三角形不相交时返回null
          */
-        intersectionWithLine(line: Line3D): Vector3 | Segment3D;
+        intersectionWithLine(line: Line3): Vector3 | Segment3D;
         /**
          * 获取与线段相交
          */
@@ -6306,7 +6306,7 @@ declare namespace feng3d {
          * 用直线分解（切割）三角形
          * @param line 直线
          */
-        decomposeWithLine(line: Line3D): Triangle3D[];
+        decomposeWithLine(line: Line3): Triangle3D[];
         /**
          * 面积
          */
@@ -6776,7 +6776,7 @@ declare namespace feng3d {
          * 判定与直线是否平行
          * @param line3D
          */
-        parallelWithLine3D(line3D: Line3D, precision?: number): boolean;
+        parallelWithLine3D(line3D: Line3, precision?: number): boolean;
         /**
          * 判定与平面是否平行
          * @param plane3D
@@ -6785,12 +6785,12 @@ declare namespace feng3d {
         /**
          * 获取与直线交点
          */
-        intersectWithLine3D(line3D: Line3D): Vector3 | Line3D;
+        intersectWithLine3D(line3D: Line3): Vector3 | Line3;
         /**
          * 获取与平面相交直线
          * @param plane3D
          */
-        intersectWithPlane3D(plane3D: Plane): Line3D;
+        intersectWithPlane3D(plane3D: Plane): Line3;
         /**
          * 标准化
          */
@@ -6972,7 +6972,7 @@ declare namespace feng3d {
          * 与直线碰撞
          * @param line3d 直线
          */
-        intersectionWithLine(line3d: Line3D): {
+        intersectionWithLine(line3d: Line3): {
             segments: Segment3D[];
             points: Vector3[];
         };

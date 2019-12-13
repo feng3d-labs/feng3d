@@ -12796,13 +12796,13 @@ var feng3d;
     /**
      * 3d直线
      */
-    var Line3D = /** @class */ (function () {
+    var Line3 = /** @class */ (function () {
         /**
          * 根据直线某点与方向创建直线
          * @param position 直线上某点
          * @param direction 直线的方向
          */
-        function Line3D(position, direction) {
+        function Line3(position, direction) {
             this.position = position ? position : new feng3d.Vector3();
             this.direction = (direction ? direction : new feng3d.Vector3(0, 0, 1)).normalize();
         }
@@ -12811,29 +12811,29 @@ var feng3d;
          * @param p0 Vector3
          * @param p1 Vector3
          */
-        Line3D.fromPoints = function (p0, p1) {
-            return new Line3D().fromPoints(p0, p1);
+        Line3.fromPoints = function (p0, p1) {
+            return new Line3().fromPoints(p0, p1);
         };
         /**
          * 根据直线某点与方向初始化直线
          * @param position 直线上某点
          * @param direction 直线的方向
          */
-        Line3D.fromPosAndDir = function (position, direction) {
-            return new Line3D().fromPosAndDir(position, direction);
+        Line3.fromPosAndDir = function (position, direction) {
+            return new Line3().fromPosAndDir(position, direction);
         };
         /**
          * 随机直线，比如用于单元测试
          */
-        Line3D.random = function () {
-            return new Line3D(feng3d.Vector3.random(), feng3d.Vector3.random());
+        Line3.random = function () {
+            return new Line3(feng3d.Vector3.random(), feng3d.Vector3.random());
         };
         /**
          * 根据直线上两点初始化直线
          * @param p0 Vector3
          * @param p1 Vector3
          */
-        Line3D.prototype.fromPoints = function (p0, p1) {
+        Line3.prototype.fromPoints = function (p0, p1) {
             this.position = p0;
             this.direction = p1.subTo(p0).normalize();
             return this;
@@ -12843,7 +12843,7 @@ var feng3d;
          * @param position 直线上某点
          * @param direction 直线的方向
          */
-        Line3D.prototype.fromPosAndDir = function (position, direction) {
+        Line3.prototype.fromPosAndDir = function (position, direction) {
             this.position = position;
             this.direction = direction.normalize();
             return this;
@@ -12851,7 +12851,7 @@ var feng3d;
         /**
          * 获取经过该直线的平面
          */
-        Line3D.prototype.getPlane = function (plane) {
+        Line3.prototype.getPlane = function (plane) {
             if (plane === void 0) { plane = new feng3d.Plane(); }
             return plane.fromNormalAndPoint(feng3d.Vector3.random().cross(this.direction), this.position);
         };
@@ -12859,7 +12859,7 @@ var feng3d;
          * 获取直线上的一个点
          * @param length 与原点距离
          */
-        Line3D.prototype.getPoint = function (length, vout) {
+        Line3.prototype.getPoint = function (length, vout) {
             if (length === void 0) { length = 0; }
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return vout.copy(this.direction).scaleNumber(length).add(this.position);
@@ -12870,7 +12870,7 @@ var feng3d;
          * @param vout 目标点（输出）
          * @returns 目标点
          */
-        Line3D.prototype.getPointWithZ = function (z, vout) {
+        Line3.prototype.getPointWithZ = function (z, vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return this.getPoint((z - this.position.z) / this.direction.z, vout);
         };
@@ -12878,14 +12878,14 @@ var feng3d;
          * 指定点到该直线距离
          * @param point 指定点
          */
-        Line3D.prototype.distanceWithPoint = function (point) {
+        Line3.prototype.distanceWithPoint = function (point) {
             return this.closestPointWithPoint(point).sub(point).length;
         };
         /**
          * 与指定点最近点的系数
          * @param point 点
          */
-        Line3D.prototype.closestPointParameterWithPoint = function (point) {
+        Line3.prototype.closestPointParameterWithPoint = function (point) {
             return point.subTo(this.position).dot(this.direction);
         };
         /**
@@ -12893,7 +12893,7 @@ var feng3d;
          * @param point 点
          * @param vout 输出点
          */
-        Line3D.prototype.closestPointWithPoint = function (point, vout) {
+        Line3.prototype.closestPointWithPoint = function (point, vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             var t = this.closestPointParameterWithPoint(point);
             return this.getPoint(t, vout);
@@ -12903,7 +12903,7 @@ var feng3d;
          * @param point 点
          * @param precision 精度
          */
-        Line3D.prototype.onWithPoint = function (point, precision) {
+        Line3.prototype.onWithPoint = function (point, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             if (Math.equals(this.distanceWithPoint(point), 0, precision))
                 return true;
@@ -12913,7 +12913,7 @@ var feng3d;
          * 与直线相交
          * @param line3D 直线
          */
-        Line3D.prototype.intersectWithLine3D = function (line3D) {
+        Line3.prototype.intersectWithLine3D = function (line3D) {
             // 处理相等
             if (this.equals(line3D))
                 return this.clone();
@@ -12930,7 +12930,7 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        Line3D.prototype.applyMatri4x4 = function (mat) {
+        Line3.prototype.applyMatri4x4 = function (mat) {
             mat.transformVector(this.position, this.position);
             mat.deltaTransformVector(this.direction, this.direction);
             return this;
@@ -12941,7 +12941,7 @@ var feng3d;
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        Line3D.prototype.equals = function (line, precision) {
+        Line3.prototype.equals = function (line, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             if (!this.onWithPoint(line.position))
                 return false;
@@ -12953,7 +12953,7 @@ var feng3d;
          * 拷贝
          * @param line 直线
          */
-        Line3D.prototype.copy = function (line) {
+        Line3.prototype.copy = function (line) {
             this.position.copy(line.position);
             this.direction.copy(line.direction);
             return this;
@@ -12961,12 +12961,12 @@ var feng3d;
         /**
          * 克隆
          */
-        Line3D.prototype.clone = function () {
-            return new Line3D().copy(this);
+        Line3.prototype.clone = function () {
+            return new Line3().copy(this);
         };
-        return Line3D;
+        return Line3;
     }());
-    feng3d.Line3D = Line3D;
+    feng3d.Line3 = Line3;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -12998,7 +12998,7 @@ var feng3d;
          * 获取线段所在直线
          */
         Segment3D.prototype.getLine = function (line) {
-            if (line === void 0) { line = new feng3d.Line3D(); }
+            if (line === void 0) { line = new feng3d.Line3(); }
             return line.fromPoints(this.p0.clone(), this.p1.clone());
         };
         /**
@@ -13083,7 +13083,7 @@ var feng3d;
             var r = l.intersectWithLine3D(line);
             if (!r)
                 return null;
-            if (r instanceof feng3d.Line3D)
+            if (r instanceof feng3d.Line3)
                 return this.clone();
             if (this.onWithPoint(r))
                 return r;
@@ -13166,7 +13166,7 @@ var feng3d;
             return _super.call(this, position, direction) || this;
         }
         return Ray3D;
-    }(feng3d.Line3D));
+    }(feng3d.Line3));
     feng3d.Ray3D = Ray3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -14576,7 +14576,7 @@ var feng3d;
             else {
                 throw "无法计算平面相交结果";
             }
-            return new feng3d.Line3D(new feng3d.Vector3(x, y, z), direction);
+            return new feng3d.Line3(new feng3d.Vector3(x, y, z), direction);
         };
         /**
          * 标准化

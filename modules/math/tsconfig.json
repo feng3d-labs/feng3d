@@ -31,7 +31,7 @@
         "src/geom/Matrix3x3.ts",
         "src/geom/Matrix4x4.ts",
         "src/geom/Quaternion.ts",
-        "src/geom/Line3D.ts",
+        "src/geom/Line3.ts",
         "src/geom/Segment3D.ts",
         "src/geom/Ray3D.ts",
         "src/geom/Triangle3D.ts",
