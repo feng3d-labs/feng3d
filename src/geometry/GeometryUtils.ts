@@ -595,7 +595,7 @@ namespace feng3d
          */
         getAABB(positions: number[])
         {
-            return AABB.formPositions(positions);
+            return Box3.formPositions(positions);
         }
 
     }

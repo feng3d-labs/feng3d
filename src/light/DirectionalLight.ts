@@ -33,14 +33,14 @@ namespace feng3d
          */
         updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, models: Model[])
         {
-            var worldBounds: AABB = models.reduce((pre: AABB, i) =>
+            var worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
                 var box = i.gameObject.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);
                 return pre;
-            }, null) || new AABB(new Vector3(), new Vector3(1, 1, 1));
+            }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
 
             // 
             var center = worldBounds.getCenter();

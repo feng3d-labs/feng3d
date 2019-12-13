@@ -139,8 +139,8 @@ namespace feng3d
 
         //
         private _lightPicker: LightPicker;
-        private _selfLocalBounds: AABB;
-        private _selfWorldBounds: AABB;
+        private _selfLocalBounds: Box3;
+        private _selfWorldBounds: Box3;
 
         private _onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
         {

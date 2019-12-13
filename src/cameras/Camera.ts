@@ -174,5 +174,5 @@ namespace feng3d
         }
     }
     // 投影后可视区域
-    var visibleBox = new AABB(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+    var visibleBox = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 }

@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 轴向对称包围盒
      */
-    export class AABB
+    export class Box3
     {
         /**
          * 从一组顶点初始化包围盒
@@ -11,7 +11,7 @@ namespace feng3d
          */
         static formPositions(positions: number[])
         {
-            return new AABB().formPositions(positions);
+            return new Box3().formPositions(positions);
         }
 
         /**
@@ -20,7 +20,7 @@ namespace feng3d
          */
         static fromPoints(ps: Vector3[])
         {
-            return new AABB().fromPoints(ps);
+            return new Box3().fromPoints(ps);
         }
 
         /**
@@ -30,7 +30,7 @@ namespace feng3d
         {
             var min = Vector3.random();
             var max = Vector3.random().add(min);
-            return new AABB(min, max);
+            return new Box3(min, max);
         }
 
         /**
@@ -185,7 +185,7 @@ namespace feng3d
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3DTo(mat: Matrix4x4, out = new AABB())
+        applyMatrix3DTo(mat: Matrix4x4, out = new Box3())
         {
             return out.copy(this).applyMatrix3D(mat);
         }
@@ -193,9 +193,9 @@ namespace feng3d
         /**
          * 
          */
-        clone(): AABB
+        clone(): Box3
         {
-            return new AABB(this.min.clone(), this.max.clone());
+            return new Box3(this.min.clone(), this.max.clone());
         }
 
         /**
@@ -211,7 +211,7 @@ namespace feng3d
          * 是否包含包围盒
          * @param aabb 包围盒
          */
-        contains(aabb: AABB)
+        contains(aabb: Box3)
         {
             return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
         }
@@ -220,7 +220,7 @@ namespace feng3d
          * 拷贝
          * @param aabb 包围盒
          */
-        copy(aabb: AABB)
+        copy(aabb: Box3)
         {
             this.min.copy(aabb.min);
             this.max.copy(aabb.max);
@@ -231,7 +231,7 @@ namespace feng3d
          * 比较包围盒是否相等
          * @param aabb 包围盒
          */
-        equals(aabb: AABB)
+        equals(aabb: Box3)
         {
             return this.min.equals(aabb.min) && this.max.equals(aabb.max);
         }
@@ -279,7 +279,7 @@ namespace feng3d
          * 与包围盒相交
          * @param aabb 包围盒
          */
-        intersection(aabb: AABB)
+        intersection(aabb: Box3)
         {
             this.min.clamp(aabb.min, aabb.max);
             this.max.clamp(aabb.min, aabb.max);
@@ -290,7 +290,7 @@ namespace feng3d
          * 与包围盒相交
          * @param aabb 包围盒
          */
-        intersectionTo(aabb: AABB, out = new AABB())
+        intersectionTo(aabb: Box3, out = new Box3())
         {
             return out.copy(this).intersection(aabb);
         }
@@ -299,7 +299,7 @@ namespace feng3d
          * 包围盒是否相交
          * @param aabb 包围盒
          */
-        intersects(aabb: AABB)
+        intersects(aabb: Box3)
         {
             var b = this.intersectionTo(aabb);
             var c = b.getCenter();
@@ -521,7 +521,7 @@ namespace feng3d
          * 联合包围盒
          * @param aabb 包围盒
          */
-        union(aabb: AABB)
+        union(aabb: Box3)
         {
             this.min.min(aabb.min);
             this.max.max(aabb.max);

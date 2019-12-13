@@ -35,7 +35,7 @@
         "src/geom/Segment3.ts",
         "src/geom/Ray3.ts",
         "src/geom/Triangle3.ts",
-        "src/geom/AABB.ts",
+        "src/geom/Box3.ts",
         "src/geom/Sphere.ts",
         "src/geom/Plane.ts",
         "src/geom/Frustum.ts",

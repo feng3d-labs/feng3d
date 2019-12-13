@@ -118,7 +118,7 @@ namespace feng3d
 		 * 
 		 * @param box 长方体
 		 */
-		intersectsBox(box: AABB)
+		intersectsBox(box: Box3)
 		{
 			var planes = this.planes;
 

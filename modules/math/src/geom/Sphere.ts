@@ -98,7 +98,7 @@ namespace feng3d
          */
         fromPoints(points: Vector3[])
         {
-            var box = new AABB();
+            var box = new Box3();
             var center = this.center;
             box.fromPoints(points).getCenter(center);
             var maxRadiusSq = 0;
@@ -116,7 +116,7 @@ namespace feng3d
          */
         fromPositions(positions: number[])
         {
-            var box = new AABB();
+            var box = new Box3();
             var v = new Vector3();
             var center = this.center;
             box.formPositions(positions).getCenter(center);
@@ -177,7 +177,7 @@ namespace feng3d
          * 是否与盒子相交
          * @param box 盒子
          */
-        intersectsBox(box: AABB)
+        intersectsBox(box: Box3)
         {
             return box.intersectsSphere(this);
         }
@@ -211,7 +211,7 @@ namespace feng3d
         /**
          * 获取包围盒
          */
-        getBoundingBox(box = new AABB())
+        getBoundingBox(box = new Box3())
         {
             box.init(this.center.subNumberTo(this.radius), this.center.addNumberTo(this.radius));
             return box;

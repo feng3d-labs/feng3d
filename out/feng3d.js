@@ -13529,7 +13529,7 @@ var feng3d;
          * 栅格化，点阵化为XYZ轴间距为1的点阵
          */
         Triangle3.prototype.rasterize = function () {
-            var aabb = feng3d.AABB.fromPoints([this.p0, this.p1, this.p2]);
+            var aabb = feng3d.Box3.fromPoints([this.p0, this.p1, this.p2]);
             aabb.min.round();
             aabb.max.round();
             var point = new feng3d.Vector3();
@@ -13612,13 +13612,13 @@ var feng3d;
     /**
      * 轴向对称包围盒
      */
-    var AABB = /** @class */ (function () {
+    var Box3 = /** @class */ (function () {
         /**
          * 创建包围盒
          * @param min 最小点
          * @param max 最大点
          */
-        function AABB(min, max) {
+        function Box3(min, max) {
             if (min === void 0) { min = new feng3d.Vector3(); }
             if (max === void 0) { max = new feng3d.Vector3(); }
             this.min = min.clone();
@@ -13628,36 +13628,36 @@ var feng3d;
          * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
          */
-        AABB.formPositions = function (positions) {
-            return new AABB().formPositions(positions);
+        Box3.formPositions = function (positions) {
+            return new Box3().formPositions(positions);
         };
         /**
          * 从一组点初始化包围盒
          * @param ps 点列表
          */
-        AABB.fromPoints = function (ps) {
-            return new AABB().fromPoints(ps);
+        Box3.fromPoints = function (ps) {
+            return new Box3().fromPoints(ps);
         };
         /**
          * 随机包围盒
          */
-        AABB.random = function () {
+        Box3.random = function () {
             var min = feng3d.Vector3.random();
             var max = feng3d.Vector3.random().add(min);
-            return new AABB(min, max);
+            return new Box3(min, max);
         };
         /**
          * 获取中心点
          * @param vout 输出向量
          */
-        AABB.prototype.getCenter = function (vout) {
+        Box3.prototype.getCenter = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return vout.copy(this.min).add(this.max).scaleNumber(0.5);
         };
         /**
          * 尺寸
          */
-        AABB.prototype.getSize = function (vout) {
+        Box3.prototype.getSize = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return vout.copy(this.max).sub(this.min);
         };
@@ -13666,7 +13666,7 @@ var feng3d;
          * @param min 最小值
          * @param max 最大值
          */
-        AABB.prototype.init = function (min, max) {
+        Box3.prototype.init = function (min, max) {
             this.min = min.clone();
             this.max = max.clone();
             return this;
@@ -13674,7 +13674,7 @@ var feng3d;
         /**
          * 转换为包围盒八个角所在点列表
          */
-        AABB.prototype.toPoints = function () {
+        Box3.prototype.toPoints = function () {
             var min = this.min;
             var max = this.max;
             return [
@@ -13692,7 +13692,7 @@ var feng3d;
          * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
          */
-        AABB.prototype.formPositions = function (positions) {
+        Box3.prototype.formPositions = function (positions) {
             var minX = +Infinity;
             var minY = +Infinity;
             var minZ = +Infinity;
@@ -13724,7 +13724,7 @@ var feng3d;
          * 从一组点初始化包围盒
          * @param ps 点列表
          */
-        AABB.prototype.fromPoints = function (ps) {
+        Box3.prototype.fromPoints = function (ps) {
             var _this = this;
             this.empty();
             ps.forEach(function (element) {
@@ -13735,7 +13735,7 @@ var feng3d;
         /**
          * 包围盒内随机点
          */
-        AABB.prototype.randomPoint = function (pout) {
+        Box3.prototype.randomPoint = function (pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             return pout.copy(this.min).lerp(this.max, feng3d.Vector3.random());
         };
@@ -13743,7 +13743,7 @@ var feng3d;
          * 使用点扩张包围盒
          * @param point 点
          */
-        AABB.prototype.expandByPoint = function (point) {
+        Box3.prototype.expandByPoint = function (point) {
             this.min.min(point);
             this.max.max(point);
             return this;
@@ -13752,7 +13752,7 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        AABB.prototype.applyMatrix3D = function (mat) {
+        Box3.prototype.applyMatrix3D = function (mat) {
             this.fromPoints(this.toPoints().map(function (v) {
                 return v.applyMatrix4x4(mat);
             }));
@@ -13762,35 +13762,35 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        AABB.prototype.applyMatrix3DTo = function (mat, out) {
-            if (out === void 0) { out = new AABB(); }
+        Box3.prototype.applyMatrix3DTo = function (mat, out) {
+            if (out === void 0) { out = new Box3(); }
             return out.copy(this).applyMatrix3D(mat);
         };
         /**
          *
          */
-        AABB.prototype.clone = function () {
-            return new AABB(this.min.clone(), this.max.clone());
+        Box3.prototype.clone = function () {
+            return new Box3(this.min.clone(), this.max.clone());
         };
         /**
          * 是否包含指定点
          * @param p 点
          */
-        AABB.prototype.containsPoint = function (p) {
+        Box3.prototype.containsPoint = function (p) {
             return this.min.lessequal(p) && this.max.greaterequal(p);
         };
         /**
          * 是否包含包围盒
          * @param aabb 包围盒
          */
-        AABB.prototype.contains = function (aabb) {
+        Box3.prototype.contains = function (aabb) {
             return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
         };
         /**
          * 拷贝
          * @param aabb 包围盒
          */
-        AABB.prototype.copy = function (aabb) {
+        Box3.prototype.copy = function (aabb) {
             this.min.copy(aabb.min);
             this.max.copy(aabb.max);
             return this;
@@ -13799,7 +13799,7 @@ var feng3d;
          * 比较包围盒是否相等
          * @param aabb 包围盒
          */
-        AABB.prototype.equals = function (aabb) {
+        Box3.prototype.equals = function (aabb) {
             return this.min.equals(aabb.min) && this.max.equals(aabb.max);
         };
         /**
@@ -13807,7 +13807,7 @@ var feng3d;
          *
          * @param offset 偏移量
          */
-        AABB.prototype.translate = function (offset) {
+        Box3.prototype.translate = function (offset) {
             this.min.add(offset);
             this.max.add(offset);
             return this;
@@ -13818,7 +13818,7 @@ var feng3d;
          * @param dy y方向膨胀量
          * @param dz z方向膨胀量
          */
-        AABB.prototype.inflate = function (dx, dy, dz) {
+        Box3.prototype.inflate = function (dx, dy, dz) {
             this.min.x -= dx / 2;
             this.min.y -= dy / 2;
             this.min.z -= dz / 2;
@@ -13830,7 +13830,7 @@ var feng3d;
          * 膨胀包围盒
          * @param delta 膨胀量
          */
-        AABB.prototype.inflatePoint = function (delta) {
+        Box3.prototype.inflatePoint = function (delta) {
             delta = delta.scaleNumberTo(0.5);
             this.min.sub(delta);
             this.max.add(delta);
@@ -13839,7 +13839,7 @@ var feng3d;
          * 与包围盒相交
          * @param aabb 包围盒
          */
-        AABB.prototype.intersection = function (aabb) {
+        Box3.prototype.intersection = function (aabb) {
             this.min.clamp(aabb.min, aabb.max);
             this.max.clamp(aabb.min, aabb.max);
             return this;
@@ -13848,15 +13848,15 @@ var feng3d;
          * 与包围盒相交
          * @param aabb 包围盒
          */
-        AABB.prototype.intersectionTo = function (aabb, out) {
-            if (out === void 0) { out = new AABB(); }
+        Box3.prototype.intersectionTo = function (aabb, out) {
+            if (out === void 0) { out = new Box3(); }
             return out.copy(this).intersection(aabb);
         };
         /**
          * 包围盒是否相交
          * @param aabb 包围盒
          */
-        AABB.prototype.intersects = function (aabb) {
+        Box3.prototype.intersects = function (aabb) {
             var b = this.intersectionTo(aabb);
             var c = b.getCenter();
             return this.containsPoint(c) && aabb.containsPoint(c);
@@ -13868,7 +13868,7 @@ var feng3d;
          * @param targetNormal 相交处法线
          * @return 起点到包围盒距离
          */
-        AABB.prototype.rayIntersection = function (position, direction, targetNormal) {
+        Box3.prototype.rayIntersection = function (position, direction, targetNormal) {
             if (this.containsPoint(position))
                 return 0;
             var halfExtentsX = (this.max.x - this.min.x) / 2;
@@ -13987,14 +13987,14 @@ var feng3d;
          * @param point 指定点
          * @param target 存储最近的点
          */
-        AABB.prototype.closestPointToPoint = function (point, target) {
+        Box3.prototype.closestPointToPoint = function (point, target) {
             if (target === void 0) { target = new feng3d.Vector3(); }
             return this.clampPoint(point, target);
         };
         /**
          * 清空包围盒
          */
-        AABB.prototype.empty = function () {
+        Box3.prototype.empty = function () {
             this.min.x = this.min.y = this.min.z = +Infinity;
             this.max.x = this.max.y = this.max.z = -Infinity;
             return this;
@@ -14003,7 +14003,7 @@ var feng3d;
          * 是否为空
          * 当体积为0时为空
          */
-        AABB.prototype.isEmpty = function () {
+        Box3.prototype.isEmpty = function () {
             return (this.max.x <= this.min.x) || (this.max.y <= this.min.y) || (this.max.z <= this.min.z);
         };
         /**
@@ -14012,26 +14012,26 @@ var feng3d;
          * @param dy y轴偏移
          * @param dz z轴偏移
          */
-        AABB.prototype.offset = function (dx, dy, dz) {
+        Box3.prototype.offset = function (dx, dy, dz) {
             return this.offsetPosition(new feng3d.Vector3(dx, dy, dz));
         };
         /**
          * 偏移
          * @param position 偏移量
          */
-        AABB.prototype.offsetPosition = function (position) {
+        Box3.prototype.offsetPosition = function (position) {
             this.min.add(position);
             this.max.add(position);
             return this;
         };
-        AABB.prototype.toString = function () {
+        Box3.prototype.toString = function () {
             return "[AABB] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
         };
         /**
          * 联合包围盒
          * @param aabb 包围盒
          */
-        AABB.prototype.union = function (aabb) {
+        Box3.prototype.union = function (aabb) {
             this.min.min(aabb.min);
             this.max.max(aabb.max);
             return this;
@@ -14040,7 +14040,7 @@ var feng3d;
          * 是否与球相交
          * @param sphere 球
          */
-        AABB.prototype.intersectsSphere = function (sphere) {
+        Box3.prototype.intersectsSphere = function (sphere) {
             var closestPoint = new feng3d.Vector3();
             this.clampPoint(sphere.center, closestPoint);
             return closestPoint.distanceSquared(sphere.center) <= (sphere.radius * sphere.radius);
@@ -14051,7 +14051,7 @@ var feng3d;
          * @param point 点
          * @param out 输出点
          */
-        AABB.prototype.clampPoint = function (point, out) {
+        Box3.prototype.clampPoint = function (point, out) {
             if (out === void 0) { out = new feng3d.Vector3(); }
             return out.copy(point).clamp(this.min, this.max);
         };
@@ -14059,7 +14059,7 @@ var feng3d;
          * 是否与平面相交
          * @param plane 平面
          */
-        AABB.prototype.intersectsPlane = function (plane) {
+        Box3.prototype.intersectsPlane = function (plane) {
             var min = Infinity;
             var max = -Infinity;
             this.toPoints().forEach(function (p) {
@@ -14073,7 +14073,7 @@ var feng3d;
          * 是否与三角形相交
          * @param triangle 三角形
          */
-        AABB.prototype.intersectsTriangle = function (triangle) {
+        Box3.prototype.intersectsTriangle = function (triangle) {
             if (this.isEmpty()) {
                 return false;
             }
@@ -14110,7 +14110,7 @@ var feng3d;
         /**
          * 转换为三角形列表
          */
-        AABB.prototype.toTriangles = function (triangles) {
+        Box3.prototype.toTriangles = function (triangles) {
             if (triangles === void 0) { triangles = []; }
             var min = this.min;
             var max = this.max;
@@ -14129,9 +14129,9 @@ var feng3d;
             feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(min.x, min.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, min.y, max.z)));
             return triangles;
         };
-        return AABB;
+        return Box3;
     }());
-    feng3d.AABB = AABB;
+    feng3d.Box3 = Box3;
     /**
      * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
      *
@@ -14230,7 +14230,7 @@ var feng3d;
          * @param points 点列表
          */
         Sphere.prototype.fromPoints = function (points) {
-            var box = new feng3d.AABB();
+            var box = new feng3d.Box3();
             var center = this.center;
             box.fromPoints(points).getCenter(center);
             var maxRadiusSq = 0;
@@ -14245,7 +14245,7 @@ var feng3d;
          * @param positions 坐标数据列表
          */
         Sphere.prototype.fromPositions = function (positions) {
-            var box = new feng3d.AABB();
+            var box = new feng3d.Box3();
             var v = new feng3d.Vector3();
             var center = this.center;
             box.formPositions(positions).getCenter(center);
@@ -14323,7 +14323,7 @@ var feng3d;
          * 获取包围盒
          */
         Sphere.prototype.getBoundingBox = function (box) {
-            if (box === void 0) { box = new feng3d.AABB(); }
+            if (box === void 0) { box = new feng3d.Box3(); }
             box.init(this.center.subNumberTo(this.radius), this.center.addNumberTo(this.radius));
             return box;
         };
@@ -14875,7 +14875,7 @@ var feng3d;
          * 包围盒
          */
         TriangleGeometry.prototype.getBox = function (box) {
-            if (box === void 0) { box = new feng3d.AABB(); }
+            if (box === void 0) { box = new feng3d.Box3(); }
             return box.fromPoints(this.getPoints());
         };
         /**
@@ -24356,7 +24356,7 @@ var feng3d;
              */
             get: function () {
                 var model = this.getComponent(feng3d.Model);
-                var box = model ? model.selfWorldBounds : new feng3d.AABB(this.transform.worldPosition, this.transform.worldPosition);
+                var box = model ? model.selfWorldBounds : new feng3d.Box3(this.transform.worldPosition, this.transform.worldPosition);
                 this.children.forEach(function (element) {
                     var ebox = element.worldBounds;
                     box.union(ebox);
@@ -26084,8 +26084,8 @@ var feng3d;
                 if (!this._bounding) {
                     var positions = this.positions;
                     if (!positions || positions.length == 0)
-                        return new feng3d.AABB();
-                    this._bounding = feng3d.AABB.formPositions(this.positions);
+                        return new feng3d.Box3();
+                    this._bounding = feng3d.Box3.formPositions(this.positions);
                 }
                 return this._bounding;
             },
@@ -26785,7 +26785,7 @@ var feng3d;
          * @param positions 顶点数据
          */
         GeometryUtils.prototype.getAABB = function (positions) {
-            return feng3d.AABB.formPositions(positions);
+            return feng3d.Box3.formPositions(positions);
         };
         return GeometryUtils;
     }());
@@ -27393,7 +27393,7 @@ var feng3d;
     }(feng3d.Component));
     feng3d.Camera = Camera;
     // 投影后可视区域
-    var visibleBox = new feng3d.AABB(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
+    var visibleBox = new feng3d.Box3(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30088,7 +30088,7 @@ var feng3d;
                     return box.clone();
                 pre.union(box);
                 return pre;
-            }, null) || new feng3d.AABB(new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
+            }, null) || new feng3d.Box3(new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
             // 
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;

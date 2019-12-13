@@ -310,8 +310,8 @@ namespace feng3d
             {
                 var positions = this.positions;
                 if (!positions || positions.length == 0)
-                    return new AABB();
-                this._bounding = AABB.formPositions(this.positions);
+                    return new Box3();
+                this._bounding = Box3.formPositions(this.positions);
             }
             return this._bounding;
         }
@@ -416,7 +416,7 @@ namespace feng3d
         private _geometryInvalid = true;
         private _useFaceWeights = false;
 
-        private _bounding: AABB;
+        private _bounding: Box3;
 
         /**
          * 设置默认几何体
