@@ -5195,8 +5195,8 @@ var feng3d;
     /**
      * 3D线段
      */
-    var Segment3D = /** @class */ (function () {
-        function Segment3D(p0, p1) {
+    var Segment3 = /** @class */ (function () {
+        function Segment3(p0, p1) {
             if (p0 === void 0) { p0 = new feng3d.Vector3(); }
             if (p1 === void 0) { p1 = new feng3d.Vector3(); }
             this.p0 = p0;
@@ -5207,19 +5207,19 @@ var feng3d;
          * @param p0
          * @param p1
          */
-        Segment3D.fromPoints = function (p0, p1) {
-            return new Segment3D(p0, p1);
+        Segment3.fromPoints = function (p0, p1) {
+            return new Segment3(p0, p1);
         };
         /**
          * 随机线段
          */
-        Segment3D.random = function () {
-            return new Segment3D(feng3d.Vector3.random(), feng3d.Vector3.random());
+        Segment3.random = function () {
+            return new Segment3(feng3d.Vector3.random(), feng3d.Vector3.random());
         };
         /**
          * 获取线段所在直线
          */
-        Segment3D.prototype.getLine = function (line) {
+        Segment3.prototype.getLine = function (line) {
             if (line === void 0) { line = new feng3d.Line3(); }
             return line.fromPoints(this.p0.clone(), this.p1.clone());
         };
@@ -5227,7 +5227,7 @@ var feng3d;
          * 获取指定位置上的点，当position=0时返回p0，当position=1时返回p1
          * @param position 线段上的位置
          */
-        Segment3D.prototype.getPoint = function (position, pout) {
+        Segment3.prototype.getPoint = function (position, pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             var newPoint = pout.copy(this.p0).add(this.p1.subTo(this.p0).scaleNumber(position));
             return newPoint;
@@ -5236,7 +5236,7 @@ var feng3d;
          * 判定点是否在线段上
          * @param point
          */
-        Segment3D.prototype.onWithPoint = function (point, precision) {
+        Segment3.prototype.onWithPoint = function (point, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             return Math.equals(this.getPointDistance(point), 0, precision);
         };
@@ -5244,7 +5244,7 @@ var feng3d;
          * 判定点是否投影在线段上
          * @param point
          */
-        Segment3D.prototype.projectOnWithPoint = function (point) {
+        Segment3.prototype.projectOnWithPoint = function (point) {
             var position = this.getPositionByPoint(point);
             position = Number(position.toFixed(6));
             return 0 <= position && position <= 1;
@@ -5253,7 +5253,7 @@ var feng3d;
          * 获取点在线段上的位置，当点投影在线段上p0位置时返回0，当点投影在线段p1上时返回1
          * @param point 点
          */
-        Segment3D.prototype.getPositionByPoint = function (point) {
+        Segment3.prototype.getPositionByPoint = function (point) {
             var vec = this.p1.subTo(this.p0);
             var position = point.subTo(this.p0).dot(vec) / vec.lengthSquared;
             return position;
@@ -5262,7 +5262,7 @@ var feng3d;
          * 获取直线到点的法线（线段到点垂直方向）
          * @param point 点
          */
-        Segment3D.prototype.getNormalWithPoint = function (point) {
+        Segment3.prototype.getNormalWithPoint = function (point) {
             var direction = this.p1.subTo(this.p0);
             var l1 = point.subTo(this.p0);
             var n = direction.crossTo(l1).crossTo(direction).normalize();
@@ -5272,7 +5272,7 @@ var feng3d;
          * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
          * @param point 指定点
          */
-        Segment3D.prototype.getPointDistanceSquare = function (point) {
+        Segment3.prototype.getPointDistanceSquare = function (point) {
             var position = this.getPositionByPoint(point);
             if (position <= 0) {
                 lengthSquared = point.subTo(this.p0).lengthSquared;
@@ -5291,7 +5291,7 @@ var feng3d;
          * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
          * @param point 指定点
          */
-        Segment3D.prototype.getPointDistance = function (point) {
+        Segment3.prototype.getPointDistance = function (point) {
             var v = this.getPointDistanceSquare(point);
             v = Math.sqrt(v);
             return v;
@@ -5300,7 +5300,7 @@ var feng3d;
          * 与直线相交
          * @param line 直线
          */
-        Segment3D.prototype.intersectionWithLine = function (line) {
+        Segment3.prototype.intersectionWithLine = function (line) {
             var l = this.getLine();
             var r = l.intersectWithLine3D(line);
             if (!r)
@@ -5315,16 +5315,16 @@ var feng3d;
          * 与线段相交
          * @param segment 直线
          */
-        Segment3D.prototype.intersectionWithSegment = function (segment) {
+        Segment3.prototype.intersectionWithSegment = function (segment) {
             var r = this.intersectionWithLine(segment.getLine());
             if (!r)
                 return null;
-            if (r instanceof Segment3D) {
+            if (r instanceof Segment3) {
                 var ps = [this.p0, this.p1].map(function (p) {
                     return segment.clampPoint(p);
                 });
                 if (this.onWithPoint(ps[0]))
-                    return Segment3D.fromPoints(ps[0], ps[1]);
+                    return Segment3.fromPoints(ps[0], ps[1]);
                 return null;
             }
             if (this.onWithPoint(r))
@@ -5336,7 +5336,7 @@ var feng3d;
          * @param point 点
          * @param vout 输出点
          */
-        Segment3D.prototype.closestPointWithPoint = function (point, vout) {
+        Segment3.prototype.closestPointWithPoint = function (point, vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             this.getLine().closestPointWithPoint(point, vout);
             if (this.onWithPoint(vout))
@@ -5348,20 +5348,20 @@ var feng3d;
         /**
          * 把点压缩到线段内
          */
-        Segment3D.prototype.clampPoint = function (point, pout) {
+        Segment3.prototype.clampPoint = function (point, pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
             return this.getPoint(Math.clamp(this.getPositionByPoint(point), 0, 1), pout);
         };
         /**
          * 判定线段是否相等
          */
-        Segment3D.prototype.equals = function (segment) {
+        Segment3.prototype.equals = function (segment) {
             return (this.p0.equals(segment.p0) && this.p1.equals(segment.p1)) || (this.p0.equals(segment.p1) && this.p1.equals(segment.p0));
         };
         /**
          * 复制
          */
-        Segment3D.prototype.copy = function (segment) {
+        Segment3.prototype.copy = function (segment) {
             this.p0.copy(segment.p0);
             this.p1.copy(segment.p1);
             return this;
@@ -5369,12 +5369,12 @@ var feng3d;
         /**
          * 克隆
          */
-        Segment3D.prototype.clone = function () {
-            return new Segment3D().copy(this);
+        Segment3.prototype.clone = function () {
+            return new Segment3().copy(this);
         };
-        return Segment3D;
+        return Segment3;
     }());
-    feng3d.Segment3D = Segment3D;
+    feng3d.Segment3 = Segment3;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -5439,7 +5439,7 @@ var feng3d;
          * 三边
          */
         Triangle3D.prototype.getSegments = function () {
-            return [feng3d.Segment3D.fromPoints(this.p0, this.p1), feng3d.Segment3D.fromPoints(this.p1, this.p2), feng3d.Segment3D.fromPoints(this.p2, this.p0)];
+            return [feng3d.Segment3.fromPoints(this.p0, this.p1), feng3d.Segment3.fromPoints(this.p1, this.p2), feng3d.Segment3.fromPoints(this.p2, this.p0)];
         };
         /**
          * 三角形所在平面
@@ -5564,7 +5564,7 @@ var feng3d;
                 var r = segment.intersectionWithLine(line);
                 if (!r)
                     return v;
-                if (r instanceof feng3d.Segment3D) {
+                if (r instanceof feng3d.Segment3) {
                     crossSegment = r;
                     return v;
                 }
@@ -5580,7 +5580,7 @@ var feng3d;
             if (ps[0].equals(ps[1])) {
                 return ps[0];
             }
-            return feng3d.Segment3D.fromPoints(ps[0], ps[1]);
+            return feng3d.Segment3.fromPoints(ps[0], ps[1]);
         };
         /**
          * 获取与线段相交
@@ -5600,7 +5600,7 @@ var feng3d;
                 return null;
             if (p0.equals(p1))
                 return p0;
-            return feng3d.Segment3D.fromPoints(p0, p1);
+            return feng3d.Segment3.fromPoints(p0, p1);
         };
         /**
          * 判定点是否在三角形上
@@ -5612,11 +5612,11 @@ var feng3d;
             var plane3d = this.getPlane3d();
             if (plane3d.classifyPoint(p, precision) != feng3d.PlaneClassification.INTERSECT)
                 return false;
-            if (feng3d.Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
+            if (feng3d.Segment3.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
                 return true;
-            if (feng3d.Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
+            if (feng3d.Segment3.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
                 return true;
-            if (feng3d.Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
+            if (feng3d.Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
             var n = this.getNormal();
             if (new Triangle3D(this.p0, this.p1, p).getNormal().dot(n) < 0)
@@ -5692,11 +5692,11 @@ var feng3d;
                 return [this];
             if (this.p0.equals(p) || this.p1.equals(p) || this.p2.equals(p))
                 return [this];
-            if (feng3d.Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p))
+            if (feng3d.Segment3.fromPoints(this.p0, this.p1).onWithPoint(p))
                 return [Triangle3D.fromPoints(this.p0, p, this.p2), Triangle3D.fromPoints(p, this.p1, this.p2)];
-            if (feng3d.Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p))
+            if (feng3d.Segment3.fromPoints(this.p1, this.p2).onWithPoint(p))
                 return [Triangle3D.fromPoints(this.p1, p, this.p0), Triangle3D.fromPoints(p, this.p2, this.p0)];
-            if (feng3d.Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p))
+            if (feng3d.Segment3.fromPoints(this.p2, this.p0).onWithPoint(p))
                 return [Triangle3D.fromPoints(this.p2, p, this.p1), Triangle3D.fromPoints(p, this.p0, this.p1)];
             return [Triangle3D.fromPoints(p, this.p0, this.p1), Triangle3D.fromPoints(p, this.p1, this.p2), Triangle3D.fromPoints(p, this.p2, this.p0)];
         };
@@ -7197,7 +7197,7 @@ var feng3d;
                 var r = t.intersectionWithLine(line3d);
                 if (!r)
                     return;
-                if (r instanceof feng3d.Segment3D) {
+                if (r instanceof feng3d.Segment3) {
                     ss.push(r);
                     return;
                 }
@@ -7233,7 +7233,7 @@ var feng3d;
                     ps.push(p0);
                     return v;
                 }
-                v.push(feng3d.Segment3D.fromPoints(p0, p1));
+                v.push(feng3d.Segment3.fromPoints(p0, p1));
                 return v;
             }, []);
             if (r.segments.length + r.points.length == 0)

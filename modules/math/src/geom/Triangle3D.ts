@@ -67,7 +67,7 @@ namespace feng3d
          */
         getSegments()
         {
-            return [Segment3D.fromPoints(this.p0, this.p1), Segment3D.fromPoints(this.p1, this.p2), Segment3D.fromPoints(this.p2, this.p0)];
+            return [Segment3.fromPoints(this.p0, this.p1), Segment3.fromPoints(this.p1, this.p2), Segment3.fromPoints(this.p2, this.p0)];
         }
 
         /**
@@ -203,13 +203,13 @@ namespace feng3d
             }
 
             // 直线分别于三边相交
-            var crossSegment: Segment3D = <any>null;
+            var crossSegment: Segment3 = <any>null;
             var ps = this.getSegments().reduce((v: Vector3[], segment) =>
             {
                 var r = segment.intersectionWithLine(line);
                 if (!r)
                     return v;
-                if (r instanceof Segment3D)
+                if (r instanceof Segment3)
                 {
                     crossSegment = r;
                     return v;
@@ -227,13 +227,13 @@ namespace feng3d
             {
                 return ps[0];
             }
-            return Segment3D.fromPoints(ps[0], ps[1]);
+            return Segment3.fromPoints(ps[0], ps[1]);
         }
 
         /**
          * 获取与线段相交
          */
-        intersectionWithSegment(segment: Segment3D)
+        intersectionWithSegment(segment: Segment3)
         {
             var r = this.intersectionWithLine(segment.getLine());
             if (!r) return null;
@@ -249,7 +249,7 @@ namespace feng3d
                 return null;
             if (p0.equals(p1))
                 return p0;
-            return Segment3D.fromPoints(p0, p1);
+            return Segment3.fromPoints(p0, p1);
         }
 
         /**
@@ -263,11 +263,11 @@ namespace feng3d
             if (plane3d.classifyPoint(p, precision) != PlaneClassification.INTERSECT)
                 return false;
 
-            if (Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
+            if (Segment3.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
                 return true;
-            if (Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
+            if (Segment3.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
                 return true;
-            if (Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
+            if (Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
 
             var n = this.getNormal();
@@ -356,11 +356,11 @@ namespace feng3d
                 return [this];
             if (this.p0.equals(p) || this.p1.equals(p) || this.p2.equals(p))
                 return [this];
-            if (Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p))
+            if (Segment3.fromPoints(this.p0, this.p1).onWithPoint(p))
                 return [Triangle3D.fromPoints(this.p0, p, this.p2), Triangle3D.fromPoints(p, this.p1, this.p2)];
-            if (Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p))
+            if (Segment3.fromPoints(this.p1, this.p2).onWithPoint(p))
                 return [Triangle3D.fromPoints(this.p1, p, this.p0), Triangle3D.fromPoints(p, this.p2, this.p0)];
-            if (Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p))
+            if (Segment3.fromPoints(this.p2, this.p0).onWithPoint(p))
                 return [Triangle3D.fromPoints(this.p2, p, this.p1), Triangle3D.fromPoints(p, this.p0, this.p1)];
             return [Triangle3D.fromPoints(p, this.p0, this.p1), Triangle3D.fromPoints(p, this.p1, this.p2), Triangle3D.fromPoints(p, this.p2, this.p0)];
         }
@@ -387,7 +387,7 @@ namespace feng3d
          * 用线段分解（切割）三角形
          * @param segment 线段
          */
-        decomposeWithSegment(segment: Segment3D)
+        decomposeWithSegment(segment: Segment3)
         {
             var r = this.intersectionWithSegment(segment);
             if (!r) return [this];

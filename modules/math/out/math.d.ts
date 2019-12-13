@@ -2445,17 +2445,17 @@ declare namespace feng3d {
     /**
      * 3D线段
      */
-    class Segment3D {
+    class Segment3 {
         /**
          * 初始化线段
          * @param p0
          * @param p1
          */
-        static fromPoints(p0: Vector3, p1: Vector3): Segment3D;
+        static fromPoints(p0: Vector3, p1: Vector3): Segment3;
         /**
          * 随机线段
          */
-        static random(): Segment3D;
+        static random(): Segment3;
         /**
          * 线段起点
          */
@@ -2508,12 +2508,12 @@ declare namespace feng3d {
          * 与直线相交
          * @param line 直线
          */
-        intersectionWithLine(line: Line3): Vector3 | Segment3D;
+        intersectionWithLine(line: Line3): Vector3 | Segment3;
         /**
          * 与线段相交
          * @param segment 直线
          */
-        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D;
+        intersectionWithSegment(segment: Segment3): Vector3 | Segment3;
         /**
          * 与指定点最近的点
          * @param point 点
@@ -2527,15 +2527,15 @@ declare namespace feng3d {
         /**
          * 判定线段是否相等
          */
-        equals(segment: Segment3D): boolean;
+        equals(segment: Segment3): boolean;
         /**
          * 复制
          */
-        copy(segment: Segment3D): this;
+        copy(segment: Segment3): this;
         /**
          * 克隆
          */
-        clone(): Segment3D;
+        clone(): Segment3;
     }
 }
 declare namespace feng3d {
@@ -2589,7 +2589,7 @@ declare namespace feng3d {
         /**
          * 三边
          */
-        getSegments(): Segment3D[];
+        getSegments(): Segment3[];
         /**
          * 三角形所在平面
          */
@@ -2643,11 +2643,11 @@ declare namespace feng3d {
         /**
          * 获取与直线相交，当直线与三角形不相交时返回null
          */
-        intersectionWithLine(line: Line3): Vector3 | Segment3D;
+        intersectionWithLine(line: Line3): Vector3 | Segment3;
         /**
          * 获取与线段相交
          */
-        intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D;
+        intersectionWithSegment(segment: Segment3): Vector3 | Segment3;
         /**
          * 判定点是否在三角形上
          * @param p 点
@@ -2690,7 +2690,7 @@ declare namespace feng3d {
          * 用线段分解（切割）三角形
          * @param segment 线段
          */
-        decomposeWithSegment(segment: Segment3D): Triangle3D[];
+        decomposeWithSegment(segment: Segment3): Triangle3D[];
         /**
          * 用直线分解（切割）三角形
          * @param line 直线
@@ -3350,7 +3350,7 @@ declare namespace feng3d {
          * @param segment 线段
          * @return 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
          */
-        classifySegment(segment: Segment3D): 1 | 0 | 2 | -1;
+        classifySegment(segment: Segment3): 1 | 0 | 2 | -1;
         /**
          * 给指定三角形分类
          * @param triangle 三角形
@@ -3362,7 +3362,7 @@ declare namespace feng3d {
          * @param line3d 直线
          */
         intersectionWithLine(line3d: Line3): {
-            segments: Segment3D[];
+            segments: Segment3[];
             points: Vector3[];
         };
         /**
@@ -3370,8 +3370,8 @@ declare namespace feng3d {
          * @param segment 线段
          * @return 不相交时返回null，相交时返回 碰撞线段列表与碰撞点列表
          */
-        intersectionWithSegment(segment: Segment3D): {
-            segments: Segment3D[];
+        intersectionWithSegment(segment: Segment3): {
+            segments: Segment3[];
             points: Vector3[];
         };
         /**

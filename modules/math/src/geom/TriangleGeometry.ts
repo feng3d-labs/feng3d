@@ -52,7 +52,7 @@ namespace feng3d
         isClosed()
         {
             // 获取所有线段
-            var ss = this.triangles.reduce((ss: Segment3D[], t) => { return ss.concat(t.getSegments()); }, []);
+            var ss = this.triangles.reduce((ss: Segment3[], t) => { return ss.concat(t.getSegments()); }, []);
             // 当每条线段（a,b）都存在与之相对于的线段（b，a）时几何体闭合
             var r = ss.every((s) => { return ss.filter((s0) => { return s.p0.equals(s0.p1) && s.p1.equals(s0.p0); }).length == 1; });
             return r;
@@ -123,7 +123,7 @@ namespace feng3d
          * @param segment 线段
          * @return 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
          */
-        classifySegment(segment: Segment3D)
+        classifySegment(segment: Segment3)
         {
             // 线段与几何体不相交时
             var r = this.intersectionWithSegment(segment);
@@ -169,13 +169,13 @@ namespace feng3d
         intersectionWithLine(line3d: Line3)
         {
             // 线段与三角形碰撞
-            var ss: Segment3D[] = [];
+            var ss: Segment3[] = [];
             var ps: Vector3[] = [];
             this.triangles.forEach(t =>
             {
                 var r = t.intersectionWithLine(line3d);
                 if (!r) return;
-                if (r instanceof Segment3D) { ss.push(r); return; }
+                if (r instanceof Segment3) { ss.push(r); return; }
                 ps.push(r);
             });
 
@@ -195,13 +195,13 @@ namespace feng3d
          * @param segment 线段
          * @return 不相交时返回null，相交时返回 碰撞线段列表与碰撞点列表
          */
-        intersectionWithSegment(segment: Segment3D)
+        intersectionWithSegment(segment: Segment3)
         {
             var line = segment.getLine();
             var r = this.intersectionWithLine(line);
             if (!r) return null;
             var ps = r.points = r.points.filter((p) => { return segment.onWithPoint(p) });
-            r.segments = r.segments.reduce((v: Segment3D[], s) =>
+            r.segments = r.segments.reduce((v: Segment3[], s) =>
             {
                 var p0 = segment.clampPoint(s.p0);
                 var p1 = segment.clampPoint(s.p1);
@@ -212,7 +212,7 @@ namespace feng3d
                     ps.push(p0);
                     return v;
                 }
-                v.push(Segment3D.fromPoints(p0, p1));
+                v.push(Segment3.fromPoints(p0, p1));
                 return v;
             }, []);
 

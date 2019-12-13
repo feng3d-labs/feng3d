@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 3D线段
      */
-    export class Segment3D
+    export class Segment3
     {
         /**
          * 初始化线段
@@ -12,7 +12,7 @@ namespace feng3d
          */
         static fromPoints(p0: Vector3, p1: Vector3)
         {
-            return new Segment3D(p0, p1);
+            return new Segment3(p0, p1);
         }
 
         /**
@@ -20,7 +20,7 @@ namespace feng3d
          */
         static random()
         {
-            return new Segment3D(Vector3.random(), Vector3.random());
+            return new Segment3(Vector3.random(), Vector3.random());
         }
 
         /**
@@ -154,18 +154,18 @@ namespace feng3d
          * 与线段相交
          * @param segment 直线
          */
-        intersectionWithSegment(segment: Segment3D)
+        intersectionWithSegment(segment: Segment3)
         {
             var r = this.intersectionWithLine(segment.getLine());
             if (!r) return null;
-            if (r instanceof Segment3D)
+            if (r instanceof Segment3)
             {
                 var ps = [this.p0, this.p1].map((p) =>
                 {
                     return segment.clampPoint(p);
                 });
                 if (this.onWithPoint(ps[0]))
-                    return Segment3D.fromPoints(ps[0], ps[1]);
+                    return Segment3.fromPoints(ps[0], ps[1]);
                 return null;
             }
             if (this.onWithPoint(r))
@@ -199,7 +199,7 @@ namespace feng3d
         /**
          * 判定线段是否相等
          */
-        equals(segment: Segment3D)
+        equals(segment: Segment3)
         {
             return (this.p0.equals(segment.p0) && this.p1.equals(segment.p1)) || (this.p0.equals(segment.p1) && this.p1.equals(segment.p0))
         }
@@ -207,7 +207,7 @@ namespace feng3d
         /**
          * 复制
          */
-        copy(segment: Segment3D)
+        copy(segment: Segment3)
         {
             this.p0.copy(segment.p0);
             this.p1.copy(segment.p1);
@@ -219,7 +219,7 @@ namespace feng3d
          */
         clone()
         {
-            return new Segment3D().copy(this);
+            return new Segment3().copy(this);
         }
     }
 }

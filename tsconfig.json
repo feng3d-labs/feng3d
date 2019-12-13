@@ -83,7 +83,7 @@
         "modules/math/src/geom/Matrix4x4.ts",
         "modules/math/src/geom/Quaternion.ts",
         "modules/math/src/geom/Line3.ts",
-        "modules/math/src/geom/Segment3D.ts",
+        "modules/math/src/geom/Segment3.ts",
         "modules/math/src/geom/Ray3D.ts",
         "modules/math/src/geom/Triangle3D.ts",
         "modules/math/src/geom/AABB.ts",
