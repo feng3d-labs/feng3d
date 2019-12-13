@@ -1,6 +1,114 @@
 var feng3d;
 (function (feng3d) {
     /**
+     * 事件适配器
+     */
+    var EventDispatcher = /** @class */ (function () {
+        function EventDispatcher() {
+        }
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
+            if (thisObject === void 0) { thisObject = null; }
+            if (priority === void 0) { priority = 0; }
+            feng3d.event.on(this, type, listener, thisObject, priority, true);
+        };
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        EventDispatcher.prototype.dispatchEvent = function (e) {
+            return feng3d.event.dispatchEvent(this, e);
+        };
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
+            if (bubbles === void 0) { bubbles = false; }
+            return feng3d.event.dispatch(this, type, data, bubbles);
+        };
+        /**
+         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        EventDispatcher.prototype.has = function (type) {
+            return feng3d.event.has(this, type);
+        };
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
+            if (priority === void 0) { priority = 0; }
+            if (once === void 0) { once = false; }
+            feng3d.event.on(this, type, listener, thisObject, priority, once);
+        };
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        EventDispatcher.prototype.off = function (type, listener, thisObject) {
+            feng3d.event.off(this, type, listener, thisObject);
+        };
+        /**
+         * 监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         * @param priority 优先级
+         */
+        EventDispatcher.prototype.onAll = function (listener, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            feng3d.event.onAll(this, listener, thisObject, priority);
+        };
+        /**
+         * 移除监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         */
+        EventDispatcher.prototype.offAll = function (listener, thisObject) {
+            feng3d.event.offAll(this, listener, thisObject);
+        };
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handleEvent = function (e) {
+            feng3d.event["handleEvent"](this, e);
+        };
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handelEventBubbles = function (e) {
+            feng3d.event["handelEventBubbles"](this, e);
+        };
+        return EventDispatcher;
+    }());
+    feng3d.EventDispatcher = EventDispatcher;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 事件
      */
     var FEvent = /** @class */ (function () {
@@ -232,113 +340,5 @@ var feng3d;
     }());
     feng3d.FEvent = FEvent;
     feng3d.objectevent = feng3d.event = new FEvent();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 事件适配器
-     */
-    var EventDispatcher = /** @class */ (function () {
-        function EventDispatcher() {
-        }
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
-            if (thisObject === void 0) { thisObject = null; }
-            if (priority === void 0) { priority = 0; }
-            feng3d.event.on(this, type, listener, thisObject, priority, true);
-        };
-        /**
-         * 派发事件
-         *
-         * 当事件重复流向一个对象时将不会被处理。
-         *
-         * @param e   事件对象
-         * @returns 返回事件是否被该对象处理
-         */
-        EventDispatcher.prototype.dispatchEvent = function (e) {
-            return feng3d.event.dispatchEvent(this, e);
-        };
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-         * @param type                      事件的类型。类型区分大小写。
-         * @param data                      事件携带的自定义数据。
-         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
-            if (bubbles === void 0) { bubbles = false; }
-            return feng3d.event.dispatch(this, type, data, bubbles);
-        };
-        /**
-         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        EventDispatcher.prototype.has = function (type) {
-            return feng3d.event.has(this, type);
-        };
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
-            if (priority === void 0) { priority = 0; }
-            if (once === void 0) { once = false; }
-            feng3d.event.on(this, type, listener, thisObject, priority, once);
-        };
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        EventDispatcher.prototype.off = function (type, listener, thisObject) {
-            feng3d.event.off(this, type, listener, thisObject);
-        };
-        /**
-         * 监听对象的所有事件
-         * @param obj 被监听对象
-         * @param listener 回调函数
-         * @param thisObject 回调函数 this 指针
-         * @param priority 优先级
-         */
-        EventDispatcher.prototype.onAll = function (listener, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            feng3d.event.onAll(this, listener, thisObject, priority);
-        };
-        /**
-         * 移除监听对象的所有事件
-         * @param obj 被监听对象
-         * @param listener 回调函数
-         * @param thisObject 回调函数 this 指针
-         */
-        EventDispatcher.prototype.offAll = function (listener, thisObject) {
-            feng3d.event.offAll(this, listener, thisObject);
-        };
-        /**
-         * 处理事件
-         * @param e 事件
-         */
-        EventDispatcher.prototype.handleEvent = function (e) {
-            feng3d.event["handleEvent"](this, e);
-        };
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        EventDispatcher.prototype.handelEventBubbles = function (e) {
-            feng3d.event["handelEventBubbles"](this, e);
-        };
-        return EventDispatcher;
-    }());
-    feng3d.EventDispatcher = EventDispatcher;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=evnet.js.map

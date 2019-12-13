@@ -13,8 +13,8 @@
             "DOM",
         ],
     },
-    "files": [ 
-        "src/Watcher.ts",
+    "include": [
+        "src/**/*.ts",
     ],
     "references": [
         {

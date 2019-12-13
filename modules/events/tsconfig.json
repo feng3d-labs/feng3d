@@ -12,9 +12,7 @@
             "ES2015",
         ],
     },
-    "files": [ 
-        // 事件模块
-        "src/FEvent.ts",
-        "src/EventDispatcher.ts",
-    ]
+    "include": [
+        "src/**/*.ts"
+    ],
 }

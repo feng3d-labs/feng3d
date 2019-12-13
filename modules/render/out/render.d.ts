@@ -1,78 +1,285 @@
 declare namespace feng3d {
+    class RenderBuffer {
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        /**
+         * 使失效
+         */
+        protected invalidate(): void;
+        /**
+         * 激活
+         * @param gl
+         */
+        static active(gl: GL, renderBuffer: RenderBuffer): WebGLBuffer;
+        /**
+         * 清理纹理
+         */
+        static clear(renderBuffer: RenderBuffer): void;
+    }
+}
+declare namespace feng3d {
+    interface Attributes {
+        /**
+         * 坐标
+         */
+        a_position: Attribute;
+        /**
+         * 颜色
+         */
+        a_color: Attribute;
+        /**
+         * 法线
+         */
+        a_normal: Attribute;
+        /**
+         * 切线
+         */
+        a_tangent: Attribute;
+        /**
+         * uv（纹理坐标）
+         */
+        a_uv: Attribute;
+        /**
+         * 关节索引
+         */
+        a_jointindex0: Attribute;
+        /**
+         * 关节权重
+         */
+        a_jointweight0: Attribute;
+        /**
+         * 关节索引
+         */
+        a_jointindex1: Attribute;
+        /**
+         * 关节权重
+         */
+        a_jointweight1: Attribute;
+    }
     /**
-     * 渲染模式
-     * A GLenum specifying the type primitive to render. Possible values are:
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+     * 属性渲染数据
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
      */
-    enum RenderMode {
+    class Attribute {
+        name: string;
         /**
-         * 点渲染
-         * gl.POINTS: Draws a single dot.
+         * 属性数据
          */
-        POINTS = "POINTS",
+        data: number[];
         /**
-         * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
+         * 数据尺寸
+         *
+         * A GLint specifying the number of components per vertex attribute. Must be 1, 2, 3, or 4.
          */
-        LINE_LOOP = "LINE_LOOP",
+        size: number;
         /**
-         * gl.LINE_STRIP: Draws a straight line to the next vertex.
+         *  A GLenum specifying the data type of each component in the array. Possible values:
+                - gl.BYTE: signed 8-bit integer, with values in [-128, 127]
+                - gl.SHORT: signed 16-bit integer, with values in [-32768, 32767]
+                - gl.UNSIGNED_BYTE: unsigned 8-bit integer, with values in [0, 255]
+                - gl.UNSIGNED_SHORT: unsigned 16-bit integer, with values in [0, 65535]
+                - gl.FLOAT: 32-bit floating point number
+            When using a WebGL 2 context, the following values are available additionally:
+               - gl.HALF_FLOAT: 16-bit floating point number
          */
-        LINE_STRIP = "LINE_STRIP",
+        type: GLArrayType;
         /**
-         * gl.LINES: Draws a line between a pair of vertices.
+         * A GLboolean specifying whether integer data values should be normalized when being casted to a float.
+              -  If true, signed integers are normalized to [-1, 1].
+              -  If true, unsigned integers are normalized to [0, 1].
+              -  For types gl.FLOAT and gl.HALF_FLOAT, this parameter has no effect.
          */
-        LINES = "LINES",
+        normalized: boolean;
         /**
-         * gl.TRIANGLES: Draws a triangle for a group of three vertices.
+         * A GLsizei specifying the offset in bytes between the beginning of consecutive vertex attributes. Cannot be larger than 255.
          */
-        TRIANGLES = "TRIANGLES",
+        stride: number;
         /**
-         * gl.TRIANGLE_STRIP
-         * @see https://en.wikipedia.org/wiki/Triangle_strip
+         * A GLintptr specifying an offset in bytes of the first component in the vertex attribute array. Must be a multiple of type.
          */
-        TRIANGLE_STRIP = "TRIANGLE_STRIP",
+        offset: number;
         /**
-         * gl.TRIANGLE_FAN
-         * @see https://en.wikipedia.org/wiki/Triangle_fan
+         * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
+         *
+         * A GLuint specifying the number of instances that will pass between updates of the generic attribute.
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
          */
-        TRIANGLE_FAN = "TRIANGLE_FAN"
+        divisor: number;
+        /**
+         * 是否失效
+         */
+        invalid: boolean;
+        constructor(name: string, data: number[], size?: number, divisor?: number);
+        /**
+         * 使数据失效
+         */
+        invalidate(): void;
+        /**
+         *
+         * @param gl
+         * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
+         */
+        static active(gl: GL, location: number, attribute: Attribute): void;
+        /**
+         * 获取缓冲
+         */
+        static getBuffer(gl: GL, attribute: Attribute): WebGLBuffer;
+        /**
+         * 清理缓冲
+         */
+        static clear(attribute: Attribute): void;
+    }
+}
+declare namespace feng3d {
+    class FrameBuffer {
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        static active(gl: GL, frameBuffer: FrameBuffer): WebGLFramebuffer;
+        /**
+         * 清理缓存
+         */
+        static clear(frameBuffer: FrameBuffer): void;
     }
 }
 declare namespace feng3d {
     /**
-     * 纹理类型
-     * A GLenum specifying the binding point (target). Possible values:
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
+     * 索引渲染数据
+
      */
-    enum TextureType {
+    class Index {
         /**
-         * gl.TEXTURE_2D: A two-dimensional texture.
+         * 索引数据
          */
-        TEXTURE_2D = "TEXTURE_2D",
+        indices: number[];
+        invalidate(): void;
         /**
-         * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
+         * 渲染数量
          */
-        TEXTURE_CUBE_MAP = "TEXTURE_CUBE_MAP"
+        get count(): number;
+        /**
+         * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
+         */
+        type: GLArrayType;
+        /**
+         * 索引偏移
+         */
+        offset: number;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        /**
+         * 激活缓冲
+         * @param gl
+         */
+        static active(gl: GL, index: Index): void;
+        /**
+         * 获取缓冲
+         */
+        static getBuffer(gl: GL, index: Index): WebGLBuffer;
+        /**
+         * 清理缓冲
+         */
+        static clear(index: Index): void;
     }
 }
 declare namespace feng3d {
     /**
-     * 混合方法
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
+     * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      */
-    enum BlendEquation {
+    class RenderAtomic {
         /**
-         *  source + destination
+         * 下一个结点
          */
-        FUNC_ADD = "FUNC_ADD",
+        next: RenderAtomic;
         /**
-         * source - destination
+         * 顶点索引缓冲
          */
-        FUNC_SUBTRACT = "FUNC_SUBTRACT",
+        indexBuffer: Index;
         /**
-         * destination - source
+         * 属性数据列表
          */
-        FUNC_REVERSE_SUBTRACT = "FUNC_REVERSE_SUBTRACT"
+        attributes: Attributes;
+        /**
+         * Uniform渲染数据
+         */
+        uniforms: LazyUniforms;
+        /**
+         * 渲染实例数量
+         */
+        instanceCount: Lazy<number>;
+        /**
+         * 渲染程序
+         */
+        shader: Shader;
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro;
+        /**
+         * 渲染参数
+         */
+        renderParams: Partial<RenderParams>;
+        getIndexBuffer(): Index;
+        getAttributes(attributes?: Attributes): Attributes;
+        getAttributeByKey(key: string): Attribute;
+        getUniforms(uniforms?: LazyUniforms): LazyObject<Uniforms>;
+        getUniformByKey(key: string): Uniforms;
+        getInstanceCount(): number;
+        getShader(): Shader;
+        getRenderParams(renderParams?: RenderParams): RenderParams;
+        getShaderMacro(shaderMacro?: ShaderMacro): ShaderMacro;
+    }
+    interface RenderAtomicData {
+        shader: Shader;
+        attributes: {
+            [name: string]: Attribute;
+        };
+        uniforms: {
+            [name: string]: Uniforms;
+        };
+        renderParams: RenderParams;
+        indexBuffer: Index;
+        instanceCount: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 正面方向枚举
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
+     */
+    enum FrontFace {
+        /**
+         * Clock-wise winding.
+         */
+        CW = "CW",
+        /**
+         *  Counter-clock-wise winding.
+         */
+        CCW = "CCW"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 决定给WebGLRenderingContext.colorMask何种参数。
+     */
+    enum ColorMask {
+        NONE = 0,
+        R = 1,
+        G = 2,
+        B = 4,
+        A = 8,
+        RGB = 7,
+        /**
+         *
+         */
+        RGBA = 15
     }
 }
 declare namespace feng3d {
@@ -128,220 +335,22 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 裁剪面枚举
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
+     * 混合方法
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
      */
-    enum CullFace {
+    enum BlendEquation {
         /**
-         * 关闭裁剪面
+         *  source + destination
          */
-        NONE = "NONE",
+        FUNC_ADD = "FUNC_ADD",
         /**
-         * 正面
+         * source - destination
          */
-        FRONT = "FRONT",
+        FUNC_SUBTRACT = "FUNC_SUBTRACT",
         /**
-         * 背面
+         * destination - source
          */
-        BACK = "BACK",
-        /**
-         * 正面与背面
-         */
-        FRONT_AND_BACK = "FRONT_AND_BACK"
-    }
-}
-declare namespace feng3d {
-    /**
-     * 决定给WebGLRenderingContext.colorMask何种参数。
-     */
-    enum ColorMask {
-        NONE = 0,
-        R = 1,
-        G = 2,
-        B = 4,
-        A = 8,
-        RGB = 7,
-        /**
-         *
-         */
-        RGBA = 15
-    }
-}
-declare namespace feng3d {
-    /**
-     * 正面方向枚举
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
-     */
-    enum FrontFace {
-        /**
-         * Clock-wise winding.
-         */
-        CW = "CW",
-        /**
-         *  Counter-clock-wise winding.
-         */
-        CCW = "CCW"
-    }
-}
-declare namespace feng3d {
-    /**
-     * 纹理颜色格式
-     * A GLint specifying the color components in the texture
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
-     */
-    enum TextureFormat {
-        /**
-         * Discards the red, green and blue components and reads the alpha component.
-         */
-        ALPHA = "ALPHA",
-        /**
-         *  Discards the alpha components and reads the red, green and blue components.
-         */
-        RGB = "RGB",
-        /**
-         * Red, green, blue and alpha components are read from the color buffer.
-         */
-        RGBA = "RGBA",
-        /**
-         * Each color component is a luminance component, alpha is 1.0.
-         */
-        LUMINANCE = "LUMINANCE",
-        /**
-         * Each component is a luminance/alpha component.
-         */
-        LUMINANCE_ALPHA = "LUMINANCE_ALPHA"
-    }
-}
-declare namespace feng3d {
-    /**
-     * 纹理数据类型
-     * A GLenum specifying the data type of the texel data
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
-     */
-    enum TextureDataType {
-        /**
-         * 8 bits per channel for gl.RGBA
-         */
-        UNSIGNED_BYTE = "UNSIGNED_BYTE",
-        /**
-         * 5 red bits, 6 green bits, 5 blue bits.
-         */
-        UNSIGNED_SHORT_5_6_5 = "UNSIGNED_SHORT_5_6_5",
-        /**
-         * 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
-         */
-        UNSIGNED_SHORT_4_4_4_4 = "UNSIGNED_SHORT_4_4_4_4",
-        /**
-         * 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
-         */
-        UNSIGNED_SHORT_5_5_5_1 = "UNSIGNED_SHORT_5_5_5_1"
-    }
-}
-declare namespace feng3d {
-    /**
-     * 纹理缩小过滤器
-     * Texture minification filter
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    enum TextureMinFilter {
-        LINEAR = "LINEAR",
-        NEAREST = "NEAREST",
-        NEAREST_MIPMAP_NEAREST = "NEAREST_MIPMAP_NEAREST",
-        LINEAR_MIPMAP_NEAREST = "LINEAR_MIPMAP_NEAREST",
-        /**
-         *  (default value)
-         */
-        NEAREST_MIPMAP_LINEAR = "NEAREST_MIPMAP_LINEAR",
-        LINEAR_MIPMAP_LINEAR = "LINEAR_MIPMAP_LINEAR"
-    }
-}
-declare namespace feng3d {
-    /**
-     * 纹理放大滤波器
-     * Texture magnification filter
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    enum TextureMagFilter {
-        /**
-         *  (default value)
-         */
-        LINEAR = "LINEAR",
-        NEAREST = "NEAREST"
-    }
-}
-declare namespace feng3d {
-    /**
-     * 纹理坐标s包装函数枚举
-     * Wrapping function for texture coordinate s
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    enum TextureWrap {
-        /**
-         * (default value)
-         */
-        REPEAT = "REPEAT",
-        CLAMP_TO_EDGE = "CLAMP_TO_EDGE",
-        MIRRORED_REPEAT = "MIRRORED_REPEAT"
-    }
-}
-declare namespace feng3d {
-    /**
-     * GL 数组数据类型
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
-     */
-    enum GLArrayType {
-        /**
-         * signed 8-bit integer, with values in [-128, 127]
-         */
-        BYTE = "BYTE",
-        /**
-         *  signed 16-bit integer, with values in [-32768, 32767]
-         */
-        SHORT = "SHORT",
-        /**
-         * unsigned 8-bit integer, with values in [0, 255]
-         */
-        UNSIGNED_BYTE = "UNSIGNED_BYTE",
-        /**
-         * unsigned 16-bit integer, with values in [0, 65535]
-         */
-        UNSIGNED_SHORT = "UNSIGNED_SHORT",
-        /**
-         * 32-bit floating point number
-         */
-        FLOAT = "FLOAT"
-    }
-}
-declare namespace feng3d {
-    /**
-     * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
-     *
-     * 指定数据存储区的使用方法。
-     *
-     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/bufferData
-     */
-    enum AttributeUsage {
-        /**
-         * The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
-         *
-         * 内容由应用程序指定一次，并多次用作WebGL绘图和图像规范命令的源。
-         *
-         * 缓冲区的内容可能经常使用，而不会经常更改。内容被写入缓冲区，但不被读取。
-         */
-        STATIC_DRAW = "STATIC_DRAW",
-        /**
-         * The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
-         *
-         * 这些内容将由应用程序反复重新指定，并多次用作WebGL绘图和图像规范命令的源。
-         */
-        DYNAMIC_DRAW = "DYNAMIC_DRAW",
-        /**
-         * The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands.
-         *
-         * 内容由应用程序指定一次，最多几次用作WebGL绘图和图像规范命令的源。
-         */
-        STREAM_DRAW = "STREAM_DRAW"
+        FUNC_REVERSE_SUBTRACT = "FUNC_REVERSE_SUBTRACT"
     }
 }
 declare namespace feng3d {
@@ -383,6 +392,313 @@ declare namespace feng3d {
          *  (always pass)
          */
         ALWAYS = "ALWAYS"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渲染模式
+     * A GLenum specifying the type primitive to render. Possible values are:
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+     */
+    enum RenderMode {
+        /**
+         * 点渲染
+         * gl.POINTS: Draws a single dot.
+         */
+        POINTS = "POINTS",
+        /**
+         * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
+         */
+        LINE_LOOP = "LINE_LOOP",
+        /**
+         * gl.LINE_STRIP: Draws a straight line to the next vertex.
+         */
+        LINE_STRIP = "LINE_STRIP",
+        /**
+         * gl.LINES: Draws a line between a pair of vertices.
+         */
+        LINES = "LINES",
+        /**
+         * gl.TRIANGLES: Draws a triangle for a group of three vertices.
+         */
+        TRIANGLES = "TRIANGLES",
+        /**
+         * gl.TRIANGLE_STRIP
+         * @see https://en.wikipedia.org/wiki/Triangle_strip
+         */
+        TRIANGLE_STRIP = "TRIANGLE_STRIP",
+        /**
+         * gl.TRIANGLE_FAN
+         * @see https://en.wikipedia.org/wiki/Triangle_fan
+         */
+        TRIANGLE_FAN = "TRIANGLE_FAN"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 裁剪面枚举
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
+     */
+    enum CullFace {
+        /**
+         * 关闭裁剪面
+         */
+        NONE = "NONE",
+        /**
+         * 正面
+         */
+        FRONT = "FRONT",
+        /**
+         * 背面
+         */
+        BACK = "BACK",
+        /**
+         * 正面与背面
+         */
+        FRONT_AND_BACK = "FRONT_AND_BACK"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渲染参数
+     */
+    class RenderParams {
+        /**
+        * 渲染模式，默认RenderMode.TRIANGLES
+        */
+        renderMode: RenderMode;
+        /**
+         * 剔除面
+         * 参考：http://www.jianshu.com/p/ee04165f2a02
+         * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
+         * 使用gl.frontFace(gl.CW);调整顺时针为正面
+         */
+        cullFace: CullFace;
+        frontFace: FrontFace;
+        /**
+         * 是否开启混合
+         * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
+         */
+        enableBlend: boolean;
+        /**
+         * 混合方式，默认BlendEquation.FUNC_ADD
+         */
+        blendEquation: BlendEquation;
+        /**
+         * 源混合因子，默认BlendFactor.SRC_ALPHA
+         */
+        sfactor: BlendFactor;
+        /**
+         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
+         */
+        dfactor: BlendFactor;
+        /**
+         * 是否开启深度检查
+         */
+        depthtest: boolean;
+        depthFunc: DepthFunc;
+        /**
+         * 是否开启深度标记
+         */
+        depthMask: boolean;
+        /**
+         * 控制那些颜色分量是否可以被写入到帧缓冲器。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+         */
+        colorMask: ColorMask;
+        /**
+         * 绘制在画布上的区域
+         */
+        viewRect: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+        /**
+         * 是否使用 viewRect
+         */
+        useViewRect: boolean;
+        constructor(raw?: Partial<RenderParams>);
+    }
+    interface RenderParams {
+        viewRect: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+    }
+}
+declare namespace feng3d {
+    /**
+     * shader
+     */
+    class Shader {
+        /**
+         * shader 中的 宏
+         */
+        shaderMacro: ShaderMacro;
+        constructor(shaderName: string);
+        /**
+         * 激活渲染程序
+         */
+        activeShaderProgram(gl: GL): CompileShaderResult;
+        /**
+         * 着色器名称
+         */
+        private shaderName;
+        /**
+         * 顶点着色器代码
+         */
+        private vertex;
+        /**
+         * 片段着色器代码
+         */
+        private fragment;
+        /**
+         * 更新渲染代码
+         */
+        private updateShaderCode;
+        /**
+         * 编译着色器代码
+         * @param gl GL上下文
+         * @param type 着色器类型
+         * @param code 着色器代码
+         * @return 编译后的着色器对象
+         */
+        private compileShaderCode;
+        private createLinkProgram;
+        private compileShaderProgram;
+        private getMacroCode;
+    }
+    interface CompileShaderResult {
+        program: WebGLProgram;
+        vertex: WebGLShader;
+        fragment: WebGLShader;
+        /**
+         * 属性信息列表
+         */
+        attributes: {
+            [name: string]: AttributeInfo;
+        };
+        /**
+         * uniform信息列表
+         */
+        uniforms: {
+            [name: string]: UniformInfo;
+        };
+    }
+    /**
+     * WebGL渲染程序有效信息
+     */
+    interface UniformInfo {
+        /**
+         * uniform名称
+         */
+        name: string;
+        size: number;
+        type: number;
+        /**
+         * uniform地址
+         */
+        location: WebGLUniformLocation;
+        /**
+         * texture索引
+         */
+        textureID: number;
+        /**
+         * Uniform数组索引，当Uniform数据为数组数据时生效
+         */
+        paths: string[];
+    }
+    interface AttributeInfo {
+        /**
+         * 名称
+         */
+        name: string;
+        size: number;
+        type: number;
+        /**
+         * 属性地址
+         */
+        location: number;
+    }
+}
+declare namespace feng3d {
+    interface Texture {
+        /**
+         * 纹理类型
+         */
+        textureType: TextureType;
+        /**
+         * 格式
+         */
+        format: TextureFormat;
+        /**
+         * 数据类型
+         */
+        type: TextureDataType;
+        /**
+         * 是否生成mipmap
+         */
+        generateMipmap: boolean;
+        /**
+         * 对图像进行Y轴反转。默认值为false
+         */
+        flipY: boolean;
+        /**
+         * 将图像RGB颜色值得每一个分量乘以A。默认为false
+         */
+        premulAlpha: boolean;
+        minFilter: TextureMinFilter;
+        magFilter: TextureMagFilter;
+        /**
+         * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
+         */
+        wrapS: TextureWrap;
+        /**
+         * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
+         */
+        wrapT: TextureWrap;
+        /**
+         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
+         */
+        anisotropy: number;
+        /**
+         * 当前使用的贴图数据
+         */
+        activePixels: TexImageSource | TexImageSource[];
+        /**
+         * 是否为渲染目标纹理
+         */
+        isRenderTarget: boolean;
+        OFFSCREEN_WIDTH: number;
+        OFFSCREEN_HEIGHT: number;
+        /**
+         * 是否失效，值为true时重新创建 WebGLTexture
+         */
+        invalid: boolean;
+    }
+    class Texture {
+        static active(gl: GL, data: Texture): WebGLTexture;
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据
+         */
+        static getTexture(gl: GL, data: Texture): WebGLTexture;
+        /**
+         * 清除纹理
+         *
+         * @param data
+         */
+        static clear(data: Texture): void;
+    }
+}
+declare namespace feng3d {
+    type LazyUniforms = LazyObject<Uniforms>;
+    interface Uniforms {
     }
 }
 declare namespace feng3d {
@@ -509,45 +825,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * GL扩展
-     */
-    class GLExtension {
-        ANGLE_instanced_arrays: ANGLE_instanced_arrays;
-        EXT_blend_minmax: EXT_blend_minmax;
-        EXT_color_buffer_half_float: any;
-        EXT_frag_depth: EXT_frag_depth;
-        EXT_sRGB: EXT_sRGB;
-        EXT_shader_texture_lod: EXT_shader_texture_lod;
-        EXT_texture_filter_anisotropic: EXT_texture_filter_anisotropic;
-        OES_element_index_uint: OES_element_index_uint;
-        OES_standard_derivatives: OES_standard_derivatives;
-        OES_texture_float: OES_texture_float;
-        OES_texture_float_linear: OES_texture_float_linear;
-        OES_texture_half_float: OES_texture_half_float;
-        OES_texture_half_float_linear: OES_texture_half_float_linear;
-        OES_vertex_array_object: OES_vertex_array_object;
-        WEBGL_color_buffer_float: WEBGL_color_buffer_float;
-        WEBGL_compressed_texture_atc: any;
-        WEBGL_compressed_texture_etc1: any;
-        WEBGL_compressed_texture_pvrtc: any;
-        WEBGL_compressed_texture_s3tc: WEBGL_compressed_texture_s3tc;
-        WEBGL_debug_renderer_info: WEBGL_debug_renderer_info;
-        WEBGL_debug_shaders: WEBGL_debug_shaders;
-        WEBGL_depth_texture: WEBGL_depth_texture;
-        WEBGL_draw_buffers: WEBGL_draw_buffers;
-        WEBGL_lose_context: any;
-        constructor(gl: GL);
-        private initExtensions;
-        /**
-         * 缓存GL查询
-         * @param gl GL实例
-         */
-        private cacheGLQuery;
-        private wrap;
-    }
-}
-declare namespace feng3d {
-    /**
      * WEBGL 支持功能
      *
      * @see https://webglreport.com
@@ -618,516 +895,234 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type LazyUniforms = LazyObject<Uniforms>;
-    interface Uniforms {
+    /**
+     * GL扩展
+     */
+    class GLExtension {
+        ANGLE_instanced_arrays: ANGLE_instanced_arrays;
+        EXT_blend_minmax: EXT_blend_minmax;
+        EXT_color_buffer_half_float: any;
+        EXT_frag_depth: EXT_frag_depth;
+        EXT_sRGB: EXT_sRGB;
+        EXT_shader_texture_lod: EXT_shader_texture_lod;
+        EXT_texture_filter_anisotropic: EXT_texture_filter_anisotropic;
+        OES_element_index_uint: OES_element_index_uint;
+        OES_standard_derivatives: OES_standard_derivatives;
+        OES_texture_float: OES_texture_float;
+        OES_texture_float_linear: OES_texture_float_linear;
+        OES_texture_half_float: OES_texture_half_float;
+        OES_texture_half_float_linear: OES_texture_half_float_linear;
+        OES_vertex_array_object: OES_vertex_array_object;
+        WEBGL_color_buffer_float: WEBGL_color_buffer_float;
+        WEBGL_compressed_texture_atc: any;
+        WEBGL_compressed_texture_etc1: any;
+        WEBGL_compressed_texture_pvrtc: any;
+        WEBGL_compressed_texture_s3tc: WEBGL_compressed_texture_s3tc;
+        WEBGL_debug_renderer_info: WEBGL_debug_renderer_info;
+        WEBGL_debug_shaders: WEBGL_debug_shaders;
+        WEBGL_depth_texture: WEBGL_depth_texture;
+        WEBGL_draw_buffers: WEBGL_draw_buffers;
+        WEBGL_lose_context: any;
+        constructor(gl: GL);
+        private initExtensions;
+        /**
+         * 缓存GL查询
+         * @param gl GL实例
+         */
+        private cacheGLQuery;
+        private wrap;
     }
 }
 declare namespace feng3d {
     /**
-     * shader
+     * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
+     *
+     * 指定数据存储区的使用方法。
+     *
+     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/bufferData
      */
-    class Shader {
+    enum AttributeUsage {
         /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
-        constructor(shaderName: string);
-        /**
-         * 激活渲染程序
-         */
-        activeShaderProgram(gl: GL): CompileShaderResult;
-        /**
-         * 着色器名称
-         */
-        private shaderName;
-        /**
-         * 顶点着色器代码
-         */
-        private vertex;
-        /**
-         * 片段着色器代码
-         */
-        private fragment;
-        /**
-         * 更新渲染代码
-         */
-        private updateShaderCode;
-        /**
-         * 编译着色器代码
-         * @param gl GL上下文
-         * @param type 着色器类型
-         * @param code 着色器代码
-         * @return 编译后的着色器对象
-         */
-        private compileShaderCode;
-        private createLinkProgram;
-        private compileShaderProgram;
-        private getMacroCode;
-    }
-    interface CompileShaderResult {
-        program: WebGLProgram;
-        vertex: WebGLShader;
-        fragment: WebGLShader;
-        /**
-         * 属性信息列表
-         */
-        attributes: {
-            [name: string]: AttributeInfo;
-        };
-        /**
-         * uniform信息列表
-         */
-        uniforms: {
-            [name: string]: UniformInfo;
-        };
-    }
-    /**
-     * WebGL渲染程序有效信息
-     */
-    interface UniformInfo {
-        /**
-         * uniform名称
-         */
-        name: string;
-        size: number;
-        type: number;
-        /**
-         * uniform地址
-         */
-        location: WebGLUniformLocation;
-        /**
-         * texture索引
-         */
-        textureID: number;
-        /**
-         * Uniform数组索引，当Uniform数据为数组数据时生效
-         */
-        paths: string[];
-    }
-    interface AttributeInfo {
-        /**
-         * 名称
-         */
-        name: string;
-        size: number;
-        type: number;
-        /**
-         * 属性地址
-         */
-        location: number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 渲染参数
-     */
-    class RenderParams {
-        /**
-        * 渲染模式，默认RenderMode.TRIANGLES
-        */
-        renderMode: RenderMode;
-        /**
-         * 剔除面
-         * 参考：http://www.jianshu.com/p/ee04165f2a02
-         * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
-         * 使用gl.frontFace(gl.CW);调整顺时针为正面
-         */
-        cullFace: CullFace;
-        frontFace: FrontFace;
-        /**
-         * 是否开启混合
-         * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
-         */
-        enableBlend: boolean;
-        /**
-         * 混合方式，默认BlendEquation.FUNC_ADD
-         */
-        blendEquation: BlendEquation;
-        /**
-         * 源混合因子，默认BlendFactor.SRC_ALPHA
-         */
-        sfactor: BlendFactor;
-        /**
-         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
-         */
-        dfactor: BlendFactor;
-        /**
-         * 是否开启深度检查
-         */
-        depthtest: boolean;
-        depthFunc: DepthFunc;
-        /**
-         * 是否开启深度标记
-         */
-        depthMask: boolean;
-        /**
-         * 控制那些颜色分量是否可以被写入到帧缓冲器。
+         * The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
          *
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+         * 内容由应用程序指定一次，并多次用作WebGL绘图和图像规范命令的源。
+         *
+         * 缓冲区的内容可能经常使用，而不会经常更改。内容被写入缓冲区，但不被读取。
          */
-        colorMask: ColorMask;
+        STATIC_DRAW = "STATIC_DRAW",
         /**
-         * 绘制在画布上的区域
+         * The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
+         *
+         * 这些内容将由应用程序反复重新指定，并多次用作WebGL绘图和图像规范命令的源。
          */
-        viewRect: {
-            x: number;
-            y: number;
-            width: number;
-            height: number;
-        };
+        DYNAMIC_DRAW = "DYNAMIC_DRAW",
         /**
-         * 是否使用 viewRect
+         * The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands.
+         *
+         * 内容由应用程序指定一次，最多几次用作WebGL绘图和图像规范命令的源。
          */
-        useViewRect: boolean;
-        constructor(raw?: Partial<RenderParams>);
-    }
-    interface RenderParams {
-        viewRect: {
-            x: number;
-            y: number;
-            width: number;
-            height: number;
-        };
+        STREAM_DRAW = "STREAM_DRAW"
     }
 }
 declare namespace feng3d {
     /**
-     * 渲染原子（该对象会收集一切渲染所需数据以及参数）
-     */
-    class RenderAtomic {
-        /**
-         * 下一个结点
-         */
-        next: RenderAtomic;
-        /**
-         * 顶点索引缓冲
-         */
-        indexBuffer: Index;
-        /**
-         * 属性数据列表
-         */
-        attributes: Attributes;
-        /**
-         * Uniform渲染数据
-         */
-        uniforms: LazyUniforms;
-        /**
-         * 渲染实例数量
-         */
-        instanceCount: Lazy<number>;
-        /**
-         * 渲染程序
-         */
-        shader: Shader;
-        /**
-         * shader 中的 宏
-         */
-        shaderMacro: ShaderMacro;
-        /**
-         * 渲染参数
-         */
-        renderParams: Partial<RenderParams>;
-        getIndexBuffer(): Index;
-        getAttributes(attributes?: Attributes): Attributes;
-        getAttributeByKey(key: string): Attribute;
-        getUniforms(uniforms?: LazyUniforms): LazyObject<Uniforms>;
-        getUniformByKey(key: string): Uniforms;
-        getInstanceCount(): number;
-        getShader(): Shader;
-        getRenderParams(renderParams?: RenderParams): RenderParams;
-        getShaderMacro(shaderMacro?: ShaderMacro): ShaderMacro;
-    }
-    interface RenderAtomicData {
-        shader: Shader;
-        attributes: {
-            [name: string]: Attribute;
-        };
-        uniforms: {
-            [name: string]: Uniforms;
-        };
-        renderParams: RenderParams;
-        indexBuffer: Index;
-        instanceCount: number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 索引渲染数据
-
-     */
-    class Index {
-        /**
-         * 索引数据
-         */
-        indices: number[];
-        invalidate(): void;
-        /**
-         * 渲染数量
-         */
-        get count(): number;
-        /**
-         * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
-         */
-        type: GLArrayType;
-        /**
-         * 索引偏移
-         */
-        offset: number;
-        /**
-         * 是否失效
-         */
-        private _invalid;
-        /**
-         * 激活缓冲
-         * @param gl
-         */
-        static active(gl: GL, index: Index): void;
-        /**
-         * 获取缓冲
-         */
-        static getBuffer(gl: GL, index: Index): WebGLBuffer;
-        /**
-         * 清理缓冲
-         */
-        static clear(index: Index): void;
-    }
-}
-declare namespace feng3d {
-    interface Attributes {
-        /**
-         * 坐标
-         */
-        a_position: Attribute;
-        /**
-         * 颜色
-         */
-        a_color: Attribute;
-        /**
-         * 法线
-         */
-        a_normal: Attribute;
-        /**
-         * 切线
-         */
-        a_tangent: Attribute;
-        /**
-         * uv（纹理坐标）
-         */
-        a_uv: Attribute;
-        /**
-         * 关节索引
-         */
-        a_jointindex0: Attribute;
-        /**
-         * 关节权重
-         */
-        a_jointweight0: Attribute;
-        /**
-         * 关节索引
-         */
-        a_jointindex1: Attribute;
-        /**
-         * 关节权重
-         */
-        a_jointweight1: Attribute;
-    }
-    /**
-     * 属性渲染数据
+     * GL 数组数据类型
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
      */
-    class Attribute {
-        name: string;
+    enum GLArrayType {
         /**
-         * 属性数据
+         * signed 8-bit integer, with values in [-128, 127]
          */
-        data: number[];
+        BYTE = "BYTE",
         /**
-         * 数据尺寸
-         *
-         * A GLint specifying the number of components per vertex attribute. Must be 1, 2, 3, or 4.
+         *  signed 16-bit integer, with values in [-32768, 32767]
          */
-        size: number;
+        SHORT = "SHORT",
         /**
-         *  A GLenum specifying the data type of each component in the array. Possible values:
-                - gl.BYTE: signed 8-bit integer, with values in [-128, 127]
-                - gl.SHORT: signed 16-bit integer, with values in [-32768, 32767]
-                - gl.UNSIGNED_BYTE: unsigned 8-bit integer, with values in [0, 255]
-                - gl.UNSIGNED_SHORT: unsigned 16-bit integer, with values in [0, 65535]
-                - gl.FLOAT: 32-bit floating point number
-            When using a WebGL 2 context, the following values are available additionally:
-               - gl.HALF_FLOAT: 16-bit floating point number
+         * unsigned 8-bit integer, with values in [0, 255]
          */
-        type: GLArrayType;
+        UNSIGNED_BYTE = "UNSIGNED_BYTE",
         /**
-         * A GLboolean specifying whether integer data values should be normalized when being casted to a float.
-              -  If true, signed integers are normalized to [-1, 1].
-              -  If true, unsigned integers are normalized to [0, 1].
-              -  For types gl.FLOAT and gl.HALF_FLOAT, this parameter has no effect.
+         * unsigned 16-bit integer, with values in [0, 65535]
          */
-        normalized: boolean;
+        UNSIGNED_SHORT = "UNSIGNED_SHORT",
         /**
-         * A GLsizei specifying the offset in bytes between the beginning of consecutive vertex attributes. Cannot be larger than 255.
+         * 32-bit floating point number
          */
-        stride: number;
-        /**
-         * A GLintptr specifying an offset in bytes of the first component in the vertex attribute array. Must be a multiple of type.
-         */
-        offset: number;
-        /**
-         * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
-         *
-         * A GLuint specifying the number of instances that will pass between updates of the generic attribute.
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
-         */
-        divisor: number;
-        /**
-         * 是否失效
-         */
-        invalid: boolean;
-        constructor(name: string, data: number[], size?: number, divisor?: number);
-        /**
-         * 使数据失效
-         */
-        invalidate(): void;
-        /**
-         *
-         * @param gl
-         * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
-         */
-        static active(gl: GL, location: number, attribute: Attribute): void;
-        /**
-         * 获取缓冲
-         */
-        static getBuffer(gl: GL, attribute: Attribute): WebGLBuffer;
-        /**
-         * 清理缓冲
-         */
-        static clear(attribute: Attribute): void;
-    }
-}
-declare namespace feng3d {
-    interface Texture {
-        /**
-         * 纹理类型
-         */
-        textureType: TextureType;
-        /**
-         * 格式
-         */
-        format: TextureFormat;
-        /**
-         * 数据类型
-         */
-        type: TextureDataType;
-        /**
-         * 是否生成mipmap
-         */
-        generateMipmap: boolean;
-        /**
-         * 对图像进行Y轴反转。默认值为false
-         */
-        flipY: boolean;
-        /**
-         * 将图像RGB颜色值得每一个分量乘以A。默认为false
-         */
-        premulAlpha: boolean;
-        minFilter: TextureMinFilter;
-        magFilter: TextureMagFilter;
-        /**
-         * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
-         */
-        wrapS: TextureWrap;
-        /**
-         * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
-         */
-        wrapT: TextureWrap;
-        /**
-         * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
-         */
-        anisotropy: number;
-        /**
-         * 当前使用的贴图数据
-         */
-        activePixels: TexImageSource | TexImageSource[];
-        /**
-         * 是否为渲染目标纹理
-         */
-        isRenderTarget: boolean;
-        OFFSCREEN_WIDTH: number;
-        OFFSCREEN_HEIGHT: number;
-        /**
-         * 是否失效，值为true时重新创建 WebGLTexture
-         */
-        invalid: boolean;
-    }
-    class Texture {
-        static active(gl: GL, data: Texture): WebGLTexture;
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        static getTexture(gl: GL, data: Texture): WebGLTexture;
-        /**
-         * 清除纹理
-         *
-         * @param data
-         */
-        static clear(data: Texture): void;
-    }
-}
-declare namespace feng3d {
-    class FrameBuffer {
-        /**
-         * 是否失效
-         */
-        private _invalid;
-        static active(gl: GL, frameBuffer: FrameBuffer): WebGLFramebuffer;
-        /**
-         * 清理缓存
-         */
-        static clear(frameBuffer: FrameBuffer): void;
-    }
-}
-declare namespace feng3d {
-    class RenderBuffer {
-        OFFSCREEN_WIDTH: number;
-        OFFSCREEN_HEIGHT: number;
-        /**
-         * 是否失效
-         */
-        private _invalid;
-        /**
-         * 使失效
-         */
-        protected invalidate(): void;
-        /**
-         * 激活
-         * @param gl
-         */
-        static active(gl: GL, renderBuffer: RenderBuffer): WebGLBuffer;
-        /**
-         * 清理纹理
-         */
-        static clear(renderBuffer: RenderBuffer): void;
+        FLOAT = "FLOAT"
     }
 }
 declare namespace feng3d {
     /**
-     * 着色器代码宏工具
+     * 纹理数据类型
+     * A GLenum specifying the data type of the texel data
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
-    var shaderMacroUtils: ShaderMacroUtils;
-    class ShaderMacroUtils {
+    enum TextureDataType {
         /**
-         * 从着色器代码中获取宏变量列表
-         * @param vertex
-         * @param fragment
+         * 8 bits per channel for gl.RGBA
          */
-        getMacroVariablesFromShaderCode(vertex: string, fragment: string): string[];
+        UNSIGNED_BYTE = "UNSIGNED_BYTE",
         /**
-         * 从着色器代码中获取宏变量列表
-         * @param code
+         * 5 red bits, 6 green bits, 5 blue bits.
          */
-        getMacroVariablesFromCode(code: string): string[];
+        UNSIGNED_SHORT_5_6_5 = "UNSIGNED_SHORT_5_6_5",
+        /**
+         * 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
+         */
+        UNSIGNED_SHORT_4_4_4_4 = "UNSIGNED_SHORT_4_4_4_4",
+        /**
+         * 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
+         */
+        UNSIGNED_SHORT_5_5_5_1 = "UNSIGNED_SHORT_5_5_5_1"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 纹理颜色格式
+     * A GLint specifying the color components in the texture
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    enum TextureFormat {
+        /**
+         * Discards the red, green and blue components and reads the alpha component.
+         */
+        ALPHA = "ALPHA",
+        /**
+         *  Discards the alpha components and reads the red, green and blue components.
+         */
+        RGB = "RGB",
+        /**
+         * Red, green, blue and alpha components are read from the color buffer.
+         */
+        RGBA = "RGBA",
+        /**
+         * Each color component is a luminance component, alpha is 1.0.
+         */
+        LUMINANCE = "LUMINANCE",
+        /**
+         * Each component is a luminance/alpha component.
+         */
+        LUMINANCE_ALPHA = "LUMINANCE_ALPHA"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 纹理放大滤波器
+     * Texture magnification filter
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    enum TextureMagFilter {
+        /**
+         *  (default value)
+         */
+        LINEAR = "LINEAR",
+        NEAREST = "NEAREST"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 纹理缩小过滤器
+     * Texture minification filter
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    enum TextureMinFilter {
+        LINEAR = "LINEAR",
+        NEAREST = "NEAREST",
+        NEAREST_MIPMAP_NEAREST = "NEAREST_MIPMAP_NEAREST",
+        LINEAR_MIPMAP_NEAREST = "LINEAR_MIPMAP_NEAREST",
+        /**
+         *  (default value)
+         */
+        NEAREST_MIPMAP_LINEAR = "NEAREST_MIPMAP_LINEAR",
+        LINEAR_MIPMAP_LINEAR = "LINEAR_MIPMAP_LINEAR"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 纹理类型
+     * A GLenum specifying the binding point (target). Possible values:
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
+     */
+    enum TextureType {
+        /**
+         * gl.TEXTURE_2D: A two-dimensional texture.
+         */
+        TEXTURE_2D = "TEXTURE_2D",
+        /**
+         * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
+         */
+        TEXTURE_CUBE_MAP = "TEXTURE_CUBE_MAP"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 纹理坐标s包装函数枚举
+     * Wrapping function for texture coordinate s
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    enum TextureWrap {
+        /**
+         * (default value)
+         */
+        REPEAT = "REPEAT",
+        CLAMP_TO_EDGE = "CLAMP_TO_EDGE",
+        MIRRORED_REPEAT = "MIRRORED_REPEAT"
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渲染器
+     * 所有渲染都由该渲染器执行
+     */
+    class Renderer {
+        /**
+         * 绘制
+         * @param renderAtomic  渲染原子
+         */
+        readonly draw: (renderAtomic: RenderAtomic) => void;
+        constructor(gl: GL);
     }
 }
 declare namespace feng3d {
@@ -1298,16 +1293,21 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 渲染器
-     * 所有渲染都由该渲染器执行
+     * 着色器代码宏工具
      */
-    class Renderer {
+    var shaderMacroUtils: ShaderMacroUtils;
+    class ShaderMacroUtils {
         /**
-         * 绘制
-         * @param renderAtomic  渲染原子
+         * 从着色器代码中获取宏变量列表
+         * @param vertex
+         * @param fragment
          */
-        readonly draw: (renderAtomic: RenderAtomic) => void;
-        constructor(gl: GL);
+        getMacroVariablesFromShaderCode(vertex: string, fragment: string): string[];
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param code
+         */
+        getMacroVariablesFromCode(code: string): string[];
     }
 }
 //# sourceMappingURL=render.d.ts.map

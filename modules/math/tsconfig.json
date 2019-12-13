@@ -13,51 +13,8 @@
             "DOM",
         ],
     },
-    "files": [
-        // 函数方程
-        "src/EquationSolving.ts",
-        "src/HighFunction.ts",
-        //
-        "src/enums/CoordinateSystem.ts",
-        "src/enums/RotationOrder.ts",
-        // 颜色
-        "src/Color3.ts",
-        "src/Color4.ts",
-        // 几何运算
-        "src/geom/Vector2.ts",
-        "src/geom/Vector3.ts",
-        "src/geom/Vector4.ts",
-        "src/geom/Rectangle.ts",
-        "src/geom/Matrix3x3.ts",
-        "src/geom/Matrix4x4.ts",
-        "src/geom/Quaternion.ts",
-        "src/geom/Line3D.ts",
-        "src/geom/Segment3D.ts",
-        "src/geom/Ray3D.ts",
-        "src/geom/Triangle3D.ts",
-        "src/geom/AABB.ts",
-        "src/geom/Sphere.ts",
-        "src/geom/Plane3D.ts",
-        "src/geom/Frustum.ts",
-        "src/geom/PlaneClassification.ts",
-        "src/geom/TriangleGeometry.ts",
-        // 颜色渐变
-        "src/gradient/GradientMode.ts",
-        "src/gradient/GradientAlphaKey.ts",
-        "src/gradient/GradientColorKey.ts",
-        "src/gradient/Gradient.ts",
-        "src/gradient/MinMaxGradientMode.ts",
-        "src/gradient/MinMaxGradient.ts",
-        // 曲线
-        "src/curve/BezierCurve.ts",
-        "src/curve/AnimationCurveKeyframe.ts",
-        "src/curve/AnimationCurveWrapMode.ts",
-        "src/curve/AnimationCurve.ts",
-        "src/curve/MinMaxCurveMode.ts",
-        "src/curve/MinMaxCurve.ts",
-        "src/curve/MinMaxCurveVector3.ts",
-        //
-        "src/ClassicNoise.ts",
+    "include": [
+        "src/**/*.ts",
     ],
     "references": [
         {

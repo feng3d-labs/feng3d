@@ -122,6 +122,8 @@ namespace feng3d
 		{
 			var planes = this.planes;
 
+			var _vector = new Vector3();
+
 			for (var i = 0; i < 6; i++)
 			{
 				var plane = planes[i];
@@ -159,6 +161,4 @@ namespace feng3d
 			return true;
 		}
 	}
-
-	var _vector = new Vector3();
 }
