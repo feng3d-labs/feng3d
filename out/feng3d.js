@@ -14768,8 +14768,7 @@ var feng3d;
          *
          * @param box 长方体
          */
-        Frustum.prototype.intersectsBox = function (box, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
+        Frustum.prototype.intersectsBox = function (box) {
             var planes = this.planes;
             for (var i = 0; i < 6; i++) {
                 var plane = planes[i];
@@ -14778,7 +14777,7 @@ var feng3d;
                 _vector.x = normal.x > 0 ? box.max.x : box.min.x;
                 _vector.y = normal.y > 0 ? box.max.y : box.min.y;
                 _vector.z = normal.z > 0 ? box.max.z : box.min.z;
-                if (plane.distanceWithPoint(_vector) < -precision) {
+                if (plane.distanceWithPoint(_vector) < 0) {
                     return false;
                 }
             }
@@ -14789,11 +14788,10 @@ var feng3d;
          *
          * @param point
          */
-        Frustum.prototype.containsPoint = function (point, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
+        Frustum.prototype.containsPoint = function (point) {
             var planes = this.planes;
             for (var i = 0; i < 6; i++) {
-                if (planes[i].distanceWithPoint(point) < -precision) {
+                if (planes[i].distanceWithPoint(point) < 0) {
                     return false;
                 }
             }

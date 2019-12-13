@@ -3266,13 +3266,13 @@ declare namespace feng3d {
          *
          * @param box 长方体
          */
-        intersectsBox(box: AABB, precision?: number): boolean;
+        intersectsBox(box: AABB): boolean;
         /**
          * 与点是否相交
          *
          * @param point
          */
-        containsPoint(point: Vector3, precision?: number): boolean;
+        containsPoint(point: Vector3): boolean;
     }
 }
 declare namespace feng3d {

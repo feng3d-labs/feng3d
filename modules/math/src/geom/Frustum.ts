@@ -118,7 +118,7 @@ namespace feng3d
 		 * 
 		 * @param box 长方体
 		 */
-		intersectsBox(box: AABB, precision = Math.PRECISION)
+		intersectsBox(box: AABB)
 		{
 			var planes = this.planes;
 
@@ -133,7 +133,7 @@ namespace feng3d
 				_vector.y = normal.y > 0 ? box.max.y : box.min.y;
 				_vector.z = normal.z > 0 ? box.max.z : box.min.z;
 
-				if (plane.distanceWithPoint(_vector) < -precision)
+				if (plane.distanceWithPoint(_vector) < 0)
 				{
 					return false;
 				}
@@ -146,12 +146,12 @@ namespace feng3d
 		 * 
 		 * @param point 
 		 */
-		containsPoint(point: Vector3, precision = Math.PRECISION)
+		containsPoint(point: Vector3)
 		{
 			var planes = this.planes;
 			for (var i = 0; i < 6; i++)
 			{
-				if (planes[i].distanceWithPoint(point) < -precision)
+				if (planes[i].distanceWithPoint(point) < 0)
 				{
 					return false;
 				}
