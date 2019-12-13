@@ -237,6 +237,18 @@ namespace feng3d
         }
 
         /**
+         * 平移
+         * 
+         * @param offset 偏移量
+         */
+        translate(offset: Vector3)
+        {
+            this.min.add(offset);
+            this.max.add(offset);
+            return this;
+        }
+
+        /**
          * 膨胀包围盒
          * @param dx x方向膨胀量 
          * @param dy y方向膨胀量
@@ -542,7 +554,7 @@ namespace feng3d
          * 是否与平面相交
          * @param plane 平面
          */
-        intersectsPlane(plane: Plane3D)
+        intersectsPlane(plane: Plane)
         {
             var min = Infinity;
             var max = -Infinity;

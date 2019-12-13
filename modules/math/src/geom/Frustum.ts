@@ -14,7 +14,7 @@ namespace feng3d
 	 */
 	export class Frustum
 	{
-		planes: Plane3D[];
+		planes: Plane[];
 
 		/**
 		 * 初始化截头锥体
@@ -26,14 +26,14 @@ namespace feng3d
 		 * @param p4 
 		 * @param p5 
 		 */
-		constructor(p0 = new Plane3D(), p1 = new Plane3D(), p2 = new Plane3D(), p3 = new Plane3D(), p4 = new Plane3D(), p5 = new Plane3D())
+		constructor(p0 = new Plane(), p1 = new Plane(), p2 = new Plane(), p3 = new Plane(), p4 = new Plane(), p5 = new Plane())
 		{
 			this.planes = [
 				p0, p1, p2, p3, p4, p5
 			];
 		}
 
-		set(p0: Plane3D, p1: Plane3D, p2: Plane3D, p3: Plane3D, p4: Plane3D, p5: Plane3D)
+		set(p0: Plane, p1: Plane, p2: Plane, p3: Plane, p4: Plane, p5: Plane)
 		{
 			var planes = this.planes;
 
@@ -118,7 +118,7 @@ namespace feng3d
 		 * 
 		 * @param box 长方体
 		 */
-		intersectsBox(box: AABB)
+		intersectsBox(box: AABB, precision = Math.PRECISION)
 		{
 			var planes = this.planes;
 
@@ -133,7 +133,7 @@ namespace feng3d
 				_vector.y = normal.y > 0 ? box.max.y : box.min.y;
 				_vector.z = normal.z > 0 ? box.max.z : box.min.z;
 
-				if (plane.distanceWithPoint(_vector) < 0)
+				if (plane.onWithPoint(_vector, precision))
 				{
 					return false;
 				}
@@ -146,12 +146,12 @@ namespace feng3d
 		 * 
 		 * @param point 
 		 */
-		containsPoint(point: Vector3)
+		containsPoint(point: Vector3, precision = Math.PRECISION)
 		{
 			var planes = this.planes;
 			for (var i = 0; i < 6; i++)
 			{
-				if (planes[i].distanceWithPoint(point) < 0)
+				if (planes[i].onWithPoint(point, precision))
 				{
 					return false;
 				}

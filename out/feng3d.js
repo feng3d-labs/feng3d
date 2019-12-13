@@ -12853,7 +12853,7 @@ var feng3d;
          * 获取经过该直线的平面
          */
         Line3D.prototype.getPlane = function (plane) {
-            if (plane === void 0) { plane = new feng3d.Plane3D(); }
+            if (plane === void 0) { plane = new feng3d.Plane(); }
             return plane.fromNormalAndPoint(feng3d.Vector3.random().cross(this.direction), this.position);
         };
         /**
@@ -13224,7 +13224,7 @@ var feng3d;
          * 三角形所在平面
          */
         Triangle3D.prototype.getPlane3d = function (pout) {
-            if (pout === void 0) { pout = new feng3d.Plane3D(); }
+            if (pout === void 0) { pout = new feng3d.Plane(); }
             return pout.fromPoints(this.p0, this.p1, this.p2);
         };
         /**
@@ -13805,6 +13805,16 @@ var feng3d;
             return this.min.equals(aabb.min) && this.max.equals(aabb.max);
         };
         /**
+         * 平移
+         *
+         * @param offset 偏移量
+         */
+        AABB.prototype.translate = function (offset) {
+            this.min.add(offset);
+            this.max.add(offset);
+            return this;
+        };
+        /**
          * 膨胀包围盒
          * @param dx x方向膨胀量
          * @param dy y方向膨胀量
@@ -14353,10 +14363,11 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3d面
+     * 平面
+     *
      * ax+by+cz+d=0
      */
-    var Plane3D = /** @class */ (function () {
+    var Plane = /** @class */ (function () {
         /**
          * 创建一个平面
          * @param a		A系数
@@ -14364,7 +14375,7 @@ var feng3d;
          * @param c		C系数
          * @param d		D系数
          */
-        function Plane3D(a, b, c, d) {
+        function Plane(a, b, c, d) {
             if (a === void 0) { a = 0; }
             if (b === void 0) { b = 1; }
             if (c === void 0) { c = 0; }
@@ -14380,23 +14391,23 @@ var feng3d;
          * @param p1		点1
          * @param p2		点2
          */
-        Plane3D.fromPoints = function (p0, p1, p2) {
-            return new Plane3D().fromPoints(p0, p1, p2);
+        Plane.fromPoints = function (p0, p1, p2) {
+            return new Plane().fromPoints(p0, p1, p2);
         };
         /**
          * 根据法线与点定义平面
          * @param normal		平面法线
          * @param point			平面上任意一点
          */
-        Plane3D.fromNormalAndPoint = function (normal, point) {
-            return new Plane3D().fromNormalAndPoint(normal, point);
+        Plane.fromNormalAndPoint = function (normal, point) {
+            return new Plane().fromNormalAndPoint(normal, point);
         };
         /**
          * 随机平面
          */
-        Plane3D.random = function () {
+        Plane.random = function () {
             var normal = feng3d.Vector3.random().normalize();
-            return new Plane3D(normal.x, normal.y, normal.z, Math.random());
+            return new Plane(normal.x, normal.y, normal.z, Math.random());
         };
         /**
          * 设置
@@ -14406,7 +14417,7 @@ var feng3d;
          * @param c		C系数
          * @param d		D系数
          */
-        Plane3D.prototype.set = function (a, b, c, d) {
+        Plane.prototype.set = function (a, b, c, d) {
             this.a = a;
             this.b = b;
             this.c = c;
@@ -14417,7 +14428,7 @@ var feng3d;
          * 原点在平面上的投影
          * @param vout 输出点
          */
-        Plane3D.prototype.getOrigin = function (vout) {
+        Plane.prototype.getOrigin = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return this.projectPoint(new feng3d.Vector3(), vout);
         };
@@ -14425,14 +14436,14 @@ var feng3d;
          * 平面上随机点
          * @param vout 输出点
          */
-        Plane3D.prototype.randomPoint = function (vout) {
+        Plane.prototype.randomPoint = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return this.getOrigin(vout).add(this.getNormal().cross(feng3d.Vector3.random()));
         };
         /**
          * 法线
          */
-        Plane3D.prototype.getNormal = function (vout) {
+        Plane.prototype.getNormal = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return vout.set(this.a, this.b, this.c);
         };
@@ -14442,7 +14453,7 @@ var feng3d;
          * @param p1		点1
          * @param p2		点2
          */
-        Plane3D.prototype.fromPoints = function (p0, p1, p2) {
+        Plane.prototype.fromPoints = function (p0, p1, p2) {
             // p1.subTo(p0, v0);
             // p2.subTo(p1, v1);
             // var normal = v0.crossTo(v1).normalize();
@@ -14458,7 +14469,7 @@ var feng3d;
          * @param normal		平面法线
          * @param point			平面上任意一点
          */
-        Plane3D.prototype.fromNormalAndPoint = function (normal, point) {
+        Plane.prototype.fromNormalAndPoint = function (normal, point) {
             normal = normal.clone().normalize();
             this.a = normal.x;
             this.b = normal.y;
@@ -14471,15 +14482,16 @@ var feng3d;
          * @param p		点
          * @returns		距离
          */
-        Plane3D.prototype.distanceWithPoint = function (p) {
+        Plane.prototype.distanceWithPoint = function (p) {
             return this.a * p.x + this.b * p.y + this.c * p.z + this.d;
         };
         /**
          * 点是否在平面上
          * @param p 点
          */
-        Plane3D.prototype.onWithPoint = function (p) {
-            return Math.equals(this.distanceWithPoint(p), 0);
+        Plane.prototype.onWithPoint = function (p, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            return Math.equals(this.distanceWithPoint(p), 0, precision);
         };
         /**
          * 顶点分类
@@ -14487,7 +14499,7 @@ var feng3d;
          * @param p			顶点
          * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
          */
-        Plane3D.prototype.classifyPoint = function (p, precision) {
+        Plane.prototype.classifyPoint = function (p, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             var len = this.distanceWithPoint(p);
             if (Math.equals(len, 0, precision))
@@ -14500,7 +14512,7 @@ var feng3d;
          * 判定与直线是否平行
          * @param line3D
          */
-        Plane3D.prototype.parallelWithLine3D = function (line3D, precision) {
+        Plane.prototype.parallelWithLine3D = function (line3D, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             if (Math.equals(line3D.direction.dot(this.getNormal()), 0, precision))
                 return true;
@@ -14510,7 +14522,7 @@ var feng3d;
          * 判定与平面是否平行
          * @param plane3D
          */
-        Plane3D.prototype.parallelWithPlane3D = function (plane3D, precision) {
+        Plane.prototype.parallelWithPlane3D = function (plane3D, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             if (plane3D.getNormal().isParallel(this.getNormal(), precision))
                 return true;
@@ -14519,7 +14531,7 @@ var feng3d;
         /**
          * 获取与直线交点
          */
-        Plane3D.prototype.intersectWithLine3D = function (line3D) {
+        Plane.prototype.intersectWithLine3D = function (line3D) {
             //处理平行
             if (this.parallelWithLine3D(line3D)) {
                 // 处理直线在平面内
@@ -14540,7 +14552,7 @@ var feng3d;
          * 获取与平面相交直线
          * @param plane3D
          */
-        Plane3D.prototype.intersectWithPlane3D = function (plane3D) {
+        Plane.prototype.intersectWithPlane3D = function (plane3D) {
             if (this.parallelWithPlane3D(plane3D))
                 return null;
             var direction = this.getNormal().crossTo(plane3D.getNormal());
@@ -14570,7 +14582,7 @@ var feng3d;
         /**
          * 标准化
          */
-        Plane3D.prototype.normalize = function () {
+        Plane.prototype.normalize = function () {
             var a = this.a, b = this.b, c = this.c, d = this.d;
             var s = a * a + b * b + c * c;
             if (s > 0) {
@@ -14588,7 +14600,7 @@ var feng3d;
         /**
          * 翻转平面
          */
-        Plane3D.prototype.negate = function () {
+        Plane.prototype.negate = function () {
             this.a = -this.a;
             this.b = -this.b;
             this.c = -this.c;
@@ -14599,7 +14611,7 @@ var feng3d;
          * 点到平面的投影
          * @param point
          */
-        Plane3D.prototype.projectPoint = function (point, vout) {
+        Plane.prototype.projectPoint = function (point, vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return this.getNormal(vout).scaleNumber(-this.distanceWithPoint(point)).add(point);
         };
@@ -14608,14 +14620,32 @@ var feng3d;
          * @param point 点
          * @param vout 输出点
          */
-        Plane3D.prototype.closestPointWithPoint = function (point, vout) {
+        Plane.prototype.closestPointWithPoint = function (point, vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
             return this.projectPoint(point, vout);
         };
         /**
+         * 与指定平面是否相等
+         *
+         * @param plane
+         * @param precision
+         */
+        Plane.prototype.equals = function (plane, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (!Math.equals(this.a - plane.a, 0, precision))
+                return false;
+            if (!Math.equals(this.b - plane.b, 0, precision))
+                return false;
+            if (!Math.equals(this.c - plane.c, 0, precision))
+                return false;
+            if (!Math.equals(this.d - plane.d, 0, precision))
+                return false;
+            return true;
+        };
+        /**
          * 复制
          */
-        Plane3D.prototype.copy = function (plane) {
+        Plane.prototype.copy = function (plane) {
             this.a = plane.a;
             this.b = plane.b;
             this.c = plane.c;
@@ -14625,18 +14655,18 @@ var feng3d;
         /**
          * 克隆
          */
-        Plane3D.prototype.clone = function () {
-            return new Plane3D().copy(this);
+        Plane.prototype.clone = function () {
+            return new Plane().copy(this);
         };
         /**
          * 输出字符串
          */
-        Plane3D.prototype.toString = function () {
+        Plane.prototype.toString = function () {
             return "Plane3D [this.a:" + this.a + ", this.b:" + this.b + ", this.c:" + this.c + ", this.d:" + this.d + "]";
         };
-        return Plane3D;
+        return Plane;
     }());
-    feng3d.Plane3D = Plane3D;
+    feng3d.Plane = Plane;
     // var v0 = new Vector3();
     // var v1 = new Vector3();
     // var v2 = new Vector3();
@@ -14666,12 +14696,12 @@ var feng3d;
          * @param p5
          */
         function Frustum(p0, p1, p2, p3, p4, p5) {
-            if (p0 === void 0) { p0 = new feng3d.Plane3D(); }
-            if (p1 === void 0) { p1 = new feng3d.Plane3D(); }
-            if (p2 === void 0) { p2 = new feng3d.Plane3D(); }
-            if (p3 === void 0) { p3 = new feng3d.Plane3D(); }
-            if (p4 === void 0) { p4 = new feng3d.Plane3D(); }
-            if (p5 === void 0) { p5 = new feng3d.Plane3D(); }
+            if (p0 === void 0) { p0 = new feng3d.Plane(); }
+            if (p1 === void 0) { p1 = new feng3d.Plane(); }
+            if (p2 === void 0) { p2 = new feng3d.Plane(); }
+            if (p3 === void 0) { p3 = new feng3d.Plane(); }
+            if (p4 === void 0) { p4 = new feng3d.Plane(); }
+            if (p5 === void 0) { p5 = new feng3d.Plane(); }
             this.planes = [
                 p0, p1, p2, p3, p4, p5
             ];
@@ -14738,7 +14768,8 @@ var feng3d;
          *
          * @param box 长方体
          */
-        Frustum.prototype.intersectsBox = function (box) {
+        Frustum.prototype.intersectsBox = function (box, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
             var planes = this.planes;
             for (var i = 0; i < 6; i++) {
                 var plane = planes[i];
@@ -14747,7 +14778,7 @@ var feng3d;
                 _vector.x = normal.x > 0 ? box.max.x : box.min.x;
                 _vector.y = normal.y > 0 ? box.max.y : box.min.y;
                 _vector.z = normal.z > 0 ? box.max.z : box.min.z;
-                if (plane.distanceWithPoint(_vector) < 0) {
+                if (plane.onWithPoint(_vector, precision)) {
                     return false;
                 }
             }
@@ -14758,10 +14789,11 @@ var feng3d;
          *
          * @param point
          */
-        Frustum.prototype.containsPoint = function (point) {
+        Frustum.prototype.containsPoint = function (point, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
             var planes = this.planes;
             for (var i = 0; i < 6; i++) {
-                if (planes[i].distanceWithPoint(point) < 0) {
+                if (planes[i].onWithPoint(point, precision)) {
                     return false;
                 }
             }
@@ -31425,7 +31457,7 @@ var feng3d;
                 0.5, 0.5, 0.5, 1.0
             ]);
             textureMatrix.append(mirrorCamera.viewProjection);
-            var mirrorPlane = feng3d.Plane3D.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.deltaTransformVector(normal), mirrorCamera.transform.worldToLocalMatrix.transformVector(mirrorWorldPosition));
+            var mirrorPlane = feng3d.Plane.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.deltaTransformVector(normal), mirrorCamera.transform.worldToLocalMatrix.transformVector(mirrorWorldPosition));
             var clipPlane = new feng3d.Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
             var projectionMatrix = mirrorCamera.lens.matrix;
             var q = new feng3d.Vector4();

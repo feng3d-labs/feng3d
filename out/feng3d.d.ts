@@ -5990,7 +5990,7 @@ declare namespace feng3d {
         /**
          * 获取经过该直线的平面
          */
-        getPlane(plane?: Plane3D): Plane3D;
+        getPlane(plane?: Plane): Plane;
         /**
          * 获取直线上的一个点
          * @param length 与原点距离
@@ -6205,7 +6205,7 @@ declare namespace feng3d {
         /**
          * 三角形所在平面
          */
-        getPlane3d(pout?: Plane3D): Plane3D;
+        getPlane3d(pout?: Plane): Plane;
         /**
          * 获取法线
          */
@@ -6456,6 +6456,12 @@ declare namespace feng3d {
          */
         equals(aabb: AABB): boolean;
         /**
+         * 平移
+         *
+         * @param offset 偏移量
+         */
+        translate(offset: Vector3): this;
+        /**
          * 膨胀包围盒
          * @param dx x方向膨胀量
          * @param dy y方向膨胀量
@@ -6540,7 +6546,7 @@ declare namespace feng3d {
          * 是否与平面相交
          * @param plane 平面
          */
-        intersectsPlane(plane: Plane3D): boolean;
+        intersectsPlane(plane: Plane): boolean;
         /**
          * 是否与三角形相交
          * @param triangle 三角形
@@ -6632,7 +6638,7 @@ declare namespace feng3d {
          * 是否与平面相交
          * @param plane 平面
          */
-        intersectsPlane(plane: Plane3D): boolean;
+        intersectsPlane(plane: Plane): boolean;
         /**
          *
          * @param point 点
@@ -6663,27 +6669,28 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 3d面
+     * 平面
+     *
      * ax+by+cz+d=0
      */
-    class Plane3D {
+    class Plane {
         /**
          * 通过3顶点定义一个平面
          * @param p0		点0
          * @param p1		点1
          * @param p2		点2
          */
-        static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Plane3D;
+        static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Plane;
         /**
          * 根据法线与点定义平面
          * @param normal		平面法线
          * @param point			平面上任意一点
          */
-        static fromNormalAndPoint(normal: Vector3, point: Vector3): Plane3D;
+        static fromNormalAndPoint(normal: Vector3, point: Vector3): Plane;
         /**
          * 随机平面
          */
-        static random(): Plane3D;
+        static random(): Plane;
         /**
          * 平面A系数
          * <p>同样也是面法线x尺寸</p>
@@ -6758,7 +6765,7 @@ declare namespace feng3d {
          * 点是否在平面上
          * @param p 点
          */
-        onWithPoint(p: Vector3): boolean;
+        onWithPoint(p: Vector3, precision?: number): boolean;
         /**
          * 顶点分类
          * <p>把顶点分为后面、前面、相交三类</p>
@@ -6775,7 +6782,7 @@ declare namespace feng3d {
          * 判定与平面是否平行
          * @param plane3D
          */
-        parallelWithPlane3D(plane3D: Plane3D, precision?: number): boolean;
+        parallelWithPlane3D(plane3D: Plane, precision?: number): boolean;
         /**
          * 获取与直线交点
          */
@@ -6784,7 +6791,7 @@ declare namespace feng3d {
          * 获取与平面相交直线
          * @param plane3D
          */
-        intersectWithPlane3D(plane3D: Plane3D): Line3D;
+        intersectWithPlane3D(plane3D: Plane): Line3D;
         /**
          * 标准化
          */
@@ -6805,13 +6812,20 @@ declare namespace feng3d {
          */
         closestPointWithPoint(point: Vector3, vout?: Vector3): Vector3;
         /**
+         * 与指定平面是否相等
+         *
+         * @param plane
+         * @param precision
+         */
+        equals(plane: Plane, precision?: number): boolean;
+        /**
          * 复制
          */
-        copy(plane: Plane3D): this;
+        copy(plane: Plane): this;
         /**
          * 克隆
          */
-        clone(): Plane3D;
+        clone(): Plane;
         /**
          * 输出字符串
          */
@@ -6831,7 +6845,7 @@ declare namespace feng3d {
      * @author bhouston / http://clara.io
      */
     class Frustum {
-        planes: Plane3D[];
+        planes: Plane[];
         /**
          * 初始化截头锥体
          *
@@ -6842,8 +6856,8 @@ declare namespace feng3d {
          * @param p4
          * @param p5
          */
-        constructor(p0?: Plane3D, p1?: Plane3D, p2?: Plane3D, p3?: Plane3D, p4?: Plane3D, p5?: Plane3D);
-        set(p0: Plane3D, p1: Plane3D, p2: Plane3D, p3: Plane3D, p4: Plane3D, p5: Plane3D): this;
+        constructor(p0?: Plane, p1?: Plane, p2?: Plane, p3?: Plane, p4?: Plane, p5?: Plane);
+        set(p0: Plane, p1: Plane, p2: Plane, p3: Plane, p4: Plane, p5: Plane): this;
         clone(): Frustum;
         copy(frustum: Frustum): this;
         /**
@@ -6863,13 +6877,13 @@ declare namespace feng3d {
          *
          * @param box 长方体
          */
-        intersectsBox(box: AABB): boolean;
+        intersectsBox(box: AABB, precision?: number): boolean;
         /**
          * 与点是否相交
          *
          * @param point
          */
-        containsPoint(point: Vector3): boolean;
+        containsPoint(point: Vector3, precision?: number): boolean;
     }
 }
 declare namespace feng3d {

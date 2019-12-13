@@ -1,10 +1,11 @@
 namespace feng3d
 {
 	/**
-	 * 3d面
+	 * 平面
+     * 
      * ax+by+cz+d=0
 	 */
-    export class Plane3D
+    export class Plane
     {
         /**
 		 * 通过3顶点定义一个平面
@@ -14,7 +15,7 @@ namespace feng3d
 		 */
         static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
         {
-            return new Plane3D().fromPoints(p0, p1, p2);
+            return new Plane().fromPoints(p0, p1, p2);
         }
 
 		/**
@@ -24,7 +25,7 @@ namespace feng3d
 		 */
         static fromNormalAndPoint(normal: Vector3, point: Vector3)
         {
-            return new Plane3D().fromNormalAndPoint(normal, point);
+            return new Plane().fromNormalAndPoint(normal, point);
         }
 
         /**
@@ -33,7 +34,7 @@ namespace feng3d
         static random()
         {
             var normal = Vector3.random().normalize();
-            return new Plane3D(normal.x, normal.y, normal.z, Math.random());
+            return new Plane(normal.x, normal.y, normal.z, Math.random());
         }
 
 		/**
@@ -166,9 +167,9 @@ namespace feng3d
          * 点是否在平面上
          * @param p 点
          */
-        onWithPoint(p: Vector3)
+        onWithPoint(p: Vector3, precision = Math.PRECISION)
         {
-            return Math.equals(this.distanceWithPoint(p), 0);
+            return Math.equals(this.distanceWithPoint(p), 0, precision);
         }
 
 		/**
@@ -202,7 +203,7 @@ namespace feng3d
          * 判定与平面是否平行
          * @param plane3D
          */
-        parallelWithPlane3D(plane3D: Plane3D, precision = Math.PRECISION)
+        parallelWithPlane3D(plane3D: Plane, precision = Math.PRECISION)
         {
             if (plane3D.getNormal().isParallel(this.getNormal(), precision))
                 return true;
@@ -237,7 +238,7 @@ namespace feng3d
          * 获取与平面相交直线
          * @param plane3D 
          */
-        intersectWithPlane3D(plane3D: Plane3D)
+        intersectWithPlane3D(plane3D: Plane)
         {
             if (this.parallelWithPlane3D(plane3D))
                 return null;
@@ -324,9 +325,28 @@ namespace feng3d
         }
 
         /**
+         * 与指定平面是否相等
+         * 
+         * @param plane 
+         * @param precision 
+         */
+        equals(plane: Plane, precision = Math.PRECISION)
+        {
+            if (!Math.equals(this.a - plane.a, 0, precision))
+                return false;
+            if (!Math.equals(this.b - plane.b, 0, precision))
+                return false;
+            if (!Math.equals(this.c - plane.c, 0, precision))
+                return false;
+            if (!Math.equals(this.d - plane.d, 0, precision))
+                return false;
+            return true;
+        }
+
+        /**
          * 复制
          */
-        copy(plane: Plane3D)
+        copy(plane: Plane)
         {
             this.a = plane.a;
             this.b = plane.b;
@@ -340,7 +360,7 @@ namespace feng3d
          */
         clone()
         {
-            return new Plane3D().copy(this);
+            return new Plane().copy(this);
         }
 
         /**

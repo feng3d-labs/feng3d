@@ -82,7 +82,7 @@ namespace feng3d
         /**
          * 获取经过该直线的平面
          */
-        getPlane(plane = new Plane3D())
+        getPlane(plane = new Plane())
         {
             return plane.fromNormalAndPoint(Vector3.random().cross(this.direction), this.position);
         }

@@ -73,7 +73,7 @@ namespace feng3d
         /**
          * 三角形所在平面
          */
-        getPlane3d(pout = new Plane3D())
+        getPlane3d(pout = new Plane())
         {
             return pout.fromPoints(this.p0, this.p1, this.p2);
         }

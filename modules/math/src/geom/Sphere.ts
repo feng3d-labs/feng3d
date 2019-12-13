@@ -186,7 +186,7 @@ namespace feng3d
          * 是否与平面相交
          * @param plane 平面
          */
-        intersectsPlane(plane: Plane3D)
+        intersectsPlane(plane: Plane)
         {
             return Math.abs(plane.distanceWithPoint(this.center)) <= this.radius;
         }
