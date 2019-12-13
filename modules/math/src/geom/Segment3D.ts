@@ -41,7 +41,7 @@ namespace feng3d
         /**
          * 获取线段所在直线
          */
-        getLine(line = new Line3D())
+        getLine(line = new Line3())
         {
             return line.fromPoints(this.p0.clone(), this.p1.clone());
         }
@@ -138,12 +138,12 @@ namespace feng3d
          * 与直线相交
          * @param line 直线
          */
-        intersectionWithLine(line: Line3D)
+        intersectionWithLine(line: Line3)
         {
             var l = this.getLine();
             var r = l.intersectWithLine3D(line);
             if (!r) return null;
-            if (r instanceof Line3D)
+            if (r instanceof Line3)
                 return this.clone();
             if (this.onWithPoint(r))
                 return r;

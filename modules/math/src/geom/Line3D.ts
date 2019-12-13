@@ -2,9 +2,8 @@ namespace feng3d
 {
 	/**
 	 * 3d直线
-
 	 */
-    export class Line3D
+    export class Line3
     {
         /**
 		 * 根据直线上两点初始化直线
@@ -13,7 +12,7 @@ namespace feng3d
 		 */
         static fromPoints(p0: Vector3, p1: Vector3)
         {
-            return new Line3D().fromPoints(p0, p1);
+            return new Line3().fromPoints(p0, p1);
         }
 
 		/**
@@ -23,7 +22,7 @@ namespace feng3d
 		 */
         static fromPosAndDir(position: Vector3, direction: Vector3)
         {
-            return new Line3D().fromPosAndDir(position, direction);
+            return new Line3().fromPosAndDir(position, direction);
         }
 
         /**
@@ -31,7 +30,7 @@ namespace feng3d
          */
         static random()
         {
-            return new Line3D(Vector3.random(), Vector3.random());
+            return new Line3(Vector3.random(), Vector3.random());
         }
 
         /**
@@ -152,7 +151,7 @@ namespace feng3d
          * 与直线相交
          * @param line3D 直线
          */
-        intersectWithLine3D(line3D: Line3D)
+        intersectWithLine3D(line3D: Line3)
         {
             // 处理相等
             if (this.equals(line3D))
@@ -185,7 +184,7 @@ namespace feng3d
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        equals(line: Line3D, precision = Math.PRECISION)
+        equals(line: Line3, precision = Math.PRECISION)
         {
             if (!this.onWithPoint(line.position))
                 return false;
@@ -198,7 +197,7 @@ namespace feng3d
          * 拷贝
          * @param line 直线
          */
-        copy(line: Line3D)
+        copy(line: Line3)
         {
             this.position.copy(line.position);
             this.direction.copy(line.direction);
@@ -210,7 +209,7 @@ namespace feng3d
          */
         clone()
         {
-            return new Line3D().copy(this);
+            return new Line3().copy(this);
         }
     }
 }

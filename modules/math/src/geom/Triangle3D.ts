@@ -188,7 +188,7 @@ namespace feng3d
         /**
          * 获取与直线相交，当直线与三角形不相交时返回null
          */
-        intersectionWithLine(line: Line3D)
+        intersectionWithLine(line: Line3)
         {
             var plane3d = this.getPlane3d();
             var normal = plane3d.getNormal();
@@ -403,7 +403,7 @@ namespace feng3d
          * 用直线分解（切割）三角形
          * @param line 直线
          */
-        decomposeWithLine(line: Line3D)
+        decomposeWithLine(line: Line3)
         {
             var r = this.intersectionWithLine(line);
             if (!r) return [this];

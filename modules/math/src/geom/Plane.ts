@@ -192,7 +192,7 @@ namespace feng3d
          * 判定与直线是否平行
          * @param line3D 
          */
-        parallelWithLine3D(line3D: Line3D, precision = Math.PRECISION)
+        parallelWithLine3D(line3D: Line3, precision = Math.PRECISION)
         {
             if (Math.equals(line3D.direction.dot(this.getNormal()), 0, precision))
                 return true;
@@ -213,7 +213,7 @@ namespace feng3d
         /**
          * 获取与直线交点
          */
-        intersectWithLine3D(line3D: Line3D)
+        intersectWithLine3D(line3D: Line3)
         {
             //处理平行
             if (this.parallelWithLine3D(line3D))
@@ -267,7 +267,7 @@ namespace feng3d
             {
                 throw "无法计算平面相交结果";
             }
-            return new Line3D(new Vector3(x, y, z), direction);
+            return new Line3(new Vector3(x, y, z), direction);
         }
 
         /**

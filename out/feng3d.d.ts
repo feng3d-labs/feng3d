@@ -5942,7 +5942,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 3d直线
-
      */
     class Line3D {
         /**

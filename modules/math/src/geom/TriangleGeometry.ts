@@ -166,7 +166,7 @@ namespace feng3d
          * 与直线碰撞
          * @param line3d 直线
          */
-        intersectionWithLine(line3d: Line3D)
+        intersectionWithLine(line3d: Line3)
         {
             // 线段与三角形碰撞
             var ss: Segment3D[] = [];

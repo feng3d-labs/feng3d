@@ -37,7 +37,7 @@
         "src/geom/Triangle3D.ts",
         "src/geom/AABB.ts",
         "src/geom/Sphere.ts",
-        "src/geom/Plane3D.ts",
+        "src/geom/Plane.ts",
         "src/geom/Frustum.ts",
         "src/geom/PlaneClassification.ts",
         "src/geom/TriangleGeometry.ts",
