@@ -6152,9 +6152,8 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 3D射线
-
      */
-    class Ray3D extends Line3 {
+    class Ray3 extends Line3 {
         constructor(position?: Vector3, direction?: Vector3);
     }
 }
@@ -12296,7 +12295,7 @@ declare namespace feng3d {
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
-        getMouseRay3D(): Ray3D;
+        getMouseRay3D(): Ray3;
         /**
          * 获取屏幕区域内所有游戏对象
          * @param start 起点
@@ -12450,7 +12449,7 @@ declare namespace feng3d {
           * @param ray3D
           * @return
           */
-        isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
+        isIntersectingRay(ray3D: Ray3): PickingCollisionVO;
         /**
          * 是否加载完成
          */
@@ -12588,7 +12587,7 @@ declare namespace feng3d {
         /**
          * 鼠标射线，在渲染时被设置
          */
-        mouseRay3D: Ray3D;
+        mouseRay3D: Ray3;
         /**
          * 上次渲染时用的摄像机
          */
@@ -12814,7 +12813,7 @@ declare namespace feng3d {
          * @param shortestCollisionDistance     当前最短碰撞距离
          * @param cullFace                      裁剪面枚举
          */
-        raycast(ray: Ray3D, shortestCollisionDistance?: number, cullFace?: CullFace): {
+        raycast(ray: Ray3, shortestCollisionDistance?: number, cullFace?: CullFace): {
             rayEntryDistance: number;
             localPosition: Vector3;
             localNormal: Vector3;
@@ -12982,7 +12981,7 @@ declare namespace feng3d {
          * @param shortestCollisionDistance     当前最短碰撞距离
          * @param cullFace                      裁剪面枚举
          */
-        raycast(ray: Ray3D, indices: number[], positions: number[], uvs: number[], shortestCollisionDistance?: number, cullFace?: CullFace): {
+        raycast(ray: Ray3, indices: number[], positions: number[], uvs: number[], shortestCollisionDistance?: number, cullFace?: CullFace): {
             rayEntryDistance: number;
             localPosition: Vector3;
             localNormal: Vector3;
@@ -13132,7 +13131,7 @@ declare namespace feng3d {
          * @param x GPU空间坐标x值
          * @param y GPU空间坐标y值
          */
-        unprojectRay(x: number, y: number, ray?: Ray3D): Ray3D;
+        unprojectRay(x: number, y: number, ray?: Ray3): Ray3;
         /**
          * 指定深度逆投影
          *
@@ -13274,7 +13273,7 @@ declare namespace feng3d {
          * @param y view3D上的X坐标
          * @return
          */
-        getRay3D(x: number, y: number, ray3D?: Ray3D): Ray3D;
+        getRay3D(x: number, y: number, ray3D?: Ray3): Ray3;
         /**
          * 投影坐标（世界坐标转换为3D视图坐标）
          * @param point3d 世界坐标
@@ -14523,14 +14522,14 @@ declare namespace feng3d {
          * @param gameObjects 实体列表
          * @return
          */
-        pick(ray3D: Ray3D, gameObjects: GameObject[]): PickingCollisionVO;
+        pick(ray3D: Ray3, gameObjects: GameObject[]): PickingCollisionVO;
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
          * @param gameObjects 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3D, gameObjects: GameObject[]): PickingCollisionVO[];
+        pickAll(ray3D: Ray3, gameObjects: GameObject[]): PickingCollisionVO[];
     }
     /**
      * 拾取的碰撞数据
@@ -14555,7 +14554,7 @@ declare namespace feng3d {
         /**
          * 本地坐标系射线
          */
-        localRay: Ray3D;
+        localRay: Ray3;
         /**
          * 本地坐标碰撞法线
          */
@@ -14563,7 +14562,7 @@ declare namespace feng3d {
         /**
          * 场景中碰撞射线
          */
-        ray3D: Ray3D;
+        ray3D: Ray3;
         /**
          * 射线坐标是否在边界内
          */

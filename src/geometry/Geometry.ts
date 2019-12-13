@@ -322,7 +322,7 @@ namespace feng3d
          * @param shortestCollisionDistance     当前最短碰撞距离
          * @param cullFace                      裁剪面枚举
          */
-        raycast(ray: Ray3D, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
+        raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
         {
             var result = geometryUtils.raycast(ray, this.indices, this.positions, this.uvs, shortestCollisionDistance, cullFace);
             return result;

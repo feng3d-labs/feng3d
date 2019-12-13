@@ -84,7 +84,7 @@
         "modules/math/src/geom/Quaternion.ts",
         "modules/math/src/geom/Line3.ts",
         "modules/math/src/geom/Segment3.ts",
-        "modules/math/src/geom/Ray3D.ts",
+        "modules/math/src/geom/Ray3.ts",
         "modules/math/src/geom/Triangle3.ts",
         "modules/math/src/geom/AABB.ts",
         "modules/math/src/geom/Sphere.ts",

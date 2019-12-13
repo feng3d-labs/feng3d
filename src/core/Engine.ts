@@ -250,7 +250,7 @@ namespace feng3d
         /**
 		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
 		 */
-        getMouseRay3D(): Ray3D
+        getMouseRay3D(): Ray3
         {
             var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(windowEventProxy.clientX - this.viewRect.x, windowEventProxy.clientY - this.viewRect.y));
             return this.camera.getRay3D(gpuPos.x, gpuPos.y);

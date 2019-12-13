@@ -13158,16 +13158,15 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D射线
-
      */
-    var Ray3D = /** @class */ (function (_super) {
-        __extends(Ray3D, _super);
-        function Ray3D(position, direction) {
+    var Ray3 = /** @class */ (function (_super) {
+        __extends(Ray3, _super);
+        function Ray3(position, direction) {
             return _super.call(this, position, direction) || this;
         }
-        return Ray3D;
+        return Ray3;
     }(feng3d.Line3));
-    feng3d.Ray3D = Ray3D;
+    feng3d.Ray3 = Ray3;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25231,7 +25230,7 @@ var feng3d;
         Model.prototype.isIntersectingRay = function (ray3D) {
             var localNormal = new feng3d.Vector3();
             //转换到当前实体坐标系空间
-            var localRay = new feng3d.Ray3D();
+            var localRay = new feng3d.Ray3();
             this.transform.worldToLocalMatrix.transformVector(ray3D.position, localRay.position);
             this.transform.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);
             //检测射线与边界的碰撞
@@ -27042,7 +27041,7 @@ var feng3d;
          * @param y GPU空间坐标y值
          */
         LensBase.prototype.unprojectRay = function (x, y, ray) {
-            if (ray === void 0) { ray = new feng3d.Ray3D(); }
+            if (ray === void 0) { ray = new feng3d.Ray3(); }
             var p0 = this.unproject(new feng3d.Vector3(x, y, 0));
             var p1 = this.unproject(new feng3d.Vector3(x, y, 1));
             // 初始化射线
@@ -27296,7 +27295,7 @@ var feng3d;
          * @return
          */
         Camera.prototype.getRay3D = function (x, y, ray3D) {
-            if (ray3D === void 0) { ray3D = new feng3d.Ray3D(); }
+            if (ray3D === void 0) { ray3D = new feng3d.Ray3(); }
             return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
         };
         /**

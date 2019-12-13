@@ -105,7 +105,7 @@ namespace feng3d
 		 * @param x GPU空间坐标x值
 		 * @param y GPU空间坐标y值
 		 */
-		unprojectRay(x: number, y: number, ray = new Ray3D())
+		unprojectRay(x: number, y: number, ray = new Ray3())
 		{
 			var p0 = this.unproject(new Vector3(x, y, 0));
 			var p1 = this.unproject(new Vector3(x, y, 1));

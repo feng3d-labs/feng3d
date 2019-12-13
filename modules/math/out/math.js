@@ -5380,16 +5380,15 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D射线
-
      */
-    var Ray3D = /** @class */ (function (_super) {
-        __extends(Ray3D, _super);
-        function Ray3D(position, direction) {
+    var Ray3 = /** @class */ (function (_super) {
+        __extends(Ray3, _super);
+        function Ray3(position, direction) {
             return _super.call(this, position, direction) || this;
         }
-        return Ray3D;
+        return Ray3;
     }(feng3d.Line3));
-    feng3d.Ray3D = Ray3D;
+    feng3d.Ray3 = Ray3;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

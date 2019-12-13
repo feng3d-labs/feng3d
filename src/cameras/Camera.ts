@@ -63,7 +63,7 @@ namespace feng3d
 		 * @param y view3D上的X坐标
 		 * @return
 		 */
-        getRay3D(x: number, y: number, ray3D = new Ray3D()): Ray3D
+        getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
         {
             return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
         }

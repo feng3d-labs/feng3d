@@ -46,7 +46,7 @@ namespace feng3d
         /**
          * 鼠标射线，在渲染时被设置
          */
-        mouseRay3D: Ray3D;
+        mouseRay3D: Ray3;
 
         /**
          * 上次渲染时用的摄像机

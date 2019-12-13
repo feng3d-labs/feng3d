@@ -79,12 +79,12 @@ namespace feng3d
           * @param ray3D
           * @return
           */
-        isIntersectingRay(ray3D: Ray3D)
+        isIntersectingRay(ray3D: Ray3)
         {
             var localNormal = new Vector3();
 
             //转换到当前实体坐标系空间
-            var localRay = new Ray3D();
+            var localRay = new Ray3();
 
             this.transform.worldToLocalMatrix.transformVector(ray3D.position, localRay.position);
             this.transform.worldToLocalMatrix.deltaTransformVector(ray3D.direction, localRay.direction);

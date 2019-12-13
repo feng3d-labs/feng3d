@@ -17,7 +17,7 @@ namespace feng3d
          * @param gameObjects 实体列表
          * @return
          */
-        pick(ray3D: Ray3D, gameObjects: GameObject[])
+        pick(ray3D: Ray3, gameObjects: GameObject[])
         {
             if (gameObjects.length == 0) return null;
 
@@ -68,7 +68,7 @@ namespace feng3d
          * @param gameObjects 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3D, gameObjects: GameObject[])
+        pickAll(ray3D: Ray3, gameObjects: GameObject[])
         {
             if (gameObjects.length == 0) return [];
 
@@ -131,7 +131,7 @@ namespace feng3d
 		/**
 		 * 本地坐标系射线
 		 */
-        localRay: Ray3D;
+        localRay: Ray3;
 
 		/**
 		 * 本地坐标碰撞法线
@@ -141,7 +141,7 @@ namespace feng3d
 		/**
 		 * 场景中碰撞射线
 		 */
-        ray3D: Ray3D;
+        ray3D: Ray3;
 
 		/**
 		 * 射线坐标是否在边界内
