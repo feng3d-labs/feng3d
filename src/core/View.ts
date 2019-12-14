@@ -7,12 +7,13 @@ namespace feng3d
 {
 
     /**
-     * 3D视图
+     * 视图
      */
-    export class Engine extends Feng3dObject
+    export class View extends Feng3dObject
     {
         //
         canvas: HTMLCanvasElement;
+
         /**
          * 摄像机
          */

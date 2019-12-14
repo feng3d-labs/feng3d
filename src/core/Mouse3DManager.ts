@@ -27,12 +27,12 @@ namespace feng3d
          * @param scene 场景
          * @param camera 摄像机
          */
-        pick(engine: Engine, scene: Scene, camera: Camera)
+        pick(view: View, scene: Scene, camera: Camera)
         {
             if (this._mouseEventTypes.length == 0) return;
 
             //计算得到鼠标射线相交的物体
-            var pickingCollisionVO = raycaster.pick(engine.getMouseRay3D(), scene.mouseCheckObjects);
+            var pickingCollisionVO = raycaster.pick(view.getMouseRay3D(), scene.mouseCheckObjects);
 
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;

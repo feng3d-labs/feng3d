@@ -12217,9 +12217,9 @@ interface HTMLCanvasElement {
 }
 declare namespace feng3d {
     /**
-     * 3D视图
+     * 视图
      */
-    class Engine extends Feng3dObject {
+    class View extends Feng3dObject {
         canvas: HTMLCanvasElement;
         /**
          * 摄像机
@@ -18703,7 +18703,7 @@ declare namespace feng3d {
          * @param scene 场景
          * @param camera 摄像机
          */
-        pick(engine: Engine, scene: Scene, camera: Camera): GameObject;
+        pick(view: View, scene: Scene, camera: Camera): GameObject;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedGameObject;
         private _mouseEventTypes;

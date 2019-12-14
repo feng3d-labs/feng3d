@@ -24660,17 +24660,17 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D视图
+     * 视图
      */
-    var Engine = /** @class */ (function (_super) {
-        __extends(Engine, _super);
+    var View = /** @class */ (function (_super) {
+        __extends(View, _super);
         /**
          * 构建3D视图
          * @param canvas    画布
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        function Engine(canvas, scene, camera) {
+        function View(canvas, scene, camera) {
             var _this = _super.call(this) || this;
             _this.contextLost = false;
             if (!canvas) {
@@ -24704,7 +24704,7 @@ var feng3d;
             _this.mouse3DManager = new feng3d.Mouse3DManager(new feng3d.WindowMouseInput(), function () { return _this.viewRect; });
             return _this;
         }
-        Object.defineProperty(Engine.prototype, "camera", {
+        Object.defineProperty(View.prototype, "camera", {
             /**
              * 摄像机
              */
@@ -24727,7 +24727,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Engine.prototype, "root", {
+        Object.defineProperty(View.prototype, "root", {
             /**
              * 根结点
              */
@@ -24737,7 +24737,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Engine.prototype, "gl", {
+        Object.defineProperty(View.prototype, "gl", {
             get: function () {
                 if (!this.canvas.gl)
                     this.canvas.gl = feng3d.GL.getGL(this.canvas);
@@ -24746,7 +24746,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Engine.prototype, "mousePos", {
+        Object.defineProperty(View.prototype, "mousePos", {
             /**
              * 鼠标在3D视图中的位置
              */
@@ -24756,7 +24756,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Engine.prototype, "viewRect", {
+        Object.defineProperty(View.prototype, "viewRect", {
             get: function () {
                 var clientRect = this.canvas.getBoundingClientRect();
                 var viewRect = new feng3d.Rectangle(clientRect.left, clientRect.top, clientRect.width, clientRect.height);
@@ -24770,26 +24770,26 @@ var feng3d;
          * @param width 宽度
          * @param height 高度
          */
-        Engine.prototype.setSize = function (width, height) {
+        View.prototype.setSize = function (width, height) {
             this.canvas.width = width;
             this.canvas.height = height;
             this.canvas.style.width = width + 'px';
             this.canvas.style.height = height + 'px';
         };
-        Engine.prototype.start = function () {
+        View.prototype.start = function () {
             feng3d.ticker.onframe(this.update, this);
         };
-        Engine.prototype.stop = function () {
+        View.prototype.stop = function () {
             feng3d.ticker.offframe(this.update, this);
         };
-        Engine.prototype.update = function (interval) {
+        View.prototype.update = function (interval) {
             this.render(interval);
             this.mouse3DManager.selectedGameObject = this.selectedObject;
         };
         /**
          * 绘制场景
          */
-        Engine.prototype.render = function (interval) {
+        View.prototype.render = function (interval) {
             if (!this.scene)
                 return;
             if (this.contextLost)
@@ -24824,7 +24824,7 @@ var feng3d;
          * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
          * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
          */
-        Engine.prototype.screenToGpuPosition = function (screenPos) {
+        View.prototype.screenToGpuPosition = function (screenPos) {
             var gpuPos = new feng3d.Vector2();
             gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
             // 屏幕坐标与gpu中使用的坐标Y轴方向相反
@@ -24836,7 +24836,7 @@ var feng3d;
          * @param point3d 世界坐标
          * @return 屏幕的绝对坐标
          */
-        Engine.prototype.project = function (point3d) {
+        View.prototype.project = function (point3d) {
             var v = this.camera.project(point3d);
             v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
             v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
@@ -24850,7 +24850,7 @@ var feng3d;
          * @param v 场景坐标（输出）
          * @return 场景坐标
          */
-        Engine.prototype.unproject = function (sX, sY, sZ, v) {
+        View.prototype.unproject = function (sX, sY, sZ, v) {
             if (v === void 0) { v = new feng3d.Vector3(); }
             var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(sX, sY));
             return this.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
@@ -24859,7 +24859,7 @@ var feng3d;
          * 获取单位像素在指定深度映射的大小
          * @param   depth   深度
          */
-        Engine.prototype.getScaleByDepth = function (depth, dir) {
+        View.prototype.getScaleByDepth = function (depth, dir) {
             if (dir === void 0) { dir = new feng3d.Vector2(0, 1); }
             var scale = this.camera.getScaleByDepth(depth, dir);
             scale = scale / new feng3d.Vector2(this.viewRect.width * dir.x, this.viewRect.height * dir.y).length;
@@ -24868,7 +24868,7 @@ var feng3d;
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
-        Engine.prototype.getMouseRay3D = function () {
+        View.prototype.getMouseRay3D = function () {
             var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(feng3d.windowEventProxy.clientX - this.viewRect.x, feng3d.windowEventProxy.clientY - this.viewRect.y));
             return this.camera.getRay3D(gpuPos.x, gpuPos.y);
         };
@@ -24877,7 +24877,7 @@ var feng3d;
          * @param start 起点
          * @param end 终点
          */
-        Engine.prototype.getObjectsInGlobalArea = function (start, end) {
+        View.prototype.getObjectsInGlobalArea = function (start, end) {
             var _this = this;
             var s = this.viewRect.clampPoint(start);
             var e = this.viewRect.clampPoint(end);
@@ -24903,7 +24903,7 @@ var feng3d;
             }).map(function (t) { return t.gameObject; });
             return gs;
         };
-        Engine.createNewScene = function () {
+        View.createNewScene = function () {
             var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
@@ -24919,9 +24919,9 @@ var feng3d;
             scene.gameObject.addChild(directionalLight);
             return scene;
         };
-        return Engine;
+        return View;
     }(feng3d.Feng3dObject));
-    feng3d.Engine = Engine;
+    feng3d.View = View;
 })(feng3d || (feng3d = {}));
 // var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
 var feng3d;
@@ -41455,11 +41455,11 @@ var feng3d;
          * @param scene 场景
          * @param camera 摄像机
          */
-        Mouse3DManager.prototype.pick = function (engine, scene, camera) {
+        Mouse3DManager.prototype.pick = function (view, scene, camera) {
             if (this._mouseEventTypes.length == 0)
                 return;
             //计算得到鼠标射线相交的物体
-            var pickingCollisionVO = feng3d.raycaster.pick(engine.getMouseRay3D(), scene.mouseCheckObjects);
+            var pickingCollisionVO = feng3d.raycaster.pick(view.getMouseRay3D(), scene.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
         };
