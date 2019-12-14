@@ -25979,16 +25979,6 @@ var feng3d;
                 delete this._attributes[key];
             }
         };
-        /**
-         * 获取顶点属性数据
-         * @param vaId 数据类型编号
-         * @return 顶点属性数据
-         */
-        Geometry.prototype.getVAData1 = function (vaId) {
-            this.updateGrometry();
-            var attribute = this._attributes[vaId];
-            return attribute && attribute.data;
-        };
         Object.defineProperty(Geometry.prototype, "numVertex", {
             /**
              * 顶点数量
@@ -26888,7 +26878,7 @@ var feng3d;
                 positionData.push(start.x, start.y, start.z, end.x, end.y, end.z);
                 colorData.push(startColor.r, startColor.g, startColor.b, startColor.a, endColor.r, endColor.g, endColor.b, endColor.a);
             }
-            this.setVAData("a_position", positionData, 3);
+            this.positions = positionData;
             this.setVAData("a_color", colorData, 4);
             this.indices = indices;
         };
@@ -28341,11 +28331,11 @@ var feng3d;
                     index += 3;
                 }
             }
-            this.setVAData("a_position", vertexPositionData, 3);
-            this.setVAData("a_normal", vertexNormalData, 3);
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.positions = vertexPositionData;
+            this.normals = vertexNormalData;
+            this.tangents = vertexTangentData;
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
             this.buildIndices();
         };
         /**
@@ -31653,8 +31643,8 @@ var feng3d;
                 }
             }
             var uvs = this.buildUVs();
-            this.setVAData("a_position", vertices, 3);
-            this.setVAData("a_uv", uvs, 2);
+            this.positions = vertices;
+            this.uvs = uvs;
             this.indices = indices;
         };
         /**

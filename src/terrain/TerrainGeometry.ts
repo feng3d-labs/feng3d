@@ -164,8 +164,8 @@ namespace feng3d
                 }
             }
             var uvs = this.buildUVs();
-            this.setVAData("a_position", vertices, 3);
-            this.setVAData("a_uv", uvs, 2);
+            this.positions = vertices;
+            this.uvs = uvs;
             this.indices = indices;
         }
 

@@ -63,8 +63,8 @@ namespace feng3d
                     endColor.r, endColor.g, endColor.b, endColor.a);
             }
 
-            this.setVAData("a_position", positionData, 3);
-            this.setVAData("a_color", colorData, 4);
+            this.positions = positionData;
+            this.colors = colorData;
             this.indices = indices;
         }
     }

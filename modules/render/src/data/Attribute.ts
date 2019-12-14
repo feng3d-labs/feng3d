@@ -30,7 +30,7 @@ namespace feng3d
         /**
          * 关节索引
          */
-        a_jointindex0: Attribute;
+        a_skinIndices: Attribute;
 
         /**
          * 关节权重

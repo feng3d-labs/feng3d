@@ -80,13 +80,13 @@ namespace feng3d
             }
         }
         geometry.indices = indices;
-        geometry.setVAData("a_position", vertices, 3);
+        geometry.positions = vertices;
 
         if (normals.length > 0)
-            geometry.setVAData("a_normal", normals, 3);
+            geometry.normals = normals;
 
         if (uvs.length > 0)
-            geometry.setVAData("a_uv", uvs, 2);
+            geometry.uvs = uvs;
 
         globalDispatcher.dispatch("asset.parsed", geometry);
 

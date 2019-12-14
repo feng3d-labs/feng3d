@@ -51,7 +51,7 @@ namespace feng3d
             this.uvs = uvData;
             this.normals = normalData;
             this.indices = indices;
-            this.setVAData("a_color", colors, 4)
+            this.colors = colors;
         }
     }
 

@@ -58,16 +58,16 @@ namespace feng3d
         protected buildGeometry()
         {
             var vertexPositionData = this.buildPosition();
-            this.setVAData("a_position", vertexPositionData, 3);
+            this.positions = vertexPositionData;
 
             var vertexNormalData = this.buildNormal();
-            this.setVAData("a_normal", vertexNormalData, 3)
+            this.normals = vertexNormalData;
 
             var vertexTangentData = this.buildTangent();
-            this.setVAData("a_tangent", vertexTangentData, 3)
+            this.tangents = vertexTangentData;
 
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
 
             var indices = this.buildIndices();
             this.indices = indices;

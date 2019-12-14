@@ -12770,12 +12770,6 @@ declare namespace feng3d {
          */
         setVAData<K extends keyof Attributes>(vaId: K, data: number[], size: number): void;
         /**
-         * 获取顶点属性数据
-         * @param vaId 数据类型编号
-         * @return 顶点属性数据
-         */
-        getVAData1(vaId: string): number[];
-        /**
          * 顶点数量
          */
         get numVertex(): number;

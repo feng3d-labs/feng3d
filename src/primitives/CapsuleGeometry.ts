@@ -144,12 +144,13 @@ namespace feng3d
                     index += 3;
                 }
             }
-            this.setVAData("a_position", vertexPositionData, 3);
-            this.setVAData("a_normal", vertexNormalData, 3);
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.positions = vertexPositionData;
+            this.normals = vertexNormalData;
+            this.tangents = vertexTangentData;
 
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
+
             this.buildIndices();
         }
 

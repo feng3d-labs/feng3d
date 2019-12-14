@@ -16,7 +16,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         radius = 0.5;
 
         /**
@@ -24,7 +24,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         segmentsW = 16;
 
         /**
@@ -32,7 +32,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         segmentsH = 12;
 
         /**
@@ -40,7 +40,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         yUp = true;
 
         name = "Sphere";
@@ -136,12 +136,12 @@ namespace feng3d
                 }
             }
 
-            this.setVAData("a_position", vertexPositionData, 3);
-            this.setVAData("a_normal", vertexNormalData, 3);
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.positions = vertexPositionData;
+            this.normals = vertexNormalData;
+            this.tangents = vertexTangentData;
 
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
 
             var indices = this.buildIndices();
             this.indices = indices;
@@ -224,5 +224,5 @@ namespace feng3d
     {
         Sphere: SphereGeometry;
     }
-	Geometry.setDefault("Sphere", new SphereGeometry());
+    Geometry.setDefault("Sphere", new SphereGeometry());
 }

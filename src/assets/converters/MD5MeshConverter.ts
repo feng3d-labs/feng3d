@@ -223,10 +223,10 @@ namespace feng3d
             //更新索引数据
             geometry.indices = indices;
             //更新顶点坐标与uv数据
-            geometry.setVAData("a_position", vertices, 3);
-            geometry.setVAData("a_uv", uvs, 2);
+            geometry.positions = vertices;
+            geometry.uvs = uvs;
             //更新关节索引与权重索引
-            geometry.setVAData("a_jointindex0", jointIndices0, 4);
+            geometry.skinIndices = jointIndices0;
             geometry.setVAData("a_jointweight0", jointWeights0, 4);
             geometry.setVAData("a_jointindex1", jointIndices1, 4);
             geometry.setVAData("a_jointweight1", jointWeights1, 4);

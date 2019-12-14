@@ -1,6 +1,6 @@
 #ifdef HAS_SKELETON_ANIMATION
 
-    attribute vec4 a_jointindex0;
+    attribute vec4 a_skinIndices;
     attribute vec4 a_jointweight0;
 
     #ifdef HAS_a_jointindex1
@@ -17,7 +17,7 @@
         vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);
         for(int i = 0; i < 4; i++)
         {
-            totalPosition += u_skeletonGlobalMatriices[int(a_jointindex0[i])] * position * a_jointweight0[i];
+            totalPosition += u_skeletonGlobalMatriices[int(a_skinIndices[i])] * position * a_jointweight0[i];
         }
         #ifdef HAS_a_jointindex1
             for(int i = 0; i < 4; i++)

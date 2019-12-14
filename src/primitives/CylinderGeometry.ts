@@ -16,7 +16,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         topRadius = 0.5;
 
         /**
@@ -24,7 +24,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         bottomRadius = 0.5;
 
         /**
@@ -32,7 +32,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         height = 2;
 
         /**
@@ -40,7 +40,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         segmentsW = 16;
 
         /**
@@ -48,7 +48,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         segmentsH = 1;
 
         /**
@@ -56,7 +56,7 @@ namespace feng3d
          */
         @oav()
         @serialize
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         topClosed = true;
 
         /**
@@ -64,7 +64,7 @@ namespace feng3d
          */
         @oav()
         @serialize
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         bottomClosed = true;
 
         /**
@@ -72,7 +72,7 @@ namespace feng3d
          */
         @oav()
         @serialize
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         surfaceClosed = true;
 
         /**
@@ -80,7 +80,7 @@ namespace feng3d
          */
         @serialize
         @oav()
-		@watch("invalidateGeometry")
+        @watch("invalidateGeometry")
         yUp = true;
 
         name = "Cylinder";
@@ -271,9 +271,9 @@ namespace feng3d
                 }
             }
 
-            this.setVAData("a_position", vertexPositionData, 3);
-            this.setVAData("a_normal", vertexNormalData, 3);
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.positions = vertexPositionData;
+            this.normals = vertexNormalData;
+            this.tangents = vertexTangentData;
 
             function addVertex(px: number, py: number, pz: number, nx: number, ny: number, nz: number, tx: number, ty: number, tz: number)
             {
@@ -294,7 +294,7 @@ namespace feng3d
 
             //
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
 
             var indices = this.buildIndices();
             this.indices = indices;

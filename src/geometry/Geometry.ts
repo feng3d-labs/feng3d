@@ -86,6 +86,19 @@ namespace feng3d
         }
 
         /**
+         * 颜色数据
+         */
+        get colors()
+        {
+            return this._attributes.a_color.data;
+        }
+
+        set colors(value)
+        {
+            this._attributes.a_color.data = value;
+        }
+
+        /**
          * uv数据
          */
         get uvs()
@@ -125,6 +138,19 @@ namespace feng3d
         }
 
         /**
+         * 切线数据
+         */
+        get skinIndices()
+        {
+            return this._attributes.a_skinIndices.data;
+        }
+
+        set skinIndices(value)
+        {
+            this._attributes.a_skinIndices.data = value;
+        }
+
+        /**
 		 * 创建一个几何体
 		 */
         constructor()
@@ -159,39 +185,6 @@ namespace feng3d
          */
         protected buildGeometry()
         {
-        }
-
-		/**
-		 * 设置顶点属性数据
-		 * @param vaId                  顶点属性编号
-		 * @param data                  顶点属性数据
-         * @param size                  顶点数据尺寸
-         * @param autogenerate          是否自动生成数据
-		 */
-        setVAData<K extends keyof Attributes>(vaId: K, data: number[], size: number)
-        {
-            var key = <string>vaId;
-            if (data)
-            {
-                this._attributes[key] = this._attributes[key] || new Attribute(vaId, data, size);
-                this._attributes[key].data = data;
-            } else
-            {
-                delete this._attributes[key];
-            }
-        }
-
-		/**
-		 * 获取顶点属性数据
-		 * @param vaId 数据类型编号
-		 * @return 顶点属性数据
-		 */
-        getVAData1(vaId: string)
-        {
-            this.updateGrometry();
-
-            var attribute: Attribute = this._attributes[vaId];
-            return attribute && attribute.data;
         }
 
         /**
@@ -253,11 +246,10 @@ namespace feng3d
             //合并属性数据
             for (var attributeName in attributes)
             {
-                var stride = attributes[attributeName].size;
-                var attributeData = attributes[attributeName].data;
-                var addAttributeData = addAttributes[attributeName].data;
-                var data = attributeData.concat(addAttributeData);
-                this.setVAData(<any>attributeName, data, stride);
+                var attribute: Attribute = attributes[attributeName];
+                var addAttribute: Attribute = addAttributes[attributeName];
+                //
+                attribute.data = attribute.data.concat(addAttribute.data);
             }
         }
 
@@ -372,11 +364,12 @@ namespace feng3d
         {
             geometry.updateGrometry();
             this.indices = geometry.indices.concat();
-            this._attributes = <any>{};
-            for (var key in geometry._attributes)
+            for (var attributeName in geometry._attributes)
             {
-                var attributeRenderData = geometry._attributes[key];
-                this.setVAData(<any>key, attributeRenderData.data, attributeRenderData.size);
+                var attribute: Attribute = this._attributes[attributeName];
+                var addAttribute: Attribute = geometry._attributes[attributeName];
+
+                attribute.data = addAttribute.data.concat();
             }
         }
 
@@ -408,9 +401,11 @@ namespace feng3d
          */
         protected _attributes = {
             a_position: new Attribute("a_position", [], 3),
+            a_color: new Attribute("a_color", [], 4),
             a_uv: new Attribute("a_uv", [], 2),
             a_normal: new Attribute("a_normal", [], 3),
             a_tangent: new Attribute("a_tangent", [], 3),
+            a_skinIndices: new Attribute("a_skinIndices", [], 3),
         };
 
         private _geometryInvalid = true;
