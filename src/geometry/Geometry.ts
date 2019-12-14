@@ -138,7 +138,7 @@ namespace feng3d
         }
 
         /**
-         * 切线数据
+         * 蒙皮索引，顶点关联的关节索引
          */
         get skinIndices()
         {
@@ -148,6 +148,45 @@ namespace feng3d
         set skinIndices(value)
         {
             this._attributes.a_skinIndices.data = value;
+        }
+
+        /**
+         * 蒙皮权重，顶点关联的关节权重
+         */
+        get skinWeights()
+        {
+            return this._attributes.a_skinWeights.data;
+        }
+
+        set skinWeights(value)
+        {
+            this._attributes.a_skinWeights.data = value;
+        }
+
+        /**
+         * 蒙皮索引，顶点关联的关节索引
+         */
+        get skinIndices1()
+        {
+            return this._attributes.a_skinIndices1.data;
+        }
+
+        set skinIndices1(value)
+        {
+            this._attributes.a_skinIndices1.data = value;
+        }
+
+        /**
+         * 蒙皮权重，顶点关联的关节权重
+         */
+        get skinWeights1()
+        {
+            return this._attributes.a_skinWeights1.data;
+        }
+
+        set skinWeights1(value)
+        {
+            this._attributes.a_skinWeights1.data = value;
         }
 
         /**
@@ -405,7 +444,10 @@ namespace feng3d
             a_uv: new Attribute("a_uv", [], 2),
             a_normal: new Attribute("a_normal", [], 3),
             a_tangent: new Attribute("a_tangent", [], 3),
-            a_skinIndices: new Attribute("a_skinIndices", [], 3),
+            a_skinIndices: new Attribute("a_skinIndices", [], 4),
+            a_skinWeights: new Attribute("a_skinWeights", [], 4),
+            a_skinIndices1: new Attribute("a_skinIndices1", [], 4),
+            a_skinWeights1: new Attribute("a_skinWeights1", [], 4),
         };
 
         private _geometryInvalid = true;

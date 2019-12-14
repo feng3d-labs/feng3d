@@ -921,15 +921,15 @@ declare namespace feng3d {
         /**
          * 关节权重
          */
-        a_jointweight0: Attribute;
+        a_skinWeights: Attribute;
         /**
          * 关节索引
          */
-        a_jointindex1: Attribute;
+        a_skinIndices1: Attribute;
         /**
          * 关节权重
          */
-        a_jointweight1: Attribute;
+        a_skinWeights1: Attribute;
     }
     /**
      * 属性渲染数据

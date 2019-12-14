@@ -8972,19 +8972,19 @@ declare namespace feng3d {
         /**
          * 关节索引
          */
-        a_jointindex0: Attribute;
+        a_skinIndices: Attribute;
         /**
          * 关节权重
          */
-        a_jointweight0: Attribute;
+        a_skinWeights: Attribute;
         /**
          * 关节索引
          */
-        a_jointindex1: Attribute;
+        a_skinIndices1: Attribute;
         /**
          * 关节权重
          */
-        a_jointweight1: Attribute;
+        a_skinWeights1: Attribute;
     }
     /**
      * 属性渲染数据
@@ -12731,6 +12731,11 @@ declare namespace feng3d {
         get positions(): number[];
         set positions(value: number[]);
         /**
+         * 颜色数据
+         */
+        get colors(): number[];
+        set colors(value: number[]);
+        /**
          * uv数据
          */
         get uvs(): number[];
@@ -12745,6 +12750,26 @@ declare namespace feng3d {
          */
         get tangents(): number[];
         set tangents(value: number[]);
+        /**
+         * 蒙皮索引，顶点关联的关节索引
+         */
+        get skinIndices(): number[];
+        set skinIndices(value: number[]);
+        /**
+         * 蒙皮权重，顶点关联的关节权重
+         */
+        get skinWeights(): number[];
+        set skinWeights(value: number[]);
+        /**
+         * 蒙皮索引，顶点关联的关节索引
+         */
+        get skinIndices1(): number[];
+        set skinIndices1(value: number[]);
+        /**
+         * 蒙皮权重，顶点关联的关节权重
+         */
+        get skinWeights1(): number[];
+        set skinWeights1(value: number[]);
         /**
          * 创建一个几何体
          */
@@ -12761,14 +12786,6 @@ declare namespace feng3d {
          * 构建几何体
          */
         protected buildGeometry(): void;
-        /**
-         * 设置顶点属性数据
-         * @param vaId                  顶点属性编号
-         * @param data                  顶点属性数据
-         * @param size                  顶点数据尺寸
-         * @param autogenerate          是否自动生成数据
-         */
-        setVAData<K extends keyof Attributes>(vaId: K, data: number[], size: number): void;
         /**
          * 顶点数量
          */
@@ -12839,9 +12856,14 @@ declare namespace feng3d {
          */
         protected _attributes: {
             a_position: Attribute;
+            a_color: Attribute;
             a_uv: Attribute;
             a_normal: Attribute;
             a_tangent: Attribute;
+            a_skinIndices: Attribute;
+            a_skinWeights: Attribute;
+            a_skinIndices1: Attribute;
+            a_skinWeights1: Attribute;
         };
         private _geometryInvalid;
         private _useFaceWeights;
@@ -12876,22 +12898,31 @@ declare namespace feng3d {
         /**
          * 顶点索引缓冲
          */
-        get indicesBase(): number[];
-        set indicesBase(value: number[]);
+        indices: number[];
         /**
          * 属性数据列表
          */
         get attributes(): {
             a_position: Attribute;
+            a_color: Attribute;
             a_uv: Attribute;
             a_normal: Attribute;
             a_tangent: Attribute;
+            a_skinIndices: Attribute;
+            a_skinWeights: Attribute;
+            a_skinIndices1: Attribute;
+            a_skinWeights1: Attribute;
         };
-        set attributes(value: {
+        set attributes(v: {
             a_position: Attribute;
+            a_color: Attribute;
             a_uv: Attribute;
             a_normal: Attribute;
             a_tangent: Attribute;
+            a_skinIndices: Attribute;
+            a_skinWeights: Attribute;
+            a_skinIndices1: Attribute;
+            a_skinWeights1: Attribute;
         });
     }
 }

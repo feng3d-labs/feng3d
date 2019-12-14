@@ -69,7 +69,7 @@ namespace feng3d.war3
 
 				//更新关节索引与权重索引
 				geometry.skinIndices = skins.jointIndices0;
-				geometry.setVAData("a_jointweight0", skins.jointWeights0, 4);
+				geometry.skinWeights = skins.jointWeights0;
 
 				var material: Material = this.materials[geoset.MaterialID];
 				if (!material.material)

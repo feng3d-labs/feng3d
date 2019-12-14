@@ -227,9 +227,9 @@ namespace feng3d
             geometry.uvs = uvs;
             //更新关节索引与权重索引
             geometry.skinIndices = jointIndices0;
-            geometry.setVAData("a_jointweight0", jointWeights0, 4);
-            geometry.setVAData("a_jointindex1", jointIndices1, 4);
-            geometry.setVAData("a_jointweight1", jointWeights1, 4);
+            geometry.skinWeights = jointWeights0;
+            geometry.skinIndices1 = jointIndices1;
+            geometry.skinWeights1 = jointWeights1;
             return geometry;
         }
 

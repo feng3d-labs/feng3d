@@ -17967,7 +17967,7 @@ var feng3d;
             "project_pars_vert": "uniform mat4 u_viewProjection;",
             "project_vert": "//计算投影坐标\r\ngl_Position = u_viewProjection * worldPosition;",
             "shadowmap_pars_frag": "#if (NUM_POINTLIGHT_CASTSHADOW > 0) ||  (NUM_DIRECTIONALLIGHT_CASTSHADOW > 0) ||  (NUM_SPOT_LIGHTS_CASTSHADOW > 0)\r\n    #if NUM_POINTLIGHT_CASTSHADOW > 0\r\n        // 投影的点光源\r\n        struct CastShadowPointLight\r\n        {\r\n            // 位置\r\n            vec3 position;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 范围\r\n            float range;\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的点光源列表\r\n        uniform CastShadowPointLight u_castShadowPointLights[NUM_POINTLIGHT_CASTSHADOW];\r\n        // 点光源阴影图\r\n        uniform sampler2D u_pointShadowMaps[NUM_POINTLIGHT_CASTSHADOW];\r\n    #endif\r\n\r\n    #if NUM_SPOT_LIGHTS_CASTSHADOW > 0\r\n        // 投影的聚光灯\r\n        struct CastShadowSpotLight\r\n        {\r\n            // 位置\r\n            vec3 position;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 范围\r\n            float range;\r\n            // 方向\r\n            vec3 direction;\r\n            // 椎体cos值\r\n            float coneCos;\r\n            // 半影cos\r\n            float penumbraCos;\r\n\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的投影的聚光灯列表\r\n        uniform CastShadowSpotLight u_castShadowSpotLights[NUM_SPOT_LIGHTS_CASTSHADOW];\r\n        // 投影的聚光灯阴影图\r\n        uniform sampler2D u_spotShadowMaps[NUM_SPOT_LIGHTS_CASTSHADOW];\r\n        // 方向光源投影uv列表\r\n        varying vec4 v_spotShadowCoord[ NUM_SPOT_LIGHTS_CASTSHADOW ];\r\n    #endif\r\n\r\n    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n        // 投影的方向光源\r\n        struct CastShadowDirectionalLight\r\n        {\r\n            // 方向\r\n            vec3 direction;\r\n            // 颜色\r\n            vec3 color;\r\n            // 强度\r\n            float intensity;\r\n            // 阴影类型\r\n            int shadowType;\r\n            // 阴影偏差，用来解决判断是否为阴影时精度问题\r\n            float shadowBias;\r\n            // 阴影半径，边缘宽度\r\n            float shadowRadius;\r\n            // 阴影图尺寸\r\n            vec2 shadowMapSize;\r\n            // 位置\r\n            vec3 position;\r\n            float shadowCameraNear;\r\n            float shadowCameraFar;\r\n        };\r\n        // 投影的方向光源列表\r\n        uniform CastShadowDirectionalLight u_castShadowDirectionalLights[NUM_DIRECTIONALLIGHT_CASTSHADOW];\r\n        // 方向光源阴影图\r\n        uniform sampler2D u_directionalShadowMaps[NUM_DIRECTIONALLIGHT_CASTSHADOW];\r\n        // 方向光源投影uv列表\r\n        varying vec4 v_directionalShadowCoord[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];\r\n    #endif\r\n\r\n    // @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/packing.glsl\r\n    const float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\r\n    const vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\r\n    const vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\r\n    float unpackRGBAToDepth( const in vec4 v ) \r\n    {\r\n        return dot( v, UnpackFactors );\r\n    }\r\n\r\n    float texture2DCompare( sampler2D depths, vec2 uv, float compare ) \r\n    {\r\n        return step( compare, unpackRGBAToDepth( texture2D( depths, uv ) ) );\r\n    }\r\n\r\n    float texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare ) \r\n    {\r\n        const vec2 offset = vec2( 0.0, 1.0 );\r\n\r\n        vec2 texelSize = vec2( 1.0 ) / size;\r\n        vec2 centroidUV = floor( uv * size + 0.5 ) / size;\r\n\r\n        float lb = texture2DCompare( depths, centroidUV + texelSize * offset.xx, compare );\r\n        float lt = texture2DCompare( depths, centroidUV + texelSize * offset.xy, compare );\r\n        float rb = texture2DCompare( depths, centroidUV + texelSize * offset.yx, compare );\r\n        float rt = texture2DCompare( depths, centroidUV + texelSize * offset.yy, compare );\r\n\r\n        vec2 f = fract( uv * size + 0.5 );\r\n\r\n        float a = mix( lb, lt, f.y );\r\n        float b = mix( rb, rt, f.y );\r\n        float c = mix( a, b, f.x );\r\n\r\n        return c;\r\n    }\r\n\r\n    // 计算阴影值 @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/shadowmap_pars_fragment.glsl\r\n    float getShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec4 shadowCoord, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar) \r\n    {\r\n        float shadow = 1.0;\r\n\r\n        shadowCoord.xy /= shadowCoord.w;\r\n        shadowCoord.xy = (shadowCoord.xy + 1.0) / 2.0;\r\n\r\n        // dp = normalized distance from light to fragment position\r\n        float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?\r\n        dp += shadowBias;\r\n        shadowCoord.z = dp;\r\n\r\n        // if ( something && something ) breaks ATI OpenGL shader compiler\r\n        // if ( all( something, something ) ) using this instead\r\n\r\n        bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );\r\n        bool inFrustum = all( inFrustumVec );\r\n\r\n        bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );\r\n\r\n        bool frustumTest = all( frustumTestVec );\r\n\r\n        if ( frustumTest ) \r\n        {\r\n            if (shadowType == 2)\r\n            {\r\n                // PCF\r\n                vec2 texelSize = vec2( 1.0 ) / shadowMapSize;\r\n\r\n                float dx0 = - texelSize.x * shadowRadius;\r\n                float dy0 = - texelSize.y * shadowRadius;\r\n                float dx1 = + texelSize.x * shadowRadius;\r\n                float dy1 = + texelSize.y * shadowRadius;\r\n\r\n                shadow = (\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\r\n                    texture2DCompare( shadowMap, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\r\n                ) * ( 1.0 / 9.0 );\r\n            }\r\n            else if(shadowType == 3)\r\n            {\r\n                // PCF soft\r\n                vec2 texelSize = vec2( 1.0 ) / shadowMapSize;\r\n\r\n                float dx0 = - texelSize.x * shadowRadius;\r\n                float dy0 = - texelSize.y * shadowRadius;\r\n                float dx1 = + texelSize.x * shadowRadius;\r\n                float dy1 = + texelSize.y * shadowRadius;\r\n\r\n                shadow = (\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, 0.0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy, shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, 0.0 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx0, dy1 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( 0.0, dy1 ), shadowCoord.z ) +\r\n                    texture2DShadowLerp( shadowMap, shadowMapSize, shadowCoord.xy + vec2( dx1, dy1 ), shadowCoord.z )\r\n                ) * ( 1.0 / 9.0 );\r\n            }\r\n            else\r\n            {\r\n                shadow = texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );\r\n            }\r\n        }\r\n\r\n        return shadow;\r\n    }\r\n\r\n    // cubeToUV() maps a 3D direction vector suitable for cube texture mapping to a 2D\r\n    // vector suitable for 2D texture mapping. This code uses the following layout for the\r\n    // 2D texture:\r\n    //\r\n    // xzXZ\r\n    //  y Y\r\n    //\r\n    // Y - Positive y direction\r\n    // y - Negative y direction\r\n    // X - Positive x direction\r\n    // x - Negative x direction\r\n    // Z - Positive z direction\r\n    // z - Negative z direction\r\n    //\r\n    // Source and test bed:\r\n    // https://gist.github.com/tschw/da10c43c467ce8afd0c4\r\n\r\n    vec2 cubeToUV( vec3 v, float texelSizeY ) \r\n    {\r\n        // Number of texels to avoid at the edge of each square\r\n        vec3 absV = abs( v );\r\n\r\n        // Intersect unit cube\r\n        float scaleToCube = 1.0 / max( absV.x, max( absV.y, absV.z ) );\r\n        absV *= scaleToCube;\r\n\r\n        // Apply scale to avoid seams\r\n\r\n        // two texels less per square (one texel will do for NEAREST)\r\n        v *= scaleToCube * ( 1.0 - 2.0 * texelSizeY );\r\n\r\n        // Unwrap\r\n\r\n        // space: -1 ... 1 range for each square\r\n        //\r\n        // #X##\t\tdim    := ( 1/4 , 1/2 )\r\n        //  # #\t\tcenter := ( 1/2 , 1/2 )\r\n        vec2 planar;\r\n        float almostOne = 1.0 - 1.5 * texelSizeY;\r\n        if ( absV.z >= almostOne ) \r\n        {\r\n            if ( v.z > 0.0 )\r\n            {\r\n                planar.x = (0.5 + v.x * 0.5) * 0.25 + 0.75;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }else\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }\r\n        } else if ( absV.x >= almostOne ) \r\n        {\r\n            if( v.x > 0.0)\r\n            {\r\n                planar.x = (0.5 - v.z * 0.5) * 0.25 + 0.5;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }else\r\n            {\r\n                planar.x = (0.5 + v.z * 0.5) * 0.25 + 0.0;\r\n                planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;\r\n            }\r\n        } else if ( absV.y >= almostOne ) \r\n        {\r\n            if( v.y > 0.0)\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.75;\r\n                planar.y = (0.5 + v.z * 0.5) * 0.5 + 0.0;\r\n            }else\r\n            {\r\n                planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;\r\n                planar.y = (0.5 - v.z * 0.5) * 0.5 + 0.0;\r\n            }\r\n        }\r\n        return planar;\r\n    }\r\n\r\n    float getPointShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) \r\n    {\r\n        vec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );\r\n\r\n        // for point lights, the uniform @vShadowCoord is re-purposed to hold\r\n        // the vector from the light to the world-space position of the fragment.\r\n        // vec3 lightToPosition = shadowCoord.xyz;\r\n\r\n        // dp = normalized distance from light to fragment position\r\n        float dp = ( length( lightToPosition ) - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear ); // need to clamp?\r\n        dp += shadowBias;\r\n\r\n        // bd3D = base direction 3D\r\n        vec3 bd3D = normalize( lightToPosition );\r\n\r\n        if(shadowType == 2 || shadowType == 3)\r\n        {\r\n            vec2 offset = vec2( - 1, 1 ) * shadowRadius * texelSize.y;\r\n\r\n            return (\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xyx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yyx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxy, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.xxx, texelSize.y ), dp ) +\r\n                texture2DCompare( shadowMap, cubeToUV( bd3D + offset.yxx, texelSize.y ), dp )\r\n            ) * ( 1.0 / 9.0 );\r\n        }else\r\n        {\r\n            return texture2DCompare( shadowMap, cubeToUV( bd3D, texelSize.y ), dp );\r\n        }\r\n    }\r\n#endif",
-            "skeleton_pars_vert": "#ifdef HAS_SKELETON_ANIMATION\r\n\r\n    attribute vec4 a_jointindex0;\r\n    attribute vec4 a_jointweight0;\r\n\r\n    #ifdef HAS_a_jointindex1\r\n        attribute vec4 a_jointindex1;\r\n        attribute vec4 a_jointweight1;\r\n    #endif\r\n\r\n    #ifdef NUM_SKELETONJOINT\r\n        uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];\r\n    #endif\r\n\r\n    vec4 skeletonAnimation(vec4 position) \r\n    {\r\n        vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);\r\n        for(int i = 0; i < 4; i++)\r\n        {\r\n            totalPosition += u_skeletonGlobalMatriices[int(a_jointindex0[i])] * position * a_jointweight0[i];\r\n        }\r\n        #ifdef HAS_a_jointindex1\r\n            for(int i = 0; i < 4; i++)\r\n            {\r\n                totalPosition += u_skeletonGlobalMatriices[int(a_jointindex1[i])] * position * a_jointweight1[i];\r\n            }\r\n        #endif\r\n        position.xyz = totalPosition.xyz;\r\n        return position;\r\n    }\r\n#endif",
+            "skeleton_pars_vert": "#ifdef HAS_SKELETON_ANIMATION\r\n\r\n    attribute vec4 a_skinIndices;\r\n    attribute vec4 a_skinWeights;\r\n\r\n    #ifdef HAS_a_skinIndices1\r\n        attribute vec4 a_skinIndices1;\r\n        attribute vec4 a_skinWeights1;\r\n    #endif\r\n\r\n    #ifdef NUM_SKELETONJOINT\r\n        uniform mat4 u_skeletonGlobalMatriices[NUM_SKELETONJOINT];\r\n    #endif\r\n\r\n    vec4 skeletonAnimation(vec4 position) \r\n    {\r\n        vec4 totalPosition = vec4(0.0,0.0,0.0,1.0);\r\n        for(int i = 0; i < 4; i++)\r\n        {\r\n            totalPosition += u_skeletonGlobalMatriices[int(a_skinIndices[i])] * position * a_skinWeights[i];\r\n        }\r\n        #ifdef HAS_a_skinIndices1\r\n            for(int i = 0; i < 4; i++)\r\n            {\r\n                totalPosition += u_skeletonGlobalMatriices[int(a_skinIndices1[i])] * position * a_skinWeights1[i];\r\n            }\r\n        #endif\r\n        position.xyz = totalPosition.xyz;\r\n        return position;\r\n    }\r\n#endif",
             "skeleton_vert": "#ifdef HAS_SKELETON_ANIMATION\r\n    position = skeletonAnimation(position);\r\n#endif",
             "specular_frag": "//获取高光值\r\nfloat glossiness = u_glossiness;\r\n//获取镜面反射基本颜色\r\nvec3 specularColor = u_specular;\r\nvec4 specularMapColor = texture2D(s_specular, v_uv);\r\nspecularColor.xyz = specularMapColor.xyz;\r\nglossiness = glossiness * specularMapColor.w;",
             "specular_pars_frag": "//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;",
@@ -25848,9 +25848,14 @@ var feng3d;
              */
             _this._attributes = {
                 a_position: new feng3d.Attribute("a_position", [], 3),
+                a_color: new feng3d.Attribute("a_color", [], 4),
                 a_uv: new feng3d.Attribute("a_uv", [], 2),
                 a_normal: new feng3d.Attribute("a_normal", [], 3),
                 a_tangent: new feng3d.Attribute("a_tangent", [], 3),
+                a_skinIndices: new feng3d.Attribute("a_skinIndices", [], 4),
+                a_skinWeights: new feng3d.Attribute("a_skinWeights", [], 4),
+                a_skinIndices1: new feng3d.Attribute("a_skinIndices1", [], 4),
+                a_skinWeights1: new feng3d.Attribute("a_skinWeights1", [], 4),
             };
             _this._geometryInvalid = true;
             _this._useFaceWeights = false;
@@ -25902,6 +25907,19 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Geometry.prototype, "colors", {
+            /**
+             * 颜色数据
+             */
+            get: function () {
+                return this._attributes.a_color.data;
+            },
+            set: function (value) {
+                this._attributes.a_color.data = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Geometry.prototype, "uvs", {
             /**
              * uv数据
@@ -25941,6 +25959,58 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Geometry.prototype, "skinIndices", {
+            /**
+             * 蒙皮索引，顶点关联的关节索引
+             */
+            get: function () {
+                return this._attributes.a_skinIndices.data;
+            },
+            set: function (value) {
+                this._attributes.a_skinIndices.data = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Geometry.prototype, "skinWeights", {
+            /**
+             * 蒙皮权重，顶点关联的关节权重
+             */
+            get: function () {
+                return this._attributes.a_skinWeights.data;
+            },
+            set: function (value) {
+                this._attributes.a_skinWeights.data = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Geometry.prototype, "skinIndices1", {
+            /**
+             * 蒙皮索引，顶点关联的关节索引
+             */
+            get: function () {
+                return this._attributes.a_skinIndices1.data;
+            },
+            set: function (value) {
+                this._attributes.a_skinIndices1.data = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Geometry.prototype, "skinWeights1", {
+            /**
+             * 蒙皮权重，顶点关联的关节权重
+             */
+            get: function () {
+                return this._attributes.a_skinWeights1.data;
+            },
+            set: function (value) {
+                this._attributes.a_skinWeights1.data = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 标记需要更新几何体，在更改几何体数据后需要调用该函数。
          */
@@ -25961,23 +26031,6 @@ var feng3d;
          * 构建几何体
          */
         Geometry.prototype.buildGeometry = function () {
-        };
-        /**
-         * 设置顶点属性数据
-         * @param vaId                  顶点属性编号
-         * @param data                  顶点属性数据
-         * @param size                  顶点数据尺寸
-         * @param autogenerate          是否自动生成数据
-         */
-        Geometry.prototype.setVAData = function (vaId, data, size) {
-            var key = vaId;
-            if (data) {
-                this._attributes[key] = this._attributes[key] || new feng3d.Attribute(vaId, data, size);
-                this._attributes[key].data = data;
-            }
-            else {
-                delete this._attributes[key];
-            }
         };
         Object.defineProperty(Geometry.prototype, "numVertex", {
             /**
@@ -26035,11 +26088,10 @@ var feng3d;
             var totalVertex = oldNumVertex + geometry.numVertex;
             //合并属性数据
             for (var attributeName in attributes) {
-                var stride = attributes[attributeName].size;
-                var attributeData = attributes[attributeName].data;
-                var addAttributeData = addAttributes[attributeName].data;
-                var data = attributeData.concat(addAttributeData);
-                this.setVAData(attributeName, data, stride);
+                var attribute = attributes[attributeName];
+                var addAttribute = addAttributes[attributeName];
+                //
+                attribute.data = attribute.data.concat(addAttribute.data);
             }
         };
         /**
@@ -26125,10 +26177,10 @@ var feng3d;
         Geometry.prototype.cloneFrom = function (geometry) {
             geometry.updateGrometry();
             this.indices = geometry.indices.concat();
-            this._attributes = {};
-            for (var key in geometry._attributes) {
-                var attributeRenderData = geometry._attributes[key];
-                this.setVAData(key, attributeRenderData.data, attributeRenderData.size);
+            for (var attributeName in geometry._attributes) {
+                var attribute = this._attributes[attributeName];
+                var addAttribute = geometry._attributes[attributeName];
+                attribute.data = addAttribute.data.concat();
             }
         };
         Geometry.prototype.beforeRender = function (renderAtomic) {
@@ -26195,19 +26247,6 @@ var feng3d;
         function CustomGeometry() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(CustomGeometry.prototype, "indicesBase", {
-            /**
-             * 顶点索引缓冲
-             */
-            get: function () {
-                return this.indices;
-            },
-            set: function (value) {
-                this.indices = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(CustomGeometry.prototype, "attributes", {
             /**
              * 属性数据列表
@@ -26215,18 +26254,15 @@ var feng3d;
             get: function () {
                 return this._attributes;
             },
-            set: function (value) {
-                this._attributes = {};
-                for (var key in value) {
-                    this.setVAData(key, value[key].data, value[key].size);
-                }
+            set: function (v) {
+                this._attributes = v;
             },
             enumerable: true,
             configurable: true
         });
         __decorate([
             feng3d.serialize
-        ], CustomGeometry.prototype, "indicesBase", null);
+        ], CustomGeometry.prototype, "indices", void 0);
         __decorate([
             feng3d.serialize
         ], CustomGeometry.prototype, "attributes", null);
@@ -26820,7 +26856,7 @@ var feng3d;
             this.uvs = uvData;
             this.normals = normalData;
             this.indices = indices;
-            this.setVAData("a_color", colors, 4);
+            this.colors = colors;
         };
         __decorate([
             feng3d.serialize,
@@ -26879,7 +26915,7 @@ var feng3d;
                 colorData.push(startColor.r, startColor.g, startColor.b, startColor.a, endColor.r, endColor.g, endColor.b, endColor.a);
             }
             this.positions = positionData;
-            this.setVAData("a_color", colorData, 4);
+            this.colors = colorData;
             this.indices = indices;
         };
         __decorate([
@@ -27439,13 +27475,13 @@ var feng3d;
          */
         PlaneGeometry.prototype.buildGeometry = function () {
             var vertexPositionData = this.buildPosition();
-            this.setVAData("a_position", vertexPositionData, 3);
+            this.positions = vertexPositionData;
             var vertexNormalData = this.buildNormal();
-            this.setVAData("a_normal", vertexNormalData, 3);
+            this.normals = vertexNormalData;
             var vertexTangentData = this.buildTangent();
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.tangents = vertexTangentData;
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
             var indices = this.buildIndices();
             this.indices = indices;
         };
@@ -27660,13 +27696,13 @@ var feng3d;
         }
         CubeGeometry.prototype.buildGeometry = function () {
             var vertexPositionData = this.buildPosition();
-            this.setVAData("a_position", vertexPositionData, 3);
+            this.positions = vertexPositionData;
             var vertexNormalData = this.buildNormal();
-            this.setVAData("a_normal", vertexNormalData, 3);
+            this.normals = vertexNormalData;
             var vertexTangentData = this.buildTangent();
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.tangents = vertexTangentData;
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
             var indices = this.buildIndices();
             this.indices = indices;
         };
@@ -28140,11 +28176,11 @@ var feng3d;
                     index += 3;
                 }
             }
-            this.setVAData("a_position", vertexPositionData, 3);
-            this.setVAData("a_normal", vertexNormalData, 3);
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.positions = vertexPositionData;
+            this.normals = vertexNormalData;
+            this.tangents = vertexTangentData;
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
             var indices = this.buildIndices();
             this.indices = indices;
         };
@@ -28605,9 +28641,9 @@ var feng3d;
                     }
                 }
             }
-            this.setVAData("a_position", vertexPositionData, 3);
-            this.setVAData("a_normal", vertexNormalData, 3);
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.positions = vertexPositionData;
+            this.normals = vertexNormalData;
+            this.tangents = vertexTangentData;
             function addVertex(px, py, pz, nx, ny, nz, tx, ty, tz) {
                 vertexPositionData[index] = px;
                 vertexPositionData[index + 1] = py;
@@ -28622,7 +28658,7 @@ var feng3d;
             }
             //
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
             var indices = this.buildIndices();
             this.indices = indices;
         };
@@ -28944,9 +28980,9 @@ var feng3d;
                     }
                 }
             }
-            this.setVAData("a_position", this._vertexPositionData, 3);
-            this.setVAData("a_normal", this._vertexNormalData, 3);
-            this.setVAData("a_tangent", this._vertexTangentData, 3);
+            this.positions = this._vertexPositionData;
+            this.normals = this._vertexNormalData;
+            this.tangents = this._vertexTangentData;
             this.indices = this._rawIndices;
         };
         /**
@@ -28971,7 +29007,7 @@ var feng3d;
                 }
             }
             // build real data from raw data
-            this.setVAData("a_uv", data, 2);
+            this.uvs = data;
         };
         __decorate([
             feng3d.serialize,
@@ -39399,8 +39435,8 @@ var feng3d;
                     var skinSkeleton = new feng3d.SkinSkeletonTemp();
                     skinSkeleton.resetJointIndices(skins.jointIndices0, this.skeletonComponent);
                     //更新关节索引与权重索引
-                    geometry.setVAData("a_jointindex0", skins.jointIndices0, 4);
-                    geometry.setVAData("a_jointweight0", skins.jointWeights0, 4);
+                    geometry.skinIndices = skins.jointIndices0;
+                    geometry.skinWeights = skins.jointWeights0;
                     var material = this.materials[geoset.MaterialID];
                     if (!material.material) {
                         var fBitmap = this.getFBitmap(material);
@@ -40856,11 +40892,11 @@ var feng3d;
             }
         }
         geometry.indices = indices;
-        geometry.setVAData("a_position", vertices, 3);
+        geometry.positions = vertices;
         if (normals.length > 0)
-            geometry.setVAData("a_normal", normals, 3);
+            geometry.normals = normals;
         if (uvs.length > 0)
-            geometry.setVAData("a_uv", uvs, 2);
+            geometry.uvs = uvs;
         feng3d.globalDispatcher.dispatch("asset.parsed", geometry);
         return gameObject;
         function translateVertexData(face, vertexIndex, vertices, uvs, indices, normals, obj) {
@@ -41081,13 +41117,13 @@ var feng3d;
             //更新索引数据
             geometry.indices = indices;
             //更新顶点坐标与uv数据
-            geometry.setVAData("a_position", vertices, 3);
-            geometry.setVAData("a_uv", uvs, 2);
+            geometry.positions = vertices;
+            geometry.uvs = uvs;
             //更新关节索引与权重索引
-            geometry.setVAData("a_jointindex0", jointIndices0, 4);
-            geometry.setVAData("a_jointweight0", jointWeights0, 4);
-            geometry.setVAData("a_jointindex1", jointIndices1, 4);
-            geometry.setVAData("a_jointweight1", jointWeights1, 4);
+            geometry.skinIndices = jointIndices0;
+            geometry.skinWeights = jointWeights0;
+            geometry.skinIndices1 = jointIndices1;
+            geometry.skinWeights1 = jointWeights1;
             return geometry;
         };
         return MD5MeshConverter;
