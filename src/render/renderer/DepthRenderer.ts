@@ -8,7 +8,7 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera)
+        draw(gl: GL, scene: Scene, camera: Camera)
         {
 
         }

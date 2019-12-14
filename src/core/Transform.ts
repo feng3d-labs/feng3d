@@ -472,7 +472,7 @@ namespace feng3d
             return vector;
         }
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             Object.assign(renderAtomic.uniforms, this._renderAtomic.uniforms);
         }

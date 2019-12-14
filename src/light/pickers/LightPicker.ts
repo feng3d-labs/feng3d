@@ -15,12 +15,12 @@ namespace feng3d
             var directionalLights: DirectionalLight[] = [];
             var spotLights: SpotLight[] = [];
 
-            var scene3d = this._model.gameObject.scene;
-            if (scene3d)
+            var scene = this._model.gameObject.scene;
+            if (scene)
             {
-                pointLights = scene3d.activePointLights;
-                directionalLights = scene3d.activeDirectionalLights;
-                spotLights = scene3d.activeSpotLights;
+                pointLights = scene.activePointLights;
+                directionalLights = scene.activeDirectionalLights;
+                spotLights = scene.activeSpotLights;
             }
 
             renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;

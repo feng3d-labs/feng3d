@@ -25,9 +25,9 @@ namespace feng3d
             }
         }
 
-        draw(gl: GL, scene3d: Scene3D, camera: Camera)
+        draw(gl: GL, scene: Scene, camera: Camera)
         {
-            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            var unblenditems = scene.getPickCache(camera).unblenditems;
 
             this.init();
 
@@ -37,7 +37,7 @@ namespace feng3d
                 if (model.getComponent(OutLineComponent) || model.getComponent(CartoonComponent))
                 {
                     var renderAtomic = model.gameObject.renderAtomic;
-                    model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                    model.gameObject.beforeRender(gl, renderAtomic, scene, camera);
 
                     this.renderAtomic.next = renderAtomic;
 

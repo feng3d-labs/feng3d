@@ -19,7 +19,7 @@ namespace feng3d
          */
         private frameBufferObject = new FrameBufferObject();
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             var uniforms = <feng3d.WaterUniforms>this.material.uniforms;
             var sun = this.gameObject.scene.activeDirectionalLights[0];
@@ -35,7 +35,7 @@ namespace feng3d
 
             // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
 
-            super.beforeRender(gl, renderAtomic, scene3d, camera);
+            super.beforeRender(gl, renderAtomic, scene, camera);
 
             if (1) return;
             //
@@ -107,9 +107,9 @@ namespace feng3d
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            skyboxRenderer.draw(gl, scene3d, mirrorCamera);
-            // forwardRenderer.draw(gl, scene3d, mirrorCamera);
-            // forwardRenderer.draw(gl, scene3d, camera);
+            skyboxRenderer.draw(gl, scene, mirrorCamera);
+            // forwardRenderer.draw(gl, scene, mirrorCamera);
+            // forwardRenderer.draw(gl, scene, camera);
 
             frameBufferObject.deactive(gl);
 

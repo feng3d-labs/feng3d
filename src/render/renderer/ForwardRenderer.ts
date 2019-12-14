@@ -16,10 +16,10 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera)
+        draw(gl: GL, scene: Scene, camera: Camera)
         {
-            var blenditems = scene3d.getPickCache(camera).blenditems;
-            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            var blenditems = scene.getPickCache(camera).blenditems;
+            var unblenditems = scene.getPickCache(camera).unblenditems;
 
             var uniforms: LazyObject<Uniforms> = <any>{};
             //
@@ -30,7 +30,7 @@ namespace feng3d
             uniforms.u_cameraPos = camera.transform.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
-            uniforms.u_sceneAmbientColor = scene3d.ambientColor;
+            uniforms.u_sceneAmbientColor = scene.ambientColor;
 
 
             unblenditems.concat(blenditems).forEach(model =>
@@ -54,7 +54,7 @@ namespace feng3d
 
                 renderAtomic.shaderMacro.RotationOrder = defaultRotationOrder;
 
-                model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                model.gameObject.beforeRender(gl, renderAtomic, scene, camera);
 
                 gl.render(renderAtomic);
             });

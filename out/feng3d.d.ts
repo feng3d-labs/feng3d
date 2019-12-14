@@ -11292,7 +11292,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        draw(gl: GL, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -11303,7 +11303,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        draw(gl: GL, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -11335,7 +11335,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        draw(gl: GL, scene: Scene, camera: Camera): void;
         private drawForSpotLight;
         private drawForPointLight;
         private drawForDirectionalLight;
@@ -11359,7 +11359,7 @@ declare namespace feng3d {
     class OutlineRenderer {
         renderAtomic: RenderAtomic;
         init(): void;
-        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        draw(gl: GL, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -11373,11 +11373,11 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        draw(gl: GL, scene: Scene, camera: Camera): void;
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor?: Color4): void;
+        drawGameObject(gl: GL, gameObject: GameObject, scene: Scene, camera: Camera, wireframeColor?: Color4): void;
     }
     interface RenderAtomic {
         /**
@@ -11464,7 +11464,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
@@ -11535,7 +11535,7 @@ declare namespace feng3d {
     class SkyBox extends Component {
         __class__: "feng3d.SkyBox";
         s_skyboxTexture: TextureCube;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -11552,17 +11552,17 @@ declare namespace feng3d {
         /**
          * 绘制场景中天空盒
          * @param gl
-         * @param scene3d 场景
+         * @param scene 场景
          * @param camera 摄像机
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
+        draw(gl: GL, scene: Scene, camera: Camera): void;
         /**
          * 绘制天空盒
          * @param gl
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        drawSkyBox(gl: GL, skybox: SkyBox, scene3d: Scene3D, camera: Camera): void;
+        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -11830,7 +11830,7 @@ declare namespace feng3d {
          * 将向量从世界空间转换为局部空间
          */
         inverseTransformVector(vector: Vector3): Vector3;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         private readonly _position;
         private readonly _rotation;
         private readonly _orientation;
@@ -11880,11 +11880,11 @@ declare namespace feng3d {
          */
         removeChild: GameObject;
         /**
-         * 当GameObject的scene属性被设置是由Scene3D派发
+         * 当GameObject的scene属性被设置是由Scene派发
          */
         addedToScene: GameObject;
         /**
-         * 当GameObject的scene属性被清空时由Scene3D派发
+         * 当GameObject的scene属性被清空时由Scene派发
          */
         removedFromScene: GameObject;
         /**
@@ -11954,7 +11954,7 @@ declare namespace feng3d {
          * 全局是否可见
          */
         get globalVisible(): any;
-        get scene(): Scene3D;
+        get scene(): Scene;
         get components(): Components[];
         set components(value: Components[]);
         /**
@@ -12045,7 +12045,7 @@ declare namespace feng3d {
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type?: Constructor<T>): T[];
+        getComponents<T extends Components>(type: Constructor<T>): T[];
         /**
          * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
          *
@@ -12146,10 +12146,10 @@ declare namespace feng3d {
          *
          * @param gl
          * @param renderAtomic
-         * @param scene3d
+         * @param scene
          * @param camera
          */
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
          * 查找指定名称的游戏对象
          *
@@ -12161,7 +12161,7 @@ declare namespace feng3d {
          */
         protected _components: Components[];
         protected _children: GameObject[];
-        protected _scene: Scene3D;
+        protected _scene: Scene;
         protected _parent: GameObject;
         private _setParent;
         private updateScene;
@@ -12230,7 +12230,7 @@ declare namespace feng3d {
         /**
          * 3d场景
          */
-        scene: Scene3D;
+        scene: Scene;
         /**
          * 根结点
          */
@@ -12252,7 +12252,7 @@ declare namespace feng3d {
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas?: HTMLCanvasElement, scene?: Scene3D, camera?: Camera);
+        constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera);
         /**
          * 修改canvas尺寸
          * @param width 宽度
@@ -12303,7 +12303,7 @@ declare namespace feng3d {
          */
         getObjectsInGlobalArea(start: feng3d.Vector2, end: feng3d.Vector2): GameObject[];
         protected selectedObject: GameObject;
-        static createNewScene(): Scene3D;
+        static createNewScene(): Scene;
     }
 }
 declare namespace feng3d {
@@ -12381,7 +12381,7 @@ declare namespace feng3d {
         get cartoon_Anti_aliasing(): boolean;
         set cartoon_Anti_aliasing(value: boolean);
         _cartoon_Anti_aliasing: boolean;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
     }
     interface Uniforms {
         u_diffuseSegment: Vector4;
@@ -12398,7 +12398,7 @@ declare namespace feng3d {
         size: number;
         color: Color4;
         outlineMorphFactor: number;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
     }
     interface Uniforms {
         /**
@@ -12443,7 +12443,7 @@ declare namespace feng3d {
         get selfWorldBounds(): Box3;
         constructor();
         init(): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
           * 判断射线是否穿过对象
           * @param ray3D
@@ -12561,13 +12561,13 @@ declare namespace feng3d {
         addComponentToScene: Component;
     }
     interface ComponentMap {
-        Scene3D: Scene3D;
+        Scene: Scene;
     }
     /**
      * 3D场景
      */
-    class Scene3D extends Component {
-        __class__: "feng3d.Scene3D";
+    class Scene extends Component {
+        __class__: "feng3d.Scene";
         /**
          * 背景颜色
          */
@@ -12661,7 +12661,7 @@ declare namespace feng3d {
         private _activeModels;
         private _blenditems;
         private _unblenditems;
-        constructor(scene: Scene3D, camera: Camera);
+        constructor(scene: Scene, camera: Camera);
         /**
          * 获取需要渲染的对象
          *
@@ -14281,7 +14281,7 @@ declare namespace feng3d {
         debugShadowMap: boolean;
         private debugShadowMapObject;
         constructor();
-        updateDebugShadowMap(scene3d: Scene3D, viewCamera: Camera): void;
+        updateDebugShadowMap(scene: Scene, viewCamera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -14304,7 +14304,7 @@ declare namespace feng3d {
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene3d: Scene3D, viewCamera: Camera, models: Model[]): void;
+        updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Model[]): void;
     }
 }
 declare namespace feng3d {
@@ -14737,7 +14737,7 @@ declare namespace feng3d {
          * 帧缓冲对象，用于处理水面反射
          */
         private frameBufferObject;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -15174,7 +15174,7 @@ declare namespace feng3d {
          * 继续
          */
         continue(): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         private _awaked;
         /**
          * 当前真实时间（time - startDelay）
@@ -17539,7 +17539,7 @@ declare namespace feng3d {
          * 创建一个骨骼动画类
          */
         init(): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
          * 销毁
          */
@@ -18700,10 +18700,10 @@ declare namespace feng3d {
         viewport: Lazy<Rectangle>;
         /**
          * 拾取
-         * @param scene3d 场景
+         * @param scene 场景
          * @param camera 摄像机
          */
-        pick(engine: Engine, scene3d: Scene3D, camera: Camera): GameObject;
+        pick(engine: Engine, scene: Scene, camera: Camera): GameObject;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedGameObject;
         private _mouseEventTypes;

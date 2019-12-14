@@ -13,7 +13,7 @@ namespace feng3d
         @oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         s_skyboxTexture = TextureCube.default;
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             renderAtomic.uniforms.s_skyboxTexture = () => this.s_skyboxTexture;
         }

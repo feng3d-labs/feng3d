@@ -23,9 +23,9 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera)
+        draw(gl: GL, scene: Scene, camera: Camera)
         {
-            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            var unblenditems = scene.getPickCache(camera).unblenditems;
 
             var wireframes = unblenditems.reduce((pv: WireframeComponent[], cv) => { var wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push(wireframe); return pv; }, [])
 
@@ -34,17 +34,17 @@ namespace feng3d
 
             wireframes.forEach(element =>
             {
-                this.drawGameObject(gl, element.gameObject, scene3d, camera, element.color);            //
+                this.drawGameObject(gl, element.gameObject, scene, camera, element.color);            //
             });
         }
 
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor = new Color4())
+        drawGameObject(gl: GL, gameObject: GameObject, scene: Scene, camera: Camera, wireframeColor = new Color4())
         {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+            gameObject.beforeRender(gl, renderAtomic, scene, camera);
 
             var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == RenderMode.POINTS

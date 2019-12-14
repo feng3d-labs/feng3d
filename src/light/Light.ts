@@ -108,7 +108,7 @@ namespace feng3d
             this.shadowCamera = serialization.setValue(new GameObject(), { name: "LightShadowCamera" }).addComponent(Camera);
         }
 
-        updateDebugShadowMap(scene3d: Scene3D, viewCamera: Camera)
+        updateDebugShadowMap(scene: Scene, viewCamera: Camera)
         {
             var gameObject = this.debugShadowMapObject;
             if (!gameObject)
@@ -137,7 +137,7 @@ namespace feng3d
 
             if (this.debugShadowMap)
             {
-                scene3d.gameObject.addChild(gameObject);
+                scene.gameObject.addChild(gameObject);
             } else
             {
                 gameObject.remove();

@@ -392,11 +392,11 @@ namespace feng3d
             }
         }
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
-            super.beforeRender(gl, renderAtomic, scene3d, camera);
+            super.beforeRender(gl, renderAtomic, scene, camera);
 
-            if (Boolean(scene3d.runEnvironment & RunEnvironment.feng3d) && !this._awaked)
+            if (Boolean(scene.runEnvironment & RunEnvironment.feng3d) && !this._awaked)
             {
                 this._isPlaying = this.main.playOnAwake;
                 this._awaked = true;

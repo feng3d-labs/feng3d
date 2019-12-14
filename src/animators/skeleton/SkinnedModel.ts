@@ -24,9 +24,9 @@ namespace feng3d
             this.hideFlags = HideFlags.DontTransform;
         }
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
-            super.beforeRender(gl, renderAtomic, scene3d, camera);
+            super.beforeRender(gl, renderAtomic, scene, camera);
 
             var frameId: string = null;
             var animation = this.getComponentsInParents(Animation)[0];

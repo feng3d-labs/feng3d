@@ -40,7 +40,7 @@ namespace feng3d
         /**
          * 3d场景
          */
-        scene: Scene3D;
+        scene: Scene;
         /**
          * 根结点
          */
@@ -84,7 +84,7 @@ namespace feng3d
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas?: HTMLCanvasElement, scene?: Scene3D, camera?: Camera)
+        constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera)
         {
             super();
             if (!canvas)
@@ -119,7 +119,7 @@ namespace feng3d
                 // #endif
             }, false);
 
-            this.scene = scene || serialization.setValue(new GameObject(), { name: "scene" }).addComponent(Scene3D);
+            this.scene = scene || serialization.setValue(new GameObject(), { name: "scene" }).addComponent(Scene);
             this.camera = camera;
 
             this.start();
@@ -294,7 +294,7 @@ namespace feng3d
 
         static createNewScene()
         {
-            var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene3D)
+            var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene)
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
 

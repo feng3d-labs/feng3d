@@ -10,15 +10,15 @@ namespace feng3d
         addComponentToScene: Component;
     }
 
-    export interface ComponentMap { Scene3D: Scene3D; }
+    export interface ComponentMap { Scene: Scene; }
 
     /**
      * 3D场景
      */
-    export class Scene3D extends Component
+    export class Scene extends Component
     {
 
-        __class__: "feng3d.Scene3D";
+        __class__: "feng3d.Scene";
 
         /**
          * 背景颜色

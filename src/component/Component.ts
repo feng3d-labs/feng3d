@@ -125,7 +125,7 @@ namespace feng3d
             this._disposed = true;
         }
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
 
         }

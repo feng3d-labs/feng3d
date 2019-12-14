@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class ScenePickCache
     {
-        private scene: Scene3D
+        private scene: Scene
         private camera: Camera;
 
         //
@@ -13,7 +13,7 @@ namespace feng3d
         private _blenditems: Model[];
         private _unblenditems: Model[];
 
-        constructor(scene: Scene3D, camera: Camera)
+        constructor(scene: Scene, camera: Camera)
         {
             this.scene = scene;
             this.camera = camera;

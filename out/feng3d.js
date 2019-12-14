@@ -22461,9 +22461,9 @@ var feng3d;
         /**
          * 渲染
          */
-        ForwardRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var blenditems = scene3d.getPickCache(camera).blenditems;
-            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+        ForwardRenderer.prototype.draw = function (gl, scene, camera) {
+            var blenditems = scene.getPickCache(camera).blenditems;
+            var unblenditems = scene.getPickCache(camera).unblenditems;
             var uniforms = {};
             //
             uniforms.u_projectionMatrix = camera.lens.matrix;
@@ -22473,7 +22473,7 @@ var feng3d;
             uniforms.u_cameraPos = camera.transform.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
-            uniforms.u_sceneAmbientColor = scene3d.ambientColor;
+            uniforms.u_sceneAmbientColor = scene.ambientColor;
             unblenditems.concat(blenditems).forEach(function (model) {
                 //绘制
                 var renderAtomic = model.gameObject.renderAtomic;
@@ -22488,7 +22488,7 @@ var feng3d;
                     return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
                 };
                 renderAtomic.shaderMacro.RotationOrder = feng3d.defaultRotationOrder;
-                model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                model.gameObject.beforeRender(gl, renderAtomic, scene, camera);
                 gl.render(renderAtomic);
             });
         };
@@ -22508,7 +22508,7 @@ var feng3d;
         /**
          * 渲染
          */
-        DepthRenderer.prototype.draw = function (gl, scene3d, camera) {
+        DepthRenderer.prototype.draw = function (gl, scene, camera) {
         };
         return DepthRenderer;
     }());
@@ -22586,24 +22586,24 @@ var feng3d;
         /**
          * 渲染
          */
-        ShadowRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var pointLights = scene3d.activePointLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
+        ShadowRenderer.prototype.draw = function (gl, scene, camera) {
+            var pointLights = scene.activePointLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
             for (var i = 0; i < pointLights.length; i++) {
-                pointLights[i].updateDebugShadowMap(scene3d, camera);
-                this.drawForPointLight(gl, pointLights[i], scene3d, camera);
+                pointLights[i].updateDebugShadowMap(scene, camera);
+                this.drawForPointLight(gl, pointLights[i], scene, camera);
             }
-            var spotLights = scene3d.activeSpotLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
+            var spotLights = scene.activeSpotLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
             for (var i = 0; i < spotLights.length; i++) {
-                spotLights[i].updateDebugShadowMap(scene3d, camera);
-                this.drawForSpotLight(gl, spotLights[i], scene3d, camera);
+                spotLights[i].updateDebugShadowMap(scene, camera);
+                this.drawForSpotLight(gl, spotLights[i], scene, camera);
             }
-            var directionalLights = scene3d.activeDirectionalLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
+            var directionalLights = scene.activeDirectionalLights.filter(function (i) { return i.shadowType != feng3d.ShadowType.No_Shadows; });
             for (var i = 0; i < directionalLights.length; i++) {
-                directionalLights[i].updateDebugShadowMap(scene3d, camera);
-                this.drawForDirectionalLight(gl, directionalLights[i], scene3d, camera);
+                directionalLights[i].updateDebugShadowMap(scene, camera);
+                this.drawForDirectionalLight(gl, directionalLights[i], scene, camera);
             }
         };
-        ShadowRenderer.prototype.drawForSpotLight = function (gl, light, scene3d, camera) {
+        ShadowRenderer.prototype.drawForSpotLight = function (gl, light, scene, camera) {
             var _this = this;
             feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
@@ -22614,7 +22614,7 @@ var feng3d;
             shadowCamera.transform.localToWorldMatrix = light.transform.localToWorldMatrix;
             var renderAtomic = this.renderAtomic;
             // 获取影响阴影图的渲染对象
-            var models = scene3d.getModelsByCamera(shadowCamera);
+            var models = scene.getModelsByCamera(shadowCamera);
             // 筛选投射阴影的渲染对象
             var castShadowsModels = models.filter(function (i) { return i.castShadows; });
             //
@@ -22632,11 +22632,11 @@ var feng3d;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             castShadowsModels.forEach(function (element) {
-                _this.drawGameObject(gl, element.gameObject, scene3d, camera);
+                _this.drawGameObject(gl, element.gameObject, scene, camera);
             });
             light.frameBufferObject.deactive(gl);
         };
-        ShadowRenderer.prototype.drawForPointLight = function (gl, light, scene3d, camera) {
+        ShadowRenderer.prototype.drawForPointLight = function (gl, light, scene, camera) {
             var _this = this;
             feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
@@ -22675,7 +22675,7 @@ var feng3d;
             for (var face = 0; face < 6; face++) {
                 shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
                 // 获取影响阴影图的渲染对象
-                var models = scene3d.getModelsByCamera(shadowCamera);
+                var models = scene.getModelsByCamera(shadowCamera);
                 // 筛选投射阴影的渲染对象
                 var castShadowsModels = models.filter(function (i) { return i.castShadows; });
                 //
@@ -22693,18 +22693,18 @@ var feng3d;
                 renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
                 renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
                 castShadowsModels.forEach(function (element) {
-                    _this.drawGameObject(gl, element.gameObject, scene3d, camera);
+                    _this.drawGameObject(gl, element.gameObject, scene, camera);
                 });
             }
             light.frameBufferObject.deactive(gl);
         };
-        ShadowRenderer.prototype.drawForDirectionalLight = function (gl, light, scene3d, camera) {
+        ShadowRenderer.prototype.drawForDirectionalLight = function (gl, light, scene, camera) {
             var _this = this;
             // 获取影响阴影图的渲染对象
-            var models = scene3d.getPickByDirectionalLight(light);
+            var models = scene.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
             var castShadowsModels = models.filter(function (i) { return i.castShadows; });
-            light.updateShadowByCamera(scene3d, camera, models);
+            light.updateShadowByCamera(scene, camera, models);
             feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -22728,16 +22728,16 @@ var feng3d;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
             castShadowsModels.forEach(function (element) {
-                _this.drawGameObject(gl, element.gameObject, scene3d, camera);
+                _this.drawGameObject(gl, element.gameObject, scene, camera);
             });
             light.frameBufferObject.deactive(gl);
         };
         /**
          * 绘制3D对象
          */
-        ShadowRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
+        ShadowRenderer.prototype.drawGameObject = function (gl, gameObject, scene, camera) {
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+            gameObject.beforeRender(gl, renderAtomic, scene, camera);
             renderAtomic.shadowShader = renderAtomic.shadowShader || new feng3d.Shader("shadow");
             //
             this.renderAtomic.next = renderAtomic;
@@ -22781,14 +22781,14 @@ var feng3d;
                 this.renderAtomic.shader = new feng3d.Shader("outline");
             }
         };
-        OutlineRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+        OutlineRenderer.prototype.draw = function (gl, scene, camera) {
+            var unblenditems = scene.getPickCache(camera).unblenditems;
             this.init();
             for (var i = 0; i < unblenditems.length; i++) {
                 var model = unblenditems[i];
                 if (model.getComponent(feng3d.OutLineComponent) || model.getComponent(feng3d.CartoonComponent)) {
                     var renderAtomic = model.gameObject.renderAtomic;
-                    model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                    model.gameObject.beforeRender(gl, renderAtomic, scene, camera);
                     this.renderAtomic.next = renderAtomic;
                     gl.render(this.renderAtomic);
                 }
@@ -22815,24 +22815,24 @@ var feng3d;
         /**
          * 渲染
          */
-        WireframeRenderer.prototype.draw = function (gl, scene3d, camera) {
+        WireframeRenderer.prototype.draw = function (gl, scene, camera) {
             var _this = this;
-            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            var unblenditems = scene.getPickCache(camera).unblenditems;
             var wireframes = unblenditems.reduce(function (pv, cv) { var wireframe = cv.getComponent(feng3d.WireframeComponent); if (wireframe)
                 pv.push(wireframe); return pv; }, []);
             if (wireframes.length == 0)
                 return;
             wireframes.forEach(function (element) {
-                _this.drawGameObject(gl, element.gameObject, scene3d, camera, element.color); //
+                _this.drawGameObject(gl, element.gameObject, scene, camera, element.color); //
             });
         };
         /**
          * 绘制3D对象
          */
-        WireframeRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera, wireframeColor) {
+        WireframeRenderer.prototype.drawGameObject = function (gl, gameObject, scene, camera, wireframeColor) {
             if (wireframeColor === void 0) { wireframeColor = new feng3d.Color4(); }
             var renderAtomic = gameObject.renderAtomic;
-            gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+            gameObject.beforeRender(gl, renderAtomic, scene, camera);
             var renderMode = feng3d.lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == feng3d.RenderMode.POINTS
                 || renderMode == feng3d.RenderMode.LINES
@@ -22981,7 +22981,7 @@ var feng3d;
             this._gameObject = null;
             this._disposed = true;
         };
-        Component.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        Component.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
         };
         /**
          * 监听对象的所有事件并且传播到所有组件中
@@ -23127,7 +23127,7 @@ var feng3d;
             _this.s_skyboxTexture = feng3d.TextureCube.default;
             return _this;
         }
-        SkyBox.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        SkyBox.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             var _this = this;
             renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
         };
@@ -23183,12 +23183,12 @@ var feng3d;
         /**
          * 绘制场景中天空盒
          * @param gl
-         * @param scene3d 场景
+         * @param scene 场景
          * @param camera 摄像机
          */
-        SkyBoxRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var skybox = scene3d.activeSkyBoxs[0];
-            this.drawSkyBox(gl, skybox, scene3d, camera);
+        SkyBoxRenderer.prototype.draw = function (gl, scene, camera) {
+            var skybox = scene.activeSkyBoxs[0];
+            this.drawSkyBox(gl, skybox, scene, camera);
         };
         /**
          * 绘制天空盒
@@ -23196,12 +23196,12 @@ var feng3d;
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        SkyBoxRenderer.prototype.drawSkyBox = function (gl, skybox, scene3d, camera) {
+        SkyBoxRenderer.prototype.drawSkyBox = function (gl, skybox, scene, camera) {
             if (!skybox)
                 return;
             this.init();
             //
-            skybox.gameObject.beforeRender(gl, this.renderAtomic, scene3d, camera);
+            skybox.gameObject.beforeRender(gl, this.renderAtomic, scene, camera);
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
             this.renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
@@ -23769,7 +23769,7 @@ var feng3d;
             vector = matrix3d.deltaTransformVector(vector);
             return vector;
         };
-        Transform.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        Transform.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             Object.assign(renderAtomic.uniforms, this._renderAtomic.uniforms);
         };
         Transform.prototype._positionChanged = function (object, property, oldvalue) {
@@ -24205,13 +24205,8 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         GameObject.prototype.getComponents = function (type) {
-            var filterResult;
-            if (!type) {
-                filterResult = this._components.concat();
-            }
-            else {
-                filterResult = this._components.filter(function (v) { return v instanceof type; });
-            }
+            console.assert(!!type, "\u7C7B\u578B\u4E0D\u80FD\u4E3A\u7A7A\uFF01");
+            var filterResult = this._components.filter(function (v) { return v instanceof type; });
             return filterResult;
         };
         /**
@@ -24474,12 +24469,12 @@ var feng3d;
          *
          * @param gl
          * @param renderAtomic
-         * @param scene3d
+         * @param scene
          * @param camera
          */
-        GameObject.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        GameObject.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             this._components.forEach(function (element) {
-                element.beforeRender(gl, renderAtomic, scene3d, camera);
+                element.beforeRender(gl, renderAtomic, scene, camera);
             });
         };
         //------------------------------------------
@@ -24703,7 +24698,7 @@ var feng3d;
                 console.log('pc.GraphicsDevice: WebGL context restored.');
                 // #endif
             }, false);
-            _this.scene = scene || feng3d.serialization.setValue(new feng3d.GameObject(), { name: "scene" }).addComponent(feng3d.Scene3D);
+            _this.scene = scene || feng3d.serialization.setValue(new feng3d.GameObject(), { name: "scene" }).addComponent(feng3d.Scene);
             _this.camera = camera;
             _this.start();
             _this.mouse3DManager = new feng3d.Mouse3DManager(new feng3d.WindowMouseInput(), function () { return _this.viewRect; });
@@ -24909,7 +24904,7 @@ var feng3d;
             return gs;
         };
         Engine.createNewScene = function () {
-            var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene3D);
+            var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
             var camera = feng3d.GameObject.createPrimitive("Camera", { name: "Main Camera" });
@@ -25091,7 +25086,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        CartoonComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        CartoonComponent.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
             renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
             renderAtomic.uniforms.u_specularSegment = this.specularSegment;
@@ -25143,7 +25138,7 @@ var feng3d;
             _this.outlineMorphFactor = 0.0;
             return _this;
         }
-        OutLineComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        OutLineComponent.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             renderAtomic.uniforms.u_outlineSize = this.size;
             renderAtomic.uniforms.u_outlineColor = this.color;
             renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
@@ -25216,7 +25211,7 @@ var feng3d;
             _super.prototype.init.call(this);
             this.on("scenetransformChanged", this._onScenetransformChanged, this);
         };
-        Model.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        Model.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             //
             this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
@@ -25486,9 +25481,9 @@ var feng3d;
     /**
      * 3D场景
      */
-    var Scene3D = /** @class */ (function (_super) {
-        __extends(Scene3D, _super);
-        function Scene3D() {
+    var Scene = /** @class */ (function (_super) {
+        __extends(Scene, _super);
+        function Scene() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 背景颜色
@@ -25509,7 +25504,7 @@ var feng3d;
             _this._pickMap = new Map();
             return _this;
         }
-        Scene3D.prototype.init = function () {
+        Scene.prototype.init = function () {
             _super.prototype.init.call(this);
             this.transform.hideFlags = this.transform.hideFlags | feng3d.HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | feng3d.HideFlags.DontTransform;
@@ -25517,7 +25512,7 @@ var feng3d;
             this._gameObject["_scene"] = this;
             this._gameObject["updateChildrenScene"]();
         };
-        Scene3D.prototype.update = function (interval) {
+        Scene.prototype.update = function (interval) {
             var _this = this;
             interval = interval || (1000 / feng3d.ticker.frameRate);
             this._mouseCheckObjects = null;
@@ -25542,7 +25537,7 @@ var feng3d;
                     element.update(interval);
             });
         };
-        Object.defineProperty(Scene3D.prototype, "models", {
+        Object.defineProperty(Scene.prototype, "models", {
             /**
              * 所有 Model
              */
@@ -25552,7 +25547,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "visibleAndEnabledModels", {
+        Object.defineProperty(Scene.prototype, "visibleAndEnabledModels", {
             /**
              * 所有 可见且开启的 Model
              */
@@ -25562,7 +25557,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "skyBoxs", {
+        Object.defineProperty(Scene.prototype, "skyBoxs", {
             /**
              * 所有 SkyBox
              */
@@ -25572,84 +25567,84 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "activeSkyBoxs", {
+        Object.defineProperty(Scene.prototype, "activeSkyBoxs", {
             get: function () {
                 return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(function (i) { return i.gameObject.globalVisible; });
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "directionalLights", {
+        Object.defineProperty(Scene.prototype, "directionalLights", {
             get: function () {
                 return this._directionalLights = this._directionalLights || this.getComponentsInChildren(feng3d.DirectionalLight);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "activeDirectionalLights", {
+        Object.defineProperty(Scene.prototype, "activeDirectionalLights", {
             get: function () {
                 return this._activeDirectionalLights = this._activeDirectionalLights || this.directionalLights.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "pointLights", {
+        Object.defineProperty(Scene.prototype, "pointLights", {
             get: function () {
                 return this._pointLights = this._pointLights || this.getComponentsInChildren(feng3d.PointLight);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "activePointLights", {
+        Object.defineProperty(Scene.prototype, "activePointLights", {
             get: function () {
                 return this._activePointLights = this._activePointLights || this.pointLights.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "spotLights", {
+        Object.defineProperty(Scene.prototype, "spotLights", {
             get: function () {
                 return this._spotLights = this._spotLights || this.getComponentsInChildren(feng3d.SpotLight);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "activeSpotLights", {
+        Object.defineProperty(Scene.prototype, "activeSpotLights", {
             get: function () {
                 return this._activeSpotLights = this._activeSpotLights || this.spotLights.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "animations", {
+        Object.defineProperty(Scene.prototype, "animations", {
             get: function () {
                 return this._animations = this._animations || this.getComponentsInChildren(feng3d.Animation);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "activeAnimations", {
+        Object.defineProperty(Scene.prototype, "activeAnimations", {
             get: function () {
                 return this._activeAnimations = this._activeAnimations || this.animations.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "behaviours", {
+        Object.defineProperty(Scene.prototype, "behaviours", {
             get: function () {
                 return this._behaviours = this._behaviours || this.getComponentsInChildren(feng3d.Behaviour);
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "activeBehaviours", {
+        Object.defineProperty(Scene.prototype, "activeBehaviours", {
             get: function () {
                 return this._activeBehaviours = this._activeBehaviours || this.behaviours.filter(function (i) { return i.isVisibleAndEnabled; });
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene3D.prototype, "mouseCheckObjects", {
+        Object.defineProperty(Scene.prototype, "mouseCheckObjects", {
             get: function () {
                 if (this._mouseCheckObjects)
                     return this._mouseCheckObjects;
@@ -25675,7 +25670,7 @@ var feng3d;
          * 获取拾取缓存
          * @param camera
          */
-        Scene3D.prototype.getPickCache = function (camera) {
+        Scene.prototype.getPickCache = function (camera) {
             if (this._pickMap.get(camera))
                 return this._pickMap.get(camera);
             var pick = new feng3d.ScenePickCache(this, camera);
@@ -25686,7 +25681,7 @@ var feng3d;
          * 获取接收光照渲染对象列表
          * @param light
          */
-        Scene3D.prototype.getPickByDirectionalLight = function (light) {
+        Scene.prototype.getPickByDirectionalLight = function (light) {
             var openlist = [this.gameObject];
             var targets = [];
             while (openlist.length > 0) {
@@ -25709,7 +25704,7 @@ var feng3d;
          * 获取 可被摄像机看见的 Model 列表
          * @param camera
          */
-        Scene3D.prototype.getModelsByCamera = function (camera) {
+        Scene.prototype.getModelsByCamera = function (camera) {
             var frustum = new feng3d.Frustum().fromMatrix(camera.viewProjection);
             var results = this.visibleAndEnabledModels.filter(function (i) {
                 var model = i.getComponent(feng3d.Model);
@@ -25724,14 +25719,14 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], Scene3D.prototype, "background", void 0);
+        ], Scene.prototype, "background", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], Scene3D.prototype, "ambientColor", void 0);
-        return Scene3D;
+        ], Scene.prototype, "ambientColor", void 0);
+        return Scene;
     }(feng3d.Component));
-    feng3d.Scene3D = Scene3D;
+    feng3d.Scene = Scene;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30004,7 +29999,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Light.prototype.updateDebugShadowMap = function (scene3d, viewCamera) {
+        Light.prototype.updateDebugShadowMap = function (scene, viewCamera) {
             var gameObject = this.debugShadowMapObject;
             if (!gameObject) {
                 gameObject = this.debugShadowMapObject = feng3d.GameObject.createPrimitive("Plane", { name: "debugShadowMapObject" });
@@ -30027,7 +30022,7 @@ var feng3d;
             var billboardComponent = gameObject.getComponent(feng3d.BillboardComponent);
             billboardComponent.camera = viewCamera;
             if (this.debugShadowMap) {
-                scene3d.gameObject.addChild(gameObject);
+                scene.gameObject.addChild(gameObject);
             }
             else {
                 gameObject.remove();
@@ -30081,7 +30076,7 @@ var feng3d;
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera, models) {
+        DirectionalLight.prototype.updateShadowByCamera = function (scene, viewCamera, models) {
             var worldBounds = models.reduce(function (pre, i) {
                 var box = i.gameObject.worldBounds;
                 if (!pre)
@@ -30238,11 +30233,11 @@ var feng3d;
             var pointLights = [];
             var directionalLights = [];
             var spotLights = [];
-            var scene3d = this._model.gameObject.scene;
-            if (scene3d) {
-                pointLights = scene3d.activePointLights;
-                directionalLights = scene3d.activeDirectionalLights;
-                spotLights = scene3d.activeSpotLights;
+            var scene = this._model.gameObject.scene;
+            if (scene) {
+                pointLights = scene.activePointLights;
+                directionalLights = scene.activeDirectionalLights;
+                spotLights = scene.activeSpotLights;
             }
             renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;
             //设置点光源数据
@@ -31413,7 +31408,7 @@ var feng3d;
             _this.frameBufferObject = new feng3d.FrameBufferObject();
             return _this;
         }
-        Water.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        Water.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             var uniforms = this.material.uniforms;
             var sun = this.gameObject.scene.activeDirectionalLights[0];
             if (sun) {
@@ -31423,7 +31418,7 @@ var feng3d;
             var clipBias = 0;
             uniforms.u_time += 1.0 / 60.0;
             // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
-            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
+            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene, camera);
             if (1)
                 return;
             //
@@ -31475,9 +31470,9 @@ var feng3d;
             gl.viewport(0, 0, frameBufferObject.OFFSCREEN_WIDTH, frameBufferObject.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            feng3d.skyboxRenderer.draw(gl, scene3d, mirrorCamera);
-            // forwardRenderer.draw(gl, scene3d, mirrorCamera);
-            // forwardRenderer.draw(gl, scene3d, camera);
+            feng3d.skyboxRenderer.draw(gl, scene, mirrorCamera);
+            // forwardRenderer.draw(gl, scene, mirrorCamera);
+            // forwardRenderer.draw(gl, scene, camera);
             frameBufferObject.deactive(gl);
             //
             // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
@@ -32540,9 +32535,9 @@ var feng3d;
                 this._preRealTime = Math.max(0, this._realTime);
             }
         };
-        ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
-            if (Boolean(scene3d.runEnvironment & feng3d.RunEnvironment.feng3d) && !this._awaked) {
+        ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
+            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene, camera);
+            if (Boolean(scene.runEnvironment & feng3d.RunEnvironment.feng3d) && !this._awaked) {
                 this._isPlaying = this.main.playOnAwake;
                 this._awaked = true;
             }
@@ -37516,9 +37511,9 @@ var feng3d;
             _super.prototype.init.call(this);
             this.hideFlags = feng3d.HideFlags.DontTransform;
         };
-        SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+        SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             var _this = this;
-            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
+            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene, camera);
             var frameId = null;
             var animation = this.getComponentsInParents(feng3d.Animation)[0];
             if (animation) {
@@ -41457,14 +41452,14 @@ var feng3d;
         });
         /**
          * 拾取
-         * @param scene3d 场景
+         * @param scene 场景
          * @param camera 摄像机
          */
-        Mouse3DManager.prototype.pick = function (engine, scene3d, camera) {
+        Mouse3DManager.prototype.pick = function (engine, scene, camera) {
             if (this._mouseEventTypes.length == 0)
                 return;
             //计算得到鼠标射线相交的物体
-            var pickingCollisionVO = feng3d.raycaster.pick(engine.getMouseRay3D(), scene3d.mouseCheckObjects);
+            var pickingCollisionVO = feng3d.raycaster.pick(engine.getMouseRay3D(), scene.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
         };

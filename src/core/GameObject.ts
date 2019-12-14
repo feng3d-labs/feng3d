@@ -21,12 +21,12 @@ namespace feng3d
          */
         removeChild: GameObject;
         /**
-         * 当GameObject的scene属性被设置是由Scene3D派发
+         * 当GameObject的scene属性被设置是由Scene派发
          */
         addedToScene: GameObject;
 
         /**
-         * 当GameObject的scene属性被清空时由Scene3D派发
+         * 当GameObject的scene属性被清空时由Scene派发
          */
         removedFromScene: GameObject;
 
@@ -403,16 +403,11 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type?: Constructor<T>): T[]
+        getComponents<T extends Components>(type: Constructor<T>): T[]
         {
-            var filterResult: Component[];
-            if (!type)
-            {
-                filterResult = this._components.concat();
-            } else
-            {
-                filterResult = this._components.filter(v => v instanceof type);
-            }
+            console.assert(!!type, `类型不能为空！`);
+
+            var filterResult = this._components.filter(v => v instanceof type);
             return <T[]>filterResult;
         }
 
@@ -721,14 +716,14 @@ namespace feng3d
          * 
          * @param gl 
          * @param renderAtomic 
-         * @param scene3d 
+         * @param scene 
          * @param camera 
          */
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             this._components.forEach(element =>
             {
-                element.beforeRender(gl, renderAtomic, scene3d, camera);
+                element.beforeRender(gl, renderAtomic, scene, camera);
             });
         }
 
@@ -755,7 +750,7 @@ namespace feng3d
 		 */
         protected _components: Components[] = [];
         protected _children: GameObject[] = [];
-        protected _scene: Scene3D;
+        protected _scene: Scene;
         protected _parent: GameObject;
 
         //------------------------------------------

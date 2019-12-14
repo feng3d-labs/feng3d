@@ -18,7 +18,7 @@ namespace feng3d
         @serialize
         outlineMorphFactor = 0.0;
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             renderAtomic.uniforms.u_outlineSize = this.size;
             renderAtomic.uniforms.u_outlineColor = this.color;
