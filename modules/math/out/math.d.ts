@@ -247,6 +247,25 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 点与面的相对位置
+     */
+    enum PlaneClassification {
+        /**
+         * 在平面后面
+         */
+        BACK = 0,
+        /**
+         * 在平面前面
+         */
+        FRONT = 1,
+        /**
+         * 与平面相交
+         */
+        INTERSECT = 2
+    }
+}
+declare namespace feng3d {
+    /**
      * 颜色
      */
     class Color3 {
@@ -3271,26 +3290,6 @@ declare namespace feng3d {
          * @param point
          */
         containsPoint(point: Vector3, precision?: number): boolean;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 点与面的相对位置
-
-     */
-    enum PlaneClassification {
-        /**
-         * 在平面后面
-         */
-        BACK = 0,
-        /**
-         * 在平面前面
-         */
-        FRONT = 1,
-        /**
-         * 与平面相交
-         */
-        INTERSECT = 2
     }
 }
 declare namespace feng3d {

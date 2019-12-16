@@ -20,6 +20,7 @@
         //
         "src/enums/CoordinateSystem.ts",
         "src/enums/RotationOrder.ts",
+        "src/enums/PlaneClassification.ts",
         // 颜色
         "src/Color3.ts",
         "src/Color4.ts",
@@ -39,7 +40,6 @@
         "src/geom/Sphere.ts",
         "src/geom/Plane.ts",
         "src/geom/Frustum.ts",
-        "src/geom/PlaneClassification.ts",
         "src/geom/TriangleGeometry.ts",
         // 颜色渐变
         "src/gradient/GradientMode.ts",
