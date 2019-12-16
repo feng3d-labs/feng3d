@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class ParticlesAdditiveUniforms
     {
-        __class__: "feng3d.ParticlesAdditiveUniforms" ;
+        __class__: "feng3d.ParticlesAdditiveUniforms";
 
         @serialize
         @oav()
@@ -36,7 +36,14 @@ namespace feng3d
     }
 
     shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
-    shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: BlendFactor.SRC_ALPHA, dfactor: BlendFactor.ONE, depthMask: false, cullFace: CullFace.NONE, colorMask: ColorMask.RGB };
+    shaderConfig.shaders["Particles_Additive"].renderParams = {
+        enableBlend: true,
+        sfactor: BlendFactor.SRC_ALPHA,
+        dfactor: BlendFactor.ONE,
+        colorMask: ColorMask.RGB,
+        cullFace: CullFace.NONE,
+        depthMask: false,
+    };
 
     export interface DefaultMaterial
     {

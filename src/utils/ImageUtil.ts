@@ -243,7 +243,7 @@ namespace feng3d
                     var l = Math.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
                     // l = l * l;
                     var f = 1 - l;
-                    f = f * f;
+                    // f = f * f;
                     // f = f * f * f;
                     // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
 
@@ -251,7 +251,7 @@ namespace feng3d
                     imageData.data[pos] = f * 255;
                     imageData.data[pos + 1] = f * 255;
                     imageData.data[pos + 2] = f * 255;
-                    imageData.data[pos + 3] = 255;
+                    imageData.data[pos + 3] = f * 255;
                 }
             }
             this.imageData = imageData;

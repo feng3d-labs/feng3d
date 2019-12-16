@@ -32,8 +32,10 @@ namespace feng3d
     shaderConfig.shaders["Particles_AlphaBlendedPremultiply"].cls = ParticlesAlphaBlendedPremultiplyUniforms;
     shaderConfig.shaders["Particles_AlphaBlendedPremultiply"].renderParams = {
         enableBlend: true,
-        sfactor: BlendFactor.ONE,
-        dfactor: BlendFactor.ONE_MINUS_DST_ALPHA,
-        depthMask: false
+        sfactor: BlendFactor.SRC_ALPHA,
+        dfactor: BlendFactor.ONE_MINUS_SRC_ALPHA,
+        colorMask: ColorMask.RGB,
+        cullFace: CullFace.NONE,
+        depthMask: false,
     };
 }

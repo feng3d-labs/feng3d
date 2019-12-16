@@ -18943,14 +18943,14 @@ var feng3d;
                     var l = Math.clamp(new feng3d.Vector2(i - half, j - half).length, 0, half) / half;
                     // l = l * l;
                     var f = 1 - l;
-                    f = f * f;
+                    // f = f * f;
                     // f = f * f * f;
                     // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
                     var pos = (i + j * size) * 4;
                     imageData.data[pos] = f * 255;
                     imageData.data[pos + 1] = f * 255;
                     imageData.data[pos + 2] = f * 255;
-                    imageData.data[pos + 3] = 255;
+                    imageData.data[pos + 3] = f * 255;
                 }
             }
             this.imageData = imageData;
@@ -32140,7 +32140,14 @@ var feng3d;
     }());
     feng3d.ParticlesAdditiveUniforms = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
-    feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false, cullFace: feng3d.CullFace.NONE, colorMask: feng3d.ColorMask.RGB };
+    feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = {
+        enableBlend: true,
+        sfactor: feng3d.BlendFactor.SRC_ALPHA,
+        dfactor: feng3d.BlendFactor.ONE,
+        colorMask: feng3d.ColorMask.RGB,
+        cullFace: feng3d.CullFace.NONE,
+        depthMask: false,
+    };
     feng3d.Material.setDefault("Particle-Material", { shaderName: "Particles_Additive" });
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -32181,9 +32188,11 @@ var feng3d;
     feng3d.shaderConfig.shaders["Particles_AlphaBlendedPremultiply"].cls = ParticlesAlphaBlendedPremultiplyUniforms;
     feng3d.shaderConfig.shaders["Particles_AlphaBlendedPremultiply"].renderParams = {
         enableBlend: true,
-        sfactor: feng3d.BlendFactor.ONE,
-        dfactor: feng3d.BlendFactor.ONE_MINUS_DST_ALPHA,
-        depthMask: false
+        sfactor: feng3d.BlendFactor.SRC_ALPHA,
+        dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA,
+        colorMask: feng3d.ColorMask.RGB,
+        cullFace: feng3d.CullFace.NONE,
+        depthMask: false,
     };
 })(feng3d || (feng3d = {}));
 var feng3d;
