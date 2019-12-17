@@ -297,7 +297,7 @@ declare namespace feng3d {
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchchain(object: any, property: string, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchchain(object: any, property: string, handler: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         /**
          * 取消监听对象属性链值变化
          *
