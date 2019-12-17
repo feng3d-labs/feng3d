@@ -33,7 +33,7 @@ namespace feng3d
             canvas.height = height;
             var ctxt = canvas.getContext('2d');
             callback(ctxt);
-            dataTransform.canvasToImage(canvas, "png", (img) =>
+            dataTransform.canvasToImage(canvas, "png", 1, (img) =>
             {
                 this.image = img;
             });

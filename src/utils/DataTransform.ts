@@ -99,18 +99,18 @@ namespace feng3d
         /**
          * canvas转换为dataURL
          */
-        canvasToDataURL(canvas: HTMLCanvasElement, type: "png" | "jpeg" = "png")
+        canvasToDataURL(canvas: HTMLCanvasElement, type: "png" | "jpeg" = "png", quality = 1)
         {
             if (type == "png") return canvas.toDataURL("image/png");
-            return canvas.toDataURL("image/jpeg", 0.8);
+            return canvas.toDataURL("image/jpeg", quality);
         }
 
         /**
          * canvas转换为图片
          */
-        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg" = "png", callback: (img: HTMLImageElement) => void)
+        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg" = "png", quality = 1, callback: (img: HTMLImageElement) => void)
         {
-            var dataURL = this.canvasToDataURL(canvas, type);
+            var dataURL = this.canvasToDataURL(canvas, type, quality);
             this.dataURLToImage(dataURL, callback);
         }
 
@@ -179,10 +179,10 @@ namespace feng3d
             img.src = dataurl;
         }
 
-        imageToDataURL(img: HTMLImageElement)
+        imageToDataURL(img: HTMLImageElement, quality = 1)
         {
             var canvas = this.imageToCanvas(img);
-            var dataurl = this.canvasToDataURL(canvas, "png");
+            var dataurl = this.canvasToDataURL(canvas, "png", quality);
             return dataurl;
         }
 
@@ -212,10 +212,10 @@ namespace feng3d
             });
         }
 
-        imageDataToDataURL(imageData: ImageData)
+        imageDataToDataURL(imageData: ImageData, quality = 1)
         {
             var canvas = this.imageDataToCanvas(imageData);
-            var dataurl = this.canvasToDataURL(canvas, "png");
+            var dataurl = this.canvasToDataURL(canvas, "png", quality);
             return dataurl;
         }
 
@@ -229,9 +229,9 @@ namespace feng3d
             return canvas;
         }
 
-        imagedataToImage(imageData: ImageData, callback: (img: HTMLImageElement) => void)
+        imagedataToImage(imageData: ImageData, quality = 1, callback: (img: HTMLImageElement) => void)
         {
-            var dataUrl = this.imageDataToDataURL(imageData);
+            var dataUrl = this.imageDataToDataURL(imageData, quality);
             this.dataURLToImage(dataUrl, callback);
         }
 

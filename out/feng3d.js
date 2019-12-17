@@ -18562,18 +18562,20 @@ var feng3d;
         /**
          * canvas转换为dataURL
          */
-        DataTransform.prototype.canvasToDataURL = function (canvas, type) {
+        DataTransform.prototype.canvasToDataURL = function (canvas, type, quality) {
             if (type === void 0) { type = "png"; }
+            if (quality === void 0) { quality = 1; }
             if (type == "png")
                 return canvas.toDataURL("image/png");
-            return canvas.toDataURL("image/jpeg", 0.8);
+            return canvas.toDataURL("image/jpeg", quality);
         };
         /**
          * canvas转换为图片
          */
-        DataTransform.prototype.canvasToImage = function (canvas, type, callback) {
+        DataTransform.prototype.canvasToImage = function (canvas, type, quality, callback) {
             if (type === void 0) { type = "png"; }
-            var dataURL = this.canvasToDataURL(canvas, type);
+            if (quality === void 0) { quality = 1; }
+            var dataURL = this.canvasToDataURL(canvas, type, quality);
             this.dataURLToImage(dataURL, callback);
         };
         /**
@@ -18624,9 +18626,10 @@ var feng3d;
             };
             img.src = dataurl;
         };
-        DataTransform.prototype.imageToDataURL = function (img) {
+        DataTransform.prototype.imageToDataURL = function (img, quality) {
+            if (quality === void 0) { quality = 1; }
             var canvas = this.imageToCanvas(img);
-            var dataurl = this.canvasToDataURL(canvas, "png");
+            var dataurl = this.canvasToDataURL(canvas, "png", quality);
             return dataurl;
         };
         DataTransform.prototype.imageToCanvas = function (img) {
@@ -18649,9 +18652,10 @@ var feng3d;
                 callback(arraybuffer);
             });
         };
-        DataTransform.prototype.imageDataToDataURL = function (imageData) {
+        DataTransform.prototype.imageDataToDataURL = function (imageData, quality) {
+            if (quality === void 0) { quality = 1; }
             var canvas = this.imageDataToCanvas(imageData);
-            var dataurl = this.canvasToDataURL(canvas, "png");
+            var dataurl = this.canvasToDataURL(canvas, "png", quality);
             return dataurl;
         };
         DataTransform.prototype.imageDataToCanvas = function (imageData) {
@@ -18662,8 +18666,9 @@ var feng3d;
             ctxt.putImageData(imageData, 0, 0);
             return canvas;
         };
-        DataTransform.prototype.imagedataToImage = function (imageData, callback) {
-            var dataUrl = this.imageDataToDataURL(imageData);
+        DataTransform.prototype.imagedataToImage = function (imageData, quality, callback) {
+            if (quality === void 0) { quality = 1; }
+            var dataUrl = this.imageDataToDataURL(imageData, quality);
             this.dataURLToImage(dataUrl, callback);
         };
         DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
@@ -23026,7 +23031,7 @@ var feng3d;
             canvas.height = height;
             var ctxt = canvas.getContext('2d');
             callback(ctxt);
-            feng3d.dataTransform.canvasToImage(canvas, "png", function (img) {
+            feng3d.dataTransform.canvasToImage(canvas, "png", 1, function (img) {
                 _this.image = img;
             });
             return this;
@@ -32184,7 +32189,7 @@ var feng3d;
     feng3d.shaderConfig.shaders["Particles_AlphaBlendedPremultiply"].cls = ParticlesAlphaBlendedPremultiplyUniforms;
     feng3d.shaderConfig.shaders["Particles_AlphaBlendedPremultiply"].renderParams = {
         enableBlend: true,
-        sfactor: feng3d.BlendFactor.SRC_ALPHA,
+        sfactor: feng3d.BlendFactor.ONE,
         dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA,
         colorMask: feng3d.ColorMask.RGB,
         cullFace: feng3d.CullFace.NONE,

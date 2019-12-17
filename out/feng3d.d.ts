@@ -9851,11 +9851,11 @@ declare namespace feng3d {
         /**
          * canvas转换为dataURL
          */
-        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg"): string;
+        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg", quality?: number): string;
         /**
          * canvas转换为图片
          */
-        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg", callback: (img: HTMLImageElement) => void): void;
+        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg", quality: number, callback: (img: HTMLImageElement) => void): void;
         /**
          * File、Blob对象转换为dataURL
          * File对象也是一个Blob对象，二者的处理相同。
@@ -9874,12 +9874,12 @@ declare namespace feng3d {
         dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
-        imageToDataURL(img: HTMLImageElement): string;
+        imageToDataURL(img: HTMLImageElement, quality?: number): string;
         imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
         imageToArrayBuffer(img: HTMLImageElement, callback: (arraybuffer: ArrayBuffer) => void): void;
-        imageDataToDataURL(imageData: ImageData): string;
+        imageDataToDataURL(imageData: ImageData, quality?: number): string;
         imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
-        imagedataToImage(imageData: ImageData, callback: (img: HTMLImageElement) => void): void;
+        imagedataToImage(imageData: ImageData, quality: number, callback: (img: HTMLImageElement) => void): void;
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
         blobToText(blob: Blob, callback: (content: string) => void): void;
         stringToArrayBuffer(str: string): ArrayBuffer;
