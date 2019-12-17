@@ -328,7 +328,7 @@ Math.randFloatSpread = Math.randFloatSpread || function (range: number)
  */
 Math.degToRad = Math.degToRad || function (degrees: number)
 {
-    return degrees * this.DEG2RAD;
+    return degrees * Math.DEG2RAD;
 }
 
 /**
@@ -338,7 +338,7 @@ Math.degToRad = Math.degToRad || function (degrees: number)
  */
 Math.radToDeg = Math.radToDeg || function (radians: number)
 {
-    return radians * this.RAD2DEG;
+    return radians * Math.RAD2DEG;
 }
 
 /**
@@ -406,7 +406,7 @@ Math.toRound = Math.toRound || function (source: number, target: number, precisi
 Math.equals = Math.equals || function (a: number, b: number, precision?: number)
 {
     if (precision == undefined)
-        precision = this.PRECISION;
+        precision = Math.PRECISION;
     return Math.abs(a - b) < precision;
 }
 

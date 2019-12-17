@@ -460,7 +460,7 @@ interface ObjectConstructor {
      * @param object 对象
      * @param property 属性名称
      */
-    getPropertyDescriptor(object: Object, property: string): PropertyDescriptor;
+    getPropertyDescriptor(object: Object, property: string): PropertyDescriptor | undefined;
     /**
      * 属性是否可写
      * @param obj 对象
@@ -509,7 +509,7 @@ interface ObjectConstructor {
      * @param handlers 处理函数列表，先于 Object.assignDeepDefaultHandlers 执行。函数返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。执行在 Object.DefaultAssignDeepReplacers 前。
      * @param deep 赋值深度，deep<1时直接返回。
      */
-    assignDeep<T>(target: T, source: feng3d.gPartial<T>, handlers?: AssignDeepHandler | AssignDeepHandler[], deep?: number): T;
+    assignDeep<T>(target: T, source: feng3d.gPartial<T>, handlers?: AssignDeepHandler[], deep?: number): T;
     /**
      * 深度比较两个对象子代可枚举属性值
      *

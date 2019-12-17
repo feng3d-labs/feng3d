@@ -22,7 +22,7 @@ interface ObjectConstructor
      * @param object 对象
      * @param property 属性名称
      */
-    getPropertyDescriptor(object: Object, property: string): PropertyDescriptor;
+    getPropertyDescriptor(object: Object, property: string): PropertyDescriptor | undefined;
 
     /**
      * 属性是否可写
@@ -78,7 +78,7 @@ interface ObjectConstructor
      * @param handlers 处理函数列表，先于 Object.assignDeepDefaultHandlers 执行。函数返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。执行在 Object.DefaultAssignDeepReplacers 前。
      * @param deep 赋值深度，deep<1时直接返回。
      */
-    assignDeep<T>(target: T, source: feng3d.gPartial<T>, handlers?: AssignDeepHandler | AssignDeepHandler[], deep?: number): T;
+    assignDeep<T>(target: T, source: feng3d.gPartial<T>, handlers?: AssignDeepHandler[], deep?: number): T;
 
     /**
      * 深度比较两个对象子代可枚举属性值
@@ -117,9 +117,10 @@ Object.isBaseType = function (object: any)
         || typeof object == "number"
     )
         return true;
+    return false;
 }
 
-Object.getPropertyDescriptor = function (host: any, property: string): PropertyDescriptor
+Object.getPropertyDescriptor = function (host: any, property: string)
 {
     var data = Object.getOwnPropertyDescriptor(host, property);
     if (data)
@@ -131,7 +132,7 @@ Object.getPropertyDescriptor = function (host: any, property: string): PropertyD
     {
         return Object.getPropertyDescriptor(prototype, property);
     }
-    return null;
+    return undefined;
 }
 
 Object.propertyIsWritable = function (host: any, property: string): boolean
@@ -249,10 +250,10 @@ Object.assignDeep = function (target, source, replacers = [], deep = Number.MAX_
     if (source == null) return target;
     if (deep < 1) return target;
     var keys = Object.keys(source);
+    var handles = replacers.concat(Object.assignDeepDefaultHandlers);
     keys.forEach(k =>
     {
         //
-        var handles = [].concat(replacers).concat(Object.assignDeepDefaultHandlers);
         for (let i = 0; i < handles.length; i++)
         {
             if (handles[i](target, source, k, replacers, deep)) 
@@ -270,6 +271,7 @@ Object.assignDeepDefaultHandlers = [
     function (target, source, key)
     {
         if (target[key] == source[key]) return true;
+        return false;
     },
     function (target, source, key)
     {
@@ -278,6 +280,7 @@ Object.assignDeepDefaultHandlers = [
             target[key] = source[key];
             return true
         }
+        return false;
     },
     function (target, source, key, handlers, deep)
     {
@@ -286,6 +289,7 @@ Object.assignDeepDefaultHandlers = [
             Object.assignDeep(target[key], source[key], handlers, deep - 1);
             return true
         }
+        return false;
     },
 
 ];

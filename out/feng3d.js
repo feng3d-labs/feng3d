@@ -647,6 +647,7 @@ Object.isBaseType = function (object) {
         || typeof object == "string"
         || typeof object == "number")
         return true;
+    return false;
 };
 Object.getPropertyDescriptor = function (host, property) {
     var data = Object.getOwnPropertyDescriptor(host, property);
@@ -657,7 +658,7 @@ Object.getPropertyDescriptor = function (host, property) {
     if (prototype) {
         return Object.getPropertyDescriptor(prototype, property);
     }
-    return null;
+    return undefined;
 };
 Object.propertyIsWritable = function (host, property) {
     var data = Object.getPropertyDescriptor(host, property);
@@ -764,9 +765,9 @@ Object.assignDeep = function (target, source, replacers, deep) {
     if (deep < 1)
         return target;
     var keys = Object.keys(source);
+    var handles = replacers.concat(Object.assignDeepDefaultHandlers);
     keys.forEach(function (k) {
         //
-        var handles = [].concat(replacers).concat(Object.assignDeepDefaultHandlers);
         for (var i = 0; i < handles.length; i++) {
             if (handles[i](target, source, k, replacers, deep)) {
                 return;
@@ -781,18 +782,21 @@ Object.assignDeepDefaultHandlers = [
     function (target, source, key) {
         if (target[key] == source[key])
             return true;
+        return false;
     },
     function (target, source, key) {
         if (Object.isBaseType(target[key]) || Object.isBaseType(source[key])) {
             target[key] = source[key];
             return true;
         }
+        return false;
     },
     function (target, source, key, handlers, deep) {
         if (Array.isArray(source[key]) || Object.isObject(source[key])) {
             Object.assignDeep(target[key], source[key], handlers, deep - 1);
             return true;
         }
+        return false;
     },
 ];
 var feng3d;
@@ -1205,7 +1209,7 @@ Math.randFloatSpread = Math.randFloatSpread || function (range) {
  * @param degrees 角度
  */
 Math.degToRad = Math.degToRad || function (degrees) {
-    return degrees * this.DEG2RAD;
+    return degrees * Math.DEG2RAD;
 };
 /**
  * 弧度转换为角度
@@ -1213,7 +1217,7 @@ Math.degToRad = Math.degToRad || function (degrees) {
  * @param radians 弧度
  */
 Math.radToDeg = Math.radToDeg || function (radians) {
-    return radians * this.RAD2DEG;
+    return radians * Math.RAD2DEG;
 };
 /**
  * 判断指定整数是否为2的幂
@@ -1272,7 +1276,7 @@ Math.toRound = Math.toRound || function (source, target, precision) {
  */
 Math.equals = Math.equals || function (a, b, precision) {
     if (precision == undefined)
-        precision = this.PRECISION;
+        precision = Math.PRECISION;
     return Math.abs(a - b) < precision;
 };
 /**
