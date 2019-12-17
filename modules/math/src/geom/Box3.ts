@@ -281,9 +281,15 @@ namespace feng3d
          */
         intersection(aabb: Box3)
         {
-            this.min.clamp(aabb.min, aabb.max);
-            this.max.clamp(aabb.min, aabb.max);
-            return this;
+            var min = this.min.clampTo(aabb.min, aabb.max);
+            var max = this.max.clampTo(aabb.min, aabb.max);
+            if (this.containsPoint(min))
+            {
+                this.min.copy(min);
+                this.max.copy(max);
+                return this;
+            }
+            return null;
         }
 
         /**
