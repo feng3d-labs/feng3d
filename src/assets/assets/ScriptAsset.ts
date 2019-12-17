@@ -17,6 +17,7 @@ namespace feng3d
          */
         get parentScriptName()
         {
+            this._update();
             return this._parentScriptName;
         }
         private _parentScriptName: string;
@@ -26,6 +27,7 @@ namespace feng3d
          */
         get scriptName()
         {
+            this._update();
             return this._scriptName;
         }
         private _scriptName: string;

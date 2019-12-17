@@ -38093,6 +38093,7 @@ var feng3d;
              * 脚本父类名称
              */
             get: function () {
+                this._update();
                 return this._parentScriptName;
             },
             enumerable: true,
@@ -38103,6 +38104,7 @@ var feng3d;
              * 脚本类定义
              */
             get: function () {
+                this._update();
                 return this._scriptName;
             },
             enumerable: true,
