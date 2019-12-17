@@ -514,6 +514,27 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 点与面的相对位置
+     */
+    var PlaneClassification;
+    (function (PlaneClassification) {
+        /**
+         * 在平面后面
+         */
+        PlaneClassification[PlaneClassification["BACK"] = 0] = "BACK";
+        /**
+         * 在平面前面
+         */
+        PlaneClassification[PlaneClassification["FRONT"] = 1] = "FRONT";
+        /**
+         * 与平面相交
+         */
+        PlaneClassification[PlaneClassification["INTERSECT"] = 2] = "INTERSECT";
+    })(PlaneClassification = feng3d.PlaneClassification || (feng3d.PlaneClassification = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 颜色
      */
     var Color3 = /** @class */ (function () {
@@ -7022,28 +7043,6 @@ var feng3d;
     }());
     feng3d.Frustum = Frustum;
     var _vector = new feng3d.Vector3();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 点与面的相对位置
-
-     */
-    var PlaneClassification;
-    (function (PlaneClassification) {
-        /**
-         * 在平面后面
-         */
-        PlaneClassification[PlaneClassification["BACK"] = 0] = "BACK";
-        /**
-         * 在平面前面
-         */
-        PlaneClassification[PlaneClassification["FRONT"] = 1] = "FRONT";
-        /**
-         * 与平面相交
-         */
-        PlaneClassification[PlaneClassification["INTERSECT"] = 2] = "INTERSECT";
-    })(PlaneClassification = feng3d.PlaneClassification || (feng3d.PlaneClassification = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

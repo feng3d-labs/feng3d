@@ -56,6 +56,7 @@
         //
         "modules/math/src/enums/CoordinateSystem.ts",
         "modules/math/src/enums/RotationOrder.ts",
+        "modules/math/src/enums/PlaneClassification.ts",
         // 颜色
         "modules/math/src/Color3.ts",
         "modules/math/src/Color4.ts",
@@ -75,7 +76,6 @@
         "modules/math/src/geom/Sphere.ts",
         "modules/math/src/geom/Plane.ts",
         "modules/math/src/geom/Frustum.ts",
-        "modules/math/src/geom/PlaneClassification.ts",
         "modules/math/src/geom/TriangleGeometry.ts",
         // 颜色渐变
         "modules/math/src/gradient/GradientMode.ts",
