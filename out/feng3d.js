@@ -18941,11 +18941,8 @@ var feng3d;
             for (var i = 0; i < size; i++) {
                 for (var j = 0; j < size; j++) {
                     var l = Math.clamp(new feng3d.Vector2(i - half, j - half).length, 0, half) / half;
-                    // l = l * l;
                     var f = 1 - l;
-                    // f = f * f;
-                    // f = f * f * f;
-                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
+                    f = f * f;
                     var pos = (i + j * size) * 4;
                     imageData.data[pos] = f * 255;
                     imageData.data[pos + 1] = f * 255;
