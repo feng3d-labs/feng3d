@@ -5917,19 +5917,30 @@ var feng3d;
         /**
          * 转换为包围盒八个角所在点列表
          */
-        Box3.prototype.toPoints = function () {
+        Box3.prototype.toPoints = function (points) {
+            if (!points) {
+                points = [
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                ];
+            }
             var min = this.min;
             var max = this.max;
-            return [
-                new feng3d.Vector3(min.x, min.y, min.z),
-                new feng3d.Vector3(max.x, min.y, min.z),
-                new feng3d.Vector3(min.x, max.y, min.z),
-                new feng3d.Vector3(min.x, min.y, max.z),
-                new feng3d.Vector3(min.x, max.y, max.z),
-                new feng3d.Vector3(max.x, min.y, max.z),
-                new feng3d.Vector3(max.x, max.y, min.z),
-                new feng3d.Vector3(max.x, max.y, max.z),
-            ];
+            points[0].set(min.x, min.y, min.z);
+            points[1].set(max.x, min.y, min.z);
+            points[2].set(min.x, max.y, min.z);
+            points[3].set(min.x, min.y, max.z);
+            points[4].set(min.x, max.y, max.z);
+            points[5].set(max.x, min.y, max.z);
+            points[6].set(max.x, max.y, min.z);
+            points[7].set(max.x, max.y, max.z);
+            return points;
         };
         /**
          * 从一组顶点初始化包围盒
@@ -6083,9 +6094,14 @@ var feng3d;
          * @param aabb 包围盒
          */
         Box3.prototype.intersection = function (aabb) {
-            this.min.clamp(aabb.min, aabb.max);
-            this.max.clamp(aabb.min, aabb.max);
-            return this;
+            var min = this.min.clampTo(aabb.min, aabb.max);
+            var max = this.max.clampTo(aabb.min, aabb.max);
+            if (this.containsPoint(min)) {
+                this.min.copy(min);
+                this.max.copy(max);
+                return this;
+            }
+            return null;
         };
         /**
          * 与包围盒相交
@@ -6349,6 +6365,22 @@ var feng3d;
             var triangleNormal = f0.crossTo(f1);
             axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
             return satForAxes(axes, v0, v1, v2, extents);
+        };
+        /**
+        * 是否与指定长方体相交
+        *
+        * @param box3 长方体
+        */
+        Box3.prototype.overlaps = function (box3) {
+            var l1 = this.min, u1 = this.max, l2 = box3.min, u2 = box3.max;
+            //      l2        u2
+            //      |---------|
+            // |--------|
+            // l1       u1
+            var overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
+            var overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
+            var overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
+            return overlapsX && overlapsY && overlapsZ;
         };
         /**
          * 转换为三角形列表

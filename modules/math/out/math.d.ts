@@ -2807,7 +2807,7 @@ declare namespace feng3d {
         /**
          * 转换为包围盒八个角所在点列表
          */
-        toPoints(): Vector3[];
+        toPoints(points?: Vector3[]): Vector3[];
         /**
          * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
@@ -2958,6 +2958,12 @@ declare namespace feng3d {
          * @param triangle 三角形
          */
         intersectsTriangle(triangle: Triangle3): boolean;
+        /**
+        * 是否与指定长方体相交
+        *
+        * @param box3 长方体
+        */
+        overlaps(box3: Box3): boolean;
         /**
          * 转换为三角形列表
          */

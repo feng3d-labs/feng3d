@@ -103,7 +103,9 @@ namespace feng3d
          */
         has(obj: Object, type: string): boolean
         {
-            return !!(this.feventMap.get(obj) && this.feventMap.get(obj)[type] && this.feventMap.get(obj)[type].length);
+            var objectListener = this.feventMap.get(obj);
+            if (!objectListener) return false;
+            return !!(objectListener[type] && objectListener[type].length);
         }
 
         /**
@@ -115,7 +117,11 @@ namespace feng3d
         on(obj: Object, type: string, listener: (event: any) => any, thisObject?: any, priority = 0, once = false)
         {
             var objectListener = this.feventMap.get(obj);
-            if (!objectListener) (this.feventMap.set(obj, objectListener = {}));
+            if (!objectListener)
+            {
+                objectListener = { __allEventType__: [] }
+                this.feventMap.set(obj, objectListener)
+            }
 
             var listeners: ListenerVO[] = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++)
@@ -151,13 +157,15 @@ namespace feng3d
                 this.feventMap.delete(obj)
                 return;
             }
+            var objectListener = this.feventMap.get(obj);
+            if (!objectListener) return;
+
             if (!listener)
             {
-                if (this.feventMap.get(obj))
-                    delete this.feventMap.get(obj)[type];
+                delete objectListener[type];
                 return;
             }
-            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj)[type];
+            var listeners = objectListener[type];
             if (listeners)
             {
                 for (var i = listeners.length - 1; i >= 0; i--)
@@ -170,7 +178,7 @@ namespace feng3d
                 }
                 if (listeners.length == 0)
                 {
-                    delete this.feventMap.get(obj)[type];
+                    delete objectListener[type];
                 }
             }
         }
@@ -184,10 +192,14 @@ namespace feng3d
          */
         onAll(obj: Object, listener: (event: any) => void, thisObject?: any, priority = 0)
         {
-            var objectListener = this.feventMap.get(obj)
-            if (!objectListener) (this.feventMap.set(obj, objectListener = {}));
+            var objectListener = this.feventMap.get(obj);
+            if (!objectListener)
+            {
+                objectListener = { __allEventType__: [] };
+                this.feventMap.set(obj, objectListener)
+            }
 
-            var listeners: ListenerVO[] = objectListener.__allEventType__ = objectListener.__allEventType__ || [];
+            var listeners: ListenerVO[] = objectListener.__allEventType__;
             for (var i = 0; i < listeners.length; i++)
             {
                 var element = listeners[i];
@@ -216,15 +228,16 @@ namespace feng3d
          */
         offAll(obj: Object, listener?: (event: any) => void, thisObject?: any)
         {
+            var objectListener = this.feventMap.get(obj);
             if (!listener)
             {
-                if (this.feventMap.get(obj))
-                    delete this.feventMap.get(obj).__allEventType__;
+                if (objectListener)
+                    objectListener.__allEventType__.length = 0;
                 return;
             }
-            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
-            if (listeners)
+            if (objectListener)
             {
+                var listeners = objectListener.__allEventType__;
                 for (var i = listeners.length - 1; i >= 0; i--)
                 {
                     var element = listeners[i];
@@ -232,10 +245,6 @@ namespace feng3d
                     {
                         listeners.splice(i, 1);
                     }
-                }
-                if (listeners.length == 0)
-                {
-                    delete this.feventMap.get(obj).__allEventType__;
                 }
             }
         }
@@ -253,7 +262,11 @@ namespace feng3d
                 //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
                 e.currentTarget = obj;
             } catch (error) { }
-            var listeners: ListenerVO[] = this.feventMap.get(obj) && this.feventMap.get(obj)[e.type];
+            //
+            var objectListener = this.feventMap.get(obj);
+            if (!objectListener) return;
+
+            var listeners: ListenerVO[] = objectListener[e.type];
             if (listeners)
             {
                 //遍历调用事件回调函数
@@ -269,10 +282,10 @@ namespace feng3d
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete this.feventMap.get(obj)[e.type];
+                    delete objectListener[e.type];
             }
             // All_EVENT_Type
-            listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
+            listeners = objectListener.__allEventType__;
             if (listeners)
             {
                 //遍历调用事件回调函数
@@ -286,8 +299,6 @@ namespace feng3d
                     if (listeners[i].once)
                         listeners.splice(i, 1);
                 }
-                if (listeners.length == 0)
-                    delete this.feventMap.get(obj).__allEventType__;
             }
         }
 
@@ -316,7 +327,7 @@ namespace feng3d
     interface ObjectListener
     {
         [type: string]: ListenerVO[];
-        __allEventType__?: ListenerVO[];
+        __allEventType__: ListenerVO[];
     }
 
 	/**

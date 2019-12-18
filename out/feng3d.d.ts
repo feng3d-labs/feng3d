@@ -297,7 +297,7 @@ declare namespace feng3d {
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchchain(object: any, property: string, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchchain(object: any, property: string, handler: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         /**
          * 取消监听对象属性链值变化
          *
@@ -315,7 +315,7 @@ declare namespace feng3d {
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchobject<T>(object: T, property: gPartial<T>, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchobject<T>(object: T, property: gPartial<T>, handler: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         /**
          * 取消监听对象属性链值变化
          *
@@ -460,7 +460,7 @@ interface ObjectConstructor {
      * @param object 对象
      * @param property 属性名称
      */
-    getPropertyDescriptor(object: Object, property: string): PropertyDescriptor;
+    getPropertyDescriptor(object: Object, property: string): PropertyDescriptor | undefined;
     /**
      * 属性是否可写
      * @param obj 对象
@@ -509,7 +509,7 @@ interface ObjectConstructor {
      * @param handlers 处理函数列表，先于 Object.assignDeepDefaultHandlers 执行。函数返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。执行在 Object.DefaultAssignDeepReplacers 前。
      * @param deep 赋值深度，deep<1时直接返回。
      */
-    assignDeep<T>(target: T, source: feng3d.gPartial<T>, handlers?: AssignDeepHandler | AssignDeepHandler[], deep?: number): T;
+    assignDeep<T>(target: T, source: feng3d.gPartial<T>, handlers?: AssignDeepHandler[], deep?: number): T;
     /**
      * 深度比较两个对象子代可枚举属性值
      *
@@ -5561,7 +5561,7 @@ declare namespace feng3d {
         /**
          * 转换为包围盒八个角所在点列表
          */
-        toPoints(): Vector3[];
+        toPoints(points?: Vector3[]): Vector3[];
         /**
          * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
@@ -5712,6 +5712,12 @@ declare namespace feng3d {
          * @param triangle 三角形
          */
         intersectsTriangle(triangle: Triangle3): boolean;
+        /**
+        * 是否与指定长方体相交
+        *
+        * @param box3 长方体
+        */
+        overlaps(box3: Box3): boolean;
         /**
          * 转换为三角形列表
          */
@@ -6854,6 +6860,29 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     *
+     *
+     * @see https://mrl.nyu.edu/~perlin/noise/
+     */
+    class ImprovedNoise {
+        noise(x: number, y: number, z: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     *
+     */
+    class PerlinNoise {
+        fade(t: number): number;
+        lerp(t: number, a: number, b: number): number;
+        grad(hash: number, x: number, y: number, z: number): number;
+        grad2(hash: number, x: number, y: number): number;
+        p: number[];
+        Noise(x: number, y: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
      * Ported from Stefan Gustavson's java implementation
      * http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
      * Read Stefan's excellent paper for details on how this code works.
@@ -6906,19 +6935,6 @@ declare namespace feng3d {
          * @param w
          */
         noise4d(x: number, y: number, z: number, w: number): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     *
-     */
-    class PerlinNoise {
-        fade(t: number): number;
-        lerp(t: number, a: number, b: number): number;
-        grad(hash: number, x: number, y: number, z: number): number;
-        grad2(hash: number, x: number, y: number): number;
-        p: number[];
-        Noise(x: number, y: number): number;
     }
 }
 declare namespace feng3d {

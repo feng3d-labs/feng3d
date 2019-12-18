@@ -1,3 +1,4 @@
+"use strict";
 var feng3d;
 (function (feng3d) {
     /**

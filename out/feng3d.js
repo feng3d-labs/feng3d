@@ -78,7 +78,10 @@ var feng3d;
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
         FEvent.prototype.has = function (obj, type) {
-            return !!(this.feventMap.get(obj) && this.feventMap.get(obj)[type] && this.feventMap.get(obj)[type].length);
+            var objectListener = this.feventMap.get(obj);
+            if (!objectListener)
+                return false;
+            return !!(objectListener[type] && objectListener[type].length);
         };
         /**
          * 添加监听
@@ -90,8 +93,10 @@ var feng3d;
             if (priority === void 0) { priority = 0; }
             if (once === void 0) { once = false; }
             var objectListener = this.feventMap.get(obj);
-            if (!objectListener)
-                (this.feventMap.set(obj, objectListener = {}));
+            if (!objectListener) {
+                objectListener = { __allEventType__: [] };
+                this.feventMap.set(obj, objectListener);
+            }
             var listeners = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -119,12 +124,14 @@ var feng3d;
                 this.feventMap.delete(obj);
                 return;
             }
+            var objectListener = this.feventMap.get(obj);
+            if (!objectListener)
+                return;
             if (!listener) {
-                if (this.feventMap.get(obj))
-                    delete this.feventMap.get(obj)[type];
+                delete objectListener[type];
                 return;
             }
-            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj)[type];
+            var listeners = objectListener[type];
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
@@ -133,7 +140,7 @@ var feng3d;
                     }
                 }
                 if (listeners.length == 0) {
-                    delete this.feventMap.get(obj)[type];
+                    delete objectListener[type];
                 }
             }
         };
@@ -147,9 +154,11 @@ var feng3d;
         FEvent.prototype.onAll = function (obj, listener, thisObject, priority) {
             if (priority === void 0) { priority = 0; }
             var objectListener = this.feventMap.get(obj);
-            if (!objectListener)
-                (this.feventMap.set(obj, objectListener = {}));
-            var listeners = objectListener.__allEventType__ = objectListener.__allEventType__ || [];
+            if (!objectListener) {
+                objectListener = { __allEventType__: [] };
+                this.feventMap.set(obj, objectListener);
+            }
+            var listeners = objectListener.__allEventType__;
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
                 if (element.listener == listener && element.thisObject == thisObject) {
@@ -172,21 +181,19 @@ var feng3d;
          * @param thisObject 回调函数 this 指针
          */
         FEvent.prototype.offAll = function (obj, listener, thisObject) {
+            var objectListener = this.feventMap.get(obj);
             if (!listener) {
-                if (this.feventMap.get(obj))
-                    delete this.feventMap.get(obj).__allEventType__;
+                if (objectListener)
+                    objectListener.__allEventType__.length = 0;
                 return;
             }
-            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
-            if (listeners) {
+            if (objectListener) {
+                var listeners = objectListener.__allEventType__;
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
                     if (element.listener == listener && element.thisObject == thisObject) {
                         listeners.splice(i, 1);
                     }
-                }
-                if (listeners.length == 0) {
-                    delete this.feventMap.get(obj).__allEventType__;
                 }
             }
         };
@@ -202,7 +209,11 @@ var feng3d;
                 e.currentTarget = obj;
             }
             catch (error) { }
-            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj)[e.type];
+            //
+            var objectListener = this.feventMap.get(obj);
+            if (!objectListener)
+                return;
+            var listeners = objectListener[e.type];
             if (listeners) {
                 //遍历调用事件回调函数
                 var listeners0 = listeners.concat();
@@ -215,10 +226,10 @@ var feng3d;
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete this.feventMap.get(obj)[e.type];
+                    delete objectListener[e.type];
             }
             // All_EVENT_Type
-            listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
+            listeners = objectListener.__allEventType__;
             if (listeners) {
                 //遍历调用事件回调函数
                 var listeners0 = listeners.concat();
@@ -229,8 +240,6 @@ var feng3d;
                     if (listeners[i].once)
                         listeners.splice(i, 1);
                 }
-                if (listeners.length == 0)
-                    delete this.feventMap.get(obj).__allEventType__;
             }
         };
         /**
@@ -638,6 +647,7 @@ Object.isBaseType = function (object) {
         || typeof object == "string"
         || typeof object == "number")
         return true;
+    return false;
 };
 Object.getPropertyDescriptor = function (host, property) {
     var data = Object.getOwnPropertyDescriptor(host, property);
@@ -648,7 +658,7 @@ Object.getPropertyDescriptor = function (host, property) {
     if (prototype) {
         return Object.getPropertyDescriptor(prototype, property);
     }
-    return null;
+    return undefined;
 };
 Object.propertyIsWritable = function (host, property) {
     var data = Object.getPropertyDescriptor(host, property);
@@ -755,9 +765,9 @@ Object.assignDeep = function (target, source, replacers, deep) {
     if (deep < 1)
         return target;
     var keys = Object.keys(source);
+    var handles = replacers.concat(Object.assignDeepDefaultHandlers);
     keys.forEach(function (k) {
         //
-        var handles = [].concat(replacers).concat(Object.assignDeepDefaultHandlers);
         for (var i = 0; i < handles.length; i++) {
             if (handles[i](target, source, k, replacers, deep)) {
                 return;
@@ -772,18 +782,21 @@ Object.assignDeepDefaultHandlers = [
     function (target, source, key) {
         if (target[key] == source[key])
             return true;
+        return false;
     },
     function (target, source, key) {
         if (Object.isBaseType(target[key]) || Object.isBaseType(source[key])) {
             target[key] = source[key];
             return true;
         }
+        return false;
     },
     function (target, source, key, handlers, deep) {
         if (Array.isArray(source[key]) || Object.isObject(source[key])) {
             Object.assignDeep(target[key], source[key], handlers, deep - 1);
             return true;
         }
+        return false;
     },
 ];
 var feng3d;
@@ -1196,7 +1209,7 @@ Math.randFloatSpread = Math.randFloatSpread || function (range) {
  * @param degrees 角度
  */
 Math.degToRad = Math.degToRad || function (degrees) {
-    return degrees * this.DEG2RAD;
+    return degrees * Math.DEG2RAD;
 };
 /**
  * 弧度转换为角度
@@ -1204,7 +1217,7 @@ Math.degToRad = Math.degToRad || function (degrees) {
  * @param radians 弧度
  */
 Math.radToDeg = Math.radToDeg || function (radians) {
-    return radians * this.RAD2DEG;
+    return radians * Math.RAD2DEG;
 };
 /**
  * 判断指定整数是否为2的幂
@@ -1263,7 +1276,7 @@ Math.toRound = Math.toRound || function (source, target, precision) {
  */
 Math.equals = Math.equals || function (a, b, precision) {
     if (precision == undefined)
-        precision = this.PRECISION;
+        precision = Math.PRECISION;
     return Math.abs(a - b) < precision;
 };
 /**
@@ -10744,19 +10757,30 @@ var feng3d;
         /**
          * 转换为包围盒八个角所在点列表
          */
-        Box3.prototype.toPoints = function () {
+        Box3.prototype.toPoints = function (points) {
+            if (!points) {
+                points = [
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                ];
+            }
             var min = this.min;
             var max = this.max;
-            return [
-                new feng3d.Vector3(min.x, min.y, min.z),
-                new feng3d.Vector3(max.x, min.y, min.z),
-                new feng3d.Vector3(min.x, max.y, min.z),
-                new feng3d.Vector3(min.x, min.y, max.z),
-                new feng3d.Vector3(min.x, max.y, max.z),
-                new feng3d.Vector3(max.x, min.y, max.z),
-                new feng3d.Vector3(max.x, max.y, min.z),
-                new feng3d.Vector3(max.x, max.y, max.z),
-            ];
+            points[0].set(min.x, min.y, min.z);
+            points[1].set(max.x, min.y, min.z);
+            points[2].set(min.x, max.y, min.z);
+            points[3].set(min.x, min.y, max.z);
+            points[4].set(min.x, max.y, max.z);
+            points[5].set(max.x, min.y, max.z);
+            points[6].set(max.x, max.y, min.z);
+            points[7].set(max.x, max.y, max.z);
+            return points;
         };
         /**
          * 从一组顶点初始化包围盒
@@ -10910,9 +10934,14 @@ var feng3d;
          * @param aabb 包围盒
          */
         Box3.prototype.intersection = function (aabb) {
-            this.min.clamp(aabb.min, aabb.max);
-            this.max.clamp(aabb.min, aabb.max);
-            return this;
+            var min = this.min.clampTo(aabb.min, aabb.max);
+            var max = this.max.clampTo(aabb.min, aabb.max);
+            if (this.containsPoint(min)) {
+                this.min.copy(min);
+                this.max.copy(max);
+                return this;
+            }
+            return null;
         };
         /**
          * 与包围盒相交
@@ -11176,6 +11205,22 @@ var feng3d;
             var triangleNormal = f0.crossTo(f1);
             axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
             return satForAxes(axes, v0, v1, v2, extents);
+        };
+        /**
+        * 是否与指定长方体相交
+        *
+        * @param box3 长方体
+        */
+        Box3.prototype.overlaps = function (box3) {
+            var l1 = this.min, u1 = this.max, l2 = box3.min, u2 = box3.max;
+            //      l2        u2
+            //      |---------|
+            // |--------|
+            // l1       u1
+            var overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
+            var overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
+            var overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
+            return overlapsX && overlapsY && overlapsZ;
         };
         /**
          * 转换为三角形列表
@@ -13319,6 +13364,138 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     *
+     *
+     * @see https://mrl.nyu.edu/~perlin/noise/
+     */
+    var ImprovedNoise = /** @class */ (function () {
+        function ImprovedNoise() {
+        }
+        ImprovedNoise.prototype.noise = function (x, y, z) {
+            var X = Math.floor(x) & 255, // FIND UNIT CUBE THAT
+            Y = Math.floor(y) & 255, // CONTAINS POINT.
+            Z = Math.floor(z) & 255;
+            x -= Math.floor(x); // FIND RELATIVE X,Y,Z
+            y -= Math.floor(y); // OF POINT IN CUBE.
+            z -= Math.floor(z);
+            var u = fade(x), // COMPUTE FADE CURVES
+            v = fade(y), // FOR EACH OF X,Y,Z.
+            w = fade(z);
+            var A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z, // HASH COORDINATES OF
+            B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z; // THE 8 CUBE CORNERS,
+            return lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z), // AND ADD
+            grad(p[BA], x - 1, y, z)), // BLENDED
+            lerp(u, grad(p[AB], x, y - 1, z), // RESULTS
+            grad(p[BB], x - 1, y - 1, z))), // FROM  8
+            lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1), // CORNERS
+            grad(p[BA + 1], x - 1, y, z - 1)), // OF CUBE
+            lerp(u, grad(p[AB + 1], x, y - 1, z - 1), grad(p[BB + 1], x - 1, y - 1, z - 1))));
+        };
+        return ImprovedNoise;
+    }());
+    feng3d.ImprovedNoise = ImprovedNoise;
+    var permutation = [
+        151, 160, 137, 91, 90, 15,
+        131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
+        190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+        88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
+        77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
+        102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
+        135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
+        5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
+        223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+        129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
+        251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
+        49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
+        138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
+    ];
+    var p = permutation.concat(permutation);
+    function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+    function lerp(t, a, b) { return a + t * (b - a); }
+    function grad(hash, x, y, z) {
+        var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
+        var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
+        v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+        return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     *
+     */
+    var PerlinNoise = /** @class */ (function () {
+        function PerlinNoise() {
+            this.p = [
+                151, 160, 137, 91, 90, 15,
+                131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
+                190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+                88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
+                77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
+                102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
+                135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
+                5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
+                223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+                129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
+                251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
+                49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
+                138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
+                151, 160, 137, 91, 90, 15,
+                131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
+                190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+                88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
+                77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
+                102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
+                135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
+                5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
+                223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+                129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
+                251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
+                49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
+                138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
+            ];
+        }
+        PerlinNoise.prototype.fade = function (t) { return t * t * t * (t * (t * 6 - 15) + 10); };
+        PerlinNoise.prototype.lerp = function (t, a, b) { return a + t * (b - a); };
+        PerlinNoise.prototype.grad = function (hash, x, y, z) {
+            var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
+            var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
+            v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+            return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+        };
+        PerlinNoise.prototype.grad2 = function (hash, x, y) {
+            var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
+            var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
+            v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
+            return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+        };
+        PerlinNoise.prototype.Noise = function (x, y) {
+            x = Math.abs(x);
+            y = Math.abs(y);
+            var p = this.p;
+            var floorX = Math.floor(x);
+            var floorY = Math.floor(y);
+            var X = floorX & 255; // FIND UNIT CUBE THAT
+            var Y = floorY & 255; // CONTAINS POINT.
+            x -= floorX; // FIND RELATIVE X,Y,Z
+            y -= floorY; // OF POINT IN CUBE.
+            var u = this.fade(Math.min(x, 1.0)); // COMPUTE FADE CURVES
+            var v = this.fade(Math.min(y, 1.0)); // FOR EACH OF X,Y,Z.
+            var A = p[X] + Y, AA = p[A], AB = p[A + 1], // HASH COORDINATES OF
+            B = p[X + 1] + Y, BA = p[B], BB = p[B + 1]; // THE 8 CUBE CORNERS,
+            var res = this.lerp(v, this.lerp(u, this.grad2(p[AA], x, y), // AND ADD
+            this.grad2(p[BA], x - 1, y)), // BLENDED
+            this.lerp(u, this.grad2(p[AB], x, y - 1), // RESULTS
+            this.grad2(p[BB], x - 1, y - 1))); // FROM  8
+            return res;
+        };
+        return PerlinNoise;
+    }());
+    feng3d.PerlinNoise = PerlinNoise;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * Ported from Stefan Gustavson's java implementation
      * http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
      * Read Stefan's excellent paper for details on how this code works.
@@ -13727,80 +13904,6 @@ var feng3d;
         return SimplexNoise;
     }());
     feng3d.SimplexNoise = SimplexNoise;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     *
-     */
-    var PerlinNoise = /** @class */ (function () {
-        function PerlinNoise() {
-            this.p = [
-                151, 160, 137, 91, 90, 15,
-                131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
-                190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
-                88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
-                77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
-                102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
-                135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
-                5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
-                223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
-                129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-                251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-                49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-                138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
-                151, 160, 137, 91, 90, 15,
-                131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
-                190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
-                88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
-                77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
-                102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
-                135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
-                5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
-                223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
-                129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-                251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-                49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-                138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
-            ];
-        }
-        PerlinNoise.prototype.fade = function (t) { return t * t * t * (t * (t * 6 - 15) + 10); };
-        PerlinNoise.prototype.lerp = function (t, a, b) { return a + t * (b - a); };
-        PerlinNoise.prototype.grad = function (hash, x, y, z) {
-            var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
-            var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
-            v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-            return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-        };
-        PerlinNoise.prototype.grad2 = function (hash, x, y) {
-            var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
-            var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
-            v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
-            return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-        };
-        PerlinNoise.prototype.Noise = function (x, y) {
-            x = Math.abs(x);
-            y = Math.abs(y);
-            var p = this.p;
-            var floorX = Math.floor(x);
-            var floorY = Math.floor(y);
-            var X = floorX & 255; // FIND UNIT CUBE THAT
-            var Y = floorY & 255; // CONTAINS POINT.
-            x -= floorX; // FIND RELATIVE X,Y,Z
-            y -= floorY; // OF POINT IN CUBE.
-            var u = this.fade(Math.min(x, 1.0)); // COMPUTE FADE CURVES
-            var v = this.fade(Math.min(y, 1.0)); // FOR EACH OF X,Y,Z.
-            var A = p[X] + Y, AA = p[A], AB = p[A + 1], // HASH COORDINATES OF
-            B = p[X + 1] + Y, BA = p[B], BB = p[B + 1]; // THE 8 CUBE CORNERS,
-            var res = this.lerp(v, this.lerp(u, this.grad2(p[AA], x, y), // AND ADD
-            this.grad2(p[BA], x - 1, y)), // BLENDED
-            this.lerp(u, this.grad2(p[AB], x, y - 1), // RESULTS
-            this.grad2(p[BB], x - 1, y - 1))); // FROM  8
-            return res;
-        };
-        return PerlinNoise;
-    }());
-    feng3d.PerlinNoise = PerlinNoise;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

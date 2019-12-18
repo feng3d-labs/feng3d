@@ -6,6 +6,7 @@
         "declarationMap": true,
         "declaration": true,
         "composite": true,
+        "strict": true,
         "experimentalDecorators": true,
         "outFile": "out/watcher.js",
         "lib": [

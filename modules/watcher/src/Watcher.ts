@@ -68,12 +68,12 @@ namespace feng3d
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, _property);
                 watchs[_property] = { value: object[_property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data: PropertyDescriptor = Object.getPropertyDescriptor(object, _property);
+                var data = Object.getPropertyDescriptor(object, _property);
                 if (data && data.set && data.get)
                 {
-                    data = <any>{ enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
+                    data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
-                    data.set = function (value: any)
+                    data.set = function (value)
                     {
                         var oldvalue = this[<any>_property];
                         if (oldvalue != value)
@@ -85,12 +85,12 @@ namespace feng3d
                 }
                 else if (!data || (!data.get && !data.set))
                 {
-                    data = <any>{ enumerable: true, configurable: true };
-                    data.get = function (): any
+                    data = { enumerable: true, configurable: true };
+                    data.get = function ()
                     {
                         return this[__watchs__][_property].value;
                     };
-                    data.set = function (value: any)
+                    data.set = function (value)
                     {
                         var oldvalue = this[__watchs__][_property].value;
                         if (oldvalue != value)
@@ -161,7 +161,7 @@ namespace feng3d
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchchain(object: any, property: string, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any)
+        watchchain(object: any, property: string, handler: (object: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
             var notIndex = property.indexOf(".");
             if (notIndex == -1)
@@ -268,7 +268,7 @@ namespace feng3d
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchobject<T>(object: T, property: gPartial<T>, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any)
+        watchobject<T>(object: T, property: gPartial<T>, handler: (object: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
             var chains = Object.getPropertyChains(object);
             chains.forEach(v =>

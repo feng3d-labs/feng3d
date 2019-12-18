@@ -121,9 +121,9 @@ Array.equal = function (self, arr)
     return true;
 }
 
-Array.concatToSelf = function (self, ...items)
+Array.concatToSelf = function <T>(self: T[], ...items: (T | ConcatArray<T>)[])
 {
-    var arr = [];
+    var arr: T[] = [];
     items.forEach(v => arr = arr.concat(v));
     arr.forEach(v => self.push(v));
     return self;
@@ -197,9 +197,9 @@ Array.replace = function (arr, a, b, isAdd = true)
     return arr;
 }
 
-Array.create = function (length, itemFunc)
+Array.create = function <T>(length: number, itemFunc: (index: number) => T)
 {
-    var arr = [];
+    var arr: T[] = [];
     for (let i = 0; i < length; i++)
     {
         arr[i] = itemFunc(i);
