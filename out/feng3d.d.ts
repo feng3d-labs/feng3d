@@ -6910,6 +6910,19 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     *
+     */
+    class PerlinNoise {
+        fade(t: number): number;
+        lerp(t: number, a: number, b: number): number;
+        grad(hash: number, x: number, y: number, z: number): number;
+        grad2(hash: number, x: number, y: number): number;
+        p: number[];
+        Noise(x: number, y: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
      * 代理 EventTarget, 处理js事件中this关键字问题
      */
     class EventProxy extends EventDispatcher {

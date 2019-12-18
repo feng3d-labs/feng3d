@@ -1,30 +1,30 @@
-
 namespace feng3d
 {
-
+    /**
+     * 
+     */
     export class PerlinNoise
     {
         fade(t: number) { return t * t * t * (t * (t * 6 - 15) + 10); }
-        inline static float lerp(float t, float a, float b) { return a + t * (b - a); }
-        inline static float grad(int hash, float x, float y, float z)
+        lerp(t: number, a: number, b: number) { return a + t * (b - a); }
+        grad(hash: number, x: number, y: number, z: number)
         {
-            int h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
-            float u = h < 8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
+            var h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
+            var u = h < 8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
                 v = h < 4 ? y : h == 12 || h == 14 ? x : z;
             return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
         }
 
-        inline static float grad2(int hash, float x, float y)
+        grad2(hash: number, x: number, y: number)
         {
-            int h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
-            float u = h < 8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
+            var h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
+            var u = h < 8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
                 v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
             return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
         }
 
-        static int p[] =
-    {
-        151, 160, 137, 91, 90, 15,
+        p = [
+            151, 160, 137, 91, 90, 15,
             131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
             190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
             88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
@@ -50,31 +50,31 @@ namespace feng3d
             251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
             49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
             138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
-    };
+        ];
 
+        Noise(x: number, y: number)
+        {
+            x = Math.abs(x);
+            y = Math.abs(y);
+            var p = this.p;
 
+            var floorX = Math.floor(x);
+            var floorY = Math.floor(y);
 
-    float PerlinNoise:: Noise(float x, float y) {
-        x = Abs(x);
-        y = Abs(y);
+            var X = floorX & 255;                  // FIND UNIT CUBE THAT
+            var Y = floorY & 255;                  // CONTAINS POINT.
+            x -= floorX;                                // FIND RELATIVE X,Y,Z
+            y -= floorY;                                // OF POINT IN CUBE.
+            var u = this.fade(Math.min(x, 1.0));          // COMPUTE FADE CURVES
+            var v = this.fade(Math.min(y, 1.0));          // FOR EACH OF X,Y,Z.
+            var A = p[X] + Y, AA = p[A], AB = p[A + 1],      // HASH COORDINATES OF
+                B = p[X + 1] + Y, BA = p[B], BB = p[B + 1];      // THE 8 CUBE CORNERS,
 
-        int floorX = int(x);
-        int floorY = int(y);
-
-        int X = floorX & 255;                  // FIND UNIT CUBE THAT
-        int Y = floorY & 255;                  // CONTAINS POINT.
-        x -= floorX;                                // FIND RELATIVE X,Y,Z
-        y -= floorY;                                // OF POINT IN CUBE.
-        float u = fade(std:: min(x, 1.0f));          // COMPUTE FADE CURVES
-        float v = fade(std:: min(y, 1.0f));          // FOR EACH OF X,Y,Z.
-        int A = p[X] + Y, AA = p[A], AB = p[A + 1],      // HASH COORDINATES OF
-            B = p[X + 1] + Y, BA = p[B], BB = p[B + 1];      // THE 8 CUBE CORNERS,
-
-        float res = lerp(v, lerp(u, grad2(p[AA], x, y),  // AND ADD
-            grad2(p[BA], x - 1, y)), // BLENDED
-            lerp(u, grad2(p[AB], x, y - 1),  // RESULTS
-                grad2(p[BB], x - 1, y - 1)));// FROM  8
-        return res;
+            var res = this.lerp(v, this.lerp(u, this.grad2(p[AA], x, y),  // AND ADD
+                this.grad2(p[BA], x - 1, y)), // BLENDED
+                this.lerp(u, this.grad2(p[AB], x, y - 1),  // RESULTS
+                    this.grad2(p[BB], x - 1, y - 1)));// FROM  8
+            return res;
+        }
     }
-}
 }

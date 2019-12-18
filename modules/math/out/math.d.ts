@@ -4154,4 +4154,27 @@ declare namespace feng3d {
         noise4d(x: number, y: number, z: number, w: number): number;
     }
 }
+declare namespace feng3d {
+    /**
+     *
+     */
+    class PerlinNoise {
+        fade(t: number): number;
+        lerp(t: number, a: number, b: number): number;
+        grad(hash: number, x: number, y: number, z: number): number;
+        grad2(hash: number, x: number, y: number): number;
+        p: number[];
+        Noise(x: number, y: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     *
+     *
+     * @see https://mrl.nyu.edu/~perlin/noise/
+     */
+    class ImprovedNoise {
+        noise(x: number, y: number, z: number): number;
+    }
+}
 //# sourceMappingURL=math.d.ts.map
