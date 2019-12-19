@@ -398,7 +398,7 @@ namespace feng3d
 
             if (Boolean(scene.runEnvironment & RunEnvironment.feng3d) && !this._awaked)
             {
-                this._isPlaying = this.main.playOnAwake;
+                this._isPlaying = this._isPlaying || this.main.playOnAwake;
                 this._awaked = true;
             }
 

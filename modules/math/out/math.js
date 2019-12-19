@@ -979,7 +979,7 @@ var feng3d;
 (function (feng3d) {
     var DEG_TO_RAD = Math.PI / 180;
     /**
-     * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
+     * Vector2 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
      */
     var Vector2 = /** @class */ (function () {
         /**

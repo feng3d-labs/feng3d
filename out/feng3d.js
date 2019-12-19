@@ -5819,7 +5819,7 @@ var feng3d;
 (function (feng3d) {
     var DEG_TO_RAD = Math.PI / 180;
     /**
-     * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
+     * Vector2 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
      */
     var Vector2 = /** @class */ (function () {
         /**
@@ -32751,7 +32751,7 @@ var feng3d;
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene, camera);
             if (Boolean(scene.runEnvironment & feng3d.RunEnvironment.feng3d) && !this._awaked) {
-                this._isPlaying = this.main.playOnAwake;
+                this._isPlaying = this._isPlaying || this.main.playOnAwake;
                 this._awaked = true;
             }
             renderAtomic.instanceCount = this._activeParticles.length;
