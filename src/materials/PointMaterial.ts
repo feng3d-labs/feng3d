@@ -1,7 +1,7 @@
 namespace feng3d
 {
 
-    export interface UniformsMap { point: PointUniforms }
+    export interface UniformsTypes { point: PointUniforms }
     export class PointUniforms
     {
         __class__: "feng3d.PointUniforms";

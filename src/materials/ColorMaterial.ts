@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface UniformsMap { color: ColorUniforms }
+    export interface UniformsTypes { color: ColorUniforms }
 
     export class ColorUniforms
     {

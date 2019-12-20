@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface UniformsMap { water: WaterUniforms }
+    export interface UniformsTypes { water: WaterUniforms }
 
     export class WaterUniforms
     {

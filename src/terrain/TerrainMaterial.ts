@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface UniformsMap { terrain: TerrainUniforms }
+    export interface UniformsTypes { terrain: TerrainUniforms }
 
     export class TerrainUniforms extends StandardUniforms
     {

@@ -14016,17 +14016,17 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
     }
-    type ShaderNames = keyof UniformsMap;
-    type UniformsData = UniformsMap[keyof UniformsMap];
+    type ShaderNames = keyof UniformsTypes;
+    type UniformsLike = UniformsTypes[keyof UniformsTypes];
     /**
      * 材质
      */
     class Material extends AssetData {
         __class__: "feng3d.Material";
-        static create<K extends keyof UniformsMap>(shaderName: K, uniforms?: gPartial<UniformsMap[K]>, renderParams?: gPartial<RenderParams>): Material;
-        init<K extends keyof UniformsMap>(shaderName: K, uniforms?: gPartial<UniformsMap[K]>, renderParams?: gPartial<RenderParams>): this;
+        static create<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>): Material;
+        init<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>): this;
         private renderAtomic;
         private preview;
         /**
@@ -14037,7 +14037,7 @@ declare namespace feng3d {
         /**
          * Uniform数据
          */
-        uniforms: UniformsData;
+        uniforms: UniformsLike;
         /**
          * 渲染参数
          */
@@ -14089,7 +14089,7 @@ declare namespace feng3d {
         EXP2 = 2,
         LINEAR = 3
     }
-    interface UniformsMap {
+    interface UniformsTypes {
         standard: StandardUniforms;
     }
     class StandardUniforms {
@@ -14168,7 +14168,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
         point: PointUniforms;
     }
     class PointUniforms {
@@ -14184,7 +14184,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
         color: ColorUniforms;
     }
     class ColorUniforms {
@@ -14196,7 +14196,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
         texture: TextureUniforms;
     }
     class TextureUniforms {
@@ -14212,7 +14212,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
         segment: SegmentUniforms;
     }
     /**
@@ -14794,7 +14794,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
         water: WaterUniforms;
     }
     class WaterUniforms {
@@ -14891,7 +14891,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
         terrain: TerrainUniforms;
     }
     class TerrainUniforms extends StandardUniforms {
@@ -15043,7 +15043,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface UniformsMap {
+    interface UniformsTypes {
         Particles_Additive: ParticlesAdditiveUniforms;
     }
     /**

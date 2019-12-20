@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface UniformsMap { Particles_Additive: ParticlesAdditiveUniforms }
+    export interface UniformsTypes { Particles_Additive: ParticlesAdditiveUniforms }
 
     /**
      * UnityShader "Particles/Additive"

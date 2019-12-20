@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface UniformsMap { segment: SegmentUniforms }
+    export interface UniformsTypes { segment: SegmentUniforms }
 
     /**
      * 线段材质

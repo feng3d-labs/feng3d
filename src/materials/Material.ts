@@ -1,8 +1,8 @@
 namespace feng3d
 {
-    export interface UniformsMap { }
-    export type ShaderNames = keyof UniformsMap;
-    export type UniformsData = UniformsMap[keyof UniformsMap];
+    export interface UniformsTypes { }
+    export type ShaderNames = keyof UniformsTypes;
+    export type UniformsLike = UniformsTypes[keyof UniformsTypes];
 
     /**
      * 材质
@@ -11,14 +11,14 @@ namespace feng3d
     {
         __class__: "feng3d.Material";
 
-        static create<K extends keyof UniformsMap>(shaderName: K, uniforms?: gPartial<UniformsMap[K]>, renderParams?: gPartial<RenderParams>)
+        static create<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
         {
             var material = new Material();
             material.init(shaderName, uniforms, renderParams);
             return material;
         }
 
-        init<K extends keyof UniformsMap>(shaderName: K, uniforms?: gPartial<UniformsMap[K]>, renderParams?: gPartial<RenderParams>)
+        init<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
         {
             this.shaderName = shaderName;
             //
@@ -51,7 +51,7 @@ namespace feng3d
         @serialize
         @oav({ component: "OAVObjectView" })
         @watch("_onUniformsChanged")
-        uniforms: UniformsData;
+        uniforms: UniformsLike;
 
         /**
          * 渲染参数

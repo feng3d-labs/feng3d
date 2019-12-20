@@ -11,7 +11,7 @@ namespace feng3d
         LINEAR = 3
     }
 
-    export interface UniformsMap { standard: StandardUniforms }
+    export interface UniformsTypes { standard: StandardUniforms }
 
     export class StandardUniforms
     {
