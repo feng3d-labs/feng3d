@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { QuadGeometry: QuadGeometry }
+    export interface GeometryTypes { QuadGeometry: QuadGeometry }
 
     /**
      * 四边形面皮几何体

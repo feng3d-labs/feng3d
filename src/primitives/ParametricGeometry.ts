@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { ParametricGeometry: ParametricGeometry }
+    export interface GeometryTypes { ParametricGeometry: ParametricGeometry }
     
     export class ParametricGeometry extends Geometry
     {

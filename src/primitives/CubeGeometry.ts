@@ -1,7 +1,7 @@
 namespace feng3d
 {
 
-    export interface GeometryMap { CubeGeometry: CubeGeometry }
+    export interface GeometryTypes { CubeGeometry: CubeGeometry }
 
     /**
      * 立（长）方体几何体

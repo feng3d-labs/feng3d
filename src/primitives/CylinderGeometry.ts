@@ -1,7 +1,7 @@
 namespace feng3d
 {
 
-    export interface GeometryMap { CylinderGeometry: CylinderGeometry }
+    export interface GeometryTypes { CylinderGeometry: CylinderGeometry }
 
     /**
      * 圆柱体几何体

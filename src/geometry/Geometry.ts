@@ -1,8 +1,8 @@
 namespace feng3d
 {
-    export interface GeometryMap { }
+    export interface GeometryTypes { }
 
-    export type Geometrys = GeometryMap[keyof GeometryMap];
+    export type GeometryLike = GeometryTypes[keyof GeometryTypes];
 
     export interface GeometryEventMap
     {

@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { SphereGeometry: SphereGeometry }
+    export interface GeometryTypes { SphereGeometry: SphereGeometry }
 
     /**
      * 球体几何体

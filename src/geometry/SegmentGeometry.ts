@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { SegmentGeometry: SegmentGeometry }
+    export interface GeometryTypes { SegmentGeometry: SegmentGeometry }
 
     /**
      * 线段组件

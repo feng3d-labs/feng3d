@@ -12454,7 +12454,7 @@ declare namespace feng3d {
         /**
          * 几何体
          */
-        geometry: Geometrys;
+        geometry: GeometryLike;
         /**
          * 材质
          */
@@ -12714,9 +12714,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
     }
-    type Geometrys = GeometryMap[keyof GeometryMap];
+    type GeometryLike = GeometryTypes[keyof GeometryTypes];
     interface GeometryEventMap {
         /**
          * 包围盒失效
@@ -12918,7 +12918,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         CustomGeometry: CustomGeometry;
     }
     class CustomGeometry extends Geometry {
@@ -13049,7 +13049,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         PointGeometry: PointGeometry;
     }
     /**
@@ -13078,7 +13078,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         SegmentGeometry: SegmentGeometry;
     }
     /**
@@ -13363,7 +13363,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         QuadGeometry: QuadGeometry;
     }
     /**
@@ -13378,7 +13378,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         PlaneGeometry: PlaneGeometry;
     }
     /**
@@ -13453,7 +13453,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         CubeGeometry: CubeGeometry;
     }
     /**
@@ -13536,7 +13536,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         SphereGeometry: SphereGeometry;
     }
     /**
@@ -13589,7 +13589,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         CapsuleGeometry: CapsuleGeometry;
     }
     /**
@@ -13646,7 +13646,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         CylinderGeometry: CylinderGeometry;
     }
     /**
@@ -13740,7 +13740,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         TorusGeometry: TorusGeometry;
     }
     /**
@@ -13805,7 +13805,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         ParametricGeometry: ParametricGeometry;
     }
     class ParametricGeometry extends Geometry {
@@ -14821,7 +14821,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GeometryMap {
+    interface GeometryTypes {
         TerrainGeometry: TerrainGeometry;
     }
     /**

@@ -14,7 +14,7 @@ namespace feng3d
         @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serialize
         @watch("_onGeometryChanged")
-        geometry: Geometrys = Geometry.getDefault("Cube");
+        geometry: GeometryLike = Geometry.getDefault("Cube");
 
         /**
          * 材质
@@ -142,7 +142,7 @@ namespace feng3d
         private _selfLocalBounds: Box3;
         private _selfWorldBounds: Box3;
 
-        private _onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
+        private _onGeometryChanged(property: string, oldValue: GeometryLike, value: GeometryLike)
         {
             if (oldValue)
             {

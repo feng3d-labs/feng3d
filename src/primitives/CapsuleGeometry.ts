@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { CapsuleGeometry: CapsuleGeometry }
+    export interface GeometryTypes { CapsuleGeometry: CapsuleGeometry }
 
     /**
      * 胶囊体几何体

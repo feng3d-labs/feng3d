@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { TerrainGeometry: TerrainGeometry }
+    export interface GeometryTypes { TerrainGeometry: TerrainGeometry }
 
     /**
      * 地形几何体
