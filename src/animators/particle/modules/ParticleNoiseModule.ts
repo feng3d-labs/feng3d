@@ -236,6 +236,49 @@ namespace feng3d
             this.remap3D.zCurve = v;
         }
 
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+            particle[_Noise_strength_rate] = Math.random();
+            particle[_Noise_particle_rate] = Math.random();
+        }
+
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle)
+        {
+            var strengthX = 1;
+            var strengthY = 1;
+            var strengthZ = 1;
+            if (this.separateAxes)
+            {
+                var strength3D = this.strength3D.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
+                strengthX = strength3D.x;
+                strengthY = strength3D.y;
+                strengthZ = strength3D.z;
+            } else
+            {
+                strengthX = strengthY = strengthZ = this.strength.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
+            }
+            var offsetPos = new Vector3(strengthX, strengthY, strengthZ);
+            offsetPos.x *= this._getNoiseValue(1 / 3 * (0 + particle.rateAtLifeTime), particle[_Noise_particle_rate]);
+            offsetPos.y *= this._getNoiseValue(1 / 3 * (1 + particle.rateAtLifeTime), particle[_Noise_particle_rate]);
+            offsetPos.z *= this._getNoiseValue(1 / 3 * (2 + particle.rateAtLifeTime), particle[_Noise_particle_rate]);
+
+
+            this.particleSystem.removeParticleVelocity(particle, _VelocityOverLifetime_preVelocity);
+            if (!this.enabled) return;
+
+            var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
+            this.particleSystem.addParticleVelocity(particle, velocity, this.space, _VelocityOverLifetime_preVelocity);
+        }
+
+
         // 以下两个值用于与Unity中数据接近
         private _frequencyScale = 0.2;
         private _strengthScale = 4;
@@ -252,8 +295,7 @@ namespace feng3d
             var strengthY = strength.y;
             var strengthZ = strength.z;
             //
-            var cellSizeX = this._frequencyScale / this.frequency;
-            var cellSizeY = this._frequencyScale / this.frequency;
+            var invFrequency = this._frequencyScale / this.frequency;
             //
             strengthX *= this._strengthScale;
             strengthY *= this._strengthScale;
@@ -279,8 +321,8 @@ namespace feng3d
             {
                 for (var y = 0; y < imageHeight; y++)
                 {
-                    var xv = x / imageWidth / cellSizeX;
-                    var yv = y / imageHeight / cellSizeY
+                    var xv = x / imageWidth / invFrequency;
+                    var yv = y / imageHeight / invFrequency
 
                     var value = this._getNoiseValue(xv, yv);
 
@@ -381,4 +423,7 @@ namespace feng3d
         }
 
     }
+    var _Noise_strength_rate = "_Noise_strength_rate";
+    var _Noise_particle_rate = "_Noise_particle_rate";
+
 }
