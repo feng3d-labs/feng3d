@@ -34,5 +34,14 @@ namespace feng3d
         {
 
         }
+
+        /**
+         * 更新
+         * 
+         * @param interval 
+         */
+        update(interval: number)
+        {
+        }
     }
 }

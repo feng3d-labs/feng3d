@@ -309,12 +309,20 @@ namespace feng3d
 
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this._realTime = this.time - this.startDelay;
+
+            this._rateAtDuration = (this._realTime % this.main.duration) / this.main.duration;
+
             // 粒子系统位置
             this.worldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
             this.moveVec.copy(this.worldPos).sub(this._preworldPos);
             // 粒子系统速度
             this.speed.copy(this.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
+
+            this._modules.forEach(m =>
+            {
+                m.update(interval);
+            });
 
             this._updateActiveParticlesState();
 
@@ -529,8 +537,9 @@ namespace feng3d
          */
         get rateAtDuration()
         {
-            return (this._realTime % this.main.duration) / this.main.duration;
+            return this._rateAtDuration;
         }
+        private _rateAtDuration = 0;
 
         /**
          * 发射粒子

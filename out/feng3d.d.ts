@@ -15250,6 +15250,7 @@ declare namespace feng3d {
          * 此时在周期中的位置
          */
         get rateAtDuration(): number;
+        private _rateAtDuration;
         /**
          * 发射粒子
          * @param time 当前粒子时间
@@ -16075,6 +16076,12 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         updateParticleState(particle: Particle): void;
+        /**
+         * 更新
+         *
+         * @param interval
+         */
+        update(interval: number): void;
     }
 }
 declare namespace feng3d {
@@ -17464,6 +17471,13 @@ declare namespace feng3d {
          * @param y
          */
         private _getNoiseValueBase;
+        /**
+         * 更新
+         *
+         * @param interval
+         */
+        update(interval: number): void;
+        private _scrollValue;
     }
 }
 declare namespace feng3d {

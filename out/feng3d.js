@@ -32247,6 +32247,7 @@ var feng3d;
                 a_particle_flipUV: new feng3d.Attribute("a_particle_flipUV", [], 2, 1),
             };
             _this._modules = [];
+            _this._rateAtDuration = 0;
             /**
              * 上次移动发射的位置
              */
@@ -32509,12 +32510,16 @@ var feng3d;
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this._realTime = this.time - this.startDelay;
+            this._rateAtDuration = (this._realTime % this.main.duration) / this.main.duration;
             // 粒子系统位置
             this.worldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
             this.moveVec.copy(this.worldPos).sub(this._preworldPos);
             // 粒子系统速度
             this.speed.copy(this.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
+            this._modules.forEach(function (m) {
+                m.update(interval);
+            });
             this._updateActiveParticlesState();
             // 完成一个循环
             if (this.main.loop && Math.floor(this._preRealTime / this.main.duration) < Math.floor(this._realTime / this.main.duration)) {
@@ -32648,7 +32653,7 @@ var feng3d;
              * 此时在周期中的位置
              */
             get: function () {
-                return (this._realTime % this.main.duration) / this.main.duration;
+                return this._rateAtDuration;
             },
             enumerable: true,
             configurable: true
@@ -34313,6 +34318,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleModule.prototype.updateParticleState = function (particle) {
+        };
+        /**
+         * 更新
+         *
+         * @param interval
+         */
+        ParticleModule.prototype.update = function (interval) {
         };
         __decorate([
             feng3d.oav({ tooltip: "是否开启" }),
@@ -36979,6 +36991,7 @@ var feng3d;
             // 以下两个值用于与Unity中数据接近
             _this._frequencyScale = 5;
             _this._strengthScale = 4;
+            _this._scrollValue = 0;
             return _this;
         }
         Object.defineProperty(ParticleNoiseModule.prototype, "strength", {
@@ -37134,7 +37147,7 @@ var feng3d;
             //
             var offsetPos = new feng3d.Vector3(strengthX, strengthY, strengthZ);
             //
-            // offsetPos.scaleNumber(this._strengthScale);
+            offsetPos.scaleNumber(this._strengthScale);
             if (this.damping) {
                 offsetPos.scaleNumber(1 / this.frequency);
             }
@@ -37176,7 +37189,7 @@ var feng3d;
             for (var x = 0; x < imageWidth; x++) {
                 for (var y = 0; y < imageHeight; y++) {
                     var xv = x / imageWidth * frequency;
-                    var yv = y / imageHeight * frequency;
+                    var yv = 1 - y / imageHeight * frequency;
                     var value = this._getNoiseValue(xv, yv);
                     // datas.push(value);
                     // if (min > value) min = value;
@@ -37249,14 +37262,23 @@ var feng3d;
          * @param y
          */
         ParticleNoiseModule.prototype._getNoiseValueBase = function (x, y) {
+            var scrollValue = this._scrollValue;
             if (this.quality == feng3d.ParticleSystemNoiseQuality.Low) {
-                return feng3d.noise.perlin1(x);
+                return feng3d.noise.perlin1(x + scrollValue);
             }
             if (this.quality == feng3d.ParticleSystemNoiseQuality.Medium) {
-                return feng3d.noise.perlin2(x, y);
+                return feng3d.noise.perlin2(x, y + scrollValue);
             }
             // if (this.quality == ParticleSystemNoiseQuality.High)
-            return feng3d.noise.perlin3(x, y, 0);
+            return feng3d.noise.perlin3(x, y, scrollValue);
+        };
+        /**
+         * 更新
+         *
+         * @param interval
+         */
+        ParticleNoiseModule.prototype.update = function (interval) {
+            this._scrollValue += this.scrollSpeed.getValue(this.particleSystem.rateAtDuration) * interval / 1000;
         };
         __decorate([
             feng3d.serialize,

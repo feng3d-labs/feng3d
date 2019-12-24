@@ -273,7 +273,7 @@ namespace feng3d
             //
             var offsetPos = new Vector3(strengthX, strengthY, strengthZ);
             //
-            // offsetPos.scaleNumber(this._strengthScale);
+            offsetPos.scaleNumber(this._strengthScale);
             if (this.damping)
             {
                 offsetPos.scaleNumber(1 / this.frequency);
@@ -330,7 +330,7 @@ namespace feng3d
                 for (var y = 0; y < imageHeight; y++)
                 {
                     var xv = x / imageWidth * frequency;
-                    var yv = y / imageHeight * frequency;
+                    var yv = 1 - y / imageHeight * frequency;
 
                     var value = this._getNoiseValue(xv, yv);
 
@@ -418,18 +418,29 @@ namespace feng3d
          */
         private _getNoiseValueBase(x: number, y: number)
         {
+            var scrollValue = this._scrollValue;
             if (this.quality == ParticleSystemNoiseQuality.Low)
             {
-                return noise.perlin1(x);
+                return noise.perlin1(x + scrollValue);
             }
             if (this.quality == ParticleSystemNoiseQuality.Medium)
             {
-                return noise.perlin2(x, y);
+                return noise.perlin2(x, y + scrollValue);
             }
             // if (this.quality == ParticleSystemNoiseQuality.High)
-            return noise.perlin3(x, y, 0);
+            return noise.perlin3(x, y, scrollValue);
         }
 
+        /**
+         * 更新
+         * 
+         * @param interval 
+         */
+        update(interval: number)
+        {
+            this._scrollValue += this.scrollSpeed.getValue(this.particleSystem.rateAtDuration) * interval / 1000;
+        }
+        private _scrollValue = 0;
     }
     var _Noise_strength_rate = "_Noise_strength_rate";
     var _Noise_particle_rate = "_Noise_particle_rate";
