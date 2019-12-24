@@ -4106,81 +4106,71 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * Ported from Stefan Gustavson's java implementation
-     * http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
-     * Read Stefan's excellent paper for details on how this code works.
+     * 柏林噪音
      *
-     * Sean McCullough banksean@gmail.com
+     * 用于生产随机的噪音贴图
      *
-     * Added 4D noise
-     * Joshua Koo zz85nus@gmail.com
-     *
-     * @see https://github.com/mrdoob/three.js/blob/dev/examples/js/math/SimplexNoise.js
-     *
-     * 另外参考 https://github.com/WardBenjamin/SimplexNoise    https://github.com/sarveshsvaran/Procedural-Volumetric-Particles-from-3d-4d-noise/blob/master/Assets/Noise.cs
-     */
-    class SimplexNoise {
-        private _grad3;
-        private _grad4;
-        private _p;
-        private _perm;
-        private _simplex;
-        /**
-         * You can pass in a random number generator object if you like.
-         * It is assumed to have a random() method.
-         */
-        constructor(r?: {
-            random: () => number;
-        });
-        private _dot;
-        private _dot3;
-        private _dot4;
-        /**
-         *
-         * @param xin
-         * @param yin
-         */
-        noise(xin: number, yin: number): number;
-        /**
-         * 3D simplex noise
-         *
-         * @param xin
-         * @param yin
-         * @param zin
-         */
-        noise3d(xin: number, yin: number, zin: number): number;
-        /**
-         * 4D simplex noise
-         *
-         * @param x
-         * @param y
-         * @param z
-         * @param w
-         */
-        noise4d(x: number, y: number, z: number, w: number): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     *
-     */
-    class PerlinNoise {
-        fade(t: number): number;
-        lerp(t: number, a: number, b: number): number;
-        grad(hash: number, x: number, y: number, z: number): number;
-        grad2(hash: number, x: number, y: number): number;
-        p: number[];
-        Noise(x: number, y: number): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     *
-     *
+     * @see http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
      * @see https://mrl.nyu.edu/~perlin/noise/
+     * @see https://gitee.com/feng3d_admin/noise
      */
-    class ImprovedNoise {
-        noise(x: number, y: number, z: number): number;
+    class Noise {
+        /**
+         * 构建柏林噪音
+         *
+         * @param seed 随机种子
+         */
+        constructor(seed?: number);
+        /**
+         * 1D 经典噪音
+         *
+         * @param x X轴数值
+         */
+        perlin1(x: number): number;
+        /**
+         * 2D 经典噪音
+         *
+         * @param x X轴数值
+         * @param y Y轴数值
+         */
+        perlin2(x: number, y: number): number;
+        /**
+         * 3D 经典噪音
+         *
+         * @param x X轴数值
+         * @param y Y轴数值
+         * @param z Z轴数值
+         */
+        perlin3(x: number, y: number, z: number): number;
+        /**
+         * N阶经典噪音
+         *
+         * 如果是1D，2D，3D噪音，最好选用对于函数，perlinN中存在for循环因此效率比perlin3等性能差3到5（8）倍！
+         *
+         * 满足以下运算
+         * perlinN(x) == perlin1(x)
+         * perlinN(x,y) == perlin2(x,y)
+         * perlinN(x,y,z) == perlin3(x,y,z)
+         *
+         * @param ps 每个轴的数值
+         */
+        perlinN(...ps: number[]): number;
+        /**
+         * This isn't a very good seeding function, but it works ok. It supports 2^16
+         * different seed values. Write something better if you need more seeds.
+         */
+        get seed(): number;
+        set seed(v: number);
+        private _seed;
+        private _p;
     }
+    /**
+     *
+     * @param n
+     *
+     * len = 2^(n-1) * n
+     */
+    function createGrad(n: number): number[][];
+    function getBits(n: number): number[][];
 }
 //# sourceMappingURL=math.d.ts.map

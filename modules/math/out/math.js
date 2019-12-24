@@ -8524,522 +8524,335 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Ported from Stefan Gustavson's java implementation
-     * http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
-     * Read Stefan's excellent paper for details on how this code works.
+     * 柏林噪音
      *
-     * Sean McCullough banksean@gmail.com
+     * 用于生产随机的噪音贴图
      *
-     * Added 4D noise
-     * Joshua Koo zz85nus@gmail.com
-     *
-     * @see https://github.com/mrdoob/three.js/blob/dev/examples/js/math/SimplexNoise.js
-     *
-     * 另外参考 https://github.com/WardBenjamin/SimplexNoise    https://github.com/sarveshsvaran/Procedural-Volumetric-Particles-from-3d-4d-noise/blob/master/Assets/Noise.cs
-     */
-    var SimplexNoise = /** @class */ (function () {
-        /**
-         * You can pass in a random number generator object if you like.
-         * It is assumed to have a random() method.
-         */
-        function SimplexNoise(r) {
-            if (r == undefined)
-                r = Math;
-            this._grad3 = [[1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0],
-                [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
-                [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]];
-            this._grad4 = [[0, 1, 1, 1], [0, 1, 1, -1], [0, 1, -1, 1], [0, 1, -1, -1],
-                [0, -1, 1, 1], [0, -1, 1, -1], [0, -1, -1, 1], [0, -1, -1, -1],
-                [1, 0, 1, 1], [1, 0, 1, -1], [1, 0, -1, 1], [1, 0, -1, -1],
-                [-1, 0, 1, 1], [-1, 0, 1, -1], [-1, 0, -1, 1], [-1, 0, -1, -1],
-                [1, 1, 0, 1], [1, 1, 0, -1], [1, -1, 0, 1], [1, -1, 0, -1],
-                [-1, 1, 0, 1], [-1, 1, 0, -1], [-1, -1, 0, 1], [-1, -1, 0, -1],
-                [1, 1, 1, 0], [1, 1, -1, 0], [1, -1, 1, 0], [1, -1, -1, 0],
-                [-1, 1, 1, 0], [-1, 1, -1, 0], [-1, -1, 1, 0], [-1, -1, -1, 0]];
-            this._p = [];
-            for (var i = 0; i < 256; i++) {
-                this._p[i] = Math.floor(r.random() * 256);
-            }
-            // To remove the need for index wrapping, double the permutation table length
-            this._perm = [];
-            for (var i = 0; i < 512; i++) {
-                this._perm[i] = this._p[i & 255];
-            }
-            // A lookup table to traverse the simplex around a given point in 4D.
-            // Details can be found where this table is used, in the 4D noise method.
-            this._simplex = [
-                [0, 1, 2, 3], [0, 1, 3, 2], [0, 0, 0, 0], [0, 2, 3, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [1, 2, 3, 0],
-                [0, 2, 1, 3], [0, 0, 0, 0], [0, 3, 1, 2], [0, 3, 2, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [1, 3, 2, 0],
-                [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0],
-                [1, 2, 0, 3], [0, 0, 0, 0], [1, 3, 0, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [2, 3, 0, 1], [2, 3, 1, 0],
-                [1, 0, 2, 3], [1, 0, 3, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [2, 0, 3, 1], [0, 0, 0, 0], [2, 1, 3, 0],
-                [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0],
-                [2, 0, 1, 3], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [3, 0, 1, 2], [3, 0, 2, 1], [0, 0, 0, 0], [3, 1, 2, 0],
-                [2, 1, 0, 3], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [3, 1, 0, 2], [0, 0, 0, 0], [3, 2, 0, 1], [3, 2, 1, 0]
-            ];
-        }
-        SimplexNoise.prototype._dot = function (g, x, y) {
-            return g[0] * x + g[1] * y;
-        };
-        SimplexNoise.prototype._dot3 = function (g, x, y, z) {
-            return g[0] * x + g[1] * y + g[2] * z;
-        };
-        SimplexNoise.prototype._dot4 = function (g, x, y, z, w) {
-            return g[0] * x + g[1] * y + g[2] * z + g[3] * w;
-        };
-        /**
-         *
-         * @param xin
-         * @param yin
-         */
-        SimplexNoise.prototype.noise = function (xin, yin) {
-            var n0, n1, n2; // Noise contributions from the three corners
-            // Skew the input space to determine which simplex cell we're in
-            var F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
-            var s = (xin + yin) * F2; // Hairy factor for 2D
-            var i = Math.floor(xin + s);
-            var j = Math.floor(yin + s);
-            var G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
-            var t = (i + j) * G2;
-            var X0 = i - t; // Unskew the cell origin back to (x,y) space
-            var Y0 = j - t;
-            var x0 = xin - X0; // The x,y distances from the cell origin
-            var y0 = yin - Y0;
-            // For the 2D case, the simplex shape is an equilateral triangle.
-            // Determine which simplex we are in.
-            var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
-            if (x0 > y0) {
-                i1 = 1;
-                j1 = 0;
-                // lower triangle, XY order: (0,0)->(1,0)->(1,1)
-            }
-            else {
-                i1 = 0;
-                j1 = 1;
-            }
-            // upper triangle, YX order: (0,0)->(0,1)->(1,1)
-            // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
-            // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
-            // c = (3-sqrt(3))/6
-            var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
-            var y1 = y0 - j1 + G2;
-            var x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords
-            var y2 = y0 - 1.0 + 2.0 * G2;
-            // Work out the hashed gradient indices of the three simplex corners
-            var ii = i & 255;
-            var jj = j & 255;
-            var gi0 = this._perm[ii + this._perm[jj]] % 12;
-            var gi1 = this._perm[ii + i1 + this._perm[jj + j1]] % 12;
-            var gi2 = this._perm[ii + 1 + this._perm[jj + 1]] % 12;
-            // Calculate the contribution from the three corners
-            var t0 = 0.5 - x0 * x0 - y0 * y0;
-            if (t0 < 0)
-                n0 = 0.0;
-            else {
-                t0 *= t0;
-                n0 = t0 * t0 * this._dot(this._grad3[gi0], x0, y0); // (x,y) of grad3 used for 2D gradient
-            }
-            var t1 = 0.5 - x1 * x1 - y1 * y1;
-            if (t1 < 0)
-                n1 = 0.0;
-            else {
-                t1 *= t1;
-                n1 = t1 * t1 * this._dot(this._grad3[gi1], x1, y1);
-            }
-            var t2 = 0.5 - x2 * x2 - y2 * y2;
-            if (t2 < 0)
-                n2 = 0.0;
-            else {
-                t2 *= t2;
-                n2 = t2 * t2 * this._dot(this._grad3[gi2], x2, y2);
-            }
-            // Add contributions from each corner to get the final noise value.
-            // The result is scaled to return values in the interval [-1,1].
-            return 70.0 * (n0 + n1 + n2);
-        };
-        /**
-         * 3D simplex noise
-         *
-         * @param xin
-         * @param yin
-         * @param zin
-         */
-        SimplexNoise.prototype.noise3d = function (xin, yin, zin) {
-            var n0, n1, n2, n3; // Noise contributions from the four corners
-            // Skew the input space to determine which simplex cell we're in
-            var F3 = 1.0 / 3.0;
-            var s = (xin + yin + zin) * F3; // Very nice and simple skew factor for 3D
-            var i = Math.floor(xin + s);
-            var j = Math.floor(yin + s);
-            var k = Math.floor(zin + s);
-            var G3 = 1.0 / 6.0; // Very nice and simple unskew factor, too
-            var t = (i + j + k) * G3;
-            var X0 = i - t; // Unskew the cell origin back to (x,y,z) space
-            var Y0 = j - t;
-            var Z0 = k - t;
-            var x0 = xin - X0; // The x,y,z distances from the cell origin
-            var y0 = yin - Y0;
-            var z0 = zin - Z0;
-            // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
-            // Determine which simplex we are in.
-            var i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
-            var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
-            if (x0 >= y0) {
-                if (y0 >= z0) {
-                    i1 = 1;
-                    j1 = 0;
-                    k1 = 0;
-                    i2 = 1;
-                    j2 = 1;
-                    k2 = 0;
-                    // X Y Z order
-                }
-                else if (x0 >= z0) {
-                    i1 = 1;
-                    j1 = 0;
-                    k1 = 0;
-                    i2 = 1;
-                    j2 = 0;
-                    k2 = 1;
-                    // X Z Y order
-                }
-                else {
-                    i1 = 0;
-                    j1 = 0;
-                    k1 = 1;
-                    i2 = 1;
-                    j2 = 0;
-                    k2 = 1;
-                } // Z X Y order
-            }
-            else { // x0<y0
-                if (y0 < z0) {
-                    i1 = 0;
-                    j1 = 0;
-                    k1 = 1;
-                    i2 = 0;
-                    j2 = 1;
-                    k2 = 1;
-                    // Z Y X order
-                }
-                else if (x0 < z0) {
-                    i1 = 0;
-                    j1 = 1;
-                    k1 = 0;
-                    i2 = 0;
-                    j2 = 1;
-                    k2 = 1;
-                    // Y Z X order
-                }
-                else {
-                    i1 = 0;
-                    j1 = 1;
-                    k1 = 0;
-                    i2 = 1;
-                    j2 = 1;
-                    k2 = 0;
-                } // Y X Z order
-            }
-            // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
-            // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
-            // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
-            // c = 1/6.
-            var x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
-            var y1 = y0 - j1 + G3;
-            var z1 = z0 - k1 + G3;
-            var x2 = x0 - i2 + 2.0 * G3; // Offsets for third corner in (x,y,z) coords
-            var y2 = y0 - j2 + 2.0 * G3;
-            var z2 = z0 - k2 + 2.0 * G3;
-            var x3 = x0 - 1.0 + 3.0 * G3; // Offsets for last corner in (x,y,z) coords
-            var y3 = y0 - 1.0 + 3.0 * G3;
-            var z3 = z0 - 1.0 + 3.0 * G3;
-            // Work out the hashed gradient indices of the four simplex corners
-            var ii = i & 255;
-            var jj = j & 255;
-            var kk = k & 255;
-            var gi0 = this._perm[ii + this._perm[jj + this._perm[kk]]] % 12;
-            var gi1 = this._perm[ii + i1 + this._perm[jj + j1 + this._perm[kk + k1]]] % 12;
-            var gi2 = this._perm[ii + i2 + this._perm[jj + j2 + this._perm[kk + k2]]] % 12;
-            var gi3 = this._perm[ii + 1 + this._perm[jj + 1 + this._perm[kk + 1]]] % 12;
-            // Calculate the contribution from the four corners
-            var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-            if (t0 < 0)
-                n0 = 0.0;
-            else {
-                t0 *= t0;
-                n0 = t0 * t0 * this._dot3(this._grad3[gi0], x0, y0, z0);
-            }
-            var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-            if (t1 < 0)
-                n1 = 0.0;
-            else {
-                t1 *= t1;
-                n1 = t1 * t1 * this._dot3(this._grad3[gi1], x1, y1, z1);
-            }
-            var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-            if (t2 < 0)
-                n2 = 0.0;
-            else {
-                t2 *= t2;
-                n2 = t2 * t2 * this._dot3(this._grad3[gi2], x2, y2, z2);
-            }
-            var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-            if (t3 < 0)
-                n3 = 0.0;
-            else {
-                t3 *= t3;
-                n3 = t3 * t3 * this._dot3(this._grad3[gi3], x3, y3, z3);
-            }
-            // Add contributions from each corner to get the final noise value.
-            // The result is scaled to stay just inside [-1,1]
-            return 32.0 * (n0 + n1 + n2 + n3);
-        };
-        /**
-         * 4D simplex noise
-         *
-         * @param x
-         * @param y
-         * @param z
-         * @param w
-         */
-        SimplexNoise.prototype.noise4d = function (x, y, z, w) {
-            // For faster and easier lookups
-            var grad4 = this._grad4;
-            var simplex = this._simplex;
-            var perm = this._perm;
-            // The skewing and unskewing factors are hairy again for the 4D case
-            var F4 = (Math.sqrt(5.0) - 1.0) / 4.0;
-            var G4 = (5.0 - Math.sqrt(5.0)) / 20.0;
-            var n0, n1, n2, n3, n4; // Noise contributions from the five corners
-            // Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
-            var s = (x + y + z + w) * F4; // Factor for 4D skewing
-            var i = Math.floor(x + s);
-            var j = Math.floor(y + s);
-            var k = Math.floor(z + s);
-            var l = Math.floor(w + s);
-            var t = (i + j + k + l) * G4; // Factor for 4D unskewing
-            var X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
-            var Y0 = j - t;
-            var Z0 = k - t;
-            var W0 = l - t;
-            var x0 = x - X0; // The x,y,z,w distances from the cell origin
-            var y0 = y - Y0;
-            var z0 = z - Z0;
-            var w0 = w - W0;
-            // For the 4D case, the simplex is a 4D shape I won't even try to describe.
-            // To find out which of the 24 possible simplices we're in, we need to
-            // determine the magnitude ordering of x0, y0, z0 and w0.
-            // The method below is a good way of finding the ordering of x,y,z,w and
-            // then find the correct traversal order for the simplex we’re in.
-            // First, six pair-wise comparisons are performed between each possible pair
-            // of the four coordinates, and the results are used to add up binary bits
-            // for an integer index.
-            var c1 = (x0 > y0) ? 32 : 0;
-            var c2 = (x0 > z0) ? 16 : 0;
-            var c3 = (y0 > z0) ? 8 : 0;
-            var c4 = (x0 > w0) ? 4 : 0;
-            var c5 = (y0 > w0) ? 2 : 0;
-            var c6 = (z0 > w0) ? 1 : 0;
-            var c = c1 + c2 + c3 + c4 + c5 + c6;
-            var i1, j1, k1, l1; // The integer offsets for the second simplex corner
-            var i2, j2, k2, l2; // The integer offsets for the third simplex corner
-            var i3, j3, k3, l3; // The integer offsets for the fourth simplex corner
-            // simplex[c] is a 4-vector with the numbers 0, 1, 2 and 3 in some order.
-            // Many values of c will never occur, since e.g. x>y>z>w makes x<z, y<w and x<w
-            // impossible. Only the 24 indices which have non-zero entries make any sense.
-            // We use a thresholding to set the coordinates in turn from the largest magnitude.
-            // The number 3 in the "simplex" array is at the position of the largest coordinate.
-            i1 = simplex[c][0] >= 3 ? 1 : 0;
-            j1 = simplex[c][1] >= 3 ? 1 : 0;
-            k1 = simplex[c][2] >= 3 ? 1 : 0;
-            l1 = simplex[c][3] >= 3 ? 1 : 0;
-            // The number 2 in the "simplex" array is at the second largest coordinate.
-            i2 = simplex[c][0] >= 2 ? 1 : 0;
-            j2 = simplex[c][1] >= 2 ? 1 : 0;
-            k2 = simplex[c][2] >= 2 ? 1 : 0;
-            l2 = simplex[c][3] >= 2 ? 1 : 0;
-            // The number 1 in the "simplex" array is at the second smallest coordinate.
-            i3 = simplex[c][0] >= 1 ? 1 : 0;
-            j3 = simplex[c][1] >= 1 ? 1 : 0;
-            k3 = simplex[c][2] >= 1 ? 1 : 0;
-            l3 = simplex[c][3] >= 1 ? 1 : 0;
-            // The fifth corner has all coordinate offsets = 1, so no need to look that up.
-            var x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
-            var y1 = y0 - j1 + G4;
-            var z1 = z0 - k1 + G4;
-            var w1 = w0 - l1 + G4;
-            var x2 = x0 - i2 + 2.0 * G4; // Offsets for third corner in (x,y,z,w) coords
-            var y2 = y0 - j2 + 2.0 * G4;
-            var z2 = z0 - k2 + 2.0 * G4;
-            var w2 = w0 - l2 + 2.0 * G4;
-            var x3 = x0 - i3 + 3.0 * G4; // Offsets for fourth corner in (x,y,z,w) coords
-            var y3 = y0 - j3 + 3.0 * G4;
-            var z3 = z0 - k3 + 3.0 * G4;
-            var w3 = w0 - l3 + 3.0 * G4;
-            var x4 = x0 - 1.0 + 4.0 * G4; // Offsets for last corner in (x,y,z,w) coords
-            var y4 = y0 - 1.0 + 4.0 * G4;
-            var z4 = z0 - 1.0 + 4.0 * G4;
-            var w4 = w0 - 1.0 + 4.0 * G4;
-            // Work out the hashed gradient indices of the five simplex corners
-            var ii = i & 255;
-            var jj = j & 255;
-            var kk = k & 255;
-            var ll = l & 255;
-            var gi0 = perm[ii + perm[jj + perm[kk + perm[ll]]]] % 32;
-            var gi1 = perm[ii + i1 + perm[jj + j1 + perm[kk + k1 + perm[ll + l1]]]] % 32;
-            var gi2 = perm[ii + i2 + perm[jj + j2 + perm[kk + k2 + perm[ll + l2]]]] % 32;
-            var gi3 = perm[ii + i3 + perm[jj + j3 + perm[kk + k3 + perm[ll + l3]]]] % 32;
-            var gi4 = perm[ii + 1 + perm[jj + 1 + perm[kk + 1 + perm[ll + 1]]]] % 32;
-            // Calculate the contribution from the five corners
-            var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
-            if (t0 < 0)
-                n0 = 0.0;
-            else {
-                t0 *= t0;
-                n0 = t0 * t0 * this._dot4(grad4[gi0], x0, y0, z0, w0);
-            }
-            var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
-            if (t1 < 0)
-                n1 = 0.0;
-            else {
-                t1 *= t1;
-                n1 = t1 * t1 * this._dot4(grad4[gi1], x1, y1, z1, w1);
-            }
-            var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
-            if (t2 < 0)
-                n2 = 0.0;
-            else {
-                t2 *= t2;
-                n2 = t2 * t2 * this._dot4(grad4[gi2], x2, y2, z2, w2);
-            }
-            var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
-            if (t3 < 0)
-                n3 = 0.0;
-            else {
-                t3 *= t3;
-                n3 = t3 * t3 * this._dot4(grad4[gi3], x3, y3, z3, w3);
-            }
-            var t4 = 0.6 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
-            if (t4 < 0)
-                n4 = 0.0;
-            else {
-                t4 *= t4;
-                n4 = t4 * t4 * this._dot4(grad4[gi4], x4, y4, z4, w4);
-            }
-            // Sum up and scale the result to cover the range [-1,1]
-            return 27.0 * (n0 + n1 + n2 + n3 + n4);
-        };
-        return SimplexNoise;
-    }());
-    feng3d.SimplexNoise = SimplexNoise;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     *
-     */
-    var PerlinNoise = /** @class */ (function () {
-        function PerlinNoise() {
-            this.p = [
-                151, 160, 137, 91, 90, 15,
-                131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
-                190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
-                88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
-                77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
-                102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
-                135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
-                5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
-                223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
-                129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-                251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-                49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-                138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
-                151, 160, 137, 91, 90, 15,
-                131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
-                190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
-                88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
-                77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
-                102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
-                135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
-                5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
-                223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
-                129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-                251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-                49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-                138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
-            ];
-        }
-        PerlinNoise.prototype.fade = function (t) { return t * t * t * (t * (t * 6 - 15) + 10); };
-        PerlinNoise.prototype.lerp = function (t, a, b) { return a + t * (b - a); };
-        PerlinNoise.prototype.grad = function (hash, x, y, z) {
-            var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
-            var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
-            v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-            return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-        };
-        PerlinNoise.prototype.grad2 = function (hash, x, y) {
-            var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
-            var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
-            v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
-            return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-        };
-        PerlinNoise.prototype.Noise = function (x, y) {
-            x = Math.abs(x);
-            y = Math.abs(y);
-            var p = this.p;
-            var floorX = Math.floor(x);
-            var floorY = Math.floor(y);
-            var X = floorX & 255; // FIND UNIT CUBE THAT
-            var Y = floorY & 255; // CONTAINS POINT.
-            x -= floorX; // FIND RELATIVE X,Y,Z
-            y -= floorY; // OF POINT IN CUBE.
-            var u = this.fade(Math.min(x, 1.0)); // COMPUTE FADE CURVES
-            var v = this.fade(Math.min(y, 1.0)); // FOR EACH OF X,Y,Z.
-            var A = p[X] + Y, AA = p[A], AB = p[A + 1], // HASH COORDINATES OF
-            B = p[X + 1] + Y, BA = p[B], BB = p[B + 1]; // THE 8 CUBE CORNERS,
-            var res = this.lerp(v, this.lerp(u, this.grad2(p[AA], x, y), // AND ADD
-            this.grad2(p[BA], x - 1, y)), // BLENDED
-            this.lerp(u, this.grad2(p[AB], x, y - 1), // RESULTS
-            this.grad2(p[BB], x - 1, y - 1))); // FROM  8
-            return res;
-        };
-        return PerlinNoise;
-    }());
-    feng3d.PerlinNoise = PerlinNoise;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     *
-     *
+     * @see http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
      * @see https://mrl.nyu.edu/~perlin/noise/
+     * @see https://gitee.com/feng3d_admin/noise
      */
-    var ImprovedNoise = /** @class */ (function () {
-        function ImprovedNoise() {
+    var Noise = /** @class */ (function () {
+        /**
+         * 构建柏林噪音
+         *
+         * @param seed 随机种子
+         */
+        function Noise(seed) {
+            if (seed === void 0) { seed = 0; }
+            this._seed = 0;
+            this._p = [];
+            this.seed = seed;
         }
-        ImprovedNoise.prototype.noise = function (x, y, z) {
-            var X = Math.floor(x) & 255, // FIND UNIT CUBE THAT
-            Y = Math.floor(y) & 255, // CONTAINS POINT.
-            Z = Math.floor(z) & 255;
-            x -= Math.floor(x); // FIND RELATIVE X,Y,Z
-            y -= Math.floor(y); // OF POINT IN CUBE.
-            z -= Math.floor(z);
-            var u = fade(x), // COMPUTE FADE CURVES
-            v = fade(y), // FOR EACH OF X,Y,Z.
-            w = fade(z);
-            var A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z, // HASH COORDINATES OF
-            B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z; // THE 8 CUBE CORNERS,
-            return lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z), // AND ADD
-            grad(p[BA], x - 1, y, z)), // BLENDED
-            lerp(u, grad(p[AB], x, y - 1, z), // RESULTS
-            grad(p[BB], x - 1, y - 1, z))), // FROM  8
-            lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1), // CORNERS
-            grad(p[BA + 1], x - 1, y, z - 1)), // OF CUBE
-            lerp(u, grad(p[AB + 1], x, y - 1, z - 1), grad(p[BB + 1], x - 1, y - 1, z - 1))));
+        /**
+         * 1D 经典噪音
+         *
+         * @param x X轴数值
+         */
+        Noise.prototype.perlin1 = function (x) {
+            var perm = this._p;
+            // Find unit grid cell containing point
+            var X = Math.floor(x);
+            // Get relative xyz coordinates of point within that cell
+            x = x - X;
+            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+            X = X & 255;
+            // Calculate a set of eight hashed gradient indices
+            var gi00 = perm[X] % 2;
+            var gi10 = perm[X + 1] % 2;
+            // Calculate noise contributions from each of the eight corners
+            var n00 = dot1(grad1[gi00], x);
+            var n10 = dot1(grad1[gi10], x - 1);
+            // Compute the fade curve value for each of x, y
+            var u = fade(x);
+            // Interpolate along x the contributions from each of the corners
+            var nx0 = mix(n00, n10, u);
+            return nx0;
         };
-        return ImprovedNoise;
+        /**
+         * 2D 经典噪音
+         *
+         * @param x X轴数值
+         * @param y Y轴数值
+         */
+        Noise.prototype.perlin2 = function (x, y) {
+            var perm = this._p;
+            // Find unit grid cell containing point
+            var X = Math.floor(x);
+            var Y = Math.floor(y);
+            // Get relative xyz coordinates of point within that cell
+            x = x - X;
+            y = y - Y;
+            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+            X = X & 255;
+            Y = Y & 255;
+            // Calculate a set of eight hashed gradient indices
+            var gi00 = perm[X + perm[Y]] % 4;
+            var gi10 = perm[X + 1 + perm[Y]] % 4;
+            var gi01 = perm[X + perm[Y + 1]] % 4;
+            var gi11 = perm[X + 1 + perm[Y + 1]] % 4;
+            // Calculate noise contributions from each of the eight corners
+            var n00 = dot2(grad2[gi00], x, y);
+            var n10 = dot2(grad2[gi10], x - 1, y);
+            var n01 = dot2(grad2[gi01], x, y - 1);
+            var n11 = dot2(grad2[gi11], x - 1, y - 1);
+            // Compute the fade curve value for each of x, y
+            var u = fade(x);
+            var v = fade(y);
+            // Interpolate along x the contributions from each of the corners
+            var nx0 = mix(n00, n10, u);
+            var nx1 = mix(n01, n11, u);
+            // Interpolate the four results along y
+            var nxy = mix(nx0, nx1, v);
+            return nxy;
+        };
+        /**
+         * 3D 经典噪音
+         *
+         * @param x X轴数值
+         * @param y Y轴数值
+         * @param z Z轴数值
+         */
+        Noise.prototype.perlin3 = function (x, y, z) {
+            var perm = this._p;
+            // Find unit grid cell containing point
+            var X = Math.floor(x);
+            var Y = Math.floor(y);
+            var Z = Math.floor(z);
+            // Get relative xyz coordinates of point within that cell
+            x = x - X;
+            y = y - Y;
+            z = z - Z;
+            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+            X = X & 255;
+            Y = Y & 255;
+            Z = Z & 255;
+            // Calculate a set of eight hashed gradient indices
+            var gi000 = perm[X + perm[Y + perm[Z]]] % 12;
+            var gi100 = perm[X + 1 + perm[Y + perm[Z]]] % 12;
+            var gi010 = perm[X + perm[Y + 1 + perm[Z]]] % 12;
+            var gi110 = perm[X + 1 + perm[Y + 1 + perm[Z]]] % 12;
+            var gi001 = perm[X + perm[Y + perm[Z + 1]]] % 12;
+            var gi101 = perm[X + 1 + perm[Y + perm[Z + 1]]] % 12;
+            var gi011 = perm[X + perm[Y + 1 + perm[Z + 1]]] % 12;
+            var gi111 = perm[X + 1 + perm[Y + 1 + perm[Z + 1]]] % 12;
+            // Calculate noise contributions from each of the eight corners
+            var n000 = dot(grad3[gi000], x, y, z);
+            var n100 = dot(grad3[gi100], x - 1, y, z);
+            var n010 = dot(grad3[gi010], x, y - 1, z);
+            var n110 = dot(grad3[gi110], x - 1, y - 1, z);
+            var n001 = dot(grad3[gi001], x, y, z - 1);
+            var n101 = dot(grad3[gi101], x - 1, y, z - 1);
+            var n011 = dot(grad3[gi011], x, y - 1, z - 1);
+            var n111 = dot(grad3[gi111], x - 1, y - 1, z - 1);
+            // Compute the fade curve value for each of x, y, z
+            var u = fade(x);
+            var v = fade(y);
+            var w = fade(z);
+            // Interpolate along x the contributions from each of the corners
+            var nx00 = mix(n000, n100, u);
+            var nx01 = mix(n001, n101, u);
+            var nx10 = mix(n010, n110, u);
+            var nx11 = mix(n011, n111, u);
+            // Interpolate the four results along y
+            var nxy0 = mix(nx00, nx10, v);
+            var nxy1 = mix(nx01, nx11, v);
+            // Interpolate the two last results along z
+            var nxyz = mix(nxy0, nxy1, w);
+            return nxyz;
+        };
+        /**
+         * N阶经典噪音
+         *
+         * 如果是1D，2D，3D噪音，最好选用对于函数，perlinN中存在for循环因此效率比perlin3等性能差3到5（8）倍！
+         *
+         * 满足以下运算
+         * perlinN(x) == perlin1(x)
+         * perlinN(x,y) == perlin2(x,y)
+         * perlinN(x,y,z) == perlin3(x,y,z)
+         *
+         * @param ps 每个轴的数值
+         */
+        Noise.prototype.perlinN = function () {
+            var ps = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                ps[_i] = arguments[_i];
+            }
+            var perm = this._p;
+            var n = ps.length;
+            // 在格子内对应每个轴的位置
+            var pp = [];
+            // 所属格子对应每个轴的索引
+            var PS = [];
+            // 在格子内对应每个轴的混合权重
+            var PF = [];
+            for (var i = 0; i < n; i++) {
+                var p = ps[i];
+                // 找到所属单元格
+                var P = Math.floor(p);
+                // 获取所在单元格内的位置
+                p = p - P;
+                // 单元格以255为周期
+                P = P & 255;
+                //
+                pp[i] = p;
+                PS[i] = P;
+                // 分别计算每个轴的混合度
+                PF[i] = fade(p);
+            }
+            //
+            var gradN = createGrad(n);
+            // 边的数量
+            var numEdge = gradN.length;
+            // if (n > 1)
+            // {
+            //     console.assert(numEdge == Math.pow(2, n - 1) * n, `边的数量不对！`)
+            // }
+            //
+            var bits = getBits(n);
+            var dns = [];
+            //
+            for (var i = 0, len = bits.length; i < len; i++) {
+                var bit = bits[i];
+                var bitn = bit.length;
+                // 计算索引
+                var gi = 0;
+                while (bitn > 0) {
+                    bitn--;
+                    gi = perm[PS[bitn] + bit[bitn] + gi];
+                    // if (isNaN(gi))
+                    //     debugger;
+                }
+                // 获取 grad
+                var grad = gradN[gi % numEdge];
+                bitn = bit.length;
+                // 计算点乘 dot运算
+                var dn = 0;
+                while (bitn > 0) {
+                    bitn--;
+                    dn += grad[bitn] * (pp[bitn] - bit[bitn]);
+                }
+                dns[i] = dn;
+            }
+            // 进行插值
+            for (var i = 0; i < n; i++) {
+                // 每次前后两个插值
+                for (var j = 0, len = dns.length; j < len; j += 2) {
+                    dns[j / 2] = mix(dns[j], dns[j + 1], PF[i]);
+                }
+                // 每波插值后 长度减半
+                dns.length = dns.length >> 1;
+            }
+            // console.assert(dns.length == 1, `结果长度不对！`)
+            return dns[0];
+        };
+        Object.defineProperty(Noise.prototype, "seed", {
+            /**
+             * This isn't a very good seeding function, but it works ok. It supports 2^16
+             * different seed values. Write something better if you need more seeds.
+             */
+            get: function () {
+                return this._seed;
+            },
+            set: function (v) {
+                this._seed = v;
+                var p = this._p;
+                if (v > 0 && v < 1) {
+                    // Scale the seed out
+                    v *= 65536;
+                }
+                v = Math.floor(v);
+                if (v < 256) {
+                    v |= v << 8;
+                }
+                for (var i = 0; i < 256; i++) {
+                    var v0;
+                    if (i & 1) {
+                        v0 = permutation[i] ^ (v & 255);
+                    }
+                    else {
+                        v0 = permutation[i] ^ ((v >> 8) & 255);
+                    }
+                    p[i] = p[i + 256] = v0;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Noise;
     }());
-    feng3d.ImprovedNoise = ImprovedNoise;
+    feng3d.Noise = Noise;
+    /**
+     *
+     * @param n
+     *
+     * len = 2^(n-1) * n
+     */
+    function createGrad(n) {
+        if (createGradCache[n])
+            return createGradCache[n];
+        var gradBase = createGradBase(n - 1);
+        var grad = [];
+        if (n > 1) {
+            for (var i = n - 1; i >= 0; i--) {
+                for (var j = 0; j < gradBase.length; j++) {
+                    var item = gradBase[j].concat();
+                    item.splice(i, 0, 0);
+                    grad.push(item);
+                }
+            }
+        }
+        else {
+            grad = gradBase;
+        }
+        createGradCache[n] = grad;
+        return grad;
+    }
+    feng3d.createGrad = createGrad;
+    var createGradCache = {};
+    function createGradBase(n) {
+        if (n < 2)
+            return [
+                [1], [-1],
+            ];
+        var grad = createGradBase(n - 1);
+        for (var i = 0, len = grad.length; i < len; i++) {
+            var item = grad[i];
+            grad[i] = item.concat(1);
+            grad[i + len] = item.concat(-1);
+        }
+        return grad;
+    }
+    function getBits(n) {
+        if (getBitsChace[n])
+            return getBitsChace[n];
+        if (n < 2)
+            return [
+                [0], [1],
+            ];
+        var grad = getBits(n - 1);
+        for (var i = 0, len = grad.length; i < len; i++) {
+            var item = grad[i];
+            grad[i] = item.concat(0);
+            grad[i + len] = item.concat(1);
+        }
+        getBitsChace[n] = grad;
+        return grad;
+    }
+    feng3d.getBits = getBits;
+    var getBitsChace = {};
+    var grad1 = [
+        [1], [-1],
+    ];
+    var grad2 = [
+        [1, 0], [-1, 0],
+        [0, 1], [0, -1],
+    ];
+    var grad3 = [
+        [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0],
+        [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
+        [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]
+    ];
     var permutation = [
         151, 160, 137, 91, 90, 15,
         131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
@@ -9055,14 +8868,20 @@ var feng3d;
         49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
         138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
     ];
-    var p = permutation.concat(permutation);
-    function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-    function lerp(t, a, b) { return a + t * (b - a); }
-    function grad(hash, x, y, z) {
-        var h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
-        var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
-        v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-        return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+    function dot(g, x, y, z) {
+        return g[0] * x + g[1] * y + g[2] * z;
+    }
+    function dot2(g, x, y) {
+        return g[0] * x + g[1] * y;
+    }
+    function dot1(g, x) {
+        return g[0] * x;
+    }
+    function mix(a, b, t) {
+        return (1 - t) * a + t * b;
+    }
+    function fade(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
     }
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=math.js.map

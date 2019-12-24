@@ -93,9 +93,7 @@
         "modules/math/src/curve/MinMaxCurve.ts",
         "modules/math/src/curve/MinMaxCurveVector3.ts",
         //
-        "modules/math/src/noise/ImprovedNoise.ts",
-        "modules/math/src/noise/PerlinNoise.ts",
-        "modules/math/src/noise/SimplexNoise.ts",
+        "modules/math/src/Noise.ts",
         // 事件
         "modules/shortcut/src/EventProxy.ts",
         "modules/shortcut/src/WindowEventProxy.ts",

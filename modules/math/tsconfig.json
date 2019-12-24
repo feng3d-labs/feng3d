@@ -57,9 +57,7 @@
         "src/curve/MinMaxCurve.ts",
         "src/curve/MinMaxCurveVector3.ts",
         // noise
-        "src/noise/SimplexNoise.ts",
-        "src/noise/PerlinNoise.ts",
-        "src/noise/ImprovedNoise.ts",
+        "src/Noise.ts",
     ],
     "references": [
         {
