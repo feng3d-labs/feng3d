@@ -32270,6 +32270,7 @@ var feng3d;
             _this.sizeBySpeed = new feng3d.ParticleSizeBySpeedModule();
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
             _this.rotationBySpeed = new feng3d.ParticleRotationBySpeedModule();
+            _this.noise = new feng3d.ParticleNoiseModule();
             _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
             _this.main.enabled = true;
             _this.emission.enabled = true;
@@ -32468,6 +32469,19 @@ var feng3d;
                 Array.replace(this._modules, this._rotationBySpeed, v);
                 v.particleSystem = this;
                 this._rotationBySpeed = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "noise", {
+            /**
+             * 旋转角度随速度变化模块
+             */
+            get: function () { return this._noise; },
+            set: function (v) {
+                Array.replace(this._modules, this._noise, v);
+                v.particleSystem = this;
+                this._noise = v;
             },
             enumerable: true,
             configurable: true
@@ -32823,6 +32837,54 @@ var feng3d;
             }
         };
         /**
+         * 给指定粒子添加指定空间的位移。
+         *
+         * @param particle 粒子。
+         * @param position 速度。
+         * @param space 速度所在空间。
+         * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        ParticleSystem.prototype.addParticlePosition = function (particle, position, space, name) {
+            if (name != undefined) {
+                this.removeParticleVelocity(particle, name);
+                particle.cache[name] = { value: position.clone(), space: space };
+            }
+            if (space != this.main.simulationSpace) {
+                if (space == feng3d.ParticleSystemSimulationSpace.World) {
+                    this.transform.worldToLocalMatrix.transformVector(position, position);
+                }
+                else {
+                    this.transform.localToWorldMatrix.transformVector(position, position);
+                }
+            }
+            //
+            particle.position.add(position);
+        };
+        /**
+         * 移除指定粒子上的位移
+         *
+         * @param particle 粒子。
+         * @param name 位移名称。
+         */
+        ParticleSystem.prototype.removeParticlePosition = function (particle, name) {
+            var obj = particle.cache[name];
+            if (obj) {
+                delete particle.cache[name];
+                var space = obj.space;
+                var value = obj.value;
+                if (space != this.main.simulationSpace) {
+                    if (space == feng3d.ParticleSystemSimulationSpace.World) {
+                        this.transform.worldToLocalMatrix.transformVector(value, value);
+                    }
+                    else {
+                        this.transform.localToWorldMatrix.transformVector(value, value);
+                    }
+                }
+                //
+                particle.position.sub(value);
+            }
+        };
+        /**
          * 给指定粒子添加指定空间的速度。
          *
          * @param particle 粒子。
@@ -32972,6 +33034,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "rotationBySpeed", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "rotationBySpeed", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "noise", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "noise", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统纹理表动画模块。", block: "textureSheetAnimation", component: "OAVObjectView" })
@@ -36911,7 +36977,7 @@ var feng3d;
                 zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }
             });
             // 以下两个值用于与Unity中数据接近
-            _this._frequencyScale = 0.2;
+            _this._frequencyScale = 5;
             _this._strengthScale = 4;
             return _this;
         }
@@ -37036,6 +37102,47 @@ var feng3d;
             configurable: true
         });
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleNoiseModule.prototype.initParticleState = function (particle) {
+            particle[_Noise_strength_rate] = Math.random();
+            particle[_Noise_particle_rate] = Math.random();
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleNoiseModule.prototype.updateParticleState = function (particle) {
+            this.particleSystem.removeParticlePosition(particle, _Noise_preOffset);
+            if (!this.enabled)
+                return;
+            var strengthX = 1;
+            var strengthY = 1;
+            var strengthZ = 1;
+            if (this.separateAxes) {
+                var strength3D = this.strength3D.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
+                strengthX = strength3D.x;
+                strengthY = strength3D.y;
+                strengthZ = strength3D.z;
+            }
+            else {
+                strengthX = strengthY = strengthZ = this.strength.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
+            }
+            //
+            var frequency = this._frequencyScale * this.frequency;
+            //
+            var offsetPos = new feng3d.Vector3(strengthX, strengthY, strengthZ);
+            //
+            offsetPos.scaleNumber(this._strengthScale);
+            //
+            offsetPos.x *= this._getNoiseValue(1 / 3 * (0 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.y *= this._getNoiseValue(1 / 3 * (1 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.z *= this._getNoiseValue(1 / 3 * (2 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            //
+            this.particleSystem.addParticlePosition(particle, offsetPos, this.particleSystem.main.simulationSpace, _Noise_preOffset);
+        };
+        /**
          * 绘制噪音到图片
          *
          * @param image 图片数据
@@ -37046,9 +37153,6 @@ var feng3d;
             var strengthY = strength.y;
             var strengthZ = strength.z;
             //
-            var cellSizeX = this._frequencyScale / this.frequency;
-            var cellSizeY = this._frequencyScale / this.frequency;
-            //
             strengthX *= this._strengthScale;
             strengthY *= this._strengthScale;
             strengthZ *= this._strengthScale;
@@ -37057,6 +37161,9 @@ var feng3d;
                 strengthY /= this.frequency;
                 strengthZ /= this.frequency;
             }
+            //
+            var frequency = this._frequencyScale * this.frequency;
+            //
             var data = image.data;
             var imageWidth = image.width;
             var imageHeight = image.height;
@@ -37065,8 +37172,8 @@ var feng3d;
             // var max = Number.MIN_VALUE;
             for (var x = 0; x < imageWidth; x++) {
                 for (var y = 0; y < imageHeight; y++) {
-                    var xv = x / imageWidth / cellSizeX;
-                    var yv = y / imageHeight / cellSizeY;
+                    var xv = x / imageWidth * frequency;
+                    var yv = y / imageHeight * frequency;
                     var value = this._getNoiseValue(xv, yv);
                     // datas.push(value);
                     // if (min > value) min = value;
@@ -37201,6 +37308,9 @@ var feng3d;
         return ParticleNoiseModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleNoiseModule = ParticleNoiseModule;
+    var _Noise_strength_rate = "_Noise_strength_rate";
+    var _Noise_particle_rate = "_Noise_particle_rate";
+    var _Noise_preOffset = "_Noise_preOffset";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

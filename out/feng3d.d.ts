@@ -15179,6 +15179,12 @@ declare namespace feng3d {
         set rotationBySpeed(v: ParticleRotationBySpeedModule);
         private _rotationBySpeed;
         /**
+         * 旋转角度随速度变化模块
+         */
+        get noise(): ParticleNoiseModule;
+        set noise(v: ParticleNoiseModule);
+        private _noise;
+        /**
          * 粒子系统纹理表动画模块。
          */
         get textureSheetAnimation(): ParticleTextureSheetAnimationModule;
@@ -15270,6 +15276,22 @@ declare namespace feng3d {
          */
         private _updateParticleState;
         private _simulationSpaceChanged;
+        /**
+         * 给指定粒子添加指定空间的位移。
+         *
+         * @param particle 粒子。
+         * @param position 速度。
+         * @param space 速度所在空间。
+         * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        addParticlePosition(particle: Particle, position: Vector3, space: ParticleSystemSimulationSpace, name?: string): void;
+        /**
+         * 移除指定粒子上的位移
+         *
+         * @param particle 粒子。
+         * @param name 位移名称。
+         */
+        removeParticlePosition(particle: Particle, name: string): void;
         /**
          * 给指定粒子添加指定空间的速度。
          *
@@ -17409,6 +17431,16 @@ declare namespace feng3d {
          */
         get remapZ(): MinMaxCurve;
         set remapZ(v: MinMaxCurve);
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
         private _frequencyScale;
         private _strengthScale;
         /**

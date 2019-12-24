@@ -229,6 +229,20 @@ namespace feng3d
         private _rotationBySpeed: ParticleRotationBySpeedModule;
 
         /**
+         * 旋转角度随速度变化模块
+         */
+        @serialize
+        @oav({ block: "noise", component: "OAVObjectView" })
+        get noise() { return this._noise; }
+        set noise(v)
+        {
+            Array.replace(this._modules, this._noise, v);
+            v.particleSystem = this;
+            this._noise = v;
+        }
+        private _noise: ParticleNoiseModule;
+
+        /**
          * 粒子系统纹理表动画模块。
          */
         @serialize
@@ -281,6 +295,7 @@ namespace feng3d
             this.sizeBySpeed = new ParticleSizeBySpeedModule();
             this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
             this.rotationBySpeed = new ParticleRotationBySpeedModule();
+            this.noise = new ParticleNoiseModule();
             this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
 
             this.main.enabled = true;
@@ -731,6 +746,66 @@ namespace feng3d
                     localToWorldMatrix.deltaTransformVector(p.velocity, p.velocity);
                     localToWorldMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
+            }
+        }
+
+        /**
+         * 给指定粒子添加指定空间的位移。
+         * 
+         * @param particle 粒子。
+         * @param position 速度。
+         * @param space 速度所在空间。
+         * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        addParticlePosition(particle: Particle, position: Vector3, space: ParticleSystemSimulationSpace, name?: string)
+        {
+            if (name != undefined)
+            {
+                this.removeParticleVelocity(particle, name);
+                particle.cache[name] = { value: position.clone(), space: space };
+            }
+
+            if (space != this.main.simulationSpace)
+            {
+                if (space == ParticleSystemSimulationSpace.World)
+                {
+                    this.transform.worldToLocalMatrix.transformVector(position, position);
+                } else
+                {
+                    this.transform.localToWorldMatrix.transformVector(position, position);
+                }
+            }
+            //
+            particle.position.add(position);
+        }
+
+        /**
+         * 移除指定粒子上的位移
+         * 
+         * @param particle 粒子。
+         * @param name 位移名称。
+         */
+        removeParticlePosition(particle: Particle, name: string)
+        {
+            var obj: { value: Vector3, space: ParticleSystemSimulationSpace } = particle.cache[name];
+            if (obj)
+            {
+                delete particle.cache[name];
+
+                var space = obj.space;
+                var value = obj.value;
+                if (space != this.main.simulationSpace)
+                {
+                    if (space == ParticleSystemSimulationSpace.World)
+                    {
+                        this.transform.worldToLocalMatrix.transformVector(value, value);
+                    } else
+                    {
+                        this.transform.localToWorldMatrix.transformVector(value, value);
+                    }
+                }
+                //
+                particle.position.sub(value);
             }
         }
 

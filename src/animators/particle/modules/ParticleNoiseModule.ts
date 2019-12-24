@@ -252,6 +252,9 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
+            this.particleSystem.removeParticlePosition(particle, _Noise_preOffset);
+            if (!this.enabled) return;
+
             var strengthX = 1;
             var strengthY = 1;
             var strengthZ = 1;
@@ -265,22 +268,23 @@ namespace feng3d
             {
                 strengthX = strengthY = strengthZ = this.strength.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
             }
+            //
+            var frequency = this._frequencyScale * this.frequency;
+            //
             var offsetPos = new Vector3(strengthX, strengthY, strengthZ);
-            offsetPos.x *= this._getNoiseValue(1 / 3 * (0 + particle.rateAtLifeTime), particle[_Noise_particle_rate]);
-            offsetPos.y *= this._getNoiseValue(1 / 3 * (1 + particle.rateAtLifeTime), particle[_Noise_particle_rate]);
-            offsetPos.z *= this._getNoiseValue(1 / 3 * (2 + particle.rateAtLifeTime), particle[_Noise_particle_rate]);
+            //
+            offsetPos.scaleNumber(this._strengthScale);
+            //
+            offsetPos.x *= this._getNoiseValue(1 / 3 * (0 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.y *= this._getNoiseValue(1 / 3 * (1 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.z *= this._getNoiseValue(1 / 3 * (2 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            //
 
-
-            this.particleSystem.removeParticleVelocity(particle, _VelocityOverLifetime_preVelocity);
-            if (!this.enabled) return;
-
-            var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
-            this.particleSystem.addParticleVelocity(particle, velocity, this.space, _VelocityOverLifetime_preVelocity);
+            this.particleSystem.addParticlePosition(particle, offsetPos, this.particleSystem.main.simulationSpace, _Noise_preOffset);
         }
 
-
         // 以下两个值用于与Unity中数据接近
-        private _frequencyScale = 0.2;
+        private _frequencyScale = 5;
         private _strengthScale = 4;
 
         /**
@@ -295,8 +299,6 @@ namespace feng3d
             var strengthY = strength.y;
             var strengthZ = strength.z;
             //
-            var invFrequency = this._frequencyScale / this.frequency;
-            //
             strengthX *= this._strengthScale;
             strengthY *= this._strengthScale;
             strengthZ *= this._strengthScale;
@@ -307,7 +309,9 @@ namespace feng3d
                 strengthY /= this.frequency;
                 strengthZ /= this.frequency;
             }
-
+            //
+            var frequency = this._frequencyScale * this.frequency;
+            //
             var data = image.data;
 
             var imageWidth = image.width;
@@ -321,8 +325,8 @@ namespace feng3d
             {
                 for (var y = 0; y < imageHeight; y++)
                 {
-                    var xv = x / imageWidth / invFrequency;
-                    var yv = y / imageHeight / invFrequency
+                    var xv = x / imageWidth * frequency;
+                    var yv = y / imageHeight * frequency;
 
                     var value = this._getNoiseValue(xv, yv);
 
@@ -425,5 +429,6 @@ namespace feng3d
     }
     var _Noise_strength_rate = "_Noise_strength_rate";
     var _Noise_particle_rate = "_Noise_particle_rate";
+    var _Noise_preOffset = "_Noise_preOffset";
 
 }
