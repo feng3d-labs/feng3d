@@ -17403,6 +17403,8 @@ declare namespace feng3d {
          */
         get remapZ(): MinMaxCurve;
         set remapZ(v: MinMaxCurve);
+        private _frequencyScale;
+        private _strengthScale;
     }
 }
 declare namespace feng3d {

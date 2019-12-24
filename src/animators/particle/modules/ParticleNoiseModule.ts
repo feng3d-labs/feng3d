@@ -109,6 +109,15 @@ namespace feng3d
         scrollSpeed = new MinMaxCurve();
 
         /**
+         * Higher frequency noise will reduce the strength by a proportional amount, if enabled.
+         * 
+         * 如果启用高频率噪音，将按比例减少强度。
+         */
+        @serialize
+        @oav({ tooltip: "如果启用高频率噪音，将按比例减少强度。" })
+        damping = true;
+
+        /**
          * Layers of noise that combine to produce final noise.
          * 
          * 一层一层的噪声组合在一起产生最终的噪声。
@@ -227,7 +236,75 @@ namespace feng3d
             this.remap3D.zCurve = v;
         }
 
+        // 以下两个值用于与Unity中数据接近
+        private _frequencyScale = 0.2;
+        private _strengthScale = 4;
 
+        /**
+         * 绘制噪音到图片
+         * 
+         * @param image 图片数据
+         */
+        drawImage(image: ImageData)
+        {
+            var cellSizeX = this._frequencyScale / this.frequency;
+            var cellSizeY = this._frequencyScale / this.frequency;
+            var strength = this.strength * this._strengthScale;
+            var quality = this.quality;
+            var octaveCount = this.octaveCount;
+            var octaveScale = this.octaveScale;
+            var octaveMultiplier = this.octaveMultiplier;
+
+            if (this.damping) strength /= this.frequency;
+
+            var data = image.data;
+
+            var imageWidth = image.width;
+            var imageHeight = image.height;
+
+            // var datas: number[] = [];
+            // var min = Number.MAX_VALUE;
+            // var max = Number.MIN_VALUE;
+
+            for (var x = 0; x < imageWidth; x++)
+            {
+                for (var y = 0; y < imageHeight; y++)
+                {
+                    var value = getValue(x, y);
+                    for (var l = 1, ln = octaveCount; l < ln; l++)
+                    {
+                        var value0 = getValue(x * octaveScale, y * octaveScale);
+                        value += (value0 - value) * octaveMultiplier;
+                    }
+                    // datas.push(value);
+                    // if (min > value) min = value;
+                    // if (max < value) max = value;
+
+                    value = (value * strength + 1) / 2 * 256;
+                    var cell = (x + y * imageWidth) * 4;
+                    data[cell] = data[cell + 1] = data[cell + 2] = Math.floor(value);
+                    data[cell + 3] = 255; // alpha
+                }
+            }
+            // console.log(datas, min, max);
+
+            function getValue(x: number, y: number)
+            {
+                var value = 0;
+
+                if (quality == ParticleSystemNoiseQuality.Low)
+                {
+                    value = noise.perlin1(x / imageWidth / cellSizeX);
+                } else if (quality == ParticleSystemNoiseQuality.Medium)
+                {
+                    value = noise.perlin2(x / imageWidth / cellSizeX, y / imageHeight / cellSizeY);
+                } else if (quality == ParticleSystemNoiseQuality.High)
+                {
+                    value = noise.perlin3(x / imageWidth / cellSizeX, y / imageHeight / cellSizeY, 0);
+                }
+                return value;
+            }
+        }
 
     }
 }

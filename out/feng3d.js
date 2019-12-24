@@ -36904,6 +36904,9 @@ var feng3d;
                 yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },
                 zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }
             });
+            // 以下两个值用于与Unity中数据接近
+            _this._frequencyScale = 0.2;
+            _this._strengthScale = 4;
             return _this;
         }
         Object.defineProperty(ParticleNoiseModule.prototype, "strength", {
