@@ -273,11 +273,15 @@ namespace feng3d
             //
             var offsetPos = new Vector3(strengthX, strengthY, strengthZ);
             //
-            offsetPos.scaleNumber(this._strengthScale);
+            // offsetPos.scaleNumber(this._strengthScale);
+            if (this.damping)
+            {
+                offsetPos.scaleNumber(1 / this.frequency);
+            }
             //
-            offsetPos.x *= this._getNoiseValue(1 / 3 * (0 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
-            offsetPos.y *= this._getNoiseValue(1 / 3 * (1 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
-            offsetPos.z *= this._getNoiseValue(1 / 3 * (2 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.x *= this._getNoiseValue((1 / 3 * 0 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.y *= this._getNoiseValue((1 / 3 * 1 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.z *= this._getNoiseValue((1 / 3 * 2 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
             //
 
             this.particleSystem.addParticlePosition(particle, offsetPos, this.particleSystem.main.simulationSpace, _Noise_preOffset);
