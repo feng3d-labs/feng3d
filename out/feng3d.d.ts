@@ -5239,6 +5239,14 @@ declare namespace feng3d {
         p1: Vector3;
         constructor(p0?: Vector3, p1?: Vector3);
         /**
+         * 线段长度
+         */
+        getLength(): number;
+        /**
+         * 线段长度的平方
+         */
+        getLengthSquared(): number;
+        /**
          * 获取线段所在直线
          */
         getLine(line?: Line3): Line3;

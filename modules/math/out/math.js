@@ -5238,6 +5238,18 @@ var feng3d;
             return new Segment3(feng3d.Vector3.random(), feng3d.Vector3.random());
         };
         /**
+         * 线段长度
+         */
+        Segment3.prototype.getLength = function () {
+            return Math.sqrt(this.getLengthSquared());
+        };
+        /**
+         * 线段长度的平方
+         */
+        Segment3.prototype.getLengthSquared = function () {
+            return this.p0.distanceSquared(this.p1);
+        };
+        /**
          * 获取线段所在直线
          */
         Segment3.prototype.getLine = function (line) {

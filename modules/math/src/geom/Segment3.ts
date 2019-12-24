@@ -39,6 +39,22 @@ namespace feng3d
         }
 
         /**
+         * 线段长度
+         */
+        getLength()
+        {
+            return Math.sqrt(this.getLengthSquared());
+        }
+
+        /**
+         * 线段长度的平方
+         */
+        getLengthSquared()
+        {
+            return this.p0.distanceSquared(this.p1);
+        }
+
+        /**
          * 获取线段所在直线
          */
         getLine(line = new Line3())
