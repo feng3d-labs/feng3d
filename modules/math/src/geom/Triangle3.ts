@@ -260,9 +260,19 @@ namespace feng3d
         onWithPoint(p: Vector3, precision = Math.PRECISION)
         {
             var plane3d = this.getPlane3d();
+            // 排除不在平面上的点
             if (plane3d.classifyPoint(p, precision) != PlaneClassification.INTERSECT)
                 return false;
 
+            // 判断在三边上的点
+            if (Segment3.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
+                return true;
+            if (Segment3.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
+                return true;
+            if (Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
+                return true;
+
+            // 如果指定点与三角形任意两个点组成的三角形与三角形不同向时，点不在三角形上。
             var n = this.getNormal();
             if (new Triangle3(this.p0, this.p1, p).getNormal().dot(n) < 0)
                 return false;
