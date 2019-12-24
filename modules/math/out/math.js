@@ -5632,12 +5632,6 @@ var feng3d;
             var plane3d = this.getPlane3d();
             if (plane3d.classifyPoint(p, precision) != feng3d.PlaneClassification.INTERSECT)
                 return false;
-            if (feng3d.Segment3.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
-                return true;
-            if (feng3d.Segment3.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
-                return true;
-            if (feng3d.Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
-                return true;
             var n = this.getNormal();
             if (new Triangle3(this.p0, this.p1, p).getNormal().dot(n) < 0)
                 return false;
