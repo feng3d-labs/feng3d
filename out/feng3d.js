@@ -36865,6 +36865,12 @@ var feng3d;
              */
             _this.scrollSpeed = new feng3d.MinMaxCurve();
             /**
+             * Higher frequency noise will reduce the strength by a proportional amount, if enabled.
+             *
+             * 如果启用高频率噪音，将按比例减少强度。
+             */
+            _this.damping = true;
+            /**
              * Layers of noise that combine to produce final noise.
              *
              * 一层一层的噪声组合在一起产生最终的噪声。
@@ -37029,6 +37035,119 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 绘制噪音到图片
+         *
+         * @param image 图片数据
+         */
+        ParticleNoiseModule.prototype.drawImage = function (image) {
+            var strength = this._getDrawImageStrength();
+            var strengthX = strength.x;
+            var strengthY = strength.y;
+            var strengthZ = strength.z;
+            //
+            var cellSizeX = this._frequencyScale / this.frequency;
+            var cellSizeY = this._frequencyScale / this.frequency;
+            //
+            strengthX *= this._strengthScale;
+            strengthY *= this._strengthScale;
+            strengthZ *= this._strengthScale;
+            if (this.damping) {
+                strengthX /= this.frequency;
+                strengthY /= this.frequency;
+                strengthZ /= this.frequency;
+            }
+            var data = image.data;
+            var imageWidth = image.width;
+            var imageHeight = image.height;
+            // var datas: number[] = [];
+            // var min = Number.MAX_VALUE;
+            // var max = Number.MIN_VALUE;
+            for (var x = 0; x < imageWidth; x++) {
+                for (var y = 0; y < imageHeight; y++) {
+                    var xv = x / imageWidth / cellSizeX;
+                    var yv = y / imageHeight / cellSizeY;
+                    var value = this._getNoiseValue(xv, yv);
+                    // datas.push(value);
+                    // if (min > value) min = value;
+                    // if (max < value) max = value;
+                    if (xv < 1 / 3)
+                        value = (value * strengthX + 1) / 2 * 256;
+                    else if (xv < 2 / 3)
+                        value = (value * strengthY + 1) / 2 * 256;
+                    else
+                        value = (value * strengthZ + 1) / 2 * 256;
+                    var cell = (x + y * imageWidth) * 4;
+                    data[cell] = data[cell + 1] = data[cell + 2] = Math.floor(value);
+                    data[cell + 3] = 255; // alpha
+                }
+            }
+            // console.log(datas, min, max);
+        };
+        ParticleNoiseModule.prototype._getDrawImageStrength = function () {
+            var strengthX = 1;
+            var strengthY = 1;
+            var strengthZ = 1;
+            if (this.separateAxes) {
+                if (this.strengthX.mode == feng3d.MinMaxCurveMode.Curve || this.strengthX.mode == feng3d.MinMaxCurveMode.TwoCurves)
+                    strengthX = this.strengthX.curveMultiplier;
+                else if (this.strengthX.mode == feng3d.MinMaxCurveMode.Constant)
+                    strengthX = this.strengthX.constant;
+                else if (this.strengthX.mode == feng3d.MinMaxCurveMode.TwoConstants)
+                    strengthX = this.strengthX.constantMax;
+                if (this.strengthY.mode == feng3d.MinMaxCurveMode.Curve || this.strengthY.mode == feng3d.MinMaxCurveMode.TwoCurves)
+                    strengthY = this.strengthY.curveMultiplier;
+                else if (this.strengthY.mode == feng3d.MinMaxCurveMode.Constant)
+                    strengthY = this.strengthY.constant;
+                else if (this.strengthY.mode == feng3d.MinMaxCurveMode.TwoConstants)
+                    strengthY = this.strengthY.constantMax;
+                if (this.strengthZ.mode == feng3d.MinMaxCurveMode.Curve || this.strengthZ.mode == feng3d.MinMaxCurveMode.TwoCurves)
+                    strengthZ = this.strengthZ.curveMultiplier;
+                else if (this.strengthZ.mode == feng3d.MinMaxCurveMode.Constant)
+                    strengthZ = this.strengthZ.constant;
+                else if (this.strengthZ.mode == feng3d.MinMaxCurveMode.TwoConstants)
+                    strengthZ = this.strengthZ.constantMax;
+            }
+            else {
+                if (this.strength.mode == feng3d.MinMaxCurveMode.Curve || this.strength.mode == feng3d.MinMaxCurveMode.TwoCurves)
+                    strengthX = strengthY = strengthZ = this.strength.curveMultiplier;
+                else if (this.strength.mode == feng3d.MinMaxCurveMode.Constant)
+                    strengthX = strengthY = strengthZ = this.strength.constant;
+                else if (this.strength.mode == feng3d.MinMaxCurveMode.TwoConstants)
+                    strengthX = strengthY = strengthZ = this.strength.constantMax;
+            }
+            return { x: strengthX, y: strengthY, z: strengthZ };
+        };
+        /**
+         * 获取噪音值
+         *
+         * @param x
+         * @param y
+         */
+        ParticleNoiseModule.prototype._getNoiseValue = function (x, y) {
+            var value = this._getNoiseValueBase(x, y);
+            for (var l = 1, ln = this.octaveCount; l < ln; l++) {
+                var value0 = this._getNoiseValueBase(x * this.octaveScale, y * this.octaveScale);
+                value += (value0 - value) * this.octaveMultiplier;
+            }
+            return value;
+        };
+        /**
+         * 获取单层噪音值
+         *
+         * @param x
+         * @param y
+         */
+        ParticleNoiseModule.prototype._getNoiseValueBase = function (x, y) {
+            if (this.quality == feng3d.ParticleSystemNoiseQuality.Low) {
+                return feng3d.noise.perlin1(x);
+            }
+            if (this.quality == feng3d.ParticleSystemNoiseQuality.Medium) {
+                return feng3d.noise.perlin2(x, y);
+            }
+            // if (this.quality == ParticleSystemNoiseQuality.High)
+            return feng3d.noise.perlin3(x, y, 0);
+        };
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "分别控制每个轴的噪声。" })
@@ -37048,6 +37167,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ tooltip: "在粒子系统上滚动噪声图。" })
         ], ParticleNoiseModule.prototype, "scrollSpeed", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "如果启用高频率噪音，将按比例减少强度。" })
+        ], ParticleNoiseModule.prototype, "damping", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "一层一层的噪声组合在一起产生最终的噪声。" })

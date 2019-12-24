@@ -17340,6 +17340,12 @@ declare namespace feng3d {
          */
         scrollSpeed: MinMaxCurve;
         /**
+         * Higher frequency noise will reduce the strength by a proportional amount, if enabled.
+         *
+         * 如果启用高频率噪音，将按比例减少强度。
+         */
+        damping: boolean;
+        /**
          * Layers of noise that combine to produce final noise.
          *
          * 一层一层的噪声组合在一起产生最终的噪声。
@@ -17405,6 +17411,27 @@ declare namespace feng3d {
         set remapZ(v: MinMaxCurve);
         private _frequencyScale;
         private _strengthScale;
+        /**
+         * 绘制噪音到图片
+         *
+         * @param image 图片数据
+         */
+        drawImage(image: ImageData): void;
+        private _getDrawImageStrength;
+        /**
+         * 获取噪音值
+         *
+         * @param x
+         * @param y
+         */
+        private _getNoiseValue;
+        /**
+         * 获取单层噪音值
+         *
+         * @param x
+         * @param y
+         */
+        private _getNoiseValueBase;
     }
 }
 declare namespace feng3d {

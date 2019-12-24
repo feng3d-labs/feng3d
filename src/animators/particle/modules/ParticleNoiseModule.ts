@@ -247,15 +247,24 @@ namespace feng3d
          */
         drawImage(image: ImageData)
         {
+            var strength = this._getDrawImageStrength();
+            var strengthX = strength.x;
+            var strengthY = strength.y;
+            var strengthZ = strength.z;
+            //
             var cellSizeX = this._frequencyScale / this.frequency;
             var cellSizeY = this._frequencyScale / this.frequency;
-            var strength = this.strength * this._strengthScale;
-            var quality = this.quality;
-            var octaveCount = this.octaveCount;
-            var octaveScale = this.octaveScale;
-            var octaveMultiplier = this.octaveMultiplier;
+            //
+            strengthX *= this._strengthScale;
+            strengthY *= this._strengthScale;
+            strengthZ *= this._strengthScale;
 
-            if (this.damping) strength /= this.frequency;
+            if (this.damping)
+            {
+                strengthX /= this.frequency;
+                strengthY /= this.frequency;
+                strengthZ /= this.frequency;
+            }
 
             var data = image.data;
 
@@ -270,17 +279,22 @@ namespace feng3d
             {
                 for (var y = 0; y < imageHeight; y++)
                 {
-                    var value = getValue(x, y);
-                    for (var l = 1, ln = octaveCount; l < ln; l++)
-                    {
-                        var value0 = getValue(x * octaveScale, y * octaveScale);
-                        value += (value0 - value) * octaveMultiplier;
-                    }
+                    var xv = x / imageWidth / cellSizeX;
+                    var yv = y / imageHeight / cellSizeY
+
+                    var value = this._getNoiseValue(xv, yv);
+
                     // datas.push(value);
                     // if (min > value) min = value;
                     // if (max < value) max = value;
 
-                    value = (value * strength + 1) / 2 * 256;
+                    if (xv < 1 / 3)
+                        value = (value * strengthX + 1) / 2 * 256;
+                    else if (xv < 2 / 3)
+                        value = (value * strengthY + 1) / 2 * 256;
+                    else
+                        value = (value * strengthZ + 1) / 2 * 256;
+
                     var cell = (x + y * imageWidth) * 4;
                     data[cell] = data[cell + 1] = data[cell + 2] = Math.floor(value);
                     data[cell + 3] = 255; // alpha
@@ -288,22 +302,82 @@ namespace feng3d
             }
             // console.log(datas, min, max);
 
-            function getValue(x: number, y: number)
-            {
-                var value = 0;
+        }
 
-                if (quality == ParticleSystemNoiseQuality.Low)
-                {
-                    value = noise.perlin1(x / imageWidth / cellSizeX);
-                } else if (quality == ParticleSystemNoiseQuality.Medium)
-                {
-                    value = noise.perlin2(x / imageWidth / cellSizeX, y / imageHeight / cellSizeY);
-                } else if (quality == ParticleSystemNoiseQuality.High)
-                {
-                    value = noise.perlin3(x / imageWidth / cellSizeX, y / imageHeight / cellSizeY, 0);
-                }
-                return value;
+        private _getDrawImageStrength()
+        {
+            var strengthX = 1;
+            var strengthY = 1;
+            var strengthZ = 1;
+            if (this.separateAxes)
+            {
+                if (this.strengthX.mode == MinMaxCurveMode.Curve || this.strengthX.mode == MinMaxCurveMode.TwoCurves)
+                    strengthX = this.strengthX.curveMultiplier;
+                else if (this.strengthX.mode == MinMaxCurveMode.Constant)
+                    strengthX = this.strengthX.constant;
+                else if (this.strengthX.mode == MinMaxCurveMode.TwoConstants)
+                    strengthX = this.strengthX.constantMax;
+
+                if (this.strengthY.mode == MinMaxCurveMode.Curve || this.strengthY.mode == MinMaxCurveMode.TwoCurves)
+                    strengthY = this.strengthY.curveMultiplier;
+                else if (this.strengthY.mode == MinMaxCurveMode.Constant)
+                    strengthY = this.strengthY.constant;
+                else if (this.strengthY.mode == MinMaxCurveMode.TwoConstants)
+                    strengthY = this.strengthY.constantMax;
+
+                if (this.strengthZ.mode == MinMaxCurveMode.Curve || this.strengthZ.mode == MinMaxCurveMode.TwoCurves)
+                    strengthZ = this.strengthZ.curveMultiplier;
+                else if (this.strengthZ.mode == MinMaxCurveMode.Constant)
+                    strengthZ = this.strengthZ.constant;
+                else if (this.strengthZ.mode == MinMaxCurveMode.TwoConstants)
+                    strengthZ = this.strengthZ.constantMax;
+            } else
+            {
+                if (this.strength.mode == MinMaxCurveMode.Curve || this.strength.mode == MinMaxCurveMode.TwoCurves)
+                    strengthX = strengthY = strengthZ = this.strength.curveMultiplier;
+                else if (this.strength.mode == MinMaxCurveMode.Constant)
+                    strengthX = strengthY = strengthZ = this.strength.constant;
+                else if (this.strength.mode == MinMaxCurveMode.TwoConstants)
+                    strengthX = strengthY = strengthZ = this.strength.constantMax;
             }
+            return { x: strengthX, y: strengthY, z: strengthZ }
+        }
+
+        /**
+         * 获取噪音值
+         * 
+         * @param x 
+         * @param y 
+         */
+        private _getNoiseValue(x: number, y: number)
+        {
+            var value = this._getNoiseValueBase(x, y);
+            for (var l = 1, ln = this.octaveCount; l < ln; l++)
+            {
+                var value0 = this._getNoiseValueBase(x * this.octaveScale, y * this.octaveScale);
+                value += (value0 - value) * this.octaveMultiplier;
+            }
+            return value;
+        }
+
+        /**
+         * 获取单层噪音值
+         * 
+         * @param x 
+         * @param y 
+         */
+        private _getNoiseValueBase(x: number, y: number)
+        {
+            if (this.quality == ParticleSystemNoiseQuality.Low)
+            {
+                return noise.perlin1(x);
+            }
+            if (this.quality == ParticleSystemNoiseQuality.Medium)
+            {
+                return noise.perlin2(x, y);
+            }
+            // if (this.quality == ParticleSystemNoiseQuality.High)
+            return noise.perlin3(x, y, 0);
         }
 
     }
