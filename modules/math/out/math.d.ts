@@ -2607,6 +2607,13 @@ declare namespace feng3d {
          * 三角形2号点
          */
         p2: Vector3;
+        /**
+         * 构造三角形
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         constructor(p0?: Vector3, p1?: Vector3, p2?: Vector3);
         /**
          * 三角形三个点
@@ -2762,6 +2769,15 @@ declare namespace feng3d {
          * 克隆
          */
         clone(): Triangle3;
+        /**
+         * 判断指定点是否在三角形内
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3): boolean;
     }
 }
 declare namespace feng3d {

@@ -5429,6 +5429,13 @@ var feng3d;
      * 三角形
      */
     var Triangle3 = /** @class */ (function () {
+        /**
+         * 构造三角形
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         function Triangle3(p0, p1, p2) {
             if (p0 === void 0) { p0 = new feng3d.Vector3(); }
             if (p1 === void 0) { p1 = new feng3d.Vector3(); }
@@ -5860,6 +5867,17 @@ var feng3d;
          */
         Triangle3.prototype.clone = function () {
             return new Triangle3().copy(this);
+        };
+        /**
+         * 判断指定点是否在三角形内
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        Triangle3.containsPoint = function (p0, p1, p2, p) {
+            return new feng3d.Triangle3(p0, p1, p2).onWithPoint(p);
         };
         return Triangle3;
     }());

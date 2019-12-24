@@ -47,6 +47,13 @@ namespace feng3d
          */
         p2: Vector3;
 
+        /**
+         * 构造三角形
+         * 
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         constructor(p0 = new Vector3(), p1 = new Vector3(), p2 = new Vector3())
         {
             this.p0 = p0;
@@ -518,6 +525,19 @@ namespace feng3d
         clone()
         {
             return new Triangle3().copy(this);
+        }
+
+        /**
+         * 判断指定点是否在三角形内
+         * 
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3)
+        {
+            return new feng3d.Triangle3(p0, p1, p2).onWithPoint(p);
         }
     }
 }
