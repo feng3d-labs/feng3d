@@ -24606,53 +24606,54 @@ var feng3d;
          */
         GameObject.createPrimitive = function (type, param) {
             var g = new GameObject();
+            g.name = type;
             if (type == "Cube") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },] });
             }
             else if (type == "Plane") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },] });
             }
             else if (type == "Quad") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },] });
             }
             else if (type == "Cylinder") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },] });
             }
             else if (type == "Cone") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },] });
             }
             else if (type == "Torus") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },] });
             }
             else if (type == "Sphere") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },] });
             }
             else if (type == "Capsule") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },] });
             }
             else if (type == "Segment") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },] });
             }
             else if (type == "Terrain") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Terrain" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Terrain" },] });
             }
             else if (type == "Camera") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Camera" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Camera" },] });
             }
             else if (type == "Point light") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.PointLight" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.PointLight" },] });
             }
             else if (type == "Directional light") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.DirectionalLight" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.DirectionalLight" },] });
             }
             else if (type == "Spot light") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.SpotLight" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.SpotLight" },] });
             }
             else if (type == "Water") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Water" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Water" },] });
             }
             else if (type == "Particle System") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
             }
             feng3d.serialization.setValue(g, param);
             return g;
