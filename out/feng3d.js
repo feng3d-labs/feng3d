@@ -23850,7 +23850,7 @@ var feng3d;
                 if (this.parent)
                     this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
                 this._localToWorldMatrixInvalid = false;
-                this.dispatch("updateLocalToWorldMatrix");
+                this.dispatch("updateLocalToWorldMatrix", this);
                 console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             }
             return this._localToWorldMatrix;

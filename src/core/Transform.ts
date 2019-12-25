@@ -5,11 +5,11 @@ namespace feng3d
         /**
          * 变换矩阵变化
          */
-        transformChanged
+        transformChanged: Transform;
         /**
          * 
          */
-        updateLocalToWorldMatrix
+        updateLocalToWorldMatrix: Transform;
 
         /**
          * 场景矩阵变化
@@ -570,7 +570,7 @@ namespace feng3d
                 if (this.parent)
                     this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
                 this._localToWorldMatrixInvalid = false;
-                this.dispatch("updateLocalToWorldMatrix");
+                this.dispatch("updateLocalToWorldMatrix", this);
                 console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             }
             return this._localToWorldMatrix;

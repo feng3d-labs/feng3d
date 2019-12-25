@@ -11682,11 +11682,11 @@ declare namespace feng3d {
         /**
          * 变换矩阵变化
          */
-        transformChanged: any;
+        transformChanged: Transform;
         /**
          *
          */
-        updateLocalToWorldMatrix: any;
+        updateLocalToWorldMatrix: Transform;
         /**
          * 场景矩阵变化
          */
