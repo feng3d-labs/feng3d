@@ -11782,8 +11782,8 @@ declare namespace feng3d {
         /**
          * 本地变换矩阵
          */
-        get matrix3d(): Matrix4x4;
-        set matrix3d(v: Matrix4x4);
+        get matrix(): Matrix4x4;
+        set matrix(v: Matrix4x4);
         /**
          * 本地旋转矩阵
          */
@@ -11895,7 +11895,7 @@ declare namespace feng3d {
         private _scaleChanged;
         private _invalidateTransform;
         private _invalidateSceneTransform;
-        private _updateMatrix3D;
+        private _updateMatrix;
         private _updateLocalToWorldMatrix;
         private _updateWorldToLocalMatrix;
         private _updateITlocalToWorldMatrix;

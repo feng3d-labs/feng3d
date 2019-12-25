@@ -23491,7 +23491,7 @@ var feng3d;
              * 本地四元素旋转
              */
             get: function () {
-                this._orientation.fromMatrix(this.matrix3d);
+                this._orientation.fromMatrix(this.matrix);
                 return this._orientation;
             },
             set: function (value) {
@@ -23511,12 +23511,12 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "matrix3d", {
+        Object.defineProperty(Transform.prototype, "matrix", {
             /**
              * 本地变换矩阵
              */
             get: function () {
-                return this._updateMatrix3D();
+                return this._updateMatrix();
             },
             set: function (v) {
                 v.decompose(this._position, this._rotation, this._scale);
@@ -23544,7 +23544,7 @@ var feng3d;
             /**
              * 向前向量
              */
-            get: function () { return this.matrix3d.forward; },
+            get: function () { return this.matrix.forward; },
             enumerable: true,
             configurable: true
         });
@@ -23552,7 +23552,7 @@ var feng3d;
             /**
              * 向右向量
              */
-            get: function () { return this.matrix3d.right; },
+            get: function () { return this.matrix.right; },
             enumerable: true,
             configurable: true
         });
@@ -23560,7 +23560,7 @@ var feng3d;
             /**
              * 向上向量
              */
-            get: function () { return this.matrix3d.up; },
+            get: function () { return this.matrix.up; },
             enumerable: true,
             configurable: true
         });
@@ -23569,8 +23569,8 @@ var feng3d;
              * 向后向量
              */
             get: function () {
-                this.matrix3d.back;
-                var director = this.matrix3d.forward;
+                this.matrix.back;
+                var director = this.matrix.forward;
                 director.negate();
                 return director;
             },
@@ -23579,7 +23579,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "leftVector", {
             get: function () {
-                var director = this.matrix3d.left;
+                var director = this.matrix.left;
                 director.negate();
                 return director;
             },
@@ -23588,7 +23588,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "downVector", {
             get: function () {
-                var director = this.matrix3d.up;
+                var director = this.matrix.up;
                 director.negate();
                 return director;
             },
@@ -23623,7 +23623,7 @@ var feng3d;
         Transform.prototype.translateLocal = function (axis, distance) {
             var x = axis.x, y = axis.y, z = axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
-            var matrix3d = this.matrix3d.clone();
+            var matrix3d = this.matrix.clone();
             matrix3d.prependTranslation(x * len, y * len, z * len);
             var p = matrix3d.getPosition();
             this.x = p.x;
@@ -23683,7 +23683,7 @@ var feng3d;
          * @param upAxis    向上朝向
          */
         Transform.prototype.lookAt = function (target, upAxis) {
-            this._updateMatrix3D();
+            this._updateMatrix();
             this._matrix3d.lookAt(target, upAxis);
             this._matrix3d.decompose(this._position, this._rotation, this._scale);
             this._matrix3dInvalid = false;
@@ -23698,7 +23698,7 @@ var feng3d;
             set: function (value) {
                 value = value.clone();
                 this.parent && value.append(this.parent.worldToLocalMatrix);
-                this.matrix3d = value;
+                this.matrix = value;
             },
             enumerable: true,
             configurable: true
@@ -23837,7 +23837,7 @@ var feng3d;
                 }
             }
         };
-        Transform.prototype._updateMatrix3D = function () {
+        Transform.prototype._updateMatrix = function () {
             if (this._matrix3dInvalid) {
                 this._matrix3d.recompose(this._position, this._rotation, this._scale);
                 this._matrix3dInvalid = false;
@@ -23846,7 +23846,7 @@ var feng3d;
         };
         Transform.prototype._updateLocalToWorldMatrix = function () {
             if (this._localToWorldMatrixInvalid) {
-                this._localToWorldMatrix.copyFrom(this.matrix3d);
+                this._localToWorldMatrix.copyFrom(this.matrix);
                 if (this.parent)
                     this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
                 this._localToWorldMatrixInvalid = false;
@@ -37751,7 +37751,7 @@ var feng3d;
                     return globalMatrix3Ds[index];
                 var jointPose = joints[index];
                 var jointGameobject = jointGameobjects[index];
-                globalMatrix3Ds[index] = jointGameobject.transform.matrix3d.clone();
+                globalMatrix3Ds[index] = jointGameobject.transform.matrix.clone();
                 if (jointPose.parentIndex >= 0) {
                     var parentGlobalMatrix3d = globalMatrix3d(jointPose.parentIndex);
                     globalMatrix3Ds[index].append(parentGlobalMatrix3d);
@@ -37799,7 +37799,7 @@ var feng3d;
                 if (skeletonJoint.parentIndex != -1) {
                     matrix3D = matrix3D.clone().append(joints[skeletonJoint.parentIndex].invertMatrix3D);
                 }
-                transform.matrix3d = matrix3D;
+                transform.matrix = matrix3D;
                 transform.on("transformChanged", function () {
                     skeleton.invalidjoint(i);
                 });
