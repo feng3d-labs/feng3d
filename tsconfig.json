@@ -379,7 +379,7 @@
         //
         "src/ui/enums/UIRenderMode.ts",
         //
-        "src/ui/RectTransform.ts",
+        "src/ui/Transform2D.ts",
         "src/ui/Canvas.ts",
         "src/ui/Image.ts",
         //
