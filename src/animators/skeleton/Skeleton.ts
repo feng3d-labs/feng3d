@@ -25,16 +25,16 @@ namespace feng3d
 
         /** 骨骼全局矩阵 */
         @serialize
-        matrix3D: Matrix4x4;
+        matrix: Matrix4x4;
 
         children: number[] = [];
 
-        get invertMatrix3D()
+        get invertMatrix()
         {
-            if (!this._invertMatrix3D)
-                this._invertMatrix3D = this.matrix3D.clone().invert();
-            return this._invertMatrix3D;
+            if (!this._invertMatrix)
+                this._invertMatrix = this.matrix.clone().invert();
+            return this._invertMatrix;
         }
-        private _invertMatrix3D: Matrix4x4;
+        private _invertMatrix: Matrix4x4;
     }
 }

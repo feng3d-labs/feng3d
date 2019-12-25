@@ -38,8 +38,8 @@ namespace feng3d
         private jointGameObjectMap: { [jointname: string]: Transform };
         private _globalPropertiesInvalid: boolean;
         private _jointsInvalid: boolean[];
-        private _globalMatrix3DsInvalid: boolean[];
-        private globalMatrix3Ds: Matrix4x4[];
+        private _globalMatrixsInvalid: boolean[];
+        private globalMatrixs: Matrix4x4[];
         private _globalMatrices: Matrix4x4[];
 
         initSkeleton()
@@ -52,16 +52,16 @@ namespace feng3d
             //
             this._globalPropertiesInvalid = true;
             this._jointsInvalid = [];
-            this._globalMatrix3DsInvalid = [];
-            this.globalMatrix3Ds = [];
+            this._globalMatrixsInvalid = [];
+            this.globalMatrixs = [];
             this._globalMatrices = [];
             //
             var jointNum = this.joints.length;
             for (var i = 0; i < jointNum; i++)
             {
                 this._jointsInvalid[i] = true;
-                this._globalMatrix3DsInvalid[i] = true;
-                this.globalMatrix3Ds[i] = new Matrix4x4();
+                this._globalMatrixsInvalid[i] = true;
+                this.globalMatrixs[i] = new Matrix4x4();
                 this._globalMatrices[i] = new Matrix4x4();
             }
 
@@ -75,8 +75,8 @@ namespace feng3d
             //姿势变换矩阵
             var joints: SkeletonJoint[] = this.joints;
             var jointGameobjects = this.jointGameobjects;
-            var globalMatrix3Ds = this.globalMatrix3Ds;
-            var _globalMatrix3DsInvalid = this._globalMatrix3DsInvalid;
+            var globalMatrixs = this.globalMatrixs;
+            var _globalMatrixsInvalid = this._globalMatrixsInvalid;
             //遍历每个关节
             for (var i = 0; i < joints.length; ++i)
             {
@@ -84,30 +84,30 @@ namespace feng3d
                     continue;
 
                 this._globalMatrices[i]
-                    .copyFrom(globalMatrix3d(i))
-                    .prepend(joints[i].invertMatrix3D);
+                    .copyFrom(globalMatrix(i))
+                    .prepend(joints[i].invertMatrix);
 
                 this._jointsInvalid[i] = false;
             }
 
-            function globalMatrix3d(index: number)
+            function globalMatrix(index: number)
             {
-                if (!_globalMatrix3DsInvalid[index])
-                    return globalMatrix3Ds[index];
+                if (!_globalMatrixsInvalid[index])
+                    return globalMatrixs[index];
 
                 var jointPose = joints[index];
 
                 var jointGameobject = jointGameobjects[index];
-                globalMatrix3Ds[index] = jointGameobject.transform.matrix.clone();
+                globalMatrixs[index] = jointGameobject.transform.matrix.clone();
                 if (jointPose.parentIndex >= 0)
                 {
-                    var parentGlobalMatrix3d = globalMatrix3d(jointPose.parentIndex);
-                    globalMatrix3Ds[index].append(parentGlobalMatrix3d);
+                    var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
+                    globalMatrixs[index].append(parentGlobalMatrix);
                 }
 
-                _globalMatrix3DsInvalid[index] = false;
+                _globalMatrixsInvalid[index] = false;
 
-                return globalMatrix3Ds[index];
+                return globalMatrixs[index];
             }
         }
 
@@ -115,7 +115,7 @@ namespace feng3d
         {
             this._globalPropertiesInvalid = true;
             this._jointsInvalid[jointIndex] = true;
-            this._globalMatrix3DsInvalid[jointIndex] = true;
+            this._globalMatrixsInvalid[jointIndex] = true;
 
             this.joints[jointIndex].children.forEach(element =>
             {
@@ -161,12 +161,12 @@ namespace feng3d
 
                 var transform = jointGameobject.transform;
 
-                var matrix3D = skeletonJoint.matrix3D;
+                var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1)
                 {
-                    matrix3D = matrix3D.clone().append(joints[skeletonJoint.parentIndex].invertMatrix3D);
+                    matrix = matrix.clone().append(joints[skeletonJoint.parentIndex].invertMatrix);
                 }
-                transform.matrix = matrix3D;
+                transform.matrix = matrix;
 
                 transform.on("transformChanged", () =>
                 {

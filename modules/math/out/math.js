@@ -3502,7 +3502,7 @@ var feng3d;
          * @param q 四元素
          */
         Matrix4x4.prototype.fromQuaternion = function (q) {
-            q.toMatrix3D(this);
+            q.toMatrix(this);
             return this;
         };
         /**
@@ -3652,11 +3652,11 @@ var feng3d;
         };
         /**
          * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         * @param   source      要从中复制数据的 Matrix4x4 对象。
          */
-        Matrix4x4.prototype.copyFrom = function (sourceMatrix3D) {
+        Matrix4x4.prototype.copyFrom = function (source) {
             for (var i = 0; i < 16; i++) {
-                this.rawData[i] = sourceMatrix3D.rawData[i];
+                this.rawData[i] = source.rawData[i];
             }
             return this;
         };
@@ -3731,7 +3731,7 @@ var feng3d;
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        Matrix4x4.prototype.copyToMatrix3D = function (dest) {
+        Matrix4x4.prototype.copyToMatrix = function (dest) {
             dest.rawData = this.rawData.concat();
             return this;
         };
@@ -4176,9 +4176,9 @@ var feng3d;
         };
         Matrix4x4.prototype.transformRotation = function (vin, vout) {
             //转换旋转
-            var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
-            rotationMatrix3d.append(this);
-            var newrotation = rotationMatrix3d.decompose()[1];
+            var rotationMatrix = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
+            rotationMatrix.append(this);
+            var newrotation = rotationMatrix.decompose()[1];
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -4217,9 +4217,9 @@ var feng3d;
         /**
          * 比较矩阵是否相等
          */
-        Matrix4x4.prototype.equals = function (matrix3D, precision) {
+        Matrix4x4.prototype.equals = function (matrix, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
-            var r2 = matrix3D.rawData;
+            var r2 = matrix.rawData;
             for (var i = 0; i < 16; ++i) {
                 if (!Math.equals(this.rawData[i] - r2[i], 0, precision))
                     return false;
@@ -4811,7 +4811,7 @@ var feng3d;
          *
          * @param target
          */
-        Quaternion.prototype.toMatrix3D = function (target) {
+        Quaternion.prototype.toMatrix = function (target) {
             if (target === void 0) { target = new feng3d.Matrix4x4(); }
             var rawData = target.rawData;
             var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
@@ -6039,7 +6039,7 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        Box3.prototype.applyMatrix3D = function (mat) {
+        Box3.prototype.applyMatrix = function (mat) {
             this.fromPoints(this.toPoints().map(function (v) {
                 return v.applyMatrix4x4(mat);
             }));
@@ -6049,9 +6049,9 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        Box3.prototype.applyMatrix3DTo = function (mat, out) {
+        Box3.prototype.applyMatrixTo = function (mat, out) {
             if (out === void 0) { out = new Box3(); }
-            return out.copy(this).applyMatrix3D(mat);
+            return out.copy(this).applyMatrix(mat);
         };
         /**
          *

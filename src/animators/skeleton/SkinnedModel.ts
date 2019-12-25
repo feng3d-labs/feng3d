@@ -13,7 +13,7 @@ namespace feng3d
         skinSkeleton: SkinSkeleton;
 
         @serialize
-        initMatrix3d: Matrix4x4;
+        initMatrix: Matrix4x4;
 
         /**
 		 * 创建一个骨骼动画类
@@ -101,9 +101,9 @@ namespace feng3d
                 for (var i = joints.length - 1; i >= 0; i--)
                 {
                     skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]].clone();
-                    if (this.initMatrix3d)
+                    if (this.initMatrix)
                     {
-                        skeletonGlobalMatriices[i].prepend(this.initMatrix3d);
+                        skeletonGlobalMatriices[i].prepend(this.initMatrix);
                     }
                 }
             } else

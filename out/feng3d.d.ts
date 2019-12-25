@@ -4686,9 +4686,9 @@ declare namespace feng3d {
         copyColumnToVector4(column: number, vector3D?: Vector4): Vector4;
         /**
          * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         * @param   source      要从中复制数据的 Matrix4x4 对象。
          */
-        copyFrom(sourceMatrix3D: Matrix4x4): this;
+        copyFrom(source: Matrix4x4): this;
         /**
          * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix4x4 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
          * @param   vector      要从中复制数据的 Vector 对象。
@@ -4719,7 +4719,7 @@ declare namespace feng3d {
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        copyToMatrix3D(dest: Matrix4x4): this;
+        copyToMatrix(dest: Matrix4x4): this;
         /**
          * 通过位移旋转缩放重组矩阵
          *
@@ -4821,7 +4821,7 @@ declare namespace feng3d {
         /**
          * 比较矩阵是否相等
          */
-        equals(matrix3D: Matrix4x4, precision?: number): boolean;
+        equals(matrix: Matrix4x4, precision?: number): boolean;
         /**
          * 看向目标位置
          * @param target    目标位置
@@ -5038,7 +5038,7 @@ declare namespace feng3d {
          *
          * @param target
          */
-        toMatrix3D(target?: Matrix4x4): Matrix4x4;
+        toMatrix(target?: Matrix4x4): Matrix4x4;
         /**
          * 从矩阵初始化四元素
          *
@@ -5609,12 +5609,12 @@ declare namespace feng3d {
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3D(mat: Matrix4x4): this;
+        applyMatrix(mat: Matrix4x4): this;
         /**
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3DTo(mat: Matrix4x4, out?: Box3): Box3;
+        applyMatrixTo(mat: Matrix4x4, out?: Box3): Box3;
         /**
          *
          */
@@ -11877,10 +11877,10 @@ declare namespace feng3d {
         private readonly _rotation;
         private readonly _orientation;
         private readonly _scale;
-        protected readonly _matrix3d: Matrix4x4;
-        protected _matrix3dInvalid: boolean;
-        protected readonly _rotationMatrix3d: Matrix4x4;
-        protected _rotationMatrix3dInvalid: boolean;
+        protected readonly _matrix: Matrix4x4;
+        protected _matrixInvalid: boolean;
+        protected readonly _rotationMatrix: Matrix4x4;
+        protected _rotationMatrixInvalid: boolean;
         protected readonly _localToWorldMatrix: Matrix4x4;
         protected _localToWorldMatrixInvalid: boolean;
         protected readonly _ITlocalToWorldMatrix: Matrix4x4;
@@ -17632,10 +17632,10 @@ declare namespace feng3d {
         /** 关节名字 */
         name: string;
         /** 骨骼全局矩阵 */
-        matrix3D: Matrix4x4;
+        matrix: Matrix4x4;
         children: number[];
-        get invertMatrix3D(): Matrix4x4;
-        private _invertMatrix3D;
+        get invertMatrix(): Matrix4x4;
+        private _invertMatrix;
     }
 }
 declare namespace feng3d {
@@ -17656,8 +17656,8 @@ declare namespace feng3d {
         private jointGameObjectMap;
         private _globalPropertiesInvalid;
         private _jointsInvalid;
-        private _globalMatrix3DsInvalid;
-        private globalMatrix3Ds;
+        private _globalMatrixsInvalid;
+        private globalMatrixs;
         private _globalMatrices;
         initSkeleton(): void;
         /**
@@ -17676,7 +17676,7 @@ declare namespace feng3d {
         __class__: "feng3d.SkinnedModel";
         get single(): boolean;
         skinSkeleton: SkinSkeleton;
-        initMatrix3d: Matrix4x4;
+        initMatrix: Matrix4x4;
         /**
          * 创建一个骨骼动画类
          */
@@ -18376,7 +18376,7 @@ declare namespace feng3d.war3 {
         buildAnimationclip(animationclip: AnimationClip, __chache__: {
             [key: string]: PropertyClip;
         }, start: number, end: number): void;
-        private getMatrix3D;
+        private getMatrix;
     }
     /**
      * 骨骼的位移信息

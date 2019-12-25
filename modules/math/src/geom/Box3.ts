@@ -186,7 +186,7 @@ namespace feng3d
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3D(mat: Matrix4x4)
+        applyMatrix(mat: Matrix4x4)
         {
             this.fromPoints(this.toPoints().map((v) =>
             {
@@ -199,9 +199,9 @@ namespace feng3d
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3DTo(mat: Matrix4x4, out = new Box3())
+        applyMatrixTo(mat: Matrix4x4, out = new Box3())
         {
-            return out.copy(this).applyMatrix3D(mat);
+            return out.copy(this).applyMatrix(mat);
         }
 
         /**
