@@ -24686,13 +24686,13 @@ var feng3d;
                 event.preventDefault();
                 _this.contextLost = true;
                 // #ifdef DEBUG
-                console.log('pc.GraphicsDevice: WebGL context lost.');
+                console.log('GraphicsDevice: WebGL context lost.');
                 // #endif
             }, false);
             canvas.addEventListener("webglcontextrestored", function () {
                 _this.contextLost = false;
                 // #ifdef DEBUG
-                console.log('pc.GraphicsDevice: WebGL context restored.');
+                console.log('GraphicsDevice: WebGL context restored.');
                 // #endif
             }, false);
             _this.scene = scene || feng3d.serialization.setValue(new feng3d.GameObject(), { name: "scene" }).addComponent(feng3d.Scene);

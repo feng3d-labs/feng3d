@@ -108,7 +108,7 @@ namespace feng3d
                 event.preventDefault();
                 this.contextLost = true;
                 // #ifdef DEBUG
-                console.log('pc.GraphicsDevice: WebGL context lost.');
+                console.log('GraphicsDevice: WebGL context lost.');
                 // #endif
             }, false);
 
@@ -116,7 +116,7 @@ namespace feng3d
             {
                 this.contextLost = false;
                 // #ifdef DEBUG
-                console.log('pc.GraphicsDevice: WebGL context restored.');
+                console.log('GraphicsDevice: WebGL context restored.');
                 // #endif
             }, false);
 
