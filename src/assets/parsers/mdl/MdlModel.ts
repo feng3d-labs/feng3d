@@ -176,13 +176,13 @@ namespace feng3d.war3
 			var pRotation = this.Rotation.getRotation(keyFrameTime);
 			var pTranslation = this.Translation.getTranslation(keyFrameTime);
 
-			var matrix3D = this.c_transformation;
-			matrix3D.appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix3D());
+			var matrix = this.c_transformation;
+			matrix.appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix());
 			//设置旋转缩放中心
-			matrix3D.prependTranslation(-this.pivotPoint.x, - this.pivotPoint.y, - this.pivotPoint.z);
-			matrix3D.appendTranslation(this.pivotPoint.x, this.pivotPoint.y, this.pivotPoint.z);
+			matrix.prependTranslation(-this.pivotPoint.x, - this.pivotPoint.y, - this.pivotPoint.z);
+			matrix.appendTranslation(this.pivotPoint.x, this.pivotPoint.y, this.pivotPoint.z);
 			//平移
-			matrix3D.appendTranslation(pTranslation.x, pTranslation.y, pTranslation.z)
+			matrix.appendTranslation(pTranslation.x, pTranslation.y, pTranslation.z)
 			//
 		}
 
@@ -257,17 +257,17 @@ namespace feng3d.war3
 
 		}
 
-		private getMatrix3D(time: number)
+		private getMatrix(time: number)
 		{
 			var pScaling = this.Scaling.getScaling(time);
 			var pRotation = this.Rotation.getRotation(time);
 			var pTranslation = this.Translation.getTranslation(time);
 
-			var matrix3D = new Matrix4x4().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix3D());
+			var matrix = new Matrix4x4().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix());
 			//平移
-			matrix3D.appendTranslation(pTranslation.x + this.pivotPoint.x, pTranslation.y + this.pivotPoint.y, pTranslation.z + this.pivotPoint.z)
+			matrix.appendTranslation(pTranslation.x + this.pivotPoint.x, pTranslation.y + this.pivotPoint.y, pTranslation.z + this.pivotPoint.z)
 			//
-			return matrix3D;
+			return matrix;
 		}
 	}
 

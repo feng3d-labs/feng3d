@@ -171,7 +171,7 @@ namespace feng3d
 		 */
         private _updateWorldBounds()
         {
-            this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
+            this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.transform.localToWorldMatrix);
         }
 
         /**

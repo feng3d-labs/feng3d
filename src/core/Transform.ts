@@ -5,11 +5,11 @@ namespace feng3d
         /**
          * 变换矩阵变化
          */
-        transformChanged
+        transformChanged: Transform;
         /**
          * 
          */
-        updateLocalToWorldMatrix
+        updateLocalToWorldMatrix: Transform;
 
         /**
          * 场景矩阵变化
@@ -148,7 +148,7 @@ namespace feng3d
          */
         get orientation()
         {
-            this._orientation.fromMatrix(this.matrix3d);
+            this._orientation.fromMatrix(this.matrix);
             return this._orientation;
         }
 
@@ -169,16 +169,16 @@ namespace feng3d
         /**
          * 本地变换矩阵
          */
-        get matrix3d(): Matrix4x4
+        get matrix()
         {
-            return this._updateMatrix3D();
+            return this._updateMatrix();
         }
 
-        set matrix3d(v: Matrix4x4)
+        set matrix(v)
         {
             v.decompose(this._position, this._rotation, this._scale);
-            this._matrix3d.copyRawDataFrom(v.rawData);
-            this._matrix3dInvalid = false;
+            this._matrix.copyRawDataFrom(v.rawData);
+            this._matrixInvalid = false;
         }
 
         /**
@@ -186,51 +186,51 @@ namespace feng3d
          */
         get rotationMatrix()
         {
-            if (this._rotationMatrix3dInvalid)
+            if (this._rotationMatrixInvalid)
             {
-                this._rotationMatrix3d.setRotation(this._rotation);
-                this._rotationMatrix3dInvalid = false;
+                this._rotationMatrix.setRotation(this._rotation);
+                this._rotationMatrixInvalid = false;
             }
-            return this._rotationMatrix3d;
+            return this._rotationMatrix;
         }
 
         /**
          * 向前向量
          */
-        get forwardVector() { return this.matrix3d.forward; }
+        get forwardVector() { return this.matrix.forward; }
 
         /**
          * 向右向量
          */
-        get rightVector() { return this.matrix3d.right; }
+        get rightVector() { return this.matrix.right; }
 
         /**
          * 向上向量
          */
-        get upVector() { return this.matrix3d.up; }
+        get upVector() { return this.matrix.up; }
 
         /**
          * 向后向量
          */
         get backVector()
         {
-            this.matrix3d.back
+            this.matrix.back
 
-            var director: Vector3 = this.matrix3d.forward;
+            var director = this.matrix.forward;
             director.negate();
             return director;
         }
 
-        get leftVector(): Vector3
+        get leftVector()
         {
-            var director: Vector3 = this.matrix3d.left;
+            var director = this.matrix.left;
             director.negate();
             return director;
         }
 
-        get downVector(): Vector3
+        get downVector()
         {
-            var director: Vector3 = this.matrix3d.up;
+            var director = this.matrix.up;
             director.negate();
             return director;
         }
@@ -267,7 +267,7 @@ namespace feng3d
 
         translate(axis: Vector3, distance: number)
         {
-            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var x = axis.x, y = axis.y, z = axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
             this.x += x * len;
             this.y += y * len;
@@ -276,11 +276,11 @@ namespace feng3d
 
         translateLocal(axis: Vector3, distance: number)
         {
-            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var x = axis.x, y = axis.y, z = axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
-            var matrix3d = this.matrix3d.clone();
-            matrix3d.prependTranslation(x * len, y * len, z * len);
-            var p = matrix3d.getPosition();
+            var matrix = this.matrix.clone();
+            matrix.prependTranslation(x * len, y * len, z * len);
+            var p = matrix.getPosition();
             this.x = p.x;
             this.y = p.y;
             this.z = p.z;
@@ -317,13 +317,13 @@ namespace feng3d
         rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void
         {
             //转换位移
-            var positionMatrix3d = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
-            positionMatrix3d.appendRotation(axis, angle, pivotPoint);
-            this.position = positionMatrix3d.getPosition();
+            var positionMatrix = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
+            positionMatrix.appendRotation(axis, angle, pivotPoint);
+            this.position = positionMatrix.getPosition();
             //转换旋转
-            var rotationMatrix3d = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
-            rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
-            var newrotation = rotationMatrix3d.decompose()[1];
+            var rotationMatrix = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
+            rotationMatrix.appendRotation(axis, angle, pivotPoint);
+            var newrotation = rotationMatrix.decompose()[1];
             var v = Math.round((newrotation.x - this.rx) / 180);
             if (v % 2 != 0)
             {
@@ -351,25 +351,25 @@ namespace feng3d
          */
         lookAt(target: Vector3, upAxis?: Vector3)
         {
-            this._updateMatrix3D();
-            this._matrix3d.lookAt(target, upAxis);
-            this._matrix3d.decompose(this._position, this._rotation, this._scale);
-            this._matrix3dInvalid = false;
+            this._updateMatrix();
+            this._matrix.lookAt(target, upAxis);
+            this._matrix.decompose(this._position, this._rotation, this._scale);
+            this._matrixInvalid = false;
         }
 
         /**
          * 将一个点从局部空间变换到世界空间的矩阵。
          */
-        get localToWorldMatrix(): Matrix4x4
+        get localToWorldMatrix()
         {
             return this._updateLocalToWorldMatrix();
         }
 
-        set localToWorldMatrix(value: Matrix4x4)
+        set localToWorldMatrix(value)
         {
             value = value.clone();
             this.parent && value.append(this.parent.worldToLocalMatrix);
-            this.matrix3d = value;
+            this.matrix = value;
         }
 
         /**
@@ -383,7 +383,7 @@ namespace feng3d
         /**
          * 将一个点从世界空间转换为局部空间的矩阵。
          */
-        get worldToLocalMatrix(): Matrix4x4
+        get worldToLocalMatrix()
         {
             return this._updateWorldToLocalMatrix();
         }
@@ -407,8 +407,8 @@ namespace feng3d
         {
             if (!this.parent)
                 return direction.clone();
-            var matrix3d = this.parent.localToWorldRotationMatrix;
-            direction = matrix3d.transformVector(direction);
+            var matrix = this.parent.localToWorldRotationMatrix;
+            direction = matrix.transformVector(direction);
             return direction;
         }
 
@@ -419,8 +419,8 @@ namespace feng3d
         {
             if (!this.parent)
                 return position.clone();
-            var matrix3d = this.parent.localToWorldMatrix;
-            position = matrix3d.transformVector(position);
+            var matrix = this.parent.localToWorldMatrix;
+            position = matrix.transformVector(position);
             return position;
         }
 
@@ -431,8 +431,8 @@ namespace feng3d
         {
             if (!this.parent)
                 return vector.clone();
-            var matrix3d = this.parent.localToWorldMatrix;
-            vector = matrix3d.deltaTransformVector(vector);
+            var matrix = this.parent.localToWorldMatrix;
+            vector = matrix.deltaTransformVector(vector);
             return vector;
         }
 
@@ -443,8 +443,8 @@ namespace feng3d
         {
             if (!this.parent)
                 return direction.clone();
-            var matrix3d = this.parent.localToWorldRotationMatrix.clone().invert();
-            direction = matrix3d.transformVector(direction);
+            var matrix = this.parent.localToWorldRotationMatrix.clone().invert();
+            direction = matrix.transformVector(direction);
             return direction;
         }
 
@@ -455,8 +455,8 @@ namespace feng3d
         {
             if (!this.parent)
                 return position.clone();
-            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
-            position = matrix3d.transformVector(position);
+            var matrix = this.parent.localToWorldMatrix.clone().invert();
+            position = matrix.transformVector(position);
             return position;
         }
 
@@ -467,8 +467,8 @@ namespace feng3d
         {
             if (!this.parent)
                 return vector.clone();
-            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
-            vector = matrix3d.deltaTransformVector(vector);
+            var matrix = this.parent.localToWorldMatrix.clone().invert();
+            vector = matrix.deltaTransformVector(vector);
             return vector;
         }
 
@@ -482,11 +482,11 @@ namespace feng3d
         private readonly _orientation = new Quaternion();
         private readonly _scale = new Vector3(1, 1, 1);
 
-        protected readonly _matrix3d = new Matrix4x4();
-        protected _matrix3dInvalid = false;
+        protected readonly _matrix = new Matrix4x4();
+        protected _matrixInvalid = false;
 
-        protected readonly _rotationMatrix3d = new Matrix4x4();
-        protected _rotationMatrix3dInvalid = false;
+        protected readonly _rotationMatrix = new Matrix4x4();
+        protected _rotationMatrixInvalid = false;
 
         protected readonly _localToWorldMatrix = new Matrix4x4();
         protected _localToWorldMatrixInvalid = false;
@@ -513,7 +513,7 @@ namespace feng3d
             if (!Math.equals(object[property], oldvalue))
             {
                 this._invalidateTransform();
-                this._rotationMatrix3dInvalid = true;
+                this._rotationMatrixInvalid = true;
             }
         }
 
@@ -525,8 +525,8 @@ namespace feng3d
 
         private _invalidateTransform()
         {
-            if (!this._matrix3dInvalid)
-                this._matrix3dInvalid = true;
+            if (!this._matrixInvalid)
+                this._matrixInvalid = true;
 
             this.dispatch("transformChanged", this);
             this._invalidateSceneTransform();
@@ -552,25 +552,25 @@ namespace feng3d
             }
         }
 
-        private _updateMatrix3D()
+        private _updateMatrix()
         {
-            if (this._matrix3dInvalid)
+            if (this._matrixInvalid)
             {
-                this._matrix3d.recompose(this._position, this._rotation, this._scale);
-                this._matrix3dInvalid = false;
+                this._matrix.recompose(this._position, this._rotation, this._scale);
+                this._matrixInvalid = false;
             }
-            return this._matrix3d;
+            return this._matrix;
         }
 
         private _updateLocalToWorldMatrix()
         {
             if (this._localToWorldMatrixInvalid)
             {
-                this._localToWorldMatrix.copyFrom(this.matrix3d);
+                this._localToWorldMatrix.copyFrom(this.matrix);
                 if (this.parent)
                     this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
                 this._localToWorldMatrixInvalid = false;
-                this.dispatch("updateLocalToWorldMatrix");
+                this.dispatch("updateLocalToWorldMatrix", this);
                 console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             }
             return this._localToWorldMatrix;

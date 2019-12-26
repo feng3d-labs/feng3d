@@ -8342,7 +8342,7 @@ var feng3d;
          * @param q 四元素
          */
         Matrix4x4.prototype.fromQuaternion = function (q) {
-            q.toMatrix3D(this);
+            q.toMatrix(this);
             return this;
         };
         /**
@@ -8492,11 +8492,11 @@ var feng3d;
         };
         /**
          * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         * @param   source      要从中复制数据的 Matrix4x4 对象。
          */
-        Matrix4x4.prototype.copyFrom = function (sourceMatrix3D) {
+        Matrix4x4.prototype.copyFrom = function (source) {
             for (var i = 0; i < 16; i++) {
-                this.rawData[i] = sourceMatrix3D.rawData[i];
+                this.rawData[i] = source.rawData[i];
             }
             return this;
         };
@@ -8571,7 +8571,7 @@ var feng3d;
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        Matrix4x4.prototype.copyToMatrix3D = function (dest) {
+        Matrix4x4.prototype.copyToMatrix = function (dest) {
             dest.rawData = this.rawData.concat();
             return this;
         };
@@ -9016,9 +9016,9 @@ var feng3d;
         };
         Matrix4x4.prototype.transformRotation = function (vin, vout) {
             //转换旋转
-            var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
-            rotationMatrix3d.append(this);
-            var newrotation = rotationMatrix3d.decompose()[1];
+            var rotationMatrix = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
+            rotationMatrix.append(this);
+            var newrotation = rotationMatrix.decompose()[1];
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -9057,9 +9057,9 @@ var feng3d;
         /**
          * 比较矩阵是否相等
          */
-        Matrix4x4.prototype.equals = function (matrix3D, precision) {
+        Matrix4x4.prototype.equals = function (matrix, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
-            var r2 = matrix3D.rawData;
+            var r2 = matrix.rawData;
             for (var i = 0; i < 16; ++i) {
                 if (!Math.equals(this.rawData[i] - r2[i], 0, precision))
                     return false;
@@ -9651,7 +9651,7 @@ var feng3d;
          *
          * @param target
          */
-        Quaternion.prototype.toMatrix3D = function (target) {
+        Quaternion.prototype.toMatrix = function (target) {
             if (target === void 0) { target = new feng3d.Matrix4x4(); }
             var rawData = target.rawData;
             var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
@@ -10078,6 +10078,18 @@ var feng3d;
             return new Segment3(feng3d.Vector3.random(), feng3d.Vector3.random());
         };
         /**
+         * 线段长度
+         */
+        Segment3.prototype.getLength = function () {
+            return Math.sqrt(this.getLengthSquared());
+        };
+        /**
+         * 线段长度的平方
+         */
+        Segment3.prototype.getLengthSquared = function () {
+            return this.p0.distanceSquared(this.p1);
+        };
+        /**
          * 获取线段所在直线
          */
         Segment3.prototype.getLine = function (line) {
@@ -10257,6 +10269,13 @@ var feng3d;
      * 三角形
      */
     var Triangle3 = /** @class */ (function () {
+        /**
+         * 构造三角形
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         function Triangle3(p0, p1, p2) {
             if (p0 === void 0) { p0 = new feng3d.Vector3(); }
             if (p1 === void 0) { p1 = new feng3d.Vector3(); }
@@ -10470,14 +10489,17 @@ var feng3d;
         Triangle3.prototype.onWithPoint = function (p, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             var plane3d = this.getPlane3d();
+            // 排除不在平面上的点
             if (plane3d.classifyPoint(p, precision) != feng3d.PlaneClassification.INTERSECT)
                 return false;
+            // 判断在三边上的点
             if (feng3d.Segment3.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
                 return true;
             if (feng3d.Segment3.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
                 return true;
             if (feng3d.Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
+            // 如果指定点与三角形任意两个点组成的三角形与三角形不同向时，点不在三角形上。
             var n = this.getNormal();
             if (new Triangle3(this.p0, this.p1, p).getNormal().dot(n) < 0)
                 return false;
@@ -10686,6 +10708,17 @@ var feng3d;
         Triangle3.prototype.clone = function () {
             return new Triangle3().copy(this);
         };
+        /**
+         * 判断指定点是否在三角形内
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        Triangle3.containsPoint = function (p0, p1, p2, p) {
+            return new feng3d.Triangle3(p0, p1, p2).onWithPoint(p);
+        };
         return Triangle3;
     }());
     feng3d.Triangle3 = Triangle3;
@@ -10846,7 +10879,7 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        Box3.prototype.applyMatrix3D = function (mat) {
+        Box3.prototype.applyMatrix = function (mat) {
             this.fromPoints(this.toPoints().map(function (v) {
                 return v.applyMatrix4x4(mat);
             }));
@@ -10856,9 +10889,9 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        Box3.prototype.applyMatrix3DTo = function (mat, out) {
+        Box3.prototype.applyMatrixTo = function (mat, out) {
             if (out === void 0) { out = new Box3(); }
-            return out.copy(this).applyMatrix3D(mat);
+            return out.copy(this).applyMatrix(mat);
         };
         /**
          *
@@ -23306,10 +23339,10 @@ var feng3d;
             _this._rotation = new feng3d.Vector3();
             _this._orientation = new feng3d.Quaternion();
             _this._scale = new feng3d.Vector3(1, 1, 1);
-            _this._matrix3d = new feng3d.Matrix4x4();
-            _this._matrix3dInvalid = false;
-            _this._rotationMatrix3d = new feng3d.Matrix4x4();
-            _this._rotationMatrix3dInvalid = false;
+            _this._matrix = new feng3d.Matrix4x4();
+            _this._matrixInvalid = false;
+            _this._rotationMatrix = new feng3d.Matrix4x4();
+            _this._rotationMatrixInvalid = false;
             _this._localToWorldMatrix = new feng3d.Matrix4x4();
             _this._localToWorldMatrixInvalid = false;
             _this._ITlocalToWorldMatrix = new feng3d.Matrix4x4();
@@ -23458,7 +23491,7 @@ var feng3d;
              * 本地四元素旋转
              */
             get: function () {
-                this._orientation.fromMatrix(this.matrix3d);
+                this._orientation.fromMatrix(this.matrix);
                 return this._orientation;
             },
             set: function (value) {
@@ -23478,17 +23511,17 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "matrix3d", {
+        Object.defineProperty(Transform.prototype, "matrix", {
             /**
              * 本地变换矩阵
              */
             get: function () {
-                return this._updateMatrix3D();
+                return this._updateMatrix();
             },
             set: function (v) {
                 v.decompose(this._position, this._rotation, this._scale);
-                this._matrix3d.copyRawDataFrom(v.rawData);
-                this._matrix3dInvalid = false;
+                this._matrix.copyRawDataFrom(v.rawData);
+                this._matrixInvalid = false;
             },
             enumerable: true,
             configurable: true
@@ -23498,11 +23531,11 @@ var feng3d;
              * 本地旋转矩阵
              */
             get: function () {
-                if (this._rotationMatrix3dInvalid) {
-                    this._rotationMatrix3d.setRotation(this._rotation);
-                    this._rotationMatrix3dInvalid = false;
+                if (this._rotationMatrixInvalid) {
+                    this._rotationMatrix.setRotation(this._rotation);
+                    this._rotationMatrixInvalid = false;
                 }
-                return this._rotationMatrix3d;
+                return this._rotationMatrix;
             },
             enumerable: true,
             configurable: true
@@ -23511,7 +23544,7 @@ var feng3d;
             /**
              * 向前向量
              */
-            get: function () { return this.matrix3d.forward; },
+            get: function () { return this.matrix.forward; },
             enumerable: true,
             configurable: true
         });
@@ -23519,7 +23552,7 @@ var feng3d;
             /**
              * 向右向量
              */
-            get: function () { return this.matrix3d.right; },
+            get: function () { return this.matrix.right; },
             enumerable: true,
             configurable: true
         });
@@ -23527,7 +23560,7 @@ var feng3d;
             /**
              * 向上向量
              */
-            get: function () { return this.matrix3d.up; },
+            get: function () { return this.matrix.up; },
             enumerable: true,
             configurable: true
         });
@@ -23536,8 +23569,8 @@ var feng3d;
              * 向后向量
              */
             get: function () {
-                this.matrix3d.back;
-                var director = this.matrix3d.forward;
+                this.matrix.back;
+                var director = this.matrix.forward;
                 director.negate();
                 return director;
             },
@@ -23546,7 +23579,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "leftVector", {
             get: function () {
-                var director = this.matrix3d.left;
+                var director = this.matrix.left;
                 director.negate();
                 return director;
             },
@@ -23555,7 +23588,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "downVector", {
             get: function () {
-                var director = this.matrix3d.up;
+                var director = this.matrix.up;
                 director.negate();
                 return director;
             },
@@ -23590,9 +23623,9 @@ var feng3d;
         Transform.prototype.translateLocal = function (axis, distance) {
             var x = axis.x, y = axis.y, z = axis.z;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
-            var matrix3d = this.matrix3d.clone();
-            matrix3d.prependTranslation(x * len, y * len, z * len);
-            var p = matrix3d.getPosition();
+            var matrix = this.matrix.clone();
+            matrix.prependTranslation(x * len, y * len, z * len);
+            var p = matrix.getPosition();
             this.x = p.x;
             this.y = p.y;
             this.z = p.z;
@@ -23619,13 +23652,13 @@ var feng3d;
          */
         Transform.prototype.rotate = function (axis, angle, pivotPoint) {
             //转换位移
-            var positionMatrix3d = feng3d.Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
-            positionMatrix3d.appendRotation(axis, angle, pivotPoint);
-            this.position = positionMatrix3d.getPosition();
+            var positionMatrix = feng3d.Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
+            positionMatrix.appendRotation(axis, angle, pivotPoint);
+            this.position = positionMatrix.getPosition();
             //转换旋转
-            var rotationMatrix3d = feng3d.Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
-            rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
-            var newrotation = rotationMatrix3d.decompose()[1];
+            var rotationMatrix = feng3d.Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
+            rotationMatrix.appendRotation(axis, angle, pivotPoint);
+            var newrotation = rotationMatrix.decompose()[1];
             var v = Math.round((newrotation.x - this.rx) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -23650,10 +23683,10 @@ var feng3d;
          * @param upAxis    向上朝向
          */
         Transform.prototype.lookAt = function (target, upAxis) {
-            this._updateMatrix3D();
-            this._matrix3d.lookAt(target, upAxis);
-            this._matrix3d.decompose(this._position, this._rotation, this._scale);
-            this._matrix3dInvalid = false;
+            this._updateMatrix();
+            this._matrix.lookAt(target, upAxis);
+            this._matrix.decompose(this._position, this._rotation, this._scale);
+            this._matrixInvalid = false;
         };
         Object.defineProperty(Transform.prototype, "localToWorldMatrix", {
             /**
@@ -23665,7 +23698,7 @@ var feng3d;
             set: function (value) {
                 value = value.clone();
                 this.parent && value.append(this.parent.worldToLocalMatrix);
-                this.matrix3d = value;
+                this.matrix = value;
             },
             enumerable: true,
             configurable: true
@@ -23712,8 +23745,8 @@ var feng3d;
         Transform.prototype.transformDirection = function (direction) {
             if (!this.parent)
                 return direction.clone();
-            var matrix3d = this.parent.localToWorldRotationMatrix;
-            direction = matrix3d.transformVector(direction);
+            var matrix = this.parent.localToWorldRotationMatrix;
+            direction = matrix.transformVector(direction);
             return direction;
         };
         /**
@@ -23722,8 +23755,8 @@ var feng3d;
         Transform.prototype.transformPoint = function (position) {
             if (!this.parent)
                 return position.clone();
-            var matrix3d = this.parent.localToWorldMatrix;
-            position = matrix3d.transformVector(position);
+            var matrix = this.parent.localToWorldMatrix;
+            position = matrix.transformVector(position);
             return position;
         };
         /**
@@ -23732,8 +23765,8 @@ var feng3d;
         Transform.prototype.transformVector = function (vector) {
             if (!this.parent)
                 return vector.clone();
-            var matrix3d = this.parent.localToWorldMatrix;
-            vector = matrix3d.deltaTransformVector(vector);
+            var matrix = this.parent.localToWorldMatrix;
+            vector = matrix.deltaTransformVector(vector);
             return vector;
         };
         /**
@@ -23742,8 +23775,8 @@ var feng3d;
         Transform.prototype.inverseTransformDirection = function (direction) {
             if (!this.parent)
                 return direction.clone();
-            var matrix3d = this.parent.localToWorldRotationMatrix.clone().invert();
-            direction = matrix3d.transformVector(direction);
+            var matrix = this.parent.localToWorldRotationMatrix.clone().invert();
+            direction = matrix.transformVector(direction);
             return direction;
         };
         /**
@@ -23752,8 +23785,8 @@ var feng3d;
         Transform.prototype.inverseTransformPoint = function (position) {
             if (!this.parent)
                 return position.clone();
-            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
-            position = matrix3d.transformVector(position);
+            var matrix = this.parent.localToWorldMatrix.clone().invert();
+            position = matrix.transformVector(position);
             return position;
         };
         /**
@@ -23762,8 +23795,8 @@ var feng3d;
         Transform.prototype.inverseTransformVector = function (vector) {
             if (!this.parent)
                 return vector.clone();
-            var matrix3d = this.parent.localToWorldMatrix.clone().invert();
-            vector = matrix3d.deltaTransformVector(vector);
+            var matrix = this.parent.localToWorldMatrix.clone().invert();
+            vector = matrix.deltaTransformVector(vector);
             return vector;
         };
         Transform.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
@@ -23776,7 +23809,7 @@ var feng3d;
         Transform.prototype._rotationChanged = function (object, property, oldvalue) {
             if (!Math.equals(object[property], oldvalue)) {
                 this._invalidateTransform();
-                this._rotationMatrix3dInvalid = true;
+                this._rotationMatrixInvalid = true;
             }
         };
         Transform.prototype._scaleChanged = function (object, property, oldvalue) {
@@ -23784,8 +23817,8 @@ var feng3d;
                 this._invalidateTransform();
         };
         Transform.prototype._invalidateTransform = function () {
-            if (!this._matrix3dInvalid)
-                this._matrix3dInvalid = true;
+            if (!this._matrixInvalid)
+                this._matrixInvalid = true;
             this.dispatch("transformChanged", this);
             this._invalidateSceneTransform();
         };
@@ -23804,20 +23837,20 @@ var feng3d;
                 }
             }
         };
-        Transform.prototype._updateMatrix3D = function () {
-            if (this._matrix3dInvalid) {
-                this._matrix3d.recompose(this._position, this._rotation, this._scale);
-                this._matrix3dInvalid = false;
+        Transform.prototype._updateMatrix = function () {
+            if (this._matrixInvalid) {
+                this._matrix.recompose(this._position, this._rotation, this._scale);
+                this._matrixInvalid = false;
             }
-            return this._matrix3d;
+            return this._matrix;
         };
         Transform.prototype._updateLocalToWorldMatrix = function () {
             if (this._localToWorldMatrixInvalid) {
-                this._localToWorldMatrix.copyFrom(this.matrix3d);
+                this._localToWorldMatrix.copyFrom(this.matrix);
                 if (this.parent)
                     this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
                 this._localToWorldMatrixInvalid = false;
-                this.dispatch("updateLocalToWorldMatrix");
+                this.dispatch("updateLocalToWorldMatrix", this);
                 console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             }
             return this._localToWorldMatrix;
@@ -24573,53 +24606,54 @@ var feng3d;
          */
         GameObject.createPrimitive = function (type, param) {
             var g = new GameObject();
+            g.name = type;
             if (type == "Cube") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },] });
             }
             else if (type == "Plane") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },] });
             }
             else if (type == "Quad") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },] });
             }
             else if (type == "Cylinder") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },] });
             }
             else if (type == "Cone") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },] });
             }
             else if (type == "Torus") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },] });
             }
             else if (type == "Sphere") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },] });
             }
             else if (type == "Capsule") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },] });
             }
             else if (type == "Segment") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },] });
             }
             else if (type == "Terrain") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Terrain" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Terrain" },] });
             }
             else if (type == "Camera") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Camera" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Camera" },] });
             }
             else if (type == "Point light") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.PointLight" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.PointLight" },] });
             }
             else if (type == "Directional light") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.DirectionalLight" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.DirectionalLight" },] });
             }
             else if (type == "Spot light") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.SpotLight" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.SpotLight" },] });
             }
             else if (type == "Water") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Water" },] });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Water" },] });
             }
             else if (type == "Particle System") {
-                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
+                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
             }
             feng3d.serialization.setValue(g, param);
             return g;
@@ -25289,7 +25323,7 @@ var feng3d;
          * 更新世界边界
          */
         Model.prototype._updateWorldBounds = function () {
-            this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
+            this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.transform.localToWorldMatrix);
         };
         /**
          * 处理包围盒变换事件
@@ -30764,14 +30798,14 @@ var feng3d;
                 offsetPoint.y *= 0.15;
                 // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
-                var matrix3d = this.transform.localToWorldMatrix;
-                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.getPosition());
+                var matrix = this.transform.localToWorldMatrix;
+                matrix.appendRotation(matrix.right, offsetPoint.y, matrix.getPosition());
                 var up = feng3d.Vector3.Y_AXIS.clone();
-                if (matrix3d.up.dot(up) < 0) {
+                if (matrix.up.dot(up) < 0) {
                     up.scaleNumber(-1);
                 }
-                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.getPosition());
-                this.transform.localToWorldMatrix = matrix3d;
+                matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
+                this.transform.localToWorldMatrix = matrix;
                 //
                 this.preMousePoint = this.mousePoint;
                 this.mousePoint = null;
@@ -37622,11 +37656,11 @@ var feng3d;
             this.parentIndex = -1;
             this.children = [];
         }
-        Object.defineProperty(SkeletonJoint.prototype, "invertMatrix3D", {
+        Object.defineProperty(SkeletonJoint.prototype, "invertMatrix", {
             get: function () {
-                if (!this._invertMatrix3D)
-                    this._invertMatrix3D = this.matrix3D.clone().invert();
-                return this._invertMatrix3D;
+                if (!this._invertMatrix)
+                    this._invertMatrix = this.matrix.clone().invert();
+                return this._invertMatrix;
             },
             enumerable: true,
             configurable: true
@@ -37639,7 +37673,7 @@ var feng3d;
         ], SkeletonJoint.prototype, "name", void 0);
         __decorate([
             feng3d.serialize
-        ], SkeletonJoint.prototype, "matrix3D", void 0);
+        ], SkeletonJoint.prototype, "matrix", void 0);
         return SkeletonJoint;
     }());
     feng3d.SkeletonJoint = SkeletonJoint;
@@ -37683,15 +37717,15 @@ var feng3d;
             //
             this._globalPropertiesInvalid = true;
             this._jointsInvalid = [];
-            this._globalMatrix3DsInvalid = [];
-            this.globalMatrix3Ds = [];
+            this._globalMatrixsInvalid = [];
+            this.globalMatrixs = [];
             this._globalMatrices = [];
             //
             var jointNum = this.joints.length;
             for (var i = 0; i < jointNum; i++) {
                 this._jointsInvalid[i] = true;
-                this._globalMatrix3DsInvalid[i] = true;
-                this.globalMatrix3Ds[i] = new feng3d.Matrix4x4();
+                this._globalMatrixsInvalid[i] = true;
+                this.globalMatrixs[i] = new feng3d.Matrix4x4();
                 this._globalMatrices[i] = new feng3d.Matrix4x4();
             }
         };
@@ -37702,36 +37736,36 @@ var feng3d;
             //姿势变换矩阵
             var joints = this.joints;
             var jointGameobjects = this.jointGameobjects;
-            var globalMatrix3Ds = this.globalMatrix3Ds;
-            var _globalMatrix3DsInvalid = this._globalMatrix3DsInvalid;
+            var globalMatrixs = this.globalMatrixs;
+            var _globalMatrixsInvalid = this._globalMatrixsInvalid;
             //遍历每个关节
             for (var i = 0; i < joints.length; ++i) {
                 if (!this._jointsInvalid[i])
                     continue;
                 this._globalMatrices[i]
-                    .copyFrom(globalMatrix3d(i))
-                    .prepend(joints[i].invertMatrix3D);
+                    .copyFrom(globalMatrix(i))
+                    .prepend(joints[i].invertMatrix);
                 this._jointsInvalid[i] = false;
             }
-            function globalMatrix3d(index) {
-                if (!_globalMatrix3DsInvalid[index])
-                    return globalMatrix3Ds[index];
+            function globalMatrix(index) {
+                if (!_globalMatrixsInvalid[index])
+                    return globalMatrixs[index];
                 var jointPose = joints[index];
                 var jointGameobject = jointGameobjects[index];
-                globalMatrix3Ds[index] = jointGameobject.transform.matrix3d.clone();
+                globalMatrixs[index] = jointGameobject.transform.matrix.clone();
                 if (jointPose.parentIndex >= 0) {
-                    var parentGlobalMatrix3d = globalMatrix3d(jointPose.parentIndex);
-                    globalMatrix3Ds[index].append(parentGlobalMatrix3d);
+                    var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
+                    globalMatrixs[index].append(parentGlobalMatrix);
                 }
-                _globalMatrix3DsInvalid[index] = false;
-                return globalMatrix3Ds[index];
+                _globalMatrixsInvalid[index] = false;
+                return globalMatrixs[index];
             }
         };
         SkeletonComponent.prototype.invalidjoint = function (jointIndex) {
             var _this = this;
             this._globalPropertiesInvalid = true;
             this._jointsInvalid[jointIndex] = true;
-            this._globalMatrix3DsInvalid[jointIndex] = true;
+            this._globalMatrixsInvalid[jointIndex] = true;
             this.joints[jointIndex].children.forEach(function (element) {
                 _this.invalidjoint(element);
             });
@@ -37762,11 +37796,11 @@ var feng3d;
                     parentGameobject.addChild(jointGameobject);
                 }
                 var transform = jointGameobject.transform;
-                var matrix3D = skeletonJoint.matrix3D;
+                var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1) {
-                    matrix3D = matrix3D.clone().append(joints[skeletonJoint.parentIndex].invertMatrix3D);
+                    matrix = matrix.clone().append(joints[skeletonJoint.parentIndex].invertMatrix);
                 }
-                transform.matrix3d = matrix3D;
+                transform.matrix = matrix;
                 transform.on("transformChanged", function () {
                     skeleton.invalidjoint(i);
                 });
@@ -37867,8 +37901,8 @@ var feng3d;
                     var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
                     for (var i = joints.length - 1; i >= 0; i--) {
                         skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]].clone();
-                        if (this.initMatrix3d) {
-                            skeletonGlobalMatriices[i].prepend(this.initMatrix3d);
+                        if (this.initMatrix) {
+                            skeletonGlobalMatriices[i].prepend(this.initMatrix);
                         }
                     }
                 }
@@ -37886,7 +37920,7 @@ var feng3d;
         ], SkinnedModel.prototype, "skinSkeleton", void 0);
         __decorate([
             feng3d.serialize
-        ], SkinnedModel.prototype, "initMatrix3d", void 0);
+        ], SkinnedModel.prototype, "initMatrix", void 0);
         return SkinnedModel;
     }(feng3d.Model));
     feng3d.SkinnedModel = SkinnedModel;
@@ -39308,13 +39342,13 @@ var feng3d;
                 var pScaling = this.Scaling.getScaling(keyFrameTime);
                 var pRotation = this.Rotation.getRotation(keyFrameTime);
                 var pTranslation = this.Translation.getTranslation(keyFrameTime);
-                var matrix3D = this.c_transformation;
-                matrix3D.appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix3D());
+                var matrix = this.c_transformation;
+                matrix.appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix());
                 //设置旋转缩放中心
-                matrix3D.prependTranslation(-this.pivotPoint.x, -this.pivotPoint.y, -this.pivotPoint.z);
-                matrix3D.appendTranslation(this.pivotPoint.x, this.pivotPoint.y, this.pivotPoint.z);
+                matrix.prependTranslation(-this.pivotPoint.x, -this.pivotPoint.y, -this.pivotPoint.z);
+                matrix.appendTranslation(this.pivotPoint.x, this.pivotPoint.y, this.pivotPoint.z);
                 //平移
-                matrix3D.appendTranslation(pTranslation.x, pTranslation.y, pTranslation.z);
+                matrix.appendTranslation(pTranslation.x, pTranslation.y, pTranslation.z);
                 //
             };
             BoneObject.prototype.buildAnimationclip = function (animationclip, __chache__, start, end) {
@@ -39368,15 +39402,15 @@ var feng3d;
                     return __chache__[key];
                 }
             };
-            BoneObject.prototype.getMatrix3D = function (time) {
+            BoneObject.prototype.getMatrix = function (time) {
                 var pScaling = this.Scaling.getScaling(time);
                 var pRotation = this.Rotation.getRotation(time);
                 var pTranslation = this.Translation.getTranslation(time);
-                var matrix3D = new feng3d.Matrix4x4().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix3D());
+                var matrix = new feng3d.Matrix4x4().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix());
                 //平移
-                matrix3D.appendTranslation(pTranslation.x + this.pivotPoint.x, pTranslation.y + this.pivotPoint.y, pTranslation.z + this.pivotPoint.z);
+                matrix.appendTranslation(pTranslation.x + this.pivotPoint.x, pTranslation.y + this.pivotPoint.y, pTranslation.z + this.pivotPoint.z);
                 //
-                return matrix3D;
+                return matrix;
             };
             return BoneObject;
         }());
@@ -39763,15 +39797,15 @@ var feng3d;
                 skeletonJoint.parentIndex = joint.Parent;
                 var position = war3Model.pivotPoints[joint.ObjectId];
                 ;
-                var matrix3D = new feng3d.Matrix4x4().recompose(position, new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
+                var matrix = new feng3d.Matrix4x4().recompose(position, new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
                 if (skeletonJoint.parentIndex != -1) {
                     var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);
-                    joint.pivotPoint = matrix3D.getPosition().subTo(parentskeletonJoint.matrix3D.getPosition());
+                    joint.pivotPoint = matrix.getPosition().subTo(parentskeletonJoint.matrix.getPosition());
                 }
                 else {
                     joint.pivotPoint = position;
                 }
-                skeletonJoint.matrix3D = matrix3D;
+                skeletonJoint.matrix = matrix;
                 skeletonjoints[index] = skeletonJoint;
                 return skeletonJoint;
             }
@@ -41301,10 +41335,10 @@ var feng3d;
             var t = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
-            var matrix3D = quat.toMatrix3D();
-            matrix3D.appendTranslation(-position[0], position[1], position[2]);
+            var matrix = quat.toMatrix();
+            matrix.appendTranslation(-position[0], position[1], position[2]);
             //
-            skeletonJoint.matrix3D = matrix3D;
+            skeletonJoint.matrix = matrix;
             return skeletonJoint;
         };
         MD5MeshConverter.prototype.createGeometry = function (md5Mesh, skeleton, skinSkeleton) {
@@ -41351,7 +41385,7 @@ var feng3d;
                     if (j < vertex.countWeight) {
                         weight = weights[vertex.startWeight + j];
                         if (weight.bias > 0) {
-                            bindPose = skeleton.joints[weight.joint].matrix3D;
+                            bindPose = skeleton.joints[weight.joint].matrix;
                             pos = bindPose.transformVector(new feng3d.Vector3(-weight.pos[0], weight.pos[1], weight.pos[2]));
                             vertices[i * 3] += pos.x * weight.bias;
                             vertices[i * 3 + 1] += pos.y * weight.bias;
@@ -41633,95 +41667,6 @@ var feng3d;
     }());
     feng3d.MDLLoader = MDLLoader;
     feng3d.mdlLoader = new MDLLoader();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * UIRenderMode for the Canvas.
-     *
-     * Canvas的渲染模式
-     */
-    var UIRenderMode;
-    (function (UIRenderMode) {
-        /**
-         * Render at the end of the Scene using a 2D Canvas.
-         *
-         * 在场景的最后使用2D画布渲染。
-         */
-        UIRenderMode[UIRenderMode["ScreenSpaceOverlay"] = 0] = "ScreenSpaceOverlay";
-        /**
-         * Render using the Camera configured on the Canvas.
-         *
-         * 使用在画布上配置的摄像机进行渲染。
-         */
-        UIRenderMode[UIRenderMode["ScreenSpaceCamera"] = 1] = "ScreenSpaceCamera";
-        /**
-         * Render using any Camera in the Scene that can render the layer.
-         *
-         * 使用场景中任何可以渲染图层的相机渲染。
-         */
-        UIRenderMode[UIRenderMode["WorldSpace"] = 2] = "WorldSpace";
-    })(UIRenderMode = feng3d.UIRenderMode || (feng3d.UIRenderMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Position, size, anchor and pivot information for a rectangle.
-     *
-     * 矩形的位置、大小、锚点和枢轴信息。
-     */
-    var RectTransform = /** @class */ (function (_super) {
-        __extends(RectTransform, _super);
-        function RectTransform() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return RectTransform;
-    }(feng3d.Transform));
-    feng3d.RectTransform = RectTransform;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Element that can be used for screen rendering.
-     *
-     * 能够被用于屏幕渲染的元素
-     */
-    var Canvas = /** @class */ (function (_super) {
-        __extends(Canvas, _super);
-        function Canvas() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * Is the Canvas in World or Overlay mode?
-             *
-             * 画布是在世界或覆盖模式?
-             */
-            _this.renderMode = feng3d.UIRenderMode.ScreenSpaceOverlay;
-            return _this;
-        }
-        return Canvas;
-    }(feng3d.Behaviour));
-    feng3d.Canvas = Canvas;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 图片组件
-     */
-    var UIImage = /** @class */ (function (_super) {
-        __extends(UIImage, _super);
-        function UIImage() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * Tinting color for this Image.
-             *
-             * 为该图像着色。
-             */
-            _this.color = new feng3d.Color4();
-            return _this;
-        }
-        return UIImage;
-    }(feng3d.Behaviour));
-    feng3d.UIImage = UIImage;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

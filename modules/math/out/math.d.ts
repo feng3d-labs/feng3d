@@ -1932,9 +1932,9 @@ declare namespace feng3d {
         copyColumnToVector4(column: number, vector3D?: Vector4): Vector4;
         /**
          * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         * @param   source      要从中复制数据的 Matrix4x4 对象。
          */
-        copyFrom(sourceMatrix3D: Matrix4x4): this;
+        copyFrom(source: Matrix4x4): this;
         /**
          * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix4x4 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
          * @param   vector      要从中复制数据的 Vector 对象。
@@ -1965,7 +1965,7 @@ declare namespace feng3d {
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        copyToMatrix3D(dest: Matrix4x4): this;
+        copyToMatrix(dest: Matrix4x4): this;
         /**
          * 通过位移旋转缩放重组矩阵
          *
@@ -2067,7 +2067,7 @@ declare namespace feng3d {
         /**
          * 比较矩阵是否相等
          */
-        equals(matrix3D: Matrix4x4, precision?: number): boolean;
+        equals(matrix: Matrix4x4, precision?: number): boolean;
         /**
          * 看向目标位置
          * @param target    目标位置
@@ -2284,7 +2284,7 @@ declare namespace feng3d {
          *
          * @param target
          */
-        toMatrix3D(target?: Matrix4x4): Matrix4x4;
+        toMatrix(target?: Matrix4x4): Matrix4x4;
         /**
          * 从矩阵初始化四元素
          *
@@ -2485,6 +2485,14 @@ declare namespace feng3d {
         p1: Vector3;
         constructor(p0?: Vector3, p1?: Vector3);
         /**
+         * 线段长度
+         */
+        getLength(): number;
+        /**
+         * 线段长度的平方
+         */
+        getLengthSquared(): number;
+        /**
          * 获取线段所在直线
          */
         getLine(line?: Line3): Line3;
@@ -2599,6 +2607,13 @@ declare namespace feng3d {
          * 三角形2号点
          */
         p2: Vector3;
+        /**
+         * 构造三角形
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         constructor(p0?: Vector3, p1?: Vector3, p2?: Vector3);
         /**
          * 三角形三个点
@@ -2754,6 +2769,15 @@ declare namespace feng3d {
          * 克隆
          */
         clone(): Triangle3;
+        /**
+         * 判断指定点是否在三角形内
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3): boolean;
     }
 }
 declare namespace feng3d {
@@ -2831,12 +2855,12 @@ declare namespace feng3d {
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3D(mat: Matrix4x4): this;
+        applyMatrix(mat: Matrix4x4): this;
         /**
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3DTo(mat: Matrix4x4, out?: Box3): Box3;
+        applyMatrixTo(mat: Matrix4x4, out?: Box3): Box3;
         /**
          *
          */

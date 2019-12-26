@@ -128,15 +128,15 @@ namespace feng3d
                 // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
-                var matrix3d = this.transform.localToWorldMatrix;
-                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.getPosition());
+                var matrix = this.transform.localToWorldMatrix;
+                matrix.appendRotation(matrix.right, offsetPoint.y, matrix.getPosition());
                 var up = Vector3.Y_AXIS.clone();
-                if (matrix3d.up.dot(up) < 0)
+                if (matrix.up.dot(up) < 0)
                 {
                     up.scaleNumber(-1);
                 }
-                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.getPosition());
-                this.transform.localToWorldMatrix = matrix3d;
+                matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
+                this.transform.localToWorldMatrix = matrix;
                 //
                 this.preMousePoint = this.mousePoint;
                 this.mousePoint = null;

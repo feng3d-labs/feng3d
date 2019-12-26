@@ -458,7 +458,7 @@ namespace feng3d
          * 
          * @param target 
          */
-        toMatrix3D(target = new Matrix4x4())
+        toMatrix(target = new Matrix4x4())
         {
             var rawData = target.rawData;
             var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;

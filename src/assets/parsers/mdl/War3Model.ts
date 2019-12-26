@@ -146,7 +146,7 @@ namespace feng3d.war3
 
 			var position = war3Model.pivotPoints[joint.ObjectId];;
 
-			var matrix3D = new Matrix4x4().recompose(
+			var matrix = new Matrix4x4().recompose(
 				position,
 				new Vector3(),
 				new Vector3(1, 1, 1)
@@ -154,12 +154,12 @@ namespace feng3d.war3
 			if (skeletonJoint.parentIndex != -1)
 			{
 				var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);
-				joint.pivotPoint = matrix3D.getPosition().subTo(parentskeletonJoint.matrix3D.getPosition());
+				joint.pivotPoint = matrix.getPosition().subTo(parentskeletonJoint.matrix.getPosition());
 			} else
 			{
 				joint.pivotPoint = position;
 			}
-			skeletonJoint.matrix3D = matrix3D;
+			skeletonJoint.matrix = matrix;
 			skeletonjoints[index] = skeletonJoint;
 			return skeletonJoint;
 		}

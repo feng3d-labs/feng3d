@@ -47,6 +47,13 @@ namespace feng3d
          */
         p2: Vector3;
 
+        /**
+         * 构造三角形
+         * 
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         constructor(p0 = new Vector3(), p1 = new Vector3(), p2 = new Vector3())
         {
             this.p0 = p0;
@@ -260,9 +267,11 @@ namespace feng3d
         onWithPoint(p: Vector3, precision = Math.PRECISION)
         {
             var plane3d = this.getPlane3d();
+            // 排除不在平面上的点
             if (plane3d.classifyPoint(p, precision) != PlaneClassification.INTERSECT)
                 return false;
 
+            // 判断在三边上的点
             if (Segment3.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
                 return true;
             if (Segment3.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
@@ -270,6 +279,7 @@ namespace feng3d
             if (Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
 
+            // 如果指定点与三角形任意两个点组成的三角形与三角形不同向时，点不在三角形上。
             var n = this.getNormal();
             if (new Triangle3(this.p0, this.p1, p).getNormal().dot(n) < 0)
                 return false;
@@ -515,6 +525,19 @@ namespace feng3d
         clone()
         {
             return new Triangle3().copy(this);
+        }
+
+        /**
+         * 判断指定点是否在三角形内
+         * 
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3)
+        {
+            return new feng3d.Triangle3(p0, p1, p2).onWithPoint(p);
         }
     }
 }

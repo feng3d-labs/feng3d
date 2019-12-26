@@ -123,10 +123,10 @@ namespace feng3d
             var t = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
-            var matrix3D = quat.toMatrix3D();
-            matrix3D.appendTranslation(-position[0], position[1], position[2]);
+            var matrix = quat.toMatrix();
+            matrix.appendTranslation(-position[0], position[1], position[2]);
             //
-            skeletonJoint.matrix3D = matrix3D;
+            skeletonJoint.matrix = matrix;
             return skeletonJoint;
         }
 
@@ -183,7 +183,7 @@ namespace feng3d
                         weight = weights[vertex.startWeight + j];
                         if (weight.bias > 0)
                         {
-                            bindPose = skeleton.joints[weight.joint].matrix3D;
+                            bindPose = skeleton.joints[weight.joint].matrix;
                             pos = bindPose.transformVector(new Vector3(-weight.pos[0], weight.pos[1], weight.pos[2]));
                             vertices[i * 3] += pos.x * weight.bias;
                             vertices[i * 3 + 1] += pos.y * weight.bias;

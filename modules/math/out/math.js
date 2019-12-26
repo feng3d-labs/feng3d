@@ -3502,7 +3502,7 @@ var feng3d;
          * @param q 四元素
          */
         Matrix4x4.prototype.fromQuaternion = function (q) {
-            q.toMatrix3D(this);
+            q.toMatrix(this);
             return this;
         };
         /**
@@ -3652,11 +3652,11 @@ var feng3d;
         };
         /**
          * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         * @param   source      要从中复制数据的 Matrix4x4 对象。
          */
-        Matrix4x4.prototype.copyFrom = function (sourceMatrix3D) {
+        Matrix4x4.prototype.copyFrom = function (source) {
             for (var i = 0; i < 16; i++) {
-                this.rawData[i] = sourceMatrix3D.rawData[i];
+                this.rawData[i] = source.rawData[i];
             }
             return this;
         };
@@ -3731,7 +3731,7 @@ var feng3d;
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        Matrix4x4.prototype.copyToMatrix3D = function (dest) {
+        Matrix4x4.prototype.copyToMatrix = function (dest) {
             dest.rawData = this.rawData.concat();
             return this;
         };
@@ -4176,9 +4176,9 @@ var feng3d;
         };
         Matrix4x4.prototype.transformRotation = function (vin, vout) {
             //转换旋转
-            var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
-            rotationMatrix3d.append(this);
-            var newrotation = rotationMatrix3d.decompose()[1];
+            var rotationMatrix = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
+            rotationMatrix.append(this);
+            var newrotation = rotationMatrix.decompose()[1];
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -4217,9 +4217,9 @@ var feng3d;
         /**
          * 比较矩阵是否相等
          */
-        Matrix4x4.prototype.equals = function (matrix3D, precision) {
+        Matrix4x4.prototype.equals = function (matrix, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
-            var r2 = matrix3D.rawData;
+            var r2 = matrix.rawData;
             for (var i = 0; i < 16; ++i) {
                 if (!Math.equals(this.rawData[i] - r2[i], 0, precision))
                     return false;
@@ -4811,7 +4811,7 @@ var feng3d;
          *
          * @param target
          */
-        Quaternion.prototype.toMatrix3D = function (target) {
+        Quaternion.prototype.toMatrix = function (target) {
             if (target === void 0) { target = new feng3d.Matrix4x4(); }
             var rawData = target.rawData;
             var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
@@ -5238,6 +5238,18 @@ var feng3d;
             return new Segment3(feng3d.Vector3.random(), feng3d.Vector3.random());
         };
         /**
+         * 线段长度
+         */
+        Segment3.prototype.getLength = function () {
+            return Math.sqrt(this.getLengthSquared());
+        };
+        /**
+         * 线段长度的平方
+         */
+        Segment3.prototype.getLengthSquared = function () {
+            return this.p0.distanceSquared(this.p1);
+        };
+        /**
          * 获取线段所在直线
          */
         Segment3.prototype.getLine = function (line) {
@@ -5417,6 +5429,13 @@ var feng3d;
      * 三角形
      */
     var Triangle3 = /** @class */ (function () {
+        /**
+         * 构造三角形
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         function Triangle3(p0, p1, p2) {
             if (p0 === void 0) { p0 = new feng3d.Vector3(); }
             if (p1 === void 0) { p1 = new feng3d.Vector3(); }
@@ -5630,14 +5649,17 @@ var feng3d;
         Triangle3.prototype.onWithPoint = function (p, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
             var plane3d = this.getPlane3d();
+            // 排除不在平面上的点
             if (plane3d.classifyPoint(p, precision) != feng3d.PlaneClassification.INTERSECT)
                 return false;
+            // 判断在三边上的点
             if (feng3d.Segment3.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
                 return true;
             if (feng3d.Segment3.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
                 return true;
             if (feng3d.Segment3.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
+            // 如果指定点与三角形任意两个点组成的三角形与三角形不同向时，点不在三角形上。
             var n = this.getNormal();
             if (new Triangle3(this.p0, this.p1, p).getNormal().dot(n) < 0)
                 return false;
@@ -5846,6 +5868,17 @@ var feng3d;
         Triangle3.prototype.clone = function () {
             return new Triangle3().copy(this);
         };
+        /**
+         * 判断指定点是否在三角形内
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        Triangle3.containsPoint = function (p0, p1, p2, p) {
+            return new feng3d.Triangle3(p0, p1, p2).onWithPoint(p);
+        };
         return Triangle3;
     }());
     feng3d.Triangle3 = Triangle3;
@@ -6006,7 +6039,7 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        Box3.prototype.applyMatrix3D = function (mat) {
+        Box3.prototype.applyMatrix = function (mat) {
             this.fromPoints(this.toPoints().map(function (v) {
                 return v.applyMatrix4x4(mat);
             }));
@@ -6016,9 +6049,9 @@ var feng3d;
          * 应用矩阵
          * @param mat 矩阵
          */
-        Box3.prototype.applyMatrix3DTo = function (mat, out) {
+        Box3.prototype.applyMatrixTo = function (mat, out) {
             if (out === void 0) { out = new Box3(); }
-            return out.copy(this).applyMatrix3D(mat);
+            return out.copy(this).applyMatrix(mat);
         };
         /**
          *

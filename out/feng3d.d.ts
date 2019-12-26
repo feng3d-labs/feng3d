@@ -4686,9 +4686,9 @@ declare namespace feng3d {
         copyColumnToVector4(column: number, vector3D?: Vector4): Vector4;
         /**
          * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         * @param   source      要从中复制数据的 Matrix4x4 对象。
          */
-        copyFrom(sourceMatrix3D: Matrix4x4): this;
+        copyFrom(source: Matrix4x4): this;
         /**
          * 将源 Vector 对象中的所有矢量数据复制到调用方 Matrix4x4 对象中。利用可选索引参数，您可以选择矢量中的任何起始文字插槽。
          * @param   vector      要从中复制数据的 Vector 对象。
@@ -4719,7 +4719,7 @@ declare namespace feng3d {
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        copyToMatrix3D(dest: Matrix4x4): this;
+        copyToMatrix(dest: Matrix4x4): this;
         /**
          * 通过位移旋转缩放重组矩阵
          *
@@ -4821,7 +4821,7 @@ declare namespace feng3d {
         /**
          * 比较矩阵是否相等
          */
-        equals(matrix3D: Matrix4x4, precision?: number): boolean;
+        equals(matrix: Matrix4x4, precision?: number): boolean;
         /**
          * 看向目标位置
          * @param target    目标位置
@@ -5038,7 +5038,7 @@ declare namespace feng3d {
          *
          * @param target
          */
-        toMatrix3D(target?: Matrix4x4): Matrix4x4;
+        toMatrix(target?: Matrix4x4): Matrix4x4;
         /**
          * 从矩阵初始化四元素
          *
@@ -5239,6 +5239,14 @@ declare namespace feng3d {
         p1: Vector3;
         constructor(p0?: Vector3, p1?: Vector3);
         /**
+         * 线段长度
+         */
+        getLength(): number;
+        /**
+         * 线段长度的平方
+         */
+        getLengthSquared(): number;
+        /**
          * 获取线段所在直线
          */
         getLine(line?: Line3): Line3;
@@ -5353,6 +5361,13 @@ declare namespace feng3d {
          * 三角形2号点
          */
         p2: Vector3;
+        /**
+         * 构造三角形
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         */
         constructor(p0?: Vector3, p1?: Vector3, p2?: Vector3);
         /**
          * 三角形三个点
@@ -5508,6 +5523,15 @@ declare namespace feng3d {
          * 克隆
          */
         clone(): Triangle3;
+        /**
+         * 判断指定点是否在三角形内
+         *
+         * @param p0 三角形0号点
+         * @param p1 三角形1号点
+         * @param p2 三角形2号点
+         * @param p 指定点
+         */
+        static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3): boolean;
     }
 }
 declare namespace feng3d {
@@ -5585,12 +5609,12 @@ declare namespace feng3d {
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3D(mat: Matrix4x4): this;
+        applyMatrix(mat: Matrix4x4): this;
         /**
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3DTo(mat: Matrix4x4, out?: Box3): Box3;
+        applyMatrixTo(mat: Matrix4x4, out?: Box3): Box3;
         /**
          *
          */
@@ -11658,11 +11682,11 @@ declare namespace feng3d {
         /**
          * 变换矩阵变化
          */
-        transformChanged: any;
+        transformChanged: Transform;
         /**
          *
          */
-        updateLocalToWorldMatrix: any;
+        updateLocalToWorldMatrix: Transform;
         /**
          * 场景矩阵变化
          */
@@ -11758,8 +11782,8 @@ declare namespace feng3d {
         /**
          * 本地变换矩阵
          */
-        get matrix3d(): Matrix4x4;
-        set matrix3d(v: Matrix4x4);
+        get matrix(): Matrix4x4;
+        set matrix(v: Matrix4x4);
         /**
          * 本地旋转矩阵
          */
@@ -11853,10 +11877,10 @@ declare namespace feng3d {
         private readonly _rotation;
         private readonly _orientation;
         private readonly _scale;
-        protected readonly _matrix3d: Matrix4x4;
-        protected _matrix3dInvalid: boolean;
-        protected readonly _rotationMatrix3d: Matrix4x4;
-        protected _rotationMatrix3dInvalid: boolean;
+        protected readonly _matrix: Matrix4x4;
+        protected _matrixInvalid: boolean;
+        protected readonly _rotationMatrix: Matrix4x4;
+        protected _rotationMatrixInvalid: boolean;
         protected readonly _localToWorldMatrix: Matrix4x4;
         protected _localToWorldMatrixInvalid: boolean;
         protected readonly _ITlocalToWorldMatrix: Matrix4x4;
@@ -11871,7 +11895,7 @@ declare namespace feng3d {
         private _scaleChanged;
         private _invalidateTransform;
         private _invalidateSceneTransform;
-        private _updateMatrix3D;
+        private _updateMatrix;
         private _updateLocalToWorldMatrix;
         private _updateWorldToLocalMatrix;
         private _updateITlocalToWorldMatrix;
@@ -17608,10 +17632,10 @@ declare namespace feng3d {
         /** 关节名字 */
         name: string;
         /** 骨骼全局矩阵 */
-        matrix3D: Matrix4x4;
+        matrix: Matrix4x4;
         children: number[];
-        get invertMatrix3D(): Matrix4x4;
-        private _invertMatrix3D;
+        get invertMatrix(): Matrix4x4;
+        private _invertMatrix;
     }
 }
 declare namespace feng3d {
@@ -17632,8 +17656,8 @@ declare namespace feng3d {
         private jointGameObjectMap;
         private _globalPropertiesInvalid;
         private _jointsInvalid;
-        private _globalMatrix3DsInvalid;
-        private globalMatrix3Ds;
+        private _globalMatrixsInvalid;
+        private globalMatrixs;
         private _globalMatrices;
         initSkeleton(): void;
         /**
@@ -17652,7 +17676,7 @@ declare namespace feng3d {
         __class__: "feng3d.SkinnedModel";
         get single(): boolean;
         skinSkeleton: SkinSkeleton;
-        initMatrix3d: Matrix4x4;
+        initMatrix: Matrix4x4;
         /**
          * 创建一个骨骼动画类
          */
@@ -18352,7 +18376,7 @@ declare namespace feng3d.war3 {
         buildAnimationclip(animationclip: AnimationClip, __chache__: {
             [key: string]: PropertyClip;
         }, start: number, end: number): void;
-        private getMatrix3D;
+        private getMatrix;
     }
     /**
      * 骨骼的位移信息
@@ -18732,76 +18756,6 @@ declare namespace feng3d {
          * @param callback 加载完成回调
          */
         load(mdlurl: string, callback?: (gameObject: GameObject) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * UIRenderMode for the Canvas.
-     *
-     * Canvas的渲染模式
-     */
-    enum UIRenderMode {
-        /**
-         * Render at the end of the Scene using a 2D Canvas.
-         *
-         * 在场景的最后使用2D画布渲染。
-         */
-        ScreenSpaceOverlay = 0,
-        /**
-         * Render using the Camera configured on the Canvas.
-         *
-         * 使用在画布上配置的摄像机进行渲染。
-         */
-        ScreenSpaceCamera = 1,
-        /**
-         * Render using any Camera in the Scene that can render the layer.
-         *
-         * 使用场景中任何可以渲染图层的相机渲染。
-         */
-        WorldSpace = 2
-    }
-}
-declare namespace feng3d {
-    /**
-     * Position, size, anchor and pivot information for a rectangle.
-     *
-     * 矩形的位置、大小、锚点和枢轴信息。
-     */
-    class RectTransform extends Transform {
-    }
-}
-declare namespace feng3d {
-    /**
-     * Element that can be used for screen rendering.
-     *
-     * 能够被用于屏幕渲染的元素
-     */
-    class Canvas extends Behaviour {
-        /**
-         * Is the Canvas in World or Overlay mode?
-         *
-         * 画布是在世界或覆盖模式?
-         */
-        renderMode: UIRenderMode;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 图片组件
-     */
-    class UIImage extends Behaviour {
-        /**
-         * The source texture of the Image element.
-         *
-         * 图像元素的源纹理。
-         */
-        image: Texture2D;
-        /**
-         * Tinting color for this Image.
-         *
-         * 为该图像着色。
-         */
-        color: Color4;
     }
 }
 declare namespace feng3d {

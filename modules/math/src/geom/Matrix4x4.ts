@@ -297,7 +297,7 @@ namespace feng3d
          */
         fromQuaternion(q: Quaternion)
         {
-            q.toMatrix3D(this);
+            q.toMatrix(this);
             return this;
         }
 
@@ -478,13 +478,13 @@ namespace feng3d
 
         /**
          * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-         * @param   sourceMatrix3D      要从中复制数据的 Matrix4x4 对象。
+         * @param   source      要从中复制数据的 Matrix4x4 对象。
          */
-        copyFrom(sourceMatrix3D: Matrix4x4)
+        copyFrom(source: Matrix4x4)
         {
             for (var i = 0; i < 16; i++)
             {
-                this.rawData[i] = sourceMatrix3D.rawData[i];
+                this.rawData[i] = source.rawData[i];
             }
             return this;
         }
@@ -571,7 +571,7 @@ namespace feng3d
          * 拷贝当前矩阵
          * @param   dest    目标矩阵
          */
-        copyToMatrix3D(dest: Matrix4x4)
+        copyToMatrix(dest: Matrix4x4)
         {
             dest.rawData = this.rawData.concat();
             return this;
@@ -1062,9 +1062,9 @@ namespace feng3d
         transformRotation(vin: Vector3, vout?: Vector3)
         {
             //转换旋转
-            var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
-            rotationMatrix3d.append(this);
-            var newrotation = rotationMatrix3d.decompose()[1];
+            var rotationMatrix = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
+            rotationMatrix.append(this);
+            var newrotation = rotationMatrix.decompose()[1];
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0)
             {
@@ -1109,9 +1109,9 @@ namespace feng3d
         /**
          * 比较矩阵是否相等
          */
-        equals(matrix3D: Matrix4x4, precision = Math.PRECISION)
+        equals(matrix: Matrix4x4, precision = Math.PRECISION)
         {
-            var r2 = matrix3D.rawData;
+            var r2 = matrix.rawData;
             for (var i = 0; i < 16; ++i)
             {
                 if (!Math.equals(this.rawData[i] - r2[i], 0, precision))
