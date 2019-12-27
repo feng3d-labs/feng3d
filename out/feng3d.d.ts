@@ -10980,7 +10980,7 @@ declare namespace feng3d {
         /**
          * 漫反射贴图
          */
-        s_texture: TextureInfo;
+        s_texture: Texture2D;
         /**
          * 漫反射贴图
          */

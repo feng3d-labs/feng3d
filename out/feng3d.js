@@ -22136,7 +22136,7 @@ var feng3d;
             /**
              * 格式
              */
-            _this.format = feng3d.TextureFormat.RGB;
+            _this.format = feng3d.TextureFormat.RGBA;
             /**
              * 数据类型
              */

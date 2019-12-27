@@ -16,7 +16,7 @@ namespace feng3d
         @serialize
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureFormat } })
         @watch("invalidate")
-        format = TextureFormat.RGB;
+        format = TextureFormat.RGBA;
 
         /**
          * 数据类型
