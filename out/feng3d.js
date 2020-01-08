@@ -5672,6 +5672,12 @@ var feng3d;
             return "#" + feng3d.Color3.ToHex(intA) + feng3d.Color3.ToHex(intR) + feng3d.Color3.ToHex(intG) + feng3d.Color3.ToHex(intB);
         };
         /**
+         * 输出 RGBA 颜色值，例如 rgba(255,255,255,1)
+         */
+        Color4.prototype.toRGBA = function () {
+            return "rgba(" + this.r * 255 + "," + this.g * 255 + "," + this.b * 255 + "," + this.a + ")";
+        };
+        /**
          * 混合颜色
          * @param color 混入的颜色
          * @param rate  混入比例

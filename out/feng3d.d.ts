@@ -3303,6 +3303,10 @@ declare namespace feng3d {
          */
         toHexString(): string;
         /**
+         * 输出 RGBA 颜色值，例如 rgba(255,255,255,1)
+         */
+        toRGBA(): string;
+        /**
          * 混合颜色
          * @param color 混入的颜色
          * @param rate  混入比例

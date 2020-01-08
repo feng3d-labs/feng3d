@@ -97,7 +97,7 @@ namespace feng3d
         /**
          * 输出16进制字符串
          */
-        toHexString(): string
+        toHexString()
         {
             var intR = (this.r * 0xff) | 0;
             var intG = (this.g * 0xff) | 0;
@@ -105,6 +105,14 @@ namespace feng3d
             var intA = (this.a * 0xff) | 0;
 
             return "#" + Color3.ToHex(intA) + Color3.ToHex(intR) + Color3.ToHex(intG) + Color3.ToHex(intB);
+        }
+
+        /**
+         * 输出 RGBA 颜色值，例如 rgba(255,255,255,1)
+         */
+        toRGBA()
+        {
+            return `rgba(${this.r * 255},${this.g * 255},${this.b * 255},${this.a})`;
         }
 
         /**
