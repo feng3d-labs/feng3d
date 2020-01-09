@@ -12001,8 +12001,8 @@ declare namespace feng3d {
          */
         get globalVisible(): any;
         get scene(): Scene;
-        get components(): Components[];
-        set components(value: Components[]);
+        get components(): (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Model | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[];
+        set components(value: (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Model | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[]);
         /**
          * 构建3D对象
          */

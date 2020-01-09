@@ -171,7 +171,7 @@ namespace feng3d
 
         @serialize
         @oav({ component: "OAVComponentList" })
-        get components(): Components[]
+        get components()
         {
             return this._components.concat();
         }
