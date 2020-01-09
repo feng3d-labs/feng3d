@@ -72,8 +72,6 @@ namespace feng3d
         @serialize
         assetId: string;
 
-        readonly renderAtomic = new RenderAtomic();
-
         /**
          * 名称
          */
@@ -707,24 +705,6 @@ namespace feng3d
                 }
             }
             if (loadingNum == 0) callback();
-        }
-
-        /**
-         * 渲染前执行函数
-         * 
-         * 可用于渲染前收集渲染数据，或者更新显示效果等
-         * 
-         * @param gl 
-         * @param renderAtomic 
-         * @param scene 
-         * @param camera 
-         */
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
-        {
-            this._components.forEach(element =>
-            {
-                element.beforeRender(gl, renderAtomic, scene, camera);
-            });
         }
 
         //------------------------------------------

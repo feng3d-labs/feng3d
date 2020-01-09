@@ -72,9 +72,9 @@ namespace feng3d
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
-            castShadowsModels.forEach(element =>
+            castShadowsModels.forEach(renderable =>
             {
-                this.drawGameObject(gl, element.gameObject, scene, camera);
+                this.drawGameObject(gl, renderable, scene, camera);
             });
 
             light.frameBufferObject.deactive(gl);
@@ -149,9 +149,9 @@ namespace feng3d
                 renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
                 renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
-                castShadowsModels.forEach(element =>
+                castShadowsModels.forEach(renderable =>
                 {
-                    this.drawGameObject(gl, element.gameObject, scene, camera);
+                    this.drawGameObject(gl, renderable, scene, camera);
                 });
             }
             light.frameBufferObject.deactive(gl);
@@ -192,9 +192,9 @@ namespace feng3d
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
-            castShadowsModels.forEach(element =>
+            castShadowsModels.forEach(renderable =>
             {
-                this.drawGameObject(gl, element.gameObject, scene, camera);
+                this.drawGameObject(gl, renderable, scene, camera);
             });
 
             light.frameBufferObject.deactive(gl);
@@ -203,10 +203,10 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        private drawGameObject(gl: GL, gameObject: GameObject, scene: Scene, camera: Camera)
+        private drawGameObject(gl: GL, renderable: Renderable, scene: Scene, camera: Camera)
         {
-            var renderAtomic = gameObject.renderAtomic;
-            gameObject.beforeRender(gl, renderAtomic, scene, camera);
+            var renderAtomic = renderable.renderAtomic;
+            renderable.beforeRender(gl, renderAtomic, scene, camera);
             renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader("shadow");
 
             //

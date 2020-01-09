@@ -33,11 +33,11 @@ namespace feng3d
 
             for (var i = 0; i < unblenditems.length; i++)
             {
-                var model = unblenditems[i];
-                if (model.getComponent(OutLineComponent) || model.getComponent(CartoonComponent))
+                var renderable = unblenditems[i];
+                if (renderable.getComponent(OutLineComponent) || renderable.getComponent(CartoonComponent))
                 {
-                    var renderAtomic = model.gameObject.renderAtomic;
-                    model.gameObject.beforeRender(gl, renderAtomic, scene, camera);
+                    var renderAtomic = renderable.renderAtomic;
+                    renderable.beforeRender(gl, renderAtomic, scene, camera);
 
                     this.renderAtomic.next = renderAtomic;
 

@@ -11,6 +11,8 @@ namespace feng3d
 
         get single() { return true; }
 
+        readonly renderAtomic = new RenderAtomic();
+
         /**
          * 几何体
          */
@@ -69,12 +71,28 @@ namespace feng3d
             this.on("scenetransformChanged", this._onScenetransformChanged, this);
         }
 
+        /**
+         * 渲染前执行函数
+         * 
+         * 可用于渲染前收集渲染数据，或者更新显示效果等
+         * 
+         * @param gl 
+         * @param renderAtomic 
+         * @param scene 
+         * @param camera 
+         */
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             //
             this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
             this._lightPicker.beforeRender(renderAtomic);
+
+            this.gameObject.components.forEach(element =>
+            {
+                if (element != this)
+                    element.beforeRender(gl, renderAtomic, scene, camera);
+            });
         }
 
         /**

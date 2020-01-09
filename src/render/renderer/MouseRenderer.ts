@@ -46,15 +46,15 @@ namespace feng3d
             return this.objects[id];
         }
 
-        protected drawRenderables(gl: GL, model: Renderable)
+        protected drawRenderables(gl: GL, renderable: Renderable)
         {
-            if (model.gameObject.mouseEnabled)
+            if (renderable.gameObject.mouseEnabled)
             {
-                var object = model.gameObject;
+                var object = renderable.gameObject;
                 var u_objectID = this.objects.length;
                 this.objects[u_objectID] = object;
 
-                var renderAtomic = object.renderAtomic;
+                var renderAtomic = renderable.renderAtomic;
 
                 renderAtomic.uniforms.u_objectID = u_objectID;
                 // super.drawRenderables(renderContext, model);

@@ -33,10 +33,10 @@ namespace feng3d
             uniforms.u_sceneAmbientColor = scene.ambientColor;
 
 
-            unblenditems.concat(blenditems).forEach(model =>
+            unblenditems.concat(blenditems).forEach(renderable =>
             {
                 //绘制
-                var renderAtomic = model.gameObject.renderAtomic;
+                var renderAtomic = renderable.renderAtomic;
 
                 for (const key in uniforms)
                 {
@@ -54,7 +54,7 @@ namespace feng3d
 
                 renderAtomic.shaderMacro.RotationOrder = defaultRotationOrder;
 
-                model.gameObject.beforeRender(gl, renderAtomic, scene, camera);
+                renderable.beforeRender(gl, renderAtomic, scene, camera);
 
                 gl.render(renderAtomic);
             });

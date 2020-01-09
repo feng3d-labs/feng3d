@@ -11364,7 +11364,7 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, viewRect: Rectangle): GameObject;
-        protected drawRenderables(gl: GL, model: Renderable): void;
+        protected drawRenderables(gl: GL, renderable: Renderable): void;
         /**
          * 绘制3D对象
          */
@@ -11423,7 +11423,7 @@ declare namespace feng3d {
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene: Scene, camera: Camera, wireframeColor?: Color4): void;
+        drawGameObject(gl: GL, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor?: Color4): void;
     }
     interface RenderAtomic {
         /**
@@ -11963,7 +11963,6 @@ declare namespace feng3d {
          * 资源编号
          */
         assetId: string;
-        readonly renderAtomic: RenderAtomic;
         /**
          * 名称
          */
@@ -12185,17 +12184,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
-        /**
-         * 渲染前执行函数
-         *
-         * 可用于渲染前收集渲染数据，或者更新显示效果等
-         *
-         * @param gl
-         * @param renderAtomic
-         * @param scene
-         * @param camera
-         */
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
          * 查找指定名称的游戏对象
          *
@@ -12472,6 +12460,7 @@ declare namespace feng3d {
     class Renderable extends Behaviour {
         __class__: string;
         get single(): boolean;
+        readonly renderAtomic: RenderAtomic;
         /**
          * 几何体
          */
@@ -12492,6 +12481,16 @@ declare namespace feng3d {
         get selfWorldBounds(): Box3;
         constructor();
         init(): void;
+        /**
+         * 渲染前执行函数
+         *
+         * 可用于渲染前收集渲染数据，或者更新显示效果等
+         *
+         * @param gl
+         * @param renderAtomic
+         * @param scene
+         * @param camera
+         */
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
           * 判断射线是否穿过对象
