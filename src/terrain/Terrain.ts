@@ -7,7 +7,7 @@ namespace feng3d
      * The Terrain component renders the terrain.
      */
     // @ov({ component: "OVTerrain" })
-    export class Terrain extends Model
+    export class Terrain extends Renderable
     {
         __class__: "feng3d.Terrain";
 

@@ -2,9 +2,9 @@ namespace feng3d
 {
     export class LightPicker
     {
-        private _model: Model
+        private _model: Renderable
 
-        constructor(model: Model)
+        constructor(model: Renderable)
         {
             this._model = model;
         }

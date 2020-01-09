@@ -23,7 +23,7 @@ namespace feng3d
 
             var pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
             {
-                var model = gameObject.getComponent(Model);
+                var model = gameObject.getComponent(Renderable);
                 var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
                 if (pickingCollisionVO) pv.push(pickingCollisionVO);
                 return pv;
@@ -74,7 +74,7 @@ namespace feng3d
 
             var pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
             {
-                var model = gameObject.getComponent(Model);
+                var model = gameObject.getComponent(Renderable);
                 var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
                 if (pickingCollisionVO) pv.push(pickingCollisionVO);
                 return pv;

@@ -13,7 +13,7 @@ namespace feng3d
     /**
      * 粒子系统
      */
-    export class ParticleSystem extends Model
+    export class ParticleSystem extends Renderable
     {
         __class__: "feng3d.ParticleSystem";
 

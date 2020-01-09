@@ -6,7 +6,7 @@ namespace feng3d
     /**
      * The Water component renders the terrain.
      */
-    export class Water extends Model
+    export class Water extends Renderable
     {
         __class__: "feng3d.Water";
 

@@ -588,7 +588,7 @@ namespace feng3d
          */
         get worldBounds()
         {
-            var model = this.getComponent(Model);
+            var model = this.getComponent(Renderable);
             var box = model ? model.selfWorldBounds : new Box3(this.transform.worldPosition, this.transform.worldPosition);
             this.children.forEach(element =>
             {
@@ -639,7 +639,7 @@ namespace feng3d
          */
         get isSelfLoaded()
         {
-            var model = this.getComponent(Model);
+            var model = this.getComponent(Renderable);
             if (model) return model.isLoaded
             return true;
         }
@@ -655,7 +655,7 @@ namespace feng3d
                 callback();
                 return;
             }
-            var model = this.getComponent(Model);
+            var model = this.getComponent(Renderable);
             if (model)
             {
                 model.onLoadCompleted(callback);

@@ -275,7 +275,7 @@ namespace feng3d
             var gs = this.scene.getComponentsInChildren(Transform).filter(t =>
             {
                 if (t == this.scene.transform) return false;
-                var m = t.getComponent(Model);
+                var m = t.getComponent(Renderable);
                 if (m)
                 {
                     var include = m.selfWorldBounds.toPoints().every(pos =>

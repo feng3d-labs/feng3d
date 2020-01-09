@@ -216,7 +216,7 @@
         "src/component/WireframeComponent.ts",
         "src/component/CartoonComponent.ts",
         "src/component/OutLineComponent.ts",
-        "src/core/Model.ts",
+        "src/core/Renderable.ts",
         "src/core/MeshModel.ts",
         "src/core/ScriptComponent.ts",
         "src/core/Script.ts",

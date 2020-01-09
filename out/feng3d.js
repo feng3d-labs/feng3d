@@ -24386,7 +24386,7 @@ var feng3d;
              * 世界包围盒
              */
             get: function () {
-                var model = this.getComponent(feng3d.Model);
+                var model = this.getComponent(feng3d.Renderable);
                 var box = model ? model.selfWorldBounds : new feng3d.Box3(this.transform.worldPosition, this.transform.worldPosition);
                 this.children.forEach(function (element) {
                     var ebox = element.worldBounds;
@@ -24429,7 +24429,7 @@ var feng3d;
              * 是否加载完成
              */
             get: function () {
-                var model = this.getComponent(feng3d.Model);
+                var model = this.getComponent(feng3d.Renderable);
                 if (model)
                     return model.isLoaded;
                 return true;
@@ -24446,7 +24446,7 @@ var feng3d;
                 callback();
                 return;
             }
-            var model = this.getComponent(feng3d.Model);
+            var model = this.getComponent(feng3d.Renderable);
             if (model) {
                 model.onLoadCompleted(callback);
             }
@@ -24927,7 +24927,7 @@ var feng3d;
             var gs = this.scene.getComponentsInChildren(feng3d.Transform).filter(function (t) {
                 if (t == _this.scene.transform)
                     return false;
-                var m = t.getComponent(feng3d.Model);
+                var m = t.getComponent(feng3d.Renderable);
                 if (m) {
                     var include = m.selfWorldBounds.toPoints().every(function (pos) {
                         var p = _this.project(pos);
@@ -25198,9 +25198,12 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var Model = /** @class */ (function (_super) {
-        __extends(Model, _super);
-        function Model() {
+    /**
+     * 可渲染组件
+     */
+    var Renderable = /** @class */ (function (_super) {
+        __extends(Renderable, _super);
+        function Renderable() {
             var _this = _super.call(this) || this;
             /**
              * 几何体
@@ -25215,12 +25218,12 @@ var feng3d;
             _this._lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
-        Object.defineProperty(Model.prototype, "single", {
+        Object.defineProperty(Renderable.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Model.prototype, "selfLocalBounds", {
+        Object.defineProperty(Renderable.prototype, "selfLocalBounds", {
             /**
              * 自身局部包围盒
              */
@@ -25232,7 +25235,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Model.prototype, "selfWorldBounds", {
+        Object.defineProperty(Renderable.prototype, "selfWorldBounds", {
             /**
              * 自身世界包围盒
              */
@@ -25244,11 +25247,11 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Model.prototype.init = function () {
+        Renderable.prototype.init = function () {
             _super.prototype.init.call(this);
             this.on("scenetransformChanged", this._onScenetransformChanged, this);
         };
-        Model.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
+        Renderable.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             //
             this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
@@ -25259,7 +25262,7 @@ var feng3d;
           * @param ray3D
           * @return
           */
-        Model.prototype.isIntersectingRay = function (ray3D) {
+        Renderable.prototype.isIntersectingRay = function (ray3D) {
             var localNormal = new feng3d.Vector3();
             //转换到当前实体坐标系空间
             var localRay = new feng3d.Ray3();
@@ -25282,7 +25285,7 @@ var feng3d;
             };
             return pickingCollisionVO;
         };
-        Object.defineProperty(Model.prototype, "isLoaded", {
+        Object.defineProperty(Renderable.prototype, "isLoaded", {
             /**
              * 是否加载完成
              */
@@ -25296,7 +25299,7 @@ var feng3d;
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
-        Model.prototype.onLoadCompleted = function (callback) {
+        Renderable.prototype.onLoadCompleted = function (callback) {
             if (this.isLoaded)
                 callback();
             this.material.onLoadCompleted(callback);
@@ -25304,12 +25307,12 @@ var feng3d;
         /**
          * 销毁
          */
-        Model.prototype.dispose = function () {
+        Renderable.prototype.dispose = function () {
             this.geometry = null;
             this.material = null;
             _super.prototype.dispose.call(this);
         };
-        Model.prototype._onGeometryChanged = function (property, oldValue, value) {
+        Renderable.prototype._onGeometryChanged = function (property, oldValue, value) {
             if (oldValue) {
                 oldValue.off("boundsInvalid", this._onBoundsInvalid, this);
             }
@@ -25319,49 +25322,49 @@ var feng3d;
             this.geometry = this.geometry || feng3d.Geometry.getDefault("Cube");
             this._onBoundsInvalid();
         };
-        Model.prototype._onMaterialChanged = function () {
+        Renderable.prototype._onMaterialChanged = function () {
             this.material = this.material || feng3d.Material.getDefault("Default-Material");
         };
-        Model.prototype._onScenetransformChanged = function () {
+        Renderable.prototype._onScenetransformChanged = function () {
             this._selfWorldBounds = null;
         };
         /**
          * 更新世界边界
          */
-        Model.prototype._updateWorldBounds = function () {
+        Renderable.prototype._updateWorldBounds = function () {
             this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.transform.localToWorldMatrix);
         };
         /**
          * 处理包围盒变换事件
          */
-        Model.prototype._onBoundsInvalid = function () {
+        Renderable.prototype._onBoundsInvalid = function () {
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
         };
-        Model.prototype._updateBounds = function () {
+        Renderable.prototype._updateBounds = function () {
             this._selfLocalBounds = this.geometry.bounding;
         };
         __decorate([
             feng3d.oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
             feng3d.serialize,
             feng3d.watch("_onGeometryChanged")
-        ], Model.prototype, "geometry", void 0);
+        ], Renderable.prototype, "geometry", void 0);
         __decorate([
             feng3d.oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } }),
             feng3d.serialize,
             feng3d.watch("_onMaterialChanged")
-        ], Model.prototype, "material", void 0);
+        ], Renderable.prototype, "material", void 0);
         __decorate([
             feng3d.oav({ tooltip: "是否投射阴影" }),
             feng3d.serialize
-        ], Model.prototype, "castShadows", void 0);
+        ], Renderable.prototype, "castShadows", void 0);
         __decorate([
             feng3d.oav({ tooltip: "是否接受阴影" }),
             feng3d.serialize
-        ], Model.prototype, "receiveShadows", void 0);
-        return Model;
+        ], Renderable.prototype, "receiveShadows", void 0);
+        return Renderable;
     }(feng3d.Behaviour));
-    feng3d.Model = Model;
+    feng3d.Renderable = Renderable;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25371,7 +25374,7 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         return MeshModel;
-    }(feng3d.Model));
+    }(feng3d.Renderable));
     feng3d.MeshModel = MeshModel;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -25579,7 +25582,7 @@ var feng3d;
              * 所有 Model
              */
             get: function () {
-                return this._models = this._models || this.getComponentsInChildren(feng3d.Model);
+                return this._models = this._models || this.getComponentsInChildren(feng3d.Renderable);
             },
             enumerable: true,
             configurable: true
@@ -25692,7 +25695,7 @@ var feng3d;
                 while (i < checkList.length) {
                     var checkObject = checkList[i++];
                     if (checkObject.mouseEnabled) {
-                        if (checkObject.getComponents(feng3d.Model)) {
+                        if (checkObject.getComponents(feng3d.Renderable)) {
                             this._mouseCheckObjects.push(checkObject);
                         }
                         checkList = checkList.concat(checkObject.getChildren());
@@ -25725,7 +25728,7 @@ var feng3d;
                 var item = openlist.shift();
                 if (!item.visible)
                     continue;
-                var model = item.getComponent(feng3d.Model);
+                var model = item.getComponent(feng3d.Renderable);
                 if (model && (model.castShadows || model.receiveShadows)
                     && !model.material.renderParams.enableBlend
                     && model.material.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
@@ -25744,7 +25747,7 @@ var feng3d;
         Scene.prototype.getModelsByCamera = function (camera) {
             var frustum = new feng3d.Frustum().fromMatrix(camera.viewProjection);
             var results = this.visibleAndEnabledModels.filter(function (i) {
-                var model = i.getComponent(feng3d.Model);
+                var model = i.getComponent(feng3d.Renderable);
                 if (model.selfWorldBounds) {
                     if (frustum.intersectsBox(model.selfWorldBounds))
                         return true;
@@ -25797,7 +25800,7 @@ var feng3d;
                     var gameObject = gameObjects.pop();
                     if (!gameObject.visible)
                         continue;
-                    var model = gameObject.getComponent(feng3d.Model);
+                    var model = gameObject.getComponent(feng3d.Renderable);
                     if (model && model.enabled) {
                         if (model.selfWorldBounds) {
                             if (frustum.intersectsBox(model.selfWorldBounds))
@@ -30070,7 +30073,7 @@ var feng3d;
                 gameObject.mouseEnabled = false;
                 gameObject.addComponent(feng3d.BillboardComponent);
                 //材质
-                var model = gameObject.getComponent(feng3d.Model);
+                var model = gameObject.getComponent(feng3d.Renderable);
                 model.geometry = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = feng3d.serialization.setValue(new feng3d.Material(), { shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
@@ -30914,7 +30917,7 @@ var feng3d;
             if (gameObjects.length == 0)
                 return null;
             var pickingCollisionVOs = gameObjects.reduce(function (pv, gameObject) {
-                var model = gameObject.getComponent(feng3d.Model);
+                var model = gameObject.getComponent(feng3d.Renderable);
                 var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
                     pv.push(pickingCollisionVO);
@@ -30956,7 +30959,7 @@ var feng3d;
             if (gameObjects.length == 0)
                 return [];
             var pickingCollisionVOs = gameObjects.reduce(function (pv, gameObject) {
-                var model = gameObject.getComponent(feng3d.Model);
+                var model = gameObject.getComponent(feng3d.Renderable);
                 var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
                 if (pickingCollisionVO)
                     pv.push(pickingCollisionVO);
@@ -31542,7 +31545,7 @@ var feng3d;
             uniforms.u_textureMatrix = textureMatrix;
         };
         return Water;
-    }(feng3d.Model));
+    }(feng3d.Renderable));
     feng3d.Water = Water;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -32049,7 +32052,7 @@ var feng3d;
             return _this;
         }
         return Terrain;
-    }(feng3d.Model));
+    }(feng3d.Renderable));
     feng3d.Terrain = Terrain;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -33102,7 +33105,7 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "receiveShadows", void 0);
         return ParticleSystem;
-    }(feng3d.Model));
+    }(feng3d.Renderable));
     feng3d.ParticleSystem = ParticleSystem;
     feng3d.Geometry.setDefault("Billboard-Geometry", new feng3d.QuadGeometry());
 })(feng3d || (feng3d = {}));
@@ -37928,7 +37931,7 @@ var feng3d;
             feng3d.serialize
         ], SkinnedModel.prototype, "initMatrix", void 0);
         return SkinnedModel;
-    }(feng3d.Model));
+    }(feng3d.Renderable));
     feng3d.SkinnedModel = SkinnedModel;
     var defaultSkeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = 150; while (i-- > 1)
         v.push(v[0]); return v; })();
@@ -41179,7 +41182,7 @@ var feng3d;
     function createMaterialObj(obj, subObj, materials) {
         var gameObject = new feng3d.GameObject();
         gameObject.name = subObj.g || gameObject.name;
-        var model = gameObject.addComponent(feng3d.Model);
+        var model = gameObject.addComponent(feng3d.Renderable);
         if (materials && materials[subObj.material])
             model.material = materials[subObj.material];
         var geometry = model.geometry = new feng3d.CustomGeometry();

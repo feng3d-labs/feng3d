@@ -9,9 +9,9 @@ namespace feng3d
         private camera: Camera;
 
         //
-        private _activeModels: Model[];
-        private _blenditems: Model[];
-        private _unblenditems: Model[];
+        private _activeModels: Renderable[];
+        private _blenditems: Renderable[];
+        private _unblenditems: Renderable[];
 
         constructor(scene: Scene, camera: Camera)
         {
@@ -35,7 +35,7 @@ namespace feng3d
             if (this._activeModels)
                 return this._activeModels;
 
-            var models: Model[] = this._activeModels = [];
+            var models: Renderable[] = this._activeModels = [];
             var frustum = new Frustum().fromMatrix(this.camera.viewProjection);
 
             var gameObjects = [this.scene.gameObject];
@@ -45,7 +45,7 @@ namespace feng3d
 
                 if (!gameObject.visible)
                     continue;
-                var model = gameObject.getComponent(Model);
+                var model = gameObject.getComponent(Renderable);
                 if (model && model.enabled)
                 {
                     if (model.selfWorldBounds)

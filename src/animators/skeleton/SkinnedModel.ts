@@ -2,7 +2,7 @@ namespace feng3d
 {
     export interface ComponentMap { SkinnedModel: SkinnedModel }
 
-    export class SkinnedModel extends Model
+    export class SkinnedModel extends Renderable
     {
         __class__: "feng3d.SkinnedModel";
 

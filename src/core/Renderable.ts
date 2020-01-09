@@ -1,8 +1,11 @@
 namespace feng3d
 {
-    export interface ComponentMap { Model: Model }
+    export interface ComponentMap { Renderable: Renderable }
 
-    export class Model extends Behaviour
+    /**
+     * 可渲染组件
+     */
+    export class Renderable extends Behaviour
     {
         __class__: string;
 

@@ -99,7 +99,7 @@ namespace feng3d
          */
         get models()
         {
-            return this._models = this._models || this.getComponentsInChildren(Model);
+            return this._models = this._models || this.getComponentsInChildren(Renderable);
         }
 
         /**
@@ -187,7 +187,7 @@ namespace feng3d
                 var checkObject = checkList[i++];
                 if (checkObject.mouseEnabled)
                 {
-                    if (checkObject.getComponents(Model))
+                    if (checkObject.getComponents(Renderable))
                     {
                         this._mouseCheckObjects.push(checkObject);
                     }
@@ -217,12 +217,12 @@ namespace feng3d
         getPickByDirectionalLight(light: DirectionalLight)
         {
             var openlist = [this.gameObject];
-            var targets: Model[] = [];
+            var targets: Renderable[] = [];
             while (openlist.length > 0)
             {
                 var item = openlist.shift();
                 if (!item.visible) continue;
-                var model = item.getComponent(Model);
+                var model = item.getComponent(Renderable);
                 if (model && (model.castShadows || model.receiveShadows)
                     && !model.material.renderParams.enableBlend
                     && model.material.renderParams.renderMode == RenderMode.TRIANGLES
@@ -248,7 +248,7 @@ namespace feng3d
 
             var results = this.visibleAndEnabledModels.filter(i =>
             {
-                var model = i.getComponent(Model);
+                var model = i.getComponent(Renderable);
                 if (model.selfWorldBounds)
                 {
                     if (frustum.intersectsBox(model.selfWorldBounds))
@@ -261,8 +261,8 @@ namespace feng3d
 
         //
         private _mouseCheckObjects: GameObject[];
-        private _models: Model[];
-        private _visibleAndEnabledModels: Model[];
+        private _models: Renderable[];
+        private _visibleAndEnabledModels: Renderable[];
         private _skyBoxs: SkyBox[];
         private _activeSkyBoxs: SkyBox[];
         private _directionalLights: DirectionalLight[];

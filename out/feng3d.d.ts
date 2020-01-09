@@ -11364,7 +11364,7 @@ declare namespace feng3d {
          * 渲染
          */
         draw(gl: GL, viewRect: Rectangle): GameObject;
-        protected drawRenderables(gl: GL, model: Model): void;
+        protected drawRenderables(gl: GL, model: Renderable): void;
         /**
          * 绘制3D对象
          */
@@ -12001,8 +12001,8 @@ declare namespace feng3d {
          */
         get globalVisible(): any;
         get scene(): Scene;
-        get components(): (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Model | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[];
-        set components(value: (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Model | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[]);
+        get components(): (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Renderable | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[];
+        set components(value: (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Renderable | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[]);
         /**
          * 构建3D对象
          */
@@ -12464,9 +12464,12 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface ComponentMap {
-        Model: Model;
+        Renderable: Renderable;
     }
-    class Model extends Behaviour {
+    /**
+     * 可渲染组件
+     */
+    class Renderable extends Behaviour {
         __class__: string;
         get single(): boolean;
         /**
@@ -12530,7 +12533,7 @@ declare namespace feng3d {
     interface ComponentMap {
         MeshModel: MeshModel;
     }
-    class MeshModel extends Model {
+    class MeshModel extends Renderable {
         __class__: "feng3d.MeshModel";
     }
 }
@@ -12643,11 +12646,11 @@ declare namespace feng3d {
         /**
          * 所有 Model
          */
-        get models(): Model[];
+        get models(): Renderable[];
         /**
          * 所有 可见且开启的 Model
          */
-        get visibleAndEnabledModels(): Model[];
+        get visibleAndEnabledModels(): Renderable[];
         /**
          * 所有 SkyBox
          */
@@ -12673,12 +12676,12 @@ declare namespace feng3d {
          * 获取接收光照渲染对象列表
          * @param light
          */
-        getPickByDirectionalLight(light: DirectionalLight): Model[];
+        getPickByDirectionalLight(light: DirectionalLight): Renderable[];
         /**
          * 获取 可被摄像机看见的 Model 列表
          * @param camera
          */
-        getModelsByCamera(camera: Camera): Model[];
+        getModelsByCamera(camera: Camera): Renderable[];
         private _mouseCheckObjects;
         private _models;
         private _visibleAndEnabledModels;
@@ -12719,15 +12722,15 @@ declare namespace feng3d {
          * @param gameObject
          * @param camera
          */
-        get activeModels(): Model[];
+        get activeModels(): Renderable[];
         /**
          * 半透明渲染对象
          */
-        get blenditems(): Model[];
+        get blenditems(): Renderable[];
         /**
          * 半透明渲染对象
          */
-        get unblenditems(): Model[];
+        get unblenditems(): Renderable[];
         clear(): void;
     }
 }
@@ -14375,7 +14378,7 @@ declare namespace feng3d {
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Model[]): void;
+        updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void;
     }
 }
 declare namespace feng3d {
@@ -14437,7 +14440,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     class LightPicker {
         private _model;
-        constructor(model: Model);
+        constructor(model: Renderable);
         beforeRender(renderAtomic: RenderAtomic): void;
     }
 }
@@ -14800,7 +14803,7 @@ declare namespace feng3d {
     /**
      * The Water component renders the terrain.
      */
-    class Water extends Model {
+    class Water extends Renderable {
         __class__: "feng3d.Water";
         geometry: PlaneGeometry;
         material: Material;
@@ -14975,7 +14978,7 @@ declare namespace feng3d {
     /**
      * The Terrain component renders the terrain.
      */
-    class Terrain extends Model {
+    class Terrain extends Renderable {
         __class__: "feng3d.Terrain";
         /**
          * 地形资源
@@ -15120,7 +15123,7 @@ declare namespace feng3d {
     /**
      * 粒子系统
      */
-    class ParticleSystem extends Model {
+    class ParticleSystem extends Renderable {
         __class__: "feng3d.ParticleSystem";
         /**
          * Is the particle system playing right now ?
@@ -17676,7 +17679,7 @@ declare namespace feng3d {
     interface ComponentMap {
         SkinnedModel: SkinnedModel;
     }
-    class SkinnedModel extends Model {
+    class SkinnedModel extends Renderable {
         __class__: "feng3d.SkinnedModel";
         get single(): boolean;
         skinSkeleton: SkinSkeleton;

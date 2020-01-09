@@ -46,7 +46,7 @@ namespace feng3d
             return this.objects[id];
         }
 
-        protected drawRenderables(gl: GL, model: Model)
+        protected drawRenderables(gl: GL, model: Renderable)
         {
             if (model.gameObject.mouseEnabled)
             {

@@ -31,7 +31,7 @@ namespace feng3d
          * 通过视窗摄像机进行更新
          * @param viewCamera 视窗摄像机
          */
-        updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Model[])
+        updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[])
         {
             var worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
