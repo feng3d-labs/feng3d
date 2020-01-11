@@ -9676,7 +9676,7 @@ declare namespace feng3d {
              */
             step?: number;
             /**
-             * 键盘上下方向键步长
+             * 按下上下方向键时增加的步长数量
              */
             stepDownup?: number;
             /**

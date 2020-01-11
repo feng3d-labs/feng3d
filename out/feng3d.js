@@ -23985,7 +23985,7 @@ var feng3d;
             feng3d.oav({ tooltip: "本地位移" })
         ], Transform.prototype, "position", null);
         __decorate([
-            feng3d.oav({ tooltip: "本地旋转", component: "OAVVector3", componentParam: { step: 0.001, stepScale: 30, stepDownup: 1 } })
+            feng3d.oav({ tooltip: "本地旋转", component: "OAVVector3", componentParam: { step: 0.001, stepScale: 30, stepDownup: 30 } })
         ], Transform.prototype, "rotation", null);
         __decorate([
             feng3d.oav({ tooltip: "本地缩放" })
