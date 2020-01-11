@@ -1610,6 +1610,23 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * Matrix3x3 类表示一个转换矩阵，该矩阵确定二维 (2D) 显示对象的位置和方向。
+     * 该矩阵可以执行转换功能，包括平移（沿 x 和 y 轴重新定位）、旋转和缩放（调整大小）。
+     * ```
+     *  ---                                   ---
+     *  |   scaleX      0         0    |   x轴
+     *  |     0       scaleY      0    |   y轴
+     *  |     tx        ty        1    |   平移
+     *  ---                                   ---
+     *
+     *  ---                                   ---
+     *  |     0         1         2    |   x轴
+     *  |     3         4         5    |   y轴
+     *  |     6         7         8    |   平移
+     *  ---                                   ---
+     * ```
+     */
     class Matrix3x3 {
         /**
          * 长度为9的向量，包含所有的矩阵元素
@@ -1723,6 +1740,12 @@ declare namespace feng3d {
          * @param offset 偏移
          */
         toArray(array?: number[], offset?: number): number[];
+        /**
+         * 转换为4x4矩阵
+         *
+         * @param out 4x4矩阵
+         */
+        toMatrix4x4(out?: Matrix4x4): Matrix4x4;
     }
 }
 declare namespace feng3d {
@@ -1735,7 +1758,7 @@ declare namespace feng3d {
      *  |   scaleX      0         0       0     |   x轴
      *  |     0       scaleY      0       0     |   y轴
      *  |     0         0       scaleZ    0     |   z轴
-     *  |     tx        ty        tz      tw    |   平移
+     *  |     tx        ty        tz      1     |   平移
      *  ---                                   ---
      *
      *  ---                                   ---
@@ -2126,6 +2149,12 @@ declare namespace feng3d {
          * @param offset 偏移
          */
         toArray(array?: number[], offset?: number): number[];
+        /**
+         * 转换为3x3矩阵
+         *
+         * @param out 3x3矩阵
+         */
+        toMatrix3x3(out?: Matrix3x3): Matrix3x3;
         /**
          * 以字符串返回矩阵的值
          */

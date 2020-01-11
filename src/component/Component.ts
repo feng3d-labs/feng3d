@@ -64,7 +64,7 @@ namespace feng3d
         // Functions
         //------------------------------------------
 		/**
-		 * 创建一个组件容器
+		 * 创建一个组件
 		 */
         constructor()
         {
@@ -72,6 +72,11 @@ namespace feng3d
             this.onAll(this._onAllListener, this);
         }
 
+        /**
+         * 初始化组件
+         * 
+         * 在添加到GameObject时立即被调用。
+         */
         init()
         {
         }
