@@ -1,5 +1,22 @@
 namespace feng3d
 {
+    /**
+     * Matrix3x3 类表示一个转换矩阵，该矩阵确定二维 (2D) 显示对象的位置和方向。
+     * 该矩阵可以执行转换功能，包括平移（沿 x 和 y 轴重新定位）、旋转和缩放（调整大小）。
+     * ```
+     *  ---                                   ---
+     *  |   scaleX      0         0    |   x轴
+     *  |     0       scaleY      0    |   y轴
+     *  |     tx        ty        1    |   平移
+     *  ---                                   ---
+     * 
+     *  ---                                   ---
+     *  |     0         1         2    |   x轴
+     *  |     3         4         5    |   y轴
+     *  |     6         7         8    |   平移
+     *  ---                                   ---
+     * ```
+     */
     export class Matrix3x3
     {
         /**
@@ -496,6 +513,39 @@ namespace feng3d
                 array[offset + i] = v;
             });
             return array;
+        }
+
+        /**
+         * 转换为4x4矩阵
+         * 
+         * @param out 4x4矩阵
+         */
+        toMatrix4x4(out = new Matrix4x4())
+        {
+            var outdata = out.rawData;
+            var indata = this.elements;
+
+            outdata[0] = indata[0];
+            outdata[1] = indata[1];
+            outdata[2] = 0;
+            outdata[3] = 0;
+
+            outdata[4] = indata[3];
+            outdata[5] = indata[4];
+            outdata[6] = 0;
+            outdata[7] = 0;
+
+            outdata[8] = 0;
+            outdata[9] = 0;
+            outdata[10] = 1;
+            outdata[11] = 0;
+
+            outdata[12] = indata[6];
+            outdata[13] = indata[7];
+            outdata[14] = 0;
+            outdata[15] = 1;
+
+            return out;
         }
     }
 }

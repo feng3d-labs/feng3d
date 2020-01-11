@@ -10,7 +10,7 @@ namespace feng3d
      *  |   scaleX      0         0       0     |   x轴
      *  |     0       scaleY      0       0     |   y轴
      *  |     0         0       scaleZ    0     |   z轴
-     *  |     tx        ty        tz      tw    |   平移
+     *  |     tx        ty        tz      1     |   平移
      *  ---                                   ---
      * 
      *  ---                                   ---
@@ -1281,6 +1281,31 @@ namespace feng3d
                 array[offset + i] = v;
             });
             return array;
+        }
+
+        /**
+         * 转换为3x3矩阵
+         * 
+         * @param out 3x3矩阵
+         */
+        toMatrix3x3(out = new Matrix3x3())
+        {
+            var outdata = out.elements;
+            var indata = this.rawData;
+
+            outdata[0] = indata[0];
+            outdata[1] = indata[1];
+            outdata[2] = 0;
+
+            outdata[3] = indata[4];
+            outdata[4] = indata[5];
+            outdata[5] = 0;
+
+            outdata[6] = indata[12];
+            outdata[7] = indata[13];
+            outdata[8] = 1;
+
+            return out;
         }
 
         /**
