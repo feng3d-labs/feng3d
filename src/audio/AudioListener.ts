@@ -54,15 +54,22 @@ namespace feng3d
             //
             var listener = audioCtx.listener;
             // feng3d中为左手坐标系，listener中使用的为右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/AudioListener
-            listener.positionX.value = position.x;
-            listener.positionY.value = position.y;
-            listener.positionZ.value = -position.z;
-            listener.forwardX.value = forward.x;
-            listener.forwardY.value = forward.y;
-            listener.forwardZ.value = -forward.z;
-            listener.upX.value = up.x;
-            listener.upY.value = up.y;
-            listener.upZ.value = -up.z;
+            if (listener.forwardX)
+            {
+                listener.positionX.setValueAtTime(position.x, audioCtx.currentTime);
+                listener.positionY.setValueAtTime(position.y, audioCtx.currentTime);
+                listener.positionZ.setValueAtTime(-position.z, audioCtx.currentTime);
+                listener.forwardX.setValueAtTime(forward.x, audioCtx.currentTime);
+                listener.forwardY.setValueAtTime(forward.y, audioCtx.currentTime);
+                listener.forwardZ.setValueAtTime(-forward.z, audioCtx.currentTime);
+                listener.upX.setValueAtTime(up.x, audioCtx.currentTime);
+                listener.upY.setValueAtTime(up.y, audioCtx.currentTime);
+                listener.upZ.setValueAtTime(-up.z, audioCtx.currentTime);
+            } else
+            {
+                listener.setOrientation(forward.x, forward.y, -forward.z, up.x, up.y, -up.z);
+                listener.setPosition(position.x, position.y, -position.z);
+            }
         }
 
         private _enabledChanged()

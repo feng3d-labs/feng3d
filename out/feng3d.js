@@ -31098,15 +31098,21 @@ var feng3d;
             //
             var listener = feng3d.audioCtx.listener;
             // feng3d中为左手坐标系，listener中使用的为右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/AudioListener
-            listener.positionX.value = position.x;
-            listener.positionY.value = position.y;
-            listener.positionZ.value = -position.z;
-            listener.forwardX.value = forward.x;
-            listener.forwardY.value = forward.y;
-            listener.forwardZ.value = -forward.z;
-            listener.upX.value = up.x;
-            listener.upY.value = up.y;
-            listener.upZ.value = -up.z;
+            if (listener.forwardX) {
+                listener.positionX.setValueAtTime(position.x, feng3d.audioCtx.currentTime);
+                listener.positionY.setValueAtTime(position.y, feng3d.audioCtx.currentTime);
+                listener.positionZ.setValueAtTime(-position.z, feng3d.audioCtx.currentTime);
+                listener.forwardX.setValueAtTime(forward.x, feng3d.audioCtx.currentTime);
+                listener.forwardY.setValueAtTime(forward.y, feng3d.audioCtx.currentTime);
+                listener.forwardZ.setValueAtTime(-forward.z, feng3d.audioCtx.currentTime);
+                listener.upX.setValueAtTime(up.x, feng3d.audioCtx.currentTime);
+                listener.upY.setValueAtTime(up.y, feng3d.audioCtx.currentTime);
+                listener.upZ.setValueAtTime(-up.z, feng3d.audioCtx.currentTime);
+            }
+            else {
+                listener.setOrientation(forward.x, forward.y, -forward.z, up.x, up.y, -up.z);
+                listener.setPosition(position.x, position.y, -position.z);
+            }
         };
         AudioListener.prototype._enabledChanged = function () {
             if (!this.gain)
@@ -31404,15 +31410,16 @@ var feng3d;
             //
             var panner = this.panner;
             // feng3d使用左手坐标系，panner使用右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/PannerNode
-            panner.positionX.value = scenePosition.x;
-            panner.positionY.value = scenePosition.y;
-            panner.positionZ.value = -scenePosition.z;
             if (panner.orientationX) {
+                panner.positionX.value = scenePosition.x;
+                panner.positionY.value = scenePosition.y;
+                panner.positionZ.value = -scenePosition.z;
                 panner.orientationX.value = 1;
                 panner.orientationY.value = 0;
                 panner.orientationZ.value = 0;
             }
             else {
+                panner.setPosition(scenePosition.x, scenePosition.y, -scenePosition.z);
                 panner.setOrientation(1, 0, 0);
             }
         };
