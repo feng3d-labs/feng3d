@@ -24760,8 +24760,9 @@ var feng3d;
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        function View(canvas, scene, camera) {
+        function View(canvas, scene, camera, contextAttributes) {
             var _this = _super.call(this) || this;
+            _this._contextAttributes = { antialias: false };
             _this.contextLost = false;
             if (!canvas) {
                 canvas = document.createElement("canvas");
@@ -24775,6 +24776,9 @@ var feng3d;
             }
             console.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             _this.canvas = canvas;
+            if (contextAttributes) {
+                Object.assign(_this._contextAttributes, contextAttributes);
+            }
             canvas.addEventListener("webglcontextlost", function (event) {
                 event.preventDefault();
                 _this.contextLost = true;
@@ -24830,7 +24834,7 @@ var feng3d;
         Object.defineProperty(View.prototype, "gl", {
             get: function () {
                 if (!this.canvas.gl)
-                    this.canvas.gl = feng3d.GL.getGL(this.canvas);
+                    this.canvas.gl = feng3d.GL.getGL(this.canvas, this._contextAttributes);
                 return this.canvas.gl;
             },
             enumerable: true,

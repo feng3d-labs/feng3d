@@ -14,6 +14,8 @@ namespace feng3d
         //
         canvas: HTMLCanvasElement;
 
+        private _contextAttributes: WebGLContextAttributes = { antialias: false };
+
         /**
          * 摄像机
          */
@@ -53,7 +55,7 @@ namespace feng3d
         get gl()
         {
             if (!this.canvas.gl)
-                this.canvas.gl = GL.getGL(this.canvas);
+                this.canvas.gl = GL.getGL(this.canvas, this._contextAttributes);
             return this.canvas.gl;
         }
 
@@ -85,7 +87,7 @@ namespace feng3d
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera)
+        constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera, contextAttributes?: WebGLContextAttributes)
         {
             super();
             if (!canvas)
@@ -102,6 +104,10 @@ namespace feng3d
             console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
 
             this.canvas = canvas;
+            if (contextAttributes)
+            {
+                Object.assign(this._contextAttributes, contextAttributes);
+            }
 
             canvas.addEventListener("webglcontextlost", (event) =>
             {

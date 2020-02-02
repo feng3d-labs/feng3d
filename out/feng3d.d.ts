@@ -12289,6 +12289,7 @@ declare namespace feng3d {
      */
     class View extends Feng3dObject {
         canvas: HTMLCanvasElement;
+        private _contextAttributes;
         /**
          * 摄像机
          */
@@ -12320,7 +12321,7 @@ declare namespace feng3d {
          * @param scene     3D场景
          * @param camera    摄像机
          */
-        constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera);
+        constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera, contextAttributes?: WebGLContextAttributes);
         /**
          * 修改canvas尺寸
          * @param width 宽度
