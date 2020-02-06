@@ -14,7 +14,7 @@ namespace feng3d
         //
         canvas: HTMLCanvasElement;
 
-        private _contextAttributes: WebGLContextAttributes = { antialias: false };
+        private _contextAttributes: WebGLContextAttributes = {};
 
         /**
          * 摄像机

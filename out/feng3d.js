@@ -24762,7 +24762,7 @@ var feng3d;
          */
         function View(canvas, scene, camera, contextAttributes) {
             var _this = _super.call(this) || this;
-            _this._contextAttributes = { antialias: false };
+            _this._contextAttributes = {};
             _this.contextLost = false;
             if (!canvas) {
                 canvas = document.createElement("canvas");
