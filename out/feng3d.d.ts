@@ -12248,12 +12248,6 @@ declare namespace feng3d {
          */
         private addComponentAt;
         /**
-         * 创建游戏对象
-         *
-         * @param param 游戏对象参数
-         */
-        static create(param?: gPartial<GameObject>): GameObject;
-        /**
          * 创建指定类型的游戏对象。
          *
          * @param type 游戏对象类型。

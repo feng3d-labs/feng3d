@@ -825,17 +825,6 @@ namespace feng3d
         }
 
         /**
-         * 创建游戏对象
-         * 
-         * @param param 游戏对象参数
-         */
-        static create(param?: gPartial<GameObject>)
-        {
-            var g = serialization.setValue(new GameObject(), param);
-            return g;
-        }
-
-        /**
          * 创建指定类型的游戏对象。
          * 
          * @param type 游戏对象类型。

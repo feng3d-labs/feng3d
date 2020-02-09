@@ -1438,7 +1438,7 @@ var feng3d;
          */
         Serialization.prototype.setValue = function (target, source) {
             if (Object.isBaseType(source) || target == source)
-                return;
+                return target;
             var handlers = this.setValueHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
             propertyHandler({ __root__: target }, { __root__: source }, __root__, handlers, this);
             return target;
@@ -24647,15 +24647,6 @@ var feng3d;
             component.init();
             //派发添加组件事件
             this.dispatch("addComponent", component, true);
-        };
-        /**
-         * 创建游戏对象
-         *
-         * @param param 游戏对象参数
-         */
-        GameObject.create = function (param) {
-            var g = feng3d.serialization.setValue(new GameObject(), param);
-            return g;
         };
         /**
          * 创建指定类型的游戏对象。

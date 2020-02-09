@@ -131,7 +131,7 @@ var feng3d;
          */
         Serialization.prototype.setValue = function (target, source) {
             if (Object.isBaseType(source) || target == source)
-                return;
+                return target;
             var handlers = this.setValueHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
             propertyHandler({ __root__: target }, { __root__: source }, __root__, handlers, this);
             return target;
