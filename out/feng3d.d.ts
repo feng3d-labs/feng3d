@@ -12261,6 +12261,9 @@ declare namespace feng3d {
          */
         static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): GameObject;
     }
+    /**
+     * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
+     */
     interface PrimitiveGameObject {
         Cube: GameObject;
         Plane: GameObject;

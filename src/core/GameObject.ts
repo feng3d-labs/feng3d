@@ -900,6 +900,9 @@ namespace feng3d
         }
     }
 
+    /**
+     * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
+     */
     export interface PrimitiveGameObject
     {
         Cube: GameObject;
