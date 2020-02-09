@@ -93,6 +93,12 @@ declare namespace feng3d {
          */
         serialize<T>(target: T): gPartial<T>;
         /**
+         * 删除 Json 对象中 CLASS_KEY 属性，防止被反序列化。
+         *
+         * @param obj
+         */
+        deleteCLASS_KEY(obj: Object): void;
+        /**
          * 反序列化对象为基础对象数据（由Object与Array组合）
          *
          * @param object 换为Json的对象

@@ -1403,6 +1403,19 @@ var feng3d;
             return v;
         };
         /**
+         * 删除 Json 对象中 CLASS_KEY 属性，防止被反序列化。
+         *
+         * @param obj
+         */
+        Serialization.prototype.deleteCLASS_KEY = function (obj) {
+            if (Object.isBaseType(obj))
+                return;
+            delete obj[feng3d.CLASS_KEY];
+            for (var key in obj) {
+                this.deleteCLASS_KEY(obj[key]);
+            }
+        };
+        /**
          * 反序列化对象为基础对象数据（由Object与Array组合）
          *
          * @param object 换为Json的对象
