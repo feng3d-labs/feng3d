@@ -119,4 +119,14 @@ namespace feng3d
             uniforms.u_textureMatrix = textureMatrix;
         }
     }
+
+    GameObject.registerPrimitive("Water", (g) =>
+    {
+        g.addComponent(Water);
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Water: GameObject;
+    }
 }

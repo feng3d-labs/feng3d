@@ -20,4 +20,14 @@ namespace feng3d
 
         material = Material.getDefault("Terrain-Material");
     }
+
+    GameObject.registerPrimitive("Terrain", (g) =>
+    {
+        g.addComponent(Terrain);
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Terrain: GameObject;
+    }
 }

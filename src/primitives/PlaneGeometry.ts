@@ -255,4 +255,14 @@ namespace feng3d
     }
 
     Geometry.setDefault("Plane", new PlaneGeometry(), { width: 10, height: 10 });
+
+    GameObject.registerPrimitive("Plane", (g) =>
+    {
+        g.addComponent(MeshModel).geometry = Geometry.getDefault("Plane");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Plane: GameObject;
+    }
 }

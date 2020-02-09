@@ -102,4 +102,16 @@ namespace feng3d
         @oav({ tooltip: "终点颜色" })
         endColor = new Color4();
     }
+
+    GameObject.registerPrimitive("Segment", (g) =>
+    {
+        var model = g.addComponent(MeshModel);
+        model.geometry = new SegmentGeometry();
+        model.material = Material.getDefault("Segment-Material");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Segment: GameObject;
+    }
 }

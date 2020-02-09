@@ -175,4 +175,14 @@ namespace feng3d
     }
     // 投影后可视区域
     var visibleBox = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+
+    GameObject.registerPrimitive("Camera", (g) =>
+    {
+        g.addComponent(Camera);
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Camera: GameObject;
+    }
 }

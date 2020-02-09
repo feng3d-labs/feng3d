@@ -845,59 +845,27 @@ namespace feng3d
         {
             var g = new GameObject();
             g.name = type;
-            if (type == "Cube")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },] });
-            } else if (type == "Plane")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Plane") },] });
-            } else if (type == "Quad")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Quad") },] });
-            } else if (type == "Cylinder")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cylinder") },] });
-            } else if (type == "Cone")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cone") },] });
-            } else if (type == "Torus")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Torus") },] });
-            } else if (type == "Sphere")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Sphere") },] });
-            } else if (type == "Capsule")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Capsule") },] });
-            } else if (type == "Segment")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: new SegmentGeometry(), material: Material.getDefault("Segment-Material") },] });
-            } else if (type == "Terrain")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.Terrain" },] });
-            } else if (type == "Camera")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.Camera" },] });
-            } else if (type == "Point light")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.PointLight" },] });
-            } else if (type == "Directional light")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.DirectionalLight" },] });
-            } else if (type == "Spot light")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.SpotLight" },] });
-            } else if (type == "Water")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.Water" },] });
-            } else if (type == "Particle System")
-            {
-                serialization.setValue(g, { components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
-            }
+
+            var createHandler = this._registerPrimitives[type];
+            if (createHandler != null) createHandler(g);
 
             serialization.setValue(g, param);
             return g;
         }
+
+        /**
+         * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
+         * 
+         * @param type 原始游戏对象类型。
+         * @param handler 构建原始游戏对象的函数。
+         */
+        static registerPrimitive<K extends keyof PrimitiveGameObject>(type: K, handler: (gameObject: GameObject) => void)
+        {
+            if (this._registerPrimitives[type])
+                console.warn(`重复注册原始游戏对象 ${type} ！`);
+            this._registerPrimitives[type] = handler;
+        }
+        static _registerPrimitives: { [type: string]: (gameObject: GameObject) => void } = {};
     }
 
     /**
@@ -905,21 +873,5 @@ namespace feng3d
      */
     export interface PrimitiveGameObject
     {
-        Cube: GameObject;
-        Plane: GameObject;
-        Quad: GameObject;
-        Cylinder: GameObject;
-        Cone: GameObject;
-        Torus: GameObject;
-        Sphere: GameObject;
-        Capsule: GameObject;
-        Segment: GameObject;
-        Terrain: GameObject;
-        Camera: GameObject;
-        "Point light": GameObject;
-        "Directional light": GameObject;
-        "Spot light": GameObject;
-        "Particle System": GameObject;
-        "Water": GameObject;
     }
 }

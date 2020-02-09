@@ -225,4 +225,14 @@ namespace feng3d
         Sphere: SphereGeometry;
     }
     Geometry.setDefault("Sphere", new SphereGeometry());
+
+    GameObject.registerPrimitive("Sphere", (g) =>
+    {
+        g.addComponent(MeshModel).geometry = Geometry.getDefault("Sphere");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Sphere: GameObject;
+    }
 }

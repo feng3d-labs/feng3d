@@ -58,4 +58,14 @@ namespace feng3d
             }
         }
     }
+
+    GameObject.registerPrimitive("Directional light", (g) =>
+    {
+        g.addComponent(DirectionalLight);
+    });
+
+    export interface PrimitiveGameObject
+    {
+        "Directional light": GameObject;
+    }
 }

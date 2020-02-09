@@ -232,4 +232,14 @@ namespace feng3d
         Capsule: CapsuleGeometry;
     }
     Geometry.setDefault("Capsule", new CapsuleGeometry());
+
+    GameObject.registerPrimitive("Capsule", (g) =>
+    {
+        g.addComponent(MeshModel).geometry = Geometry.getDefault("Capsule");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Capsule: GameObject;
+    }
 }

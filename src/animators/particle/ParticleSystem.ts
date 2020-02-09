@@ -955,4 +955,15 @@ namespace feng3d
         "Billboard-Geometry": QuadGeometry;
     }
     Geometry.setDefault("Billboard-Geometry", new QuadGeometry());
+
+    GameObject.registerPrimitive("Particle System", (g) =>
+    {
+        g.addComponent(ParticleSystem);
+        g.getComponent(Transform).rx = -90;
+    });
+
+    export interface PrimitiveGameObject
+    {
+        "Particle System": GameObject;
+    }
 }

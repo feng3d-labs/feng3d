@@ -66,4 +66,14 @@ namespace feng3d
                 this.perspectiveLens.fov = this.angle;
         }
     }
+
+    GameObject.registerPrimitive("Spot light", (g) =>
+    {
+        g.addComponent(SpotLight);
+    });
+
+    export interface PrimitiveGameObject
+    {
+        "Spot light": GameObject;
+    }
 }

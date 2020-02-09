@@ -238,4 +238,14 @@ namespace feng3d
 		Torus: TorusGeometry;
 	}
 	Geometry.setDefault("Torus", new TorusGeometry());
+
+    GameObject.registerPrimitive("Torus", (g) =>
+    {
+        g.addComponent(MeshModel).geometry = Geometry.getDefault("Torus");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Torus: GameObject;
+    }
 }

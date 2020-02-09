@@ -12260,27 +12260,21 @@ declare namespace feng3d {
          * @param param 游戏对象参数。
          */
         static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): GameObject;
+        /**
+         * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
+         *
+         * @param type 原始游戏对象类型。
+         * @param handler 构建原始游戏对象的函数。
+         */
+        static registerPrimitive<K extends keyof PrimitiveGameObject>(type: K, handler: (gameObject: GameObject) => void): void;
+        static _registerPrimitives: {
+            [type: string]: (gameObject: GameObject) => void;
+        };
     }
     /**
      * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
      */
     interface PrimitiveGameObject {
-        Cube: GameObject;
-        Plane: GameObject;
-        Quad: GameObject;
-        Cylinder: GameObject;
-        Cone: GameObject;
-        Torus: GameObject;
-        Sphere: GameObject;
-        Capsule: GameObject;
-        Segment: GameObject;
-        Terrain: GameObject;
-        Camera: GameObject;
-        "Point light": GameObject;
-        "Directional light": GameObject;
-        "Spot light": GameObject;
-        "Particle System": GameObject;
-        "Water": GameObject;
     }
 }
 interface HTMLCanvasElement {
@@ -13183,6 +13177,9 @@ declare namespace feng3d {
          */
         endColor: Color4;
     }
+    interface PrimitiveGameObject {
+        Segment: GameObject;
+    }
 }
 declare namespace feng3d {
     /**
@@ -13419,6 +13416,9 @@ declare namespace feng3d {
         private _onLensChanged;
         private _onProjectionChanged;
     }
+    interface PrimitiveGameObject {
+        Camera: GameObject;
+    }
 }
 declare namespace feng3d {
     interface GeometryTypes {
@@ -13433,6 +13433,9 @@ declare namespace feng3d {
     }
     interface DefaultGeometry {
         Quad: QuadGeometry;
+    }
+    interface PrimitiveGameObject {
+        Quad: GameObject;
     }
 }
 declare namespace feng3d {
@@ -13508,6 +13511,9 @@ declare namespace feng3d {
     }
     interface DefaultGeometry {
         Plane: PlaneGeometry;
+    }
+    interface PrimitiveGameObject {
+        Plane: GameObject;
     }
 }
 declare namespace feng3d {
@@ -13592,6 +13598,9 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Cube: CubeGeometry;
     }
+    interface PrimitiveGameObject {
+        Cube: GameObject;
+    }
 }
 declare namespace feng3d {
     interface GeometryTypes {
@@ -13644,6 +13653,9 @@ declare namespace feng3d {
     }
     interface DefaultGeometry {
         Sphere: SphereGeometry;
+    }
+    interface PrimitiveGameObject {
+        Sphere: GameObject;
     }
 }
 declare namespace feng3d {
@@ -13701,6 +13713,9 @@ declare namespace feng3d {
     }
     interface DefaultGeometry {
         Capsule: CapsuleGeometry;
+    }
+    interface PrimitiveGameObject {
+        Capsule: GameObject;
     }
 }
 declare namespace feng3d {
@@ -13771,6 +13786,9 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Cylinder: CylinderGeometry;
     }
+    interface PrimitiveGameObject {
+        Cylinder: GameObject;
+    }
 }
 declare namespace feng3d {
     /**
@@ -13795,6 +13813,9 @@ declare namespace feng3d {
     }
     interface DefaultGeometry {
         Cone: ConeGeometry;
+    }
+    interface PrimitiveGameObject {
+        Cone: GameObject;
     }
 }
 declare namespace feng3d {
@@ -13860,6 +13881,9 @@ declare namespace feng3d {
     }
     interface DefaultGeometry {
         Torus: TorusGeometry;
+    }
+    interface PrimitiveGameObject {
+        Torus: GameObject;
     }
 }
 declare namespace feng3d {
@@ -14417,6 +14441,9 @@ declare namespace feng3d {
          */
         updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void;
     }
+    interface PrimitiveGameObject {
+        "Directional light": GameObject;
+    }
 }
 declare namespace feng3d {
     interface ComponentMap {
@@ -14440,6 +14467,9 @@ declare namespace feng3d {
         get shadowMapSize(): Vector2;
         constructor();
         private invalidRange;
+    }
+    interface PrimitiveGameObject {
+        "Point light": GameObject;
     }
 }
 declare namespace feng3d {
@@ -14472,6 +14502,9 @@ declare namespace feng3d {
         constructor();
         private _invalidRange;
         private _invalidAngle;
+    }
+    interface PrimitiveGameObject {
+        "Spot light": GameObject;
     }
 }
 declare namespace feng3d {
@@ -14850,6 +14883,9 @@ declare namespace feng3d {
         private frameBufferObject;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
     }
+    interface PrimitiveGameObject {
+        Water: GameObject;
+    }
 }
 declare namespace feng3d {
     interface UniformsTypes {
@@ -15023,6 +15059,9 @@ declare namespace feng3d {
         assign: TerrainData;
         geometry: TerrainGeometry;
         material: Material;
+    }
+    interface PrimitiveGameObject {
+        Terrain: GameObject;
     }
 }
 declare namespace feng3d {
@@ -15405,6 +15444,9 @@ declare namespace feng3d {
     }
     interface DefaultGeometry {
         "Billboard-Geometry": QuadGeometry;
+    }
+    interface PrimitiveGameObject {
+        "Particle System": GameObject;
     }
 }
 declare namespace feng3d {

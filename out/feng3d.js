@@ -24666,57 +24666,24 @@ var feng3d;
         GameObject.createPrimitive = function (type, param) {
             var g = new GameObject();
             g.name = type;
-            if (type == "Cube") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },] });
-            }
-            else if (type == "Plane") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },] });
-            }
-            else if (type == "Quad") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },] });
-            }
-            else if (type == "Cylinder") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },] });
-            }
-            else if (type == "Cone") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },] });
-            }
-            else if (type == "Torus") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },] });
-            }
-            else if (type == "Sphere") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },] });
-            }
-            else if (type == "Capsule") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },] });
-            }
-            else if (type == "Segment") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },] });
-            }
-            else if (type == "Terrain") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Terrain" },] });
-            }
-            else if (type == "Camera") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Camera" },] });
-            }
-            else if (type == "Point light") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.PointLight" },] });
-            }
-            else if (type == "Directional light") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.DirectionalLight" },] });
-            }
-            else if (type == "Spot light") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.SpotLight" },] });
-            }
-            else if (type == "Water") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Water" },] });
-            }
-            else if (type == "Particle System") {
-                feng3d.serialization.setValue(g, { components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
-            }
+            var createHandler = this._registerPrimitives[type];
+            if (createHandler != null)
+                createHandler(g);
             feng3d.serialization.setValue(g, param);
             return g;
         };
+        /**
+         * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
+         *
+         * @param type 原始游戏对象类型。
+         * @param handler 构建原始游戏对象的函数。
+         */
+        GameObject.registerPrimitive = function (type, handler) {
+            if (this._registerPrimitives[type])
+                console.warn("\u91CD\u590D\u6CE8\u518C\u539F\u59CB\u6E38\u620F\u5BF9\u8C61 " + type + " \uFF01");
+            this._registerPrimitives[type] = handler;
+        };
+        GameObject._registerPrimitives = {};
         __decorate([
             feng3d.serialize
         ], GameObject.prototype, "prefabId", void 0);
@@ -27080,6 +27047,11 @@ var feng3d;
         return Segment;
     }());
     feng3d.Segment = Segment;
+    feng3d.GameObject.registerPrimitive("Segment", function (g) {
+        var model = g.addComponent(feng3d.MeshModel);
+        model.geometry = new SegmentGeometry();
+        model.material = feng3d.Material.getDefault("Segment-Material");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27528,6 +27500,9 @@ var feng3d;
     feng3d.Camera = Camera;
     // 投影后可视区域
     var visibleBox = new feng3d.Box3(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
+    feng3d.GameObject.registerPrimitive("Camera", function (g) {
+        g.addComponent(Camera);
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27550,6 +27525,9 @@ var feng3d;
     }(feng3d.Geometry));
     feng3d.QuadGeometry = QuadGeometry;
     feng3d.Geometry.setDefault("Quad", new QuadGeometry());
+    feng3d.GameObject.registerPrimitive("Quad", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Quad");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27766,6 +27744,9 @@ var feng3d;
     }(feng3d.Geometry));
     feng3d.PlaneGeometry = PlaneGeometry;
     feng3d.Geometry.setDefault("Plane", new PlaneGeometry(), { width: 10, height: 10 });
+    feng3d.GameObject.registerPrimitive("Plane", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Plane");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28190,6 +28171,9 @@ var feng3d;
     }(feng3d.Geometry));
     feng3d.CubeGeometry = CubeGeometry;
     feng3d.Geometry.setDefault("Cube", new CubeGeometry());
+    feng3d.GameObject.registerPrimitive("Cube", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Cube");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28376,6 +28360,9 @@ var feng3d;
     }(feng3d.Geometry));
     feng3d.SphereGeometry = SphereGeometry;
     feng3d.Geometry.setDefault("Sphere", new SphereGeometry());
+    feng3d.GameObject.registerPrimitive("Sphere", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Sphere");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28571,6 +28558,9 @@ var feng3d;
     }(feng3d.Geometry));
     feng3d.CapsuleGeometry = CapsuleGeometry;
     feng3d.Geometry.setDefault("Capsule", new CapsuleGeometry());
+    feng3d.GameObject.registerPrimitive("Capsule", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Capsule");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28925,6 +28915,9 @@ var feng3d;
     }(feng3d.Geometry));
     feng3d.CylinderGeometry = CylinderGeometry;
     feng3d.Geometry.setDefault("Cylinder", new CylinderGeometry());
+    feng3d.GameObject.registerPrimitive("Cylinder", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Cylinder");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28956,6 +28949,9 @@ var feng3d;
     }(feng3d.CylinderGeometry));
     feng3d.ConeGeometry = ConeGeometry;
     feng3d.Geometry.setDefault("Cone", new ConeGeometry());
+    feng3d.GameObject.registerPrimitive("Cone", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Cone");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -29151,6 +29147,9 @@ var feng3d;
     }(feng3d.Geometry));
     feng3d.TorusGeometry = TorusGeometry;
     feng3d.Geometry.setDefault("Torus", new TorusGeometry());
+    feng3d.GameObject.registerPrimitive("Torus", function (g) {
+        g.addComponent(feng3d.MeshModel).geometry = feng3d.Geometry.getDefault("Torus");
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30240,6 +30239,9 @@ var feng3d;
         return DirectionalLight;
     }(feng3d.Light));
     feng3d.DirectionalLight = DirectionalLight;
+    feng3d.GameObject.registerPrimitive("Directional light", function (g) {
+        g.addComponent(DirectionalLight);
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30292,6 +30294,9 @@ var feng3d;
         return PointLight;
     }(feng3d.Light));
     feng3d.PointLight = PointLight;
+    feng3d.GameObject.registerPrimitive("Point light", function (g) {
+        g.addComponent(PointLight);
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30360,6 +30365,9 @@ var feng3d;
         return SpotLight;
     }(feng3d.Light));
     feng3d.SpotLight = SpotLight;
+    feng3d.GameObject.registerPrimitive("Spot light", function (g) {
+        g.addComponent(SpotLight);
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31627,6 +31635,9 @@ var feng3d;
         return Water;
     }(feng3d.Renderable));
     feng3d.Water = Water;
+    feng3d.GameObject.registerPrimitive("Water", function (g) {
+        g.addComponent(Water);
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32134,6 +32145,9 @@ var feng3d;
         return Terrain;
     }(feng3d.Renderable));
     feng3d.Terrain = Terrain;
+    feng3d.GameObject.registerPrimitive("Terrain", function (g) {
+        g.addComponent(Terrain);
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -33188,6 +33202,10 @@ var feng3d;
     }(feng3d.Renderable));
     feng3d.ParticleSystem = ParticleSystem;
     feng3d.Geometry.setDefault("Billboard-Geometry", new feng3d.QuadGeometry());
+    feng3d.GameObject.registerPrimitive("Particle System", function (g) {
+        g.addComponent(ParticleSystem);
+        g.getComponent(feng3d.Transform).rx = -90;
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
