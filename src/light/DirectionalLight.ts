@@ -6,6 +6,7 @@ namespace feng3d
     /**
      * 方向光源
      */
+    @AddComponentMenu("Rendering/DirectionalLight")
     export class DirectionalLight extends Light
     {
         __class__: "feng3d.DirectionalLight";

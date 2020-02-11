@@ -6,6 +6,7 @@ namespace feng3d
     /**
      * 参考
      */
+    @AddComponentMenu("Rendering/CartoonComponent")
     export class CartoonComponent extends Component
     {
 

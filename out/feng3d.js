@@ -17989,6 +17989,9 @@ var feng3d;
             if (!feng3d.menuConfig.component)
                 feng3d.menuConfig.component = [];
             feng3d.menuConfig.component.push({ path: path, order: componentOrder, type: target });
+            feng3d.menuConfig.component.sort(function (a, b) { if (a.path < b.path)
+                return -1; return 1; });
+            feng3d.menuConfig.component.sort(function (a, b) { return a.order - b.order; });
         };
     }
     feng3d.AddComponentMenu = AddComponentMenu;
@@ -23277,6 +23280,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         ], SkyBox.prototype, "s_skyboxTexture", void 0);
+        SkyBox = __decorate([
+            feng3d.AddComponentMenu("SkyBox/SkyBox")
+        ], SkyBox);
         return SkyBox;
     }(feng3d.Component));
     feng3d.SkyBox = SkyBox;
@@ -25073,6 +25079,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.watch("_onCameraChanged")
         ], HoldSizeComponent.prototype, "camera", void 0);
+        HoldSizeComponent = __decorate([
+            feng3d.AddComponentMenu("Layout/HoldSizeComponent")
+        ], HoldSizeComponent);
         return HoldSizeComponent;
     }(feng3d.Component));
     feng3d.HoldSizeComponent = HoldSizeComponent;
@@ -25118,6 +25127,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.watch("_onCameraChanged")
         ], BillboardComponent.prototype, "camera", void 0);
+        BillboardComponent = __decorate([
+            feng3d.AddComponentMenu("Layout/BillboardComponent")
+        ], BillboardComponent);
         return BillboardComponent;
     }(feng3d.Component));
     feng3d.BillboardComponent = BillboardComponent;
@@ -25212,6 +25224,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], CartoonComponent.prototype, "cartoon_Anti_aliasing", null);
+        CartoonComponent = __decorate([
+            feng3d.AddComponentMenu("Rendering/CartoonComponent")
+        ], CartoonComponent);
         return CartoonComponent;
     }(feng3d.Component));
     feng3d.CartoonComponent = CartoonComponent;
@@ -25244,6 +25259,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], OutLineComponent.prototype, "outlineMorphFactor", void 0);
+        OutLineComponent = __decorate([
+            feng3d.AddComponentMenu("Rendering/OutLineComponent")
+        ], OutLineComponent);
         return OutLineComponent;
     }(feng3d.Component));
     feng3d.OutLineComponent = OutLineComponent;
@@ -25532,6 +25550,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], ScriptComponent.prototype, "scriptInstance", null);
+        ScriptComponent = __decorate([
+            feng3d.AddComponentMenu("Script/Script")
+        ], ScriptComponent);
         return ScriptComponent;
     }(feng3d.Behaviour));
     feng3d.ScriptComponent = ScriptComponent;
@@ -27523,6 +27544,9 @@ var feng3d;
             feng3d.oav({ component: "OAVObjectView" }),
             feng3d.watch("_onLensChanged")
         ], Camera.prototype, "lens", void 0);
+        Camera = __decorate([
+            feng3d.AddComponentMenu("Rendering/Camera")
+        ], Camera);
         return Camera;
     }(feng3d.Component));
     feng3d.Camera = Camera;
@@ -30264,6 +30288,9 @@ var feng3d;
                 feng3d.serialization.setValue(this.orthographicLens, { size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
             }
         };
+        DirectionalLight = __decorate([
+            feng3d.AddComponentMenu("Rendering/DirectionalLight")
+        ], DirectionalLight);
         return DirectionalLight;
     }(feng3d.Light));
     feng3d.DirectionalLight = DirectionalLight;
@@ -30319,6 +30346,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], PointLight.prototype, "range", null);
+        PointLight = __decorate([
+            feng3d.AddComponentMenu("Rendering/PointLight")
+        ], PointLight);
         return PointLight;
     }(feng3d.Light));
     feng3d.PointLight = PointLight;
@@ -31178,6 +31208,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ tooltip: "音量" })
         ], AudioListener.prototype, "volume", null);
+        AudioListener = __decorate([
+            feng3d.AddComponentMenu("Audio/AudioListener")
+        ], AudioListener);
         return AudioListener;
     }(feng3d.Behaviour));
     feng3d.AudioListener = AudioListener;
@@ -31560,6 +31593,9 @@ var feng3d;
         __decorate([
             feng3d.oav()
         ], AudioSource.prototype, "stop", null);
+        AudioSource = __decorate([
+            feng3d.AddComponentMenu("Audio/AudioSource")
+        ], AudioSource);
         return AudioSource;
     }(feng3d.Behaviour));
     feng3d.AudioSource = AudioSource;
@@ -31663,6 +31699,9 @@ var feng3d;
             // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
             uniforms.u_textureMatrix = textureMatrix;
         };
+        Water = __decorate([
+            feng3d.AddComponentMenu("Graphics/Water")
+        ], Water);
         return Water;
     }(feng3d.Renderable));
     feng3d.Water = Water;
@@ -33229,6 +33268,9 @@ var feng3d;
             feng3d.oav({ block: "Renderer" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "receiveShadows", void 0);
+        ParticleSystem = __decorate([
+            feng3d.AddComponentMenu("Animator/ParticleSystem")
+        ], ParticleSystem);
         return ParticleSystem;
     }(feng3d.Renderable));
     feng3d.ParticleSystem = ParticleSystem;
@@ -38339,6 +38381,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], Animation.prototype, "playspeed", void 0);
+        Animation = __decorate([
+            feng3d.AddComponentMenu("Animator/Animation")
+        ], Animation);
         return Animation;
     }(feng3d.Behaviour));
     feng3d.Animation = Animation;

@@ -10,6 +10,7 @@ namespace feng3d
 	/**
 	 * 摄像机
 	 */
+    @AddComponentMenu("Rendering/Camera")
     export class Camera extends Component
     {
         __class__: "feng3d.Camera";

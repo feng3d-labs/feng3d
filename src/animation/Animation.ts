@@ -3,6 +3,8 @@ namespace feng3d
 
     export interface ComponentMap { Animation: Animation; }
 
+
+    @AddComponentMenu("Animator/Animation")
     export class Animation extends Behaviour
     {
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })

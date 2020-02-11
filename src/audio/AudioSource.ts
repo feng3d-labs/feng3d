@@ -27,6 +27,7 @@ namespace feng3d
      * 声源
      * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
      */
+    @AddComponentMenu("Audio/AudioSource")
     export class AudioSource extends Behaviour
     {
         private panner: PannerNode;

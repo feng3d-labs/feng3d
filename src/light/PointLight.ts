@@ -6,6 +6,7 @@ namespace feng3d
     /**
      * 点光源
      */
+    @AddComponentMenu("Rendering/PointLight")
     export class PointLight extends Light
     {
         __class__: "feng3d.PointLight";

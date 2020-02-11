@@ -3,6 +3,7 @@ namespace feng3d
 
     export interface ComponentMap { HoldSizeComponent: HoldSizeComponent; }
 
+    @feng3d.AddComponentMenu("Layout/HoldSizeComponent")
     export class HoldSizeComponent extends Component
     {
 

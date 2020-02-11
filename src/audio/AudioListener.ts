@@ -7,6 +7,7 @@ namespace feng3d
     /**
      * 声音监听器
      */
+    @AddComponentMenu("Audio/AudioListener")
     export class AudioListener extends Behaviour
     {
         gain: GainNode;

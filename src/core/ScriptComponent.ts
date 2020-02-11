@@ -6,6 +6,7 @@ namespace feng3d
     /**
      * 3d对象脚本
      */
+    @AddComponentMenu("Script/Script")
     export class ScriptComponent extends Behaviour
     {
         runEnvironment = RunEnvironment.feng3d;

@@ -5,6 +5,7 @@ namespace feng3d
     /**
      * 天空盒组件
      */
+    @feng3d.AddComponentMenu("SkyBox/SkyBox")
     export class SkyBox extends Component
     {
         __class__: "feng3d.SkyBox";

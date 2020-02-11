@@ -14,6 +14,9 @@ namespace feng3d
         {
             if (!menuConfig.component) menuConfig.component = [];
             menuConfig.component.push({ path: path, order: componentOrder, type: target })
+
+            menuConfig.component.sort((a, b) => { if (a.path < b.path) return -1; return 1 })
+            menuConfig.component.sort((a, b) => a.order - b.order);
         }
     }
 

@@ -2,6 +2,7 @@ namespace feng3d
 {
     export interface ComponentMap { OutLineComponent: OutLineComponent; }
 
+    @AddComponentMenu("Rendering/OutLineComponent")
     export class OutLineComponent extends Component
     {
         __class__: "feng3d.OutLineComponent";
