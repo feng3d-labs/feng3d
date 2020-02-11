@@ -13,8 +13,6 @@ namespace feng3d
         return (target: Constructor<Components>) =>
         {
             if (!menuConfig.component) menuConfig.component = [];
-            var component = menuConfig.component;
-
             menuConfig.component.push({ path: path, order: componentOrder, type: target })
         }
     }

@@ -17988,7 +17988,6 @@ var feng3d;
         return function (target) {
             if (!feng3d.menuConfig.component)
                 feng3d.menuConfig.component = [];
-            var component = feng3d.menuConfig.component;
             feng3d.menuConfig.component.push({ path: path, order: componentOrder, type: target });
         };
     }
@@ -31005,6 +31004,9 @@ var feng3d;
         __decorate([
             feng3d.oav()
         ], FPSController.prototype, "acceleration", void 0);
+        FPSController = __decorate([
+            feng3d.AddComponentMenu("Controller/FPSController")
+        ], FPSController);
         return FPSController;
     }(feng3d.Behaviour));
     feng3d.FPSController = FPSController;

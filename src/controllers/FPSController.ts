@@ -6,6 +6,7 @@ namespace feng3d
     /**
      * FPS模式控制器
      */
+    @AddComponentMenu("Controller/FPSController")
     export class FPSController extends Behaviour
     {
         /**
