@@ -9448,6 +9448,47 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 添加组件菜单
+     *
+     * 在组件类上新增 @feng3d.AddComponentMenu("UI/Text") 可以把该组件添加到组件菜单上。
+     *
+     * @param path 组件菜单中路径
+     * @param componentOrder 组件菜单中组件的顺序(从低到高)。
+     */
+    function AddComponentMenu(path: string, componentOrder?: number): (target: Constructor<PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | Renderable | MeshModel | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation>) => void;
+    /**
+     * 菜单配置
+     */
+    const menuConfig: MenuConfig;
+    /**
+     * 菜单配置
+     */
+    interface MenuConfig {
+        /**
+         * 组件菜单
+         */
+        component?: ComponentMenu[];
+    }
+    /**
+     * 组件菜单
+     */
+    interface ComponentMenu {
+        /**
+         * 组件菜单中路径
+         */
+        path: string;
+        /**
+         * 组件菜单中组件的顺序(从低到高)。
+         */
+        order: number;
+        /**
+         * 组件类定义
+         */
+        type: Constructor<Components>;
+    }
+}
+declare namespace feng3d {
+    /**
      * 全局事件
      */
     var globalDispatcher: IEventDispatcher<GlobalEvents>;
@@ -12040,8 +12081,8 @@ declare namespace feng3d {
          */
         get globalVisible(): any;
         get scene(): Scene;
-        get components(): (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Renderable | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[];
-        set components(value: (PointLight | SpotLight | DirectionalLight | Scene | Camera | Component | Renderable | Behaviour | Transform | SkyBox | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshModel | ScriptComponent | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[]);
+        get components(): (PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | Renderable | MeshModel | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[];
+        set components(value: (PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | Renderable | MeshModel | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[]);
         /**
          * 构建3D对象
          */

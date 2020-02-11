@@ -157,6 +157,7 @@
         //
         "modules/render/src/renderer/Renderer.ts",
         //
+        "src/Menu.ts",
         //
         "src/event/GlobalDispatcher.ts",
         // 自动生成文件

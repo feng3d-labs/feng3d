@@ -17976,6 +17976,31 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 添加组件菜单
+     *
+     * 在组件类上新增 @feng3d.AddComponentMenu("UI/Text") 可以把该组件添加到组件菜单上。
+     *
+     * @param path 组件菜单中路径
+     * @param componentOrder 组件菜单中组件的顺序(从低到高)。
+     */
+    function AddComponentMenu(path, componentOrder) {
+        if (componentOrder === void 0) { componentOrder = 0; }
+        return function (target) {
+            if (!feng3d.menuConfig.component)
+                feng3d.menuConfig.component = [];
+            var component = feng3d.menuConfig.component;
+            feng3d.menuConfig.component.push({ path: path, order: componentOrder, type: target });
+        };
+    }
+    feng3d.AddComponentMenu = AddComponentMenu;
+    /**
+     * 菜单配置
+     */
+    feng3d.menuConfig = {};
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 全局事件
      */
     feng3d.globalDispatcher = new feng3d.EventDispatcher();
