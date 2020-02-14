@@ -14019,6 +14019,10 @@ declare namespace feng3d {
         /**
          * 默认贴图
          */
+        static white: Texture2D;
+        /**
+         * 默认贴图
+         */
         static default: Texture2D;
         /**
          * 默认法线贴图
