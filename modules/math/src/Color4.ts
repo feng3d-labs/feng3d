@@ -8,8 +8,8 @@ namespace feng3d
 
         __class__: "feng3d.Color4";
 
-        static WHITE = new Color4();
-        static BLACK = new Color4(0, 0, 0);
+        static readonly WHITE = Object.freeze(new Color4(1, 1, 1, 1));
+        static readonly BLACK = Object.freeze(new Color4(0, 0, 0, 1));
 
         static fromUnit(color: number)
         {

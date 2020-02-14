@@ -13,7 +13,7 @@ namespace feng3d
         /**
          * 原点
          */
-        static ZERO = new Vector2();
+        static ZERO = Object.freeze(new Vector2());
 
         /**
          * 将一对极坐标转换为笛卡尔点坐标。

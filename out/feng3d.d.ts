@@ -3268,8 +3268,8 @@ declare namespace feng3d {
      */
     class Color4 {
         __class__: "feng3d.Color4";
-        static WHITE: Color4;
-        static BLACK: Color4;
+        static readonly WHITE: Readonly<Color4>;
+        static readonly BLACK: Readonly<Color4>;
         static fromUnit(color: number): Color4;
         static fromUnit24(color: number, a?: number): Color4;
         static fromColor3(color3: Color3, a?: number): Color4;
@@ -3378,7 +3378,7 @@ declare namespace feng3d {
         /**
          * 原点
          */
-        static ZERO: Vector2;
+        static ZERO: Readonly<Vector2>;
         /**
          * 将一对极坐标转换为笛卡尔点坐标。
          * @param len 极坐标对的长度。

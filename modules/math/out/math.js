@@ -959,8 +959,8 @@ var feng3d;
         Color4.prototype.clone = function () {
             return new Color4(this.r, this.g, this.b, this.a);
         };
-        Color4.WHITE = new Color4();
-        Color4.BLACK = new Color4(0, 0, 0);
+        Color4.WHITE = Object.freeze(new Color4(1, 1, 1, 1));
+        Color4.BLACK = Object.freeze(new Color4(0, 0, 0, 1));
         __decorate([
             feng3d.oav(),
             feng3d.serialize
@@ -1299,7 +1299,7 @@ var feng3d;
         /**
          * 原点
          */
-        Vector2.ZERO = new Vector2();
+        Vector2.ZERO = Object.freeze(new Vector2());
         __decorate([
             feng3d.oav(),
             feng3d.serialize
