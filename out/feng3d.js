@@ -41854,6 +41854,43 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var BezierComponent = /** @class */ (function (_super) {
+        __extends(BezierComponent, _super);
+        function BezierComponent() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.geometry = new feng3d.SegmentGeometry();
+            _this.castShadows = false;
+            _this.receiveShadows = false;
+            /**
+             * Maximum velocity.
+             *
+             * 最高速度。
+             */
+            _this.limit3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
+            return _this;
+        }
+        __decorate([
+            feng3d.oav({ exclude: true })
+        ], BezierComponent.prototype, "geometry", void 0);
+        __decorate([
+            feng3d.oav({ exclude: true })
+        ], BezierComponent.prototype, "castShadows", void 0);
+        __decorate([
+            feng3d.oav({ exclude: true })
+        ], BezierComponent.prototype, "receiveShadows", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "位置曲线" })
+        ], BezierComponent.prototype, "limit3D", void 0);
+        BezierComponent = __decorate([
+            feng3d.AddComponentMenu("Graphics/BezierComponent")
+        ], BezierComponent);
+        return BezierComponent;
+    }(feng3d.Renderable));
+    feng3d.BezierComponent = BezierComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 鼠标事件管理
      */

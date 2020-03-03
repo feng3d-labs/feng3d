@@ -18890,6 +18890,19 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class BezierComponent extends Renderable {
+        geometry: SegmentGeometry;
+        castShadows: boolean;
+        receiveShadows: boolean;
+        /**
+         * Maximum velocity.
+         *
+         * 最高速度。
+         */
+        limit3D: MinMaxCurveVector3;
+    }
+}
+declare namespace feng3d {
     /**
      * 鼠标事件管理
      */

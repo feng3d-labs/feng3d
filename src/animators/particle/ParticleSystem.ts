@@ -13,7 +13,7 @@ namespace feng3d
     /**
      * 粒子系统
      */
-    @AddComponentMenu("Animator/ParticleSystem")
+    @AddComponentMenu("Effects/ParticleSystem")
     export class ParticleSystem extends Renderable
     {
         __class__: "feng3d.ParticleSystem";
