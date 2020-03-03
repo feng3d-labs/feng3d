@@ -71,6 +71,7 @@ namespace feng3d
 
             //
             var oldIndexBuffer = renderAtomic.indexBuffer;
+            if (oldIndexBuffer.count < 3) return;
             if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count)
             {
                 var wireframeindices: number[] = [];

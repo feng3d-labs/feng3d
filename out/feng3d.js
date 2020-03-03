@@ -22993,6 +22993,8 @@ var feng3d;
             this.renderAtomic.next = renderAtomic;
             //
             var oldIndexBuffer = renderAtomic.indexBuffer;
+            if (oldIndexBuffer.count < 3)
+                return;
             if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count) {
                 var wireframeindices = [];
                 var indices = feng3d.lazy.getvalue(oldIndexBuffer.indices);
