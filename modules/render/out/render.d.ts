@@ -1231,6 +1231,10 @@ declare namespace feng3d {
          * 是否启用粒子系统纹理表动画模块
          */
         ENABLED_PARTICLE_SYSTEM_textureSheetAnimation: Boolean;
+        /**
+         * 是否有颜色顶点数据
+         */
+        HAS_a_color: Boolean;
     }
 }
 declare namespace feng3d {

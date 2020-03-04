@@ -104,6 +104,7 @@ namespace feng3d
          * 是否卡通渲染
          */
         IS_CARTOON: Boolean;
+
         /**
          * 是否抗锯齿
          */
@@ -113,5 +114,10 @@ namespace feng3d
          * 是否启用粒子系统纹理表动画模块
          */
         ENABLED_PARTICLE_SYSTEM_textureSheetAnimation: Boolean;
+
+        /**
+         * 是否有颜色顶点数据
+         */
+        HAS_a_color: Boolean;
     }
 }

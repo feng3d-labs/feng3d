@@ -3,6 +3,7 @@ precision mediump float;
 #include<position_pars_vert>
 #include<normal_pars_vert>
 #include<tangent_pars_vert>
+#include<color_pars_vert>
 //
 #include<skeleton_pars_vert>
 #include<particle_pars_vert>
@@ -22,6 +23,7 @@ void main()
     #include<position_vert>
     #include<normal_vert>
     #include<tangent_vert>
+    #include<color_vert>
     #include<uv_vert>
     // 动画
     #include<skeleton_vert>
