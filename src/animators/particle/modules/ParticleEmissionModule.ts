@@ -40,6 +40,7 @@ namespace feng3d
          * 产生新粒子的速度，通过距离。
          * 新粒子只有世界空间模拟且发射器移动时才会被发射出来。
          */
+        @serialize
         // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
         @oav({ tooltip: "产生新粒子的速度，通过距离。新粒子只有世界空间模拟且发射器移动时才会被发射出来。" })
         rateOverDistance = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });

@@ -35156,7 +35156,6 @@ var feng3d;
              * 产生新粒子的速度，通过距离。
              * 新粒子只有世界空间模拟且发射器移动时才会被发射出来。
              */
-            // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
             _this.rateOverDistance = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
             /**
              * 爆发数组
@@ -35246,6 +35245,9 @@ var feng3d;
             feng3d.oav({ tooltip: "随着时间的推移，新粒子产生的速度。" })
         ], ParticleEmissionModule.prototype, "rateOverTime", void 0);
         __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
+            ,
             feng3d.oav({ tooltip: "产生新粒子的速度，通过距离。新粒子只有世界空间模拟且发射器移动时才会被发射出来。" })
         ], ParticleEmissionModule.prototype, "rateOverDistance", void 0);
         __decorate([
