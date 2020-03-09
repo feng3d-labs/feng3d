@@ -450,6 +450,18 @@ namespace feng3d
             a_skinWeights1: new Attribute("a_skinWeights1", [], 4),
         };
 
+        /**
+         * 清理数据
+         */
+        clear()
+        {
+            for (const key in this._attributes)
+            {
+                const element: Attribute = this._attributes[key];
+                element.data = [];
+            }
+        }
+
         private _geometryInvalid = true;
         private _useFaceWeights = false;
 

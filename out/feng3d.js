@@ -26395,6 +26395,15 @@ var feng3d;
             renderAtomic.shaderMacro.SCALEV = this.scaleV;
         };
         /**
+         * 清理数据
+         */
+        Geometry.prototype.clear = function () {
+            for (var key in this._attributes) {
+                var element = this._attributes[key];
+                element.data = [];
+            }
+        };
+        /**
          * 设置默认几何体
          *
          * @param name 默认几何体名称

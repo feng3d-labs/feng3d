@@ -13038,6 +13038,10 @@ declare namespace feng3d {
             a_skinIndices1: Attribute;
             a_skinWeights1: Attribute;
         };
+        /**
+         * 清理数据
+         */
+        clear(): void;
         private _geometryInvalid;
         private _useFaceWeights;
         private _bounding;
