@@ -11939,28 +11939,76 @@ declare namespace feng3d {
         get worldToLocalRotationMatrix(): Matrix4x4;
         /**
          * 将方向从局部空间转换到世界空间。
+         *
+         * @param direction 局部空间方向
          */
         transformDirection(direction: Vector3): Vector3;
         /**
+         * 将方向从局部空间转换到世界空间。
+         *
+         * @param direction 局部空间方向
+         */
+        localToWolrdDirection(direction: Vector3): Vector3;
+        /**
          * 将位置从局部空间转换为世界空间。
+         *
+         * @param position 局部空间位置
          */
         transformPoint(position: Vector3): Vector3;
         /**
+         * 将位置从局部空间转换为世界空间。
+         *
+         * @param position 局部空间位置
+         */
+        localToWorldPoint(position: Vector3): Vector3;
+        /**
          * 将向量从局部空间变换到世界空间。
+         *
+         * @param vector 局部空间向量
          */
         transformVector(vector: Vector3): Vector3;
         /**
+         * 将向量从局部空间变换到世界空间。
+         *
+         * @param vector 局部空间位置
+         */
+        localToWorldVector(vector: Vector3): Vector3;
+        /**
+         * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
+         *
          * 将一个方向从世界空间转换到局部空间。
          */
         inverseTransformDirection(direction: Vector3): Vector3;
         /**
+         * 将一个方向从世界空间转换到局部空间。
+         */
+        worldToLocalDirection(direction: Vector3): Vector3;
+        /**
+         * Transforms position from world space to local space.
+         *
          * 将位置从世界空间转换为局部空间。
+         *
+         * @param position 世界坐标系中位置
          */
         inverseTransformPoint(position: Vector3): Vector3;
         /**
+         * 将位置从世界空间转换为局部空间。
+         *
+         * @param position 世界坐标系中位置
+         */
+        worldToLocalPoint(position: Vector3): Vector3;
+        /**
          * 将向量从世界空间转换为局部空间
+         *
+         * @param vector 世界坐标系中向量
          */
         inverseTransformVector(vector: Vector3): Vector3;
+        /**
+         * 将位置从世界空间转换为局部空间。
+         *
+         * @param vector 世界坐标系中向量
+         */
+        worldToLocalVector(vector: Vector3): Vector3;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         private readonly _position;
         private readonly _rotation;

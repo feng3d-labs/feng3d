@@ -23861,8 +23861,19 @@ var feng3d;
         });
         /**
          * 将方向从局部空间转换到世界空间。
+         *
+         * @param direction 局部空间方向
          */
         Transform.prototype.transformDirection = function (direction) {
+            direction = this.localToWolrdDirection(direction);
+            return direction;
+        };
+        /**
+         * 将方向从局部空间转换到世界空间。
+         *
+         * @param direction 局部空间方向
+         */
+        Transform.prototype.localToWolrdDirection = function (direction) {
             if (!this.parent)
                 return direction.clone();
             var matrix = this.parent.localToWorldRotationMatrix;
@@ -23871,8 +23882,19 @@ var feng3d;
         };
         /**
          * 将位置从局部空间转换为世界空间。
+         *
+         * @param position 局部空间位置
          */
         Transform.prototype.transformPoint = function (position) {
+            position = this.localToWorldPoint(position);
+            return position;
+        };
+        /**
+         * 将位置从局部空间转换为世界空间。
+         *
+         * @param position 局部空间位置
+         */
+        Transform.prototype.localToWorldPoint = function (position) {
             if (!this.parent)
                 return position.clone();
             var matrix = this.parent.localToWorldMatrix;
@@ -23881,8 +23903,19 @@ var feng3d;
         };
         /**
          * 将向量从局部空间变换到世界空间。
+         *
+         * @param vector 局部空间向量
          */
         Transform.prototype.transformVector = function (vector) {
+            vector = this.localToWorldVector(vector);
+            return vector;
+        };
+        /**
+         * 将向量从局部空间变换到世界空间。
+         *
+         * @param vector 局部空间位置
+         */
+        Transform.prototype.localToWorldVector = function (vector) {
             if (!this.parent)
                 return vector.clone();
             var matrix = this.parent.localToWorldMatrix;
@@ -23890,9 +23923,18 @@ var feng3d;
             return vector;
         };
         /**
+         * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
+         *
          * 将一个方向从世界空间转换到局部空间。
          */
         Transform.prototype.inverseTransformDirection = function (direction) {
+            direction = this.worldToLocalDirection(direction);
+            return direction;
+        };
+        /**
+         * 将一个方向从世界空间转换到局部空间。
+         */
+        Transform.prototype.worldToLocalDirection = function (direction) {
             if (!this.parent)
                 return direction.clone();
             var matrix = this.parent.localToWorldRotationMatrix.clone().invert();
@@ -23900,9 +23942,22 @@ var feng3d;
             return direction;
         };
         /**
+         * Transforms position from world space to local space.
+         *
          * 将位置从世界空间转换为局部空间。
+         *
+         * @param position 世界坐标系中位置
          */
         Transform.prototype.inverseTransformPoint = function (position) {
+            var position = this.worldToLocalPoint(position);
+            return position;
+        };
+        /**
+         * 将位置从世界空间转换为局部空间。
+         *
+         * @param position 世界坐标系中位置
+         */
+        Transform.prototype.worldToLocalPoint = function (position) {
             if (!this.parent)
                 return position.clone();
             var matrix = this.parent.localToWorldMatrix.clone().invert();
@@ -23911,8 +23966,22 @@ var feng3d;
         };
         /**
          * 将向量从世界空间转换为局部空间
+         *
+         * @param vector 世界坐标系中向量
          */
         Transform.prototype.inverseTransformVector = function (vector) {
+            if (!this.parent)
+                return vector.clone();
+            var matrix = this.parent.localToWorldMatrix.clone().invert();
+            vector = matrix.deltaTransformVector(vector);
+            return vector;
+        };
+        /**
+         * 将位置从世界空间转换为局部空间。
+         *
+         * @param vector 世界坐标系中向量
+         */
+        Transform.prototype.worldToLocalVector = function (vector) {
             if (!this.parent)
                 return vector.clone();
             var matrix = this.parent.localToWorldMatrix.clone().invert();
