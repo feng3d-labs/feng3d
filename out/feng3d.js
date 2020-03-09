@@ -13259,7 +13259,7 @@ var feng3d;
          *
          * @param time 时间轴的位置 [0,1]
          * @param value 值
-         * @param precision 查找进度
+         * @param precision 查找精度
          */
         AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
             var point = this.getPoint(time);

@@ -4033,7 +4033,7 @@ declare namespace feng3d {
          *
          * @param time 时间轴的位置 [0,1]
          * @param value 值
-         * @param precision 查找进度
+         * @param precision 查找精度
          */
         addKeyAtCurve(time: number, value: number, precision: number): AnimationCurveKeyframe;
         /**
@@ -4159,6 +4159,30 @@ declare namespace feng3d {
          * @param time 时间
          */
         getValue(time: number, randomBetween?: number): Vector3;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Vector3 曲线
+     */
+    class AnimationCurveVector3 {
+        /**
+         * X 轴曲线
+         */
+        xCurve: AnimationCurve;
+        /**
+         * Y 轴曲线
+         */
+        yCurve: AnimationCurve;
+        /**
+         * Z 轴曲线
+         */
+        zCurve: AnimationCurve;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Vector3;
     }
 }
 declare namespace feng3d {

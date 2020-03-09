@@ -8406,7 +8406,7 @@ var feng3d;
          *
          * @param time 时间轴的位置 [0,1]
          * @param value 值
-         * @param precision 查找进度
+         * @param precision 查找精度
          */
         AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
             var point = this.getPoint(time);
@@ -8623,6 +8623,46 @@ var feng3d;
         return MinMaxCurveVector3;
     }());
     feng3d.MinMaxCurveVector3 = MinMaxCurveVector3;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Vector3 曲线
+     */
+    var AnimationCurveVector3 = /** @class */ (function () {
+        function AnimationCurveVector3() {
+            /**
+             * X 轴曲线
+             */
+            this.xCurve = new feng3d.AnimationCurve();
+            /**
+             * Y 轴曲线
+             */
+            this.yCurve = new feng3d.AnimationCurve();
+            /**
+             * Z 轴曲线
+             */
+            this.zCurve = new feng3d.AnimationCurve();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        AnimationCurveVector3.prototype.getValue = function (time) {
+            return new feng3d.Vector3(this.xCurve.getValue(time), this.yCurve.getValue(time), this.zCurve.getValue(time));
+        };
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveVector3.prototype, "xCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveVector3.prototype, "yCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveVector3.prototype, "zCurve", void 0);
+        return AnimationCurveVector3;
+    }());
+    feng3d.AnimationCurveVector3 = AnimationCurveVector3;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
