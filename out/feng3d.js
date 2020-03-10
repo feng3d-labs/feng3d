@@ -37614,7 +37614,7 @@ var feng3d;
         ], ParticleNoiseModule.prototype, "octaveScale", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "生成一维、二维或三维噪声。" })
+            feng3d.oav({ tooltip: "生成一维、二维或三维噪声。", componentParam: { enumClass: feng3d.ParticleSystemNoiseQuality } })
         ], ParticleNoiseModule.prototype, "quality", void 0);
         __decorate([
             feng3d.serialize,

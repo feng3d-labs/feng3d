@@ -150,7 +150,7 @@ namespace feng3d
          * 生成一维、二维或三维噪声。
          */
         @serialize
-        @oav({ tooltip: "生成一维、二维或三维噪声。" })
+        @oav({ tooltip: "生成一维、二维或三维噪声。", componentParam: { enumClass: ParticleSystemNoiseQuality } })
         quality = ParticleSystemNoiseQuality.High;
 
         /**
