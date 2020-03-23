@@ -32,6 +32,8 @@ namespace feng3d
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene.ambientColor;
 
+            var ctime = (Date.now() / 1000) % 3600;
+            uniforms._Time = new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3);
 
             unblenditems.concat(blenditems).forEach(renderable =>
             {

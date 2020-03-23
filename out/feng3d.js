@@ -22614,6 +22614,8 @@ var feng3d;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene.ambientColor;
+            var ctime = (Date.now() / 1000) % 3600;
+            uniforms._Time = new feng3d.Vector4(ctime / 20, ctime, ctime * 2, ctime * 3);
             unblenditems.concat(blenditems).forEach(function (renderable) {
                 //绘制
                 var renderAtomic = renderable.renderAtomic;

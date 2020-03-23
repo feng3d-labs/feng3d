@@ -11020,6 +11020,10 @@ declare namespace feng3d {
 declare namespace feng3d {
     interface Uniforms {
         /**
+         * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
+         */
+        _Time: Vector4;
+        /**
          * 模型矩阵
          */
         u_modelMatrix: Matrix4x4;
