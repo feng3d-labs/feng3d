@@ -34,7 +34,7 @@ namespace feng3d
     
     GameObject.registerPrimitive("Cone", (g) =>
     {
-        g.addComponent(MeshModel).geometry = Geometry.getDefault("Cone");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Cone");
     });
 
     export interface PrimitiveGameObject

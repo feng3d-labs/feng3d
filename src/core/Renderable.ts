@@ -1,14 +1,10 @@
 namespace feng3d
 {
-    export interface ComponentMap { Renderable: Renderable }
-
     /**
      * 可渲染组件
      */
     export class Renderable extends Behaviour
     {
-        __class__: string;
-
         get single() { return true; }
 
         readonly renderAtomic = new RenderAtomic();

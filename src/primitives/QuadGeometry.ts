@@ -31,7 +31,7 @@ namespace feng3d
     
     GameObject.registerPrimitive("Quad", (g) =>
     {
-        g.addComponent(MeshModel).geometry = Geometry.getDefault("Quad");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Quad");
     });
 
     export interface PrimitiveGameObject

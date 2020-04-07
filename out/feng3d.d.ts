@@ -9459,7 +9459,7 @@ declare namespace feng3d {
      * @param path 组件菜单中路径
      * @param componentOrder 组件菜单中组件的顺序(从低到高)。
      */
-    function AddComponentMenu(path: string, componentOrder?: number): (target: Constructor<PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | Renderable | MeshModel | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation>) => void;
+    function AddComponentMenu(path: string, componentOrder?: number): (target: Constructor<PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshRenderer | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation>) => void;
     /**
      * 菜单配置
      */
@@ -12137,8 +12137,8 @@ declare namespace feng3d {
          */
         get globalVisible(): any;
         get scene(): Scene;
-        get components(): (PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | Renderable | MeshModel | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[];
-        set components(value: (PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | Renderable | MeshModel | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[]);
+        get components(): (PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshRenderer | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[];
+        set components(value: (PointLight | SpotLight | DirectionalLight | Component | Behaviour | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | CartoonComponent | OutLineComponent | MeshRenderer | ScriptComponent | Scene | Camera | FPSController | AudioListener | AudioSource | Water | Terrain | ParticleSystem | SkeletonComponent | SkinnedModel | Animation)[]);
         /**
          * 构建3D对象
          */
@@ -12580,14 +12580,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface ComponentMap {
-        Renderable: Renderable;
-    }
     /**
      * 可渲染组件
      */
     class Renderable extends Behaviour {
-        __class__: string;
         get single(): boolean;
         readonly renderAtomic: RenderAtomic;
         /**
@@ -12659,10 +12655,13 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface ComponentMap {
-        MeshModel: MeshModel;
+        MeshRenderer: MeshRenderer;
     }
-    class MeshModel extends Renderable {
-        __class__: "feng3d.MeshModel";
+    /**
+     * 网格渲染器
+     */
+    class MeshRenderer extends Renderable {
+        __class__: "feng3d.MeshRenderer";
     }
 }
 declare namespace feng3d {
