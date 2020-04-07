@@ -53,7 +53,7 @@ namespace feng3d.war3
 
 				var mesh: GameObject = this.meshs[i] = new GameObject();
 				// var model = mesh.addComponent(Model);
-				var model = mesh.addComponent(SkinnedModel);
+				var model = mesh.addComponent(SkinnedMeshRenderer);
 
 				var geometry: CustomGeometry = new CustomGeometry();
 				geometry.positions = geoset.Vertices;

@@ -1,10 +1,10 @@
 namespace feng3d
 {
-    export interface ComponentMap { SkinnedModel: SkinnedModel }
+    export interface ComponentMap { SkinnedMeshRenderer: SkinnedMeshRenderer }
 
-    export class SkinnedModel extends Renderable
+    export class SkinnedMeshRenderer extends Renderable
     {
-        __class__: "feng3d.SkinnedModel";
+        __class__: "feng3d.SkinnedMeshRenderer";
 
         get single() { return true; }
 

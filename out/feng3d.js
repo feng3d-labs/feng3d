@@ -38087,14 +38087,14 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var SkinnedModel = /** @class */ (function (_super) {
-        __extends(SkinnedModel, _super);
-        function SkinnedModel() {
+    var SkinnedMeshRenderer = /** @class */ (function (_super) {
+        __extends(SkinnedMeshRenderer, _super);
+        function SkinnedMeshRenderer() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.cacheU_skeletonGlobalMatriices = {};
             return _this;
         }
-        Object.defineProperty(SkinnedModel.prototype, "single", {
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
             configurable: true
@@ -38102,11 +38102,11 @@ var feng3d;
         /**
          * 创建一个骨骼动画类
          */
-        SkinnedModel.prototype.init = function () {
+        SkinnedMeshRenderer.prototype.init = function () {
             _super.prototype.init.call(this);
             this.hideFlags = feng3d.HideFlags.DontTransform;
         };
-        SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
+        SkinnedMeshRenderer.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
             var _this = this;
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene, camera);
             var frameId = null;
@@ -38130,11 +38130,11 @@ var feng3d;
         /**
          * 销毁
          */
-        SkinnedModel.prototype.dispose = function () {
+        SkinnedMeshRenderer.prototype.dispose = function () {
             this.cacheSkeletonComponent = null;
             _super.prototype.dispose.call(this);
         };
-        Object.defineProperty(SkinnedModel.prototype, "u_modelMatrix", {
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_modelMatrix", {
             get: function () {
                 if (this.cacheSkeletonComponent)
                     return this.cacheSkeletonComponent.transform.localToWorldMatrix;
@@ -38143,7 +38143,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SkinnedModel.prototype, "u_ITModelMatrix", {
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_ITModelMatrix", {
             get: function () {
                 if (this.cacheSkeletonComponent)
                     return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
@@ -38152,7 +38152,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SkinnedModel.prototype, "u_skeletonGlobalMatriices", {
+        Object.defineProperty(SkinnedMeshRenderer.prototype, "u_skeletonGlobalMatriices", {
             get: function () {
                 if (!this.cacheSkeletonComponent) {
                     var gameObject = this.gameObject;
@@ -38185,13 +38185,13 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], SkinnedModel.prototype, "skinSkeleton", void 0);
+        ], SkinnedMeshRenderer.prototype, "skinSkeleton", void 0);
         __decorate([
             feng3d.serialize
-        ], SkinnedModel.prototype, "initMatrix", void 0);
-        return SkinnedModel;
+        ], SkinnedMeshRenderer.prototype, "initMatrix", void 0);
+        return SkinnedMeshRenderer;
     }(feng3d.Renderable));
-    feng3d.SkinnedModel = SkinnedModel;
+    feng3d.SkinnedMeshRenderer = SkinnedMeshRenderer;
     var defaultSkeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = 150; while (i-- > 1)
         v.push(v[0]); return v; })();
     var SkinSkeleton = /** @class */ (function () {
@@ -39998,7 +39998,7 @@ var feng3d;
                     var geoset = this.geosets[i];
                     var mesh = this.meshs[i] = new feng3d.GameObject();
                     // var model = mesh.addComponent(Model);
-                    var model = mesh.addComponent(feng3d.SkinnedModel);
+                    var model = mesh.addComponent(feng3d.SkinnedMeshRenderer);
                     var geometry = new feng3d.CustomGeometry();
                     geometry.positions = geoset.Vertices;
                     geometry.uvs = geoset.TVertices;
@@ -41540,7 +41540,7 @@ var feng3d;
                 var skinSkeleton = new feng3d.SkinSkeletonTemp();
                 var geometry = this.createGeometry(md5MeshData.meshs[i], skeletonComponent, skinSkeleton);
                 var skeletonGameObject = new feng3d.GameObject();
-                var skinnedModel = skeletonGameObject.addComponent(feng3d.SkinnedModel);
+                var skinnedModel = skeletonGameObject.addComponent(feng3d.SkinnedMeshRenderer);
                 skinnedModel.geometry = geometry;
                 skinnedModel.skinSkeleton = skinSkeleton;
                 gameObject.addChild(skeletonGameObject);
