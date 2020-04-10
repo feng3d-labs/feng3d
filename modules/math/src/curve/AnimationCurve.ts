@@ -21,7 +21,7 @@ namespace feng3d
          * 在第一个关键帧之前的动画行为。
          */
         @serialize
-        preWrapMode = AnimationCurveWrapMode.Clamp;
+        preWrapMode = WrapMode.Clamp;
 
         /**
          * The behaviour of the animation after the last keyframe.
@@ -29,7 +29,7 @@ namespace feng3d
          * 动画在最后一个关键帧之后的行为。
          */
         @serialize
-        postWrapMode = AnimationCurveWrapMode.Clamp;
+        postWrapMode = WrapMode.Clamp;
 
         /**
          * All keys defined in the animation curve.
@@ -107,7 +107,7 @@ namespace feng3d
          */
         getPoint(t: number): AnimationCurveKeyframe
         {
-            var wrapMode = AnimationCurveWrapMode.Clamp;
+            var wrapMode = WrapMode.Clamp;
 
             if (t < 0)
                 wrapMode = this.preWrapMode;
@@ -116,13 +116,13 @@ namespace feng3d
 
             switch (wrapMode)
             {
-                case AnimationCurveWrapMode.Clamp:
+                case WrapMode.Clamp:
                     t = Math.clamp(t, 0, 1);
                     break;
-                case AnimationCurveWrapMode.Loop:
+                case WrapMode.Loop:
                     t = Math.clamp(t - Math.floor(t), 0, 1);
                     break;
-                case AnimationCurveWrapMode.PingPong:
+                case WrapMode.PingPong:
                     t = Math.clamp(t - Math.floor(t), 0, 1);
                     if (Math.floor(t) % 2 == 1) t = 1 - t;
                     break;

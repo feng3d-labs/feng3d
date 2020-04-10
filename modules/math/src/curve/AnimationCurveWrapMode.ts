@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 动画曲线Wrap模式，处理超出范围情况
      */
-    export enum AnimationCurveWrapMode
+    export enum WrapMode
     {
         /**
          * 夹紧; 0>-<1
@@ -17,5 +17,15 @@ namespace feng3d
          * 来回循环; 0->1,1->0
          */
         PingPong = 4,
+
+        /**
+         * When time reaches the end of the animation clip, the clip will automatically stop playing and time will be reset to beginning of the clip.
+         */
+        Once,
+
+        /**
+         * Reads the default repeat mode set higher up.
+         */
+        Default,
     }
 }
