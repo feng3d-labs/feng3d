@@ -87,7 +87,7 @@
         // 曲线
         "modules/math/src/curve/BezierCurve.ts",
         "modules/math/src/curve/AnimationCurveKeyframe.ts",
-        "modules/math/src/curve/AnimationCurveWrapMode.ts",
+        "modules/math/src/curve/WrapMode.ts",
         "modules/math/src/curve/AnimationCurve.ts",
         "modules/math/src/curve/MinMaxCurveMode.ts",
         "modules/math/src/curve/MinMaxCurve.ts",
