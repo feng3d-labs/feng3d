@@ -13053,21 +13053,29 @@ var feng3d;
     /**
      * 动画曲线Wrap模式，处理超出范围情况
      */
-    var AnimationCurveWrapMode;
-    (function (AnimationCurveWrapMode) {
+    var WrapMode;
+    (function (WrapMode) {
         /**
          * 夹紧; 0>-<1
          */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["Clamp"] = 1] = "Clamp";
+        WrapMode[WrapMode["Clamp"] = 1] = "Clamp";
         /**
          * 循环; 0->1,0->1
          */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["Loop"] = 2] = "Loop";
+        WrapMode[WrapMode["Loop"] = 2] = "Loop";
         /**
          * 来回循环; 0->1,1->0
          */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["PingPong"] = 4] = "PingPong";
-    })(AnimationCurveWrapMode = feng3d.AnimationCurveWrapMode || (feng3d.AnimationCurveWrapMode = {}));
+        WrapMode[WrapMode["PingPong"] = 4] = "PingPong";
+        /**
+         * When time reaches the end of the animation clip, the clip will automatically stop playing and time will be reset to beginning of the clip.
+         */
+        WrapMode[WrapMode["Once"] = 5] = "Once";
+        /**
+         * Reads the default repeat mode set higher up.
+         */
+        WrapMode[WrapMode["Default"] = 6] = "Default";
+    })(WrapMode = feng3d.WrapMode || (feng3d.WrapMode = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -13087,13 +13095,13 @@ var feng3d;
              *
              * 在第一个关键帧之前的动画行为。
              */
-            this.preWrapMode = feng3d.AnimationCurveWrapMode.Clamp;
+            this.preWrapMode = feng3d.WrapMode.Clamp;
             /**
              * The behaviour of the animation after the last keyframe.
              *
              * 动画在最后一个关键帧之后的行为。
              */
-            this.postWrapMode = feng3d.AnimationCurveWrapMode.Clamp;
+            this.postWrapMode = feng3d.WrapMode.Clamp;
             /**
              * All keys defined in the animation curve.
              *
@@ -13160,19 +13168,19 @@ var feng3d;
          * @param t 时间轴的位置 [0,1]
          */
         AnimationCurve.prototype.getPoint = function (t) {
-            var wrapMode = feng3d.AnimationCurveWrapMode.Clamp;
+            var wrapMode = feng3d.WrapMode.Clamp;
             if (t < 0)
                 wrapMode = this.preWrapMode;
             else if (t > 1)
                 wrapMode = this.postWrapMode;
             switch (wrapMode) {
-                case feng3d.AnimationCurveWrapMode.Clamp:
+                case feng3d.WrapMode.Clamp:
                     t = Math.clamp(t, 0, 1);
                     break;
-                case feng3d.AnimationCurveWrapMode.Loop:
+                case feng3d.WrapMode.Loop:
                     t = Math.clamp(t - Math.floor(t), 0, 1);
                     break;
-                case feng3d.AnimationCurveWrapMode.PingPong:
+                case feng3d.WrapMode.PingPong:
                     t = Math.clamp(t - Math.floor(t), 0, 1);
                     if (Math.floor(t) % 2 == 1)
                         t = 1 - t;

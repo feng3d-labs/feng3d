@@ -3929,7 +3929,7 @@ declare namespace feng3d {
     /**
      * 动画曲线Wrap模式，处理超出范围情况
      */
-    enum AnimationCurveWrapMode {
+    enum WrapMode {
         /**
          * 夹紧; 0>-<1
          */
@@ -3941,7 +3941,15 @@ declare namespace feng3d {
         /**
          * 来回循环; 0->1,1->0
          */
-        PingPong = 4
+        PingPong = 4,
+        /**
+         * When time reaches the end of the animation clip, the clip will automatically stop playing and time will be reset to beginning of the clip.
+         */
+        Once = 5,
+        /**
+         * Reads the default repeat mode set higher up.
+         */
+        Default = 6
     }
 }
 declare namespace feng3d {
@@ -3961,13 +3969,13 @@ declare namespace feng3d {
          *
          * 在第一个关键帧之前的动画行为。
          */
-        preWrapMode: AnimationCurveWrapMode;
+        preWrapMode: WrapMode;
         /**
          * The behaviour of the animation after the last keyframe.
          *
          * 动画在最后一个关键帧之后的行为。
          */
-        postWrapMode: AnimationCurveWrapMode;
+        postWrapMode: WrapMode;
         /**
          * All keys defined in the animation curve.
          *

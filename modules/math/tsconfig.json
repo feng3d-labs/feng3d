@@ -51,7 +51,7 @@
         // 曲线
         "src/curve/BezierCurve.ts",
         "src/curve/AnimationCurveKeyframe.ts",
-        "src/curve/AnimationCurveWrapMode.ts",
+        "src/curve/WrapMode.ts",
         "src/curve/AnimationCurve.ts",
         "src/curve/MinMaxCurveMode.ts",
         "src/curve/MinMaxCurve.ts",
