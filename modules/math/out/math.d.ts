@@ -4195,6 +4195,10 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 噪音
+     */
+    var noise: Noise;
+    /**
      * 柏林噪音
      *
      * 用于生产随机的噪音贴图

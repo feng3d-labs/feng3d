@@ -22,9 +22,4 @@ namespace feng3d
      * three.js XYZ
      */
     defaultRotationOrder = RotationOrder.YXZ;
-
-    /**
-     * 噪音
-     */
-    export var noise = new Noise();
 }

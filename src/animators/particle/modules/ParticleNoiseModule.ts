@@ -269,27 +269,29 @@ namespace feng3d
                 strengthX = strengthY = strengthZ = this.strength.getValue(particle.rateAtLifeTime, particle[_Noise_strength_rate]);
             }
             //
-            var frequency = this._frequencyScale * this.frequency;
+            var frequency = ParticleNoiseModule._frequencyScale * this.frequency;
             //
             var offsetPos = new Vector3(strengthX, strengthY, strengthZ);
             //
-            offsetPos.scaleNumber(this._strengthScale);
+            offsetPos.scaleNumber(ParticleNoiseModule._strengthScale);
             if (this.damping)
             {
                 offsetPos.scaleNumber(1 / this.frequency);
             }
+            var time = particle.rateAtLifeTime * ParticleNoiseModule._timeScale % 1;
             //
-            offsetPos.x *= this._getNoiseValue((1 / 3 * 0 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
-            offsetPos.y *= this._getNoiseValue((1 / 3 * 1 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
-            offsetPos.z *= this._getNoiseValue((1 / 3 * 2 + particle.rateAtLifeTime) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.x *= this._getNoiseValue((1 / 3 * 0 + time) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.y *= this._getNoiseValue((1 / 3 * 1 + time) * frequency, particle[_Noise_particle_rate] * frequency);
+            offsetPos.z *= this._getNoiseValue((1 / 3 * 2 + time) * frequency, particle[_Noise_particle_rate] * frequency);
             //
 
             this.particleSystem.addParticlePosition(particle, offsetPos, this.particleSystem.main.simulationSpace, _Noise_preOffset);
         }
 
         // 以下两个值用于与Unity中数据接近
-        private _frequencyScale = 5;
-        private _strengthScale = 4;
+        static _frequencyScale = 5;
+        static _strengthScale = 0.3;
+        static _timeScale = 5;
 
         /**
          * 绘制噪音到图片
@@ -303,9 +305,9 @@ namespace feng3d
             var strengthY = strength.y;
             var strengthZ = strength.z;
             //
-            strengthX *= this._strengthScale;
-            strengthY *= this._strengthScale;
-            strengthZ *= this._strengthScale;
+            strengthX *= ParticleNoiseModule._strengthScale;
+            strengthY *= ParticleNoiseModule._strengthScale;
+            strengthZ *= ParticleNoiseModule._strengthScale;
 
             if (this.damping)
             {
@@ -314,7 +316,7 @@ namespace feng3d
                 strengthZ /= this.frequency;
             }
             //
-            var frequency = this._frequencyScale * this.frequency;
+            var frequency = ParticleNoiseModule._frequencyScale * this.frequency;
             //
             var data = image.data;
 

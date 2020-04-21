@@ -6931,6 +6931,10 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 噪音
+     */
+    var noise: Noise;
+    /**
      * 柏林噪音
      *
      * 用于生产随机的噪音贴图
@@ -17670,8 +17674,9 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         updateParticleState(particle: Particle): void;
-        private _frequencyScale;
-        private _strengthScale;
+        static _frequencyScale: number;
+        static _strengthScale: number;
+        static _timeScale: number;
         /**
          * 绘制噪音到图片
          *
@@ -19136,9 +19141,5 @@ declare namespace feng3d {
      * 版本号
      */
     var version: string;
-    /**
-     * 噪音
-     */
-    var noise: Noise;
 }
 //# sourceMappingURL=feng3d.d.ts.map

@@ -1,5 +1,9 @@
 namespace feng3d
 {
+    /**
+     * 噪音
+     */
+    export var noise: Noise;
 
     /**
      * 柏林噪音
@@ -417,4 +421,6 @@ namespace feng3d
     {
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
+
+    noise = new Noise();
 }

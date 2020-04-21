@@ -9034,5 +9034,6 @@ var feng3d;
     function fade(t) {
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
+    feng3d.noise = new Noise();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=math.js.map
