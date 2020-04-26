@@ -335,7 +335,7 @@
         "src/animators/particle/modules/ParticleRotationOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleRotationBySpeedModule.ts",
         "src/animators/particle/modules/ParticleNoiseModule.ts",
-        "src/animators/particle/modules/SubEmittersModule.ts",
+        "src/animators/particle/modules/ParticleSubEmittersModule.ts",
         "src/animators/particle/modules/ParticleTextureSheetAnimationModule.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",

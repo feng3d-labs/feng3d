@@ -7,19 +7,21 @@ namespace feng3d
      * 
      * This module triggers child particle emission on events such as the birth, death, and collision of particles in the parent system.
      */
-    export class SubEmittersModule extends ParticleModule
+    export class ParticleSubEmittersModule extends ParticleModule
     {
         /**
          * The total number of sub-emitters.
          */
         subEmittersCount: number;
 
+        private subEmitters: { subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number }[] = [];
+
         /**
          * Add a new sub-emitter.
          */
         AddSubEmitter(subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number)
         {
-
+            this.subEmitters.push({ subEmitter: subEmitter, type: type, properties: properties, emitProbability: emitProbability });
         }
 
         /**
@@ -29,7 +31,8 @@ namespace feng3d
          */
         GetSubEmitterEmitProbability(index: number)
         {
-
+            if (!this.subEmitters[index]) return 0;
+            return this.subEmitters[index].emitProbability;
         }
 
         /**
@@ -39,7 +42,8 @@ namespace feng3d
          */
         GetSubEmitterProperties(index: number)
         {
-
+            if (!this.subEmitters[index]) return null;
+            return this.subEmitters[index].properties;
         }
 
         /**
@@ -49,7 +53,8 @@ namespace feng3d
          */
         GetSubEmitterSystem(index: number)
         {
-
+            if (!this.subEmitters[index]) return null;
+            return this.subEmitters[index].subEmitter;
         }
 
         /**
@@ -59,7 +64,8 @@ namespace feng3d
          */
         GetSubEmitterType(index: number)
         {
-
+            if (!this.subEmitters[index]) return null;
+            return this.subEmitters[index].type;
         }
 
         /**
@@ -69,7 +75,8 @@ namespace feng3d
          */
         RemoveSubEmitter(index: number)
         {
-
+            if (!this.subEmitters[index]) return;
+            this.subEmitters.splice(index, 1);
         }
 
         /**
@@ -80,7 +87,8 @@ namespace feng3d
          */
         SetSubEmitterEmitProbability(index: number, emitProbability: number)
         {
-
+            if (!this.subEmitters[index]) return;
+            this.subEmitters[index].emitProbability = emitProbability;
         }
 
         /**
@@ -91,7 +99,8 @@ namespace feng3d
          */
         SetSubEmitterProperties(index: number, properties: ParticleSystemSubEmitterProperties)
         {
-
+            if (!this.subEmitters[index]) return;
+            this.subEmitters[index].properties = properties;
         }
 
         /**
@@ -99,7 +108,8 @@ namespace feng3d
          */
         SetSubEmitterSystem(index: number, subEmitter: ParticleSystem)
         {
-
+            if (!this.subEmitters[index]) return;
+            this.subEmitters[index].subEmitter = subEmitter;
         }
 
         /**
@@ -110,7 +120,8 @@ namespace feng3d
          */
         SetSubEmitterType(index: number, type: ParticleSystemSubEmitterType)
         {
-
+            if (!this.subEmitters[index]) return;
+            this.subEmitters[index].type = type;
         }
 
     }
