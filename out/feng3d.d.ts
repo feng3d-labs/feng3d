@@ -3112,154 +3112,154 @@ declare namespace feng3d {
         static ToHex(i: number): string;
     }
     var ColorKeywords: {
-        'aliceblue': number;
-        'antiquewhite': number;
-        'aqua': number;
-        'aquamarine': number;
-        'azure': number;
-        'beige': number;
-        'bisque': number;
-        'black': number;
-        'blanchedalmond': number;
-        'blue': number;
-        'blueviolet': number;
-        'brown': number;
-        'burlywood': number;
-        'cadetblue': number;
-        'chartreuse': number;
-        'chocolate': number;
-        'coral': number;
-        'cornflowerblue': number;
-        'cornsilk': number;
-        'crimson': number;
-        'cyan': number;
-        'darkblue': number;
-        'darkcyan': number;
-        'darkgoldenrod': number;
-        'darkgray': number;
-        'darkgreen': number;
-        'darkgrey': number;
-        'darkkhaki': number;
-        'darkmagenta': number;
-        'darkolivegreen': number;
-        'darkorange': number;
-        'darkorchid': number;
-        'darkred': number;
-        'darksalmon': number;
-        'darkseagreen': number;
-        'darkslateblue': number;
-        'darkslategray': number;
-        'darkslategrey': number;
-        'darkturquoise': number;
-        'darkviolet': number;
-        'deeppink': number;
-        'deepskyblue': number;
-        'dimgray': number;
-        'dimgrey': number;
-        'dodgerblue': number;
-        'firebrick': number;
-        'floralwhite': number;
-        'forestgreen': number;
-        'fuchsia': number;
-        'gainsboro': number;
-        'ghostwhite': number;
-        'gold': number;
-        'goldenrod': number;
-        'gray': number;
-        'green': number;
-        'greenyellow': number;
-        'grey': number;
-        'honeydew': number;
-        'hotpink': number;
-        'indianred': number;
-        'indigo': number;
-        'ivory': number;
-        'khaki': number;
-        'lavender': number;
-        'lavenderblush': number;
-        'lawngreen': number;
-        'lemonchiffon': number;
-        'lightblue': number;
-        'lightcoral': number;
-        'lightcyan': number;
-        'lightgoldenrodyellow': number;
-        'lightgray': number;
-        'lightgreen': number;
-        'lightgrey': number;
-        'lightpink': number;
-        'lightsalmon': number;
-        'lightseagreen': number;
-        'lightskyblue': number;
-        'lightslategray': number;
-        'lightslategrey': number;
-        'lightsteelblue': number;
-        'lightyellow': number;
-        'lime': number;
-        'limegreen': number;
-        'linen': number;
-        'magenta': number;
-        'maroon': number;
-        'mediumaquamarine': number;
-        'mediumblue': number;
-        'mediumorchid': number;
-        'mediumpurple': number;
-        'mediumseagreen': number;
-        'mediumslateblue': number;
-        'mediumspringgreen': number;
-        'mediumturquoise': number;
-        'mediumvioletred': number;
-        'midnightblue': number;
-        'mintcream': number;
-        'mistyrose': number;
-        'moccasin': number;
-        'navajowhite': number;
-        'navy': number;
-        'oldlace': number;
-        'olive': number;
-        'olivedrab': number;
-        'orange': number;
-        'orangered': number;
-        'orchid': number;
-        'palegoldenrod': number;
-        'palegreen': number;
-        'paleturquoise': number;
-        'palevioletred': number;
-        'papayawhip': number;
-        'peachpuff': number;
-        'peru': number;
-        'pink': number;
-        'plum': number;
-        'powderblue': number;
-        'purple': number;
-        'rebeccapurple': number;
-        'red': number;
-        'rosybrown': number;
-        'royalblue': number;
-        'saddlebrown': number;
-        'salmon': number;
-        'sandybrown': number;
-        'seagreen': number;
-        'seashell': number;
-        'sienna': number;
-        'silver': number;
-        'skyblue': number;
-        'slateblue': number;
-        'slategray': number;
-        'slategrey': number;
-        'snow': number;
-        'springgreen': number;
-        'steelblue': number;
-        'tan': number;
-        'teal': number;
-        'thistle': number;
-        'tomato': number;
-        'turquoise': number;
-        'violet': number;
-        'wheat': number;
-        'white': number;
-        'whitesmoke': number;
-        'yellow': number;
-        'yellowgreen': number;
+        aliceblue: number;
+        antiquewhite: number;
+        aqua: number;
+        aquamarine: number;
+        azure: number;
+        beige: number;
+        bisque: number;
+        black: number;
+        blanchedalmond: number;
+        blue: number;
+        blueviolet: number;
+        brown: number;
+        burlywood: number;
+        cadetblue: number;
+        chartreuse: number;
+        chocolate: number;
+        coral: number;
+        cornflowerblue: number;
+        cornsilk: number;
+        crimson: number;
+        cyan: number;
+        darkblue: number;
+        darkcyan: number;
+        darkgoldenrod: number;
+        darkgray: number;
+        darkgreen: number;
+        darkgrey: number;
+        darkkhaki: number;
+        darkmagenta: number;
+        darkolivegreen: number;
+        darkorange: number;
+        darkorchid: number;
+        darkred: number;
+        darksalmon: number;
+        darkseagreen: number;
+        darkslateblue: number;
+        darkslategray: number;
+        darkslategrey: number;
+        darkturquoise: number;
+        darkviolet: number;
+        deeppink: number;
+        deepskyblue: number;
+        dimgray: number;
+        dimgrey: number;
+        dodgerblue: number;
+        firebrick: number;
+        floralwhite: number;
+        forestgreen: number;
+        fuchsia: number;
+        gainsboro: number;
+        ghostwhite: number;
+        gold: number;
+        goldenrod: number;
+        gray: number;
+        green: number;
+        greenyellow: number;
+        grey: number;
+        honeydew: number;
+        hotpink: number;
+        indianred: number;
+        indigo: number;
+        ivory: number;
+        khaki: number;
+        lavender: number;
+        lavenderblush: number;
+        lawngreen: number;
+        lemonchiffon: number;
+        lightblue: number;
+        lightcoral: number;
+        lightcyan: number;
+        lightgoldenrodyellow: number;
+        lightgray: number;
+        lightgreen: number;
+        lightgrey: number;
+        lightpink: number;
+        lightsalmon: number;
+        lightseagreen: number;
+        lightskyblue: number;
+        lightslategray: number;
+        lightslategrey: number;
+        lightsteelblue: number;
+        lightyellow: number;
+        lime: number;
+        limegreen: number;
+        linen: number;
+        magenta: number;
+        maroon: number;
+        mediumaquamarine: number;
+        mediumblue: number;
+        mediumorchid: number;
+        mediumpurple: number;
+        mediumseagreen: number;
+        mediumslateblue: number;
+        mediumspringgreen: number;
+        mediumturquoise: number;
+        mediumvioletred: number;
+        midnightblue: number;
+        mintcream: number;
+        mistyrose: number;
+        moccasin: number;
+        navajowhite: number;
+        navy: number;
+        oldlace: number;
+        olive: number;
+        olivedrab: number;
+        orange: number;
+        orangered: number;
+        orchid: number;
+        palegoldenrod: number;
+        palegreen: number;
+        paleturquoise: number;
+        palevioletred: number;
+        papayawhip: number;
+        peachpuff: number;
+        peru: number;
+        pink: number;
+        plum: number;
+        powderblue: number;
+        purple: number;
+        rebeccapurple: number;
+        red: number;
+        rosybrown: number;
+        royalblue: number;
+        saddlebrown: number;
+        salmon: number;
+        sandybrown: number;
+        seagreen: number;
+        seashell: number;
+        sienna: number;
+        silver: number;
+        skyblue: number;
+        slateblue: number;
+        slategray: number;
+        slategrey: number;
+        snow: number;
+        springgreen: number;
+        steelblue: number;
+        tan: number;
+        teal: number;
+        thistle: number;
+        tomato: number;
+        turquoise: number;
+        violet: number;
+        wheat: number;
+        white: number;
+        whitesmoke: number;
+        yellow: number;
+        yellowgreen: number;
     };
 }
 declare namespace feng3d {
@@ -16028,6 +16028,80 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The events that cause new particles to be spawned.
+     *
+     * 导致新粒子产生的事件。
+     */
+    enum ParticleSystemSubEmitterType {
+        /**
+         * Spawns new particles when particles from the parent system are born.
+         *
+         * 当来自父系统的粒子诞生时，产生新的粒子。
+         */
+        Birth = 0,
+        /**
+         * Spawns new particles when particles from the parent system collide with something.
+         *
+         * 当来自父系统的粒子与某物碰撞时，产生新的粒子。
+         */
+        Collision = 1,
+        /**
+         * Spawns new particles when particles from the parent system die.
+         *
+         * 当来自父系统的粒子死亡时，产生新的粒子。
+         */
+        Death = 2,
+        /**
+         * Spawns new particles when particles from the parent system pass conditions in the Trigger Module.
+         *
+         * 当来自父系统的粒子通过触发器模块中的条件时，生成新的粒子。
+         */
+        Trigger = 3,
+        /**
+         * Spawns new particles when triggered from script using ParticleSystem.TriggerSubEmitter.
+         *
+         * 当使用ParticleSystem.TriggerSubEmitter从脚本中触发时，生成新的粒子。
+         */
+        Manual = 4
+    }
+}
+declare namespace feng3d {
+    /**
+     * The properties of sub-emitter particles.
+     */
+    enum ParticleSystemSubEmitterProperties {
+        /**
+         * When spawning new particles, do not inherit any properties from the parent particles.
+         */
+        InheritNothing = 0,
+        /**
+         * When spawning new particles, inherit all available properties from the parent particles.
+         */
+        InheritEverything = 1,
+        /**
+         * When spawning new particles, multiply the start color by the color of the parent particles.
+         */
+        InheritColor = 2,
+        /**
+         * When spawning new particles, multiply the start size by the size of the parent particles.
+         */
+        InheritSize = 3,
+        /**
+         * When spawning new particles, add the start rotation to the rotation of the parent particles.
+         */
+        InheritRotation = 4,
+        /**
+         * New particles will have a shorter lifespan, the closer their parent particles are to death.
+         */
+        InheritLifetime = 5,
+        /**
+         * When spawning new particles, use the duration and age properties from the parent system, when sampling MainModule curves in the Sub-Emitter.
+         */
+        InheritDuration = 6
+    }
+}
+declare namespace feng3d {
+    /**
      * 粒子系统 发射形状
      */
     class ParticleSystemShape {
@@ -17705,6 +17779,81 @@ declare namespace feng3d {
          */
         update(interval: number): void;
         private _scrollValue;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Script interface for the SubEmittersModule.
+     *
+     * The sub-emitters module allows you to spawn particles in child emitters from the positions of particles in the parent system.
+     *
+     * This module triggers child particle emission on events such as the birth, death, and collision of particles in the parent system.
+     */
+    class ParticleSubEmittersModule extends ParticleModule {
+        /**
+         * The total number of sub-emitters.
+         */
+        subEmittersCount: number;
+        private subEmitters;
+        /**
+         * Add a new sub-emitter.
+         */
+        AddSubEmitter(subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number): void;
+        /**
+         * Gets the probability that the sub-emitter emits particles.
+         *
+         * @param index The index of the sub-emitter.
+         */
+        GetSubEmitterEmitProbability(index: number): number;
+        /**
+         * Gets the properties of the sub - emitter at the given index.
+         *
+         * @param index The index of the sub-emitter.
+         */
+        GetSubEmitterProperties(index: number): ParticleSystemSubEmitterProperties;
+        /**
+         * Gets the sub - emitter Particle System at the given index.
+         *
+         * @param index The index of the desired sub-emitter.
+         */
+        GetSubEmitterSystem(index: number): ParticleSystem;
+        /**
+         * Gets the type of the sub - emitter at the given index.
+         *
+         * @param index The index of the desired sub-emitter.
+         */
+        GetSubEmitterType(index: number): ParticleSystemSubEmitterType;
+        /**
+         * Removes a sub - emitter from the given index in the array.
+         *
+         * @param index The index of the desired sub-emitter.
+         */
+        RemoveSubEmitter(index: number): void;
+        /**
+         * Sets the probability that the sub - emitter emits particles.
+         *
+         * @param index The index of the sub-emitter you want to modify.
+         * @param emitProbability The probability value.
+         */
+        SetSubEmitterEmitProbability(index: number, emitProbability: number): void;
+        /**
+         * Sets the properties of the sub - emitter at the given index.
+         *
+         * @param index The index of the sub-emitter you want to modify.
+         * @param properties The new properties to assign to this sub-emitter.
+         */
+        SetSubEmitterProperties(index: number, properties: ParticleSystemSubEmitterProperties): void;
+        /**
+         * Sets the Particle System to use as the sub - emitter at the given index.
+         */
+        SetSubEmitterSystem(index: number, subEmitter: ParticleSystem): void;
+        /**
+         * Sets the type of the sub - emitter at the given index.
+         *
+         * @param index The index of the sub-emitter you want to modify.
+         * @param type The new spawning type to assign to this sub-emitter.
+         */
+        SetSubEmitterType(index: number, type: ParticleSystemSubEmitterType): void;
     }
 }
 declare namespace feng3d {

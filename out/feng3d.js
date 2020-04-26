@@ -32574,6 +32574,7 @@ var feng3d;
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
             _this.rotationBySpeed = new feng3d.ParticleRotationBySpeedModule();
             _this.noise = new feng3d.ParticleNoiseModule();
+            // this.noise = new ParticleSubEmittersModule();
             _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
             _this.main.enabled = true;
             _this.emission.enabled = true;
@@ -33904,6 +33905,84 @@ var feng3d;
          */
         ParticleSystemNoiseQuality[ParticleSystemNoiseQuality["High"] = 2] = "High";
     })(ParticleSystemNoiseQuality = feng3d.ParticleSystemNoiseQuality || (feng3d.ParticleSystemNoiseQuality = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * The events that cause new particles to be spawned.
+     *
+     * 导致新粒子产生的事件。
+     */
+    var ParticleSystemSubEmitterType;
+    (function (ParticleSystemSubEmitterType) {
+        /**
+         * Spawns new particles when particles from the parent system are born.
+         *
+         * 当来自父系统的粒子诞生时，产生新的粒子。
+         */
+        ParticleSystemSubEmitterType[ParticleSystemSubEmitterType["Birth"] = 0] = "Birth";
+        /**
+         * Spawns new particles when particles from the parent system collide with something.
+         *
+         * 当来自父系统的粒子与某物碰撞时，产生新的粒子。
+         */
+        ParticleSystemSubEmitterType[ParticleSystemSubEmitterType["Collision"] = 1] = "Collision";
+        /**
+         * Spawns new particles when particles from the parent system die.
+         *
+         * 当来自父系统的粒子死亡时，产生新的粒子。
+         */
+        ParticleSystemSubEmitterType[ParticleSystemSubEmitterType["Death"] = 2] = "Death";
+        /**
+         * Spawns new particles when particles from the parent system pass conditions in the Trigger Module.
+         *
+         * 当来自父系统的粒子通过触发器模块中的条件时，生成新的粒子。
+         */
+        ParticleSystemSubEmitterType[ParticleSystemSubEmitterType["Trigger"] = 3] = "Trigger";
+        /**
+         * Spawns new particles when triggered from script using ParticleSystem.TriggerSubEmitter.
+         *
+         * 当使用ParticleSystem.TriggerSubEmitter从脚本中触发时，生成新的粒子。
+         */
+        ParticleSystemSubEmitterType[ParticleSystemSubEmitterType["Manual"] = 4] = "Manual";
+    })(ParticleSystemSubEmitterType = feng3d.ParticleSystemSubEmitterType || (feng3d.ParticleSystemSubEmitterType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * The properties of sub-emitter particles.
+     */
+    var ParticleSystemSubEmitterProperties;
+    (function (ParticleSystemSubEmitterProperties) {
+        /**
+         * When spawning new particles, do not inherit any properties from the parent particles.
+         */
+        ParticleSystemSubEmitterProperties[ParticleSystemSubEmitterProperties["InheritNothing"] = 0] = "InheritNothing";
+        /**
+         * When spawning new particles, inherit all available properties from the parent particles.
+         */
+        ParticleSystemSubEmitterProperties[ParticleSystemSubEmitterProperties["InheritEverything"] = 1] = "InheritEverything";
+        /**
+         * When spawning new particles, multiply the start color by the color of the parent particles.
+         */
+        ParticleSystemSubEmitterProperties[ParticleSystemSubEmitterProperties["InheritColor"] = 2] = "InheritColor";
+        /**
+         * When spawning new particles, multiply the start size by the size of the parent particles.
+         */
+        ParticleSystemSubEmitterProperties[ParticleSystemSubEmitterProperties["InheritSize"] = 3] = "InheritSize";
+        /**
+         * When spawning new particles, add the start rotation to the rotation of the parent particles.
+         */
+        ParticleSystemSubEmitterProperties[ParticleSystemSubEmitterProperties["InheritRotation"] = 4] = "InheritRotation";
+        /**
+         * New particles will have a shorter lifespan, the closer their parent particles are to death.
+         */
+        ParticleSystemSubEmitterProperties[ParticleSystemSubEmitterProperties["InheritLifetime"] = 5] = "InheritLifetime";
+        /**
+         * When spawning new particles, use the duration and age properties from the parent system, when sampling MainModule curves in the Sub-Emitter.
+         */
+        ParticleSystemSubEmitterProperties[ParticleSystemSubEmitterProperties["InheritDuration"] = 6] = "InheritDuration";
+    })(ParticleSystemSubEmitterProperties = feng3d.ParticleSystemSubEmitterProperties || (feng3d.ParticleSystemSubEmitterProperties = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -37653,6 +37732,123 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * Script interface for the SubEmittersModule.
+     *
+     * The sub-emitters module allows you to spawn particles in child emitters from the positions of particles in the parent system.
+     *
+     * This module triggers child particle emission on events such as the birth, death, and collision of particles in the parent system.
+     */
+    var ParticleSubEmittersModule = /** @class */ (function (_super) {
+        __extends(ParticleSubEmittersModule, _super);
+        function ParticleSubEmittersModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.subEmitters = [];
+            return _this;
+        }
+        /**
+         * Add a new sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.AddSubEmitter = function (subEmitter, type, properties, emitProbability) {
+            this.subEmitters.push({ subEmitter: subEmitter, type: type, properties: properties, emitProbability: emitProbability });
+        };
+        /**
+         * Gets the probability that the sub-emitter emits particles.
+         *
+         * @param index The index of the sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.GetSubEmitterEmitProbability = function (index) {
+            if (!this.subEmitters[index])
+                return 0;
+            return this.subEmitters[index].emitProbability;
+        };
+        /**
+         * Gets the properties of the sub - emitter at the given index.
+         *
+         * @param index The index of the sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.GetSubEmitterProperties = function (index) {
+            if (!this.subEmitters[index])
+                return null;
+            return this.subEmitters[index].properties;
+        };
+        /**
+         * Gets the sub - emitter Particle System at the given index.
+         *
+         * @param index The index of the desired sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.GetSubEmitterSystem = function (index) {
+            if (!this.subEmitters[index])
+                return null;
+            return this.subEmitters[index].subEmitter;
+        };
+        /**
+         * Gets the type of the sub - emitter at the given index.
+         *
+         * @param index The index of the desired sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.GetSubEmitterType = function (index) {
+            if (!this.subEmitters[index])
+                return null;
+            return this.subEmitters[index].type;
+        };
+        /**
+         * Removes a sub - emitter from the given index in the array.
+         *
+         * @param index The index of the desired sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.RemoveSubEmitter = function (index) {
+            if (!this.subEmitters[index])
+                return;
+            this.subEmitters.splice(index, 1);
+        };
+        /**
+         * Sets the probability that the sub - emitter emits particles.
+         *
+         * @param index The index of the sub-emitter you want to modify.
+         * @param emitProbability The probability value.
+         */
+        ParticleSubEmittersModule.prototype.SetSubEmitterEmitProbability = function (index, emitProbability) {
+            if (!this.subEmitters[index])
+                return;
+            this.subEmitters[index].emitProbability = emitProbability;
+        };
+        /**
+         * Sets the properties of the sub - emitter at the given index.
+         *
+         * @param index The index of the sub-emitter you want to modify.
+         * @param properties The new properties to assign to this sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.SetSubEmitterProperties = function (index, properties) {
+            if (!this.subEmitters[index])
+                return;
+            this.subEmitters[index].properties = properties;
+        };
+        /**
+         * Sets the Particle System to use as the sub - emitter at the given index.
+         */
+        ParticleSubEmittersModule.prototype.SetSubEmitterSystem = function (index, subEmitter) {
+            if (!this.subEmitters[index])
+                return;
+            this.subEmitters[index].subEmitter = subEmitter;
+        };
+        /**
+         * Sets the type of the sub - emitter at the given index.
+         *
+         * @param index The index of the sub-emitter you want to modify.
+         * @param type The new spawning type to assign to this sub-emitter.
+         */
+        ParticleSubEmittersModule.prototype.SetSubEmitterType = function (index, type) {
+            if (!this.subEmitters[index])
+                return;
+            this.subEmitters[index].type = type;
+        };
+        return ParticleSubEmittersModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleSubEmittersModule = ParticleSubEmittersModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子系统纹理表动画模块。
      */
     var ParticleTextureSheetAnimationModule = /** @class */ (function (_super) {
@@ -38532,6 +38728,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], FolderAsset.prototype, "childrenAssets", void 0);
+        FolderAsset = __decorate([
+            feng3d.ov({ component: "OVFolderAsset" })
+        ], FolderAsset);
         return FolderAsset;
     }(feng3d.FileAsset));
     feng3d.FolderAsset = FolderAsset;
