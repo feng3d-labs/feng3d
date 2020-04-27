@@ -15408,6 +15408,12 @@ declare namespace feng3d {
         set noise(v: ParticleNoiseModule);
         private _noise;
         /**
+         * 旋转角度随速度变化模块
+         */
+        get subEmitters(): ParticleSubEmittersModule;
+        set subEmitters(v: ParticleSubEmittersModule);
+        private _subEmitters;
+        /**
          * 粒子系统纹理表动画模块。
          */
         get textureSheetAnimation(): ParticleTextureSheetAnimationModule;
@@ -15548,6 +15554,12 @@ declare namespace feng3d {
          * @param name 加速度名称。
          */
         removeParticleAcceleration(particle: Particle, name: string): void;
+        /**
+         * 触发子发射器
+         *
+         * @param subEmitterIndex 子发射器索引
+         */
+        TriggerSubEmitter(subEmitterIndex: number): void;
         /**
          * 上次移动发射的位置
          */

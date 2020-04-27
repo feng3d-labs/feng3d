@@ -244,6 +244,20 @@ namespace feng3d
         private _noise: ParticleNoiseModule;
 
         /**
+         * 旋转角度随速度变化模块
+         */
+        @serialize
+        @oav({ block: "subEmitters", component: "OAVObjectView" })
+        get subEmitters() { return this._subEmitters; }
+        set subEmitters(v)
+        {
+            Array.replace(this._modules, this._subEmitters, v);
+            v.particleSystem = this;
+            this._subEmitters = v;
+        }
+        private _subEmitters: ParticleSubEmittersModule;
+
+        /**
          * 粒子系统纹理表动画模块。
          */
         @serialize
@@ -297,7 +311,7 @@ namespace feng3d
             this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
             this.rotationBySpeed = new ParticleRotationBySpeedModule();
             this.noise = new ParticleNoiseModule();
-            // this.noise = new ParticleSubEmittersModule();
+            this.subEmitters = new ParticleSubEmittersModule();
             this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
 
             this.main.enabled = true;
@@ -938,6 +952,30 @@ namespace feng3d
                 //
                 particle.acceleration.sub(value);
             }
+        }
+
+        /**
+         * 触发子发射器
+         * 
+         * @param subEmitterIndex 子发射器索引
+         */
+        TriggerSubEmitter(subEmitterIndex: number)
+        {
+            if (!this.subEmitters.enabled) return;
+
+            var subEmitter = this.subEmitters.GetSubEmitterSystem(subEmitterIndex);
+            if (!subEmitter) return;
+
+            var probability = this.subEmitters.GetSubEmitterEmitProbability(subEmitterIndex);
+            this.subEmitters.GetSubEmitterProperties(subEmitterIndex);
+            this.subEmitters.GetSubEmitterType(subEmitterIndex);
+
+            this._activeParticles.forEach(p =>
+            {
+                if (Math.random() > probability) return;
+
+                subEmitter._emitParticles
+            });
         }
 
         /**

@@ -32574,7 +32574,7 @@ var feng3d;
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
             _this.rotationBySpeed = new feng3d.ParticleRotationBySpeedModule();
             _this.noise = new feng3d.ParticleNoiseModule();
-            // this.noise = new ParticleSubEmittersModule();
+            _this.subEmitters = new feng3d.ParticleSubEmittersModule();
             _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
             _this.main.enabled = true;
             _this.emission.enabled = true;
@@ -32786,6 +32786,19 @@ var feng3d;
                 Array.replace(this._modules, this._noise, v);
                 v.particleSystem = this;
                 this._noise = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "subEmitters", {
+            /**
+             * 旋转角度随速度变化模块
+             */
+            get: function () { return this._subEmitters; },
+            set: function (v) {
+                Array.replace(this._modules, this._subEmitters, v);
+                v.particleSystem = this;
+                this._subEmitters = v;
             },
             enumerable: true,
             configurable: true
@@ -33288,6 +33301,26 @@ var feng3d;
                 particle.acceleration.sub(value);
             }
         };
+        /**
+         * 触发子发射器
+         *
+         * @param subEmitterIndex 子发射器索引
+         */
+        ParticleSystem.prototype.TriggerSubEmitter = function (subEmitterIndex) {
+            if (!this.subEmitters.enabled)
+                return;
+            var subEmitter = this.subEmitters.GetSubEmitterSystem(subEmitterIndex);
+            if (!subEmitter)
+                return;
+            var probability = this.subEmitters.GetSubEmitterEmitProbability(subEmitterIndex);
+            this.subEmitters.GetSubEmitterProperties(subEmitterIndex);
+            this.subEmitters.GetSubEmitterType(subEmitterIndex);
+            this._activeParticles.forEach(function (p) {
+                if (Math.random() > probability)
+                    return;
+                subEmitter._emitParticles;
+            });
+        };
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "main", component: "OAVObjectView" })
@@ -33346,6 +33379,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "noise", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "noise", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "subEmitters", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "subEmitters", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统纹理表动画模块。", block: "textureSheetAnimation", component: "OAVObjectView" })
@@ -34377,7 +34414,7 @@ var feng3d;
          */
         ParticleSystemShapeBox.prototype.calcParticlePosDir = function (particle, position, dir) {
             // 计算位置
-            position.set(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scaleNumber(2).subNumber(1));
+            position.copy(feng3d.Vector3.random().scaleNumber(2).subNumber(1));
             if (this.emitFrom == ParticleSystemShapeBoxEmitFrom.Shell) {
                 var max = Math.max(Math.abs(position.x), Math.abs(position.y), Math.abs(position.z));
                 if (Math.abs(position.x) == max) {
@@ -34405,6 +34442,7 @@ var feng3d;
                     position.y = position.y < 0 ? -1 : 1;
                 }
             }
+            position.scale(new feng3d.Vector3(this.boxX, this.boxY, this.boxZ)).scaleNumber(0.5);
             // 
             dir.set(0, 0, 1);
         };
