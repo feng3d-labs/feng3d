@@ -79,7 +79,7 @@ namespace feng3d
         calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
         {
             // 计算位置
-            position.set(this.boxX, this.boxY, this.boxZ).multiply(Vector3.random().scaleNumber(2).subNumber(1));
+            position.copy(Vector3.random().scaleNumber(2).subNumber(1));
 
             if (this.emitFrom == ParticleSystemShapeBoxEmitFrom.Shell)
             {
@@ -111,6 +111,7 @@ namespace feng3d
                     position.y = position.y < 0 ? -1 : 1;
                 }
             }
+            position.scale(new Vector3(this.boxX, this.boxY, this.boxZ)).scaleNumber(0.5);
 
             // 
             dir.set(0, 0, 1);
