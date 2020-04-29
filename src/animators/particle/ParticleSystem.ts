@@ -358,7 +358,8 @@ namespace feng3d
                 this.dispatch("particleCycled", this);
             }
 
-            this._emit();
+            // 发射粒子
+            this._emit(this.rateAtDuration, this._preRealTime, this._realTime);
 
             this._preRealTime = this._realTime;
             this._preworldPos.copy(this._currentWorldPos);
@@ -567,26 +568,20 @@ namespace feng3d
          * 发射粒子
          * @param time 当前粒子时间
          */
-        private _emit()
+        private _emit(rateAtDuration: number, preRealTime: number, realEmitTime: number)
         {
             if (!this.emission.enabled) return;
-
-            // 判断是否达到最大粒子数量
-            if (this._activeParticles.length >= this.main.maxParticles) return;
 
             // 判断是否开始发射
             if (this._realTime <= 0) return;
 
             var loop = this.main.loop;
             var duration = this.main.duration;
-            var rateAtDuration = this.rateAtDuration;
-            var preRealTime = this._preRealTime;
 
             // 判断是否结束发射
             if (!loop && preRealTime >= duration) return;
 
             // 计算最后发射时间
-            var realEmitTime = this._realTime;
             if (!loop) realEmitTime = Math.min(realEmitTime, duration);
 
             // 
@@ -599,12 +594,22 @@ namespace feng3d
             var timeEmits = this._emitWithTime(rateAtDuration, preRealTime, duration, realEmitTime);
             emits = emits.concat(timeEmits);
 
-            emits.sort((a, b) => { return a.time - b.time });;
+            emits.sort((a, b) => { return a.time - b.time });
 
             emits.forEach(v =>
             {
-                this._emitParticles(v);
+                this._emitParticles(rateAtDuration, v);
             });
+        }
+
+        /**
+         * 由指定粒子发射粒子。
+         * 
+         * @param particle 发射子粒子系统的粒子
+         */
+        private _emitFromParticle(particle: Particle)
+        {
+
         }
 
         /**
@@ -712,9 +717,8 @@ namespace feng3d
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        private _emitParticles(v: { time: number; num: number; position?: Vector3; })
+        private _emitParticles(rateAtDuration: number, v: { time: number; num: number; position?: Vector3; })
         {
-            var rateAtDuration = this.rateAtDuration;
             var num = v.num;
             var birthTime = v.time;
             var position = v.position || new Vector3();
@@ -1014,7 +1018,7 @@ namespace feng3d
 
                 p.rateAtLifeTime
 
-                subEmitter._emitParticles
+                subEmitter._emitFromParticle(p);
             });
         }
 

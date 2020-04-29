@@ -15490,6 +15490,12 @@ declare namespace feng3d {
          */
         private _emit;
         /**
+         * 由指定粒子发射粒子。
+         *
+         * @param particle 发射子粒子系统的粒子
+         */
+        private _emitFromParticle;
+        /**
          * 计算在指定移动的位移线段中发射的粒子列表。
          *
          * @param rateAtDuration

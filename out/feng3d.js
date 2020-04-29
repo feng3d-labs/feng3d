@@ -32859,7 +32859,8 @@ var feng3d;
                 });
                 this.dispatch("particleCycled", this);
             }
-            this._emit();
+            // 发射粒子
+            this._emit(this.rateAtDuration, this._preRealTime, this._realTime);
             this._preRealTime = this._realTime;
             this._preworldPos.copy(this._currentWorldPos);
             // 判断非循环的效果是否播放结束
@@ -32993,25 +32994,19 @@ var feng3d;
          * 发射粒子
          * @param time 当前粒子时间
          */
-        ParticleSystem.prototype._emit = function () {
+        ParticleSystem.prototype._emit = function (rateAtDuration, preRealTime, realEmitTime) {
             var _this = this;
             if (!this.emission.enabled)
-                return;
-            // 判断是否达到最大粒子数量
-            if (this._activeParticles.length >= this.main.maxParticles)
                 return;
             // 判断是否开始发射
             if (this._realTime <= 0)
                 return;
             var loop = this.main.loop;
             var duration = this.main.duration;
-            var rateAtDuration = this.rateAtDuration;
-            var preRealTime = this._preRealTime;
             // 判断是否结束发射
             if (!loop && preRealTime >= duration)
                 return;
             // 计算最后发射时间
-            var realEmitTime = this._realTime;
             if (!loop)
                 realEmitTime = Math.min(realEmitTime, duration);
             // 
@@ -33023,10 +33018,16 @@ var feng3d;
             var timeEmits = this._emitWithTime(rateAtDuration, preRealTime, duration, realEmitTime);
             emits = emits.concat(timeEmits);
             emits.sort(function (a, b) { return a.time - b.time; });
-            ;
             emits.forEach(function (v) {
-                _this._emitParticles(v);
+                _this._emitParticles(rateAtDuration, v);
             });
+        };
+        /**
+         * 由指定粒子发射粒子。
+         *
+         * @param particle 发射子粒子系统的粒子
+         */
+        ParticleSystem.prototype._emitFromParticle = function (particle) {
         };
         /**
          * 计算在指定移动的位移线段中发射的粒子列表。
@@ -33119,8 +33120,7 @@ var feng3d;
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        ParticleSystem.prototype._emitParticles = function (v) {
-            var rateAtDuration = this.rateAtDuration;
+        ParticleSystem.prototype._emitParticles = function (rateAtDuration, v) {
             var num = v.num;
             var birthTime = v.time;
             var position = v.position || new feng3d.Vector3();
@@ -33364,7 +33364,7 @@ var feng3d;
                 if (Math.random() > probability)
                     return;
                 p.rateAtLifeTime;
-                subEmitter._emitParticles;
+                subEmitter._emitFromParticle(p);
             });
         };
         __decorate([
