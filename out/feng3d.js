@@ -32565,7 +32565,7 @@ var feng3d;
             /**
              * 当前粒子世界坐标
              */
-            _this.worldPos = new feng3d.Vector3();
+            _this._currentWorldPos = new feng3d.Vector3();
             /**
              * 此次位移
              */
@@ -32842,9 +32842,9 @@ var feng3d;
             this._realTime = this.time - this.startDelay;
             this._rateAtDuration = (this._realTime % this.main.duration) / this.main.duration;
             // 粒子系统位置
-            this.worldPos.copy(this.transform.worldPosition);
+            this._currentWorldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
-            this.moveVec.copy(this.worldPos).sub(this._preworldPos);
+            this.moveVec.copy(this._currentWorldPos).sub(this._preworldPos);
             // 粒子系统速度
             this.speed.copy(this.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
             this._modules.forEach(function (m) {
@@ -32857,10 +32857,11 @@ var feng3d;
                 this.emission.bursts.forEach(function (element) {
                     element.calculateProbability();
                 });
+                this.dispatch("particleCycled", this);
             }
             this._emit();
             this._preRealTime = this._realTime;
-            this._preworldPos.copy(this.worldPos);
+            this._preworldPos.copy(this._currentWorldPos);
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this._realTime > this.main.duration) {
                 this.stop();
@@ -33016,42 +33017,25 @@ var feng3d;
             // 
             var emits = [];
             // 处理移动发射粒子
-            var moveEmits = this.emitWithMove(rateAtDuration, this._preworldPos, this.worldPos);
+            var moveEmits = this._emitWithMove(rateAtDuration, this._preworldPos, this._currentWorldPos);
             emits = emits.concat(moveEmits);
             // 单粒子发射周期
-            var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
-            var bursts = this.emission.bursts;
-            // 遍历所有发射周期
-            var cycleStartIndex = Math.floor(preRealTime / duration);
-            var cycleEndIndex = Math.ceil(realEmitTime / duration);
-            for (var k = cycleStartIndex; k < cycleEndIndex; k++) {
-                var cycleStartTime = k * duration;
-                var cycleEndTime = (k + 1) * duration;
-                // 单个周期内的起始与结束时间
-                var startTime = Math.max(preRealTime, cycleStartTime);
-                var endTime = Math.min(realEmitTime, cycleEndTime);
-                // 处理稳定发射
-                var singleStart = Math.ceil(startTime / step) * step;
-                for (var i = singleStart; i < endTime; i += step) {
-                    emits.push({ time: i, num: 1 });
-                }
-                // 处理喷发
-                var inCycleStart = startTime - cycleStartTime;
-                var inCycleEnd = endTime - cycleStartTime;
-                for (var i_2 = 0; i_2 < bursts.length; i_2++) {
-                    var burst = bursts[i_2];
-                    if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd) {
-                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
-                    }
-                }
-            }
+            var timeEmits = this._emitWithTime(rateAtDuration, preRealTime, duration, realEmitTime);
+            emits = emits.concat(timeEmits);
             emits.sort(function (a, b) { return a.time - b.time; });
             ;
             emits.forEach(function (v) {
                 _this._emitParticles(v);
             });
         };
-        ParticleSystem.prototype.emitWithMove = function (rateAtDuration, prePos, currentPos) {
+        /**
+         * 计算在指定移动的位移线段中发射的粒子列表。
+         *
+         * @param rateAtDuration
+         * @param prePos
+         * @param currentPos
+         */
+        ParticleSystem.prototype._emitWithMove = function (rateAtDuration, prePos, currentPos) {
             var _this = this;
             var emits = [];
             if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
@@ -33089,6 +33073,44 @@ var feng3d;
             else {
                 this._isRateOverDistance = false;
                 this._leftRateOverDistance = 0;
+            }
+            return emits;
+        };
+        /**
+         * 计算在指定时间段内发射的粒子列表
+         *
+         * @param rateAtDuration
+         * @param preRealTime
+         * @param duration
+         * @param realEmitTime
+         */
+        ParticleSystem.prototype._emitWithTime = function (rateAtDuration, preRealTime, duration, realEmitTime) {
+            var emits = [];
+            var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
+            var bursts = this.emission.bursts;
+            // 遍历所有发射周期
+            var cycleStartIndex = Math.floor(preRealTime / duration);
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
+            for (var k = cycleStartIndex; k < cycleEndIndex; k++) {
+                var cycleStartTime = k * duration;
+                var cycleEndTime = (k + 1) * duration;
+                // 单个周期内的起始与结束时间
+                var startTime = Math.max(preRealTime, cycleStartTime);
+                var endTime = Math.min(realEmitTime, cycleEndTime);
+                // 处理稳定发射
+                var singleStart = Math.ceil(startTime / step) * step;
+                for (var i = singleStart; i < endTime; i += step) {
+                    emits.push({ time: i, num: 1 });
+                }
+                // 处理喷发
+                var inCycleStart = startTime - cycleStartTime;
+                var inCycleEnd = endTime - cycleStartTime;
+                for (var i_2 = 0; i_2 < bursts.length; i_2++) {
+                    var burst = bursts[i_2];
+                    if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd) {
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
+                    }
+                }
             }
             return emits;
         };

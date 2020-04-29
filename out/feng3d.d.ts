@@ -15308,6 +15308,10 @@ declare namespace feng3d {
     }
     interface GameObjectEventMap {
         /**
+         * 粒子系统播放完一个周期
+         */
+        particleCycled: ParticleSystem;
+        /**
          * 粒子效果播放结束
          */
         particleCompleted: ParticleSystem;
@@ -15485,7 +15489,23 @@ declare namespace feng3d {
          * @param time 当前粒子时间
          */
         private _emit;
-        private emitWithMove;
+        /**
+         * 计算在指定移动的位移线段中发射的粒子列表。
+         *
+         * @param rateAtDuration
+         * @param prePos
+         * @param currentPos
+         */
+        private _emitWithMove;
+        /**
+         * 计算在指定时间段内发射的粒子列表
+         *
+         * @param rateAtDuration
+         * @param preRealTime
+         * @param duration
+         * @param realEmitTime
+         */
+        private _emitWithTime;
         /**
          * 发射粒子
          * @param birthTime 发射时间
@@ -15576,7 +15596,7 @@ declare namespace feng3d {
         /**
          * 当前粒子世界坐标
          */
-        worldPos: Vector3;
+        private _currentWorldPos;
         /**
          * 此次位移
          */

@@ -5,6 +5,11 @@ namespace feng3d
     export interface GameObjectEventMap
     {
         /**
+         * 粒子系统播放完一个周期
+         */
+        particleCycled: ParticleSystem;
+
+        /**
          * 粒子效果播放结束
          */
         particleCompleted: ParticleSystem;
@@ -329,9 +334,9 @@ namespace feng3d
             this._rateAtDuration = (this._realTime % this.main.duration) / this.main.duration;
 
             // 粒子系统位置
-            this.worldPos.copy(this.transform.worldPosition);
+            this._currentWorldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
-            this.moveVec.copy(this.worldPos).sub(this._preworldPos);
+            this.moveVec.copy(this._currentWorldPos).sub(this._preworldPos);
             // 粒子系统速度
             this.speed.copy(this.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
 
@@ -350,12 +355,13 @@ namespace feng3d
                 {
                     element.calculateProbability();
                 });
+                this.dispatch("particleCycled", this);
             }
 
             this._emit();
 
             this._preRealTime = this._realTime;
-            this._preworldPos.copy(this.worldPos);
+            this._preworldPos.copy(this._currentWorldPos);
 
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this._realTime > this.main.duration)
@@ -586,43 +592,12 @@ namespace feng3d
             // 
             var emits: { time: number, num: number, position?: Vector3 }[] = [];
             // 处理移动发射粒子
-            var moveEmits = this.emitWithMove(rateAtDuration, this._preworldPos, this.worldPos);
+            var moveEmits = this._emitWithMove(rateAtDuration, this._preworldPos, this._currentWorldPos);
             emits = emits.concat(moveEmits);
 
             // 单粒子发射周期
-            var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
-            var bursts = this.emission.bursts;
-            // 遍历所有发射周期
-            var cycleStartIndex = Math.floor(preRealTime / duration);
-            var cycleEndIndex = Math.ceil(realEmitTime / duration);
-            for (let k = cycleStartIndex; k < cycleEndIndex; k++)
-            {
-                var cycleStartTime = k * duration;
-                var cycleEndTime = (k + 1) * duration;
-
-                // 单个周期内的起始与结束时间
-                var startTime = Math.max(preRealTime, cycleStartTime);
-                var endTime = Math.min(realEmitTime, cycleEndTime);
-
-                // 处理稳定发射
-                var singleStart = Math.ceil(startTime / step) * step;
-                for (var i = singleStart; i < endTime; i += step)
-                {
-                    emits.push({ time: i, num: 1 });
-                }
-
-                // 处理喷发
-                var inCycleStart = startTime - cycleStartTime;
-                var inCycleEnd = endTime - cycleStartTime;
-                for (let i = 0; i < bursts.length; i++)
-                {
-                    const burst = bursts[i];
-                    if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd)
-                    {
-                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
-                    }
-                }
-            }
+            var timeEmits = this._emitWithTime(rateAtDuration, preRealTime, duration, realEmitTime);
+            emits = emits.concat(timeEmits);
 
             emits.sort((a, b) => { return a.time - b.time });;
 
@@ -632,7 +607,14 @@ namespace feng3d
             });
         }
 
-        private emitWithMove(rateAtDuration: number, prePos: Vector3, currentPos: Vector3)
+        /**
+         * 计算在指定移动的位移线段中发射的粒子列表。
+         * 
+         * @param rateAtDuration 
+         * @param prePos 
+         * @param currentPos 
+         */
+        private _emitWithMove(rateAtDuration: number, prePos: Vector3, currentPos: Vector3)
         {
             var emits: { time: number; num: number; position?: Vector3; }[] = [];
             if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
@@ -676,6 +658,51 @@ namespace feng3d
             {
                 this._isRateOverDistance = false;
                 this._leftRateOverDistance = 0;
+            }
+            return emits;
+        }
+
+        /**
+         * 计算在指定时间段内发射的粒子列表
+         * 
+         * @param rateAtDuration 
+         * @param preRealTime 
+         * @param duration 
+         * @param realEmitTime 
+         */
+        private _emitWithTime(rateAtDuration: number, preRealTime: number, duration: number, realEmitTime: number)
+        {
+            var emits: { time: number; num: number; position?: Vector3; }[] = [];
+
+            var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
+            var bursts = this.emission.bursts;
+            // 遍历所有发射周期
+            var cycleStartIndex = Math.floor(preRealTime / duration);
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
+            for (let k = cycleStartIndex; k < cycleEndIndex; k++)
+            {
+                var cycleStartTime = k * duration;
+                var cycleEndTime = (k + 1) * duration;
+                // 单个周期内的起始与结束时间
+                var startTime = Math.max(preRealTime, cycleStartTime);
+                var endTime = Math.min(realEmitTime, cycleEndTime);
+                // 处理稳定发射
+                var singleStart = Math.ceil(startTime / step) * step;
+                for (var i = singleStart; i < endTime; i += step)
+                {
+                    emits.push({ time: i, num: 1 });
+                }
+                // 处理喷发
+                var inCycleStart = startTime - cycleStartTime;
+                var inCycleEnd = endTime - cycleStartTime;
+                for (let i = 0; i < bursts.length; i++)
+                {
+                    const burst = bursts[i];
+                    if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd)
+                    {
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
+                    }
+                }
             }
             return emits;
         }
@@ -1009,7 +1036,7 @@ namespace feng3d
         /**
          * 当前粒子世界坐标
          */
-        worldPos = new Vector3();
+        private _currentWorldPos = new Vector3();
 
         /**
          * 此次位移
