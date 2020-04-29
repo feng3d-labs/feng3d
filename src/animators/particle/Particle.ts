@@ -87,25 +87,52 @@ namespace feng3d
 		cache = {};
 
 		/**
+		 * 上次记录的时间
+		 */
+		preTime: number;
+
+		/**
+		 * 当前记录的时间
+		 */
+		curTime: number;
+
+		/**
+		 * 上次记录位置
+		 */
+		prePosition: Vector3;
+
+		/**
+		 * 当前记录位置
+		 */
+		curPosition: Vector3;
+
+		/**
 		 * 更新状态
 		 */
-		updateState(preTime: number, time: number)
+		updateState(time: number)
 		{
-			preTime = Math.max(preTime, this.birthTime);
+			var preTime = Math.max(this.curTime, this.birthTime);
 			time = Math.max(this.birthTime, time);
 
-			var pTime = time - preTime;
+			//
+			var deltaTime = time - preTime;
 
 			// 计算速度
-			this.velocity.add(this.acceleration.scaleNumberTo(pTime));
+			this.velocity.add(this.acceleration.scaleNumberTo(deltaTime));
 
 			// 计算位置
-			this.position.x += this.velocity.x * pTime;
-			this.position.y += this.velocity.y * pTime;
-			this.position.z += this.velocity.z * pTime;
+			this.position.x += this.velocity.x * deltaTime;
+			this.position.y += this.velocity.y * deltaTime;
+			this.position.z += this.velocity.z * deltaTime;
 
 			// 计算角度
-			this.rotation.add(this.angularVelocity.scaleNumberTo(pTime));
+			this.rotation.add(this.angularVelocity.scaleNumberTo(deltaTime));
+
+			// 记录粒子此次移动的起始时间以及起始位置
+			this.prePosition = this.curPosition.clone();
+			this.curPosition = this.position.clone();
+			this.preTime = this.curTime;
+			this.curTime = time;
 		}
 	}
 }

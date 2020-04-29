@@ -15250,9 +15250,25 @@ declare namespace feng3d {
          */
         cache: {};
         /**
+         * 上次记录的时间
+         */
+        preTime: number;
+        /**
+         * 当前记录的时间
+         */
+        curTime: number;
+        /**
+         * 上次记录位置
+         */
+        prePosition: Vector3;
+        /**
+         * 当前记录位置
+         */
+        curPosition: Vector3;
+        /**
          * 更新状态
          */
-        updateState(preTime: number, time: number): void;
+        updateState(time: number): void;
     }
 }
 declare namespace feng3d {
@@ -15486,7 +15502,11 @@ declare namespace feng3d {
         private _rateAtDuration;
         /**
          * 发射粒子
-         * @param time 当前粒子时间
+         *
+         * @param startTime 发射起始时间
+         * @param endTime 发射终止时间
+         * @param startPos 发射起始位置
+         * @param stopPos 发射终止位置
          */
         private _emit;
         /**

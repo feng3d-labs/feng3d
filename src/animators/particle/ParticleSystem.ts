@@ -359,7 +359,7 @@ namespace feng3d
             }
 
             // 发射粒子
-            this._emit(this.rateAtDuration, this._preRealTime, this._realTime);
+            this._emit(this._preRealTime, this._realTime, this._preworldPos, this._currentWorldPos);
 
             this._preRealTime = this._realTime;
             this._preworldPos.copy(this._currentWorldPos);
@@ -566,32 +566,39 @@ namespace feng3d
 
         /**
          * 发射粒子
-         * @param time 当前粒子时间
+         * 
+         * @param startTime 发射起始时间
+         * @param endTime 发射终止时间
+         * @param startPos 发射起始位置
+         * @param stopPos 发射终止位置
          */
-        private _emit(rateAtDuration: number, preRealTime: number, realEmitTime: number)
+        private _emit(startTime: number, endTime: number, startPos: Vector3, stopPos: Vector3)
         {
             if (!this.emission.enabled) return;
 
             // 判断是否开始发射
-            if (this._realTime <= 0) return;
+            if (endTime <= 0) return;
 
             var loop = this.main.loop;
             var duration = this.main.duration;
 
             // 判断是否结束发射
-            if (!loop && preRealTime >= duration) return;
+            if (!loop && startTime >= duration) return;
 
             // 计算最后发射时间
-            if (!loop) realEmitTime = Math.min(realEmitTime, duration);
+            if (!loop) endTime = Math.min(endTime, duration);
+
+            // 计算此处在发射周期的位置
+            var rateAtDuration = (endTime % duration) / duration;
 
             // 
             var emits: { time: number, num: number, position?: Vector3 }[] = [];
             // 处理移动发射粒子
-            var moveEmits = this._emitWithMove(rateAtDuration, this._preworldPos, this._currentWorldPos);
+            var moveEmits = this._emitWithMove(rateAtDuration, startPos, stopPos);
             emits = emits.concat(moveEmits);
 
             // 单粒子发射周期
-            var timeEmits = this._emitWithTime(rateAtDuration, preRealTime, duration, realEmitTime);
+            var timeEmits = this._emitWithTime(rateAtDuration, startTime, duration, endTime);
             emits = emits.concat(timeEmits);
 
             emits.sort((a, b) => { return a.time - b.time });
@@ -609,7 +616,10 @@ namespace feng3d
          */
         private _emitFromParticle(particle: Particle)
         {
+            var startTime = Math.max(particle.preTime - particle.birthTime, 0);
+            var endTime = Math.max(particle.curTime - particle.birthTime, particle.lifetime);
 
+            this._emit(startTime, endTime, particle.prePosition, particle.curPosition);
         }
 
         /**
@@ -738,6 +748,11 @@ namespace feng3d
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
                     //
+                    particle.preTime = this._realTime;
+                    particle.curTime = this._realTime;
+                    particle.prePosition = position.clone();
+                    particle.curPosition = position.clone();
+                    //
                     particle.birthRateAtDuration = birthRateAtDuration - Math.floor(birthRateAtDuration);
 
                     this._activeParticles.push(particle);
@@ -782,10 +797,9 @@ namespace feng3d
          */
         private _updateParticleState(particle: Particle)
         {
-            var preTime = Math.max(this._preRealTime, particle.birthTime);
             //
             this._modules.forEach(v => { v.updateParticleState(particle) });
-            particle.updateState(preTime, this._realTime);
+            particle.updateState(this._realTime);
         }
 
         private _simulationSpaceChanged()
@@ -1015,8 +1029,6 @@ namespace feng3d
             particles.forEach(p =>
             {
                 if (Math.random() > probability) return;
-
-                p.rateAtLifeTime
 
                 subEmitter._emitFromParticle(p);
             });
