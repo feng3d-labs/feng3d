@@ -15612,14 +15612,6 @@ declare namespace feng3d {
          */
         private _preworldPos;
         /**
-         * 是否已经执行位移发射。
-         */
-        private _isRateOverDistance;
-        /**
-         * 用于处理移动发射的剩余移动距离。
-         */
-        private _leftRateOverDistance;
-        /**
          * 当前粒子世界坐标
          */
         private _currentWorldPos;
@@ -15645,25 +15637,33 @@ declare namespace feng3d {
      */
     interface ParticleSystemEmitInfo {
         /**
-         * 发射起始时间
+         * 上次粒子系统时间
          */
-        startTime: number;
+        preTime: number;
         /**
-         * 发射终止时间
+         * 当前粒子系统时间
          */
-        endTime: number;
+        currentTime: number;
         /**
-         * 发射起始位置
+         * 上次世界坐标
          */
-        startPos: Vector3;
+        preWorldPos: Vector3;
         /**
-         * 发射终止位置
+         * 当前世界坐标
          */
-        stopPos: Vector3;
+        currentWorldPos: Vector3;
         /**
          * 此时在发射周期的位置
          */
         rateAtDuration: number;
+        /**
+         * 用于处理移动发射的剩余移动距离。
+         */
+        _leftRateOverDistance: number;
+        /**
+         * 是否已经执行位移发射。
+         */
+        _isRateOverDistance: boolean;
     }
     interface DefaultGeometry {
         "Billboard-Geometry": QuadGeometry;

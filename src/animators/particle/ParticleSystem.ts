@@ -359,10 +359,10 @@ namespace feng3d
             }
 
             this._emitInfo = this._emitInfo || <any>{};
-            this._emitInfo.startTime = this._preRealTime;
-            this._emitInfo.endTime = this._realTime;
-            this._emitInfo.startPos = this._preworldPos;
-            this._emitInfo.stopPos = this._currentWorldPos;
+            this._emitInfo.preTime = this._preRealTime;
+            this._emitInfo.currentTime = this._realTime;
+            this._emitInfo.preWorldPos = this._preworldPos;
+            this._emitInfo.currentWorldPos = this._currentWorldPos;
 
             // 发射粒子
             if (!this._isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
@@ -589,8 +589,8 @@ namespace feng3d
          */
         private _emit(emitInfo: ParticleSystemEmitInfo)
         {
-            var startTime = emitInfo.startTime;
-            var endTime = emitInfo.endTime;
+            var startTime = emitInfo.preTime;
+            var endTime = emitInfo.currentTime;
 
             if (!this.emission.enabled) return;
 
@@ -613,7 +613,7 @@ namespace feng3d
             emitInfo.rateAtDuration = rateAtDuration;
 
             // 
-            var emits: { time: number, num: number, position?: Vector3 }[] = [];
+            var emits: { time: number, num: number, position: Vector3, emitInfo: ParticleSystemEmitInfo }[] = [];
             // 处理移动发射粒子
             var moveEmits = this._emitWithMove(emitInfo);
             emits = emits.concat(moveEmits);
@@ -651,20 +651,21 @@ namespace feng3d
          */
         private _emitWithMove(emitInfo: ParticleSystemEmitInfo)
         {
-            var emits: { time: number; num: number; position?: Vector3; }[] = [];
+            var emits: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo; }[] = [];
             if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
             {
-                if (this._isRateOverDistance)
+                if (emitInfo._isRateOverDistance)
                 {
-                    var moveVec = emitInfo.stopPos.subTo(emitInfo.startPos);
-                    var worldPos = emitInfo.stopPos;
+                    var moveVec = emitInfo.currentWorldPos.subTo(emitInfo.preWorldPos);
+                    var moveDistance = moveVec.length;
+                    var worldPos = emitInfo.currentWorldPos;
                     // 本次移动距离
-                    if (moveVec.lengthSquared > 0)
+                    if (moveDistance > 0)
                     {
                         // 移动方向
                         var moveDir = moveVec.clone().normalize();
                         // 剩余移动量
-                        var leftRateOverDistance = this._leftRateOverDistance + moveVec.length;
+                        var leftRateOverDistance = emitInfo._leftRateOverDistance + moveDistance;
                         // 发射频率
                         var rateOverDistance = this.emission.rateOverDistance.getValue(emitInfo.rateAtDuration);
                         // 发射间隔距离
@@ -672,27 +673,27 @@ namespace feng3d
                         // 发射间隔位移
                         var invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
                         // 上次发射位置
-                        var lastRateOverDistance = this._preworldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
-                        // 发射位置列表
-                        var emitPosArr: Vector3[] = [];
+                        var lastRateOverDistance = emitInfo.preWorldPos.addTo(moveDir.negateTo().scaleNumber(emitInfo._leftRateOverDistance));
+
                         while (invRateOverDistance < leftRateOverDistance)
                         {
-                            emitPosArr.push(lastRateOverDistance.add(invRateOverDistanceVec).clone());
+                            emits.push({
+                                position: lastRateOverDistance.add(invRateOverDistanceVec).clone().sub(worldPos),
+                                time: emitInfo.preTime + (emitInfo.currentTime - emitInfo.preTime) * (1 - leftRateOverDistance / moveDistance),
+                                num: 1,
+                                emitInfo: emitInfo
+                            });
                             leftRateOverDistance -= invRateOverDistance;
                         }
-                        this._leftRateOverDistance = leftRateOverDistance;
-                        emitPosArr.forEach(p =>
-                        {
-                            emits.push({ time: this.time, num: 1, position: p.sub(worldPos) });
-                        });
+                        emitInfo._leftRateOverDistance = leftRateOverDistance;
                     }
                 }
-                this._isRateOverDistance = true;
+                emitInfo._isRateOverDistance = true;
             }
             else
             {
-                this._isRateOverDistance = false;
-                this._leftRateOverDistance = 0;
+                emitInfo._isRateOverDistance = false;
+                emitInfo._leftRateOverDistance = 0;
             }
             return emits;
         }
@@ -708,28 +709,28 @@ namespace feng3d
         private _emitWithTime(emitInfo: ParticleSystemEmitInfo, duration: number)
         {
             var rateAtDuration = emitInfo.rateAtDuration;
-            var preRealTime = emitInfo.startTime;
-            var realEmitTime = emitInfo.endTime;
+            var startTime = emitInfo.preTime;
+            var endTime = emitInfo.currentTime;
 
-            var emits: { time: number; num: number; position?: Vector3; }[] = [];
+            var emits: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo }[] = [];
 
             var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
             // 遍历所有发射周期
-            var cycleStartIndex = Math.floor(preRealTime / duration);
-            var cycleEndIndex = Math.ceil(realEmitTime / duration);
+            var cycleStartIndex = Math.floor(startTime / duration);
+            var cycleEndIndex = Math.ceil(endTime / duration);
             for (let k = cycleStartIndex; k < cycleEndIndex; k++)
             {
                 var cycleStartTime = k * duration;
                 var cycleEndTime = (k + 1) * duration;
                 // 单个周期内的起始与结束时间
-                var startTime = Math.max(preRealTime, cycleStartTime);
-                var endTime = Math.min(realEmitTime, cycleEndTime);
+                var startTime = Math.max(startTime, cycleStartTime);
+                var endTime = Math.min(endTime, cycleEndTime);
                 // 处理稳定发射
                 var singleStart = Math.ceil(startTime / step) * step;
                 for (var i = singleStart; i < endTime; i += step)
                 {
-                    emits.push({ time: i, num: 1 });
+                    emits.push({ time: i, num: 1, emitInfo: emitInfo, position: new Vector3() });
                 }
                 // 处理喷发
                 var inCycleStart = startTime - cycleStartTime;
@@ -739,7 +740,7 @@ namespace feng3d
                     const burst = bursts[i];
                     if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd)
                     {
-                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration), emitInfo: emitInfo, position: new Vector3() });
                     }
                 }
             }
@@ -751,17 +752,18 @@ namespace feng3d
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        private _emitParticles(rateAtDuration: number, v: { time: number; num: number; position?: Vector3; })
+        private _emitParticles(rateAtDuration: number, v: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo })
         {
             var num = v.num;
             var birthTime = v.time;
-            var position = v.position || new Vector3();
+            var position = v.position;
+            var emitInfo = v.emitInfo;
             for (let i = 0; i < num; i++)
             {
                 if (this._activeParticles.length >= this.main.maxParticles) return;
                 var lifetime = this.main.startLifetime.getValue(rateAtDuration);
                 var birthRateAtDuration = (birthTime - this.startDelay) / this.main.duration;
-                var rateAtLifeTime = (this._realTime - birthTime) / lifetime;
+                var rateAtLifeTime = (emitInfo.currentTime - birthTime) / lifetime;
 
                 if (rateAtLifeTime < 1)
                 {
@@ -772,8 +774,8 @@ namespace feng3d
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
                     //
-                    particle.preTime = this._realTime;
-                    particle.curTime = this._realTime;
+                    particle.preTime = emitInfo.currentTime;
+                    particle.curTime = emitInfo.currentTime;
                     particle.prePosition = position.clone();
                     particle.curPosition = position.clone();
                     //
@@ -1053,7 +1055,8 @@ namespace feng3d
             var emits: {
                 time: number;
                 num: number;
-                position?: Vector3;
+                position: Vector3;
+                emitInfo: ParticleSystemEmitInfo;
             }[] = [];
 
             particles.forEach(p =>
@@ -1075,16 +1078,6 @@ namespace feng3d
          * 上次移动发射的位置
          */
         private _preworldPos = new Vector3();
-
-        /**
-         * 是否已经执行位移发射。
-         */
-        private _isRateOverDistance = false;
-
-        /**
-         * 用于处理移动发射的剩余移动距离。
-         */
-        private _leftRateOverDistance = 0;
 
         /**
          * 当前粒子世界坐标
@@ -1118,29 +1111,39 @@ namespace feng3d
     export interface ParticleSystemEmitInfo
     {
         /**
-         * 发射起始时间
+         * 上次粒子系统时间
          */
-        startTime: number;
+        preTime: number;
 
         /**
-         * 发射终止时间
+         * 当前粒子系统时间
          */
-        endTime: number;
+        currentTime: number;
 
         /**
-         * 发射起始位置
+         * 上次世界坐标
          */
-        startPos: Vector3;
+        preWorldPos: Vector3;
 
         /**
-         * 发射终止位置
+         * 当前世界坐标
          */
-        stopPos: Vector3;
+        currentWorldPos: Vector3;
 
         /**
          * 此时在发射周期的位置
          */
         rateAtDuration: number;
+
+        /**
+         * 用于处理移动发射的剩余移动距离。
+         */
+        _leftRateOverDistance: number;
+
+        /**
+         * 是否已经执行位移发射。
+         */
+        _isRateOverDistance: boolean;
     }
 
     export interface DefaultGeometry
