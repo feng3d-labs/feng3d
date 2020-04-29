@@ -107,6 +107,11 @@ namespace feng3d
 		curPosition: Vector3;
 
 		/**
+		 * 发射信息
+		 */
+		emitInfo: ParticleSystemEmitInfo;
+
+		/**
 		 * 更新状态
 		 */
 		updateState(time: number)

@@ -32549,7 +32549,6 @@ var feng3d;
                 a_particle_flipUV: new feng3d.Attribute("a_particle_flipUV", [], 2, 1),
             };
             _this._modules = [];
-            _this._rateAtDuration = 0;
             /**
              * 上次移动发射的位置
              */
@@ -32838,7 +32837,6 @@ var feng3d;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this._emitInfo.preTime = this._emitInfo.currentTime;
             this._emitInfo.currentTime = this.time - this._emitInfo.startDelay;
-            this._rateAtDuration = (this._emitInfo.currentTime % this.main.duration) / this.main.duration;
             // 粒子系统位置
             this._currentWorldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
@@ -32867,7 +32865,7 @@ var feng3d;
                 var emits = this._emit(this._emitInfo);
                 emits.sort(function (a, b) { return a.time - b.time; });
                 emits.forEach(function (v) {
-                    _this._emitParticles(_this._rateAtDuration, v);
+                    _this._emitParticles(v);
                 });
             }
             this._preRealTime = this._emitInfo.currentTime;
@@ -32992,16 +32990,6 @@ var feng3d;
                 renderAtomic.attributes[key] = this._attributes[key];
             }
         };
-        Object.defineProperty(ParticleSystem.prototype, "rateAtDuration", {
-            /**
-             * 此时在周期中的位置
-             */
-            get: function () {
-                return this._rateAtDuration;
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 发射粒子
          *
@@ -33149,7 +33137,7 @@ var feng3d;
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        ParticleSystem.prototype._emitParticles = function (rateAtDuration, v) {
+        ParticleSystem.prototype._emitParticles = function (v) {
             var num = v.num;
             var birthTime = v.time;
             var position = v.position;
@@ -33157,7 +33145,7 @@ var feng3d;
             for (var i = 0; i < num; i++) {
                 if (this._activeParticles.length >= this.main.maxParticles)
                     return;
-                var lifetime = this.main.startLifetime.getValue(rateAtDuration);
+                var lifetime = this.main.startLifetime.getValue(emitInfo.rateAtDuration);
                 var birthRateAtDuration = (birthTime - emitInfo.startDelay) / this.main.duration;
                 var rateAtLifeTime = (emitInfo.currentTime - birthTime) / lifetime;
                 if (rateAtLifeTime < 1) {
@@ -33168,12 +33156,14 @@ var feng3d;
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
                     //
+                    particle.birthRateAtDuration = birthRateAtDuration - Math.floor(birthRateAtDuration);
+                    //
                     particle.preTime = emitInfo.currentTime;
                     particle.curTime = emitInfo.currentTime;
                     particle.prePosition = position.clone();
                     particle.curPosition = position.clone();
+                    particle.emitInfo = emitInfo;
                     //
-                    particle.birthRateAtDuration = birthRateAtDuration - Math.floor(birthRateAtDuration);
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
                     this._updateParticleState(particle);
@@ -33384,7 +33374,6 @@ var feng3d;
          * @param subEmitterIndex 子发射器索引
          */
         ParticleSystem.prototype.TriggerSubEmitter = function (subEmitterIndex, particles) {
-            var _this = this;
             if (particles === void 0) { particles = null; }
             if (!this.subEmitters.enabled)
                 return;
@@ -33404,7 +33393,7 @@ var feng3d;
             });
             emits.sort(function (a, b) { return a.time - b.time; });
             emits.forEach(function (v) {
-                subEmitter._emitParticles(_this._rateAtDuration, v);
+                subEmitter._emitParticles(v);
             });
         };
         __decorate([
@@ -35299,7 +35288,7 @@ var feng3d;
          */
         ParticleMainModule.prototype.updateParticleState = function (particle) {
             // 加速度
-            var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem.rateAtDuration));
+            var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(particle.emitInfo.rateAtDuration));
             this.particleSystem.addParticleAcceleration(particle, gravity, feng3d.ParticleSystemSimulationSpace.World, _Main_preGravity);
             //
             particle.size.copy(particle.startSize);
@@ -37790,7 +37779,7 @@ var feng3d;
          * @param interval
          */
         ParticleNoiseModule.prototype.update = function (interval) {
-            this._scrollValue += this.scrollSpeed.getValue(this.particleSystem.rateAtDuration) * interval / 1000;
+            this._scrollValue += this.scrollSpeed.getValue(this.particleSystem._emitInfo.rateAtDuration) * interval / 1000;
         };
         // 以下两个值用于与Unity中数据接近
         ParticleNoiseModule._frequencyScale = 5;

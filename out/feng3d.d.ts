@@ -15266,6 +15266,10 @@ declare namespace feng3d {
          */
         curPosition: Vector3;
         /**
+         * 发射信息
+         */
+        emitInfo: ParticleSystemEmitInfo;
+        /**
          * 更新状态
          */
         updateState(time: number): void;
@@ -15481,11 +15485,6 @@ declare namespace feng3d {
          */
         private _attributes;
         private readonly _modules;
-        /**
-         * 此时在周期中的位置
-         */
-        get rateAtDuration(): number;
-        private _rateAtDuration;
         /**
          * 发射粒子
          *

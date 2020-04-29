@@ -327,9 +327,6 @@ namespace feng3d
             this._emitInfo.preTime = this._emitInfo.currentTime;
             this._emitInfo.currentTime = this.time - this._emitInfo.startDelay;
 
-
-            this._rateAtDuration = (this._emitInfo.currentTime % this.main.duration) / this.main.duration;
-
             // 粒子系统位置
             this._currentWorldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
@@ -368,7 +365,7 @@ namespace feng3d
                 emits.sort((a, b) => { return a.time - b.time });
                 emits.forEach(v =>
                 {
-                    this._emitParticles(this._rateAtDuration, v);
+                    this._emitParticles(v);
                 });
             }
 
@@ -567,15 +564,6 @@ namespace feng3d
         private readonly _modules: ParticleModule[] = [];
 
         /**
-         * 此时在周期中的位置
-         */
-        get rateAtDuration()
-        {
-            return this._rateAtDuration;
-        }
-        private _rateAtDuration = 0;
-
-        /**
          * 发射粒子
          * 
          * @param startTime 发射起始时间
@@ -748,7 +736,7 @@ namespace feng3d
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        private _emitParticles(rateAtDuration: number, v: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo })
+        private _emitParticles(v: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo })
         {
             var num = v.num;
             var birthTime = v.time;
@@ -757,7 +745,7 @@ namespace feng3d
             for (let i = 0; i < num; i++)
             {
                 if (this._activeParticles.length >= this.main.maxParticles) return;
-                var lifetime = this.main.startLifetime.getValue(rateAtDuration);
+                var lifetime = this.main.startLifetime.getValue(emitInfo.rateAtDuration);
                 var birthRateAtDuration = (birthTime - emitInfo.startDelay) / this.main.duration;
                 var rateAtLifeTime = (emitInfo.currentTime - birthTime) / lifetime;
 
@@ -770,13 +758,15 @@ namespace feng3d
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
                     //
+                    particle.birthRateAtDuration = birthRateAtDuration - Math.floor(birthRateAtDuration);
+                    //
                     particle.preTime = emitInfo.currentTime;
                     particle.curTime = emitInfo.currentTime;
                     particle.prePosition = position.clone();
                     particle.curPosition = position.clone();
-                    //
-                    particle.birthRateAtDuration = birthRateAtDuration - Math.floor(birthRateAtDuration);
+                    particle.emitInfo = emitInfo;
 
+                    //
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
                     this._updateParticleState(particle);
@@ -1066,7 +1056,7 @@ namespace feng3d
             emits.sort((a, b) => { return a.time - b.time });
             emits.forEach(v =>
             {
-                subEmitter._emitParticles(this._rateAtDuration, v);
+                subEmitter._emitParticles(v);
             });
         }
 

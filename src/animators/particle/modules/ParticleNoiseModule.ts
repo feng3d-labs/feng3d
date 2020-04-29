@@ -440,7 +440,7 @@ namespace feng3d
          */
         update(interval: number)
         {
-            this._scrollValue += this.scrollSpeed.getValue(this.particleSystem.rateAtDuration) * interval / 1000;
+            this._scrollValue += this.scrollSpeed.getValue(this.particleSystem._emitInfo.rateAtDuration) * interval / 1000;
         }
         private _scrollValue = 0;
     }
