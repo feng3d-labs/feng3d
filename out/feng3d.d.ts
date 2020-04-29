@@ -15485,6 +15485,7 @@ declare namespace feng3d {
          * @param time 当前粒子时间
          */
         private _emit;
+        private emitWithMove;
         /**
          * 发射粒子
          * @param birthTime 发射时间
@@ -15559,15 +15560,30 @@ declare namespace feng3d {
          *
          * @param subEmitterIndex 子发射器索引
          */
-        TriggerSubEmitter(subEmitterIndex: number): void;
+        TriggerSubEmitter(subEmitterIndex: number, particles?: Particle[]): void;
         /**
          * 上次移动发射的位置
          */
         private _preworldPos;
+        /**
+         * 是否已经执行位移发射。
+         */
         private _isRateOverDistance;
+        /**
+         * 用于处理移动发射的剩余移动距离。
+         */
         private _leftRateOverDistance;
+        /**
+         * 当前粒子世界坐标
+         */
         worldPos: Vector3;
+        /**
+         * 此次位移
+         */
         moveVec: Vector3;
+        /**
+         * 当前移动速度
+         */
         speed: Vector3;
     }
     interface DefaultGeometry {

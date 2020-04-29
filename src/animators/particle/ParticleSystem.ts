@@ -585,52 +585,13 @@ namespace feng3d
 
             // 
             var emits: { time: number, num: number, position?: Vector3 }[] = [];
+            // 处理移动发射粒子
+            var moveEmits = this.emitWithMove(rateAtDuration, this._preworldPos, this.worldPos);
+            emits = emits.concat(moveEmits);
+
             // 单粒子发射周期
             var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
-            // 处理移动发射粒子
-            if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
-            {
-                if (this._isRateOverDistance)
-                {
-                    var moveVec = this.moveVec;
-                    var worldPos = this.worldPos;
-                    // 本次移动距离
-                    if (moveVec.lengthSquared > 0)
-                    {
-                        // 移动方向
-                        var moveDir = moveVec.clone().normalize();
-                        // 剩余移动量
-                        var leftRateOverDistance = this._leftRateOverDistance + moveVec.length;
-                        // 发射频率
-                        var rateOverDistance = this.emission.rateOverDistance.getValue(rateAtDuration);
-                        // 发射间隔距离
-                        var invRateOverDistance = 1 / rateOverDistance;
-                        // 发射间隔位移
-                        var invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
-                        // 上次发射位置
-                        var lastRateOverDistance = this._preworldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
-                        // 发射位置列表
-                        var emitPosArr: Vector3[] = [];
-                        while (invRateOverDistance < leftRateOverDistance)
-                        {
-                            emitPosArr.push(lastRateOverDistance.add(invRateOverDistanceVec).clone());
-                            leftRateOverDistance -= invRateOverDistance;
-                        }
-                        this._leftRateOverDistance = leftRateOverDistance;
-                        emitPosArr.forEach(p =>
-                        {
-                            emits.push({ time: this.time, num: 1, position: p.sub(worldPos) });
-                        });
-                    }
-                }
-                this._isRateOverDistance = true;
-            } else
-            {
-                this._isRateOverDistance = false;
-                this._leftRateOverDistance = 0;
-            }
-
             // 遍历所有发射周期
             var cycleStartIndex = Math.floor(preRealTime / duration);
             var cycleEndIndex = Math.ceil(realEmitTime / duration);
@@ -669,6 +630,54 @@ namespace feng3d
             {
                 this._emitParticles(v);
             });
+        }
+
+        private emitWithMove(rateAtDuration: number, prePos: Vector3, currentPos: Vector3)
+        {
+            var emits: { time: number; num: number; position?: Vector3; }[] = [];
+            if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
+            {
+                if (this._isRateOverDistance)
+                {
+                    var moveVec = currentPos.subTo(prePos);
+                    var worldPos = currentPos;
+                    // 本次移动距离
+                    if (moveVec.lengthSquared > 0)
+                    {
+                        // 移动方向
+                        var moveDir = moveVec.clone().normalize();
+                        // 剩余移动量
+                        var leftRateOverDistance = this._leftRateOverDistance + moveVec.length;
+                        // 发射频率
+                        var rateOverDistance = this.emission.rateOverDistance.getValue(rateAtDuration);
+                        // 发射间隔距离
+                        var invRateOverDistance = 1 / rateOverDistance;
+                        // 发射间隔位移
+                        var invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
+                        // 上次发射位置
+                        var lastRateOverDistance = this._preworldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
+                        // 发射位置列表
+                        var emitPosArr: Vector3[] = [];
+                        while (invRateOverDistance < leftRateOverDistance)
+                        {
+                            emitPosArr.push(lastRateOverDistance.add(invRateOverDistanceVec).clone());
+                            leftRateOverDistance -= invRateOverDistance;
+                        }
+                        this._leftRateOverDistance = leftRateOverDistance;
+                        emitPosArr.forEach(p =>
+                        {
+                            emits.push({ time: this.time, num: 1, position: p.sub(worldPos) });
+                        });
+                    }
+                }
+                this._isRateOverDistance = true;
+            }
+            else
+            {
+                this._isRateOverDistance = false;
+                this._leftRateOverDistance = 0;
+            }
+            return emits;
         }
 
         /**
@@ -959,7 +968,7 @@ namespace feng3d
          * 
          * @param subEmitterIndex 子发射器索引
          */
-        TriggerSubEmitter(subEmitterIndex: number)
+        TriggerSubEmitter(subEmitterIndex: number, particles: Particle[] = null)
         {
             if (!this.subEmitters.enabled) return;
 
@@ -970,9 +979,13 @@ namespace feng3d
             this.subEmitters.GetSubEmitterProperties(subEmitterIndex);
             this.subEmitters.GetSubEmitterType(subEmitterIndex);
 
-            this._activeParticles.forEach(p =>
+            particles = particles || this._activeParticles;
+
+            particles.forEach(p =>
             {
                 if (Math.random() > probability) return;
+
+                p.rateAtLifeTime
 
                 subEmitter._emitParticles
             });
@@ -982,11 +995,30 @@ namespace feng3d
          * 上次移动发射的位置
          */
         private _preworldPos = new Vector3();
+
+        /**
+         * 是否已经执行位移发射。
+         */
         private _isRateOverDistance = false;
+
+        /**
+         * 用于处理移动发射的剩余移动距离。
+         */
         private _leftRateOverDistance = 0;
-        //
+
+        /**
+         * 当前粒子世界坐标
+         */
         worldPos = new Vector3();
+
+        /**
+         * 此次位移
+         */
         moveVec = new Vector3();
+
+        /**
+         * 当前移动速度
+         */
         speed = new Vector3;
     }
 
