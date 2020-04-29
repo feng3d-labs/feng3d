@@ -15635,6 +15635,35 @@ declare namespace feng3d {
          * 当前移动速度
          */
         speed: Vector3;
+        /**
+         * 发射信息
+         */
+        _emitInfo: ParticleSystemEmitInfo;
+    }
+    /**
+     * 粒子系统发射器状态信息
+     */
+    interface ParticleSystemEmitInfo {
+        /**
+         * 发射起始时间
+         */
+        startTime: number;
+        /**
+         * 发射终止时间
+         */
+        endTime: number;
+        /**
+         * 发射起始位置
+         */
+        startPos: Vector3;
+        /**
+         * 发射终止位置
+         */
+        stopPos: Vector3;
+        /**
+         * 此时在发射周期的位置
+         */
+        rateAtDuration: number;
     }
     interface DefaultGeometry {
         "Billboard-Geometry": QuadGeometry;
