@@ -21,6 +21,8 @@ namespace feng3d
          */
         AddSubEmitter(subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number)
         {
+            subEmitter._isSubParticleSystem = true;
+
             this.subEmitters.push({ subEmitter: subEmitter, type: type, properties: properties, emitProbability: emitProbability });
         }
 

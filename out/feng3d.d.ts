@@ -15624,6 +15624,10 @@ declare namespace feng3d {
          */
         private _currentWorldPos;
         /**
+         * 是否为被上级粒子系统引用的子粒子系统。
+         */
+        _isSubParticleSystem: boolean;
+        /**
          * 此次位移
          */
         moveVec: Vector3;

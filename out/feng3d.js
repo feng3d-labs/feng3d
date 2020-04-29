@@ -32573,6 +32573,10 @@ var feng3d;
              */
             _this._currentWorldPos = new feng3d.Vector3();
             /**
+             * 是否为被上级粒子系统引用的子粒子系统。
+             */
+            _this._isSubParticleSystem = false;
+            /**
              * 此次位移
              */
             _this.moveVec = new feng3d.Vector3();
@@ -32842,6 +32846,7 @@ var feng3d;
             configurable: true
         });
         ParticleSystem.prototype.update = function (interval) {
+            var _this = this;
             if (!this.isPlaying)
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
@@ -32866,7 +32871,14 @@ var feng3d;
                 this.dispatch("particleCycled", this);
             }
             // 发射粒子
-            this._emit(this._preRealTime, this._realTime, this._preworldPos, this._currentWorldPos);
+            if (!this._isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
+             {
+                var emits = this._emit(this._preRealTime, this._realTime, this._preworldPos, this._currentWorldPos);
+                emits.sort(function (a, b) { return a.time - b.time; });
+                emits.forEach(function (v) {
+                    _this._emitParticles(_this._rateAtDuration, v);
+                });
+            }
             this._preRealTime = this._realTime;
             this._preworldPos.copy(this._currentWorldPos);
             // 判断非循环的效果是否播放结束
@@ -33005,7 +33017,6 @@ var feng3d;
          * @param stopPos 发射终止位置
          */
         ParticleSystem.prototype._emit = function (startTime, endTime, startPos, stopPos) {
-            var _this = this;
             if (!this.emission.enabled)
                 return;
             // 判断是否开始发射
@@ -33021,6 +33032,8 @@ var feng3d;
                 endTime = Math.min(endTime, duration);
             // 计算此处在发射周期的位置
             var rateAtDuration = (endTime % duration) / duration;
+            if (rateAtDuration == 0 && endTime >= duration)
+                rateAtDuration = 1;
             // 
             var emits = [];
             // 处理移动发射粒子
@@ -33029,10 +33042,7 @@ var feng3d;
             // 单粒子发射周期
             var timeEmits = this._emitWithTime(rateAtDuration, startTime, duration, endTime);
             emits = emits.concat(timeEmits);
-            emits.sort(function (a, b) { return a.time - b.time; });
-            emits.forEach(function (v) {
-                _this._emitParticles(rateAtDuration, v);
-            });
+            return emits;
         };
         /**
          * 由指定粒子发射粒子。
@@ -33040,9 +33050,12 @@ var feng3d;
          * @param particle 发射子粒子系统的粒子
          */
         ParticleSystem.prototype._emitFromParticle = function (particle) {
-            var startTime = Math.max(particle.preTime - particle.birthTime, 0);
-            var endTime = Math.max(particle.curTime - particle.birthTime, particle.lifetime);
-            this._emit(startTime, endTime, particle.prePosition, particle.curPosition);
+            var startTime = particle.preTime - particle.birthTime;
+            var endTime = particle.curTime - particle.birthTime;
+            startTime = Math.clamp(startTime, 0, particle.lifetime);
+            endTime = Math.clamp(endTime, 0, particle.lifetime);
+            var emits = this._emit(startTime, endTime, particle.prePosition, particle.curPosition);
+            return emits;
         };
         /**
          * 计算在指定移动的位移线段中发射的粒子列表。
@@ -33369,6 +33382,7 @@ var feng3d;
          * @param subEmitterIndex 子发射器索引
          */
         ParticleSystem.prototype.TriggerSubEmitter = function (subEmitterIndex, particles) {
+            var _this = this;
             if (particles === void 0) { particles = null; }
             if (!this.subEmitters.enabled)
                 return;
@@ -33379,10 +33393,16 @@ var feng3d;
             this.subEmitters.GetSubEmitterProperties(subEmitterIndex);
             this.subEmitters.GetSubEmitterType(subEmitterIndex);
             particles = particles || this._activeParticles;
+            var emits = [];
             particles.forEach(function (p) {
                 if (Math.random() > probability)
                     return;
-                subEmitter._emitFromParticle(p);
+                var subEmits = subEmitter._emitFromParticle(p);
+                emits = emits.concat(subEmits);
+            });
+            emits.sort(function (a, b) { return a.time - b.time; });
+            emits.forEach(function (v) {
+                subEmitter._emitParticles(_this._rateAtDuration, v);
             });
         };
         __decorate([
@@ -37851,6 +37871,7 @@ var feng3d;
          * Add a new sub-emitter.
          */
         ParticleSubEmittersModule.prototype.AddSubEmitter = function (subEmitter, type, properties, emitProbability) {
+            subEmitter._isSubParticleSystem = true;
             this.subEmitters.push({ subEmitter: subEmitter, type: type, properties: properties, emitProbability: emitProbability });
         };
         /**

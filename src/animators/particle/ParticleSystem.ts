@@ -359,7 +359,16 @@ namespace feng3d
             }
 
             // 发射粒子
-            this._emit(this._preRealTime, this._realTime, this._preworldPos, this._currentWorldPos);
+            if (!this._isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
+            {
+                var emits = this._emit(this._preRealTime, this._realTime, this._preworldPos, this._currentWorldPos);
+
+                emits.sort((a, b) => { return a.time - b.time });
+                emits.forEach(v =>
+                {
+                    this._emitParticles(this._rateAtDuration, v);
+                });
+            }
 
             this._preRealTime = this._realTime;
             this._preworldPos.copy(this._currentWorldPos);
@@ -590,6 +599,7 @@ namespace feng3d
 
             // 计算此处在发射周期的位置
             var rateAtDuration = (endTime % duration) / duration;
+            if (rateAtDuration == 0 && endTime >= duration) rateAtDuration = 1;
 
             // 
             var emits: { time: number, num: number, position?: Vector3 }[] = [];
@@ -601,12 +611,7 @@ namespace feng3d
             var timeEmits = this._emitWithTime(rateAtDuration, startTime, duration, endTime);
             emits = emits.concat(timeEmits);
 
-            emits.sort((a, b) => { return a.time - b.time });
-
-            emits.forEach(v =>
-            {
-                this._emitParticles(rateAtDuration, v);
-            });
+            return emits;
         }
 
         /**
@@ -616,10 +621,13 @@ namespace feng3d
          */
         private _emitFromParticle(particle: Particle)
         {
-            var startTime = Math.max(particle.preTime - particle.birthTime, 0);
-            var endTime = Math.max(particle.curTime - particle.birthTime, particle.lifetime);
+            var startTime = particle.preTime - particle.birthTime;
+            var endTime = particle.curTime - particle.birthTime;
+            startTime = Math.clamp(startTime, 0, particle.lifetime);
+            endTime = Math.clamp(endTime, 0, particle.lifetime);
 
-            this._emit(startTime, endTime, particle.prePosition, particle.curPosition);
+            var emits = this._emit(startTime, endTime, particle.prePosition, particle.curPosition);
+            return emits;
         }
 
         /**
@@ -1026,11 +1034,24 @@ namespace feng3d
 
             particles = particles || this._activeParticles;
 
+            var emits: {
+                time: number;
+                num: number;
+                position?: Vector3;
+            }[] = [];
+
             particles.forEach(p =>
             {
                 if (Math.random() > probability) return;
 
-                subEmitter._emitFromParticle(p);
+                var subEmits = subEmitter._emitFromParticle(p);
+                emits = emits.concat(subEmits);
+            });
+
+            emits.sort((a, b) => { return a.time - b.time });
+            emits.forEach(v =>
+            {
+                subEmitter._emitParticles(this._rateAtDuration, v);
             });
         }
 
@@ -1053,6 +1074,11 @@ namespace feng3d
          * 当前粒子世界坐标
          */
         private _currentWorldPos = new Vector3();
+
+        /**
+         * 是否为被上级粒子系统引用的子粒子系统。
+         */
+        _isSubParticleSystem = false;
 
         /**
          * 此次位移
