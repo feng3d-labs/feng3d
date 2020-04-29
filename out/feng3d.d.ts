@@ -15444,11 +15444,6 @@ declare namespace feng3d {
         castShadows: boolean;
         receiveShadows: boolean;
         get single(): boolean;
-        /**
-         * Start delay in seconds.
-         * 启动延迟(以秒为单位)。在调用.play()时初始化值。
-         */
-        startDelay: number;
         constructor();
         update(interval: number): void;
         /**
@@ -15459,11 +15454,6 @@ declare namespace feng3d {
          * 播放
          */
         play(): void;
-        private _startDelay_rate;
-        /**
-         * @private
-         */
-        updateStartDelay(): void;
         /**
          * 暂停
          */
@@ -15474,10 +15464,6 @@ declare namespace feng3d {
         continue(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         private _awaked;
-        /**
-         * 当前真实时间（time - startDelay）
-         */
-        private _realTime;
         /**
          * 上次真实时间
          */
@@ -15664,6 +15650,11 @@ declare namespace feng3d {
          * 是否已经执行位移发射。
          */
         _isRateOverDistance: boolean;
+        /**
+         * Start delay in seconds.
+         * 启动延迟(以秒为单位)。在调用.play()时初始化值。
+         */
+        startDelay: number;
     }
     interface DefaultGeometry {
         "Billboard-Geometry": QuadGeometry;

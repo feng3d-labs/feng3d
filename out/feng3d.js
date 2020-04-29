@@ -32520,17 +32520,11 @@ var feng3d;
             _this.material = feng3d.Material.getDefault("Particle-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
-            /**
-             * Start delay in seconds.
-             * 启动延迟(以秒为单位)。在调用.play()时初始化值。
-             */
-            _this.startDelay = 0;
-            _this._startDelay_rate = Math.random();
             _this._awaked = false;
-            /**
-             * 当前真实时间（time - startDelay）
-             */
-            _this._realTime = 0;
+            // /**
+            //  * 当前真实时间（time - startDelay）
+            //  */
+            // private _realTime = 0;
             /**
              * 上次真实时间
              */
@@ -32842,8 +32836,9 @@ var feng3d;
             if (!this.isPlaying)
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
-            this._realTime = this.time - this.startDelay;
-            this._rateAtDuration = (this._realTime % this.main.duration) / this.main.duration;
+            this._emitInfo.preTime = this._emitInfo.currentTime;
+            this._emitInfo.currentTime = this.time - this._emitInfo.startDelay;
+            this._rateAtDuration = (this._emitInfo.currentTime % this.main.duration) / this.main.duration;
             // 粒子系统位置
             this._currentWorldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
@@ -32855,7 +32850,7 @@ var feng3d;
             });
             this._updateActiveParticlesState();
             // 完成一个循环
-            if (this.main.loop && Math.floor(this._preRealTime / this.main.duration) < Math.floor(this._realTime / this.main.duration)) {
+            if (this.main.loop && Math.floor(this._preRealTime / this.main.duration) < Math.floor(this._emitInfo.currentTime / this.main.duration)) {
                 // 重新计算喷发概率
                 this.emission.bursts.forEach(function (element) {
                     element.calculateProbability();
@@ -32864,7 +32859,6 @@ var feng3d;
             }
             this._emitInfo = this._emitInfo || {};
             this._emitInfo.preTime = this._preRealTime;
-            this._emitInfo.currentTime = this._realTime;
             this._emitInfo.preWorldPos = this._preworldPos;
             this._emitInfo.currentWorldPos = this._currentWorldPos;
             // 发射粒子
@@ -32876,10 +32870,10 @@ var feng3d;
                     _this._emitParticles(_this._rateAtDuration, v);
                 });
             }
-            this._preRealTime = this._realTime;
+            this._preRealTime = this._emitInfo.currentTime;
             this._preworldPos.copy(this._currentWorldPos);
             // 判断非循环的效果是否播放结束
-            if (!this.main.loop && this._activeParticles.length == 0 && this._realTime > this.main.duration) {
+            if (!this.main.loop && this._activeParticles.length == 0 && this._emitInfo.currentTime > this.main.duration) {
                 this.stop();
                 this.dispatch("particleCompleted", this);
             }
@@ -32899,21 +32893,24 @@ var feng3d;
         ParticleSystem.prototype.play = function () {
             this._isPlaying = true;
             this.time = 0;
-            this._startDelay_rate = Math.random();
-            this.updateStartDelay();
             this._preRealTime = 0;
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
+            this._emitInfo =
+                {
+                    preTime: 0,
+                    currentTime: 0,
+                    preWorldPos: new feng3d.Vector3(),
+                    currentWorldPos: new feng3d.Vector3(),
+                    rateAtDuration: 0,
+                    _leftRateOverDistance: 0,
+                    _isRateOverDistance: false,
+                    startDelay: this.main.startDelay.getValue(Math.random()),
+                };
             // 重新计算喷发概率
             this.emission.bursts.forEach(function (element) {
                 element.calculateProbability();
             });
-        };
-        /**
-         * @private
-         */
-        ParticleSystem.prototype.updateStartDelay = function () {
-            this.startDelay = this.main.startDelay.getValue(this._startDelay_rate);
         };
         /**
          * 暂停
@@ -32930,7 +32927,7 @@ var feng3d;
             }
             else {
                 this._isPlaying = true;
-                this._preRealTime = Math.max(0, this._realTime);
+                this._preRealTime = Math.max(0, this._emitInfo.currentTime);
             }
         };
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene, camera) {
@@ -33161,7 +33158,7 @@ var feng3d;
                 if (this._activeParticles.length >= this.main.maxParticles)
                     return;
                 var lifetime = this.main.startLifetime.getValue(rateAtDuration);
-                var birthRateAtDuration = (birthTime - this.startDelay) / this.main.duration;
+                var birthRateAtDuration = (birthTime - emitInfo.startDelay) / this.main.duration;
                 var rateAtLifeTime = (emitInfo.currentTime - birthTime) / lifetime;
                 if (rateAtLifeTime < 1) {
                     var particle = this._particlePool.pop() || new feng3d.Particle();
@@ -33189,7 +33186,7 @@ var feng3d;
         ParticleSystem.prototype._updateActiveParticlesState = function () {
             for (var i = this._activeParticles.length - 1; i >= 0; i--) {
                 var particle = this._activeParticles[i];
-                particle.rateAtLifeTime = (this._realTime - particle.birthTime) / particle.lifetime;
+                particle.rateAtLifeTime = (this._emitInfo.currentTime - particle.birthTime) / particle.lifetime;
                 if (particle.rateAtLifeTime < 0 || particle.rateAtLifeTime > 1) {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
@@ -33213,7 +33210,7 @@ var feng3d;
         ParticleSystem.prototype._updateParticleState = function (particle) {
             //
             this._modules.forEach(function (v) { v.updateParticleState(particle); });
-            particle.updateState(this._realTime);
+            particle.updateState(this._emitInfo.currentTime);
         };
         ParticleSystem.prototype._simulationSpaceChanged = function () {
             if (!this.transform)
