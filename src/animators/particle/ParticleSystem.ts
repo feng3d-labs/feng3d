@@ -322,7 +322,8 @@ namespace feng3d
         {
             if (!this.isPlaying) return;
 
-            this.time = this.time + this.main.simulationSpeed * interval / 1000;
+            var deltaTime = this.main.simulationSpeed * interval / 1000;
+            this.time = this.time + deltaTime;
 
             var emitInfo = this._emitInfo;
 
@@ -336,14 +337,14 @@ namespace feng3d
             // 粒子系统位移
             emitInfo.moveVec.copy(emitInfo.currentWorldPos).sub(emitInfo.preWorldPos);
             // 粒子系统速度
-            emitInfo.speed.copy(emitInfo.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
+            emitInfo.speed.copy(emitInfo.moveVec).divideNumber(deltaTime);
 
             this._modules.forEach(m =>
             {
-                m.update(interval);
+                m.update(deltaTime);
             });
 
-            this._updateActiveParticlesState();
+            this._updateActiveParticlesState(deltaTime);
 
             // 完成一个循环
             if (this.main.loop && Math.floor(emitInfo.preTime / this.main.duration) < Math.floor(emitInfo.currentTime / this.main.duration))
@@ -776,12 +777,11 @@ namespace feng3d
                     particle.curTime = emitInfo.currentTime;
                     particle.prePosition = position.clone();
                     particle.curPosition = position.clone();
-                    particle.emitInfo = emitInfo;
 
                     //
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
-                    this._updateParticleState(particle);
+                    this._updateParticleState(particle, 0);
                 }
             }
         }
@@ -789,21 +789,21 @@ namespace feng3d
         /**
          * 更新活跃粒子状态
          */
-        private _updateActiveParticlesState()
+        private _updateActiveParticlesState(deltaTime: number)
         {
             for (let i = this._activeParticles.length - 1; i >= 0; i--)
             {
                 var particle = this._activeParticles[i];
-                particle.rateAtLifeTime = (particle.emitInfo.currentTime - particle.birthTime) / particle.lifetime;
+
+                particle.rateAtLifeTime = (particle.curTime + deltaTime - particle.birthTime) / particle.lifetime;
                 if (particle.rateAtLifeTime < 0 || particle.rateAtLifeTime > 1)
                 {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
                     particle.subEmitInfo = null;
-                    particle.emitInfo = null;
                 } else
                 {
-                    this._updateParticleState(particle);
+                    this._updateParticleState(particle, deltaTime);
                 }
             }
         }
@@ -821,11 +821,11 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        private _updateParticleState(particle: Particle)
+        private _updateParticleState(particle: Particle, deltaTime: number)
         {
             //
             this._modules.forEach(v => { v.updateParticleState(particle) });
-            particle.updateState(particle.emitInfo.currentTime);
+            particle.updateState(particle.curTime + deltaTime);
         }
 
         private _simulationSpaceChanged()

@@ -537,7 +537,7 @@ namespace feng3d
         updateParticleState(particle: Particle)
         {
             // 加速度
-            var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(particle.emitInfo.rateAtDuration));
+            var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem._emitInfo.rateAtDuration));
             this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, _Main_preGravity);
 
             //
