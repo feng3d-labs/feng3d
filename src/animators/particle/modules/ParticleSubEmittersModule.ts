@@ -12,7 +12,10 @@ namespace feng3d
         /**
          * The total number of sub-emitters.
          */
-        subEmittersCount: number;
+        get subEmittersCount()
+        {
+            return this.subEmitters.length;
+        }
 
         private subEmitters: { subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number }[] = [];
 
@@ -126,5 +129,20 @@ namespace feng3d
             this.subEmitters[index].type = type;
         }
 
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle)
+        {
+            for (let i = 0, n = this.subEmittersCount; i < n; i++)
+            {
+                var emitterType = this.GetSubEmitterType(i);
+                if (emitterType == ParticleSystemSubEmitterType.Birth)
+                {
+                    this.particleSystem.TriggerSubEmitter(i, [particle]);
+                }
+            }
+        }
     }
 }

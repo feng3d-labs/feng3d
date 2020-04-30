@@ -37850,6 +37850,16 @@ var feng3d;
             _this.subEmitters = [];
             return _this;
         }
+        Object.defineProperty(ParticleSubEmittersModule.prototype, "subEmittersCount", {
+            /**
+             * The total number of sub-emitters.
+             */
+            get: function () {
+                return this.subEmitters.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Add a new sub-emitter.
          */
@@ -37947,6 +37957,18 @@ var feng3d;
             if (!this.subEmitters[index])
                 return;
             this.subEmitters[index].type = type;
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleSubEmittersModule.prototype.updateParticleState = function (particle) {
+            for (var i = 0, n = this.subEmittersCount; i < n; i++) {
+                var emitterType = this.GetSubEmitterType(i);
+                if (emitterType == feng3d.ParticleSystemSubEmitterType.Birth) {
+                    this.particleSystem.TriggerSubEmitter(i, [particle]);
+                }
+            }
         };
         return ParticleSubEmittersModule;
     }(feng3d.ParticleModule));

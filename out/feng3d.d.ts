@@ -17876,7 +17876,7 @@ declare namespace feng3d {
         /**
          * The total number of sub-emitters.
          */
-        subEmittersCount: number;
+        get subEmittersCount(): number;
         private subEmitters;
         /**
          * Add a new sub-emitter.
@@ -17937,6 +17937,11 @@ declare namespace feng3d {
          * @param type The new spawning type to assign to this sub-emitter.
          */
         SetSubEmitterType(index: number, type: ParticleSystemSubEmitterType): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
