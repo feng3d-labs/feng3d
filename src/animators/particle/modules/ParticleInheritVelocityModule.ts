@@ -70,7 +70,7 @@ namespace feng3d
             if (this.mode != ParticleSystemInheritVelocityMode.Initial) return;
 
             var multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[_InheritVelocity_rate]);
-            particle.velocity.addScaledVector(multiplier, this.particleSystem.speed);
+            particle.velocity.addScaledVector(multiplier, this.particleSystem._emitInfo.speed);
         }
 
         /**
@@ -84,7 +84,7 @@ namespace feng3d
             if (this.mode != ParticleSystemInheritVelocityMode.Current) return;
 
             var multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[_InheritVelocity_rate]);
-            particle.position.addScaledVector(multiplier, this.particleSystem.moveVec);
+            particle.position.addScaledVector(multiplier, this.particleSystem._emitInfo.moveVec);
         }
     }
     var _InheritVelocity_rate = "_InheritVelocity_rate";

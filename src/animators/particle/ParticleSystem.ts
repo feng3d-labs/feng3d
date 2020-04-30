@@ -326,13 +326,15 @@ namespace feng3d
 
             this._emitInfo.preTime = this._emitInfo.currentTime;
             this._emitInfo.currentTime = this.time - this._emitInfo.startDelay;
+            this._emitInfo.preWorldPos.copy(this._emitInfo.currentWorldPos);
 
             // 粒子系统位置
-            this._currentWorldPos.copy(this.transform.worldPosition);
+            this._emitInfo.currentWorldPos.copy(this.transform.worldPosition);
+
             // 粒子系统位移
-            this.moveVec.copy(this._currentWorldPos).sub(this._preworldPos);
+            this._emitInfo.moveVec.copy(this._emitInfo.currentWorldPos).sub(this._emitInfo.preWorldPos);
             // 粒子系统速度
-            this.speed.copy(this.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
+            this._emitInfo.speed.copy(this._emitInfo.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
 
             this._modules.forEach(m =>
             {
@@ -342,7 +344,7 @@ namespace feng3d
             this._updateActiveParticlesState();
 
             // 完成一个循环
-            if (this.main.loop && Math.floor(this._preRealTime / this.main.duration) < Math.floor(this._emitInfo.currentTime / this.main.duration))
+            if (this.main.loop && Math.floor(this._emitInfo.preTime / this.main.duration) < Math.floor(this._emitInfo.currentTime / this.main.duration))
             {
                 // 重新计算喷发概率
                 this.emission.bursts.forEach(element =>
@@ -351,11 +353,6 @@ namespace feng3d
                 });
                 this.dispatch("particleCycled", this);
             }
-
-            this._emitInfo = this._emitInfo || <any>{};
-            this._emitInfo.preTime = this._preRealTime;
-            this._emitInfo.preWorldPos = this._preworldPos;
-            this._emitInfo.currentWorldPos = this._currentWorldPos;
 
             // 发射粒子
             if (!this._isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
@@ -368,9 +365,6 @@ namespace feng3d
                     this._emitParticles(v);
                 });
             }
-
-            this._preRealTime = this._emitInfo.currentTime;
-            this._preworldPos.copy(this._currentWorldPos);
 
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this._emitInfo.currentTime > this.main.duration)
@@ -399,21 +393,24 @@ namespace feng3d
         {
             this._isPlaying = true;
             this.time = 0;
-            this._preRealTime = 0;
 
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
 
+            var startDelay = this.main.startDelay.getValue(Math.random());
+
             this._emitInfo =
             {
-                preTime: 0,
-                currentTime: 0,
+                preTime: -startDelay,
+                currentTime: -startDelay,
                 preWorldPos: new Vector3(),
                 currentWorldPos: new Vector3(),
                 rateAtDuration: 0,
                 _leftRateOverDistance: 0,
                 _isRateOverDistance: false,
-                startDelay: this.main.startDelay.getValue(Math.random()),
+                startDelay: startDelay,
+                moveVec: new Vector3(),
+                speed: new Vector3(),
             };
 
             // 重新计算喷发概率
@@ -442,7 +439,7 @@ namespace feng3d
             } else
             {
                 this._isPlaying = true;
-                this._preRealTime = Math.max(0, this._emitInfo.currentTime);
+                this._emitInfo.preTime = Math.max(0, this._emitInfo.currentTime);
             }
         }
 
@@ -452,7 +449,10 @@ namespace feng3d
 
             if (Boolean(scene.runEnvironment & RunEnvironment.feng3d) && !this._awaked)
             {
-                this._isPlaying = this._isPlaying || this.main.playOnAwake;
+                if (this.main.playOnAwake && !this._isPlaying)
+                {
+                    this.play();
+                }
                 this._awaked = true;
             }
 
@@ -531,15 +531,6 @@ namespace feng3d
 
         private _awaked = false;
 
-        // /**
-        //  * 当前真实时间（time - startDelay）
-        //  */
-        // private _realTime = 0;
-        /**
-         * 上次真实时间
-         */
-        private _preRealTime = 0;
-
         /**
          * 粒子池，用于存放未发射或者死亡粒子
          */
@@ -573,19 +564,22 @@ namespace feng3d
          */
         private _emit(emitInfo: ParticleSystemEmitInfo)
         {
+            // 
+            var emits: { time: number, num: number, position: Vector3, emitInfo: ParticleSystemEmitInfo }[] = [];
+
             var startTime = emitInfo.preTime;
             var endTime = emitInfo.currentTime;
 
-            if (!this.emission.enabled) return;
+            if (!this.emission.enabled) return emits;
 
             // 判断是否开始发射
-            if (endTime <= 0) return;
+            if (endTime <= 0) return emits;
 
             var loop = this.main.loop;
             var duration = this.main.duration;
 
             // 判断是否结束发射
-            if (!loop && startTime >= duration) return;
+            if (!loop && startTime >= duration) return emits;
 
             // 计算最后发射时间
             if (!loop) endTime = Math.min(endTime, duration);
@@ -596,8 +590,6 @@ namespace feng3d
 
             emitInfo.rateAtDuration = rateAtDuration;
 
-            // 
-            var emits: { time: number, num: number, position: Vector3, emitInfo: ParticleSystemEmitInfo }[] = [];
             // 处理移动发射粒子
             var moveEmits = this._emitWithMove(emitInfo);
             emits = emits.concat(moveEmits);
@@ -1061,29 +1053,9 @@ namespace feng3d
         }
 
         /**
-         * 上次移动发射的位置
-         */
-        private _preworldPos = new Vector3();
-
-        /**
-         * 当前粒子世界坐标
-         */
-        private _currentWorldPos = new Vector3();
-
-        /**
          * 是否为被上级粒子系统引用的子粒子系统。
          */
         _isSubParticleSystem = false;
-
-        /**
-         * 此次位移
-         */
-        moveVec = new Vector3();
-
-        /**
-         * 当前移动速度
-         */
-        speed = new Vector3;
 
         /**
          * 发射信息
@@ -1117,6 +1089,22 @@ namespace feng3d
         currentWorldPos: Vector3;
 
         /**
+         * Start delay in seconds.
+         * 启动延迟(以秒为单位)。在调用.play()时初始化值。
+         */
+        startDelay: number;
+
+        /**
+         * 此次位移
+         */
+        moveVec: Vector3;
+
+        /**
+         * 当前移动速度
+         */
+        speed: Vector3;
+
+        /**
          * 此时在发射周期的位置
          */
         rateAtDuration: number;
@@ -1130,12 +1118,6 @@ namespace feng3d
          * 是否已经执行位移发射。
          */
         _isRateOverDistance: boolean;
-
-        /**
-         * Start delay in seconds.
-         * 启动延迟(以秒为单位)。在调用.play()时初始化值。
-         */
-        startDelay: number;
     }
 
     export interface DefaultGeometry

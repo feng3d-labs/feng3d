@@ -15469,10 +15469,6 @@ declare namespace feng3d {
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         private _awaked;
         /**
-         * 上次真实时间
-         */
-        private _preRealTime;
-        /**
          * 粒子池，用于存放未发射或者死亡粒子
          */
         private _particlePool;
@@ -15593,25 +15589,9 @@ declare namespace feng3d {
          */
         TriggerSubEmitter(subEmitterIndex: number, particles?: Particle[]): void;
         /**
-         * 上次移动发射的位置
-         */
-        private _preworldPos;
-        /**
-         * 当前粒子世界坐标
-         */
-        private _currentWorldPos;
-        /**
          * 是否为被上级粒子系统引用的子粒子系统。
          */
         _isSubParticleSystem: boolean;
-        /**
-         * 此次位移
-         */
-        moveVec: Vector3;
-        /**
-         * 当前移动速度
-         */
-        speed: Vector3;
         /**
          * 发射信息
          */
@@ -15638,6 +15618,19 @@ declare namespace feng3d {
          */
         currentWorldPos: Vector3;
         /**
+         * Start delay in seconds.
+         * 启动延迟(以秒为单位)。在调用.play()时初始化值。
+         */
+        startDelay: number;
+        /**
+         * 此次位移
+         */
+        moveVec: Vector3;
+        /**
+         * 当前移动速度
+         */
+        speed: Vector3;
+        /**
          * 此时在发射周期的位置
          */
         rateAtDuration: number;
@@ -15649,11 +15642,6 @@ declare namespace feng3d {
          * 是否已经执行位移发射。
          */
         _isRateOverDistance: boolean;
-        /**
-         * Start delay in seconds.
-         * 启动延迟(以秒为单位)。在调用.play()时初始化值。
-         */
-        startDelay: number;
     }
     interface DefaultGeometry {
         "Billboard-Geometry": QuadGeometry;
