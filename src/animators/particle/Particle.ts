@@ -107,9 +107,14 @@ namespace feng3d
 		curPosition: Vector3;
 
 		/**
-		 * 发射信息
+		 * 父发射器信息
 		 */
 		emitInfo: ParticleSystemEmitInfo;
+
+		/**
+		 * 子发射器信息
+		 */
+		subEmitInfo: ParticleSystemEmitInfo;
 
 		/**
 		 * 更新状态

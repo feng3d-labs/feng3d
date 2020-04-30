@@ -324,17 +324,19 @@ namespace feng3d
 
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
 
-            this._emitInfo.preTime = this._emitInfo.currentTime;
-            this._emitInfo.currentTime = this.time - this._emitInfo.startDelay;
-            this._emitInfo.preWorldPos.copy(this._emitInfo.currentWorldPos);
+            var emitInfo = this._emitInfo;
+
+            emitInfo.preTime = emitInfo.currentTime;
+            emitInfo.currentTime = this.time - emitInfo.startDelay;
+            emitInfo.preWorldPos.copy(emitInfo.currentWorldPos);
 
             // 粒子系统位置
-            this._emitInfo.currentWorldPos.copy(this.transform.worldPosition);
+            emitInfo.currentWorldPos.copy(this.transform.worldPosition);
 
             // 粒子系统位移
-            this._emitInfo.moveVec.copy(this._emitInfo.currentWorldPos).sub(this._emitInfo.preWorldPos);
+            emitInfo.moveVec.copy(emitInfo.currentWorldPos).sub(emitInfo.preWorldPos);
             // 粒子系统速度
-            this._emitInfo.speed.copy(this._emitInfo.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
+            emitInfo.speed.copy(emitInfo.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
 
             this._modules.forEach(m =>
             {
@@ -344,7 +346,7 @@ namespace feng3d
             this._updateActiveParticlesState();
 
             // 完成一个循环
-            if (this.main.loop && Math.floor(this._emitInfo.preTime / this.main.duration) < Math.floor(this._emitInfo.currentTime / this.main.duration))
+            if (this.main.loop && Math.floor(emitInfo.preTime / this.main.duration) < Math.floor(emitInfo.currentTime / this.main.duration))
             {
                 // 重新计算喷发概率
                 this.emission.bursts.forEach(element =>
@@ -357,7 +359,7 @@ namespace feng3d
             // 发射粒子
             if (!this._isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
             {
-                var emits = this._emit(this._emitInfo);
+                var emits = this._emit(emitInfo);
 
                 emits.sort((a, b) => { return a.time - b.time });
                 emits.forEach(v =>
@@ -367,7 +369,7 @@ namespace feng3d
             }
 
             // 判断非循环的效果是否播放结束
-            if (!this.main.loop && this._activeParticles.length == 0 && this._emitInfo.currentTime > this.main.duration)
+            if (!this.main.loop && this._activeParticles.length == 0 && emitInfo.currentTime > this.main.duration)
             {
                 this.stop();
                 this.dispatch("particleCompleted", this);
@@ -613,9 +615,27 @@ namespace feng3d
             startTime = Math.clamp(startTime, 0, particle.lifetime);
             endTime = Math.clamp(endTime, 0, particle.lifetime);
 
-            // var emits = this._emit(startTime, endTime, particle.prePosition, particle.curPosition);
-            // return emits;
-            return [];
+            if (!particle.subEmitInfo)
+            {
+                var startDelay = this.main.startDelay.getValue(Math.random());
+                particle.subEmitInfo = {
+                    preTime: -startDelay,
+                    currentTime: -startDelay,
+                    preWorldPos: new Vector3(),
+                    currentWorldPos: new Vector3(),
+                    rateAtDuration: 0,
+                    _leftRateOverDistance: 0,
+                    _isRateOverDistance: false,
+                    startDelay: startDelay,
+                    moveVec: new Vector3(),
+                    speed: new Vector3(),
+                };
+            }
+            particle.subEmitInfo.preTime = particle.preTime - particle.birthTime - particle.subEmitInfo.startDelay;
+            particle.subEmitInfo.currentTime = particle.curTime - particle.birthTime - particle.subEmitInfo.startDelay;
+
+            var emits = this._emit(particle.subEmitInfo);
+            return emits;
         }
 
         /**
@@ -774,11 +794,13 @@ namespace feng3d
             for (let i = this._activeParticles.length - 1; i >= 0; i--)
             {
                 var particle = this._activeParticles[i];
-                particle.rateAtLifeTime = (this._emitInfo.currentTime - particle.birthTime) / particle.lifetime;
+                particle.rateAtLifeTime = (particle.emitInfo.currentTime - particle.birthTime) / particle.lifetime;
                 if (particle.rateAtLifeTime < 0 || particle.rateAtLifeTime > 1)
                 {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
+                    particle.subEmitInfo = null;
+                    particle.emitInfo = null;
                 } else
                 {
                     this._updateParticleState(particle);
@@ -803,7 +825,7 @@ namespace feng3d
         {
             //
             this._modules.forEach(v => { v.updateParticleState(particle) });
-            particle.updateState(this._emitInfo.currentTime);
+            particle.updateState(particle.emitInfo.currentTime);
         }
 
         private _simulationSpaceChanged()

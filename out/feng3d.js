@@ -32811,21 +32811,22 @@ var feng3d;
             if (!this.isPlaying)
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
-            this._emitInfo.preTime = this._emitInfo.currentTime;
-            this._emitInfo.currentTime = this.time - this._emitInfo.startDelay;
-            this._emitInfo.preWorldPos.copy(this._emitInfo.currentWorldPos);
+            var emitInfo = this._emitInfo;
+            emitInfo.preTime = emitInfo.currentTime;
+            emitInfo.currentTime = this.time - emitInfo.startDelay;
+            emitInfo.preWorldPos.copy(emitInfo.currentWorldPos);
             // 粒子系统位置
-            this._emitInfo.currentWorldPos.copy(this.transform.worldPosition);
+            emitInfo.currentWorldPos.copy(this.transform.worldPosition);
             // 粒子系统位移
-            this._emitInfo.moveVec.copy(this._emitInfo.currentWorldPos).sub(this._emitInfo.preWorldPos);
+            emitInfo.moveVec.copy(emitInfo.currentWorldPos).sub(emitInfo.preWorldPos);
             // 粒子系统速度
-            this._emitInfo.speed.copy(this._emitInfo.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
+            emitInfo.speed.copy(emitInfo.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
             this._modules.forEach(function (m) {
                 m.update(interval);
             });
             this._updateActiveParticlesState();
             // 完成一个循环
-            if (this.main.loop && Math.floor(this._emitInfo.preTime / this.main.duration) < Math.floor(this._emitInfo.currentTime / this.main.duration)) {
+            if (this.main.loop && Math.floor(emitInfo.preTime / this.main.duration) < Math.floor(emitInfo.currentTime / this.main.duration)) {
                 // 重新计算喷发概率
                 this.emission.bursts.forEach(function (element) {
                     element.calculateProbability();
@@ -32835,14 +32836,14 @@ var feng3d;
             // 发射粒子
             if (!this._isSubParticleSystem) // 子粒子系统自身不会自动发射粒子
              {
-                var emits = this._emit(this._emitInfo);
+                var emits = this._emit(emitInfo);
                 emits.sort(function (a, b) { return a.time - b.time; });
                 emits.forEach(function (v) {
                     _this._emitParticles(v);
                 });
             }
             // 判断非循环的效果是否播放结束
-            if (!this.main.loop && this._activeParticles.length == 0 && this._emitInfo.currentTime > this.main.duration) {
+            if (!this.main.loop && this._activeParticles.length == 0 && emitInfo.currentTime > this.main.duration) {
                 this.stop();
                 this.dispatch("particleCompleted", this);
             }
@@ -33014,9 +33015,25 @@ var feng3d;
             var endTime = particle.curTime - particle.birthTime;
             startTime = Math.clamp(startTime, 0, particle.lifetime);
             endTime = Math.clamp(endTime, 0, particle.lifetime);
-            // var emits = this._emit(startTime, endTime, particle.prePosition, particle.curPosition);
-            // return emits;
-            return [];
+            if (!particle.subEmitInfo) {
+                var startDelay = this.main.startDelay.getValue(Math.random());
+                particle.subEmitInfo = {
+                    preTime: -startDelay,
+                    currentTime: -startDelay,
+                    preWorldPos: new feng3d.Vector3(),
+                    currentWorldPos: new feng3d.Vector3(),
+                    rateAtDuration: 0,
+                    _leftRateOverDistance: 0,
+                    _isRateOverDistance: false,
+                    startDelay: startDelay,
+                    moveVec: new feng3d.Vector3(),
+                    speed: new feng3d.Vector3(),
+                };
+            }
+            particle.subEmitInfo.preTime = particle.preTime - particle.birthTime - particle.subEmitInfo.startDelay;
+            particle.subEmitInfo.currentTime = particle.curTime - particle.birthTime - particle.subEmitInfo.startDelay;
+            var emits = this._emit(particle.subEmitInfo);
+            return emits;
         };
         /**
          * 计算在指定移动的位移线段中发射的粒子列表。
@@ -33151,10 +33168,12 @@ var feng3d;
         ParticleSystem.prototype._updateActiveParticlesState = function () {
             for (var i = this._activeParticles.length - 1; i >= 0; i--) {
                 var particle = this._activeParticles[i];
-                particle.rateAtLifeTime = (this._emitInfo.currentTime - particle.birthTime) / particle.lifetime;
+                particle.rateAtLifeTime = (particle.emitInfo.currentTime - particle.birthTime) / particle.lifetime;
                 if (particle.rateAtLifeTime < 0 || particle.rateAtLifeTime > 1) {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
+                    particle.subEmitInfo = null;
+                    particle.emitInfo = null;
                 }
                 else {
                     this._updateParticleState(particle);
@@ -33175,7 +33194,7 @@ var feng3d;
         ParticleSystem.prototype._updateParticleState = function (particle) {
             //
             this._modules.forEach(function (v) { v.updateParticleState(particle); });
-            particle.updateState(this._emitInfo.currentTime);
+            particle.updateState(particle.emitInfo.currentTime);
         };
         ParticleSystem.prototype._simulationSpaceChanged = function () {
             if (!this.transform)
