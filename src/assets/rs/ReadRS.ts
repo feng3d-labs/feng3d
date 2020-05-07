@@ -25,12 +25,12 @@ namespace feng3d
         /**
          * 资源编号映射
          */
-        idMap: { [id: string]: FileAsset } = {};
+        protected _idMap: { [id: string]: FileAsset } = {};
 
         /**
          * 资源路径映射
          */
-        pathMap: { [path: string]: FileAsset } = {};
+        protected _pathMap: { [path: string]: FileAsset } = {};
 
         /**
          * 资源树保存路径
@@ -70,8 +70,7 @@ namespace feng3d
                         // 设置资源系统
                         asset.rs = <any>this;
                         // 新增映射
-                        this.idMap[asset.assetId] = asset;
-                        this.pathMap[asset.assetPath] = asset;
+                        this.addAsset(asset);
                         // 
                         if (asset instanceof FolderAsset)
                         {
@@ -143,8 +142,7 @@ namespace feng3d
             if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
             asset.assetPath = path;
             // 新增映射
-            this.idMap[asset.assetId] = asset;
-            this.pathMap[asset.assetPath] = asset;
+            this.addAsset(asset);
 
             //
             asset.write((err) =>
@@ -179,7 +177,7 @@ namespace feng3d
          */
         readAsset(id: string, callback: (err: Error, asset: FileAsset) => void)
         {
-            var asset = this.idMap[id];
+            var asset = this.getAssetById(id);
             if (!asset)
             {
                 callback(new Error(`不存在资源 ${id}`), asset);
@@ -245,7 +243,7 @@ namespace feng3d
          */
         getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[]
         {
-            var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
+            var assets = Object.keys(this._idMap).map(v => this._idMap[v]);
             return <any>assets.filter(v => v instanceof type);
         }
 
@@ -261,13 +259,50 @@ namespace feng3d
         }
 
         /**
-         * 获取资源
+         * 获取指定编号资源
          * 
-         * @param assetId 资源编号
+         * @param id 资源编号
          */
-        getAsset(assetId: string)
+        getAssetById(id: string)
         {
-            return this.idMap[assetId];
+            return this._idMap[id];
+        }
+
+        /**
+         * 获取指定路径资源
+         * 
+         * @param path 资源路径
+         */
+        getAssetByPath(path: string)
+        {
+            return this._pathMap[path];
+        }
+
+        /**
+         * 新增资源
+         * 
+         * @param asset 资源
+         */
+        addAsset(asset: FileAsset)
+        {
+            this._idMap[asset.assetId] = asset;
+            this._pathMap[asset.assetPath] = asset;
+        }
+
+        /**
+         * 获取所有资源编号列表
+         */
+        getAllIds()
+        {
+            return Object.keys(this._idMap);
+        }
+
+        /**
+         * 获取所有资源路径列表
+         */
+        getAllPaths()
+        {
+            return Object.keys(this._pathMap);
         }
 
         /**
@@ -275,8 +310,39 @@ namespace feng3d
          */
         getAllAssets()
         {
-            var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
+            var assets = this.getAllIds().map(v => this.getAssetById(v));
             return assets;
+        }
+
+        /**
+         * 删除指定编号的资源
+         * 
+         * @param id 资源编号
+         */
+        deleteAssetById(id: string)
+        {
+            this.deleteAsset(this.getAssetById(id));
+        }
+
+        /**
+         * 删除指定路径的资源
+         * 
+         * @param path 资源路径
+         */
+        deleteAssetByPath(path: string)
+        {
+            this.deleteAsset(this._pathMap[path]);
+        }
+
+        /**
+         * 删除资源
+         * 
+         * @param asset 资源
+         */
+        deleteAsset(asset: FileAsset)
+        {
+            delete rs._idMap[asset.assetId];
+            delete rs._pathMap[asset.assetPath];
         }
 
         /**

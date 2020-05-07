@@ -177,8 +177,7 @@ namespace feng3d
                         }
                         la.assetPath = np;
                         // 新增映射
-                        this.idMap[la.assetId] = la;
-                        this.pathMap[la.assetPath] = la;
+                        this.addAsset(la);
                         // 保存资源到新路径
                         this.writeAsset(la, (err) =>
                         {

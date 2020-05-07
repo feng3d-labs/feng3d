@@ -10869,13 +10869,13 @@ declare namespace feng3d {
         /**
          * 资源编号映射
          */
-        idMap: {
+        protected _idMap: {
             [id: string]: FileAsset;
         };
         /**
          * 资源路径映射
          */
-        pathMap: {
+        protected _pathMap: {
             [path: string]: FileAsset;
         };
         /**
@@ -10944,15 +10944,53 @@ declare namespace feng3d {
          */
         getLoadedAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[];
         /**
-         * 获取资源
+         * 获取指定编号资源
          *
-         * @param assetId 资源编号
+         * @param id 资源编号
          */
-        getAsset(assetId: string): FileAsset;
+        getAssetById(id: string): FileAsset;
+        /**
+         * 获取指定路径资源
+         *
+         * @param path 资源路径
+         */
+        getAssetByPath(path: string): FileAsset;
+        /**
+         * 新增资源
+         *
+         * @param asset 资源
+         */
+        addAsset(asset: FileAsset): void;
+        /**
+         * 获取所有资源编号列表
+         */
+        getAllIds(): string[];
+        /**
+         * 获取所有资源路径列表
+         */
+        getAllPaths(): string[];
         /**
          * 获取所有资源
          */
         getAllAssets(): FileAsset[];
+        /**
+         * 删除指定编号的资源
+         *
+         * @param id 资源编号
+         */
+        deleteAssetById(id: string): void;
+        /**
+         * 删除指定路径的资源
+         *
+         * @param path 资源路径
+         */
+        deleteAssetByPath(path: string): void;
+        /**
+         * 删除资源
+         *
+         * @param asset 资源
+         */
+        deleteAsset(asset: FileAsset): void;
         /**
          * 获取需要反序列化对象中的资源id列表
          */

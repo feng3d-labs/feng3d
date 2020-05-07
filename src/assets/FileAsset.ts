@@ -198,8 +198,7 @@ namespace feng3d
                         this.parentAsset = null;
                     }
                     // 删除映射
-                    delete rs.idMap[this.assetId];
-                    delete rs.pathMap[this.assetPath];
+                    rs.deleteAssetById(this.assetId);
                     callback && callback();
                 });
             });
@@ -277,7 +276,7 @@ namespace feng3d
             // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
             ticker.once(1000, () =>
             {
-                if (this.rs.getAsset(this.assetId) == null)
+                if (this.rs.getAssetById(this.assetId) == null)
                 {
                     this.deletePreview();
                 }
