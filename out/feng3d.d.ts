@@ -10731,7 +10731,7 @@ declare namespace feng3d {
         /**
          * 父资源
          */
-        parentAsset: FolderAsset;
+        get parentAsset(): FolderAsset;
         /**
          * 文件名称
          *

@@ -21531,6 +21531,19 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(FileAsset.prototype, "parentAsset", {
+            /**
+             * 父资源
+             */
+            get: function () {
+                var dir0 = feng3d.path.dirname(this.assetPath);
+                var dir = feng3d.pathUtils.dirname(this.assetPath);
+                var parent = this.rs.getAssetByPath(dir);
+                return parent;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(FileAsset.prototype, "fileName", {
             /**
              * 文件名称
@@ -21641,7 +21654,6 @@ var feng3d;
                     // 删除父子资源关系
                     if (_this.parentAsset) {
                         Array.delete(_this.parentAsset.childrenAssets, _this);
-                        _this.parentAsset = null;
                     }
                     // 删除映射
                     feng3d.rs.deleteAssetById(_this.assetId);
@@ -21826,8 +21838,6 @@ var feng3d;
                         if (asset instanceof feng3d.FolderAsset) {
                             for (var i = 0; i < asset.childrenAssets.length; i++) {
                                 var v = asset.childrenAssets[i];
-                                // 处理资源父子关系
-                                v.parentAsset = asset;
                                 //
                                 assets.push(v);
                             }
@@ -21866,7 +21876,7 @@ var feng3d;
             asset.initAsset();
             feng3d.AssetData.addAssetData(asset.assetId, asset.data);
             //
-            var extenson = feng3d.pathUtils.extname(fileName);
+            var extenson = feng3d.path.extname(fileName);
             fileName = feng3d.pathUtils.getName(fileName);
             // 设置默认名称
             fileName = fileName || "new " + asset.assetType;
@@ -21875,16 +21885,12 @@ var feng3d;
                 fileName = this.getValidChildName(parent, fileName);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
-                asset.parentAsset = parent;
             }
             // 计算路径
             if (extenson == "")
                 extenson = cls["extenson"];
             console.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
-            var path = fileName + extenson;
-            if (asset.parentAsset)
-                path = asset.parentAsset.assetPath + "/" + path;
-            asset.assetPath = path;
+            asset.assetPath = parent.assetPath + "/" + fileName + extenson;
             // 新增映射
             this.addAsset(asset);
             //
@@ -22190,7 +22196,6 @@ var feng3d;
             var index = asset.parentAsset.childrenAssets.indexOf(asset);
             asset.parentAsset.childrenAssets.splice(index, 1);
             folder.childrenAssets.push(asset);
-            asset.parentAsset = folder;
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -22230,8 +22235,6 @@ var feng3d;
                             callback && callback(err);
                             return;
                         }
-                        // 修复删除资源时破坏的父资源引用
-                        la.parentAsset = pla;
                         // 计算资源新路径
                         var np = la.fileName + la.extenson;
                         var p = la.parentAsset;

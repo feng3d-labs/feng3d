@@ -114,7 +114,6 @@ namespace feng3d
             var index = asset.parentAsset.childrenAssets.indexOf(asset);
             asset.parentAsset.childrenAssets.splice(index, 1);
             folder.childrenAssets.push(asset);
-            asset.parentAsset = folder;
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -165,8 +164,6 @@ namespace feng3d
                             callback && callback(err);
                             return;
                         }
-                        // 修复删除资源时破坏的父资源引用
-                        la.parentAsset = pla;
                         // 计算资源新路径
                         var np = la.fileName + la.extenson;
                         var p = la.parentAsset;

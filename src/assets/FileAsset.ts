@@ -53,7 +53,14 @@ namespace feng3d
         /**
          * 父资源
          */
-        parentAsset: FolderAsset;
+        get parentAsset()
+        {
+            var dir0 = path.dirname(this.assetPath);
+            var dir = pathUtils.dirname(this.assetPath);
+
+            var parent = this.rs.getAssetByPath(dir) as FolderAsset;
+            return parent;
+        }
 
         /**
          * 文件名称
@@ -195,7 +202,6 @@ namespace feng3d
                     if (this.parentAsset)
                     {
                         Array.delete(this.parentAsset.childrenAssets, this);
-                        this.parentAsset = null;
                     }
                     // 删除映射
                     rs.deleteAssetById(this.assetId);

@@ -77,8 +77,6 @@ namespace feng3d
                             for (var i = 0; i < asset.childrenAssets.length; i++)
                             {
                                 var v = asset.childrenAssets[i];
-                                // 处理资源父子关系
-                                v.parentAsset = asset;
                                 //
                                 assets.push(v);
                             }
@@ -122,7 +120,7 @@ namespace feng3d
             AssetData.addAssetData(asset.assetId, asset.data);
 
             //
-            var extenson = pathUtils.extname(fileName);
+            var extenson = feng3d.path.extname(fileName);
             fileName = pathUtils.getName(fileName);
 
             // 设置默认名称
@@ -133,14 +131,12 @@ namespace feng3d
                 fileName = this.getValidChildName(parent, fileName);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
-                asset.parentAsset = parent;
             }
             // 计算路径
             if (extenson == "") extenson = cls["extenson"];
             console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
-            var path = fileName + extenson;
-            if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
-            asset.assetPath = path;
+
+            asset.assetPath = parent.assetPath + "/" + fileName + extenson;
             // 新增映射
             this.addAsset(asset);
 
