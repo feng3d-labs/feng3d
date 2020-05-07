@@ -36,7 +36,8 @@ namespace feng3d
          */
         private save(callback?: (err: Error) => void)
         {
-            var object = serialization.serialize(this.root);
+            var allAssets = this.getAllAssets();
+            var object = serialization.serialize(allAssets);
             this.fs.writeObject(this.resources, object, callback)
         }
 
@@ -110,10 +111,6 @@ namespace feng3d
                 fp = fp.parentAsset;
             }
 
-            // 重新设置父子资源关系
-            var index = asset.parentAsset.childrenAssets.indexOf(asset);
-            asset.parentAsset.childrenAssets.splice(index, 1);
-            folder.childrenAssets.push(asset);
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -135,11 +132,6 @@ namespace feng3d
             {
                 if (assets.length == 0)
                 {
-                    // 修复 childrenAssets
-                    copyassets.forEach(v =>
-                    {
-                        v.parentAsset.childrenAssets.push(v);
-                    });
                     callback && callback(null);
                     // 保存资源库
                     this.laterSave();
@@ -154,8 +146,6 @@ namespace feng3d
                         callback && callback(err);
                         return;
                     }
-                    // 备份父资源
-                    var pla = la.parentAsset;
                     // 从原路径上删除资源
                     this.deleteAsset(la, (err) =>
                     {

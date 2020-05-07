@@ -21536,7 +21536,6 @@ var feng3d;
              * 父资源
              */
             get: function () {
-                var dir0 = feng3d.path.dirname(this.assetPath);
                 var dir = feng3d.pathUtils.dirname(this.assetPath);
                 var parent = this.rs.getAssetByPath(dir);
                 return parent;
@@ -21651,10 +21650,6 @@ var feng3d;
                     return;
                 }
                 _this.deleteFile(function (err) {
-                    // 删除父子资源关系
-                    if (_this.parentAsset) {
-                        Array.delete(_this.parentAsset.childrenAssets, _this);
-                    }
                     // 删除映射
                     feng3d.rs.deleteAssetById(_this.assetId);
                     callback && callback();
@@ -21764,10 +21759,10 @@ var feng3d;
         });
         __decorate([
             feng3d.serialize
-        ], FileAsset.prototype, "assetId", void 0);
+        ], FileAsset.prototype, "assetPath", void 0);
         __decorate([
             feng3d.serialize
-        ], FileAsset.prototype, "assetPath", void 0);
+        ], FileAsset.prototype, "assetId", void 0);
         return FileAsset;
     }());
     feng3d.FileAsset = FileAsset;
@@ -21784,6 +21779,7 @@ var feng3d;
          * @param fs 可读文件系统
          */
         function ReadRS(fs) {
+            this._rootPath = "Assets";
             /**
              * 资源编号映射
              */
@@ -21806,11 +21802,19 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ReadRS.prototype, "rootPath", {
+            /**
+             * 根资源路径
+             */
+            get: function () { return this._rootPath; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ReadRS.prototype, "root", {
             /**
-             * 根文件夹
+             * 根资源
              */
-            get: function () { return this._root; },
+            get: function () { return this.getAssetByPath(this.rootPath); },
             enumerable: true,
             configurable: true
         });
@@ -21823,32 +21827,18 @@ var feng3d;
             var _this = this;
             this.fs.readObject(this.resources, function (err, object) {
                 if (object) {
-                    var data = feng3d.serialization.deserialize(object);
-                    _this._root = data;
+                    var allAssets = feng3d.serialization.deserialize(object);
                     //
-                    var assets = [data];
-                    var index = 0;
-                    while (index < assets.length) {
-                        var asset = assets[index];
+                    allAssets.forEach(function (asset) {
                         // 设置资源系统
                         asset.rs = _this;
                         // 新增映射
                         _this.addAsset(asset);
-                        // 
-                        if (asset instanceof feng3d.FolderAsset) {
-                            for (var i = 0; i < asset.childrenAssets.length; i++) {
-                                var v = asset.childrenAssets[i];
-                                //
-                                assets.push(v);
-                            }
-                        }
-                        index++;
-                    }
+                    });
                     callback();
                 }
                 else {
-                    _this.createAsset(feng3d.FolderAsset, "Assets", null, null, function (err, asset) {
-                        _this._root = asset;
+                    _this.createAsset(feng3d.FolderAsset, _this.rootPath, null, null, function (err, asset) {
                         callback();
                     });
                 }
@@ -21864,7 +21854,7 @@ var feng3d;
          * @param callback 完成回调函数
          */
         ReadRS.prototype.createAsset = function (cls, fileName, value, parent, callback) {
-            parent = parent || this._root;
+            parent = parent || this.root;
             //
             var asset = new cls();
             var assetId = Math.uuid();
@@ -21875,22 +21865,24 @@ var feng3d;
             asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             asset.initAsset();
             feng3d.AssetData.addAssetData(asset.assetId, asset.data);
-            //
+            // 计算扩展名
             var extenson = feng3d.path.extname(fileName);
-            fileName = feng3d.pathUtils.getName(fileName);
-            // 设置默认名称
-            fileName = fileName || "new " + asset.assetType;
-            if (parent) {
-                // 计算有效名称
-                fileName = this.getValidChildName(parent, fileName);
-                // 处理资源父子关系
-                parent.childrenAssets.push(asset);
-            }
-            // 计算路径
             if (extenson == "")
                 extenson = cls["extenson"];
             console.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
-            asset.assetPath = parent.assetPath + "/" + fileName + extenson;
+            // 计算名称
+            fileName = feng3d.pathUtils.getName(fileName);
+            // 设置默认名称
+            fileName = fileName || "new " + asset.assetType;
+            // 
+            if (parent) {
+                // 计算有效名称
+                fileName = this.getValidChildName(parent, fileName);
+                asset.assetPath = parent.assetPath + "/" + fileName + extenson;
+            }
+            else {
+                asset.assetPath = fileName + extenson;
+            }
             // 新增映射
             this.addAsset(asset);
             //
@@ -22003,6 +21995,29 @@ var feng3d;
             return this._pathMap[path];
         };
         /**
+         * 获取文件夹内子文件路径列表
+         *
+         * @param path 路径
+         */
+        ReadRS.prototype.getChildrenPathsByPath = function (path) {
+            var paths = this.getAllPaths();
+            var childrenPaths = paths.filter(function (v) {
+                return feng3d.pathUtils.dirname(v) == path;
+            });
+            return childrenPaths;
+        };
+        /**
+         * 获取文件夹内子文件列表
+         *
+         * @param path 文件夹路径
+         */
+        ReadRS.prototype.getChildrenAssetByPath = function (path) {
+            var _this = this;
+            var childrenPaths = this.getChildrenPathsByPath(path);
+            var children = childrenPaths.map(function (v) { return _this.getAssetByPath(v); });
+            return children;
+        };
+        /**
          * 新增资源
          *
          * @param asset 资源
@@ -22037,7 +22052,7 @@ var feng3d;
          * @param id 资源编号
          */
         ReadRS.prototype.deleteAssetById = function (id) {
-            this.deleteAsset(this.getAssetById(id));
+            this.deleteAsset0(this.getAssetById(id));
         };
         /**
          * 删除指定路径的资源
@@ -22045,14 +22060,14 @@ var feng3d;
          * @param path 资源路径
          */
         ReadRS.prototype.deleteAssetByPath = function (path) {
-            this.deleteAsset(this._pathMap[path]);
+            this.deleteAsset0(this._pathMap[path]);
         };
         /**
          * 删除资源
          *
          * @param asset 资源
          */
-        ReadRS.prototype.deleteAsset = function (asset) {
+        ReadRS.prototype.deleteAsset0 = function (asset) {
             delete feng3d.rs._idMap[asset.assetId];
             delete feng3d.rs._pathMap[asset.assetPath];
         };
@@ -22131,7 +22146,8 @@ var feng3d;
          * @param callback 完成回调
          */
         ReadWriteRS.prototype.save = function (callback) {
-            var object = feng3d.serialization.serialize(this.root);
+            var allAssets = this.getAllAssets();
+            var object = feng3d.serialization.serialize(allAssets);
             this.fs.writeObject(this.resources, object, callback);
         };
         /**
@@ -22192,10 +22208,6 @@ var feng3d;
                 }
                 fp = fp.parentAsset;
             }
-            // 重新设置父子资源关系
-            var index = asset.parentAsset.childrenAssets.indexOf(asset);
-            asset.parentAsset.childrenAssets.splice(index, 1);
-            folder.childrenAssets.push(asset);
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -22211,10 +22223,6 @@ var feng3d;
             // 移动最后一个资源
             var moveLastAsset = function () {
                 if (assets.length == 0) {
-                    // 修复 childrenAssets
-                    copyassets.forEach(function (v) {
-                        v.parentAsset.childrenAssets.push(v);
-                    });
                     callback && callback(null);
                     // 保存资源库
                     _this.laterSave();
@@ -22227,8 +22235,6 @@ var feng3d;
                         callback && callback(err);
                         return;
                     }
-                    // 备份父资源
-                    var pla = la.parentAsset;
                     // 从原路径上删除资源
                     _this.deleteAsset(la, function (err) {
                         if (err) {
@@ -38875,12 +38881,19 @@ var feng3d;
         function FolderAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetType.folder;
+            return _this;
+        }
+        Object.defineProperty(FolderAsset.prototype, "childrenAssets", {
             /**
              * 子资源列表
              */
-            _this.childrenAssets = [];
-            return _this;
-        }
+            get: function () {
+                var children = this.rs.getChildrenAssetByPath(this.assetPath);
+                return children;
+            },
+            enumerable: true,
+            configurable: true
+        });
         FolderAsset.prototype.initAsset = function () {
         };
         /**
@@ -38906,9 +38919,6 @@ var feng3d;
             callback && callback(null);
         };
         FolderAsset.extenson = "";
-        __decorate([
-            feng3d.serialize
-        ], FolderAsset.prototype, "childrenAssets", void 0);
         FolderAsset = __decorate([
             feng3d.ov({ component: "OVFolderAsset" })
         ], FolderAsset);

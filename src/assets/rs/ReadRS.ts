@@ -17,10 +17,15 @@ namespace feng3d
         private _fs: ReadFS;
 
         /**
-         * 根文件夹
+         * 根资源路径
          */
-        get root() { return this._root; }
-        private _root: FolderAsset;
+        get rootPath() { return this._rootPath; }
+        private _rootPath = "Assets";
+
+        /**
+         * 根资源
+         */
+        get root() { return this.getAssetByPath(this.rootPath) as FolderAsset; }
 
         /**
          * 资源编号映射
@@ -58,37 +63,20 @@ namespace feng3d
             {
                 if (object)
                 {
-                    var data: FolderAsset = <any>serialization.deserialize(object);
-
-                    this._root = data;
+                    var allAssets: FileAsset[] = <any>serialization.deserialize(object);
                     //
-                    var assets: FileAsset[] = [data];
-                    var index = 0;
-                    while (index < assets.length)
+                    allAssets.forEach(asset =>
                     {
-                        var asset = assets[index];
                         // 设置资源系统
                         asset.rs = <any>this;
                         // 新增映射
                         this.addAsset(asset);
-                        // 
-                        if (asset instanceof FolderAsset)
-                        {
-                            for (var i = 0; i < asset.childrenAssets.length; i++)
-                            {
-                                var v = asset.childrenAssets[i];
-                                //
-                                assets.push(v);
-                            }
-                        }
-                        index++;
-                    }
+                    });
                     callback();
                 } else
                 {
-                    this.createAsset(FolderAsset, "Assets", null, null, (err, asset) =>
+                    this.createAsset(FolderAsset, this.rootPath, null, null, (err, asset) =>
                     {
-                        this._root = asset;
                         callback();
                     });
                 }
@@ -106,7 +94,7 @@ namespace feng3d
          */
         createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
-            parent = parent || this._root;
+            parent = parent || this.root;
             //
             var asset: FileAsset = new cls();
             var assetId = Math.uuid()
@@ -119,24 +107,27 @@ namespace feng3d
             asset.initAsset();
             AssetData.addAssetData(asset.assetId, asset.data);
 
-            //
+            // 计算扩展名
             var extenson = feng3d.path.extname(fileName);
-            fileName = pathUtils.getName(fileName);
+            if (extenson == "") extenson = cls["extenson"];
+            console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
 
+            // 计算名称
+            fileName = pathUtils.getName(fileName);
             // 设置默认名称
             fileName = fileName || "new " + asset.assetType;
+            // 
             if (parent) 
             {
                 // 计算有效名称
                 fileName = this.getValidChildName(parent, fileName);
-                // 处理资源父子关系
-                parent.childrenAssets.push(asset);
+                asset.assetPath = parent.assetPath + "/" + fileName + extenson;
             }
-            // 计算路径
-            if (extenson == "") extenson = cls["extenson"];
-            console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
+            else
+            {
+                asset.assetPath = fileName + extenson;
+            }
 
-            asset.assetPath = parent.assetPath + "/" + fileName + extenson;
             // 新增映射
             this.addAsset(asset);
 
@@ -275,6 +266,34 @@ namespace feng3d
         }
 
         /**
+         * 获取文件夹内子文件路径列表
+         * 
+         * @param path 路径
+         */
+        getChildrenPathsByPath(path: string)
+        {
+            var paths = this.getAllPaths();
+            var childrenPaths = paths.filter(v =>
+            {
+                return pathUtils.dirname(v) == path;
+            });
+            return childrenPaths;
+        }
+
+        /**
+         * 获取文件夹内子文件列表
+         * 
+         * @param path 文件夹路径
+         */
+        getChildrenAssetByPath(path: string)
+        {
+            var childrenPaths = this.getChildrenPathsByPath(path);
+
+            var children: FileAsset[] = childrenPaths.map(v => this.getAssetByPath(v));
+            return children;
+        }
+
+        /**
          * 新增资源
          * 
          * @param asset 资源
@@ -317,7 +336,7 @@ namespace feng3d
          */
         deleteAssetById(id: string)
         {
-            this.deleteAsset(this.getAssetById(id));
+            this.deleteAsset0(this.getAssetById(id));
         }
 
         /**
@@ -327,7 +346,7 @@ namespace feng3d
          */
         deleteAssetByPath(path: string)
         {
-            this.deleteAsset(this._pathMap[path]);
+            this.deleteAsset0(this._pathMap[path]);
         }
 
         /**
@@ -335,7 +354,7 @@ namespace feng3d
          * 
          * @param asset 资源
          */
-        deleteAsset(asset: FileAsset)
+        deleteAsset0(asset: FileAsset)
         {
             delete rs._idMap[asset.assetId];
             delete rs._pathMap[asset.assetPath];

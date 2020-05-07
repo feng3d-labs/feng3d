@@ -10697,6 +10697,10 @@ declare namespace feng3d {
      */
     abstract class FileAsset {
         /**
+         * 资源路径
+         */
+        assetPath: string;
+        /**
          * 资源编号
          */
         assetId: string;
@@ -10738,10 +10742,6 @@ declare namespace feng3d {
          * 不包含后缀
          */
         get fileName(): string;
-        /**
-         * 资源路径
-         */
-        assetPath: string;
         /**
          * 资源对象
          */
@@ -10862,10 +10862,14 @@ declare namespace feng3d {
         get fs(): ReadFS;
         private _fs;
         /**
-         * 根文件夹
+         * 根资源路径
+         */
+        get rootPath(): string;
+        private _rootPath;
+        /**
+         * 根资源
          */
         get root(): FolderAsset;
-        private _root;
         /**
          * 资源编号映射
          */
@@ -10956,6 +10960,18 @@ declare namespace feng3d {
          */
         getAssetByPath(path: string): FileAsset;
         /**
+         * 获取文件夹内子文件路径列表
+         *
+         * @param path 路径
+         */
+        getChildrenPathsByPath(path: string): string[];
+        /**
+         * 获取文件夹内子文件列表
+         *
+         * @param path 文件夹路径
+         */
+        getChildrenAssetByPath(path: string): FileAsset[];
+        /**
          * 新增资源
          *
          * @param asset 资源
@@ -10990,7 +11006,7 @@ declare namespace feng3d {
          *
          * @param asset 资源
          */
-        deleteAsset(asset: FileAsset): void;
+        deleteAsset0(asset: FileAsset): void;
         /**
          * 获取需要反序列化对象中的资源id列表
          */
@@ -18273,7 +18289,7 @@ declare namespace feng3d {
         /**
          * 子资源列表
          */
-        childrenAssets: FileAsset[];
+        get childrenAssets(): FileAsset[];
         initAsset(): void;
         /**
          * 删除资源

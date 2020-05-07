@@ -6,6 +6,12 @@ namespace feng3d
     export abstract class FileAsset
     {
         /**
+         * 资源路径
+         */
+        @serialize
+        assetPath: string;
+
+        /**
          * 资源编号
          */
         @serialize
@@ -55,9 +61,7 @@ namespace feng3d
          */
         get parentAsset()
         {
-            var dir0 = path.dirname(this.assetPath);
             var dir = pathUtils.dirname(this.assetPath);
-
             var parent = this.rs.getAssetByPath(dir) as FolderAsset;
             return parent;
         }
@@ -73,12 +77,6 @@ namespace feng3d
             var fn = pathUtils.getName(this.assetPath);
             return fn;
         }
-
-        /**
-         * 资源路径
-         */
-        @serialize
-        assetPath: string;
 
         /**
          * 资源对象
@@ -198,11 +196,6 @@ namespace feng3d
                 }
                 this.deleteFile((err) =>
                 {
-                    // 删除父子资源关系
-                    if (this.parentAsset)
-                    {
-                        Array.delete(this.parentAsset.childrenAssets, this);
-                    }
                     // 删除映射
                     rs.deleteAssetById(this.assetId);
                     callback && callback();
