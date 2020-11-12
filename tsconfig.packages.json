@@ -2,12 +2,6 @@
   "files": [],
   "references": [
     {
-      "path": "packages/polyfill"
-    },
-    {
-      "path": "packages/watcher"
-    },
-    {
       "path": "packages/math"
     },
     {

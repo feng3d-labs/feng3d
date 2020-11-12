@@ -19,14 +19,14 @@
         "../packages/eventsystem/src/EventDispatcher.ts",
         "../packages/eventsystem/src/ObjectEvent.ts",
         //
-        "packages/watcher/src/Watcher.ts",
+        "../packages/watcher/src/Watcher.ts",
         // Polyfill
-        "packages/polyfill/src/Types.ts",
-        "packages/polyfill/src/Object.ts",
-        "packages/polyfill/src/ClassUtils.ts",
-        "packages/polyfill/src/Map.ts",
-        "packages/polyfill/src/Array.ts",
-        "packages/polyfill/src/Math.ts",
+        "../packages/polyfill/src/Types.ts",
+        "../packages/polyfill/src/Object.ts",
+        "../packages/polyfill/src/ClassUtils.ts",
+        "../packages/polyfill/src/Map.ts",
+        "../packages/polyfill/src/Array.ts",
+        "../packages/polyfill/src/Math.ts",
         //
         "packages/serialization/src/Serialization.ts",
         //
