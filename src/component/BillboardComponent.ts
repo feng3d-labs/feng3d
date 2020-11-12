@@ -3,48 +3,46 @@ namespace feng3d
 
     export interface ComponentMap { BillboardComponent: BillboardComponent; }
 
+    @feng3d.AddComponentMenu("Layout/BillboardComponent")
+    @RegisterComponent()
     export class BillboardComponent extends Component
     {
-        __class__: "feng3d.BillboardComponent" = "feng3d.BillboardComponent";
+        __class__: "feng3d.BillboardComponent";
 
         /**
          * 相机
          */
         @oav()
-        get camera()
-        {
-            return this._camera;
-        }
-        set camera(v)
-        {
-            if (this._camera == v) return;
-            if (this._camera) this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            this._camera = v;
-            if (this._camera) this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            this.invalidHoldSizeMatrix();
-        }
-        private _camera: Camera;
+        @watch("_onCameraChanged")
+        camera: Camera;
 
         init()
         {
             super.init();
-            this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
-            this.invalidHoldSizeMatrix();
+            this.transform.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this._invalidHoldSizeMatrix();
         }
 
-        private invalidHoldSizeMatrix()
+        private _onCameraChanged(property: string, oldValue: Camera, value: Camera)
         {
-            if (this._gameObject) this.transform["invalidateSceneTransform"]();
+            if (oldValue) oldValue.off("scenetransformChanged", this._invalidHoldSizeMatrix, this);
+            if (value) value.on("scenetransformChanged", this._invalidHoldSizeMatrix, this);
+            this._invalidHoldSizeMatrix();
         }
 
-        private updateLocalToWorldMatrix()
+        private _invalidHoldSizeMatrix()
+        {
+            if (this._gameObject) this.transform["_invalidateSceneTransform"]();
+        }
+
+        private _onUpdateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
             if (_localToWorldMatrix && this.camera)
             {
                 var camera = this.camera;
-                var cameraPos = camera.transform.scenePosition;
-                var yAxis = camera.transform.localToWorldMatrix.up;
+                var cameraPos = camera.transform.worldPosition;
+                var yAxis = camera.transform.localToWorldMatrix.getAxisY();
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);
             }
         }
@@ -52,7 +50,7 @@ namespace feng3d
         dispose()
         {
             this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.transform.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             super.dispose();
         }
     }

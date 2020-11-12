@@ -7,17 +7,28 @@ namespace feng3d
      * The Terrain component renders the terrain.
      */
     // @ov({ component: "OVTerrain" })
-    export class Terrain extends Model
+    @RegisterComponent()
+    export class Terrain extends Renderable
     {
-        __class__: "feng3d.Terrain" = "feng3d.Terrain";
+        __class__: "feng3d.Terrain";
 
         /**
          * 地形资源
          */
         assign: TerrainData;
 
-        geometry = Geometry.terrain;
+        geometry = Geometry.getDefault("Terrain-Geometry");
 
-        material = Material.terrain;
+        material = Material.getDefault("Terrain-Material");
+    }
+
+    GameObject.registerPrimitive("Terrain", (g) =>
+    {
+        g.addComponent("Terrain");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Terrain: GameObject;
     }
 }

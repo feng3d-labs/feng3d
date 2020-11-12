@@ -3,88 +3,72 @@ namespace feng3d
 
     export interface ComponentMap { HoldSizeComponent: HoldSizeComponent; }
 
+    @AddComponentMenu("Layout/HoldSizeComponent")
+    @RegisterComponent()
     export class HoldSizeComponent extends Component
     {
 
-        __class__: "feng3d.HoldSizeComponent" = "feng3d.HoldSizeComponent";
+        __class__: "feng3d.HoldSizeComponent";
 
         /**
          * 保持缩放尺寸
          */
         @oav()
-        get holdSize()
-        {
-            return this._holdSize;
-        }
-        set holdSize(v)
-        {
-            if (this._holdSize == v) return;
-            this._holdSize = v;
-            this.onHoldSizeChanged();
-        }
-        private _holdSize = 1;
+        @watch("_invalidateSceneTransform")
+        holdSize = 1;
 
         /**
          * 相机
          */
         @oav()
-        get camera()
-        {
-            return this._camera;
-        }
-        set camera(v)
-        {
-            if (this._camera == v) return;
-            if (this._camera) this._camera.off("scenetransformChanged", this.invalidateSceneTransform, this);
-            this._camera = v;
-            if (this._camera) this._camera.on("scenetransformChanged", this.invalidateSceneTransform, this);
-            this.invalidateSceneTransform();
-        }
-        private _camera: Camera;
+        @watch("_onCameraChanged")
+        camera: Camera;
 
         init()
         {
-            this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.transform.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
         }
 
         dispose()
         {
             this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            this.transform.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             super.dispose();
         }
 
-        private onHoldSizeChanged()
+        private _onCameraChanged(property: string, oldValue: Camera, value: Camera)
         {
-            this.invalidateSceneTransform();
+            if (oldValue) oldValue.off("scenetransformChanged", this._invalidateSceneTransform, this);
+            if (value) value.on("scenetransformChanged", this._invalidateSceneTransform, this);
+            this._invalidateSceneTransform();
         }
 
-        private invalidateSceneTransform()
+        private _invalidateSceneTransform()
         {
-            if (this._gameObject) this.transform["invalidateSceneTransform"]();
+            if (this._gameObject) this.transform["_invalidateSceneTransform"]();
         }
 
-        private updateLocalToWorldMatrix()
+        private _onUpdateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
             if (this.holdSize && this.camera && _localToWorldMatrix)
             {
-                var depthScale = this.getDepthScale(this.camera);
-                var vec = _localToWorldMatrix.decompose();
+                var depthScale = this._getDepthScale(this.camera);
+                var vec = _localToWorldMatrix.toTRS();
                 vec[2].scaleNumber(depthScale * this.holdSize);
-                _localToWorldMatrix.recompose(vec);
+                _localToWorldMatrix.fromTRS(vec[0], vec[1], vec[2]);
 
-                debuger && console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
+                console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
         }
 
-        private getDepthScale(camera: Camera)
+        private _getDepthScale(camera: Camera)
         {
             var cameraTranform = camera.transform.localToWorldMatrix;
-            var distance = this.transform.scenePosition.subTo(cameraTranform.position);
+            var distance = this.transform.worldPosition.subTo(cameraTranform.getPosition());
             if (distance.length == 0)
                 distance.x = 1;
-            var depth = distance.dot(cameraTranform.forward);
+            var depth = distance.dot(cameraTranform.getAxisZ());
             var scale = camera.getScaleByDepth(depth);
             //限制在放大缩小100倍之间，否则容易出现矩阵不可逆问题
             scale = Math.max(Math.min(100, scale), 0.01);

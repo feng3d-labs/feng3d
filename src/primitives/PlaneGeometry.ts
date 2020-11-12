@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { PlaneGeometry: PlaneGeometry }
+    export interface GeometryTypes { PlaneGeometry: PlaneGeometry }
 
     /**
      * 平面几何体
@@ -8,92 +8,47 @@ namespace feng3d
     export class PlaneGeometry extends Geometry
     {
 
-        __class__: "feng3d.PlaneGeometry" = "feng3d.PlaneGeometry";
+        __class__: "feng3d.PlaneGeometry";
 
         /**
          * 宽度
          */
         @oav()
         @serialize
-        get width()
-        {
-            return this._width;
-        }
-        set width(v)
-        {
-            if (this._width == v) return;
-            this._width = v;
-            this.invalidateGeometry();
-        }
-        private _width = 1;
+        @watch("invalidateGeometry")
+        width = 1;
 
         /**
          * 高度
          */
         @oav()
         @serialize
-        get height()
-        {
-            return this._height;
-        }
-        set height(v)
-        {
-            if (this._height == v) return;
-            this._height = v;
-            this.invalidateGeometry();
-        }
-        private _height = 1;
+        @watch("invalidateGeometry")
+        height = 1;
 
         /**
          * 横向分割数
          */
         @oav()
         @serialize
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(v)
-        {
-            if (this._segmentsW == v) return;
-            this._segmentsW = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 1;
+        @watch("invalidateGeometry")
+        segmentsW = 1;
 
         /**
          * 纵向分割数
          */
         @oav()
         @serialize
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(v)
-        {
-            if (this._segmentsH == v) return;
-            this._segmentsH = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 1;
+        @watch("invalidateGeometry")
+        segmentsH = 1;
 
         /**
          * 是否朝上
          */
         @oav()
         @serialize
-        get yUp()
-        {
-            return this._yUp;
-        }
-        set yUp(v)
-        {
-            if (this._yUp == v) return;
-            this._yUp = v;
-            this.invalidateGeometry();
-        }
-        private _yUp = true;
+        @watch("invalidateGeometry")
+        yUp = true;
 
         name = "Plane";
 
@@ -103,16 +58,16 @@ namespace feng3d
         protected buildGeometry()
         {
             var vertexPositionData = this.buildPosition();
-            this.setVAData("a_position", vertexPositionData, 3);
+            this.positions = vertexPositionData;
 
             var vertexNormalData = this.buildNormal();
-            this.setVAData("a_normal", vertexNormalData, 3)
+            this.normals = vertexNormalData;
 
             var vertexTangentData = this.buildTangent();
-            this.setVAData("a_tangent", vertexTangentData, 3)
+            this.tangents = vertexTangentData;
 
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
 
             var indices = this.buildIndices();
             this.indices = indices;
@@ -294,5 +249,20 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Plane", Geometry.plane = serialization.setValue(new PlaneGeometry(), { name: "Plane", assetId: "Plane", width: 10, height: 10, hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Plane: PlaneGeometry;
+    }
+
+    Geometry.setDefault("Plane", new PlaneGeometry(), { width: 10, height: 10 });
+
+    GameObject.registerPrimitive("Plane", (g) =>
+    {
+        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Plane");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Plane: GameObject;
+    }
 }

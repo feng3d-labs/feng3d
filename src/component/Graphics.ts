@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class Graphics extends Component 
     {
-        __class__: "feng3d.Graphics" = "feng3d.Graphics";
+        __class__: "feng3d.Graphics";
 
         private image: HTMLImageElement
         private context2D: CanvasRenderingContext2D;
@@ -33,7 +33,7 @@ namespace feng3d
             canvas.height = height;
             var ctxt = canvas.getContext('2d');
             callback(ctxt);
-            dataTransform.canvasToImage(canvas, "png", (img) =>
+            dataTransform.canvasToImage(canvas, "png", 1, (img) =>
             {
                 this.image = img;
             });

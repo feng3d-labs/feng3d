@@ -7,6 +7,7 @@ namespace feng3d
      * 
      * 可以控制开关的组件
      */
+    @RegisterComponent()
     export class Behaviour extends Component
     {
 

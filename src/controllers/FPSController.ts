@@ -1,11 +1,13 @@
 namespace feng3d
 {
-    
+
     export interface ComponentMap { FPSController: FPSController; }
 
     /**
      * FPS模式控制器
      */
+    @AddComponentMenu("Controller/FPSController")
+    @RegisterComponent()
     export class FPSController extends Behaviour
     {
         /**
@@ -24,7 +26,7 @@ namespace feng3d
         /**
          * 按键方向字典
          */
-        private keyDirectionDic;
+        private keyDirectionDic: { [key: string]: Vector3 };
 
         /**
          * 速度
@@ -128,16 +130,15 @@ namespace feng3d
                 // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
-                var matrix3d = this.transform.localToWorldMatrix;
-                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
-                var up = Vector3.Y_AXIS;
-                if (matrix3d.up.dot(up) < 0)
+                var matrix = this.transform.localToWorldMatrix;
+                matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
+                var up = Vector3.Y_AXIS.clone();
+                if (matrix.getAxisY().dot(up) < 0)
                 {
-                    up = up.clone();
                     up.scaleNumber(-1);
                 }
-                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
-                this.transform.localToWorldMatrix = matrix3d;
+                matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
+                this.transform.localToWorldMatrix = matrix;
                 //
                 this.preMousePoint = this.mousePoint;
                 this.mousePoint = null;
@@ -156,9 +157,9 @@ namespace feng3d
             accelerationVec.scaleNumber(this.acceleration);
             //计算速度
             this.velocity.add(accelerationVec);
-            var right = this.transform.rightVector;
-            var up = this.transform.upVector;
-            var forward = this.transform.forwardVector;
+            var right = this.transform.matrix.getAxisX();
+            var up = this.transform.matrix.getAxisY();
+            var forward = this.transform.matrix.getAxisZ();
             right.scaleNumber(this.velocity.x);
             up.scaleNumber(this.velocity.y);
             forward.scaleNumber(this.velocity.z);

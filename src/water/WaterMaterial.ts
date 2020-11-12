@@ -1,10 +1,10 @@
 namespace feng3d
 {
-    export interface UniformsMap { water: WaterUniforms }
+    export interface UniformsTypes { water: WaterUniforms }
 
     export class WaterUniforms
     {
-        __class__: "feng3d.WaterUniforms" = "feng3d.WaterUniforms";
+        __class__: "feng3d.WaterUniforms";
 
         @serialize
         @oav({ tooltip: "透明度" })
@@ -48,5 +48,10 @@ namespace feng3d
 
     shaderConfig.shaders["water"].cls = WaterUniforms;
 
-    AssetData.addAssetData("Water-Material", Material.water = serialization.setValue(new Material(), { name: "Water-Material", assetId: "Water-Material", shaderName: "water", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultMaterial
+    {
+        "Water-Material": Material;
+    }
+
+    Material.setDefault("Water-Material", { shaderName: "water" });
 }

@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface UniformsMap { segment: SegmentUniforms }
+    export interface UniformsTypes { segment: SegmentUniforms }
 
     /**
      * 线段材质
@@ -8,7 +8,7 @@ namespace feng3d
      */
     export class SegmentUniforms
     {
-        __class__: "feng3d.SegmentUniforms" = "feng3d.SegmentUniforms";
+        __class__: "feng3d.SegmentUniforms";
 
         /** 
          * 颜色
@@ -19,4 +19,12 @@ namespace feng3d
     }
 
     shaderConfig.shaders["segment"].cls = SegmentUniforms;
+    shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES, enableBlend: true };
+
+    export interface DefaultMaterial
+    {
+        "Segment-Material": Material;
+    }
+
+    Material.setDefault("Segment-Material", { shaderName: "segment" });
 }

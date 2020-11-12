@@ -1,14 +1,14 @@
 namespace feng3d
 {
 
-    export interface GeometryMap { CubeGeometry: CubeGeometry }
+    export interface GeometryTypes { CubeGeometry: CubeGeometry }
 
     /**
      * 立（长）方体几何体
      */
     export class CubeGeometry extends Geometry
     {
-        __class__: "feng3d.CubeGeometry" = "feng3d.CubeGeometry";
+        __class__: "feng3d.CubeGeometry";
 
         name = "Cube";
 
@@ -17,130 +17,67 @@ namespace feng3d
          */
         @serialize
         @oav()
-        get width()
-        {
-            return this._width;
-        }
-        set width(v)
-        {
-            if (this._width == v) return;
-            this._width = v;
-            this.invalidateGeometry();
-        }
-        private _width = 1;
+        @watch("invalidateGeometry")
+        width = 1;
 
         /**
          * 高度
          */
         @serialize
         @oav()
-        get height()
-        {
-            return this._height;
-        }
-        set height(v)
-        {
-            if (this._height == v) return;
-            this._height = v;
-            this.invalidateGeometry();
-        }
-        private _height = 1;
+        @watch("invalidateGeometry")
+        height = 1;
 
         /**
          * 深度
          */
         @serialize
         @oav()
-        get depth()
-        {
-            return this._depth;
-        }
-        set depth(v)
-        {
-            if (this._depth == v) return;
-            this._depth = v;
-            this.invalidateGeometry();
-        }
-        private _depth = 1;
+        @watch("invalidateGeometry")
+        depth = 1;
 
         /**
          * 宽度方向分割数
          */
         @serialize
         @oav()
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(v)
-        {
-            if (this._segmentsW == v) return;
-            this._segmentsW = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 1;
+        @watch("invalidateGeometry")
+        segmentsW = 1;
 
         /**
          * 高度方向分割数
          */
         @serialize
         @oav()
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(v)
-        {
-            if (this._segmentsH == v) return;
-            this._segmentsH = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 1;
+        @watch("invalidateGeometry")
+        segmentsH = 1;
 
         /**
          * 深度方向分割数
          */
         @serialize
         @oav()
-        get segmentsD()
-        {
-            return this._segmentsD;
-        }
-        set segmentsD(v)
-        {
-            if (this._segmentsD == v) return;
-            this._segmentsD = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsD = 1;
+        @watch("invalidateGeometry")
+        segmentsD = 1;
 
         /**
          * 是否为6块贴图，默认true。
          */
         @serialize
         @oav()
-        get tile6()
-        {
-            return this._tile6;
-        }
-        set tile6(v)
-        {
-            if (this._tile6 == v) return;
-            this._tile6 = v;
-            this.invalidateGeometry();
-        }
-        private _tile6 = false;
+        @watch("invalidateGeometry")
+        tile6 = false;
 
         protected buildGeometry()
         {
             var vertexPositionData = this.buildPosition();
-            this.setVAData("a_position", vertexPositionData, 3);
+            this.positions = vertexPositionData;
             var vertexNormalData = this.buildNormal();
-            this.setVAData("a_normal", vertexNormalData, 3);
+            this.normals = vertexNormalData;
             var vertexTangentData = this.buildTangent();
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.tangents = vertexTangentData;
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
             var indices = this.buildIndices();
             this.indices = indices;
         }
@@ -582,5 +519,20 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Cube", Geometry.cube = serialization.setValue(new CubeGeometry(), { name: "Cube", assetId: "Cube", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Cube: CubeGeometry;
+    }
+
+    Geometry.setDefault("Cube", new CubeGeometry());
+
+    GameObject.registerPrimitive("Cube", (g) =>
+    {
+        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cube");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Cube: GameObject;
+    }
 }

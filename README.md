@@ -8,14 +8,24 @@
 1. 支持脚本，你能够在这里实现所有你想做的事情。
 1. 支持自定义材质，只需要你提供shader代码以及所有到的数据结构就可以实现你想要的渲染效果。
 
-## 文档
-    http://feng3d.com
+## 贡献
 
-## Issues
-    https://github.com/feng3d-labs/editor/issues
+首先感谢天底下所有愿意奉献的人！
+1. 如果你有什么想法或者需求欢迎在 [issues](https://gitee.com/feng3d/feng3d/issues) 发布
 
-## 在线版本
-    http://feng3d.com/editor/index.html
+## 项目托管
+1. gitee 提供了不亚于github的功能。除了知名度，国内访问速度非常快，开发效率，作为主要仓库。
+    * https://gitee.com/feng3d
 
-## 本地版本
-    https://github.com/feng3d-labs/editor/releases
+1. github 国内访问较慢，有时甚至无法访问，放弃作为主仓库，将会不定期从gitee上同步。
+    * https://github.com/feng3d-labs
+
+## 关于
+
+网站：http://feng3d.com/
+
+getee：https://gitee.com/feng3d
+
+github：https://github.com/feng3d-labs
+
+feng3d交流QQ群:519732759

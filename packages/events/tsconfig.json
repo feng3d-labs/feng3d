@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+        "composite": true,
+        "strict": true,
+        "experimentalDecorators": true,
+        "outFile": "out/evnet.js",
+        "lib": [
+            "ES2015",
+        ],
+    },
+    "files": [
+        // 事件模块
+        "src/FEvent.ts",
+        "src/EventDispatcher.ts",
+        "src/ObjectEvent.ts",
+    ]
+}

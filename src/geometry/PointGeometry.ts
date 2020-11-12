@@ -1,7 +1,7 @@
 namespace feng3d
 {
 
-    export interface GeometryMap { PointGeometry: PointGeometry }
+    export interface GeometryTypes { PointGeometry: PointGeometry }
 
     /**
      * 点几何体
@@ -9,7 +9,7 @@ namespace feng3d
     export class PointGeometry extends Geometry
     {
 
-        __class__: "feng3d.PointGeometry" = "feng3d.PointGeometry";
+        __class__: "feng3d.PointGeometry";
 
         /**
          * 点数据列表
@@ -17,17 +17,8 @@ namespace feng3d
          */
         @serialize
         @oav()
-        get points()
-        {
-            return this._points;
-        }
-        set points(v)
-        {
-            if (this._points == v) return;
-            this._points = v;
-            this.invalidateGeometry();
-        }
-        private _points: PointInfo[] = [];
+        @watch("invalidateGeometry")
+        points: PointInfo[] = [];
 
         /**
          * 构建几何体
@@ -60,7 +51,7 @@ namespace feng3d
             this.uvs = uvData;
             this.normals = normalData;
             this.indices = indices;
-            this.setVAData("a_color", colors, 4)
+            this.colors = colors;
         }
     }
 
@@ -74,6 +65,4 @@ namespace feng3d
         normal?: Vector3;
         uv?: Vector2;
     }
-
-    AssetData.addAssetData("PointGeometry", Geometry.point = serialization.setValue(new PointGeometry(), { name: "PointGeometry", assetId: "PointGeometry", points: [], hideFlags: HideFlags.NotEditable }));
 }

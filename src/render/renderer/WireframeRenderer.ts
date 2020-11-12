@@ -23,28 +23,28 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera)
+        draw(gl: GL, scene: Scene, camera: Camera)
         {
-            var unblenditems = scene3d.getPickCache(camera).unblenditems;
+            var unblenditems = scene.getPickCache(camera).unblenditems;
 
-            var wireframes = unblenditems.reduce((pv: WireframeComponent[], cv) => { var wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push(wireframe); return pv; }, [])
+            var wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) => { var wireframe = cv.getComponent("WireframeComponent"); if (wireframe) pv.push({ wireframe: wireframe, renderable: cv }); return pv; }, [])
 
             if (wireframes.length == 0)
                 return;
 
             wireframes.forEach(element =>
             {
-                this.drawGameObject(gl, element.gameObject, scene3d, camera, element.color);            //
+                this.drawGameObject(gl, element.renderable, scene, camera, element.wireframe.color);            //
             });
         }
 
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor = new Color4())
+        drawGameObject(gl: GL, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
         {
-            var renderAtomic = gameObject.renderAtomic;
-            gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+            var renderAtomic = renderable.renderAtomic;
+            renderable.beforeRender(renderAtomic, scene, camera);
 
             var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == RenderMode.POINTS
@@ -62,7 +62,7 @@ namespace feng3d
             uniforms.u_viewProjection = camera.viewProjection;
             uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-            uniforms.u_cameraPos = camera.transform.scenePosition;
+            uniforms.u_cameraPos = camera.transform.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
 
@@ -71,6 +71,7 @@ namespace feng3d
 
             //
             var oldIndexBuffer = renderAtomic.indexBuffer;
+            if (oldIndexBuffer.count < 3) return;
             if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count)
             {
                 var wireframeindices: number[] = [];
@@ -93,7 +94,7 @@ namespace feng3d
 
             //
             this.renderAtomic.shader = renderAtomic.wireframeShader;
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
             this.renderAtomic.shader = null;
             //
         }

@@ -28,7 +28,7 @@ namespace feng3d
                 object.addChild(gameObject);
             }
 
-            dispatcher.dispatch("asset.parsed", object);
+            globalDispatcher.dispatch("asset.parsed", object);
 
             completed && completed(object);
         }
@@ -55,7 +55,7 @@ namespace feng3d
     {
         var gameObject = new GameObject();
         gameObject.name = subObj.g || gameObject.name;
-        var model = gameObject.addComponent(Model);
+        var model = gameObject.addComponent("Renderable");
         if (materials && materials[subObj.material])
             model.material = materials[subObj.material];
 
@@ -80,15 +80,15 @@ namespace feng3d
             }
         }
         geometry.indices = indices;
-        geometry.setVAData("a_position", vertices, 3);
+        geometry.positions = vertices;
 
         if (normals.length > 0)
-            geometry.setVAData("a_normal", normals, 3);
+            geometry.normals = normals;
 
         if (uvs.length > 0)
-            geometry.setVAData("a_uv", uvs, 2);
+            geometry.uvs = uvs;
 
-        dispatcher.dispatch("asset.parsed", geometry);
+        globalDispatcher.dispatch("asset.parsed", geometry);
 
         return gameObject;
 

@@ -6,6 +6,7 @@ namespace feng3d
     /**
      * 聚光灯光源
      */
+    @RegisterComponent()
     export class SpotLight extends Light
     {
         lightType = LightType.Spot;
@@ -15,34 +16,16 @@ namespace feng3d
          */
         @oav()
         @serialize
-        get range()
-        {
-            return this._range;
-        }
-        set range(v)
-        {
-            if (this._range == v) return;
-            this._range = v;
-            this.invalidRange();
-        }
-        private _range = 10;
+        @watch("_invalidRange")
+        range = 10;
 
         /**
          * 
          */
         @oav()
         @serialize
-        get angle()
-        {
-            return this._angle;
-        }
-        set angle(v)
-        {
-            if (this._angle == v) return;
-            this._angle = v;
-            this.invalidAngle();
-        }
-        private _angle = 60;
+        @watch("_invalidAngle")
+        angle = 60;
 
         /**
          * 半影.
@@ -72,16 +55,26 @@ namespace feng3d
             this.perspectiveLens = this.shadowCamera.lens = new PerspectiveLens(this.angle, 1, 0.1, this.range);
         }
 
-        private invalidRange()
+        private _invalidRange()
         {
             if (this.shadowCamera)
                 this.shadowCamera.lens.far = this.range;
         }
 
-        private invalidAngle()
+        private _invalidAngle()
         {
             if (this.perspectiveLens)
                 this.perspectiveLens.fov = this.angle;
         }
+    }
+
+    GameObject.registerPrimitive("Spot light", (g) =>
+    {
+        g.addComponent("SpotLight");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        "Spot light": GameObject;
     }
 }

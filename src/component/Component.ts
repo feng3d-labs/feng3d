@@ -1,15 +1,41 @@
 namespace feng3d
 {
+    /**
+     * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+     */
+    export const componentMap: ComponentMap = <any>{};
+
+    /**
+     * 注册组件
+     * 
+     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 GameObject.getComponent 等方法。
+     * 
+     * @param component 组件名称，默认使用类名称
+     */
+    export function RegisterComponent(component?: string)
+    {
+        return (constructor: Function) =>
+        {
+            component = component || constructor["name"];
+            componentMap[<string>component] = constructor;
+        }
+    }
+
+    /**
+     * 组件名称与类定义映射，新建组件一般都需扩展该接口。
+     */
     export interface ComponentMap { Component: Component }
-    export type Components = ComponentMap[keyof ComponentMap];
+
+    export type ComponentNames = keyof ComponentMap;
+    export type Components = ComponentMap[ComponentNames];
 
     export interface Component
     {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
     }
 
 	/**
@@ -64,14 +90,19 @@ namespace feng3d
         // Functions
         //------------------------------------------
 		/**
-		 * 创建一个组件容器
+		 * 创建一个组件
 		 */
         constructor()
         {
             super();
-            this.onAll(this._onAllListener, this);
+            this.onAny(this._onAnyListener, this);
         }
 
+        /**
+         * 初始化组件
+         * 
+         * 在添加到GameObject时立即被调用。
+         */
         init()
         {
         }
@@ -81,7 +112,7 @@ namespace feng3d
          * @param type				The type of Component to retrieve.
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Components>(type: Constructor<T>): T
+        getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
         {
             return this.gameObject.getComponent(type);
         }
@@ -91,7 +122,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type?: Constructor<T>): T[]
+        getComponents<T extends ComponentNames>(type?: T): ComponentMap[T][]
         {
             return this.gameObject.getComponents(type);
         }
@@ -101,7 +132,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
+        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
         {
             return this.gameObject.getComponentsInChildren(type, filter, result);
         }
@@ -111,7 +142,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
+        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
         {
             return this.gameObject.getComponentsInParents(type, result);
         }
@@ -125,7 +156,7 @@ namespace feng3d
             this._disposed = true;
         }
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
 
         }
@@ -133,7 +164,7 @@ namespace feng3d
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
-        private _onAllListener(e: Event<any>)
+        private _onAnyListener(e: Event<any>)
         {
             if (this._gameObject)
                 this._gameObject.dispatchEvent(e);

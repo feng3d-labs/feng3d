@@ -1,0 +1,35 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/events"
+    },
+    {
+      "path": "packages/polyfill"
+    },
+    {
+      "path": "packages/watcher"
+    },
+    {
+      "path": "packages/math"
+    },
+    {
+      "path": "packages/objectview"
+    },
+    {
+      "path": "packages/serialization"
+    },
+    {
+      "path": "packages/ds"
+    },
+    {
+      "path": "packages/shortcut"
+    },
+    {
+      "path": "packages/render"
+    },
+    {
+      "path": "./tsconfig.json"
+    },
+  ]
+}

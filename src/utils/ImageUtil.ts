@@ -36,20 +36,8 @@ namespace feng3d
          */
         init(width = 1, height = 1, fillcolor = new Color4(0, 0, 0, 0))
         {
-            if (typeof document == "undefined") return;
-
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle = Color3.fromColor4(fillcolor).toHexString();
-            var backAlpha = ctx.globalAlpha;
-            ctx.globalAlpha = fillcolor.a;
-            ctx.fillRect(0, 0, width, height);
-            ctx.globalAlpha = backAlpha;
-
-            this.imageData = ctx.getImageData(0, 0, width, height);
+            this.imageData = new ImageData(width, height);
+            this.fillRect(new Rectangle(0, 0, width, height), fillcolor);
         }
 
         /**
@@ -64,7 +52,7 @@ namespace feng3d
             canvasImg.height = image.height;
 
             var ctxt = canvasImg.getContext('2d');
-            debuger && console.assert(!!ctxt);
+            console.assert(!!ctxt);
             ctxt.drawImage(image, 0, 0);
             this.imageData = ctxt.getImageData(0, 0, image.width, image.height);//读取整张图片的像素。
             return this;
@@ -228,12 +216,7 @@ namespace feng3d
          */
         drawDefaultParticle(size = 64)
         {
-            var canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, size, size);
+            var imageData = new ImageData(size, size);
 
             var half = size / 2;
             for (let i = 0; i < size; i++)
@@ -241,16 +224,13 @@ namespace feng3d
                 for (let j = 0; j < size; j++)
                 {
                     var l = Math.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
-                    // l = l * l;
                     var f = 1 - l;
                     f = f * f;
-                    // f = f * f * f;
-                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
 
                     var pos = (i + j * size) * 4;
-                    imageData.data[pos] = 255;
-                    imageData.data[pos + 1] = 255;
-                    imageData.data[pos + 2] = 255;
+                    imageData.data[pos] = f * 255;
+                    imageData.data[pos + 1] = f * 255;
+                    imageData.data[pos + 2] = f * 255;
                     imageData.data[pos + 3] = f * 255;
                 }
             }
@@ -344,6 +324,8 @@ namespace feng3d
             rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
             var range = between0And1 ? [1, 0] : [1, -1];
 
+            var prepos = new Vector2();
+            var curpos = new Vector2();
             //
             for (let i = 0; i < rect.width; i++)
             {
@@ -353,7 +335,16 @@ namespace feng3d
                 y = Math.mapLinear(y, range[0], range[1], 0, 1);
 
                 var j = Math.round(y * (rect.height - 1));
-                this.setPixel(rect.x + i, rect.y + j, color);
+
+                //
+                curpos.x = rect.x + i;
+                curpos.y = rect.y + j;
+                if (i > 0)
+                {
+                    this.drawLine(prepos, curpos, color);
+                }
+                prepos.x = curpos.x;
+                prepos.y = curpos.y;
             }
             return this;
         }
@@ -370,6 +361,10 @@ namespace feng3d
             rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
             var range = between0And1 ? [1, 0] : [1, -1];
 
+            var prepos0 = new Vector2();
+            var curpos0 = new Vector2();
+            var prepos1 = new Vector2();
+            var curpos1 = new Vector2();
             //
             for (let i = 0; i < rect.width; i++)
             {
@@ -383,10 +378,21 @@ namespace feng3d
                 y0 = Math.round(y0 * (rect.height - 1));
                 y1 = Math.round(y1 * (rect.height - 1));
 
-                this.drawLine(new feng3d.Vector2(rect.x + i, rect.y + y0), new feng3d.Vector2(rect.x + i, rect.y + y1), fillcolor);
+                curpos0.x = rect.x + i;
+                curpos0.y = rect.y + y0;
+                curpos1.x = rect.x + i;
+                curpos1.y = rect.y + y1;
 
-                this.drawPixel(rect.x + i, rect.y + y0, curveColor);
-                this.drawPixel(rect.x + i, rect.y + y1, curveColor);
+                this.drawLine(new feng3d.Vector2(rect.x + i, rect.y + y0), new feng3d.Vector2(rect.x + i, rect.y + y1), fillcolor);
+                if (i > 0)
+                {
+                    this.drawLine(prepos0, curpos0, curveColor);
+                    this.drawLine(prepos1, curpos1, curveColor);
+                }
+                prepos0.x = curpos0.x;
+                prepos0.y = curpos0.y;
+                prepos1.x = curpos1.x;
+                prepos1.y = curpos1.y;
 
             }
             return this;

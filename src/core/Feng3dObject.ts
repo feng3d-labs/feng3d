@@ -31,7 +31,7 @@ namespace feng3d
             super();
             Object.defineProperty(this, "uuid", { value: Math.uuid() });
             Object.defineProperty(this, "disposed", { value: false, configurable: true });
-            debuger && console.assert(!Feng3dObject.objectLib[this.uuid], `唯一标识符存在重复！？`);
+            console.assert(!Feng3dObject.objectLib[this.uuid], `唯一标识符存在重复！？`);
             Feng3dObject.objectLib[this.uuid] = this;
         }
 
@@ -76,4 +76,22 @@ namespace feng3d
         private static objectLib: { [guid: string]: Feng3dObject };
     }
     Object.defineProperty(Feng3dObject, "objectLib", { value: {} });
+
+    serialization.serializeHandlers.push(
+        // 处理 Feng3dObject
+        {
+            priority: 0,
+            handler: function (target, source, property)
+            {
+                var spv = source[property];
+                if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
+                {
+                    return true;
+                }
+                return false;
+            }
+        },
+    );
+
+    
 }

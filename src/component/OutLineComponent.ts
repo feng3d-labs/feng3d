@@ -2,9 +2,11 @@ namespace feng3d
 {
     export interface ComponentMap { OutLineComponent: OutLineComponent; }
 
+    @AddComponentMenu("Rendering/OutLineComponent")
+    @RegisterComponent()
     export class OutLineComponent extends Component
     {
-        __class__: "feng3d.OutLineComponent" = "feng3d.OutLineComponent";
+        __class__: "feng3d.OutLineComponent";
 
         @oav()
         @serialize
@@ -18,7 +20,7 @@ namespace feng3d
         @serialize
         outlineMorphFactor = 0.0;
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             renderAtomic.uniforms.u_outlineSize = this.size;
             renderAtomic.uniforms.u_outlineColor = this.color;

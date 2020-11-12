@@ -2,69 +2,23 @@ namespace feng3d
 {
     /**
      * 帧缓冲对象
-
      */
     export class FrameBufferObject
     {
-        get OFFSCREEN_WIDTH()
-        {
-            return this._OFFSCREEN_WIDTH;
-        }
-        set OFFSCREEN_WIDTH(v)
-        {
-            if (this._OFFSCREEN_WIDTH == v) return;
-            this._OFFSCREEN_WIDTH = v;
-            this.invalidateSize();
-        }
-        private _OFFSCREEN_WIDTH = 1024;
+        @watch("invalidateSize")
+        OFFSCREEN_WIDTH = 1024;
 
-        get OFFSCREEN_HEIGHT()
-        {
-            return this._OFFSCREEN_HEIGHT;
-        }
-        set OFFSCREEN_HEIGHT(v)
-        {
-            if (this._OFFSCREEN_HEIGHT == v) return;
-            this._OFFSCREEN_HEIGHT = v;
-            this.invalidateSize();
-        }
-        private _OFFSCREEN_HEIGHT = 1024;
+        @watch("invalidateSize")
+        OFFSCREEN_HEIGHT = 1024;
 
-        get frameBuffer()
-        {
-            return this._frameBuffer;
-        }
-        set frameBuffer(v)
-        {
-            if (this._frameBuffer == v) return;
-            this._frameBuffer = v;
-            this.invalidate();
-        }
-        private _frameBuffer: FrameBuffer;
+        @watch("invalidate")
+        frameBuffer: FrameBuffer;
 
-        get texture()
-        {
-            return this._texture;
-        }
-        set texture(v)
-        {
-            if (this._texture == v) return;
-            this._texture = v;
-            this.invalidate();
-        }
-        private _texture: RenderTargetTexture2D;
+        @watch("invalidate")
+        texture: RenderTargetTexture2D;
 
-        get depthBuffer()
-        {
-            return this._depthBuffer;
-        }
-        set depthBuffer(v)
-        {
-            if (this._depthBuffer == v) return;
-            this._depthBuffer = v;
-            this.invalidate();
-        }
-        private _depthBuffer: RenderBuffer;
+        @watch("invalidate")
+        depthBuffer: RenderBuffer;
 
         constructor(width = 1024, height = 1024)
         {
@@ -75,20 +29,21 @@ namespace feng3d
             this.OFFSCREEN_HEIGHT = height;
         }
 
-        active(gl: GL)
+        static active(gl: GL, frameBufferObject: FrameBufferObject)
         {
-            if (this._invalid)
+            if (frameBufferObject._invalid)
             {
-                this._invalid = false;
-                this.clear();
+                frameBufferObject._invalid = false;
+                this.clear(frameBufferObject);
             }
 
-            var obj = this._map.get(gl);
+            gl.cache.frameBufferObjects = gl.cache.frameBufferObjects || new Map();
+            var obj = gl.cache.frameBufferObjects.get(frameBufferObject);
             if (!obj)
             {
-                var framebuffer = this.frameBuffer.active(gl);
-                var texture = this.texture.active(gl);
-                var depthBuffer = this.depthBuffer.active(gl);
+                var framebuffer = FrameBuffer.active(gl, frameBufferObject.frameBuffer);
+                var texture = Texture.active(gl, frameBufferObject.texture);
+                var depthBuffer = RenderBuffer.active(gl, frameBufferObject.depthBuffer);
 
                 // 绑定帧缓冲区对象
                 gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -101,7 +56,7 @@ namespace feng3d
                 var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
                 if (gl.FRAMEBUFFER_COMPLETE !== e)
                 {
-                    debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                    alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
 
@@ -109,7 +64,7 @@ namespace feng3d
                 gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
                 obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
-                this._map.set(gl, obj);
+                gl.cache.frameBufferObjects.set(frameBufferObject, obj);
             } else
             {
                 gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
@@ -136,10 +91,6 @@ namespace feng3d
             this._invalid = true;
         }
 
-        private _map = new Map<GL, {
-            framebuffer: WebGLFramebuffer, texture: WebGLTexture, depthBuffer: WebGLRenderbuffer
-        }>();
-
         private invalidateSize()
         {
             if (this.texture)
@@ -155,10 +106,28 @@ namespace feng3d
             this._invalid = true;
         }
 
-        private clear()
+        static clear(frameBufferObject: FrameBufferObject)
         {
-            this._map.clear();
+            GL.glList.forEach(gl =>
+            {
+                gl.cache.frameBufferObjects = gl.cache.frameBufferObjects || new Map();
+
+                var buffer = gl.cache.frameBufferObjects.get(frameBufferObject);
+                if (buffer)
+                {
+                    gl.cache.frameBufferObjects.delete(frameBufferObject);
+                }
+            });
         }
     }
 
+    export interface GLCache
+    {
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
+        frameBufferObjects: Map<FrameBufferObject, {
+            framebuffer: WebGLFramebuffer, texture: WebGLTexture, depthBuffer: WebGLRenderbuffer
+        }>;
+    }
 }

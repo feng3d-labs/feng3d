@@ -1,10 +1,10 @@
 namespace feng3d
 {
-    export interface UniformsMap { terrain: TerrainUniforms }
+    export interface UniformsTypes { terrain: TerrainUniforms }
 
     export class TerrainUniforms extends StandardUniforms
     {
-        __class__: "feng3d.TerrainUniforms" = "feng3d.TerrainUniforms";
+        __class__: "feng3d.TerrainUniforms";
 
         @serialize
         @oav({ block: "terrain" })
@@ -29,5 +29,10 @@ namespace feng3d
 
     shaderConfig.shaders["terrain"].cls = TerrainUniforms;
 
-    AssetData.addAssetData("Terrain-Material", Material.terrain = serialization.setValue(new Material(), { name: "Terrain-Material", assetId: "Terrain-Material", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultMaterial
+    {
+        "Terrain-Material": Material;
+    }
+
+    Material.setDefault("Terrain-Material", { shaderName: "terrain" });
 }

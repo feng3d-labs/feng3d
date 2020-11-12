@@ -6,6 +6,12 @@ namespace feng3d
     export abstract class FileAsset
     {
         /**
+         * 资源路径
+         */
+        @serialize
+        assetPath: string;
+
+        /**
          * 资源编号
          */
         @serialize
@@ -45,15 +51,20 @@ namespace feng3d
          */
         get extenson()
         {
-            debuger && console.assert(!!this.assetPath);
-            var ext = pathUtils.getExtension(this.assetPath);
+            console.assert(!!this.assetPath);
+            var ext = pathUtils.extname(this.assetPath);
             return ext;
         }
 
         /**
          * 父资源
          */
-        parentAsset: FolderAsset;
+        get parentAsset()
+        {
+            var dir = pathUtils.dirname(this.assetPath);
+            var parent = this.rs.getAssetByPath(dir) as FolderAsset;
+            return parent;
+        }
 
         /**
          * 文件名称
@@ -62,16 +73,10 @@ namespace feng3d
          */
         get fileName()
         {
-            debuger && console.assert(!!this.assetPath);
+            console.assert(!!this.assetPath);
             var fn = pathUtils.getName(this.assetPath);
             return fn;
         }
-
-        /**
-         * 资源路径
-         */
-        @serialize
-        assetPath: string;
 
         /**
          * 资源对象
@@ -98,7 +103,7 @@ namespace feng3d
                 {
                     this.read(err =>
                     {
-                        debuger && console.assert(!err);
+                        console.assert(!err);
                         this.getAssetData(callback);
                     });
                 }
@@ -191,15 +196,8 @@ namespace feng3d
                 }
                 this.deleteFile((err) =>
                 {
-                    // 删除父子资源关系
-                    if (this.parentAsset)
-                    {
-                        this.parentAsset.childrenAssets.delete(this);
-                        this.parentAsset = null;
-                    }
                     // 删除映射
-                    delete rs.idMap[this.assetId];
-                    delete rs.pathMap[this.assetPath];
+                    rs.deleteAssetById(this.assetId);
                     callback && callback();
                 });
             });
@@ -277,7 +275,7 @@ namespace feng3d
             // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
             ticker.once(1000, () =>
             {
-                if (this.rs.getAsset(this.assetId) == null)
+                if (this.rs.getAssetById(this.assetId) == null)
                 {
                     this.deletePreview();
                 }

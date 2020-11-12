@@ -20,16 +20,16 @@ namespace feng3d
         {
             var gameObject = new GameObject();
             gameObject.name = md5MeshData.name;
-            gameObject.addComponent(Animation);
+            gameObject.addComponent("Animation");
             gameObject.transform.rx = -90;
 
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            debuger && console.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
+            console.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
 
             var skeletonjoints = this.createSkeleton(md5MeshData.joints);
 
-            var skeletonComponent = gameObject.addComponent(SkeletonComponent);
+            var skeletonComponent = gameObject.addComponent("SkeletonComponent");
             skeletonComponent.joints = skeletonjoints;
 
             for (var i = 0; i < md5MeshData.meshs.length; i++)
@@ -39,14 +39,14 @@ namespace feng3d
 
                 var skeletonGameObject = new GameObject();
 
-                var skinnedModel: SkinnedModel = skeletonGameObject.addComponent(SkinnedModel);
+                var skinnedModel = skeletonGameObject.addComponent("SkinnedMeshRenderer");
                 skinnedModel.geometry = geometry;
                 skinnedModel.skinSkeleton = skinSkeleton;
 
                 gameObject.addChild(skeletonGameObject);
             }
 
-            dispatcher.dispatch("asset.parsed", gameObject);
+            globalDispatcher.dispatch("asset.parsed", gameObject);
             completed && completed(gameObject);
         }
 
@@ -123,10 +123,10 @@ namespace feng3d
             var t = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
-            var matrix3D = quat.toMatrix3D();
-            matrix3D.appendTranslation(-position[0], position[1], position[2]);
+            var matrix = quat.toMatrix();
+            matrix.appendTranslation(-position[0], position[1], position[2]);
             //
-            skeletonJoint.matrix3D = matrix3D;
+            skeletonJoint.matrix = matrix;
             return skeletonJoint;
         }
 
@@ -183,8 +183,8 @@ namespace feng3d
                         weight = weights[vertex.startWeight + j];
                         if (weight.bias > 0)
                         {
-                            bindPose = skeleton.joints[weight.joint].matrix3D;
-                            pos = bindPose.transformVector(new Vector3(-weight.pos[0], weight.pos[1], weight.pos[2]));
+                            bindPose = skeleton.joints[weight.joint].matrix;
+                            pos = bindPose.transformPoint3(new Vector3(-weight.pos[0], weight.pos[1], weight.pos[2]));
                             vertices[i * 3] += pos.x * weight.bias;
                             vertices[i * 3 + 1] += pos.y * weight.bias;
                             vertices[i * 3 + 2] += pos.z * weight.bias;
@@ -223,13 +223,13 @@ namespace feng3d
             //更新索引数据
             geometry.indices = indices;
             //更新顶点坐标与uv数据
-            geometry.setVAData("a_position", vertices, 3);
-            geometry.setVAData("a_uv", uvs, 2);
+            geometry.positions = vertices;
+            geometry.uvs = uvs;
             //更新关节索引与权重索引
-            geometry.setVAData("a_jointindex0", jointIndices0, 4);
-            geometry.setVAData("a_jointweight0", jointWeights0, 4);
-            geometry.setVAData("a_jointindex1", jointIndices1, 4);
-            geometry.setVAData("a_jointweight1", jointWeights1, 4);
+            geometry.skinIndices = jointIndices0;
+            geometry.skinWeights = jointWeights0;
+            geometry.skinIndices1 = jointIndices1;
+            geometry.skinWeights1 = jointWeights1;
             return geometry;
         }
 

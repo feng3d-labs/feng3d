@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { SegmentGeometry: SegmentGeometry }
+    export interface GeometryTypes { SegmentGeometry: SegmentGeometry }
 
     /**
      * 线段组件
@@ -8,25 +8,31 @@ namespace feng3d
     export class SegmentGeometry extends Geometry
     {
 
-        __class__: "feng3d.SegmentGeometry" = "feng3d.SegmentGeometry";
+        __class__: "feng3d.SegmentGeometry";
+
+        name = "Segment";
 
 		/**
 		 * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
 		 */
         @serialize
-        @oav()
-        get segments()
+        @oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: () => { return new Segment(); } } })
+        @watch("invalidateGeometry")
+        segments: Segment[] = [];
+
+        /**
+         * 添加线段
+         * 
+         * @param segment 线段
+         */
+        addSegment(segment: Partial<Segment>)
         {
-            return this._segments;
-        }
-        set segments(v)
-        {
-            if (this._segments == v) return;
-            this._segments = v;
+            var s = new Segment();
+            serialization.setValue(s, segment);
+            this.segments.push(s);
             this.invalidateGeometry();
         }
-        private _segments: Segment[] = [];
 
         constructor()
         {
@@ -57,33 +63,55 @@ namespace feng3d
                     endColor.r, endColor.g, endColor.b, endColor.a);
             }
 
-            this.setVAData("a_position", positionData, 3);
-            this.setVAData("a_color", colorData, 4);
+            this.positions = positionData;
+            this.colors = colorData;
             this.indices = indices;
         }
     }
 
     /**
      * 线段
-
      */
-    export interface Segment
+    export class Segment
     {
         /**
          * 起点坐标
          */
-        start?: Vector3;
+        @serialize
+        @oav({ tooltip: "起点坐标" })
+        start = new Vector3();
+
         /**
          * 终点坐标
          */
-        end?: Vector3;
+        @serialize
+        @oav({ tooltip: "终点坐标" })
+        end = new Vector3();
+
         /**
          * 起点颜色
          */
-        startColor?: Color4;
+        @serialize
+        @oav({ tooltip: "起点颜色" })
+        startColor = new Color4();
+
         /**
-         * 线段厚度
+         * 终点颜色
          */
-        endColor?: Color4;
+        @serialize
+        @oav({ tooltip: "终点颜色" })
+        endColor = new Color4();
+    }
+
+    GameObject.registerPrimitive("Segment", (g) =>
+    {
+        var model = g.addComponent("MeshRenderer");
+        model.geometry = new SegmentGeometry();
+        model.material = Material.getDefault("Segment-Material");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Segment: GameObject;
     }
 }

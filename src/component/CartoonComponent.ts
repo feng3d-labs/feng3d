@@ -6,10 +6,12 @@ namespace feng3d
     /**
      * 参考
      */
+    @AddComponentMenu("Rendering/CartoonComponent")
+    @RegisterComponent()
     export class CartoonComponent extends Component
     {
 
-        __class__: "feng3d.CartoonComponent" = "feng3d.CartoonComponent";
+        __class__: "feng3d.CartoonComponent";
 
         @oav()
         @serialize
@@ -52,7 +54,7 @@ namespace feng3d
         }
         _cartoon_Anti_aliasing = false;
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
             renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;

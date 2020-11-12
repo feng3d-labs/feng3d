@@ -11,11 +11,11 @@ namespace feng3d
         LINEAR = 3
     }
 
-    export interface UniformsMap { standard: StandardUniforms }
+    export interface UniformsTypes { standard: StandardUniforms }
 
     export class StandardUniforms
     {
-        __class__: "feng3d.StandardUniforms" | "feng3d.TerrainUniforms" | "feng3d.ParticleUniforms" = "feng3d.StandardUniforms";
+        __class__: "feng3d.StandardUniforms" | "feng3d.TerrainUniforms" | "feng3d.ParticleUniforms";
         /**
          * 点绘制时点的尺寸
          */
@@ -138,5 +138,10 @@ namespace feng3d
 
     shaderConfig.shaders["standard"].cls = StandardUniforms;
 
-    AssetData.addAssetData("Default-Material", Material.default = serialization.setValue(new Material(), { name: "Default-Material", assetId: "Default-Material", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultMaterial
+    {
+        "Default-Material": Material;
+    }
+
+    Material.setDefault("Default-Material", { shaderName: "standard" });
 }

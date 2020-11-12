@@ -7,21 +7,14 @@ namespace feng3d
     /**
      * 声音监听器
      */
+    @AddComponentMenu("Audio/AudioListener")
+    @RegisterComponent()
     export class AudioListener extends Behaviour
     {
         gain: GainNode;
 
-        get enabled()
-        {
-            return this._enabled;
-        }
-        set enabled(v)
-        {
-            if (this._enabled == v) return;
-            this._enabled = v;
-            this.enabledChanged();
-        }
-        private _enabled = true;
+        @watch("_enabledChanged")
+        enabled = true;
 
         /**
          * 音量
@@ -44,37 +37,44 @@ namespace feng3d
             super();
             this.gain = audioCtx.createGain();
             this.gain.connect(audioCtx.destination);
-            this.enabledChanged();
+            this._enabledChanged();
         }
 
         init()
         {
             super.init();
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this.onScenetransformChanged();
+            this.on("scenetransformChanged", this._onScenetransformChanged, this);
+            this._onScenetransformChanged();
         }
 
-        private onScenetransformChanged()
+        private _onScenetransformChanged()
         {
             var localToWorldMatrix = this.transform.localToWorldMatrix;
-            var position = localToWorldMatrix.position;
-            var forward = localToWorldMatrix.forward;
-            var up = localToWorldMatrix.up;
+            var position = localToWorldMatrix.getPosition();
+            var forward = localToWorldMatrix.getAxisZ();
+            var up = localToWorldMatrix.getAxisY();
             //
             var listener = audioCtx.listener;
             // feng3d中为左手坐标系，listener中使用的为右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/AudioListener
-            listener.positionX.value = position.x;
-            listener.positionY.value = position.y;
-            listener.positionZ.value = -position.z;
-            listener.forwardX.value = forward.x;
-            listener.forwardY.value = forward.y;
-            listener.forwardZ.value = -forward.z;
-            listener.upX.value = up.x;
-            listener.upY.value = up.y;
-            listener.upZ.value = -up.z;
+            if (listener.forwardX)
+            {
+                listener.positionX.setValueAtTime(position.x, audioCtx.currentTime);
+                listener.positionY.setValueAtTime(position.y, audioCtx.currentTime);
+                listener.positionZ.setValueAtTime(-position.z, audioCtx.currentTime);
+                listener.forwardX.setValueAtTime(forward.x, audioCtx.currentTime);
+                listener.forwardY.setValueAtTime(forward.y, audioCtx.currentTime);
+                listener.forwardZ.setValueAtTime(-forward.z, audioCtx.currentTime);
+                listener.upX.setValueAtTime(up.x, audioCtx.currentTime);
+                listener.upY.setValueAtTime(up.y, audioCtx.currentTime);
+                listener.upZ.setValueAtTime(-up.z, audioCtx.currentTime);
+            } else
+            {
+                listener.setOrientation(forward.x, forward.y, -forward.z, up.x, up.y, -up.z);
+                listener.setPosition(position.x, position.y, -position.z);
+            }
         }
 
-        private enabledChanged()
+        private _enabledChanged()
         {
             if (!this.gain) return;
             if (this.enabled)
@@ -88,7 +88,7 @@ namespace feng3d
 
         dispose()
         {
-            this.off("scenetransformChanged", this.onScenetransformChanged, this);
+            this.off("scenetransformChanged", this._onScenetransformChanged, this);
             super.dispose();
         }
     }

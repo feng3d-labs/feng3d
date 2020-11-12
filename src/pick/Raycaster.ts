@@ -17,14 +17,14 @@ namespace feng3d
          * @param gameObjects 实体列表
          * @return
          */
-        pick(ray3D: Ray3D, gameObjects: GameObject[])
+        pick(ray3D: Ray3, gameObjects: GameObject[])
         {
             if (gameObjects.length == 0) return null;
 
             var pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
             {
-                var model = gameObject.getComponent(Model);
-                var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
+                var model = gameObject.getComponent("RayCastable");
+                var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO) pv.push(pickingCollisionVO);
                 return pv;
             }, []);
@@ -68,14 +68,14 @@ namespace feng3d
          * @param gameObjects 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3D, gameObjects: GameObject[])
+        pickAll(ray3D: Ray3, gameObjects: GameObject[])
         {
             if (gameObjects.length == 0) return [];
 
             var pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
             {
-                var model = gameObject.getComponent(Model);
-                var pickingCollisionVO = model && model.isIntersectingRay(ray3D);
+                var model = gameObject.getComponent("RayCastable");
+                var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO) pv.push(pickingCollisionVO);
                 return pv;
             }, []);
@@ -131,17 +131,12 @@ namespace feng3d
 		/**
 		 * 本地坐标系射线
 		 */
-        localRay: Ray3D;
+        localRay: Ray3;
 
 		/**
 		 * 本地坐标碰撞法线
 		 */
         localNormal: Vector3;
-
-		/**
-		 * 场景中碰撞射线
-		 */
-        ray3D: Ray3D;
 
 		/**
 		 * 射线坐标是否在边界内

@@ -3,12 +3,12 @@ namespace feng3d
     /**
      * 天空盒渲染器
      */
-    export var skyboxRenderer: SkyboxRenderer;
+    export var skyboxRenderer: SkyBoxRenderer;
 
     /**
      * 天空盒渲染器
      */
-    export class SkyboxRenderer
+    export class SkyBoxRenderer
     {
         private renderAtomic: RenderAtomic;
 
@@ -52,13 +52,13 @@ namespace feng3d
         /**
          * 绘制场景中天空盒
          * @param gl 
-         * @param scene3d 场景
+         * @param scene 场景
          * @param camera 摄像机
          */
-        draw(gl: GL, scene3d: Scene3D, camera: Camera)
+        draw(gl: GL, scene: Scene, camera: Camera)
         {
-            var skybox = scene3d.activeSkyBoxs[0];
-            this.drawSkyBox(gl, skybox, scene3d, camera);
+            var skybox = scene.activeSkyBoxs[0];
+            this.drawSkyBox(gl, skybox, scene, camera);
         }
 
         /**
@@ -67,25 +67,25 @@ namespace feng3d
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        drawSkyBox(gl: GL, skybox: SkyBox, scene3d: Scene3D, camera: Camera)
+        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera)
         {
             if (!skybox) return;
 
             this.init();
 
             //
-            skybox.gameObject.beforeRender(gl, this.renderAtomic, scene3d, camera);
+            skybox.beforeRender(this.renderAtomic, scene, camera);
 
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
             this.renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix
             this.renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-            this.renderAtomic.uniforms.u_cameraPos = camera.transform.scenePosition;
+            this.renderAtomic.uniforms.u_cameraPos = camera.transform.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
         }
     }
 
-    skyboxRenderer = new SkyboxRenderer();
+    skyboxRenderer = new SkyBoxRenderer();
 }

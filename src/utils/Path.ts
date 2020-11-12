@@ -13,7 +13,7 @@ namespace feng3d
     /**
      * 路径
      */
-    interface Path
+    export interface Path
     {
         /**
          * 规范化字符串路径，减少'.'和'.'的部分。当发现多个斜杠时，它们被单个斜杠替换;当路径包含尾部斜杠时，它将被保留。在Windows上使用反斜杠。
@@ -97,7 +97,7 @@ namespace feng3d
     /**
      * 由path.parse()生成或由path.format()使用的已解析路径对象。
      */
-    interface ParsedPath
+    export interface ParsedPath
     {
         /**
          * 路径的根，如'/'或'c:\'
@@ -121,7 +121,7 @@ namespace feng3d
         name: string;
     }
 
-    interface FormatInputPathObject
+    export interface FormatInputPathObject
     {
         /**
          * 路径的根，如'/'或'c:\'
@@ -195,7 +195,7 @@ namespace feng3d
     {
         constructor(name: string, expected: string, actual: any)
         {
-            debuger && assert(typeof name === 'string', "'name' must be a string");
+            assert(typeof name === 'string', "'name' must be a string");
 
             // determiner: 'must be' or 'must not be'
             let determiner;
@@ -228,11 +228,11 @@ namespace feng3d
 
     function oneOf(expected: string | string[], thing: string)
     {
-        debuger && assert(typeof thing === 'string', '`thing` has to be of type string');
+        assert(typeof thing === 'string', '`thing` has to be of type string');
         if (Array.isArray(expected))
         {
             const len = expected.length;
-            debuger && assert(len > 0, 'At least one expected value needs to be specified');
+            assert(len > 0, 'At least one expected value needs to be specified');
             expected = expected.map((i) => String(i));
             if (len > 2)
             {

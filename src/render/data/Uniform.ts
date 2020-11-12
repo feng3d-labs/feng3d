@@ -1,9 +1,11 @@
 namespace feng3d
 {
-    export type LazyUniforms = LazyObject<Uniforms>;
-
     export interface Uniforms
     {
+        /**
+         * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
+         */
+        _Time: Vector4;
         /**
          * 模型矩阵
          */
@@ -50,7 +52,7 @@ namespace feng3d
         /**
          * 漫反射贴图
          */
-        s_texture: TextureInfo;
+        s_texture: Texture2D;
         /**
          * 漫反射贴图
          */
@@ -217,9 +219,9 @@ namespace feng3d
         u_metalic: number;
 
         /**
-         * 粒子时间
+         * 粒子公告牌矩阵
          */
-        u_particleTime: number;
+        u_particle_billboardMatrix: Matrix3x3;
 
         /**
          * 点大小

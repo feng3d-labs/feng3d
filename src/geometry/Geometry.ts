@@ -1,8 +1,8 @@
 namespace feng3d
 {
-    export interface GeometryMap { }
+    export interface GeometryTypes { }
 
-    export type Geometrys = GeometryMap[keyof GeometryMap];
+    export type GeometryLike = GeometryTypes[keyof GeometryTypes];
 
     export interface GeometryEventMap
     {
@@ -17,8 +17,8 @@ namespace feng3d
         once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
         has<K extends keyof GeometryEventMap>(type: K): boolean;
-        on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**
@@ -26,56 +26,6 @@ namespace feng3d
      */
     export class Geometry extends AssetData
     {
-
-        /**
-         * 立（长）方体几何体
-         */
-        static cube: CubeGeometry;
-
-        /**
-         * 胶囊体几何体
-         */
-        static capsule: CapsuleGeometry;
-
-        /**
-         * 圆锥体
-         */
-        static cone: ConeGeometry;
-
-        /**
-         * 圆柱体几何体
-         */
-        static cylinder: CylinderGeometry;
-
-        /**
-         * 平面几何体
-         */
-        static plane: PlaneGeometry;
-
-        /**
-         * 球体几何体
-         */
-        static sphere: SphereGeometry;
-
-        /**
-         * 圆环几何体
-         */
-        static torus: TorusGeometry;
-
-        /**
-         * 点几何体
-         */
-        static point: PointGeometry
-
-        /**
-         * 默认地形几何体
-         */
-        static terrain: TerrainGeometry;
-
-        /**
-         * 公告牌
-         */
-        static billboard: PlaneGeometry;
 
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";
@@ -111,12 +61,7 @@ namespace feng3d
         get indices()
         {
             this.updateGrometry();
-            if (!this._indices && this._invalids.index)
-            {
-                this._invalids.index = false;
-                this._autoIndices = geometryUtils.createIndices(this.positions);
-            }
-            return this._indices || this._autoIndices;
+            return this._indexBuffer.indices;
         }
 
 		/**
@@ -124,12 +69,7 @@ namespace feng3d
 		 */
         set indices(value: number[])
         {
-            this._indices = value;
-
-            if (!this._attributes.a_normal)
-                this._invalids.a_normal = true;
-            if (!this._attributes.a_tangent)
-                this._invalids.a_tangent = true;
+            this._indexBuffer.indices = value;
         }
 
         /**
@@ -137,21 +77,25 @@ namespace feng3d
          */
         get positions()
         {
-            return this.getVAData1("a_position")
+            return this._attributes.a_position.data;
         }
 
         set positions(value)
         {
-            if (!this._indices)
-                this._invalids.index = true;
-            this.setVAData("a_position", value, 3);
+            this._attributes.a_position.data = value;
+        }
 
-            if (!this._attributes.a_uv)
-                this._invalids.a_uv = true;
-            if (!this._attributes.a_normal)
-                this._invalids.a_normal = true;
-            if (!this._attributes.a_tangent)
-                this._invalids.a_tangent = true;
+        /**
+         * 颜色数据
+         */
+        get colors()
+        {
+            return this._attributes.a_color.data;
+        }
+
+        set colors(value)
+        {
+            this._attributes.a_color.data = value;
         }
 
         /**
@@ -159,14 +103,12 @@ namespace feng3d
          */
         get uvs()
         {
-            return this.getVAData1("a_uv")
+            return this._attributes.a_uv.data;
         }
 
         set uvs(value)
         {
-            this.setVAData("a_uv", value, 2);
-            if (!this._attributes.a_tangent)
-                this._invalids.a_tangent = true;
+            this._attributes.a_uv.data = value;
         }
 
         /**
@@ -174,12 +116,12 @@ namespace feng3d
          */
         get normals()
         {
-            return this.getVAData1("a_normal");
+            return this._attributes.a_normal.data;
         }
 
         set normals(value)
         {
-            this.setVAData("a_normal", value, 3);
+            this._attributes.a_normal.data = value;
         }
 
         /**
@@ -187,12 +129,64 @@ namespace feng3d
          */
         get tangents()
         {
-            return this.getVAData1("a_tangent");
+            return this._attributes.a_tangent.data;
         }
 
         set tangents(value)
         {
-            this.setVAData("a_tangent", value, 3);
+            this._attributes.a_tangent.data = value;
+        }
+
+        /**
+         * 蒙皮索引，顶点关联的关节索引
+         */
+        get skinIndices()
+        {
+            return this._attributes.a_skinIndices.data;
+        }
+
+        set skinIndices(value)
+        {
+            this._attributes.a_skinIndices.data = value;
+        }
+
+        /**
+         * 蒙皮权重，顶点关联的关节权重
+         */
+        get skinWeights()
+        {
+            return this._attributes.a_skinWeights.data;
+        }
+
+        set skinWeights(value)
+        {
+            this._attributes.a_skinWeights.data = value;
+        }
+
+        /**
+         * 蒙皮索引，顶点关联的关节索引
+         */
+        get skinIndices1()
+        {
+            return this._attributes.a_skinIndices1.data;
+        }
+
+        set skinIndices1(value)
+        {
+            this._attributes.a_skinIndices1.data = value;
+        }
+
+        /**
+         * 蒙皮权重，顶点关联的关节权重
+         */
+        get skinWeights1()
+        {
+            return this._attributes.a_skinWeights1.data;
+        }
+
+        set skinWeights1(value)
+        {
+            this._attributes.a_skinWeights1.data = value;
         }
 
         /**
@@ -204,8 +198,9 @@ namespace feng3d
         }
 
         /**
-         * 几何体变脏
+         * 标记需要更新几何体，在更改几何体数据后需要调用该函数。
          */
+        @oav({ tooltip: "标记需要更新几何体，在更改几何体数据后需要调用该函数。" })
         invalidateGeometry()
         {
             this._geometryInvalid = true;
@@ -231,81 +226,12 @@ namespace feng3d
         {
         }
 
-		/**
-		 * 设置顶点属性数据
-		 * @param vaId                  顶点属性编号
-		 * @param data                  顶点属性数据
-         * @param size                  顶点数据尺寸
-         * @param autogenerate          是否自动生成数据
-		 */
-        setVAData<K extends keyof Attributes>(vaId: K, data: number[], size: number)
-        {
-            if (data)
-            {
-                this._attributes[vaId] = this._attributes[vaId] || { data: data, size: size };
-                this._attributes[vaId].data = data;
-            } else
-            {
-                delete this._attributes[vaId];
-            }
-        }
-
-		/**
-		 * 获取顶点属性数据
-		 * @param vaId 数据类型编号
-		 * @return 顶点属性数据
-		 */
-        getVAData1(vaId: string)
-        {
-            this.updateGrometry();
-
-            if (vaId == "a_uv")
-            {
-                if (!this._attributes.a_uv && this._invalids.a_uv)
-                {
-                    this._invalids.a_uv = false;
-                    var uvs = geometryUtils.createUVs(this.positions);
-                    this._autoAttributeDatas[vaId] = { data: uvs, size: 2 };
-                }
-            }
-
-            if (vaId == "a_normal")
-            {
-                if (!this._attributes.a_normal && this._invalids.a_normal)
-                {
-                    this._invalids.a_normal = false;
-                    var normals = geometryUtils.createVertexNormals(this.indices, this.positions, this._useFaceWeights);
-                    this._autoAttributeDatas[vaId] = { data: normals, size: 3 };
-                }
-            }
-
-            if (vaId == "a_tangent")
-            {
-                if (!this._attributes.a_tangent && this._invalids.a_tangent)
-                {
-                    this._invalids.a_tangent = false;
-                    var tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
-                    this._autoAttributeDatas[vaId] = { data: tangents, size: 3 };
-                }
-            }
-
-            var attributeRenderData = this._attributes[vaId] || this._autoAttributeDatas[vaId];
-            return attributeRenderData && attributeRenderData.data;
-        }
-
         /**
          * 顶点数量
          */
         get numVertex()
         {
-            var numVertex = 0;
-            for (var attributeName in this._attributes)
-            {
-                var attributeRenderData = this._attributes[attributeName];
-                numVertex = attributeRenderData.data.length / attributeRenderData.size;
-                break;
-            }
-            return numVertex;
+            return this.positions.length / 3;
         }
 
         /**
@@ -334,7 +260,7 @@ namespace feng3d
             }
 
             //如果自身为空几何体
-            if (!this._indices)
+            if (!this.indices)
             {
                 this.cloneFrom(geometry);
                 return;
@@ -346,8 +272,8 @@ namespace feng3d
             //当前顶点数量
             var oldNumVertex = this.numVertex;
             //合并索引
-            var indices = this._indices;
-            var targetIndices = geometry._indices;
+            var indices = this.indices;
+            var targetIndices = geometry.indices;
             var totalIndices = indices.concat();
             for (var i = 0; i < targetIndices.length; i++)
             {
@@ -359,11 +285,10 @@ namespace feng3d
             //合并属性数据
             for (var attributeName in attributes)
             {
-                var stride = attributes[attributeName].size;
-                var attributeData = attributes[attributeName].data;
-                var addAttributeData = addAttributes[attributeName].data;
-                var data = attributeData.concat(addAttributeData);
-                this.setVAData(<any>attributeName, data, stride);
+                var attribute: Attribute = attributes[attributeName];
+                var addAttribute: Attribute = addAttributes[attributeName];
+                //
+                attribute.data = attribute.data.concat(addAttribute.data);
             }
         }
 
@@ -416,8 +341,8 @@ namespace feng3d
             {
                 var positions = this.positions;
                 if (!positions || positions.length == 0)
-                    return new AABB();
-                this._bounding = AABB.formPositions(this.positions);
+                    return new Box3();
+                this._bounding = Box3.formPositions(this.positions);
             }
             return this._bounding;
         }
@@ -428,7 +353,7 @@ namespace feng3d
          * @param shortestCollisionDistance     当前最短碰撞距离
          * @param cullFace                      裁剪面枚举
          */
-        raycast(ray: Ray3D, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
+        raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
         {
             var result = geometryUtils.raycast(ray, this.indices, this.positions, this.uvs, shortestCollisionDistance, cullFace);
             return result;
@@ -478,56 +403,29 @@ namespace feng3d
         {
             geometry.updateGrometry();
             this.indices = geometry.indices.concat();
-            this._attributes = {};
-            for (var key in geometry._attributes)
+            for (var attributeName in geometry._attributes)
             {
-                var attributeRenderData = geometry._attributes[key];
-                this.setVAData(<any>key, attributeRenderData.data, attributeRenderData.size);
+                var attribute: Attribute = this._attributes[attributeName];
+                var addAttribute: Attribute = geometry._attributes[attributeName];
+
+                attribute.data = addAttribute.data.concat();
             }
         }
 
         beforeRender(renderAtomic: RenderAtomic)
         {
-            renderAtomic.indexBuffer = renderAtomic.indexBuffer || new Index();
-            renderAtomic.indexBuffer.indices = this.indices;
+            this.updateGrometry();
 
-            var attributes = renderAtomic.attributes;
+            renderAtomic.indexBuffer = this._indexBuffer;
 
-            this.uvs;
-            this.normals;
-            this.tangents;
-
-            for (const vaId in this._autoAttributeDatas)
+            for (const key in this._attributes)
             {
-                if (this._autoAttributeDatas.hasOwnProperty(vaId))
+                if (this._attributes.hasOwnProperty(key))
                 {
-                    const element = this._autoAttributeDatas[vaId];
-                    //
-                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new Attribute(vaId, element.data);
-                    if (attributeRenderData.data != element.data)
-                        attributeRenderData.data = element.data;
-                    attributeRenderData.size = element.size;
-                    attributeRenderData.divisor = 0;
-                    //
-                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
+                    renderAtomic.attributes[key] = this._attributes[key];
                 }
             }
 
-            for (const vaId in this._attributes)
-            {
-                if (this._attributes.hasOwnProperty(vaId))
-                {
-                    const element = this._attributes[vaId];
-                    //
-                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new Attribute(vaId, element.data);
-                    if (attributeRenderData.data != element.data)
-                        attributeRenderData.data = element.data;
-                    attributeRenderData.size = element.size;
-                    attributeRenderData.divisor = 0;
-                    //
-                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
-                }
-            }
             renderAtomic.shaderMacro.SCALEU = this.scaleU;
             renderAtomic.shaderMacro.SCALEV = this.scaleV;
         }
@@ -535,23 +433,70 @@ namespace feng3d
         /**
          * 顶点索引缓冲
          */
-        protected _indices: number[];
-        /**
-         * 自动生成的顶点索引
-         */
-        protected _autoIndices: number[];
+        private _indexBuffer = new Index();
+
         /**
          * 属性数据列表
          */
-        protected _attributes: { [name: string]: { data: number[], size: number } } = {};
+        protected _attributes: Attributes = {
+            a_position: new Attribute("a_position", [], 3),
+            a_color: new Attribute("a_color", [], 4),
+            a_uv: new Attribute("a_uv", [], 2),
+            a_normal: new Attribute("a_normal", [], 3),
+            a_tangent: new Attribute("a_tangent", [], 3),
+            a_skinIndices: new Attribute("a_skinIndices", [], 4),
+            a_skinWeights: new Attribute("a_skinWeights", [], 4),
+            a_skinIndices1: new Attribute("a_skinIndices1", [], 4),
+            a_skinWeights1: new Attribute("a_skinWeights1", [], 4),
+        };
+
+        /**
+         * 清理数据
+         */
+        clear()
+        {
+            for (const key in this._attributes)
+            {
+                const element: Attribute = this._attributes[key];
+                element.data = [];
+            }
+        }
 
         private _geometryInvalid = true;
         private _useFaceWeights = false;
 
-        private _bounding: AABB;
+        private _bounding: Box3;
 
-        private _autoAttributeDatas: { [name: string]: { data: number[], size: number } } = {};
+        /**
+         * 设置默认几何体
+         * 
+         * @param name 默认几何体名称
+         * @param geometry 默认几何体
+         */
+        static setDefault<K extends keyof DefaultGeometry>(name: K, geometry: DefaultGeometry[K], param?: gPartial<DefaultGeometry[K]>)
+        {
+            this._defaultGeometry[name] = geometry;
+            if (param) serialization.setValue(geometry, param);
+            serialization.setValue(geometry, { name: name, assetId: name, hideFlags: HideFlags.NotEditable });
+            AssetData.addAssetData(name, geometry);
+        }
 
-        private _invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
+        /**
+         * 获取默认几何体
+         * 
+         * @param name 默认几何体名称
+         */
+        static getDefault<K extends keyof DefaultGeometry>(name: K)
+        {
+            return this._defaultGeometry[name];
+        }
+        private static _defaultGeometry: DefaultGeometry = <any>{};
+    }
+
+    /**
+     * 默认几何体
+     */
+    export interface DefaultGeometry
+    {
     }
 }

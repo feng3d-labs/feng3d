@@ -4,27 +4,41 @@ namespace feng3d
 	 * 圆锥体
 
 	 */
-	export class ConeGeometry extends CylinderGeometry
-	{
-		__class__: "feng3d.ConeGeometry" = "feng3d.ConeGeometry";
+    export class ConeGeometry extends CylinderGeometry
+    {
+        __class__: "feng3d.ConeGeometry" = "feng3d.ConeGeometry";
 
-		name = "Cone";
+        name = "Cone";
 
         /**
          * 底部半径 private
          */
-		topRadius = 0;
+        topRadius = 0;
 
         /**
          * 顶部是否封口 private
          */
-		topClosed = false;
+        topClosed = false;
 
         /**
          * 侧面是否封口 private
          */
-		surfaceClosed = true;
-	}
+        surfaceClosed = true;
+    }
 
-	AssetData.addAssetData("Cone", Geometry.cone = serialization.setValue(new ConeGeometry(), { name: "Cone", assetId: "Cone", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Cone: ConeGeometry;
+    }
+    Geometry.setDefault("Cone", new ConeGeometry());
+
+    GameObject.registerPrimitive("Cone", (g) =>
+    {
+        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cone");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Cone: GameObject;
+    }
 }

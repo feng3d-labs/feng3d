@@ -3,6 +3,7 @@ namespace feng3d
     /**
      * 文件夹资源
      */
+    @ov({ component: "OVFolderAsset" })
     export class FolderAsset extends FileAsset
     {
         static extenson = "";
@@ -12,8 +13,11 @@ namespace feng3d
         /**
          * 子资源列表
          */
-        @serialize
-        childrenAssets: FileAsset[] = [];
+        get childrenAssets()
+        {
+            var children = this.rs.getChildrenAssetByPath(this.assetPath);
+            return children;
+        }
 
         initAsset()
         {

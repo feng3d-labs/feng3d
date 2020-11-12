@@ -13,8 +13,8 @@ namespace feng3d
         once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
         has<K extends keyof TextureCubeEventMap>(type: K): boolean;
-        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): void;
     }
 
     export type TextureCubeImageName = "positive_x_url" | "positive_y_url" | "positive_z_url" | "negative_x_url" | "negative_y_url" | "negative_z_url";
@@ -24,7 +24,9 @@ namespace feng3d
      */
     export class TextureCube extends TextureInfo
     {
-        __class__: "feng3d.TextureCube" = "feng3d.TextureCube";
+        __class__: "feng3d.TextureCube";
+
+        textureType = TextureType.TEXTURE_CUBE_MAP;
 
         assetType = AssetType.texturecube;
 
@@ -37,23 +39,12 @@ namespace feng3d
          * 原始数据
          */
         @serialize
-        get rawData()
-        {
-            return this._rawData;
-        }
-        set rawData(v)
-        {
-            if (this._rawData == v) return;
-            this._rawData = v;
-            this._rawDataChanged();
-        }
-        private _rawData: { type: "texture", textures: Texture2D[] } | { type: "path", paths: string[] };
+        @watch("_rawDataChanged")
+        rawData: { type: "texture", textures: Texture2D[] } | { type: "path", paths: string[] };
 
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 
         protected _pixels = [null, null, null, null, null, null];
-
-        protected _textureType = TextureType.TEXTURE_CUBE_MAP;
 
         /**
          * 是否加载完成
@@ -146,7 +137,7 @@ namespace feng3d
                     this._pixels[index] = texture.image;
                     this.invalidate();
                 }
-                this._loading.delete(texture);
+                Array.delete(this._loading, texture);
                 this._onItemLoadCompleted();
             });
         }
@@ -169,7 +160,7 @@ namespace feng3d
                     this._pixels[index] = img;
                     this.invalidate();
                 }
-                this._loading.delete(imagepath);
+                Array.delete(this._loading, imagepath);
                 this._onItemLoadCompleted();
             });
         }

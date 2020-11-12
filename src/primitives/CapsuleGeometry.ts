@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { CapsuleGeometry: CapsuleGeometry }
+    export interface GeometryTypes { CapsuleGeometry: CapsuleGeometry }
 
     /**
      * 胶囊体几何体
@@ -8,92 +8,47 @@ namespace feng3d
     export class CapsuleGeometry extends Geometry
     {
 
-        __class__: "feng3d.CapsuleGeometry" = "feng3d.CapsuleGeometry";
+        __class__: "feng3d.CapsuleGeometry";
 
         /**
          * 胶囊体半径
          */
         @serialize
         @oav()
-        get radius()
-        {
-            return this._radius;
-        }
-        set radius(v)
-        {
-            if (this._radius == v) return;
-            this._radius = v;
-            this.invalidateGeometry();
-        }
-        private _radius = 0.5;
+        @watch("invalidateGeometry")
+        radius = 0.5;
 
         /**
          * 胶囊体高度
          */
         @serialize
         @oav()
-        get height()
-        {
-            return this._height;
-        }
-        set height(v)
-        {
-            if (this._height == v) return;
-            this._height = v;
-            this.invalidateGeometry();
-        }
-        private _height = 1
+        @watch("invalidateGeometry")
+        height = 1
 
         /**
          * 横向分割数
          */
         @serialize
         @oav()
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(v)
-        {
-            if (this._segmentsW == v) return;
-            this._segmentsW = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 16
+        @watch("invalidateGeometry")
+        segmentsW = 16
 
         /**
          * 纵向分割数
          */
         @serialize
         @oav()
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(v)
-        {
-            if (this._segmentsH == v) return;
-            this._segmentsH = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 15;
+        @watch("invalidateGeometry")
+        segmentsH = 15;
 
         /**
          * 正面朝向 true:Y+ false:Z+
          */
         @serialize
         @oav()
-        get yUp()
-        {
-            return this._yUp;
-        }
-        set yUp(v)
-        {
-            if (this._yUp == v) return;
-            this._yUp = v;
-            this.invalidateGeometry();
-        }
-        private _yUp = true;
+        @watch("invalidateGeometry")
+        yUp = true;
 
         name = "Capsule";
 
@@ -189,12 +144,13 @@ namespace feng3d
                     index += 3;
                 }
             }
-            this.setVAData("a_position", vertexPositionData, 3);
-            this.setVAData("a_normal", vertexNormalData, 3);
-            this.setVAData("a_tangent", vertexTangentData, 3);
+            this.positions = vertexPositionData;
+            this.normals = vertexNormalData;
+            this.tangents = vertexTangentData;
 
             var uvData = this.buildUVs();
-            this.setVAData("a_uv", uvData, 2);
+            this.uvs = uvData;
+
             this.buildIndices();
         }
 
@@ -270,5 +226,20 @@ namespace feng3d
         }
 
     }
-    AssetData.addAssetData("Capsule", Geometry.capsule = serialization.setValue(new CapsuleGeometry(), { name: "Capsule", assetId: "Capsule", hideFlags: HideFlags.NotEditable }));
+
+    export interface DefaultGeometry
+    {
+        Capsule: CapsuleGeometry;
+    }
+    Geometry.setDefault("Capsule", new CapsuleGeometry());
+
+    GameObject.registerPrimitive("Capsule", (g) =>
+    {
+        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Capsule");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Capsule: GameObject;
+    }
 }

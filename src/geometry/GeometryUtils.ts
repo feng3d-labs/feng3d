@@ -43,7 +43,7 @@ namespace feng3d
          * @param positions 顶点数据
          * @param useFaceWeights 是否使用面权重计算法线
          */
-        createVertexNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights = false)
+        createVertexNormals(indices: number[], positions: number[], useFaceWeights = false)
         {
             var faceNormalsResult = this.createFaceNormals(indices, positions, useFaceWeights);
             var faceWeights = faceNormalsResult.faceWeights;
@@ -108,7 +108,7 @@ namespace feng3d
          * @param uvs uv数据
          * @param useFaceWeights 是否使用面权重计算切线数据
          */
-        createVertexTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights = false)
+        createVertexTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights = false)
         {
             var faceTangentsResult = this.createFaceTangents(indices, positions, uvs, useFaceWeights);
             var faceWeights = faceTangentsResult.faceWeights;
@@ -174,7 +174,7 @@ namespace feng3d
          * @param uvs uv数据
          * @param useFaceWeights 是否计算面权重
          */
-        createFaceTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights = false)
+        createFaceTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights = false)
         {
             var i = 0, k = 0;
             var index1 = 0, index2 = 0, index3 = 0;
@@ -241,7 +241,7 @@ namespace feng3d
          * @param positions 顶点数据
          * @param useFaceWeights 是否计算面权重
          */
-        createFaceNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights = false)
+        createFaceNormals(indices: number[], positions: number[], useFaceWeights = false)
         {
             var i = 0, j = 0, k = 0;
             var index = 0;
@@ -318,7 +318,7 @@ namespace feng3d
 
             if (bakeNormals || bakeTangents)
             {
-                invTranspose.copyFrom(transform);
+                invTranspose.copy(transform);
                 invTranspose.invert();
                 invTranspose.transpose();
             }
@@ -336,7 +336,7 @@ namespace feng3d
                 vector.x = positions[vi0];
                 vector.y = positions[i1];
                 vector.z = positions[i2];
-                vector = transform.transformVector(vector);
+                vector = transform.transformPoint3(vector);
                 positions[vi0] = vector.x;
                 positions[i1] = vector.y;
                 positions[i2] = vector.z;
@@ -350,7 +350,7 @@ namespace feng3d
                     vector.x = normals[ni0];
                     vector.y = normals[i1];
                     vector.z = normals[i2];
-                    vector = invTranspose.deltaTransformVector(vector);
+                    vector = invTranspose.transformVector3(vector);
                     vector.normalize();
                     normals[ni0] = vector.x;
                     normals[i1] = vector.y;
@@ -366,7 +366,7 @@ namespace feng3d
                     vector.x = tangents[ti0];
                     vector.y = tangents[i1];
                     vector.z = tangents[i2];
-                    vector = invTranspose.deltaTransformVector(vector);
+                    vector = invTranspose.transformVector3(vector);
                     vector.normalize();
                     tangents[ti0] = vector.x;
                     tangents[i1] = vector.y;
@@ -413,8 +413,13 @@ namespace feng3d
          * @param ray                           射线
          * @param shortestCollisionDistance     当前最短碰撞距离
          * @param cullFace                      裁剪面枚举
+         * 
+         * @todo
+         * @see 3D数学基础：图形与游戏开发 P278 是否可用该内容优化运算效率？
+         * 
+         * @see 优化参考 three.js Ray.intersectTriangle
          */
-        raycast(ray: Ray3D, indices: number[], positions: number[], uvs: number[], shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
+        raycast(ray: Ray3, indices: number[], positions: number[], uvs: number[], shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
         {
             if (cullFace == CullFace.FRONT_AND_BACK) return null;
 
@@ -467,17 +472,17 @@ namespace feng3d
                 nx = s0y * s1z - s0z * s1y; // n = s0 x s1
                 ny = s0z * s1x - s0x * s1z;
                 nz = s0x * s1y - s0y * s1x;
-                nl = 1 / Math.sqrt(nx * nx + ny * ny + nz * nz); // normalize n
+                nl = 1 / Math.sqrt(nx * nx + ny * ny + nz * nz); // normalize n 此处使用了开平方根，性能很差
                 nx *= nl;
                 ny *= nl;
                 nz *= nl;
 
                 //初始化射线数据
-                var rayPosition: Vector3 = ray.position;
+                var rayPosition: Vector3 = ray.origin;
                 var rayDirection: Vector3 = ray.direction;
 
                 //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
-                nDotV = nx * rayDirection.x + ny * +rayDirection.y + nz * rayDirection.z; // rayDirection . normal
+                nDotV = nx * rayDirection.x + ny * rayDirection.y + nz * rayDirection.z; // rayDirection . normal
                 //判断射线是否与三角面相交
                 if ((cullFace == CullFace.FRONT && nDotV > 0.0) || (cullFace == CullFace.BACK && nDotV < 0.0) || (cullFace == CullFace.NONE && nDotV != 0.0))
                 { // an intersection must exist
@@ -501,14 +506,14 @@ namespace feng3d
                     RQ2 = rx * s1x + ry * s1y + rz * s1z;
                     coeff = 1 / (Q1Q1 * Q2Q2 - Q1Q2 * Q1Q2);
                     v = coeff * (Q2Q2 * RQ1 - Q1Q2 * RQ2);
-                    w = coeff * (-Q1Q2 * RQ1 + Q1Q1 * RQ2);
                     if (v < 0)
                         continue;
+                    w = coeff * (-Q1Q2 * RQ1 + Q1Q1 * RQ2);
                     if (w < 0)
                         continue;
                     u = 1 - v - w;
                     //u v w都大于0表示点在三角形内 射线的坐标t大于0表示射线朝向三角面
-                    if (!(u < 0) && t > 0 && t < shortestCollisionDistance)
+                    if (u >= 0 && t >= 0 && t < shortestCollisionDistance)
                     {
                         shortestCollisionDistance = t;
                         collisionTriangleIndex = index / 3;
@@ -519,7 +524,6 @@ namespace feng3d
                         {
                             result.uv = getCollisionUV(indices, uvs, index, v, w, u);
                         }
-                        result.localNormal = getCollisionNormal(indices, positions, index);
                         result.index = index;
                     }
                 }
@@ -529,35 +533,6 @@ namespace feng3d
                 return result;
 
             return null;
-
-
-            /**
-             * 获取碰撞法线
-             * @param indices 顶点索引数据
-             * @param positions 顶点数据
-             * @param triangleIndex 三角形索引
-             * @return 碰撞法线
-             */
-            function getCollisionNormal(indices: number[], positions: number[], triangleIndex = 0)
-            {
-                var i0 = indices[triangleIndex] * 3;
-                var i1 = indices[triangleIndex + 1] * 3;
-                var i2 = indices[triangleIndex + 2] * 3;
-
-                var side0x = positions[i1] - positions[i0];
-                var side0y = positions[i1 + 1] - positions[i0 + 1];
-                var side0z = positions[i1 + 2] - positions[i0 + 2];
-                var side1x = positions[i2] - positions[i0];
-                var side1y = positions[i2 + 1] - positions[i0 + 1];
-                var side1z = positions[i2 + 2] - positions[i0 + 2];
-
-                var normal = new Vector3();
-                normal.x = side0y * side1z - side0z * side1y;
-                normal.y = side0z * side1x - side0x * side1z;
-                normal.z = side0x * side1y - side0y * side1x;
-                normal.normalize();
-                return normal;
-            }
 
             /**
              * 获取碰撞uv
@@ -595,7 +570,7 @@ namespace feng3d
          */
         getAABB(positions: number[])
         {
-            return AABB.formPositions(positions);
+            return Box3.formPositions(positions);
         }
 
     }

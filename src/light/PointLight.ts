@@ -6,9 +6,11 @@ namespace feng3d
     /**
      * 点光源
      */
+    @AddComponentMenu("Rendering/PointLight")
+    @RegisterComponent()
     export class PointLight extends Light
     {
-        __class__: "feng3d.PointLight" = "feng3d.PointLight";
+        __class__: "feng3d.PointLight";
 
         lightType = LightType.Point;
 
@@ -48,5 +50,15 @@ namespace feng3d
             if (this.shadowCamera)
                 this.shadowCamera.lens.far = this.range;
         }
+    }
+
+    GameObject.registerPrimitive("Point light", (g) =>
+    {
+        g.addComponent("PointLight");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        "Point light": GameObject;
     }
 }

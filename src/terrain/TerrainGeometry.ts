@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GeometryMap { TerrainGeometry: TerrainGeometry }
+    export interface GeometryTypes { TerrainGeometry: TerrainGeometry }
 
     /**
      * 地形几何体
@@ -12,136 +12,64 @@ namespace feng3d
          */
         @serialize
         @oav()
-        get heightMap()
-        {
-            return this._heightMap;
-        }
-        set heightMap(v)
-        {
-            if (this._heightMap == v) return;
-            this._heightMap = v;
-            this.onHeightMapChanged();
-        }
-        private _heightMap = Texture2D.default;
+        @watch("_onHeightMapChanged")
+        heightMap = Texture2D.default;
 
         /**
          * 地形宽度
          */
         @serialize
         @oav()
-        get width()
-        {
-            return this._width;
-        }
-        set width(v)
-        {
-            if (this._width == v) return;
-            this._width = v;
-            this.invalidateGeometry();
-        }
-        private _width = 10;
+        @watch("invalidateGeometry")
+        width = 10;
 
         /**
          * 地形高度
          */
         @serialize
         @oav()
-        get height()
-        {
-            return this._height;
-        }
-        set height(v)
-        {
-            if (this._height == v) return;
-            this._height = v;
-            this.invalidateGeometry();
-        }
-        private _height = 1;
+        @watch("invalidateGeometry")
+        height = 1;
 
         /**
          * 地形深度
          */
         @serialize
         @oav()
-        get depth()
-        {
-            return this._depth;
-        }
-        set depth(v)
-        {
-            if (this._depth == v) return;
-            this._depth = v;
-            this.invalidateGeometry();
-        }
-        private _depth = 10;
+        @watch("invalidateGeometry")
+        depth = 10;
 
         /**
          * 横向网格段数
          */
         @serialize
         @oav()
-        get segmentsW()
-        {
-            return this._segmentsW;
-        }
-        set segmentsW(v)
-        {
-            if (this._segmentsW == v) return;
-            this._segmentsW = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsW = 30;
+        @watch("invalidateGeometry")
+        segmentsW = 30;
 
         /**
          * 纵向网格段数
          */
         @serialize
         @oav()
-        get segmentsH()
-        {
-            return this._segmentsH;
-        }
-        set segmentsH(v)
-        {
-            if (this._segmentsH == v) return;
-            this._segmentsH = v;
-            this.invalidateGeometry();
-        }
-        private _segmentsH = 30;
+        @watch("invalidateGeometry")
+        segmentsH = 30;
 
         /**
          * 最大地形高度
          */
         @serialize
         @oav()
-        get maxElevation()
-        {
-            return this._maxElevation;
-        }
-        set maxElevation(v)
-        {
-            if (this._maxElevation == v) return;
-            this._maxElevation = v;
-            this.invalidateGeometry();
-        }
-        private _maxElevation = 255;
+        @watch("invalidateGeometry")
+        maxElevation = 255;
 
         /**
          * 最小地形高度
          */
         @serialize
         @oav()
-        get minElevation()
-        {
-            return this._minElevation;
-        }
-        set minElevation(v)
-        {
-            if (this._minElevation == v) return;
-            this._minElevation = v;
-            this.invalidateGeometry();
-        }
-        private _minElevation = 0;
+        @watch("invalidateGeometry")
+        minElevation = 0;
 
         private _heightImageData = defaultHeightMap;
 
@@ -155,7 +83,7 @@ namespace feng3d
             serialization.setValue(this, raw);
         }
 
-        private onHeightMapChanged()
+        private _onHeightMapChanged()
         {
             if (!this.heightMap["_pixels"]) 
             {
@@ -236,8 +164,8 @@ namespace feng3d
                 }
             }
             var uvs = this.buildUVs();
-            this.setVAData("a_position", vertices, 3);
-            this.setVAData("a_uv", uvs, 2);
+            this.positions = vertices;
+            this.uvs = uvs;
             this.indices = indices;
         }
 
@@ -320,5 +248,9 @@ namespace feng3d
      */
     var defaultHeightMap = new ImageUtil(1024, 1024, new Color4(0, 0, 0, 0)).imageData;
 
-    AssetData.addAssetData("Terrain-Geometry", Geometry.terrain = serialization.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetId: "Terrain-Geometry", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        "Terrain-Geometry": TerrainGeometry;
+    }
+    Geometry.setDefault("Terrain-Geometry", new TerrainGeometry());
 }

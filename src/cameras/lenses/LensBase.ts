@@ -13,53 +13,35 @@ namespace feng3d
 	export abstract class LensBase extends Feng3dObject
 	{
 		/**
+		 * 摄像机投影类型
+		 */
+		get projectionType()
+		{
+			return this._projectionType;
+		}
+		protected _projectionType: Projection;
+
+		/**
 		 * 最近距离
 		 */
 		@serialize
 		@oav()
-		get near()
-		{
-			return this._near;
-		}
-		set near(v)
-		{
-			if (this._near == v) return;
-			this._near = v;
-			this.invalidate();
-		}
-		protected _near: number;
+		@watch("invalidate")
+		near: number;
 
 		/**
 		 * 最远距离
 		 */
+		@watch("invalidate")
 		@serialize
 		@oav()
-		get far()
-		{
-			return this._far;
-		}
-		set far(v)
-		{
-			if (this._far == v) return;
-			this._far = v;
-			this.invalidate();
-		}
-		protected _far: number;
+		far: number;
 
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		get aspect()
-		{
-			return this._aspect;
-		}
-		set aspect(v)
-		{
-			if (this._aspect == v) return;
-			this._aspect = v;
-			this.invalidate();
-		}
-		protected _aspect: number;
+		@watch("invalidate")
+		aspect: number;
 
 		/**
 		 * 创建一个摄像机镜头
@@ -79,7 +61,7 @@ namespace feng3d
 		{
 			if (this._matrixInvalid)
 			{
-				this.updateMatrix();
+				this._updateMatrix();
 				this._matrixInvalid = false;
 			}
 			return this._matrix;
@@ -92,26 +74,10 @@ namespace feng3d
 		{
 			if (this._invertMatrixInvalid)
 			{
-				this._inverseMatrix.copyFrom(this.matrix);
-				this._inverseMatrix.invert();
-				this._matrixInvalid = false;
+				this._updateInverseMatrix();
+				this._invertMatrixInvalid = false;
 			}
 			return this._inverseMatrix;
-		}
-
-		/**
-		 * 可视包围盒
-		 * 
-		 * 一个包含可视空间的最小包围盒
-		 */
-		get viewBox()
-		{
-			if (this._viewBoxInvalid)
-			{
-				this.updateViewBox();
-				this._viewBoxInvalid = false;
-			}
-			return this._viewBox;
 		}
 
 		/**
@@ -148,7 +114,7 @@ namespace feng3d
 		 * @param x GPU空间坐标x值
 		 * @param y GPU空间坐标y值
 		 */
-		unprojectRay(x: number, y: number, ray = new Ray3D())
+		unprojectRay(x: number, y: number, ray = new Ray3())
 		{
 			var p0 = this.unproject(new Vector3(x, y, 0));
 			var p1 = this.unproject(new Vector3(x, y, 1));
@@ -156,7 +122,7 @@ namespace feng3d
 			ray.fromPosAndDir(p0, p1.sub(p0));
 			// 获取z==0的点
 			var sp = ray.getPointWithZ(0);
-			ray.position = sp;
+			ray.origin = sp;
 			return ray;
 		}
 
@@ -177,36 +143,34 @@ namespace feng3d
 		}
 
 		//
-		private _matrixInvalid = true;
-		private _invertMatrixInvalid = true;
 		private _inverseMatrix = new Matrix4x4();
-		private _viewBoxInvalid = true;
+		private _invertMatrixInvalid = true;
 		//
-		protected _viewBox = new AABB();
 		protected _matrix = new Matrix4x4();
+		private _matrixInvalid = true;
 
 		/**
 		 * 投影矩阵失效
 		 */
 		protected invalidate()
 		{
-			debuger && console.assert(!isNaN(this.aspect));
+			console.assert(!isNaN(this.aspect));
 
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
-			this._viewBoxInvalid = true;
 			this.dispatch("lensChanged", this);
+		}
+
+		private _updateInverseMatrix()
+		{
+			this._inverseMatrix.copy(this.matrix);
+			this._inverseMatrix.invert();
 		}
 
 		/**
 		 * 更新投影矩阵
 		 */
-		protected abstract updateMatrix(): void;
-
-		/**
-		 * 更新最小包围盒
-		 */
-		protected abstract updateViewBox(): void;
+		protected abstract _updateMatrix(): void;
 
 		/**
 		 * 克隆

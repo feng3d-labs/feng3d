@@ -7,26 +7,37 @@ namespace feng3d
         /**
 		 * 添加子组件事件
 		 */
-        addComponent: Component;
+        addComponent: { gameobject: GameObject, component: Component };
 		/**
 		 * 移除子组件事件
 		 */
-        removeComponent: Component;
+        removeComponent: { gameobject: GameObject, component: Component };
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        addChild: GameObject
+        addChild: { parent: GameObject, child: GameObject }
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removeChild: GameObject;
+        removeChild: { parent: GameObject, child: GameObject };
+
         /**
-         * 当GameObject的scene属性被设置是由Scene3D派发
+         * 自身被添加到父对象中事件
+         */
+        added: { parent: GameObject };
+
+        /**
+         * 自身从父对象中移除事件
+         */
+        removed: { parent: GameObject };
+
+        /**
+         * 当GameObject的scene属性被设置是由Scene派发
          */
         addedToScene: GameObject;
 
         /**
-         * 当GameObject的scene属性被清空时由Scene3D派发
+         * 当GameObject的scene属性被清空时由Scene派发
          */
         removedFromScene: GameObject;
 
@@ -38,7 +49,7 @@ namespace feng3d
         /**
          * 刷新界面
          */
-        refreshView
+        refreshView: any;
     }
 
     export interface GameObject
@@ -46,13 +57,8 @@ namespace feng3d
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any);
-    }
-
-    export interface GameObjectUserData
-    {
-
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**
@@ -61,7 +67,7 @@ namespace feng3d
     export class GameObject extends AssetData implements IDisposable
     {
 
-        __class__: "feng3d.GameObject" = "feng3d.GameObject";
+        __class__: "feng3d.GameObject";
 
         assetType = AssetType.gameobject;
 
@@ -77,8 +83,6 @@ namespace feng3d
         @serialize
         assetId: string;
 
-        readonly renderAtomic = new RenderAtomic();
-
         /**
          * 名称
          */
@@ -90,25 +94,23 @@ namespace feng3d
          * 是否显示
          */
         @serialize
-        visible = true;
+        get visible()
+        {
+            return this._visible;
+        }
+        set visible(v)
+        {
+            if (this._visible == v) return;
+            this._visible = v;
+            this._invalidateGlobalVisible();
+        }
+        private _visible = true;
 
         /**
          * 自身以及子对象是否支持鼠标拾取
          */
         @serialize
         mouseEnabled = true;
-
-        /**
-         * 模型生成的导航网格类型
-         */
-        @serialize
-        @oav()
-        navigationArea = -1;
-
-        /**
-         * 用户自定义数据
-         */
-        userData: GameObjectUserData = {};
 
         //------------------------------------------
         // Variables
@@ -120,10 +122,23 @@ namespace feng3d
         get transform()
         {
             if (!this._transform)
-                this._transform = this.getComponent(Transform);
+                this._transform = this.getComponent("Transform");
             return this._transform;
         }
         private _transform: Transform;
+
+        /**
+         * 轴对称包围盒
+         */
+        get boundingBox()
+        {
+            if (!this._boundingBox)
+            {
+                this._boundingBox = this.getComponent("BoundingBox");
+            }
+            return this._boundingBox;
+        }
+        private _boundingBox: BoundingBox;
 
         get parent()
         {
@@ -170,9 +185,12 @@ namespace feng3d
          */
         get globalVisible()
         {
-            if (this.parent)
-                return this.visible && this.parent.globalVisible;
-            return this.visible;
+            if (this._globalVisibleInvalid)
+            {
+                this._updateGlobalVisible();
+                this._globalVisibleInvalid = false;
+            }
+            return this._globalVisible;
         }
 
         get scene()
@@ -182,7 +200,7 @@ namespace feng3d
 
         @serialize
         @oav({ component: "OAVComponentList" })
-        get components(): Components[]
+        get components()
         {
             return this._components.concat();
         }
@@ -209,9 +227,9 @@ namespace feng3d
         {
             super();
             this.name = "GameObject";
-            this.addComponent(Transform);
+            this.addComponent("Transform");
 
-            this.onAll(this._onAllListener, this);
+            this.onAny(this._onAnyListener, this);
         }
 
         /**
@@ -274,7 +292,8 @@ namespace feng3d
                 if (child._parent) child._parent.removeChild(child);
                 child._setParent(this);
                 this._children.push(child);
-                this.dispatch("addChild", child, true);
+                child.dispatch("added", { parent: this });
+                this.dispatch("addChild", { child: child, parent: this }, true);
             }
             return child;
         }
@@ -361,24 +380,25 @@ namespace feng3d
          */
         getComponentAt(index: number): Component
         {
-            debuger && console.assert(index < this.numComponents, "给出索引超出范围");
+            console.assert(index < this.numComponents, "给出索引超出范围");
             return this._components[index];
         }
 
 		/**
          * 添加指定组件类型到游戏对象
          * 
-		 * @param param 被添加组件
+		 * @type type 被添加组件
 		 */
-        addComponent<T extends Components>(param: Constructor<T>, callback: (component: T) => void = null): T
+        addComponent<T extends ComponentNames>(type: T, callback: (component: ComponentMap[T]) => void = null): ComponentMap[T]
         {
-            var component: T = this.getComponent(param);
+            var component = this.getComponent(type);
             if (component && component.single)
             {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
-            component = new param();
+            var cls: any = componentMap[type];
+            component = new cls();
             this.addComponentAt(component, this._components.length);
             callback && callback(component);
             return component;
@@ -402,7 +422,7 @@ namespace feng3d
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Components>(type: Constructor<T>): T
+        getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
         {
             var component = this.getComponents(type)[0];
             return component;
@@ -414,17 +434,18 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type?: Constructor<T>): T[]
+        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][]
         {
-            var filterResult: Component[];
-            if (!type)
+            console.assert(!!type, `类型不能为空！`);
+
+            var cls: any = componentMap[type];
+            if (!cls)
             {
-                filterResult = this._components.concat();
-            } else
-            {
-                filterResult = this._components.filter(v => v instanceof type);
+                console.warn(`无法找到 ${type} 组件类定义，请使用 @feng3d.RegisterComponent() 在组件类上标记。`);
+                return [];
             }
-            return <T[]>filterResult;
+            var filterResult: any = this._components.filter(v => v instanceof cls);
+            return filterResult;
         }
 
         /**
@@ -433,17 +454,18 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
+        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
         {
             result = result || [];
             var findchildren = true;
+            var cls: any = componentMap[type];
             for (var i = 0, n = this._components.length; i < n; i++)
             {
-                var item = <T>this._components[i];
-                if (!type)
+                var item = <ComponentMap[T]>this._components[i];
+                if (!cls)
                 {
                     result.push(item);
-                } else if (item instanceof type)
+                } else if (item instanceof cls)
                 {
                     if (filter)
                     {
@@ -464,7 +486,7 @@ namespace feng3d
                     this.getChildAt(i).getComponentsInChildren(type, filter, result);
                 }
             }
-            return <T[]>result;
+            return result;
         }
 
         /**
@@ -473,7 +495,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
+        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
         {
             result = result || [];
             var parent = this.parent;
@@ -493,10 +515,10 @@ namespace feng3d
          */
         setComponentIndex(component: Components, index: number): void
         {
-            debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
             var oldIndex = this._components.indexOf(component);
-            debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
+            console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
 
             this._components.splice(oldIndex, 1);
             this._components.splice(index, 0, component);
@@ -522,7 +544,7 @@ namespace feng3d
 		 */
         removeComponent(component: Components): void
         {
-            debuger && console.assert(this.hasComponent(component), "只能移除在容器中的组件");
+            console.assert(this.hasComponent(component), "只能移除在容器中的组件");
 
             var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
@@ -535,7 +557,7 @@ namespace feng3d
          */
         getComponentIndex(component: Components): number
         {
-            debuger && console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
+            console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
 
             var index = this._components.indexOf(component);
             return index;
@@ -547,11 +569,11 @@ namespace feng3d
          */
         removeComponentAt(index: number): Component
         {
-            debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.dispatch("removeComponent", component, true);
+            this.dispatch("removeComponent", { component: component, gameobject: this }, true);
             component.dispose();
             return component;
         }
@@ -563,8 +585,8 @@ namespace feng3d
          */
         swapComponentsAt(index1: number, index2: number): void
         {
-            debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
-            debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
+            console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
+            console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
 
             var temp: Components = this._components[index1];
             this._components[index1] = this._components[index2];
@@ -578,8 +600,8 @@ namespace feng3d
          */
         swapComponents(a: Components, b: Components): void
         {
-            debuger && console.assert(this.hasComponent(a), "第一个子组件不在容器中");
-            debuger && console.assert(this.hasComponent(b), "第二个子组件不在容器中");
+            console.assert(this.hasComponent(a), "第一个子组件不在容器中");
+            console.assert(this.hasComponent(b), "第二个子组件不在容器中");
 
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         }
@@ -604,8 +626,8 @@ namespace feng3d
          */
         get worldBounds()
         {
-            var model = this.getComponent(Model);
-            var box = model ? model.selfWorldBounds : new AABB(this.transform.scenePosition, this.transform.scenePosition);
+            var model = this.getComponent("Renderable");
+            var box = model ? model.selfWorldBounds : new Box3(this.transform.worldPosition, this.transform.worldPosition);
             this.children.forEach(element =>
             {
                 var ebox = element.worldBounds;
@@ -617,7 +639,7 @@ namespace feng3d
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
-        private _onAllListener(e: Event<any>)
+        private _onAnyListener(e: Event<any>)
         {
             this.components.forEach(element =>
             {
@@ -655,7 +677,7 @@ namespace feng3d
          */
         get isSelfLoaded()
         {
-            var model = this.getComponent(Model);
+            var model = this.getComponent("Renderable");
             if (model) return model.isLoaded
             return true;
         }
@@ -671,7 +693,7 @@ namespace feng3d
                 callback();
                 return;
             }
-            var model = this.getComponent(Model);
+            var model = this.getComponent("Renderable");
             if (model)
             {
                 model.onLoadCompleted(callback);
@@ -725,24 +747,6 @@ namespace feng3d
             if (loadingNum == 0) callback();
         }
 
-        /**
-         * 渲染前执行函数
-         * 
-         * 可用于渲染前收集渲染数据，或者更新显示效果等
-         * 
-         * @param gl 
-         * @param renderAtomic 
-         * @param scene3d 
-         * @param camera 
-         */
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
-        {
-            this._components.forEach(element =>
-            {
-                element.beforeRender(gl, renderAtomic, scene3d, camera);
-            });
-        }
-
         //------------------------------------------
         // Static Functions
         //------------------------------------------
@@ -766,13 +770,36 @@ namespace feng3d
 		 */
         protected _components: Components[] = [];
         protected _children: GameObject[] = [];
-        protected _scene: Scene3D;
+        protected _scene: Scene;
         protected _parent: GameObject;
+        protected _globalVisible = false;
+        protected _globalVisibleInvalid = true;
 
         //------------------------------------------
         // Protected Functions
         //------------------------------------------
 
+        protected _updateGlobalVisible()
+        {
+            var visible = this.visible;
+            if (this.parent)
+            {
+                visible = visible && this.parent.globalVisible;
+            }
+            this._globalVisible = visible;
+        }
+
+        protected _invalidateGlobalVisible()
+        {
+            if (this._globalVisibleInvalid) return;
+
+            this._globalVisibleInvalid = true;
+
+            this._children.forEach(c =>
+            {
+                c._invalidateGlobalVisible();
+            });
+        }
         //------------------------------------------
         // Private Properties
         //------------------------------------------
@@ -785,7 +812,7 @@ namespace feng3d
         {
             this._parent = value;
             this.updateScene();
-            this.transform["invalidateSceneTransform"]();
+            this.transform["_invalidateSceneTransform"]();
         }
 
         private updateScene()
@@ -819,7 +846,8 @@ namespace feng3d
             this._children.splice(childIndex, 1);
             child._setParent(null);
 
-            this.dispatch("removeChild", child, true);
+            child.dispatch("removed", { parent: this });
+            this.dispatch("removeChild", { child: child, parent: this }, true);
         }
 
         /**
@@ -841,7 +869,7 @@ namespace feng3d
         {
             if (component == null)
                 return;
-            debuger && console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
 
             if (this.hasComponent(component))
             {
@@ -857,7 +885,46 @@ namespace feng3d
             component.setGameObject(this);
             component.init();
             //派发添加组件事件
-            this.dispatch("addComponent", component, true);
+            this.dispatch("addComponent", { component: component, gameobject: this }, true);
         }
+
+        /**
+         * 创建指定类型的游戏对象。
+         * 
+         * @param type 游戏对象类型。
+         * @param param 游戏对象参数。
+         */
+        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>)
+        {
+            var g = new GameObject();
+            g.name = type;
+
+            var createHandler = this._registerPrimitives[type];
+            if (createHandler != null) createHandler(g);
+
+            serialization.setValue(g, param);
+            return g;
+        }
+
+        /**
+         * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
+         * 
+         * @param type 原始游戏对象类型。
+         * @param handler 构建原始游戏对象的函数。
+         */
+        static registerPrimitive<K extends keyof PrimitiveGameObject>(type: K, handler: (gameObject: GameObject) => void)
+        {
+            if (this._registerPrimitives[type])
+                console.warn(`重复注册原始游戏对象 ${type} ！`);
+            this._registerPrimitives[type] = handler;
+        }
+        static _registerPrimitives: { [type: string]: (gameObject: GameObject) => void } = {};
+    }
+
+    /**
+     * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
+     */
+    export interface PrimitiveGameObject
+    {
     }
 }

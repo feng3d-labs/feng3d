@@ -2,19 +2,10 @@ namespace feng3d
 {
     export class ImageDataTexture2D extends Texture2D
     {
-        get imageData()
-        {
-            return this._imageData;
-        }
-        set imageData(v)
-        {
-            if (this._imageData == v) return;
-            this._imageData = v;
-            this.imageDataChanged();
-        }
-        private _imageData: ImageData;
+        @watch("_imageDataChanged")
+        imageData: ImageData;
 
-        private imageDataChanged()
+        private _imageDataChanged()
         {
             this._pixels = this.imageData;
             this.invalidate();

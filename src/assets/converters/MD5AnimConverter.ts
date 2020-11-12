@@ -30,7 +30,7 @@ namespace feng3d
                 translatePose(md5AnimData, md5AnimData.frame[i], animationClip);
             }
 
-            dispatcher.dispatch("asset.parsed", animationClip);
+            globalDispatcher.dispatch("asset.parsed", animationClip);
 
             completed && completed(animationClip);
 
@@ -95,7 +95,7 @@ namespace feng3d
 
                     var path: PropertyClipPath = [
                         [PropertyClipPathItemType.GameObject, hierarchy.name],
-                        [PropertyClipPathItemType.Component, "feng3d.Transform"],
+                        [PropertyClipPathItemType.Component, "Transform"],
                     ];
 
                     var time = (frameData.index / md5AnimData.frameRate) * 1000;

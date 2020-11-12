@@ -44,7 +44,7 @@ namespace feng3d.war3
 			var container = serialization.setValue(new GameObject(), { name: this.model.name });
 
 			var skeletonjoints = createSkeleton(this);
-			this.skeletonComponent = container.addComponent(SkeletonComponent);
+			this.skeletonComponent = container.addComponent("SkeletonComponent");
 			this.skeletonComponent.joints = skeletonjoints;
 
 			for (var i: number = 0; i < this.geosets.length; i++)
@@ -52,8 +52,8 @@ namespace feng3d.war3
 				var geoset: Geoset = this.geosets[i];
 
 				var mesh: GameObject = this.meshs[i] = new GameObject();
-				// var model = mesh.addComponent(Model);
-				var model = mesh.addComponent(SkinnedModel);
+				// var model = mesh.addComponent("Model");
+				var model = mesh.addComponent("SkinnedMeshRenderer");
 
 				var geometry: CustomGeometry = new CustomGeometry();
 				geometry.positions = geoset.Vertices;
@@ -68,8 +68,8 @@ namespace feng3d.war3
 				skinSkeleton.resetJointIndices(skins.jointIndices0, this.skeletonComponent);
 
 				//更新关节索引与权重索引
-				geometry.setVAData("a_jointindex0", skins.jointIndices0, 4);
-				geometry.setVAData("a_jointweight0", skins.jointWeights0, 4);
+				geometry.skinIndices = skins.jointIndices0;
+				geometry.skinWeights = skins.jointWeights0;
 
 				var material: Material = this.materials[geoset.MaterialID];
 				if (!material.material)
@@ -83,10 +83,10 @@ namespace feng3d.war3
 					material.material = model.material = serialization.setValue(new feng3d.Material(), { name: image, renderParams: { cullFace: CullFace.FRONT } });
 					// }
 
-					dispatcher.dispatch("asset.parsed", material.material);
+					globalDispatcher.dispatch("asset.parsed", material.material);
 				}
 
-				dispatcher.dispatch("asset.parsed", geometry);
+				globalDispatcher.dispatch("asset.parsed", geometry);
 
 				model.geometry = geometry;
 				model.skinSkeleton = skinSkeleton;
@@ -95,7 +95,7 @@ namespace feng3d.war3
 			}
 
 			var animationclips = createAnimationClips(this);
-			var animation = container.addComponent(Animation);
+			var animation = container.addComponent("Animation");
 			animation.animation = animationclips[0]
 			animation.animations = animationclips;
 
@@ -146,20 +146,20 @@ namespace feng3d.war3
 
 			var position = war3Model.pivotPoints[joint.ObjectId];;
 
-			var matrix3D = new Matrix4x4().recompose([
+			var matrix = new Matrix4x4().fromTRS(
 				position,
 				new Vector3(),
 				new Vector3(1, 1, 1)
-			]);
+			);
 			if (skeletonJoint.parentIndex != -1)
 			{
 				var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);
-				joint.pivotPoint = matrix3D.position.subTo(parentskeletonJoint.matrix3D.position);
+				joint.pivotPoint = matrix.getPosition().subTo(parentskeletonJoint.matrix.getPosition());
 			} else
 			{
 				joint.pivotPoint = position;
 			}
-			skeletonJoint.matrix3D = matrix3D;
+			skeletonJoint.matrix = matrix;
 			skeletonjoints[index] = skeletonJoint;
 			return skeletonJoint;
 		}
@@ -227,7 +227,7 @@ namespace feng3d.war3
 				bone.buildAnimationclip(animationclip, __chache__, sequence.interval.start, sequence.interval.end);
 			});
 
-			dispatcher.dispatch("asset.parsed", animationclip);
+			globalDispatcher.dispatch("asset.parsed", animationclip);
 
 			animationclips.push(animationclip);
 		}

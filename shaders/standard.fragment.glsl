@@ -4,6 +4,8 @@ varying vec2 v_uv;
 varying vec3 v_worldPosition;
 uniform vec3 u_cameraPos;
 
+#include<color_pars_frag>
+
 #include<normal_pars_frag>
 #include<diffuse_pars_frag>
 #include<alphatest_pars_frag>
@@ -19,6 +21,8 @@ uniform vec3 u_cameraPos;
 void main()
 {
     vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
+
+    #include<color_frag>
 
     #include<normal_frag>
     #include<diffuse_frag>

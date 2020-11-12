@@ -1,7 +1,7 @@
 namespace feng3d
 {
 
-	export interface GeometryMap { TorusGeometry: TorusGeometry }
+	export interface GeometryTypes { TorusGeometry: TorusGeometry }
 
 	/**
 	 * 圆环几何体
@@ -16,85 +16,40 @@ namespace feng3d
 		 */
 		@serialize
 		@oav()
-		get radius()
-		{
-			return this._radius;
-		}
-		set radius(v)
-		{
-			if (this._radius == v) return;
-			this._radius = v;
-			this.invalidateGeometry();
-		}
-		private _radius = 0.5;
+		@watch("invalidateGeometry")
+		radius = 0.5;
 
 		/**
 		 * 管道半径
 		 */
 		@serialize
 		@oav()
-		get tubeRadius()
-		{
-			return this._tubeRadius;
-		}
-		set tubeRadius(v)
-		{
-			if (this._tubeRadius == v) return;
-			this._tubeRadius = v;
-			this.invalidateGeometry();
-		}
-		private _tubeRadius = 0.1;
+		@watch("invalidateGeometry")
+		tubeRadius = 0.1;
 
 		/**
 		 * 半径方向分割数
 		 */
 		@serialize
 		@oav()
-		get segmentsR()
-		{
-			return this._segmentsR;
-		}
-		set segmentsR(v)
-		{
-			if (this._segmentsR == v) return;
-			this._segmentsR = v;
-			this.invalidateGeometry();
-		}
-		private _segmentsR = 16;
+		@watch("invalidateGeometry")
+		segmentsR = 16;
 
 		/**
 		 * 管道方向分割数
 		 */
 		@serialize
 		@oav()
-		get segmentsT()
-		{
-			return this._segmentsT;
-		}
-		set segmentsT(v)
-		{
-			if (this._segmentsT == v) return;
-			this._segmentsT = v;
-			this.invalidateGeometry();
-		}
-		private _segmentsT = 8;
+		@watch("invalidateGeometry")
+		segmentsT = 8;
 
 		/**
 		 * 是否朝上
 		 */
 		@serialize
 		@oav()
-		get yUp()
-		{
-			return this._yUp;
-		}
-		set yUp(v)
-		{
-			if (this._yUp == v) return;
-			this._yUp = v;
-			this.invalidateGeometry();
-		}
-		private _yUp = true;
+		@watch("invalidateGeometry")
+		yUp = true;
 
 		name = "Torus";
 
@@ -238,9 +193,10 @@ namespace feng3d
 				}
 			}
 
-			this.setVAData("a_position", this._vertexPositionData, 3);
-			this.setVAData("a_normal", this._vertexNormalData, 3);
-			this.setVAData("a_tangent", this._vertexTangentData, 3);
+			this.positions = this._vertexPositionData;
+			this.normals = this._vertexNormalData;
+			this.tangents = this._vertexTangentData;
+
 			this.indices = this._rawIndices;
 		}
 
@@ -273,10 +229,23 @@ namespace feng3d
 			}
 
 			// build real data from raw data
-			this.setVAData("a_uv", data, 2);
-
+			this.uvs = data;
 		}
 	}
 
-	AssetData.addAssetData("Torus", Geometry.torus = serialization.setValue(new TorusGeometry(), { name: "Torus", assetId: "Torus", hideFlags: HideFlags.NotEditable }));
+	export interface DefaultGeometry
+	{
+		Torus: TorusGeometry;
+	}
+	Geometry.setDefault("Torus", new TorusGeometry());
+
+    GameObject.registerPrimitive("Torus", (g) =>
+    {
+        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Torus");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Torus: GameObject;
+    }
 }

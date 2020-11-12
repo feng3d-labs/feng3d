@@ -6,27 +6,29 @@ namespace feng3d
     /**
      * The Water component renders the terrain.
      */
-    export class Water extends Model
+    @AddComponentMenu("Graphics/Water")
+    @RegisterComponent()
+    export class Water extends Renderable
     {
-        __class__: "feng3d.Water" = "feng3d.Water";
+        __class__: "feng3d.Water";
 
-        geometry = Geometry.plane;
+        geometry = Geometry.getDefault("Plane");
 
-        material = Material.water;
+        material = Material.getDefault("Water-Material");
 
         /**
          * 帧缓冲对象，用于处理水面反射
          */
         private frameBufferObject = new FrameBufferObject();
 
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             var uniforms = <feng3d.WaterUniforms>this.material.uniforms;
             var sun = this.gameObject.scene.activeDirectionalLights[0];
             if (sun)
             {
                 uniforms.u_sunColor = sun.color;
-                uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward.clone().negate();
+                uniforms.u_sunDirection = sun.transform.localToWorldMatrix.getAxisZ().negate();
             }
 
             var clipBias = 0;
@@ -35,16 +37,16 @@ namespace feng3d
 
             // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
 
-            super.beforeRender(gl, renderAtomic, scene3d, camera);
+            super.beforeRender(renderAtomic, scene, camera);
 
             if (1) return;
             //
-            var mirrorWorldPosition = this.transform.scenePosition;
-            var cameraWorldPosition = camera.transform.scenePosition;
+            var mirrorWorldPosition = this.transform.worldPosition;
+            var cameraWorldPosition = camera.transform.worldPosition;
 
             var rotationMatrix = this.transform.rotationMatrix;
 
-            var normal = rotationMatrix.forward;
+            var normal = rotationMatrix.getAxisZ();
 
             var view = mirrorWorldPosition.subTo(cameraWorldPosition);
             if (view.dot(normal) > 0) return;
@@ -62,9 +64,9 @@ namespace feng3d
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
 
-            var mirrorCamera = serialization.setValue(new GameObject(), { name: "waterMirrorCamera" }).addComponent(Camera);
+            var mirrorCamera = serialization.setValue(new GameObject(), { name: "waterMirrorCamera" }).addComponent("Camera");
             mirrorCamera.transform.position = view;
-            mirrorCamera.transform.lookAt(target, rotationMatrix.up);
+            mirrorCamera.transform.lookAt(target, rotationMatrix.getAxisY());
 
             mirrorCamera.lens = camera.lens.clone();
 
@@ -78,7 +80,7 @@ namespace feng3d
             );
             textureMatrix.append(mirrorCamera.viewProjection);
 
-            var mirrorPlane = Plane3D.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.deltaTransformVector(normal), mirrorCamera.transform.worldToLocalMatrix.transformVector(mirrorWorldPosition));
+            var mirrorPlane = Plane.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.transformVector3(normal), mirrorCamera.transform.worldToLocalMatrix.transformPoint3(mirrorWorldPosition));
             var clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
             var projectionMatrix = mirrorCamera.lens.matrix;
@@ -96,27 +98,38 @@ namespace feng3d
             projectionMatrix.rawData[10] = clipPlane.z + 1.0 - clipBias;
             projectionMatrix.rawData[14] = clipPlane.w;
 
-            var eye = camera.transform.scenePosition;
+            var eye = camera.transform.worldPosition;
 
-            // 
-            var frameBufferObject = this.frameBufferObject;
-            frameBufferObject.active(gl);
+            // 不支持直接操作gl，下面代码暂时注释掉！
+            // // 
+            // var frameBufferObject = this.frameBufferObject;
+            // FrameBufferObject.active(gl, frameBufferObject);
 
-            //
-            gl.viewport(0, 0, frameBufferObject.OFFSCREEN_WIDTH, frameBufferObject.OFFSCREEN_HEIGHT);
-            gl.clearColor(1.0, 1.0, 1.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            // //
+            // gl.viewport(0, 0, frameBufferObject.OFFSCREEN_WIDTH, frameBufferObject.OFFSCREEN_HEIGHT);
+            // gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            skyboxRenderer.draw(gl, scene3d, mirrorCamera);
-            // forwardRenderer.draw(gl, scene3d, mirrorCamera);
-            // forwardRenderer.draw(gl, scene3d, camera);
+            // skyboxRenderer.draw(gl, scene, mirrorCamera);
+            // // forwardRenderer.draw(gl, scene, mirrorCamera);
+            // // forwardRenderer.draw(gl, scene, camera);
 
-            frameBufferObject.deactive(gl);
+            // frameBufferObject.deactive(gl);
 
             //
             // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
 
             uniforms.u_textureMatrix = textureMatrix;
         }
+    }
+
+    GameObject.registerPrimitive("Water", (g) =>
+    {
+        g.addComponent("Water");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Water: GameObject;
     }
 }

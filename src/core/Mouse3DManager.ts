@@ -5,30 +5,8 @@ namespace feng3d
      */
     export class Mouse3DManager
     {
-        get mouseInput()
-        {
-            return this._mouseInput;
-        }
-        set mouseInput(v)
-        {
-            if (this._mouseInput == v) return;
-            if (this._mouseInput)
-            {
-                mouseEventTypes.forEach(element =>
-                {
-                    this._mouseInput.off(element, this.onMouseEvent, this);
-                });
-            }
-            this._mouseInput = v;
-            if (this._mouseInput)
-            {
-                mouseEventTypes.forEach(element =>
-                {
-                    this._mouseInput.on(element, this.onMouseEvent, this);
-                });
-            }
-        }
-        private _mouseInput: MouseInput;
+        @watch("_mouseInputChanged")
+        mouseInput: MouseInput;
 
         get selectedGameObject()
         {
@@ -46,15 +24,15 @@ namespace feng3d
 
         /**
          * 拾取
-         * @param scene3d 场景
+         * @param scene 场景
          * @param camera 摄像机
          */
-        pick(engine: Engine, scene3d: Scene3D, camera: Camera)
+        pick(view: View, scene: Scene, camera: Camera)
         {
             if (this._mouseEventTypes.length == 0) return;
 
             //计算得到鼠标射线相交的物体
-            var pickingCollisionVO = raycaster.pick(engine.getMouseRay3D(), scene3d.mouseCheckObjects);
+            var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
 
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
@@ -78,6 +56,24 @@ namespace feng3d
          * 统计处理click次数，判断是否达到dblclick
          */
         private gameObjectClickNum: number;
+
+        private _mouseInputChanged(property: string, oldValue: MouseInput, newValue: MouseInput)
+        {
+            if (oldValue)
+            {
+                mouseEventTypes.forEach(element =>
+                {
+                    oldValue.off(element, this.onMouseEvent, this);
+                });
+            }
+            if (newValue)
+            {
+                mouseEventTypes.forEach(element =>
+                {
+                    newValue.on(element, this.onMouseEvent, this);
+                });
+            }
+        }
 
         private dispatch(type)
         {
@@ -161,8 +157,8 @@ namespace feng3d
         once<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): void;
 
         has<K extends keyof MouseEventMap>(type: K): boolean;
-        on<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof MouseEventMap>(type?: K, listener?: (event: Event<MouseEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof MouseEventMap>(type?: K, listener?: (event: Event<MouseEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**

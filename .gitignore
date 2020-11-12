@@ -1,3 +1,5 @@
 /debug
 **/node_modules
 /package-lock.json
+/api
+*.tsbuildinfo

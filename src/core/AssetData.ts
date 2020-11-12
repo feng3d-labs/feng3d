@@ -13,7 +13,7 @@ namespace feng3d
         @serialize
         get name()
         {
-            var asset = rs.getAsset(this.assetId);
+            var asset = rs.getAssetById(this.assetId);
             if (asset)
                 this._name = asset.fileName;
             return this._name;
@@ -33,7 +33,7 @@ namespace feng3d
         {
             if (this._assetId == v) return;
 
-            if (this._assetId != undefined) { debuger && console.error(`不允许修改 assetId`); return; }
+            if (this._assetId != undefined) { console.error(`不允许修改 assetId`); return; }
 
             this._assetId = v;
         }
@@ -50,7 +50,7 @@ namespace feng3d
          * @param assetId 资源编号
          * @param data 资源数据
          */
-        static addAssetData(assetId: string, data: AssetData)
+        static addAssetData<T extends AssetData>(assetId: string, data: T)
         {
             if (!data) return;
             if (data.assetId != assetId)
@@ -58,6 +58,7 @@ namespace feng3d
 
             this.assetMap.set(data, assetId);
             this.idAssetMap.set(assetId, data);
+            return data;
         }
 
         /**
@@ -68,14 +69,14 @@ namespace feng3d
         static deleteAssetData(data: AssetData)
         {
             if (!data) return;
-            debuger && console.assert(this.assetMap.has(data));
+            console.assert(this.assetMap.has(data));
             var assetId = this.assetMap.get(data);
             this._delete(assetId, data);
         }
 
         static deleteAssetDataById(assetId: string)
         {
-            debuger && console.assert(this.idAssetMap.has(assetId));
+            console.assert(this.idAssetMap.has(assetId));
             var data = this.idAssetMap.get(assetId);
             this._delete(assetId, data);
         }
@@ -94,8 +95,8 @@ namespace feng3d
         static isAssetData(asset: any): asset is AssetData
         {
             if (!asset || asset.assetId == undefined) return false;
+            if (asset instanceof AssetData) return true;
             if (classUtils.getDefaultInstanceByName(asset[CLASS_KEY]) instanceof AssetData) return true;
-            return false;
         }
 
         /**
@@ -124,7 +125,7 @@ namespace feng3d
         static deserialize(object: any)
         {
             var result = this.getLoadedAssetData(object.assetId);
-            debuger && console.assert(!!result, `资源 ${object.assetId} 未加载，请使用 ReadRS.deserializeWithAssets 进行序列化包含加载的资源对象。`)
+            console.assert(!!result, `资源 ${object.assetId} 未加载，请使用 ReadRS.deserializeWithAssets 进行序列化包含加载的资源对象。`)
             return result;
         }
 
@@ -143,7 +144,7 @@ namespace feng3d
          */
         static getAllLoadedAssetDatas()
         {
-            return this.assetMap.getKeys();
+            return Map.getKeys(this.assetMap);
         }
 
         /**
@@ -156,4 +157,119 @@ namespace feng3d
          */
         static idAssetMap = new Map<string, AssetData>();
     }
+
+    /**
+     * 设置函数列表
+     */
+    serialization.setValueHandlers.push(
+        // 处理资源
+        {
+            priority: 0,
+            handler: function (target, source, property, param)
+            {
+                var tpv = target[property];
+                var spv = source[property];
+                if (AssetData.isAssetData(spv))
+                {
+                    // 此处需要反序列化资源完整数据
+                    if (property == "__root__")
+                    {
+                        return false;
+                    }
+
+                    target[property] = AssetData.deserialize(spv);
+                    return true;
+                }
+                if (AssetData.isAssetData(tpv))
+                {
+                    if (spv.__class__ == null)
+                    {
+                        var className = classUtils.getQualifiedClassName(tpv);
+                        var inst = classUtils.getInstanceByName(className)
+                        param.serialization.setValue(inst, spv);
+                        target[property] = inst;
+                    } else
+                    {
+                        target[property] = param.serialization.deserialize(spv);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        },
+    );
+
+    serialization.serializeHandlers.push(
+        // 处理资源
+        {
+            priority: 0,
+            handler: function (target, source, property)
+            {
+                var spv = source[property];
+                if (AssetData.isAssetData(spv))
+                {
+                    // 此处需要反序列化资源完整数据
+                    if (property == "__root__")
+                    {
+                        return false;
+                    }
+                    target[property] = AssetData.serialize(<any>spv);
+                    return true;
+                }
+                return false;
+            }
+        },
+    );
+
+    serialization.deserializeHandlers.push(
+        // 处理资源
+        {
+            priority: 0,
+            handler: function (target, source, property, param)
+            {
+                var tpv = target[property];
+                var spv = source[property];
+                if (AssetData.isAssetData(spv))
+                {
+                    // 此处需要反序列化资源完整数据
+                    if (property == "__root__")
+                    {
+                        return false;
+                    }
+                    target[property] = AssetData.deserialize(spv);
+                    return true;
+                }
+                if (AssetData.isAssetData(tpv))
+                {
+                    target[property] = param.serialization.deserialize(spv);
+                    return true;
+                }
+                return false;
+            }
+        },
+    );
+
+    serialization.differentHandlers.push(
+        // 资源
+        {
+            priority: 0,
+            handler: function (target, source, property, param)
+            {
+                var different = param.different;
+                let tpv = target[property];
+                if (AssetData.isAssetData(tpv))
+                {
+                    // 此处需要反序列化资源完整数据
+                    if (property == "__root__")
+                    {
+                        return false;
+                    }
+                    different[property] = AssetData.serialize(tpv);
+                    return true;
+                }
+                return false;
+            }
+        },
+    );
+
 }

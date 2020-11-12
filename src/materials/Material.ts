@@ -1,15 +1,31 @@
 namespace feng3d
 {
-    export interface UniformsMap { }
-    export type ShaderNames = keyof UniformsMap;
-    export type UniformsData = UniformsMap[keyof UniformsMap];
+    export interface UniformsTypes { }
+    export type ShaderNames = keyof UniformsTypes;
+    export type UniformsLike = UniformsTypes[keyof UniformsTypes];
 
     /**
      * 材质
      */
     export class Material extends AssetData
     {
-        __class__: "feng3d.Material" = "feng3d.Material";
+        __class__: "feng3d.Material";
+
+        static create<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
+        {
+            var material = new Material();
+            material.init(shaderName, uniforms, renderParams);
+            return material;
+        }
+
+        init<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
+        {
+            this.shaderName = shaderName;
+            //
+            uniforms && serialization.setValue(this.uniforms, <any>uniforms);
+            renderParams && serialization.setValue(this.renderParams, renderParams);
+            return this;
+        }
 
         //
         private renderAtomic = new RenderAtomic();
@@ -22,17 +38,8 @@ namespace feng3d
          */
         @oav({ component: "OAVMaterialName" })
         @serialize
-        get shaderName()
-        {
-            return this._shaderName;
-        }
-        set shaderName(v)
-        {
-            if (this._shaderName == v) return;
-            this._shaderName = v;
-            this.onShaderChanged();
-        }
-        private _shaderName: ShaderNames;
+        @watch("_onShaderChanged")
+        shaderName: ShaderNames;
 
         @oav({ editable: false })
         @serialize
@@ -43,39 +50,21 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        get uniforms()
-        {
-            return this._uniforms;
-        }
-        set uniforms(v)
-        {
-            if (this._uniforms == v) return;
-            this._uniforms = v;
-            this.onUniformsChanged();
-        }
-        private _uniforms: UniformsData;
+        @watch("_onUniformsChanged")
+        uniforms: UniformsLike;
 
         /**
          * 渲染参数
          */
         @serialize
         @oav({ block: "渲染参数", component: "OAVObjectView" })
-        get renderParams()
-        {
-            return this._renderParams;
-        }
-        set renderParams(v)
-        {
-            if (this._renderParams == v) return;
-            this._renderParams = v;
-            this.onRenderParamsChanged();
-        }
-        private _renderParams: RenderParams;
+        @watch("_onRenderParamsChanged")
+        renderParams: RenderParams;
 
         constructor()
         {
             super();
-            dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            globalDispatcher.on("asset.shaderChanged", this._onShaderChanged, this);
             this.shaderName = "standard";
             this.uniforms = new StandardUniforms();
             this.renderParams = new RenderParams();
@@ -134,7 +123,7 @@ namespace feng3d
             if (loadingNum == 0) callback();
         }
 
-        private onShaderChanged()
+        private _onShaderChanged()
         {
             var cls = shaderConfig.shaders[this.shaderName].cls;
             if (cls)
@@ -142,44 +131,61 @@ namespace feng3d
                 if (this.uniforms == null || this.uniforms.constructor != cls)
                 {
                     var newuniforms = new cls();
-                    // Object.assign(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             } else
             {
                 this.uniforms = <any>{};
             }
+
+            var renderParams = shaderConfig.shaders[this.shaderName].renderParams;
+            renderParams && serialization.setValue(this.renderParams, renderParams);
+
             this.renderAtomic.shader = new Shader(this.shaderName);
         }
 
-        private onUniformsChanged()
+        private _onUniformsChanged()
         {
             this.renderAtomic.uniforms = <any>this.uniforms;
         }
 
-        private onRenderParamsChanged()
+        private _onRenderParamsChanged()
         {
             this.renderAtomic.renderParams = this.renderParams;
         }
 
         /**
-         * 默认材质
+         * 设置默认材质
+         * 
+         * 资源名称与材质名称相同，且无法在检查器界面中编辑。
+         * 
+         * @param name 材质名称
+         * @param material 材质数据
          */
-        static default: Material;
+        static setDefault<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>)
+        {
+            var newMaterial = this._defaultMaterials[<any>name] = new Material();
+            serialization.setValue(newMaterial, material);
+            serialization.setValue(newMaterial, { name: name, assetId: name, hideFlags: HideFlags.NotEditable });
+            AssetData.addAssetData(name, newMaterial);
+        }
 
         /**
-         * 默认水材质
+         * 获取材质
+         * 
+         * @param name 材质名称
          */
-        static water: Material;
+        static getDefault<K extends keyof DefaultMaterial>(name: K)
+        {
+            return this._defaultMaterials[name];
+        }
+        private static _defaultMaterials: DefaultMaterial = <any>{};
+    }
 
-        /**
-         * 默认地形材质
-         */
-        static terrain: Material;
-
-        /**
-         * 粒子材质
-         */
-        static particle: Material;
+    /**
+     * 默认材质
+     */
+    export interface DefaultMaterial
+    {
     }
 }

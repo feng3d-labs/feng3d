@@ -1,23 +1,16 @@
 namespace feng3d
 {
-    export interface GeometryMap { CustomGeometry: CustomGeometry }
-    
+    export interface GeometryTypes { CustomGeometry: CustomGeometry }
+
     export class CustomGeometry extends Geometry
     {
-        __class__: "feng3d.CustomGeometry" = "feng3d.CustomGeometry";
-        
+        __class__: "feng3d.CustomGeometry";
+
         /**
          * 顶点索引缓冲
          */
         @serialize
-        get indicesBase()
-        {
-            return this._indices;
-        }
-        set indicesBase(value)
-        {
-            this.indices = value;
-        }
+        indices: number[];
 
         /**
          * 属性数据列表
@@ -27,13 +20,9 @@ namespace feng3d
         {
             return this._attributes;
         }
-        set attributes(value)
+        set attributes(v)
         {
-            this._attributes = {};
-            for (var key in value)
-            {
-                this.setVAData(<any>key, value[key].data, value[key].size);
-            }
+            this._attributes = v;
         }
     }
 }

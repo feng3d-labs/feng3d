@@ -10,24 +10,44 @@ namespace feng3d
 	/**
 	 * 摄像机
 	 */
+    @AddComponentMenu("Rendering/Camera")
+    @RegisterComponent()
     export class Camera extends Component
     {
-        __class__: "feng3d.Camera" = "feng3d.Camera";
+        __class__: "feng3d.Camera";
 
         get single() { return true; }
 
         @oav({ component: "OAVEnum", componentParam: { enumClass: Projection } })
         get projection()
         {
-            return this._projection;
+            return this.lens && this.lens.projectionType;
         }
         set projection(v)
         {
-            if (this._projection == v) return;
-            this._projection = v;
-            this.onProjectionChanged();
+            var projectionType = this.projection;
+            if (projectionType == v) return;
+            //
+            var aspect = 1;
+            var near = 0.3;
+            var far = 1000;
+            if (this.lens)
+            {
+                aspect = this.lens.aspect;
+                near = this.lens.near;
+                far = this.lens.far;
+                serialization.setValue(this._backups, <any>this.lens);
+            }
+            var fov = this._backups ? this._backups.fov : 60;
+            var size = this._backups ? this._backups.size : 1;
+            if (v == Projection.Perspective)
+            {
+                this.lens = new PerspectiveLens(fov, aspect, near, far);
+            } else
+            {
+                this.lens = new OrthographicLens(size, aspect, near, far);
+            }
         }
-        private _projection = Projection.Perspective;
 
         /**
 		 * 镜头
@@ -41,12 +61,23 @@ namespace feng3d
         set lens(v)
         {
             if (this._lens == v) return;
-            if (this._lens) this._lens.off("lensChanged", <any>this.onLensChanged, this);
-            this._lens = v;
-            if (this._lens) this._lens.on("lensChanged", <any>this.onLensChanged, this);
 
-            this.onLensChanged();
+            if (this._lens)
+            {
+                this._lens.off("lensChanged", this.invalidateViewProjection, this);
+            }
+            this._lens = v;
+            if (this._lens)
+            {
+                this._lens.on("lensChanged", this.invalidateViewProjection, this);
+            }
+
+            this.invalidateViewProjection();
+
+            this.dispatch("refreshView");
+            this.dispatch("lensChanged");
         }
+        private _lens: LensBase;
 
 		/**
 		 * 场景投影矩阵，世界空间转投影空间
@@ -56,9 +87,9 @@ namespace feng3d
             if (this._viewProjectionInvalid)
             {
                 //场景空间转摄像机空间
-                this._viewProjection.copyFrom(this.transform.worldToLocalMatrix);
+                this._viewProjection.copy(this.transform.worldToLocalMatrix);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
-                this._viewProjection.append(this._lens.matrix);
+                this._viewProjection.append(this.lens.matrix);
                 this._viewProjectionInvalid = false;
             }
 
@@ -66,16 +97,16 @@ namespace feng3d
         }
 
         /**
-         * 可视包围盒
+         * 获取摄像机的截头锥体
          */
-        get viewBox()
+        get frustum()
         {
-            if (this._viewBoxInvalid)
+            if (this._frustumInvalid)
             {
-                this.updateViewBox();
-                this._viewBoxInvalid = false;
+                this._frustum.fromMatrix(this.viewProjection);
+                this._frustumInvalid = false;
             }
-            return this._viewBox;
+            return this._frustum;
         }
 
 		/**
@@ -86,8 +117,8 @@ namespace feng3d
             super.init();
             this.lens = this.lens || new PerspectiveLens();
             //
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this._viewProjectionInvalid = true;
+            this.on("scenetransformChanged", this.invalidateViewProjection, this);
+            this.invalidateViewProjection();
         }
 
         /**
@@ -96,7 +127,7 @@ namespace feng3d
 		 * @param y view3D上的X坐标
 		 * @return
 		 */
-        getRay3D(x: number, y: number, ray3D = new Ray3D()): Ray3D
+        getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
         {
             return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
         }
@@ -108,7 +139,7 @@ namespace feng3d
 		 */
         project(point3d: Vector3): Vector3
         {
-            var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
+            var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformPoint3(point3d));
             return v;
         }
 
@@ -122,7 +153,7 @@ namespace feng3d
 		 */
         unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
         {
-            return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
+            return this.transform.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
         }
 
         /**
@@ -139,91 +170,32 @@ namespace feng3d
         }
 
         /**
-         * 是否与盒子相交
-         * @param box 盒子
-         */
-        intersectsBox(box: AABB)
-        {
-            // 投影后的包围盒
-            var box0 = AABB.fromPoints(box.toPoints().map(v => this.lens.project(this.transform.worldToLocalMatrix.transformVector(v))));
-            var intersects = box0.intersects(visibleBox);
-            return intersects;
-        }
-
-        /**
          * 处理场景变换改变事件
          */
-        protected onScenetransformChanged()
+        protected invalidateViewProjection()
         {
             this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
         }
 
         //
-        private _lens: LensBase;
         private _viewProjection: Matrix4x4 = new Matrix4x4();
         private _viewProjectionInvalid = true;
-        private _viewBox = new AABB();
-        private _viewBoxInvalid = true;
         private _backups = { fov: 60, size: 1 };
+        private _frustum = new Frustum()
+        private _frustumInvalid = true;
 
-        /**
-         * 更新可视区域顶点
-         */
-        private updateViewBox()
-        {
-            this._viewBox.copy(this.lens.viewBox);
-            this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
-        }
-
-		/**
-		 * 处理镜头变化事件
-		 */
-        private onLensChanged()
-        {
-            this._viewProjectionInvalid = true;
-
-            if (this.lens instanceof PerspectiveLens)
-            {
-                this.projection = Projection.Perspective;
-            } else if (this.lens instanceof OrthographicLens)
-            {
-                this.projection = Projection.Orthographic;
-            }
-
-            this.dispatch("refreshView");
-
-            this.dispatch("lensChanged");
-        }
-
-        private onProjectionChanged()
-        {
-            var aspect = 1;
-            var near = 0.3;
-            var far = 1000;
-            if (this.lens)
-            {
-                aspect = this.lens.aspect;
-                near = this.lens.near;
-                far = this.lens.far;
-                serialization.setValue(this._backups, <any>this.lens);
-            }
-            var fov = this._backups ? this._backups.fov : 60;
-            var size = this._backups ? this._backups.size : 1;
-            if (this.projection == Projection.Perspective)
-            {
-                if (!(this.lens instanceof PerspectiveLens))
-                {
-                    this.lens = new PerspectiveLens(fov, aspect, near, far);
-                }
-            } else if (this.projection == Projection.Orthographic)
-            {
-                if (!(this.lens instanceof OrthographicLens))
-                {
-                    this.lens = new OrthographicLens(size, aspect, near, far);
-                }
-            }
-        }
     }
     // 投影后可视区域
-    var visibleBox = new AABB(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+    var visibleBox = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+
+    GameObject.registerPrimitive("Camera", (g) =>
+    {
+        g.addComponent("Camera");
+    });
+
+    export interface PrimitiveGameObject
+    {
+        Camera: GameObject;
+    }
 }

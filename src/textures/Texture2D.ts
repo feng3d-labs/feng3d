@@ -46,8 +46,8 @@ namespace feng3d
         once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
         has<K extends keyof Texture2DEventMap>(type: K): boolean;
-        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any);
+        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**
@@ -55,7 +55,12 @@ namespace feng3d
      */
     export class Texture2D extends TextureInfo
     {
-        __class__: "feng3d.Texture2D" = "feng3d.Texture2D";
+        __class__: "feng3d.Texture2D";
+
+        /**
+         * 纹理类型
+         */
+        textureType = TextureType.TEXTURE_2D;
 
         assetType = AssetType.texture;
 
@@ -106,13 +111,13 @@ namespace feng3d
                 {
                     this._pixels = img;
                     this.invalidate();
-                    this._loadings.delete(v.url);
+                    Array.delete(this._loadings, v.url);
                     this.onItemLoadCompleted();
                 }, null,
                     (e) =>
                     {
                         console.error(e);
-                        this._loadings.delete(v.url);
+                        Array.delete(this._loadings, v.url);
                         this.onItemLoadCompleted();
                     });
             }
@@ -141,9 +146,9 @@ namespace feng3d
         private _source: { url: string };
 
         /**
-         * 纹理类型
+         * 默认贴图
          */
-        protected _textureType = TextureType.TEXTURE_2D;
+        static white: Texture2D;
 
         /**
          * 默认贴图
@@ -159,8 +164,21 @@ namespace feng3d
          * 默认粒子贴图
          */
         static defaultParticle: Texture2D;
+
+        /**
+         * 从url初始化纹理
+         * 
+         * @param url 路径
+         */
+        static fromUrl(url: string)
+        {
+            var texture = new Texture2D();
+            texture.source = { url: url };
+            return texture;
+        }
     }
 
+    AssetData.addAssetData("white-Texture", Texture2D.white = serialization.setValue(new Texture2D(), { name: "white-Texture", assetId: "white-Texture", noPixels: ImageDatas.white, hideFlags: HideFlags.NotEditable }));
     AssetData.addAssetData("Default-Texture", Texture2D.default = serialization.setValue(new Texture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
     AssetData.addAssetData("Default-NormalTexture", Texture2D.defaultNormal = serialization.setValue(new Texture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
     AssetData.addAssetData("Default-ParticleTexture", Texture2D.defaultParticle = serialization.setValue(new Texture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
