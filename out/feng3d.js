@@ -16267,176 +16267,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 代理 EventTarget, 处理js事件中this关键字问题
-     */
-    var EventProxy = /** @class */ (function (_super) {
-        __extends(EventProxy, _super);
-        function EventProxy(target) {
-            var _this = _super.call(this) || this;
-            _this.pageX = 0;
-            _this.pageY = 0;
-            _this.clientX = 0;
-            _this.clientY = 0;
-            /**
-             * 是否右击
-             */
-            _this.rightmouse = false;
-            _this.key = "";
-            _this.keyCode = 0;
-            _this.deltaY = 0;
-            _this.listentypes = [];
-            /**
-             * 处理鼠标按下时同时出发 "mousemove" 事件bug
-             */
-            _this.handleMouseMoveBug = true;
-            /**
-             * 键盘按下事件
-             */
-            _this.onMouseKey = function (event) {
-                // this.clear();
-                if (event["clientX"] != undefined) {
-                    event = event;
-                    _this.clientX = event.clientX;
-                    _this.clientY = event.clientY;
-                    _this.pageX = event.pageX;
-                    _this.pageY = event.pageY;
-                }
-                if (event instanceof MouseEvent) {
-                    _this.rightmouse = event.button == 2;
-                    // 处理鼠标按下时同时出发 "mousemove" 事件bug
-                    if (_this.handleMouseMoveBug) {
-                        if (event.type == "mousedown") {
-                            _this.mousedownposition = { x: event.clientX, y: event.clientY };
-                        }
-                        if (event.type == "mousemove") {
-                            if (_this.mousedownposition) {
-                                if (_this.mousedownposition.x == event.clientX && _this.mousedownposition.y == event.clientY) {
-                                    // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
-                                    return;
-                                }
-                            }
-                        }
-                        if (event.type == "mouseup") {
-                            _this.mousedownposition = null;
-                        }
-                    }
-                }
-                if (event instanceof KeyboardEvent) {
-                    _this.keyCode = event.keyCode;
-                    _this.key = event.key;
-                }
-                if (event instanceof WheelEvent) {
-                    _this.deltaY = event.deltaY;
-                }
-                // 赋值上次鼠标事件值
-                // event.clientX = this.clientX;
-                // event.clientY = this.clientY;
-                // event.pageX = this.pageX;
-                // event.pageY = this.pageY;
-                _this.dispatchEvent(event);
-            };
-            _this.target = target;
-            return _this;
-        }
-        Object.defineProperty(EventProxy.prototype, "target", {
-            get: function () {
-                return this._target;
-            },
-            set: function (v) {
-                var _this = this;
-                if (this._target == v)
-                    return;
-                if (this._target) {
-                    this.listentypes.forEach(function (element) {
-                        _this._target.removeEventListener(element, _this.onMouseKey);
-                    });
-                }
-                this._target = v;
-                if (this._target) {
-                    this.listentypes.forEach(function (element) {
-                        _this._target.addEventListener(element, _this.onMouseKey);
-                    });
-                }
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventProxy.prototype.once = function (type, listener, thisObject, priority) {
-            this.on(type, listener, thisObject, priority, true);
-        };
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventProxy.prototype.on = function (type, listener, thisObject, priority, once) {
-            if (priority === void 0) { priority = 0; }
-            if (once === void 0) { once = false; }
-            _super.prototype.on.call(this, type, listener, thisObject, priority, once);
-            if (this.listentypes.indexOf(type) == -1) {
-                this.listentypes.push(type);
-                this._target.addEventListener(type, this.onMouseKey);
-            }
-        };
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        EventProxy.prototype.off = function (type, listener, thisObject) {
-            var _this = this;
-            _super.prototype.off.call(this, type, listener, thisObject);
-            if (!type) {
-                this.listentypes.forEach(function (element) {
-                    _this._target.removeEventListener(element, _this.onMouseKey);
-                });
-                this.listentypes.length = 0;
-            }
-            else if (!this.has(type)) {
-                this._target.removeEventListener(type, this.onMouseKey);
-                this.listentypes.splice(this.listentypes.indexOf(type), 1);
-            }
-        };
-        /**
-         * 清理数据
-         */
-        EventProxy.prototype.clear = function () {
-            this.clientX = 0;
-            this.clientY = 0;
-            this.rightmouse = false;
-            this.key = "";
-            this.keyCode = 0;
-            this.deltaY = 0;
-        };
-        return EventProxy;
-    }(feng3d.EventDispatcher));
-    feng3d.EventProxy = EventProxy;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var WindowEventProxy = /** @class */ (function (_super) {
-        __extends(WindowEventProxy, _super);
-        function WindowEventProxy() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return WindowEventProxy;
-    }(feng3d.EventProxy));
-    feng3d.WindowEventProxy = WindowEventProxy;
-    if (typeof window != "undefined")
-        feng3d.windowEventProxy = new WindowEventProxy(window);
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 路径工具
      */
     var PathUtils = /** @class */ (function () {
@@ -17841,6 +17671,176 @@ var feng3d;
     }());
     feng3d.HttpFS = HttpFS;
     feng3d.basefs = new HttpFS();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 代理 EventTarget, 处理js事件中this关键字问题
+     */
+    var EventProxy = /** @class */ (function (_super) {
+        __extends(EventProxy, _super);
+        function EventProxy(target) {
+            var _this = _super.call(this) || this;
+            _this.pageX = 0;
+            _this.pageY = 0;
+            _this.clientX = 0;
+            _this.clientY = 0;
+            /**
+             * 是否右击
+             */
+            _this.rightmouse = false;
+            _this.key = "";
+            _this.keyCode = 0;
+            _this.deltaY = 0;
+            _this.listentypes = [];
+            /**
+             * 处理鼠标按下时同时出发 "mousemove" 事件bug
+             */
+            _this.handleMouseMoveBug = true;
+            /**
+             * 键盘按下事件
+             */
+            _this.onMouseKey = function (event) {
+                // this.clear();
+                if (event["clientX"] != undefined) {
+                    event = event;
+                    _this.clientX = event.clientX;
+                    _this.clientY = event.clientY;
+                    _this.pageX = event.pageX;
+                    _this.pageY = event.pageY;
+                }
+                if (event instanceof MouseEvent) {
+                    _this.rightmouse = event.button == 2;
+                    // 处理鼠标按下时同时出发 "mousemove" 事件bug
+                    if (_this.handleMouseMoveBug) {
+                        if (event.type == "mousedown") {
+                            _this.mousedownposition = { x: event.clientX, y: event.clientY };
+                        }
+                        if (event.type == "mousemove") {
+                            if (_this.mousedownposition) {
+                                if (_this.mousedownposition.x == event.clientX && _this.mousedownposition.y == event.clientY) {
+                                    // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
+                                    return;
+                                }
+                            }
+                        }
+                        if (event.type == "mouseup") {
+                            _this.mousedownposition = null;
+                        }
+                    }
+                }
+                if (event instanceof KeyboardEvent) {
+                    _this.keyCode = event.keyCode;
+                    _this.key = event.key;
+                }
+                if (event instanceof WheelEvent) {
+                    _this.deltaY = event.deltaY;
+                }
+                // 赋值上次鼠标事件值
+                // event.clientX = this.clientX;
+                // event.clientY = this.clientY;
+                // event.pageX = this.pageX;
+                // event.pageY = this.pageY;
+                _this.dispatchEvent(event);
+            };
+            _this.target = target;
+            return _this;
+        }
+        Object.defineProperty(EventProxy.prototype, "target", {
+            get: function () {
+                return this._target;
+            },
+            set: function (v) {
+                var _this = this;
+                if (this._target == v)
+                    return;
+                if (this._target) {
+                    this.listentypes.forEach(function (element) {
+                        _this._target.removeEventListener(element, _this.onMouseKey);
+                    });
+                }
+                this._target = v;
+                if (this._target) {
+                    this.listentypes.forEach(function (element) {
+                        _this._target.addEventListener(element, _this.onMouseKey);
+                    });
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventProxy.prototype.once = function (type, listener, thisObject, priority) {
+            this.on(type, listener, thisObject, priority, true);
+        };
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventProxy.prototype.on = function (type, listener, thisObject, priority, once) {
+            if (priority === void 0) { priority = 0; }
+            if (once === void 0) { once = false; }
+            _super.prototype.on.call(this, type, listener, thisObject, priority, once);
+            if (this.listentypes.indexOf(type) == -1) {
+                this.listentypes.push(type);
+                this._target.addEventListener(type, this.onMouseKey);
+            }
+        };
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        EventProxy.prototype.off = function (type, listener, thisObject) {
+            var _this = this;
+            _super.prototype.off.call(this, type, listener, thisObject);
+            if (!type) {
+                this.listentypes.forEach(function (element) {
+                    _this._target.removeEventListener(element, _this.onMouseKey);
+                });
+                this.listentypes.length = 0;
+            }
+            else if (!this.has(type)) {
+                this._target.removeEventListener(type, this.onMouseKey);
+                this.listentypes.splice(this.listentypes.indexOf(type), 1);
+            }
+        };
+        /**
+         * 清理数据
+         */
+        EventProxy.prototype.clear = function () {
+            this.clientX = 0;
+            this.clientY = 0;
+            this.rightmouse = false;
+            this.key = "";
+            this.keyCode = 0;
+            this.deltaY = 0;
+        };
+        return EventProxy;
+    }(feng3d.EventDispatcher));
+    feng3d.EventProxy = EventProxy;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var WindowEventProxy = /** @class */ (function (_super) {
+        __extends(WindowEventProxy, _super);
+        function WindowEventProxy() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return WindowEventProxy;
+    }(feng3d.EventProxy));
+    feng3d.WindowEventProxy = WindowEventProxy;
+    if (typeof window != "undefined")
+        feng3d.windowEventProxy = new WindowEventProxy(window);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

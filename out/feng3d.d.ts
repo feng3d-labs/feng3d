@@ -7510,86 +7510,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 代理 EventTarget, 处理js事件中this关键字问题
-     */
-    class EventProxy extends EventDispatcher {
-        pageX: number;
-        pageY: number;
-        clientX: number;
-        clientY: number;
-        /**
-         * 是否右击
-         */
-        rightmouse: boolean;
-        key: string;
-        keyCode: number;
-        deltaY: number;
-        private listentypes;
-        get target(): EventTarget;
-        set target(v: EventTarget);
-        private _target;
-        constructor(target?: EventTarget);
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
-        /**
-         * 处理鼠标按下时同时出发 "mousemove" 事件bug
-         */
-        private handleMouseMoveBug;
-        private mousedownposition;
-        /**
-         * 键盘按下事件
-         */
-        private onMouseKey;
-        /**
-         * 清理数据
-         */
-        private clear;
-    }
-}
-declare namespace feng3d {
-    interface WindowEventProxy {
-        once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof WindowEventMap>(type: K): boolean;
-        on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): void;
-    }
-    interface IEventProxy<T> {
-        once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
-        has<K extends keyof T>(type: K): boolean;
-        on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;
-    }
-    class WindowEventProxy extends EventProxy {
-    }
-    /**
-     * 键盘鼠标输入
-     */
-    var windowEventProxy: IEventProxy<WindowEventMap> & EventProxy;
-}
-declare namespace feng3d {
-    /**
      * 路径工具
      */
     var pathUtils: PathUtils;
@@ -8353,6 +8273,86 @@ declare namespace feng3d {
          */
         getAbsolutePath(path: string): string;
     }
+}
+declare namespace feng3d {
+    /**
+     * 代理 EventTarget, 处理js事件中this关键字问题
+     */
+    class EventProxy extends EventDispatcher {
+        pageX: number;
+        pageY: number;
+        clientX: number;
+        clientY: number;
+        /**
+         * 是否右击
+         */
+        rightmouse: boolean;
+        key: string;
+        keyCode: number;
+        deltaY: number;
+        private listentypes;
+        get target(): EventTarget;
+        set target(v: EventTarget);
+        private _target;
+        constructor(target?: EventTarget);
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
+        /**
+         * 处理鼠标按下时同时出发 "mousemove" 事件bug
+         */
+        private handleMouseMoveBug;
+        private mousedownposition;
+        /**
+         * 键盘按下事件
+         */
+        private onMouseKey;
+        /**
+         * 清理数据
+         */
+        private clear;
+    }
+}
+declare namespace feng3d {
+    interface WindowEventProxy {
+        once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof WindowEventMap>(type: K): boolean;
+        on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): void;
+    }
+    interface IEventProxy<T> {
+        once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
+        has<K extends keyof T>(type: K): boolean;
+        on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;
+    }
+    class WindowEventProxy extends EventProxy {
+    }
+    /**
+     * 键盘鼠标输入
+     */
+    var windowEventProxy: IEventProxy<WindowEventMap> & EventProxy;
 }
 declare namespace feng3d {
     class KeyBoard {

@@ -2,9 +2,6 @@
   "files": [],
   "references": [
     {
-      "path": "packages/events"
-    },
-    {
       "path": "packages/polyfill"
     },
     {
@@ -21,9 +18,6 @@
     },
     {
       "path": "packages/ds"
-    },
-    {
-      "path": "packages/shortcut"
     },
     {
       "path": "packages/render"

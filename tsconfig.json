@@ -15,9 +15,9 @@
     },
     "files": [
         // 事件模块
-        "packages/events/src/FEvent.ts",
-        "packages/events/src/EventDispatcher.ts",
-        "packages/events/src/ObjectEvent.ts",
+        "../packages/eventsystem/src/FEvent.ts",
+        "../packages/eventsystem/src/EventDispatcher.ts",
+        "../packages/eventsystem/src/ObjectEvent.ts",
         //
         "packages/watcher/src/Watcher.ts",
         // Polyfill
@@ -118,9 +118,6 @@
         "src/math/shape/curves/QuadraticBezierCurve3.ts",
         //
         "packages/math/src/Noise.ts",
-        // 事件
-        "packages/shortcut/src/EventProxy.ts",
-        "packages/shortcut/src/WindowEventProxy.ts",
         //
         "packages/fs/src/PathUtils.ts",
         //
@@ -137,12 +134,14 @@
         "packages/fs/src/IndexedDBFS.ts",
         "packages/fs/src/HttpFS.ts",
         // 快捷键
-        "packages/shortcut/src/Keyboard.ts",
-        "packages/shortcut/src/handle/KeyCapture.ts",
-        "packages/shortcut/src/handle/KeyState.ts",
-        "packages/shortcut/src/handle/ShortCutCapture.ts",
-        "packages/shortcut/src/handle/ShortCutEvent.ts",
-        "packages/shortcut/src/ShortCut.ts",
+        "../packages/shortcut/src/EventProxy.ts",
+        "../packages/shortcut/src/WindowEventProxy.ts",
+        "../packages/shortcut/src/Keyboard.ts",
+        "../packages/shortcut/src/handle/KeyCapture.ts",
+        "../packages/shortcut/src/handle/KeyState.ts",
+        "../packages/shortcut/src/handle/ShortCutCapture.ts",
+        "../packages/shortcut/src/handle/ShortCutEvent.ts",
+        "../packages/shortcut/src/ShortCut.ts",
         //
         "packages/render/src/gl/enums/RenderMode.ts",
         "packages/render/src/gl/enums/TextureType.ts",
