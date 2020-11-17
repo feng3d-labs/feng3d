@@ -200,7 +200,7 @@
         "src/utils/RegExps.ts",
         "src/utils/Pool.ts",
         //
-        "src/utils/Task.ts",
+        "../packages/task/runtime/src/Task.ts",
         //
         "src/core/Feng3dObject.ts",
         "src/core/AssetData.ts",
