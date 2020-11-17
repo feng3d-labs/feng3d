@@ -276,6 +276,65 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 任务，用于处理任务之间依赖
+     */
+    export var task: Task;
+    /**
+     * 任务函数
+     */
+    export interface TaskFunction {
+        /**
+         * 函数自身名称
+         */
+        readonly name?: string;
+        /**
+         * 函数自身
+         */
+        (callback: () => void): void;
+    }
+    /**
+     * 任务
+     *
+     * 处理 异步任务(函数)串联并联执行功能
+     */
+    class Task {
+        /**
+         * 并联多个异步函数为一个函数
+         *
+         * 这些异步函数同时执行
+         *
+         * @param fns 一组异步函数
+         */
+        parallel(fns: TaskFunction[]): TaskFunction;
+        /**
+         * 串联多个异步函数为一个函数
+         *
+         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
+         *
+         * @param fns 一组异步函数
+         */
+        series(fns: TaskFunction[]): TaskFunction;
+        /**
+         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
+        /**
+         * 创建一组串联同类任务，例如排序加载一组资源
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
+    }
+    export {};
+}
+declare namespace feng3d {
+    /**
      * 观察装饰器，观察被装饰属性的变化
      *
      * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
@@ -10926,65 +10985,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 任务，用于处理任务之间依赖
-     */
-    export var task: Task;
-    /**
-     * 任务函数
-     */
-    export interface TaskFunction {
-        /**
-         * 函数自身名称
-         */
-        readonly name?: string;
-        /**
-         * 函数自身
-         */
-        (callback: () => void): void;
-    }
-    /**
-     * 任务
-     *
-     * 处理 异步任务(函数)串联并联执行功能
-     */
-    class Task {
-        /**
-         * 并联多个异步函数为一个函数
-         *
-         * 这些异步函数同时执行
-         *
-         * @param fns 一组异步函数
-         */
-        parallel(fns: TaskFunction[]): TaskFunction;
-        /**
-         * 串联多个异步函数为一个函数
-         *
-         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
-         *
-         * @param fns 一组异步函数
-         */
-        series(fns: TaskFunction[]): TaskFunction;
-        /**
-         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
-        /**
-         * 创建一组串联同类任务，例如排序加载一组资源
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
-    }
-    export {};
-}
-declare namespace feng3d {
-    /**
      * 所有feng3d对象的基类
      */
     class Feng3dObject extends EventDispatcher implements IDisposable {
@@ -12019,21 +12019,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 深度渲染器
-     */
-    class DepthRenderer {
-        /**
-         * 渲染
-         */
-        draw(gl: GL, scene: Scene, camera: Camera): void;
-    }
-}
-declare namespace feng3d {
     var mouseRenderer: MouseRenderer;
     /**
      * 鼠标拾取渲染器
-
      */
     class MouseRenderer extends EventDispatcher {
         private objects;
@@ -15835,156 +15823,6 @@ declare namespace feng3d {
     }
     interface DefaultMaterial {
         "Water-Material": Material;
-    }
-}
-declare namespace feng3d {
-    interface GeometryTypes {
-        TerrainGeometry: TerrainGeometry;
-    }
-    /**
-     * 地形几何体
-     */
-    class TerrainGeometry extends Geometry {
-        /**
-         * 高度图路径
-         */
-        heightMap: Texture2D;
-        /**
-         * 地形宽度
-         */
-        width: number;
-        /**
-         * 地形高度
-         */
-        height: number;
-        /**
-         * 地形深度
-         */
-        depth: number;
-        /**
-         * 横向网格段数
-         */
-        segmentsW: number;
-        /**
-         * 纵向网格段数
-         */
-        segmentsH: number;
-        /**
-         * 最大地形高度
-         */
-        maxElevation: number;
-        /**
-         * 最小地形高度
-         */
-        minElevation: number;
-        private _heightImageData;
-        /**
-         * 创建高度地形 拥有segmentsW*segmentsH个顶点
-         */
-        constructor(raw?: gPartial<TerrainGeometry>);
-        private _onHeightMapChanged;
-        /**
-         * 创建顶点坐标
-         */
-        protected buildGeometry(): void;
-        /**
-         * 创建uv坐标
-         */
-        private buildUVs;
-        /**
-         * 获取位置在（x，z）处的高度y值
-         * @param x x坐标
-         * @param z z坐标
-         * @return 高度
-         */
-        getHeightAt(x: number, z: number): number;
-        /**
-         * 获取像素值
-         */
-        private getPixel;
-    }
-    interface DefaultGeometry {
-        "Terrain-Geometry": TerrainGeometry;
-    }
-}
-declare namespace feng3d {
-    interface UniformsTypes {
-        terrain: TerrainUniforms;
-    }
-    class TerrainUniforms extends StandardUniforms {
-        __class__: "feng3d.TerrainUniforms";
-        s_splatTexture1: Texture2D;
-        s_splatTexture2: Texture2D;
-        s_splatTexture3: Texture2D;
-        s_blendTexture: Texture2D;
-        u_splatRepeats: Vector4;
-    }
-    interface DefaultMaterial {
-        "Terrain-Material": Material;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 地形材质
-     */
-    class TerrainMergeMethod extends EventDispatcher {
-        splatMergeTexture: Texture2D;
-        blendTexture: Texture2D;
-        splatRepeats: Vector4;
-        /**
-         * 构建材质
-         */
-        constructor();
-        beforeRender(renderAtomic: RenderAtomic): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * The TerrainData class stores heightmaps, detail mesh positions, tree instances, and terrain texture alpha maps.
-     *
-     * The Terrain component links to the terrain data and renders it.
-     */
-    class TerrainData {
-        /**
-         * Width of the terrain in samples(Read Only).
-         */
-        get heightmapWidth(): number;
-        /**
-         * Height of the terrain in samples(Read Only).
-         */
-        get heightmapHeight(): number;
-        /**
-         * Resolution of the heightmap.
-         */
-        heightmapResolution: number;
-        /**
-         * The size of each heightmap sample.
-         */
-        get heightmapScale(): Vector3;
-        /**
-         * The total size in world units of the terrain.
-         */
-        size: Vector3;
-    }
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        Terrain: Terrain;
-    }
-    /**
-     * The Terrain component renders the terrain.
-     */
-    class Terrain extends Renderable {
-        __class__: "feng3d.Terrain";
-        /**
-         * 地形资源
-         */
-        assign: TerrainData;
-        geometry: TerrainGeometry;
-        material: Material;
-    }
-    interface PrimitiveGameObject {
-        Terrain: GameObject;
     }
 }
 declare namespace feng3d {

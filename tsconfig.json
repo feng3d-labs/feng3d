@@ -19,6 +19,8 @@
         "../packages/eventsystem/src/EventDispatcher.ts",
         "../packages/eventsystem/src/ObjectEvent.ts",
         //
+        "../packages/task/runtime/src/Task.ts",
+        //
         "../packages/watcher/src/Watcher.ts",
         // Polyfill
         "../packages/polyfill/src/Types.ts",
@@ -200,8 +202,6 @@
         "src/utils/RegExps.ts",
         "src/utils/Pool.ts",
         //
-        "../packages/task/runtime/src/Task.ts",
-        //
         "src/core/Feng3dObject.ts",
         "src/core/AssetData.ts",
         //
@@ -217,7 +217,6 @@
         "src/render/FrameBufferObject.ts",
         //
         "src/render/renderer/ForwardRenderer.ts",
-        "src/render/renderer/DepthRenderer.ts",
         "src/render/renderer/MouseRenderer.ts",
         "src/render/renderer/ShadowRenderer.ts",
         "src/render/renderer/OutlineRenderer.ts",
@@ -312,12 +311,12 @@
         //水
         "src/water/Water.ts",
         "src/water/WaterMaterial.ts",
-        //地形
-        "src/terrain/TerrainGeometry.ts",
-        "src/terrain/TerrainMaterial.ts",
-        "src/terrain/TerrainMergeMethod.ts",
-        "src/terrain/TerrainData.ts",
-        "src/terrain/Terrain.ts",
+        // //地形
+        // "../packages/terrain/runtime/src/TerrainGeometry.ts",
+        // "../packages/terrain/runtime/src/TerrainMaterial.ts",
+        // "../packages/terrain/runtime/src/TerrainMergeMethod.ts",
+        // "../packages/terrain/runtime/src/TerrainData.ts",
+        // "../packages/terrain/runtime/src/Terrain.ts",
         // //粒子系统
         // "../packages/particlesystem/runtime/src/Particle.ts",
         // "../packages/particlesystem/runtime/src/ParticlesAdditive.shader.ts",

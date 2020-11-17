@@ -4,7 +4,6 @@ namespace feng3d
 
     /**
      * 鼠标拾取渲染器
-
      */
     export class MouseRenderer extends EventDispatcher
     {
