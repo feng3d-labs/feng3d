@@ -8431,6 +8431,76 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 按键状态
+
+     */
+    class KeyState extends EventDispatcher {
+        /**
+         * 按键状态{key:键名称,value:是否按下}
+         */
+        private _keyStateDic;
+        /**
+         * 构建
+         */
+        constructor();
+        /**
+         * 按下键
+         * @param key 	键名称
+         * @param data	携带数据
+         */
+        pressKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void;
+        /**
+         * 释放键
+         * @param key	键名称
+         * @param data	携带数据
+         */
+        releaseKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void;
+        /**
+         * 获取按键状态
+         * @param key 按键名称
+         */
+        getKeyState(key: string): boolean;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 按键捕获
+
+     */
+    class KeyCapture {
+        /**
+         * 捕获的按键字典
+         */
+        private _mouseKeyDic;
+        /**
+         * 按键状态
+         */
+        private _keyState;
+        /**
+         * 构建
+         * @param stage		舞台
+         */
+        constructor(shortCut: ShortCut);
+        /**
+         * 鼠标事件
+         */
+        private onMouseOnce;
+        /**
+         * 鼠标事件
+         */
+        private onMousewheel;
+        /**
+         * 键盘按下事件
+         */
+        private onKeydown;
+        /**
+         * 键盘弹起事件
+         */
+        private onKeyup;
+    }
+}
+declare namespace feng3d {
+    /**
      * 快捷键
      */
     var shortcut: ShortCut;
@@ -8548,76 +8618,6 @@ declare namespace feng3d {
      * 键盘鼠标输入
      */
     var windowEventProxy: IEventProxy<WindowEventMap> & EventProxy;
-}
-declare namespace feng3d {
-    /**
-     * 按键捕获
-
-     */
-    class KeyCapture {
-        /**
-         * 捕获的按键字典
-         */
-        private _mouseKeyDic;
-        /**
-         * 按键状态
-         */
-        private _keyState;
-        /**
-         * 构建
-         * @param stage		舞台
-         */
-        constructor(shortCut: ShortCut);
-        /**
-         * 鼠标事件
-         */
-        private onMouseOnce;
-        /**
-         * 鼠标事件
-         */
-        private onMousewheel;
-        /**
-         * 键盘按下事件
-         */
-        private onKeydown;
-        /**
-         * 键盘弹起事件
-         */
-        private onKeyup;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 按键状态
-
-     */
-    class KeyState extends EventDispatcher {
-        /**
-         * 按键状态{key:键名称,value:是否按下}
-         */
-        private _keyStateDic;
-        /**
-         * 构建
-         */
-        constructor();
-        /**
-         * 按下键
-         * @param key 	键名称
-         * @param data	携带数据
-         */
-        pressKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void;
-        /**
-         * 释放键
-         * @param key	键名称
-         * @param data	携带数据
-         */
-        releaseKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void;
-        /**
-         * 获取按键状态
-         * @param key 按键名称
-         */
-        getKeyState(key: string): boolean;
-    }
 }
 declare namespace feng3d {
     /**

@@ -18051,6 +18051,159 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 按键状态
+
+     */
+    var KeyState = /** @class */ (function (_super) {
+        __extends(KeyState, _super);
+        /**
+         * 构建
+         */
+        function KeyState() {
+            var _this = _super.call(this) || this;
+            _this._keyStateDic = {};
+            return _this;
+        }
+        /**
+         * 按下键
+         * @param key 	键名称
+         * @param data	携带数据
+         */
+        KeyState.prototype.pressKey = function (key, data) {
+            // 处理鼠标中键与右键
+            if (data instanceof MouseEvent) {
+                if (["click", "mousedown", "mouseup"].indexOf(data.type) != -1) {
+                    key = ["", "middle", "right"][data.button] + data.type;
+                }
+            }
+            this._keyStateDic[key] = true;
+            this.dispatch(key, data);
+        };
+        /**
+         * 释放键
+         * @param key	键名称
+         * @param data	携带数据
+         */
+        KeyState.prototype.releaseKey = function (key, data) {
+            // 处理鼠标中键与右键
+            if (data instanceof MouseEvent) {
+                if (["click", "mousedown", "mouseup"].indexOf(data.type) != -1) {
+                    key = ["", "middle", "right"][data.button] + data.type;
+                }
+            }
+            this._keyStateDic[key] = false;
+            this.dispatch(key, data);
+        };
+        /**
+         * 获取按键状态
+         * @param key 按键名称
+         */
+        KeyState.prototype.getKeyState = function (key) {
+            return !!this._keyStateDic[key];
+        };
+        return KeyState;
+    }(feng3d.EventDispatcher));
+    feng3d.KeyState = KeyState;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 按键捕获
+
+     */
+    var KeyCapture = /** @class */ (function () {
+        /**
+         * 构建
+         * @param stage		舞台
+         */
+        function KeyCapture(shortCut) {
+            /**
+             * 捕获的按键字典
+             */
+            this._mouseKeyDic = {};
+            this._keyState = shortCut.keyState;
+            //
+            if (!feng3d.windowEventProxy) {
+                return;
+            }
+            feng3d.windowEventProxy.on("keydown", this.onKeydown, this);
+            feng3d.windowEventProxy.on("keyup", this.onKeyup, this);
+            //监听鼠标事件
+            var mouseEvents = [
+                "dblclick",
+                "click",
+                "mousedown",
+                "mouseup",
+                "mousemove",
+                "mouseover",
+                "mouseout",
+            ];
+            for (var i = 0; i < mouseEvents.length; i++) {
+                feng3d.windowEventProxy.on(mouseEvents[i], this.onMouseOnce, this);
+            }
+            feng3d.windowEventProxy.on("wheel", this.onMousewheel, this);
+        }
+        /**
+         * 鼠标事件
+         */
+        KeyCapture.prototype.onMouseOnce = function (event) {
+            if (!feng3d.shortcut.enable)
+                return;
+            var mouseKey = event.type;
+            this._keyState.pressKey(mouseKey, event);
+            this._keyState.releaseKey(mouseKey, event);
+        };
+        /**
+         * 鼠标事件
+         */
+        KeyCapture.prototype.onMousewheel = function (event) {
+            if (!feng3d.shortcut.enable)
+                return;
+            var mouseKey = event.type;
+            this._keyState.pressKey(mouseKey, event);
+            this._keyState.releaseKey(mouseKey, event);
+        };
+        /**
+         * 键盘按下事件
+         */
+        KeyCapture.prototype.onKeydown = function (event) {
+            if (!feng3d.shortcut.enable)
+                return;
+            var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
+            boardKey = boardKey || event.key;
+            if (boardKey) {
+                boardKey = boardKey.toLocaleLowerCase();
+                this._keyState.pressKey(boardKey, event);
+            }
+            else {
+                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
+            }
+        };
+        /**
+         * 键盘弹起事件
+         */
+        KeyCapture.prototype.onKeyup = function (event) {
+            if (!feng3d.shortcut.enable)
+                return;
+            var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
+            boardKey = boardKey || event.key;
+            if (boardKey) {
+                boardKey = boardKey.toLocaleLowerCase();
+                this._keyState.releaseKey(boardKey, event);
+            }
+            else {
+                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
+            }
+        };
+        return KeyCapture;
+    }());
+    feng3d.KeyCapture = KeyCapture;
+})(feng3d || (feng3d = {}));
+/// <reference path="handle/KeyState.ts" />
+/// <reference path="handle/KeyCapture.ts" />
+var feng3d;
+(function (feng3d) {
+    /**
      * 初始化快捷键模块
      *
      * <pre>
@@ -18175,157 +18328,6 @@ var feng3d;
     feng3d.WindowEventProxy = WindowEventProxy;
     if (typeof window != "undefined")
         feng3d.windowEventProxy = new WindowEventProxy(window);
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 按键捕获
-
-     */
-    var KeyCapture = /** @class */ (function () {
-        /**
-         * 构建
-         * @param stage		舞台
-         */
-        function KeyCapture(shortCut) {
-            /**
-             * 捕获的按键字典
-             */
-            this._mouseKeyDic = {};
-            this._keyState = shortCut.keyState;
-            //
-            if (!feng3d.windowEventProxy) {
-                return;
-            }
-            feng3d.windowEventProxy.on("keydown", this.onKeydown, this);
-            feng3d.windowEventProxy.on("keyup", this.onKeyup, this);
-            //监听鼠标事件
-            var mouseEvents = [
-                "dblclick",
-                "click",
-                "mousedown",
-                "mouseup",
-                "mousemove",
-                "mouseover",
-                "mouseout",
-            ];
-            for (var i = 0; i < mouseEvents.length; i++) {
-                feng3d.windowEventProxy.on(mouseEvents[i], this.onMouseOnce, this);
-            }
-            feng3d.windowEventProxy.on("wheel", this.onMousewheel, this);
-        }
-        /**
-         * 鼠标事件
-         */
-        KeyCapture.prototype.onMouseOnce = function (event) {
-            if (!feng3d.shortcut.enable)
-                return;
-            var mouseKey = event.type;
-            this._keyState.pressKey(mouseKey, event);
-            this._keyState.releaseKey(mouseKey, event);
-        };
-        /**
-         * 鼠标事件
-         */
-        KeyCapture.prototype.onMousewheel = function (event) {
-            if (!feng3d.shortcut.enable)
-                return;
-            var mouseKey = event.type;
-            this._keyState.pressKey(mouseKey, event);
-            this._keyState.releaseKey(mouseKey, event);
-        };
-        /**
-         * 键盘按下事件
-         */
-        KeyCapture.prototype.onKeydown = function (event) {
-            if (!feng3d.shortcut.enable)
-                return;
-            var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
-            boardKey = boardKey || event.key;
-            if (boardKey) {
-                boardKey = boardKey.toLocaleLowerCase();
-                this._keyState.pressKey(boardKey, event);
-            }
-            else {
-                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
-            }
-        };
-        /**
-         * 键盘弹起事件
-         */
-        KeyCapture.prototype.onKeyup = function (event) {
-            if (!feng3d.shortcut.enable)
-                return;
-            var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
-            boardKey = boardKey || event.key;
-            if (boardKey) {
-                boardKey = boardKey.toLocaleLowerCase();
-                this._keyState.releaseKey(boardKey, event);
-            }
-            else {
-                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
-            }
-        };
-        return KeyCapture;
-    }());
-    feng3d.KeyCapture = KeyCapture;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 按键状态
-
-     */
-    var KeyState = /** @class */ (function (_super) {
-        __extends(KeyState, _super);
-        /**
-         * 构建
-         */
-        function KeyState() {
-            var _this = _super.call(this) || this;
-            _this._keyStateDic = {};
-            return _this;
-        }
-        /**
-         * 按下键
-         * @param key 	键名称
-         * @param data	携带数据
-         */
-        KeyState.prototype.pressKey = function (key, data) {
-            // 处理鼠标中键与右键
-            if (data instanceof MouseEvent) {
-                if (["click", "mousedown", "mouseup"].indexOf(data.type) != -1) {
-                    key = ["", "middle", "right"][data.button] + data.type;
-                }
-            }
-            this._keyStateDic[key] = true;
-            this.dispatch(key, data);
-        };
-        /**
-         * 释放键
-         * @param key	键名称
-         * @param data	携带数据
-         */
-        KeyState.prototype.releaseKey = function (key, data) {
-            // 处理鼠标中键与右键
-            if (data instanceof MouseEvent) {
-                if (["click", "mousedown", "mouseup"].indexOf(data.type) != -1) {
-                    key = ["", "middle", "right"][data.button] + data.type;
-                }
-            }
-            this._keyStateDic[key] = false;
-            this.dispatch(key, data);
-        };
-        /**
-         * 获取按键状态
-         * @param key 按键名称
-         */
-        KeyState.prototype.getKeyState = function (key) {
-            return !!this._keyStateDic[key];
-        };
-        return KeyState;
-    }(feng3d.EventDispatcher));
-    feng3d.KeyState = KeyState;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
