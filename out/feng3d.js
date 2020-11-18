@@ -5140,521 +5140,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 方程求解
-     *
-     * 求解方程 f(x) == 0 在[a, b]上的解
-     *
-     * 参考：高等数学 第七版上册 第三章第八节 方程的近似解
-     * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
-     *
-     * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
-     *
-     * @author feng / http://feng3d.com 05/06/2018
-     */
-    var EquationSolving = /** @class */ (function () {
-        function EquationSolving() {
-        }
-        /**
-         * 获取数字的(正负)符号
-         * @param n 数字
-         */
-        EquationSolving.prototype.getSign = function (n) {
-            return n > 0 ? "+" : "-";
-        };
-        /**
-         * 比较 a 与 b 是否相等
-         * @param a 值a
-         * @param b 值b
-         * @param precision 比较精度
-         */
-        EquationSolving.prototype.equalNumber = function (a, b, precision) {
-            if (precision === void 0) { precision = 0.0000001; }
-            return Math.abs(a - b) < precision;
-        };
-        /**
-         * 获取近似导函数 f'(x)
-         *
-         * 导函数定义
-         * f'(x) = (f(x + Δx) - f(x)) / Δx , Δx → 0
-         *
-         * 注：通过测试Δx不能太小，由于方程内存在x的n次方问题（比如0.000000000000001的10次方为0），过小会导致计算机计算进度不够反而导致求导不准确！
-         *
-         * 另外一种办法是还原一元多次函数，然后求出导函数。
-         *
-         * @param f 函数
-         * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
-         */
-        EquationSolving.prototype.getDerivative = function (f, delta) {
-            if (delta === void 0) { delta = 0.000000001; }
-            return function (x) {
-                var d = (f(x + delta) - f(x)) / delta;
-                return d;
-            };
-        };
-        /**
-         * 函数是否连续
-         * @param f 函数
-         */
-        EquationSolving.prototype.isContinuous = function (f) {
-            return true;
-        };
-        /**
-         * 方程 f(x) == 0 在 [a, b] 区间内是否有解
-         *
-         * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 是否有解
-         */
-        EquationSolving.prototype.hasSolution = function (f, a, b, errorcallback) {
-            if (!this.isContinuous(f)) {
-                errorcallback && errorcallback(new Error("\u51FD\u6570 " + f + " \u5728 [" + a + " ," + b + "] \u533A\u95F4\u5185\u4E0D\u8FDE\u7EED\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
-                return false;
-            }
-            var fa = f(a);
-            var fb = f(b);
-            if (fa * fb > 0) {
-                errorcallback && errorcallback(new Error("f(a) * f(b) \u503C\u4E3A " + fa * fb + "\uFF0C\u4E0D\u6EE1\u8DB3 f(a) * f(b) <= 0\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
-                return false;
-            }
-            return true;
-        };
-        /**
-         * 二分法 求解 f(x) == 0
-         *
-         * 通过区间中点作为边界来逐步缩小求解区间，最终获得解
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解时返回 undefined ，存在时返回 解
-         */
-        EquationSolving.prototype.binary = function (f, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            do {
-                var x = (a + b) / 2;
-                var fr = f(x);
-                if (fa * fr < 0) {
-                    b = x;
-                    fb = fr;
-                }
-                else {
-                    a = x;
-                    fa = fr;
-                }
-            } while (!this.equalNumber(fr, 0, precision));
-            return x;
-        };
-        /**
-         * 连线法 求解 f(x) == 0
-         *
-         * 连线法是我自己想的方法，自己取的名字，目前没有找到相应的资料（这方法大家都能够想得到。）
-         *
-         * 用曲线弧两端的连线来代替曲线弧与X轴交点作为边界来逐步缩小求解区间，最终获得解
-         *
-         * 通过 A，B两点连线与x轴交点来缩小求解区间最终获得解
-         *
-         * A，B两点直线方程 f(x) = f(a) + (f(b) - f(a)) / (b - a) * (x-a) ,求 f(x) == 0 解得 x = a - fa * (b - a)/ (fb - fa)
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解时返回 undefined ，存在时返回 解
-         */
-        EquationSolving.prototype.line = function (f, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            do {
-                // 
-                var x = a - fa * (b - a) / (fb - fa);
-                var fr = f(x);
-                if (fa * fr < 0) {
-                    b = x;
-                    fb = fr;
-                }
-                else {
-                    a = x;
-                    fa = fr;
-                }
-            } while (!this.equalNumber(fr, 0, precision));
-            return x;
-        };
-        /**
-         * 切线法 求解 f(x) == 0
-         *
-         * 用曲线弧一端的切线来代替曲线弧，从而求出方程实根的近似解。
-         *
-         * 迭代公式： Xn+1 = Xn - f(Xn) / f'(Xn)
-         *
-         * #### 额外需求
-         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
-         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
-         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
-         *
-         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
-         *
-         * @param f 函数f(x)
-         * @param f1 一阶导函数 f'(x)
-         * @param f2 二阶导函数 f''(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
-         */
-        EquationSolving.prototype.tangent = function (f, f1, f2, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
-            var f1a = f1(a);
-            var f1b = f1(b);
-            // f'(x)在[a, b]上保持定号
-            if (f1a * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f1b * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
-            var f2a = f2(a);
-            var f2b = f2(b);
-            // f''(x)在[a, b]上保持定号
-            if (f2a * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f2b * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var x;
-            if (f1Sign > 0) {
-                if (f2Sign > 0)
-                    x = b;
-                else
-                    x = a;
-            }
-            else {
-                if (f2Sign > 0)
-                    x = a;
-                else
-                    x = b;
-            }
-            do {
-                var fx = f(x);
-                var f1x = f1(x);
-                var f2x = f2(x);
-                // f'(x)在[a, b]上保持定号
-                if (f1x * f1Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + x + ") = " + f1x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                // f''(x)在[a, b]上保持定号
-                if (f2x * f2Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + x + ") = " + f2x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                // 迭代 Xn+1 = Xn - f(Xn) / f'(Xn)
-                x = x - fx / f1x;
-            } while (!this.equalNumber(fx, 0, precision));
-            return x;
-        };
-        /**
-         * 割线法（弦截法） 求解 f(x) == 0
-         *
-         * 使用 (f(Xn) - f(Xn-1)) / (Xn - Xn-1) 代替切线法迭代公式 Xn+1 = Xn - f(Xn) / f'(Xn) 中的 f'(x)
-         *
-         * 迭代公式：Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
-         *
-         * 用过点(Xn-1,f(Xn-1))和点(Xn,f(Xn))的割线来近似代替(Xn,f(Xn))处的切线，将这条割线与X轴交点的横坐标作为新的近似解。
-         *
-         * #### 额外需求
-         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
-         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
-         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
-         *
-         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
-         */
-        EquationSolving.prototype.secant = function (f, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            // 此处创建近似导函数以及二次导函数，其实割线法使用在计算f'(x)困难时的，但是 getDerivative 方法解决了这个困难。。。。
-            var f1 = this.getDerivative(f, precision);
-            var f2 = this.getDerivative(f1, precision);
-            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
-            // 
-            var f1a = f1(a);
-            var f1b = f1(b);
-            // f'(x)在[a, b]上保持定号
-            if (f1a * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f1b * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
-            var f2a = f2(a);
-            var f2b = f2(b);
-            // f''(x)在[a, b]上保持定号
-            if (f2a * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f2b * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var x;
-            if (f1Sign > 0) {
-                if (f2Sign > 0)
-                    x = b;
-                else
-                    x = a;
-            }
-            else {
-                if (f2Sign > 0)
-                    x = a;
-                else
-                    x = b;
-            }
-            // Xn-1
-            var xn_1 = x;
-            var fxn_1 = f(xn_1);
-            // Xn
-            var xn = xn_1 - precision * f2Sign / Math.abs(f2Sign);
-            var fxn = f(xn);
-            // 
-            if (fxn * fxn_1 < 0) {
-                return xn;
-            }
-            // Xn+1
-            var xn$1;
-            do {
-                var f1xn = f1(xn);
-                // f'(x)在[a, b]上保持定号
-                if (f1xn * f1Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + xn + ") = " + f1xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                var f2xn = f2(xn);
-                // f''(x)在[a, b]上保持定号
-                if (f2xn * f2Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + xn + ") = " + f2xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                // 迭代 Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
-                xn$1 = xn - fxn * (xn - xn_1) / (fxn - fxn_1);
-                //
-                xn_1 = xn;
-                fxn_1 = fxn;
-                xn = xn$1;
-                fxn = f(xn);
-            } while (!this.equalNumber(fxn, 0, precision));
-            return xn;
-        };
-        return EquationSolving;
-    }());
-    feng3d.EquationSolving = EquationSolving;
-    feng3d.equationSolving = new EquationSolving();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 高次函数
-     *
-     * 处理N次函数定义，求值，方程求解问题
-     *
-     * n次函数定义
-     * f(x) = a0 * pow(x, n) + a1 * pow(x, n - 1) +.....+ an_1 * pow(x, 1) + an
-     *
-     * 0次 f(x) = a0;
-     * 1次 f(x) = a0 * x + a1;
-     * 2次 f(x) = a0 * x * x + a1 * x + a2;
-     * ......
-     *
-     */
-    var HighFunction = /** @class */ (function () {
-        /**
-         * 构建函数
-         * @param as 函数系数 a0-an 数组
-         */
-        function HighFunction(as) {
-            this.as = as;
-        }
-        /**
-         * 获取函数 f(x) 的值
-         * @param x x坐标
-         */
-        HighFunction.prototype.getValue = function (x) {
-            var v = 0;
-            var as = this.as;
-            for (var i = 0, n = as.length; i < n; i++) {
-                v = v * x + as[i];
-            }
-            return v;
-        };
-        return HighFunction;
-    }());
-    feng3d.HighFunction = HighFunction;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 坐标系统类型
-     */
-    var CoordinateSystem;
-    (function (CoordinateSystem) {
-        /**
-         * 默认坐标系统，左手坐标系统
-         */
-        CoordinateSystem[CoordinateSystem["LEFT_HANDED"] = 0] = "LEFT_HANDED";
-        /**
-         * 右手坐标系统
-         */
-        CoordinateSystem[CoordinateSystem["RIGHT_HANDED"] = 1] = "RIGHT_HANDED";
-    })(CoordinateSystem = feng3d.CoordinateSystem || (feng3d.CoordinateSystem = {}));
-    /**
-     * 引擎中使用的坐标系统，默认左手坐标系统。
-     *
-     * three.js 右手坐标系统。
-     * playcanvas 右手坐标系统。
-     * unity    左手坐标系统。
-     */
-    feng3d.coordinateSystem = CoordinateSystem.LEFT_HANDED;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 用于表示欧拉角的旋转顺序
-     *
-     * 如果顺序为XYZ，则依次按 ZYZ 轴旋转。为什么循序与定义相反？因为three.js中都这么定义，他们为什么这么定义就不清楚了。
-     */
-    var RotationOrder;
-    (function (RotationOrder) {
-        /**
-         * 依次按 ZYX 轴旋转。
-         *
-         * three.js默认旋转顺序。
-         */
-        RotationOrder[RotationOrder["XYZ"] = 0] = "XYZ";
-        /**
-         * 依次按 YXZ 轴旋转。
-         */
-        RotationOrder[RotationOrder["ZXY"] = 1] = "ZXY";
-        /**
-         * 依次按 XYZ 轴旋转。
-         *
-         * playcanvas默认旋转顺序。
-         */
-        RotationOrder[RotationOrder["ZYX"] = 2] = "ZYX";
-        /**
-         * 依次按 ZXY 轴旋转。
-         *
-         * unity默认旋转顺序。
-         */
-        RotationOrder[RotationOrder["YXZ"] = 3] = "YXZ";
-        /**
-         * 依次按 XZY 轴旋转。
-         */
-        RotationOrder[RotationOrder["YZX"] = 4] = "YZX";
-        /**
-         * 依次按 YZX 轴旋转。
-         */
-        RotationOrder[RotationOrder["XZY"] = 5] = "XZY";
-    })(RotationOrder = feng3d.RotationOrder || (feng3d.RotationOrder = {}));
-    /**
-     * 引擎中使用的旋转顺序。
-     *
-     * unity YXZ
-     * playcanvas ZYX
-     * three.js XYZ
-     */
-    feng3d.defaultRotationOrder = RotationOrder.YXZ;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 点与面的相对位置
-     */
-    var PlaneClassification;
-    (function (PlaneClassification) {
-        /**
-         * 在平面后面
-         */
-        PlaneClassification[PlaneClassification["BACK"] = 0] = "BACK";
-        /**
-         * 在平面前面
-         */
-        PlaneClassification[PlaneClassification["FRONT"] = 1] = "FRONT";
-        /**
-         * 与平面相交
-         */
-        PlaneClassification[PlaneClassification["INTERSECT"] = 2] = "INTERSECT";
-    })(PlaneClassification = feng3d.PlaneClassification || (feng3d.PlaneClassification = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 颜色
      */
     var Color3 = /** @class */ (function () {
@@ -6103,1448 +5588,2775 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var DEG_TO_RAD = Math.PI / 180;
     /**
-     * Vector2 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
+     * 方程求解
+     *
+     * 求解方程 f(x) == 0 在[a, b]上的解
+     *
+     * 参考：高等数学 第七版上册 第三章第八节 方程的近似解
+     * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
+     *
+     * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
+     *
+     * @author feng / http://feng3d.com 05/06/2018
      */
-    var Vector2 = /** @class */ (function () {
-        /**
-         * 创建一个 Vector2 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
-         *
-         * @param x 该对象的x属性值，默认为0
-         * @param y 该对象的y属性值，默认为0
-         */
-        function Vector2(x, y) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            this.x = x;
-            this.y = y;
+    var EquationSolving = /** @class */ (function () {
+        function EquationSolving() {
         }
         /**
-         * 将一对极坐标转换为笛卡尔点坐标。
-         * @param len 极坐标对的长度。
-         * @param angle 极坐标对的角度（以弧度表示）。
+         * 获取数字的(正负)符号
+         * @param n 数字
          */
-        Vector2.polar = function (len, angle) {
-            return new Vector2(len * Math.cos(angle / DEG_TO_RAD), len * Math.sin(angle / DEG_TO_RAD));
-        };
-        Object.defineProperty(Vector2.prototype, "length", {
-            /**
-             * 从 (0,0) 到此点的线段长度。
-             */
-            get: function () {
-                return Math.sqrt(this.x * this.x + this.y * this.y);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 将 Vector2 的成员设置为指定值
-         * @param x 该对象的x属性值
-         * @param y 该对象的y属性值
-         */
-        Vector2.prototype.set = function (x, y) {
-            this.x = x;
-            this.y = y;
-            return this;
+        EquationSolving.prototype.getSign = function (n) {
+            return n > 0 ? "+" : "-";
         };
         /**
-         * 克隆点对象
+         * 比较 a 与 b 是否相等
+         * @param a 值a
+         * @param b 值b
+         * @param precision 比较精度
          */
-        Vector2.prototype.clone = function () {
-            return new Vector2(this.x, this.y);
+        EquationSolving.prototype.equalNumber = function (a, b, precision) {
+            if (precision === void 0) { precision = 0.0000001; }
+            return Math.abs(a - b) < precision;
         };
         /**
-         * 返回 pt1 和 pt2 之间的距离。
-         * @param p1 第一个点
-         * @param p2 第二个点
-         * @returns 第一个点和第二个点之间的距离。
+         * 获取近似导函数 f'(x)
+         *
+         * 导函数定义
+         * f'(x) = (f(x + Δx) - f(x)) / Δx , Δx → 0
+         *
+         * 注：通过测试Δx不能太小，由于方程内存在x的n次方问题（比如0.000000000000001的10次方为0），过小会导致计算机计算进度不够反而导致求导不准确！
+         *
+         * 另外一种办法是还原一元多次函数，然后求出导函数。
+         *
+         * @param f 函数
+         * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
          */
-        Vector2.distance = function (p1, p2) {
-            return p1.distance(p2);
+        EquationSolving.prototype.getDerivative = function (f, delta) {
+            if (delta === void 0) { delta = 0.000000001; }
+            return function (x) {
+                var d = (f(x + delta) - f(x)) / delta;
+                return d;
+            };
         };
         /**
-         * 将另一个点的坐标添加到此点的坐标。
-         * @param v 要添加的点。
+         * 函数是否连续
+         * @param f 函数
          */
-        Vector2.prototype.add = function (v) {
-            this.x += v.x;
-            this.y += v.y;
-            return this;
-        };
-        /**
-         * 将另一个点的坐标添加到此点的坐标以创建一个新点。
-         * @param v 要添加的点。
-         * @returns 新点。
-         */
-        Vector2.prototype.addTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            vout.x = this.x + v.x;
-            vout.y = this.y + v.y;
-            return vout;
-        };
-        /**
-         * 从此点的坐标中减去另一个点的坐标以创建一个新点。
-         * @param v 要减去的点。
-         * @returns 新点。
-         */
-        Vector2.prototype.sub = function (v) {
-            this.x -= v.x;
-            this.y -= v.y;
-            return this;
-        };
-        /**
-         * 减去向量返回新向量
-         * @param v 减去的向量
-         * @return 返回的新向量
-         */
-        Vector2.prototype.subTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            vout.x = this.x - v.x;
-            vout.y = this.y - v.y;
-            return vout;
-        };
-        /**
-         * 乘以向量
-         * @param v 向量
-         */
-        Vector2.prototype.multiply = function (v) {
-            this.x *= v.x;
-            this.y *= v.y;
-            return this;
-        };
-        /**
-         * 乘以向量
-         * @param v 向量
-         * @param vout 输出向量
-         */
-        Vector2.prototype.multiplyTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            vout.x = this.x * v.x;
-            vout.y = this.y * v.y;
-            return vout;
-        };
-        /**
-         * 除以向量
-         * @param v 向量
-         */
-        Vector2.prototype.divide = function (v) {
-            this.x /= v.x;
-            this.y /= v.y;
-            return this;
-        };
-        /**
-         * 除以向量
-         * @param v 向量
-         * @param vout 输出向量
-         */
-        Vector2.prototype.divideTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            vout.x = this.x / v.x;
-            vout.y = this.y / v.y;
-            return vout;
-        };
-        /**
-         * 确定两个点是否相同。如果两个点具有相同的 x 和 y 值，则它们是相同的点。
-         * @param toCompare 要比较的向量。
-         * @returns 如果该对象与此 向量 对象相同，则为 true 值，如果不相同，则为 false。
-         */
-        Vector2.prototype.equals = function (v, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (!Math.equals(this.x - v.x, 0, precision))
-                return false;
-            if (!Math.equals(this.y - v.y, 0, precision))
-                return false;
+        EquationSolving.prototype.isContinuous = function (f) {
             return true;
         };
         /**
-         * 将源 Vector2 对象中的所有点数据复制到调用方 Vector2 对象中。
-         * @param source 要从中复制数据的 Vector2 对象。
+         * 方程 f(x) == 0 在 [a, b] 区间内是否有解
+         *
+         * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 是否有解
          */
-        Vector2.prototype.copy = function (source) {
-            this.x = source.x;
-            this.y = source.y;
-            return this;
-        };
-        /**
-         * 返回与目标点之间的距离。
-         * @param p 目标点
-         * @returns 与目标点之间的距离。
-         */
-        Vector2.prototype.distance = function (p) {
-            var dx = this.x - p.x, dy = this.y - p.y;
-            return Math.sqrt(dx * dx + dy * dy);
-        };
-        /**
-         * 与目标点之间的距离平方
-         * @param p 目标点
-         */
-        Vector2.prototype.distanceSquared = function (p) {
-            var dx = this.x - p.x, dy = this.y - p.y;
-            return dx * dx + dy * dy;
-        };
-        /**
-         * 将 (0,0) 和当前点之间的线段缩放为设定的长度。
-         * @param thickness 缩放值。例如，如果当前点为 (0,5) 并且您将它规范化为 1，则返回的点位于 (0,1) 处。
-         */
-        Vector2.prototype.normalize = function (thickness) {
-            if (thickness === void 0) { thickness = 1; }
-            if (this.x != 0 || this.y != 0) {
-                var relativeThickness = thickness / this.length;
-                this.x *= relativeThickness;
-                this.y *= relativeThickness;
+        EquationSolving.prototype.hasSolution = function (f, a, b, errorcallback) {
+            if (!this.isContinuous(f)) {
+                errorcallback && errorcallback(new Error("\u51FD\u6570 " + f + " \u5728 [" + a + " ," + b + "] \u533A\u95F4\u5185\u4E0D\u8FDE\u7EED\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
+                return false;
             }
-            return this;
+            var fa = f(a);
+            var fb = f(b);
+            if (fa * fb > 0) {
+                errorcallback && errorcallback(new Error("f(a) * f(b) \u503C\u4E3A " + fa * fb + "\uFF0C\u4E0D\u6EE1\u8DB3 f(a) * f(b) <= 0\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
+                return false;
+            }
+            return true;
         };
         /**
-         * 负向量
+         * 二分法 求解 f(x) == 0
+         *
+         * 通过区间中点作为边界来逐步缩小求解区间，最终获得解
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解时返回 undefined ，存在时返回 解
          */
-        Vector2.prototype.negate = function () {
-            this.x *= -1;
-            this.y *= -1;
-            return this;
+        EquationSolving.prototype.binary = function (f, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            do {
+                var x = (a + b) / 2;
+                var fr = f(x);
+                if (fa * fr < 0) {
+                    b = x;
+                    fb = fr;
+                }
+                else {
+                    a = x;
+                    fa = fr;
+                }
+            } while (!this.equalNumber(fr, 0, precision));
+            return x;
         };
         /**
-         * 倒数向量。
-         * (x,y) -> (1/x,1/y)
+         * 连线法 求解 f(x) == 0
+         *
+         * 连线法是我自己想的方法，自己取的名字，目前没有找到相应的资料（这方法大家都能够想得到。）
+         *
+         * 用曲线弧两端的连线来代替曲线弧与X轴交点作为边界来逐步缩小求解区间，最终获得解
+         *
+         * 通过 A，B两点连线与x轴交点来缩小求解区间最终获得解
+         *
+         * A，B两点直线方程 f(x) = f(a) + (f(b) - f(a)) / (b - a) * (x-a) ,求 f(x) == 0 解得 x = a - fa * (b - a)/ (fb - fa)
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解时返回 undefined ，存在时返回 解
          */
-        Vector2.prototype.reciprocal = function () {
-            this.x = 1 / this.x;
-            this.y = 1 / this.y;
-            return this;
+        EquationSolving.prototype.line = function (f, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            do {
+                // 
+                var x = a - fa * (b - a) / (fb - fa);
+                var fr = f(x);
+                if (fa * fr < 0) {
+                    b = x;
+                    fb = fr;
+                }
+                else {
+                    a = x;
+                    fa = fr;
+                }
+            } while (!this.equalNumber(fr, 0, precision));
+            return x;
         };
         /**
-         * 倒数向量。
-         * (x,y) -> (1/x,1/y)
+         * 切线法 求解 f(x) == 0
+         *
+         * 用曲线弧一端的切线来代替曲线弧，从而求出方程实根的近似解。
+         *
+         * 迭代公式： Xn+1 = Xn - f(Xn) / f'(Xn)
+         *
+         * #### 额外需求
+         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
+         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
+         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
+         *
+         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
+         *
+         * @param f 函数f(x)
+         * @param f1 一阶导函数 f'(x)
+         * @param f2 二阶导函数 f''(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        Vector2.prototype.reciprocalTo = function (out) {
-            if (out === void 0) { out = new Vector2(); }
-            out.copy(this).reciprocal();
-            return out;
+        EquationSolving.prototype.tangent = function (f, f1, f2, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
+            var f1a = f1(a);
+            var f1b = f1(b);
+            // f'(x)在[a, b]上保持定号
+            if (f1a * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f1b * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
+            var f2a = f2(a);
+            var f2b = f2(b);
+            // f''(x)在[a, b]上保持定号
+            if (f2a * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f2b * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var x;
+            if (f1Sign > 0) {
+                if (f2Sign > 0)
+                    x = b;
+                else
+                    x = a;
+            }
+            else {
+                if (f2Sign > 0)
+                    x = a;
+                else
+                    x = b;
+            }
+            do {
+                var fx = f(x);
+                var f1x = f1(x);
+                var f2x = f2(x);
+                // f'(x)在[a, b]上保持定号
+                if (f1x * f1Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + x + ") = " + f1x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                // f''(x)在[a, b]上保持定号
+                if (f2x * f2Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + x + ") = " + f2x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                // 迭代 Xn+1 = Xn - f(Xn) / f'(Xn)
+                x = x - fx / f1x;
+            } while (!this.equalNumber(fx, 0, precision));
+            return x;
         };
         /**
-         * 按标量（大小）缩放当前的 Vector3 对象。
+         * 割线法（弦截法） 求解 f(x) == 0
+         *
+         * 使用 (f(Xn) - f(Xn-1)) / (Xn - Xn-1) 代替切线法迭代公式 Xn+1 = Xn - f(Xn) / f'(Xn) 中的 f'(x)
+         *
+         * 迭代公式：Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
+         *
+         * 用过点(Xn-1,f(Xn-1))和点(Xn,f(Xn))的割线来近似代替(Xn,f(Xn))处的切线，将这条割线与X轴交点的横坐标作为新的近似解。
+         *
+         * #### 额外需求
+         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
+         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
+         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
+         *
+         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        Vector2.prototype.scaleNumber = function (s) {
-            this.x *= s;
-            this.y *= s;
-            return this;
+        EquationSolving.prototype.secant = function (f, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            // 此处创建近似导函数以及二次导函数，其实割线法使用在计算f'(x)困难时的，但是 getDerivative 方法解决了这个困难。。。。
+            var f1 = this.getDerivative(f, precision);
+            var f2 = this.getDerivative(f1, precision);
+            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
+            // 
+            var f1a = f1(a);
+            var f1b = f1(b);
+            // f'(x)在[a, b]上保持定号
+            if (f1a * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f1b * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
+            var f2a = f2(a);
+            var f2b = f2(b);
+            // f''(x)在[a, b]上保持定号
+            if (f2a * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f2b * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var x;
+            if (f1Sign > 0) {
+                if (f2Sign > 0)
+                    x = b;
+                else
+                    x = a;
+            }
+            else {
+                if (f2Sign > 0)
+                    x = a;
+                else
+                    x = b;
+            }
+            // Xn-1
+            var xn_1 = x;
+            var fxn_1 = f(xn_1);
+            // Xn
+            var xn = xn_1 - precision * f2Sign / Math.abs(f2Sign);
+            var fxn = f(xn);
+            // 
+            if (fxn * fxn_1 < 0) {
+                return xn;
+            }
+            // Xn+1
+            var xn$1;
+            do {
+                var f1xn = f1(xn);
+                // f'(x)在[a, b]上保持定号
+                if (f1xn * f1Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + xn + ") = " + f1xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                var f2xn = f2(xn);
+                // f''(x)在[a, b]上保持定号
+                if (f2xn * f2Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + xn + ") = " + f2xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                // 迭代 Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
+                xn$1 = xn - fxn * (xn - xn_1) / (fxn - fxn_1);
+                //
+                xn_1 = xn;
+                fxn_1 = fxn;
+                xn = xn$1;
+                fxn = f(xn);
+            } while (!this.equalNumber(fxn, 0, precision));
+            return xn;
         };
-        /**
-         * 按标量（大小）缩放当前的 Vector2 对象。
-         */
-        Vector2.prototype.scaleNumberTo = function (s, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            return vout.copy(this).scaleNumber(s);
-        };
-        /**
-         * 缩放
-         * @param s 缩放量
-         */
-        Vector2.prototype.scale = function (s) {
-            this.x *= s.x;
-            this.y *= s.y;
-            return this;
-        };
-        /**
-         * 缩放
-         * @param s 缩放量
-         */
-        Vector2.prototype.scaleTo = function (s, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            if (s == vout)
-                s = s.clone();
-            return vout.copy(this).scale(s);
-        };
-        /**
-         * 按指定量偏移 Vector2 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
-         * @param dx 水平坐标 x 的偏移量。
-         * @param dy 水平坐标 y 的偏移量。
-         */
-        Vector2.prototype.offset = function (dx, dy) {
-            this.x += dx;
-            this.y += dy;
-            return this;
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector2.prototype.lerp = function (p, alpha) {
-            this.x += (p.x - this.x) * alpha.x;
-            this.y += (p.y - this.y) * alpha.y;
-            return this;
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回新向量
-         */
-        Vector2.prototype.lerpTo = function (v, alpha, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            return vout.copy(this).lerp(v, alpha);
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector2.prototype.lerpNumber = function (v, alpha) {
-            this.x += (v.x - this.x) * alpha;
-            this.y += (v.y - this.y) * alpha;
-            return this;
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector2.prototype.lerpNumberTo = function (v, alpha, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            return vout.copy(this).lerpNumber(v, alpha);
-        };
-        /**
-         * 夹紧？
-         * @param min 最小值
-         * @param max 最大值
-         */
-        Vector2.prototype.clamp = function (min, max) {
-            this.x = Math.clamp(this.x, min.x, max.x);
-            this.y = Math.clamp(this.y, min.y, max.y);
-            return this;
-        };
-        /**
-         * 夹紧？
-         * @param min 最小值
-         * @param max 最大值
-         */
-        Vector2.prototype.clampTo = function (min, max, vout) {
-            if (vout === void 0) { vout = new Vector2(); }
-            return vout.copy(this).clamp(min, max);
-        };
-        /**
-         * 取最小元素
-         * @param v 向量
-         */
-        Vector2.prototype.min = function (v) {
-            this.x = Math.min(this.x, v.x);
-            this.y = Math.min(this.y, v.y);
-            return this;
-        };
-        /**
-         * 取最大元素
-         * @param v 向量
-         */
-        Vector2.prototype.max = function (v) {
-            this.x = Math.max(this.x, v.x);
-            this.y = Math.max(this.y, v.y);
-            return this;
-        };
-        /**
-         * 各分量均取最近的整数
-         */
-        Vector2.prototype.round = function () {
-            this.x = Math.round(this.x);
-            this.y = Math.round(this.y);
-            return this;
-        };
-        /**
-         * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
-         * @returns 坐标的字符串表示形式。
-         */
-        Vector2.prototype.toString = function () {
-            return "(x=" + this.x + ", y=" + this.y + ")";
-        };
-        /**
-         * 转换为数组
-         * @param array 数组
-         * @param offset 偏移
-         * @return 返回数组
-         */
-        Vector2.prototype.toArray = function (array, offset) {
-            if (array === void 0) { array = []; }
-            if (offset === void 0) { offset = 0; }
-            array[offset] = this.x;
-            array[offset + 1] = this.y;
-            return array;
-        };
-        /**
-         * 原点
-         */
-        Vector2.ZERO = Object.freeze(new Vector2());
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Vector2.prototype, "x", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Vector2.prototype, "y", void 0);
-        return Vector2;
+        return EquationSolving;
     }());
-    feng3d.Vector2 = Vector2;
+    feng3d.EquationSolving = EquationSolving;
+    feng3d.equationSolving = new EquationSolving();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
-     * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
+     * 高次函数
+     *
+     * 处理N次函数定义，求值，方程求解问题
+     *
+     * n次函数定义
+     * f(x) = a0 * pow(x, n) + a1 * pow(x, n - 1) +.....+ an_1 * pow(x, 1) + an
+     *
+     * 0次 f(x) = a0;
+     * 1次 f(x) = a0 * x + a1;
+     * 2次 f(x) = a0 * x * x + a1 * x + a2;
+     * ......
+     *
      */
-    var Vector3 = /** @class */ (function () {
+    var HighFunction = /** @class */ (function () {
         /**
-         * 创建 Vector3 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3 对象。
-         * @param x 第一个元素，例如 x 坐标。
-         * @param y 第二个元素，例如 y 坐标。
-         * @param z 第三个元素，例如 z 坐标。
+         * 构建函数
+         * @param as 函数系数 a0-an 数组
          */
-        function Vector3(x, y, z) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (z === void 0) { z = 0; }
-            /**
-            * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
-            */
-            this.x = 0;
-            /**
-             * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
-             */
-            this.y = 0;
-            /**
-             * Vector3 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
-             */
-            this.z = 0;
-            this.x = x;
-            this.y = y;
-            this.z = z;
+        function HighFunction(as) {
+            this.as = as;
         }
         /**
-         * 从数组中初始化向量
-         * @param array 数组
-         * @param offset 偏移
-         * @return 返回新向量
+         * 获取函数 f(x) 的值
+         * @param x x坐标
          */
-        Vector3.fromArray = function (array, offset) {
-            if (offset === void 0) { offset = 0; }
-            return new Vector3().fromArray(array, offset);
+        HighFunction.prototype.getValue = function (x) {
+            var v = 0;
+            var as = this.as;
+            for (var i = 0, n = as.length; i < n; i++) {
+                v = v * x + as[i];
+            }
+            return v;
+        };
+        return HighFunction;
+    }());
+    feng3d.HighFunction = HighFunction;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 柏林噪音
+     *
+     * 用于生产随机的噪音贴图
+     *
+     * @see http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
+     * @see https://mrl.nyu.edu/~perlin/noise/
+     * @see https://gitee.com/feng3d_admin/noise
+     */
+    var Noise = /** @class */ (function () {
+        /**
+         * 构建柏林噪音
+         *
+         * @param seed 随机种子
+         */
+        function Noise(seed) {
+            if (seed === void 0) { seed = 0; }
+            this._seed = 0;
+            this._p = [];
+            this.seed = seed;
+        }
+        /**
+         * 1D 经典噪音
+         *
+         * @param x X轴数值
+         */
+        Noise.prototype.perlin1 = function (x) {
+            var perm = this._p;
+            // Find unit grid cell containing point
+            var X = Math.floor(x);
+            // Get relative xyz coordinates of point within that cell
+            x = x - X;
+            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+            X = X & 255;
+            // Calculate a set of eight hashed gradient indices
+            var gi00 = perm[X] % 2;
+            var gi10 = perm[X + 1] % 2;
+            // Calculate noise contributions from each of the eight corners
+            var n00 = dot1(grad1[gi00], x);
+            var n10 = dot1(grad1[gi10], x - 1);
+            // Compute the fade curve value for each of x, y
+            var u = fade(x);
+            // Interpolate along x the contributions from each of the corners
+            var nx0 = mix(n00, n10, u);
+            return nx0;
         };
         /**
-         * 随机三维向量
+         * 2D 经典噪音
          *
-         * @param size 尺寸
-         * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
+         * @param x X轴数值
+         * @param y Y轴数值
          */
-        Vector3.random = function (size, double) {
-            if (size === void 0) { size = 1; }
-            if (double === void 0) { double = false; }
-            var v = new Vector3(Math.random(), Math.random(), Math.random());
-            if (double)
-                v.scaleNumber(2).subNumber(1);
-            v.scaleNumber(size);
+        Noise.prototype.perlin2 = function (x, y) {
+            var perm = this._p;
+            // Find unit grid cell containing point
+            var X = Math.floor(x);
+            var Y = Math.floor(y);
+            // Get relative xyz coordinates of point within that cell
+            x = x - X;
+            y = y - Y;
+            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+            X = X & 255;
+            Y = Y & 255;
+            // Calculate a set of eight hashed gradient indices
+            var gi00 = perm[X + perm[Y]] % 4;
+            var gi10 = perm[X + 1 + perm[Y]] % 4;
+            var gi01 = perm[X + perm[Y + 1]] % 4;
+            var gi11 = perm[X + 1 + perm[Y + 1]] % 4;
+            // Calculate noise contributions from each of the eight corners
+            var n00 = dot2(grad2[gi00], x, y);
+            var n10 = dot2(grad2[gi10], x - 1, y);
+            var n01 = dot2(grad2[gi01], x, y - 1);
+            var n11 = dot2(grad2[gi11], x - 1, y - 1);
+            // Compute the fade curve value for each of x, y
+            var u = fade(x);
+            var v = fade(y);
+            // Interpolate along x the contributions from each of the corners
+            var nx0 = mix(n00, n10, u);
+            var nx1 = mix(n01, n11, u);
+            // Interpolate the four results along y
+            var nxy = mix(nx0, nx1, v);
+            return nxy;
+        };
+        /**
+         * 3D 经典噪音
+         *
+         * @param x X轴数值
+         * @param y Y轴数值
+         * @param z Z轴数值
+         */
+        Noise.prototype.perlin3 = function (x, y, z) {
+            var perm = this._p;
+            // Find unit grid cell containing point
+            var X = Math.floor(x);
+            var Y = Math.floor(y);
+            var Z = Math.floor(z);
+            // Get relative xyz coordinates of point within that cell
+            x = x - X;
+            y = y - Y;
+            z = z - Z;
+            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+            X = X & 255;
+            Y = Y & 255;
+            Z = Z & 255;
+            // Calculate a set of eight hashed gradient indices
+            var gi000 = perm[X + perm[Y + perm[Z]]] % 12;
+            var gi100 = perm[X + 1 + perm[Y + perm[Z]]] % 12;
+            var gi010 = perm[X + perm[Y + 1 + perm[Z]]] % 12;
+            var gi110 = perm[X + 1 + perm[Y + 1 + perm[Z]]] % 12;
+            var gi001 = perm[X + perm[Y + perm[Z + 1]]] % 12;
+            var gi101 = perm[X + 1 + perm[Y + perm[Z + 1]]] % 12;
+            var gi011 = perm[X + perm[Y + 1 + perm[Z + 1]]] % 12;
+            var gi111 = perm[X + 1 + perm[Y + 1 + perm[Z + 1]]] % 12;
+            // Calculate noise contributions from each of the eight corners
+            var n000 = dot(grad3[gi000], x, y, z);
+            var n100 = dot(grad3[gi100], x - 1, y, z);
+            var n010 = dot(grad3[gi010], x, y - 1, z);
+            var n110 = dot(grad3[gi110], x - 1, y - 1, z);
+            var n001 = dot(grad3[gi001], x, y, z - 1);
+            var n101 = dot(grad3[gi101], x - 1, y, z - 1);
+            var n011 = dot(grad3[gi011], x, y - 1, z - 1);
+            var n111 = dot(grad3[gi111], x - 1, y - 1, z - 1);
+            // Compute the fade curve value for each of x, y, z
+            var u = fade(x);
+            var v = fade(y);
+            var w = fade(z);
+            // Interpolate along x the contributions from each of the corners
+            var nx00 = mix(n000, n100, u);
+            var nx01 = mix(n001, n101, u);
+            var nx10 = mix(n010, n110, u);
+            var nx11 = mix(n011, n111, u);
+            // Interpolate the four results along y
+            var nxy0 = mix(nx00, nx10, v);
+            var nxy1 = mix(nx01, nx11, v);
+            // Interpolate the two last results along z
+            var nxyz = mix(nxy0, nxy1, w);
+            return nxyz;
+        };
+        /**
+         * N阶经典噪音
+         *
+         * 如果是1D，2D，3D噪音，最好选用对于函数，perlinN中存在for循环因此效率比perlin3等性能差3到5（8）倍！
+         *
+         * 满足以下运算
+         * perlinN(x) == perlin1(x)
+         * perlinN(x,y) == perlin2(x,y)
+         * perlinN(x,y,z) == perlin3(x,y,z)
+         *
+         * @param ps 每个轴的数值
+         */
+        Noise.prototype.perlinN = function () {
+            var ps = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                ps[_i] = arguments[_i];
+            }
+            var perm = this._p;
+            var n = ps.length;
+            // 在格子内对应每个轴的位置
+            var pp = [];
+            // 所属格子对应每个轴的索引
+            var PS = [];
+            // 在格子内对应每个轴的混合权重
+            var PF = [];
+            for (var i = 0; i < n; i++) {
+                var p = ps[i];
+                // 找到所属单元格
+                var P = Math.floor(p);
+                // 获取所在单元格内的位置
+                p = p - P;
+                // 单元格以255为周期
+                P = P & 255;
+                //
+                pp[i] = p;
+                PS[i] = P;
+                // 分别计算每个轴的混合度
+                PF[i] = fade(p);
+            }
+            //
+            var gradN = createGrad(n);
+            // 边的数量
+            var numEdge = gradN.length;
+            // if (n > 1)
+            // {
+            //     console.assert(numEdge == Math.pow(2, n - 1) * n, `边的数量不对！`)
+            // }
+            //
+            var bits = getBits(n);
+            var dns = [];
+            //
+            for (var i = 0, len = bits.length; i < len; i++) {
+                var bit = bits[i];
+                var bitn = bit.length;
+                // 计算索引
+                var gi = 0;
+                while (bitn > 0) {
+                    bitn--;
+                    gi = perm[PS[bitn] + bit[bitn] + gi];
+                    // if (isNaN(gi))
+                    //     debugger;
+                }
+                // 获取 grad
+                var grad = gradN[gi % numEdge];
+                bitn = bit.length;
+                // 计算点乘 dot运算
+                var dn = 0;
+                while (bitn > 0) {
+                    bitn--;
+                    dn += grad[bitn] * (pp[bitn] - bit[bitn]);
+                }
+                dns[i] = dn;
+            }
+            // 进行插值
+            for (var i = 0; i < n; i++) {
+                // 每次前后两个插值
+                for (var j = 0, len = dns.length; j < len; j += 2) {
+                    dns[j / 2] = mix(dns[j], dns[j + 1], PF[i]);
+                }
+                // 每波插值后 长度减半
+                dns.length = dns.length >> 1;
+            }
+            // console.assert(dns.length == 1, `结果长度不对！`)
+            return dns[0];
+        };
+        Object.defineProperty(Noise.prototype, "seed", {
+            /**
+             * This isn't a very good seeding function, but it works ok. It supports 2^16
+             * different seed values. Write something better if you need more seeds.
+             */
+            get: function () {
+                return this._seed;
+            },
+            set: function (v) {
+                this._seed = v;
+                var p = this._p;
+                if (v > 0 && v < 1) {
+                    // Scale the seed out
+                    v *= 65536;
+                }
+                v = Math.floor(v);
+                if (v < 256) {
+                    v |= v << 8;
+                }
+                for (var i = 0; i < 256; i++) {
+                    var v0;
+                    if (i & 1) {
+                        v0 = permutation[i] ^ (v & 255);
+                    }
+                    else {
+                        v0 = permutation[i] ^ ((v >> 8) & 255);
+                    }
+                    p[i] = p[i + 256] = v0;
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return Noise;
+    }());
+    feng3d.Noise = Noise;
+    /**
+     *
+     * @param n
+     *
+     * len = 2^(n-1) * n
+     */
+    function createGrad(n) {
+        if (createGradCache[n])
+            return createGradCache[n];
+        var gradBase = createGradBase(n - 1);
+        var grad = [];
+        if (n > 1) {
+            for (var i = n - 1; i >= 0; i--) {
+                for (var j = 0; j < gradBase.length; j++) {
+                    var item = gradBase[j].concat();
+                    item.splice(i, 0, 0);
+                    grad.push(item);
+                }
+            }
+        }
+        else {
+            grad = gradBase;
+        }
+        createGradCache[n] = grad;
+        return grad;
+    }
+    feng3d.createGrad = createGrad;
+    var createGradCache = {};
+    function createGradBase(n) {
+        if (n < 2)
+            return [
+                [1], [-1],
+            ];
+        var grad = createGradBase(n - 1);
+        for (var i = 0, len = grad.length; i < len; i++) {
+            var item = grad[i];
+            grad[i] = item.concat(1);
+            grad[i + len] = item.concat(-1);
+        }
+        return grad;
+    }
+    function getBits(n) {
+        if (getBitsChace[n])
+            return getBitsChace[n];
+        if (n < 2)
+            return [
+                [0], [1],
+            ];
+        var grad = getBits(n - 1);
+        for (var i = 0, len = grad.length; i < len; i++) {
+            var item = grad[i];
+            grad[i] = item.concat(0);
+            grad[i + len] = item.concat(1);
+        }
+        getBitsChace[n] = grad;
+        return grad;
+    }
+    feng3d.getBits = getBits;
+    var getBitsChace = {};
+    var grad1 = [
+        [1], [-1],
+    ];
+    var grad2 = [
+        [1, 0], [-1, 0],
+        [0, 1], [0, -1],
+    ];
+    var grad3 = [
+        [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0],
+        [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
+        [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]
+    ];
+    var permutation = [
+        151, 160, 137, 91, 90, 15,
+        131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
+        190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+        88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
+        77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
+        102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
+        135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
+        5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
+        223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+        129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
+        251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
+        49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
+        138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
+    ];
+    function dot(g, x, y, z) {
+        return g[0] * x + g[1] * y + g[2] * z;
+    }
+    function dot2(g, x, y) {
+        return g[0] * x + g[1] * y;
+    }
+    function dot1(g, x) {
+        return g[0] * x;
+    }
+    function mix(a, b, t) {
+        return (1 - t) * a + t * b;
+    }
+    function fade(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+    feng3d.noise = new Noise();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画曲线
+     *
+     * 基于时间轴的连续三阶Bézier曲线
+     */
+    var AnimationCurve = /** @class */ (function () {
+        function AnimationCurve() {
+            /**
+             * 最大tan值，超出该值后将会变成分段
+             */
+            this.maxtan = 1000;
+            /**
+             * The behaviour of the animation before the first keyframe.
+             *
+             * 在第一个关键帧之前的动画行为。
+             */
+            this.preWrapMode = feng3d.WrapMode.Clamp;
+            /**
+             * The behaviour of the animation after the last keyframe.
+             *
+             * 动画在最后一个关键帧之后的行为。
+             */
+            this.postWrapMode = feng3d.WrapMode.Clamp;
+            /**
+             * All keys defined in the animation curve.
+             *
+             * 动画曲线上所有关键字定义。
+             *
+             * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
+             */
+            this.keys = [{ time: 0, value: 1, inTangent: 0, outTangent: 0 }];
+        }
+        Object.defineProperty(AnimationCurve.prototype, "numKeys", {
+            /**
+             * 关键点数量
+             */
+            get: function () {
+                return this.keys.length;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 添加关键点
+         *
+         * 添加关键点后将会执行按t进行排序
+         *
+         * @param key 关键点
+         */
+        AnimationCurve.prototype.addKey = function (key) {
+            this.keys.push(key);
+            this.sort();
+        };
+        /**
+         * 关键点排序
+         *
+         * 当移动关键点或者新增关键点时需要再次排序
+         */
+        AnimationCurve.prototype.sort = function () {
+            this.keys.sort(function (a, b) { return a.time - b.time; });
+        };
+        /**
+         * 删除关键点
+         * @param key 关键点
+         */
+        AnimationCurve.prototype.deleteKey = function (key) {
+            var index = this.keys.indexOf(key);
+            if (index != -1)
+                this.keys.splice(index, 1);
+        };
+        /**
+         * 获取关键点
+         * @param index 索引
+         */
+        AnimationCurve.prototype.getKey = function (index) {
+            return this.keys[index];
+        };
+        /**
+         * 获取关键点索引
+         * @param key 关键点
+         */
+        AnimationCurve.prototype.indexOfKeys = function (key) {
+            return this.keys.indexOf(key);
+        };
+        /**
+         * 获取曲线上点信息
+         * @param t 时间轴的位置 [0,1]
+         */
+        AnimationCurve.prototype.getPoint = function (t) {
+            var wrapMode = feng3d.WrapMode.Clamp;
+            var min = 0;
+            var max = 1;
+            if (this.keys.length > 0) {
+                min = this.keys[0].time;
+            }
+            if (this.keys.length > 1) {
+                max = this.keys[this.keys.length - 1].time;
+            }
+            var cycle = max - min;
+            var dcycle = 2 * cycle;
+            if (t < min)
+                wrapMode = this.preWrapMode;
+            else if (t > max)
+                wrapMode = this.postWrapMode;
+            switch (wrapMode) {
+                case feng3d.WrapMode.Clamp:
+                    t = Math.clamp(t, min, max);
+                    break;
+                case feng3d.WrapMode.Loop:
+                    t = ((t - min) % cycle + cycle) % cycle + min;
+                    break;
+                case feng3d.WrapMode.PingPong:
+                    t = ((t - min) % dcycle + dcycle) % dcycle + min;
+                    if (t > max) {
+                        t = max - (t - max);
+                    }
+                    break;
+            }
+            var keys = this.keys;
+            var maxtan = this.maxtan;
+            var value = 0, tangent = 0, isfind = false;
+            ;
+            for (var i = 0, n = keys.length; i < n; i++) {
+                // 使用 bezierCurve 进行采样曲线点
+                var key = keys[i];
+                var prekey = keys[i - 1];
+                if (i > 0 && prekey.time <= t && t <= key.time) {
+                    var xstart = prekey.time;
+                    var ystart = prekey.value;
+                    var tanstart = prekey.outTangent;
+                    var xend = key.time;
+                    var yend = key.value;
+                    var tanend = key.inTangent;
+                    if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend)) {
+                        var ct = (t - prekey.time) / (key.time - prekey.time);
+                        var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
+                        var fy = feng3d.bezierCurve.getValue(ct, sys);
+                        isfind = true;
+                        value = fy;
+                        tangent = feng3d.bezierCurve.getDerivative(ct, sys) / (xend - xstart);
+                        break;
+                    }
+                    else {
+                        isfind = true;
+                        value = prekey.value;
+                        tangent = 0;
+                        break;
+                    }
+                }
+                if (i == 0 && t <= key.time) {
+                    isfind = true;
+                    value = key.value;
+                    tangent = 0;
+                    break;
+                }
+                if (i == n - 1 && t >= key.time) {
+                    isfind = true;
+                    value = key.value;
+                    tangent = 0;
+                    break;
+                }
+            }
+            if (keys.length == 0)
+                return { time: t, value: 0, inTangent: 0, outTangent: 0 };
+            console.assert(isfind);
+            return { time: t, value: value, inTangent: tangent, outTangent: tangent };
+        };
+        /**
+         * 获取值
+         * @param t 时间轴的位置 [0,1]
+         */
+        AnimationCurve.prototype.getValue = function (t) {
+            var point = this.getPoint(t);
+            if (!point)
+                return 0;
+            return point.value;
+        };
+        /**
+         * 查找关键点
+         * @param t 时间轴的位置 [0,1]
+         * @param y 值
+         * @param precision 查找精度
+         */
+        AnimationCurve.prototype.findKey = function (t, y, precision) {
+            var keys = this.keys;
+            for (var i = 0; i < keys.length; i++) {
+                if (Math.abs(keys[i].time - t) < precision && Math.abs(keys[i].value - y) < precision) {
+                    return keys[i];
+                }
+            }
+            return null;
+        };
+        /**
+         * 添加曲线上的关键点
+         *
+         * 如果该点在曲线上，则添加关键点
+         *
+         * @param time 时间轴的位置 [0,1]
+         * @param value 值
+         * @param precision 查找精度
+         */
+        AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
+            var point = this.getPoint(time);
+            if (Math.abs(value - point.value) < precision) {
+                this.keys.push(point);
+                this.keys.sort(function (a, b) { return a.time - b.time; });
+                return point;
+            }
+            return null;
+        };
+        /**
+         * 获取曲线样本数据
+         *
+         * 这些点可用于连线来拟合曲线。
+         *
+         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
+         */
+        AnimationCurve.prototype.getSamples = function (num) {
+            if (num === void 0) { num = 100; }
+            var results = [];
+            for (var i = 0; i <= num; i++) {
+                var p = this.getPoint(i / num);
+                results.push(p);
+            }
+            return results;
+        };
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurve.prototype, "preWrapMode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurve.prototype, "postWrapMode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurve.prototype, "keys", void 0);
+        return AnimationCurve;
+    }());
+    feng3d.AnimationCurve = AnimationCurve;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Vector3 曲线
+     */
+    var AnimationCurveVector3 = /** @class */ (function () {
+        function AnimationCurveVector3() {
+            /**
+             * X 轴曲线
+             */
+            this.xCurve = new feng3d.AnimationCurve();
+            /**
+             * Y 轴曲线
+             */
+            this.yCurve = new feng3d.AnimationCurve();
+            /**
+             * Z 轴曲线
+             */
+            this.zCurve = new feng3d.AnimationCurve();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        AnimationCurveVector3.prototype.getValue = function (time) {
+            return new feng3d.Vector3(this.xCurve.getValue(time), this.yCurve.getValue(time), this.zCurve.getValue(time));
+        };
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveVector3.prototype, "xCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveVector3.prototype, "yCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveVector3.prototype, "zCurve", void 0);
+        return AnimationCurveVector3;
+    }());
+    feng3d.AnimationCurveVector3 = AnimationCurveVector3;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Bézier曲线
+     * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+     * @author feng / http://feng3d.com 03/06/2018
+     */
+    var BezierCurve = /** @class */ (function () {
+        function BezierCurve() {
+        }
+        /**
+         * 线性Bézier曲线
+         * 给定不同的点P0和P1，线性Bézier曲线就是这两个点之间的直线。曲线由下式给出
+         * ```
+         * B(t) = p0 + t * (p1 - p0) = (1 - t) * p0 + t * p1 , 0 <= t && t <= 1
+         * ```
+         * 相当于线性插值
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        BezierCurve.prototype.linear = function (t, p0, p1) {
+            return p0 + t * (p1 - p0);
+            // return (1 - t) * p0 + t * p1;
+        };
+        /**
+         * 线性Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        BezierCurve.prototype.linearDerivative = function (t, p0, p1) {
+            return p1 - p0;
+        };
+        /**
+         * 线性Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        BezierCurve.prototype.linearSecondDerivative = function (t, p0, p1) {
+            return 0;
+        };
+        /**
+         * 二次Bézier曲线
+         *
+         * 二次Bézier曲线是由函数B（t）跟踪的路径，给定点P0，P1和P2，
+         * ```
+         * B(t) = (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2) , 0 <= t && t <= 1
+         * ```
+         * 这可以解释为分别从P0到P1和从P1到P2的线性Bézier曲线上相应点的线性插值。重新排列前面的等式得出：
+         * ```
+         * B(t) = (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2 , 0 <= t && t <= 1
+         * ```
+         * Bézier曲线关于t的导数是
+         * ```
+         * B'(t) = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
+         * ```
+         * 从中可以得出结论：在P0和P2处曲线的切线在P 1处相交。随着t从0增加到1，曲线沿P1的方向从P0偏离，然后从P1的方向弯曲到P2。
+         *
+         * Bézier曲线关于t的二阶导数是
+         * ```
+         * B''(t) = 2 * (p2 - 2 * p1 + p0)
+         * ```
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.quadratic = function (t, p0, p1, p2) {
+            // return this.linear(t, this.linear(t, p0, p1), this.linear(t, p1, p2));
+            // return (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2);
+            return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
+        };
+        /**
+         * 二次Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.quadraticDerivative = function (t, p0, p1, p2) {
+            // return 2 * this.linear(t, this.linearDerivative(t, p0, p1), this.linearDerivative(t, p1, p2));
+            return 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1);
+        };
+        /**
+         * 二次Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.quadraticSecondDerivative = function (t, p0, p1, p2) {
+            // return 1 * 2 * this.linearDerivative(t, p1 - p0, p2 - p1)
+            // return 1 * 2 * ((p2 - p1) - (p1 - p0));
+            return 2 * (p2 - 2 * p1 + p0);
+        };
+        /**
+         * 立方Bézier曲线
+         *
+         * 平面中或高维空间中（其实一维也是成立的，这里就是使用一维计算）的四个点P0，P1，P2和P3定义了三次Bézier曲线。
+         * 曲线开始于P0朝向P1并且从P2的方向到达P3。通常不会通过P1或P2; 这些点只是为了提供方向信息。
+         * P1和P2之间的距离在转向P2之前确定曲线向P1移动的“多远”和“多快” 。
+         *
+         * 对于由点Pi，Pj和Pk定义的二次Bézier曲线，可以将Bpipjpk(t)写成三次Bézier曲线，它可以定义为两条二次Bézier曲线的仿射组合：
+         * ```
+         * B(t) = (1 - t) * Bp0p1p2(t) + t * Bp1p2p3(t) , 0 <= t && t <= 1
+         * ```
+         * 曲线的显式形式是：
+         * ```
+         * B(t) = (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3 , 0 <= t && t <= 1
+         * ```
+         * 对于P1和P2的一些选择，曲线可以相交，或者包含尖点。
+         *
+         * 三次Bézier曲线相对于t的导数是
+         * ```
+         * B'(t) = 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
+         * ```
+         * 三次Bézier曲线关于t的二阶导数是
+         * ```
+         * 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
+         * ```
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         * @param p3 点3
+         */
+        BezierCurve.prototype.cubic = function (t, p0, p1, p2, p3) {
+            // return this.linear(t, this.quadratic(t, p0, p1, p2), this.quadratic(t, p1, p2, p3));
+            return (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3;
+        };
+        /**
+         * 三次Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         * @param p3 点3
+         */
+        BezierCurve.prototype.cubicDerivative = function (t, p0, p1, p2, p3) {
+            // return 3 * this.linear(t, this.quadraticDerivative(t, p0, p1, p2), this.quadraticDerivative(t, p1, p2, p3));
+            return 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
+        };
+        /**
+         * 三次Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.cubicSecondDerivative = function (t, p0, p1, p2, p3) {
+            // return 3 * this.linear(t, this.quadraticSecondDerivative(t, p0, p1, p2), this.quadraticSecondDerivative(t, p1, p2, p3));
+            return 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
+        };
+        /**
+         * n次Bézier曲线
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
+         */
+        BezierCurve.prototype.bn = function (t, ps, processs) {
+            if (processs === void 0) { processs = null; }
+            ps = ps.concat();
+            if (processs)
+                processs.push(ps.concat());
+            // n次Bézier递推
+            for (var i = ps.length - 1; i > 0; i--) {
+                for (var j = 0; j < i; j++) {
+                    ps[j] = (1 - t) * ps[j] + t * ps[j + 1];
+                }
+                if (processs) {
+                    ps.length = ps.length - 1;
+                    processs.push(ps.concat());
+                }
+            }
+            return ps[0];
+        };
+        /**
+         * n次Bézier曲线关于t的导数
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         */
+        BezierCurve.prototype.bnDerivative = function (t, ps) {
+            if (ps.length < 2)
+                return 0;
+            ps = ps.concat();
+            // 进行
+            for (var i = 0, n = ps.length - 1; i < n; i++) {
+                ps[i] = ps[i + 1] - ps[i];
+            }
+            //
+            ps.length = ps.length - 1;
+            var v = ps.length * this.bn(t, ps);
             return v;
         };
         /**
-         * 从Vector2初始化
+         * n次Bézier曲线关于t的二阶导数
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
          */
-        Vector3.fromVector2 = function (vector, z) {
-            if (z === void 0) { z = 0; }
-            return new Vector3().fromVector2(vector, z);
-        };
-        Object.defineProperty(Vector3.prototype, "length", {
-            /**
-            * 当前 Vector3 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
-            */
-            get: function () {
-                return Math.sqrt(this.lengthSquared);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Vector3.prototype, "lengthSquared", {
-            /**
-            * 当前 Vector3 对象长度的平方，它是使用 x、y 和 z 属性计算出来的。w 属性将被忽略。尽可能使用 lengthSquared() 方法，而不要使用 Vector3.length() 方法的 Math.sqrt() 方法调用，后者速度较慢。
-            */
-            get: function () {
-                return this.x * this.x + this.y * this.y + this.z * this.z;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 将 Vector3 的成员设置为指定值
-         */
-        Vector3.prototype.set = function (x, y, z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            return this;
-        };
-        /**
-         * 把所有分量都设为零
-         */
-        Vector3.prototype.setZero = function () {
-            this.x = this.y = this.z = 0;
-        };
-        /**
-         * 从Vector2初始化
-         */
-        Vector3.prototype.fromVector2 = function (vector, z) {
-            if (z === void 0) { z = 0; }
-            this.x = vector.x;
-            this.y = vector.y;
-            this.z = z;
-            return this;
-        };
-        Vector3.prototype.fromArray = function (array, offset) {
-            if (offset === void 0) { offset = 0; }
-            this.x = array[offset];
-            this.y = array[offset + 1];
-            this.z = array[offset + 2];
-            return this;
-        };
-        /**
-         * 转换为Vector2
-         */
-        Vector3.prototype.toVector2 = function (vector) {
-            if (vector === void 0) { vector = new feng3d.Vector2(); }
-            return vector.set(this.x, this.y);
-        };
-        /**
-         * 转换为Vector4
-         */
-        Vector3.prototype.toVector4 = function (vector4) {
-            if (vector4 === void 0) { vector4 = new feng3d.Vector4(); }
-            vector4.x = this.x;
-            vector4.y = this.y;
-            vector4.z = this.z;
-            return vector4;
-        };
-        /**
-         * 加上指定向量
-         * @param v 加向量
-         */
-        Vector3.prototype.add = function (v) {
-            this.x += v.x;
-            this.y += v.y;
-            this.z += v.z;
-            return this;
-        };
-        /**
-         * 加上指定向量得到新向量
-         * @param v 加向量
-         * @return 返回新向量
-         */
-        Vector3.prototype.addTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x + v.x;
-            vout.y = this.y + v.y;
-            vout.z = this.z + v.z;
-            return vout;
-        };
-        /**
-         * 减去向量
-         * @param a 减去的向量
-         * @return 返回新向量
-         */
-        Vector3.prototype.sub = function (a) {
-            this.x -= a.x;
-            this.y -= a.y;
-            this.z -= a.z;
-            return this;
-        };
-        /**
-         * 减去向量返回新向量
-         * @param v 减去的向量
-         * @return 返回的新向量
-         */
-        Vector3.prototype.subTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x - v.x;
-            vout.y = this.y - v.y;
-            vout.z = this.z - v.z;
-            return vout;
-        };
-        /**
-         * 乘以向量
-         * @param v 向量
-         */
-        Vector3.prototype.multiply = function (v) {
-            this.x *= v.x;
-            this.y *= v.y;
-            this.z *= v.z;
-            return this;
-        };
-        /**
-         * 乘以向量
-         * @param v 向量
-         * @param vout 输出向量
-         */
-        Vector3.prototype.multiplyTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x * v.x;
-            vout.y = this.y * v.y;
-            vout.z = this.z * v.z;
-            return vout;
-        };
-        /**
-         * 除以向量
-         * @param a 向量
-         */
-        Vector3.prototype.divide = function (a) {
-            this.x /= a.x;
-            this.y /= a.y;
-            this.z /= a.z;
-            return this;
-        };
-        /**
-         * 除以向量
-         * @param a 向量
-         * @param vout 输出向量
-         */
-        Vector3.prototype.divideTo = function (a, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x / a.x;
-            vout.y = this.y / a.y;
-            vout.z = this.z / a.z;
-            return vout;
-        };
-        /**
-         * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
-         */
-        Vector3.prototype.equals = function (v, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (!Math.equals(this.x - v.x, 0, precision))
-                return false;
-            if (!Math.equals(this.y - v.y, 0, precision))
-                return false;
-            if (!Math.equals(this.z - v.z, 0, precision))
-                return false;
-            return true;
-        };
-        /**
-         * 将源 Vector3 对象中的所有矢量数据复制到调用方 Vector3 对象中。
-         * @return 要从中复制数据的 Vector3 对象。
-         */
-        Vector3.prototype.copy = function (v) {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
-            return this;
-        };
-        /**
-         * 与目标点之间的距离
-         * @param p 目标点
-         */
-        Vector3.prototype.distance = function (p) {
-            var dx = this.x - p.x, dy = this.y - p.y, dz = this.z - p.z;
-            return Math.sqrt(dx * dx + dy * dy + dz * dz);
-        };
-        /**
-         * 与目标点之间的距离平方
-         * @param p 目标点
-         */
-        Vector3.prototype.distanceSquared = function (p) {
-            var dx = this.x - p.x, dy = this.y - p.y, dz = this.z - p.z;
-            return dx * dx + dy * dy + dz * dz;
-        };
-        /**
-         * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3 对象转换为单位矢量。
-         */
-        Vector3.prototype.normalize = function (thickness) {
-            if (thickness === void 0) { thickness = 1; }
-            var length = this.lengthSquared;
-            if (length > 0) {
-                length = Math.sqrt(length);
-                var invLength = thickness / length;
-                this.x *= invLength;
-                this.y *= invLength;
-                this.z *= invLength;
+        BezierCurve.prototype.bnSecondDerivative = function (t, ps) {
+            if (ps.length < 3)
+                return 0;
+            ps = ps.concat();
+            // 进行
+            for (var i = 0, n = ps.length - 1; i < n; i++) {
+                ps[i] = ps[i + 1] - ps[i];
             }
-            else {
-                // Make something up
-                this.x = 0;
-                this.y = 0;
-                this.z = 0;
+            //
+            ps.length = ps.length - 1;
+            var v = ps.length * this.bnDerivative(t, ps);
+            return v;
+        };
+        /**
+         * n次Bézier曲线关于t的dn阶导数
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param dn 求导次数
+         * @param ps 点列表     ps.length == n+1
+         */
+        BezierCurve.prototype.bnND = function (t, dn, ps) {
+            if (ps.length < dn + 1)
+                return 0;
+            var factorial = 1;
+            ps = ps.concat();
+            for (var j = 0; j < dn; j++) {
+                // 进行
+                for (var i = 0, n = ps.length - 1; i < n; i++) {
+                    ps[i] = ps[i + 1] - ps[i];
+                }
+                //
+                ps.length = ps.length - 1;
+                factorial *= ps.length;
             }
-            return this;
+            var v = factorial * this.bn(t, ps);
+            return v;
         };
         /**
-         * Scale a vector and add it to this vector. Save the result in "this". (this = this + vector * scalar)
-         * @param scalar
-         * @param vector
-         * @param  target The vector to save the result in.
+         * 获取曲线在指定插值度上的值
+         * @param t 插值度
+         * @param ps 点列表
          */
-        Vector3.prototype.addScaledVector = function (scalar, vector) {
-            this.x = this.x + scalar * vector.x;
-            this.y = this.y + scalar * vector.y;
-            this.z = this.z + scalar * vector.z;
-            return this;
+        BezierCurve.prototype.getValue = function (t, ps) {
+            if (ps.length == 2) {
+                return this.linear(t, ps[0], ps[1]);
+            }
+            if (ps.length == 3) {
+                return this.quadratic(t, ps[0], ps[1], ps[2]);
+            }
+            if (ps.length == 4) {
+                return this.cubic(t, ps[0], ps[1], ps[2], ps[3]);
+            }
+            return this.bn(t, ps);
+            // var t1 = 1 - t;
+            // return t1 * t1 * t1 * ps[0] + 3 * t1 * t1 * t * ps[1] + 3 * t1 * t * t * ps[2] + t * t * t * ps[3];
         };
         /**
-         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
-         * @param scalar
-         * @param vector
-         * @param  target The vector to save the result in.
+         * 获取曲线在指定插值度上的导数(斜率)
+         * @param t 插值度
+         * @param ps 点列表
          */
-        Vector3.prototype.addScaledVectorTo = function (scalar, vector, target) {
-            if (target === void 0) { target = new Vector3(); }
-            target.x = this.x + scalar * vector.x;
-            target.y = this.y + scalar * vector.y;
-            target.z = this.z + scalar * vector.z;
-            return target;
+        BezierCurve.prototype.getDerivative = function (t, ps) {
+            if (ps.length == 2) {
+                return this.linearDerivative(t, ps[0], ps[1]);
+            }
+            if (ps.length == 3) {
+                return this.quadraticDerivative(t, ps[0], ps[1], ps[2]);
+            }
+            if (ps.length == 4) {
+                return this.cubicDerivative(t, ps[0], ps[1], ps[2], ps[3]);
+            }
+            return this.bnDerivative(t, ps);
+            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
         };
         /**
-         * 叉乘向量
-         * @param a 向量
+         * 获取曲线在指定插值度上的二阶导数
+         * @param t 插值度
+         * @param ps 点列表
          */
-        Vector3.prototype.cross = function (a) {
-            return this.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+        BezierCurve.prototype.getSecondDerivative = function (t, ps) {
+            if (ps.length == 2) {
+                return this.linearSecondDerivative(t, ps[0], ps[1]);
+            }
+            if (ps.length == 3) {
+                return this.quadraticSecondDerivative(t, ps[0], ps[1], ps[2]);
+            }
+            if (ps.length == 4) {
+                return this.cubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]);
+            }
+            return this.bnSecondDerivative(t, ps);
+            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
         };
         /**
-         * 叉乘向量
-         * @param a 向量
-         * @param vout 输出向量
+         * 查找区间内极值列表
+         *
+         * @param ps 点列表
+         * @param numSamples 采样次数，用于分段查找极值
+         * @param precision  查找精度
+         *
+         * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
          */
-        Vector3.prototype.crossTo = function (a, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
-            return vout;
+        BezierCurve.prototype.getExtremums = function (ps, numSamples, precision) {
+            var _this = this;
+            if (numSamples === void 0) { numSamples = 10; }
+            if (precision === void 0) { precision = 0.0000001; }
+            var samples = [];
+            for (var i = 0; i <= numSamples; i++) {
+                samples.push(this.getDerivative(i / numSamples, ps));
+            }
+            // 查找存在解的分段
+            //
+            var resultTs = [];
+            var resultVs = [];
+            for (var i = 0, n = numSamples; i < n; i++) {
+                if (samples[i] * samples[i + 1] < 0) {
+                    var guessT = feng3d.equationSolving.line(function (x) { return _this.getDerivative(x, ps); }, i / numSamples, (i + 1) / numSamples, precision);
+                    resultTs.push(guessT);
+                    resultVs.push(this.getValue(guessT, ps));
+                }
+            }
+            return { ts: resultTs, vs: resultVs };
         };
         /**
-         * 如果当前 Vector3 对象和作为参数指定的 Vector3 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         * 获取单调区间列表
+         *
+         * @param ps
+         * @param numSamples
+         * @param precision
+         * @returns ts: 区间结点插值度列表,vs: 区间结点值列表
          */
-        Vector3.prototype.dot = function (a) {
-            return this.x * a.x + this.y * a.y + this.z * a.z;
+        BezierCurve.prototype.getMonotoneIntervals = function (ps, numSamples, precision) {
+            if (numSamples === void 0) { numSamples = 10; }
+            if (precision === void 0) { precision = 0.0000001; }
+            // 区间内的单调区间
+            var monotoneIntervalTs = [0, 1];
+            var monotoneIntervalVs = [ps[0], ps[ps.length - 1]];
+            // 预先计算好极值
+            var extremums = this.getExtremums(ps, numSamples, precision);
+            for (var i = 0; i < extremums.ts.length; i++) {
+                // 增加单调区间
+                monotoneIntervalTs.splice(i + 1, 0, extremums.ts[i]);
+                monotoneIntervalVs.splice(i + 1, 0, extremums.vs[i]);
+            }
+            return { ts: monotoneIntervalTs, vs: monotoneIntervalVs };
         };
         /**
-         * 是否为零向量
+         * 获取目标值所在的插值度T
+         *
+         * @param targetV 目标值
+         * @param ps 点列表
+         * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
+         * @param precision  查找精度
+         *
+         * @returns 返回解数组
          */
-        Vector3.prototype.isZero = function () {
-            return this.x === 0 && this.y === 0 && this.z === 0;
+        BezierCurve.prototype.getTFromValue = function (targetV, ps, numSamples, precision) {
+            var _this = this;
+            if (numSamples === void 0) { numSamples = 10; }
+            if (precision === void 0) { precision = 0.0000001; }
+            // 获取单调区间
+            var monotoneIntervals = this.getMonotoneIntervals(ps, numSamples, precision);
+            var monotoneIntervalTs = monotoneIntervals.ts;
+            var monotoneIntervalVs = monotoneIntervals.vs;
+            // 存在解的单调区间
+            var results = [];
+            // 遍历单调区间
+            for (var i = 0, n = monotoneIntervalVs.length - 1; i < n; i++) {
+                if ((monotoneIntervalVs[i] - targetV) * (monotoneIntervalVs[i + 1] - targetV) <= 0) {
+                    var fx = function (x) { return _this.getValue(x, ps) - targetV; };
+                    // 连线法
+                    var result = feng3d.equationSolving.line(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
+                    results.push(result);
+                }
+            }
+            return results;
         };
-        Vector3.prototype.tangents = function (t1, t2) {
-            var norm = this.length;
-            if (norm > 0.0) {
-                var n = new Vector3();
-                var inorm = 1 / norm;
-                n.set(this.x * inorm, this.y * inorm, this.z * inorm);
-                var randVec = new Vector3();
-                if (Math.abs(n.x) < 0.9) {
-                    randVec.set(1, 0, 0);
-                    n.crossTo(randVec, t1);
+        /**
+         * 分割曲线
+         *
+         * 在曲线插值度t位置分割为两条连接起来与原曲线完全重合的曲线
+         *
+         * @param t 分割位置（插值度）
+         * @param ps 被分割曲线点列表
+         * @returns 返回两条曲线组成的数组
+         */
+        BezierCurve.prototype.split = function (t, ps) {
+            // 获取曲线的动画过程
+            var processs = [];
+            feng3d.bezierCurve.bn(t, ps, processs);
+            // 第一条曲线
+            var fps = [];
+            // 第二条曲线
+            var sps = [];
+            // 使用当前t值进行分割曲线
+            for (var i = processs.length - 1; i >= 0; i--) {
+                if (i == processs.length - 1) {
+                    // 添加关键点
+                    fps.push(processs[i][0]);
+                    fps.push(processs[i][0]);
                 }
                 else {
-                    randVec.set(0, 1, 0);
-                    n.crossTo(randVec, t1);
+                    // 添加左右控制点
+                    fps.unshift(processs[i][0]);
+                    sps.push(processs[i].pop());
                 }
-                n.crossTo(t1, t2);
             }
-            else {
-                // The normal length is zero, make something up
-                t1.set(1, 0, 0);
-                t2.set(0, 1, 0);
-            }
+            return [fps, sps];
         };
         /**
-         * 检查一个向量是否接近零
+         * 合并曲线
          *
-         * @param precision
-         */
-        Vector3.prototype.almostZero = function (precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (Math.abs(this.x) > precision ||
-                Math.abs(this.y) > precision ||
-                Math.abs(this.z) > precision) {
-                return false;
-            }
-            return true;
-        };
-        /**
-         * 检查这个向量是否与另一个向量反平行。
+         * 合并两条连接的曲线为一条曲线并且可以还原为分割前的曲线
          *
-         * @param  v
-         * @param  precision 设置为零以进行精确比较
+         * @param fps 第一条曲线点列表
+         * @param sps 第二条曲线点列表
+         * @param mergeType 合并方式。mergeType = 0时进行还原合并，还原拆分之前的曲线；mergeType = 1时进行拟合合并，合并后的曲线会经过两条曲线的连接点；
          */
-        Vector3.prototype.isAntiparallelTo = function (v, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            var t = new Vector3();
-            this.negateTo(t);
-            return t.equals(v, precision);
+        BezierCurve.prototype.merge = function (fps, sps, mergeType) {
+            if (mergeType === void 0) { mergeType = 0; }
+            fps = fps.concat();
+            sps = sps.concat();
+            var processs = [];
+            var t;
+            // 上条曲线
+            var pps;
+            // 当前曲线
+            var ps;
+            for (var i = 0, n = fps.length; i < n; i++) {
+                ps = processs[i] = [];
+                if (i == 0) {
+                    processs[i][0] = fps.pop();
+                    sps.shift();
+                }
+                else if (i == 1) {
+                    // 计算t值
+                    processs[i][0] = fps.pop();
+                    processs[i][1] = sps.shift();
+                    t = (processs[i - 1][0] - processs[i][0]) / (processs[i][1] - processs[i][0]);
+                }
+                else {
+                    pps = processs[i - 1];
+                    // 前面增加点
+                    var nfp = fps.pop();
+                    // 后面增加点
+                    var nsp = sps.shift();
+                    // 从前往后计算
+                    var ps0 = [];
+                    ps0[0] = nfp;
+                    for (var j = 0, n_1 = pps.length; j < n_1; j++) {
+                        ps0[j + 1] = ps0[j] + (pps[j] - ps0[j]) / t;
+                    }
+                    // 从后往前计算
+                    var ps1 = [];
+                    ps1[pps.length] = nsp;
+                    for (var j = pps.length - 1; j >= 0; j--) {
+                        ps1[j] = ps1[j + 1] - (ps1[j + 1] - pps[j]) / (1 - t);
+                    }
+                    // 拟合合并,合并前后两个方向的计算
+                    if (mergeType == 1) {
+                        for (var j = 0, n_2 = ps0.length - 1; j <= n_2; j++) {
+                            ps[j] = (ps0[j] * (n_2 - j) + ps1[j] * j) / n_2;
+                        }
+                    }
+                    else if (mergeType == 0) {
+                        // 还原合并，前半段使用从前往后计算，后半段使用从后往前计算
+                        for (var j = 0, n_3 = ps0.length - 1; j <= n_3; j++) {
+                            if (j < n_3 / 2) {
+                                ps[j] = ps0[j];
+                            }
+                            else if (j > n_3 / 2) {
+                                ps[j] = ps1[j];
+                            }
+                            else {
+                                ps[j] = (ps0[j] + ps1[j]) / 2;
+                            }
+                        }
+                    }
+                    else {
+                        console.error("\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!");
+                    }
+                }
+            }
+            return processs.pop();
         };
         /**
-         * 加上标量
-         * @param n 标量
+         * 获取曲线样本数据
+         *
+         * 这些点可用于连线来拟合曲线。
+         *
+         * @param ps 点列表
+         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
          */
-        Vector3.prototype.addNumber = function (n) {
-            this.x += n;
-            this.y += n;
-            this.z += n;
-            return this;
+        BezierCurve.prototype.getSamples = function (ps, num) {
+            if (num === void 0) { num = 100; }
+            var results = [];
+            for (var i = 0; i <= num; i++) {
+                var t = i / num;
+                var p = this.getValue(t, ps);
+                results.push({ t: t, v: p });
+            }
+            return results;
+        };
+        return BezierCurve;
+    }());
+    feng3d.BezierCurve = BezierCurve;
+    feng3d.bezierCurve = new BezierCurve();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最大最小曲线
+     */
+    var MinMaxCurve = /** @class */ (function () {
+        function MinMaxCurve() {
+            /**
+             * 模式
+             */
+            this.mode = feng3d.MinMaxCurveMode.Constant;
+            /**
+             * Set the constant value.
+             *
+             * 设置常数值。
+             */
+            this.constant = 0;
+            /**
+             * Set a constant for the lower bound.
+             *
+             * 为下界设置一个常数。
+             */
+            this.constantMin = 0;
+            /**
+             * Set a constant for the upper bound.
+             *
+             * 为上界设置一个常数。
+             */
+            this.constantMax = 0;
+            /**
+             * Set the curve.
+             *
+             * 设置曲线。
+             */
+            this.curve = new feng3d.AnimationCurve();
+            /**
+             * Set a curve for the lower bound.
+             *
+             * 为下界设置一条曲线。
+             */
+            this.curveMin = new feng3d.AnimationCurve();
+            /**
+             * Set a curve for the upper bound.
+             *
+             * 为上界设置一条曲线。
+             */
+            this.curveMax = new feng3d.AnimationCurve();
+            /**
+             * Set a multiplier to be applied to the curves.
+             *
+             * 设置一个乘数应用于曲线。
+             */
+            this.curveMultiplier = 1;
+            /**
+             * 是否在编辑器中只显示Y轴 0-1 区域，例如 lifetime 为非负，需要设置为true
+             */
+            this.between0And1 = false;
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxCurve.prototype.getValue = function (time, randomBetween) {
+            if (randomBetween === void 0) { randomBetween = Math.random(); }
+            switch (this.mode) {
+                case feng3d.MinMaxCurveMode.Constant:
+                    return this.constant;
+                case feng3d.MinMaxCurveMode.Curve:
+                    return this.curve.getValue(time) * this.curveMultiplier;
+                case feng3d.MinMaxCurveMode.TwoConstants:
+                    return Math.lerp(this.constantMin, this.constantMax, randomBetween);
+                case feng3d.MinMaxCurveMode.TwoCurves:
+                    return Math.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
+            }
+            return this.constant;
+        };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "constant", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "constantMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "constantMax", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curveMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curveMax", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curveMultiplier", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "between0And1", void 0);
+        return MinMaxCurve;
+    }());
+    feng3d.MinMaxCurve = MinMaxCurve;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 曲线模式
+     */
+    var MinMaxCurveMode;
+    (function (MinMaxCurveMode) {
+        /**
+         * Use a single constant for the MinMaxCurve.
+         *
+         * 使用单个常数。
+         */
+        MinMaxCurveMode[MinMaxCurveMode["Constant"] = 0] = "Constant";
+        /**
+         * Use a single curve for the MinMaxCurve.
+         *
+         * 使用一条曲线
+         */
+        MinMaxCurveMode[MinMaxCurveMode["Curve"] = 1] = "Curve";
+        /**
+         * Use a random value between 2 constants for the MinMaxCurve.
+         *
+         * 在两个常量之间使用一个随机值
+         */
+        MinMaxCurveMode[MinMaxCurveMode["TwoConstants"] = 3] = "TwoConstants";
+        /**
+         * Use a random value between 2 curves for the MinMaxCurve.
+         *
+         * 在两条曲线之间使用一个随机值。
+         */
+        MinMaxCurveMode[MinMaxCurveMode["TwoCurves"] = 2] = "TwoCurves";
+    })(MinMaxCurveMode = feng3d.MinMaxCurveMode || (feng3d.MinMaxCurveMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var MinMaxCurveVector3 = /** @class */ (function () {
+        function MinMaxCurveVector3() {
+            /**
+             * x 曲线
+             */
+            this.xCurve = new feng3d.MinMaxCurve();
+            /**
+             * y 曲线
+             */
+            this.yCurve = new feng3d.MinMaxCurve();
+            /**
+             * z 曲线
+             */
+            this.zCurve = new feng3d.MinMaxCurve();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxCurveVector3.prototype.getValue = function (time, randomBetween) {
+            if (randomBetween === void 0) { randomBetween = Math.random(); }
+            return new feng3d.Vector3(this.xCurve.getValue(time, randomBetween), this.yCurve.getValue(time, randomBetween), this.zCurve.getValue(time, randomBetween));
+        };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveVector3.prototype, "xCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveVector3.prototype, "yCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveVector3.prototype, "zCurve", void 0);
+        return MinMaxCurveVector3;
+    }());
+    feng3d.MinMaxCurveVector3 = MinMaxCurveVector3;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画曲线Wrap模式，处理超出范围情况
+     */
+    var WrapMode;
+    (function (WrapMode) {
+        /**
+         * 夹紧; 0>-<1
+         */
+        WrapMode[WrapMode["Clamp"] = 1] = "Clamp";
+        /**
+         * 循环; 0->1,0->1
+         */
+        WrapMode[WrapMode["Loop"] = 2] = "Loop";
+        /**
+         * 来回循环; 0->1,1->0
+         */
+        WrapMode[WrapMode["PingPong"] = 4] = "PingPong";
+        /**
+         * When time reaches the end of the animation clip, the clip will automatically stop playing and time will be reset to beginning of the clip.
+         */
+        WrapMode[WrapMode["Once"] = 5] = "Once";
+        /**
+         * Reads the default repeat mode set higher up.
+         */
+        WrapMode[WrapMode["Default"] = 6] = "Default";
+    })(WrapMode = feng3d.WrapMode || (feng3d.WrapMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 坐标系统类型
+     */
+    var CoordinateSystem;
+    (function (CoordinateSystem) {
+        /**
+         * 默认坐标系统，左手坐标系统
+         */
+        CoordinateSystem[CoordinateSystem["LEFT_HANDED"] = 0] = "LEFT_HANDED";
+        /**
+         * 右手坐标系统
+         */
+        CoordinateSystem[CoordinateSystem["RIGHT_HANDED"] = 1] = "RIGHT_HANDED";
+    })(CoordinateSystem = feng3d.CoordinateSystem || (feng3d.CoordinateSystem = {}));
+    /**
+     * 引擎中使用的坐标系统，默认左手坐标系统。
+     *
+     * three.js 右手坐标系统。
+     * playcanvas 右手坐标系统。
+     * unity    左手坐标系统。
+     */
+    feng3d.coordinateSystem = CoordinateSystem.LEFT_HANDED;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 点与面的相对位置
+     */
+    var PlaneClassification;
+    (function (PlaneClassification) {
+        /**
+         * 在平面后面
+         */
+        PlaneClassification[PlaneClassification["BACK"] = 0] = "BACK";
+        /**
+         * 在平面前面
+         */
+        PlaneClassification[PlaneClassification["FRONT"] = 1] = "FRONT";
+        /**
+         * 与平面相交
+         */
+        PlaneClassification[PlaneClassification["INTERSECT"] = 2] = "INTERSECT";
+    })(PlaneClassification = feng3d.PlaneClassification || (feng3d.PlaneClassification = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 用于表示欧拉角的旋转顺序
+     *
+     * 如果顺序为XYZ，则依次按 ZYZ 轴旋转。为什么循序与定义相反？因为three.js中都这么定义，他们为什么这么定义就不清楚了。
+     */
+    var RotationOrder;
+    (function (RotationOrder) {
+        /**
+         * 依次按 ZYX 轴旋转。
+         *
+         * three.js默认旋转顺序。
+         */
+        RotationOrder[RotationOrder["XYZ"] = 0] = "XYZ";
+        /**
+         * 依次按 YXZ 轴旋转。
+         */
+        RotationOrder[RotationOrder["ZXY"] = 1] = "ZXY";
+        /**
+         * 依次按 XYZ 轴旋转。
+         *
+         * playcanvas默认旋转顺序。
+         */
+        RotationOrder[RotationOrder["ZYX"] = 2] = "ZYX";
+        /**
+         * 依次按 ZXY 轴旋转。
+         *
+         * unity默认旋转顺序。
+         */
+        RotationOrder[RotationOrder["YXZ"] = 3] = "YXZ";
+        /**
+         * 依次按 XZY 轴旋转。
+         */
+        RotationOrder[RotationOrder["YZX"] = 4] = "YZX";
+        /**
+         * 依次按 YZX 轴旋转。
+         */
+        RotationOrder[RotationOrder["XZY"] = 5] = "XZY";
+    })(RotationOrder = feng3d.RotationOrder || (feng3d.RotationOrder = {}));
+    /**
+     * 引擎中使用的旋转顺序。
+     *
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
+     */
+    feng3d.defaultRotationOrder = RotationOrder.YXZ;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 轴向对称包围盒
+     */
+    var Box3 = /** @class */ (function () {
+        /**
+         * 创建包围盒
+         * @param min 最小点
+         * @param max 最大点
+         */
+        function Box3(min, max) {
+            if (min === void 0) { min = new feng3d.Vector3(+Infinity, +Infinity, +Infinity); }
+            if (max === void 0) { max = new feng3d.Vector3(-Infinity, -Infinity, -Infinity); }
+            this.min = min;
+            this.max = max;
+        }
+        /**
+         * 从一组顶点初始化包围盒
+         * @param positions 坐标数据列表
+         */
+        Box3.formPositions = function (positions) {
+            return new Box3().formPositions(positions);
         };
         /**
-         * 增加标量
-         * @param n 标量
+         * 从一组点初始化包围盒
+         * @param ps 点列表
          */
-        Vector3.prototype.addNumberTo = function (n, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x + n;
-            vout.y = this.y + n;
-            vout.z = this.z + n;
-            return vout;
+        Box3.fromPoints = function (ps) {
+            return new Box3().fromPoints(ps);
         };
         /**
-         * 减去标量
-         * @param n 标量
+         * 随机包围盒
          */
-        Vector3.prototype.subNumber = function (n) {
-            this.x -= n;
-            this.y -= n;
-            this.z -= n;
-            return this;
+        Box3.random = function () {
+            var min = feng3d.Vector3.random();
+            var max = feng3d.Vector3.random().add(min);
+            return new Box3(min, max);
         };
         /**
-         * 减去标量
-         * @param n 标量
-         */
-        Vector3.prototype.subNumberTo = function (n, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x - n;
-            vout.y = this.y - n;
-            vout.z = this.z - n;
-            return vout;
-        };
-        /**
-         * 乘以标量
-         * @param n 标量
-         */
-        Vector3.prototype.multiplyNumber = function (n) {
-            this.x *= n;
-            this.y *= n;
-            this.z *= n;
-            return this;
-        };
-        /**
-         * 乘以标量
-         * @param n 标量
+         * 获取中心点
          * @param vout 输出向量
          */
-        Vector3.prototype.multiplyNumberTo = function (n, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x * n;
-            vout.y = this.y * n;
-            vout.z = this.z * n;
-            return vout;
+        Box3.prototype.getCenter = function (vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return vout.copy(this.min).add(this.max).scaleNumber(0.5);
         };
         /**
-         * 除以标量
-         * @param n 标量
+         * 尺寸
          */
-        Vector3.prototype.divideNumber = function (n) {
-            this.x /= n;
-            this.y /= n;
-            this.z /= n;
-            return this;
+        Box3.prototype.getSize = function (vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return this.isEmpty() ? vout.set(0, 0, 0) : this.max.subTo(this.min, vout);
         };
         /**
-         * 除以标量
-         * @param n 标量
-         * @param vout 输出向量
-         */
-        Vector3.prototype.divideNumberTo = function (n, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x / n;
-            vout.y = this.y / n;
-            vout.z = this.z / n;
-            return vout;
-        };
-        /**
-         * 返回一个新 Vector3 对象，它是与当前 Vector3 对象完全相同的副本。
-         * @return 一个新 Vector3 对象，它是当前 Vector3 对象的副本。
-         */
-        Vector3.prototype.clone = function () {
-            return new Vector3(this.x, this.y, this.z);
-        };
-        /**
-         * 负向量
-         * (a,b,c)->(-a,-b,-c)
-         */
-        Vector3.prototype.negate = function () {
-            this.x = -this.x;
-            this.y = -this.y;
-            this.z = -this.z;
-            return this;
-        };
-        /**
-         * 负向量
-         * (a,b,c)->(-a,-b,-c)
-         */
-        Vector3.prototype.negateTo = function (vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = -this.x;
-            vout.y = -this.y;
-            vout.z = -this.z;
-            return vout;
-        };
-        /**
-         * 倒向量
-         * (a,b,c)->(1/a,1/b,1/c)
-         */
-        Vector3.prototype.inverse = function () {
-            this.x = 1 / this.x;
-            this.y = 1 / this.y;
-            this.z = 1 / this.z;
-            return this;
-        };
-        /**
-         * 倒向量
-         * (a,b,c)->(1/a,1/b,1/c)
-         */
-        Vector3.prototype.inverseTo = function (vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = 1 / this.x;
-            vout.y = 1 / this.y;
-            vout.z = 1 / this.z;
-            return vout;
-        };
-        /**
-         * 得到这个向量长度为1
-         */
-        Vector3.prototype.unit = function (target) {
-            if (target === void 0) { target = new Vector3(); }
-            var x = this.x, y = this.y, z = this.z;
-            var ninv = x * x + y * y + z * z;
-            if (ninv > 0.0) {
-                var ninv = Math.sqrt(ninv);
-                ninv = 1.0 / ninv;
-                target.x = x * ninv;
-                target.y = y * ninv;
-                target.z = z * ninv;
-            }
-            else {
-                target.x = 1;
-                target.y = 0;
-                target.z = 0;
-            }
-            return target;
-        };
-        /**
-         * 按标量（大小）缩放当前的 Vector3 对象。
-         */
-        Vector3.prototype.scaleNumber = function (s) {
-            this.x *= s;
-            this.y *= s;
-            this.z *= s;
-            return this;
-        };
-        /**
-         * 按标量（大小）缩放当前的 Vector3 对象。
-         */
-        Vector3.prototype.scaleNumberTo = function (s, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x * s;
-            vout.y = this.y * s;
-            vout.z = this.z * s;
-            return vout;
-        };
-        /**
-         * 缩放
-         * @param s 缩放量
-         */
-        Vector3.prototype.scale = function (s) {
-            this.x *= s.x;
-            this.y *= s.y;
-            this.z *= s.z;
-            return this;
-        };
-        /**
-         * 缩放
-         * @param s 缩放量
-         */
-        Vector3.prototype.scaleTo = function (s, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x * s.x;
-            vout.y = this.y * s.y;
-            vout.z = this.z * s.z;
-            return vout;
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector3.prototype.lerp = function (v, alpha) {
-            this.x += (v.x - this.x) * alpha.x;
-            this.y += (v.y - this.y) * alpha.y;
-            this.z += (v.z - this.z) * alpha.z;
-            return this;
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector3.prototype.lerpTo = function (v, alpha, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x + (v.x - this.x) * alpha.x;
-            vout.y = this.y + (v.y - this.y) * alpha.y;
-            vout.z = this.z + (v.z - this.z) * alpha.z;
-            return vout;
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector3.prototype.lerpNumber = function (v, alpha) {
-            this.x += (v.x - this.x) * alpha;
-            this.y += (v.y - this.y) * alpha;
-            this.z += (v.z - this.z) * alpha;
-            return this;
-        };
-        /**
-         * 插值到指定向量
-         * @param v 目标向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector3.prototype.lerpNumberTo = function (v, alpha, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            vout.x = this.x + (v.x - this.x) * alpha;
-            vout.y = this.y + (v.y - this.y) * alpha;
-            vout.z = this.z + (v.z - this.z) * alpha;
-            return vout;
-        };
-        /**
-         * 小于指定点
-         * @param p 点
-         */
-        Vector3.prototype.less = function (p) {
-            return this.x < p.x && this.y < p.y && this.z < p.z;
-        };
-        /**
-         * 小于等于指定点
-         * @param p 点
-         */
-        Vector3.prototype.lessequal = function (p) {
-            return this.x <= p.x && this.y <= p.y && this.z <= p.z;
-        };
-        /**
-         * 大于指定点
-         * @param p 点
-         */
-        Vector3.prototype.greater = function (p) {
-            return this.x > p.x && this.y > p.y && this.z > p.z;
-        };
-        /**
-         * 大于等于指定点
-         * @param p 点
-         */
-        Vector3.prototype.greaterequal = function (p) {
-            return this.x >= p.x && this.y >= p.y && this.z >= p.z;
-        };
-        /**
-         * 夹紧？
+         * 初始化包围盒
          * @param min 最小值
          * @param max 最大值
          */
-        Vector3.prototype.clamp = function (min, max) {
-            this.x = Math.clamp(this.x, min.x, max.x);
-            this.y = Math.clamp(this.y, min.y, max.y);
-            this.z = Math.clamp(this.z, min.z, max.z);
+        Box3.prototype.init = function (min, max) {
+            this.min = min;
+            this.max = max;
             return this;
         };
         /**
-         * 夹紧？
-         * @param min 最小值
-         * @param max 最大值
+         * 缩放包围盒
+         *
+         * @param s 缩放系数
          */
-        Vector3.prototype.clampTo = function (min, max, vout) {
-            if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).clamp(min, max);
-        };
-        /**
-         * 取最小元素
-         * @param v 向量
-         */
-        Vector3.prototype.min = function (v) {
-            this.x = Math.min(this.x, v.x);
-            this.y = Math.min(this.y, v.y);
-            this.z = Math.min(this.z, v.z);
+        Box3.prototype.scale = function (s) {
+            this.min.scale(s);
+            this.max.scale(s);
             return this;
         };
         /**
-         * 取最大元素
-         * @param v 向量
+         * 转换为包围盒八个角所在点列表
          */
-        Vector3.prototype.max = function (v) {
-            this.x = Math.max(this.x, v.x);
-            this.y = Math.max(this.y, v.y);
-            this.z = Math.max(this.z, v.z);
+        Box3.prototype.toPoints = function (points) {
+            if (!points) {
+                points = [
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                    new feng3d.Vector3(),
+                ];
+            }
+            var min = this.min;
+            var max = this.max;
+            points[0].set(min.x, min.y, min.z);
+            points[1].set(max.x, min.y, min.z);
+            points[2].set(min.x, max.y, min.z);
+            points[3].set(min.x, min.y, max.z);
+            points[4].set(min.x, max.y, max.z);
+            points[5].set(max.x, min.y, max.z);
+            points[6].set(max.x, max.y, min.z);
+            points[7].set(max.x, max.y, max.z);
+            return points;
+        };
+        /**
+         * 从一组顶点初始化包围盒
+         * @param positions 坐标数据列表
+         */
+        Box3.prototype.formPositions = function (positions) {
+            var minX = +Infinity;
+            var minY = +Infinity;
+            var minZ = +Infinity;
+            var maxX = -Infinity;
+            var maxY = -Infinity;
+            var maxZ = -Infinity;
+            for (var i = 0, l = positions.length; i < l; i += 3) {
+                var x = positions[i];
+                var y = positions[i + 1];
+                var z = positions[i + 2];
+                if (x < minX)
+                    minX = x;
+                if (y < minY)
+                    minY = y;
+                if (z < minZ)
+                    minZ = z;
+                if (x > maxX)
+                    maxX = x;
+                if (y > maxY)
+                    maxY = y;
+                if (z > maxZ)
+                    maxZ = z;
+            }
+            this.min.set(minX, minY, minZ);
+            this.max.set(maxX, maxY, maxZ);
+            return this;
+        };
+        /**
+         * 从一组点初始化包围盒
+         * @param ps 点列表
+         */
+        Box3.prototype.fromPoints = function (ps) {
+            var _this = this;
+            this.empty();
+            ps.forEach(function (element) {
+                _this.expandByPoint(element);
+            });
+            return this;
+        };
+        /**
+         * 包围盒内随机点
+         */
+        Box3.prototype.randomPoint = function (pout) {
+            if (pout === void 0) { pout = new feng3d.Vector3(); }
+            return pout.copy(this.min).lerp(this.max, feng3d.Vector3.random());
+        };
+        /**
+         * 使用点扩张包围盒
+         * @param point 点
+         */
+        Box3.prototype.expandByPoint = function (point) {
+            this.min.min(point);
+            this.max.max(point);
+            return this;
+        };
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         *
+         * @todo 优化
+         * @see 3D数学基础：图形与游戏开发 P288 AABB::setToTransformedBox
+         */
+        Box3.prototype.applyMatrix = function (mat) {
+            if (this.isEmpty())
+                return this;
+            this.fromPoints(this.toPoints().map(function (v) {
+                return v.applyMatrix4x4(mat);
+            }));
             return this;
         };
         /**
          * 应用矩阵
          * @param mat 矩阵
          */
-        Vector3.prototype.applyMatrix4x4 = function (mat) {
-            mat.transformPoint3(this, this);
+        Box3.prototype.applyMatrixTo = function (mat, out) {
+            if (out === void 0) { out = new Box3(); }
+            return out.copy(this).applyMatrix(mat);
+        };
+        /**
+         *
+         */
+        Box3.prototype.clone = function () {
+            return new Box3(this.min.clone(), this.max.clone());
+        };
+        /**
+         * 是否包含指定点
+         * @param p 点
+         */
+        Box3.prototype.containsPoint = function (p) {
+            return this.min.lessequal(p) && this.max.greaterequal(p);
+        };
+        /**
+         * 是否包含包围盒
+         * @param aabb 包围盒
+         */
+        Box3.prototype.contains = function (aabb) {
+            return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
+        };
+        /**
+         * 拷贝
+         * @param aabb 包围盒
+         */
+        Box3.prototype.copy = function (aabb) {
+            this.min.copy(aabb.min);
+            this.max.copy(aabb.max);
             return this;
         };
         /**
-         * 应用四元素
-         * @param q 四元素
+         * 比较包围盒是否相等
+         * @param aabb 包围盒
          */
-        Vector3.prototype.applyQuaternion = function (q) {
-            var x = this.x, y = this.y, z = this.z;
-            var qx = q.x, qy = q.y, qz = q.z, qw = q.w;
-            // calculate quat * vector
-            var ix = qw * x + qy * z - qz * y;
-            var iy = qw * y + qz * x - qx * z;
-            var iz = qw * z + qx * y - qy * x;
-            var iw = -qx * x - qy * y - qz * z;
-            // calculate result * inverse quat
-            this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-            this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-            this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+        Box3.prototype.equals = function (aabb) {
+            return this.min.equals(aabb.min) && this.max.equals(aabb.max);
+        };
+        /**
+         * 平移
+         *
+         * @param offset 偏移量
+         */
+        Box3.prototype.translate = function (offset) {
+            this.min.add(offset);
+            this.max.add(offset);
             return this;
         };
         /**
-         * 反射
-         * @param normal
+         * 膨胀包围盒
+         * @param dx x方向膨胀量
+         * @param dy y方向膨胀量
+         * @param dz z方向膨胀量
          */
-        Vector3.prototype.reflect = function (normal) {
-            return this.sub(normal.multiplyNumberTo(2 * this.dot(normal)));
+        Box3.prototype.inflate = function (dx, dy, dz) {
+            this.min.x -= dx / 2;
+            this.min.y -= dy / 2;
+            this.min.z -= dz / 2;
+            this.max.x += dx / 2;
+            this.max.y += dy / 2;
+            this.max.z += dz / 2;
         };
         /**
-         * 向下取整
+         * 膨胀包围盒
+         * @param delta 膨胀量
          */
-        Vector3.prototype.floor = function () {
-            this.x = Math.floor(this.x);
-            this.y = Math.floor(this.y);
-            this.z = Math.floor(this.z);
+        Box3.prototype.inflatePoint = function (delta) {
+            delta = delta.scaleNumberTo(0.5);
+            this.min.sub(delta);
+            this.max.add(delta);
+        };
+        /**
+         * 与包围盒相交
+         * @param aabb 包围盒
+         */
+        Box3.prototype.intersection = function (aabb) {
+            var min = this.min.clampTo(aabb.min, aabb.max);
+            var max = this.max.clampTo(aabb.min, aabb.max);
+            if (this.containsPoint(min)) {
+                this.min.copy(min);
+                this.max.copy(max);
+                return this;
+            }
+            return null;
+        };
+        /**
+         * 与包围盒相交
+         * @param aabb 包围盒
+         */
+        Box3.prototype.intersectionTo = function (aabb, out) {
+            if (out === void 0) { out = new Box3(); }
+            return out.copy(this).intersection(aabb);
+        };
+        /**
+         * 包围盒是否相交
+         * @param aabb 包围盒
+         */
+        Box3.prototype.intersects = function (aabb) {
+            var b = this.intersectionTo(aabb);
+            var c = b.getCenter();
+            return this.containsPoint(c) && aabb.containsPoint(c);
+        };
+        /**
+         * 与射线相交
+         * @param position 射线起点
+         * @param direction 射线方向
+         * @param targetNormal 相交处法线
+         * @return 起点到包围盒距离
+         *
+         * @todo 可用以下方法优化？
+         * @see 3D数学基础：图形与游戏开发 P290
+         */
+        Box3.prototype.rayIntersection = function (position, direction, targetNormal) {
+            if (this.containsPoint(position))
+                return 0;
+            var halfExtentsX = (this.max.x - this.min.x) / 2;
+            var halfExtentsY = (this.max.y - this.min.y) / 2;
+            var halfExtentsZ = (this.max.z - this.min.z) / 2;
+            var centerX = this.min.x + halfExtentsX;
+            var centerY = this.min.y + halfExtentsY;
+            var centerZ = this.min.z + halfExtentsZ;
+            var px = position.x - centerX;
+            var py = position.y - centerY;
+            var pz = position.z - centerZ;
+            var vx = direction.x;
+            var vy = direction.y;
+            var vz = direction.z;
+            var ix;
+            var iy;
+            var iz;
+            var rayEntryDistance = -1;
+            // 射线与平面相交测试
+            var intersects = false;
+            if (vx < 0) {
+                rayEntryDistance = (halfExtentsX - px) / vx;
+                if (rayEntryDistance > 0) {
+                    iy = py + rayEntryDistance * vy;
+                    iz = pz + rayEntryDistance * vz;
+                    if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
+                        if (targetNormal) {
+                            targetNormal.x = 1;
+                            targetNormal.y = 0;
+                            targetNormal.z = 0;
+                        }
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vx > 0) {
+                rayEntryDistance = (-halfExtentsX - px) / vx;
+                if (rayEntryDistance > 0) {
+                    iy = py + rayEntryDistance * vy;
+                    iz = pz + rayEntryDistance * vz;
+                    if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
+                        if (targetNormal) {
+                            targetNormal.x = -1;
+                            targetNormal.y = 0;
+                            targetNormal.z = 0;
+                        }
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vy < 0) {
+                rayEntryDistance = (halfExtentsY - py) / vy;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iz = pz + rayEntryDistance * vz;
+                    if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = 1;
+                            targetNormal.z = 0;
+                        }
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vy > 0) {
+                rayEntryDistance = (-halfExtentsY - py) / vy;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iz = pz + rayEntryDistance * vz;
+                    if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = -1;
+                            targetNormal.z = 0;
+                        }
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vz < 0) {
+                rayEntryDistance = (halfExtentsZ - pz) / vz;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iy = py + rayEntryDistance * vy;
+                    if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = 0;
+                            targetNormal.z = 1;
+                        }
+                        intersects = true;
+                    }
+                }
+            }
+            if (!intersects && vz > 0) {
+                rayEntryDistance = (-halfExtentsZ - pz) / vz;
+                if (rayEntryDistance > 0) {
+                    ix = px + rayEntryDistance * vx;
+                    iy = py + rayEntryDistance * vy;
+                    if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = 0;
+                            targetNormal.z = -1;
+                        }
+                        intersects = true;
+                    }
+                }
+            }
+            return intersects ? rayEntryDistance : -1;
+        };
+        /**
+         * 获取包围盒上距离指定点最近的点
+         *
+         * @param point 指定点
+         * @param target 存储最近的点
+         */
+        Box3.prototype.closestPointToPoint = function (point, target) {
+            if (target === void 0) { target = new feng3d.Vector3(); }
+            return this.clampPoint(point, target);
+        };
+        /**
+         * 清空包围盒
+         */
+        Box3.prototype.empty = function () {
+            this.min.x = this.min.y = this.min.z = +Infinity;
+            this.max.x = this.max.y = this.max.z = -Infinity;
             return this;
         };
         /**
-         * 向上取整
+         * 是否为空
+         * 当体积为0时为空
          */
-        Vector3.prototype.ceil = function () {
-            this.x = Math.ceil(this.x);
-            this.y = Math.ceil(this.y);
-            this.z = Math.ceil(this.z);
+        Box3.prototype.isEmpty = function () {
+            return (this.max.x < this.min.x) || (this.max.y < this.min.y) || (this.max.z < this.min.z);
+        };
+        /**
+         * 偏移
+         * @param dx x轴偏移
+         * @param dy y轴偏移
+         * @param dz z轴偏移
+         */
+        Box3.prototype.offset = function (dx, dy, dz) {
+            return this.offsetPosition(new feng3d.Vector3(dx, dy, dz));
+        };
+        /**
+         * 偏移
+         * @param position 偏移量
+         */
+        Box3.prototype.offsetPosition = function (position) {
+            this.min.add(position);
+            this.max.add(position);
+            return this;
+        };
+        Box3.prototype.toString = function () {
+            return "[AABB] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
+        };
+        /**
+         * 联合包围盒
+         * @param aabb 包围盒
+         */
+        Box3.prototype.union = function (aabb) {
+            this.min.min(aabb.min);
+            this.max.max(aabb.max);
             return this;
         };
         /**
-         * 四舍五入
+         * 是否与球相交
+         * @param sphere 球
          */
-        Vector3.prototype.round = function () {
-            this.x = Math.round(this.x);
-            this.y = Math.round(this.y);
-            this.z = Math.round(this.z);
-            return this;
+        Box3.prototype.intersectsSphere = function (sphere) {
+            var closestPoint = new feng3d.Vector3();
+            this.clampPoint(sphere.center, closestPoint);
+            return closestPoint.distanceSquared(sphere.center) <= (sphere.radius * sphere.radius);
         };
         /**
-         * 向0取整
+         * 夹紧？
+         *
+         * @param point 点
+         * @param out 输出点
          */
-        Vector3.prototype.roundToZero = function () {
-            this.x = (this.x < 0) ? Math.ceil(this.x) : Math.floor(this.x);
-            this.y = (this.y < 0) ? Math.ceil(this.y) : Math.floor(this.y);
-            this.z = (this.z < 0) ? Math.ceil(this.z) : Math.floor(this.z);
-            return this;
+        Box3.prototype.clampPoint = function (point, out) {
+            if (out === void 0) { out = new feng3d.Vector3(); }
+            return out.copy(point).clamp(this.min, this.max);
         };
         /**
-         * 与指定向量是否平行
-         * @param v 向量
+         * 是否与平面相交
+         * @param plane 平面
          */
-        Vector3.prototype.isParallel = function (v, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            return Math.equals(this.crossTo(v).lengthSquared, 0, precision);
+        Box3.prototype.intersectsPlane = function (plane) {
+            var min = Infinity;
+            var max = -Infinity;
+            this.toPoints().forEach(function (p) {
+                var d = plane.distanceWithPoint(p);
+                min = d < min ? d : min;
+                max = d > min ? d : min;
+            });
+            return min < 0 && max > 0;
         };
         /**
-         * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
-         * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
+         * 是否与三角形相交
+         * @param triangle 三角形
          */
-        Vector3.prototype.crossmat = function () {
-            return new feng3d.Matrix3x3([0, -this.z, this.y,
-                this.z, 0, -this.x,
-                -this.y, this.x, 0]);
+        Box3.prototype.intersectsTriangle = function (triangle) {
+            if (this.isEmpty()) {
+                return false;
+            }
+            // 计算包围盒中心和区段
+            var center = this.getCenter();
+            var extents = this.max.subTo(center);
+            // 把三角形顶点转换包围盒空间
+            var v0 = triangle.p0.subTo(center);
+            var v1 = triangle.p1.subTo(center);
+            var v2 = triangle.p2.subTo(center);
+            // 计算三边向量
+            var f0 = v1.subTo(v0);
+            var f1 = v2.subTo(v1);
+            var f2 = v0.subTo(v2);
+            // 测试三边向量分别所在三个轴面上的法线
+            var axes = [
+                0, -f0.z, f0.y, 0, -f1.z, f1.y, 0, -f2.z, f2.y,
+                f0.z, 0, -f0.x, f1.z, 0, -f1.x, f2.z, 0, -f2.x,
+                -f0.y, f0.x, 0, -f1.y, f1.x, 0, -f2.y, f2.x, 0
+            ];
+            if (!satForAxes(axes, v0, v1, v2, extents)) {
+                return false;
+            }
+            // 测试三个面法线
+            axes = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+            if (!satForAxes(axes, v0, v1, v2, extents)) {
+                return false;
+            }
+            // 检测三角形面法线
+            var triangleNormal = f0.crossTo(f1);
+            axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
+            return satForAxes(axes, v0, v1, v2, extents);
         };
         /**
-         * 返回当前 Vector3 对象的字符串表示形式。
-         */
-        Vector3.prototype.toString = function () {
-            return "<" + this.x + ", " + this.y + ", " + this.z + ">";
-        };
-        /**
-         * 转换为数组
-         * @param array 数组
-         * @param offset 偏移
-         * @return 返回数组
-         */
-        Vector3.prototype.toArray = function (array, offset) {
-            if (array === void 0) { array = []; }
-            if (offset === void 0) { offset = 0; }
-            array[offset] = this.x;
-            array[offset + 1] = this.y;
-            array[offset + 2] = this.z;
-            return array;
-        };
-        /**
-        * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
+        * 是否与指定长方体相交
+        *
+        * @param box3 长方体
         */
-        Vector3.X_AXIS = Object.freeze(new Vector3(1, 0, 0));
+        Box3.prototype.overlaps = function (box3) {
+            var l1 = this.min, u1 = this.max, l2 = box3.min, u2 = box3.max;
+            //      l2        u2
+            //      |---------|
+            // |--------|
+            // l1       u1
+            var overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
+            var overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
+            var overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
+            return overlapsX && overlapsY && overlapsZ;
+        };
         /**
-        * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
-        */
-        Vector3.Y_AXIS = Object.freeze(new Vector3(0, 1, 0));
-        /**
-        * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
-        */
-        Vector3.Z_AXIS = Object.freeze(new Vector3(0, 0, 1));
-        /**
-         * 原点 Vector3(0,0,0)
+         * 转换为三角形列表
          */
-        Vector3.ZERO = Object.freeze(new Vector3());
-        /**
-         * Vector3(1, 1, 1)
-         */
-        Vector3.ONE = Object.freeze(new Vector3(1, 1, 1));
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], Vector3.prototype, "x", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], Vector3.prototype, "y", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], Vector3.prototype, "z", void 0);
-        return Vector3;
+        Box3.prototype.toTriangles = function (triangles) {
+            if (triangles === void 0) { triangles = []; }
+            var min = this.min;
+            var max = this.max;
+            triangles.push(
+            // 前
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, min.y, min.z)), 
+            // 后
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), 
+            // 右
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, min.y, max.z)), 
+            // 左
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, min.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, min.z)), 
+            // 上
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, max.z)), 
+            // 下
+            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(min.x, min.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, min.y, max.z)));
+            return triangles;
+        };
+        return Box3;
     }());
-    feng3d.Vector3 = Vector3;
+    feng3d.Box3 = Box3;
+    /**
+     * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
+     *
+     * @param axes
+     * @param v0
+     * @param v1
+     * @param v2
+     * @param extents
+     */
+    function satForAxes(axes, v0, v1, v2, extents) {
+        for (var i = 0, j = axes.length - 3; i <= j; i += 3) {
+            var testAxis = feng3d.Vector3.fromArray(axes, i);
+            // 投影包围盒到指定轴的长度
+            var r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
+            // 投影三角形的三个点到指定轴
+            var p0 = v0.dot(testAxis);
+            var p1 = v1.dot(testAxis);
+            var p2 = v2.dot(testAxis);
+            // 三个点在包围盒投影外同侧
+            if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r) {
+                return false;
+            }
+        }
+        return true;
+    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
-     * 四维向量
+     * 截头锥体
+     *
+     * Frustums are used to determine what is inside the camera's field of view. They help speed up the rendering process.
+     *
+     * Frustums用于确定摄像机的视场范围。它们有助于加速渲染过程。
+     *
+     * @author mrdoob / http://mrdoob.com/
+     * @author alteredq / http://alteredqualia.com/
+     * @author bhouston / http://clara.io
      */
-    var Vector4 = /** @class */ (function () {
+    var Frustum = /** @class */ (function () {
         /**
-         * 创建 Vector4 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector4 对象。
-         * @param x 第一个元素
-         * @param y 第二个元素
-         * @param z 第三个元素
-         * @param w 第四个元素
+         * 初始化截头锥体
+         *
+         * @param p0
+         * @param p1
+         * @param p2
+         * @param p3
+         * @param p4
+         * @param p5
          */
-        function Vector4(x, y, z, w) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (z === void 0) { z = 0; }
-            if (w === void 0) { w = 0; }
-            /**
-            * Vector4 对象中的第一个元素。默认值为 0
-            */
-            this.x = 0;
-            /**
-             * Vector4 对象中的第二个元素。默认值为 0
-             */
-            this.y = 0;
-            /**
-             * Vector4 对象中的第三个元素。默认值为 0
-             */
-            this.z = 0;
-            /**
-             * Vector4 对象的第四个元素。默认值为 0
-             */
-            this.w = 0;
-            this.init(x, y, z, w);
+        function Frustum(p0, p1, p2, p3, p4, p5) {
+            if (p0 === void 0) { p0 = new feng3d.Plane(); }
+            if (p1 === void 0) { p1 = new feng3d.Plane(); }
+            if (p2 === void 0) { p2 = new feng3d.Plane(); }
+            if (p3 === void 0) { p3 = new feng3d.Plane(); }
+            if (p4 === void 0) { p4 = new feng3d.Plane(); }
+            if (p5 === void 0) { p5 = new feng3d.Plane(); }
+            this.planes = [
+                p0, p1, p2, p3, p4, p5
+            ];
         }
-        Vector4.fromArray = function (array, offset) {
-            if (offset === void 0) { offset = 0; }
-            return new Vector4().fromArray(array, offset);
+        Frustum.prototype.set = function (p0, p1, p2, p3, p4, p5) {
+            var planes = this.planes;
+            planes[0].copy(p0);
+            planes[1].copy(p1);
+            planes[2].copy(p2);
+            planes[3].copy(p3);
+            planes[4].copy(p4);
+            planes[5].copy(p5);
+            return this;
         };
-        Vector4.fromVector3 = function (vector3, w) {
-            if (w === void 0) { w = 0; }
-            return new Vector4().fromVector3(vector3, w);
+        Frustum.prototype.clone = function () {
+            return new Frustum().copy(this);
         };
-        Vector4.random = function () {
-            return new Vector4(Math.random(), Math.random(), Math.random(), Math.random());
-        };
-        /**
-         * 初始化向量
-         * @param x 第一个元素
-         * @param y 第二个元素
-         * @param z 第三个元素
-         * @param w 第四个元素
-         * @return 返回自身
-         */
-        Vector4.prototype.init = function (x, y, z, w) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+        Frustum.prototype.copy = function (frustum) {
+            var planes = this.planes;
+            for (var i = 0; i < 6; i++) {
+                planes[i].copy(frustum.planes[i]);
+            }
             return this;
         };
         /**
-         * 从数组初始化
-         * @param array 提供数据的数组
-         * @param offset 数组中起始位置
-         * @return 返回自身
+         * 从矩阵初始化
+         *
+         * @param m 矩阵
          */
-        Vector4.prototype.fromArray = function (array, offset) {
-            if (offset === void 0) { offset = 0; }
-            this.x = array[offset];
-            this.y = array[offset + 1];
-            this.z = array[offset + 2];
-            this.w = array[offset + 3];
+        Frustum.prototype.fromMatrix = function (m) {
+            var planes = this.planes;
+            var me = m.rawData;
+            var me0 = me[0], me1 = me[1], me2 = me[2], me3 = me[3];
+            var me4 = me[4], me5 = me[5], me6 = me[6], me7 = me[7];
+            var me8 = me[8], me9 = me[9], me10 = me[10], me11 = me[11];
+            var me12 = me[12], me13 = me[13], me14 = me[14], me15 = me[15];
+            planes[0].set(me3 - me0, me7 - me4, me11 - me8, me15 - me12).normalize();
+            planes[1].set(me3 + me0, me7 + me4, me11 + me8, me15 + me12).normalize();
+            planes[2].set(me3 + me1, me7 + me5, me11 + me9, me15 + me13).normalize();
+            planes[3].set(me3 - me1, me7 - me5, me11 - me9, me15 - me13).normalize();
+            planes[4].set(me3 - me2, me7 - me6, me11 - me10, me15 - me14).normalize();
+            planes[5].set(me3 + me2, me7 + me6, me11 + me10, me15 + me14).normalize();
             return this;
         };
         /**
-         * 从三维向量初始化
-         * @param vector3 三维向量
-         * @param w 向量第四个值
-         * @return 返回自身
+         * 是否与球体相交
+         *
+         * @param sphere 球体
          */
-        Vector4.prototype.fromVector3 = function (vector3, w) {
-            if (w === void 0) { w = 0; }
-            this.x = vector3.x;
-            this.y = vector3.y;
-            this.z = vector3.z;
-            this.w = w;
+        Frustum.prototype.intersectsSphere = function (sphere) {
+            var planes = this.planes;
+            var center = sphere.center;
+            var negRadius = -sphere.radius;
+            for (var i = 0; i < 6; i++) {
+                var distance = planes[i].distanceWithPoint(center);
+                if (distance < negRadius) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        /**
+         * 是否与长方体相交
+         *
+         * @param box 长方体
+         */
+        Frustum.prototype.intersectsBox = function (box) {
+            var planes = this.planes;
+            var temp = new feng3d.Vector3();
+            for (var i = 0; i < 6; i++) {
+                var plane = planes[i];
+                // corner at max distance
+                var normal = plane.getNormal();
+                temp.x = normal.x > 0 ? box.max.x : box.min.x;
+                temp.y = normal.y > 0 ? box.max.y : box.min.y;
+                temp.z = normal.z > 0 ? box.max.z : box.min.z;
+                if (plane.distanceWithPoint(temp) < 0) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        /**
+         * 与点是否相交
+         *
+         * @param point
+         */
+        Frustum.prototype.containsPoint = function (point, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            var planes = this.planes;
+            for (var i = 0; i < 6; i++) {
+                if (planes[i].distanceWithPoint(point) < -precision) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        return Frustum;
+    }());
+    feng3d.Frustum = Frustum;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3d直线
+     */
+    var Line3 = /** @class */ (function () {
+        /**
+         * 根据直线某点与方向创建直线
+         * @param origin 直线上某点
+         * @param direction 直线的方向
+         */
+        function Line3(origin, direction) {
+            this.origin = origin ? origin : new feng3d.Vector3();
+            this.direction = (direction ? direction : new feng3d.Vector3(0, 0, 1)).normalize();
+        }
+        /**
+         * 根据直线上两点初始化直线
+         * @param p0 Vector3
+         * @param p1 Vector3
+         */
+        Line3.fromPoints = function (p0, p1) {
+            return new Line3().fromPoints(p0, p1);
+        };
+        /**
+         * 根据直线某点与方向初始化直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
+        Line3.fromPosAndDir = function (position, direction) {
+            return new Line3().fromPosAndDir(position, direction);
+        };
+        /**
+         * 随机直线，比如用于单元测试
+         */
+        Line3.random = function () {
+            return new Line3(feng3d.Vector3.random(), feng3d.Vector3.random());
+        };
+        /**
+         * 根据直线上两点初始化直线
+         * @param p0 Vector3
+         * @param p1 Vector3
+         */
+        Line3.prototype.fromPoints = function (p0, p1) {
+            this.origin = p0;
+            this.direction = p1.subTo(p0).normalize();
             return this;
         };
         /**
-         * 转换为三维向量
-         * @param v3 三维向量
+         * 根据直线某点与方向初始化直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
          */
-        Vector4.prototype.toVector3 = function (v3) {
-            if (v3 === void 0) { v3 = new feng3d.Vector3(); }
-            v3.set(this.x, this.y, this.z);
-            return v3;
-        };
-        /**
-         * 转换为数组
-         * @param array 数组
-         * @param offset 偏移
-         */
-        Vector4.prototype.toArray = function (array, offset) {
-            if (array === void 0) { array = []; }
-            if (offset === void 0) { offset = 0; }
-            array[offset] = this.x;
-            array[offset + 1] = this.y;
-            array[offset + 2] = this.z;
-            array[offset + 3] = this.w;
-            return array;
-        };
-        /**
-         * 加上指定向量得到新向量
-         * @param v 加向量
-         * @return 返回新向量
-         */
-        Vector4.prototype.add = function (v) {
-            this.x += v.x;
-            this.y += v.y;
-            this.z += v.z;
-            this.w += v.w;
+        Line3.prototype.fromPosAndDir = function (position, direction) {
+            this.origin = position;
+            this.direction = direction.normalize();
             return this;
         };
         /**
-         * 加上指定向量得到新向量
-         * @param v 加向量
-         * @return 返回新向量
+         * 获取经过该直线的平面
          */
-        Vector4.prototype.addTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector4(); }
-            return vout.copy(this).add(v);
+        Line3.prototype.getPlane = function (plane) {
+            if (plane === void 0) { plane = new feng3d.Plane(); }
+            return plane.fromNormalAndPoint(feng3d.Vector3.random().cross(this.direction), this.origin);
         };
         /**
-         * 克隆一个向量
-         * @return 返回一个拷贝向量
+         * 获取直线上的一个点
+         * @param length 与原点距离
          */
-        Vector4.prototype.clone = function () {
-            return new Vector4(this.x, this.y, this.z, this.w);
+        Line3.prototype.getPoint = function (length, vout) {
+            if (length === void 0) { length = 0; }
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return vout.copy(this.direction).scaleNumber(length).add(this.origin);
         };
         /**
-         * 从指定向量拷贝数据
-         * @param v 被拷贝向量
-         * @return 返回自身
+         * 获取指定z值的点
+         * @param z z值
+         * @param vout 目标点（输出）
+         * @returns 目标点
          */
-        Vector4.prototype.copy = function (v) {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
-            this.w = v.w;
+        Line3.prototype.getPointWithZ = function (z, vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return this.getPoint((z - this.origin.z) / this.direction.z, vout);
+        };
+        /**
+         * 指定点到该直线距离
+         * @param point 指定点
+         */
+        Line3.prototype.distanceWithPoint = function (point) {
+            return this.closestPointWithPoint(point).sub(point).length;
+        };
+        /**
+         * 与指定点最近点的系数
+         * @param point 点
+         */
+        Line3.prototype.closestPointParameterWithPoint = function (point) {
+            return point.subTo(this.origin).dot(this.direction);
+        };
+        /**
+         * 与指定点最近的点
+         * @param point 点
+         * @param vout 输出点
+         */
+        Line3.prototype.closestPointWithPoint = function (point, vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            var t = this.closestPointParameterWithPoint(point);
+            return this.getPoint(t, vout);
+        };
+        /**
+         * 判定点是否在直线上
+         * @param point 点
+         * @param precision 精度
+         */
+        Line3.prototype.onWithPoint = function (point, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (Math.equals(this.distanceWithPoint(point), 0, precision))
+                return true;
+            return false;
+        };
+        /**
+         * 与直线相交
+         * @param line3D 直线
+         */
+        Line3.prototype.intersectWithLine3D = function (line3D) {
+            // 处理相等
+            if (this.equals(line3D))
+                return this.clone();
+            // 处理平行
+            if (this.direction.isParallel(line3D.direction))
+                return null;
+            var plane = this.getPlane();
+            var point = plane.intersectWithLine3(line3D);
+            if (this.onWithPoint(point))
+                return point;
+            return null;
+        };
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        Line3.prototype.applyMatri4x4 = function (mat) {
+            mat.transformPoint3(this.origin, this.origin);
+            mat.transformVector3(this.direction, this.direction);
             return this;
-        };
-        /**
-         * 减去指定向量
-         * @param v 减去的向量
-         * @return 返回自身
-         */
-        Vector4.prototype.sub = function (v) {
-            this.x -= v.x;
-            this.y -= v.y;
-            this.z -= v.z;
-            this.w -= v.w;
-            return this;
-        };
-        /**
-         * 减去指定向量
-         * @param v 减去的向量
-         * @return 返回新向量
-         */
-        Vector4.prototype.subTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector4(); }
-            return vout.copy(this).sub(v);
-        };
-        /**
-         * 乘以指定向量
-         * @param v 乘以的向量
-         * @return 返回自身
-         */
-        Vector4.prototype.multiply = function (v) {
-            this.x *= v.x;
-            this.y *= v.y;
-            this.z *= v.z;
-            this.w *= v.w;
-            return this;
-        };
-        /**
-         * 乘以指定向量
-         * @param v 乘以的向量
-         * @return 返回新向量
-         */
-        Vector4.prototype.multiplyTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector4(); }
-            return vout.copy(this).multiply(v);
-        };
-        /**
-         * 除以指定向量
-         * @param v 除以的向量
-         * @return 返回自身
-         */
-        Vector4.prototype.div = function (v) {
-            this.x /= v.x;
-            this.y /= v.y;
-            this.z /= v.z;
-            this.w /= v.w;
-            return this;
-        };
-        /**
-         * 除以指定向量
-         * @param v 除以的向量
-         * @return 返回新向量
-         */
-        Vector4.prototype.divTo = function (v, vout) {
-            if (vout === void 0) { vout = new Vector4(); }
-            return vout.copy(this).div(v);
         };
         /**
          * 与指定向量比较是否相等
@@ -7552,473 +8364,32 @@ var feng3d;
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        Vector4.prototype.equals = function (v, precision) {
+        Line3.prototype.equals = function (line, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
-            if (!Math.equals(this.x - v.x, 0, precision))
+            if (!this.onWithPoint(line.origin))
                 return false;
-            if (!Math.equals(this.y - v.y, 0, precision))
-                return false;
-            if (!Math.equals(this.z - v.z, 0, precision))
-                return false;
-            if (!Math.equals(this.w - v.w, 0, precision))
+            if (!this.onWithPoint(line.origin.addTo(line.direction)))
                 return false;
             return true;
         };
         /**
-         * 负向量
-         * @return 返回自身
+         * 拷贝
+         * @param line 直线
          */
-        Vector4.prototype.negate = function () {
-            this.x = -this.x;
-            this.y = -this.y;
-            this.z = -this.z;
-            this.w = -this.w;
+        Line3.prototype.copy = function (line) {
+            this.origin.copy(line.origin);
+            this.direction.copy(line.direction);
             return this;
         };
         /**
-         * 负向量
-         * @return 返回新向量
+         * 克隆
          */
-        Vector4.prototype.negateTo = function (vout) {
-            if (vout === void 0) { vout = new Vector4(); }
-            return vout.copy(this).negate();
+        Line3.prototype.clone = function () {
+            return new Line3().copy(this);
         };
-        /**
-         * 缩放指定系数
-         * @param s 缩放系数
-         * @return 返回自身
-         */
-        Vector4.prototype.scale = function (s) {
-            this.x *= s;
-            this.y *= s;
-            this.z *= s;
-            this.w *= s;
-            return this;
-        };
-        /**
-         * 缩放指定系数
-         * @param s 缩放系数
-         * @return 返回新向量
-         */
-        Vector4.prototype.scaleTo = function (s) {
-            return this.clone().scale(s);
-        };
-        /**
-         * 如果当前 Vector4 对象和作为参数指定的 Vector4 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
-         */
-        Vector4.prototype.dot = function (a) {
-            return this.x * a.x + this.y * a.y + this.z * a.z + this.w * a.w;
-        };
-        /**
-         * 获取到指定向量的插值
-         * @param v 终点插值向量
-         * @param alpha 插值系数
-         * @return 返回自身
-         */
-        Vector4.prototype.lerp = function (v, alpha) {
-            this.x += (v.x - this.x) * alpha;
-            this.y += (v.y - this.y) * alpha;
-            this.z += (v.z - this.z) * alpha;
-            this.w += (v.w - this.w) * alpha;
-            return this;
-        };
-        /**
-         * 获取到指定向量的插值
-         * @param v 终点插值向量
-         * @param alpha 插值系数
-         * @return 返回新向量
-         */
-        Vector4.prototype.lerpTo = function (v, alpha, vout) {
-            if (vout === void 0) { vout = new Vector4(); }
-            return vout.copy(this).lerp(v, alpha);
-        };
-        /**
-         * 应用矩阵
-         * @param mat 矩阵
-         */
-        Vector4.prototype.applyMatrix4x4 = function (mat) {
-            mat.transformVector4(this, this);
-            return this;
-        };
-        /**
-         * 返回当前 Vector4 对象的字符串表示形式。
-         */
-        Vector4.prototype.toString = function () {
-            return "<" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ">";
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], Vector4.prototype, "x", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], Vector4.prototype, "y", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], Vector4.prototype, "z", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], Vector4.prototype, "w", void 0);
-        return Vector4;
+        return Line3;
     }());
-    feng3d.Vector4 = Vector4;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 矩形
-     *
-     * Rectangle 对象是按其位置（由它左上角的点 (x, y) 确定）以及宽度和高度定义的区域。<br/>
-     * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
-     * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
-     * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
-     */
-    var Rectangle = /** @class */ (function () {
-        /**
-         * 创建一个新 Rectangle 对象，其左上角由 x 和 y 参数指定，并具有指定的 width 和 height 参数。
-         * @param x 矩形左上角的 x 坐标。
-         * @param y 矩形左上角的 y 坐标。
-         * @param width 矩形的宽度（以像素为单位）。
-         * @param height 矩形的高度（以像素为单位）。
-         */
-        function Rectangle(x, y, width, height) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (width === void 0) { width = 0; }
-            if (height === void 0) { height = 0; }
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
-        }
-        Object.defineProperty(Rectangle.prototype, "right", {
-            /**
-             * x 和 width 属性的和。
-             */
-            get: function () {
-                return this.x + this.width;
-            },
-            set: function (value) {
-                this.width = value - this.x;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Rectangle.prototype, "bottom", {
-            /**
-             * y 和 height 属性的和。
-             */
-            get: function () {
-                return this.y + this.height;
-            },
-            set: function (value) {
-                this.height = value - this.y;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Rectangle.prototype, "left", {
-            /**
-             * 矩形左上角的 x 坐标。更改 Rectangle 对象的 left 属性对 y 和 height 属性没有影响。但是，它会影响 width 属性，而更改 x 值不会影响 width 属性。
-             * left 属性的值等于 x 属性的值。
-             */
-            get: function () {
-                return this.x;
-            },
-            set: function (value) {
-                this.width += this.x - value;
-                this.x = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Rectangle.prototype, "top", {
-            /**
-             * 矩形左上角的 y 坐标。更改 Rectangle 对象的 top 属性对 x 和 width 属性没有影响。但是，它会影响 height 属性，而更改 y 值不会影响 height 属性。<br/>
-             * top 属性的值等于 y 属性的值。
-             */
-            get: function () {
-                return this.y;
-            },
-            set: function (value) {
-                this.height += this.y - value;
-                this.y = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Rectangle.prototype, "topLeft", {
-            /**
-             * 由该点的 x 和 y 坐标确定的 Rectangle 对象左上角的位置。
-             */
-            get: function () {
-                return new feng3d.Vector2(this.left, this.top);
-            },
-            set: function (value) {
-                this.top = value.y;
-                this.left = value.x;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Rectangle.prototype, "bottomRight", {
-            /**
-             * 由 right 和 bottom 属性的值确定的 Rectangle 对象的右下角的位置。
-             */
-            get: function () {
-                return new feng3d.Vector2(this.right, this.bottom);
-            },
-            set: function (value) {
-                this.bottom = value.y;
-                this.right = value.x;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Rectangle.prototype, "center", {
-            /**
-             * 中心点
-             */
-            get: function () {
-                return new feng3d.Vector2(this.x + this.width / 2, this.y + this.height / 2);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
-         * @param sourceRect 要从中复制数据的 Rectangle 对象。
-         */
-        Rectangle.prototype.copyFrom = function (sourceRect) {
-            this.x = sourceRect.x;
-            this.y = sourceRect.y;
-            this.width = sourceRect.width;
-            this.height = sourceRect.height;
-            return this;
-        };
-        /**
-         * 将 Rectangle 的成员设置为指定值
-         * @param x 矩形左上角的 x 坐标。
-         * @param y 矩形左上角的 y 坐标。
-         * @param width 矩形的宽度（以像素为单位）。
-         * @param height 矩形的高度（以像素为单位）。
-         */
-        Rectangle.prototype.init = function (x, y, width, height) {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
-            return this;
-        };
-        /**
-         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
-         * @param x 检测点的x轴
-         * @param y 检测点的y轴
-         * @returns 如果检测点位于矩形内，返回true，否则，返回false
-         */
-        Rectangle.prototype.contains = function (x, y) {
-            return this.x <= x &&
-                this.x + this.width >= x &&
-                this.y <= y &&
-                this.y + this.height >= y;
-        };
-        /**
-         * 如果在 toIntersect 参数中指定的 Rectangle 对象与此 Rectangle 对象相交，则返回交集区域作为 Rectangle 对象。如果矩形不相交，
-         * 则此方法返回一个空的 Rectangle 对象，其属性设置为 0。
-         * @param toIntersect 要对照比较以查看其是否与此 Rectangle 对象相交的 Rectangle 对象。
-         * @returns 等于交集区域的 Rectangle 对象。如果该矩形不相交，则此方法返回一个空的 Rectangle 对象；即，其 x、y、width 和
-         * height 属性均设置为 0 的矩形。
-         */
-        Rectangle.prototype.intersection = function (toIntersect) {
-            if (!this.intersects(toIntersect))
-                return new Rectangle();
-            var i = new Rectangle();
-            if (this.x > toIntersect.x) {
-                i.x = this.x;
-                i.width = toIntersect.x - this.x + toIntersect.width;
-                if (i.width > this.width)
-                    i.width = this.width;
-            }
-            else {
-                i.x = toIntersect.x;
-                i.width = this.x - toIntersect.x + this.width;
-                if (i.width > toIntersect.width)
-                    i.width = toIntersect.width;
-            }
-            if (this.y > toIntersect.y) {
-                i.y = this.y;
-                i.height = toIntersect.y - this.y + toIntersect.height;
-                if (i.height > this.height)
-                    i.height = this.height;
-            }
-            else {
-                i.y = toIntersect.y;
-                i.height = this.y - toIntersect.y + this.height;
-                if (i.height > toIntersect.height)
-                    i.height = toIntersect.height;
-            }
-            return i;
-        };
-        /**
-         * 按指定量增加 Rectangle 对象的大小（以像素为单位）
-         * 保持 Rectangle 对象的中心点不变，使用 dx 值横向增加它的大小，使用 dy 值纵向增加它的大小。
-         * @param dx Rectangle 对象横向增加的值。
-         * @param dy Rectangle 对象纵向增加的值。
-         */
-        Rectangle.prototype.inflate = function (dx, dy) {
-            this.x -= dx;
-            this.width += 2 * dx;
-            this.y -= dy;
-            this.height += 2 * dy;
-        };
-        /**
-         * 确定在 toIntersect 参数中指定的对象是否与此 Rectangle 对象相交。此方法检查指定的 Rectangle
-         * 对象的 x、y、width 和 height 属性，以查看它是否与此 Rectangle 对象相交。
-         * @param toIntersect 要与此 Rectangle 对象比较的 Rectangle 对象。
-         * @returns 如果两个矩形相交，返回true，否则返回false
-         */
-        Rectangle.prototype.intersects = function (toIntersect) {
-            return Math.max(this.x, toIntersect.x) <= Math.min(this.right, toIntersect.right)
-                && Math.max(this.y, toIntersect.y) <= Math.min(this.bottom, toIntersect.bottom);
-        };
-        /**
-         * 确定此 Rectangle 对象是否为空。
-         * @returns 如果 Rectangle 对象的宽度或高度小于等于 0，则返回 true 值，否则返回 false。
-         */
-        Rectangle.prototype.isEmpty = function () {
-            return this.width <= 0 || this.height <= 0;
-        };
-        /**
-         * 将 Rectangle 对象的所有属性设置为 0。
-         */
-        Rectangle.prototype.setEmpty = function () {
-            this.x = 0;
-            this.y = 0;
-            this.width = 0;
-            this.height = 0;
-        };
-        /**
-         * 返回一个新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
-         * @returns 新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
-         */
-        Rectangle.prototype.clone = function () {
-            return new Rectangle(this.x, this.y, this.width, this.height);
-        };
-        /**
-         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
-         * 此方法与 Rectangle.contains() 方法类似，只不过它采用 Point 对象作为参数。
-         * @param point 包含点对象
-         * @returns 如果包含，返回true，否则返回false
-         */
-        Rectangle.prototype.containsPoint = function (point) {
-            if (this.x < point.x
-                && this.x + this.width > point.x
-                && this.y < point.y
-                && this.y + this.height > point.y) {
-                return true;
-            }
-            return false;
-        };
-        /**
-         * 确定此 Rectangle 对象内是否包含由 rect 参数指定的 Rectangle 对象。
-         * 如果一个 Rectangle 对象完全在另一个 Rectangle 的边界内，我们说第二个 Rectangle 包含第一个 Rectangle。
-         * @param rect 所检查的 Rectangle 对象
-         * @returns 如果此 Rectangle 对象包含您指定的 Rectangle 对象，则返回 true 值，否则返回 false。
-         */
-        Rectangle.prototype.containsRect = function (rect) {
-            var r1 = rect.x + rect.width;
-            var b1 = rect.y + rect.height;
-            var r2 = this.x + this.width;
-            var b2 = this.y + this.height;
-            return (rect.x >= this.x) && (rect.x < r2) && (rect.y >= this.y) && (rect.y < b2) && (r1 > this.x) && (r1 <= r2) && (b1 > this.y) && (b1 <= b2);
-        };
-        /**
-         * 确定在 toCompare 参数中指定的对象是否等于此 Rectangle 对象。
-         * 此方法将某个对象的 x、y、width 和 height 属性与此 Rectangle 对象所对应的相同属性进行比较。
-         * @param toCompare 要与此 Rectangle 对象进行比较的矩形。
-         * @returns 如果对象具有与此 Rectangle 对象完全相同的 x、y、width 和 height 属性值，则返回 true 值，否则返回 false。
-         */
-        Rectangle.prototype.equals = function (toCompare) {
-            if (this === toCompare) {
-                return true;
-            }
-            return this.x === toCompare.x && this.y === toCompare.y
-                && this.width === toCompare.width && this.height === toCompare.height;
-        };
-        /**
-         * 增加 Rectangle 对象的大小。此方法与 Rectangle.inflate() 方法类似，只不过它采用 Point 对象作为参数。
-         */
-        Rectangle.prototype.inflatePoint = function (point) {
-            this.inflate(point.x, point.y);
-        };
-        /**
-         * 按指定量调整 Rectangle 对象的位置（由其左上角确定）。
-         * @param dx 将 Rectangle 对象的 x 值移动此数量。
-         * @param dy 将 Rectangle 对象的 t 值移动此数量。
-         */
-        Rectangle.prototype.offset = function (dx, dy) {
-            this.x += dx;
-            this.y += dy;
-        };
-        /**
-         * 将 Point 对象用作参数来调整 Rectangle 对象的位置。此方法与 Rectangle.offset() 方法类似，只不过它采用 Point 对象作为参数。
-         * @param point 要用于偏移此 Rectangle 对象的 Point 对象。
-         */
-        Rectangle.prototype.offsetPoint = function (point) {
-            this.offset(point.x, point.y);
-        };
-        /**
-         * 生成并返回一个字符串，该字符串列出 Rectangle 对象的水平位置和垂直位置以及高度和宽度。
-         * @returns 一个字符串，它列出了 Rectangle 对象的下列各个属性的值：x、y、width 和 height。
-         */
-        Rectangle.prototype.toString = function () {
-            return "(x=" + this.x + ", y=" + this.y + ", width=" + this.width + ", height=" + this.height + ")";
-        };
-        /**
-         * 通过填充两个矩形之间的水平和垂直空间，将这两个矩形组合在一起以创建一个新的 Rectangle 对象。
-         * @param toUnion 要添加到此 Rectangle 对象的 Rectangle 对象。
-         * @returns 充当两个矩形的联合的新 Rectangle 对象。
-         */
-        Rectangle.prototype.union = function (toUnion) {
-            var result = this.clone();
-            if (toUnion.isEmpty()) {
-                return result;
-            }
-            if (result.isEmpty()) {
-                result.copyFrom(toUnion);
-                return result;
-            }
-            var l = Math.min(result.x, toUnion.x);
-            var t = Math.min(result.y, toUnion.y);
-            result.init(l, t, Math.max(result.right, toUnion.right) - l, Math.max(result.bottom, toUnion.bottom) - t);
-            return result;
-        };
-        /**
-         *
-         * @param point 点
-         * @param pout 输出点
-         */
-        Rectangle.prototype.clampPoint = function (point, pout) {
-            if (pout === void 0) { pout = new feng3d.Vector2(); }
-            return pout.copy(point).clamp(this.topLeft, this.bottomRight);
-        };
-        Object.defineProperty(Rectangle.prototype, "size", {
-            /**
-             * The size of the Rectangle object, expressed as a Point object with the
-             * values of the <code>width</code> and <code>height</code> properties.
-             */
-            get: function () {
-                return new feng3d.Vector2(this.width, this.height);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        return Rectangle;
-    }());
-    feng3d.Rectangle = Rectangle;
+    feng3d.Line3 = Line3;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9639,6 +10010,343 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 平面
+     *
+     * ax+by+cz+d=0
+     */
+    var Plane = /** @class */ (function () {
+        /**
+         * 创建一个平面
+         * @param a		A系数
+         * @param b		B系数
+         * @param c		C系数
+         * @param d		D系数
+         */
+        function Plane(a, b, c, d) {
+            if (a === void 0) { a = 0; }
+            if (b === void 0) { b = 1; }
+            if (c === void 0) { c = 0; }
+            if (d === void 0) { d = 0; }
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+        /**
+         * 通过3顶点定义一个平面
+         * @param p0		点0
+         * @param p1		点1
+         * @param p2		点2
+         */
+        Plane.fromPoints = function (p0, p1, p2) {
+            return new Plane().fromPoints(p0, p1, p2);
+        };
+        /**
+         * 根据法线与点定义平面
+         * @param normal		平面法线
+         * @param point			平面上任意一点
+         */
+        Plane.fromNormalAndPoint = function (normal, point) {
+            return new Plane().fromNormalAndPoint(normal, point);
+        };
+        /**
+         * 随机平面
+         */
+        Plane.random = function () {
+            var normal = feng3d.Vector3.random().normalize();
+            return new Plane(normal.x, normal.y, normal.z, Math.random());
+        };
+        /**
+         * 设置
+         *
+         * @param a		A系数
+         * @param b		B系数
+         * @param c		C系数
+         * @param d		D系数
+         */
+        Plane.prototype.set = function (a, b, c, d) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+            return this;
+        };
+        /**
+         * 原点在平面上的投影
+         * @param vout 输出点
+         */
+        Plane.prototype.getOrigin = function (vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return this.projectPoint(new feng3d.Vector3(), vout);
+        };
+        /**
+         * 平面上随机点
+         * @param vout 输出点
+         */
+        Plane.prototype.randomPoint = function (vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return this.getOrigin(vout).add(this.getNormal().cross(feng3d.Vector3.random()));
+        };
+        /**
+         * 法线
+         */
+        Plane.prototype.getNormal = function (vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return vout.set(this.a, this.b, this.c);
+        };
+        /**
+         * 通过3顶点定义一个平面
+         * @param p0		点0
+         * @param p1		点1
+         * @param p2		点2
+         */
+        Plane.prototype.fromPoints = function (p0, p1, p2) {
+            // p1.subTo(p0, v0);
+            // p2.subTo(p1, v1);
+            // var normal = v0.crossTo(v1).normalize();
+            var normal = p1.subTo(p0).crossTo(p2.subTo(p1)).normalize();
+            this.a = normal.x;
+            this.b = normal.y;
+            this.c = normal.z;
+            this.d = -normal.dot(p0);
+            return this;
+        };
+        /**
+         * 根据法线与点定义平面
+         * @param normal		平面法线
+         * @param point			平面上任意一点
+         */
+        Plane.prototype.fromNormalAndPoint = function (normal, point) {
+            normal = normal.clone().normalize();
+            this.a = normal.x;
+            this.b = normal.y;
+            this.c = normal.z;
+            this.d = -normal.dot(point);
+            return this;
+        };
+        /**
+         * 计算点与平面的距离
+         * @param p		点
+         * @returns		距离
+         */
+        Plane.prototype.distanceWithPoint = function (p) {
+            return this.a * p.x + this.b * p.y + this.c * p.z + this.d;
+        };
+        /**
+         * 点是否在平面上
+         * @param p 点
+         */
+        Plane.prototype.onWithPoint = function (p, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            return Math.equals(this.distanceWithPoint(p), 0, precision);
+        };
+        /**
+         * 顶点分类
+         * <p>把顶点分为后面、前面、相交三类</p>
+         * @param p			顶点
+         * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
+         */
+        Plane.prototype.classifyPoint = function (p, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            var len = this.distanceWithPoint(p);
+            if (Math.equals(len, 0, precision))
+                return feng3d.PlaneClassification.INTERSECT;
+            if (len < 0)
+                return feng3d.PlaneClassification.BACK;
+            return feng3d.PlaneClassification.FRONT;
+        };
+        /**
+         * 判定与直线是否平行
+         * @param line3D
+         */
+        Plane.prototype.parallelWithLine3D = function (line3D, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (Math.equals(line3D.direction.dot(this.getNormal()), 0, precision))
+                return true;
+            return false;
+        };
+        /**
+         * 判定与平面是否平行
+         * @param plane3D
+         */
+        Plane.prototype.parallelWithPlane3D = function (plane3D, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (plane3D.getNormal().isParallel(this.getNormal(), precision))
+                return true;
+            return false;
+        };
+        /**
+         * 获取与直线交点
+         *
+         * @see 3D数学基础：图形与游戏开发 P269
+         */
+        Plane.prototype.intersectWithLine3 = function (line) {
+            var n = this.getNormal();
+            var d = line.direction;
+            var dn = d.dot(n);
+            if (Math.equals(dn, 0)) {
+                // 处理直线在平面内
+                if (this.onWithPoint(line.origin))
+                    return line.clone();
+                return null;
+            }
+            var t = (-this.d - line.origin.dot(n)) / dn;
+            var cp = line.getPoint(t);
+            return cp;
+        };
+        /**
+         * 获取与平面相交直线
+         * @param plane3D
+         */
+        Plane.prototype.intersectWithPlane3D = function (plane3D) {
+            if (this.parallelWithPlane3D(plane3D))
+                return null;
+            var direction = this.getNormal().crossTo(plane3D.getNormal());
+            var a0 = this.a, b0 = this.b, c0 = this.c, d0 = this.d, a1 = plane3D.a, b1 = plane3D.b, c1 = plane3D.c, d1 = plane3D.d;
+            var x, y, z;
+            // 解 方程组 a0*x+b0*y+c0*z+d0=0;a1*x+b1*y+c1*z+d1=0;
+            if (b1 * c0 - b0 * c1 != 0) {
+                x = 0;
+                y = (-c0 * d1 + c1 * d0 + (a0 * c1 - a1 * c0) * x) / (b1 * c0 - b0 * c1);
+                z = (-b1 * d0 + b0 * d1 + (a1 * b0 - a0 * b1) * x) / (b1 * c0 - b0 * c1);
+            }
+            else if (a0 * c1 - a1 * c0 != 0) {
+                y = 0;
+                x = (-c1 * d0 + c0 * d1 + (b1 * c0 - b0 * c1) * y) / (a0 * c1 - a1 * c0);
+                z = (-a0 * d1 + a1 * d0 + (a1 * b0 - a0 * b1) * y) / (a0 * c1 - a1 * c0);
+            }
+            else if (a1 * b0 - a0 * b1 != 0) {
+                z = 0;
+                x = (-b0 * d1 + b1 * d0 + (b1 * c0 - b0 * c1) * z) / (a1 * b0 - a0 * b1);
+                y = (-a1 * d0 + a0 * d1 + (a0 * c1 - a1 * c0) * z) / (a1 * b0 - a0 * b1);
+            }
+            else {
+                throw "无法计算平面相交结果";
+            }
+            return new feng3d.Line3(new feng3d.Vector3(x, y, z), direction);
+        };
+        /**
+         * 标准化
+         */
+        Plane.prototype.normalize = function () {
+            var a = this.a, b = this.b, c = this.c, d = this.d;
+            var s = a * a + b * b + c * c;
+            if (s > 0) {
+                var invLen = 1 / Math.sqrt(s);
+                this.a = a * invLen;
+                this.b = b * invLen;
+                this.c = c * invLen;
+                this.d = d * invLen;
+            }
+            else {
+                console.warn("\u65E0\u6548\u5E73\u9762 " + this);
+            }
+            return this;
+        };
+        /**
+         * 翻转平面
+         */
+        Plane.prototype.negate = function () {
+            this.a = -this.a;
+            this.b = -this.b;
+            this.c = -this.c;
+            this.d = -this.d;
+            return this;
+        };
+        /**
+         * 点到平面的投影
+         * @param point
+         */
+        Plane.prototype.projectPoint = function (point, vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return this.getNormal(vout).scaleNumber(-this.distanceWithPoint(point)).add(point);
+        };
+        /**
+         * 与指定点最近的点
+         * @param point 点
+         * @param vout 输出点
+         */
+        Plane.prototype.closestPointWithPoint = function (point, vout) {
+            if (vout === void 0) { vout = new feng3d.Vector3(); }
+            return this.projectPoint(point, vout);
+        };
+        /**
+         * 与其他两平面相交于一点
+         *
+         * @param plane0
+         * @param plane1
+         *
+         * @see 3D数学基础：图形与游戏开发 P271
+         */
+        Plane.prototype.intersectWithTwoPlane3D = function (plane0, plane1) {
+            var n1 = plane0.getNormal();
+            var n2 = plane1.getNormal();
+            var n3 = this.getNormal();
+            var d1 = -plane0.d;
+            var d2 = -plane1.d;
+            var d3 = -this.d;
+            var n1xn2 = n1.crossTo(n2);
+            var n2xn3 = n2.crossTo(n3);
+            var n3xn1 = n3.crossTo(n1);
+            var m = n1xn2.dot(n3);
+            if (Math.equals(m, 0)) {
+                // 不存在交点或者不存在唯一的交点
+                return null;
+            }
+            m = 1 / m;
+            var p = n2xn3.scaleNumberTo(d1).add(n3xn1.scaleNumber(d2)).add(n1xn2.scaleNumber(d3)).scaleNumber(m);
+            return p;
+        };
+        /**
+         * 与指定平面是否相等
+         *
+         * @param plane
+         * @param precision
+         */
+        Plane.prototype.equals = function (plane, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (!Math.equals(this.a - plane.a, 0, precision))
+                return false;
+            if (!Math.equals(this.b - plane.b, 0, precision))
+                return false;
+            if (!Math.equals(this.c - plane.c, 0, precision))
+                return false;
+            if (!Math.equals(this.d - plane.d, 0, precision))
+                return false;
+            return true;
+        };
+        /**
+         * 复制
+         */
+        Plane.prototype.copy = function (plane) {
+            this.a = plane.a;
+            this.b = plane.b;
+            this.c = plane.c;
+            this.d = plane.d;
+            return this;
+        };
+        /**
+         * 克隆
+         */
+        Plane.prototype.clone = function () {
+            return new Plane().copy(this);
+        };
+        /**
+         * 输出字符串
+         */
+        Plane.prototype.toString = function () {
+            return "Plane3D [this.a:" + this.a + ", this.b:" + this.b + ", this.c:" + this.c + ", this.d:" + this.d + "]";
+        };
+        return Plane;
+    }());
+    feng3d.Plane = Plane;
+    // var v0 = new Vector3();
+    // var v1 = new Vector3();
+    // var v2 = new Vector3();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 可用于表示旋转的四元数对象
      */
     var Quaternion = /** @class */ (function () {
@@ -10256,179 +10964,370 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3d直线
+     * 3D射线
      */
-    var Line3 = /** @class */ (function () {
-        /**
-         * 根据直线某点与方向创建直线
-         * @param origin 直线上某点
-         * @param direction 直线的方向
-         */
-        function Line3(origin, direction) {
-            this.origin = origin ? origin : new feng3d.Vector3();
-            this.direction = (direction ? direction : new feng3d.Vector3(0, 0, 1)).normalize();
+    var Ray3 = /** @class */ (function (_super) {
+        __extends(Ray3, _super);
+        function Ray3(origin, direction) {
+            return _super.call(this, origin, direction) || this;
         }
+        return Ray3;
+    }(feng3d.Line3));
+    feng3d.Ray3 = Ray3;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 矩形
+     *
+     * Rectangle 对象是按其位置（由它左上角的点 (x, y) 确定）以及宽度和高度定义的区域。<br/>
+     * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
+     * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
+     * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
+     */
+    var Rectangle = /** @class */ (function () {
         /**
-         * 根据直线上两点初始化直线
-         * @param p0 Vector3
-         * @param p1 Vector3
+         * 创建一个新 Rectangle 对象，其左上角由 x 和 y 参数指定，并具有指定的 width 和 height 参数。
+         * @param x 矩形左上角的 x 坐标。
+         * @param y 矩形左上角的 y 坐标。
+         * @param width 矩形的宽度（以像素为单位）。
+         * @param height 矩形的高度（以像素为单位）。
          */
-        Line3.fromPoints = function (p0, p1) {
-            return new Line3().fromPoints(p0, p1);
-        };
+        function Rectangle(x, y, width, height) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            if (width === void 0) { width = 0; }
+            if (height === void 0) { height = 0; }
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+        Object.defineProperty(Rectangle.prototype, "right", {
+            /**
+             * x 和 width 属性的和。
+             */
+            get: function () {
+                return this.x + this.width;
+            },
+            set: function (value) {
+                this.width = value - this.x;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Rectangle.prototype, "bottom", {
+            /**
+             * y 和 height 属性的和。
+             */
+            get: function () {
+                return this.y + this.height;
+            },
+            set: function (value) {
+                this.height = value - this.y;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Rectangle.prototype, "left", {
+            /**
+             * 矩形左上角的 x 坐标。更改 Rectangle 对象的 left 属性对 y 和 height 属性没有影响。但是，它会影响 width 属性，而更改 x 值不会影响 width 属性。
+             * left 属性的值等于 x 属性的值。
+             */
+            get: function () {
+                return this.x;
+            },
+            set: function (value) {
+                this.width += this.x - value;
+                this.x = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Rectangle.prototype, "top", {
+            /**
+             * 矩形左上角的 y 坐标。更改 Rectangle 对象的 top 属性对 x 和 width 属性没有影响。但是，它会影响 height 属性，而更改 y 值不会影响 height 属性。<br/>
+             * top 属性的值等于 y 属性的值。
+             */
+            get: function () {
+                return this.y;
+            },
+            set: function (value) {
+                this.height += this.y - value;
+                this.y = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Rectangle.prototype, "topLeft", {
+            /**
+             * 由该点的 x 和 y 坐标确定的 Rectangle 对象左上角的位置。
+             */
+            get: function () {
+                return new feng3d.Vector2(this.left, this.top);
+            },
+            set: function (value) {
+                this.top = value.y;
+                this.left = value.x;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Rectangle.prototype, "bottomRight", {
+            /**
+             * 由 right 和 bottom 属性的值确定的 Rectangle 对象的右下角的位置。
+             */
+            get: function () {
+                return new feng3d.Vector2(this.right, this.bottom);
+            },
+            set: function (value) {
+                this.bottom = value.y;
+                this.right = value.x;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Rectangle.prototype, "center", {
+            /**
+             * 中心点
+             */
+            get: function () {
+                return new feng3d.Vector2(this.x + this.width / 2, this.y + this.height / 2);
+            },
+            enumerable: false,
+            configurable: true
+        });
         /**
-         * 根据直线某点与方向初始化直线
-         * @param position 直线上某点
-         * @param direction 直线的方向
+         * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
+         * @param sourceRect 要从中复制数据的 Rectangle 对象。
          */
-        Line3.fromPosAndDir = function (position, direction) {
-            return new Line3().fromPosAndDir(position, direction);
-        };
-        /**
-         * 随机直线，比如用于单元测试
-         */
-        Line3.random = function () {
-            return new Line3(feng3d.Vector3.random(), feng3d.Vector3.random());
-        };
-        /**
-         * 根据直线上两点初始化直线
-         * @param p0 Vector3
-         * @param p1 Vector3
-         */
-        Line3.prototype.fromPoints = function (p0, p1) {
-            this.origin = p0;
-            this.direction = p1.subTo(p0).normalize();
+        Rectangle.prototype.copyFrom = function (sourceRect) {
+            this.x = sourceRect.x;
+            this.y = sourceRect.y;
+            this.width = sourceRect.width;
+            this.height = sourceRect.height;
             return this;
         };
         /**
-         * 根据直线某点与方向初始化直线
-         * @param position 直线上某点
-         * @param direction 直线的方向
+         * 将 Rectangle 的成员设置为指定值
+         * @param x 矩形左上角的 x 坐标。
+         * @param y 矩形左上角的 y 坐标。
+         * @param width 矩形的宽度（以像素为单位）。
+         * @param height 矩形的高度（以像素为单位）。
          */
-        Line3.prototype.fromPosAndDir = function (position, direction) {
-            this.origin = position;
-            this.direction = direction.normalize();
+        Rectangle.prototype.init = function (x, y, width, height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
             return this;
         };
         /**
-         * 获取经过该直线的平面
+         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
+         * @param x 检测点的x轴
+         * @param y 检测点的y轴
+         * @returns 如果检测点位于矩形内，返回true，否则，返回false
          */
-        Line3.prototype.getPlane = function (plane) {
-            if (plane === void 0) { plane = new feng3d.Plane(); }
-            return plane.fromNormalAndPoint(feng3d.Vector3.random().cross(this.direction), this.origin);
+        Rectangle.prototype.contains = function (x, y) {
+            return this.x <= x &&
+                this.x + this.width >= x &&
+                this.y <= y &&
+                this.y + this.height >= y;
         };
         /**
-         * 获取直线上的一个点
-         * @param length 与原点距离
+         * 如果在 toIntersect 参数中指定的 Rectangle 对象与此 Rectangle 对象相交，则返回交集区域作为 Rectangle 对象。如果矩形不相交，
+         * 则此方法返回一个空的 Rectangle 对象，其属性设置为 0。
+         * @param toIntersect 要对照比较以查看其是否与此 Rectangle 对象相交的 Rectangle 对象。
+         * @returns 等于交集区域的 Rectangle 对象。如果该矩形不相交，则此方法返回一个空的 Rectangle 对象；即，其 x、y、width 和
+         * height 属性均设置为 0 的矩形。
          */
-        Line3.prototype.getPoint = function (length, vout) {
-            if (length === void 0) { length = 0; }
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return vout.copy(this.direction).scaleNumber(length).add(this.origin);
+        Rectangle.prototype.intersection = function (toIntersect) {
+            if (!this.intersects(toIntersect))
+                return new Rectangle();
+            var i = new Rectangle();
+            if (this.x > toIntersect.x) {
+                i.x = this.x;
+                i.width = toIntersect.x - this.x + toIntersect.width;
+                if (i.width > this.width)
+                    i.width = this.width;
+            }
+            else {
+                i.x = toIntersect.x;
+                i.width = this.x - toIntersect.x + this.width;
+                if (i.width > toIntersect.width)
+                    i.width = toIntersect.width;
+            }
+            if (this.y > toIntersect.y) {
+                i.y = this.y;
+                i.height = toIntersect.y - this.y + toIntersect.height;
+                if (i.height > this.height)
+                    i.height = this.height;
+            }
+            else {
+                i.y = toIntersect.y;
+                i.height = this.y - toIntersect.y + this.height;
+                if (i.height > toIntersect.height)
+                    i.height = toIntersect.height;
+            }
+            return i;
         };
         /**
-         * 获取指定z值的点
-         * @param z z值
-         * @param vout 目标点（输出）
-         * @returns 目标点
+         * 按指定量增加 Rectangle 对象的大小（以像素为单位）
+         * 保持 Rectangle 对象的中心点不变，使用 dx 值横向增加它的大小，使用 dy 值纵向增加它的大小。
+         * @param dx Rectangle 对象横向增加的值。
+         * @param dy Rectangle 对象纵向增加的值。
          */
-        Line3.prototype.getPointWithZ = function (z, vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return this.getPoint((z - this.origin.z) / this.direction.z, vout);
+        Rectangle.prototype.inflate = function (dx, dy) {
+            this.x -= dx;
+            this.width += 2 * dx;
+            this.y -= dy;
+            this.height += 2 * dy;
         };
         /**
-         * 指定点到该直线距离
-         * @param point 指定点
+         * 确定在 toIntersect 参数中指定的对象是否与此 Rectangle 对象相交。此方法检查指定的 Rectangle
+         * 对象的 x、y、width 和 height 属性，以查看它是否与此 Rectangle 对象相交。
+         * @param toIntersect 要与此 Rectangle 对象比较的 Rectangle 对象。
+         * @returns 如果两个矩形相交，返回true，否则返回false
          */
-        Line3.prototype.distanceWithPoint = function (point) {
-            return this.closestPointWithPoint(point).sub(point).length;
+        Rectangle.prototype.intersects = function (toIntersect) {
+            return Math.max(this.x, toIntersect.x) <= Math.min(this.right, toIntersect.right)
+                && Math.max(this.y, toIntersect.y) <= Math.min(this.bottom, toIntersect.bottom);
         };
         /**
-         * 与指定点最近点的系数
-         * @param point 点
+         * 确定此 Rectangle 对象是否为空。
+         * @returns 如果 Rectangle 对象的宽度或高度小于等于 0，则返回 true 值，否则返回 false。
          */
-        Line3.prototype.closestPointParameterWithPoint = function (point) {
-            return point.subTo(this.origin).dot(this.direction);
+        Rectangle.prototype.isEmpty = function () {
+            return this.width <= 0 || this.height <= 0;
         };
         /**
-         * 与指定点最近的点
-         * @param point 点
-         * @param vout 输出点
+         * 将 Rectangle 对象的所有属性设置为 0。
          */
-        Line3.prototype.closestPointWithPoint = function (point, vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            var t = this.closestPointParameterWithPoint(point);
-            return this.getPoint(t, vout);
+        Rectangle.prototype.setEmpty = function () {
+            this.x = 0;
+            this.y = 0;
+            this.width = 0;
+            this.height = 0;
         };
         /**
-         * 判定点是否在直线上
-         * @param point 点
-         * @param precision 精度
+         * 返回一个新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
+         * @returns 新的 Rectangle 对象，其 x、y、width 和 height 属性的值与原始 Rectangle 对象的对应值相同。
          */
-        Line3.prototype.onWithPoint = function (point, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (Math.equals(this.distanceWithPoint(point), 0, precision))
+        Rectangle.prototype.clone = function () {
+            return new Rectangle(this.x, this.y, this.width, this.height);
+        };
+        /**
+         * 确定由此 Rectangle 对象定义的矩形区域内是否包含指定的点。
+         * 此方法与 Rectangle.contains() 方法类似，只不过它采用 Point 对象作为参数。
+         * @param point 包含点对象
+         * @returns 如果包含，返回true，否则返回false
+         */
+        Rectangle.prototype.containsPoint = function (point) {
+            if (this.x < point.x
+                && this.x + this.width > point.x
+                && this.y < point.y
+                && this.y + this.height > point.y) {
                 return true;
+            }
             return false;
         };
         /**
-         * 与直线相交
-         * @param line3D 直线
+         * 确定此 Rectangle 对象内是否包含由 rect 参数指定的 Rectangle 对象。
+         * 如果一个 Rectangle 对象完全在另一个 Rectangle 的边界内，我们说第二个 Rectangle 包含第一个 Rectangle。
+         * @param rect 所检查的 Rectangle 对象
+         * @returns 如果此 Rectangle 对象包含您指定的 Rectangle 对象，则返回 true 值，否则返回 false。
          */
-        Line3.prototype.intersectWithLine3D = function (line3D) {
-            // 处理相等
-            if (this.equals(line3D))
-                return this.clone();
-            // 处理平行
-            if (this.direction.isParallel(line3D.direction))
-                return null;
-            var plane = this.getPlane();
-            var point = plane.intersectWithLine3(line3D);
-            if (this.onWithPoint(point))
-                return point;
-            return null;
+        Rectangle.prototype.containsRect = function (rect) {
+            var r1 = rect.x + rect.width;
+            var b1 = rect.y + rect.height;
+            var r2 = this.x + this.width;
+            var b2 = this.y + this.height;
+            return (rect.x >= this.x) && (rect.x < r2) && (rect.y >= this.y) && (rect.y < b2) && (r1 > this.x) && (r1 <= r2) && (b1 > this.y) && (b1 <= b2);
         };
         /**
-         * 应用矩阵
-         * @param mat 矩阵
+         * 确定在 toCompare 参数中指定的对象是否等于此 Rectangle 对象。
+         * 此方法将某个对象的 x、y、width 和 height 属性与此 Rectangle 对象所对应的相同属性进行比较。
+         * @param toCompare 要与此 Rectangle 对象进行比较的矩形。
+         * @returns 如果对象具有与此 Rectangle 对象完全相同的 x、y、width 和 height 属性值，则返回 true 值，否则返回 false。
          */
-        Line3.prototype.applyMatri4x4 = function (mat) {
-            mat.transformPoint3(this.origin, this.origin);
-            mat.transformVector3(this.direction, this.direction);
-            return this;
+        Rectangle.prototype.equals = function (toCompare) {
+            if (this === toCompare) {
+                return true;
+            }
+            return this.x === toCompare.x && this.y === toCompare.y
+                && this.width === toCompare.width && this.height === toCompare.height;
         };
         /**
-         * 与指定向量比较是否相等
-         * @param v 比较的向量
-         * @param precision 允许误差
-         * @return 相等返回true，否则false
+         * 增加 Rectangle 对象的大小。此方法与 Rectangle.inflate() 方法类似，只不过它采用 Point 对象作为参数。
          */
-        Line3.prototype.equals = function (line, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (!this.onWithPoint(line.origin))
-                return false;
-            if (!this.onWithPoint(line.origin.addTo(line.direction)))
-                return false;
-            return true;
+        Rectangle.prototype.inflatePoint = function (point) {
+            this.inflate(point.x, point.y);
         };
         /**
-         * 拷贝
-         * @param line 直线
+         * 按指定量调整 Rectangle 对象的位置（由其左上角确定）。
+         * @param dx 将 Rectangle 对象的 x 值移动此数量。
+         * @param dy 将 Rectangle 对象的 t 值移动此数量。
          */
-        Line3.prototype.copy = function (line) {
-            this.origin.copy(line.origin);
-            this.direction.copy(line.direction);
-            return this;
+        Rectangle.prototype.offset = function (dx, dy) {
+            this.x += dx;
+            this.y += dy;
         };
         /**
-         * 克隆
+         * 将 Point 对象用作参数来调整 Rectangle 对象的位置。此方法与 Rectangle.offset() 方法类似，只不过它采用 Point 对象作为参数。
+         * @param point 要用于偏移此 Rectangle 对象的 Point 对象。
          */
-        Line3.prototype.clone = function () {
-            return new Line3().copy(this);
+        Rectangle.prototype.offsetPoint = function (point) {
+            this.offset(point.x, point.y);
         };
-        return Line3;
+        /**
+         * 生成并返回一个字符串，该字符串列出 Rectangle 对象的水平位置和垂直位置以及高度和宽度。
+         * @returns 一个字符串，它列出了 Rectangle 对象的下列各个属性的值：x、y、width 和 height。
+         */
+        Rectangle.prototype.toString = function () {
+            return "(x=" + this.x + ", y=" + this.y + ", width=" + this.width + ", height=" + this.height + ")";
+        };
+        /**
+         * 通过填充两个矩形之间的水平和垂直空间，将这两个矩形组合在一起以创建一个新的 Rectangle 对象。
+         * @param toUnion 要添加到此 Rectangle 对象的 Rectangle 对象。
+         * @returns 充当两个矩形的联合的新 Rectangle 对象。
+         */
+        Rectangle.prototype.union = function (toUnion) {
+            var result = this.clone();
+            if (toUnion.isEmpty()) {
+                return result;
+            }
+            if (result.isEmpty()) {
+                result.copyFrom(toUnion);
+                return result;
+            }
+            var l = Math.min(result.x, toUnion.x);
+            var t = Math.min(result.y, toUnion.y);
+            result.init(l, t, Math.max(result.right, toUnion.right) - l, Math.max(result.bottom, toUnion.bottom) - t);
+            return result;
+        };
+        /**
+         *
+         * @param point 点
+         * @param pout 输出点
+         */
+        Rectangle.prototype.clampPoint = function (point, pout) {
+            if (pout === void 0) { pout = new feng3d.Vector2(); }
+            return pout.copy(point).clamp(this.topLeft, this.bottomRight);
+        };
+        Object.defineProperty(Rectangle.prototype, "size", {
+            /**
+             * The size of the Rectangle object, expressed as a Point object with the
+             * values of the <code>width</code> and <code>height</code> properties.
+             */
+            get: function () {
+                return new feng3d.Vector2(this.width, this.height);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return Rectangle;
     }());
-    feng3d.Line3 = Line3;
+    feng3d.Rectangle = Rectangle;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -10631,16 +11530,202 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D射线
+     * 球
      */
-    var Ray3 = /** @class */ (function (_super) {
-        __extends(Ray3, _super);
-        function Ray3(origin, direction) {
-            return _super.call(this, origin, direction) || this;
+    var Sphere = /** @class */ (function () {
+        /**
+         * Create a Sphere with ABCD coefficients
+         */
+        function Sphere(center, radius) {
+            if (center === void 0) { center = new feng3d.Vector3(); }
+            if (radius === void 0) { radius = 0; }
+            this.center = center;
+            this.radius = radius;
         }
-        return Ray3;
-    }(feng3d.Line3));
-    feng3d.Ray3 = Ray3;
+        /**
+         * 从一组点初始化球
+         * @param points 点列表
+         */
+        Sphere.fromPoints = function (points) {
+            return new Sphere().fromPoints(points);
+        };
+        /**
+         * 从一组顶点初始化球
+         * @param positions 坐标数据列表
+         */
+        Sphere.fromPositions = function (positions) {
+            return new Sphere().fromPositions(positions);
+        };
+        /**
+         * 与射线相交
+         * @param position 射线起点
+         * @param direction 射线方向
+         * @param targetNormal 目标法线
+         * @return 射线起点到交点的距离
+         */
+        Sphere.prototype.rayIntersection = function (position, direction, targetNormal) {
+            if (this.containsPoint(position))
+                return 0;
+            var px = position.x - this.center.x, py = position.y - this.center.y, pz = position.z - this.center.z;
+            var vx = direction.x, vy = direction.y, vz = direction.z;
+            var rayEntryDistance;
+            var a = vx * vx + vy * vy + vz * vz;
+            var b = 2 * (px * vx + py * vy + pz * vz);
+            var c = px * px + py * py + pz * pz - this.radius * this.radius;
+            var det = b * b - 4 * a * c;
+            if (det >= 0) { // ray goes through sphere
+                var sqrtDet = Math.sqrt(det);
+                rayEntryDistance = (-b - sqrtDet) / (2 * a);
+                if (rayEntryDistance >= 0) {
+                    targetNormal.x = px + rayEntryDistance * vx;
+                    targetNormal.y = py + rayEntryDistance * vy;
+                    targetNormal.z = pz + rayEntryDistance * vz;
+                    targetNormal.normalize();
+                    return rayEntryDistance;
+                }
+            }
+            // ray misses sphere
+            return -1;
+        };
+        /**
+         * 是否包含指定点
+         * @param position 点
+         */
+        Sphere.prototype.containsPoint = function (position) {
+            return position.subTo(this.center).lengthSquared <= this.radius * this.radius;
+        };
+        /**
+         * 从一组点初始化球
+         * @param points 点列表
+         */
+        Sphere.prototype.fromPoints = function (points) {
+            var box = new feng3d.Box3();
+            var center = this.center;
+            box.fromPoints(points).getCenter(center);
+            var maxRadiusSq = 0;
+            for (var i = 0, n = points.length; i < n; i++) {
+                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(points[i]));
+            }
+            this.radius = Math.sqrt(maxRadiusSq);
+            return this;
+        };
+        /**
+         * 从一组顶点初始化球
+         * @param positions 坐标数据列表
+         */
+        Sphere.prototype.fromPositions = function (positions) {
+            var box = new feng3d.Box3();
+            var v = new feng3d.Vector3();
+            var center = this.center;
+            box.formPositions(positions).getCenter(center);
+            var maxRadiusSq = 0;
+            for (var i = 0, n = positions.length; i < n; i += 3) {
+                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.set(positions[i], positions[i + 1], positions[i + 2])));
+            }
+            this.radius = Math.sqrt(maxRadiusSq);
+            return this;
+        };
+        /**
+         * 拷贝
+         */
+        Sphere.prototype.copy = function (sphere) {
+            this.center.copy(sphere.center);
+            this.radius = sphere.radius;
+            return this;
+        };
+        /**
+         * 克隆
+         */
+        Sphere.prototype.clone = function () {
+            return new Sphere().copy(this);
+        };
+        /**
+         * 是否为空
+         */
+        Sphere.prototype.isEmpty = function () {
+            return this.radius <= 0;
+        };
+        /**
+         * 点到球的距离
+         * @param point 点
+         */
+        Sphere.prototype.distanceToPoint = function (point) {
+            return point.distance(this.center) - this.radius;
+        };
+        /**
+         * 与指定球是否相交
+         */
+        Sphere.prototype.intersectsSphere = function (sphere) {
+            var radiusSum = this.radius + sphere.radius;
+            return sphere.center.distanceSquared(this.center) <= radiusSum * radiusSum;
+        };
+        /**
+         * 是否与盒子相交
+         * @param box 盒子
+         */
+        Sphere.prototype.intersectsBox = function (box) {
+            return box.intersectsSphere(this);
+        };
+        /**
+         * 是否与平面相交
+         * @param plane 平面
+         */
+        Sphere.prototype.intersectsPlane = function (plane) {
+            return Math.abs(plane.distanceWithPoint(this.center)) <= this.radius;
+        };
+        /**
+         *
+         * @param point 点
+         * @param pout 输出点
+         */
+        Sphere.prototype.clampPoint = function (point, pout) {
+            if (pout === void 0) { pout = new feng3d.Vector3(); }
+            var deltaLengthSq = this.center.distanceSquared(point);
+            pout.copy(point);
+            if (deltaLengthSq > (this.radius * this.radius)) {
+                pout.sub(this.center).normalize();
+                pout.scaleNumber(this.radius).add(this.center);
+            }
+            return pout;
+        };
+        /**
+         * 获取包围盒
+         */
+        Sphere.prototype.getBoundingBox = function (box) {
+            if (box === void 0) { box = new feng3d.Box3(); }
+            box.init(this.center.subNumberTo(this.radius), this.center.addNumberTo(this.radius));
+            return box;
+        };
+        /**
+         * 应用矩阵
+         * @param matrix 矩阵
+         */
+        Sphere.prototype.applyMatrix4 = function (matrix) {
+            this.center.applyMatrix4x4(matrix);
+            this.radius = this.radius * matrix.getMaxScaleOnAxis();
+            return this;
+        };
+        /**
+         * 平移
+         * @param offset 偏移量
+         */
+        Sphere.prototype.translate = function (offset) {
+            this.center.add(offset);
+            return this;
+        };
+        /**
+         * 是否相等
+         * @param sphere 球
+         */
+        Sphere.prototype.equals = function (sphere) {
+            return sphere.center.equals(this.center) && (sphere.radius === this.radius);
+        };
+        Sphere.prototype.toString = function () {
+            return "Sphere [center:" + this.center.toString() + ", radius:" + this.radius + "]";
+        };
+        return Sphere;
+    }());
+    feng3d.Sphere = Sphere;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -11167,1279 +12252,6 @@ var feng3d;
         return Triangle3;
     }());
     feng3d.Triangle3 = Triangle3;
-    var td0 = new feng3d.Vector3();
-    var td1 = new feng3d.Vector3();
-    var tn = new feng3d.Vector3();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 轴向对称包围盒
-     */
-    var Box3 = /** @class */ (function () {
-        /**
-         * 创建包围盒
-         * @param min 最小点
-         * @param max 最大点
-         */
-        function Box3(min, max) {
-            if (min === void 0) { min = new feng3d.Vector3(+Infinity, +Infinity, +Infinity); }
-            if (max === void 0) { max = new feng3d.Vector3(-Infinity, -Infinity, -Infinity); }
-            this.min = min;
-            this.max = max;
-        }
-        /**
-         * 从一组顶点初始化包围盒
-         * @param positions 坐标数据列表
-         */
-        Box3.formPositions = function (positions) {
-            return new Box3().formPositions(positions);
-        };
-        /**
-         * 从一组点初始化包围盒
-         * @param ps 点列表
-         */
-        Box3.fromPoints = function (ps) {
-            return new Box3().fromPoints(ps);
-        };
-        /**
-         * 随机包围盒
-         */
-        Box3.random = function () {
-            var min = feng3d.Vector3.random();
-            var max = feng3d.Vector3.random().add(min);
-            return new Box3(min, max);
-        };
-        /**
-         * 获取中心点
-         * @param vout 输出向量
-         */
-        Box3.prototype.getCenter = function (vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return vout.copy(this.min).add(this.max).scaleNumber(0.5);
-        };
-        /**
-         * 尺寸
-         */
-        Box3.prototype.getSize = function (vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return this.isEmpty() ? vout.set(0, 0, 0) : this.max.subTo(this.min, vout);
-        };
-        /**
-         * 初始化包围盒
-         * @param min 最小值
-         * @param max 最大值
-         */
-        Box3.prototype.init = function (min, max) {
-            this.min = min;
-            this.max = max;
-            return this;
-        };
-        /**
-         * 缩放包围盒
-         *
-         * @param s 缩放系数
-         */
-        Box3.prototype.scale = function (s) {
-            this.min.scale(s);
-            this.max.scale(s);
-            return this;
-        };
-        /**
-         * 转换为包围盒八个角所在点列表
-         */
-        Box3.prototype.toPoints = function (points) {
-            if (!points) {
-                points = [
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(),
-                ];
-            }
-            var min = this.min;
-            var max = this.max;
-            points[0].set(min.x, min.y, min.z);
-            points[1].set(max.x, min.y, min.z);
-            points[2].set(min.x, max.y, min.z);
-            points[3].set(min.x, min.y, max.z);
-            points[4].set(min.x, max.y, max.z);
-            points[5].set(max.x, min.y, max.z);
-            points[6].set(max.x, max.y, min.z);
-            points[7].set(max.x, max.y, max.z);
-            return points;
-        };
-        /**
-         * 从一组顶点初始化包围盒
-         * @param positions 坐标数据列表
-         */
-        Box3.prototype.formPositions = function (positions) {
-            var minX = +Infinity;
-            var minY = +Infinity;
-            var minZ = +Infinity;
-            var maxX = -Infinity;
-            var maxY = -Infinity;
-            var maxZ = -Infinity;
-            for (var i = 0, l = positions.length; i < l; i += 3) {
-                var x = positions[i];
-                var y = positions[i + 1];
-                var z = positions[i + 2];
-                if (x < minX)
-                    minX = x;
-                if (y < minY)
-                    minY = y;
-                if (z < minZ)
-                    minZ = z;
-                if (x > maxX)
-                    maxX = x;
-                if (y > maxY)
-                    maxY = y;
-                if (z > maxZ)
-                    maxZ = z;
-            }
-            this.min.set(minX, minY, minZ);
-            this.max.set(maxX, maxY, maxZ);
-            return this;
-        };
-        /**
-         * 从一组点初始化包围盒
-         * @param ps 点列表
-         */
-        Box3.prototype.fromPoints = function (ps) {
-            var _this = this;
-            this.empty();
-            ps.forEach(function (element) {
-                _this.expandByPoint(element);
-            });
-            return this;
-        };
-        /**
-         * 包围盒内随机点
-         */
-        Box3.prototype.randomPoint = function (pout) {
-            if (pout === void 0) { pout = new feng3d.Vector3(); }
-            return pout.copy(this.min).lerp(this.max, feng3d.Vector3.random());
-        };
-        /**
-         * 使用点扩张包围盒
-         * @param point 点
-         */
-        Box3.prototype.expandByPoint = function (point) {
-            this.min.min(point);
-            this.max.max(point);
-            return this;
-        };
-        /**
-         * 应用矩阵
-         * @param mat 矩阵
-         *
-         * @todo 优化
-         * @see 3D数学基础：图形与游戏开发 P288 AABB::setToTransformedBox
-         */
-        Box3.prototype.applyMatrix = function (mat) {
-            if (this.isEmpty())
-                return this;
-            this.fromPoints(this.toPoints().map(function (v) {
-                return v.applyMatrix4x4(mat);
-            }));
-            return this;
-        };
-        /**
-         * 应用矩阵
-         * @param mat 矩阵
-         */
-        Box3.prototype.applyMatrixTo = function (mat, out) {
-            if (out === void 0) { out = new Box3(); }
-            return out.copy(this).applyMatrix(mat);
-        };
-        /**
-         *
-         */
-        Box3.prototype.clone = function () {
-            return new Box3(this.min.clone(), this.max.clone());
-        };
-        /**
-         * 是否包含指定点
-         * @param p 点
-         */
-        Box3.prototype.containsPoint = function (p) {
-            return this.min.lessequal(p) && this.max.greaterequal(p);
-        };
-        /**
-         * 是否包含包围盒
-         * @param aabb 包围盒
-         */
-        Box3.prototype.contains = function (aabb) {
-            return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
-        };
-        /**
-         * 拷贝
-         * @param aabb 包围盒
-         */
-        Box3.prototype.copy = function (aabb) {
-            this.min.copy(aabb.min);
-            this.max.copy(aabb.max);
-            return this;
-        };
-        /**
-         * 比较包围盒是否相等
-         * @param aabb 包围盒
-         */
-        Box3.prototype.equals = function (aabb) {
-            return this.min.equals(aabb.min) && this.max.equals(aabb.max);
-        };
-        /**
-         * 平移
-         *
-         * @param offset 偏移量
-         */
-        Box3.prototype.translate = function (offset) {
-            this.min.add(offset);
-            this.max.add(offset);
-            return this;
-        };
-        /**
-         * 膨胀包围盒
-         * @param dx x方向膨胀量
-         * @param dy y方向膨胀量
-         * @param dz z方向膨胀量
-         */
-        Box3.prototype.inflate = function (dx, dy, dz) {
-            this.min.x -= dx / 2;
-            this.min.y -= dy / 2;
-            this.min.z -= dz / 2;
-            this.max.x += dx / 2;
-            this.max.y += dy / 2;
-            this.max.z += dz / 2;
-        };
-        /**
-         * 膨胀包围盒
-         * @param delta 膨胀量
-         */
-        Box3.prototype.inflatePoint = function (delta) {
-            delta = delta.scaleNumberTo(0.5);
-            this.min.sub(delta);
-            this.max.add(delta);
-        };
-        /**
-         * 与包围盒相交
-         * @param aabb 包围盒
-         */
-        Box3.prototype.intersection = function (aabb) {
-            var min = this.min.clampTo(aabb.min, aabb.max);
-            var max = this.max.clampTo(aabb.min, aabb.max);
-            if (this.containsPoint(min)) {
-                this.min.copy(min);
-                this.max.copy(max);
-                return this;
-            }
-            return null;
-        };
-        /**
-         * 与包围盒相交
-         * @param aabb 包围盒
-         */
-        Box3.prototype.intersectionTo = function (aabb, out) {
-            if (out === void 0) { out = new Box3(); }
-            return out.copy(this).intersection(aabb);
-        };
-        /**
-         * 包围盒是否相交
-         * @param aabb 包围盒
-         */
-        Box3.prototype.intersects = function (aabb) {
-            var b = this.intersectionTo(aabb);
-            var c = b.getCenter();
-            return this.containsPoint(c) && aabb.containsPoint(c);
-        };
-        /**
-         * 与射线相交
-         * @param position 射线起点
-         * @param direction 射线方向
-         * @param targetNormal 相交处法线
-         * @return 起点到包围盒距离
-         *
-         * @todo 可用以下方法优化？
-         * @see 3D数学基础：图形与游戏开发 P290
-         */
-        Box3.prototype.rayIntersection = function (position, direction, targetNormal) {
-            if (this.containsPoint(position))
-                return 0;
-            var halfExtentsX = (this.max.x - this.min.x) / 2;
-            var halfExtentsY = (this.max.y - this.min.y) / 2;
-            var halfExtentsZ = (this.max.z - this.min.z) / 2;
-            var centerX = this.min.x + halfExtentsX;
-            var centerY = this.min.y + halfExtentsY;
-            var centerZ = this.min.z + halfExtentsZ;
-            var px = position.x - centerX;
-            var py = position.y - centerY;
-            var pz = position.z - centerZ;
-            var vx = direction.x;
-            var vy = direction.y;
-            var vz = direction.z;
-            var ix;
-            var iy;
-            var iz;
-            var rayEntryDistance = -1;
-            // 射线与平面相交测试
-            var intersects = false;
-            if (vx < 0) {
-                rayEntryDistance = (halfExtentsX - px) / vx;
-                if (rayEntryDistance > 0) {
-                    iy = py + rayEntryDistance * vy;
-                    iz = pz + rayEntryDistance * vz;
-                    if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = 1;
-                            targetNormal.y = 0;
-                            targetNormal.z = 0;
-                        }
-                        intersects = true;
-                    }
-                }
-            }
-            if (!intersects && vx > 0) {
-                rayEntryDistance = (-halfExtentsX - px) / vx;
-                if (rayEntryDistance > 0) {
-                    iy = py + rayEntryDistance * vy;
-                    iz = pz + rayEntryDistance * vz;
-                    if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = -1;
-                            targetNormal.y = 0;
-                            targetNormal.z = 0;
-                        }
-                        intersects = true;
-                    }
-                }
-            }
-            if (!intersects && vy < 0) {
-                rayEntryDistance = (halfExtentsY - py) / vy;
-                if (rayEntryDistance > 0) {
-                    ix = px + rayEntryDistance * vx;
-                    iz = pz + rayEntryDistance * vz;
-                    if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = 1;
-                            targetNormal.z = 0;
-                        }
-                        intersects = true;
-                    }
-                }
-            }
-            if (!intersects && vy > 0) {
-                rayEntryDistance = (-halfExtentsY - py) / vy;
-                if (rayEntryDistance > 0) {
-                    ix = px + rayEntryDistance * vx;
-                    iz = pz + rayEntryDistance * vz;
-                    if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = -1;
-                            targetNormal.z = 0;
-                        }
-                        intersects = true;
-                    }
-                }
-            }
-            if (!intersects && vz < 0) {
-                rayEntryDistance = (halfExtentsZ - pz) / vz;
-                if (rayEntryDistance > 0) {
-                    ix = px + rayEntryDistance * vx;
-                    iy = py + rayEntryDistance * vy;
-                    if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = 0;
-                            targetNormal.z = 1;
-                        }
-                        intersects = true;
-                    }
-                }
-            }
-            if (!intersects && vz > 0) {
-                rayEntryDistance = (-halfExtentsZ - pz) / vz;
-                if (rayEntryDistance > 0) {
-                    ix = px + rayEntryDistance * vx;
-                    iy = py + rayEntryDistance * vy;
-                    if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = 0;
-                            targetNormal.z = -1;
-                        }
-                        intersects = true;
-                    }
-                }
-            }
-            return intersects ? rayEntryDistance : -1;
-        };
-        /**
-         * 获取包围盒上距离指定点最近的点
-         *
-         * @param point 指定点
-         * @param target 存储最近的点
-         */
-        Box3.prototype.closestPointToPoint = function (point, target) {
-            if (target === void 0) { target = new feng3d.Vector3(); }
-            return this.clampPoint(point, target);
-        };
-        /**
-         * 清空包围盒
-         */
-        Box3.prototype.empty = function () {
-            this.min.x = this.min.y = this.min.z = +Infinity;
-            this.max.x = this.max.y = this.max.z = -Infinity;
-            return this;
-        };
-        /**
-         * 是否为空
-         * 当体积为0时为空
-         */
-        Box3.prototype.isEmpty = function () {
-            return (this.max.x < this.min.x) || (this.max.y < this.min.y) || (this.max.z < this.min.z);
-        };
-        /**
-         * 偏移
-         * @param dx x轴偏移
-         * @param dy y轴偏移
-         * @param dz z轴偏移
-         */
-        Box3.prototype.offset = function (dx, dy, dz) {
-            return this.offsetPosition(new feng3d.Vector3(dx, dy, dz));
-        };
-        /**
-         * 偏移
-         * @param position 偏移量
-         */
-        Box3.prototype.offsetPosition = function (position) {
-            this.min.add(position);
-            this.max.add(position);
-            return this;
-        };
-        Box3.prototype.toString = function () {
-            return "[AABB] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
-        };
-        /**
-         * 联合包围盒
-         * @param aabb 包围盒
-         */
-        Box3.prototype.union = function (aabb) {
-            this.min.min(aabb.min);
-            this.max.max(aabb.max);
-            return this;
-        };
-        /**
-         * 是否与球相交
-         * @param sphere 球
-         */
-        Box3.prototype.intersectsSphere = function (sphere) {
-            var closestPoint = new feng3d.Vector3();
-            this.clampPoint(sphere.center, closestPoint);
-            return closestPoint.distanceSquared(sphere.center) <= (sphere.radius * sphere.radius);
-        };
-        /**
-         * 夹紧？
-         *
-         * @param point 点
-         * @param out 输出点
-         */
-        Box3.prototype.clampPoint = function (point, out) {
-            if (out === void 0) { out = new feng3d.Vector3(); }
-            return out.copy(point).clamp(this.min, this.max);
-        };
-        /**
-         * 是否与平面相交
-         * @param plane 平面
-         */
-        Box3.prototype.intersectsPlane = function (plane) {
-            var min = Infinity;
-            var max = -Infinity;
-            this.toPoints().forEach(function (p) {
-                var d = plane.distanceWithPoint(p);
-                min = d < min ? d : min;
-                max = d > min ? d : min;
-            });
-            return min < 0 && max > 0;
-        };
-        /**
-         * 是否与三角形相交
-         * @param triangle 三角形
-         */
-        Box3.prototype.intersectsTriangle = function (triangle) {
-            if (this.isEmpty()) {
-                return false;
-            }
-            // 计算包围盒中心和区段
-            var center = this.getCenter();
-            var extents = this.max.subTo(center);
-            // 把三角形顶点转换包围盒空间
-            var v0 = triangle.p0.subTo(center);
-            var v1 = triangle.p1.subTo(center);
-            var v2 = triangle.p2.subTo(center);
-            // 计算三边向量
-            var f0 = v1.subTo(v0);
-            var f1 = v2.subTo(v1);
-            var f2 = v0.subTo(v2);
-            // 测试三边向量分别所在三个轴面上的法线
-            var axes = [
-                0, -f0.z, f0.y, 0, -f1.z, f1.y, 0, -f2.z, f2.y,
-                f0.z, 0, -f0.x, f1.z, 0, -f1.x, f2.z, 0, -f2.x,
-                -f0.y, f0.x, 0, -f1.y, f1.x, 0, -f2.y, f2.x, 0
-            ];
-            if (!satForAxes(axes, v0, v1, v2, extents)) {
-                return false;
-            }
-            // 测试三个面法线
-            axes = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-            if (!satForAxes(axes, v0, v1, v2, extents)) {
-                return false;
-            }
-            // 检测三角形面法线
-            var triangleNormal = f0.crossTo(f1);
-            axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
-            return satForAxes(axes, v0, v1, v2, extents);
-        };
-        /**
-        * 是否与指定长方体相交
-        *
-        * @param box3 长方体
-        */
-        Box3.prototype.overlaps = function (box3) {
-            var l1 = this.min, u1 = this.max, l2 = box3.min, u2 = box3.max;
-            //      l2        u2
-            //      |---------|
-            // |--------|
-            // l1       u1
-            var overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
-            var overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
-            var overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
-            return overlapsX && overlapsY && overlapsZ;
-        };
-        /**
-         * 转换为三角形列表
-         */
-        Box3.prototype.toTriangles = function (triangles) {
-            if (triangles === void 0) { triangles = []; }
-            var min = this.min;
-            var max = this.max;
-            triangles.push(
-            // 前
-            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, min.y, min.z)), 
-            // 后
-            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, max.z)), 
-            // 右
-            feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, min.y, max.z)), 
-            // 左
-            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, min.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, max.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(min.x, max.y, min.z)), 
-            // 上
-            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(max.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, min.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, max.y, min.z), new feng3d.Vector3(min.x, max.y, max.z), new feng3d.Vector3(max.x, max.y, max.z)), 
-            // 下
-            feng3d.Triangle3.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(min.x, min.y, max.z)), feng3d.Triangle3.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, min.y, max.z)));
-            return triangles;
-        };
-        return Box3;
-    }());
-    feng3d.Box3 = Box3;
-    /**
-     * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
-     *
-     * @param axes
-     * @param v0
-     * @param v1
-     * @param v2
-     * @param extents
-     */
-    function satForAxes(axes, v0, v1, v2, extents) {
-        for (var i = 0, j = axes.length - 3; i <= j; i += 3) {
-            var testAxis = feng3d.Vector3.fromArray(axes, i);
-            // 投影包围盒到指定轴的长度
-            var r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
-            // 投影三角形的三个点到指定轴
-            var p0 = v0.dot(testAxis);
-            var p1 = v1.dot(testAxis);
-            var p2 = v2.dot(testAxis);
-            // 三个点在包围盒投影外同侧
-            if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r) {
-                return false;
-            }
-        }
-        return true;
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 球
-     */
-    var Sphere = /** @class */ (function () {
-        /**
-         * Create a Sphere with ABCD coefficients
-         */
-        function Sphere(center, radius) {
-            if (center === void 0) { center = new feng3d.Vector3(); }
-            if (radius === void 0) { radius = 0; }
-            this.center = center;
-            this.radius = radius;
-        }
-        /**
-         * 从一组点初始化球
-         * @param points 点列表
-         */
-        Sphere.fromPoints = function (points) {
-            return new Sphere().fromPoints(points);
-        };
-        /**
-         * 从一组顶点初始化球
-         * @param positions 坐标数据列表
-         */
-        Sphere.fromPositions = function (positions) {
-            return new Sphere().fromPositions(positions);
-        };
-        /**
-         * 与射线相交
-         * @param position 射线起点
-         * @param direction 射线方向
-         * @param targetNormal 目标法线
-         * @return 射线起点到交点的距离
-         */
-        Sphere.prototype.rayIntersection = function (position, direction, targetNormal) {
-            if (this.containsPoint(position))
-                return 0;
-            var px = position.x - this.center.x, py = position.y - this.center.y, pz = position.z - this.center.z;
-            var vx = direction.x, vy = direction.y, vz = direction.z;
-            var rayEntryDistance;
-            var a = vx * vx + vy * vy + vz * vz;
-            var b = 2 * (px * vx + py * vy + pz * vz);
-            var c = px * px + py * py + pz * pz - this.radius * this.radius;
-            var det = b * b - 4 * a * c;
-            if (det >= 0) { // ray goes through sphere
-                var sqrtDet = Math.sqrt(det);
-                rayEntryDistance = (-b - sqrtDet) / (2 * a);
-                if (rayEntryDistance >= 0) {
-                    targetNormal.x = px + rayEntryDistance * vx;
-                    targetNormal.y = py + rayEntryDistance * vy;
-                    targetNormal.z = pz + rayEntryDistance * vz;
-                    targetNormal.normalize();
-                    return rayEntryDistance;
-                }
-            }
-            // ray misses sphere
-            return -1;
-        };
-        /**
-         * 是否包含指定点
-         * @param position 点
-         */
-        Sphere.prototype.containsPoint = function (position) {
-            return position.subTo(this.center).lengthSquared <= this.radius * this.radius;
-        };
-        /**
-         * 从一组点初始化球
-         * @param points 点列表
-         */
-        Sphere.prototype.fromPoints = function (points) {
-            var box = new feng3d.Box3();
-            var center = this.center;
-            box.fromPoints(points).getCenter(center);
-            var maxRadiusSq = 0;
-            for (var i = 0, n = points.length; i < n; i++) {
-                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(points[i]));
-            }
-            this.radius = Math.sqrt(maxRadiusSq);
-            return this;
-        };
-        /**
-         * 从一组顶点初始化球
-         * @param positions 坐标数据列表
-         */
-        Sphere.prototype.fromPositions = function (positions) {
-            var box = new feng3d.Box3();
-            var v = new feng3d.Vector3();
-            var center = this.center;
-            box.formPositions(positions).getCenter(center);
-            var maxRadiusSq = 0;
-            for (var i = 0, n = positions.length; i < n; i += 3) {
-                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.set(positions[i], positions[i + 1], positions[i + 2])));
-            }
-            this.radius = Math.sqrt(maxRadiusSq);
-            return this;
-        };
-        /**
-         * 拷贝
-         */
-        Sphere.prototype.copy = function (sphere) {
-            this.center.copy(sphere.center);
-            this.radius = sphere.radius;
-            return this;
-        };
-        /**
-         * 克隆
-         */
-        Sphere.prototype.clone = function () {
-            return new Sphere().copy(this);
-        };
-        /**
-         * 是否为空
-         */
-        Sphere.prototype.isEmpty = function () {
-            return this.radius <= 0;
-        };
-        /**
-         * 点到球的距离
-         * @param point 点
-         */
-        Sphere.prototype.distanceToPoint = function (point) {
-            return point.distance(this.center) - this.radius;
-        };
-        /**
-         * 与指定球是否相交
-         */
-        Sphere.prototype.intersectsSphere = function (sphere) {
-            var radiusSum = this.radius + sphere.radius;
-            return sphere.center.distanceSquared(this.center) <= radiusSum * radiusSum;
-        };
-        /**
-         * 是否与盒子相交
-         * @param box 盒子
-         */
-        Sphere.prototype.intersectsBox = function (box) {
-            return box.intersectsSphere(this);
-        };
-        /**
-         * 是否与平面相交
-         * @param plane 平面
-         */
-        Sphere.prototype.intersectsPlane = function (plane) {
-            return Math.abs(plane.distanceWithPoint(this.center)) <= this.radius;
-        };
-        /**
-         *
-         * @param point 点
-         * @param pout 输出点
-         */
-        Sphere.prototype.clampPoint = function (point, pout) {
-            if (pout === void 0) { pout = new feng3d.Vector3(); }
-            var deltaLengthSq = this.center.distanceSquared(point);
-            pout.copy(point);
-            if (deltaLengthSq > (this.radius * this.radius)) {
-                pout.sub(this.center).normalize();
-                pout.scaleNumber(this.radius).add(this.center);
-            }
-            return pout;
-        };
-        /**
-         * 获取包围盒
-         */
-        Sphere.prototype.getBoundingBox = function (box) {
-            if (box === void 0) { box = new feng3d.Box3(); }
-            box.init(this.center.subNumberTo(this.radius), this.center.addNumberTo(this.radius));
-            return box;
-        };
-        /**
-         * 应用矩阵
-         * @param matrix 矩阵
-         */
-        Sphere.prototype.applyMatrix4 = function (matrix) {
-            this.center.applyMatrix4x4(matrix);
-            this.radius = this.radius * matrix.getMaxScaleOnAxis();
-            return this;
-        };
-        /**
-         * 平移
-         * @param offset 偏移量
-         */
-        Sphere.prototype.translate = function (offset) {
-            this.center.add(offset);
-            return this;
-        };
-        /**
-         * 是否相等
-         * @param sphere 球
-         */
-        Sphere.prototype.equals = function (sphere) {
-            return sphere.center.equals(this.center) && (sphere.radius === this.radius);
-        };
-        Sphere.prototype.toString = function () {
-            return "Sphere [center:" + this.center.toString() + ", radius:" + this.radius + "]";
-        };
-        return Sphere;
-    }());
-    feng3d.Sphere = Sphere;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 平面
-     *
-     * ax+by+cz+d=0
-     */
-    var Plane = /** @class */ (function () {
-        /**
-         * 创建一个平面
-         * @param a		A系数
-         * @param b		B系数
-         * @param c		C系数
-         * @param d		D系数
-         */
-        function Plane(a, b, c, d) {
-            if (a === void 0) { a = 0; }
-            if (b === void 0) { b = 1; }
-            if (c === void 0) { c = 0; }
-            if (d === void 0) { d = 0; }
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-        }
-        /**
-         * 通过3顶点定义一个平面
-         * @param p0		点0
-         * @param p1		点1
-         * @param p2		点2
-         */
-        Plane.fromPoints = function (p0, p1, p2) {
-            return new Plane().fromPoints(p0, p1, p2);
-        };
-        /**
-         * 根据法线与点定义平面
-         * @param normal		平面法线
-         * @param point			平面上任意一点
-         */
-        Plane.fromNormalAndPoint = function (normal, point) {
-            return new Plane().fromNormalAndPoint(normal, point);
-        };
-        /**
-         * 随机平面
-         */
-        Plane.random = function () {
-            var normal = feng3d.Vector3.random().normalize();
-            return new Plane(normal.x, normal.y, normal.z, Math.random());
-        };
-        /**
-         * 设置
-         *
-         * @param a		A系数
-         * @param b		B系数
-         * @param c		C系数
-         * @param d		D系数
-         */
-        Plane.prototype.set = function (a, b, c, d) {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-            return this;
-        };
-        /**
-         * 原点在平面上的投影
-         * @param vout 输出点
-         */
-        Plane.prototype.getOrigin = function (vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return this.projectPoint(new feng3d.Vector3(), vout);
-        };
-        /**
-         * 平面上随机点
-         * @param vout 输出点
-         */
-        Plane.prototype.randomPoint = function (vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return this.getOrigin(vout).add(this.getNormal().cross(feng3d.Vector3.random()));
-        };
-        /**
-         * 法线
-         */
-        Plane.prototype.getNormal = function (vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return vout.set(this.a, this.b, this.c);
-        };
-        /**
-         * 通过3顶点定义一个平面
-         * @param p0		点0
-         * @param p1		点1
-         * @param p2		点2
-         */
-        Plane.prototype.fromPoints = function (p0, p1, p2) {
-            // p1.subTo(p0, v0);
-            // p2.subTo(p1, v1);
-            // var normal = v0.crossTo(v1).normalize();
-            var normal = p1.subTo(p0).crossTo(p2.subTo(p1)).normalize();
-            this.a = normal.x;
-            this.b = normal.y;
-            this.c = normal.z;
-            this.d = -normal.dot(p0);
-            return this;
-        };
-        /**
-         * 根据法线与点定义平面
-         * @param normal		平面法线
-         * @param point			平面上任意一点
-         */
-        Plane.prototype.fromNormalAndPoint = function (normal, point) {
-            normal = normal.clone().normalize();
-            this.a = normal.x;
-            this.b = normal.y;
-            this.c = normal.z;
-            this.d = -normal.dot(point);
-            return this;
-        };
-        /**
-         * 计算点与平面的距离
-         * @param p		点
-         * @returns		距离
-         */
-        Plane.prototype.distanceWithPoint = function (p) {
-            return this.a * p.x + this.b * p.y + this.c * p.z + this.d;
-        };
-        /**
-         * 点是否在平面上
-         * @param p 点
-         */
-        Plane.prototype.onWithPoint = function (p, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            return Math.equals(this.distanceWithPoint(p), 0, precision);
-        };
-        /**
-         * 顶点分类
-         * <p>把顶点分为后面、前面、相交三类</p>
-         * @param p			顶点
-         * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
-         */
-        Plane.prototype.classifyPoint = function (p, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            var len = this.distanceWithPoint(p);
-            if (Math.equals(len, 0, precision))
-                return feng3d.PlaneClassification.INTERSECT;
-            if (len < 0)
-                return feng3d.PlaneClassification.BACK;
-            return feng3d.PlaneClassification.FRONT;
-        };
-        /**
-         * 判定与直线是否平行
-         * @param line3D
-         */
-        Plane.prototype.parallelWithLine3D = function (line3D, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (Math.equals(line3D.direction.dot(this.getNormal()), 0, precision))
-                return true;
-            return false;
-        };
-        /**
-         * 判定与平面是否平行
-         * @param plane3D
-         */
-        Plane.prototype.parallelWithPlane3D = function (plane3D, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (plane3D.getNormal().isParallel(this.getNormal(), precision))
-                return true;
-            return false;
-        };
-        /**
-         * 获取与直线交点
-         *
-         * @see 3D数学基础：图形与游戏开发 P269
-         */
-        Plane.prototype.intersectWithLine3 = function (line) {
-            var n = this.getNormal();
-            var d = line.direction;
-            var dn = d.dot(n);
-            if (Math.equals(dn, 0)) {
-                // 处理直线在平面内
-                if (this.onWithPoint(line.origin))
-                    return line.clone();
-                return null;
-            }
-            var t = (-this.d - line.origin.dot(n)) / dn;
-            var cp = line.getPoint(t);
-            return cp;
-        };
-        /**
-         * 获取与平面相交直线
-         * @param plane3D
-         */
-        Plane.prototype.intersectWithPlane3D = function (plane3D) {
-            if (this.parallelWithPlane3D(plane3D))
-                return null;
-            var direction = this.getNormal().crossTo(plane3D.getNormal());
-            var a0 = this.a, b0 = this.b, c0 = this.c, d0 = this.d, a1 = plane3D.a, b1 = plane3D.b, c1 = plane3D.c, d1 = plane3D.d;
-            var x, y, z;
-            // 解 方程组 a0*x+b0*y+c0*z+d0=0;a1*x+b1*y+c1*z+d1=0;
-            if (b1 * c0 - b0 * c1 != 0) {
-                x = 0;
-                y = (-c0 * d1 + c1 * d0 + (a0 * c1 - a1 * c0) * x) / (b1 * c0 - b0 * c1);
-                z = (-b1 * d0 + b0 * d1 + (a1 * b0 - a0 * b1) * x) / (b1 * c0 - b0 * c1);
-            }
-            else if (a0 * c1 - a1 * c0 != 0) {
-                y = 0;
-                x = (-c1 * d0 + c0 * d1 + (b1 * c0 - b0 * c1) * y) / (a0 * c1 - a1 * c0);
-                z = (-a0 * d1 + a1 * d0 + (a1 * b0 - a0 * b1) * y) / (a0 * c1 - a1 * c0);
-            }
-            else if (a1 * b0 - a0 * b1 != 0) {
-                z = 0;
-                x = (-b0 * d1 + b1 * d0 + (b1 * c0 - b0 * c1) * z) / (a1 * b0 - a0 * b1);
-                y = (-a1 * d0 + a0 * d1 + (a0 * c1 - a1 * c0) * z) / (a1 * b0 - a0 * b1);
-            }
-            else {
-                throw "无法计算平面相交结果";
-            }
-            return new feng3d.Line3(new feng3d.Vector3(x, y, z), direction);
-        };
-        /**
-         * 标准化
-         */
-        Plane.prototype.normalize = function () {
-            var a = this.a, b = this.b, c = this.c, d = this.d;
-            var s = a * a + b * b + c * c;
-            if (s > 0) {
-                var invLen = 1 / Math.sqrt(s);
-                this.a = a * invLen;
-                this.b = b * invLen;
-                this.c = c * invLen;
-                this.d = d * invLen;
-            }
-            else {
-                console.warn("\u65E0\u6548\u5E73\u9762 " + this);
-            }
-            return this;
-        };
-        /**
-         * 翻转平面
-         */
-        Plane.prototype.negate = function () {
-            this.a = -this.a;
-            this.b = -this.b;
-            this.c = -this.c;
-            this.d = -this.d;
-            return this;
-        };
-        /**
-         * 点到平面的投影
-         * @param point
-         */
-        Plane.prototype.projectPoint = function (point, vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return this.getNormal(vout).scaleNumber(-this.distanceWithPoint(point)).add(point);
-        };
-        /**
-         * 与指定点最近的点
-         * @param point 点
-         * @param vout 输出点
-         */
-        Plane.prototype.closestPointWithPoint = function (point, vout) {
-            if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return this.projectPoint(point, vout);
-        };
-        /**
-         * 与其他两平面相交于一点
-         *
-         * @param plane0
-         * @param plane1
-         *
-         * @see 3D数学基础：图形与游戏开发 P271
-         */
-        Plane.prototype.intersectWithTwoPlane3D = function (plane0, plane1) {
-            var n1 = plane0.getNormal();
-            var n2 = plane1.getNormal();
-            var n3 = this.getNormal();
-            var d1 = -plane0.d;
-            var d2 = -plane1.d;
-            var d3 = -this.d;
-            var n1xn2 = n1.crossTo(n2);
-            var n2xn3 = n2.crossTo(n3);
-            var n3xn1 = n3.crossTo(n1);
-            var m = n1xn2.dot(n3);
-            if (Math.equals(m, 0)) {
-                // 不存在交点或者不存在唯一的交点
-                return null;
-            }
-            m = 1 / m;
-            var p = n2xn3.scaleNumberTo(d1).add(n3xn1.scaleNumber(d2)).add(n1xn2.scaleNumber(d3)).scaleNumber(m);
-            return p;
-        };
-        /**
-         * 与指定平面是否相等
-         *
-         * @param plane
-         * @param precision
-         */
-        Plane.prototype.equals = function (plane, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            if (!Math.equals(this.a - plane.a, 0, precision))
-                return false;
-            if (!Math.equals(this.b - plane.b, 0, precision))
-                return false;
-            if (!Math.equals(this.c - plane.c, 0, precision))
-                return false;
-            if (!Math.equals(this.d - plane.d, 0, precision))
-                return false;
-            return true;
-        };
-        /**
-         * 复制
-         */
-        Plane.prototype.copy = function (plane) {
-            this.a = plane.a;
-            this.b = plane.b;
-            this.c = plane.c;
-            this.d = plane.d;
-            return this;
-        };
-        /**
-         * 克隆
-         */
-        Plane.prototype.clone = function () {
-            return new Plane().copy(this);
-        };
-        /**
-         * 输出字符串
-         */
-        Plane.prototype.toString = function () {
-            return "Plane3D [this.a:" + this.a + ", this.b:" + this.b + ", this.c:" + this.c + ", this.d:" + this.d + "]";
-        };
-        return Plane;
-    }());
-    feng3d.Plane = Plane;
-    // var v0 = new Vector3();
-    // var v1 = new Vector3();
-    // var v2 = new Vector3();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 截头锥体
-     *
-     * Frustums are used to determine what is inside the camera's field of view. They help speed up the rendering process.
-     *
-     * Frustums用于确定摄像机的视场范围。它们有助于加速渲染过程。
-     *
-     * @author mrdoob / http://mrdoob.com/
-     * @author alteredq / http://alteredqualia.com/
-     * @author bhouston / http://clara.io
-     */
-    var Frustum = /** @class */ (function () {
-        /**
-         * 初始化截头锥体
-         *
-         * @param p0
-         * @param p1
-         * @param p2
-         * @param p3
-         * @param p4
-         * @param p5
-         */
-        function Frustum(p0, p1, p2, p3, p4, p5) {
-            if (p0 === void 0) { p0 = new feng3d.Plane(); }
-            if (p1 === void 0) { p1 = new feng3d.Plane(); }
-            if (p2 === void 0) { p2 = new feng3d.Plane(); }
-            if (p3 === void 0) { p3 = new feng3d.Plane(); }
-            if (p4 === void 0) { p4 = new feng3d.Plane(); }
-            if (p5 === void 0) { p5 = new feng3d.Plane(); }
-            this.planes = [
-                p0, p1, p2, p3, p4, p5
-            ];
-        }
-        Frustum.prototype.set = function (p0, p1, p2, p3, p4, p5) {
-            var planes = this.planes;
-            planes[0].copy(p0);
-            planes[1].copy(p1);
-            planes[2].copy(p2);
-            planes[3].copy(p3);
-            planes[4].copy(p4);
-            planes[5].copy(p5);
-            return this;
-        };
-        Frustum.prototype.clone = function () {
-            return new Frustum().copy(this);
-        };
-        Frustum.prototype.copy = function (frustum) {
-            var planes = this.planes;
-            for (var i = 0; i < 6; i++) {
-                planes[i].copy(frustum.planes[i]);
-            }
-            return this;
-        };
-        /**
-         * 从矩阵初始化
-         *
-         * @param m 矩阵
-         */
-        Frustum.prototype.fromMatrix = function (m) {
-            var planes = this.planes;
-            var me = m.rawData;
-            var me0 = me[0], me1 = me[1], me2 = me[2], me3 = me[3];
-            var me4 = me[4], me5 = me[5], me6 = me[6], me7 = me[7];
-            var me8 = me[8], me9 = me[9], me10 = me[10], me11 = me[11];
-            var me12 = me[12], me13 = me[13], me14 = me[14], me15 = me[15];
-            planes[0].set(me3 - me0, me7 - me4, me11 - me8, me15 - me12).normalize();
-            planes[1].set(me3 + me0, me7 + me4, me11 + me8, me15 + me12).normalize();
-            planes[2].set(me3 + me1, me7 + me5, me11 + me9, me15 + me13).normalize();
-            planes[3].set(me3 - me1, me7 - me5, me11 - me9, me15 - me13).normalize();
-            planes[4].set(me3 - me2, me7 - me6, me11 - me10, me15 - me14).normalize();
-            planes[5].set(me3 + me2, me7 + me6, me11 + me10, me15 + me14).normalize();
-            return this;
-        };
-        /**
-         * 是否与球体相交
-         *
-         * @param sphere 球体
-         */
-        Frustum.prototype.intersectsSphere = function (sphere) {
-            var planes = this.planes;
-            var center = sphere.center;
-            var negRadius = -sphere.radius;
-            for (var i = 0; i < 6; i++) {
-                var distance = planes[i].distanceWithPoint(center);
-                if (distance < negRadius) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        /**
-         * 是否与长方体相交
-         *
-         * @param box 长方体
-         */
-        Frustum.prototype.intersectsBox = function (box) {
-            var planes = this.planes;
-            for (var i = 0; i < 6; i++) {
-                var plane = planes[i];
-                // corner at max distance
-                var normal = plane.getNormal();
-                _vector.x = normal.x > 0 ? box.max.x : box.min.x;
-                _vector.y = normal.y > 0 ? box.max.y : box.min.y;
-                _vector.z = normal.z > 0 ? box.max.z : box.min.z;
-                if (plane.distanceWithPoint(_vector) < 0) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        /**
-         * 与点是否相交
-         *
-         * @param point
-         */
-        Frustum.prototype.containsPoint = function (point, precision) {
-            if (precision === void 0) { precision = Math.PRECISION; }
-            var planes = this.planes;
-            for (var i = 0; i < 6; i++) {
-                if (planes[i].distanceWithPoint(point) < -precision) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        return Frustum;
-    }());
-    feng3d.Frustum = Frustum;
-    var _vector = new feng3d.Vector3();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -12660,20 +12472,1568 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var DEG_TO_RAD = Math.PI / 180;
     /**
-     * 渐变模式
+     * Vector2 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
      */
-    var GradientMode;
-    (function (GradientMode) {
+    var Vector2 = /** @class */ (function () {
         /**
-         * 混合
+         * 创建一个 Vector2 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
+         *
+         * @param x 该对象的x属性值，默认为0
+         * @param y 该对象的y属性值，默认为0
          */
-        GradientMode[GradientMode["Blend"] = 0] = "Blend";
+        function Vector2(x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            this.x = x;
+            this.y = y;
+        }
         /**
-         * 阶梯
+         * 将一对极坐标转换为笛卡尔点坐标。
+         * @param len 极坐标对的长度。
+         * @param angle 极坐标对的角度（以弧度表示）。
          */
-        GradientMode[GradientMode["Fixed"] = 1] = "Fixed";
-    })(GradientMode = feng3d.GradientMode || (feng3d.GradientMode = {}));
+        Vector2.polar = function (len, angle) {
+            return new Vector2(len * Math.cos(angle / DEG_TO_RAD), len * Math.sin(angle / DEG_TO_RAD));
+        };
+        Object.defineProperty(Vector2.prototype, "length", {
+            /**
+             * 从 (0,0) 到此点的线段长度。
+             */
+            get: function () {
+                return Math.sqrt(this.x * this.x + this.y * this.y);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 将 Vector2 的成员设置为指定值
+         * @param x 该对象的x属性值
+         * @param y 该对象的y属性值
+         */
+        Vector2.prototype.set = function (x, y) {
+            this.x = x;
+            this.y = y;
+            return this;
+        };
+        /**
+         * 克隆点对象
+         */
+        Vector2.prototype.clone = function () {
+            return new Vector2(this.x, this.y);
+        };
+        /**
+         * 返回 pt1 和 pt2 之间的距离。
+         * @param p1 第一个点
+         * @param p2 第二个点
+         * @returns 第一个点和第二个点之间的距离。
+         */
+        Vector2.distance = function (p1, p2) {
+            return p1.distance(p2);
+        };
+        /**
+         * 将另一个点的坐标添加到此点的坐标。
+         * @param v 要添加的点。
+         */
+        Vector2.prototype.add = function (v) {
+            this.x += v.x;
+            this.y += v.y;
+            return this;
+        };
+        /**
+         * 将另一个点的坐标添加到此点的坐标以创建一个新点。
+         * @param v 要添加的点。
+         * @returns 新点。
+         */
+        Vector2.prototype.addTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            vout.x = this.x + v.x;
+            vout.y = this.y + v.y;
+            return vout;
+        };
+        /**
+         * 从此点的坐标中减去另一个点的坐标以创建一个新点。
+         * @param v 要减去的点。
+         * @returns 新点。
+         */
+        Vector2.prototype.sub = function (v) {
+            this.x -= v.x;
+            this.y -= v.y;
+            return this;
+        };
+        /**
+         * 减去向量返回新向量
+         * @param v 减去的向量
+         * @return 返回的新向量
+         */
+        Vector2.prototype.subTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            vout.x = this.x - v.x;
+            vout.y = this.y - v.y;
+            return vout;
+        };
+        /**
+         * 乘以向量
+         * @param v 向量
+         */
+        Vector2.prototype.multiply = function (v) {
+            this.x *= v.x;
+            this.y *= v.y;
+            return this;
+        };
+        /**
+         * 乘以向量
+         * @param v 向量
+         * @param vout 输出向量
+         */
+        Vector2.prototype.multiplyTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            vout.x = this.x * v.x;
+            vout.y = this.y * v.y;
+            return vout;
+        };
+        /**
+         * 除以向量
+         * @param v 向量
+         */
+        Vector2.prototype.divide = function (v) {
+            this.x /= v.x;
+            this.y /= v.y;
+            return this;
+        };
+        /**
+         * 除以向量
+         * @param v 向量
+         * @param vout 输出向量
+         */
+        Vector2.prototype.divideTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            vout.x = this.x / v.x;
+            vout.y = this.y / v.y;
+            return vout;
+        };
+        /**
+         * 确定两个点是否相同。如果两个点具有相同的 x 和 y 值，则它们是相同的点。
+         * @param toCompare 要比较的向量。
+         * @returns 如果该对象与此 向量 对象相同，则为 true 值，如果不相同，则为 false。
+         */
+        Vector2.prototype.equals = function (v, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (!Math.equals(this.x - v.x, 0, precision))
+                return false;
+            if (!Math.equals(this.y - v.y, 0, precision))
+                return false;
+            return true;
+        };
+        /**
+         * 将源 Vector2 对象中的所有点数据复制到调用方 Vector2 对象中。
+         * @param source 要从中复制数据的 Vector2 对象。
+         */
+        Vector2.prototype.copy = function (source) {
+            this.x = source.x;
+            this.y = source.y;
+            return this;
+        };
+        /**
+         * 返回与目标点之间的距离。
+         * @param p 目标点
+         * @returns 与目标点之间的距离。
+         */
+        Vector2.prototype.distance = function (p) {
+            var dx = this.x - p.x, dy = this.y - p.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+        /**
+         * 与目标点之间的距离平方
+         * @param p 目标点
+         */
+        Vector2.prototype.distanceSquared = function (p) {
+            var dx = this.x - p.x, dy = this.y - p.y;
+            return dx * dx + dy * dy;
+        };
+        /**
+         * 将 (0,0) 和当前点之间的线段缩放为设定的长度。
+         * @param thickness 缩放值。例如，如果当前点为 (0,5) 并且您将它规范化为 1，则返回的点位于 (0,1) 处。
+         */
+        Vector2.prototype.normalize = function (thickness) {
+            if (thickness === void 0) { thickness = 1; }
+            if (this.x != 0 || this.y != 0) {
+                var relativeThickness = thickness / this.length;
+                this.x *= relativeThickness;
+                this.y *= relativeThickness;
+            }
+            return this;
+        };
+        /**
+         * 负向量
+         */
+        Vector2.prototype.negate = function () {
+            this.x *= -1;
+            this.y *= -1;
+            return this;
+        };
+        /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        Vector2.prototype.reciprocal = function () {
+            this.x = 1 / this.x;
+            this.y = 1 / this.y;
+            return this;
+        };
+        /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        Vector2.prototype.reciprocalTo = function (out) {
+            if (out === void 0) { out = new Vector2(); }
+            out.copy(this).reciprocal();
+            return out;
+        };
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        Vector2.prototype.scaleNumber = function (s) {
+            this.x *= s;
+            this.y *= s;
+            return this;
+        };
+        /**
+         * 按标量（大小）缩放当前的 Vector2 对象。
+         */
+        Vector2.prototype.scaleNumberTo = function (s, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            return vout.copy(this).scaleNumber(s);
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        Vector2.prototype.scale = function (s) {
+            this.x *= s.x;
+            this.y *= s.y;
+            return this;
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        Vector2.prototype.scaleTo = function (s, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            if (s == vout)
+                s = s.clone();
+            return vout.copy(this).scale(s);
+        };
+        /**
+         * 按指定量偏移 Vector2 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
+         * @param dx 水平坐标 x 的偏移量。
+         * @param dy 水平坐标 y 的偏移量。
+         */
+        Vector2.prototype.offset = function (dx, dy) {
+            this.x += dx;
+            this.y += dy;
+            return this;
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector2.prototype.lerp = function (p, alpha) {
+            this.x += (p.x - this.x) * alpha.x;
+            this.y += (p.y - this.y) * alpha.y;
+            return this;
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回新向量
+         */
+        Vector2.prototype.lerpTo = function (v, alpha, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            return vout.copy(this).lerp(v, alpha);
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector2.prototype.lerpNumber = function (v, alpha) {
+            this.x += (v.x - this.x) * alpha;
+            this.y += (v.y - this.y) * alpha;
+            return this;
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector2.prototype.lerpNumberTo = function (v, alpha, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            return vout.copy(this).lerpNumber(v, alpha);
+        };
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        Vector2.prototype.clamp = function (min, max) {
+            this.x = Math.clamp(this.x, min.x, max.x);
+            this.y = Math.clamp(this.y, min.y, max.y);
+            return this;
+        };
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        Vector2.prototype.clampTo = function (min, max, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            return vout.copy(this).clamp(min, max);
+        };
+        /**
+         * 取最小元素
+         * @param v 向量
+         */
+        Vector2.prototype.min = function (v) {
+            this.x = Math.min(this.x, v.x);
+            this.y = Math.min(this.y, v.y);
+            return this;
+        };
+        /**
+         * 取最大元素
+         * @param v 向量
+         */
+        Vector2.prototype.max = function (v) {
+            this.x = Math.max(this.x, v.x);
+            this.y = Math.max(this.y, v.y);
+            return this;
+        };
+        /**
+         * 各分量均取最近的整数
+         */
+        Vector2.prototype.round = function () {
+            this.x = Math.round(this.x);
+            this.y = Math.round(this.y);
+            return this;
+        };
+        /**
+         * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
+         * @returns 坐标的字符串表示形式。
+         */
+        Vector2.prototype.toString = function () {
+            return "(x=" + this.x + ", y=" + this.y + ")";
+        };
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回数组
+         */
+        Vector2.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            array[offset] = this.x;
+            array[offset + 1] = this.y;
+            return array;
+        };
+        /**
+         * 原点
+         */
+        Vector2.ZERO = Object.freeze(new Vector2());
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Vector2.prototype, "x", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Vector2.prototype, "y", void 0);
+        return Vector2;
+    }());
+    feng3d.Vector2 = Vector2;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
+     */
+    var Vector3 = /** @class */ (function () {
+        /**
+         * 创建 Vector3 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3 对象。
+         * @param x 第一个元素，例如 x 坐标。
+         * @param y 第二个元素，例如 y 坐标。
+         * @param z 第三个元素，例如 z 坐标。
+         */
+        function Vector3(x, y, z) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            if (z === void 0) { z = 0; }
+            /**
+            * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
+            */
+            this.x = 0;
+            /**
+             * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
+             */
+            this.y = 0;
+            /**
+             * Vector3 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
+             */
+            this.z = 0;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+        /**
+         * 从数组中初始化向量
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回新向量
+         */
+        Vector3.fromArray = function (array, offset) {
+            if (offset === void 0) { offset = 0; }
+            return new Vector3().fromArray(array, offset);
+        };
+        /**
+         * 随机三维向量
+         *
+         * @param size 尺寸
+         * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
+         */
+        Vector3.random = function (size, double) {
+            if (size === void 0) { size = 1; }
+            if (double === void 0) { double = false; }
+            var v = new Vector3(Math.random(), Math.random(), Math.random());
+            if (double)
+                v.scaleNumber(2).subNumber(1);
+            v.scaleNumber(size);
+            return v;
+        };
+        /**
+         * 从Vector2初始化
+         */
+        Vector3.fromVector2 = function (vector, z) {
+            if (z === void 0) { z = 0; }
+            return new Vector3().fromVector2(vector, z);
+        };
+        Object.defineProperty(Vector3.prototype, "length", {
+            /**
+            * 当前 Vector3 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
+            */
+            get: function () {
+                return Math.sqrt(this.lengthSquared);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Vector3.prototype, "lengthSquared", {
+            /**
+            * 当前 Vector3 对象长度的平方，它是使用 x、y 和 z 属性计算出来的。w 属性将被忽略。尽可能使用 lengthSquared() 方法，而不要使用 Vector3.length() 方法的 Math.sqrt() 方法调用，后者速度较慢。
+            */
+            get: function () {
+                return this.x * this.x + this.y * this.y + this.z * this.z;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 将 Vector3 的成员设置为指定值
+         */
+        Vector3.prototype.set = function (x, y, z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            return this;
+        };
+        /**
+         * 把所有分量都设为零
+         */
+        Vector3.prototype.setZero = function () {
+            this.x = this.y = this.z = 0;
+        };
+        /**
+         * 从Vector2初始化
+         */
+        Vector3.prototype.fromVector2 = function (vector, z) {
+            if (z === void 0) { z = 0; }
+            this.x = vector.x;
+            this.y = vector.y;
+            this.z = z;
+            return this;
+        };
+        Vector3.prototype.fromArray = function (array, offset) {
+            if (offset === void 0) { offset = 0; }
+            this.x = array[offset];
+            this.y = array[offset + 1];
+            this.z = array[offset + 2];
+            return this;
+        };
+        /**
+         * 转换为Vector2
+         */
+        Vector3.prototype.toVector2 = function (vector) {
+            if (vector === void 0) { vector = new feng3d.Vector2(); }
+            return vector.set(this.x, this.y);
+        };
+        /**
+         * 转换为Vector4
+         */
+        Vector3.prototype.toVector4 = function (vector4) {
+            if (vector4 === void 0) { vector4 = new feng3d.Vector4(); }
+            vector4.x = this.x;
+            vector4.y = this.y;
+            vector4.z = this.z;
+            return vector4;
+        };
+        /**
+         * 加上指定向量
+         * @param v 加向量
+         */
+        Vector3.prototype.add = function (v) {
+            this.x += v.x;
+            this.y += v.y;
+            this.z += v.z;
+            return this;
+        };
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        Vector3.prototype.addTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x + v.x;
+            vout.y = this.y + v.y;
+            vout.z = this.z + v.z;
+            return vout;
+        };
+        /**
+         * 减去向量
+         * @param a 减去的向量
+         * @return 返回新向量
+         */
+        Vector3.prototype.sub = function (a) {
+            this.x -= a.x;
+            this.y -= a.y;
+            this.z -= a.z;
+            return this;
+        };
+        /**
+         * 减去向量返回新向量
+         * @param v 减去的向量
+         * @return 返回的新向量
+         */
+        Vector3.prototype.subTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x - v.x;
+            vout.y = this.y - v.y;
+            vout.z = this.z - v.z;
+            return vout;
+        };
+        /**
+         * 乘以向量
+         * @param v 向量
+         */
+        Vector3.prototype.multiply = function (v) {
+            this.x *= v.x;
+            this.y *= v.y;
+            this.z *= v.z;
+            return this;
+        };
+        /**
+         * 乘以向量
+         * @param v 向量
+         * @param vout 输出向量
+         */
+        Vector3.prototype.multiplyTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x * v.x;
+            vout.y = this.y * v.y;
+            vout.z = this.z * v.z;
+            return vout;
+        };
+        /**
+         * 除以向量
+         * @param a 向量
+         */
+        Vector3.prototype.divide = function (a) {
+            this.x /= a.x;
+            this.y /= a.y;
+            this.z /= a.z;
+            return this;
+        };
+        /**
+         * 除以向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        Vector3.prototype.divideTo = function (a, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x / a.x;
+            vout.y = this.y / a.y;
+            vout.z = this.z / a.z;
+            return vout;
+        };
+        /**
+         * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
+         */
+        Vector3.prototype.equals = function (v, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (!Math.equals(this.x - v.x, 0, precision))
+                return false;
+            if (!Math.equals(this.y - v.y, 0, precision))
+                return false;
+            if (!Math.equals(this.z - v.z, 0, precision))
+                return false;
+            return true;
+        };
+        /**
+         * 将源 Vector3 对象中的所有矢量数据复制到调用方 Vector3 对象中。
+         * @return 要从中复制数据的 Vector3 对象。
+         */
+        Vector3.prototype.copy = function (v) {
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
+            return this;
+        };
+        /**
+         * 与目标点之间的距离
+         * @param p 目标点
+         */
+        Vector3.prototype.distance = function (p) {
+            var dx = this.x - p.x, dy = this.y - p.y, dz = this.z - p.z;
+            return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        };
+        /**
+         * 与目标点之间的距离平方
+         * @param p 目标点
+         */
+        Vector3.prototype.distanceSquared = function (p) {
+            var dx = this.x - p.x, dy = this.y - p.y, dz = this.z - p.z;
+            return dx * dx + dy * dy + dz * dz;
+        };
+        /**
+         * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3 对象转换为单位矢量。
+         */
+        Vector3.prototype.normalize = function (thickness) {
+            if (thickness === void 0) { thickness = 1; }
+            var length = this.lengthSquared;
+            if (length > 0) {
+                length = Math.sqrt(length);
+                var invLength = thickness / length;
+                this.x *= invLength;
+                this.y *= invLength;
+                this.z *= invLength;
+            }
+            else {
+                // Make something up
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
+            }
+            return this;
+        };
+        /**
+         * Scale a vector and add it to this vector. Save the result in "this". (this = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        Vector3.prototype.addScaledVector = function (scalar, vector) {
+            this.x = this.x + scalar * vector.x;
+            this.y = this.y + scalar * vector.y;
+            this.z = this.z + scalar * vector.z;
+            return this;
+        };
+        /**
+         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        Vector3.prototype.addScaledVectorTo = function (scalar, vector, target) {
+            if (target === void 0) { target = new Vector3(); }
+            target.x = this.x + scalar * vector.x;
+            target.y = this.y + scalar * vector.y;
+            target.z = this.z + scalar * vector.z;
+            return target;
+        };
+        /**
+         * 叉乘向量
+         * @param a 向量
+         */
+        Vector3.prototype.cross = function (a) {
+            return this.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+        };
+        /**
+         * 叉乘向量
+         * @param a 向量
+         * @param vout 输出向量
+         */
+        Vector3.prototype.crossTo = function (a, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+            return vout;
+        };
+        /**
+         * 如果当前 Vector3 对象和作为参数指定的 Vector3 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         */
+        Vector3.prototype.dot = function (a) {
+            return this.x * a.x + this.y * a.y + this.z * a.z;
+        };
+        /**
+         * 是否为零向量
+         */
+        Vector3.prototype.isZero = function () {
+            return this.x === 0 && this.y === 0 && this.z === 0;
+        };
+        Vector3.prototype.tangents = function (t1, t2) {
+            var norm = this.length;
+            if (norm > 0.0) {
+                var n = new Vector3();
+                var inorm = 1 / norm;
+                n.set(this.x * inorm, this.y * inorm, this.z * inorm);
+                var randVec = new Vector3();
+                if (Math.abs(n.x) < 0.9) {
+                    randVec.set(1, 0, 0);
+                    n.crossTo(randVec, t1);
+                }
+                else {
+                    randVec.set(0, 1, 0);
+                    n.crossTo(randVec, t1);
+                }
+                n.crossTo(t1, t2);
+            }
+            else {
+                // The normal length is zero, make something up
+                t1.set(1, 0, 0);
+                t2.set(0, 1, 0);
+            }
+        };
+        /**
+         * 检查一个向量是否接近零
+         *
+         * @param precision
+         */
+        Vector3.prototype.almostZero = function (precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (Math.abs(this.x) > precision ||
+                Math.abs(this.y) > precision ||
+                Math.abs(this.z) > precision) {
+                return false;
+            }
+            return true;
+        };
+        /**
+         * 检查这个向量是否与另一个向量反平行。
+         *
+         * @param  v
+         * @param  precision 设置为零以进行精确比较
+         */
+        Vector3.prototype.isAntiparallelTo = function (v, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            var t = new Vector3();
+            this.negateTo(t);
+            return t.equals(v, precision);
+        };
+        /**
+         * 加上标量
+         * @param n 标量
+         */
+        Vector3.prototype.addNumber = function (n) {
+            this.x += n;
+            this.y += n;
+            this.z += n;
+            return this;
+        };
+        /**
+         * 增加标量
+         * @param n 标量
+         */
+        Vector3.prototype.addNumberTo = function (n, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x + n;
+            vout.y = this.y + n;
+            vout.z = this.z + n;
+            return vout;
+        };
+        /**
+         * 减去标量
+         * @param n 标量
+         */
+        Vector3.prototype.subNumber = function (n) {
+            this.x -= n;
+            this.y -= n;
+            this.z -= n;
+            return this;
+        };
+        /**
+         * 减去标量
+         * @param n 标量
+         */
+        Vector3.prototype.subNumberTo = function (n, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x - n;
+            vout.y = this.y - n;
+            vout.z = this.z - n;
+            return vout;
+        };
+        /**
+         * 乘以标量
+         * @param n 标量
+         */
+        Vector3.prototype.multiplyNumber = function (n) {
+            this.x *= n;
+            this.y *= n;
+            this.z *= n;
+            return this;
+        };
+        /**
+         * 乘以标量
+         * @param n 标量
+         * @param vout 输出向量
+         */
+        Vector3.prototype.multiplyNumberTo = function (n, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x * n;
+            vout.y = this.y * n;
+            vout.z = this.z * n;
+            return vout;
+        };
+        /**
+         * 除以标量
+         * @param n 标量
+         */
+        Vector3.prototype.divideNumber = function (n) {
+            this.x /= n;
+            this.y /= n;
+            this.z /= n;
+            return this;
+        };
+        /**
+         * 除以标量
+         * @param n 标量
+         * @param vout 输出向量
+         */
+        Vector3.prototype.divideNumberTo = function (n, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x / n;
+            vout.y = this.y / n;
+            vout.z = this.z / n;
+            return vout;
+        };
+        /**
+         * 返回一个新 Vector3 对象，它是与当前 Vector3 对象完全相同的副本。
+         * @return 一个新 Vector3 对象，它是当前 Vector3 对象的副本。
+         */
+        Vector3.prototype.clone = function () {
+            return new Vector3(this.x, this.y, this.z);
+        };
+        /**
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
+         */
+        Vector3.prototype.negate = function () {
+            this.x = -this.x;
+            this.y = -this.y;
+            this.z = -this.z;
+            return this;
+        };
+        /**
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
+         */
+        Vector3.prototype.negateTo = function (vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = -this.x;
+            vout.y = -this.y;
+            vout.z = -this.z;
+            return vout;
+        };
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        Vector3.prototype.inverse = function () {
+            this.x = 1 / this.x;
+            this.y = 1 / this.y;
+            this.z = 1 / this.z;
+            return this;
+        };
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        Vector3.prototype.inverseTo = function (vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = 1 / this.x;
+            vout.y = 1 / this.y;
+            vout.z = 1 / this.z;
+            return vout;
+        };
+        /**
+         * 得到这个向量长度为1
+         */
+        Vector3.prototype.unit = function (target) {
+            if (target === void 0) { target = new Vector3(); }
+            var x = this.x, y = this.y, z = this.z;
+            var ninv = x * x + y * y + z * z;
+            if (ninv > 0.0) {
+                var ninv = Math.sqrt(ninv);
+                ninv = 1.0 / ninv;
+                target.x = x * ninv;
+                target.y = y * ninv;
+                target.z = z * ninv;
+            }
+            else {
+                target.x = 1;
+                target.y = 0;
+                target.z = 0;
+            }
+            return target;
+        };
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        Vector3.prototype.scaleNumber = function (s) {
+            this.x *= s;
+            this.y *= s;
+            this.z *= s;
+            return this;
+        };
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        Vector3.prototype.scaleNumberTo = function (s, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x * s;
+            vout.y = this.y * s;
+            vout.z = this.z * s;
+            return vout;
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        Vector3.prototype.scale = function (s) {
+            this.x *= s.x;
+            this.y *= s.y;
+            this.z *= s.z;
+            return this;
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        Vector3.prototype.scaleTo = function (s, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x * s.x;
+            vout.y = this.y * s.y;
+            vout.z = this.z * s.z;
+            return vout;
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector3.prototype.lerp = function (v, alpha) {
+            this.x += (v.x - this.x) * alpha.x;
+            this.y += (v.y - this.y) * alpha.y;
+            this.z += (v.z - this.z) * alpha.z;
+            return this;
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector3.prototype.lerpTo = function (v, alpha, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x + (v.x - this.x) * alpha.x;
+            vout.y = this.y + (v.y - this.y) * alpha.y;
+            vout.z = this.z + (v.z - this.z) * alpha.z;
+            return vout;
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector3.prototype.lerpNumber = function (v, alpha) {
+            this.x += (v.x - this.x) * alpha;
+            this.y += (v.y - this.y) * alpha;
+            this.z += (v.z - this.z) * alpha;
+            return this;
+        };
+        /**
+         * 插值到指定向量
+         * @param v 目标向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector3.prototype.lerpNumberTo = function (v, alpha, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            vout.x = this.x + (v.x - this.x) * alpha;
+            vout.y = this.y + (v.y - this.y) * alpha;
+            vout.z = this.z + (v.z - this.z) * alpha;
+            return vout;
+        };
+        /**
+         * 小于指定点
+         * @param p 点
+         */
+        Vector3.prototype.less = function (p) {
+            return this.x < p.x && this.y < p.y && this.z < p.z;
+        };
+        /**
+         * 小于等于指定点
+         * @param p 点
+         */
+        Vector3.prototype.lessequal = function (p) {
+            return this.x <= p.x && this.y <= p.y && this.z <= p.z;
+        };
+        /**
+         * 大于指定点
+         * @param p 点
+         */
+        Vector3.prototype.greater = function (p) {
+            return this.x > p.x && this.y > p.y && this.z > p.z;
+        };
+        /**
+         * 大于等于指定点
+         * @param p 点
+         */
+        Vector3.prototype.greaterequal = function (p) {
+            return this.x >= p.x && this.y >= p.y && this.z >= p.z;
+        };
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        Vector3.prototype.clamp = function (min, max) {
+            this.x = Math.clamp(this.x, min.x, max.x);
+            this.y = Math.clamp(this.y, min.y, max.y);
+            this.z = Math.clamp(this.z, min.z, max.z);
+            return this;
+        };
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        Vector3.prototype.clampTo = function (min, max, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            return vout.copy(this).clamp(min, max);
+        };
+        /**
+         * 取最小元素
+         * @param v 向量
+         */
+        Vector3.prototype.min = function (v) {
+            this.x = Math.min(this.x, v.x);
+            this.y = Math.min(this.y, v.y);
+            this.z = Math.min(this.z, v.z);
+            return this;
+        };
+        /**
+         * 取最大元素
+         * @param v 向量
+         */
+        Vector3.prototype.max = function (v) {
+            this.x = Math.max(this.x, v.x);
+            this.y = Math.max(this.y, v.y);
+            this.z = Math.max(this.z, v.z);
+            return this;
+        };
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        Vector3.prototype.applyMatrix4x4 = function (mat) {
+            mat.transformPoint3(this, this);
+            return this;
+        };
+        /**
+         * 应用四元素
+         * @param q 四元素
+         */
+        Vector3.prototype.applyQuaternion = function (q) {
+            var x = this.x, y = this.y, z = this.z;
+            var qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+            // calculate quat * vector
+            var ix = qw * x + qy * z - qz * y;
+            var iy = qw * y + qz * x - qx * z;
+            var iz = qw * z + qx * y - qy * x;
+            var iw = -qx * x - qy * y - qz * z;
+            // calculate result * inverse quat
+            this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+            return this;
+        };
+        /**
+         * 反射
+         * @param normal
+         */
+        Vector3.prototype.reflect = function (normal) {
+            return this.sub(normal.multiplyNumberTo(2 * this.dot(normal)));
+        };
+        /**
+         * 向下取整
+         */
+        Vector3.prototype.floor = function () {
+            this.x = Math.floor(this.x);
+            this.y = Math.floor(this.y);
+            this.z = Math.floor(this.z);
+            return this;
+        };
+        /**
+         * 向上取整
+         */
+        Vector3.prototype.ceil = function () {
+            this.x = Math.ceil(this.x);
+            this.y = Math.ceil(this.y);
+            this.z = Math.ceil(this.z);
+            return this;
+        };
+        /**
+         * 四舍五入
+         */
+        Vector3.prototype.round = function () {
+            this.x = Math.round(this.x);
+            this.y = Math.round(this.y);
+            this.z = Math.round(this.z);
+            return this;
+        };
+        /**
+         * 向0取整
+         */
+        Vector3.prototype.roundToZero = function () {
+            this.x = (this.x < 0) ? Math.ceil(this.x) : Math.floor(this.x);
+            this.y = (this.y < 0) ? Math.ceil(this.y) : Math.floor(this.y);
+            this.z = (this.z < 0) ? Math.ceil(this.z) : Math.floor(this.z);
+            return this;
+        };
+        /**
+         * 与指定向量是否平行
+         * @param v 向量
+         */
+        Vector3.prototype.isParallel = function (v, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            return Math.equals(this.crossTo(v).lengthSquared, 0, precision);
+        };
+        /**
+         * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
+         * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
+         */
+        Vector3.prototype.crossmat = function () {
+            return new feng3d.Matrix3x3([0, -this.z, this.y,
+                this.z, 0, -this.x,
+                -this.y, this.x, 0]);
+        };
+        /**
+         * 返回当前 Vector3 对象的字符串表示形式。
+         */
+        Vector3.prototype.toString = function () {
+            return "<" + this.x + ", " + this.y + ", " + this.z + ">";
+        };
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回数组
+         */
+        Vector3.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            array[offset] = this.x;
+            array[offset + 1] = this.y;
+            array[offset + 2] = this.z;
+            return array;
+        };
+        /**
+        * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
+        */
+        Vector3.X_AXIS = Object.freeze(new Vector3(1, 0, 0));
+        /**
+        * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
+        */
+        Vector3.Y_AXIS = Object.freeze(new Vector3(0, 1, 0));
+        /**
+        * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
+        */
+        Vector3.Z_AXIS = Object.freeze(new Vector3(0, 0, 1));
+        /**
+         * 原点 Vector3(0,0,0)
+         */
+        Vector3.ZERO = Object.freeze(new Vector3());
+        /**
+         * Vector3(1, 1, 1)
+         */
+        Vector3.ONE = Object.freeze(new Vector3(1, 1, 1));
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Vector3.prototype, "x", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Vector3.prototype, "y", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Vector3.prototype, "z", void 0);
+        return Vector3;
+    }());
+    feng3d.Vector3 = Vector3;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 四维向量
+     */
+    var Vector4 = /** @class */ (function () {
+        /**
+         * 创建 Vector4 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector4 对象。
+         * @param x 第一个元素
+         * @param y 第二个元素
+         * @param z 第三个元素
+         * @param w 第四个元素
+         */
+        function Vector4(x, y, z, w) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            if (z === void 0) { z = 0; }
+            if (w === void 0) { w = 0; }
+            /**
+            * Vector4 对象中的第一个元素。默认值为 0
+            */
+            this.x = 0;
+            /**
+             * Vector4 对象中的第二个元素。默认值为 0
+             */
+            this.y = 0;
+            /**
+             * Vector4 对象中的第三个元素。默认值为 0
+             */
+            this.z = 0;
+            /**
+             * Vector4 对象的第四个元素。默认值为 0
+             */
+            this.w = 0;
+            this.init(x, y, z, w);
+        }
+        Vector4.fromArray = function (array, offset) {
+            if (offset === void 0) { offset = 0; }
+            return new Vector4().fromArray(array, offset);
+        };
+        Vector4.fromVector3 = function (vector3, w) {
+            if (w === void 0) { w = 0; }
+            return new Vector4().fromVector3(vector3, w);
+        };
+        Vector4.random = function () {
+            return new Vector4(Math.random(), Math.random(), Math.random(), Math.random());
+        };
+        /**
+         * 初始化向量
+         * @param x 第一个元素
+         * @param y 第二个元素
+         * @param z 第三个元素
+         * @param w 第四个元素
+         * @return 返回自身
+         */
+        Vector4.prototype.init = function (x, y, z, w) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+            return this;
+        };
+        /**
+         * 从数组初始化
+         * @param array 提供数据的数组
+         * @param offset 数组中起始位置
+         * @return 返回自身
+         */
+        Vector4.prototype.fromArray = function (array, offset) {
+            if (offset === void 0) { offset = 0; }
+            this.x = array[offset];
+            this.y = array[offset + 1];
+            this.z = array[offset + 2];
+            this.w = array[offset + 3];
+            return this;
+        };
+        /**
+         * 从三维向量初始化
+         * @param vector3 三维向量
+         * @param w 向量第四个值
+         * @return 返回自身
+         */
+        Vector4.prototype.fromVector3 = function (vector3, w) {
+            if (w === void 0) { w = 0; }
+            this.x = vector3.x;
+            this.y = vector3.y;
+            this.z = vector3.z;
+            this.w = w;
+            return this;
+        };
+        /**
+         * 转换为三维向量
+         * @param v3 三维向量
+         */
+        Vector4.prototype.toVector3 = function (v3) {
+            if (v3 === void 0) { v3 = new feng3d.Vector3(); }
+            v3.set(this.x, this.y, this.z);
+            return v3;
+        };
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        Vector4.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            array[offset] = this.x;
+            array[offset + 1] = this.y;
+            array[offset + 2] = this.z;
+            array[offset + 3] = this.w;
+            return array;
+        };
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        Vector4.prototype.add = function (v) {
+            this.x += v.x;
+            this.y += v.y;
+            this.z += v.z;
+            this.w += v.w;
+            return this;
+        };
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        Vector4.prototype.addTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector4(); }
+            return vout.copy(this).add(v);
+        };
+        /**
+         * 克隆一个向量
+         * @return 返回一个拷贝向量
+         */
+        Vector4.prototype.clone = function () {
+            return new Vector4(this.x, this.y, this.z, this.w);
+        };
+        /**
+         * 从指定向量拷贝数据
+         * @param v 被拷贝向量
+         * @return 返回自身
+         */
+        Vector4.prototype.copy = function (v) {
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
+            this.w = v.w;
+            return this;
+        };
+        /**
+         * 减去指定向量
+         * @param v 减去的向量
+         * @return 返回自身
+         */
+        Vector4.prototype.sub = function (v) {
+            this.x -= v.x;
+            this.y -= v.y;
+            this.z -= v.z;
+            this.w -= v.w;
+            return this;
+        };
+        /**
+         * 减去指定向量
+         * @param v 减去的向量
+         * @return 返回新向量
+         */
+        Vector4.prototype.subTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector4(); }
+            return vout.copy(this).sub(v);
+        };
+        /**
+         * 乘以指定向量
+         * @param v 乘以的向量
+         * @return 返回自身
+         */
+        Vector4.prototype.multiply = function (v) {
+            this.x *= v.x;
+            this.y *= v.y;
+            this.z *= v.z;
+            this.w *= v.w;
+            return this;
+        };
+        /**
+         * 乘以指定向量
+         * @param v 乘以的向量
+         * @return 返回新向量
+         */
+        Vector4.prototype.multiplyTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector4(); }
+            return vout.copy(this).multiply(v);
+        };
+        /**
+         * 除以指定向量
+         * @param v 除以的向量
+         * @return 返回自身
+         */
+        Vector4.prototype.div = function (v) {
+            this.x /= v.x;
+            this.y /= v.y;
+            this.z /= v.z;
+            this.w /= v.w;
+            return this;
+        };
+        /**
+         * 除以指定向量
+         * @param v 除以的向量
+         * @return 返回新向量
+         */
+        Vector4.prototype.divTo = function (v, vout) {
+            if (vout === void 0) { vout = new Vector4(); }
+            return vout.copy(this).div(v);
+        };
+        /**
+         * 与指定向量比较是否相等
+         * @param v 比较的向量
+         * @param precision 允许误差
+         * @return 相等返回true，否则false
+         */
+        Vector4.prototype.equals = function (v, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (!Math.equals(this.x - v.x, 0, precision))
+                return false;
+            if (!Math.equals(this.y - v.y, 0, precision))
+                return false;
+            if (!Math.equals(this.z - v.z, 0, precision))
+                return false;
+            if (!Math.equals(this.w - v.w, 0, precision))
+                return false;
+            return true;
+        };
+        /**
+         * 负向量
+         * @return 返回自身
+         */
+        Vector4.prototype.negate = function () {
+            this.x = -this.x;
+            this.y = -this.y;
+            this.z = -this.z;
+            this.w = -this.w;
+            return this;
+        };
+        /**
+         * 负向量
+         * @return 返回新向量
+         */
+        Vector4.prototype.negateTo = function (vout) {
+            if (vout === void 0) { vout = new Vector4(); }
+            return vout.copy(this).negate();
+        };
+        /**
+         * 缩放指定系数
+         * @param s 缩放系数
+         * @return 返回自身
+         */
+        Vector4.prototype.scale = function (s) {
+            this.x *= s;
+            this.y *= s;
+            this.z *= s;
+            this.w *= s;
+            return this;
+        };
+        /**
+         * 缩放指定系数
+         * @param s 缩放系数
+         * @return 返回新向量
+         */
+        Vector4.prototype.scaleTo = function (s) {
+            return this.clone().scale(s);
+        };
+        /**
+         * 如果当前 Vector4 对象和作为参数指定的 Vector4 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
+         */
+        Vector4.prototype.dot = function (a) {
+            return this.x * a.x + this.y * a.y + this.z * a.z + this.w * a.w;
+        };
+        /**
+         * 获取到指定向量的插值
+         * @param v 终点插值向量
+         * @param alpha 插值系数
+         * @return 返回自身
+         */
+        Vector4.prototype.lerp = function (v, alpha) {
+            this.x += (v.x - this.x) * alpha;
+            this.y += (v.y - this.y) * alpha;
+            this.z += (v.z - this.z) * alpha;
+            this.w += (v.w - this.w) * alpha;
+            return this;
+        };
+        /**
+         * 获取到指定向量的插值
+         * @param v 终点插值向量
+         * @param alpha 插值系数
+         * @return 返回新向量
+         */
+        Vector4.prototype.lerpTo = function (v, alpha, vout) {
+            if (vout === void 0) { vout = new Vector4(); }
+            return vout.copy(this).lerp(v, alpha);
+        };
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        Vector4.prototype.applyMatrix4x4 = function (mat) {
+            mat.transformVector4(this, this);
+            return this;
+        };
+        /**
+         * 返回当前 Vector4 对象的字符串表示形式。
+         */
+        Vector4.prototype.toString = function () {
+            return "<" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ">";
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Vector4.prototype, "x", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Vector4.prototype, "y", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Vector4.prototype, "z", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Vector4.prototype, "w", void 0);
+        return Vector4;
+    }());
+    feng3d.Vector4 = Vector4;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -12794,41 +14154,19 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 最大最小颜色渐变模式
+     * 渐变模式
      */
-    var MinMaxGradientMode;
-    (function (MinMaxGradientMode) {
+    var GradientMode;
+    (function (GradientMode) {
         /**
-         * Use a single color for the MinMaxGradient.
-         *
-         * 使用单一颜色的。
+         * 混合
          */
-        MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
+        GradientMode[GradientMode["Blend"] = 0] = "Blend";
         /**
-         * Use a single color gradient for the MinMaxGradient.
-         *
-         * 使用单一颜色渐变。
+         * 阶梯
          */
-        MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
-        /**
-         * Use a random value between 2 colors for the MinMaxGradient.
-         *
-         * 在两种颜色之间使用一个随机值。
-         */
-        MinMaxGradientMode[MinMaxGradientMode["TwoColors"] = 2] = "TwoColors";
-        /**
-         * Use a random value between 2 color gradients for the MinMaxGradient.
-         *
-         * 在两个颜色梯度之间使用一个随机值。
-         */
-        MinMaxGradientMode[MinMaxGradientMode["TwoGradients"] = 3] = "TwoGradients";
-        /**
-         * Define a list of colors in the MinMaxGradient, to be chosen from at random.
-         *
-         * 在一个颜色列表中随机选择。
-         */
-        MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
-    })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
+        GradientMode[GradientMode["Fixed"] = 1] = "Fixed";
+    })(GradientMode = feng3d.GradientMode || (feng3d.GradientMode = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -12932,978 +14270,41 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Bézier曲线
-     * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     * @author feng / http://feng3d.com 03/06/2018
+     * 最大最小颜色渐变模式
      */
-    var BezierCurve = /** @class */ (function () {
-        function BezierCurve() {
-        }
+    var MinMaxGradientMode;
+    (function (MinMaxGradientMode) {
         /**
-         * 线性Bézier曲线
-         * 给定不同的点P0和P1，线性Bézier曲线就是这两个点之间的直线。曲线由下式给出
-         * ```
-         * B(t) = p0 + t * (p1 - p0) = (1 - t) * p0 + t * p1 , 0 <= t && t <= 1
-         * ```
-         * 相当于线性插值
+         * Use a single color for the MinMaxGradient.
          *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
+         * 使用单一颜色的。
          */
-        BezierCurve.prototype.linear = function (t, p0, p1) {
-            return p0 + t * (p1 - p0);
-            // return (1 - t) * p0 + t * p1;
-        };
+        MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
         /**
-         * 线性Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        BezierCurve.prototype.linearDerivative = function (t, p0, p1) {
-            return p1 - p0;
-        };
-        /**
-         * 线性Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        BezierCurve.prototype.linearSecondDerivative = function (t, p0, p1) {
-            return 0;
-        };
-        /**
-         * 二次Bézier曲线
+         * Use a single color gradient for the MinMaxGradient.
          *
-         * 二次Bézier曲线是由函数B（t）跟踪的路径，给定点P0，P1和P2，
-         * ```
-         * B(t) = (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2) , 0 <= t && t <= 1
-         * ```
-         * 这可以解释为分别从P0到P1和从P1到P2的线性Bézier曲线上相应点的线性插值。重新排列前面的等式得出：
-         * ```
-         * B(t) = (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2 , 0 <= t && t <= 1
-         * ```
-         * Bézier曲线关于t的导数是
-         * ```
-         * B'(t) = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
-         * ```
-         * 从中可以得出结论：在P0和P2处曲线的切线在P 1处相交。随着t从0增加到1，曲线沿P1的方向从P0偏离，然后从P1的方向弯曲到P2。
-         *
-         * Bézier曲线关于t的二阶导数是
-         * ```
-         * B''(t) = 2 * (p2 - 2 * p1 + p0)
-         * ```
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
+         * 使用单一颜色渐变。
          */
-        BezierCurve.prototype.quadratic = function (t, p0, p1, p2) {
-            // return this.linear(t, this.linear(t, p0, p1), this.linear(t, p1, p2));
-            // return (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2);
-            return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
-        };
+        MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
         /**
-         * 二次Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        BezierCurve.prototype.quadraticDerivative = function (t, p0, p1, p2) {
-            // return 2 * this.linear(t, this.linearDerivative(t, p0, p1), this.linearDerivative(t, p1, p2));
-            return 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1);
-        };
-        /**
-         * 二次Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        BezierCurve.prototype.quadraticSecondDerivative = function (t, p0, p1, p2) {
-            // return 1 * 2 * this.linearDerivative(t, p1 - p0, p2 - p1)
-            // return 1 * 2 * ((p2 - p1) - (p1 - p0));
-            return 2 * (p2 - 2 * p1 + p0);
-        };
-        /**
-         * 立方Bézier曲线
+         * Use a random value between 2 colors for the MinMaxGradient.
          *
-         * 平面中或高维空间中（其实一维也是成立的，这里就是使用一维计算）的四个点P0，P1，P2和P3定义了三次Bézier曲线。
-         * 曲线开始于P0朝向P1并且从P2的方向到达P3。通常不会通过P1或P2; 这些点只是为了提供方向信息。
-         * P1和P2之间的距离在转向P2之前确定曲线向P1移动的“多远”和“多快” 。
-         *
-         * 对于由点Pi，Pj和Pk定义的二次Bézier曲线，可以将Bpipjpk(t)写成三次Bézier曲线，它可以定义为两条二次Bézier曲线的仿射组合：
-         * ```
-         * B(t) = (1 - t) * Bp0p1p2(t) + t * Bp1p2p3(t) , 0 <= t && t <= 1
-         * ```
-         * 曲线的显式形式是：
-         * ```
-         * B(t) = (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3 , 0 <= t && t <= 1
-         * ```
-         * 对于P1和P2的一些选择，曲线可以相交，或者包含尖点。
-         *
-         * 三次Bézier曲线相对于t的导数是
-         * ```
-         * B'(t) = 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
-         * ```
-         * 三次Bézier曲线关于t的二阶导数是
-         * ```
-         * 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
-         * ```
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         * @param p3 点3
+         * 在两种颜色之间使用一个随机值。
          */
-        BezierCurve.prototype.cubic = function (t, p0, p1, p2, p3) {
-            // return this.linear(t, this.quadratic(t, p0, p1, p2), this.quadratic(t, p1, p2, p3));
-            return (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3;
-        };
+        MinMaxGradientMode[MinMaxGradientMode["TwoColors"] = 2] = "TwoColors";
         /**
-         * 三次Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         * @param p3 点3
-         */
-        BezierCurve.prototype.cubicDerivative = function (t, p0, p1, p2, p3) {
-            // return 3 * this.linear(t, this.quadraticDerivative(t, p0, p1, p2), this.quadraticDerivative(t, p1, p2, p3));
-            return 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
-        };
-        /**
-         * 三次Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        BezierCurve.prototype.cubicSecondDerivative = function (t, p0, p1, p2, p3) {
-            // return 3 * this.linear(t, this.quadraticSecondDerivative(t, p0, p1, p2), this.quadraticSecondDerivative(t, p1, p2, p3));
-            return 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
-        };
-        /**
-         * n次Bézier曲线
+         * Use a random value between 2 color gradients for the MinMaxGradient.
          *
-         * 一般定义
+         * 在两个颜色梯度之间使用一个随机值。
+         */
+        MinMaxGradientMode[MinMaxGradientMode["TwoGradients"] = 3] = "TwoGradients";
+        /**
+         * Define a list of colors in the MinMaxGradient, to be chosen from at random.
          *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
+         * 在一个颜色列表中随机选择。
          */
-        BezierCurve.prototype.bn = function (t, ps, processs) {
-            if (processs === void 0) { processs = null; }
-            ps = ps.concat();
-            if (processs)
-                processs.push(ps.concat());
-            // n次Bézier递推
-            for (var i = ps.length - 1; i > 0; i--) {
-                for (var j = 0; j < i; j++) {
-                    ps[j] = (1 - t) * ps[j] + t * ps[j + 1];
-                }
-                if (processs) {
-                    ps.length = ps.length - 1;
-                    processs.push(ps.concat());
-                }
-            }
-            return ps[0];
-        };
-        /**
-         * n次Bézier曲线关于t的导数
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         */
-        BezierCurve.prototype.bnDerivative = function (t, ps) {
-            if (ps.length < 2)
-                return 0;
-            ps = ps.concat();
-            // 进行
-            for (var i = 0, n = ps.length - 1; i < n; i++) {
-                ps[i] = ps[i + 1] - ps[i];
-            }
-            //
-            ps.length = ps.length - 1;
-            var v = ps.length * this.bn(t, ps);
-            return v;
-        };
-        /**
-         * n次Bézier曲线关于t的二阶导数
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         */
-        BezierCurve.prototype.bnSecondDerivative = function (t, ps) {
-            if (ps.length < 3)
-                return 0;
-            ps = ps.concat();
-            // 进行
-            for (var i = 0, n = ps.length - 1; i < n; i++) {
-                ps[i] = ps[i + 1] - ps[i];
-            }
-            //
-            ps.length = ps.length - 1;
-            var v = ps.length * this.bnDerivative(t, ps);
-            return v;
-        };
-        /**
-         * n次Bézier曲线关于t的dn阶导数
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param dn 求导次数
-         * @param ps 点列表     ps.length == n+1
-         */
-        BezierCurve.prototype.bnND = function (t, dn, ps) {
-            if (ps.length < dn + 1)
-                return 0;
-            var factorial = 1;
-            ps = ps.concat();
-            for (var j = 0; j < dn; j++) {
-                // 进行
-                for (var i = 0, n = ps.length - 1; i < n; i++) {
-                    ps[i] = ps[i + 1] - ps[i];
-                }
-                //
-                ps.length = ps.length - 1;
-                factorial *= ps.length;
-            }
-            var v = factorial * this.bn(t, ps);
-            return v;
-        };
-        /**
-         * 获取曲线在指定插值度上的值
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        BezierCurve.prototype.getValue = function (t, ps) {
-            if (ps.length == 2) {
-                return this.linear(t, ps[0], ps[1]);
-            }
-            if (ps.length == 3) {
-                return this.quadratic(t, ps[0], ps[1], ps[2]);
-            }
-            if (ps.length == 4) {
-                return this.cubic(t, ps[0], ps[1], ps[2], ps[3]);
-            }
-            return this.bn(t, ps);
-            // var t1 = 1 - t;
-            // return t1 * t1 * t1 * ps[0] + 3 * t1 * t1 * t * ps[1] + 3 * t1 * t * t * ps[2] + t * t * t * ps[3];
-        };
-        /**
-         * 获取曲线在指定插值度上的导数(斜率)
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        BezierCurve.prototype.getDerivative = function (t, ps) {
-            if (ps.length == 2) {
-                return this.linearDerivative(t, ps[0], ps[1]);
-            }
-            if (ps.length == 3) {
-                return this.quadraticDerivative(t, ps[0], ps[1], ps[2]);
-            }
-            if (ps.length == 4) {
-                return this.cubicDerivative(t, ps[0], ps[1], ps[2], ps[3]);
-            }
-            return this.bnDerivative(t, ps);
-            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
-        };
-        /**
-         * 获取曲线在指定插值度上的二阶导数
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        BezierCurve.prototype.getSecondDerivative = function (t, ps) {
-            if (ps.length == 2) {
-                return this.linearSecondDerivative(t, ps[0], ps[1]);
-            }
-            if (ps.length == 3) {
-                return this.quadraticSecondDerivative(t, ps[0], ps[1], ps[2]);
-            }
-            if (ps.length == 4) {
-                return this.cubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]);
-            }
-            return this.bnSecondDerivative(t, ps);
-            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
-        };
-        /**
-         * 查找区间内极值列表
-         *
-         * @param ps 点列表
-         * @param numSamples 采样次数，用于分段查找极值
-         * @param precision  查找精度
-         *
-         * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
-         */
-        BezierCurve.prototype.getExtremums = function (ps, numSamples, precision) {
-            var _this = this;
-            if (numSamples === void 0) { numSamples = 10; }
-            if (precision === void 0) { precision = 0.0000001; }
-            var samples = [];
-            for (var i = 0; i <= numSamples; i++) {
-                samples.push(this.getDerivative(i / numSamples, ps));
-            }
-            // 查找存在解的分段
-            //
-            var resultTs = [];
-            var resultVs = [];
-            for (var i = 0, n = numSamples; i < n; i++) {
-                if (samples[i] * samples[i + 1] < 0) {
-                    var guessT = feng3d.equationSolving.line(function (x) { return _this.getDerivative(x, ps); }, i / numSamples, (i + 1) / numSamples, precision);
-                    resultTs.push(guessT);
-                    resultVs.push(this.getValue(guessT, ps));
-                }
-            }
-            return { ts: resultTs, vs: resultVs };
-        };
-        /**
-         * 获取单调区间列表
-         *
-         * @param ps
-         * @param numSamples
-         * @param precision
-         * @returns ts: 区间结点插值度列表,vs: 区间结点值列表
-         */
-        BezierCurve.prototype.getMonotoneIntervals = function (ps, numSamples, precision) {
-            if (numSamples === void 0) { numSamples = 10; }
-            if (precision === void 0) { precision = 0.0000001; }
-            // 区间内的单调区间
-            var monotoneIntervalTs = [0, 1];
-            var monotoneIntervalVs = [ps[0], ps[ps.length - 1]];
-            // 预先计算好极值
-            var extremums = this.getExtremums(ps, numSamples, precision);
-            for (var i = 0; i < extremums.ts.length; i++) {
-                // 增加单调区间
-                monotoneIntervalTs.splice(i + 1, 0, extremums.ts[i]);
-                monotoneIntervalVs.splice(i + 1, 0, extremums.vs[i]);
-            }
-            return { ts: monotoneIntervalTs, vs: monotoneIntervalVs };
-        };
-        /**
-         * 获取目标值所在的插值度T
-         *
-         * @param targetV 目标值
-         * @param ps 点列表
-         * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
-         * @param precision  查找精度
-         *
-         * @returns 返回解数组
-         */
-        BezierCurve.prototype.getTFromValue = function (targetV, ps, numSamples, precision) {
-            var _this = this;
-            if (numSamples === void 0) { numSamples = 10; }
-            if (precision === void 0) { precision = 0.0000001; }
-            // 获取单调区间
-            var monotoneIntervals = this.getMonotoneIntervals(ps, numSamples, precision);
-            var monotoneIntervalTs = monotoneIntervals.ts;
-            var monotoneIntervalVs = monotoneIntervals.vs;
-            // 存在解的单调区间
-            var results = [];
-            // 遍历单调区间
-            for (var i = 0, n = monotoneIntervalVs.length - 1; i < n; i++) {
-                if ((monotoneIntervalVs[i] - targetV) * (monotoneIntervalVs[i + 1] - targetV) <= 0) {
-                    var fx = function (x) { return _this.getValue(x, ps) - targetV; };
-                    // 连线法
-                    var result = feng3d.equationSolving.line(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
-                    results.push(result);
-                }
-            }
-            return results;
-        };
-        /**
-         * 分割曲线
-         *
-         * 在曲线插值度t位置分割为两条连接起来与原曲线完全重合的曲线
-         *
-         * @param t 分割位置（插值度）
-         * @param ps 被分割曲线点列表
-         * @returns 返回两条曲线组成的数组
-         */
-        BezierCurve.prototype.split = function (t, ps) {
-            // 获取曲线的动画过程
-            var processs = [];
-            feng3d.bezierCurve.bn(t, ps, processs);
-            // 第一条曲线
-            var fps = [];
-            // 第二条曲线
-            var sps = [];
-            // 使用当前t值进行分割曲线
-            for (var i = processs.length - 1; i >= 0; i--) {
-                if (i == processs.length - 1) {
-                    // 添加关键点
-                    fps.push(processs[i][0]);
-                    fps.push(processs[i][0]);
-                }
-                else {
-                    // 添加左右控制点
-                    fps.unshift(processs[i][0]);
-                    sps.push(processs[i].pop());
-                }
-            }
-            return [fps, sps];
-        };
-        /**
-         * 合并曲线
-         *
-         * 合并两条连接的曲线为一条曲线并且可以还原为分割前的曲线
-         *
-         * @param fps 第一条曲线点列表
-         * @param sps 第二条曲线点列表
-         * @param mergeType 合并方式。mergeType = 0时进行还原合并，还原拆分之前的曲线；mergeType = 1时进行拟合合并，合并后的曲线会经过两条曲线的连接点；
-         */
-        BezierCurve.prototype.merge = function (fps, sps, mergeType) {
-            if (mergeType === void 0) { mergeType = 0; }
-            fps = fps.concat();
-            sps = sps.concat();
-            var processs = [];
-            var t;
-            // 上条曲线
-            var pps;
-            // 当前曲线
-            var ps;
-            for (var i = 0, n = fps.length; i < n; i++) {
-                ps = processs[i] = [];
-                if (i == 0) {
-                    processs[i][0] = fps.pop();
-                    sps.shift();
-                }
-                else if (i == 1) {
-                    // 计算t值
-                    processs[i][0] = fps.pop();
-                    processs[i][1] = sps.shift();
-                    t = (processs[i - 1][0] - processs[i][0]) / (processs[i][1] - processs[i][0]);
-                }
-                else {
-                    pps = processs[i - 1];
-                    // 前面增加点
-                    var nfp = fps.pop();
-                    // 后面增加点
-                    var nsp = sps.shift();
-                    // 从前往后计算
-                    var ps0 = [];
-                    ps0[0] = nfp;
-                    for (var j = 0, n_1 = pps.length; j < n_1; j++) {
-                        ps0[j + 1] = ps0[j] + (pps[j] - ps0[j]) / t;
-                    }
-                    // 从后往前计算
-                    var ps1 = [];
-                    ps1[pps.length] = nsp;
-                    for (var j = pps.length - 1; j >= 0; j--) {
-                        ps1[j] = ps1[j + 1] - (ps1[j + 1] - pps[j]) / (1 - t);
-                    }
-                    // 拟合合并,合并前后两个方向的计算
-                    if (mergeType == 1) {
-                        for (var j = 0, n_2 = ps0.length - 1; j <= n_2; j++) {
-                            ps[j] = (ps0[j] * (n_2 - j) + ps1[j] * j) / n_2;
-                        }
-                    }
-                    else if (mergeType == 0) {
-                        // 还原合并，前半段使用从前往后计算，后半段使用从后往前计算
-                        for (var j = 0, n_3 = ps0.length - 1; j <= n_3; j++) {
-                            if (j < n_3 / 2) {
-                                ps[j] = ps0[j];
-                            }
-                            else if (j > n_3 / 2) {
-                                ps[j] = ps1[j];
-                            }
-                            else {
-                                ps[j] = (ps0[j] + ps1[j]) / 2;
-                            }
-                        }
-                    }
-                    else {
-                        console.error("\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!");
-                    }
-                }
-            }
-            return processs.pop();
-        };
-        /**
-         * 获取曲线样本数据
-         *
-         * 这些点可用于连线来拟合曲线。
-         *
-         * @param ps 点列表
-         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
-         */
-        BezierCurve.prototype.getSamples = function (ps, num) {
-            if (num === void 0) { num = 100; }
-            var results = [];
-            for (var i = 0; i <= num; i++) {
-                var t = i / num;
-                var p = this.getValue(t, ps);
-                results.push({ t: t, v: p });
-            }
-            return results;
-        };
-        return BezierCurve;
-    }());
-    feng3d.BezierCurve = BezierCurve;
-    feng3d.bezierCurve = new BezierCurve();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 动画曲线Wrap模式，处理超出范围情况
-     */
-    var WrapMode;
-    (function (WrapMode) {
-        /**
-         * 夹紧; 0>-<1
-         */
-        WrapMode[WrapMode["Clamp"] = 1] = "Clamp";
-        /**
-         * 循环; 0->1,0->1
-         */
-        WrapMode[WrapMode["Loop"] = 2] = "Loop";
-        /**
-         * 来回循环; 0->1,1->0
-         */
-        WrapMode[WrapMode["PingPong"] = 4] = "PingPong";
-        /**
-         * When time reaches the end of the animation clip, the clip will automatically stop playing and time will be reset to beginning of the clip.
-         */
-        WrapMode[WrapMode["Once"] = 5] = "Once";
-        /**
-         * Reads the default repeat mode set higher up.
-         */
-        WrapMode[WrapMode["Default"] = 6] = "Default";
-    })(WrapMode = feng3d.WrapMode || (feng3d.WrapMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 动画曲线
-     *
-     * 基于时间轴的连续三阶Bézier曲线
-     */
-    var AnimationCurve = /** @class */ (function () {
-        function AnimationCurve() {
-            /**
-             * 最大tan值，超出该值后将会变成分段
-             */
-            this.maxtan = 1000;
-            /**
-             * The behaviour of the animation before the first keyframe.
-             *
-             * 在第一个关键帧之前的动画行为。
-             */
-            this.preWrapMode = feng3d.WrapMode.Clamp;
-            /**
-             * The behaviour of the animation after the last keyframe.
-             *
-             * 动画在最后一个关键帧之后的行为。
-             */
-            this.postWrapMode = feng3d.WrapMode.Clamp;
-            /**
-             * All keys defined in the animation curve.
-             *
-             * 动画曲线上所有关键字定义。
-             *
-             * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
-             */
-            this.keys = [{ time: 0, value: 1, inTangent: 0, outTangent: 0 }];
-        }
-        Object.defineProperty(AnimationCurve.prototype, "numKeys", {
-            /**
-             * 关键点数量
-             */
-            get: function () {
-                return this.keys.length;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 添加关键点
-         *
-         * 添加关键点后将会执行按t进行排序
-         *
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.addKey = function (key) {
-            this.keys.push(key);
-            this.sort();
-        };
-        /**
-         * 关键点排序
-         *
-         * 当移动关键点或者新增关键点时需要再次排序
-         */
-        AnimationCurve.prototype.sort = function () {
-            this.keys.sort(function (a, b) { return a.time - b.time; });
-        };
-        /**
-         * 删除关键点
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.deleteKey = function (key) {
-            var index = this.keys.indexOf(key);
-            if (index != -1)
-                this.keys.splice(index, 1);
-        };
-        /**
-         * 获取关键点
-         * @param index 索引
-         */
-        AnimationCurve.prototype.getKey = function (index) {
-            return this.keys[index];
-        };
-        /**
-         * 获取关键点索引
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.indexOfKeys = function (key) {
-            return this.keys.indexOf(key);
-        };
-        /**
-         * 获取曲线上点信息
-         * @param t 时间轴的位置 [0,1]
-         */
-        AnimationCurve.prototype.getPoint = function (t) {
-            var wrapMode = feng3d.WrapMode.Clamp;
-            var min = 0;
-            var max = 1;
-            if (this.keys.length > 0) {
-                min = this.keys[0].time;
-            }
-            if (this.keys.length > 1) {
-                max = this.keys[this.keys.length - 1].time;
-            }
-            var cycle = max - min;
-            var dcycle = 2 * cycle;
-            if (t < min)
-                wrapMode = this.preWrapMode;
-            else if (t > max)
-                wrapMode = this.postWrapMode;
-            switch (wrapMode) {
-                case feng3d.WrapMode.Clamp:
-                    t = Math.clamp(t, min, max);
-                    break;
-                case feng3d.WrapMode.Loop:
-                    t = ((t - min) % cycle + cycle) % cycle + min;
-                    break;
-                case feng3d.WrapMode.PingPong:
-                    t = ((t - min) % dcycle + dcycle) % dcycle + min;
-                    if (t > max) {
-                        t = max - (t - max);
-                    }
-                    break;
-            }
-            var keys = this.keys;
-            var maxtan = this.maxtan;
-            var value = 0, tangent = 0, isfind = false;
-            ;
-            for (var i = 0, n = keys.length; i < n; i++) {
-                // 使用 bezierCurve 进行采样曲线点
-                var key = keys[i];
-                var prekey = keys[i - 1];
-                if (i > 0 && prekey.time <= t && t <= key.time) {
-                    var xstart = prekey.time;
-                    var ystart = prekey.value;
-                    var tanstart = prekey.outTangent;
-                    var xend = key.time;
-                    var yend = key.value;
-                    var tanend = key.inTangent;
-                    if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend)) {
-                        var ct = (t - prekey.time) / (key.time - prekey.time);
-                        var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
-                        var fy = feng3d.bezierCurve.getValue(ct, sys);
-                        isfind = true;
-                        value = fy;
-                        tangent = feng3d.bezierCurve.getDerivative(ct, sys) / (xend - xstart);
-                        break;
-                    }
-                    else {
-                        isfind = true;
-                        value = prekey.value;
-                        tangent = 0;
-                        break;
-                    }
-                }
-                if (i == 0 && t <= key.time) {
-                    isfind = true;
-                    value = key.value;
-                    tangent = 0;
-                    break;
-                }
-                if (i == n - 1 && t >= key.time) {
-                    isfind = true;
-                    value = key.value;
-                    tangent = 0;
-                    break;
-                }
-            }
-            if (keys.length == 0)
-                return { time: t, value: 0, inTangent: 0, outTangent: 0 };
-            console.assert(isfind);
-            return { time: t, value: value, inTangent: tangent, outTangent: tangent };
-        };
-        /**
-         * 获取值
-         * @param t 时间轴的位置 [0,1]
-         */
-        AnimationCurve.prototype.getValue = function (t) {
-            var point = this.getPoint(t);
-            if (!point)
-                return 0;
-            return point.value;
-        };
-        /**
-         * 查找关键点
-         * @param t 时间轴的位置 [0,1]
-         * @param y 值
-         * @param precision 查找精度
-         */
-        AnimationCurve.prototype.findKey = function (t, y, precision) {
-            var keys = this.keys;
-            for (var i = 0; i < keys.length; i++) {
-                if (Math.abs(keys[i].time - t) < precision && Math.abs(keys[i].value - y) < precision) {
-                    return keys[i];
-                }
-            }
-            return null;
-        };
-        /**
-         * 添加曲线上的关键点
-         *
-         * 如果该点在曲线上，则添加关键点
-         *
-         * @param time 时间轴的位置 [0,1]
-         * @param value 值
-         * @param precision 查找精度
-         */
-        AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
-            var point = this.getPoint(time);
-            if (Math.abs(value - point.value) < precision) {
-                this.keys.push(point);
-                this.keys.sort(function (a, b) { return a.time - b.time; });
-                return point;
-            }
-            return null;
-        };
-        /**
-         * 获取曲线样本数据
-         *
-         * 这些点可用于连线来拟合曲线。
-         *
-         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
-         */
-        AnimationCurve.prototype.getSamples = function (num) {
-            if (num === void 0) { num = 100; }
-            var results = [];
-            for (var i = 0; i <= num; i++) {
-                var p = this.getPoint(i / num);
-                results.push(p);
-            }
-            return results;
-        };
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurve.prototype, "preWrapMode", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurve.prototype, "postWrapMode", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurve.prototype, "keys", void 0);
-        return AnimationCurve;
-    }());
-    feng3d.AnimationCurve = AnimationCurve;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 曲线模式
-     */
-    var MinMaxCurveMode;
-    (function (MinMaxCurveMode) {
-        /**
-         * Use a single constant for the MinMaxCurve.
-         *
-         * 使用单个常数。
-         */
-        MinMaxCurveMode[MinMaxCurveMode["Constant"] = 0] = "Constant";
-        /**
-         * Use a single curve for the MinMaxCurve.
-         *
-         * 使用一条曲线
-         */
-        MinMaxCurveMode[MinMaxCurveMode["Curve"] = 1] = "Curve";
-        /**
-         * Use a random value between 2 constants for the MinMaxCurve.
-         *
-         * 在两个常量之间使用一个随机值
-         */
-        MinMaxCurveMode[MinMaxCurveMode["TwoConstants"] = 3] = "TwoConstants";
-        /**
-         * Use a random value between 2 curves for the MinMaxCurve.
-         *
-         * 在两条曲线之间使用一个随机值。
-         */
-        MinMaxCurveMode[MinMaxCurveMode["TwoCurves"] = 2] = "TwoCurves";
-    })(MinMaxCurveMode = feng3d.MinMaxCurveMode || (feng3d.MinMaxCurveMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 最大最小曲线
-     */
-    var MinMaxCurve = /** @class */ (function () {
-        function MinMaxCurve() {
-            /**
-             * 模式
-             */
-            this.mode = feng3d.MinMaxCurveMode.Constant;
-            /**
-             * Set the constant value.
-             *
-             * 设置常数值。
-             */
-            this.constant = 0;
-            /**
-             * Set a constant for the lower bound.
-             *
-             * 为下界设置一个常数。
-             */
-            this.constantMin = 0;
-            /**
-             * Set a constant for the upper bound.
-             *
-             * 为上界设置一个常数。
-             */
-            this.constantMax = 0;
-            /**
-             * Set the curve.
-             *
-             * 设置曲线。
-             */
-            this.curve = new feng3d.AnimationCurve();
-            /**
-             * Set a curve for the lower bound.
-             *
-             * 为下界设置一条曲线。
-             */
-            this.curveMin = new feng3d.AnimationCurve();
-            /**
-             * Set a curve for the upper bound.
-             *
-             * 为上界设置一条曲线。
-             */
-            this.curveMax = new feng3d.AnimationCurve();
-            /**
-             * Set a multiplier to be applied to the curves.
-             *
-             * 设置一个乘数应用于曲线。
-             */
-            this.curveMultiplier = 1;
-            /**
-             * 是否在编辑器中只显示Y轴 0-1 区域，例如 lifetime 为非负，需要设置为true
-             */
-            this.between0And1 = false;
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxCurve.prototype.getValue = function (time, randomBetween) {
-            if (randomBetween === void 0) { randomBetween = Math.random(); }
-            switch (this.mode) {
-                case feng3d.MinMaxCurveMode.Constant:
-                    return this.constant;
-                case feng3d.MinMaxCurveMode.Curve:
-                    return this.curve.getValue(time) * this.curveMultiplier;
-                case feng3d.MinMaxCurveMode.TwoConstants:
-                    return Math.lerp(this.constantMin, this.constantMax, randomBetween);
-                case feng3d.MinMaxCurveMode.TwoCurves:
-                    return Math.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
-            }
-            return this.constant;
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "mode", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "constant", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "constantMin", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "constantMax", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "curve", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "curveMin", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "curveMax", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "curveMultiplier", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "between0And1", void 0);
-        return MinMaxCurve;
-    }());
-    feng3d.MinMaxCurve = MinMaxCurve;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var MinMaxCurveVector3 = /** @class */ (function () {
-        function MinMaxCurveVector3() {
-            /**
-             * x 曲线
-             */
-            this.xCurve = new feng3d.MinMaxCurve();
-            /**
-             * y 曲线
-             */
-            this.yCurve = new feng3d.MinMaxCurve();
-            /**
-             * z 曲线
-             */
-            this.zCurve = new feng3d.MinMaxCurve();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxCurveVector3.prototype.getValue = function (time, randomBetween) {
-            if (randomBetween === void 0) { randomBetween = Math.random(); }
-            return new feng3d.Vector3(this.xCurve.getValue(time, randomBetween), this.yCurve.getValue(time, randomBetween), this.zCurve.getValue(time, randomBetween));
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveVector3.prototype, "xCurve", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveVector3.prototype, "yCurve", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveVector3.prototype, "zCurve", void 0);
-        return MinMaxCurveVector3;
-    }());
-    feng3d.MinMaxCurveVector3 = MinMaxCurveVector3;
+        MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
+    })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
 })(feng3d || (feng3d = {}));
 /**
  * Port from https://github.com/mapbox/earcut (v2.2.2)
@@ -14772,58 +15173,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Bezier Curves formulas obtained from
-     * http://en.wikipedia.org/wiki/Bézier_curve
-     */
-    var Interpolations = /** @class */ (function () {
-        function Interpolations() {
-        }
-        Interpolations.CatmullRom = function (t, p0, p1, p2, p3) {
-            var v0 = (p2 - p0) * 0.5;
-            var v1 = (p3 - p1) * 0.5;
-            var t2 = t * t;
-            var t3 = t * t2;
-            return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
-        };
-        Interpolations.QuadraticBezier = function (t, p0, p1, p2) {
-            return QuadraticBezierP0(t, p0) + QuadraticBezierP1(t, p1) +
-                QuadraticBezierP2(t, p2);
-        };
-        Interpolations.CubicBezier = function (t, p0, p1, p2, p3) {
-            return CubicBezierP0(t, p0) + CubicBezierP1(t, p1) + CubicBezierP2(t, p2) +
-                CubicBezierP3(t, p3);
-        };
-        return Interpolations;
-    }());
-    feng3d.Interpolations = Interpolations;
-})(feng3d || (feng3d = {}));
-function QuadraticBezierP0(t, p) {
-    var k = 1 - t;
-    return k * k * p;
-}
-function QuadraticBezierP1(t, p) {
-    return 2 * (1 - t) * t * p;
-}
-function QuadraticBezierP2(t, p) {
-    return t * t * p;
-}
-function CubicBezierP0(t, p) {
-    var k = 1 - t;
-    return k * k * k * p;
-}
-function CubicBezierP1(t, p) {
-    var k = 1 - t;
-    return 3 * k * k * t * p;
-}
-function CubicBezierP2(t, p) {
-    return 3 * (1 - t) * t * t * p;
-}
-function CubicBezierP3(t, p) {
-    return t * t * t * p;
-}
-var feng3d;
-(function (feng3d) {
-    /**
      * An extensible curve object which contains methods for interpolation
      */
     var Curve = /** @class */ (function () {
@@ -15181,6 +15530,142 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var Font = /** @class */ (function () {
+        function Font(data) {
+            this.data = data;
+        }
+        Font.prototype.generateShapes = function (text, size) {
+            if (size === undefined)
+                size = 100;
+            var shapes = [];
+            var paths = createPaths(text, size, this.data);
+            for (var p = 0, pl = paths.length; p < pl; p++) {
+                Array.prototype.push.apply(shapes, paths[p].toShapes());
+            }
+            return shapes;
+        };
+        return Font;
+    }());
+    feng3d.Font = Font;
+    function createPaths(text, size, data) {
+        var chars = Array.from ? Array.from(text) : String(text).split(''); // workaround for IE11, see #13988
+        var scale = size / data.resolution;
+        var line_height = (data.boundingBox.yMax - data.boundingBox.yMin + data.underlineThickness) * scale;
+        var paths = [];
+        var offsetX = 0, offsetY = 0;
+        for (var i = 0; i < chars.length; i++) {
+            var char = chars[i];
+            if (char === '\n') {
+                offsetX = 0;
+                offsetY -= line_height;
+            }
+            else {
+                var ret = createPath(char, scale, offsetX, offsetY, data);
+                offsetX += ret.offsetX;
+                paths.push(ret.path);
+            }
+        }
+        return paths;
+    }
+    function createPath(char, scale, offsetX, offsetY, data) {
+        var glyph = data.glyphs[char] || data.glyphs['?'];
+        if (!glyph) {
+            console.error('THREE.Font: character "' + char + '" does not exists in font family ' + data.familyName + '.');
+            return;
+        }
+        var path = new feng3d.ShapePath2();
+        var x, y, cpx, cpy, cpx1, cpy1, cpx2, cpy2;
+        if (glyph.o) {
+            var outline = glyph._cachedOutline || (glyph._cachedOutline = glyph.o.split(' '));
+            for (var i = 0, l = outline.length; i < l;) {
+                var action = outline[i++];
+                switch (action) {
+                    case 'm': // moveTo
+                        x = outline[i++] * scale + offsetX;
+                        y = outline[i++] * scale + offsetY;
+                        path.moveTo(x, y);
+                        break;
+                    case 'l': // lineTo
+                        x = outline[i++] * scale + offsetX;
+                        y = outline[i++] * scale + offsetY;
+                        path.lineTo(x, y);
+                        break;
+                    case 'q': // quadraticCurveTo
+                        cpx = outline[i++] * scale + offsetX;
+                        cpy = outline[i++] * scale + offsetY;
+                        cpx1 = outline[i++] * scale + offsetX;
+                        cpy1 = outline[i++] * scale + offsetY;
+                        path.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
+                        break;
+                    case 'b': // bezierCurveTo
+                        cpx = outline[i++] * scale + offsetX;
+                        cpy = outline[i++] * scale + offsetY;
+                        cpx1 = outline[i++] * scale + offsetX;
+                        cpy1 = outline[i++] * scale + offsetY;
+                        cpx2 = outline[i++] * scale + offsetX;
+                        cpy2 = outline[i++] * scale + offsetY;
+                        path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
+                        break;
+                }
+            }
+        }
+        return { offsetX: glyph.ha * scale, path: path };
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Bezier Curves formulas obtained from
+     * http://en.wikipedia.org/wiki/Bézier_curve
+     */
+    var Interpolations = /** @class */ (function () {
+        function Interpolations() {
+        }
+        Interpolations.CatmullRom = function (t, p0, p1, p2, p3) {
+            var v0 = (p2 - p0) * 0.5;
+            var v1 = (p3 - p1) * 0.5;
+            var t2 = t * t;
+            var t3 = t * t2;
+            return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
+        };
+        Interpolations.QuadraticBezier = function (t, p0, p1, p2) {
+            return QuadraticBezierP0(t, p0) + QuadraticBezierP1(t, p1) +
+                QuadraticBezierP2(t, p2);
+        };
+        Interpolations.CubicBezier = function (t, p0, p1, p2, p3) {
+            return CubicBezierP0(t, p0) + CubicBezierP1(t, p1) + CubicBezierP2(t, p2) +
+                CubicBezierP3(t, p3);
+        };
+        return Interpolations;
+    }());
+    feng3d.Interpolations = Interpolations;
+})(feng3d || (feng3d = {}));
+function QuadraticBezierP0(t, p) {
+    var k = 1 - t;
+    return k * k * p;
+}
+function QuadraticBezierP1(t, p) {
+    return 2 * (1 - t) * t * p;
+}
+function QuadraticBezierP2(t, p) {
+    return t * t * p;
+}
+function CubicBezierP0(t, p) {
+    var k = 1 - t;
+    return k * k * k * p;
+}
+function CubicBezierP1(t, p) {
+    var k = 1 - t;
+    return 3 * k * k * t * p;
+}
+function CubicBezierP2(t, p) {
+    return 3 * (1 - t) * t * t * p;
+}
+function CubicBezierP3(t, p) {
+    return t * t * t * p;
+}
+var feng3d;
+(function (feng3d) {
     var Path2 = /** @class */ (function (_super) {
         __extends(Path2, _super);
         function Path2(points) {
@@ -15510,196 +15995,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var Font = /** @class */ (function () {
-        function Font(data) {
-            this.data = data;
-        }
-        Font.prototype.generateShapes = function (text, size) {
-            if (size === undefined)
-                size = 100;
-            var shapes = [];
-            var paths = createPaths(text, size, this.data);
-            for (var p = 0, pl = paths.length; p < pl; p++) {
-                Array.prototype.push.apply(shapes, paths[p].toShapes());
-            }
-            return shapes;
-        };
-        return Font;
-    }());
-    feng3d.Font = Font;
-    function createPaths(text, size, data) {
-        var chars = Array.from ? Array.from(text) : String(text).split(''); // workaround for IE11, see #13988
-        var scale = size / data.resolution;
-        var line_height = (data.boundingBox.yMax - data.boundingBox.yMin + data.underlineThickness) * scale;
-        var paths = [];
-        var offsetX = 0, offsetY = 0;
-        for (var i = 0; i < chars.length; i++) {
-            var char = chars[i];
-            if (char === '\n') {
-                offsetX = 0;
-                offsetY -= line_height;
-            }
-            else {
-                var ret = createPath(char, scale, offsetX, offsetY, data);
-                offsetX += ret.offsetX;
-                paths.push(ret.path);
-            }
-        }
-        return paths;
-    }
-    function createPath(char, scale, offsetX, offsetY, data) {
-        var glyph = data.glyphs[char] || data.glyphs['?'];
-        if (!glyph) {
-            console.error('THREE.Font: character "' + char + '" does not exists in font family ' + data.familyName + '.');
-            return;
-        }
-        var path = new feng3d.ShapePath2();
-        var x, y, cpx, cpy, cpx1, cpy1, cpx2, cpy2;
-        if (glyph.o) {
-            var outline = glyph._cachedOutline || (glyph._cachedOutline = glyph.o.split(' '));
-            for (var i = 0, l = outline.length; i < l;) {
-                var action = outline[i++];
-                switch (action) {
-                    case 'm': // moveTo
-                        x = outline[i++] * scale + offsetX;
-                        y = outline[i++] * scale + offsetY;
-                        path.moveTo(x, y);
-                        break;
-                    case 'l': // lineTo
-                        x = outline[i++] * scale + offsetX;
-                        y = outline[i++] * scale + offsetY;
-                        path.lineTo(x, y);
-                        break;
-                    case 'q': // quadraticCurveTo
-                        cpx = outline[i++] * scale + offsetX;
-                        cpy = outline[i++] * scale + offsetY;
-                        cpx1 = outline[i++] * scale + offsetX;
-                        cpy1 = outline[i++] * scale + offsetY;
-                        path.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
-                        break;
-                    case 'b': // bezierCurveTo
-                        cpx = outline[i++] * scale + offsetX;
-                        cpy = outline[i++] * scale + offsetY;
-                        cpx1 = outline[i++] * scale + offsetX;
-                        cpy1 = outline[i++] * scale + offsetY;
-                        cpx2 = outline[i++] * scale + offsetX;
-                        cpy2 = outline[i++] * scale + offsetY;
-                        path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
-                        break;
-                }
-            }
-        }
-        return { offsetX: glyph.ha * scale, path: path };
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var LineCurve2 = /** @class */ (function (_super) {
-        __extends(LineCurve2, _super);
-        function LineCurve2(v1, v2) {
-            if (v1 === void 0) { v1 = new feng3d.Vector2(); }
-            if (v2 === void 0) { v2 = new feng3d.Vector2(); }
-            var _this = _super.call(this) || this;
-            _this.v1 = v1;
-            _this.v2 = v2;
-            return _this;
-        }
-        LineCurve2.prototype.getResolution = function (divisions) {
-            return 1;
-        };
-        LineCurve2.prototype.getPoint = function (t, optionalTarget) {
-            var point = optionalTarget || new feng3d.Vector2();
-            if (t === 1) {
-                point.copy(this.v2);
-            }
-            else {
-                point.copy(this.v2).sub(this.v1);
-                point.scaleNumber(t).add(this.v1);
-            }
-            return point;
-        };
-        // Line curve is linear, so we can overwrite default getPointAt
-        LineCurve2.prototype.getPointAt = function (u, optionalTarget) {
-            return this.getPoint(u, optionalTarget);
-        };
-        LineCurve2.prototype.getTangent = function (t, optionalTarget) {
-            if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector2(); }
-            var tangent = optionalTarget;
-            tangent.copy(this.v2).sub(this.v1).normalize();
-            return tangent;
-        };
-        return LineCurve2;
-    }(feng3d.Curve));
-    feng3d.LineCurve2 = LineCurve2;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var LineCurve3 = /** @class */ (function (_super) {
-        __extends(LineCurve3, _super);
-        function LineCurve3(v1, v2) {
-            if (v1 === void 0) { v1 = new feng3d.Vector3(); }
-            if (v2 === void 0) { v2 = new feng3d.Vector3(); }
-            var _this = _super.call(this) || this;
-            _this.v1 = v1;
-            _this.v2 = v2;
-            return _this;
-        }
-        LineCurve3.prototype.getResolution = function (divisions) {
-            return 1;
-        };
-        LineCurve3.prototype.getPoint = function (t, optionalTarget) {
-            if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector3(); }
-            var point = optionalTarget;
-            if (t === 1) {
-                point.copy(this.v2);
-            }
-            else {
-                point.copy(this.v2).sub(this.v1);
-                point.multiplyNumber(t).add(this.v1);
-            }
-            return point;
-        };
-        // Line curve is linear, so we can overwrite default getPointAt
-        LineCurve3.prototype.getPointAt = function (u, optionalTarget) {
-            if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector3(); }
-            return this.getPoint(u, optionalTarget);
-        };
-        return LineCurve3;
-    }(feng3d.Curve));
-    feng3d.LineCurve3 = LineCurve3;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var SplineCurve2 = /** @class */ (function (_super) {
-        __extends(SplineCurve2, _super);
-        function SplineCurve2(points) {
-            if (points === void 0) { points = []; }
-            var _this = _super.call(this) || this;
-            _this.points = points;
-            return _this;
-        }
-        SplineCurve2.prototype.getResolution = function (divisions) {
-            return divisions * this.points.length;
-        };
-        SplineCurve2.prototype.getPoint = function (t, optionalTarget) {
-            var point = optionalTarget || new feng3d.Vector2();
-            var points = this.points;
-            var p = (points.length - 1) * t;
-            var intPoint = Math.floor(p);
-            var weight = p - intPoint;
-            var p0 = points[intPoint === 0 ? intPoint : intPoint - 1];
-            var p1 = points[intPoint];
-            var p2 = points[intPoint > points.length - 2 ? points.length - 1 : intPoint + 1];
-            var p3 = points[intPoint > points.length - 3 ? points.length - 1 : intPoint + 2];
-            point.set(feng3d.Interpolations.CatmullRom(weight, p0.x, p1.x, p2.x, p3.x), feng3d.Interpolations.CatmullRom(weight, p0.y, p1.y, p2.y, p3.y));
-            return point;
-        };
-        return SplineCurve2;
-    }(feng3d.Curve));
-    feng3d.SplineCurve2 = SplineCurve2;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var EllipseCurve2 = /** @class */ (function (_super) {
         __extends(EllipseCurve2, _super);
         function EllipseCurve2(aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation) {
@@ -15770,6 +16065,7 @@ var feng3d;
     }(feng3d.Curve));
     feng3d.EllipseCurve2 = EllipseCurve2;
 })(feng3d || (feng3d = {}));
+/// <reference path="./EllipseCurve2.ts" />
 var feng3d;
 (function (feng3d) {
     var ArcCurve2 = /** @class */ (function (_super) {
@@ -15983,6 +16279,82 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var LineCurve2 = /** @class */ (function (_super) {
+        __extends(LineCurve2, _super);
+        function LineCurve2(v1, v2) {
+            if (v1 === void 0) { v1 = new feng3d.Vector2(); }
+            if (v2 === void 0) { v2 = new feng3d.Vector2(); }
+            var _this = _super.call(this) || this;
+            _this.v1 = v1;
+            _this.v2 = v2;
+            return _this;
+        }
+        LineCurve2.prototype.getResolution = function (divisions) {
+            return 1;
+        };
+        LineCurve2.prototype.getPoint = function (t, optionalTarget) {
+            var point = optionalTarget || new feng3d.Vector2();
+            if (t === 1) {
+                point.copy(this.v2);
+            }
+            else {
+                point.copy(this.v2).sub(this.v1);
+                point.scaleNumber(t).add(this.v1);
+            }
+            return point;
+        };
+        // Line curve is linear, so we can overwrite default getPointAt
+        LineCurve2.prototype.getPointAt = function (u, optionalTarget) {
+            return this.getPoint(u, optionalTarget);
+        };
+        LineCurve2.prototype.getTangent = function (t, optionalTarget) {
+            if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector2(); }
+            var tangent = optionalTarget;
+            tangent.copy(this.v2).sub(this.v1).normalize();
+            return tangent;
+        };
+        return LineCurve2;
+    }(feng3d.Curve));
+    feng3d.LineCurve2 = LineCurve2;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var LineCurve3 = /** @class */ (function (_super) {
+        __extends(LineCurve3, _super);
+        function LineCurve3(v1, v2) {
+            if (v1 === void 0) { v1 = new feng3d.Vector3(); }
+            if (v2 === void 0) { v2 = new feng3d.Vector3(); }
+            var _this = _super.call(this) || this;
+            _this.v1 = v1;
+            _this.v2 = v2;
+            return _this;
+        }
+        LineCurve3.prototype.getResolution = function (divisions) {
+            return 1;
+        };
+        LineCurve3.prototype.getPoint = function (t, optionalTarget) {
+            if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector3(); }
+            var point = optionalTarget;
+            if (t === 1) {
+                point.copy(this.v2);
+            }
+            else {
+                point.copy(this.v2).sub(this.v1);
+                point.multiplyNumber(t).add(this.v1);
+            }
+            return point;
+        };
+        // Line curve is linear, so we can overwrite default getPointAt
+        LineCurve3.prototype.getPointAt = function (u, optionalTarget) {
+            if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector3(); }
+            return this.getPoint(u, optionalTarget);
+        };
+        return LineCurve3;
+    }(feng3d.Curve));
+    feng3d.LineCurve3 = LineCurve3;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var QuadraticBezierCurve2 = /** @class */ (function (_super) {
         __extends(QuadraticBezierCurve2, _super);
         function QuadraticBezierCurve2(v0, v1, v2) {
@@ -16033,367 +16405,416 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var SplineCurve2 = /** @class */ (function (_super) {
+        __extends(SplineCurve2, _super);
+        function SplineCurve2(points) {
+            if (points === void 0) { points = []; }
+            var _this = _super.call(this) || this;
+            _this.points = points;
+            return _this;
+        }
+        SplineCurve2.prototype.getResolution = function (divisions) {
+            return divisions * this.points.length;
+        };
+        SplineCurve2.prototype.getPoint = function (t, optionalTarget) {
+            var point = optionalTarget || new feng3d.Vector2();
+            var points = this.points;
+            var p = (points.length - 1) * t;
+            var intPoint = Math.floor(p);
+            var weight = p - intPoint;
+            var p0 = points[intPoint === 0 ? intPoint : intPoint - 1];
+            var p1 = points[intPoint];
+            var p2 = points[intPoint > points.length - 2 ? points.length - 1 : intPoint + 1];
+            var p3 = points[intPoint > points.length - 3 ? points.length - 1 : intPoint + 2];
+            point.set(feng3d.Interpolations.CatmullRom(weight, p0.x, p1.x, p2.x, p3.x), feng3d.Interpolations.CatmullRom(weight, p0.y, p1.y, p2.y, p3.y));
+            return point;
+        };
+        return SplineCurve2;
+    }(feng3d.Curve));
+    feng3d.SplineCurve2 = SplineCurve2;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
-     * 柏林噪音
-     *
-     * 用于生产随机的噪音贴图
-     *
-     * @see http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
-     * @see https://mrl.nyu.edu/~perlin/noise/
-     * @see https://gitee.com/feng3d_admin/noise
+     * 文件系统类型
      */
-    var Noise = /** @class */ (function () {
-        /**
-         * 构建柏林噪音
-         *
-         * @param seed 随机种子
-         */
-        function Noise(seed) {
-            if (seed === void 0) { seed = 0; }
-            this._seed = 0;
-            this._p = [];
-            this.seed = seed;
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Http可读文件系统
+     */
+    var HttpFS = /** @class */ (function () {
+        function HttpFS(rootPath) {
+            if (rootPath === void 0) { rootPath = ""; }
+            /**
+             * 根路径
+             */
+            this.rootPath = "";
+            this.type = feng3d.FSType.http;
+            this.rootPath = rootPath;
+            if (this.rootPath == "") {
+                if (typeof document != "undefined") {
+                    var url = document.URL.split("?").shift();
+                    this.rootPath = url.substring(0, url.lastIndexOf("/") + 1);
+                }
+            }
         }
         /**
-         * 1D 经典噪音
-         *
-         * @param x X轴数值
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        Noise.prototype.perlin1 = function (x) {
-            var perm = this._p;
-            // Find unit grid cell containing point
-            var X = Math.floor(x);
-            // Get relative xyz coordinates of point within that cell
-            x = x - X;
-            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
-            X = X & 255;
-            // Calculate a set of eight hashed gradient indices
-            var gi00 = perm[X] % 2;
-            var gi10 = perm[X + 1] % 2;
-            // Calculate noise contributions from each of the eight corners
-            var n00 = dot1(grad1[gi00], x);
-            var n10 = dot1(grad1[gi10], x - 1);
-            // Compute the fade curve value for each of x, y
-            var u = fade(x);
-            // Interpolate along x the contributions from each of the corners
-            var nx0 = mix(n00, n10, u);
-            return nx0;
+        HttpFS.prototype.readArrayBuffer = function (path, callback) {
+            // rootPath
+            feng3d.loader.loadBinary(this.getAbsolutePath(path), function (content) {
+                callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
         };
         /**
-         * 2D 经典噪音
-         *
-         * @param x X轴数值
-         * @param y Y轴数值
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        Noise.prototype.perlin2 = function (x, y) {
-            var perm = this._p;
-            // Find unit grid cell containing point
-            var X = Math.floor(x);
-            var Y = Math.floor(y);
-            // Get relative xyz coordinates of point within that cell
-            x = x - X;
-            y = y - Y;
-            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
-            X = X & 255;
-            Y = Y & 255;
-            // Calculate a set of eight hashed gradient indices
-            var gi00 = perm[X + perm[Y]] % 4;
-            var gi10 = perm[X + 1 + perm[Y]] % 4;
-            var gi01 = perm[X + perm[Y + 1]] % 4;
-            var gi11 = perm[X + 1 + perm[Y + 1]] % 4;
-            // Calculate noise contributions from each of the eight corners
-            var n00 = dot2(grad2[gi00], x, y);
-            var n10 = dot2(grad2[gi10], x - 1, y);
-            var n01 = dot2(grad2[gi01], x, y - 1);
-            var n11 = dot2(grad2[gi11], x - 1, y - 1);
-            // Compute the fade curve value for each of x, y
-            var u = fade(x);
-            var v = fade(y);
-            // Interpolate along x the contributions from each of the corners
-            var nx0 = mix(n00, n10, u);
-            var nx1 = mix(n01, n11, u);
-            // Interpolate the four results along y
-            var nxy = mix(nx0, nx1, v);
-            return nxy;
+        HttpFS.prototype.readString = function (path, callback) {
+            feng3d.loader.loadText(this.getAbsolutePath(path), function (content) {
+                callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
         };
         /**
-         * 3D 经典噪音
-         *
-         * @param x X轴数值
-         * @param y Y轴数值
-         * @param z Z轴数值
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        Noise.prototype.perlin3 = function (x, y, z) {
-            var perm = this._p;
-            // Find unit grid cell containing point
-            var X = Math.floor(x);
-            var Y = Math.floor(y);
-            var Z = Math.floor(z);
-            // Get relative xyz coordinates of point within that cell
-            x = x - X;
-            y = y - Y;
-            z = z - Z;
-            // Wrap the integer cells at 255 (smaller integer period can be introduced here)
-            X = X & 255;
-            Y = Y & 255;
-            Z = Z & 255;
-            // Calculate a set of eight hashed gradient indices
-            var gi000 = perm[X + perm[Y + perm[Z]]] % 12;
-            var gi100 = perm[X + 1 + perm[Y + perm[Z]]] % 12;
-            var gi010 = perm[X + perm[Y + 1 + perm[Z]]] % 12;
-            var gi110 = perm[X + 1 + perm[Y + 1 + perm[Z]]] % 12;
-            var gi001 = perm[X + perm[Y + perm[Z + 1]]] % 12;
-            var gi101 = perm[X + 1 + perm[Y + perm[Z + 1]]] % 12;
-            var gi011 = perm[X + perm[Y + 1 + perm[Z + 1]]] % 12;
-            var gi111 = perm[X + 1 + perm[Y + 1 + perm[Z + 1]]] % 12;
-            // Calculate noise contributions from each of the eight corners
-            var n000 = dot(grad3[gi000], x, y, z);
-            var n100 = dot(grad3[gi100], x - 1, y, z);
-            var n010 = dot(grad3[gi010], x, y - 1, z);
-            var n110 = dot(grad3[gi110], x - 1, y - 1, z);
-            var n001 = dot(grad3[gi001], x, y, z - 1);
-            var n101 = dot(grad3[gi101], x - 1, y, z - 1);
-            var n011 = dot(grad3[gi011], x, y - 1, z - 1);
-            var n111 = dot(grad3[gi111], x - 1, y - 1, z - 1);
-            // Compute the fade curve value for each of x, y, z
-            var u = fade(x);
-            var v = fade(y);
-            var w = fade(z);
-            // Interpolate along x the contributions from each of the corners
-            var nx00 = mix(n000, n100, u);
-            var nx01 = mix(n001, n101, u);
-            var nx10 = mix(n010, n110, u);
-            var nx11 = mix(n011, n111, u);
-            // Interpolate the four results along y
-            var nxy0 = mix(nx00, nx10, v);
-            var nxy1 = mix(nx01, nx11, v);
-            // Interpolate the two last results along z
-            var nxyz = mix(nxy0, nxy1, w);
-            return nxyz;
+        HttpFS.prototype.readObject = function (path, callback) {
+            feng3d.loader.loadText(this.getAbsolutePath(path), function (content) {
+                var obj = JSON.parse(content);
+                callback(null, obj);
+            }, null, function (e) {
+                callback(e, null);
+            });
         };
         /**
-         * N阶经典噪音
-         *
-         * 如果是1D，2D，3D噪音，最好选用对于函数，perlinN中存在for循环因此效率比perlin3等性能差3到5（8）倍！
-         *
-         * 满足以下运算
-         * perlinN(x) == perlin1(x)
-         * perlinN(x,y) == perlin2(x,y)
-         * perlinN(x,y,z) == perlin3(x,y,z)
-         *
-         * @param ps 每个轴的数值
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
          */
-        Noise.prototype.perlinN = function () {
-            var ps = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                ps[_i] = arguments[_i];
-            }
-            var perm = this._p;
-            var n = ps.length;
-            // 在格子内对应每个轴的位置
-            var pp = [];
-            // 所属格子对应每个轴的索引
-            var PS = [];
-            // 在格子内对应每个轴的混合权重
-            var PF = [];
-            for (var i = 0; i < n; i++) {
-                var p = ps[i];
-                // 找到所属单元格
-                var P = Math.floor(p);
-                // 获取所在单元格内的位置
-                p = p - P;
-                // 单元格以255为周期
-                P = P & 255;
-                //
-                pp[i] = p;
-                PS[i] = P;
-                // 分别计算每个轴的混合度
-                PF[i] = fade(p);
-            }
-            //
-            var gradN = createGrad(n);
-            // 边的数量
-            var numEdge = gradN.length;
-            // if (n > 1)
-            // {
-            //     console.assert(numEdge == Math.pow(2, n - 1) * n, `边的数量不对！`)
-            // }
-            //
-            var bits = getBits(n);
-            var dns = [];
-            //
-            for (var i = 0, len = bits.length; i < len; i++) {
-                var bit = bits[i];
-                var bitn = bit.length;
-                // 计算索引
-                var gi = 0;
-                while (bitn > 0) {
-                    bitn--;
-                    gi = perm[PS[bitn] + bit[bitn] + gi];
-                    // if (isNaN(gi))
-                    //     debugger;
-                }
-                // 获取 grad
-                var grad = gradN[gi % numEdge];
-                bitn = bit.length;
-                // 计算点乘 dot运算
-                var dn = 0;
-                while (bitn > 0) {
-                    bitn--;
-                    dn += grad[bitn] * (pp[bitn] - bit[bitn]);
-                }
-                dns[i] = dn;
-            }
-            // 进行插值
-            for (var i = 0; i < n; i++) {
-                // 每次前后两个插值
-                for (var j = 0, len = dns.length; j < len; j += 2) {
-                    dns[j / 2] = mix(dns[j], dns[j + 1], PF[i]);
-                }
-                // 每波插值后 长度减半
-                dns.length = dns.length >> 1;
-            }
-            // console.assert(dns.length == 1, `结果长度不对！`)
-            return dns[0];
+        HttpFS.prototype.readImage = function (path, callback) {
+            var img = new Image();
+            img.onload = function () {
+                callback(null, img);
+            };
+            img.onerror = function (evt) {
+                callback(new Error("\u52A0\u8F7D\u56FE\u7247" + path + "\u5931\u8D25"), null);
+            };
+            img.src = this.getAbsolutePath(path);
         };
-        Object.defineProperty(Noise.prototype, "seed", {
-            /**
-             * This isn't a very good seeding function, but it works ok. It supports 2^16
-             * different seed values. Write something better if you need more seeds.
-             */
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        HttpFS.prototype.getAbsolutePath = function (path) {
+            return this.rootPath + path;
+        };
+        return HttpFS;
+    }());
+    feng3d.HttpFS = HttpFS;
+    feng3d.basefs = new HttpFS();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 用于是否为文件夹
+     */
+    var directorytoken = "!!!___directory___!!!";
+    /**
+     * 索引数据文件系统
+     */
+    var IndexedDBFS = /** @class */ (function () {
+        function IndexedDBFS(DBname, projectname) {
+            if (DBname === void 0) { DBname = "feng3d-editor"; }
+            if (projectname === void 0) { projectname = "testproject"; }
+            this.DBname = DBname;
+            this.projectname = projectname;
+        }
+        Object.defineProperty(IndexedDBFS.prototype, "type", {
             get: function () {
-                return this._seed;
-            },
-            set: function (v) {
-                this._seed = v;
-                var p = this._p;
-                if (v > 0 && v < 1) {
-                    // Scale the seed out
-                    v *= 65536;
-                }
-                v = Math.floor(v);
-                if (v < 256) {
-                    v |= v << 8;
-                }
-                for (var i = 0; i < 256; i++) {
-                    var v0;
-                    if (i & 1) {
-                        v0 = permutation[i] ^ (v & 255);
-                    }
-                    else {
-                        v0 = permutation[i] ^ ((v >> 8) & 255);
-                    }
-                    p[i] = p[i + 256] = v0;
-                }
+                return feng3d.FSType.indexedDB;
             },
             enumerable: false,
             configurable: true
         });
-        return Noise;
-    }());
-    feng3d.Noise = Noise;
-    /**
-     *
-     * @param n
-     *
-     * len = 2^(n-1) * n
-     */
-    function createGrad(n) {
-        if (createGradCache[n])
-            return createGradCache[n];
-        var gradBase = createGradBase(n - 1);
-        var grad = [];
-        if (n > 1) {
-            for (var i = n - 1; i >= 0; i--) {
-                for (var j = 0; j < gradBase.length; j++) {
-                    var item = gradBase[j].concat();
-                    item.splice(i, 0, 0);
-                    grad.push(item);
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBFS.prototype.readArrayBuffer = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
                 }
-            }
-        }
-        else {
-            grad = gradBase;
-        }
-        createGradCache[n] = grad;
-        return grad;
-    }
-    feng3d.createGrad = createGrad;
-    var createGradCache = {};
-    function createGradBase(n) {
-        if (n < 2)
-            return [
-                [1], [-1],
-            ];
-        var grad = createGradBase(n - 1);
-        for (var i = 0, len = grad.length; i < len; i++) {
-            var item = grad[i];
-            grad[i] = item.concat(1);
-            grad[i + len] = item.concat(-1);
-        }
-        return grad;
-    }
-    function getBits(n) {
-        if (getBitsChace[n])
-            return getBitsChace[n];
-        if (n < 2)
-            return [
-                [0], [1],
-            ];
-        var grad = getBits(n - 1);
-        for (var i = 0, len = grad.length; i < len; i++) {
-            var item = grad[i];
-            grad[i] = item.concat(0);
-            grad[i + len] = item.concat(1);
-        }
-        getBitsChace[n] = grad;
-        return grad;
-    }
-    feng3d.getBits = getBits;
-    var getBitsChace = {};
-    var grad1 = [
-        [1], [-1],
-    ];
-    var grad2 = [
-        [1, 0], [-1, 0],
-        [0, 1], [0, -1],
-    ];
-    var grad3 = [
-        [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0],
-        [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
-        [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]
-    ];
-    var permutation = [
-        151, 160, 137, 91, 90, 15,
-        131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
-        190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
-        88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
-        77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
-        102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
-        135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
-        5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
-        223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
-        129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-        251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-        49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-        138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
-    ];
-    function dot(g, x, y, z) {
-        return g[0] * x + g[1] * y + g[2] * z;
-    }
-    function dot2(g, x, y) {
-        return g[0] * x + g[1] * y;
-    }
-    function dot1(g, x) {
-        return g[0] * x;
-    }
-    function mix(a, b, t) {
-        return (1 - t) * a + t * b;
-    }
-    function fade(t) {
-        return t * t * t * (t * (t * 6 - 15) + 10);
-    }
-    feng3d.noise = new Noise();
+                if (data instanceof ArrayBuffer) {
+                    callback(null, data);
+                }
+                else if (data instanceof Object) {
+                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+                    var arraybuffer = feng3d.dataTransform.stringToArrayBuffer(str);
+                    callback(null, arraybuffer);
+                }
+                else {
+                    var arraybuffer = feng3d.dataTransform.stringToArrayBuffer(data);
+                    callback(null, arraybuffer);
+                }
+            });
+        };
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBFS.prototype.readString = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
+                        callback(null, str);
+                    });
+                }
+                else if (data instanceof Object) {
+                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+                    callback(null, str);
+                }
+                else {
+                    callback(null, data);
+                }
+            });
+        };
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBFS.prototype.readObject = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
+                        var obj = JSON.parse(str);
+                        callback(null, obj);
+                    });
+                }
+                else if (data instanceof Object) {
+                    callback(null, data);
+                }
+                else {
+                    console.assert(typeof data == "string");
+                    var obj = JSON.parse(data);
+                    callback(null, obj);
+                }
+            });
+        };
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        IndexedDBFS.prototype.readImage = function (path, callback) {
+            this.readArrayBuffer(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+                    callback(null, img);
+                });
+            });
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.getAbsolutePath = function (path) {
+            return path;
+        };
+        /**
+         * 是否为文件夹
+         *
+         * @param path 文件路径
+         * @param callback 完成回调
+         */
+        IndexedDBFS.prototype.isDirectory = function (path, callback) {
+            this.readString(path, function (err, data) {
+                callback(data == directorytoken);
+            });
+        };
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.exists = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                callback(!!data);
+            });
+        };
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.readdir = function (path, callback) {
+            feng3d._indexedDB.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+                if (!allfilepaths) {
+                    callback(err, null);
+                    return;
+                }
+                var subfilemap = {};
+                allfilepaths.forEach(function (element) {
+                    var dirp = path == "" ? path : (path + "/");
+                    if (element.substr(0, dirp.length) == dirp && element != path) {
+                        var result = element.substr(dirp.length);
+                        var subfile = result.split("/").shift();
+                        subfilemap[subfile] = 1;
+                    }
+                });
+                var files = Object.keys(subfilemap);
+                callback(null, files);
+            });
+        };
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.mkdir = function (path, callback) {
+            var _this = this;
+            this.exists(path, function (exists) {
+                if (exists) {
+                    callback(new Error("\u6587\u4EF6\u5939" + path + "\u5DF2\u5B58\u5728\u65E0\u6CD5\u65B0\u5EFA"));
+                    return;
+                }
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, directorytoken, callback);
+            });
+        };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.deleteFile = function (path, callback) {
+            // 删除文件
+            feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
+            feng3d.globalDispatcher.dispatch("fs.delete", path);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+            feng3d.globalDispatcher.dispatch("fs.write", path);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.writeString = function (path, data, callback) {
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+            feng3d.globalDispatcher.dispatch("fs.write", path);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param object 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.writeObject = function (path, object, callback) {
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
+            feng3d.globalDispatcher.dispatch("fs.write", path);
+        };
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.writeImage = function (path, image, callback) {
+            var _this = this;
+            feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
+                _this.writeArrayBuffer(path, arraybuffer, callback);
+                feng3d.globalDispatcher.dispatch("fs.write", path);
+            });
+        };
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.copyFile = function (src, dest, callback) {
+            var _this = this;
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, src, function (err, data) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, dest, data, callback);
+            });
+        };
+        /**
+         * 是否存在指定项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.hasProject = function (projectname, callback) {
+            feng3d._indexedDB.getObjectStoreNames(this.DBname, function (err, objectStoreNames) {
+                if (err) {
+                    callback(false);
+                    return;
+                }
+                callback(objectStoreNames.indexOf(projectname) != -1);
+            });
+        };
+        /**
+         * 初始化项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.initproject = function (projectname, callback) {
+            this.projectname = projectname;
+            feng3d._indexedDB.createObjectStore(this.DBname, projectname, callback);
+        };
+        return IndexedDBFS;
+    }());
+    feng3d.IndexedDBFS = IndexedDBFS;
+    feng3d.indexedDBFS = new IndexedDBFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16517,458 +16938,6 @@ var feng3d;
     }());
     feng3d.PathUtils = PathUtils;
     feng3d.pathUtils = new PathUtils();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 加载类
-     */
-    var Loader = /** @class */ (function () {
-        function Loader() {
-        }
-        /**
-         * 加载文本
-         * @param url   路径
-         */
-        Loader.prototype.loadText = function (url, onCompleted, onRequestProgress, onError) {
-            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
-        };
-        /**
-         * 加载二进制
-         * @param url   路径
-         */
-        Loader.prototype.loadBinary = function (url, onCompleted, onRequestProgress, onError) {
-            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
-        };
-        /**
-         * 加载图片
-         * @param url   路径
-         */
-        Loader.prototype.loadImage = function (url, onCompleted, onRequestProgress, onError) {
-            var image = new Image();
-            image.crossOrigin = "Anonymous";
-            image.onload = function (event) {
-                onCompleted && onCompleted(image);
-            };
-            image.onerror = function (event) {
-                console.error("Error while trying to load texture: " + url);
-                //
-                image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
-                //
-                var err = new Error(url + " 加载失败！");
-                onError && onError(err);
-            };
-            image.src = url;
-        };
-        return Loader;
-    }());
-    feng3d.Loader = Loader;
-    feng3d.loader = new Loader();
-    /**
-     * 使用XMLHttpRequest加载
-     * @param url           加载路径
-     * @param dataFormat    数据类型
-     */
-    function xmlHttpRequestLoad(loadItem) {
-        var request = new XMLHttpRequest();
-        request.open('Get', loadItem.url, true);
-        request.setRequestHeader("Access-Control-Allow-Origin", "*");
-        request.responseType = loadItem.dataFormat == feng3d.LoaderDataFormat.BINARY ? "arraybuffer" : "";
-        request.onreadystatechange = onRequestReadystatechange(request, loadItem);
-        request.onprogress = onRequestProgress(request, loadItem);
-        request.send();
-    }
-    /**
-     * 请求进度回调
-     */
-    function onRequestProgress(request, loadItem) {
-        return function (event) {
-            loadItem.onProgress && loadItem.onProgress(event.loaded, event.total);
-        };
-    }
-    /**
-     * 请求状态变化回调
-     */
-    function onRequestReadystatechange(request, loadItem) {
-        return function (ev) {
-            if (request.readyState == 4) { // 4 = "loaded"
-                request.onreadystatechange = null;
-                if (request.status >= 200 && request.status < 300) {
-                    var content = loadItem.dataFormat == feng3d.LoaderDataFormat.TEXT ? request.responseText : request.response;
-                    loadItem.onCompleted && loadItem.onCompleted(content);
-                }
-                else {
-                    var err = new Error(loadItem.url + " 加载失败！");
-                    loadItem.onError && loadItem.onError(err);
-                    loadItem.onCompleted && loadItem.onCompleted(null);
-                }
-            }
-        };
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 加载数据类型
-     */
-    var LoaderDataFormat;
-    (function (LoaderDataFormat) {
-        /**
-         * 以原始二进制数据形式接收下载的数据。
-         */
-        LoaderDataFormat["BINARY"] = "binary";
-        /**
-         * 以文本形式接收已下载的数据。
-         */
-        LoaderDataFormat["TEXT"] = "text";
-        /**
-         * 图片数据
-         */
-        LoaderDataFormat["IMAGE"] = "image";
-    })(LoaderDataFormat = feng3d.LoaderDataFormat || (feng3d.LoaderDataFormat = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var databases = {};
-    /**
-     *
-     */
-    var _IndexedDB = /** @class */ (function () {
-        function _IndexedDB() {
-            /**
-             * 数据库状态
-             */
-            this._dbStatus = {};
-        }
-        /**
-         * 是否支持 indexedDB
-         */
-        _IndexedDB.prototype.support = function () {
-            if (typeof indexedDB == "undefined") {
-                indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
-                if (indexedDB == undefined) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        /**
-         * 获取数据库，如果不存在则新建数据库
-         *
-         * @param dbname 数据库名称
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.getDatabase = function (dbname, callback) {
-            if (databases[dbname]) {
-                callback(null, databases[dbname]);
-                return;
-            }
-            this._open(dbname, callback);
-        };
-        /**
-         * 打开或者升级数据库
-         *
-         * @param dbname 数据库名称
-         * @param callback 完成回调
-         * @param upgrade 是否升级数据库
-         * @param onupgrade 升级回调
-         */
-        _IndexedDB.prototype._open = function (dbname, callback, upgrade, onupgrade) {
-            var _this = this;
-            if (upgrade === void 0) { upgrade = false; }
-            if (!this._dbStatus[dbname])
-                this._dbStatus[dbname] = { status: DBStatus.unOpen, onsuccessCallbacks: [], onupgradeneededCallbacks: [] };
-            this._dbStatus[dbname].onsuccessCallbacks.push(callback);
-            if (upgrade) {
-                console.assert(!!onupgrade);
-                this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
-            }
-            if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading)
-                return;
-            var request;
-            if (!upgrade) {
-                request = indexedDB.open(dbname);
-                this._dbStatus[dbname].status = DBStatus.opening;
-            }
-            else {
-                var oldDatabase = databases[dbname];
-                oldDatabase.close();
-                delete databases[dbname];
-                request = indexedDB.open(dbname, oldDatabase.version + 1);
-                this._dbStatus[dbname].status = DBStatus.upgrading;
-            }
-            request.onupgradeneeded = function (event) {
-                var newdatabase = event.target["result"];
-                request.onupgradeneeded = null;
-                var callbacks = _this._dbStatus[dbname].onupgradeneededCallbacks.concat();
-                _this._dbStatus[dbname].onupgradeneededCallbacks.length = 0;
-                callbacks.forEach(function (element) {
-                    element(newdatabase);
-                });
-            };
-            request.onsuccess = function (event) {
-                databases[dbname] = event.target["result"];
-                request.onsuccess = null;
-                _this._dbStatus[dbname].status = DBStatus.opened;
-                var callbacks = _this._dbStatus[dbname].onsuccessCallbacks.concat();
-                _this._dbStatus[dbname].onsuccessCallbacks.length = 0;
-                callbacks.forEach(function (element) {
-                    element(null, databases[dbname]);
-                });
-            };
-            request.onerror = function (event) {
-                request.onerror = null;
-                _this._dbStatus[dbname].status = DBStatus.error;
-                var callbacks = _this._dbStatus[dbname].onsuccessCallbacks.concat();
-                _this._dbStatus[dbname].onsuccessCallbacks.length = 0;
-                callbacks.forEach(function (element) {
-                    element(event, null);
-                });
-            };
-        };
-        /**
-         * 删除数据库
-         *
-         * @param dbname 数据库名称
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.deleteDatabase = function (dbname, callback) {
-            var request = indexedDB.deleteDatabase(dbname);
-            request.onsuccess = function (event) {
-                delete databases[dbname];
-                callback && callback(null);
-                request.onsuccess = null;
-            };
-            request.onerror = function (event) {
-                callback && callback(event);
-                request.onerror = null;
-            };
-        };
-        /**
-         * 是否存在指定的对象存储
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                callback(database.objectStoreNames.contains(objectStroreName));
-            });
-        };
-        /**
-         * 获取对象存储名称列表
-         *
-         * @param dbname 数据库
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.getObjectStoreNames = function (dbname, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                var objectStoreNames = [];
-                for (var i = 0; i < database.objectStoreNames.length; i++) {
-                    objectStoreNames.push(database.objectStoreNames.item(i));
-                }
-                callback(null, objectStoreNames);
-            });
-        };
-        /**
-         * 创建对象存储
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
-            var _this = this;
-            this.getDatabase(dbname, function (err, database) {
-                if (database.objectStoreNames.contains(objectStroreName)) {
-                    callback && callback(null);
-                    return;
-                }
-                _this._open(dbname, callback, true, function (newdatabase) {
-                    newdatabase.createObjectStore(objectStroreName);
-                });
-            });
-        };
-        /**
-         * 删除对象存储
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
-            var _this = this;
-            this.getDatabase(dbname, function (err, database) {
-                if (!database.objectStoreNames.contains(objectStroreName)) {
-                    callback && callback(null);
-                    return;
-                }
-                _this._open(dbname, callback, true, function (newdatabase) {
-                    newdatabase.deleteObjectStore(objectStroreName);
-                });
-            });
-        };
-        /**
-         * 获取对象存储中所有键列表
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.getAllKeys();
-                    request.onsuccess = function (event) {
-                        callback && callback(null, event.target["result"]);
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error, null);
-                }
-            });
-        };
-        /**
-         * 获取对象存储中指定键对应的数据
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param key 键
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.objectStoreGet = function (dbname, objectStroreName, key, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                var transaction = database.transaction([objectStroreName], 'readwrite');
-                var objectStore = transaction.objectStore(objectStroreName);
-                var request = objectStore.get(key);
-                request.onsuccess = function (event) {
-                    var result = event.target["result"];
-                    callback && callback(result != null ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
-                    request.onsuccess = null;
-                };
-            });
-        };
-        /**
-         * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param key 键
-         * @param data 数据
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.objectStorePut = function (dbname, objectStroreName, key, data, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.put(data, key);
-                    request.onsuccess = function (event) {
-                        callback && callback(null);
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        /**
-         * 删除对象存储中指定键以及对于数据
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param key 键
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.objectStoreDelete = function (dbname, objectStroreName, key, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.delete(key);
-                    request.onsuccess = function (event) {
-                        callback && callback();
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        /**
-         * 清空对象存储中数据
-         *
-         * @param dbname 数据库名称
-         * @param objectStroreName 对象存储名称
-         * @param callback 完成回调
-         */
-        _IndexedDB.prototype.objectStoreClear = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.clear();
-                    request.onsuccess = function (event) {
-                        callback && callback();
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        return _IndexedDB;
-    }());
-    feng3d._IndexedDB = _IndexedDB;
-    feng3d._indexedDB = new _IndexedDB();
-    /**
-     * 数据库状态
-     */
-    var DBStatus;
-    (function (DBStatus) {
-        /**
-         * 未开启
-         */
-        DBStatus[DBStatus["unOpen"] = 0] = "unOpen";
-        /**
-         * 正在开启中
-         */
-        DBStatus[DBStatus["opening"] = 1] = "opening";
-        /**
-         * 已开启
-         */
-        DBStatus[DBStatus["opened"] = 2] = "opened";
-        /**
-         * 正在升级中
-         */
-        DBStatus[DBStatus["upgrading"] = 3] = "upgrading";
-        /**
-         * 开启或者升级失败
-         */
-        DBStatus[DBStatus["error"] = 4] = "error";
-    })(DBStatus || (DBStatus = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 文件系统类型
-     */
-    var FSType;
-    (function (FSType) {
-        FSType["http"] = "http";
-        FSType["native"] = "native";
-        FSType["indexedDB"] = "indexedDB";
-    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -17438,370 +17407,439 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 用于是否为文件夹
+     * 加载类
      */
-    var directorytoken = "!!!___directory___!!!";
-    /**
-     * 索引数据文件系统
-     */
-    var IndexedDBFS = /** @class */ (function () {
-        function IndexedDBFS(DBname, projectname) {
-            if (DBname === void 0) { DBname = "feng3d-editor"; }
-            if (projectname === void 0) { projectname = "testproject"; }
-            this.DBname = DBname;
-            this.projectname = projectname;
+    var Loader = /** @class */ (function () {
+        function Loader() {
         }
-        Object.defineProperty(IndexedDBFS.prototype, "type", {
-            get: function () {
-                return feng3d.FSType.indexedDB;
-            },
-            enumerable: false,
-            configurable: true
-        });
         /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
+         * 加载文本
+         * @param url   路径
          */
-        IndexedDBFS.prototype.readArrayBuffer = function (path, callback) {
-            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
-                if (err) {
-                    callback(err, data);
-                    return;
-                }
-                if (data instanceof ArrayBuffer) {
-                    callback(null, data);
-                }
-                else if (data instanceof Object) {
-                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-                    var arraybuffer = feng3d.dataTransform.stringToArrayBuffer(str);
-                    callback(null, arraybuffer);
-                }
-                else {
-                    var arraybuffer = feng3d.dataTransform.stringToArrayBuffer(data);
-                    callback(null, arraybuffer);
-                }
-            });
+        Loader.prototype.loadText = function (url, onCompleted, onRequestProgress, onError) {
+            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
         };
         /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
+         * 加载二进制
+         * @param url   路径
          */
-        IndexedDBFS.prototype.readString = function (path, callback) {
-            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
-                if (err) {
-                    callback(err, data);
-                    return;
-                }
-                if (data instanceof ArrayBuffer) {
-                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
-                        callback(null, str);
-                    });
-                }
-                else if (data instanceof Object) {
-                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-                    callback(null, str);
-                }
-                else {
-                    callback(null, data);
-                }
-            });
-        };
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        IndexedDBFS.prototype.readObject = function (path, callback) {
-            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
-                if (err) {
-                    callback(err, data);
-                    return;
-                }
-                if (data instanceof ArrayBuffer) {
-                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
-                        var obj = JSON.parse(str);
-                        callback(null, obj);
-                    });
-                }
-                else if (data instanceof Object) {
-                    callback(null, data);
-                }
-                else {
-                    console.assert(typeof data == "string");
-                    var obj = JSON.parse(data);
-                    callback(null, obj);
-                }
-            });
+        Loader.prototype.loadBinary = function (url, onCompleted, onRequestProgress, onError) {
+            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
         };
         /**
          * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
+         * @param url   路径
          */
-        IndexedDBFS.prototype.readImage = function (path, callback) {
-            this.readArrayBuffer(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
-                    callback(null, img);
-                });
-            });
+        Loader.prototype.loadImage = function (url, onCompleted, onRequestProgress, onError) {
+            var image = new Image();
+            image.crossOrigin = "Anonymous";
+            image.onload = function (event) {
+                onCompleted && onCompleted(image);
+            };
+            image.onerror = function (event) {
+                console.error("Error while trying to load texture: " + url);
+                //
+                image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+                //
+                var err = new Error(url + " 加载失败！");
+                onError && onError(err);
+            };
+            image.src = url;
         };
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.getAbsolutePath = function (path) {
-            return path;
-        };
-        /**
-         * 是否为文件夹
-         *
-         * @param path 文件路径
-         * @param callback 完成回调
-         */
-        IndexedDBFS.prototype.isDirectory = function (path, callback) {
-            this.readString(path, function (err, data) {
-                callback(data == directorytoken);
-            });
-        };
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.exists = function (path, callback) {
-            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
-                callback(!!data);
-            });
-        };
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.readdir = function (path, callback) {
-            feng3d._indexedDB.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
-                if (!allfilepaths) {
-                    callback(err, null);
-                    return;
-                }
-                var subfilemap = {};
-                allfilepaths.forEach(function (element) {
-                    var dirp = path == "" ? path : (path + "/");
-                    if (element.substr(0, dirp.length) == dirp && element != path) {
-                        var result = element.substr(dirp.length);
-                        var subfile = result.split("/").shift();
-                        subfilemap[subfile] = 1;
-                    }
-                });
-                var files = Object.keys(subfilemap);
-                callback(null, files);
-            });
-        };
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.mkdir = function (path, callback) {
-            var _this = this;
-            this.exists(path, function (exists) {
-                if (exists) {
-                    callback(new Error("\u6587\u4EF6\u5939" + path + "\u5DF2\u5B58\u5728\u65E0\u6CD5\u65B0\u5EFA"));
-                    return;
-                }
-                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, directorytoken, callback);
-            });
-        };
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.deleteFile = function (path, callback) {
-            // 删除文件
-            feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
-            feng3d.globalDispatcher.dispatch("fs.delete", path);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
-            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            feng3d.globalDispatcher.dispatch("fs.write", path);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.writeString = function (path, data, callback) {
-            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            feng3d.globalDispatcher.dispatch("fs.write", path);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param object 文件数据
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.writeObject = function (path, object, callback) {
-            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
-            feng3d.globalDispatcher.dispatch("fs.write", path);
-        };
-        /**
-         * 写图片
-         * @param path 图片路径
-         * @param image 图片
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.writeImage = function (path, image, callback) {
-            var _this = this;
-            feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
-                _this.writeArrayBuffer(path, arraybuffer, callback);
-                feng3d.globalDispatcher.dispatch("fs.write", path);
-            });
-        };
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.copyFile = function (src, dest, callback) {
-            var _this = this;
-            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, src, function (err, data) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, dest, data, callback);
-            });
-        };
-        /**
-         * 是否存在指定项目
-         * @param projectname 项目名称
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.hasProject = function (projectname, callback) {
-            feng3d._indexedDB.getObjectStoreNames(this.DBname, function (err, objectStoreNames) {
-                if (err) {
-                    callback(false);
-                    return;
-                }
-                callback(objectStoreNames.indexOf(projectname) != -1);
-            });
-        };
-        /**
-         * 初始化项目
-         * @param projectname 项目名称
-         * @param callback 回调函数
-         */
-        IndexedDBFS.prototype.initproject = function (projectname, callback) {
-            this.projectname = projectname;
-            feng3d._indexedDB.createObjectStore(this.DBname, projectname, callback);
-        };
-        return IndexedDBFS;
+        return Loader;
     }());
-    feng3d.IndexedDBFS = IndexedDBFS;
-    feng3d.indexedDBFS = new IndexedDBFS();
+    feng3d.Loader = Loader;
+    feng3d.loader = new Loader();
+    /**
+     * 使用XMLHttpRequest加载
+     * @param url           加载路径
+     * @param dataFormat    数据类型
+     */
+    function xmlHttpRequestLoad(loadItem) {
+        var request = new XMLHttpRequest();
+        request.open('Get', loadItem.url, true);
+        request.setRequestHeader("Access-Control-Allow-Origin", "*");
+        request.responseType = loadItem.dataFormat == feng3d.LoaderDataFormat.BINARY ? "arraybuffer" : "";
+        request.onreadystatechange = onRequestReadystatechange(request, loadItem);
+        request.onprogress = onRequestProgress(request, loadItem);
+        request.send();
+    }
+    /**
+     * 请求进度回调
+     */
+    function onRequestProgress(request, loadItem) {
+        return function (event) {
+            loadItem.onProgress && loadItem.onProgress(event.loaded, event.total);
+        };
+    }
+    /**
+     * 请求状态变化回调
+     */
+    function onRequestReadystatechange(request, loadItem) {
+        return function (ev) {
+            if (request.readyState == 4) { // 4 = "loaded"
+                request.onreadystatechange = null;
+                if (request.status >= 200 && request.status < 300) {
+                    var content = loadItem.dataFormat == feng3d.LoaderDataFormat.TEXT ? request.responseText : request.response;
+                    loadItem.onCompleted && loadItem.onCompleted(content);
+                }
+                else {
+                    var err = new Error(loadItem.url + " 加载失败！");
+                    loadItem.onError && loadItem.onError(err);
+                    loadItem.onCompleted && loadItem.onCompleted(null);
+                }
+            }
+        };
+    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
-     * Http可读文件系统
+     * 加载数据类型
      */
-    var HttpFS = /** @class */ (function () {
-        function HttpFS(rootPath) {
-            if (rootPath === void 0) { rootPath = ""; }
+    var LoaderDataFormat;
+    (function (LoaderDataFormat) {
+        /**
+         * 以原始二进制数据形式接收下载的数据。
+         */
+        LoaderDataFormat["BINARY"] = "binary";
+        /**
+         * 以文本形式接收已下载的数据。
+         */
+        LoaderDataFormat["TEXT"] = "text";
+        /**
+         * 图片数据
+         */
+        LoaderDataFormat["IMAGE"] = "image";
+    })(LoaderDataFormat = feng3d.LoaderDataFormat || (feng3d.LoaderDataFormat = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var databases = {};
+    /**
+     *
+     */
+    var _IndexedDB = /** @class */ (function () {
+        function _IndexedDB() {
             /**
-             * 根路径
+             * 数据库状态
              */
-            this.rootPath = "";
-            this.type = feng3d.FSType.http;
-            this.rootPath = rootPath;
-            if (this.rootPath == "") {
-                if (typeof document != "undefined") {
-                    var url = document.URL.split("?").shift();
-                    this.rootPath = url.substring(0, url.lastIndexOf("/") + 1);
-                }
-            }
+            this._dbStatus = {};
         }
         /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
+         * 是否支持 indexedDB
          */
-        HttpFS.prototype.readArrayBuffer = function (path, callback) {
-            // rootPath
-            feng3d.loader.loadBinary(this.getAbsolutePath(path), function (content) {
-                callback(null, content);
-            }, null, function (e) {
-                callback(e, null);
-            });
+        _IndexedDB.prototype.support = function () {
+            if (typeof indexedDB == "undefined") {
+                indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
+                if (indexedDB == undefined) {
+                    return false;
+                }
+            }
+            return true;
         };
         /**
-         * 读取文件为字符串
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
+         * 获取数据库，如果不存在则新建数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
          */
-        HttpFS.prototype.readString = function (path, callback) {
-            feng3d.loader.loadText(this.getAbsolutePath(path), function (content) {
-                callback(null, content);
-            }, null, function (e) {
-                callback(e, null);
-            });
+        _IndexedDB.prototype.getDatabase = function (dbname, callback) {
+            if (databases[dbname]) {
+                callback(null, databases[dbname]);
+                return;
+            }
+            this._open(dbname, callback);
         };
         /**
-         * 读取文件为Object
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
+         * 打开或者升级数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         * @param upgrade 是否升级数据库
+         * @param onupgrade 升级回调
          */
-        HttpFS.prototype.readObject = function (path, callback) {
-            feng3d.loader.loadText(this.getAbsolutePath(path), function (content) {
-                var obj = JSON.parse(content);
-                callback(null, obj);
-            }, null, function (e) {
-                callback(e, null);
-            });
-        };
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        HttpFS.prototype.readImage = function (path, callback) {
-            var img = new Image();
-            img.onload = function () {
-                callback(null, img);
+        _IndexedDB.prototype._open = function (dbname, callback, upgrade, onupgrade) {
+            var _this = this;
+            if (upgrade === void 0) { upgrade = false; }
+            if (!this._dbStatus[dbname])
+                this._dbStatus[dbname] = { status: DBStatus.unOpen, onsuccessCallbacks: [], onupgradeneededCallbacks: [] };
+            this._dbStatus[dbname].onsuccessCallbacks.push(callback);
+            if (upgrade) {
+                console.assert(!!onupgrade);
+                this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
+            }
+            if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading)
+                return;
+            var request;
+            if (!upgrade) {
+                request = indexedDB.open(dbname);
+                this._dbStatus[dbname].status = DBStatus.opening;
+            }
+            else {
+                var oldDatabase = databases[dbname];
+                oldDatabase.close();
+                delete databases[dbname];
+                request = indexedDB.open(dbname, oldDatabase.version + 1);
+                this._dbStatus[dbname].status = DBStatus.upgrading;
+            }
+            request.onupgradeneeded = function (event) {
+                var newdatabase = event.target["result"];
+                request.onupgradeneeded = null;
+                var callbacks = _this._dbStatus[dbname].onupgradeneededCallbacks.concat();
+                _this._dbStatus[dbname].onupgradeneededCallbacks.length = 0;
+                callbacks.forEach(function (element) {
+                    element(newdatabase);
+                });
             };
-            img.onerror = function (evt) {
-                callback(new Error("\u52A0\u8F7D\u56FE\u7247" + path + "\u5931\u8D25"), null);
+            request.onsuccess = function (event) {
+                databases[dbname] = event.target["result"];
+                request.onsuccess = null;
+                _this._dbStatus[dbname].status = DBStatus.opened;
+                var callbacks = _this._dbStatus[dbname].onsuccessCallbacks.concat();
+                _this._dbStatus[dbname].onsuccessCallbacks.length = 0;
+                callbacks.forEach(function (element) {
+                    element(null, databases[dbname]);
+                });
             };
-            img.src = this.getAbsolutePath(path);
+            request.onerror = function (event) {
+                request.onerror = null;
+                _this._dbStatus[dbname].status = DBStatus.error;
+                var callbacks = _this._dbStatus[dbname].onsuccessCallbacks.concat();
+                _this._dbStatus[dbname].onsuccessCallbacks.length = 0;
+                callbacks.forEach(function (element) {
+                    element(event, null);
+                });
+            };
         };
         /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
+         * 删除数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
          */
-        HttpFS.prototype.getAbsolutePath = function (path) {
-            return this.rootPath + path;
+        _IndexedDB.prototype.deleteDatabase = function (dbname, callback) {
+            var request = indexedDB.deleteDatabase(dbname);
+            request.onsuccess = function (event) {
+                delete databases[dbname];
+                callback && callback(null);
+                request.onsuccess = null;
+            };
+            request.onerror = function (event) {
+                callback && callback(event);
+                request.onerror = null;
+            };
         };
-        return HttpFS;
+        /**
+         * 是否存在指定的对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                callback(database.objectStoreNames.contains(objectStroreName));
+            });
+        };
+        /**
+         * 获取对象存储名称列表
+         *
+         * @param dbname 数据库
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.getObjectStoreNames = function (dbname, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                var objectStoreNames = [];
+                for (var i = 0; i < database.objectStoreNames.length; i++) {
+                    objectStoreNames.push(database.objectStoreNames.item(i));
+                }
+                callback(null, objectStoreNames);
+            });
+        };
+        /**
+         * 创建对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
+            var _this = this;
+            this.getDatabase(dbname, function (err, database) {
+                if (database.objectStoreNames.contains(objectStroreName)) {
+                    callback && callback(null);
+                    return;
+                }
+                _this._open(dbname, callback, true, function (newdatabase) {
+                    newdatabase.createObjectStore(objectStroreName);
+                });
+            });
+        };
+        /**
+         * 删除对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
+            var _this = this;
+            this.getDatabase(dbname, function (err, database) {
+                if (!database.objectStoreNames.contains(objectStroreName)) {
+                    callback && callback(null);
+                    return;
+                }
+                _this._open(dbname, callback, true, function (newdatabase) {
+                    newdatabase.deleteObjectStore(objectStroreName);
+                });
+            });
+        };
+        /**
+         * 获取对象存储中所有键列表
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.getAllKeys();
+                    request.onsuccess = function (event) {
+                        callback && callback(null, event.target["result"]);
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error, null);
+                }
+            });
+        };
+        /**
+         * 获取对象存储中指定键对应的数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStoreGet = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                var transaction = database.transaction([objectStroreName], 'readwrite');
+                var objectStore = transaction.objectStore(objectStroreName);
+                var request = objectStore.get(key);
+                request.onsuccess = function (event) {
+                    var result = event.target["result"];
+                    callback && callback(result != null ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
+                    request.onsuccess = null;
+                };
+            });
+        };
+        /**
+         * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param data 数据
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStorePut = function (dbname, objectStroreName, key, data, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.put(data, key);
+                    request.onsuccess = function (event) {
+                        callback && callback(null);
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        /**
+         * 删除对象存储中指定键以及对于数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStoreDelete = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.delete(key);
+                    request.onsuccess = function (event) {
+                        callback && callback();
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        /**
+         * 清空对象存储中数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStoreClear = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.clear();
+                    request.onsuccess = function (event) {
+                        callback && callback();
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        return _IndexedDB;
     }());
-    feng3d.HttpFS = HttpFS;
-    feng3d.basefs = new HttpFS();
+    feng3d._IndexedDB = _IndexedDB;
+    feng3d._indexedDB = new _IndexedDB();
+    /**
+     * 数据库状态
+     */
+    var DBStatus;
+    (function (DBStatus) {
+        /**
+         * 未开启
+         */
+        DBStatus[DBStatus["unOpen"] = 0] = "unOpen";
+        /**
+         * 正在开启中
+         */
+        DBStatus[DBStatus["opening"] = 1] = "opening";
+        /**
+         * 已开启
+         */
+        DBStatus[DBStatus["opened"] = 2] = "opened";
+        /**
+         * 正在升级中
+         */
+        DBStatus[DBStatus["upgrading"] = 3] = "upgrading";
+        /**
+         * 开启或者升级失败
+         */
+        DBStatus[DBStatus["error"] = 4] = "error";
+    })(DBStatus || (DBStatus = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -17962,19 +18000,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var WindowEventProxy = /** @class */ (function (_super) {
-        __extends(WindowEventProxy, _super);
-        function WindowEventProxy() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return WindowEventProxy;
-    }(feng3d.EventProxy));
-    feng3d.WindowEventProxy = WindowEventProxy;
-    if (typeof window != "undefined")
-        feng3d.windowEventProxy = new WindowEventProxy(window);
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * 键盘按键字典 （补充常量，a-z以及鼠标按键不必再次列出）
      * 例如 boardKeyDic[17] = "ctrl";
@@ -18022,6 +18047,134 @@ var feng3d;
         return KeyBoard;
     }());
     feng3d.KeyBoard = KeyBoard;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 初始化快捷键模块
+     *
+     * <pre>
+var shortcuts:Array = [ //
+//在按下key1时触发命令command1
+    {key: "key1", command: "command1", when: ""}, //
+     //在按下key1时触发状态命令改变stateCommand1为激活状态
+    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
+     //处于state1状态时按下key1触发命令command1
+    {key: "key1", command: "command1", when: "state1"}, //
+    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
+    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
+    ];
+//添加快捷键
+shortCut.addShortCuts(shortcuts);
+//监听命令
+Event.on(shortCut,<any>"run", function(e:Event):void
+{
+    trace("接受到命令：" + e.type);
+});
+     * </pre>
+     */
+    var ShortCut = /** @class */ (function (_super) {
+        __extends(ShortCut, _super);
+        /**
+         * 初始化快捷键模块
+         */
+        function ShortCut() {
+            var _this = _super.call(this) || this;
+            /**
+             * 启动
+             */
+            _this.enable = true;
+            _this.keyState = new feng3d.KeyState();
+            _this.keyCapture = new feng3d.KeyCapture(_this);
+            _this.captureDic = {};
+            _this.stateDic = {};
+            return _this;
+        }
+        /**
+         * 添加快捷键
+         * @param shortcuts		快捷键列表
+         */
+        ShortCut.prototype.addShortCuts = function (shortcuts) {
+            for (var i = 0; i < shortcuts.length; i++) {
+                var shortcut = shortcuts[i];
+                var shortcutUniqueKey = this.getShortcutUniqueKey(shortcut);
+                this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new feng3d.ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
+            }
+        };
+        /**
+         * 删除快捷键
+         * @param shortcuts		快捷键列表
+         */
+        ShortCut.prototype.removeShortCuts = function (shortcuts) {
+            for (var i = 0; i < shortcuts.length; i++) {
+                var shortcutUniqueKey = this.getShortcutUniqueKey(shortcuts[i]);
+                var shortCutCapture = this.captureDic[shortcutUniqueKey];
+                if (feng3d.ShortCutCapture != null) {
+                    shortCutCapture.destroy();
+                }
+                delete this.captureDic[shortcutUniqueKey];
+            }
+        };
+        /**
+         * 移除所有快捷键
+         */
+        ShortCut.prototype.removeAllShortCuts = function () {
+            var _this = this;
+            var keys = [];
+            var key;
+            for (key in this.captureDic) {
+                keys.push(key);
+            }
+            keys.forEach(function (key) {
+                var shortCutCapture = _this.captureDic[key];
+                shortCutCapture.destroy();
+                delete _this.captureDic[key];
+            });
+        };
+        /**
+         * 激活状态
+         * @param state 状态名称
+         */
+        ShortCut.prototype.activityState = function (state) {
+            this.stateDic[state] = true;
+        };
+        /**
+         * 取消激活状态
+         * @param state 状态名称
+         */
+        ShortCut.prototype.deactivityState = function (state) {
+            delete this.stateDic[state];
+        };
+        /**
+         * 获取状态
+         * @param state 状态名称
+         */
+        ShortCut.prototype.getState = function (state) {
+            return !!this.stateDic[state];
+        };
+        /**
+         * 获取快捷键唯一字符串
+         */
+        ShortCut.prototype.getShortcutUniqueKey = function (shortcut) {
+            return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
+        };
+        return ShortCut;
+    }(feng3d.EventDispatcher));
+    feng3d.ShortCut = ShortCut;
+    feng3d.shortcut = new ShortCut();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var WindowEventProxy = /** @class */ (function (_super) {
+        __extends(WindowEventProxy, _super);
+        function WindowEventProxy() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return WindowEventProxy;
+    }(feng3d.EventProxy));
+    feng3d.WindowEventProxy = WindowEventProxy;
+    if (typeof window != "undefined")
+        feng3d.windowEventProxy = new WindowEventProxy(window);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -18407,1729 +18560,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 初始化快捷键模块
-     *
-     * <pre>
-var shortcuts:Array = [ //
-//在按下key1时触发命令command1
-    {key: "key1", command: "command1", when: ""}, //
-     //在按下key1时触发状态命令改变stateCommand1为激活状态
-    {key: "key1", stateCommand: "stateCommand1", when: "state1"}, //
-     //处于state1状态时按下key1触发命令command1
-    {key: "key1", command: "command1", when: "state1"}, //
-    //处于state1状态不处于state2时按下key1与没按下key2触发command1与command2，改变stateCommand1为激活状态，stateCommand2为非激活状态
-    {key: "key1+ ! key2", command: "command1,command2", stateCommand: "stateCommand1,!stateCommand2", when: "state1+!state2"}, //
-    ];
-//添加快捷键
-shortCut.addShortCuts(shortcuts);
-//监听命令
-Event.on(shortCut,<any>"run", function(e:Event):void
-{
-    trace("接受到命令：" + e.type);
-});
-     * </pre>
-     */
-    var ShortCut = /** @class */ (function (_super) {
-        __extends(ShortCut, _super);
-        /**
-         * 初始化快捷键模块
-         */
-        function ShortCut() {
-            var _this = _super.call(this) || this;
-            /**
-             * 启动
-             */
-            _this.enable = true;
-            _this.keyState = new feng3d.KeyState();
-            _this.keyCapture = new feng3d.KeyCapture(_this);
-            _this.captureDic = {};
-            _this.stateDic = {};
-            return _this;
-        }
-        /**
-         * 添加快捷键
-         * @param shortcuts		快捷键列表
-         */
-        ShortCut.prototype.addShortCuts = function (shortcuts) {
-            for (var i = 0; i < shortcuts.length; i++) {
-                var shortcut = shortcuts[i];
-                var shortcutUniqueKey = this.getShortcutUniqueKey(shortcut);
-                this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new feng3d.ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
-            }
-        };
-        /**
-         * 删除快捷键
-         * @param shortcuts		快捷键列表
-         */
-        ShortCut.prototype.removeShortCuts = function (shortcuts) {
-            for (var i = 0; i < shortcuts.length; i++) {
-                var shortcutUniqueKey = this.getShortcutUniqueKey(shortcuts[i]);
-                var shortCutCapture = this.captureDic[shortcutUniqueKey];
-                if (feng3d.ShortCutCapture != null) {
-                    shortCutCapture.destroy();
-                }
-                delete this.captureDic[shortcutUniqueKey];
-            }
-        };
-        /**
-         * 移除所有快捷键
-         */
-        ShortCut.prototype.removeAllShortCuts = function () {
-            var _this = this;
-            var keys = [];
-            var key;
-            for (key in this.captureDic) {
-                keys.push(key);
-            }
-            keys.forEach(function (key) {
-                var shortCutCapture = _this.captureDic[key];
-                shortCutCapture.destroy();
-                delete _this.captureDic[key];
-            });
-        };
-        /**
-         * 激活状态
-         * @param state 状态名称
-         */
-        ShortCut.prototype.activityState = function (state) {
-            this.stateDic[state] = true;
-        };
-        /**
-         * 取消激活状态
-         * @param state 状态名称
-         */
-        ShortCut.prototype.deactivityState = function (state) {
-            delete this.stateDic[state];
-        };
-        /**
-         * 获取状态
-         * @param state 状态名称
-         */
-        ShortCut.prototype.getState = function (state) {
-            return !!this.stateDic[state];
-        };
-        /**
-         * 获取快捷键唯一字符串
-         */
-        ShortCut.prototype.getShortcutUniqueKey = function (shortcut) {
-            return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
-        };
-        return ShortCut;
-    }(feng3d.EventDispatcher));
-    feng3d.ShortCut = ShortCut;
-    feng3d.shortcut = new ShortCut();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 渲染模式
-     * A GLenum specifying the type primitive to render. Possible values are:
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-     */
-    var RenderMode;
-    (function (RenderMode) {
-        /**
-         * 点渲染
-         * gl.POINTS: Draws a single dot.
-         */
-        RenderMode["POINTS"] = "POINTS";
-        /**
-         * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
-         */
-        RenderMode["LINE_LOOP"] = "LINE_LOOP";
-        /**
-         * gl.LINE_STRIP: Draws a straight line to the next vertex.
-         */
-        RenderMode["LINE_STRIP"] = "LINE_STRIP";
-        /**
-         * gl.LINES: Draws a line between a pair of vertices.
-         */
-        RenderMode["LINES"] = "LINES";
-        /**
-         * gl.TRIANGLES: Draws a triangle for a group of three vertices.
-         */
-        RenderMode["TRIANGLES"] = "TRIANGLES";
-        /**
-         * gl.TRIANGLE_STRIP
-         * @see https://en.wikipedia.org/wiki/Triangle_strip
-         */
-        RenderMode["TRIANGLE_STRIP"] = "TRIANGLE_STRIP";
-        /**
-         * gl.TRIANGLE_FAN
-         * @see https://en.wikipedia.org/wiki/Triangle_fan
-         */
-        RenderMode["TRIANGLE_FAN"] = "TRIANGLE_FAN";
-    })(RenderMode = feng3d.RenderMode || (feng3d.RenderMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 纹理类型
-     * A GLenum specifying the binding point (target). Possible values:
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
-     */
-    var TextureType;
-    (function (TextureType) {
-        /**
-         * gl.TEXTURE_2D: A two-dimensional texture.
-         */
-        TextureType["TEXTURE_2D"] = "TEXTURE_2D";
-        /**
-         * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
-         */
-        TextureType["TEXTURE_CUBE_MAP"] = "TEXTURE_CUBE_MAP";
-        // /**
-        //  * using a WebGL 2 context
-        //  * gl.TEXTURE_3D: A three-dimensional texture.
-        //  */
-        // TEXTURE_3D = "TEXTURE_3D",
-        // /**
-        //  * using a WebGL 2 context
-        //  * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
-        //  */
-        // TEXTURE_2D_ARRAY = "TEXTURE_2D_ARRAY",
-    })(TextureType = feng3d.TextureType || (feng3d.TextureType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 混合方法
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
-     */
-    var BlendEquation;
-    (function (BlendEquation) {
-        /**
-         *  source + destination
-         */
-        BlendEquation["FUNC_ADD"] = "FUNC_ADD";
-        /**
-         * source - destination
-         */
-        BlendEquation["FUNC_SUBTRACT"] = "FUNC_SUBTRACT";
-        /**
-         * destination - source
-         */
-        BlendEquation["FUNC_REVERSE_SUBTRACT"] = "FUNC_REVERSE_SUBTRACT";
-        // /**
-        //  * When using the EXT_blend_minmax extension:
-        //  * Minimum of source and destination
-        //  */
-        // MIN_EXT = "MIN_EXT",
-        // /**
-        //  * When using the EXT_blend_minmax extension:
-        //  * Maximum of source and destination.
-        //  */
-        // MAX_EXT = "MAX_EXT",
-        // /**
-        //  * using a WebGL 2 context
-        //  * Minimum of source and destination
-        //  */
-        // MIN = "MIN",
-        // /**
-        //  * using a WebGL 2 context
-        //  * Maximum of source and destination.
-        //  */
-        // MAX = "MAX",
-    })(BlendEquation = feng3d.BlendEquation || (feng3d.BlendEquation = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 混合因子（R分量系数，G分量系数，B分量系数）
-     */
-    var BlendFactor;
-    (function (BlendFactor) {
-        /**
-         * 0.0  0.0 0.0
-         */
-        BlendFactor["ZERO"] = "ZERO";
-        /**
-         * 1.0  1.0 1.0
-         */
-        BlendFactor["ONE"] = "ONE";
-        /**
-         * Rs   Gs  Bs
-         */
-        BlendFactor["SRC_COLOR"] = "SRC_COLOR";
-        /**
-         * 1-Rs   1-Gs  1-Bs
-         */
-        BlendFactor["ONE_MINUS_SRC_COLOR"] = "ONE_MINUS_SRC_COLOR";
-        /**
-         * Rd   Gd  Bd
-         */
-        BlendFactor["DST_COLOR"] = "DST_COLOR";
-        /**
-         * 1-Rd   1-Gd  1-Bd
-         */
-        BlendFactor["ONE_MINUS_DST_COLOR"] = "ONE_MINUS_DST_COLOR";
-        /**
-         * As   As  As
-         */
-        BlendFactor["SRC_ALPHA"] = "SRC_ALPHA";
-        /**
-         * 1-As   1-As  1-As
-         */
-        BlendFactor["ONE_MINUS_SRC_ALPHA"] = "ONE_MINUS_SRC_ALPHA";
-        /**
-         * Ad   Ad  Ad
-         */
-        BlendFactor["DST_ALPHA"] = "DST_ALPHA";
-        /**
-         * 1-Ad   1-Ad  1-Ad
-         */
-        BlendFactor["ONE_MINUS_DST_ALPHA"] = "ONE_MINUS_DST_ALPHA";
-        /**
-         * min(As-Ad)   min(As-Ad)  min(As-Ad)
-         */
-        BlendFactor["SRC_ALPHA_SATURATE"] = "SRC_ALPHA_SATURATE";
-    })(BlendFactor = feng3d.BlendFactor || (feng3d.BlendFactor = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 裁剪面枚举
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
-     */
-    var CullFace;
-    (function (CullFace) {
-        /**
-         * 关闭裁剪面
-         */
-        CullFace["NONE"] = "NONE";
-        /**
-         * 正面
-         */
-        CullFace["FRONT"] = "FRONT";
-        /**
-         * 背面
-         */
-        CullFace["BACK"] = "BACK";
-        /**
-         * 正面与背面
-         */
-        CullFace["FRONT_AND_BACK"] = "FRONT_AND_BACK";
-    })(CullFace = feng3d.CullFace || (feng3d.CullFace = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 决定给WebGLRenderingContext.colorMask何种参数。
-     */
-    var ColorMask;
-    (function (ColorMask) {
-        ColorMask[ColorMask["NONE"] = 0] = "NONE";
-        ColorMask[ColorMask["R"] = 1] = "R";
-        ColorMask[ColorMask["G"] = 2] = "G";
-        ColorMask[ColorMask["B"] = 4] = "B";
-        ColorMask[ColorMask["A"] = 8] = "A";
-        ColorMask[ColorMask["RGB"] = 7] = "RGB";
-        /**
-         *
-         */
-        ColorMask[ColorMask["RGBA"] = 15] = "RGBA";
-    })(ColorMask = feng3d.ColorMask || (feng3d.ColorMask = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 正面方向枚举
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
-     */
-    var FrontFace;
-    (function (FrontFace) {
-        /**
-         * Clock-wise winding.
-         */
-        FrontFace["CW"] = "CW";
-        /**
-         *  Counter-clock-wise winding.
-         */
-        FrontFace["CCW"] = "CCW";
-    })(FrontFace = feng3d.FrontFace || (feng3d.FrontFace = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 纹理颜色格式
-     * A GLint specifying the color components in the texture
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
-     */
-    var TextureFormat;
-    (function (TextureFormat) {
-        /**
-         * Discards the red, green and blue components and reads the alpha component.
-         */
-        TextureFormat["ALPHA"] = "ALPHA";
-        /**
-         *  Discards the alpha components and reads the red, green and blue components.
-         */
-        TextureFormat["RGB"] = "RGB";
-        /**
-         * Red, green, blue and alpha components are read from the color buffer.
-         */
-        TextureFormat["RGBA"] = "RGBA";
-        /**
-         * Each color component is a luminance component, alpha is 1.0.
-         */
-        TextureFormat["LUMINANCE"] = "LUMINANCE";
-        /**
-         * Each component is a luminance/alpha component.
-         */
-        TextureFormat["LUMINANCE_ALPHA"] = "LUMINANCE_ALPHA";
-        // /**
-        //  * When using the WEBGL_depth_texture extension:
-        //  */
-        // DEPTH_COMPONENT = "DEPTH_COMPONENT",
-        // /**
-        //  * When using the WEBGL_depth_texture extension:
-        //  */
-        // DEPTH_STENCIL = "DEPTH_STENCIL",
-        // /**
-        //  * When using the EXT_sRGB extension:
-        //  */
-        // SRGB_EXT = "SRGB_EXT",
-        // /**
-        //  * When using the EXT_sRGB extension:
-        //  */
-        // SRGB_ALPHA_EXT = "SRGB_ALPHA_EXT",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // R8 = "R8",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // R16F = "R16F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // R32F = "R32F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // R8UI = "R8UI",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RG8 = "RG8",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RG16F = "RG16F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RG32F = "RG32F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RG8UI = "RG8UI",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RG16UI = "RG16UI",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RG32UI = "RG32UI",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB8 = "RGB8",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // SRGB8 = "SRGB8",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB565 = "RGB565",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // R11F_G11F_B10F = "R11F_G11F_B10F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB9_E5 = "RGB9_E5",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB16F = "RGB16F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB32F = "RGB32F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB8UI = "RGB8UI",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGBA8 = "RGBA8",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // // SRGB8_APLHA8,
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB5_A1 = "RGB5_A1",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGB10_A2 = "RGB10_A2",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGBA4 = "RGBA4",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGBA16F = "RGBA16F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGBA32F = "RGBA32F",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // RGBA8UI = "RGBA8UI",
-    })(TextureFormat = feng3d.TextureFormat || (feng3d.TextureFormat = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 纹理数据类型
-     * A GLenum specifying the data type of the texel data
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
-     */
-    var TextureDataType;
-    (function (TextureDataType) {
-        /**
-         * 8 bits per channel for gl.RGBA
-         */
-        TextureDataType["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";
-        /**
-         * 5 red bits, 6 green bits, 5 blue bits.
-         */
-        TextureDataType["UNSIGNED_SHORT_5_6_5"] = "UNSIGNED_SHORT_5_6_5";
-        /**
-         * 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
-         */
-        TextureDataType["UNSIGNED_SHORT_4_4_4_4"] = "UNSIGNED_SHORT_4_4_4_4";
-        /**
-         * 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
-         */
-        TextureDataType["UNSIGNED_SHORT_5_5_5_1"] = "UNSIGNED_SHORT_5_5_5_1";
-        // /**
-        //  * When using the WEBGL_depth_texture extension:
-        //  */
-        // UNSIGNED_SHORT = "UNSIGNED_SHORT",
-        // /**
-        //  * When using the WEBGL_depth_texture extension:
-        //  */
-        // UNSIGNED_INT = "UNSIGNED_INT",
-        // /**
-        //  * When using the WEBGL_depth_texture extension:
-        //  *  (constant provided by the extension)
-        //  */
-        // UNSIGNED_INT_24_8_WEBGL = "UNSIGNED_INT_24_8_WEBGL",
-        // //When using the OES_texture_half_float extension:
-        // /**
-        //  * When using the OES_texture_float extension:
-        //  */
-        // FLOAT = "FLOAT",
-        // /**
-        //  * When using the OES_texture_half_float extension:
-        //  *  (constant provided by the extension)
-        //  */
-        // HALF_FLOAT_OES = "HALF_FLOAT_OES",
-        // // When using a WebGL 2 context, the following values are available additionally:
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // BYTE = "BYTE",
-        // // UNSIGNED_SHORT   // 与上面合并处理
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // SHORT = "SHORT",
-        // // UNSIGNED_INT     // 与上面合并处理
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // INT = "INT",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // HALF_FLOAT = "HALF_FLOAT",
-        // // FLOAT               // 与上面合并处理
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // UNSIGNED_INT_2_10_10_10_REV = "UNSIGNED_INT_2_10_10_10_REV",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // UNSIGNED_INT_10F_11F_11F_REV = "UNSIGNED_INT_10F_11F_11F_REV",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // UNSIGNED_INT_5_9_9_9_REV = "UNSIGNED_INT_5_9_9_9_REV",
-        // /**
-        //  * using a WebGL 2 context
-        //  */
-        // UNSIGNED_INT_24_8 = "UNSIGNED_INT_24_8",
-        // /**
-        //  * using a WebGL 2 context
-        //  *  (pixels must be null)
-        //  */
-        // FLOAT_32_UNSIGNED_INT_24_8_REV = "FLOAT_32_UNSIGNED_INT_24_8_REV",
-    })(TextureDataType = feng3d.TextureDataType || (feng3d.TextureDataType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 纹理缩小过滤器
-     * Texture minification filter
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    var TextureMinFilter;
-    (function (TextureMinFilter) {
-        TextureMinFilter["LINEAR"] = "LINEAR";
-        TextureMinFilter["NEAREST"] = "NEAREST";
-        TextureMinFilter["NEAREST_MIPMAP_NEAREST"] = "NEAREST_MIPMAP_NEAREST";
-        TextureMinFilter["LINEAR_MIPMAP_NEAREST"] = "LINEAR_MIPMAP_NEAREST";
-        /**
-         *  (default value)
-         */
-        TextureMinFilter["NEAREST_MIPMAP_LINEAR"] = "NEAREST_MIPMAP_LINEAR";
-        TextureMinFilter["LINEAR_MIPMAP_LINEAR"] = "LINEAR_MIPMAP_LINEAR";
-    })(TextureMinFilter = feng3d.TextureMinFilter || (feng3d.TextureMinFilter = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 纹理放大滤波器
-     * Texture magnification filter
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    var TextureMagFilter;
-    (function (TextureMagFilter) {
-        /**
-         *  (default value)
-         */
-        TextureMagFilter["LINEAR"] = "LINEAR";
-        TextureMagFilter["NEAREST"] = "NEAREST";
-    })(TextureMagFilter = feng3d.TextureMagFilter || (feng3d.TextureMagFilter = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 纹理坐标s包装函数枚举
-     * Wrapping function for texture coordinate s
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    var TextureWrap;
-    (function (TextureWrap) {
-        /**
-         * (default value)
-         */
-        TextureWrap["REPEAT"] = "REPEAT";
-        TextureWrap["CLAMP_TO_EDGE"] = "CLAMP_TO_EDGE";
-        TextureWrap["MIRRORED_REPEAT"] = "MIRRORED_REPEAT";
-    })(TextureWrap = feng3d.TextureWrap || (feng3d.TextureWrap = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * GL 数组数据类型
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
-     */
-    var GLArrayType;
-    (function (GLArrayType) {
-        /**
-         * signed 8-bit integer, with values in [-128, 127]
-         */
-        GLArrayType["BYTE"] = "BYTE";
-        /**
-         *  signed 16-bit integer, with values in [-32768, 32767]
-         */
-        GLArrayType["SHORT"] = "SHORT";
-        /**
-         * unsigned 8-bit integer, with values in [0, 255]
-         */
-        GLArrayType["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";
-        /**
-         * unsigned 16-bit integer, with values in [0, 65535]
-         */
-        GLArrayType["UNSIGNED_SHORT"] = "UNSIGNED_SHORT";
-        /**
-         * 32-bit floating point number
-         */
-        GLArrayType["FLOAT"] = "FLOAT";
-        // /**
-        //  * using a WebGL 2 context
-        //  * 16-bit floating point number
-        //  */
-        // HALF_FLOAT = "HALF_FLOAT",
-    })(GLArrayType = feng3d.GLArrayType || (feng3d.GLArrayType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
-     *
-     * 指定数据存储区的使用方法。
-     *
-     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/bufferData
-     */
-    var AttributeUsage;
-    (function (AttributeUsage) {
-        /**
-         * The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
-         *
-         * 内容由应用程序指定一次，并多次用作WebGL绘图和图像规范命令的源。
-         *
-         * 缓冲区的内容可能经常使用，而不会经常更改。内容被写入缓冲区，但不被读取。
-         */
-        AttributeUsage["STATIC_DRAW"] = "STATIC_DRAW";
-        /**
-         * The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
-         *
-         * 这些内容将由应用程序反复重新指定，并多次用作WebGL绘图和图像规范命令的源。
-         */
-        AttributeUsage["DYNAMIC_DRAW"] = "DYNAMIC_DRAW";
-        /**
-         * The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands.
-         *
-         * 内容由应用程序指定一次，最多几次用作WebGL绘图和图像规范命令的源。
-         */
-        AttributeUsage["STREAM_DRAW"] = "STREAM_DRAW";
-    })(AttributeUsage = feng3d.AttributeUsage || (feng3d.AttributeUsage = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 深度检测方法枚举
-     * A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS.
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
-     */
-    var DepthFunc;
-    (function (DepthFunc) {
-        /**
-         * (never pass)
-         */
-        DepthFunc["NEVER"] = "NEVER";
-        /**
-         *  (pass if the incoming value is less than the depth buffer value)
-         */
-        DepthFunc["LESS"] = "LESS";
-        /**
-         *  (pass if the incoming value equals the the depth buffer value)
-         */
-        DepthFunc["EQUAL"] = "EQUAL";
-        /**
-         *  (pass if the incoming value is less than or equal to the depth buffer value)
-         */
-        DepthFunc["LEQUAL"] = "LEQUAL";
-        /**
-         * (pass if the incoming value is greater than the depth buffer value)
-         */
-        DepthFunc["GREATER"] = "GREATER";
-        /**
-         * (pass if the incoming value is not equal to the depth buffer value)
-         */
-        DepthFunc["NOTEQUAL"] = "NOTEQUAL";
-        /**
-         * (pass if the incoming value is greater than or equal to the depth buffer value)
-         */
-        DepthFunc["GEQUAL"] = "GEQUAL";
-        /**
-         *  (always pass)
-         */
-        DepthFunc["ALWAYS"] = "ALWAYS";
-    })(DepthFunc = feng3d.DepthFunc || (feng3d.DepthFunc = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var GL = /** @class */ (function () {
-        function GL() {
-        }
-        /**
-         * 获取 GL 实例
-         * @param canvas 画布
-         * @param contextAttributes
-         */
-        GL.getGL = function (canvas, contextAttributes) {
-            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-            // var contextIds = ["webgl"];
-            var gl = null;
-            for (var i = 0; i < contextIds.length; ++i) {
-                try {
-                    gl = canvas.getContext(contextIds[i], contextAttributes);
-                    gl.contextId = contextIds[i];
-                    gl.contextAttributes = contextAttributes;
-                    break;
-                }
-                catch (e) { }
-            }
-            if (!gl)
-                throw "无法初始化WEBGL";
-            //
-            new feng3d.GLCache(gl);
-            new feng3d.GLExtension(gl);
-            new feng3d.GLCapabilities(gl);
-            new feng3d.WebGLRenderer(gl);
-            //
-            gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
-            gl.clearDepth(1.0); // Clear everything
-            gl.enable(gl.DEPTH_TEST); // Enable depth testing
-            gl.depthFunc(gl.LEQUAL); // Near things obscure far things
-            this.glList.push(gl);
-            return gl;
-        };
-        GL.glList = [];
-        return GL;
-    }());
-    feng3d.GL = GL;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * GL 缓存
-     */
-    var GLCache = /** @class */ (function () {
-        function GLCache(gl) {
-            this.compileShaderResults = {};
-            /**
-             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
-             */
-            this.textures = new Map();
-            /**
-             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
-             */
-            this.attributes = new Map();
-            /**
-             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
-             */
-            this.indices = new Map();
-            /**
-             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
-             */
-            this.renderBuffers = new Map();
-            /**
-             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
-             */
-            this.frameBuffers = new Map();
-            gl.cache = this;
-            this._gl = gl;
-        }
-        return GLCache;
-    }());
-    feng3d.GLCache = GLCache;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * GL扩展
-     */
-    var GLExtension = /** @class */ (function () {
-        function GLExtension(gl) {
-            console.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
-            gl.extensions = this;
-            this.initExtensions(gl);
-            this.cacheGLQuery(gl);
-            this.wrap(gl);
-        }
-        GLExtension.prototype.initExtensions = function (gl) {
-            this.ANGLE_instanced_arrays = gl.getExtension("ANGLE_instanced_arrays");
-            this.EXT_blend_minmax = gl.getExtension("EXT_blend_minmax");
-            this.EXT_color_buffer_half_float = gl.getExtension("EXT_color_buffer_half_float");
-            this.EXT_frag_depth = gl.getExtension("EXT_frag_depth");
-            this.EXT_sRGB = gl.getExtension("EXT_sRGB");
-            this.EXT_shader_texture_lod = gl.getExtension("EXT_shader_texture_lod");
-            this.EXT_texture_filter_anisotropic = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
-            this.OES_element_index_uint = gl.getExtension("OES_element_index_uint");
-            this.OES_standard_derivatives = gl.getExtension("OES_standard_derivatives");
-            this.OES_texture_float = gl.getExtension("OES_texture_float");
-            this.OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
-            this.OES_texture_half_float = gl.getExtension("OES_texture_half_float");
-            this.OES_texture_half_float_linear = gl.getExtension("OES_texture_half_float_linear");
-            this.OES_vertex_array_object = gl.getExtension("OES_vertex_array_object");
-            this.WEBGL_color_buffer_float = gl.getExtension("WEBGL_color_buffer_float");
-            this.WEBGL_compressed_texture_atc = gl.getExtension("WEBGL_compressed_texture_atc") || gl.getExtension("WEBKIT_WEBGL_compressed_texture_atc");
-            this.WEBGL_compressed_texture_etc1 = gl.getExtension("WEBGL_compressed_texture_etc1");
-            this.WEBGL_compressed_texture_pvrtc = gl.getExtension('WEBGL_compressed_texture_pvrtc') || gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
-            this.WEBGL_compressed_texture_s3tc = gl.getExtension('WEBGL_compressed_texture_s3tc') || gl.getExtension('MOZ_WEBGL_compressed_texture_s3tc') || gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc');
-            this.WEBGL_debug_renderer_info = gl.getExtension("WEBGL_debug_renderer_info");
-            this.WEBGL_debug_shaders = gl.getExtension("WEBGL_debug_shaders");
-            this.WEBGL_depth_texture = gl.getExtension('WEBGL_depth_texture') || gl.getExtension('MOZ_WEBGL_depth_texture') || gl.getExtension('WEBKIT_WEBGL_depth_texture');
-            this.WEBGL_draw_buffers = gl.getExtension("WEBGL_draw_buffers");
-            this.WEBGL_lose_context = gl.getExtension("WEBGL_lose_context") || gl.getExtension("WEBKIT_WEBGL_lose_context") || gl.getExtension("MOZ_WEBGL_lose_context");
-        };
-        /**
-         * 缓存GL查询
-         * @param gl GL实例
-         */
-        GLExtension.prototype.cacheGLQuery = function (gl) {
-            var oldGetExtension = gl.getExtension;
-            gl.getExtension = function (name) {
-                gl.extensions[name] = gl.extensions[name] || oldGetExtension.apply(gl, arguments);
-                return gl.extensions[name];
-            };
-        };
-        GLExtension.prototype.wrap = function (gl) {
-            if (!gl.texParameterfAnisotropy) {
-                gl.texParameterfAnisotropy = function (target, anisotropy) {
-                    if (anisotropy <= 0)
-                        return;
-                    if (gl.extensions.EXT_texture_filter_anisotropic) {
-                        if (anisotropy > gl.capabilities.maxAnisotropy) {
-                            anisotropy = gl.capabilities.maxAnisotropy;
-                            console.warn(anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.capabilities.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
-                        }
-                        gl.texParameterf(target, gl.extensions.EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-                    }
-                    else {
-                        console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
-                    }
-                };
-            }
-            //
-            if (!gl.vertexAttribDivisor) {
-                gl.vertexAttribDivisor = function (index, divisor) {
-                    if (gl.extensions.ANGLE_instanced_arrays) {
-                        gl.extensions.ANGLE_instanced_arrays.vertexAttribDivisorANGLE(index, divisor);
-                    }
-                    else {
-                        console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
-                    }
-                };
-            }
-            if (!gl.drawElementsInstanced) {
-                gl.drawElementsInstanced = function (mode, count, type, offset, instanceCount) {
-                    if (gl.extensions.ANGLE_instanced_arrays) {
-                        gl.extensions.ANGLE_instanced_arrays.drawElementsInstancedANGLE(mode, count, type, offset, instanceCount);
-                    }
-                    else {
-                        console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
-                    }
-                };
-            }
-            if (!gl.drawArraysInstanced) {
-                gl.drawArraysInstanced = function (mode, first, count, instanceCount) {
-                    if (gl.extensions.ANGLE_instanced_arrays) {
-                        gl.extensions.ANGLE_instanced_arrays.drawArraysInstancedANGLE(mode, first, count, instanceCount);
-                    }
-                    else {
-                        console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawArraysInstanced \uFF01");
-                    }
-                };
-            }
-        };
-        return GLExtension;
-    }());
-    feng3d.GLExtension = GLExtension;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * WEBGL 支持功能
-     *
-     * @see https://webglreport.com
-     * @see http://html5test.com
-     */
-    var GLCapabilities = /** @class */ (function () {
-        function GLCapabilities(gl) {
-            gl.capabilities = this;
-            function getMaxPrecision(precision) {
-                if (precision === 'highp') {
-                    if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision > 0 &&
-                        gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision > 0) {
-                        return 'highp';
-                    }
-                    precision = 'mediump';
-                }
-                if (precision === 'mediump') {
-                    if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).precision > 0 &&
-                        gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).precision > 0) {
-                        return 'mediump';
-                    }
-                }
-                return 'lowp';
-            }
-            this.isWebGL2 = false;
-            var gl2 = null;
-            if (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext) {
-                gl2 = gl;
-                this.isWebGL2 = true;
-            }
-            if (gl.extensions.EXT_texture_filter_anisotropic) {
-                this.maxAnisotropy = gl.getParameter(gl.extensions.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-            }
-            else {
-                this.maxAnisotropy = 0;
-            }
-            this.maxPrecision = getMaxPrecision('highp');
-            this.maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
-            this.maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-            this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-            this.maxCubemapSize = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
-            this.maxAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
-            this.maxVertexUniforms = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
-            this.maxVaryings = gl.getParameter(gl.MAX_VARYING_VECTORS);
-            this.maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
-            this.vertexTextures = this.maxVertexTextures > 0;
-            this.floatFragmentTextures = this.isWebGL2 || !!gl.getExtension('OES_texture_float');
-            this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
-            this.maxSamples = this.isWebGL2 ? gl.getParameter(gl2.MAX_SAMPLES) : 0;
-        }
-        return GLCapabilities;
-    }());
-    feng3d.GLCapabilities = GLCapabilities;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * shader
-     */
-    var Shader = /** @class */ (function () {
-        function Shader(shaderName) {
-            if (shaderName === void 0) { shaderName = ""; }
-            /**
-             * shader 中的 宏
-             */
-            this.shaderMacro = {};
-            this.shaderName = shaderName;
-        }
-        Shader.prototype.setShader = function (vertex, fragment) {
-            this.vertex = vertex;
-            this.fragment = fragment;
-        };
-        /**
-         * 激活渲染程序
-         */
-        Shader.prototype.activeShaderProgram = function (gl) {
-            this.updateShaderCode();
-            var shaderKey = this.vertex + this.fragment;
-            var result = gl.cache.compileShaderResults[shaderKey];
-            if (result)
-                return result;
-            //渲染程序
-            try {
-                result = gl.cache.compileShaderResults[shaderKey] = this.compileShaderProgram(gl, this.vertex, this.fragment);
-            }
-            catch (error) {
-                console.error(this.shaderName + " \u7F16\u8BD1\u5931\u8D25\uFF01\n" + error);
-                return null;
-            }
-            return result;
-        };
-        /**
-         * 更新渲染代码
-         */
-        Shader.prototype.updateShaderCode = function () {
-            if (!this.shaderName)
-                return;
-            // 获取着色器代码
-            var result = feng3d.shaderlib.getShader(this.shaderName);
-            var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.shaderMacro);
-            this.vertex = vMacroCode + result.vertex;
-            var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.shaderMacro);
-            this.fragment = fMacroCode + result.fragment;
-        };
-        /**
-         * 编译着色器代码
-         * @param gl GL上下文
-         * @param type 着色器类型
-         * @param code 着色器代码
-         * @return 编译后的着色器对象
-         */
-        Shader.prototype.compileShaderCode = function (gl, type, code) {
-            var shader = gl.createShader(type);
-            if (shader == null) {
-                debugger;
-                throw 'unable to create shader';
-            }
-            gl.shaderSource(shader, code);
-            gl.compileShader(shader);
-            // 检查编译结果
-            var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-            if (!compiled) {
-                var error = gl.getShaderInfoLog(shader);
-                gl.deleteShader(shader);
-                debugger;
-                throw 'Failed to compile shader: ' + error;
-            }
-            return shader;
-        };
-        Shader.prototype.createLinkProgram = function (gl, vertexShader, fragmentShader) {
-            // 创建程序对象
-            var program = gl.createProgram();
-            if (!program) {
-                debugger;
-                throw "创建 WebGLProgram 失败！";
-            }
-            // 添加着色器
-            gl.attachShader(program, vertexShader);
-            gl.attachShader(program, fragmentShader);
-            // 链接程序
-            gl.linkProgram(program);
-            // 检查结果
-            var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
-            if (!linked) {
-                var error = gl.getProgramInfoLog(program);
-                gl.deleteProgram(program);
-                gl.deleteShader(fragmentShader);
-                gl.deleteShader(vertexShader);
-                debugger;
-                throw 'Failed to link program: ' + error;
-            }
-            return program;
-        };
-        Shader.prototype.compileShaderProgram = function (gl, vshader, fshader) {
-            // 创建着色器程序
-            // 编译顶点着色器
-            var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
-            // 编译片段着色器
-            var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
-            // 创建着色器程序
-            var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
-            //获取属性信息
-            var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
-            var attributes = {};
-            var i = 0;
-            while (i < numAttributes) {
-                var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
-                attributes[activeInfo.name] = { name: activeInfo.name, size: activeInfo.size, type: activeInfo.type, location: gl.getAttribLocation(shaderProgram, activeInfo.name) };
-            }
-            //获取uniform信息
-            var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
-            var uniforms = {};
-            var i = 0;
-            var textureID = 0;
-            while (i < numUniforms) {
-                var activeInfo = gl.getActiveUniform(shaderProgram, i++);
-                var reg = /(\w+)/g;
-                var name = activeInfo.name;
-                var names = [name];
-                if (activeInfo.size > 1) {
-                    console.assert(name.substr(-3, 3) == "[0]");
-                    var baseName = name.substring(0, name.length - 3);
-                    for (var j = 1; j < activeInfo.size; j++) {
-                        names[j] = baseName + ("[" + j + "]");
-                    }
-                }
-                for (var j_1 = 0; j_1 < names.length; j_1++) {
-                    name = names[j_1];
-                    var result;
-                    var paths = [];
-                    while (result = reg.exec(name)) {
-                        paths.push(result[1]);
-                    }
-                    uniforms[name] = { name: paths[0], paths: paths, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
-                    if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
-                        textureID++;
-                    }
-                }
-            }
-            return { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
-        };
-        Shader.prototype.getMacroCode = function (variables, valueObj) {
-            var macroHeader = "";
-            variables.forEach(function (macroName) {
-                var value = valueObj[macroName];
-                if (typeof value == "boolean") {
-                    value && (macroHeader += "#define " + macroName + "\n");
-                }
-                else if (typeof value == "number") {
-                    macroHeader += "#define " + macroName + " " + value + "\n";
-                }
-            });
-            return macroHeader.length > 0 ? (macroHeader + "\n") : macroHeader;
-        };
-        return Shader;
-    }());
-    feng3d.Shader = Shader;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 渲染参数
-     */
-    var RenderParams = /** @class */ (function () {
-        function RenderParams(raw) {
-            /**
-            * 渲染模式，默认RenderMode.TRIANGLES
-            */
-            this.renderMode = feng3d.RenderMode.TRIANGLES;
-            /**
-             * 剔除面
-             * 参考：http://www.jianshu.com/p/ee04165f2a02
-             * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
-             * 使用gl.frontFace(gl.CW);调整顺时针为正面
-             */
-            this.cullFace = feng3d.CullFace.BACK;
-            this.frontFace = feng3d.FrontFace.CW;
-            /**
-             * 是否开启混合
-             * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
-             */
-            this.enableBlend = false;
-            /**
-             * 混合方式，默认BlendEquation.FUNC_ADD
-             */
-            this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
-            /**
-             * 源混合因子，默认BlendFactor.SRC_ALPHA
-             */
-            this.sfactor = feng3d.BlendFactor.SRC_ALPHA;
-            /**
-             * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
-             */
-            this.dfactor = feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA;
-            /**
-             * 是否开启深度检查
-             */
-            this.depthtest = true;
-            this.depthFunc = feng3d.DepthFunc.LESS;
-            /**
-             * 是否开启深度标记
-             */
-            this.depthMask = true;
-            /**
-             * 控制那些颜色分量是否可以被写入到帧缓冲器。
-             *
-             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
-             */
-            this.colorMask = feng3d.ColorMask.RGBA;
-            /**
-             * 绘制在画布上的区域
-             */
-            // @oav({ tooltip: "绘制在画布上的区域" })
-            this.viewRect = { x: 0, y: 0, width: 100, height: 100 };
-            /**
-             * 是否使用 viewRect
-             */
-            // @oav({ tooltip: "是否使用 viewRect" })
-            this.useViewRect = false;
-            /**
-             * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
-             *
-             * The WebGLRenderingContext.polygonOffset() method of the WebGL API specifies the scale factors and units to calculate depth values.
-             *
-             * The offset is added before the depth test is performed and before the value is written into the depth buffer.
-             */
-            this.usePolygonOffset = false;
-            /**
-             * A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0.
-             */
-            this.polygonOffsetFactor = 0;
-            /**
-             * A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
-             */
-            this.polygonOffsetUnits = 0;
-            Object.assign(this, raw);
-        }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "渲染模式，默认RenderMode.TRIANGLES", componentParam: { enumClass: feng3d.RenderMode } })
-        ], RenderParams.prototype, "renderMode", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "剔除面", componentParam: { enumClass: feng3d.CullFace } })
-        ], RenderParams.prototype, "cullFace", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: feng3d.FrontFace } })
-        ], RenderParams.prototype, "frontFace", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "是否开启混合" })
-        ], RenderParams.prototype, "enableBlend", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "混合方式，默认BlendEquation.FUNC_ADD", componentParam: { enumClass: feng3d.BlendEquation } })
-        ], RenderParams.prototype, "blendEquation", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "源混合因子，默认BlendFactor.SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
-        ], RenderParams.prototype, "sfactor", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
-        ], RenderParams.prototype, "dfactor", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "是否开启深度检查" })
-        ], RenderParams.prototype, "depthtest", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.DepthFunc } })
-        ], RenderParams.prototype, "depthFunc", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "是否开启深度标记" })
-        ], RenderParams.prototype, "depthMask", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.ColorMask } })
-        ], RenderParams.prototype, "colorMask", void 0);
-        __decorate([
-            feng3d.serialize
-        ], RenderParams.prototype, "viewRect", void 0);
-        __decorate([
-            feng3d.serialize
-        ], RenderParams.prototype, "useViewRect", void 0);
-        return RenderParams;
-    }());
-    feng3d.RenderParams = RenderParams;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 渲染原子（该对象会收集一切渲染所需数据以及参数）
-     */
-    var RenderAtomic = /** @class */ (function () {
-        function RenderAtomic() {
-            /**
-             * 属性数据列表
-             */
-            this.attributes = {};
-            /**
-             * Uniform渲染数据
-             */
-            this.uniforms = {};
-            /**
-             * shader 中的 宏
-             */
-            this.shaderMacro = {};
-            /**
-             * 渲染参数
-             */
-            this.renderParams = {};
-        }
-        RenderAtomic.prototype.getIndexBuffer = function () {
-            if (this.indexBuffer != undefined)
-                return this.indexBuffer;
-            return (this.next && this.next.getIndexBuffer());
-        };
-        RenderAtomic.prototype.getAttributes = function (attributes) {
-            if (attributes === void 0) { attributes = {}; }
-            this.next && this.next.getAttributes(attributes);
-            Object.assign(attributes, this.attributes);
-            return attributes;
-        };
-        RenderAtomic.prototype.getAttributeByKey = function (key) {
-            if (this.attributes[key] != undefined)
-                return this.attributes[key];
-            return (this.next && this.next.getAttributeByKey(key));
-        };
-        RenderAtomic.prototype.getUniforms = function (uniforms) {
-            if (uniforms === void 0) { uniforms = {}; }
-            this.next && this.next.getUniforms(uniforms);
-            Object.assign(uniforms, this.uniforms);
-            return uniforms;
-        };
-        RenderAtomic.prototype.getUniformByKey = function (key) {
-            if (this.uniforms[key] != undefined)
-                return feng3d.lazy.getvalue(this.uniforms[key]);
-            return (this.next && this.next.getUniformByKey(key));
-        };
-        RenderAtomic.prototype.getInstanceCount = function () {
-            if (this.instanceCount != undefined)
-                return feng3d.lazy.getvalue(this.instanceCount);
-            return this.next && this.next.getInstanceCount();
-        };
-        RenderAtomic.prototype.getShader = function () {
-            if (this.shader != undefined)
-                return this.shader;
-            return this.next && this.next.getShader();
-        };
-        RenderAtomic.prototype.getRenderParams = function (renderParams) {
-            if (renderParams === void 0) { renderParams = new feng3d.RenderParams(); }
-            this.next && this.next.getRenderParams(renderParams);
-            Object.assign(renderParams, this.renderParams);
-            return renderParams;
-        };
-        RenderAtomic.prototype.getShaderMacro = function (shaderMacro) {
-            if (shaderMacro === void 0) { shaderMacro = {}; }
-            this.next && this.next.getShaderMacro(shaderMacro);
-            Object.assign(shaderMacro, this.shaderMacro);
-            return shaderMacro;
-        };
-        return RenderAtomic;
-    }());
-    feng3d.RenderAtomic = RenderAtomic;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 索引渲染数据
-
-     */
-    var Index = /** @class */ (function () {
-        function Index(indices) {
-            /**
-             * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
-             */
-            this.type = feng3d.GLArrayType.UNSIGNED_SHORT;
-            /**
-             * 索引偏移
-             */
-            this.offset = 0;
-            /**
-             * 是否失效
-             */
-            this._invalid = true;
-            this.indices = indices;
-        }
-        Index.prototype.invalidate = function () {
-            this._invalid = true;
-        };
-        Object.defineProperty(Index.prototype, "count", {
-            /**
-             * 渲染数量
-             */
-            get: function () {
-                if (!this.indices)
-                    return 0;
-                return this.indices.length;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 激活缓冲
-         * @param gl
-         */
-        Index.active = function (gl, index) {
-            var buffer = Index.getBuffer(gl, index);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-        };
-        /**
-         * 获取缓冲
-         */
-        Index.getBuffer = function (gl, index) {
-            if (index._invalid) {
-                this.clear(index);
-                index._invalid = false;
-            }
-            var buffer = gl.cache.indices.get(index);
-            if (!buffer) {
-                buffer = gl.createBuffer();
-                if (!buffer) {
-                    console.error("createBuffer 失败！");
-                    throw "";
-                }
-                gl.cache.indices.set(index, buffer);
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
-            }
-            return buffer;
-        };
-        /**
-         * 清理缓冲
-         */
-        Index.clear = function (index) {
-            feng3d.GL.glList.forEach(function (gl) {
-                var buffer = gl.cache.indices.get(index);
-                if (buffer) {
-                    gl.deleteBuffer(buffer);
-                    gl.cache.indices.delete(index);
-                }
-            });
-        };
-        __decorate([
-            feng3d.watch("invalidate")
-        ], Index.prototype, "indices", void 0);
-        return Index;
-    }());
-    feng3d.Index = Index;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 属性渲染数据
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
-     */
-    var Attribute = /** @class */ (function () {
-        function Attribute(name, data, size, divisor) {
-            if (size === void 0) { size = 3; }
-            if (divisor === void 0) { divisor = 0; }
-            /**
-             * 数据尺寸
-             *
-             * A GLint specifying the number of components per vertex attribute. Must be 1, 2, 3, or 4.
-             */
-            this.size = 3;
-            /**
-             *  A GLenum specifying the data type of each component in the array. Possible values:
-                    - gl.BYTE: signed 8-bit integer, with values in [-128, 127]
-                    - gl.SHORT: signed 16-bit integer, with values in [-32768, 32767]
-                    - gl.UNSIGNED_BYTE: unsigned 8-bit integer, with values in [0, 255]
-                    - gl.UNSIGNED_SHORT: unsigned 16-bit integer, with values in [0, 65535]
-                    - gl.FLOAT: 32-bit floating point number
-                When using a WebGL 2 context, the following values are available additionally:
-                   - gl.HALF_FLOAT: 16-bit floating point number
-             */
-            this.type = feng3d.GLArrayType.FLOAT;
-            /**
-             * A GLboolean specifying whether integer data values should be normalized when being casted to a float.
-                  -  If true, signed integers are normalized to [-1, 1].
-                  -  If true, unsigned integers are normalized to [0, 1].
-                  -  For types gl.FLOAT and gl.HALF_FLOAT, this parameter has no effect.
-             */
-            this.normalized = false;
-            /**
-             * A GLsizei specifying the offset in bytes between the beginning of consecutive vertex attributes. Cannot be larger than 255.
-             */
-            this.stride = 0;
-            /**
-             * A GLintptr specifying an offset in bytes of the first component in the vertex attribute array. Must be a multiple of type.
-             */
-            this.offset = 0;
-            /**
-             * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
-             *
-             * A GLuint specifying the number of instances that will pass between updates of the generic attribute.
-             * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
-             */
-            this.divisor = 0;
-            // /**
-            //  * A GLenum specifying the intended usage pattern of the data store for optimization purposes. 
-            //  * 
-            //  * 为优化目的指定数据存储的预期使用模式的GLenum。
-            //  * 
-            //  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
-            //  */
-            // @serialize
-            // usage = AttributeUsage.STATIC_DRAW;
-            /**
-             * 是否失效
-             */
-            this.invalid = true;
-            this.name = name;
-            this.data = data;
-            this.size = size;
-            this.divisor = divisor;
-        }
-        /**
-         * 使数据失效
-         */
-        Attribute.prototype.invalidate = function () {
-            this.invalid = true;
-        };
-        /**
-         *
-         * @param gl
-         * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
-         */
-        Attribute.active = function (gl, location, attribute) {
-            gl.enableVertexAttribArray(location);
-            var buffer = Attribute.getBuffer(gl, attribute);
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.vertexAttribPointer(location, attribute.size, gl[attribute.type], attribute.normalized, attribute.stride, attribute.offset);
-            gl.vertexAttribDivisor(location, attribute.divisor);
-        };
-        /**
-         * 获取缓冲
-         */
-        Attribute.getBuffer = function (gl, attribute) {
-            if (attribute.invalid) {
-                this.clear(attribute);
-                attribute.invalid = false;
-            }
-            var buffer = gl.cache.attributes.get(attribute);
-            if (!buffer) {
-                var buffer = gl.createBuffer();
-                if (!buffer) {
-                    console.error("createBuffer 失败！");
-                    throw "";
-                }
-                gl.cache.attributes.set(attribute, buffer);
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attribute.data), gl.STATIC_DRAW);
-            }
-            return buffer;
-        };
-        /**
-         * 清理缓冲
-         */
-        Attribute.clear = function (attribute) {
-            feng3d.GL.glList.forEach(function (gl) {
-                var buffer = gl.cache.attributes.get(attribute);
-                if (buffer) {
-                    gl.deleteBuffer(buffer);
-                    gl.cache.attributes.delete(attribute);
-                }
-            });
-        };
-        __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "name", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("invalidate")
-        ], Attribute.prototype, "data", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "size", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "divisor", void 0);
-        return Attribute;
-    }());
-    feng3d.Attribute = Attribute;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var Texture = /** @class */ (function () {
-        function Texture() {
-        }
-        Texture.active = function (gl, data) {
-            var texture = this.getTexture(gl, data);
-            var textureType = gl[data.textureType];
-            //绑定纹理
-            gl.bindTexture(textureType, texture);
-            //设置纹理参数
-            gl.texParameteri(textureType, gl.TEXTURE_MIN_FILTER, gl[data.minFilter]);
-            gl.texParameteri(textureType, gl.TEXTURE_MAG_FILTER, gl[data.magFilter]);
-            gl.texParameteri(textureType, gl.TEXTURE_WRAP_S, gl[data.wrapS]);
-            gl.texParameteri(textureType, gl.TEXTURE_WRAP_T, gl[data.wrapT]);
-            //
-            gl.texParameterfAnisotropy(textureType, data.anisotropy);
-            return texture;
-        };
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据
-         */
-        Texture.getTexture = function (gl, data) {
-            if (data.invalid) {
-                this.clear(data);
-                data.invalid = false;
-            }
-            var texture = gl.cache.textures.get(data);
-            if (!texture) {
-                texture = gl.createTexture(); // Create a texture object
-                if (!texture) {
-                    console.error("createTexture 失败！");
-                    throw "";
-                }
-                gl.cache.textures.set(data, texture);
-                //
-                var textureType = gl[data.textureType];
-                var format = gl[data.format];
-                var type = gl[data.type];
-                //设置图片y轴方向
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, data.flipY ? 1 : 0);
-                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, data.premulAlpha ? 1 : 0);
-                //绑定纹理
-                gl.bindTexture(textureType, texture);
-                //设置纹理图片
-                switch (textureType) {
-                    case gl.TEXTURE_CUBE_MAP:
-                        var pixels = data.activePixels;
-                        var faces = [
-                            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                        ];
-                        for (var i = 0; i < faces.length; i++) {
-                            if (data.isRenderTarget) {
-                                gl.texImage2D(faces[i], 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
-                            }
-                            else {
-                                gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
-                            }
-                        }
-                        break;
-                    case gl.TEXTURE_2D:
-                        var _pixel = data.activePixels;
-                        if (data.isRenderTarget) {
-                            gl.texImage2D(textureType, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
-                        }
-                        else {
-                            gl.texImage2D(textureType, 0, format, format, type, _pixel);
-                        }
-                        break;
-                    default:
-                        throw "";
-                }
-                if (data.generateMipmap) {
-                    gl.generateMipmap(textureType);
-                }
-            }
-            return texture;
-        };
-        /**
-         * 清除纹理
-         *
-         * @param data
-         */
-        Texture.clear = function (data) {
-            feng3d.GL.glList.forEach(function (gl) {
-                var tex = gl.cache.textures.get(data);
-                if (tex) {
-                    gl.deleteTexture(tex);
-                    gl.cache.textures.delete(data);
-                }
-            });
-        };
-        return Texture;
-    }());
-    feng3d.Texture = Texture;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var FrameBuffer = /** @class */ (function () {
-        function FrameBuffer() {
-            /**
-             * 是否失效
-             */
-            this._invalid = true;
-        }
-        FrameBuffer.active = function (gl, frameBuffer) {
-            if (frameBuffer._invalid) {
-                frameBuffer._invalid = false;
-                this.clear(frameBuffer);
-            }
-            // Create a framebuffer object (FBO)
-            var buffer = gl.cache.frameBuffers.get(frameBuffer);
-            if (!buffer) {
-                buffer = gl.createFramebuffer();
-                if (!buffer) {
-                    alert('Failed to create frame buffer object');
-                    return null;
-                }
-                gl.cache.frameBuffers.set(frameBuffer, buffer);
-            }
-            return buffer;
-        };
-        /**
-         * 清理缓存
-         */
-        FrameBuffer.clear = function (frameBuffer) {
-            feng3d.GL.glList.forEach(function (gl) {
-                var buffer = gl.cache.frameBuffers.get(frameBuffer);
-                if (buffer) {
-                    gl.deleteFramebuffer(buffer);
-                    gl.cache.frameBuffers.delete(frameBuffer);
-                }
-            });
-        };
-        return FrameBuffer;
-    }());
-    feng3d.FrameBuffer = FrameBuffer;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var RenderBuffer = /** @class */ (function () {
         function RenderBuffer() {
             this.OFFSCREEN_WIDTH = 1024;
@@ -20189,129 +18619,6 @@ var feng3d;
         return RenderBuffer;
     }());
     feng3d.RenderBuffer = RenderBuffer;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var shaderMacroKeys = ["if", "ifdef", "defined"];
-    var ShaderMacroUtils = /** @class */ (function () {
-        function ShaderMacroUtils() {
-        }
-        /**
-         * 从着色器代码中获取宏变量列表
-         * @param vertex
-         * @param fragment
-         */
-        ShaderMacroUtils.prototype.getMacroVariablesFromShaderCode = function (vertex, fragment) {
-            var variables0 = this.getMacroVariablesFromCode(vertex);
-            var variables1 = this.getMacroVariablesFromCode(fragment);
-            for (var i = 0; i < variables1.length; i++) {
-                var element = variables1[i];
-                if (variables0.indexOf(element) == -1)
-                    variables0.push(element);
-            }
-            return variables0;
-        };
-        /**
-         * 从着色器代码中获取宏变量列表
-         * @param code
-         */
-        ShaderMacroUtils.prototype.getMacroVariablesFromCode = function (code) {
-            var variables = [];
-            var lines = code.split("\n");
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                if (line.indexOf("#if") != -1) {
-                    var reg = /(\w+)/g;
-                    var result;
-                    while (result = reg.exec(line)) {
-                        var key = result[1];
-                        if (key != null && isNaN(Number(key)) && shaderMacroKeys.indexOf(key) == -1 && variables.indexOf(key) == -1)
-                            variables.push(key);
-                    }
-                }
-            }
-            return variables;
-        };
-        return ShaderMacroUtils;
-    }());
-    feng3d.ShaderMacroUtils = ShaderMacroUtils;
-    feng3d.shaderMacroUtils = new ShaderMacroUtils();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    feng3d.shaderConfig = { shaders: {}, modules: {} };
-    /**
-     * 渲染代码库
-
-     */
-    var ShaderLib = /** @class */ (function () {
-        function ShaderLib() {
-            this._shaderCache = {};
-        }
-        Object.defineProperty(ShaderLib.prototype, "shaderConfig", {
-            get: function () {
-                this._shaderConfig = this._shaderConfig || feng3d.shaderConfig;
-                return this._shaderConfig;
-            },
-            set: function (v) {
-                this._shaderConfig = v;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 获取shaderCode
-         */
-        ShaderLib.prototype.getShader = function (shaderName) {
-            if (this._shaderCache[shaderName])
-                return this._shaderCache[shaderName];
-            var shader = feng3d.shaderlib.shaderConfig.shaders[shaderName];
-            //
-            var vertex = feng3d.shaderlib.uninclude(shader.vertex);
-            //
-            var fragment = feng3d.shaderlib.uninclude(shader.fragment);
-            var vertexMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(vertex);
-            var fragmentMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(fragment);
-            this._shaderCache[shaderName] = { vertex: vertex, fragment: fragment, vertexMacroVariables: vertexMacroVariables, fragmentMacroVariables: fragmentMacroVariables };
-            return this._shaderCache[shaderName];
-        };
-        /**
-         * 展开 include
-         */
-        ShaderLib.prototype.uninclude = function (shaderCode) {
-            //#include 正则表达式
-            var includeRegExp = /#include<(.+)>/g;
-            //
-            var match = includeRegExp.exec(shaderCode);
-            while (match != null) {
-                var moduleshader = this.shaderConfig.modules[match[1]];
-                if (!moduleshader) {
-                    debugger;
-                    console.error("\u65E0\u6CD5\u627E\u5230\u7740\u8272\u5668 " + match[1]);
-                }
-                moduleshader = this.uninclude(moduleshader);
-                shaderCode = shaderCode.replace(match[0], moduleshader);
-                includeRegExp.lastIndex = 0;
-                match = includeRegExp.exec(shaderCode);
-            }
-            return shaderCode;
-        };
-        /**
-         * 获取shader列表
-         */
-        ShaderLib.prototype.getShaderNames = function () {
-            return Object.keys(this.shaderConfig.shaders);
-        };
-        /**
-         * 清除缓存
-         */
-        ShaderLib.prototype.clearCache = function () {
-            this._shaderCache = {};
-        };
-        return ShaderLib;
-    }());
-    feng3d.ShaderLib = ShaderLib;
-    feng3d.shaderlib = new ShaderLib();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20564,6 +18871,1744 @@ var feng3d;
         return WebGLRenderer;
     }());
     feng3d.WebGLRenderer = WebGLRenderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 属性渲染数据
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
+     */
+    var Attribute = /** @class */ (function () {
+        function Attribute(name, data, size, divisor) {
+            if (size === void 0) { size = 3; }
+            if (divisor === void 0) { divisor = 0; }
+            /**
+             * 数据尺寸
+             *
+             * A GLint specifying the number of components per vertex attribute. Must be 1, 2, 3, or 4.
+             */
+            this.size = 3;
+            /**
+             *  A GLenum specifying the data type of each component in the array. Possible values:
+                    - gl.BYTE: signed 8-bit integer, with values in [-128, 127]
+                    - gl.SHORT: signed 16-bit integer, with values in [-32768, 32767]
+                    - gl.UNSIGNED_BYTE: unsigned 8-bit integer, with values in [0, 255]
+                    - gl.UNSIGNED_SHORT: unsigned 16-bit integer, with values in [0, 65535]
+                    - gl.FLOAT: 32-bit floating point number
+                When using a WebGL 2 context, the following values are available additionally:
+                   - gl.HALF_FLOAT: 16-bit floating point number
+             */
+            this.type = feng3d.GLArrayType.FLOAT;
+            /**
+             * A GLboolean specifying whether integer data values should be normalized when being casted to a float.
+                  -  If true, signed integers are normalized to [-1, 1].
+                  -  If true, unsigned integers are normalized to [0, 1].
+                  -  For types gl.FLOAT and gl.HALF_FLOAT, this parameter has no effect.
+             */
+            this.normalized = false;
+            /**
+             * A GLsizei specifying the offset in bytes between the beginning of consecutive vertex attributes. Cannot be larger than 255.
+             */
+            this.stride = 0;
+            /**
+             * A GLintptr specifying an offset in bytes of the first component in the vertex attribute array. Must be a multiple of type.
+             */
+            this.offset = 0;
+            /**
+             * drawElementsInstanced时将会用到的因子，表示divisor个geometry共用一个数据
+             *
+             * A GLuint specifying the number of instances that will pass between updates of the generic attribute.
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
+             */
+            this.divisor = 0;
+            // /**
+            //  * A GLenum specifying the intended usage pattern of the data store for optimization purposes. 
+            //  * 
+            //  * 为优化目的指定数据存储的预期使用模式的GLenum。
+            //  * 
+            //  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+            //  */
+            // @serialize
+            // usage = AttributeUsage.STATIC_DRAW;
+            /**
+             * 是否失效
+             */
+            this.invalid = true;
+            this.name = name;
+            this.data = data;
+            this.size = size;
+            this.divisor = divisor;
+        }
+        /**
+         * 使数据失效
+         */
+        Attribute.prototype.invalidate = function () {
+            this.invalid = true;
+        };
+        /**
+         *
+         * @param gl
+         * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
+         */
+        Attribute.active = function (gl, location, attribute) {
+            gl.enableVertexAttribArray(location);
+            var buffer = Attribute.getBuffer(gl, attribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.vertexAttribPointer(location, attribute.size, gl[attribute.type], attribute.normalized, attribute.stride, attribute.offset);
+            gl.vertexAttribDivisor(location, attribute.divisor);
+        };
+        /**
+         * 获取缓冲
+         */
+        Attribute.getBuffer = function (gl, attribute) {
+            if (attribute.invalid) {
+                this.clear(attribute);
+                attribute.invalid = false;
+            }
+            var buffer = gl.cache.attributes.get(attribute);
+            if (!buffer) {
+                var buffer = gl.createBuffer();
+                if (!buffer) {
+                    console.error("createBuffer 失败！");
+                    throw "";
+                }
+                gl.cache.attributes.set(attribute, buffer);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attribute.data), gl.STATIC_DRAW);
+            }
+            return buffer;
+        };
+        /**
+         * 清理缓冲
+         */
+        Attribute.clear = function (attribute) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var buffer = gl.cache.attributes.get(attribute);
+                if (buffer) {
+                    gl.deleteBuffer(buffer);
+                    gl.cache.attributes.delete(attribute);
+                }
+            });
+        };
+        __decorate([
+            feng3d.serialize
+        ], Attribute.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.watch("invalidate")
+        ], Attribute.prototype, "data", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Attribute.prototype, "size", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Attribute.prototype, "divisor", void 0);
+        return Attribute;
+    }());
+    feng3d.Attribute = Attribute;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var FrameBuffer = /** @class */ (function () {
+        function FrameBuffer() {
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+        }
+        FrameBuffer.active = function (gl, frameBuffer) {
+            if (frameBuffer._invalid) {
+                frameBuffer._invalid = false;
+                this.clear(frameBuffer);
+            }
+            // Create a framebuffer object (FBO)
+            var buffer = gl.cache.frameBuffers.get(frameBuffer);
+            if (!buffer) {
+                buffer = gl.createFramebuffer();
+                if (!buffer) {
+                    alert('Failed to create frame buffer object');
+                    return null;
+                }
+                gl.cache.frameBuffers.set(frameBuffer, buffer);
+            }
+            return buffer;
+        };
+        /**
+         * 清理缓存
+         */
+        FrameBuffer.clear = function (frameBuffer) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var buffer = gl.cache.frameBuffers.get(frameBuffer);
+                if (buffer) {
+                    gl.deleteFramebuffer(buffer);
+                    gl.cache.frameBuffers.delete(frameBuffer);
+                }
+            });
+        };
+        return FrameBuffer;
+    }());
+    feng3d.FrameBuffer = FrameBuffer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 索引渲染数据
+
+     */
+    var Index = /** @class */ (function () {
+        function Index(indices) {
+            /**
+             * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
+             */
+            this.type = feng3d.GLArrayType.UNSIGNED_SHORT;
+            /**
+             * 索引偏移
+             */
+            this.offset = 0;
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+            this.indices = indices;
+        }
+        Index.prototype.invalidate = function () {
+            this._invalid = true;
+        };
+        Object.defineProperty(Index.prototype, "count", {
+            /**
+             * 渲染数量
+             */
+            get: function () {
+                if (!this.indices)
+                    return 0;
+                return this.indices.length;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 激活缓冲
+         * @param gl
+         */
+        Index.active = function (gl, index) {
+            var buffer = Index.getBuffer(gl, index);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+        };
+        /**
+         * 获取缓冲
+         */
+        Index.getBuffer = function (gl, index) {
+            if (index._invalid) {
+                this.clear(index);
+                index._invalid = false;
+            }
+            var buffer = gl.cache.indices.get(index);
+            if (!buffer) {
+                buffer = gl.createBuffer();
+                if (!buffer) {
+                    console.error("createBuffer 失败！");
+                    throw "";
+                }
+                gl.cache.indices.set(index, buffer);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
+            }
+            return buffer;
+        };
+        /**
+         * 清理缓冲
+         */
+        Index.clear = function (index) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var buffer = gl.cache.indices.get(index);
+                if (buffer) {
+                    gl.deleteBuffer(buffer);
+                    gl.cache.indices.delete(index);
+                }
+            });
+        };
+        __decorate([
+            feng3d.watch("invalidate")
+        ], Index.prototype, "indices", void 0);
+        return Index;
+    }());
+    feng3d.Index = Index;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 渲染原子（该对象会收集一切渲染所需数据以及参数）
+     */
+    var RenderAtomic = /** @class */ (function () {
+        function RenderAtomic() {
+            /**
+             * 属性数据列表
+             */
+            this.attributes = {};
+            /**
+             * Uniform渲染数据
+             */
+            this.uniforms = {};
+            /**
+             * shader 中的 宏
+             */
+            this.shaderMacro = {};
+            /**
+             * 渲染参数
+             */
+            this.renderParams = {};
+        }
+        RenderAtomic.prototype.getIndexBuffer = function () {
+            if (this.indexBuffer != undefined)
+                return this.indexBuffer;
+            return (this.next && this.next.getIndexBuffer());
+        };
+        RenderAtomic.prototype.getAttributes = function (attributes) {
+            if (attributes === void 0) { attributes = {}; }
+            this.next && this.next.getAttributes(attributes);
+            Object.assign(attributes, this.attributes);
+            return attributes;
+        };
+        RenderAtomic.prototype.getAttributeByKey = function (key) {
+            if (this.attributes[key] != undefined)
+                return this.attributes[key];
+            return (this.next && this.next.getAttributeByKey(key));
+        };
+        RenderAtomic.prototype.getUniforms = function (uniforms) {
+            if (uniforms === void 0) { uniforms = {}; }
+            this.next && this.next.getUniforms(uniforms);
+            Object.assign(uniforms, this.uniforms);
+            return uniforms;
+        };
+        RenderAtomic.prototype.getUniformByKey = function (key) {
+            if (this.uniforms[key] != undefined)
+                return feng3d.lazy.getvalue(this.uniforms[key]);
+            return (this.next && this.next.getUniformByKey(key));
+        };
+        RenderAtomic.prototype.getInstanceCount = function () {
+            if (this.instanceCount != undefined)
+                return feng3d.lazy.getvalue(this.instanceCount);
+            return this.next && this.next.getInstanceCount();
+        };
+        RenderAtomic.prototype.getShader = function () {
+            if (this.shader != undefined)
+                return this.shader;
+            return this.next && this.next.getShader();
+        };
+        RenderAtomic.prototype.getRenderParams = function (renderParams) {
+            if (renderParams === void 0) { renderParams = new feng3d.RenderParams(); }
+            this.next && this.next.getRenderParams(renderParams);
+            Object.assign(renderParams, this.renderParams);
+            return renderParams;
+        };
+        RenderAtomic.prototype.getShaderMacro = function (shaderMacro) {
+            if (shaderMacro === void 0) { shaderMacro = {}; }
+            this.next && this.next.getShaderMacro(shaderMacro);
+            Object.assign(shaderMacro, this.shaderMacro);
+            return shaderMacro;
+        };
+        return RenderAtomic;
+    }());
+    feng3d.RenderAtomic = RenderAtomic;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 渲染模式
+     * A GLenum specifying the type primitive to render. Possible values are:
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+     */
+    var RenderMode;
+    (function (RenderMode) {
+        /**
+         * 点渲染
+         * gl.POINTS: Draws a single dot.
+         */
+        RenderMode["POINTS"] = "POINTS";
+        /**
+         * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
+         */
+        RenderMode["LINE_LOOP"] = "LINE_LOOP";
+        /**
+         * gl.LINE_STRIP: Draws a straight line to the next vertex.
+         */
+        RenderMode["LINE_STRIP"] = "LINE_STRIP";
+        /**
+         * gl.LINES: Draws a line between a pair of vertices.
+         */
+        RenderMode["LINES"] = "LINES";
+        /**
+         * gl.TRIANGLES: Draws a triangle for a group of three vertices.
+         */
+        RenderMode["TRIANGLES"] = "TRIANGLES";
+        /**
+         * gl.TRIANGLE_STRIP
+         * @see https://en.wikipedia.org/wiki/Triangle_strip
+         */
+        RenderMode["TRIANGLE_STRIP"] = "TRIANGLE_STRIP";
+        /**
+         * gl.TRIANGLE_FAN
+         * @see https://en.wikipedia.org/wiki/Triangle_fan
+         */
+        RenderMode["TRIANGLE_FAN"] = "TRIANGLE_FAN";
+    })(RenderMode = feng3d.RenderMode || (feng3d.RenderMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 裁剪面枚举
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
+     */
+    var CullFace;
+    (function (CullFace) {
+        /**
+         * 关闭裁剪面
+         */
+        CullFace["NONE"] = "NONE";
+        /**
+         * 正面
+         */
+        CullFace["FRONT"] = "FRONT";
+        /**
+         * 背面
+         */
+        CullFace["BACK"] = "BACK";
+        /**
+         * 正面与背面
+         */
+        CullFace["FRONT_AND_BACK"] = "FRONT_AND_BACK";
+    })(CullFace = feng3d.CullFace || (feng3d.CullFace = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 正面方向枚举
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
+     */
+    var FrontFace;
+    (function (FrontFace) {
+        /**
+         * Clock-wise winding.
+         */
+        FrontFace["CW"] = "CW";
+        /**
+         *  Counter-clock-wise winding.
+         */
+        FrontFace["CCW"] = "CCW";
+    })(FrontFace = feng3d.FrontFace || (feng3d.FrontFace = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 混合方法
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
+     */
+    var BlendEquation;
+    (function (BlendEquation) {
+        /**
+         *  source + destination
+         */
+        BlendEquation["FUNC_ADD"] = "FUNC_ADD";
+        /**
+         * source - destination
+         */
+        BlendEquation["FUNC_SUBTRACT"] = "FUNC_SUBTRACT";
+        /**
+         * destination - source
+         */
+        BlendEquation["FUNC_REVERSE_SUBTRACT"] = "FUNC_REVERSE_SUBTRACT";
+        // /**
+        //  * When using the EXT_blend_minmax extension:
+        //  * Minimum of source and destination
+        //  */
+        // MIN_EXT = "MIN_EXT",
+        // /**
+        //  * When using the EXT_blend_minmax extension:
+        //  * Maximum of source and destination.
+        //  */
+        // MAX_EXT = "MAX_EXT",
+        // /**
+        //  * using a WebGL 2 context
+        //  * Minimum of source and destination
+        //  */
+        // MIN = "MIN",
+        // /**
+        //  * using a WebGL 2 context
+        //  * Maximum of source and destination.
+        //  */
+        // MAX = "MAX",
+    })(BlendEquation = feng3d.BlendEquation || (feng3d.BlendEquation = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 混合因子（R分量系数，G分量系数，B分量系数）
+     */
+    var BlendFactor;
+    (function (BlendFactor) {
+        /**
+         * 0.0  0.0 0.0
+         */
+        BlendFactor["ZERO"] = "ZERO";
+        /**
+         * 1.0  1.0 1.0
+         */
+        BlendFactor["ONE"] = "ONE";
+        /**
+         * Rs   Gs  Bs
+         */
+        BlendFactor["SRC_COLOR"] = "SRC_COLOR";
+        /**
+         * 1-Rs   1-Gs  1-Bs
+         */
+        BlendFactor["ONE_MINUS_SRC_COLOR"] = "ONE_MINUS_SRC_COLOR";
+        /**
+         * Rd   Gd  Bd
+         */
+        BlendFactor["DST_COLOR"] = "DST_COLOR";
+        /**
+         * 1-Rd   1-Gd  1-Bd
+         */
+        BlendFactor["ONE_MINUS_DST_COLOR"] = "ONE_MINUS_DST_COLOR";
+        /**
+         * As   As  As
+         */
+        BlendFactor["SRC_ALPHA"] = "SRC_ALPHA";
+        /**
+         * 1-As   1-As  1-As
+         */
+        BlendFactor["ONE_MINUS_SRC_ALPHA"] = "ONE_MINUS_SRC_ALPHA";
+        /**
+         * Ad   Ad  Ad
+         */
+        BlendFactor["DST_ALPHA"] = "DST_ALPHA";
+        /**
+         * 1-Ad   1-Ad  1-Ad
+         */
+        BlendFactor["ONE_MINUS_DST_ALPHA"] = "ONE_MINUS_DST_ALPHA";
+        /**
+         * min(As-Ad)   min(As-Ad)  min(As-Ad)
+         */
+        BlendFactor["SRC_ALPHA_SATURATE"] = "SRC_ALPHA_SATURATE";
+    })(BlendFactor = feng3d.BlendFactor || (feng3d.BlendFactor = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 深度检测方法枚举
+     * A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS.
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
+     */
+    var DepthFunc;
+    (function (DepthFunc) {
+        /**
+         * (never pass)
+         */
+        DepthFunc["NEVER"] = "NEVER";
+        /**
+         *  (pass if the incoming value is less than the depth buffer value)
+         */
+        DepthFunc["LESS"] = "LESS";
+        /**
+         *  (pass if the incoming value equals the the depth buffer value)
+         */
+        DepthFunc["EQUAL"] = "EQUAL";
+        /**
+         *  (pass if the incoming value is less than or equal to the depth buffer value)
+         */
+        DepthFunc["LEQUAL"] = "LEQUAL";
+        /**
+         * (pass if the incoming value is greater than the depth buffer value)
+         */
+        DepthFunc["GREATER"] = "GREATER";
+        /**
+         * (pass if the incoming value is not equal to the depth buffer value)
+         */
+        DepthFunc["NOTEQUAL"] = "NOTEQUAL";
+        /**
+         * (pass if the incoming value is greater than or equal to the depth buffer value)
+         */
+        DepthFunc["GEQUAL"] = "GEQUAL";
+        /**
+         *  (always pass)
+         */
+        DepthFunc["ALWAYS"] = "ALWAYS";
+    })(DepthFunc = feng3d.DepthFunc || (feng3d.DepthFunc = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 决定给WebGLRenderingContext.colorMask何种参数。
+     */
+    var ColorMask;
+    (function (ColorMask) {
+        ColorMask[ColorMask["NONE"] = 0] = "NONE";
+        ColorMask[ColorMask["R"] = 1] = "R";
+        ColorMask[ColorMask["G"] = 2] = "G";
+        ColorMask[ColorMask["B"] = 4] = "B";
+        ColorMask[ColorMask["A"] = 8] = "A";
+        ColorMask[ColorMask["RGB"] = 7] = "RGB";
+        /**
+         *
+         */
+        ColorMask[ColorMask["RGBA"] = 15] = "RGBA";
+    })(ColorMask = feng3d.ColorMask || (feng3d.ColorMask = {}));
+})(feng3d || (feng3d = {}));
+/// <reference path="../gl/enums/RenderMode.ts" />
+/// <reference path="../gl/enums/CullFace.ts" />
+/// <reference path="../gl/enums/FrontFace.ts" />
+/// <reference path="../gl/enums/BlendEquation.ts" />
+/// <reference path="../gl/enums/BlendFactor.ts" />
+/// <reference path="../gl/enums/DepthFunc.ts" />
+/// <reference path="../gl/enums/ColorMask.ts" />
+var feng3d;
+(function (feng3d) {
+    /**
+     * 渲染参数
+     */
+    var RenderParams = /** @class */ (function () {
+        function RenderParams(raw) {
+            /**
+            * 渲染模式，默认RenderMode.TRIANGLES
+            */
+            this.renderMode = feng3d.RenderMode.TRIANGLES;
+            /**
+             * 剔除面
+             * 参考：http://www.jianshu.com/p/ee04165f2a02
+             * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
+             * 使用gl.frontFace(gl.CW);调整顺时针为正面
+             */
+            this.cullFace = feng3d.CullFace.BACK;
+            this.frontFace = feng3d.FrontFace.CW;
+            /**
+             * 是否开启混合
+             * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
+             */
+            this.enableBlend = false;
+            /**
+             * 混合方式，默认BlendEquation.FUNC_ADD
+             */
+            this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
+            /**
+             * 源混合因子，默认BlendFactor.SRC_ALPHA
+             */
+            this.sfactor = feng3d.BlendFactor.SRC_ALPHA;
+            /**
+             * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
+             */
+            this.dfactor = feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA;
+            /**
+             * 是否开启深度检查
+             */
+            this.depthtest = true;
+            this.depthFunc = feng3d.DepthFunc.LESS;
+            /**
+             * 是否开启深度标记
+             */
+            this.depthMask = true;
+            /**
+             * 控制那些颜色分量是否可以被写入到帧缓冲器。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+             */
+            this.colorMask = feng3d.ColorMask.RGBA;
+            /**
+             * 绘制在画布上的区域
+             */
+            // @oav({ tooltip: "绘制在画布上的区域" })
+            this.viewRect = { x: 0, y: 0, width: 100, height: 100 };
+            /**
+             * 是否使用 viewRect
+             */
+            // @oav({ tooltip: "是否使用 viewRect" })
+            this.useViewRect = false;
+            /**
+             * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
+             *
+             * The WebGLRenderingContext.polygonOffset() method of the WebGL API specifies the scale factors and units to calculate depth values.
+             *
+             * The offset is added before the depth test is performed and before the value is written into the depth buffer.
+             */
+            this.usePolygonOffset = false;
+            /**
+             * A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0.
+             */
+            this.polygonOffsetFactor = 0;
+            /**
+             * A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
+             */
+            this.polygonOffsetUnits = 0;
+            Object.assign(this, raw);
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "渲染模式，默认RenderMode.TRIANGLES", componentParam: { enumClass: feng3d.RenderMode } })
+        ], RenderParams.prototype, "renderMode", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "剔除面", componentParam: { enumClass: feng3d.CullFace } })
+        ], RenderParams.prototype, "cullFace", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: feng3d.FrontFace } })
+        ], RenderParams.prototype, "frontFace", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "是否开启混合" })
+        ], RenderParams.prototype, "enableBlend", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "混合方式，默认BlendEquation.FUNC_ADD", componentParam: { enumClass: feng3d.BlendEquation } })
+        ], RenderParams.prototype, "blendEquation", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "源混合因子，默认BlendFactor.SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
+        ], RenderParams.prototype, "sfactor", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
+        ], RenderParams.prototype, "dfactor", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "是否开启深度检查" })
+        ], RenderParams.prototype, "depthtest", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.DepthFunc } })
+        ], RenderParams.prototype, "depthFunc", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "是否开启深度标记" })
+        ], RenderParams.prototype, "depthMask", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.ColorMask } })
+        ], RenderParams.prototype, "colorMask", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RenderParams.prototype, "viewRect", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RenderParams.prototype, "useViewRect", void 0);
+        return RenderParams;
+    }());
+    feng3d.RenderParams = RenderParams;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * shader
+     */
+    var Shader = /** @class */ (function () {
+        function Shader(shaderName) {
+            if (shaderName === void 0) { shaderName = ""; }
+            /**
+             * shader 中的 宏
+             */
+            this.shaderMacro = {};
+            this.shaderName = shaderName;
+        }
+        Shader.prototype.setShader = function (vertex, fragment) {
+            this.vertex = vertex;
+            this.fragment = fragment;
+        };
+        /**
+         * 激活渲染程序
+         */
+        Shader.prototype.activeShaderProgram = function (gl) {
+            this.updateShaderCode();
+            var shaderKey = this.vertex + this.fragment;
+            var result = gl.cache.compileShaderResults[shaderKey];
+            if (result)
+                return result;
+            //渲染程序
+            try {
+                result = gl.cache.compileShaderResults[shaderKey] = this.compileShaderProgram(gl, this.vertex, this.fragment);
+            }
+            catch (error) {
+                console.error(this.shaderName + " \u7F16\u8BD1\u5931\u8D25\uFF01\n" + error);
+                return null;
+            }
+            return result;
+        };
+        /**
+         * 更新渲染代码
+         */
+        Shader.prototype.updateShaderCode = function () {
+            if (!this.shaderName)
+                return;
+            // 获取着色器代码
+            var result = feng3d.shaderlib.getShader(this.shaderName);
+            var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.shaderMacro);
+            this.vertex = vMacroCode + result.vertex;
+            var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.shaderMacro);
+            this.fragment = fMacroCode + result.fragment;
+        };
+        /**
+         * 编译着色器代码
+         * @param gl GL上下文
+         * @param type 着色器类型
+         * @param code 着色器代码
+         * @return 编译后的着色器对象
+         */
+        Shader.prototype.compileShaderCode = function (gl, type, code) {
+            var shader = gl.createShader(type);
+            if (shader == null) {
+                debugger;
+                throw 'unable to create shader';
+            }
+            gl.shaderSource(shader, code);
+            gl.compileShader(shader);
+            // 检查编译结果
+            var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+            if (!compiled) {
+                var error = gl.getShaderInfoLog(shader);
+                gl.deleteShader(shader);
+                debugger;
+                throw 'Failed to compile shader: ' + error;
+            }
+            return shader;
+        };
+        Shader.prototype.createLinkProgram = function (gl, vertexShader, fragmentShader) {
+            // 创建程序对象
+            var program = gl.createProgram();
+            if (!program) {
+                debugger;
+                throw "创建 WebGLProgram 失败！";
+            }
+            // 添加着色器
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            // 链接程序
+            gl.linkProgram(program);
+            // 检查结果
+            var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
+            if (!linked) {
+                var error = gl.getProgramInfoLog(program);
+                gl.deleteProgram(program);
+                gl.deleteShader(fragmentShader);
+                gl.deleteShader(vertexShader);
+                debugger;
+                throw 'Failed to link program: ' + error;
+            }
+            return program;
+        };
+        Shader.prototype.compileShaderProgram = function (gl, vshader, fshader) {
+            // 创建着色器程序
+            // 编译顶点着色器
+            var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
+            // 编译片段着色器
+            var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
+            // 创建着色器程序
+            var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
+            //获取属性信息
+            var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
+            var attributes = {};
+            var i = 0;
+            while (i < numAttributes) {
+                var activeInfo = gl.getActiveAttrib(shaderProgram, i++);
+                attributes[activeInfo.name] = { name: activeInfo.name, size: activeInfo.size, type: activeInfo.type, location: gl.getAttribLocation(shaderProgram, activeInfo.name) };
+            }
+            //获取uniform信息
+            var numUniforms = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
+            var uniforms = {};
+            var i = 0;
+            var textureID = 0;
+            while (i < numUniforms) {
+                var activeInfo = gl.getActiveUniform(shaderProgram, i++);
+                var reg = /(\w+)/g;
+                var name = activeInfo.name;
+                var names = [name];
+                if (activeInfo.size > 1) {
+                    console.assert(name.substr(-3, 3) == "[0]");
+                    var baseName = name.substring(0, name.length - 3);
+                    for (var j = 1; j < activeInfo.size; j++) {
+                        names[j] = baseName + ("[" + j + "]");
+                    }
+                }
+                for (var j_1 = 0; j_1 < names.length; j_1++) {
+                    name = names[j_1];
+                    var result;
+                    var paths = [];
+                    while (result = reg.exec(name)) {
+                        paths.push(result[1]);
+                    }
+                    uniforms[name] = { name: paths[0], paths: paths, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
+                    if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE) {
+                        textureID++;
+                    }
+                }
+            }
+            return { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
+        };
+        Shader.prototype.getMacroCode = function (variables, valueObj) {
+            var macroHeader = "";
+            variables.forEach(function (macroName) {
+                var value = valueObj[macroName];
+                if (typeof value == "boolean") {
+                    value && (macroHeader += "#define " + macroName + "\n");
+                }
+                else if (typeof value == "number") {
+                    macroHeader += "#define " + macroName + " " + value + "\n";
+                }
+            });
+            return macroHeader.length > 0 ? (macroHeader + "\n") : macroHeader;
+        };
+        return Shader;
+    }());
+    feng3d.Shader = Shader;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var Texture = /** @class */ (function () {
+        function Texture() {
+        }
+        Texture.active = function (gl, data) {
+            var texture = this.getTexture(gl, data);
+            var textureType = gl[data.textureType];
+            //绑定纹理
+            gl.bindTexture(textureType, texture);
+            //设置纹理参数
+            gl.texParameteri(textureType, gl.TEXTURE_MIN_FILTER, gl[data.minFilter]);
+            gl.texParameteri(textureType, gl.TEXTURE_MAG_FILTER, gl[data.magFilter]);
+            gl.texParameteri(textureType, gl.TEXTURE_WRAP_S, gl[data.wrapS]);
+            gl.texParameteri(textureType, gl.TEXTURE_WRAP_T, gl[data.wrapT]);
+            //
+            gl.texParameterfAnisotropy(textureType, data.anisotropy);
+            return texture;
+        };
+        /**
+         * 获取顶点属性缓冲
+         * @param data  数据
+         */
+        Texture.getTexture = function (gl, data) {
+            if (data.invalid) {
+                this.clear(data);
+                data.invalid = false;
+            }
+            var texture = gl.cache.textures.get(data);
+            if (!texture) {
+                texture = gl.createTexture(); // Create a texture object
+                if (!texture) {
+                    console.error("createTexture 失败！");
+                    throw "";
+                }
+                gl.cache.textures.set(data, texture);
+                //
+                var textureType = gl[data.textureType];
+                var format = gl[data.format];
+                var type = gl[data.type];
+                //设置图片y轴方向
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, data.flipY ? 1 : 0);
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, data.premulAlpha ? 1 : 0);
+                //绑定纹理
+                gl.bindTexture(textureType, texture);
+                //设置纹理图片
+                switch (textureType) {
+                    case gl.TEXTURE_CUBE_MAP:
+                        var pixels = data.activePixels;
+                        var faces = [
+                            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                        ];
+                        for (var i = 0; i < faces.length; i++) {
+                            if (data.isRenderTarget) {
+                                gl.texImage2D(faces[i], 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
+                            }
+                            else {
+                                gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
+                            }
+                        }
+                        break;
+                    case gl.TEXTURE_2D:
+                        var _pixel = data.activePixels;
+                        if (data.isRenderTarget) {
+                            gl.texImage2D(textureType, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
+                        }
+                        else {
+                            gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        }
+                        break;
+                    default:
+                        throw "";
+                }
+                if (data.generateMipmap) {
+                    gl.generateMipmap(textureType);
+                }
+            }
+            return texture;
+        };
+        /**
+         * 清除纹理
+         *
+         * @param data
+         */
+        Texture.clear = function (data) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var tex = gl.cache.textures.get(data);
+                if (tex) {
+                    gl.deleteTexture(tex);
+                    gl.cache.textures.delete(data);
+                }
+            });
+        };
+        return Texture;
+    }());
+    feng3d.Texture = Texture;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var GL = /** @class */ (function () {
+        function GL() {
+        }
+        /**
+         * 获取 GL 实例
+         * @param canvas 画布
+         * @param contextAttributes
+         */
+        GL.getGL = function (canvas, contextAttributes) {
+            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+            // var contextIds = ["webgl"];
+            var gl = null;
+            for (var i = 0; i < contextIds.length; ++i) {
+                try {
+                    gl = canvas.getContext(contextIds[i], contextAttributes);
+                    gl.contextId = contextIds[i];
+                    gl.contextAttributes = contextAttributes;
+                    break;
+                }
+                catch (e) { }
+            }
+            if (!gl)
+                throw "无法初始化WEBGL";
+            //
+            new feng3d.GLCache(gl);
+            new feng3d.GLExtension(gl);
+            new feng3d.GLCapabilities(gl);
+            new feng3d.WebGLRenderer(gl);
+            //
+            gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
+            gl.clearDepth(1.0); // Clear everything
+            gl.enable(gl.DEPTH_TEST); // Enable depth testing
+            gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+            this.glList.push(gl);
+            return gl;
+        };
+        GL.glList = [];
+        return GL;
+    }());
+    feng3d.GL = GL;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * GL 缓存
+     */
+    var GLCache = /** @class */ (function () {
+        function GLCache(gl) {
+            this.compileShaderResults = {};
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.textures = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.attributes = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.indices = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.renderBuffers = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
+            this.frameBuffers = new Map();
+            gl.cache = this;
+            this._gl = gl;
+        }
+        return GLCache;
+    }());
+    feng3d.GLCache = GLCache;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * WEBGL 支持功能
+     *
+     * @see https://webglreport.com
+     * @see http://html5test.com
+     */
+    var GLCapabilities = /** @class */ (function () {
+        function GLCapabilities(gl) {
+            gl.capabilities = this;
+            function getMaxPrecision(precision) {
+                if (precision === 'highp') {
+                    if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision > 0 &&
+                        gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision > 0) {
+                        return 'highp';
+                    }
+                    precision = 'mediump';
+                }
+                if (precision === 'mediump') {
+                    if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).precision > 0 &&
+                        gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).precision > 0) {
+                        return 'mediump';
+                    }
+                }
+                return 'lowp';
+            }
+            this.isWebGL2 = false;
+            var gl2 = null;
+            if (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext) {
+                gl2 = gl;
+                this.isWebGL2 = true;
+            }
+            if (gl.extensions.EXT_texture_filter_anisotropic) {
+                this.maxAnisotropy = gl.getParameter(gl.extensions.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            }
+            else {
+                this.maxAnisotropy = 0;
+            }
+            this.maxPrecision = getMaxPrecision('highp');
+            this.maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+            this.maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+            this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            this.maxCubemapSize = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+            this.maxAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+            this.maxVertexUniforms = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
+            this.maxVaryings = gl.getParameter(gl.MAX_VARYING_VECTORS);
+            this.maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+            this.vertexTextures = this.maxVertexTextures > 0;
+            this.floatFragmentTextures = this.isWebGL2 || !!gl.getExtension('OES_texture_float');
+            this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
+            this.maxSamples = this.isWebGL2 ? gl.getParameter(gl2.MAX_SAMPLES) : 0;
+        }
+        return GLCapabilities;
+    }());
+    feng3d.GLCapabilities = GLCapabilities;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * GL扩展
+     */
+    var GLExtension = /** @class */ (function () {
+        function GLExtension(gl) {
+            console.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
+            gl.extensions = this;
+            this.initExtensions(gl);
+            this.cacheGLQuery(gl);
+            this.wrap(gl);
+        }
+        GLExtension.prototype.initExtensions = function (gl) {
+            this.ANGLE_instanced_arrays = gl.getExtension("ANGLE_instanced_arrays");
+            this.EXT_blend_minmax = gl.getExtension("EXT_blend_minmax");
+            this.EXT_color_buffer_half_float = gl.getExtension("EXT_color_buffer_half_float");
+            this.EXT_frag_depth = gl.getExtension("EXT_frag_depth");
+            this.EXT_sRGB = gl.getExtension("EXT_sRGB");
+            this.EXT_shader_texture_lod = gl.getExtension("EXT_shader_texture_lod");
+            this.EXT_texture_filter_anisotropic = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+            this.OES_element_index_uint = gl.getExtension("OES_element_index_uint");
+            this.OES_standard_derivatives = gl.getExtension("OES_standard_derivatives");
+            this.OES_texture_float = gl.getExtension("OES_texture_float");
+            this.OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
+            this.OES_texture_half_float = gl.getExtension("OES_texture_half_float");
+            this.OES_texture_half_float_linear = gl.getExtension("OES_texture_half_float_linear");
+            this.OES_vertex_array_object = gl.getExtension("OES_vertex_array_object");
+            this.WEBGL_color_buffer_float = gl.getExtension("WEBGL_color_buffer_float");
+            this.WEBGL_compressed_texture_atc = gl.getExtension("WEBGL_compressed_texture_atc") || gl.getExtension("WEBKIT_WEBGL_compressed_texture_atc");
+            this.WEBGL_compressed_texture_etc1 = gl.getExtension("WEBGL_compressed_texture_etc1");
+            this.WEBGL_compressed_texture_pvrtc = gl.getExtension('WEBGL_compressed_texture_pvrtc') || gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
+            this.WEBGL_compressed_texture_s3tc = gl.getExtension('WEBGL_compressed_texture_s3tc') || gl.getExtension('MOZ_WEBGL_compressed_texture_s3tc') || gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc');
+            this.WEBGL_debug_renderer_info = gl.getExtension("WEBGL_debug_renderer_info");
+            this.WEBGL_debug_shaders = gl.getExtension("WEBGL_debug_shaders");
+            this.WEBGL_depth_texture = gl.getExtension('WEBGL_depth_texture') || gl.getExtension('MOZ_WEBGL_depth_texture') || gl.getExtension('WEBKIT_WEBGL_depth_texture');
+            this.WEBGL_draw_buffers = gl.getExtension("WEBGL_draw_buffers");
+            this.WEBGL_lose_context = gl.getExtension("WEBGL_lose_context") || gl.getExtension("WEBKIT_WEBGL_lose_context") || gl.getExtension("MOZ_WEBGL_lose_context");
+        };
+        /**
+         * 缓存GL查询
+         * @param gl GL实例
+         */
+        GLExtension.prototype.cacheGLQuery = function (gl) {
+            var oldGetExtension = gl.getExtension;
+            gl.getExtension = function (name) {
+                gl.extensions[name] = gl.extensions[name] || oldGetExtension.apply(gl, arguments);
+                return gl.extensions[name];
+            };
+        };
+        GLExtension.prototype.wrap = function (gl) {
+            if (!gl.texParameterfAnisotropy) {
+                gl.texParameterfAnisotropy = function (target, anisotropy) {
+                    if (anisotropy <= 0)
+                        return;
+                    if (gl.extensions.EXT_texture_filter_anisotropic) {
+                        if (anisotropy > gl.capabilities.maxAnisotropy) {
+                            anisotropy = gl.capabilities.maxAnisotropy;
+                            console.warn(anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.capabilities.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
+                        }
+                        gl.texParameterf(target, gl.extensions.EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+                    }
+                    else {
+                        console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
+                    }
+                };
+            }
+            //
+            if (!gl.vertexAttribDivisor) {
+                gl.vertexAttribDivisor = function (index, divisor) {
+                    if (gl.extensions.ANGLE_instanced_arrays) {
+                        gl.extensions.ANGLE_instanced_arrays.vertexAttribDivisorANGLE(index, divisor);
+                    }
+                    else {
+                        console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
+                    }
+                };
+            }
+            if (!gl.drawElementsInstanced) {
+                gl.drawElementsInstanced = function (mode, count, type, offset, instanceCount) {
+                    if (gl.extensions.ANGLE_instanced_arrays) {
+                        gl.extensions.ANGLE_instanced_arrays.drawElementsInstancedANGLE(mode, count, type, offset, instanceCount);
+                    }
+                    else {
+                        console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
+                    }
+                };
+            }
+            if (!gl.drawArraysInstanced) {
+                gl.drawArraysInstanced = function (mode, first, count, instanceCount) {
+                    if (gl.extensions.ANGLE_instanced_arrays) {
+                        gl.extensions.ANGLE_instanced_arrays.drawArraysInstancedANGLE(mode, first, count, instanceCount);
+                    }
+                    else {
+                        console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawArraysInstanced \uFF01");
+                    }
+                };
+            }
+        };
+        return GLExtension;
+    }());
+    feng3d.GLExtension = GLExtension;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
+     *
+     * 指定数据存储区的使用方法。
+     *
+     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/bufferData
+     */
+    var AttributeUsage;
+    (function (AttributeUsage) {
+        /**
+         * The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
+         *
+         * 内容由应用程序指定一次，并多次用作WebGL绘图和图像规范命令的源。
+         *
+         * 缓冲区的内容可能经常使用，而不会经常更改。内容被写入缓冲区，但不被读取。
+         */
+        AttributeUsage["STATIC_DRAW"] = "STATIC_DRAW";
+        /**
+         * The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
+         *
+         * 这些内容将由应用程序反复重新指定，并多次用作WebGL绘图和图像规范命令的源。
+         */
+        AttributeUsage["DYNAMIC_DRAW"] = "DYNAMIC_DRAW";
+        /**
+         * The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands.
+         *
+         * 内容由应用程序指定一次，最多几次用作WebGL绘图和图像规范命令的源。
+         */
+        AttributeUsage["STREAM_DRAW"] = "STREAM_DRAW";
+    })(AttributeUsage = feng3d.AttributeUsage || (feng3d.AttributeUsage = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * GL 数组数据类型
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
+     */
+    var GLArrayType;
+    (function (GLArrayType) {
+        /**
+         * signed 8-bit integer, with values in [-128, 127]
+         */
+        GLArrayType["BYTE"] = "BYTE";
+        /**
+         *  signed 16-bit integer, with values in [-32768, 32767]
+         */
+        GLArrayType["SHORT"] = "SHORT";
+        /**
+         * unsigned 8-bit integer, with values in [0, 255]
+         */
+        GLArrayType["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";
+        /**
+         * unsigned 16-bit integer, with values in [0, 65535]
+         */
+        GLArrayType["UNSIGNED_SHORT"] = "UNSIGNED_SHORT";
+        /**
+         * 32-bit floating point number
+         */
+        GLArrayType["FLOAT"] = "FLOAT";
+        // /**
+        //  * using a WebGL 2 context
+        //  * 16-bit floating point number
+        //  */
+        // HALF_FLOAT = "HALF_FLOAT",
+    })(GLArrayType = feng3d.GLArrayType || (feng3d.GLArrayType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理数据类型
+     * A GLenum specifying the data type of the texel data
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    var TextureDataType;
+    (function (TextureDataType) {
+        /**
+         * 8 bits per channel for gl.RGBA
+         */
+        TextureDataType["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";
+        /**
+         * 5 red bits, 6 green bits, 5 blue bits.
+         */
+        TextureDataType["UNSIGNED_SHORT_5_6_5"] = "UNSIGNED_SHORT_5_6_5";
+        /**
+         * 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
+         */
+        TextureDataType["UNSIGNED_SHORT_4_4_4_4"] = "UNSIGNED_SHORT_4_4_4_4";
+        /**
+         * 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
+         */
+        TextureDataType["UNSIGNED_SHORT_5_5_5_1"] = "UNSIGNED_SHORT_5_5_5_1";
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // UNSIGNED_SHORT = "UNSIGNED_SHORT",
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // UNSIGNED_INT = "UNSIGNED_INT",
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  *  (constant provided by the extension)
+        //  */
+        // UNSIGNED_INT_24_8_WEBGL = "UNSIGNED_INT_24_8_WEBGL",
+        // //When using the OES_texture_half_float extension:
+        // /**
+        //  * When using the OES_texture_float extension:
+        //  */
+        // FLOAT = "FLOAT",
+        // /**
+        //  * When using the OES_texture_half_float extension:
+        //  *  (constant provided by the extension)
+        //  */
+        // HALF_FLOAT_OES = "HALF_FLOAT_OES",
+        // // When using a WebGL 2 context, the following values are available additionally:
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // BYTE = "BYTE",
+        // // UNSIGNED_SHORT   // 与上面合并处理
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // SHORT = "SHORT",
+        // // UNSIGNED_INT     // 与上面合并处理
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // INT = "INT",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // HALF_FLOAT = "HALF_FLOAT",
+        // // FLOAT               // 与上面合并处理
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_2_10_10_10_REV = "UNSIGNED_INT_2_10_10_10_REV",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_10F_11F_11F_REV = "UNSIGNED_INT_10F_11F_11F_REV",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_5_9_9_9_REV = "UNSIGNED_INT_5_9_9_9_REV",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // UNSIGNED_INT_24_8 = "UNSIGNED_INT_24_8",
+        // /**
+        //  * using a WebGL 2 context
+        //  *  (pixels must be null)
+        //  */
+        // FLOAT_32_UNSIGNED_INT_24_8_REV = "FLOAT_32_UNSIGNED_INT_24_8_REV",
+    })(TextureDataType = feng3d.TextureDataType || (feng3d.TextureDataType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理颜色格式
+     * A GLint specifying the color components in the texture
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    var TextureFormat;
+    (function (TextureFormat) {
+        /**
+         * Discards the red, green and blue components and reads the alpha component.
+         */
+        TextureFormat["ALPHA"] = "ALPHA";
+        /**
+         *  Discards the alpha components and reads the red, green and blue components.
+         */
+        TextureFormat["RGB"] = "RGB";
+        /**
+         * Red, green, blue and alpha components are read from the color buffer.
+         */
+        TextureFormat["RGBA"] = "RGBA";
+        /**
+         * Each color component is a luminance component, alpha is 1.0.
+         */
+        TextureFormat["LUMINANCE"] = "LUMINANCE";
+        /**
+         * Each component is a luminance/alpha component.
+         */
+        TextureFormat["LUMINANCE_ALPHA"] = "LUMINANCE_ALPHA";
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // DEPTH_COMPONENT = "DEPTH_COMPONENT",
+        // /**
+        //  * When using the WEBGL_depth_texture extension:
+        //  */
+        // DEPTH_STENCIL = "DEPTH_STENCIL",
+        // /**
+        //  * When using the EXT_sRGB extension:
+        //  */
+        // SRGB_EXT = "SRGB_EXT",
+        // /**
+        //  * When using the EXT_sRGB extension:
+        //  */
+        // SRGB_ALPHA_EXT = "SRGB_ALPHA_EXT",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R8 = "R8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R16F = "R16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R32F = "R32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R8UI = "R8UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG8 = "RG8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG16F = "RG16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG32F = "RG32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG8UI = "RG8UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG16UI = "RG16UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RG32UI = "RG32UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB8 = "RGB8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // SRGB8 = "SRGB8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB565 = "RGB565",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // R11F_G11F_B10F = "R11F_G11F_B10F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB9_E5 = "RGB9_E5",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB16F = "RGB16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB32F = "RGB32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB8UI = "RGB8UI",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA8 = "RGBA8",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // // SRGB8_APLHA8,
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB5_A1 = "RGB5_A1",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGB10_A2 = "RGB10_A2",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA4 = "RGBA4",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA16F = "RGBA16F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA32F = "RGBA32F",
+        // /**
+        //  * using a WebGL 2 context
+        //  */
+        // RGBA8UI = "RGBA8UI",
+    })(TextureFormat = feng3d.TextureFormat || (feng3d.TextureFormat = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理放大滤波器
+     * Texture magnification filter
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    var TextureMagFilter;
+    (function (TextureMagFilter) {
+        /**
+         *  (default value)
+         */
+        TextureMagFilter["LINEAR"] = "LINEAR";
+        TextureMagFilter["NEAREST"] = "NEAREST";
+    })(TextureMagFilter = feng3d.TextureMagFilter || (feng3d.TextureMagFilter = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理缩小过滤器
+     * Texture minification filter
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    var TextureMinFilter;
+    (function (TextureMinFilter) {
+        TextureMinFilter["LINEAR"] = "LINEAR";
+        TextureMinFilter["NEAREST"] = "NEAREST";
+        TextureMinFilter["NEAREST_MIPMAP_NEAREST"] = "NEAREST_MIPMAP_NEAREST";
+        TextureMinFilter["LINEAR_MIPMAP_NEAREST"] = "LINEAR_MIPMAP_NEAREST";
+        /**
+         *  (default value)
+         */
+        TextureMinFilter["NEAREST_MIPMAP_LINEAR"] = "NEAREST_MIPMAP_LINEAR";
+        TextureMinFilter["LINEAR_MIPMAP_LINEAR"] = "LINEAR_MIPMAP_LINEAR";
+    })(TextureMinFilter = feng3d.TextureMinFilter || (feng3d.TextureMinFilter = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理类型
+     * A GLenum specifying the binding point (target). Possible values:
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
+     */
+    var TextureType;
+    (function (TextureType) {
+        /**
+         * gl.TEXTURE_2D: A two-dimensional texture.
+         */
+        TextureType["TEXTURE_2D"] = "TEXTURE_2D";
+        /**
+         * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
+         */
+        TextureType["TEXTURE_CUBE_MAP"] = "TEXTURE_CUBE_MAP";
+        // /**
+        //  * using a WebGL 2 context
+        //  * gl.TEXTURE_3D: A three-dimensional texture.
+        //  */
+        // TEXTURE_3D = "TEXTURE_3D",
+        // /**
+        //  * using a WebGL 2 context
+        //  * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
+        //  */
+        // TEXTURE_2D_ARRAY = "TEXTURE_2D_ARRAY",
+    })(TextureType = feng3d.TextureType || (feng3d.TextureType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理坐标s包装函数枚举
+     * Wrapping function for texture coordinate s
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    var TextureWrap;
+    (function (TextureWrap) {
+        /**
+         * (default value)
+         */
+        TextureWrap["REPEAT"] = "REPEAT";
+        TextureWrap["CLAMP_TO_EDGE"] = "CLAMP_TO_EDGE";
+        TextureWrap["MIRRORED_REPEAT"] = "MIRRORED_REPEAT";
+    })(TextureWrap = feng3d.TextureWrap || (feng3d.TextureWrap = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    feng3d.shaderConfig = { shaders: {}, modules: {} };
+    /**
+     * 渲染代码库
+
+     */
+    var ShaderLib = /** @class */ (function () {
+        function ShaderLib() {
+            this._shaderCache = {};
+        }
+        Object.defineProperty(ShaderLib.prototype, "shaderConfig", {
+            get: function () {
+                this._shaderConfig = this._shaderConfig || feng3d.shaderConfig;
+                return this._shaderConfig;
+            },
+            set: function (v) {
+                this._shaderConfig = v;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 获取shaderCode
+         */
+        ShaderLib.prototype.getShader = function (shaderName) {
+            if (this._shaderCache[shaderName])
+                return this._shaderCache[shaderName];
+            var shader = feng3d.shaderlib.shaderConfig.shaders[shaderName];
+            //
+            var vertex = feng3d.shaderlib.uninclude(shader.vertex);
+            //
+            var fragment = feng3d.shaderlib.uninclude(shader.fragment);
+            var vertexMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(vertex);
+            var fragmentMacroVariables = feng3d.shaderMacroUtils.getMacroVariablesFromCode(fragment);
+            this._shaderCache[shaderName] = { vertex: vertex, fragment: fragment, vertexMacroVariables: vertexMacroVariables, fragmentMacroVariables: fragmentMacroVariables };
+            return this._shaderCache[shaderName];
+        };
+        /**
+         * 展开 include
+         */
+        ShaderLib.prototype.uninclude = function (shaderCode) {
+            //#include 正则表达式
+            var includeRegExp = /#include<(.+)>/g;
+            //
+            var match = includeRegExp.exec(shaderCode);
+            while (match != null) {
+                var moduleshader = this.shaderConfig.modules[match[1]];
+                if (!moduleshader) {
+                    debugger;
+                    console.error("\u65E0\u6CD5\u627E\u5230\u7740\u8272\u5668 " + match[1]);
+                }
+                moduleshader = this.uninclude(moduleshader);
+                shaderCode = shaderCode.replace(match[0], moduleshader);
+                includeRegExp.lastIndex = 0;
+                match = includeRegExp.exec(shaderCode);
+            }
+            return shaderCode;
+        };
+        /**
+         * 获取shader列表
+         */
+        ShaderLib.prototype.getShaderNames = function () {
+            return Object.keys(this.shaderConfig.shaders);
+        };
+        /**
+         * 清除缓存
+         */
+        ShaderLib.prototype.clearCache = function () {
+            this._shaderCache = {};
+        };
+        return ShaderLib;
+    }());
+    feng3d.ShaderLib = ShaderLib;
+    feng3d.shaderlib = new ShaderLib();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var shaderMacroKeys = ["if", "ifdef", "defined"];
+    var ShaderMacroUtils = /** @class */ (function () {
+        function ShaderMacroUtils() {
+        }
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param vertex
+         * @param fragment
+         */
+        ShaderMacroUtils.prototype.getMacroVariablesFromShaderCode = function (vertex, fragment) {
+            var variables0 = this.getMacroVariablesFromCode(vertex);
+            var variables1 = this.getMacroVariablesFromCode(fragment);
+            for (var i = 0; i < variables1.length; i++) {
+                var element = variables1[i];
+                if (variables0.indexOf(element) == -1)
+                    variables0.push(element);
+            }
+            return variables0;
+        };
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param code
+         */
+        ShaderMacroUtils.prototype.getMacroVariablesFromCode = function (code) {
+            var variables = [];
+            var lines = code.split("\n");
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (line.indexOf("#if") != -1) {
+                    var reg = /(\w+)/g;
+                    var result;
+                    while (result = reg.exec(line)) {
+                        var key = result[1];
+                        if (key != null && isNaN(Number(key)) && shaderMacroKeys.indexOf(key) == -1 && variables.indexOf(key) == -1)
+                            variables.push(key);
+                    }
+                }
+            }
+            return variables;
+        };
+        return ShaderMacroUtils;
+    }());
+    feng3d.ShaderMacroUtils = ShaderMacroUtils;
+    feng3d.shaderMacroUtils = new ShaderMacroUtils();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
