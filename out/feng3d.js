@@ -997,7 +997,7 @@ var feng3d;
                     return className;
                 }
             }
-            // console.warn(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
+            console.warn("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + "-" + className + " \u7684\u5B9A\u4E49");
             return className;
         };
         /**
