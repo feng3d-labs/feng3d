@@ -13,45 +13,21 @@
         ],
         "outFile": "out/feng3d.js",
     },
-    "files": [
+    "include": [
         // 事件模块
-        "../packages/eventsystem/src/FEvent.ts",
-        "../packages/eventsystem/src/EventDispatcher.ts",
-        "../packages/eventsystem/src/ObjectEvent.ts",
+        "../packages/eventsystem/src/**/*.ts",
         //
-        "../packages/task/runtime/src/Task.ts",
+        "../packages/task/runtime/src/**/*.ts",
         //
-        "../packages/watcher/src/Watcher.ts",
+        "../packages/watcher/src/**/*.ts",
         // Polyfill
-        "../packages/polyfill/src/Types.ts",
-        "../packages/polyfill/src/Object.ts",
-        "../packages/polyfill/src/ClassUtils.ts",
-        "../packages/polyfill/src/Map.ts",
-        "../packages/polyfill/src/Array.ts",
-        "../packages/polyfill/src/Math.ts",
+        "../packages/polyfill/src/**/*.ts",
         //
-        "../packages/serialization/src/Serialization.ts",
+        "../packages/serialization/src/**/*.ts",
         //
-        "../packages/objectview/src/ObjectView.ts",
+        "../packages/objectview/src/**/*.ts",
         // 数据结构
-        "../packages/algorithms/src/utils/Comparator.ts",
-        "../packages/algorithms/src/LinkedList.ts",
-        "../packages/algorithms/src/DoublyLinkedList.ts",
-        "../packages/algorithms/src/Queue.ts",
-        "../packages/algorithms/src/Stack.ts",
-        "../packages/algorithms/src/Heap.ts",
-        "../packages/algorithms/src/MaxHeap.ts",
-        "../packages/algorithms/src/MinHeap.ts",
-        "../packages/algorithms/src/HashTable.ts",
-        "../packages/algorithms/src/PriorityQueue.ts",
-        "../packages/algorithms/src/PriorityQueue1.ts",
-        "../packages/algorithms/src/BloomFilter.ts",
-        "../packages/algorithms/src/DisjointSet.ts",
-        "../packages/algorithms/src/Graph.ts",
-        "../packages/algorithms/src/BinaryTreeNode.ts",
-        "../packages/algorithms/src/BinarySearchTreeNode.ts",
-        "../packages/algorithms/src/BinarySearchTree.ts",
-        "../packages/algorithms/src/AvlTree.ts",
+        "../packages/algorithms/src/**/*.ts",
         // 数学相关程序
         // 函数方程
         "../packages/math/src/EquationSolving.ts",
@@ -323,5 +299,5 @@
         //
         "src/core/Mouse3DManager.ts",
         "src/Feng3d.ts",
-    ]
+    ],
 }

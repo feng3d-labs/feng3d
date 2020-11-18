@@ -20,6 +20,114 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var feng3d;
 (function (feng3d) {
     /**
+     * 事件适配器
+     */
+    var EventDispatcher = /** @class */ (function () {
+        function EventDispatcher() {
+        }
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
+            if (thisObject === void 0) { thisObject = null; }
+            if (priority === void 0) { priority = 0; }
+            feng3d.event.on(this, type, listener, thisObject, priority, true);
+        };
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        EventDispatcher.prototype.dispatchEvent = function (e) {
+            return feng3d.event.dispatchEvent(this, e);
+        };
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
+            if (bubbles === void 0) { bubbles = false; }
+            return feng3d.event.dispatch(this, type, data, bubbles);
+        };
+        /**
+         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        EventDispatcher.prototype.has = function (type) {
+            return feng3d.event.has(this, type);
+        };
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
+            if (priority === void 0) { priority = 0; }
+            if (once === void 0) { once = false; }
+            feng3d.event.on(this, type, listener, thisObject, priority, once);
+        };
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        EventDispatcher.prototype.off = function (type, listener, thisObject) {
+            feng3d.event.off(this, type, listener, thisObject);
+        };
+        /**
+         * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
+         *
+         * @param listener                  处理事件的监听器函数。
+         * @param thisObject                监听器的上下文。可选。
+         * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
+         */
+        EventDispatcher.prototype.onAny = function (listener, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            feng3d.event.onAny(this, listener, thisObject, priority);
+        };
+        /**
+         * 移除监听对象的任意事件。
+         *
+         * @param listener                  处理事件的监听器函数。
+         * @param thisObject                监听器的上下文。可选。
+         */
+        EventDispatcher.prototype.offAny = function (listener, thisObject) {
+            feng3d.event.offAny(this, listener, thisObject);
+        };
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handleEvent = function (e) {
+            feng3d.event["handleEvent"](this, e);
+        };
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handelEventBubbles = function (e) {
+            feng3d.event["handelEventBubbles"](this, e);
+        };
+        return EventDispatcher;
+    }());
+    feng3d.EventDispatcher = EventDispatcher;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 事件
      */
     var FEvent = /** @class */ (function () {
@@ -288,114 +396,6 @@ var feng3d;
     }());
     feng3d.FEvent = FEvent;
     feng3d.event = new FEvent();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 事件适配器
-     */
-    var EventDispatcher = /** @class */ (function () {
-        function EventDispatcher() {
-        }
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
-            if (thisObject === void 0) { thisObject = null; }
-            if (priority === void 0) { priority = 0; }
-            feng3d.event.on(this, type, listener, thisObject, priority, true);
-        };
-        /**
-         * 派发事件
-         *
-         * 当事件重复流向一个对象时将不会被处理。
-         *
-         * @param e   事件对象
-         * @returns 返回事件是否被该对象处理
-         */
-        EventDispatcher.prototype.dispatchEvent = function (e) {
-            return feng3d.event.dispatchEvent(this, e);
-        };
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-         * @param type                      事件的类型。类型区分大小写。
-         * @param data                      事件携带的自定义数据。
-         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
-            if (bubbles === void 0) { bubbles = false; }
-            return feng3d.event.dispatch(this, type, data, bubbles);
-        };
-        /**
-         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        EventDispatcher.prototype.has = function (type) {
-            return feng3d.event.has(this, type);
-        };
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
-            if (priority === void 0) { priority = 0; }
-            if (once === void 0) { once = false; }
-            feng3d.event.on(this, type, listener, thisObject, priority, once);
-        };
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        EventDispatcher.prototype.off = function (type, listener, thisObject) {
-            feng3d.event.off(this, type, listener, thisObject);
-        };
-        /**
-         * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
-         *
-         * @param listener                  处理事件的监听器函数。
-         * @param thisObject                监听器的上下文。可选。
-         * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
-         */
-        EventDispatcher.prototype.onAny = function (listener, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            feng3d.event.onAny(this, listener, thisObject, priority);
-        };
-        /**
-         * 移除监听对象的任意事件。
-         *
-         * @param listener                  处理事件的监听器函数。
-         * @param thisObject                监听器的上下文。可选。
-         */
-        EventDispatcher.prototype.offAny = function (listener, thisObject) {
-            feng3d.event.offAny(this, listener, thisObject);
-        };
-        /**
-         * 处理事件
-         * @param e 事件
-         */
-        EventDispatcher.prototype.handleEvent = function (e) {
-            feng3d.event["handleEvent"](this, e);
-        };
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        EventDispatcher.prototype.handelEventBubbles = function (e) {
-            feng3d.event["handelEventBubbles"](this, e);
-        };
-        return EventDispatcher;
-    }());
-    feng3d.EventDispatcher = EventDispatcher;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -837,176 +837,132 @@ var feng3d;
         });
     }
 })(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    feng3d.lazy = {
-        getvalue: function (lazyItem) {
-            if (typeof lazyItem == "function")
-                return lazyItem();
-            return lazyItem;
-        }
-    };
-})(feng3d || (feng3d = {}));
-Object.isBaseType = function (object) {
-    //基础类型
-    if (object == undefined
-        || object == null
-        || typeof object == "boolean"
-        || typeof object == "string"
-        || typeof object == "number")
-        return true;
-    return false;
-};
-Object.getPropertyDescriptor = function (host, property) {
-    var data = Object.getOwnPropertyDescriptor(host, property);
-    if (data) {
-        return data;
-    }
-    var prototype = Object.getPrototypeOf(host);
-    if (prototype) {
-        return Object.getPropertyDescriptor(prototype, property);
-    }
-    return undefined;
-};
-Object.propertyIsWritable = function (host, property) {
-    var data = Object.getPropertyDescriptor(host, property);
-    if (!data)
-        return false;
-    if (data.get && !data.set)
-        return false;
-    return true;
-};
-Object.runFunc = function (obj, func) {
-    func(obj);
-    return obj;
-};
-Object.isObject = function (obj) {
-    return obj != null && (obj.constructor == Object || (obj.constructor.name == "Object")); // 兼容其他 HTMLIFrameElement 传入的Object
-};
-Object.getPropertyValue = function (object, property) {
-    if (typeof property == "string")
-        property = property.split(".");
-    var value = object;
-    var len = property.length;
-    for (var i = 0; i < property.length; i++) {
-        if (value == null)
-            return undefined;
-        value = value[property[i]];
-    }
-    return value;
-};
-Object.getPropertyChains = function (object) {
-    var result = [];
-    // 属性名称列表
-    var propertys = Object.keys(object);
-    // 属性所属对象列表
-    var hosts = new Array(propertys.length).fill(object);
-    // 父属性所在编号列表
-    var parentPropertyIndices = new Array(propertys.length).fill(-1);
-    // 处理到的位置
-    var index = 0;
-    while (index < propertys.length) {
-        var host = hosts[index];
-        var cp = propertys[index];
-        var cv = host[cp];
-        var vks;
-        if (cv == null || Object.isBaseType(cv) || (vks = Object.keys(cv)).length == 0) {
-            // 处理叶子属性
-            var ps = [cp];
-            var ci = index;
-            // 查找并组合属性链
-            while ((ci = parentPropertyIndices[ci]) != -1) {
-                ps.push(propertys[ci]);
+if (!Array.prototype.includes) {
+    Object.defineProperty(Array.prototype, "includes", {
+        configurable: true,
+        enumerable: false,
+        value: function (searchElement, fromIndex) {
+            for (var i = fromIndex, n = this.length; i < n; i++) {
+                if (searchElement == this[i])
+                    return true;
             }
-            ps.reverse();
-            result.push(ps.join("."));
-        }
-        else {
-            // 处理中间属性
-            vks.forEach(function (k) {
-                propertys.push(k);
-                hosts.push(cv);
-                parentPropertyIndices.push(index);
-            });
-        }
-        index++;
-    }
-    return result;
-};
-Object.equalDeep = function (a, b) {
-    if (a == b)
-        return true;
-    if (Object.isBaseType(a) || Object.isBaseType(b))
-        return a == b;
-    if (typeof a == "function" || typeof b == "function")
-        return a == b;
-    //
-    var akeys = Object.keys(a);
-    var bkeys = Object.keys(b);
-    if (!Array.equal(akeys, bkeys))
-        return false;
-    if (Array.isArray(a) && Array.isArray(b))
-        return a.length == b.length;
-    // 检测所有属性
-    for (var i = 0; i < akeys.length; i++) {
-        var element = akeys[i];
-        if (!Object.equalDeep(a[element], b[element])) {
             return false;
+        },
+        writable: true,
+    });
+}
+Array.equal = function (self, arr) {
+    if (self.length != arr.length)
+        return false;
+    var keys = Object.keys(arr);
+    for (var i = 0, n = keys.length; i < n; i++) {
+        var key = keys[i];
+        if (self[key] != arr[key])
+            return false;
+    }
+    return true;
+};
+Array.concatToSelf = function (self) {
+    var items = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        items[_i - 1] = arguments[_i];
+    }
+    var arr = [];
+    items.forEach(function (v) { return arr = arr.concat(v); });
+    arr.forEach(function (v) { return self.push(v); });
+    return self;
+};
+Array.unique = function (arr, compare) {
+    if (compare === void 0) { compare = function (a, b) { return a == b; }; }
+    var keys = Object.keys(arr);
+    var ids = keys.map(function (v) { return Number(v); }).filter(function (v) { return !isNaN(v); });
+    var deleteMap = {};
+    //
+    for (var i = 0, n = ids.length; i < n; i++) {
+        var ki = ids[i];
+        if (deleteMap[ki])
+            continue;
+        for (var j = i + 1; j < n; j++) {
+            var kj = ids[j];
+            if (compare(arr[ki], arr[kj]))
+                deleteMap[kj] = true;
+        }
+    }
+    //
+    for (var i = ids.length - 1; i >= 0; i--) {
+        var id = ids[i];
+        if (deleteMap[id])
+            arr.splice(id, 1);
+    }
+    return arr;
+};
+/**
+ * 数组元素是否唯一
+ * @param equalFn 比较函数
+ */
+Array.isUnique = function (array, compare) {
+    if (compare === void 0) { compare = function (a, b) { return a == b; }; }
+    for (var i = array.length - 1; i >= 0; i--) {
+        for (var j = 0; j < i; j++) {
+            if (compare(array[i], array[j])) {
+                return false;
+            }
         }
     }
     return true;
 };
-Object.assignShallow = function (target, source) {
-    if (source == null)
-        return target;
-    var keys = Object.keys(source);
-    keys.forEach(function (k) {
-        target[k] = source[k];
-    });
-    return target;
+Array.delete = function (arr, item) {
+    var index = arr.indexOf(item);
+    if (index != -1)
+        arr.splice(index, 1);
+    return index;
 };
-Object.assignDeep = function (target, source, replacers, deep) {
-    if (replacers === void 0) { replacers = []; }
-    if (deep === void 0) { deep = Number.MAX_SAFE_INTEGER; }
-    if (source == null)
-        return target;
-    if (deep < 1)
-        return target;
-    var keys = Object.keys(source);
-    var handles = replacers.concat(Object.assignDeepDefaultHandlers);
-    keys.forEach(function (k) {
-        //
-        for (var i = 0; i < handles.length; i++) {
-            if (handles[i](target, source, k, replacers, deep)) {
-                return;
-            }
+Array.replace = function (arr, a, b, isAdd) {
+    if (isAdd === void 0) { isAdd = true; }
+    var isreplace = false;
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i] == a) {
+            arr[i] = b;
+            isreplace = true;
+            break;
         }
-        //
-        target[k] = source[k];
-    });
-    return target;
+    }
+    if (!isreplace && isAdd)
+        arr.push(b);
+    return arr;
 };
-Object.assignDeepDefaultHandlers = [
-    function (target, source, key) {
-        if (target[key] == source[key])
-            return true;
-        return false;
-    },
-    function (target, source, key) {
-        if (Object.isBaseType(target[key]) || Object.isBaseType(source[key])) {
-            target[key] = source[key];
-            return true;
-        }
-        return false;
-    },
-    function (target, source, key, handlers, deep) {
-        if (Array.isArray(source[key]) || Object.isObject(source[key])) {
-            Object.assignDeep(target[key], source[key], handlers, deep - 1);
-            return true;
-        }
-        return false;
-    },
-];
+Array.create = function (length, itemFunc) {
+    var arr = [];
+    for (var i = 0; i < length; i++) {
+        arr[i] = itemFunc(i);
+    }
+    return arr;
+};
+Array.binarySearch = function (array, target, compare, start, end) {
+    var insert = Array.binarySearchInsert(array, target, compare, start, end);
+    if (array[insert] == target)
+        return insert;
+    return -1;
+};
+Array.binarySearchInsert = function (array, target, compare, start, end) {
+    if (start === undefined)
+        start = 0;
+    if (end === undefined)
+        end = array.length;
+    if (start == end)
+        return start;
+    if (compare(array[start], target) == 0) {
+        return start;
+    }
+    var middle = ~~((start + end) / 2);
+    if (compare(array[middle], target) < 0) {
+        start = middle + 1;
+    }
+    else {
+        end = middle;
+    }
+    return Array.binarySearchInsert(array, target, compare, start, end);
+};
 var feng3d;
 (function (feng3d) {
     feng3d.CLASS_KEY = "__class__";
@@ -1147,132 +1103,6 @@ Map.getValues = function (map) {
         values.push(v);
     });
     return values;
-};
-if (!Array.prototype.includes) {
-    Object.defineProperty(Array.prototype, "includes", {
-        configurable: true,
-        enumerable: false,
-        value: function (searchElement, fromIndex) {
-            for (var i = fromIndex, n = this.length; i < n; i++) {
-                if (searchElement == this[i])
-                    return true;
-            }
-            return false;
-        },
-        writable: true,
-    });
-}
-Array.equal = function (self, arr) {
-    if (self.length != arr.length)
-        return false;
-    var keys = Object.keys(arr);
-    for (var i = 0, n = keys.length; i < n; i++) {
-        var key = keys[i];
-        if (self[key] != arr[key])
-            return false;
-    }
-    return true;
-};
-Array.concatToSelf = function (self) {
-    var items = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        items[_i - 1] = arguments[_i];
-    }
-    var arr = [];
-    items.forEach(function (v) { return arr = arr.concat(v); });
-    arr.forEach(function (v) { return self.push(v); });
-    return self;
-};
-Array.unique = function (arr, compare) {
-    if (compare === void 0) { compare = function (a, b) { return a == b; }; }
-    var keys = Object.keys(arr);
-    var ids = keys.map(function (v) { return Number(v); }).filter(function (v) { return !isNaN(v); });
-    var deleteMap = {};
-    //
-    for (var i = 0, n = ids.length; i < n; i++) {
-        var ki = ids[i];
-        if (deleteMap[ki])
-            continue;
-        for (var j = i + 1; j < n; j++) {
-            var kj = ids[j];
-            if (compare(arr[ki], arr[kj]))
-                deleteMap[kj] = true;
-        }
-    }
-    //
-    for (var i = ids.length - 1; i >= 0; i--) {
-        var id = ids[i];
-        if (deleteMap[id])
-            arr.splice(id, 1);
-    }
-    return arr;
-};
-/**
- * 数组元素是否唯一
- * @param equalFn 比较函数
- */
-Array.isUnique = function (array, compare) {
-    if (compare === void 0) { compare = function (a, b) { return a == b; }; }
-    for (var i = array.length - 1; i >= 0; i--) {
-        for (var j = 0; j < i; j++) {
-            if (compare(array[i], array[j])) {
-                return false;
-            }
-        }
-    }
-    return true;
-};
-Array.delete = function (arr, item) {
-    var index = arr.indexOf(item);
-    if (index != -1)
-        arr.splice(index, 1);
-    return index;
-};
-Array.replace = function (arr, a, b, isAdd) {
-    if (isAdd === void 0) { isAdd = true; }
-    var isreplace = false;
-    for (var i = 0; i < arr.length; i++) {
-        if (arr[i] == a) {
-            arr[i] = b;
-            isreplace = true;
-            break;
-        }
-    }
-    if (!isreplace && isAdd)
-        arr.push(b);
-    return arr;
-};
-Array.create = function (length, itemFunc) {
-    var arr = [];
-    for (var i = 0; i < length; i++) {
-        arr[i] = itemFunc(i);
-    }
-    return arr;
-};
-Array.binarySearch = function (array, target, compare, start, end) {
-    var insert = Array.binarySearchInsert(array, target, compare, start, end);
-    if (array[insert] == target)
-        return insert;
-    return -1;
-};
-Array.binarySearchInsert = function (array, target, compare, start, end) {
-    if (start === undefined)
-        start = 0;
-    if (end === undefined)
-        end = array.length;
-    if (start == end)
-        return start;
-    if (compare(array[start], target) == 0) {
-        return start;
-    }
-    var middle = ~~((start + end) / 2);
-    if (compare(array[middle], target) < 0) {
-        start = middle + 1;
-    }
-    else {
-        end = middle;
-    }
-    return Array.binarySearchInsert(array, target, compare, start, end);
 };
 Math.DEG2RAD = Math.PI / 180;
 Math.RAD2DEG = 180 / Math.PI;
@@ -1513,6 +1343,176 @@ Math.gcd = Math.gcd || function (a, b) {
 Math.lcm = Math.lcm || function (a, b) {
     return a * b / Math.gcd(a, b);
 };
+Object.isBaseType = function (object) {
+    //基础类型
+    if (object == undefined
+        || object == null
+        || typeof object == "boolean"
+        || typeof object == "string"
+        || typeof object == "number")
+        return true;
+    return false;
+};
+Object.getPropertyDescriptor = function (host, property) {
+    var data = Object.getOwnPropertyDescriptor(host, property);
+    if (data) {
+        return data;
+    }
+    var prototype = Object.getPrototypeOf(host);
+    if (prototype) {
+        return Object.getPropertyDescriptor(prototype, property);
+    }
+    return undefined;
+};
+Object.propertyIsWritable = function (host, property) {
+    var data = Object.getPropertyDescriptor(host, property);
+    if (!data)
+        return false;
+    if (data.get && !data.set)
+        return false;
+    return true;
+};
+Object.runFunc = function (obj, func) {
+    func(obj);
+    return obj;
+};
+Object.isObject = function (obj) {
+    return obj != null && (obj.constructor == Object || (obj.constructor.name == "Object")); // 兼容其他 HTMLIFrameElement 传入的Object
+};
+Object.getPropertyValue = function (object, property) {
+    if (typeof property == "string")
+        property = property.split(".");
+    var value = object;
+    var len = property.length;
+    for (var i = 0; i < property.length; i++) {
+        if (value == null)
+            return undefined;
+        value = value[property[i]];
+    }
+    return value;
+};
+Object.getPropertyChains = function (object) {
+    var result = [];
+    // 属性名称列表
+    var propertys = Object.keys(object);
+    // 属性所属对象列表
+    var hosts = new Array(propertys.length).fill(object);
+    // 父属性所在编号列表
+    var parentPropertyIndices = new Array(propertys.length).fill(-1);
+    // 处理到的位置
+    var index = 0;
+    while (index < propertys.length) {
+        var host = hosts[index];
+        var cp = propertys[index];
+        var cv = host[cp];
+        var vks;
+        if (cv == null || Object.isBaseType(cv) || (vks = Object.keys(cv)).length == 0) {
+            // 处理叶子属性
+            var ps = [cp];
+            var ci = index;
+            // 查找并组合属性链
+            while ((ci = parentPropertyIndices[ci]) != -1) {
+                ps.push(propertys[ci]);
+            }
+            ps.reverse();
+            result.push(ps.join("."));
+        }
+        else {
+            // 处理中间属性
+            vks.forEach(function (k) {
+                propertys.push(k);
+                hosts.push(cv);
+                parentPropertyIndices.push(index);
+            });
+        }
+        index++;
+    }
+    return result;
+};
+Object.equalDeep = function (a, b) {
+    if (a == b)
+        return true;
+    if (Object.isBaseType(a) || Object.isBaseType(b))
+        return a == b;
+    if (typeof a == "function" || typeof b == "function")
+        return a == b;
+    //
+    var akeys = Object.keys(a);
+    var bkeys = Object.keys(b);
+    if (!Array.equal(akeys, bkeys))
+        return false;
+    if (Array.isArray(a) && Array.isArray(b))
+        return a.length == b.length;
+    // 检测所有属性
+    for (var i = 0; i < akeys.length; i++) {
+        var element = akeys[i];
+        if (!Object.equalDeep(a[element], b[element])) {
+            return false;
+        }
+    }
+    return true;
+};
+Object.assignShallow = function (target, source) {
+    if (source == null)
+        return target;
+    var keys = Object.keys(source);
+    keys.forEach(function (k) {
+        target[k] = source[k];
+    });
+    return target;
+};
+Object.assignDeep = function (target, source, replacers, deep) {
+    if (replacers === void 0) { replacers = []; }
+    if (deep === void 0) { deep = Number.MAX_SAFE_INTEGER; }
+    if (source == null)
+        return target;
+    if (deep < 1)
+        return target;
+    var keys = Object.keys(source);
+    var handles = replacers.concat(Object.assignDeepDefaultHandlers);
+    keys.forEach(function (k) {
+        //
+        for (var i = 0; i < handles.length; i++) {
+            if (handles[i](target, source, k, replacers, deep)) {
+                return;
+            }
+        }
+        //
+        target[k] = source[k];
+    });
+    return target;
+};
+Object.assignDeepDefaultHandlers = [
+    function (target, source, key) {
+        if (target[key] == source[key])
+            return true;
+        return false;
+    },
+    function (target, source, key) {
+        if (Object.isBaseType(target[key]) || Object.isBaseType(source[key])) {
+            target[key] = source[key];
+            return true;
+        }
+        return false;
+    },
+    function (target, source, key, handlers, deep) {
+        if (Array.isArray(source[key]) || Object.isObject(source[key])) {
+            Object.assignDeep(target[key], source[key], handlers, deep - 1);
+            return true;
+        }
+        return false;
+    },
+];
+var feng3d;
+(function (feng3d) {
+    feng3d.lazy = {
+        getvalue: function (lazyItem) {
+            if (typeof lazyItem == "function")
+                return lazyItem();
+            return lazyItem;
+        }
+    };
+})(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
@@ -2591,1330 +2591,571 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 比较器
+     * 二叉查找树
+     *
+     * 二叉查找树（英语：Binary Search Tree），也称为二叉搜索树、有序二叉树（ordered binary tree）或排序二叉树（sorted binary tree），是指一棵空树或者具有下列性质的二叉树：
+     *
+     * 1. 若任意节点的左子树不空，则左子树上所有节点的值均小于它的根节点的值；
+     * 1. 若任意节点的右子树不空，则右子树上所有节点的值均大于它的根节点的值；
+     * 1. 任意节点的左、右子树也分别为二叉查找树；
+     * 1. 没有键值相等的节点。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTree.js
+     * @see https://en.wikipedia.org/wiki/Binary_search_tree
+     * @see https://www.youtube.com/watch?v=wcIRPqTR3Kc&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8&index=9&t=0s
      */
-    var Comparator = /** @class */ (function () {
+    var BinarySearchTree = /** @class */ (function () {
         /**
-         * 构建比较器
-         * @param compareFunction 比较函数
+         * 构建 二叉查找树
+         *
+         * @param nodeValueCompareFunction 结点值比较器
          */
-        function Comparator(compareFunction) {
-            this.compare = compareFunction || Comparator.defaultCompareFunction;
+        function BinarySearchTree(nodeValueCompareFunction) {
+            this.root = new feng3d.BinarySearchTreeNode(null, nodeValueCompareFunction);
+            // 从根节点中窃取节点比较器。
+            this.nodeComparator = this.root.nodeComparator;
         }
         /**
-         * 默认比较函数。只能处理 a和b 同为string或number的比较。
+         * 插入值
          *
-         * @param a 比较值a
-         * @param b 比较值b
-         */
-        Comparator.defaultCompareFunction = function (a, b) {
-            if (a === b)
-                return 0;
-            return a < b ? -1 : 1;
-        };
-        /**
-         * 检查 a 是否等于 b 。
-         *
-         * @param a 值a
-         * @param b 值b
-         */
-        Comparator.prototype.equal = function (a, b) {
-            return this.compare(a, b) === 0;
-        };
-        /**
-         * 检查 a 是否小于 b 。
-         *
-         * @param a 值a
-         * @param b 值b
-         */
-        Comparator.prototype.lessThan = function (a, b) {
-            return this.compare(a, b) < 0;
-        };
-        /**
-         * 检查 a 是否大于 b 。
-         *
-         * @param a 值a
-         * @param b 值b
-         */
-        Comparator.prototype.greaterThan = function (a, b) {
-            return this.compare(a, b) > 0;
-        };
-        /**
-         * 检查 a 是否小于等于 b 。
-         *
-         * @param a 值a
-         * @param b 值b
-         */
-        Comparator.prototype.lessThanOrEqual = function (a, b) {
-            return this.lessThan(a, b) || this.equal(a, b);
-        };
-        /**
-         * 检查 a 是否大于等于 b 。
-         *
-         * @param a 值a
-         * @param b 值b
-         */
-        Comparator.prototype.greaterThanOrEqual = function (a, b) {
-            return this.greaterThan(a, b) || this.equal(a, b);
-        };
-        /**
-         * 反转比较函数。
-         */
-        Comparator.prototype.reverse = function () {
-            var compareOriginal = this.compare;
-            this.compare = function (a, b) { return compareOriginal(b, a); };
-        };
-        return Comparator;
-    }());
-    feng3d.Comparator = Comparator;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 链表
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js
-     */
-    var LinkedList = /** @class */ (function () {
-        /**
-         * 构建双向链表
-         *
-         * @param comparatorFunction 比较函数
-         */
-        function LinkedList(comparatorFunction) {
-            this.head = null;
-            this.tail = null;
-            this.compare = new feng3d.Comparator(comparatorFunction);
-        }
-        /**
-         * 是否为空
-         */
-        LinkedList.prototype.isEmpty = function () {
-            return !this.head;
-        };
-        /**
-         * 清空
-         */
-        LinkedList.prototype.empty = function () {
-            this.head = null;
-            this.tail = null;
-        };
-        /**
-         * 获取表头值
-         */
-        LinkedList.prototype.getHeadValue = function () {
-            return this.head && this.head.value;
-        };
-        /**
-         * 添加新结点到表头
-         *
-         * @param value 结点数据
-         */
-        LinkedList.prototype.addHead = function (value) {
-            var newNode = { value: value, next: this.head };
-            this.head = newNode;
-            if (!this.tail)
-                this.tail = newNode;
-            return this;
-        };
-        /**
-         * 添加新结点到表尾
-         *
-         * @param value 结点数据
-         */
-        LinkedList.prototype.addTail = function (value) {
-            var newNode = { value: value, next: null };
-            if (this.tail)
-                this.tail.next = newNode;
-            this.tail = newNode;
-            if (!this.head)
-                this.head = newNode;
-            return this;
-        };
-        /**
-         * 删除链表中第一个与指定值相等的结点
-         *
-         * @param value 结点值
-         */
-        LinkedList.prototype.delete = function (value) {
-            if (!this.head)
-                return null;
-            var deletedNode = null;
-            // 从表头删除结点
-            while (this.head && !deletedNode && this.compare.equal(this.head.value, value)) {
-                deletedNode = this.head;
-                this.head = this.head.next;
-            }
-            var currentNode = this.head;
-            if (!deletedNode && currentNode) {
-                // 删除相等的下一个结点
-                while (!deletedNode && currentNode.next) {
-                    if (this.compare.equal(currentNode.next.value, value)) {
-                        deletedNode = currentNode.next;
-                        currentNode.next = currentNode.next.next;
-                    }
-                    else {
-                        currentNode = currentNode.next;
-                    }
-                }
-            }
-            // currentNode 是否为表尾
-            if (currentNode == null || currentNode.next == null) {
-                this.tail = currentNode;
-            }
-            return deletedNode;
-        };
-        /**
-         * 删除链表中所有与指定值相等的结点
-         *
-         * @param value 结点值
-         */
-        LinkedList.prototype.deleteAll = function (value) {
-            if (!this.head)
-                return null;
-            var deletedNode = null;
-            // 从表头删除结点
-            while (this.head && this.compare.equal(this.head.value, value)) {
-                deletedNode = this.head;
-                this.head = this.head.next;
-            }
-            var currentNode = this.head;
-            if (currentNode !== null) {
-                // 删除相等的下一个结点
-                while (currentNode.next) {
-                    if (this.compare.equal(currentNode.next.value, value)) {
-                        deletedNode = currentNode.next;
-                        currentNode.next = currentNode.next.next;
-                    }
-                    else {
-                        currentNode = currentNode.next;
-                    }
-                }
-            }
-            // currentNode 是否为表尾
-            if (currentNode == null || currentNode.next == null) {
-                this.tail = currentNode;
-            }
-            return deletedNode;
-        };
-        /**
-         * 查找与结点值相等的结点
-         *
-         * @param value 结点值
-         */
-        LinkedList.prototype.find = function (value) {
-            if (!this.head)
-                return null;
-            var currentNode = this.head;
-            while (currentNode) {
-                if (this.compare.equal(currentNode.value, value))
-                    return currentNode;
-                currentNode = currentNode.next;
-            }
-            return null;
-        };
-        /**
-         * 查找与结点值相等的结点
-         *
-         * @param callback 判断是否为查找的元素
-         */
-        LinkedList.prototype.findByFunc = function (callback) {
-            if (!this.head)
-                return null;
-            var currentNode = this.head;
-            while (currentNode) {
-                if (callback(currentNode.value))
-                    return currentNode;
-                currentNode = currentNode.next;
-            }
-            return null;
-        };
-        /**
-         * 删除表头
-         *
-         * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
-         */
-        LinkedList.prototype.deleteHead = function () {
-            if (!this.head)
-                return null;
-            var deletedHead = this.head;
-            if (this.head.next) {
-                this.head = this.head.next;
-            }
-            else {
-                this.head = null;
-                this.tail = null;
-            }
-            return deletedHead.value;
-        };
-        /**
-         * 删除表尾
-         */
-        LinkedList.prototype.deleteTail = function () {
-            if (!this.tail)
-                return null;
-            var deletedTail = this.tail;
-            if (this.head === this.tail) {
-                this.head = null;
-                this.tail = null;
-                return deletedTail.value;
-            }
-            // 遍历链表删除表尾
-            var currentNode = this.head;
-            while (currentNode.next) {
-                if (!currentNode.next.next) {
-                    currentNode.next = null;
-                }
-                else {
-                    currentNode = currentNode.next;
-                }
-            }
-            this.tail = currentNode;
-            return deletedTail.value;
-        };
-        /**
-         * 从数组中初始化链表
-         *
-         * @param values 结点值列表
-         */
-        LinkedList.prototype.fromArray = function (values) {
-            var _this = this;
-            this.empty();
-            values.forEach(function (value) { return _this.addTail(value); });
-            return this;
-        };
-        /**
-         * 转换为数组
-         */
-        LinkedList.prototype.toArray = function () {
-            var values = [];
-            var currentNode = this.head;
-            while (currentNode) {
-                values.push(currentNode.value);
-                currentNode = currentNode.next;
-            }
-            return values;
-        };
-        /**
-         * 转换为字符串
-         *
-         * @param valueToString 值输出为字符串函数
-         */
-        LinkedList.prototype.toString = function (valueToString) {
-            return this.toArray().map(function (value) { return valueToString ? valueToString(value) : "" + value; }).toString();
-        };
-        /**
-         * 反转链表
-         */
-        LinkedList.prototype.reverse = function () {
-            var currNode = this.head;
-            var prevNode = null;
-            var nextNode = null;
-            while (currNode) {
-                // 存储下一个结点
-                nextNode = currNode.next;
-                // 反转结点的next指向
-                currNode.next = prevNode;
-                // 存储上一个节点
-                prevNode = currNode;
-                // 遍历指针向后移动
-                currNode = nextNode;
-            }
-            // 重置表头与表尾
-            this.tail = this.head;
-            this.head = prevNode;
-            return this;
-        };
-        /**
-         * 核查结构是否正确
-         */
-        LinkedList.prototype.checkStructure = function () {
-            if (this.head) {
-                var currNode = this.head;
-                while (currNode.next) {
-                    currNode = currNode.next;
-                }
-                return this.tail == currNode;
-            }
-            return !this.tail;
-        };
-        return LinkedList;
-    }());
-    feng3d.LinkedList = LinkedList;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 双向链表
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/doubly-linked-list/DoublyLinkedList.js
-     */
-    var DoublyLinkedList = /** @class */ (function () {
-        /**
-         * 构建双向链表
-         *
-         * @param comparatorFunction 比较函数
-         */
-        function DoublyLinkedList(comparatorFunction) {
-            this.head = null;
-            this.tail = null;
-            this.compare = new feng3d.Comparator(comparatorFunction);
-        }
-        /**
-         * 是否为空
-         */
-        DoublyLinkedList.prototype.isEmpty = function () {
-            return !this.head;
-        };
-        /**
-         * 清空
-         */
-        DoublyLinkedList.prototype.empty = function () {
-            this.head = null;
-            this.tail = null;
-        };
-        /**
-         * 添加新结点到表头
-         *
-         * @param value 结点数据
-         */
-        DoublyLinkedList.prototype.addHead = function (value) {
-            var newNode = { value: value, previous: null, next: this.head };
-            if (this.head)
-                this.head.previous = newNode;
-            this.head = newNode;
-            if (!this.tail)
-                this.tail = newNode;
-            return this;
-        };
-        /**
-         * 添加新结点到表尾
-         *
-         * @param value 结点数据
-         */
-        DoublyLinkedList.prototype.addTail = function (value) {
-            var newNode = { value: value, previous: this.tail, next: null };
-            if (this.tail)
-                this.tail.next = newNode;
-            this.tail = newNode;
-            if (!this.head)
-                this.head = newNode;
-            return this;
-        };
-        /**
-         * 删除链表中第一个与指定值相等的结点
-         *
-         * @param value 结点值
-         */
-        DoublyLinkedList.prototype.delete = function (value) {
-            if (!this.head)
-                return null;
-            var deletedNode = null;
-            // 从表头删除结点
-            while (this.head && !deletedNode && this.compare.equal(this.head.value, value)) {
-                deletedNode = this.head;
-                this.head = this.head.next;
-                this.head.previous = null;
-            }
-            var currentNode = this.head;
-            if (!deletedNode && currentNode) {
-                // 删除相等的下一个结点
-                while (!deletedNode && currentNode.next) {
-                    if (this.compare.equal(currentNode.next.value, value)) {
-                        deletedNode = currentNode.next;
-                        currentNode.next = currentNode.next.next;
-                        if (currentNode.next)
-                            currentNode.next.previous = currentNode;
-                    }
-                    else {
-                        currentNode = currentNode.next;
-                    }
-                }
-            }
-            // currentNode 是否为表尾
-            if (currentNode == null || currentNode.next == null) {
-                this.tail = currentNode;
-            }
-            return deletedNode;
-        };
-        /**
-         * 删除链表中所有与指定值相等的结点
-         *
-         * @param value 结点值
-         */
-        DoublyLinkedList.prototype.deleteAll = function (value) {
-            if (!this.head)
-                return null;
-            var deletedNode = null;
-            // 从表头删除结点
-            while (this.head && this.compare.equal(this.head.value, value)) {
-                deletedNode = this.head;
-                this.head = this.head.next;
-                this.head.previous = null;
-            }
-            var currentNode = this.head;
-            if (currentNode !== null) {
-                // 删除相等的下一个结点
-                while (currentNode.next) {
-                    if (this.compare.equal(currentNode.next.value, value)) {
-                        deletedNode = currentNode.next;
-                        currentNode.next = currentNode.next.next;
-                        if (currentNode.next)
-                            currentNode.next.previous = currentNode;
-                    }
-                    else {
-                        currentNode = currentNode.next;
-                    }
-                }
-            }
-            // currentNode 是否为表尾
-            if (currentNode == null || currentNode.next == null) {
-                this.tail = currentNode;
-            }
-            return deletedNode;
-        };
-        /**
-         * 查找与结点值相等的结点
-         *
-         * @param value 结点值
-         */
-        DoublyLinkedList.prototype.find = function (value) {
-            if (!this.head)
-                return null;
-            var currentNode = this.head;
-            while (currentNode) {
-                if (this.compare.equal(currentNode.value, value))
-                    return currentNode;
-                currentNode = currentNode.next;
-            }
-            return null;
-        };
-        /**
-         * 查找与结点值相等的结点
-         *
-         * @param callback 判断是否为查找的元素
-         */
-        DoublyLinkedList.prototype.findByFunc = function (callback) {
-            if (!this.head)
-                return null;
-            var currentNode = this.head;
-            while (currentNode) {
-                if (callback(currentNode.value))
-                    return currentNode;
-                currentNode = currentNode.next;
-            }
-            return null;
-        };
-        /**
-         * 删除表头
-         */
-        DoublyLinkedList.prototype.deleteHead = function () {
-            if (!this.head)
-                return undefined;
-            var deletedHead = this.head;
-            if (this.head.next) {
-                this.head = this.head.next;
-                this.head.previous = null;
-            }
-            else {
-                this.head = null;
-                this.tail = null;
-            }
-            return deletedHead.value;
-        };
-        /**
-         * 删除表尾
-         */
-        DoublyLinkedList.prototype.deleteTail = function () {
-            if (!this.tail)
-                return undefined;
-            var deletedTail = this.tail;
-            if (this.head === this.tail) {
-                this.head = null;
-                this.tail = null;
-                return deletedTail.value;
-            }
-            this.tail = this.tail.previous;
-            this.tail.next = null;
-            return deletedTail.value;
-        };
-        /**
-         * 从数组中初始化链表
-         *
-         * @param values 结点值列表
-         */
-        DoublyLinkedList.prototype.fromArray = function (values) {
-            var _this = this;
-            this.empty();
-            values.forEach(function (value) { return _this.addTail(value); });
-            return this;
-        };
-        /**
-         * 转换为数组
-         */
-        DoublyLinkedList.prototype.toArray = function () {
-            var values = [];
-            var currentNode = this.head;
-            while (currentNode) {
-                values.push(currentNode.value);
-                currentNode = currentNode.next;
-            }
-            return values;
-        };
-        /**
-         * 转换为字符串
-         * @param valueToString 值输出为字符串函数
-         */
-        DoublyLinkedList.prototype.toString = function (valueToString) {
-            return this.toArray().map(function (value) { return valueToString ? valueToString(value) : "" + value; }).toString();
-        };
-        /**
-         * 反转链表
-         */
-        DoublyLinkedList.prototype.reverse = function () {
-            var currNode = this.head;
-            var prevNode = null;
-            var nextNode = null;
-            while (currNode) {
-                // 存储当前结点的next与previous指向
-                nextNode = currNode.next;
-                prevNode = currNode.previous;
-                // 反转结点的next与previous指向
-                currNode.next = prevNode;
-                currNode.previous = nextNode;
-                // 存储上一个节点
-                prevNode = currNode;
-                // 遍历指针向后移动
-                currNode = nextNode;
-            }
-            // 重置表头与表尾
-            this.tail = this.head;
-            this.head = prevNode;
-            return this;
-        };
-        /**
-         * 核查结构是否正确
-         */
-        DoublyLinkedList.prototype.checkStructure = function () {
-            if (this.head) {
-                // 核查正向链表
-                var currNode = this.head;
-                while (currNode.next) {
-                    currNode = currNode.next;
-                }
-                if (this.tail !== currNode)
-                    return false;
-                // 核查逆向链表
-                currNode = this.tail;
-                while (currNode.previous) {
-                    currNode = currNode.previous;
-                }
-                return this.head == currNode;
-            }
-            return !this.tail;
-        };
-        return DoublyLinkedList;
-    }());
-    feng3d.DoublyLinkedList = DoublyLinkedList;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 队列，只能从后面进，前面出
-     * 使用单向链表实现
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/queue/Queue.js
-     */
-    var Queue = /** @class */ (function () {
-        /**
-         * 构建队列
-         *
-         * @param comparatorFunction 比较函数
-         */
-        function Queue() {
-            this.linkedList = new feng3d.LinkedList();
-        }
-        /**
-         * 是否为空
-         */
-        Queue.prototype.isEmpty = function () {
-            return this.linkedList.isEmpty();
-        };
-        /**
-         * 清空
-         */
-        Queue.prototype.empty = function () {
-            this.linkedList.empty();
-        };
-        /**
-         * 读取队列前面的元素，但不删除它。
-         */
-        Queue.prototype.peek = function () {
-            return this.linkedList.getHeadValue();
-        };
-        /**
-         * 入队
-         *
-         * 在队列的末尾(链表的尾部)添加一个新元素。
-         * 这个元素将在它前面的所有元素之后被处理。
-         *
-         * @param value 元素值
-         */
-        Queue.prototype.enqueue = function (value) {
-            this.linkedList.addTail(value);
-            return this;
-        };
-        /**
-         * 出队
-         *
-         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
-         */
-        Queue.prototype.dequeue = function () {
-            var removedValue = this.linkedList.deleteHead();
-            return removedValue;
-        };
-        /**
-         * 转换为字符串
-         *
-         * @param valueToString 值输出为字符串函数
-         */
-        Queue.prototype.toString = function (valueToString) {
-            return this.linkedList.toString(valueToString);
-        };
-        return Queue;
-    }());
-    feng3d.Queue = Queue;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 栈
-     *
-     * 后进先出
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/stack/Stack.js
-     */
-    var Stack = /** @class */ (function () {
-        function Stack() {
-            this.linkedList = new feng3d.LinkedList();
-        }
-        /**
-         * 是否为空
-         */
-        Stack.prototype.isEmpty = function () {
-            return this.linkedList.isEmpty();
-        };
-        /**
-         * 查看第一个元素值
-         */
-        Stack.prototype.peek = function () {
-            return this.linkedList.getHeadValue();
-        };
-        /**
-         * 入栈
-         *
-         * @param value 元素值
-         */
-        Stack.prototype.push = function (value) {
-            this.linkedList.addHead(value);
-            return this;
-        };
-        /**
-         * 出栈
-         */
-        Stack.prototype.pop = function () {
-            return this.linkedList.deleteHead();
-        };
-        /**
-         * 转换为数组
-         */
-        Stack.prototype.toArray = function () {
-            return this.linkedList.toArray();
-        };
-        /**
-         * 转换为字符串
-         *
-         * @param valueToString 值输出为字符串函数
-         */
-        Stack.prototype.toString = function (valueToString) {
-            return this.linkedList.toString(valueToString);
-        };
-        return Stack;
-    }());
-    feng3d.Stack = Stack;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 堆
-     *
-     * 最小和最大堆的父类。
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/heap/Heap.js
-     */
-    var Heap = /** @class */ (function () {
-        /**
-         * 构建链表
-         *
-         * @param comparatorFunction 比较函数
-         */
-        function Heap(comparatorFunction) {
-            var _newTarget = this.constructor;
-            if (_newTarget === Heap) {
-                throw new TypeError('无法直接构造堆实例');
-            }
-            this.heapContainer = [];
-            this.compare = new feng3d.Comparator(comparatorFunction);
-        }
-        /**
-         * 获取左边子结点索引
-         *
-         * @param parentIndex 父结点索引
-         */
-        Heap.prototype.getLeftChildIndex = function (parentIndex) {
-            return (2 * parentIndex) + 1;
-        };
-        /**
-         * 获取右边子结点索引
-         *
-         * @param parentIndex 父结点索引
-         */
-        Heap.prototype.getRightChildIndex = function (parentIndex) {
-            return (2 * parentIndex) + 2;
-        };
-        /**
-         * 获取父结点索引
-         *
-         * @param childIndex 子结点索引
-         */
-        Heap.prototype.getParentIndex = function (childIndex) {
-            return Math.floor((childIndex - 1) / 2);
-        };
-        /**
-         * 是否有父结点
-         *
-         * @param childIndex 子结点索引
-         */
-        Heap.prototype.hasParent = function (childIndex) {
-            return this.getParentIndex(childIndex) >= 0;
-        };
-        /**
-         * 是否有左结点
-         *
-         * @param parentIndex 父结点索引
-         */
-        Heap.prototype.hasLeftChild = function (parentIndex) {
-            return this.getLeftChildIndex(parentIndex) < this.heapContainer.length;
-        };
-        /**
-         * 是否有右结点
-         *
-         * @param parentIndex 父结点索引
-         */
-        Heap.prototype.hasRightChild = function (parentIndex) {
-            return this.getRightChildIndex(parentIndex) < this.heapContainer.length;
-        };
-        /**
-         * 获取左结点
-         *
-         * @param parentIndex 父结点索引
-         */
-        Heap.prototype.leftChild = function (parentIndex) {
-            return this.heapContainer[this.getLeftChildIndex(parentIndex)];
-        };
-        /**
-         * 获取右结点
-         *
-         * @param parentIndex 父结点索引
-         */
-        Heap.prototype.rightChild = function (parentIndex) {
-            return this.heapContainer[this.getRightChildIndex(parentIndex)];
-        };
-        /**
-         * 获取父结点
-         *
-         * @param childIndex 子结点索引
-         */
-        Heap.prototype.parent = function (childIndex) {
-            return this.heapContainer[this.getParentIndex(childIndex)];
-        };
-        /**
-         * 交换两个结点数据
-         *
-         * @param index1 索引1
-         * @param index2 索引2
-         */
-        Heap.prototype.swap = function (index1, index2) {
-            var tmp = this.heapContainer[index2];
-            this.heapContainer[index2] = this.heapContainer[index1];
-            this.heapContainer[index1] = tmp;
-        };
-        /**
-         * 查看堆顶数据
-         */
-        Heap.prototype.peek = function () {
-            if (this.heapContainer.length === 0)
-                return null;
-            return this.heapContainer[0];
-        };
-        /**
-         * 出堆
-         *
-         * 取出堆顶元素
-         */
-        Heap.prototype.poll = function () {
-            if (this.heapContainer.length === 0)
-                return null;
-            if (this.heapContainer.length === 1)
-                return this.heapContainer.pop();
-            var item = this.heapContainer[0];
-            // 将最后一个元素从末尾移动到堆顶。
-            this.heapContainer[0] = this.heapContainer.pop();
-            this.heapifyDown();
-            return item;
-        };
-        /**
-         * 新增元素
-         *
-         * @param item 元素
-         */
-        Heap.prototype.add = function (item) {
-            this.heapContainer.push(item);
-            this.heapifyUp();
-            return this;
-        };
-        /**
-         * 移除所有指定元素
-         *
-         * @param item 元素
-         * @param comparator 比较器
-         */
-        Heap.prototype.remove = function (item, comparator) {
-            if (comparator === void 0) { comparator = this.compare; }
-            // 找到要删除的项的数量。
-            var numberOfItemsToRemove = this.find(item, comparator).length;
-            for (var iteration = 0; iteration < numberOfItemsToRemove; iteration += 1) {
-                // 获取一个删除元素索引
-                var indexToRemove = this.find(item, comparator).pop();
-                // 删除元素为最后一个索引时
-                if (indexToRemove === (this.heapContainer.length - 1)) {
-                    this.heapContainer.pop();
-                }
-                else {
-                    // 把数组最后元素移动到删除位置
-                    this.heapContainer[indexToRemove] = this.heapContainer.pop();
-                    var parentItem = this.parent(indexToRemove);
-                    if (this.hasLeftChild(indexToRemove)
-                        && (!parentItem
-                            || this.pairIsInCorrectOrder(parentItem, this.heapContainer[indexToRemove]))) {
-                        this.heapifyDown(indexToRemove);
-                    }
-                    else {
-                        this.heapifyUp(indexToRemove);
-                    }
-                }
-            }
-            return this;
-        };
-        /**
-         * 查找元素所在所有索引
-         *
-         * @param item 查找的元素
-         * @param comparator 比较器
-         */
-        Heap.prototype.find = function (item, comparator) {
-            if (comparator === void 0) { comparator = this.compare; }
-            var foundItemIndices = [];
-            for (var itemIndex = 0; itemIndex < this.heapContainer.length; itemIndex += 1) {
-                if (comparator.equal(item, this.heapContainer[itemIndex])) {
-                    foundItemIndices.push(itemIndex);
-                }
-            }
-            return foundItemIndices;
-        };
-        /**
-         * 是否为空
-         */
-        Heap.prototype.isEmpty = function () {
-            return !this.heapContainer.length;
-        };
-        /**
-         * 转换为字符串
-         */
-        Heap.prototype.toString = function () {
-            return this.heapContainer.toString();
-        };
-        /**
-         * 堆冒泡
-         *
-         * @param startIndex 堆冒泡起始索引
-         */
-        Heap.prototype.heapifyUp = function (startIndex) {
-            var currentIndex = startIndex || this.heapContainer.length - 1;
-            while (this.hasParent(currentIndex)
-                && !this.pairIsInCorrectOrder(this.parent(currentIndex), this.heapContainer[currentIndex])) {
-                this.swap(currentIndex, this.getParentIndex(currentIndex));
-                currentIndex = this.getParentIndex(currentIndex);
-            }
-        };
-        /**
-         * 堆下沉
-         *
-         * @param startIndex 堆下沉起始索引
-         */
-        Heap.prototype.heapifyDown = function (startIndex) {
-            if (startIndex === void 0) { startIndex = 0; }
-            var currentIndex = startIndex;
-            var nextIndex = null;
-            while (this.hasLeftChild(currentIndex)) {
-                if (this.hasRightChild(currentIndex)
-                    && this.pairIsInCorrectOrder(this.rightChild(currentIndex), this.leftChild(currentIndex))) {
-                    nextIndex = this.getRightChildIndex(currentIndex);
-                }
-                else {
-                    nextIndex = this.getLeftChildIndex(currentIndex);
-                }
-                if (this.pairIsInCorrectOrder(this.heapContainer[currentIndex], this.heapContainer[nextIndex])) {
-                    break;
-                }
-                this.swap(currentIndex, nextIndex);
-                currentIndex = nextIndex;
-            }
-        };
-        return Heap;
-    }());
-    feng3d.Heap = Heap;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 最大堆
-     *
-     * 所有父结点都大于子结点
-     */
-    var MaxHeap = /** @class */ (function (_super) {
-        __extends(MaxHeap, _super);
-        function MaxHeap() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        /**
-         * 检查堆元素对的顺序是否正确。
-         * 对于MinHeap，第一个元素必须总是小于等于。
-         * 对于MaxHeap，第一个元素必须总是大于或等于。
-         *
-         * @param firstElement 第一个元素
-         * @param secondElement 第二个元素
-         */
-        MaxHeap.prototype.pairIsInCorrectOrder = function (firstElement, secondElement) {
-            return this.compare.greaterThanOrEqual(firstElement, secondElement);
-        };
-        return MaxHeap;
-    }(feng3d.Heap));
-    feng3d.MaxHeap = MaxHeap;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 最小堆
-     *
-     * 所有父结点都小于子结点
-     */
-    var MinHeap = /** @class */ (function (_super) {
-        __extends(MinHeap, _super);
-        function MinHeap() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        /**
-         * 检查堆元素对的顺序是否正确。
-         * 对于MinHeap，第一个元素必须总是小于等于。
-         * 对于MaxHeap，第一个元素必须总是大于或等于。
-         *
-         * @param firstElement 第一个元素
-         * @param secondElement 第二个元素
-         */
-        MinHeap.prototype.pairIsInCorrectOrder = function (firstElement, secondElement) {
-            return this.compare.lessThanOrEqual(firstElement, secondElement);
-        };
-        return MinHeap;
-    }(feng3d.Heap));
-    feng3d.MinHeap = MinHeap;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 默认哈希表 （建议使用Object代替）
-     *
-     * 哈希表的大小直接影响冲突的次数。
-     * 哈希表的大小越大，冲突就越少。
-     */
-    var defaultHashTableSize = 32;
-    /**
-     * 哈希表（散列表）
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/hash-table/HashTable.js
-     */
-    var HashTable = /** @class */ (function () {
-        /**
-         * 构建哈希表
-         * @param hashTableSize 哈希表尺寸
-         */
-        function HashTable(hashTableSize) {
-            if (hashTableSize === void 0) { hashTableSize = defaultHashTableSize; }
-            this.buckets = [];
-            for (var i = 0; i < hashTableSize; i++) {
-                this.buckets.push(new feng3d.LinkedList());
-            }
-            this.keys = {};
-        }
-        /**
-         * 将字符串键转换为哈希数。
-         *
-         * @param key 字符串键
-         */
-        HashTable.prototype.hash = function (key) {
-            var hash = key.split("").reduce(function (hashAccumulator, char) { return (hashAccumulator + char.charCodeAt(0)); }, 0);
-            return hash % this.buckets.length;
-        };
-        /**
-         * 设置值
-         *
-         * @param key 键
          * @param value 值
          */
-        HashTable.prototype.set = function (key, value) {
-            var keyValue = { key: key, value: value };
-            var keyHash = this.hash(key);
-            this.keys[key] = keyHash;
-            var bucketLinkedList = this.buckets[keyHash];
-            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
-            if (!node) {
-                bucketLinkedList.addTail(keyValue);
-            }
-            else {
-                node.value.value = value;
-            }
+        BinarySearchTree.prototype.insert = function (value) {
+            return this.root.insert(value);
         };
         /**
-         * 删除指定键以及对于值
+         * 是否包含指定值
          *
-         * @param key 键
+         * @param value 值
          */
-        HashTable.prototype.delete = function (key) {
-            var keyHash = this.hash(key);
-            delete this.keys[key];
-            var bucketLinkedList = this.buckets[keyHash];
-            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
-            if (node) {
-                return bucketLinkedList.deleteAll(node.value);
-            }
-            return null;
+        BinarySearchTree.prototype.contains = function (value) {
+            return this.root.contains(value);
         };
         /**
-         * 获取与键对应的值
+         * 移除指定值
          *
-         * @param key 键
+         * @param value 值
          */
-        HashTable.prototype.get = function (key) {
-            var bucketLinkedList = this.buckets[this.hash(key)];
-            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
-            return node ? node.value.value : undefined;
+        BinarySearchTree.prototype.remove = function (value) {
+            return this.root.remove(value);
         };
         /**
-         * 是否拥有键
-         *
-         * @param key 键
+         * 转换为字符串
          */
-        HashTable.prototype.has = function (key) {
-            return Object.hasOwnProperty.call(this.keys, key);
+        BinarySearchTree.prototype.toString = function () {
+            return this.root.toString();
         };
-        /**
-         * 获取键列表
-         */
-        HashTable.prototype.getKeys = function () {
-            return Object.keys(this.keys);
-        };
-        return HashTable;
+        return BinarySearchTree;
     }());
-    feng3d.HashTable = HashTable;
+    feng3d.BinarySearchTree = BinarySearchTree;
 })(feng3d || (feng3d = {}));
+/// <reference path="./BinarySearchTree.ts" />
 var feng3d;
 (function (feng3d) {
     /**
-     * 优先队列
+     * 平衡二叉树
      *
-     * 所有元素按优先级排序
+     * AVL树（以发明者Adelson-Velsky和Landis 命名）是自平衡二叉搜索树。
      *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
+     * @see https://github.com/trekhleb/javascript-algorithms/tree/master/src/data-structures/tree/avl-tree
+     * @see https://en.wikipedia.org/wiki/AVL_tree
+     * @see https://www.tutorialspoint.com/data_structures_algorithms/avl_tree_algorithm.htm
+     * @see http://btechsmartclass.com/data_structures/avl-trees.html
      */
-    var PriorityQueue = /** @class */ (function () {
-        /**
-         * 构建优先数组
-         * @param   compare     比较函数
-         */
-        function PriorityQueue(compare) {
-            this.items = [];
-            this.compare = compare;
+    var AvlTree = /** @class */ (function (_super) {
+        __extends(AvlTree, _super);
+        function AvlTree() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(PriorityQueue.prototype, "length", {
-            /**
-             * 队列长度
-             */
-            get: function () {
-                return this.items.length;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(PriorityQueue.prototype, "compare", {
-            /**
-             * 比较函数
-             */
-            get: function () {
-                return this._compare;
-            },
-            set: function (v) {
-                this._compare = v;
-                this.items.sort(this._compare);
-            },
-            enumerable: false,
-            configurable: true
-        });
         /**
-         * 尾部添加元素（进队）
-         * @param items 元素列表
-         * @returns 长度
+         * @param {*} value
          */
-        PriorityQueue.prototype.push = function () {
-            var _this = this;
-            var items = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                items[_i] = arguments[_i];
+        AvlTree.prototype.insert = function (value) {
+            // Do the normal BST insert.
+            _super.prototype.insert.call(this, value);
+            // Let's move up to the root and check balance factors along the way.
+            var currentNode = this.root.find(value);
+            while (currentNode) {
+                this.balance(currentNode);
+                currentNode = currentNode.parent;
             }
-            items.forEach(function (item) {
-                var insert = Array.binarySearchInsert(_this.items, item, _this._compare);
-                _this.items.splice(insert, 0, item);
-            });
-            return this.items.length;
         };
         /**
-         * 头部移除元素（出队）
+         * @param {*} value
+         * @return {boolean}
          */
-        PriorityQueue.prototype.shift = function () {
-            return this.items.shift();
+        AvlTree.prototype.remove = function (value) {
+            // Do standard BST removal.
+            var result = _super.prototype.remove.call(this, value);
+            // Balance the tree starting from the root node.
+            this.balance(this.root);
+            return result;
         };
         /**
-         * 转换为数组
+         * @param {BinarySearchTreeNode} node
          */
-        PriorityQueue.prototype.toArray = function () {
-            return this.items.concat();
+        AvlTree.prototype.balance = function (node) {
+            // If balance factor is not OK then try to balance the node.
+            if (node.balanceFactor > 1) {
+                // Left rotation.
+                if (node.left.balanceFactor > 0) {
+                    // Left-Left rotation
+                    this.rotateLeftLeft(node);
+                }
+                else if (node.left.balanceFactor < 0) {
+                    // Left-Right rotation.
+                    this.rotateLeftRight(node);
+                }
+            }
+            else if (node.balanceFactor < -1) {
+                // Right rotation.
+                if (node.right.balanceFactor < 0) {
+                    // Right-Right rotation
+                    this.rotateRightRight(node);
+                }
+                else if (node.right.balanceFactor > 0) {
+                    // Right-Left rotation.
+                    this.rotateRightLeft(node);
+                }
+            }
         };
         /**
-         * 从数组初始化链表
+         * @param {BinarySearchTreeNode} rootNode
          */
-        PriorityQueue.prototype.fromArray = function (array) {
-            this.items = array.concat();
-            this.items.sort(this._compare);
+        AvlTree.prototype.rotateLeftLeft = function (rootNode) {
+            // Detach left node from root node.
+            var leftNode = rootNode.left;
+            rootNode.setLeft(null);
+            // Make left node to be a child of rootNode's parent.
+            if (rootNode.parent) {
+                rootNode.parent.setLeft(leftNode);
+            }
+            else if (rootNode === this.root) {
+                // If root node is root then make left node to be a new root.
+                this.root = leftNode;
+            }
+            // If left node has a right child then detach it and
+            // attach it as a left child for rootNode.
+            if (leftNode.right) {
+                rootNode.setLeft(leftNode.right);
+            }
+            // Attach rootNode to the right of leftNode.
+            leftNode.setRight(rootNode);
         };
-        return PriorityQueue;
-    }());
-    feng3d.PriorityQueue = PriorityQueue;
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        AvlTree.prototype.rotateLeftRight = function (rootNode) {
+            // Detach left node from rootNode since it is going to be replaced.
+            var leftNode = rootNode.left;
+            rootNode.setLeft(null);
+            // Detach right node from leftNode.
+            var leftRightNode = leftNode.right;
+            leftNode.setRight(null);
+            // Preserve leftRightNode's left subtree.
+            if (leftRightNode.left) {
+                leftNode.setRight(leftRightNode.left);
+                leftRightNode.setLeft(null);
+            }
+            // Attach leftRightNode to the rootNode.
+            rootNode.setLeft(leftRightNode);
+            // Attach leftNode as left node for leftRight node.
+            leftRightNode.setLeft(leftNode);
+            // Do left-left rotation.
+            this.rotateLeftLeft(rootNode);
+        };
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        AvlTree.prototype.rotateRightLeft = function (rootNode) {
+            // Detach right node from rootNode since it is going to be replaced.
+            var rightNode = rootNode.right;
+            rootNode.setRight(null);
+            // Detach left node from rightNode.
+            var rightLeftNode = rightNode.left;
+            rightNode.setLeft(null);
+            if (rightLeftNode.right) {
+                rightNode.setLeft(rightLeftNode.right);
+                rightLeftNode.setRight(null);
+            }
+            // Attach rightLeftNode to the rootNode.
+            rootNode.setRight(rightLeftNode);
+            // Attach rightNode as right node for rightLeft node.
+            rightLeftNode.setRight(rightNode);
+            // Do right-right rotation.
+            this.rotateRightRight(rootNode);
+        };
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        AvlTree.prototype.rotateRightRight = function (rootNode) {
+            // Detach right node from root node.
+            var rightNode = rootNode.right;
+            rootNode.setRight(null);
+            // Make right node to be a child of rootNode's parent.
+            if (rootNode.parent) {
+                rootNode.parent.setRight(rightNode);
+            }
+            else if (rootNode === this.root) {
+                // If root node is root then make right node to be a new root.
+                this.root = rightNode;
+            }
+            // If right node has a left child then detach it and
+            // attach it as a right child for rootNode.
+            if (rightNode.left) {
+                rootNode.setRight(rightNode.left);
+            }
+            // Attach rootNode to the left of rightNode.
+            rightNode.setLeft(rootNode);
+        };
+        return AvlTree;
+    }(feng3d.BinarySearchTree));
+    feng3d.AvlTree = AvlTree;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
-     * 优先队列
+     * 二叉树结点
      *
-     * 与最小堆相同，只是与元素比较时不同
-     * 我们考虑的不是元素的值，而是它的优先级。
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
      */
-    var PriorityQueue1 = /** @class */ (function (_super) {
-        __extends(PriorityQueue1, _super);
-        function PriorityQueue1() {
-            var _this = _super.call(this) || this;
-            _this.priorities = {};
-            _this.compare = new feng3d.Comparator(_this.comparePriority.bind(_this));
+    var BinaryTreeNode = /** @class */ (function () {
+        /**
+         * 构建二叉树结点
+         *
+         * @param value 结点值
+         */
+        function BinaryTreeNode(value) {
+            if (value === void 0) { value = null; }
+            this.left = null;
+            this.right = null;
+            this.parent = null;
+            this.value = value;
+            this.meta = new feng3d.HashTable();
+            this.nodeComparator = new feng3d.Comparator();
+        }
+        Object.defineProperty(BinaryTreeNode.prototype, "leftHeight", {
+            /**
+             * 左结点高度
+             */
+            get: function () {
+                if (!this.left) {
+                    return 0;
+                }
+                return this.left.height + 1;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "rightHeight", {
+            /**
+             * 右结点高度
+             */
+            get: function () {
+                if (!this.right) {
+                    return 0;
+                }
+                return this.right.height + 1;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "height", {
+            /**
+             * 高度
+             */
+            get: function () {
+                return Math.max(this.leftHeight, this.rightHeight);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "balanceFactor", {
+            /**
+             * 平衡系数
+             */
+            get: function () {
+                return this.leftHeight - this.rightHeight;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "uncle", {
+            /**
+             * 获取叔伯结点
+             */
+            get: function () {
+                if (!this.parent) {
+                    return undefined;
+                }
+                if (!this.parent.parent) {
+                    return undefined;
+                }
+                // 判断祖父结点是否有两个子结点
+                if (!(this.parent.parent.left && this.parent.parent.right)) {
+                    return undefined;
+                }
+                // 现在我们知道当前节点有祖父结点，而这个祖父结点有两个子结点。让我们看看谁是叔叔。
+                if (this.nodeComparator.equal(this.parent, this.parent.parent.left)) {
+                    // 右边的是一个叔叔。
+                    return this.parent.parent.right;
+                }
+                return this.parent.parent.left;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 设置结点值
+         *
+         * @param value 值
+         */
+        BinaryTreeNode.prototype.setValue = function (value) {
+            this.value = value;
+            return this;
+        };
+        /**
+         * 设置左结点
+         *
+         * @param node 结点
+         */
+        BinaryTreeNode.prototype.setLeft = function (node) {
+            if (this.left) {
+                this.left.parent = null;
+            }
+            this.left = node;
+            if (this.left) {
+                this.left.parent = this;
+            }
+            return this;
+        };
+        /**
+         * 设置右结点
+         *
+         * @param node 结点
+         */
+        BinaryTreeNode.prototype.setRight = function (node) {
+            if (this.right) {
+                this.right.parent = null;
+            }
+            this.right = node;
+            if (node) {
+                this.right.parent = this;
+            }
+            return this;
+        };
+        /**
+         * 移除子结点
+         *
+         * @param nodeToRemove 子结点
+         */
+        BinaryTreeNode.prototype.removeChild = function (nodeToRemove) {
+            if (this.left && this.nodeComparator.equal(this.left, nodeToRemove)) {
+                this.left = null;
+                return true;
+            }
+            if (this.right && this.nodeComparator.equal(this.right, nodeToRemove)) {
+                this.right = null;
+                return true;
+            }
+            return false;
+        };
+        /**
+         * 替换节点
+         *
+         * @param nodeToReplace 被替换的节点
+         * @param replacementNode 替换后的节点
+         */
+        BinaryTreeNode.prototype.replaceChild = function (nodeToReplace, replacementNode) {
+            if (!nodeToReplace || !replacementNode) {
+                return false;
+            }
+            if (this.left && this.nodeComparator.equal(this.left, nodeToReplace)) {
+                this.left = replacementNode;
+                return true;
+            }
+            if (this.right && this.nodeComparator.equal(this.right, nodeToReplace)) {
+                this.right = replacementNode;
+                return true;
+            }
+            return false;
+        };
+        /**
+         * 拷贝节点
+         *
+         * @param sourceNode 源节点
+         * @param targetNode 目标节点
+         */
+        BinaryTreeNode.copyNode = function (sourceNode, targetNode) {
+            targetNode.setValue(sourceNode.value);
+            targetNode.setLeft(sourceNode.left);
+            targetNode.setRight(sourceNode.right);
+        };
+        /**
+         * 左序深度遍历
+         */
+        BinaryTreeNode.prototype.traverseInOrder = function () {
+            var traverse = [];
+            if (this.left) {
+                traverse = traverse.concat(this.left.traverseInOrder());
+            }
+            traverse.push(this.value);
+            if (this.right) {
+                traverse = traverse.concat(this.right.traverseInOrder());
+            }
+            return traverse;
+        };
+        /**
+         * 转换为字符串
+         */
+        BinaryTreeNode.prototype.toString = function () {
+            return this.traverseInOrder().toString();
+        };
+        return BinaryTreeNode;
+    }());
+    feng3d.BinaryTreeNode = BinaryTreeNode;
+})(feng3d || (feng3d = {}));
+/// <reference path="./BinaryTreeNode.ts" />
+var feng3d;
+(function (feng3d) {
+    /**
+     * 二叉查找树结点
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTreeNode.js
+     */
+    var BinarySearchTreeNode = /** @class */ (function (_super) {
+        __extends(BinarySearchTreeNode, _super);
+        /**
+         * 构建二叉查找树结点
+         *
+         * @param value 结点值
+         * @param compareFunction 比较函数
+         */
+        function BinarySearchTreeNode(value, compareFunction) {
+            var _this = _super.call(this, value) || this;
+            _this.compareFunction = compareFunction;
+            _this.nodeValueComparator = new feng3d.Comparator(compareFunction);
             return _this;
         }
         /**
-         * 新增元素
+         * 插入值
          *
-         * @param item 元素
-         * @param priority 优先级
+         * @param value 值
          */
-        PriorityQueue1.prototype.add = function (item, priority) {
-            if (priority === void 0) { priority = 0; }
-            this.priorities[item] = priority;
-            _super.prototype.add.call(this, item);
-            return this;
-        };
-        /**
-         * 移除元素
-         *
-         * @param item 元素
-         * @param customFindingComparator 自定义查找比较器
-         */
-        PriorityQueue1.prototype.remove = function (item, customFindingComparator) {
-            if (customFindingComparator === void 0) { customFindingComparator = this.compare; }
-            _super.prototype.remove.call(this, item, customFindingComparator);
-            delete this.priorities[item];
-            return this;
-        };
-        /**
-         * 改变元素优先级
-         *
-         * @param item 元素
-         * @param priority 优先级
-         */
-        PriorityQueue1.prototype.changePriority = function (item, priority) {
-            this.remove(item, new feng3d.Comparator(this.compareValue));
-            this.add(item, priority);
-            return this;
-        };
-        /**
-         * 查找元素所在索引
-         *
-         * @param item 元素
-         */
-        PriorityQueue1.prototype.findByValue = function (item) {
-            return this.find(item, new feng3d.Comparator(this.compareValue));
-        };
-        /**
-         * 是否拥有元素
-         *
-         * @param item 元素
-         */
-        PriorityQueue1.prototype.hasValue = function (item) {
-            return this.findByValue(item).length > 0;
-        };
-        /**
-         * 比较两个元素优先级
-         *
-         * @param a 元素a
-         * @param b 元素b
-         */
-        PriorityQueue1.prototype.comparePriority = function (a, b) {
-            if (this.priorities[a] === this.priorities[b]) {
-                return 0;
+        BinarySearchTreeNode.prototype.insert = function (value) {
+            if (this.nodeValueComparator.equal(this.value, null)) {
+                this.value = value;
+                return this;
             }
-            return this.priorities[a] < this.priorities[b] ? -1 : 1;
+            if (this.nodeValueComparator.lessThan(value, this.value)) {
+                // 插入到左结点
+                if (this.left) {
+                    return this.left.insert(value);
+                }
+                var newNode = new BinarySearchTreeNode(value, this.compareFunction);
+                this.setLeft(newNode);
+                return newNode;
+            }
+            if (this.nodeValueComparator.greaterThan(value, this.value)) {
+                // 插入到右结点
+                if (this.right) {
+                    return this.right.insert(value);
+                }
+                var newNode = new BinarySearchTreeNode(value, this.compareFunction);
+                this.setRight(newNode);
+                return newNode;
+            }
+            return this;
         };
         /**
-         * 比较两个元素大小
+         * 查找结点
          *
-         * @param a 元素a
-         * @param b 元素b
+         * @param value 值
          */
-        PriorityQueue1.prototype.compareValue = function (a, b) {
-            if (a === b) {
-                return 0;
+        BinarySearchTreeNode.prototype.find = function (value) {
+            // 核查本结点是否为所查找结点
+            if (this.nodeValueComparator.equal(this.value, value)) {
+                return this;
             }
-            return a < b ? -1 : 1;
+            if (this.nodeValueComparator.lessThan(value, this.value) && this.left) {
+                // 从左结点中查找
+                return this.left.find(value);
+            }
+            if (this.nodeValueComparator.greaterThan(value, this.value) && this.right) {
+                // 从右结点中查找
+                return this.right.find(value);
+            }
+            return null;
         };
-        return PriorityQueue1;
-    }(feng3d.MinHeap));
-    feng3d.PriorityQueue1 = PriorityQueue1;
+        /**
+         * 是否包含指定值
+         *
+         * @param value 结点值
+         */
+        BinarySearchTreeNode.prototype.contains = function (value) {
+            return !!this.find(value);
+        };
+        /**
+         * 移除指定值
+         *
+         * @param value 结点值
+         */
+        BinarySearchTreeNode.prototype.remove = function (value) {
+            var nodeToRemove = this.find(value);
+            if (!nodeToRemove) {
+                throw new Error('无法查找到值对于的结点。');
+            }
+            var parent = nodeToRemove.parent;
+            if (!nodeToRemove.left && !nodeToRemove.right) {
+                // 删除叶子结点
+                if (parent) {
+                    parent.removeChild(nodeToRemove);
+                }
+                else {
+                    // 节点没有父节点。只需清除当前节点值。
+                    nodeToRemove.setValue(undefined);
+                }
+            }
+            else if (nodeToRemove.left && nodeToRemove.right) {
+                // 删除拥有两个子结点的结点
+                // 查找下一个最大的值(右分支中的最小值)，并用下一个最大的值替换当前值节点。
+                var nextBiggerNode = nodeToRemove.right.findMin();
+                if (!this.nodeComparator.equal(nextBiggerNode, nodeToRemove.right)) {
+                    this.remove(nextBiggerNode.value);
+                    nodeToRemove.setValue(nextBiggerNode.value);
+                }
+                else {
+                    //如果下一个右值是下一个更大的值，它没有左子节点，那么就用右节点替换要删除的节点。
+                    nodeToRemove.setValue(nodeToRemove.right.value);
+                    nodeToRemove.setRight(nodeToRemove.right.right);
+                }
+            }
+            else {
+                // 删除拥有一个子结点的结点
+                // 使此子节点成为当前节点的父节点的一个子节点。
+                var childNode = nodeToRemove.left || nodeToRemove.right;
+                if (parent) {
+                    parent.replaceChild(nodeToRemove, childNode);
+                }
+                else {
+                    feng3d.BinaryTreeNode.copyNode(childNode, nodeToRemove);
+                }
+            }
+            nodeToRemove.parent = null;
+            return true;
+        };
+        /**
+         * 查找最小值
+         */
+        BinarySearchTreeNode.prototype.findMin = function () {
+            if (!this.left) {
+                return this;
+            }
+            return this.left.findMin();
+        };
+        return BinarySearchTreeNode;
+    }(feng3d.BinaryTreeNode));
+    feng3d.BinarySearchTreeNode = BinarySearchTreeNode;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -4207,6 +3448,281 @@ var feng3d;
         return DisjointSetNode;
     }());
     feng3d.DisjointSetNode = DisjointSetNode;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 双向链表
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/doubly-linked-list/DoublyLinkedList.js
+     */
+    var DoublyLinkedList = /** @class */ (function () {
+        /**
+         * 构建双向链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        function DoublyLinkedList(comparatorFunction) {
+            this.head = null;
+            this.tail = null;
+            this.compare = new feng3d.Comparator(comparatorFunction);
+        }
+        /**
+         * 是否为空
+         */
+        DoublyLinkedList.prototype.isEmpty = function () {
+            return !this.head;
+        };
+        /**
+         * 清空
+         */
+        DoublyLinkedList.prototype.empty = function () {
+            this.head = null;
+            this.tail = null;
+        };
+        /**
+         * 添加新结点到表头
+         *
+         * @param value 结点数据
+         */
+        DoublyLinkedList.prototype.addHead = function (value) {
+            var newNode = { value: value, previous: null, next: this.head };
+            if (this.head)
+                this.head.previous = newNode;
+            this.head = newNode;
+            if (!this.tail)
+                this.tail = newNode;
+            return this;
+        };
+        /**
+         * 添加新结点到表尾
+         *
+         * @param value 结点数据
+         */
+        DoublyLinkedList.prototype.addTail = function (value) {
+            var newNode = { value: value, previous: this.tail, next: null };
+            if (this.tail)
+                this.tail.next = newNode;
+            this.tail = newNode;
+            if (!this.head)
+                this.head = newNode;
+            return this;
+        };
+        /**
+         * 删除链表中第一个与指定值相等的结点
+         *
+         * @param value 结点值
+         */
+        DoublyLinkedList.prototype.delete = function (value) {
+            if (!this.head)
+                return null;
+            var deletedNode = null;
+            // 从表头删除结点
+            while (this.head && !deletedNode && this.compare.equal(this.head.value, value)) {
+                deletedNode = this.head;
+                this.head = this.head.next;
+                this.head.previous = null;
+            }
+            var currentNode = this.head;
+            if (!deletedNode && currentNode) {
+                // 删除相等的下一个结点
+                while (!deletedNode && currentNode.next) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                        if (currentNode.next)
+                            currentNode.next.previous = currentNode;
+                    }
+                    else {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+            // currentNode 是否为表尾
+            if (currentNode == null || currentNode.next == null) {
+                this.tail = currentNode;
+            }
+            return deletedNode;
+        };
+        /**
+         * 删除链表中所有与指定值相等的结点
+         *
+         * @param value 结点值
+         */
+        DoublyLinkedList.prototype.deleteAll = function (value) {
+            if (!this.head)
+                return null;
+            var deletedNode = null;
+            // 从表头删除结点
+            while (this.head && this.compare.equal(this.head.value, value)) {
+                deletedNode = this.head;
+                this.head = this.head.next;
+                this.head.previous = null;
+            }
+            var currentNode = this.head;
+            if (currentNode !== null) {
+                // 删除相等的下一个结点
+                while (currentNode.next) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                        if (currentNode.next)
+                            currentNode.next.previous = currentNode;
+                    }
+                    else {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+            // currentNode 是否为表尾
+            if (currentNode == null || currentNode.next == null) {
+                this.tail = currentNode;
+            }
+            return deletedNode;
+        };
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param value 结点值
+         */
+        DoublyLinkedList.prototype.find = function (value) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (this.compare.equal(currentNode.value, value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param callback 判断是否为查找的元素
+         */
+        DoublyLinkedList.prototype.findByFunc = function (callback) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (callback(currentNode.value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 删除表头
+         */
+        DoublyLinkedList.prototype.deleteHead = function () {
+            if (!this.head)
+                return undefined;
+            var deletedHead = this.head;
+            if (this.head.next) {
+                this.head = this.head.next;
+                this.head.previous = null;
+            }
+            else {
+                this.head = null;
+                this.tail = null;
+            }
+            return deletedHead.value;
+        };
+        /**
+         * 删除表尾
+         */
+        DoublyLinkedList.prototype.deleteTail = function () {
+            if (!this.tail)
+                return undefined;
+            var deletedTail = this.tail;
+            if (this.head === this.tail) {
+                this.head = null;
+                this.tail = null;
+                return deletedTail.value;
+            }
+            this.tail = this.tail.previous;
+            this.tail.next = null;
+            return deletedTail.value;
+        };
+        /**
+         * 从数组中初始化链表
+         *
+         * @param values 结点值列表
+         */
+        DoublyLinkedList.prototype.fromArray = function (values) {
+            var _this = this;
+            this.empty();
+            values.forEach(function (value) { return _this.addTail(value); });
+            return this;
+        };
+        /**
+         * 转换为数组
+         */
+        DoublyLinkedList.prototype.toArray = function () {
+            var values = [];
+            var currentNode = this.head;
+            while (currentNode) {
+                values.push(currentNode.value);
+                currentNode = currentNode.next;
+            }
+            return values;
+        };
+        /**
+         * 转换为字符串
+         * @param valueToString 值输出为字符串函数
+         */
+        DoublyLinkedList.prototype.toString = function (valueToString) {
+            return this.toArray().map(function (value) { return valueToString ? valueToString(value) : "" + value; }).toString();
+        };
+        /**
+         * 反转链表
+         */
+        DoublyLinkedList.prototype.reverse = function () {
+            var currNode = this.head;
+            var prevNode = null;
+            var nextNode = null;
+            while (currNode) {
+                // 存储当前结点的next与previous指向
+                nextNode = currNode.next;
+                prevNode = currNode.previous;
+                // 反转结点的next与previous指向
+                currNode.next = prevNode;
+                currNode.previous = nextNode;
+                // 存储上一个节点
+                prevNode = currNode;
+                // 遍历指针向后移动
+                currNode = nextNode;
+            }
+            // 重置表头与表尾
+            this.tail = this.head;
+            this.head = prevNode;
+            return this;
+        };
+        /**
+         * 核查结构是否正确
+         */
+        DoublyLinkedList.prototype.checkStructure = function () {
+            if (this.head) {
+                // 核查正向链表
+                var currNode = this.head;
+                while (currNode.next) {
+                    currNode = currNode.next;
+                }
+                if (this.tail !== currNode)
+                    return false;
+                // 核查逆向链表
+                currNode = this.tail;
+                while (currNode.previous) {
+                    currNode = currNode.previous;
+                }
+                return this.head == currNode;
+            }
+            return !this.tail;
+        };
+        return DoublyLinkedList;
+    }());
+    feng3d.DoublyLinkedList = DoublyLinkedList;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -4571,571 +4087,1055 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 二叉树结点
+     * 默认哈希表 （建议使用Object代替）
      *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
+     * 哈希表的大小直接影响冲突的次数。
+     * 哈希表的大小越大，冲突就越少。
      */
-    var BinaryTreeNode = /** @class */ (function () {
-        /**
-         * 构建二叉树结点
-         *
-         * @param value 结点值
-         */
-        function BinaryTreeNode(value) {
-            if (value === void 0) { value = null; }
-            this.left = null;
-            this.right = null;
-            this.parent = null;
-            this.value = value;
-            this.meta = new feng3d.HashTable();
-            this.nodeComparator = new feng3d.Comparator();
-        }
-        Object.defineProperty(BinaryTreeNode.prototype, "leftHeight", {
-            /**
-             * 左结点高度
-             */
-            get: function () {
-                if (!this.left) {
-                    return 0;
-                }
-                return this.left.height + 1;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(BinaryTreeNode.prototype, "rightHeight", {
-            /**
-             * 右结点高度
-             */
-            get: function () {
-                if (!this.right) {
-                    return 0;
-                }
-                return this.right.height + 1;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(BinaryTreeNode.prototype, "height", {
-            /**
-             * 高度
-             */
-            get: function () {
-                return Math.max(this.leftHeight, this.rightHeight);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(BinaryTreeNode.prototype, "balanceFactor", {
-            /**
-             * 平衡系数
-             */
-            get: function () {
-                return this.leftHeight - this.rightHeight;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(BinaryTreeNode.prototype, "uncle", {
-            /**
-             * 获取叔伯结点
-             */
-            get: function () {
-                if (!this.parent) {
-                    return undefined;
-                }
-                if (!this.parent.parent) {
-                    return undefined;
-                }
-                // 判断祖父结点是否有两个子结点
-                if (!(this.parent.parent.left && this.parent.parent.right)) {
-                    return undefined;
-                }
-                // 现在我们知道当前节点有祖父结点，而这个祖父结点有两个子结点。让我们看看谁是叔叔。
-                if (this.nodeComparator.equal(this.parent, this.parent.parent.left)) {
-                    // 右边的是一个叔叔。
-                    return this.parent.parent.right;
-                }
-                return this.parent.parent.left;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 设置结点值
-         *
-         * @param value 值
-         */
-        BinaryTreeNode.prototype.setValue = function (value) {
-            this.value = value;
-            return this;
-        };
-        /**
-         * 设置左结点
-         *
-         * @param node 结点
-         */
-        BinaryTreeNode.prototype.setLeft = function (node) {
-            if (this.left) {
-                this.left.parent = null;
-            }
-            this.left = node;
-            if (this.left) {
-                this.left.parent = this;
-            }
-            return this;
-        };
-        /**
-         * 设置右结点
-         *
-         * @param node 结点
-         */
-        BinaryTreeNode.prototype.setRight = function (node) {
-            if (this.right) {
-                this.right.parent = null;
-            }
-            this.right = node;
-            if (node) {
-                this.right.parent = this;
-            }
-            return this;
-        };
-        /**
-         * 移除子结点
-         *
-         * @param nodeToRemove 子结点
-         */
-        BinaryTreeNode.prototype.removeChild = function (nodeToRemove) {
-            if (this.left && this.nodeComparator.equal(this.left, nodeToRemove)) {
-                this.left = null;
-                return true;
-            }
-            if (this.right && this.nodeComparator.equal(this.right, nodeToRemove)) {
-                this.right = null;
-                return true;
-            }
-            return false;
-        };
-        /**
-         * 替换节点
-         *
-         * @param nodeToReplace 被替换的节点
-         * @param replacementNode 替换后的节点
-         */
-        BinaryTreeNode.prototype.replaceChild = function (nodeToReplace, replacementNode) {
-            if (!nodeToReplace || !replacementNode) {
-                return false;
-            }
-            if (this.left && this.nodeComparator.equal(this.left, nodeToReplace)) {
-                this.left = replacementNode;
-                return true;
-            }
-            if (this.right && this.nodeComparator.equal(this.right, nodeToReplace)) {
-                this.right = replacementNode;
-                return true;
-            }
-            return false;
-        };
-        /**
-         * 拷贝节点
-         *
-         * @param sourceNode 源节点
-         * @param targetNode 目标节点
-         */
-        BinaryTreeNode.copyNode = function (sourceNode, targetNode) {
-            targetNode.setValue(sourceNode.value);
-            targetNode.setLeft(sourceNode.left);
-            targetNode.setRight(sourceNode.right);
-        };
-        /**
-         * 左序深度遍历
-         */
-        BinaryTreeNode.prototype.traverseInOrder = function () {
-            var traverse = [];
-            if (this.left) {
-                traverse = traverse.concat(this.left.traverseInOrder());
-            }
-            traverse.push(this.value);
-            if (this.right) {
-                traverse = traverse.concat(this.right.traverseInOrder());
-            }
-            return traverse;
-        };
-        /**
-         * 转换为字符串
-         */
-        BinaryTreeNode.prototype.toString = function () {
-            return this.traverseInOrder().toString();
-        };
-        return BinaryTreeNode;
-    }());
-    feng3d.BinaryTreeNode = BinaryTreeNode;
-})(feng3d || (feng3d = {}));
-/// <reference path="./BinaryTreeNode.ts" />
-var feng3d;
-(function (feng3d) {
+    var defaultHashTableSize = 32;
     /**
-     * 二叉查找树结点
+     * 哈希表（散列表）
      *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTreeNode.js
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/hash-table/HashTable.js
      */
-    var BinarySearchTreeNode = /** @class */ (function (_super) {
-        __extends(BinarySearchTreeNode, _super);
+    var HashTable = /** @class */ (function () {
         /**
-         * 构建二叉查找树结点
-         *
-         * @param value 结点值
-         * @param compareFunction 比较函数
+         * 构建哈希表
+         * @param hashTableSize 哈希表尺寸
          */
-        function BinarySearchTreeNode(value, compareFunction) {
-            var _this = _super.call(this, value) || this;
-            _this.compareFunction = compareFunction;
-            _this.nodeValueComparator = new feng3d.Comparator(compareFunction);
-            return _this;
+        function HashTable(hashTableSize) {
+            if (hashTableSize === void 0) { hashTableSize = defaultHashTableSize; }
+            this.buckets = [];
+            for (var i = 0; i < hashTableSize; i++) {
+                this.buckets.push(new feng3d.LinkedList());
+            }
+            this.keys = {};
         }
         /**
-         * 插入值
+         * 将字符串键转换为哈希数。
          *
-         * @param value 值
+         * @param key 字符串键
          */
-        BinarySearchTreeNode.prototype.insert = function (value) {
-            if (this.nodeValueComparator.equal(this.value, null)) {
-                this.value = value;
-                return this;
-            }
-            if (this.nodeValueComparator.lessThan(value, this.value)) {
-                // 插入到左结点
-                if (this.left) {
-                    return this.left.insert(value);
-                }
-                var newNode = new BinarySearchTreeNode(value, this.compareFunction);
-                this.setLeft(newNode);
-                return newNode;
-            }
-            if (this.nodeValueComparator.greaterThan(value, this.value)) {
-                // 插入到右结点
-                if (this.right) {
-                    return this.right.insert(value);
-                }
-                var newNode = new BinarySearchTreeNode(value, this.compareFunction);
-                this.setRight(newNode);
-                return newNode;
-            }
-            return this;
+        HashTable.prototype.hash = function (key) {
+            var hash = key.split("").reduce(function (hashAccumulator, char) { return (hashAccumulator + char.charCodeAt(0)); }, 0);
+            return hash % this.buckets.length;
         };
         /**
-         * 查找结点
+         * 设置值
          *
+         * @param key 键
          * @param value 值
          */
-        BinarySearchTreeNode.prototype.find = function (value) {
-            // 核查本结点是否为所查找结点
-            if (this.nodeValueComparator.equal(this.value, value)) {
-                return this;
+        HashTable.prototype.set = function (key, value) {
+            var keyValue = { key: key, value: value };
+            var keyHash = this.hash(key);
+            this.keys[key] = keyHash;
+            var bucketLinkedList = this.buckets[keyHash];
+            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
+            if (!node) {
+                bucketLinkedList.addTail(keyValue);
             }
-            if (this.nodeValueComparator.lessThan(value, this.value) && this.left) {
-                // 从左结点中查找
-                return this.left.find(value);
+            else {
+                node.value.value = value;
             }
-            if (this.nodeValueComparator.greaterThan(value, this.value) && this.right) {
-                // 从右结点中查找
-                return this.right.find(value);
+        };
+        /**
+         * 删除指定键以及对于值
+         *
+         * @param key 键
+         */
+        HashTable.prototype.delete = function (key) {
+            var keyHash = this.hash(key);
+            delete this.keys[key];
+            var bucketLinkedList = this.buckets[keyHash];
+            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
+            if (node) {
+                return bucketLinkedList.deleteAll(node.value);
             }
             return null;
         };
         /**
-         * 是否包含指定值
+         * 获取与键对应的值
          *
-         * @param value 结点值
+         * @param key 键
          */
-        BinarySearchTreeNode.prototype.contains = function (value) {
-            return !!this.find(value);
+        HashTable.prototype.get = function (key) {
+            var bucketLinkedList = this.buckets[this.hash(key)];
+            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
+            return node ? node.value.value : undefined;
         };
         /**
-         * 移除指定值
+         * 是否拥有键
          *
-         * @param value 结点值
+         * @param key 键
          */
-        BinarySearchTreeNode.prototype.remove = function (value) {
-            var nodeToRemove = this.find(value);
-            if (!nodeToRemove) {
-                throw new Error('无法查找到值对于的结点。');
-            }
-            var parent = nodeToRemove.parent;
-            if (!nodeToRemove.left && !nodeToRemove.right) {
-                // 删除叶子结点
-                if (parent) {
-                    parent.removeChild(nodeToRemove);
-                }
-                else {
-                    // 节点没有父节点。只需清除当前节点值。
-                    nodeToRemove.setValue(undefined);
-                }
-            }
-            else if (nodeToRemove.left && nodeToRemove.right) {
-                // 删除拥有两个子结点的结点
-                // 查找下一个最大的值(右分支中的最小值)，并用下一个最大的值替换当前值节点。
-                var nextBiggerNode = nodeToRemove.right.findMin();
-                if (!this.nodeComparator.equal(nextBiggerNode, nodeToRemove.right)) {
-                    this.remove(nextBiggerNode.value);
-                    nodeToRemove.setValue(nextBiggerNode.value);
-                }
-                else {
-                    //如果下一个右值是下一个更大的值，它没有左子节点，那么就用右节点替换要删除的节点。
-                    nodeToRemove.setValue(nodeToRemove.right.value);
-                    nodeToRemove.setRight(nodeToRemove.right.right);
-                }
-            }
-            else {
-                // 删除拥有一个子结点的结点
-                // 使此子节点成为当前节点的父节点的一个子节点。
-                var childNode = nodeToRemove.left || nodeToRemove.right;
-                if (parent) {
-                    parent.replaceChild(nodeToRemove, childNode);
-                }
-                else {
-                    feng3d.BinaryTreeNode.copyNode(childNode, nodeToRemove);
-                }
-            }
-            nodeToRemove.parent = null;
-            return true;
+        HashTable.prototype.has = function (key) {
+            return Object.hasOwnProperty.call(this.keys, key);
         };
         /**
-         * 查找最小值
+         * 获取键列表
          */
-        BinarySearchTreeNode.prototype.findMin = function () {
-            if (!this.left) {
-                return this;
-            }
-            return this.left.findMin();
+        HashTable.prototype.getKeys = function () {
+            return Object.keys(this.keys);
         };
-        return BinarySearchTreeNode;
-    }(feng3d.BinaryTreeNode));
-    feng3d.BinarySearchTreeNode = BinarySearchTreeNode;
+        return HashTable;
+    }());
+    feng3d.HashTable = HashTable;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
-     * 二叉查找树
+     * 堆
      *
-     * 二叉查找树（英语：Binary Search Tree），也称为二叉搜索树、有序二叉树（ordered binary tree）或排序二叉树（sorted binary tree），是指一棵空树或者具有下列性质的二叉树：
+     * 最小和最大堆的父类。
      *
-     * 1. 若任意节点的左子树不空，则左子树上所有节点的值均小于它的根节点的值；
-     * 1. 若任意节点的右子树不空，则右子树上所有节点的值均大于它的根节点的值；
-     * 1. 任意节点的左、右子树也分别为二叉查找树；
-     * 1. 没有键值相等的节点。
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTree.js
-     * @see https://en.wikipedia.org/wiki/Binary_search_tree
-     * @see https://www.youtube.com/watch?v=wcIRPqTR3Kc&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8&index=9&t=0s
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/heap/Heap.js
      */
-    var BinarySearchTree = /** @class */ (function () {
+    var Heap = /** @class */ (function () {
         /**
-         * 构建 二叉查找树
+         * 构建链表
          *
-         * @param nodeValueCompareFunction 结点值比较器
+         * @param comparatorFunction 比较函数
          */
-        function BinarySearchTree(nodeValueCompareFunction) {
-            this.root = new feng3d.BinarySearchTreeNode(null, nodeValueCompareFunction);
-            // 从根节点中窃取节点比较器。
-            this.nodeComparator = this.root.nodeComparator;
+        function Heap(comparatorFunction) {
+            var _newTarget = this.constructor;
+            if (_newTarget === Heap) {
+                throw new TypeError('无法直接构造堆实例');
+            }
+            this.heapContainer = [];
+            this.compare = new feng3d.Comparator(comparatorFunction);
         }
         /**
-         * 插入值
+         * 获取左边子结点索引
          *
-         * @param value 值
+         * @param parentIndex 父结点索引
          */
-        BinarySearchTree.prototype.insert = function (value) {
-            return this.root.insert(value);
+        Heap.prototype.getLeftChildIndex = function (parentIndex) {
+            return (2 * parentIndex) + 1;
         };
         /**
-         * 是否包含指定值
+         * 获取右边子结点索引
          *
-         * @param value 值
+         * @param parentIndex 父结点索引
          */
-        BinarySearchTree.prototype.contains = function (value) {
-            return this.root.contains(value);
+        Heap.prototype.getRightChildIndex = function (parentIndex) {
+            return (2 * parentIndex) + 2;
         };
         /**
-         * 移除指定值
+         * 获取父结点索引
          *
-         * @param value 值
+         * @param childIndex 子结点索引
          */
-        BinarySearchTree.prototype.remove = function (value) {
-            return this.root.remove(value);
+        Heap.prototype.getParentIndex = function (childIndex) {
+            return Math.floor((childIndex - 1) / 2);
+        };
+        /**
+         * 是否有父结点
+         *
+         * @param childIndex 子结点索引
+         */
+        Heap.prototype.hasParent = function (childIndex) {
+            return this.getParentIndex(childIndex) >= 0;
+        };
+        /**
+         * 是否有左结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.hasLeftChild = function (parentIndex) {
+            return this.getLeftChildIndex(parentIndex) < this.heapContainer.length;
+        };
+        /**
+         * 是否有右结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.hasRightChild = function (parentIndex) {
+            return this.getRightChildIndex(parentIndex) < this.heapContainer.length;
+        };
+        /**
+         * 获取左结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.leftChild = function (parentIndex) {
+            return this.heapContainer[this.getLeftChildIndex(parentIndex)];
+        };
+        /**
+         * 获取右结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.rightChild = function (parentIndex) {
+            return this.heapContainer[this.getRightChildIndex(parentIndex)];
+        };
+        /**
+         * 获取父结点
+         *
+         * @param childIndex 子结点索引
+         */
+        Heap.prototype.parent = function (childIndex) {
+            return this.heapContainer[this.getParentIndex(childIndex)];
+        };
+        /**
+         * 交换两个结点数据
+         *
+         * @param index1 索引1
+         * @param index2 索引2
+         */
+        Heap.prototype.swap = function (index1, index2) {
+            var tmp = this.heapContainer[index2];
+            this.heapContainer[index2] = this.heapContainer[index1];
+            this.heapContainer[index1] = tmp;
+        };
+        /**
+         * 查看堆顶数据
+         */
+        Heap.prototype.peek = function () {
+            if (this.heapContainer.length === 0)
+                return null;
+            return this.heapContainer[0];
+        };
+        /**
+         * 出堆
+         *
+         * 取出堆顶元素
+         */
+        Heap.prototype.poll = function () {
+            if (this.heapContainer.length === 0)
+                return null;
+            if (this.heapContainer.length === 1)
+                return this.heapContainer.pop();
+            var item = this.heapContainer[0];
+            // 将最后一个元素从末尾移动到堆顶。
+            this.heapContainer[0] = this.heapContainer.pop();
+            this.heapifyDown();
+            return item;
+        };
+        /**
+         * 新增元素
+         *
+         * @param item 元素
+         */
+        Heap.prototype.add = function (item) {
+            this.heapContainer.push(item);
+            this.heapifyUp();
+            return this;
+        };
+        /**
+         * 移除所有指定元素
+         *
+         * @param item 元素
+         * @param comparator 比较器
+         */
+        Heap.prototype.remove = function (item, comparator) {
+            if (comparator === void 0) { comparator = this.compare; }
+            // 找到要删除的项的数量。
+            var numberOfItemsToRemove = this.find(item, comparator).length;
+            for (var iteration = 0; iteration < numberOfItemsToRemove; iteration += 1) {
+                // 获取一个删除元素索引
+                var indexToRemove = this.find(item, comparator).pop();
+                // 删除元素为最后一个索引时
+                if (indexToRemove === (this.heapContainer.length - 1)) {
+                    this.heapContainer.pop();
+                }
+                else {
+                    // 把数组最后元素移动到删除位置
+                    this.heapContainer[indexToRemove] = this.heapContainer.pop();
+                    var parentItem = this.parent(indexToRemove);
+                    if (this.hasLeftChild(indexToRemove)
+                        && (!parentItem
+                            || this.pairIsInCorrectOrder(parentItem, this.heapContainer[indexToRemove]))) {
+                        this.heapifyDown(indexToRemove);
+                    }
+                    else {
+                        this.heapifyUp(indexToRemove);
+                    }
+                }
+            }
+            return this;
+        };
+        /**
+         * 查找元素所在所有索引
+         *
+         * @param item 查找的元素
+         * @param comparator 比较器
+         */
+        Heap.prototype.find = function (item, comparator) {
+            if (comparator === void 0) { comparator = this.compare; }
+            var foundItemIndices = [];
+            for (var itemIndex = 0; itemIndex < this.heapContainer.length; itemIndex += 1) {
+                if (comparator.equal(item, this.heapContainer[itemIndex])) {
+                    foundItemIndices.push(itemIndex);
+                }
+            }
+            return foundItemIndices;
+        };
+        /**
+         * 是否为空
+         */
+        Heap.prototype.isEmpty = function () {
+            return !this.heapContainer.length;
         };
         /**
          * 转换为字符串
          */
-        BinarySearchTree.prototype.toString = function () {
-            return this.root.toString();
+        Heap.prototype.toString = function () {
+            return this.heapContainer.toString();
         };
-        return BinarySearchTree;
+        /**
+         * 堆冒泡
+         *
+         * @param startIndex 堆冒泡起始索引
+         */
+        Heap.prototype.heapifyUp = function (startIndex) {
+            var currentIndex = startIndex || this.heapContainer.length - 1;
+            while (this.hasParent(currentIndex)
+                && !this.pairIsInCorrectOrder(this.parent(currentIndex), this.heapContainer[currentIndex])) {
+                this.swap(currentIndex, this.getParentIndex(currentIndex));
+                currentIndex = this.getParentIndex(currentIndex);
+            }
+        };
+        /**
+         * 堆下沉
+         *
+         * @param startIndex 堆下沉起始索引
+         */
+        Heap.prototype.heapifyDown = function (startIndex) {
+            if (startIndex === void 0) { startIndex = 0; }
+            var currentIndex = startIndex;
+            var nextIndex = null;
+            while (this.hasLeftChild(currentIndex)) {
+                if (this.hasRightChild(currentIndex)
+                    && this.pairIsInCorrectOrder(this.rightChild(currentIndex), this.leftChild(currentIndex))) {
+                    nextIndex = this.getRightChildIndex(currentIndex);
+                }
+                else {
+                    nextIndex = this.getLeftChildIndex(currentIndex);
+                }
+                if (this.pairIsInCorrectOrder(this.heapContainer[currentIndex], this.heapContainer[nextIndex])) {
+                    break;
+                }
+                this.swap(currentIndex, nextIndex);
+                currentIndex = nextIndex;
+            }
+        };
+        return Heap;
     }());
-    feng3d.BinarySearchTree = BinarySearchTree;
+    feng3d.Heap = Heap;
 })(feng3d || (feng3d = {}));
-/// <reference path="./BinarySearchTree.ts" />
 var feng3d;
 (function (feng3d) {
     /**
-     * 平衡二叉树
+     * 链表
      *
-     * AVL树（以发明者Adelson-Velsky和Landis 命名）是自平衡二叉搜索树。
-     *
-     * @see https://github.com/trekhleb/javascript-algorithms/tree/master/src/data-structures/tree/avl-tree
-     * @see https://en.wikipedia.org/wiki/AVL_tree
-     * @see https://www.tutorialspoint.com/data_structures_algorithms/avl_tree_algorithm.htm
-     * @see http://btechsmartclass.com/data_structures/avl-trees.html
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js
      */
-    var AvlTree = /** @class */ (function (_super) {
-        __extends(AvlTree, _super);
-        function AvlTree() {
+    var LinkedList = /** @class */ (function () {
+        /**
+         * 构建双向链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        function LinkedList(comparatorFunction) {
+            this.head = null;
+            this.tail = null;
+            this.compare = new feng3d.Comparator(comparatorFunction);
+        }
+        /**
+         * 是否为空
+         */
+        LinkedList.prototype.isEmpty = function () {
+            return !this.head;
+        };
+        /**
+         * 清空
+         */
+        LinkedList.prototype.empty = function () {
+            this.head = null;
+            this.tail = null;
+        };
+        /**
+         * 获取表头值
+         */
+        LinkedList.prototype.getHeadValue = function () {
+            return this.head && this.head.value;
+        };
+        /**
+         * 添加新结点到表头
+         *
+         * @param value 结点数据
+         */
+        LinkedList.prototype.addHead = function (value) {
+            var newNode = { value: value, next: this.head };
+            this.head = newNode;
+            if (!this.tail)
+                this.tail = newNode;
+            return this;
+        };
+        /**
+         * 添加新结点到表尾
+         *
+         * @param value 结点数据
+         */
+        LinkedList.prototype.addTail = function (value) {
+            var newNode = { value: value, next: null };
+            if (this.tail)
+                this.tail.next = newNode;
+            this.tail = newNode;
+            if (!this.head)
+                this.head = newNode;
+            return this;
+        };
+        /**
+         * 删除链表中第一个与指定值相等的结点
+         *
+         * @param value 结点值
+         */
+        LinkedList.prototype.delete = function (value) {
+            if (!this.head)
+                return null;
+            var deletedNode = null;
+            // 从表头删除结点
+            while (this.head && !deletedNode && this.compare.equal(this.head.value, value)) {
+                deletedNode = this.head;
+                this.head = this.head.next;
+            }
+            var currentNode = this.head;
+            if (!deletedNode && currentNode) {
+                // 删除相等的下一个结点
+                while (!deletedNode && currentNode.next) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                    }
+                    else {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+            // currentNode 是否为表尾
+            if (currentNode == null || currentNode.next == null) {
+                this.tail = currentNode;
+            }
+            return deletedNode;
+        };
+        /**
+         * 删除链表中所有与指定值相等的结点
+         *
+         * @param value 结点值
+         */
+        LinkedList.prototype.deleteAll = function (value) {
+            if (!this.head)
+                return null;
+            var deletedNode = null;
+            // 从表头删除结点
+            while (this.head && this.compare.equal(this.head.value, value)) {
+                deletedNode = this.head;
+                this.head = this.head.next;
+            }
+            var currentNode = this.head;
+            if (currentNode !== null) {
+                // 删除相等的下一个结点
+                while (currentNode.next) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                    }
+                    else {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+            // currentNode 是否为表尾
+            if (currentNode == null || currentNode.next == null) {
+                this.tail = currentNode;
+            }
+            return deletedNode;
+        };
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param value 结点值
+         */
+        LinkedList.prototype.find = function (value) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (this.compare.equal(currentNode.value, value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param callback 判断是否为查找的元素
+         */
+        LinkedList.prototype.findByFunc = function (callback) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (callback(currentNode.value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 删除表头
+         *
+         * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
+         */
+        LinkedList.prototype.deleteHead = function () {
+            if (!this.head)
+                return null;
+            var deletedHead = this.head;
+            if (this.head.next) {
+                this.head = this.head.next;
+            }
+            else {
+                this.head = null;
+                this.tail = null;
+            }
+            return deletedHead.value;
+        };
+        /**
+         * 删除表尾
+         */
+        LinkedList.prototype.deleteTail = function () {
+            if (!this.tail)
+                return null;
+            var deletedTail = this.tail;
+            if (this.head === this.tail) {
+                this.head = null;
+                this.tail = null;
+                return deletedTail.value;
+            }
+            // 遍历链表删除表尾
+            var currentNode = this.head;
+            while (currentNode.next) {
+                if (!currentNode.next.next) {
+                    currentNode.next = null;
+                }
+                else {
+                    currentNode = currentNode.next;
+                }
+            }
+            this.tail = currentNode;
+            return deletedTail.value;
+        };
+        /**
+         * 从数组中初始化链表
+         *
+         * @param values 结点值列表
+         */
+        LinkedList.prototype.fromArray = function (values) {
+            var _this = this;
+            this.empty();
+            values.forEach(function (value) { return _this.addTail(value); });
+            return this;
+        };
+        /**
+         * 转换为数组
+         */
+        LinkedList.prototype.toArray = function () {
+            var values = [];
+            var currentNode = this.head;
+            while (currentNode) {
+                values.push(currentNode.value);
+                currentNode = currentNode.next;
+            }
+            return values;
+        };
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        LinkedList.prototype.toString = function (valueToString) {
+            return this.toArray().map(function (value) { return valueToString ? valueToString(value) : "" + value; }).toString();
+        };
+        /**
+         * 反转链表
+         */
+        LinkedList.prototype.reverse = function () {
+            var currNode = this.head;
+            var prevNode = null;
+            var nextNode = null;
+            while (currNode) {
+                // 存储下一个结点
+                nextNode = currNode.next;
+                // 反转结点的next指向
+                currNode.next = prevNode;
+                // 存储上一个节点
+                prevNode = currNode;
+                // 遍历指针向后移动
+                currNode = nextNode;
+            }
+            // 重置表头与表尾
+            this.tail = this.head;
+            this.head = prevNode;
+            return this;
+        };
+        /**
+         * 核查结构是否正确
+         */
+        LinkedList.prototype.checkStructure = function () {
+            if (this.head) {
+                var currNode = this.head;
+                while (currNode.next) {
+                    currNode = currNode.next;
+                }
+                return this.tail == currNode;
+            }
+            return !this.tail;
+        };
+        return LinkedList;
+    }());
+    feng3d.LinkedList = LinkedList;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最大堆
+     *
+     * 所有父结点都大于子结点
+     */
+    var MaxHeap = /** @class */ (function (_super) {
+        __extends(MaxHeap, _super);
+        function MaxHeap() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
-         * @param {*} value
+         * 检查堆元素对的顺序是否正确。
+         * 对于MinHeap，第一个元素必须总是小于等于。
+         * 对于MaxHeap，第一个元素必须总是大于或等于。
+         *
+         * @param firstElement 第一个元素
+         * @param secondElement 第二个元素
          */
-        AvlTree.prototype.insert = function (value) {
-            // Do the normal BST insert.
-            _super.prototype.insert.call(this, value);
-            // Let's move up to the root and check balance factors along the way.
-            var currentNode = this.root.find(value);
-            while (currentNode) {
-                this.balance(currentNode);
-                currentNode = currentNode.parent;
+        MaxHeap.prototype.pairIsInCorrectOrder = function (firstElement, secondElement) {
+            return this.compare.greaterThanOrEqual(firstElement, secondElement);
+        };
+        return MaxHeap;
+    }(feng3d.Heap));
+    feng3d.MaxHeap = MaxHeap;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最小堆
+     *
+     * 所有父结点都小于子结点
+     */
+    var MinHeap = /** @class */ (function (_super) {
+        __extends(MinHeap, _super);
+        function MinHeap() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * 检查堆元素对的顺序是否正确。
+         * 对于MinHeap，第一个元素必须总是小于等于。
+         * 对于MaxHeap，第一个元素必须总是大于或等于。
+         *
+         * @param firstElement 第一个元素
+         * @param secondElement 第二个元素
+         */
+        MinHeap.prototype.pairIsInCorrectOrder = function (firstElement, secondElement) {
+            return this.compare.lessThanOrEqual(firstElement, secondElement);
+        };
+        return MinHeap;
+    }(feng3d.Heap));
+    feng3d.MinHeap = MinHeap;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 优先队列
+     *
+     * 所有元素按优先级排序
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
+     */
+    var PriorityQueue = /** @class */ (function () {
+        /**
+         * 构建优先数组
+         * @param   compare     比较函数
+         */
+        function PriorityQueue(compare) {
+            this.items = [];
+            this.compare = compare;
+        }
+        Object.defineProperty(PriorityQueue.prototype, "length", {
+            /**
+             * 队列长度
+             */
+            get: function () {
+                return this.items.length;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(PriorityQueue.prototype, "compare", {
+            /**
+             * 比较函数
+             */
+            get: function () {
+                return this._compare;
+            },
+            set: function (v) {
+                this._compare = v;
+                this.items.sort(this._compare);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 尾部添加元素（进队）
+         * @param items 元素列表
+         * @returns 长度
+         */
+        PriorityQueue.prototype.push = function () {
+            var _this = this;
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i] = arguments[_i];
             }
+            items.forEach(function (item) {
+                var insert = Array.binarySearchInsert(_this.items, item, _this._compare);
+                _this.items.splice(insert, 0, item);
+            });
+            return this.items.length;
         };
         /**
-         * @param {*} value
-         * @return {boolean}
+         * 头部移除元素（出队）
          */
-        AvlTree.prototype.remove = function (value) {
-            // Do standard BST removal.
-            var result = _super.prototype.remove.call(this, value);
-            // Balance the tree starting from the root node.
-            this.balance(this.root);
-            return result;
+        PriorityQueue.prototype.shift = function () {
+            return this.items.shift();
         };
         /**
-         * @param {BinarySearchTreeNode} node
+         * 转换为数组
          */
-        AvlTree.prototype.balance = function (node) {
-            // If balance factor is not OK then try to balance the node.
-            if (node.balanceFactor > 1) {
-                // Left rotation.
-                if (node.left.balanceFactor > 0) {
-                    // Left-Left rotation
-                    this.rotateLeftLeft(node);
-                }
-                else if (node.left.balanceFactor < 0) {
-                    // Left-Right rotation.
-                    this.rotateLeftRight(node);
-                }
-            }
-            else if (node.balanceFactor < -1) {
-                // Right rotation.
-                if (node.right.balanceFactor < 0) {
-                    // Right-Right rotation
-                    this.rotateRightRight(node);
-                }
-                else if (node.right.balanceFactor > 0) {
-                    // Right-Left rotation.
-                    this.rotateRightLeft(node);
-                }
-            }
+        PriorityQueue.prototype.toArray = function () {
+            return this.items.concat();
         };
         /**
-         * @param {BinarySearchTreeNode} rootNode
+         * 从数组初始化链表
          */
-        AvlTree.prototype.rotateLeftLeft = function (rootNode) {
-            // Detach left node from root node.
-            var leftNode = rootNode.left;
-            rootNode.setLeft(null);
-            // Make left node to be a child of rootNode's parent.
-            if (rootNode.parent) {
-                rootNode.parent.setLeft(leftNode);
-            }
-            else if (rootNode === this.root) {
-                // If root node is root then make left node to be a new root.
-                this.root = leftNode;
-            }
-            // If left node has a right child then detach it and
-            // attach it as a left child for rootNode.
-            if (leftNode.right) {
-                rootNode.setLeft(leftNode.right);
-            }
-            // Attach rootNode to the right of leftNode.
-            leftNode.setRight(rootNode);
+        PriorityQueue.prototype.fromArray = function (array) {
+            this.items = array.concat();
+            this.items.sort(this._compare);
+        };
+        return PriorityQueue;
+    }());
+    feng3d.PriorityQueue = PriorityQueue;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 优先队列
+     *
+     * 与最小堆相同，只是与元素比较时不同
+     * 我们考虑的不是元素的值，而是它的优先级。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
+     */
+    var PriorityQueue1 = /** @class */ (function (_super) {
+        __extends(PriorityQueue1, _super);
+        function PriorityQueue1() {
+            var _this = _super.call(this) || this;
+            _this.priorities = {};
+            _this.compare = new feng3d.Comparator(_this.comparePriority.bind(_this));
+            return _this;
+        }
+        /**
+         * 新增元素
+         *
+         * @param item 元素
+         * @param priority 优先级
+         */
+        PriorityQueue1.prototype.add = function (item, priority) {
+            if (priority === void 0) { priority = 0; }
+            this.priorities[item] = priority;
+            _super.prototype.add.call(this, item);
+            return this;
         };
         /**
-         * @param {BinarySearchTreeNode} rootNode
+         * 移除元素
+         *
+         * @param item 元素
+         * @param customFindingComparator 自定义查找比较器
          */
-        AvlTree.prototype.rotateLeftRight = function (rootNode) {
-            // Detach left node from rootNode since it is going to be replaced.
-            var leftNode = rootNode.left;
-            rootNode.setLeft(null);
-            // Detach right node from leftNode.
-            var leftRightNode = leftNode.right;
-            leftNode.setRight(null);
-            // Preserve leftRightNode's left subtree.
-            if (leftRightNode.left) {
-                leftNode.setRight(leftRightNode.left);
-                leftRightNode.setLeft(null);
-            }
-            // Attach leftRightNode to the rootNode.
-            rootNode.setLeft(leftRightNode);
-            // Attach leftNode as left node for leftRight node.
-            leftRightNode.setLeft(leftNode);
-            // Do left-left rotation.
-            this.rotateLeftLeft(rootNode);
+        PriorityQueue1.prototype.remove = function (item, customFindingComparator) {
+            if (customFindingComparator === void 0) { customFindingComparator = this.compare; }
+            _super.prototype.remove.call(this, item, customFindingComparator);
+            delete this.priorities[item];
+            return this;
         };
         /**
-         * @param {BinarySearchTreeNode} rootNode
+         * 改变元素优先级
+         *
+         * @param item 元素
+         * @param priority 优先级
          */
-        AvlTree.prototype.rotateRightLeft = function (rootNode) {
-            // Detach right node from rootNode since it is going to be replaced.
-            var rightNode = rootNode.right;
-            rootNode.setRight(null);
-            // Detach left node from rightNode.
-            var rightLeftNode = rightNode.left;
-            rightNode.setLeft(null);
-            if (rightLeftNode.right) {
-                rightNode.setLeft(rightLeftNode.right);
-                rightLeftNode.setRight(null);
-            }
-            // Attach rightLeftNode to the rootNode.
-            rootNode.setRight(rightLeftNode);
-            // Attach rightNode as right node for rightLeft node.
-            rightLeftNode.setRight(rightNode);
-            // Do right-right rotation.
-            this.rotateRightRight(rootNode);
+        PriorityQueue1.prototype.changePriority = function (item, priority) {
+            this.remove(item, new feng3d.Comparator(this.compareValue));
+            this.add(item, priority);
+            return this;
         };
         /**
-         * @param {BinarySearchTreeNode} rootNode
+         * 查找元素所在索引
+         *
+         * @param item 元素
          */
-        AvlTree.prototype.rotateRightRight = function (rootNode) {
-            // Detach right node from root node.
-            var rightNode = rootNode.right;
-            rootNode.setRight(null);
-            // Make right node to be a child of rootNode's parent.
-            if (rootNode.parent) {
-                rootNode.parent.setRight(rightNode);
-            }
-            else if (rootNode === this.root) {
-                // If root node is root then make right node to be a new root.
-                this.root = rightNode;
-            }
-            // If right node has a left child then detach it and
-            // attach it as a right child for rootNode.
-            if (rightNode.left) {
-                rootNode.setRight(rightNode.left);
-            }
-            // Attach rootNode to the left of rightNode.
-            rightNode.setLeft(rootNode);
+        PriorityQueue1.prototype.findByValue = function (item) {
+            return this.find(item, new feng3d.Comparator(this.compareValue));
         };
-        return AvlTree;
-    }(feng3d.BinarySearchTree));
-    feng3d.AvlTree = AvlTree;
+        /**
+         * 是否拥有元素
+         *
+         * @param item 元素
+         */
+        PriorityQueue1.prototype.hasValue = function (item) {
+            return this.findByValue(item).length > 0;
+        };
+        /**
+         * 比较两个元素优先级
+         *
+         * @param a 元素a
+         * @param b 元素b
+         */
+        PriorityQueue1.prototype.comparePriority = function (a, b) {
+            if (this.priorities[a] === this.priorities[b]) {
+                return 0;
+            }
+            return this.priorities[a] < this.priorities[b] ? -1 : 1;
+        };
+        /**
+         * 比较两个元素大小
+         *
+         * @param a 元素a
+         * @param b 元素b
+         */
+        PriorityQueue1.prototype.compareValue = function (a, b) {
+            if (a === b) {
+                return 0;
+            }
+            return a < b ? -1 : 1;
+        };
+        return PriorityQueue1;
+    }(feng3d.MinHeap));
+    feng3d.PriorityQueue1 = PriorityQueue1;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 队列，只能从后面进，前面出
+     * 使用单向链表实现
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/queue/Queue.js
+     */
+    var Queue = /** @class */ (function () {
+        /**
+         * 构建队列
+         *
+         * @param comparatorFunction 比较函数
+         */
+        function Queue() {
+            this.linkedList = new feng3d.LinkedList();
+        }
+        /**
+         * 是否为空
+         */
+        Queue.prototype.isEmpty = function () {
+            return this.linkedList.isEmpty();
+        };
+        /**
+         * 清空
+         */
+        Queue.prototype.empty = function () {
+            this.linkedList.empty();
+        };
+        /**
+         * 读取队列前面的元素，但不删除它。
+         */
+        Queue.prototype.peek = function () {
+            return this.linkedList.getHeadValue();
+        };
+        /**
+         * 入队
+         *
+         * 在队列的末尾(链表的尾部)添加一个新元素。
+         * 这个元素将在它前面的所有元素之后被处理。
+         *
+         * @param value 元素值
+         */
+        Queue.prototype.enqueue = function (value) {
+            this.linkedList.addTail(value);
+            return this;
+        };
+        /**
+         * 出队
+         *
+         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
+         */
+        Queue.prototype.dequeue = function () {
+            var removedValue = this.linkedList.deleteHead();
+            return removedValue;
+        };
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        Queue.prototype.toString = function (valueToString) {
+            return this.linkedList.toString(valueToString);
+        };
+        return Queue;
+    }());
+    feng3d.Queue = Queue;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 栈
+     *
+     * 后进先出
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/stack/Stack.js
+     */
+    var Stack = /** @class */ (function () {
+        function Stack() {
+            this.linkedList = new feng3d.LinkedList();
+        }
+        /**
+         * 是否为空
+         */
+        Stack.prototype.isEmpty = function () {
+            return this.linkedList.isEmpty();
+        };
+        /**
+         * 查看第一个元素值
+         */
+        Stack.prototype.peek = function () {
+            return this.linkedList.getHeadValue();
+        };
+        /**
+         * 入栈
+         *
+         * @param value 元素值
+         */
+        Stack.prototype.push = function (value) {
+            this.linkedList.addHead(value);
+            return this;
+        };
+        /**
+         * 出栈
+         */
+        Stack.prototype.pop = function () {
+            return this.linkedList.deleteHead();
+        };
+        /**
+         * 转换为数组
+         */
+        Stack.prototype.toArray = function () {
+            return this.linkedList.toArray();
+        };
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        Stack.prototype.toString = function (valueToString) {
+            return this.linkedList.toString(valueToString);
+        };
+        return Stack;
+    }());
+    feng3d.Stack = Stack;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 比较器
+     */
+    var Comparator = /** @class */ (function () {
+        /**
+         * 构建比较器
+         * @param compareFunction 比较函数
+         */
+        function Comparator(compareFunction) {
+            this.compare = compareFunction || Comparator.defaultCompareFunction;
+        }
+        /**
+         * 默认比较函数。只能处理 a和b 同为string或number的比较。
+         *
+         * @param a 比较值a
+         * @param b 比较值b
+         */
+        Comparator.defaultCompareFunction = function (a, b) {
+            if (a === b)
+                return 0;
+            return a < b ? -1 : 1;
+        };
+        /**
+         * 检查 a 是否等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.equal = function (a, b) {
+            return this.compare(a, b) === 0;
+        };
+        /**
+         * 检查 a 是否小于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.lessThan = function (a, b) {
+            return this.compare(a, b) < 0;
+        };
+        /**
+         * 检查 a 是否大于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.greaterThan = function (a, b) {
+            return this.compare(a, b) > 0;
+        };
+        /**
+         * 检查 a 是否小于等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.lessThanOrEqual = function (a, b) {
+            return this.lessThan(a, b) || this.equal(a, b);
+        };
+        /**
+         * 检查 a 是否大于等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.greaterThanOrEqual = function (a, b) {
+            return this.greaterThan(a, b) || this.equal(a, b);
+        };
+        /**
+         * 反转比较函数。
+         */
+        Comparator.prototype.reverse = function () {
+            var compareOriginal = this.compare;
+            this.compare = function (a, b) { return compareOriginal(b, a); };
+        };
+        return Comparator;
+    }());
+    feng3d.Comparator = Comparator;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
