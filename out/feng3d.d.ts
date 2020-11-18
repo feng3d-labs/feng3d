@@ -12797,22 +12797,169 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    type Constructor<T> = (new (...args: any[]) => T);
-    interface GameObjectEventMap extends MouseEventMap {
+    interface EntityEventMap {
         /**
          * 添加子组件事件
          */
         addComponent: {
-            gameobject: GameObject;
+            gameobject: Entity;
             component: Component;
         };
         /**
          * 移除子组件事件
          */
         removeComponent: {
-            gameobject: GameObject;
+            gameobject: Entity;
             component: Component;
         };
+    }
+    interface Entity {
+        once<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof EntityEventMap>(type: K, data?: EntityEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
+        has<K extends keyof EntityEventMap>(type: K): boolean;
+        on<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof EntityEventMap>(type?: K, listener?: (event: Event<EntityEventMap[K]>) => any, thisObject?: any): void;
+    }
+    /**
+     * 实体
+     */
+    class Entity extends AssetData implements IDisposable {
+        /**
+         * 变换
+         */
+        get transform(): Transform;
+        private _transform;
+        /**
+         * 轴对称包围盒
+         */
+        get boundingBox(): BoundingBox;
+        private _boundingBox;
+        /**
+         * 子组件个数
+         */
+        get numComponents(): number;
+        get components(): Components[];
+        set components(value: Components[]);
+        /**
+         * 构建3D对象
+         */
+        constructor();
+        /**
+         * 获取指定位置索引的子组件
+         * @param index			位置索引
+         * @return				子组件
+         */
+        getComponentAt(index: number): Component;
+        /**
+         * 添加指定组件类型到游戏对象
+         *
+         * @type type 被添加组件
+         */
+        addComponent<T extends ComponentNames>(type: T, callback?: (component: ComponentMap[T]) => void): ComponentMap[T];
+        /**
+         * 添加脚本
+         * @param script   脚本路径
+         */
+        addScript(scriptName: string): ScriptComponent;
+        /**
+         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         *
+         * @param type				类定义
+         * @return                  返回指定类型组件
+         */
+        getComponent<T extends ComponentNames>(type: T): ComponentMap[T];
+        /**
+         * 获取游戏对象上所有指定类型的组件数组
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][];
+        /**
+         * 设置子组件的位置
+         * @param component				子组件
+         * @param index				位置索引
+         */
+        setComponentIndex(component: Components, index: number): void;
+        /**
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
+         */
+        setComponentAt(component: Components, index: number): void;
+        /**
+         * 移除组件
+         * @param component 被移除组件
+         */
+        removeComponent(component: Components): void;
+        /**
+         * 获取组件在容器的索引位置
+         * @param component			查询的组件
+         * @return				    组件在容器的索引位置
+         */
+        getComponentIndex(component: Components): number;
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): Component;
+        /**
+         * 交换子组件位置
+         * @param index1		第一个子组件的索引位置
+         * @param index2		第二个子组件的索引位置
+         */
+        swapComponentsAt(index1: number, index2: number): void;
+        /**
+         * 交换子组件位置
+         * @param a		第一个子组件
+         * @param b		第二个子组件
+         */
+        swapComponents(a: Components, b: Components): void;
+        /**
+         * 移除指定类型组件
+         * @param type 组件类型
+         */
+        removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
+        /**
+         * 监听对象的所有事件并且传播到所有组件中
+         */
+        private _onAnyListener;
+        /**
+         * 销毁
+         */
+        dispose(): void;
+        /**
+         * 查找指定名称的游戏对象
+         *
+         * @param name
+         */
+        static find(name: string): GameObject;
+        /**
+         * 组件列表
+         */
+        protected _components: Components[];
+        protected _children: GameObject[];
+        protected _scene: Scene;
+        protected _parent: GameObject;
+        protected _globalVisible: boolean;
+        protected _globalVisibleInvalid: boolean;
+        /**
+         * 判断是否拥有组件
+         * @param com	被检测的组件
+         * @return		true：拥有该组件；false：不拥有该组件。
+         */
+        private hasComponent;
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
+        private addComponentAt;
+    }
+}
+declare namespace feng3d {
+    type Constructor<T> = (new (...args: any[]) => T);
+    interface GameObjectEventMap extends EntityEventMap, MouseEventMap {
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
@@ -12866,7 +13013,7 @@ declare namespace feng3d {
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    class GameObject extends AssetData implements IDisposable {
+    class GameObject extends Entity implements IDisposable {
         __class__: "feng3d.GameObject";
         assetType: AssetType;
         /**
@@ -12891,16 +13038,6 @@ declare namespace feng3d {
          * 自身以及子对象是否支持鼠标拾取
          */
         mouseEnabled: boolean;
-        /**
-         * 变换
-         */
-        get transform(): Transform;
-        private _transform;
-        /**
-         * 轴对称包围盒
-         */
-        get boundingBox(): BoundingBox;
-        private _boundingBox;
         get parent(): GameObject;
         /**
          * 子对象
@@ -12909,16 +13046,10 @@ declare namespace feng3d {
         set children(value: GameObject[]);
         get numChildren(): number;
         /**
-         * 子组件个数
-         */
-        get numComponents(): number;
-        /**
          * 全局是否可见
          */
         get globalVisible(): boolean;
         get scene(): Scene;
-        get components(): Components[];
-        set components(value: Components[]);
         /**
          * 构建3D对象
          */
@@ -12978,37 +13109,6 @@ declare namespace feng3d {
          */
         getChildren(): GameObject[];
         /**
-         * 获取指定位置索引的子组件
-         * @param index			位置索引
-         * @return				子组件
-         */
-        getComponentAt(index: number): Component;
-        /**
-         * 添加指定组件类型到游戏对象
-         *
-         * @type type 被添加组件
-         */
-        addComponent<T extends ComponentNames>(type: T, callback?: (component: ComponentMap[T]) => void): ComponentMap[T];
-        /**
-         * 添加脚本
-         * @param script   脚本路径
-         */
-        addScript(scriptName: string): ScriptComponent;
-        /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
-         *
-         * @param type				类定义
-         * @return                  返回指定类型组件
-         */
-        getComponent<T extends ComponentNames>(type: T): ComponentMap[T];
-        /**
-         * 获取游戏对象上所有指定类型的组件数组
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][];
-        /**
          * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
          *
          * @param type		类定义
@@ -13026,58 +13126,9 @@ declare namespace feng3d {
          */
         getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][];
         /**
-         * 设置子组件的位置
-         * @param component				子组件
-         * @param index				位置索引
-         */
-        setComponentIndex(component: Components, index: number): void;
-        /**
-         * 设置组件到指定位置
-         * @param component		被设置的组件
-         * @param index			索引
-         */
-        setComponentAt(component: Components, index: number): void;
-        /**
-         * 移除组件
-         * @param component 被移除组件
-         */
-        removeComponent(component: Components): void;
-        /**
-         * 获取组件在容器的索引位置
-         * @param component			查询的组件
-         * @return				    组件在容器的索引位置
-         */
-        getComponentIndex(component: Components): number;
-        /**
-         * 移除组件
-         * @param index		要删除的 Component 的子索引。
-         */
-        removeComponentAt(index: number): Component;
-        /**
-         * 交换子组件位置
-         * @param index1		第一个子组件的索引位置
-         * @param index2		第二个子组件的索引位置
-         */
-        swapComponentsAt(index1: number, index2: number): void;
-        /**
-         * 交换子组件位置
-         * @param a		第一个子组件
-         * @param b		第二个子组件
-         */
-        swapComponents(a: Components, b: Components): void;
-        /**
-         * 移除指定类型组件
-         * @param type 组件类型
-         */
-        removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
-        /**
          * 世界包围盒
          */
         get worldBounds(): Box3;
-        /**
-         * 监听对象的所有事件并且传播到所有组件中
-         */
-        private _onAnyListener;
         /**
          * 销毁
          */
@@ -13110,7 +13161,6 @@ declare namespace feng3d {
         /**
          * 组件列表
          */
-        protected _components: Components[];
         protected _children: GameObject[];
         protected _scene: Scene;
         protected _parent: GameObject;
@@ -13122,18 +13172,6 @@ declare namespace feng3d {
         private updateScene;
         private updateChildrenScene;
         private removeChildInternal;
-        /**
-         * 判断是否拥有组件
-         * @param com	被检测的组件
-         * @return		true：拥有该组件；false：不拥有该组件。
-         */
-        private hasComponent;
-        /**
-         * 添加组件到指定位置
-         * @param component		被添加的组件
-         * @param index			插入的位置
-         */
-        private addComponentAt;
         /**
          * 创建指定类型的游戏对象。
          *
