@@ -15767,7 +15767,6 @@ var feng3d;
     }(feng3d.Curve));
     feng3d.EllipseCurve2 = EllipseCurve2;
 })(feng3d || (feng3d = {}));
-/// <reference path="./EllipseCurve2.ts" />
 var feng3d;
 (function (feng3d) {
     var ArcCurve2 = /** @class */ (function (_super) {
@@ -19558,13 +19557,6 @@ var feng3d;
     }());
     feng3d.Shader = Shader;
 })(feng3d || (feng3d = {}));
-/// <reference path="../gl/enums/RenderMode.ts" />
-/// <reference path="../gl/enums/CullFace.ts" />
-/// <reference path="../gl/enums/FrontFace.ts" />
-/// <reference path="../gl/enums/BlendEquation.ts" />
-/// <reference path="../gl/enums/BlendFactor.ts" />
-/// <reference path="../gl/enums/DepthFunc.ts" />
-/// <reference path="../gl/enums/ColorMask.ts" />
 var feng3d;
 (function (feng3d) {
     /**
