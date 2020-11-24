@@ -11219,6 +11219,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    function getAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K): AssetTypeClassMap[K];
+    function setAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K, cls: AssetTypeClassMap[K]): void;
+    interface AssetTypeClassMap {
+    }
+    const assetTypeClassMap: AssetTypeClassMap;
     /**
      * feng3d资源
      */
@@ -11402,6 +11407,9 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         readFile(callback?: (err: Error) => void): void;
+    }
+    interface AssetTypeClassMap {
+        "folder": new () => FolderAsset;
     }
 }
 declare namespace feng3d {

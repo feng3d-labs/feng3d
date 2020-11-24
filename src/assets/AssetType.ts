@@ -1,5 +1,6 @@
 namespace feng3d
 {
+
     /**
      * 资源扩展名
      */

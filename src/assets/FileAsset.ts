@@ -1,5 +1,20 @@
 namespace feng3d
 {
+    export function getAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K)
+    {
+        return assetTypeClassMap[type];
+    }
+
+    export function setAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K, cls: AssetTypeClassMap[K])
+    {
+        assetTypeClassMap[type] = cls;
+    }
+
+    export interface AssetTypeClassMap
+    {
+    }
+    export const assetTypeClassMap: AssetTypeClassMap = <any>{};
+
     /**
      * feng3d资源
      */

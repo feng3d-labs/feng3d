@@ -23966,6 +23966,15 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    function getAssetTypeClass(type) {
+        return feng3d.assetTypeClassMap[type];
+    }
+    feng3d.getAssetTypeClass = getAssetTypeClass;
+    function setAssetTypeClass(type, cls) {
+        feng3d.assetTypeClassMap[type] = cls;
+    }
+    feng3d.setAssetTypeClass = setAssetTypeClass;
+    feng3d.assetTypeClassMap = {};
     /**
      * feng3d资源
      */
@@ -24282,6 +24291,7 @@ var feng3d;
         return FolderAsset;
     }(feng3d.FileAsset));
     feng3d.FolderAsset = FolderAsset;
+    feng3d.setAssetTypeClass("folder", FolderAsset);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

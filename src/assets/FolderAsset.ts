@@ -51,4 +51,10 @@ namespace feng3d
             callback && callback(null);
         }
     }
+
+    export interface AssetTypeClassMap
+    {
+        "folder": new () => FolderAsset;
+    }
+    setAssetTypeClass("folder", FolderAsset);
 }
