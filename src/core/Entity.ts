@@ -306,21 +306,6 @@ namespace feng3d
         }
 
         //------------------------------------------
-        // Static Functions
-        //------------------------------------------
-        /**
-         * 查找指定名称的游戏对象
-         * 
-         * @param name 
-         */
-        static find(name: string)
-        {
-            var gameobjects = Feng3dObject.getObjects(GameObject)
-            var result = gameobjects.filter(v => !v.disposed && (v.name == name));
-            return result[0];
-        }
-
-        //------------------------------------------
         // Protected Properties
         //------------------------------------------
         /**
