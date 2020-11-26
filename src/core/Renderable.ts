@@ -32,8 +32,15 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
         @serialize
-        @watch("_onMaterialChanged")
-        material = Material.getDefault("Default-Material");
+        get material()
+        {
+            return this._material || Material.getDefault("Default-Material");
+        }
+        set material(v)
+        {
+            this._material = v;
+        }
+        private _material: Material;
 
         @oav({ tooltip: "是否投射阴影" })
         @serialize
@@ -167,11 +174,6 @@ namespace feng3d
             }
             this.geometry = this.geometry || Geometry.getDefault("Cube");
             this._onBoundsInvalid();
-        }
-
-        private _onMaterialChanged()
-        {
-            this.material = this.material || Material.getDefault("Default-Material");
         }
 
         protected _updateBounds()

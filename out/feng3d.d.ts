@@ -13437,7 +13437,9 @@ declare namespace feng3d {
         /**
          * 材质
          */
-        material: Material;
+        get material(): Material;
+        set material(v: Material);
+        private _material;
         castShadows: boolean;
         receiveShadows: boolean;
         constructor();
@@ -13483,7 +13485,6 @@ declare namespace feng3d {
         dispose(): void;
         private _lightPicker;
         private _onGeometryChanged;
-        private _onMaterialChanged;
         protected _updateBounds(): void;
         protected _onGetSelfBounds(event: Event<{
             bounds: Box3[];

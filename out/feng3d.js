@@ -23855,6 +23855,27 @@ var feng3d;
             }
             return false;
         }
+    }, 
+    // 处理资源
+    {
+        priority: 0,
+        handler: function (target, source, property, param) {
+            var tpv = target[property];
+            var spv = source[property];
+            if (AssetData.isAssetData(spv)) {
+                // 此处需要反序列化资源完整数据
+                if (property == "__root__") {
+                    return false;
+                }
+                target[property] = AssetData.deserialize(spv);
+                return true;
+            }
+            if (AssetData.assetMap.has(tpv)) {
+                target[property] = param.serialization.deserialize(spv);
+                return true;
+            }
+            return false;
+        }
     });
     feng3d.serialization.differentHandlers.push(
     // 资源
@@ -28387,10 +28408,6 @@ var feng3d;
              * 几何体
              */
             _this.geometry = feng3d.Geometry.getDefault("Cube");
-            /**
-             * 材质
-             */
-            _this.material = feng3d.Material.getDefault("Default-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
             _this._lightPicker = new feng3d.LightPicker(_this);
@@ -28398,6 +28415,19 @@ var feng3d;
         }
         Object.defineProperty(Renderable.prototype, "single", {
             get: function () { return true; },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Renderable.prototype, "material", {
+            /**
+             * 材质
+             */
+            get: function () {
+                return this._material || feng3d.Material.getDefault("Default-Material");
+            },
+            set: function (v) {
+                this._material = v;
+            },
             enumerable: false,
             configurable: true
         });
@@ -28500,9 +28530,6 @@ var feng3d;
             this.geometry = this.geometry || feng3d.Geometry.getDefault("Cube");
             this._onBoundsInvalid();
         };
-        Renderable.prototype._onMaterialChanged = function () {
-            this.material = this.material || feng3d.Material.getDefault("Default-Material");
-        };
         Renderable.prototype._updateBounds = function () {
             this._selfLocalBounds = this.geometry.bounding;
         };
@@ -28516,9 +28543,8 @@ var feng3d;
         ], Renderable.prototype, "geometry", void 0);
         __decorate([
             feng3d.oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } }),
-            feng3d.serialize,
-            feng3d.watch("_onMaterialChanged")
-        ], Renderable.prototype, "material", void 0);
+            feng3d.serialize
+        ], Renderable.prototype, "material", null);
         __decorate([
             feng3d.oav({ tooltip: "是否投射阴影" }),
             feng3d.serialize

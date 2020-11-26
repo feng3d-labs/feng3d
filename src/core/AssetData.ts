@@ -249,6 +249,31 @@ namespace feng3d
                 return false;
             }
         },
+        // 处理资源
+        {
+            priority: 0,
+            handler: function (target, source, property, param)
+            {
+                var tpv = target[property];
+                var spv = source[property];
+                if (AssetData.isAssetData(spv))
+                {
+                    // 此处需要反序列化资源完整数据
+                    if (property == "__root__")
+                    {
+                        return false;
+                    }
+                    target[property] = AssetData.deserialize(spv);
+                    return true;
+                }
+                if (AssetData.assetMap.has(tpv))
+                {
+                    target[property] = param.serialization.deserialize(spv);
+                    return true;
+                }
+                return false;
+            }
+        },
     );
 
     serialization.differentHandlers.push(
