@@ -64,7 +64,7 @@ namespace feng3d
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends AssetData implements IDisposable
+    export class GameObject extends Feng3dObject implements IDisposable
     {
 
         __class__: "feng3d.GameObject";

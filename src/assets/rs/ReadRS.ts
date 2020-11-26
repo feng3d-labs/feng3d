@@ -239,7 +239,7 @@ namespace feng3d
          * 
          * @param type 资源类型
          */
-        getLoadedAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[]
+        getLoadedAssetDatasByType<T extends any>(type: Constructor<T>): T[]
         {
             var assets = AssetData.getAllLoadedAssetDatas();
             return <any>assets.filter(v => v instanceof type);

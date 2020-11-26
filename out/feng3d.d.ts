@@ -10989,6 +10989,10 @@ declare namespace feng3d {
      */
     class Feng3dObject extends EventDispatcher implements IDisposable {
         /**
+         * 名称
+         */
+        name: string;
+        /**
          * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
          */
         hideFlags: HideFlags;
@@ -11057,13 +11061,13 @@ declare namespace feng3d {
          * @param assetId 资源编号
          * @param data 资源数据
          */
-        static addAssetData<T extends AssetData>(assetId: string, data: T): T;
+        static addAssetData<T extends any>(assetId: string, data: T): T;
         /**
          * 删除资源数据
          *
          * @param data 资源数据
          */
-        static deleteAssetData(data: AssetData): void;
+        static deleteAssetData(data: any): void;
         static deleteAssetDataById(assetId: string): void;
         private static _delete;
         /**
@@ -11087,25 +11091,25 @@ declare namespace feng3d {
          *
          * @param object 资源对象
          */
-        static deserialize(object: any): AssetData;
+        static deserialize(object: any): any;
         /**
          * 获取已加载的资源数据
          *
          * @param assetId 资源编号
          */
-        static getLoadedAssetData(assetId: string): AssetData;
+        static getLoadedAssetData(assetId: string): any;
         /**
          * 获取所有已加载资源数据
          */
-        static getAllLoadedAssetDatas(): AssetData[];
+        static getAllLoadedAssetDatas(): any[];
         /**
          * 资源与编号对应表
          */
-        static assetMap: Map<AssetData, string>;
+        static assetMap: Map<any, string>;
         /**
          * 编号与资源对应表
          */
-        static idAssetMap: Map<string, AssetData>;
+        static idAssetMap: Map<string, any>;
     }
 }
 declare namespace feng3d {
@@ -11277,7 +11281,7 @@ declare namespace feng3d {
         /**
          * 资源对象
          */
-        data: AssetData;
+        data: any;
         /**
          * 初始化资源
          */
@@ -11287,11 +11291,11 @@ declare namespace feng3d {
          *
          * @param callback 完成回调，当资源已加载时会立即调用回调，否则在资源加载完成后调用。
          */
-        getAssetData(callback?: (result: feng3d.AssetData) => void): AssetData;
+        getAssetData(callback?: (result: any) => void): any;
         /**
          * 资源已加载时获取资源数据，内部使用
          */
-        protected _getAssetData(): AssetData;
+        protected _getAssetData(): any;
         /**
          * 读取资源
          *
@@ -11511,7 +11515,7 @@ declare namespace feng3d {
          *
          * @param type 资源类型
          */
-        getLoadedAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[];
+        getLoadedAssetDatasByType<T extends any>(type: Constructor<T>): T[];
         /**
          * 获取指定编号资源
          *
@@ -11911,7 +11915,7 @@ declare namespace feng3d {
     /**
      * 纹理信息
      */
-    abstract class TextureInfo extends AssetData implements Texture {
+    abstract class TextureInfo extends Feng3dObject implements Texture {
         /**
          * 纹理类型
          */
@@ -12874,7 +12878,7 @@ declare namespace feng3d {
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    class GameObject extends AssetData implements IDisposable {
+    class GameObject extends Feng3dObject implements IDisposable {
         __class__: "feng3d.GameObject";
         assetType: AssetType;
         /**
@@ -13741,7 +13745,7 @@ declare namespace feng3d {
     /**
      * 几何体
      */
-    class Geometry extends AssetData {
+    class Geometry extends Feng3dObject {
         private preview;
         name: string;
         /**
@@ -15058,7 +15062,7 @@ declare namespace feng3d {
     /**
      * 材质
      */
-    class Material extends AssetData {
+    class Material extends Feng3dObject {
         __class__: "feng3d.Material";
         static create<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>): Material;
         init<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>): this;
@@ -15984,7 +15988,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class AnimationClip extends AssetData {
+    class AnimationClip extends Feng3dObject {
         readonly assetType = AssetType.anim;
         name: string;
         /**

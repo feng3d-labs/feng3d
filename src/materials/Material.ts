@@ -7,7 +7,7 @@ namespace feng3d
     /**
      * 材质
      */
-    export class Material extends AssetData
+    export class Material extends Feng3dObject
     {
         __class__: "feng3d.Material";
 
@@ -166,7 +166,7 @@ namespace feng3d
         {
             var newMaterial = this._defaultMaterials[<any>name] = new Material();
             serialization.setValue(newMaterial, material);
-            serialization.setValue(newMaterial, { name: name, assetId: name, hideFlags: HideFlags.NotEditable });
+            serialization.setValue(newMaterial, { name: name, hideFlags: HideFlags.NotEditable });
             AssetData.addAssetData(name, newMaterial);
         }
 

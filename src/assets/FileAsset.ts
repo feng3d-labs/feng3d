@@ -96,7 +96,7 @@ namespace feng3d
         /**
          * 资源对象
          */
-        data: AssetData;
+        data: any;
 
         /**
          * 初始化资源
@@ -110,7 +110,7 @@ namespace feng3d
          * 
          * @param callback 完成回调，当资源已加载时会立即调用回调，否则在资源加载完成后调用。
          */
-        getAssetData(callback?: (result: feng3d.AssetData) => void)
+        getAssetData(callback?: (result: any) => void)
         {
             if (!this.isLoaded)
             {
@@ -132,7 +132,7 @@ namespace feng3d
         /**
          * 资源已加载时获取资源数据，内部使用
          */
-        protected _getAssetData(): AssetData
+        protected _getAssetData()
         {
             return this.data;
         }

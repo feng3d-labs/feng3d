@@ -90,13 +90,6 @@ namespace feng3d
         }
         set source(v)
         {
-            if (this.assetId)
-            {
-                // 来源于资源
-                console.error(`来源于资源，不可修改！`)
-                return;
-            }
-
             this._source = v;
             if (!v)
             {
@@ -178,8 +171,13 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("white-Texture", Texture2D.white = serialization.setValue(new Texture2D(), { name: "white-Texture", assetId: "white-Texture", noPixels: ImageDatas.white, hideFlags: HideFlags.NotEditable }));
-    AssetData.addAssetData("Default-Texture", Texture2D.default = serialization.setValue(new Texture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
-    AssetData.addAssetData("Default-NormalTexture", Texture2D.defaultNormal = serialization.setValue(new Texture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
-    AssetData.addAssetData("Default-ParticleTexture", Texture2D.defaultParticle = serialization.setValue(new Texture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
+    Texture2D.white = serialization.setValue(new Texture2D(), { name: "white-Texture", noPixels: ImageDatas.white, hideFlags: HideFlags.NotEditable })
+    Texture2D.default = serialization.setValue(new Texture2D(), { name: "Default-Texture", hideFlags: HideFlags.NotEditable })
+    Texture2D.defaultNormal = serialization.setValue(new Texture2D(), { name: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable })
+    Texture2D.defaultParticle = serialization.setValue(new Texture2D(), { name: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable })
+
+    AssetData.addAssetData("white-Texture", Texture2D.white);
+    AssetData.addAssetData("Default-Texture", Texture2D.default);
+    AssetData.addAssetData("Default-NormalTexture", Texture2D.defaultNormal);
+    AssetData.addAssetData("Default-ParticleTexture", Texture2D.defaultParticle);
 }

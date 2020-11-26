@@ -50,11 +50,13 @@ namespace feng3d
          * @param assetId 资源编号
          * @param data 资源数据
          */
-        static addAssetData<T extends AssetData>(assetId: string, data: T)
+        static addAssetData<T extends any>(assetId: string, data: T)
         {
             if (!data) return;
-            if (data.assetId != assetId)
+            if (this.assetMap.has(data) || this.idAssetMap.has(assetId))
+            {
                 console.warn(`同一个材质被保存在多个资源中！`);
+            }
 
             this.assetMap.set(data, assetId);
             this.idAssetMap.set(assetId, data);
@@ -66,7 +68,7 @@ namespace feng3d
          * 
          * @param data 资源数据
          */
-        static deleteAssetData(data: AssetData)
+        static deleteAssetData(data: any)
         {
             if (!data) return;
             console.assert(this.assetMap.has(data));
@@ -150,12 +152,12 @@ namespace feng3d
         /**
          * 资源与编号对应表
          */
-        static assetMap = new Map<AssetData, string>();
+        static assetMap = new Map<any, string>();
 
         /**
          * 编号与资源对应表
          */
-        static idAssetMap = new Map<string, AssetData>();
+        static idAssetMap = new Map<string, any>();
     }
 
     /**

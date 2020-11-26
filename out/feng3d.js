@@ -23687,8 +23687,9 @@ var feng3d;
         AssetData.addAssetData = function (assetId, data) {
             if (!data)
                 return;
-            if (data.assetId != assetId)
+            if (this.assetMap.has(data) || this.idAssetMap.has(assetId)) {
                 console.warn("\u540C\u4E00\u4E2A\u6750\u8D28\u88AB\u4FDD\u5B58\u5728\u591A\u4E2A\u8D44\u6E90\u4E2D\uFF01");
+            }
             this.assetMap.set(data, assetId);
             this.idAssetMap.set(assetId, data);
             return data;
@@ -25072,7 +25073,7 @@ var feng3d;
             feng3d.watch("invalidate")
         ], TextureInfo.prototype, "OFFSCREEN_HEIGHT", void 0);
         return TextureInfo;
-    }(feng3d.AssetData));
+    }(feng3d.Feng3dObject));
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -27776,7 +27777,7 @@ var feng3d;
             feng3d.oav({ component: "OAVComponentList" })
         ], GameObject.prototype, "components", null);
         return GameObject;
-    }(feng3d.AssetData));
+    }(feng3d.Feng3dObject));
     feng3d.GameObject = GameObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -29520,7 +29521,7 @@ var feng3d;
             feng3d.oav()
         ], Geometry.prototype, "scaleV", void 0);
         return Geometry;
-    }(feng3d.AssetData));
+    }(feng3d.Feng3dObject));
     feng3d.Geometry = Geometry;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -32511,11 +32512,6 @@ var feng3d;
             },
             set: function (v) {
                 var _this = this;
-                if (this.assetId) {
-                    // 来源于资源
-                    console.error("\u6765\u6E90\u4E8E\u8D44\u6E90\uFF0C\u4E0D\u53EF\u4FEE\u6539\uFF01");
-                    return;
-                }
                 this._source = v;
                 if (!v) {
                     this._pixels = null;
@@ -32570,10 +32566,14 @@ var feng3d;
         return Texture2D;
     }(feng3d.TextureInfo));
     feng3d.Texture2D = Texture2D;
-    feng3d.AssetData.addAssetData("white-Texture", Texture2D.white = feng3d.serialization.setValue(new Texture2D(), { name: "white-Texture", assetId: "white-Texture", noPixels: ImageDatas.white, hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.AssetData.addAssetData("Default-Texture", Texture2D.default = feng3d.serialization.setValue(new Texture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.AssetData.addAssetData("Default-NormalTexture", Texture2D.defaultNormal = feng3d.serialization.setValue(new Texture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.AssetData.addAssetData("Default-ParticleTexture", Texture2D.defaultParticle = feng3d.serialization.setValue(new Texture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: feng3d.TextureFormat.RGBA, hideFlags: feng3d.HideFlags.NotEditable }));
+    Texture2D.white = feng3d.serialization.setValue(new Texture2D(), { name: "white-Texture", noPixels: ImageDatas.white, hideFlags: feng3d.HideFlags.NotEditable });
+    Texture2D.default = feng3d.serialization.setValue(new Texture2D(), { name: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable });
+    Texture2D.defaultNormal = feng3d.serialization.setValue(new Texture2D(), { name: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable });
+    Texture2D.defaultParticle = feng3d.serialization.setValue(new Texture2D(), { name: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: feng3d.TextureFormat.RGBA, hideFlags: feng3d.HideFlags.NotEditable });
+    feng3d.AssetData.addAssetData("white-Texture", Texture2D.white);
+    feng3d.AssetData.addAssetData("Default-Texture", Texture2D.default);
+    feng3d.AssetData.addAssetData("Default-NormalTexture", Texture2D.defaultNormal);
+    feng3d.AssetData.addAssetData("Default-ParticleTexture", Texture2D.defaultParticle);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32828,7 +32828,8 @@ var feng3d;
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
-    feng3d.AssetData.addAssetData("Default-TextureCube", TextureCube.default = feng3d.serialization.setValue(new TextureCube(), { name: "Default-TextureCube", assetId: "Default-TextureCube", hideFlags: feng3d.HideFlags.NotEditable }));
+    TextureCube.default = feng3d.serialization.setValue(new TextureCube(), { name: "Default-TextureCube", hideFlags: feng3d.HideFlags.NotEditable });
+    feng3d.AssetData.addAssetData("Default-TextureCube", TextureCube.default);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32940,7 +32941,7 @@ var feng3d;
         Material.setDefault = function (name, material) {
             var newMaterial = this._defaultMaterials[name] = new Material();
             feng3d.serialization.setValue(newMaterial, material);
-            feng3d.serialization.setValue(newMaterial, { name: name, assetId: name, hideFlags: feng3d.HideFlags.NotEditable });
+            feng3d.serialization.setValue(newMaterial, { name: name, hideFlags: feng3d.HideFlags.NotEditable });
             feng3d.AssetData.addAssetData(name, newMaterial);
         };
         /**
@@ -32975,7 +32976,7 @@ var feng3d;
             feng3d.watch("_onRenderParamsChanged")
         ], Material.prototype, "renderParams", void 0);
         return Material;
-    }(feng3d.AssetData));
+    }(feng3d.Feng3dObject));
     feng3d.Material = Material;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -35397,7 +35398,7 @@ var feng3d;
             feng3d.serialize
         ], AnimationClip.prototype, "propertyClips", void 0);
         return AnimationClip;
-    }(feng3d.AssetData));
+    }(feng3d.Feng3dObject));
     feng3d.AnimationClip = AnimationClip;
 })(feng3d || (feng3d = {}));
 var feng3d;

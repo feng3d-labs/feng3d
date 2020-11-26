@@ -6,6 +6,11 @@ namespace feng3d
     export class Feng3dObject extends EventDispatcher implements IDisposable
     {
         /**
+         * 名称
+         */
+        name: string;
+
+        /**
          * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
          */
         @serialize
@@ -93,5 +98,5 @@ namespace feng3d
         },
     );
 
-    
+
 }
