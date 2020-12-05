@@ -666,6 +666,7 @@ declare namespace feng3d {
          * @param name 类名称
          */
         getInstanceByName(name: string): any;
+        getInstanceByDefinition(cls: any): any;
         /**
          * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
          */

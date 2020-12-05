@@ -1081,10 +1081,7 @@ var feng3d;
             if (defaultInst)
                 return defaultInst;
             //
-            var cls = this.getDefinitionByName(name);
-            if (!cls)
-                return undefined;
-            defaultInst = this.defaultInstMap[name] = new cls();
+            defaultInst = this.defaultInstMap[name] = this.getInstanceByName(name);
             // 冻结对象，防止被修改
             Object.freeze(defaultInst);
             return defaultInst;
@@ -1096,9 +1093,16 @@ var feng3d;
          */
         ClassUtils.prototype.getInstanceByName = function (name) {
             var cls = this.getDefinitionByName(name);
+            var instance = this.getInstanceByDefinition(cls);
+            return instance;
+        };
+        ClassUtils.prototype.getInstanceByDefinition = function (cls) {
             console.assert(cls);
             if (!cls)
                 return undefined;
+            if (cls["__create__"]) {
+                return cls["__create__"]();
+            }
             return new cls();
         };
         /**
@@ -18402,8 +18406,6 @@ var feng3d;
         return StateCommand;
     }());
 })(feng3d || (feng3d = {}));
-/// <reference path="handle/KeyState.ts" />
-/// <reference path="handle/KeyCapture.ts" />
 var feng3d;
 (function (feng3d) {
     /**
