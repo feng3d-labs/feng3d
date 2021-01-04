@@ -1,3 +1,12 @@
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { RenderAtomic } from "@feng3d/renderer";
+
+import { Component, RegisterComponent } from "../component/Component";
+import { AddComponentMenu } from "../Menu";
+import { Scene } from "../scene/Scene";
+import { TextureCube } from "../textures/TextureCube";
+import { Camera } from "../cameras/Camera";
 
 export interface ComponentMap { SkyBox: SkyBox; }
 

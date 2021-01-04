@@ -1,3 +1,20 @@
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { Color4, Ray3 } from "@feng3d/math";
+import { RenderMode } from "@feng3d/renderer";
+
+import { GameObject } from "../core/GameObject";
+import { RegisterComponent, Component } from "../component/Component";
+import { RunEnvironment } from "../core/RunEnvironment";
+import { Camera } from "../cameras/Camera";
+import { HideFlags } from "../core/HideFlags";
+import { ScenePickCache } from "./ScenePickCache";
+import { DirectionalLight } from "../light/DirectionalLight";
+import { Renderable } from "../core/Renderable";
+import { SkyBox } from "../skybox/SkyBox";
+import { PointLight } from "../light/PointLight";
+import { SpotLight } from "../light/SpotLight";
+import { Behaviour } from "../component/Behaviour";
 
 /**
  * 组件事件

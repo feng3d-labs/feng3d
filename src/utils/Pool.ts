@@ -1,3 +1,4 @@
+import { Constructor } from "../core/GameObject";
 
 /**
  * 对象池

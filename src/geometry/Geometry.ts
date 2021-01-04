@@ -1,3 +1,16 @@
+import { Event } from '@feng3d/eventsystem';
+import { oav } from '@feng3d/objectview';
+import { Matrix4x4, Box3, Ray3 } from '@feng3d/math';
+import { Attribute, CullFace, RenderAtomic, Index, Attributes } from '@feng3d/renderer';
+import { serialize, serialization } from '@feng3d/serialization';
+import { gPartial } from '@feng3d/polyfill';
+
+import { Feng3dObject } from '../core/Feng3dObject';
+import { AssetType } from '../assets/AssetType';
+import { geometryUtils } from './GeometryUtils';
+import { CustomGeometry } from './CustomGeometry';
+import { HideFlags } from '../core/HideFlags';
+import { AssetData } from '../core/AssetData';
 
 export interface GeometryTypes { }
 

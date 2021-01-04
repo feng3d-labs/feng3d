@@ -1,3 +1,16 @@
+import { serialize, serialization } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { Color3 } from "@feng3d/math";
+import { BlendFactor } from "@feng3d/renderer";
+
+import { Behaviour } from "../component/Behaviour";
+import { LightType } from "./LightType";
+import { ShadowType } from "./shadow/ShadowType";
+import { Camera } from "../cameras/Camera";
+import { FrameBufferObject } from "../render/FrameBufferObject";
+import { GameObject } from "../core/GameObject";
+import { Scene } from "../scene/Scene";
+import { Material } from "../materials/Material";
 
 /**
  * 灯光

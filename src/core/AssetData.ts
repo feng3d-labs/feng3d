@@ -1,3 +1,9 @@
+import { serialize, serialization } from "@feng3d/serialization";
+import { classUtils, CLASS_KEY } from "@feng3d/polyfill";
+
+import { Feng3dObject } from "./Feng3dObject";
+import { rs } from "../assets/rs/ReadRS";
+import { AssetType } from "../assets/AssetType";
 
 /**
  * 资源数据

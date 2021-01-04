@@ -1,3 +1,6 @@
+import { Geometry } from "../geometry/Geometry";
+import { geometryUtils } from "../geometry/GeometryUtils";
+import { GameObject } from "../core/GameObject";
 
 export interface GeometryTypes { QuadGeometry: QuadGeometry }
 

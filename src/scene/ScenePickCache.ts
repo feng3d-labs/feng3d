@@ -1,3 +1,6 @@
+import { Scene } from "./Scene";
+import { Camera } from "../cameras/Camera";
+import { Renderable } from "../core/Renderable";
 
 /**
  * 场景拾取缓存

@@ -1,3 +1,13 @@
+import { watcher } from "@feng3d/watcher";
+import { Event } from "@feng3d/eventsystem";
+import { oav } from '@feng3d/objectview';
+import { serialize } from '@feng3d/serialization';
+import { Vector3 } from '@feng3d/math';
+
+import { AddComponentMenu } from '../Menu';
+import { RegisterComponent, Component } from "../component/Component";
+import { GameObject } from "./GameObject";
+import { ticker } from '../utils/Ticker';
 
 export interface GameObjectEventMap
 {

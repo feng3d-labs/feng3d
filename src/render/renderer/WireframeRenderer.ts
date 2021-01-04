@@ -1,3 +1,11 @@
+import { RenderAtomic, RenderMode, GL, Index, Shader } from "@feng3d/renderer";
+import { Color4 } from "@feng3d/math";
+import { lazy } from "@feng3d/polyfill";
+
+import { Camera } from "../../cameras/Camera";
+import { Scene } from "../../scene/Scene";
+import { WireframeComponent } from "../../component/WireframeComponent";
+import { Renderable } from "../../core/Renderable";
 
 /**
  * 线框渲染器

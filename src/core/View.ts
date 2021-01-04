@@ -1,7 +1,19 @@
-interface HTMLCanvasElement
-{
-    gl: feng3d.GL;
-}
+import { serialization } from "@feng3d/serialization";
+import { GL } from "@feng3d/renderer";
+import { Vector2, Rectangle, Vector3, Ray3 } from "@feng3d/math";
+import { windowEventProxy } from "@feng3d/shortcut";
+
+import { GameObject } from "./GameObject";
+import { Feng3dObject } from "./Feng3dObject";
+import { Camera } from "../cameras/Camera";
+import { Scene } from "../scene/Scene";
+import { Mouse3DManager, WindowMouseInput } from "./Mouse3DManager";
+import { ticker } from "../utils/Ticker";
+import { wireframeRenderer } from "../render/renderer/WireframeRenderer";
+import { outlineRenderer } from "../render/renderer/OutlineRenderer";
+import { forwardRenderer } from "../render/renderer/ForwardRenderer";
+import { shadowRenderer } from "../render/renderer/ShadowRenderer";
+import { skyboxRenderer } from "../skybox/SkyboxRenderer";
 
 /**
  * 视图
@@ -88,7 +100,7 @@ export class View extends Feng3dObject
             canvas.style.top = "0px";
             canvas.style.width = "100%";
             canvas.style.height = "100%";
-            document.body.appendChild(canvas);
+            document.body.appendChild(<any>canvas);
         }
         console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
 

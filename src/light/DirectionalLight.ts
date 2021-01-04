@@ -1,3 +1,15 @@
+import { Box3, Vector3 } from "@feng3d/math";
+import { serialization } from "@feng3d/serialization";
+
+import { AddComponentMenu } from "../Menu";
+import { RegisterComponent } from "../component/Component";
+import { Light } from "./Light";
+import { LightType } from "./LightType";
+import { OrthographicLens } from "../cameras/lenses/OrthographicLens";
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
+import { Renderable } from "../core/Renderable";
+import { GameObject } from "../core/GameObject";
 
 export interface ComponentMap { DirectionalLight: DirectionalLight; }
 

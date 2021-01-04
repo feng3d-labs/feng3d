@@ -1,3 +1,6 @@
+import { CylinderGeometry } from "./CylinderGeometry";
+import { Geometry } from "../geometry/Geometry";
+import { GameObject } from "../core/GameObject";
 
 /**
  * 圆锥体

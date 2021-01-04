@@ -1,6 +1,8 @@
 import { serialize } from "@feng3d/serialization";
 import { oav } from "@feng3d/objectview";
 
+import {Renderable} from '../../core/Renderable'
+
 export interface ComponentMap { SkinnedMeshRenderer: SkinnedMeshRenderer }
 
 @RegisterComponent()

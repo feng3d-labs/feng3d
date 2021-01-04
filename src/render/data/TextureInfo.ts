@@ -1,3 +1,13 @@
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { watch } from "@feng3d/watcher";
+import { TextureFormat, TextureDataType, TextureMagFilter, TextureMinFilter, TextureWrap, Texture, TextureType } from "@feng3d/renderer";
+import { Vector2 } from "@feng3d/math";
+
+import { imageDatas } from "../../textures/Texture2D";
+import { Feng3dObject } from "../../core/Feng3dObject";
+import { dataTransform } from "../../utils/DataTransform";
+
 /**
  * 纹理信息
  */

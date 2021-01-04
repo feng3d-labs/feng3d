@@ -1,3 +1,7 @@
+import { RenderAtomic, CullFace, Shader, GL } from "@feng3d/renderer";
+
+import { Scene } from "../../scene/Scene";
+import { Camera } from "../../cameras/Camera";
 
 /**
  * 轮廓渲染器

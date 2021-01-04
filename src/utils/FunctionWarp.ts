@@ -1,3 +1,5 @@
+import { FunctionPropertyNames } from "@feng3d/polyfill";
+import { uuid } from "./Uuid";
 
 type Wraps<T, K extends keyof T> = {
     [P in K]: { space: T, funcName: K, oldPropertyDescriptor: PropertyDescriptor, original: Function, funcs: Function[] };

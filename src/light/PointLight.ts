@@ -1,3 +1,13 @@
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
+import { Vector2 } from "@feng3d/math";
+
+import { Light } from "./Light";
+import { RegisterComponent } from "../component/Component";
+import { AddComponentMenu } from "../Menu";
+import { LightType } from "./LightType";
+import { PerspectiveLens } from "../cameras/lenses/PerspectiveLens";
+import { GameObject } from "../core/GameObject";
 
 
 export interface ComponentMap { PointLight: PointLight; }

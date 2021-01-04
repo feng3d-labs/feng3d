@@ -1,3 +1,11 @@
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { Color4, Color3 } from "@feng3d/math";
+import { shaderConfig } from "@feng3d/renderer";
+
+import { Texture2D } from "../textures/Texture2D";
+import { TextureCube } from "../textures/TextureCube";
+import { Material } from "./Material";
 
 /**
  * 雾模式

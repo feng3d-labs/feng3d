@@ -1,3 +1,12 @@
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
+import { watch } from "@feng3d/watcher";
+
+import { LightType } from "./LightType";
+import { Light } from "./Light";
+import { RegisterComponent } from "../component/Component";
+import { PerspectiveLens } from "../cameras/lenses/PerspectiveLens";
+import { GameObject } from "../core/GameObject";
 
 
 export interface ComponentMap { SpotLight: SpotLight; }

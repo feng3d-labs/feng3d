@@ -1,3 +1,9 @@
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { Color4 } from "@feng3d/math";
+import { shaderConfig } from "@feng3d/renderer";
+
+import { Material } from "./Material";
 
 export interface UniformsTypes { segment: SegmentUniforms }
 

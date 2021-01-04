@@ -1,3 +1,9 @@
+import { GL, Uniforms } from "@feng3d/renderer";
+import { LazyObject, lazy } from "@feng3d/polyfill";
+import { Vector4, defaultRotationOrder } from "@feng3d/math";
+
+import { Camera } from "../../cameras/Camera";
+import { Scene } from "../../scene/Scene";
 
 /**
  * 前向渲染器

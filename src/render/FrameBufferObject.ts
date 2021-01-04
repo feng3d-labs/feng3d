@@ -1,3 +1,7 @@
+import { watch } from "@feng3d/watcher";
+import { FrameBuffer, RenderBuffer, GL, Texture } from "@feng3d/renderer";
+
+import { RenderTargetTexture2D } from "../textures/RenderTargetTexture2D";
 
 /**
  * 帧缓冲对象

@@ -1,3 +1,10 @@
+import { EventDispatcher } from "@feng3d/eventsystem";
+import { Rectangle } from "@feng3d/math";
+import { GL, RenderAtomic } from "@feng3d/renderer";
+import { windowEventProxy } from "@feng3d/shortcut";
+
+import { GameObject } from "../../core/GameObject";
+import { Renderable } from "../../core/Renderable";
 
 export var mouseRenderer: MouseRenderer;
 

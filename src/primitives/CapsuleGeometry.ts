@@ -1,3 +1,9 @@
+import { serialize } from "@feng3d/serialization";
+import { watch } from "@feng3d/watcher";
+import { oav } from "@feng3d/objectview";
+
+import { Geometry } from "../geometry/Geometry";
+import { GameObject } from "../core/GameObject";
 
 export interface GeometryTypes { CapsuleGeometry: CapsuleGeometry }
 

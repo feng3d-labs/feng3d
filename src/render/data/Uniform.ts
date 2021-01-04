@@ -1,3 +1,11 @@
+import { Vector4, Matrix4x4, Vector3, Color4, Vector2, Color3, Matrix3x3 } from "@feng3d/math";
+
+import { Texture2D } from "../../textures/Texture2D";
+import { TextureCube } from "../../textures/TextureCube";
+import { PointLight } from "../../light/PointLight";
+import { SpotLight } from "../../light/SpotLight";
+import { DirectionalLight } from "../../light/DirectionalLight";
+import { LightType } from "../../light/LightType";
 
 export interface Uniforms
 {

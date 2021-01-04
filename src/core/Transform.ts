@@ -1,3 +1,12 @@
+import { watcher } from "@feng3d/watcher";
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { Vector3, Matrix4x4, Box3, Ray3, Quaternion } from "@feng3d/math";
+import { RenderAtomic } from "@feng3d/renderer";
+
+import { RegisterComponent, Component } from "../component/Component";
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
 
 export interface GameObjectEventMap
 {

@@ -1,3 +1,9 @@
+import { EventDispatcher } from "@feng3d/eventsystem";
+import { IDisposable } from "@feng3d/polyfill";
+import { serialize, serialization } from "@feng3d/serialization";
+
+import { HideFlags } from "./HideFlags";
+import { Constructor } from "./GameObject";
 
 /**
  * 所有feng3d对象的基类

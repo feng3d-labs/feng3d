@@ -1,3 +1,4 @@
+import { IEventDispatcher, EventDispatcher } from "@feng3d/eventsystem";
 
 /**
  * 全局事件

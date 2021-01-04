@@ -1,3 +1,14 @@
+import { serialize, serialization } from "@feng3d/serialization";
+import { watch } from "@feng3d/watcher";
+import { oav } from "@feng3d/objectview";
+import { classUtils } from "@feng3d/polyfill";
+
+import { Behaviour } from "../component/Behaviour";
+import { AddComponentMenu } from "../Menu";
+import { RegisterComponent } from "../component/Component";
+import { RunEnvironment } from "./RunEnvironment";
+import { Script } from "./Script";
+import { globalDispatcher } from "../event/GlobalDispatcher";
 
 
 export interface ComponentMap { ScriptComponent: ScriptComponent; }

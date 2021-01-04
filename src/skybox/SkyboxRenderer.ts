@@ -1,3 +1,8 @@
+import { RenderAtomic, Attribute, Index, CullFace, Shader, GL } from "@feng3d/renderer";
+
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
+import { SkyBox } from "./SkyBox";
 
 /**
  * 天空盒渲染器

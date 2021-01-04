@@ -1,3 +1,13 @@
+import { watch } from "@feng3d/watcher";
+import { Event, EventDispatcher } from "@feng3d/eventsystem";
+import { Lazy, lazy } from "@feng3d/polyfill";
+import { Rectangle } from "@feng3d/math";
+import { windowEventProxy } from "@feng3d/shortcut";
+
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
+import { raycaster } from "../pick/Raycaster";
+import { GameObject } from "./GameObject";
 
 /**
  * 鼠标事件管理

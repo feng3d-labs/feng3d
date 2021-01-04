@@ -1,3 +1,6 @@
+import { serialize } from "@feng3d/serialization";
+
+import { Geometry } from "./Geometry";
 
 export interface GeometryTypes { CustomGeometry: CustomGeometry }
 

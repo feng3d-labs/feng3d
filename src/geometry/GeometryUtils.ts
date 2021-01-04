@@ -1,3 +1,5 @@
+import { Matrix4x4, Vector3, Ray3, Vector2, Box3 } from "@feng3d/math";
+import { CullFace } from "@feng3d/renderer";
 
 export var geometryUtils: GeometryUtils;
 export class GeometryUtils 

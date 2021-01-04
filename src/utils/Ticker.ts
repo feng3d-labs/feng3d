@@ -1,3 +1,4 @@
+import { Lazy, lazy } from "@feng3d/polyfill";
 
 /**
  * 心跳计时器

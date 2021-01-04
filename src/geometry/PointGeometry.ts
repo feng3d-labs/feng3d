@@ -1,3 +1,9 @@
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { watch } from "@feng3d/watcher";
+import { Vector3, Color4, Vector2 } from "@feng3d/math";
+
+import { Geometry } from "./Geometry";
 
 
 export interface GeometryTypes { PointGeometry: PointGeometry }

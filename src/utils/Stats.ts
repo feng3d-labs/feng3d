@@ -1,3 +1,5 @@
+import { ticker } from "./Ticker";
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */

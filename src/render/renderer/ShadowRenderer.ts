@@ -1,3 +1,14 @@
+import { GL, Shader, RenderAtomic } from "@feng3d/renderer";
+import { Rectangle, Vector3 } from "@feng3d/math";
+
+import { Scene } from "../../scene/Scene";
+import { Camera } from "../../cameras/Camera";
+import { ShadowType } from "../../light/shadow/ShadowType";
+import { SpotLight } from "../../light/SpotLight";
+import { FrameBufferObject } from "../FrameBufferObject";
+import { PointLight } from "../../light/PointLight";
+import { DirectionalLight } from "../../light/DirectionalLight";
+import { Renderable } from "../../core/Renderable";
 
 
 /**

@@ -1,3 +1,11 @@
+import { serialize, serialization } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { watch } from "@feng3d/watcher";
+import { Vector3, Color4 } from "@feng3d/math";
+
+import { Geometry } from "./Geometry";
+import { GameObject } from "../core/GameObject";
+import { Material } from "../materials/Material";
 
 export interface GeometryTypes { SegmentGeometry: SegmentGeometry }
 

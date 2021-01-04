@@ -1,3 +1,6 @@
+import { Box3 } from "@feng3d/math";
+
+import { Component, RegisterComponent } from "../component/Component";
 
 export interface GameObjectEventMap
 {

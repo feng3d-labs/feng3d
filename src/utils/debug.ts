@@ -1,3 +1,4 @@
+import { functionwrap } from "./FunctionWarp";
 
 /**
  * 调试工具

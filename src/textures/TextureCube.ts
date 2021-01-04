@@ -1,3 +1,15 @@
+import { Event } from '@feng3d/eventsystem';
+import { TextureType } from '@feng3d/renderer';
+import { oav } from '@feng3d/objectview';
+import { serialize, serialization } from '@feng3d/serialization';
+import { watch } from '@feng3d/watcher';
+import { fs } from '@feng3d/filesystem';
+
+import { TextureInfo } from '../render/data/TextureInfo';
+import { AssetType } from '../assets/AssetType';
+import { Texture2D, ImageDatas } from './Texture2D';
+import { AssetData } from '../core/AssetData';
+import { HideFlags } from '../core/HideFlags';
 
 export interface TextureCubeEventMap
 {

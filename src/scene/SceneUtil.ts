@@ -1,3 +1,6 @@
+import { Scene } from "./Scene";
+import { Camera } from "../cameras/Camera";
+import { Renderable } from "../core/Renderable";
 
 /**
  * 用于处理从场景中获取特定数据

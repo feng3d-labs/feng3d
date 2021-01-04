@@ -1,3 +1,12 @@
+import { RenderAtomic } from '@feng3d/renderer';
+import { Matrix4x4 } from '@feng3d/math';
+
+import { Renderable } from '../../core/Renderable';
+import { PointLight } from '../PointLight';
+import { DirectionalLight } from '../DirectionalLight';
+import { SpotLight } from '../SpotLight';
+import { Texture2D } from '../../textures/Texture2D';
+import { ShadowType } from '../shadow/ShadowType';
 
 export class LightPicker
 {

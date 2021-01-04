@@ -1,3 +1,5 @@
+import { watch } from "@feng3d/watcher";
+import { Texture2D } from "./Texture2D";
 
 /**
  * 2D纹理

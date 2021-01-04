@@ -1,3 +1,7 @@
+import { watch } from "@feng3d/watcher";
+import { TextureFormat, TextureMagFilter, TextureMinFilter } from "@feng3d/renderer";
+
+import { Texture2D } from "./Texture2D";
 
 /**
  * 渲染目标纹理

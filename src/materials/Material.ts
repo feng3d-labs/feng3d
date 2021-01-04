@@ -1,3 +1,16 @@
+import { gPartial } from "@feng3d/polyfill";
+import { RenderParams, RenderAtomic, shaderConfig, Shader } from "@feng3d/renderer";
+import { serialization, serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { watch } from "@feng3d/watcher";
+
+import { Feng3dObject } from "../core/Feng3dObject";
+import { StandardUniforms } from "./StandardMaterial";
+import { globalDispatcher } from "../event/GlobalDispatcher";
+import { Texture2D } from "../textures/Texture2D";
+import { TextureCube } from "../textures/TextureCube";
+import { AssetData } from "../core/AssetData";
+import { HideFlags } from "../core/HideFlags";
 
 export interface UniformsTypes { }
 export type ShaderNames = keyof UniformsTypes;
