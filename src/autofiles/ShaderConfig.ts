@@ -1,5 +1,4 @@
-namespace feng3d
-{
+
 feng3d.shaderConfig = {
 	"shaders": {
 		"color": {
@@ -111,5 +110,4 @@ feng3d.shaderConfig = {
 		"worldposition_pars_vert": "uniform mat4 u_modelMatrix;\r\n\r\nvarying vec3 v_worldPosition;",
 		"worldposition_vert": "//获取全局坐标\r\nvec4 worldPosition = u_modelMatrix * position;\r\n//输出全局坐标\r\nv_worldPosition = worldPosition.xyz;"
 	}
-}
 }

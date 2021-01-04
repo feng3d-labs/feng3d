@@ -1,28 +1,26 @@
-namespace feng3d
+
+export interface GeometryTypes { CustomGeometry: CustomGeometry }
+
+export class CustomGeometry extends Geometry
 {
-    export interface GeometryTypes { CustomGeometry: CustomGeometry }
+    __class__: "feng3d.CustomGeometry";
 
-    export class CustomGeometry extends Geometry
+    /**
+     * 顶点索引缓冲
+     */
+    @serialize
+    indices: number[];
+
+    /**
+     * 属性数据列表
+     */
+    @serialize
+    get attributes()
     {
-        __class__: "feng3d.CustomGeometry";
-
-        /**
-         * 顶点索引缓冲
-         */
-        @serialize
-        indices: number[];
-
-        /**
-         * 属性数据列表
-         */
-        @serialize
-        get attributes()
-        {
-            return this._attributes;
-        }
-        set attributes(v)
-        {
-            this._attributes = v;
-        }
+        return this._attributes;
+    }
+    set attributes(v)
+    {
+        this._attributes = v;
     }
 }

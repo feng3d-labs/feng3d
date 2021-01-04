@@ -1,17 +1,15 @@
-namespace feng3d
+
+/**
+ * 摄像机投影类型
+ */
+export enum Projection
 {
     /**
-     * 摄像机投影类型
+     * 透视投影
      */
-    export enum Projection
-    {
-        /**
-         * 透视投影
-         */
-        Perspective,
-        /**
-         * 正交投影
-         */
-        Orthographic,
-    }
+    Perspective,
+    /**
+     * 正交投影
+     */
+    Orthographic,
 }

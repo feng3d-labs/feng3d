@@ -1,41 +1,39 @@
-namespace feng3d
+
+export interface GeometryTypes { QuadGeometry: QuadGeometry }
+
+/**
+ * 四边形面皮几何体
+ */
+export class QuadGeometry extends Geometry
 {
-    export interface GeometryTypes { QuadGeometry: QuadGeometry }
+    __class__: "feng3d.QuadGeometry";
 
-    /**
-     * 四边形面皮几何体
-     */
-    export class QuadGeometry extends Geometry
+    constructor()
     {
-        __class__: "feng3d.QuadGeometry";
+        super();
+        var size = 0.5;
 
-        constructor()
-        {
-            super();
-            var size = 0.5;
+        this.positions = [-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0];
+        this.uvs = [0, 0, 1, 0, 1, 1, 0, 1];
+        this.indices = [0, 1, 2, 0, 2, 3];
 
-            this.positions = [-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0];
-            this.uvs = [0, 0, 1, 0, 1, 1, 0, 1];
-            this.indices = [0, 1, 2, 0, 2, 3];
-
-            this.normals = geometryUtils.createVertexNormals(this.indices, this.positions, true);
-            this.tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, true)
-        }
+        this.normals = geometryUtils.createVertexNormals(this.indices, this.positions, true);
+        this.tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, true)
     }
+}
 
-    export interface DefaultGeometry
-    {
-        Quad: QuadGeometry;
-    }
-    Geometry.setDefault("Quad", new QuadGeometry());
+export interface DefaultGeometry
+{
+    Quad: QuadGeometry;
+}
+Geometry.setDefault("Quad", new QuadGeometry());
 
-    GameObject.registerPrimitive("Quad", (g) =>
-    {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Quad");
-    });
+GameObject.registerPrimitive("Quad", (g) =>
+{
+    g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Quad");
+});
 
-    export interface PrimitiveGameObject
-    {
-        Quad: GameObject;
-    }
+export interface PrimitiveGameObject
+{
+    Quad: GameObject;
 }

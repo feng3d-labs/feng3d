@@ -1,23 +1,21 @@
-namespace feng3d
+
+export class AnimationClip extends Feng3dObject
 {
-    export class AnimationClip extends Feng3dObject
-    {
-        readonly assetType = AssetType.anim;
+    readonly assetType = AssetType.anim;
 
-        @oav()
-        @serialize
-        name: string;
-        /**
-         * 动画时长，单位ms
-         */
-        @serialize
-        length: number;
+    @oav()
+    @serialize
+    name: string;
+    /**
+     * 动画时长，单位ms
+     */
+    @serialize
+    length: number;
 
-        @oav()
-        @serialize
-        loop = true;
+    @oav()
+    @serialize
+    loop = true;
 
-        @serialize
-        propertyClips: PropertyClip[];
-    }
+    @serialize
+    propertyClips: PropertyClip[];
 }
