@@ -1,3 +1,4 @@
+import { GameObjectEventMap } from "../core/GameObject";
 
 /**
  * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。

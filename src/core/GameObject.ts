@@ -1,3 +1,18 @@
+import { Event } from "@feng3d/eventsystem";
+import { IDisposable } from "@feng3d/polyfill";
+import { serialize, serialization } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { Box3 } from "@feng3d/math";
+
+import { MouseEventMap } from "./Mouse3DManager";
+import { Component, ComponentNames, ComponentMap, componentMap, Components } from "../component/Component";
+import { Geometry } from "../geometry/Geometry";
+import { Feng3dObject } from "./Feng3dObject";
+import { AssetType } from "../assets/AssetType";
+import { Transform } from "./Transform";
+import { BoundingBox } from "./BoundingBox";
+import { ScriptComponent } from "./ScriptComponent";
+import { Scene } from "../scene/Scene";
 
 export type Constructor<T> = (new (...args) => T);
 

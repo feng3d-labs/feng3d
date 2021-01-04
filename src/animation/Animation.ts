@@ -1,3 +1,12 @@
+import { watch } from "@feng3d/watcher";
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+
+import { AddComponentMenu } from "../Menu";
+import { RegisterComponent } from "../component/Component";
+import { Behaviour } from "../component/Behaviour";
+import { AnimationClip } from "./AnimationClip";
+import { PropertyClip, PropertyClipPathItemType } from "./PropertyClip";
 
 
 export interface ComponentMap { Animation: Animation; }

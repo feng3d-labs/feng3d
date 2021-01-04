@@ -1,3 +1,17 @@
+import { RenderAtomic } from "@feng3d/renderer";
+import { serialization } from "@feng3d/serialization";
+import { Vector3, Matrix4x4, Plane, Vector4 } from "@feng3d/math";
+
+import { AddComponentMenu } from "../Menu";
+import { RegisterComponent } from "../component/Component";
+import { Geometry } from "../geometry/Geometry";
+import { Renderable } from "../core/Renderable";
+import { Material } from "../materials/Material";
+import { WaterUniforms } from "./WaterMaterial";
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
+import { FrameBufferObject } from "../render/FrameBufferObject";
+import { GameObject } from "../core/GameObject";
 
 
 export interface ComponentMap { Water: Water }
@@ -22,7 +36,7 @@ export class Water extends Renderable
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
-        var uniforms = <feng3d.WaterUniforms>this.material.uniforms;
+        var uniforms = <WaterUniforms>this.material.uniforms;
         var sun = this.gameObject.scene.activeDirectionalLights[0];
         if (sun)
         {

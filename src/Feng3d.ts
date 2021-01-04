@@ -1,3 +1,4 @@
+import { CoordinateSystem, RotationOrder, coordinateSystem, defaultRotationOrder } from "@feng3d/math";
 
 /**
  * 版本号

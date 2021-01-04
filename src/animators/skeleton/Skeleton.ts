@@ -6,6 +6,9 @@
 // export class Skeleton
 // {
 
+import { serialize } from "@feng3d/serialization";
+import { Matrix4x4 } from "@feng3d/math";
+
 // }
 
 /**

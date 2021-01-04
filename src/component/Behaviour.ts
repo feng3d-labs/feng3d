@@ -1,3 +1,8 @@
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+
+import { Component, RegisterComponent } from "./Component";
+import { RunEnvironment } from "../core/RunEnvironment";
 
 export interface ComponentMap { Behaviour: Behaviour; }
 

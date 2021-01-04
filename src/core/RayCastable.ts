@@ -1,3 +1,7 @@
+import { Box3, Ray3 } from "@feng3d/math";
+import { RegisterComponent } from "../component/Component";
+import { Behaviour } from "../component/Behaviour";
+import { PickingCollisionVO } from "../pick/Raycaster";
 
 
 export interface ComponentMap { RayCastable: RayCastable; }

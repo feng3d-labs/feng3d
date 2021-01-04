@@ -1,3 +1,18 @@
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
+import { RenderAtomic } from "@feng3d/renderer";
+import { Event } from "@feng3d/eventsystem";
+
+import { RayCastable } from "./RayCastable";
+import { RegisterComponent } from "../component/Component";
+import { watch } from "@feng3d/watcher";
+import { GeometryLike, Geometry } from "../geometry/Geometry";
+import { Material } from "../materials/Material";
+import { LightPicker } from "../light/pickers/LightPicker";
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
+import { Ray3, Vector3, Box3 } from "@feng3d/math";
+import { PickingCollisionVO } from "../pick/Raycaster";
 
 
 export interface ComponentMap { Renderable: Renderable; }

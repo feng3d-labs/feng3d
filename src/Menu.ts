@@ -1,3 +1,5 @@
+import { Components, ComponentNames } from "./component/Component";
+import { Constructor } from "./core/GameObject";
 
 /**
  * 添加组件菜单
