@@ -26,8 +26,6 @@ export interface GameObjectEventMap
     addComponentToScene: Component;
 }
 
-export interface ComponentMap { Scene: Scene; }
-
 /**
  * 3D场景
  */

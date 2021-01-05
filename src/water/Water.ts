@@ -14,8 +14,6 @@ import { FrameBufferObject } from "../render/FrameBufferObject";
 import { GameObject } from "../core/GameObject";
 
 
-export interface ComponentMap { Water: Water }
-
 /**
  * The Water component renders the terrain.
  */

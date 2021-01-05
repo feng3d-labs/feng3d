@@ -4,8 +4,6 @@ import { oav } from "@feng3d/objectview";
 import { Component, RegisterComponent } from "./Component";
 import { RunEnvironment } from "../core/RunEnvironment";
 
-export interface ComponentMap { Behaviour: Behaviour; }
-
 /**
  * 行为
  * 

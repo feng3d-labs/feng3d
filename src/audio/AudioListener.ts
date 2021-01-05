@@ -2,7 +2,6 @@
 export var audioCtx: AudioContext;
 export var globalGain: GainNode;
 
-export interface ComponentMap { AudioListener: AudioListener; }
 /**
  * 声音监听器
  */

@@ -3,8 +3,6 @@ import { oav } from "@feng3d/objectview";
 import { Color4 } from "@feng3d/math";
 import { shaderConfig } from "@feng3d/renderer";
 
-export interface UniformsTypes { color: ColorUniforms }
-
 export class ColorUniforms
 {
     __class__: "feng3d.ColorUniforms";

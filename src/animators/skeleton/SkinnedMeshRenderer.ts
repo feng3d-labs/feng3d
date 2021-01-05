@@ -3,8 +3,6 @@ import { oav } from "@feng3d/objectview";
 
 import {Renderable} from '../../core/Renderable'
 
-export interface ComponentMap { SkinnedMeshRenderer: SkinnedMeshRenderer }
-
 @RegisterComponent()
 export class SkinnedMeshRenderer extends Renderable
 {

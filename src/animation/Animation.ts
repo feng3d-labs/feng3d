@@ -9,9 +9,6 @@ import { AnimationClip } from "./AnimationClip";
 import { PropertyClip, PropertyClipPathItemType } from "./PropertyClip";
 
 
-export interface ComponentMap { Animation: Animation; }
-
-
 @AddComponentMenu("Animator/Animation")
 @RegisterComponent()
 export class Animation extends Behaviour

@@ -8,8 +8,6 @@ import { Scene } from "../scene/Scene";
 import { TextureCube } from "../textures/TextureCube";
 import { Camera } from "../cameras/Camera";
 
-export interface ComponentMap { SkyBox: SkyBox; }
-
 /**
  * 天空盒组件
  */

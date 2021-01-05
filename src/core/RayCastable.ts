@@ -4,8 +4,6 @@ import { Behaviour } from "../component/Behaviour";
 import { PickingCollisionVO } from "../pick/Raycaster";
 
 
-export interface ComponentMap { RayCastable: RayCastable; }
-
 /**
  * 可射线捕获
  */

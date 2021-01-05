@@ -6,8 +6,6 @@ import { shaderConfig } from "@feng3d/renderer";
 import { Texture2D } from "../textures/Texture2D";
 import { Material } from "../materials/Material";
 
-export interface UniformsTypes { water: WaterUniforms }
-
 export class WaterUniforms
 {
     __class__: "feng3d.WaterUniforms";
@@ -53,10 +51,5 @@ export class WaterUniforms
 }
 
 shaderConfig.shaders["water"].cls = WaterUniforms;
-
-export interface DefaultMaterial
-{
-    "Water-Material": Material;
-}
 
 Material.setDefault("Water-Material", { shaderName: "water" });

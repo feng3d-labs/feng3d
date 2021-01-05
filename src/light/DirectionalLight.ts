@@ -11,8 +11,6 @@ import { Camera } from "../cameras/Camera";
 import { Renderable } from "../core/Renderable";
 import { GameObject } from "../core/GameObject";
 
-export interface ComponentMap { DirectionalLight: DirectionalLight; }
-
 /**
  * 方向光源
  */

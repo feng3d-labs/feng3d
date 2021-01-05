@@ -10,8 +10,6 @@ import { PerspectiveLens } from "../cameras/lenses/PerspectiveLens";
 import { GameObject } from "../core/GameObject";
 
 
-export interface ComponentMap { PointLight: PointLight; }
-
 /**
  * 点光源
  */

@@ -25,8 +25,6 @@ export interface GameObjectEventMap
     scenetransformChanged: Transform;
 }
 
-export interface ComponentMap { Transform: Transform; }
-
 /**
  * 变换
  * 

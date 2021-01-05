@@ -5,7 +5,6 @@ import { shaderConfig } from "@feng3d/renderer";
 
 import { Texture2D } from "../textures/Texture2D";
 
-export interface UniformsTypes { texture: TextureUniforms }
 export class TextureUniforms
 {
     __class__: "feng3d.TextureUniforms";

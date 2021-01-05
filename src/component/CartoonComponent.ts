@@ -1,6 +1,12 @@
+import { RenderAtomic } from "@feng3d/renderer";
+import { serialize } from "@feng3d/serialization";
+import { oav } from "@feng3d/objectview";
+import { Vector4, Color4 } from "@feng3d/math";
 
-
-export interface ComponentMap { CartoonComponent: CartoonComponent; }
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
+import { AddComponentMenu } from "../Menu";
+import { RegisterComponent, Component } from "./Component";
 
 /**
  * 参考
@@ -64,12 +70,4 @@ export class CartoonComponent extends Component
         renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
     }
 
-}
-
-export interface Uniforms
-{
-    u_diffuseSegment: Vector4;
-    u_diffuseSegmentValue: Vector4;
-
-    u_specularSegment: number;
 }

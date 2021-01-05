@@ -22,8 +22,6 @@ export interface GameObjectEventMap
     pivotChanged: TransformLayout;
 }
 
-export interface ComponentMap { TransformLayout: TransformLayout; }
-
 /**
  * 变换布局
  * 

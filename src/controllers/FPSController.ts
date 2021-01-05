@@ -1,7 +1,5 @@
 
 
-export interface ComponentMap { FPSController: FPSController; }
-
 /**
  * FPS模式控制器
  */

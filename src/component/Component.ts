@@ -1,4 +1,12 @@
-import { GameObjectEventMap } from "../core/GameObject";
+import { serialize } from "@feng3d/serialization";
+import { IDisposable } from "@feng3d/polyfill";
+import { Event } from "@feng3d/eventsystem";
+
+import { GameObjectEventMap, GameObject } from "../core/GameObject";
+import { Feng3dObject } from "../core/Feng3dObject";
+import { RenderAtomic } from "@feng3d/renderer";
+import { Scene } from "../scene/Scene";
+import { Camera } from "../cameras/Camera";
 
 /**
  * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
@@ -24,7 +32,7 @@ export function RegisterComponent(component?: string)
 /**
  * 组件名称与类定义映射，新建组件一般都需扩展该接口。
  */
-export interface ComponentMap { Component: Component }
+export interface ComponentMap extends GlobalMixins.ComponentMap { Component: Component }
 
 export type ComponentNames = keyof ComponentMap;
 export type Components = ComponentMap[ComponentNames];

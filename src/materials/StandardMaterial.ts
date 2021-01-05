@@ -18,8 +18,6 @@ export enum FogMode
     LINEAR = 3
 }
 
-export interface UniformsTypes { standard: StandardUniforms }
-
 export class StandardUniforms
 {
     __class__: "feng3d.StandardUniforms" | "feng3d.TerrainUniforms" | "feng3d.ParticleUniforms";
@@ -144,10 +142,5 @@ export class StandardUniforms
 }
 
 shaderConfig.shaders["standard"].cls = StandardUniforms;
-
-export interface DefaultMaterial
-{
-    "Default-Material": Material;
-}
 
 Material.setDefault("Default-Material", { shaderName: "standard" });

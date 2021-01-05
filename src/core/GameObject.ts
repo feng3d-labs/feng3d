@@ -16,6 +16,8 @@ import { Scene } from "../scene/Scene";
 
 export type Constructor<T> = (new (...args) => T);
 
+export interface GameObjectEventMap extends GlobalMixins.GameObjectEventMap { }
+
 export interface GameObjectEventMap extends MouseEventMap
 {
     /**

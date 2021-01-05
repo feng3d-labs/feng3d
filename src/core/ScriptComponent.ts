@@ -11,8 +11,6 @@ import { Script } from "./Script";
 import { globalDispatcher } from "../event/GlobalDispatcher";
 
 
-export interface ComponentMap { ScriptComponent: ScriptComponent; }
-
 /**
  * 3d对象脚本
  */

@@ -1,7 +1,5 @@
 
 
-export interface ComponentMap { BillboardComponent: BillboardComponent; }
-
 @feng3d.AddComponentMenu("Layout/BillboardComponent")
 @RegisterComponent()
 export class BillboardComponent extends Component

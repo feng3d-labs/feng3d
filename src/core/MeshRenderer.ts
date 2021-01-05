@@ -1,8 +1,6 @@
 import { Renderable } from "./Renderable";
 import { RegisterComponent } from "../component/Component";
 
-export interface ComponentMap { MeshRenderer: MeshRenderer }
-
 /**
  * 网格渲染器
  */

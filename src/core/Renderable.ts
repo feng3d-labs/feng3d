@@ -15,8 +15,6 @@ import { Ray3, Vector3, Box3 } from "@feng3d/math";
 import { PickingCollisionVO } from "../pick/Raycaster";
 
 
-export interface ComponentMap { Renderable: Renderable; }
-
 /**
  * 可渲染组件
  * 

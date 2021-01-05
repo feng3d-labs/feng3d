@@ -12,7 +12,7 @@ import { TextureCube } from "../textures/TextureCube";
 import { AssetData } from "../core/AssetData";
 import { HideFlags } from "../core/HideFlags";
 
-export interface UniformsTypes { }
+export interface UniformsTypes extends GlobalMixins.UniformsTypes { }
 export type ShaderNames = keyof UniformsTypes;
 export type UniformsLike = UniformsTypes[keyof UniformsTypes];
 
@@ -197,6 +197,6 @@ export class Material extends Feng3dObject
 /**
  * 默认材质
  */
-export interface DefaultMaterial
+export interface DefaultMaterial extends GlobalMixins.DefaultMaterial
 {
 }

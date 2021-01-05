@@ -15,8 +15,6 @@ export interface GameObjectEventMap
     selfBoundsChanged: Component;
 }
 
-export interface ComponentMap { BoundingBox: BoundingBox; }
-
 /**
  * 轴对称包围盒
  * 

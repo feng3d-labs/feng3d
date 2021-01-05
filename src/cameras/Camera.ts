@@ -1,10 +1,13 @@
-
-export interface GameObjectEventMap
-{
-    lensChanged;
-}
-
-export interface ComponentMap { Camera: Camera; }
+import { AddComponentMenu } from "../Menu";
+import { RegisterComponent, Component } from "../component/Component";
+import { oav } from "@feng3d/objectview";
+import { Projection } from "./Projection";
+import { serialization, serialize } from "@feng3d/serialization";
+import { PerspectiveLens } from "./lenses/PerspectiveLens";
+import { OrthographicLens } from "./lenses/OrthographicLens";
+import { LensBase } from "./lenses/LensBase";
+import { Matrix4x4, Ray3, Vector3, Vector2, Frustum, Box3 } from "@feng3d/math";
+import { GameObject } from "../core/GameObject";
 
 /**
  * 摄像机

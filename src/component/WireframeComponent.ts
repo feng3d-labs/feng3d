@@ -1,7 +1,5 @@
 
 
-export interface ComponentMap { WireframeComponent: WireframeComponent; }
-
 /**
  * 线框组件，将会对拥有该组件的对象绘制线框
  */

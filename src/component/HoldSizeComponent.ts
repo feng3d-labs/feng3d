@@ -1,7 +1,5 @@
 
 
-export interface ComponentMap { HoldSizeComponent: HoldSizeComponent; }
-
 @AddComponentMenu("Layout/HoldSizeComponent")
 @RegisterComponent()
 export class HoldSizeComponent extends Component
