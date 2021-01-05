@@ -1,7 +1,15 @@
 import { serialize } from "@feng3d/serialization";
 import { oav } from "@feng3d/objectview";
+import { Matrix4x4 } from "@feng3d/math";
+import { HideFlags } from "feng3d/src/core/HideFlags";
+import { RenderAtomic } from "@feng3d/renderer";
 
-import {Renderable} from '../../core/Renderable'
+import { Renderable } from '../../core/Renderable'
+import { RegisterComponent } from "../../component/Component";
+import { Scene } from "../../scene/Scene";
+import { Camera } from "../../cameras/Camera";
+import { SkeletonComponent } from "./SkeletonComponent";
+import { GameObject } from "../../core/GameObject";
 
 @RegisterComponent()
 export class SkinnedMeshRenderer extends Renderable

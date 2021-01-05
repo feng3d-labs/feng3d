@@ -12,7 +12,7 @@ import { CustomGeometry } from './CustomGeometry';
 import { HideFlags } from '../core/HideFlags';
 import { AssetData } from '../core/AssetData';
 
-export interface GeometryTypes { }
+export interface GeometryTypes extends GlobalMixins.GeometryTypes { }
 
 export type GeometryLike = GeometryTypes[keyof GeometryTypes];
 
@@ -508,6 +508,6 @@ export class Geometry extends Feng3dObject
 /**
  * 默认几何体
  */
-export interface DefaultGeometry
+export interface DefaultGeometry extends GlobalMixins.DefaultGeometry
 {
 }

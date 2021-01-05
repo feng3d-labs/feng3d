@@ -6,8 +6,6 @@ import { Vector3, Color4, Vector2 } from "@feng3d/math";
 import { Geometry } from "./Geometry";
 
 
-export interface GeometryTypes { PointGeometry: PointGeometry }
-
 /**
  * 点几何体
  */

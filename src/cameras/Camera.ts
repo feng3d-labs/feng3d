@@ -195,8 +195,3 @@ GameObject.registerPrimitive("Camera", (g) =>
 {
     g.addComponent("Camera");
 });
-
-export interface PrimitiveGameObject
-{
-    Camera: GameObject;
-}

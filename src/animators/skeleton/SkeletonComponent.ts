@@ -1,7 +1,11 @@
-import { serialize } from "@feng3d/serialization";
+import { serialize, serialization } from "@feng3d/serialization";
 import { oav } from "@feng3d/objectview";
 import { Matrix4x4 } from "@feng3d/math";
+
 import { SkeletonJoint } from "./Skeleton";
+import { RegisterComponent, Component } from "../../component/Component";
+import { Transform } from "../../core/Transform";
+import { GameObject } from "../../core/GameObject";
 
 @RegisterComponent()
 export class SkeletonComponent extends Component

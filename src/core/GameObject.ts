@@ -940,6 +940,6 @@ export class GameObject extends Feng3dObject implements IDisposable
 /**
  * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
  */
-export interface PrimitiveGameObject
+export interface PrimitiveGameObject extends GlobalMixins.PrimitiveGameObject
 {
 }

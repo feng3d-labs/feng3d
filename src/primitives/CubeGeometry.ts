@@ -6,8 +6,6 @@ import { Geometry } from "../geometry/Geometry";
 import { GameObject } from "../core/GameObject";
 
 
-export interface GeometryTypes { CubeGeometry: CubeGeometry }
-
 /**
  * 立（长）方体几何体
  */
@@ -524,19 +522,9 @@ export class CubeGeometry extends Geometry
     }
 }
 
-export interface DefaultGeometry
-{
-    Cube: CubeGeometry;
-}
-
 Geometry.setDefault("Cube", new CubeGeometry());
 
 GameObject.registerPrimitive("Cube", (g) =>
 {
     g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cube");
 });
-
-export interface PrimitiveGameObject
-{
-    Cube: GameObject;
-}

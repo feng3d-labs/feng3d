@@ -2,8 +2,6 @@ import { Geometry } from "../geometry/Geometry";
 import { geometryUtils } from "../geometry/GeometryUtils";
 import { GameObject } from "../core/GameObject";
 
-export interface GeometryTypes { QuadGeometry: QuadGeometry }
-
 /**
  * 四边形面皮几何体
  */
@@ -25,10 +23,6 @@ export class QuadGeometry extends Geometry
     }
 }
 
-export interface DefaultGeometry
-{
-    Quad: QuadGeometry;
-}
 Geometry.setDefault("Quad", new QuadGeometry());
 
 GameObject.registerPrimitive("Quad", (g) =>
@@ -36,7 +30,3 @@ GameObject.registerPrimitive("Quad", (g) =>
     g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Quad");
 });
 
-export interface PrimitiveGameObject
-{
-    Quad: GameObject;
-}

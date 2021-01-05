@@ -5,8 +5,6 @@ import { watch } from "@feng3d/watcher";
 import { Geometry } from "../geometry/Geometry";
 import { GameObject } from "../core/GameObject";
 
-export interface GeometryTypes { TorusGeometry: TorusGeometry }
-
 /**
  * 圆环几何体
  */
@@ -237,18 +235,9 @@ export class TorusGeometry extends Geometry
 	}
 }
 
-export interface DefaultGeometry
-{
-	Torus: TorusGeometry;
-}
 Geometry.setDefault("Torus", new TorusGeometry());
 
 GameObject.registerPrimitive("Torus", (g) =>
 {
 	g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Torus");
 });
-
-export interface PrimitiveGameObject
-{
-	Torus: GameObject;
-}

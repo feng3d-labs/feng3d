@@ -1,3 +1,12 @@
+import { fs, ReadFS, pathUtils } from "@feng3d/filesystem";
+import { serialization } from "@feng3d/serialization";
+import { task } from "@feng3d/task";
+import { classUtils, CLASS_KEY, gPartial } from "@feng3d/polyfill";
+
+import { FolderAsset } from "../FolderAsset";
+import { FileAsset } from "../FileAsset";
+import { AssetData } from "../../core/AssetData";
+import { Constructor } from "../../core/GameObject";
 
 /**
  * 默认资源系统

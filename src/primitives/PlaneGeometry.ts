@@ -5,8 +5,6 @@ import { watch } from "@feng3d/watcher";
 import { Geometry } from "../geometry/Geometry";
 import { GameObject } from "../core/GameObject";
 
-export interface GeometryTypes { PlaneGeometry: PlaneGeometry }
-
 /**
  * 平面几何体
  */
@@ -254,10 +252,6 @@ export class PlaneGeometry extends Geometry
     }
 }
 
-export interface DefaultGeometry
-{
-    Plane: PlaneGeometry;
-}
 
 Geometry.setDefault("Plane", new PlaneGeometry(), { width: 10, height: 10 });
 
@@ -266,7 +260,3 @@ GameObject.registerPrimitive("Plane", (g) =>
     g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Plane");
 });
 
-export interface PrimitiveGameObject
-{
-    Plane: GameObject;
-}

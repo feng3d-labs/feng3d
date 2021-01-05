@@ -9,19 +9,6 @@ import { RegisterComponent, Component } from "../component/Component";
 import { GameObject } from "./GameObject";
 import { ticker } from '../utils/Ticker';
 
-export interface GameObjectEventMap
-{
-    /**
-     * 尺寸变化事件
-     */
-    sizeChanged: TransformLayout;
-
-    /**
-     * 中心点变化事件
-     */
-    pivotChanged: TransformLayout;
-}
-
 /**
  * 变换布局
  * 

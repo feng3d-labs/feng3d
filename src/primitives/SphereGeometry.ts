@@ -5,8 +5,6 @@ import { watch } from "@feng3d/watcher";
 import { Geometry } from "../geometry/Geometry";
 import { GameObject } from "../core/GameObject";
 
-export interface GeometryTypes { SphereGeometry: SphereGeometry }
-
 /**
  * 球体几何体
  * @author DawnKing 2016-09-12
@@ -225,10 +223,6 @@ export class SphereGeometry extends Geometry
     }
 }
 
-export interface DefaultGeometry
-{
-    Sphere: SphereGeometry;
-}
 Geometry.setDefault("Sphere", new SphereGeometry());
 
 GameObject.registerPrimitive("Sphere", (g) =>
@@ -236,7 +230,3 @@ GameObject.registerPrimitive("Sphere", (g) =>
     g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Sphere");
 });
 
-export interface PrimitiveGameObject
-{
-    Sphere: GameObject;
-}

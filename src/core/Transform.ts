@@ -8,23 +8,6 @@ import { RegisterComponent, Component } from "../component/Component";
 import { Scene } from "../scene/Scene";
 import { Camera } from "../cameras/Camera";
 
-export interface GameObjectEventMap
-{
-    /**
-     * 变换矩阵变化
-     */
-    transformChanged: Transform;
-    /**
-     * 
-     */
-    updateLocalToWorldMatrix: Transform;
-
-    /**
-     * 场景矩阵变化
-     */
-    scenetransformChanged: Transform;
-}
-
 /**
  * 变换
  * 

@@ -45,6 +45,82 @@ declare namespace GlobalMixins
     type ScriptComponent = import('./src/core/ScriptComponent').ScriptComponent;
     type Renderable = import('./src/core/Renderable').Renderable;
 
+    type GameObject = import('./src/core/GameObject').GameObject;
+    type Component = import('./src/component/Component').Component;
+
+    type Box3 = import('@feng3d/math').Box3;
+    type FolderAsset = import('./src/assets/FolderAsset').FolderAsset;
+
+    type CapsuleGeometry = import('./src/primitives/CapsuleGeometry').CapsuleGeometry;
+    type ConeGeometry = import('./src/primitives/ConeGeometry').ConeGeometry;
+    type CubeGeometry = import('./src/primitives/CubeGeometry').CubeGeometry;
+    type CylinderGeometry = import('./src/primitives/CylinderGeometry').CylinderGeometry;
+    type PlaneGeometry = import('./src/primitives/PlaneGeometry').PlaneGeometry;
+    type QuadGeometry = import('./src/primitives/QuadGeometry').QuadGeometry;
+    type SphereGeometry = import('./src/primitives/SphereGeometry').SphereGeometry;
+    type TorusGeometry = import('./src/primitives/TorusGeometry').TorusGeometry;
+
+    type CustomGeometry = import('./src/geometry/CustomGeometry').CustomGeometry;
+    type PointGeometry = import('./src/geometry/PointGeometry').PointGeometry;
+    type SegmentGeometry = import('./src/geometry/SegmentGeometry').SegmentGeometry;
+    type ParametricGeometry = import('./src/primitives/ParametricGeometry').ParametricGeometry;
+
+    interface GeometryTypes
+    {
+        CustomGeometry: CustomGeometry
+        PointGeometry: PointGeometry
+        SegmentGeometry: SegmentGeometry
+        CapsuleGeometry: CapsuleGeometry
+        CubeGeometry: CubeGeometry
+        CylinderGeometry: CylinderGeometry
+        ParametricGeometry: ParametricGeometry
+        PlaneGeometry: PlaneGeometry
+        QuadGeometry: QuadGeometry
+        SphereGeometry: SphereGeometry
+        TorusGeometry: TorusGeometry
+    }
+
+    /**
+     * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
+     */
+    interface PrimitiveGameObject
+    {
+        Camera: GameObject;
+        Segment: GameObject;
+        "Directional light": GameObject;
+        "Point light": GameObject;
+        "Spot light": GameObject;
+        Capsule: GameObject;
+        Cone: GameObject;
+        Cube: GameObject;
+        Cylinder: GameObject;
+        Plane: GameObject;
+        Quad: GameObject;
+        Sphere: GameObject;
+        Torus: GameObject;
+        Water: GameObject;
+    }
+
+    /**
+     * 默认几何体
+     */
+    interface DefaultGeometry
+    {
+        Capsule: CapsuleGeometry;
+        Cone: ConeGeometry;
+        Cube: CubeGeometry;
+        Cylinder: CylinderGeometry;
+        Plane: PlaneGeometry;
+        Quad: QuadGeometry;
+        Sphere: SphereGeometry;
+        Torus: TorusGeometry;
+    }
+
+    interface AssetTypeClassMap
+    {
+        "folder": new () => FolderAsset;
+    }
+
     interface UniformsTypes
     {
         water: WaterUniforms;
@@ -65,6 +141,59 @@ declare namespace GlobalMixins
     interface GameObjectEventMap
     {
         lensChanged;
+    }
+
+    interface GameObjectEventMap
+    {
+        /**
+         * 变换矩阵变化
+         */
+        transformChanged: Transform;
+        /**
+         * 
+         */
+        updateLocalToWorldMatrix: Transform;
+
+        /**
+         * 场景矩阵变化
+         */
+        scenetransformChanged: Transform;
+    }
+
+    /**
+     * 组件事件
+     */
+    interface GameObjectEventMap
+    {
+        addToScene: GameObject;
+        removeFromScene: GameObject;
+        addComponentToScene: Component;
+    }
+
+    interface GameObjectEventMap
+    {
+        /**
+         * 尺寸变化事件
+         */
+        sizeChanged: TransformLayout;
+
+        /**
+         * 中心点变化事件
+         */
+        pivotChanged: TransformLayout;
+    }
+
+    interface GameObjectEventMap
+    {
+        /**
+         * 获取自身包围盒
+         */
+        getSelfBounds: { bounds: Box3[] };
+
+        /**
+         * 自身包围盒发生变化
+         */
+        selfBoundsChanged: Component;
     }
 
     interface ComponentMap

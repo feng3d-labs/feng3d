@@ -5,8 +5,6 @@ import { oav } from "@feng3d/objectview";
 import { Geometry } from "../geometry/Geometry";
 import { GameObject } from "../core/GameObject";
 
-export interface GeometryTypes { CapsuleGeometry: CapsuleGeometry }
-
 /**
  * 胶囊体几何体
  */
@@ -232,10 +230,6 @@ export class CapsuleGeometry extends Geometry
 
 }
 
-export interface DefaultGeometry
-{
-    Capsule: CapsuleGeometry;
-}
 Geometry.setDefault("Capsule", new CapsuleGeometry());
 
 GameObject.registerPrimitive("Capsule", (g) =>
@@ -243,7 +237,3 @@ GameObject.registerPrimitive("Capsule", (g) =>
     g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Capsule");
 });
 
-export interface PrimitiveGameObject
-{
-    Capsule: GameObject;
-}

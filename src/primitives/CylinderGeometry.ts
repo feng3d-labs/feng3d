@@ -5,8 +5,6 @@ import { watch } from "@feng3d/watcher";
 import { Geometry } from "../geometry/Geometry";
 import { GameObject } from "../core/GameObject";
 
-export interface GeometryTypes { CylinderGeometry: CylinderGeometry }
-
 /**
  * 圆柱体几何体
  * @author DawnKing 2016-09-12
@@ -437,11 +435,6 @@ export class CylinderGeometry extends Geometry
     }
 }
 
-export interface DefaultGeometry
-{
-    Cylinder: CylinderGeometry;
-}
-
 Geometry.setDefault("Cylinder", new CylinderGeometry());
 
 GameObject.registerPrimitive("Cylinder", (g) =>
@@ -449,7 +442,3 @@ GameObject.registerPrimitive("Cylinder", (g) =>
     g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cylinder");
 });
 
-export interface PrimitiveGameObject
-{
-    Cylinder: GameObject;
-}

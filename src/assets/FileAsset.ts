@@ -1,3 +1,14 @@
+import { serialize } from "@feng3d/serialization";
+import { pathUtils } from "@feng3d/filesystem";
+import { event } from "@feng3d/eventsystem";
+
+
+import { AssetMeta } from "./AssetMeta";
+import { ReadWriteRS } from "./rs/ReadWriteRS";
+import { AssetType } from "./AssetType";
+import { FolderAsset } from "./FolderAsset";
+import { rs } from "./rs/ReadRS";
+import { ticker } from "../utils/Ticker";
 
 export function getAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K)
 {
@@ -9,7 +20,7 @@ export function setAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K, cl
     assetTypeClassMap[type] = cls;
 }
 
-export interface AssetTypeClassMap
+export interface AssetTypeClassMap extends GlobalMixins.AssetTypeClassMap
 {
 }
 export const assetTypeClassMap: AssetTypeClassMap = <any>{};

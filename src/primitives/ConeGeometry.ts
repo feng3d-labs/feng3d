@@ -28,18 +28,9 @@ export class ConeGeometry extends CylinderGeometry
     surfaceClosed = true;
 }
 
-export interface DefaultGeometry
-{
-    Cone: ConeGeometry;
-}
 Geometry.setDefault("Cone", new ConeGeometry());
 
 GameObject.registerPrimitive("Cone", (g) =>
 {
     g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cone");
 });
-
-export interface PrimitiveGameObject
-{
-    Cone: GameObject;
-}

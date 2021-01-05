@@ -1,3 +1,6 @@
+import { FileAsset, setAssetTypeClass } from "./FileAsset";
+import { AssetType } from "./AssetType";
+import { ov } from "@feng3d/objectview";
 
 /**
  * 文件夹资源
@@ -51,8 +54,4 @@ export class FolderAsset extends FileAsset
     }
 }
 
-export interface AssetTypeClassMap
-{
-    "folder": new () => FolderAsset;
-}
 setAssetTypeClass("folder", FolderAsset);

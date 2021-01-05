@@ -64,7 +64,3 @@ GameObject.registerPrimitive("Point light", (g) =>
     g.addComponent("PointLight");
 });
 
-export interface PrimitiveGameObject
-{
-    "Point light": GameObject;
-}

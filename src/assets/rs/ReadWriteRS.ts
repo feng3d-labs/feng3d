@@ -1,3 +1,12 @@
+import { ReadWriteFS } from "@feng3d/filesystem";
+import { serialization } from "@feng3d/serialization";
+import { gPartial } from "@feng3d/polyfill";
+
+import { ReadRS } from "./ReadRS";
+import { ticker } from "../../utils/Ticker";
+import { FileAsset } from "../FileAsset";
+import { FolderAsset } from "../FolderAsset";
+import { AssetData } from "../../core/AssetData";
 
 /**
  * 可读写资源系统

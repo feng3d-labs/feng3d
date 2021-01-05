@@ -2,8 +2,6 @@ import { serialize } from "@feng3d/serialization";
 
 import { Geometry } from "./Geometry";
 
-export interface GeometryTypes { CustomGeometry: CustomGeometry }
-
 export class CustomGeometry extends Geometry
 {
     __class__: "feng3d.CustomGeometry";

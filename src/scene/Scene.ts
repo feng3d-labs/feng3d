@@ -17,16 +17,6 @@ import { SpotLight } from "../light/SpotLight";
 import { Behaviour } from "../component/Behaviour";
 
 /**
- * 组件事件
- */
-export interface GameObjectEventMap
-{
-    addToScene: GameObject;
-    removeFromScene: GameObject;
-    addComponentToScene: Component;
-}
-
-/**
  * 3D场景
  */
 @RegisterComponent()

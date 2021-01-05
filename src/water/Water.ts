@@ -139,7 +139,3 @@ GameObject.registerPrimitive("Water", (g) =>
     g.addComponent("Water");
 });
 
-export interface PrimitiveGameObject
-{
-    Water: GameObject;
-}

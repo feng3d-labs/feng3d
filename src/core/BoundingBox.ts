@@ -2,19 +2,6 @@ import { Box3 } from "@feng3d/math";
 
 import { Component, RegisterComponent } from "../component/Component";
 
-export interface GameObjectEventMap
-{
-    /**
-     * 获取自身包围盒
-     */
-    getSelfBounds: { bounds: Box3[] };
-
-    /**
-     * 自身包围盒发生变化
-     */
-    selfBoundsChanged: Component;
-}
-
 /**
  * 轴对称包围盒
  * 

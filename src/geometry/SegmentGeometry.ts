@@ -7,8 +7,6 @@ import { Geometry } from "./Geometry";
 import { GameObject } from "../core/GameObject";
 import { Material } from "../materials/Material";
 
-export interface GeometryTypes { SegmentGeometry: SegmentGeometry }
-
 /**
  * 线段组件
  */
@@ -117,7 +115,3 @@ GameObject.registerPrimitive("Segment", (g) =>
     model.material = Material.getDefault("Segment-Material");
 });
 
-export interface PrimitiveGameObject
-{
-    Segment: GameObject;
-}
