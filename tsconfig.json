@@ -195,7 +195,6 @@
         "src/utils/ObjectViewDefinitions.ts",
         //
         "src/utils/Ticker.ts",
-        "src/utils/DataTransform.ts",
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
         "src/utils/Path.ts",
