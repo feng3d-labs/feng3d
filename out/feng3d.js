@@ -20,8 +20,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var feng3d;
 (function (feng3d) {
     /**
-<<<<<<< HEAD
-=======
      * 事件
      */
     var FEvent = /** @class */ (function () {
@@ -1017,6 +1015,7 @@ var feng3d;
      */
     var ClassUtils = /** @class */ (function () {
         function ClassUtils() {
+            this.classUtilsHandlers = [];
             this.defaultInstMap = {};
         }
         /**
@@ -1028,6 +1027,12 @@ var feng3d;
         ClassUtils.prototype.getQualifiedClassName = function (value) {
             if (value == null)
                 return "null";
+            var classUtilsHandlers = feng3d.classUtils.classUtilsHandlers;
+            if (classUtilsHandlers) {
+                classUtilsHandlers.forEach(function (element) {
+                    element(value);
+                });
+            }
             var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
             if (prototype.hasOwnProperty(feng3d.CLASS_KEY))
                 return prototype[feng3d.CLASS_KEY];
@@ -1139,6 +1144,242 @@ var feng3d;
         var prototype = classDefinition.prototype;
         Object.defineProperty(prototype, feng3d.CLASS_KEY, { value: className, writable: true, enumerable: false });
     }
+    feng3d.registerClass = registerClass;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    var DataTransform = /** @class */ (function () {
+        function DataTransform() {
+        }
+        /**
+         * Blob to ArrayBuffer
+         */
+        DataTransform.prototype.blobToArrayBuffer = function (blob, callback) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                callback(e.target["result"]);
+            };
+            reader.readAsArrayBuffer(blob);
+        };
+        /**
+         * ArrayBuffer to Blob
+         */
+        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer) {
+            var blob = new Blob([arrayBuffer]); // 注意必须包裹[]
+            return blob;
+        };
+        /**
+         * ArrayBuffer to Uint8
+         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer) {
+            var u8 = new Uint8Array(arrayBuffer);
+            return u8;
+        };
+        /**
+         * Uint8 to ArrayBuffer
+         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array) {
+            var buffer = uint8Array.buffer;
+            return buffer;
+        };
+        /**
+         * Array to ArrayBuffer
+         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
+         */
+        DataTransform.prototype.arrayToArrayBuffer = function (array) {
+            var uint8 = new Uint8Array(array);
+            var buffer = uint8.buffer;
+            return buffer;
+        };
+        /**
+         * TypeArray to Array
+         */
+        DataTransform.prototype.uint8ArrayToArray = function (u8a) {
+            var arr = [];
+            for (var i = 0; i < u8a.length; i++) {
+                arr.push(u8a[i]);
+            }
+            return arr;
+        };
+        /**
+         * canvas转换为dataURL
+         */
+        DataTransform.prototype.canvasToDataURL = function (canvas, type, quality) {
+            if (type === void 0) { type = "png"; }
+            if (quality === void 0) { quality = 1; }
+            if (type == "png")
+                return canvas.toDataURL("image/png");
+            return canvas.toDataURL("image/jpeg", quality);
+        };
+        /**
+         * canvas转换为图片
+         */
+        DataTransform.prototype.canvasToImage = function (canvas, type, quality, callback) {
+            if (type === void 0) { type = "png"; }
+            if (quality === void 0) { quality = 1; }
+            var dataURL = this.canvasToDataURL(canvas, type, quality);
+            this.dataURLToImage(dataURL, callback);
+        };
+        /**
+         * File、Blob对象转换为dataURL
+         * File对象也是一个Blob对象，二者的处理相同。
+         */
+        DataTransform.prototype.blobToDataURL = function (blob, callback) {
+            var a = new FileReader();
+            a.onload = function (e) {
+                callback(e.target["result"]);
+            };
+            a.readAsDataURL(blob);
+        };
+        /**
+         * dataURL转换为Blob对象
+         */
+        DataTransform.prototype.dataURLtoBlob = function (dataurl) {
+            var arr = dataurl.split(","), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            var blob = new Blob([u8arr], { type: mime });
+            return blob;
+        };
+        /**
+         * dataURL图片数据转换为HTMLImageElement
+         * dataURL图片数据绘制到canvas
+         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
+         */
+        DataTransform.prototype.dataURLDrawCanvas = function (dataurl, canvas, callback) {
+            this.dataURLToImage(dataurl, function (img) {
+                // canvas.drawImage(img);
+                callback(img);
+            });
+        };
+        DataTransform.prototype.dataURLToArrayBuffer = function (dataurl, callback) {
+            var blob = this.dataURLtoBlob(dataurl);
+            this.blobToArrayBuffer(blob, callback);
+        };
+        DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToDataURL(blob, callback);
+        };
+        DataTransform.prototype.dataURLToImage = function (dataurl, callback) {
+            var img = new Image();
+            img.onload = function () {
+                callback(img);
+            };
+            img.src = dataurl;
+        };
+        DataTransform.prototype.imageToDataURL = function (img, quality) {
+            if (quality === void 0) { quality = 1; }
+            var canvas = this.imageToCanvas(img);
+            var dataurl = this.canvasToDataURL(canvas, "png", quality);
+            return dataurl;
+        };
+        DataTransform.prototype.imageToCanvas = function (img) {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.drawImage(img, 0, 0);
+            return canvas;
+        };
+        DataTransform.prototype.imageToArrayBuffer = function (img, callback) {
+            if (img["arraybuffer"]) {
+                callback(img["arraybuffer"]);
+                return;
+            }
+            var dataUrl = this.imageToDataURL(img);
+            this.dataURLToArrayBuffer(dataUrl, function (arraybuffer) {
+                img["arraybuffer"] = arraybuffer;
+                arraybuffer["img"] = img;
+                callback(arraybuffer);
+            });
+        };
+        DataTransform.prototype.imageDataToDataURL = function (imageData, quality) {
+            if (quality === void 0) { quality = 1; }
+            var canvas = this.imageDataToCanvas(imageData);
+            var dataurl = this.canvasToDataURL(canvas, "png", quality);
+            return dataurl;
+        };
+        DataTransform.prototype.imageDataToCanvas = function (imageData) {
+            var canvas = document.createElement("canvas");
+            canvas.width = imageData.width;
+            canvas.height = imageData.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.putImageData(imageData, 0, 0);
+            return canvas;
+        };
+        DataTransform.prototype.imagedataToImage = function (imageData, quality, callback) {
+            if (quality === void 0) { quality = 1; }
+            var dataUrl = this.imageDataToDataURL(imageData, quality);
+            this.dataURLToImage(dataUrl, callback);
+        };
+        DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
+            var _this = this;
+            if (arrayBuffer["image"]) {
+                callback(arrayBuffer["image"]);
+                return;
+            }
+            this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
+                _this.dataURLToImage(dataurl, function (img) {
+                    img["arraybuffer"] = arrayBuffer;
+                    arrayBuffer["image"] = img;
+                    callback(img);
+                });
+            });
+        };
+        DataTransform.prototype.blobToText = function (blob, callback) {
+            var a = new FileReader();
+            a.onload = function (e) { callback(e.target["result"]); };
+            a.readAsText(blob);
+        };
+        DataTransform.prototype.stringToArrayBuffer = function (str) {
+            var uint8Array = this.stringToUint8Array(str);
+            var buffer = this.uint8ToArrayBuffer(uint8Array);
+            return buffer;
+        };
+        DataTransform.prototype.arrayBufferToString = function (arrayBuffer, callback) {
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToText(blob, callback);
+        };
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        DataTransform.prototype.arrayBufferToObject = function (arrayBuffer, callback) {
+            this.arrayBufferToString(arrayBuffer, function (str) {
+                var obj = JSON.parse(str);
+                callback(obj);
+            });
+        };
+        DataTransform.prototype.stringToUint8Array = function (str) {
+            var utf8 = unescape(encodeURIComponent(str));
+            var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
+                return item.charCodeAt(0);
+            }));
+            return uint8Array;
+        };
+        DataTransform.prototype.uint8ArrayToString = function (arr, callback) {
+            // or [].slice.apply(arr)
+            // var utf8 = Array.from(arr).map(function (item)
+            var utf8 = [].slice.apply(arr).map(function (item) {
+                return String.fromCharCode(item);
+            }).join('');
+            var str = decodeURIComponent(escape(utf8));
+            callback(str);
+        };
+        return DataTransform;
+    }());
+    feng3d.DataTransform = DataTransform;
+    feng3d.dataTransform = new DataTransform();
 })(feng3d || (feng3d = {}));
 Map.getKeys = function (map) {
     var keys = [];
@@ -18408,6 +18649,8 @@ var feng3d;
         return StateCommand;
     }());
 })(feng3d || (feng3d = {}));
+/// <reference path="handle/KeyState.ts" />
+/// <reference path="handle/KeyCapture.ts" />
 var feng3d;
 (function (feng3d) {
     /**
@@ -20571,7 +20814,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
->>>>>>> 38750ddd1dd431a7d9d87cd28a9a4de22d9fc532
      * 添加组件菜单
      *
      * 在组件类上新增 @feng3d.AddComponentMenu("UI/Text") 可以把该组件添加到组件菜单上。

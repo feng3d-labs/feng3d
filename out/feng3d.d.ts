@@ -1,7 +1,5 @@
 declare namespace feng3d {
     /**
-<<<<<<< HEAD
-=======
      * 事件
      */
     export var event: FEvent;
@@ -643,6 +641,7 @@ declare namespace feng3d {
      * 类工具
      */
     class ClassUtils {
+        classUtilsHandlers: Function[];
         /**
          * 返回对象的完全限定类名。
          * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
@@ -673,6 +672,113 @@ declare namespace feng3d {
          * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
          */
         addClassNameSpace(namespace: string): void;
+    }
+    /**
+     * 为一个类定义注册完全限定类名
+     * @param classDefinition 类定义
+     * @param className 完全限定类名
+     */
+    function registerClass(classDefinition: any, className: string): void;
+}
+/**
+ * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
+ * @param str A string to be decoded.
+ * @return A new string in which certain characters have been unescaped.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
+ */
+declare function unescape(str: string): string;
+/**
+ * The escape() function computes a new string in which certain characters have been replaced by a hexadecimal escape sequence.
+ * @param str A string to be encoded.
+ * @return A new string in which certain characters have been escaped.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape
+ */
+declare function escape(str: string): string;
+declare namespace feng3d {
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    var dataTransform: DataTransform;
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    class DataTransform {
+        /**
+         * Blob to ArrayBuffer
+         */
+        blobToArrayBuffer(blob: Blob, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * ArrayBuffer to Blob
+         */
+        arrayBufferToBlob(arrayBuffer: ArrayBuffer): Blob;
+        /**
+         * ArrayBuffer to Uint8
+         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        arrayBufferToUint8(arrayBuffer: ArrayBuffer): Uint8Array;
+        /**
+         * Uint8 to ArrayBuffer
+         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        uint8ToArrayBuffer(uint8Array: Uint8Array): ArrayBuffer;
+        /**
+         * Array to ArrayBuffer
+         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
+         */
+        arrayToArrayBuffer(array: number[]): ArrayBuffer;
+        /**
+         * TypeArray to Array
+         */
+        uint8ArrayToArray(u8a: Uint8Array): number[];
+        /**
+         * canvas转换为dataURL
+         */
+        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg", quality?: number): string;
+        /**
+         * canvas转换为图片
+         */
+        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg", quality: number, callback: (img: HTMLImageElement) => void): void;
+        /**
+         * File、Blob对象转换为dataURL
+         * File对象也是一个Blob对象，二者的处理相同。
+         */
+        blobToDataURL(blob: Blob, callback: (dataurl: string) => void): void;
+        /**
+         * dataURL转换为Blob对象
+         */
+        dataURLtoBlob(dataurl: string): Blob;
+        /**
+         * dataURL图片数据转换为HTMLImageElement
+         * dataURL图片数据绘制到canvas
+         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
+         */
+        dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void): void;
+        dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
+        arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
+        dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
+        imageToDataURL(img: HTMLImageElement, quality?: number): string;
+        imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
+        imageToArrayBuffer(img: HTMLImageElement, callback: (arraybuffer: ArrayBuffer) => void): void;
+        imageDataToDataURL(imageData: ImageData, quality?: number): string;
+        imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
+        imagedataToImage(imageData: ImageData, quality: number, callback: (img: HTMLImageElement) => void): void;
+        arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
+        blobToText(blob: Blob, callback: (content: string) => void): void;
+        stringToArrayBuffer(str: string): ArrayBuffer;
+        arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void): void;
+        stringToUint8Array(str: string): Uint8Array;
+        uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
     }
 }
 interface MapConstructor {
@@ -10053,7 +10159,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
->>>>>>> 38750ddd1dd431a7d9d87cd28a9a4de22d9fc532
      * 添加组件菜单
      *
      * 在组件类上新增 @feng3d.AddComponentMenu("UI/Text") 可以把该组件添加到组件菜单上。

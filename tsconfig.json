@@ -26,6 +26,7 @@
         "../packages/polyfill/src/Types.ts",
         "../packages/polyfill/src/Object.ts",
         "../packages/polyfill/src/ClassUtils.ts",
+        "../packages/polyfill/src/DataTransform.ts",
         "../packages/polyfill/src/Map.ts",
         "../packages/polyfill/src/Array.ts",
         "../packages/polyfill/src/Math.ts",
