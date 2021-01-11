@@ -57,8 +57,8 @@ namespace feng3d
             var castShadowsModels = models.filter(i => i.castShadows);
 
             //
-            renderAtomic.renderParams.useViewRect = true;
-            renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            renderAtomic.renderParams.useViewPort = true;
+            renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
 
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
@@ -134,8 +134,8 @@ namespace feng3d
                 var castShadowsModels = models.filter(i => i.castShadows);
 
                 //
-                renderAtomic.renderParams.useViewRect = true;
-                renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
+                renderAtomic.renderParams.useViewPort = true;
+                renderAtomic.renderParams.viewPort = cube2DViewPorts[face];
 
                 //
                 renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
@@ -178,8 +178,8 @@ namespace feng3d
 
             var renderAtomic = this.renderAtomic;
             //
-            renderAtomic.renderParams.useViewRect = true;
-            renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            renderAtomic.renderParams.useViewPort = true;
+            renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;

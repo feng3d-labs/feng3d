@@ -106,8 +106,10 @@ namespace feng3d
                 var depthtest = shaderParams.depthtest;
                 var depthMask = shaderParams.depthMask;
                 var depthFunc = gl[shaderParams.depthFunc];
-                var viewRect = shaderParams.viewRect;
-                var useViewRect = shaderParams.useViewRect;
+                var viewPort = shaderParams.viewPort;
+                var useViewPort = shaderParams.useViewPort;
+                var useScissor = shaderParams.useScissor;
+                var scissor = shaderParams.scissor;
                 var colorMask = shaderParams.colorMask;
                 var colorMaskB = [ColorMask.R, ColorMask.G, ColorMask.B, ColorMask.A].map(v => !!(colorMask & v));
 
@@ -115,9 +117,9 @@ namespace feng3d
                 var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
                 var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
 
-                if (!useViewRect)
+                if (!useViewPort)
                 {
-                    viewRect = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
+                    viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
                 }
 
                 if (cullfaceEnum != CullFace.NONE)
@@ -152,7 +154,7 @@ namespace feng3d
 
                 gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
 
-                gl.viewport(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
+                gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
 
                 if (usePolygonOffset)
                 {
@@ -162,6 +164,15 @@ namespace feng3d
                 else
                 {
                     gl.disable(gl.POLYGON_OFFSET_FILL);
+                }
+
+                if (useScissor)
+                {
+                    gl.enable(gl.SCISSOR_TEST);
+                    gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
+                } else
+                {
+                    gl.disable(gl.SCISSOR_TEST);
                 }
             }
 

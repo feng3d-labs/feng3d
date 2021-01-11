@@ -9590,18 +9590,31 @@ declare namespace feng3d {
          */
         colorMask: ColorMask;
         /**
+         * 是否使用 viewRect
+         */
+        useViewPort: boolean;
+        /**
          * 绘制在画布上的区域
          */
-        viewRect: {
+        viewPort: {
             x: number;
             y: number;
             width: number;
             height: number;
         };
         /**
-         * 是否使用 viewRect
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
          */
-        useViewRect: boolean;
+        useScissor: boolean;
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+         */
+        scissor: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
         /**
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
          *
@@ -9619,14 +9632,6 @@ declare namespace feng3d {
          */
         polygonOffsetUnits: number;
         constructor(raw?: Partial<RenderParams>);
-    }
-    interface RenderParams {
-        viewRect: {
-            x: number;
-            y: number;
-            width: number;
-            height: number;
-        };
     }
 }
 declare namespace feng3d {

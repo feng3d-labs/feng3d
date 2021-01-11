@@ -19856,15 +19856,21 @@ var feng3d;
              */
             this.colorMask = feng3d.ColorMask.RGBA;
             /**
-             * 绘制在画布上的区域
-             */
-            // @oav({ tooltip: "绘制在画布上的区域" })
-            this.viewRect = { x: 0, y: 0, width: 100, height: 100 };
-            /**
              * 是否使用 viewRect
              */
-            // @oav({ tooltip: "是否使用 viewRect" })
-            this.useViewRect = false;
+            this.useViewPort = false;
+            /**
+             * 绘制在画布上的区域
+             */
+            this.viewPort = { x: 0, y: 0, width: 100, height: 100 };
+            /**
+             * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+             */
+            this.useScissor = false;
+            /**
+             * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+             */
+            this.scissor = { x: 0, y: 0, width: 100, height: 100 };
             /**
              * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
              *
@@ -19928,11 +19934,33 @@ var feng3d;
             feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.ColorMask } })
         ], RenderParams.prototype, "colorMask", void 0);
         __decorate([
+            feng3d.oav({ tooltip: "是否使用 viewRect" }),
             feng3d.serialize
-        ], RenderParams.prototype, "viewRect", void 0);
+        ], RenderParams.prototype, "useViewPort", void 0);
         __decorate([
+            feng3d.oav({ tooltip: "绘制在画布上的区域" }),
             feng3d.serialize
-        ], RenderParams.prototype, "useViewRect", void 0);
+        ], RenderParams.prototype, "viewPort", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor" }),
+            feng3d.serialize
+        ], RenderParams.prototype, "useScissor", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor" }),
+            feng3d.serialize
+        ], RenderParams.prototype, "scissor", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "The WebGLRenderingContext.polygonOffset() method of the WebGL API specifies the scale factors and units to calculate depth values." }),
+            feng3d.serialize
+        ], RenderParams.prototype, "usePolygonOffset", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0." }),
+            feng3d.serialize
+        ], RenderParams.prototype, "polygonOffsetFactor", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0." }),
+            feng3d.serialize
+        ], RenderParams.prototype, "polygonOffsetUnits", void 0);
         return RenderParams;
     }());
     feng3d.RenderParams = RenderParams;
@@ -20645,15 +20673,17 @@ var feng3d;
                 var depthtest = shaderParams.depthtest;
                 var depthMask = shaderParams.depthMask;
                 var depthFunc = gl[shaderParams.depthFunc];
-                var viewRect = shaderParams.viewRect;
-                var useViewRect = shaderParams.useViewRect;
+                var viewPort = shaderParams.viewPort;
+                var useViewPort = shaderParams.useViewPort;
+                var useScissor = shaderParams.useScissor;
+                var scissor = shaderParams.scissor;
                 var colorMask = shaderParams.colorMask;
                 var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
                 var usePolygonOffset = shaderParams.usePolygonOffset;
                 var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
                 var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
-                if (!useViewRect) {
-                    viewRect = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
+                if (!useViewPort) {
+                    viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
                 }
                 if (cullfaceEnum != feng3d.CullFace.NONE) {
                     gl.enable(gl.CULL_FACE);
@@ -20680,13 +20710,20 @@ var feng3d;
                     gl.disable(gl.DEPTH_TEST);
                 gl.depthMask(depthMask);
                 gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
-                gl.viewport(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
+                gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
                 if (usePolygonOffset) {
                     gl.enable(gl.POLYGON_OFFSET_FILL);
                     gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
                 }
                 else {
                     gl.disable(gl.POLYGON_OFFSET_FILL);
+                }
+                if (useScissor) {
+                    gl.enable(gl.SCISSOR_TEST);
+                    gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
+                }
+                else {
+                    gl.disable(gl.SCISSOR_TEST);
                 }
             }
             /**
@@ -25370,8 +25407,8 @@ var feng3d;
             // 筛选投射阴影的渲染对象
             var castShadowsModels = models.filter(function (i) { return i.castShadows; });
             //
-            renderAtomic.renderParams.useViewRect = true;
-            renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            renderAtomic.renderParams.useViewPort = true;
+            renderAtomic.renderParams.viewPort = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
@@ -25431,8 +25468,8 @@ var feng3d;
                 // 筛选投射阴影的渲染对象
                 var castShadowsModels = models.filter(function (i) { return i.castShadows; });
                 //
-                renderAtomic.renderParams.useViewRect = true;
-                renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
+                renderAtomic.renderParams.useViewPort = true;
+                renderAtomic.renderParams.viewPort = cube2DViewPorts[face];
                 //
                 renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
                 renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
@@ -25465,8 +25502,8 @@ var feng3d;
             var shadowCamera = light.shadowCamera;
             var renderAtomic = this.renderAtomic;
             //
-            renderAtomic.renderParams.useViewRect = true;
-            renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+            renderAtomic.renderParams.useViewPort = true;
+            renderAtomic.renderParams.viewPort = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;

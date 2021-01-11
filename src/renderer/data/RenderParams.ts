@@ -84,18 +84,32 @@ namespace feng3d
         colorMask = ColorMask.RGBA;
 
         /**
-         * 绘制在画布上的区域
-         */
-        // @oav({ tooltip: "绘制在画布上的区域" })
-        @serialize
-        viewRect: { x: number, y: number, width: number, height: number } = { x: 0, y: 0, width: 100, height: 100 };
-
-        /**
          * 是否使用 viewRect
          */
-        // @oav({ tooltip: "是否使用 viewRect" })
+        @oav({ tooltip: "是否使用 viewRect" })
         @serialize
-        useViewRect = false;
+        useViewPort = false;
+
+        /**
+         * 绘制在画布上的区域
+         */
+        @oav({ tooltip: "绘制在画布上的区域" })
+        @serialize
+        viewPort: { x: number, y: number, width: number, height: number } = { x: 0, y: 0, width: 100, height: 100 };
+
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+         */
+        @oav({ tooltip: "https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor" })
+        @serialize
+        useScissor = false;
+
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+         */
+        @oav({ tooltip: "https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor" })
+        @serialize
+        scissor: { x: number, y: number, width: number, height: number } = { x: 0, y: 0, width: 100, height: 100 };
 
         /**
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
@@ -104,27 +118,27 @@ namespace feng3d
          * 
          * The offset is added before the depth test is performed and before the value is written into the depth buffer.
          */
+        @oav({ tooltip: "The WebGLRenderingContext.polygonOffset() method of the WebGL API specifies the scale factors and units to calculate depth values." })
+        @serialize
         usePolygonOffset = false;
 
         /**
          * A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0.
          */
+        @oav({ tooltip: "A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0." })
+        @serialize
         polygonOffsetFactor = 0;
 
         /**
          * A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
          */
+        @oav({ tooltip: "A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0." })
+        @serialize
         polygonOffsetUnits = 0;
 
         constructor(raw?: Partial<RenderParams>)
         {
             Object.assign(this, raw);
         }
-    }
-
-    export interface RenderParams
-    {
-        // @oav()
-        viewRect: { x: number, y: number, width: number, height: number }
     }
 }
