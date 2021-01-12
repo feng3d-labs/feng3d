@@ -117,6 +117,15 @@ namespace feng3d
                 var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
                 var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
 
+                const useStencil = shaderParams.useStencil;
+                const stencilFunc = gl[shaderParams.stencilFunc];
+                const stencilFuncRef = shaderParams.stencilFuncRef;
+                const stencilFuncMask = shaderParams.stencilFuncMask;
+                const stencilOpFail = gl[shaderParams.stencilOpFail];
+                const stencilOpZFail = gl[shaderParams.stencilOpZFail];
+                const stencilOpZPass = gl[shaderParams.stencilOpZPass];
+                const stencilMask = shaderParams.stencilMask;
+
                 if (!useViewPort)
                 {
                     viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
@@ -149,7 +158,9 @@ namespace feng3d
                     gl.depthFunc(depthFunc);
                 }
                 else
+                {
                     gl.disable(gl.DEPTH_TEST);
+                }
                 gl.depthMask(depthMask);
 
                 gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
@@ -173,6 +184,17 @@ namespace feng3d
                 } else
                 {
                     gl.disable(gl.SCISSOR_TEST);
+                }
+
+                if (useStencil)
+                {
+                    gl.enable(gl.STENCIL_TEST);
+                    gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
+                    gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
+                    gl.stencilMask(stencilMask);
+                } else
+                {
+                    gl.disable(gl.STENCIL_TEST);
                 }
             }
 

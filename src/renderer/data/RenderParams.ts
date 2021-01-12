@@ -136,6 +136,68 @@ namespace feng3d
         @serialize
         polygonOffsetUnits = 0;
 
+        /**
+         * Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc().
+         */
+        @oav({ tooltip: "Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc()." })
+        @serialize
+        useStencil = false;
+
+        /**
+         * A GLenum specifying the test function. The default function is gl.ALWAYS. 
+         * 
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+         */
+        @oav({ tooltip: "A GLenum specifying the test function. The default function is gl.ALWAYS. ", component: "OAVEnum", componentParam: { enumClass: StencilFunc } })
+        @serialize
+        stencilFunc = StencilFunc.ALWAYS;
+
+        /**
+         * A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n -1 where n is the number of bitplanes in the stencil buffer. The default value is 0.
+         * 
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+         */
+        @oav({ tooltip: "A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n -1 where n is the number of bitplanes in the stencil buffer. The default value is 0. " })
+        @serialize
+        stencilFuncRef = 0;
+
+        /**
+         * A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1.
+         * 
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+         */
+        @oav({ tooltip: "A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1." })
+        @serialize
+        stencilFuncMask = 1;
+
+        /**
+         * A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.
+         */
+        @oav({ tooltip: "A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.", component: "OAVEnum", componentParam: { enumClass: StencilOp } })
+        @serialize
+        stencilOpFail = StencilOp.KEEP;
+
+        /**
+         * A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.
+         */
+        @oav({ tooltip: "A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.", component: "OAVEnum", componentParam: { enumClass: StencilOp } })
+        @serialize
+        stencilOpZFail = StencilOp.KEEP;
+
+        /**
+         * A GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.
+         */
+        @oav({ tooltip: "A GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.", component: "OAVEnum", componentParam: { enumClass: StencilOp } })
+        @serialize
+        stencilOpZPass = StencilOp.KEEP;
+
+        /**
+         * A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1.
+         */
+        @oav({ tooltip: "A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1." })
+        @serialize
+        stencilMask = 1;
+
         constructor(raw?: Partial<RenderParams>)
         {
             Object.assign(this, raw);

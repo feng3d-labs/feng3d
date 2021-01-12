@@ -1084,6 +1084,9 @@ var feng3d;
          * @param name 类名称
          */
         ClassUtils.prototype.getDefaultInstanceByName = function (name) {
+            if (name === undefined) {
+                return null;
+            }
             var defaultInst = this.defaultInstMap[name];
             if (defaultInst)
                 return defaultInst;
@@ -19404,6 +19407,92 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * A GLenum specifying the test function. The default function is gl.ALWAYS.
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+     */
+    var StencilFunc;
+    (function (StencilFunc) {
+        /**
+         * Never pass.
+         */
+        StencilFunc["NEVER"] = "NEVER";
+        /**
+         * Pass if (ref & mask) <  (stencil & mask).
+         */
+        StencilFunc["LESS"] = "LESS";
+        /**
+         * Pass if (ref & mask) = (stencil & mask).
+         */
+        StencilFunc["EQUAL"] = "EQUAL";
+        /**
+         * Pass if (ref & mask) <= (stencil & mask).
+         */
+        StencilFunc["LEQUAL"] = "LEQUAL";
+        /**
+         * Pass if (ref & mask) > (stencil & mask).
+         */
+        StencilFunc["GREATER"] = "GREATER";
+        /**
+         * Pass if (ref & mask) != (stencil & mask).
+         */
+        StencilFunc["NOTEQUAL"] = "NOTEQUAL";
+        /**
+         * Pass if (ref & mask) >= (stencil & mask).
+         */
+        StencilFunc["GEQUAL"] = "GEQUAL";
+        /**
+         * Always pass.
+         */
+        StencilFunc["ALWAYS"] = "ALWAYS";
+    })(StencilFunc = feng3d.StencilFunc || (feng3d.StencilFunc = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * The WebGLRenderingContext.stencilOp() method of the WebGL API sets both the front and back-facing stencil test actions.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOp
+     */
+    var StencilOp;
+    (function (StencilOp) {
+        /**
+         * Keeps the current value.
+         */
+        StencilOp["KEEP"] = "KEEP";
+        /**
+         * Sets the stencil buffer value to 0.
+         */
+        StencilOp["ZERO"] = "ZERO";
+        /**
+         * Sets the stencil buffer value to the reference value as specified by WebGLRenderingContext.stencilFunc().
+         */
+        StencilOp["REPLACE"] = "REPLACE";
+        /**
+         * Increments the current stencil buffer value. Clamps to the maximum representable unsigned value.
+         */
+        StencilOp["INCR"] = "INCR";
+        /**
+         * Increments the current stencil buffer value. Wraps stencil buffer value to zero when incrementing the maximum representable unsigned value.
+         */
+        StencilOp["INCR_WRAP"] = "INCR_WRAP";
+        /**
+         * Decrements the current stencil buffer value. Clamps to 0.
+         */
+        StencilOp["DECR"] = "DECR";
+        /**
+         * Decrements the current stencil buffer value. Wraps stencil buffer value to the maximum representable unsigned value when decrementing a stencil buffer value of 0.
+         */
+        StencilOp["DECR_WRAP"] = "DECR_WRAP";
+        /**
+         * Inverts the current stencil buffer value bitwise.
+         */
+        StencilOp["INVERT"] = "INVERT";
+    })(StencilOp = feng3d.StencilOp || (feng3d.StencilOp = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var GL = /** @class */ (function () {
         function GL() {
         }
@@ -19887,6 +19976,44 @@ var feng3d;
              * A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
              */
             this.polygonOffsetUnits = 0;
+            /**
+             * Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc().
+             */
+            this.useStencil = false;
+            /**
+             * A GLenum specifying the test function. The default function is gl.ALWAYS.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+             */
+            this.stencilFunc = feng3d.StencilFunc.ALWAYS;
+            /**
+             * A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n -1 where n is the number of bitplanes in the stencil buffer. The default value is 0.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+             */
+            this.stencilFuncRef = 0;
+            /**
+             * A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+             */
+            this.stencilFuncMask = 1;
+            /**
+             * A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.
+             */
+            this.stencilOpFail = feng3d.StencilOp.KEEP;
+            /**
+             * A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.
+             */
+            this.stencilOpZFail = feng3d.StencilOp.KEEP;
+            /**
+             * A GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.
+             */
+            this.stencilOpZPass = feng3d.StencilOp.KEEP;
+            /**
+             * A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1.
+             */
+            this.stencilMask = 1;
             Object.assign(this, raw);
         }
         __decorate([
@@ -19961,6 +20088,38 @@ var feng3d;
             feng3d.oav({ tooltip: "A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0." }),
             feng3d.serialize
         ], RenderParams.prototype, "polygonOffsetUnits", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc()." }),
+            feng3d.serialize
+        ], RenderParams.prototype, "useStencil", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLenum specifying the test function. The default function is gl.ALWAYS. ", component: "OAVEnum", componentParam: { enumClass: feng3d.StencilFunc } }),
+            feng3d.serialize
+        ], RenderParams.prototype, "stencilFunc", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n -1 where n is the number of bitplanes in the stencil buffer. The default value is 0. " }),
+            feng3d.serialize
+        ], RenderParams.prototype, "stencilFuncRef", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1." }),
+            feng3d.serialize
+        ], RenderParams.prototype, "stencilFuncMask", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.", component: "OAVEnum", componentParam: { enumClass: feng3d.StencilOp } }),
+            feng3d.serialize
+        ], RenderParams.prototype, "stencilOpFail", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.", component: "OAVEnum", componentParam: { enumClass: feng3d.StencilOp } }),
+            feng3d.serialize
+        ], RenderParams.prototype, "stencilOpZFail", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.", component: "OAVEnum", componentParam: { enumClass: feng3d.StencilOp } }),
+            feng3d.serialize
+        ], RenderParams.prototype, "stencilOpZPass", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1." }),
+            feng3d.serialize
+        ], RenderParams.prototype, "stencilMask", void 0);
         return RenderParams;
     }());
     feng3d.RenderParams = RenderParams;
@@ -20682,6 +20841,14 @@ var feng3d;
                 var usePolygonOffset = shaderParams.usePolygonOffset;
                 var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
                 var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
+                var useStencil = shaderParams.useStencil;
+                var stencilFunc = gl[shaderParams.stencilFunc];
+                var stencilFuncRef = shaderParams.stencilFuncRef;
+                var stencilFuncMask = shaderParams.stencilFuncMask;
+                var stencilOpFail = gl[shaderParams.stencilOpFail];
+                var stencilOpZFail = gl[shaderParams.stencilOpZFail];
+                var stencilOpZPass = gl[shaderParams.stencilOpZPass];
+                var stencilMask = shaderParams.stencilMask;
                 if (!useViewPort) {
                     viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
                 }
@@ -20706,8 +20873,9 @@ var feng3d;
                     gl.enable(gl.DEPTH_TEST);
                     gl.depthFunc(depthFunc);
                 }
-                else
+                else {
                     gl.disable(gl.DEPTH_TEST);
+                }
                 gl.depthMask(depthMask);
                 gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
                 gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
@@ -20724,6 +20892,15 @@ var feng3d;
                 }
                 else {
                     gl.disable(gl.SCISSOR_TEST);
+                }
+                if (useStencil) {
+                    gl.enable(gl.STENCIL_TEST);
+                    gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
+                    gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
+                    gl.stencilMask(stencilMask);
+                }
+                else {
+                    gl.disable(gl.STENCIL_TEST);
                 }
             }
             /**

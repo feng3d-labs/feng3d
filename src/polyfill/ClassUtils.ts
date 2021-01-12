@@ -96,6 +96,11 @@ namespace feng3d
          */
         getDefaultInstanceByName(name: string)
         {
+            if (name === undefined)
+            {
+                return null;
+            }
+
             var defaultInst = this.defaultInstMap[name];
             if (defaultInst) return defaultInst;
             //

@@ -9209,6 +9209,88 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * A GLenum specifying the test function. The default function is gl.ALWAYS.
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+     */
+    enum StencilFunc {
+        /**
+         * Never pass.
+         */
+        NEVER = "NEVER",
+        /**
+         * Pass if (ref & mask) <  (stencil & mask).
+         */
+        LESS = "LESS",
+        /**
+         * Pass if (ref & mask) = (stencil & mask).
+         */
+        EQUAL = "EQUAL",
+        /**
+         * Pass if (ref & mask) <= (stencil & mask).
+         */
+        LEQUAL = "LEQUAL",
+        /**
+         * Pass if (ref & mask) > (stencil & mask).
+         */
+        GREATER = "GREATER",
+        /**
+         * Pass if (ref & mask) != (stencil & mask).
+         */
+        NOTEQUAL = "NOTEQUAL",
+        /**
+         * Pass if (ref & mask) >= (stencil & mask).
+         */
+        GEQUAL = "GEQUAL",
+        /**
+         * Always pass.
+         */
+        ALWAYS = "ALWAYS"
+    }
+}
+declare namespace feng3d {
+    /**
+     * The WebGLRenderingContext.stencilOp() method of the WebGL API sets both the front and back-facing stencil test actions.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOp
+     */
+    enum StencilOp {
+        /**
+         * Keeps the current value.
+         */
+        KEEP = "KEEP",
+        /**
+         * Sets the stencil buffer value to 0.
+         */
+        ZERO = "ZERO",
+        /**
+         * Sets the stencil buffer value to the reference value as specified by WebGLRenderingContext.stencilFunc().
+         */
+        REPLACE = "REPLACE",
+        /**
+         * Increments the current stencil buffer value. Clamps to the maximum representable unsigned value.
+         */
+        INCR = "INCR",
+        /**
+         * Increments the current stencil buffer value. Wraps stencil buffer value to zero when incrementing the maximum representable unsigned value.
+         */
+        INCR_WRAP = "INCR_WRAP",
+        /**
+         * Decrements the current stencil buffer value. Clamps to 0.
+         */
+        DECR = "DECR",
+        /**
+         * Decrements the current stencil buffer value. Wraps stencil buffer value to the maximum representable unsigned value when decrementing a stencil buffer value of 0.
+         */
+        DECR_WRAP = "DECR_WRAP",
+        /**
+         * Inverts the current stencil buffer value bitwise.
+         */
+        INVERT = "INVERT"
+    }
+}
+declare namespace feng3d {
+    /**
      * 扩展（封装，包装）WebGL
      */
     interface GL extends WebGLRenderingContext {
@@ -9631,6 +9713,44 @@ declare namespace feng3d {
          * A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
          */
         polygonOffsetUnits: number;
+        /**
+         * Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc().
+         */
+        useStencil: boolean;
+        /**
+         * A GLenum specifying the test function. The default function is gl.ALWAYS.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+         */
+        stencilFunc: StencilFunc;
+        /**
+         * A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n -1 where n is the number of bitplanes in the stencil buffer. The default value is 0.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+         */
+        stencilFuncRef: number;
+        /**
+         * A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+         */
+        stencilFuncMask: number;
+        /**
+         * A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.
+         */
+        stencilOpFail: StencilOp;
+        /**
+         * A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.
+         */
+        stencilOpZFail: StencilOp;
+        /**
+         * A GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.
+         */
+        stencilOpZPass: StencilOp;
+        /**
+         * A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1.
+         */
+        stencilMask: number;
         constructor(raw?: Partial<RenderParams>);
     }
 }

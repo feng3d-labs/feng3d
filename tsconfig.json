@@ -161,6 +161,8 @@
         "src/renderer/gl/enums/GLArrayType.ts",
         "src/renderer/gl/enums/AttributeUsage.ts",
         "src/renderer/gl/enums/DepthFunc.ts",
+        "src/renderer/gl/enums/StencilFunc.ts",
+        "src/renderer/gl/enums/StencilOp.ts",
         "src/renderer/gl/GL.ts",
         "src/renderer/gl/GLCache.ts",
         "src/renderer/gl/GLExtension.ts",
