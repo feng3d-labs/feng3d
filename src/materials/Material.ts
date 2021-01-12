@@ -41,7 +41,7 @@ namespace feng3d
         @watch("_onShaderChanged")
         shaderName: ShaderNames;
 
-        @oav({ editable: false })
+        @oav()
         @serialize
         name = "";
 

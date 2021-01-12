@@ -33214,7 +33214,7 @@ var feng3d;
             feng3d.watch("_onShaderChanged")
         ], Material.prototype, "shaderName", void 0);
         __decorate([
-            feng3d.oav({ editable: false }),
+            feng3d.oav(),
             feng3d.serialize
         ], Material.prototype, "name", void 0);
         __decorate([
