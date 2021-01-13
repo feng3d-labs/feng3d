@@ -188,6 +188,10 @@ namespace feng3d
 
                 if (useStencil)
                 {
+                    if (gl.capabilities.stencilBits === 0)
+                    {
+                        console.warn(`${gl} 不支持 stencil，参考 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil`);
+                    }
                     gl.enable(gl.STENCIL_TEST);
                     gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
                     gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);

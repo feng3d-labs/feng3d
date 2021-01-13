@@ -9518,6 +9518,10 @@ declare namespace feng3d {
          *
          */
         maxSamples: number;
+        /**
+         * 支持模板的位数
+         */
+        stencilBits: number;
         constructor(gl: GL);
     }
 }

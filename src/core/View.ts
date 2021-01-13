@@ -14,7 +14,7 @@ namespace feng3d
         //
         canvas: HTMLCanvasElement;
 
-        private _contextAttributes: WebGLContextAttributes = {};
+        private _contextAttributes: WebGLContextAttributes = { stencil: true };
 
         /**
          * 摄像机
@@ -190,8 +190,9 @@ namespace feng3d
             // 默认渲染
             this.gl.colorMask(true, true, true, true);
             this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
+            this.gl.clearStencil(0);
             this.gl.clearDepth(1);
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
             this.gl.enable(this.gl.DEPTH_TEST);
 
             //鼠标拾取渲染

@@ -19724,6 +19724,7 @@ var feng3d;
             this.floatFragmentTextures = this.isWebGL2 || !!gl.getExtension('OES_texture_float');
             this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
             this.maxSamples = this.isWebGL2 ? gl.getParameter(gl2.MAX_SAMPLES) : 0;
+            this.stencilBits = gl.getParameter(gl.STENCIL_BITS);
         }
         return GLCapabilities;
     }());
@@ -20894,6 +20895,9 @@ var feng3d;
                     gl.disable(gl.SCISSOR_TEST);
                 }
                 if (useStencil) {
+                    if (gl.capabilities.stencilBits === 0) {
+                        console.warn(gl + " \u4E0D\u652F\u6301 stencil\uFF0C\u53C2\u8003 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil");
+                    }
                     gl.enable(gl.STENCIL_TEST);
                     gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
                     gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
@@ -28042,7 +28046,7 @@ var feng3d;
          */
         function View(canvas, scene, camera, contextAttributes) {
             var _this = _super.call(this) || this;
-            _this._contextAttributes = {};
+            _this._contextAttributes = { stencil: true };
             /**
              * 鼠标在3D视图中的位置
              */
@@ -28174,8 +28178,9 @@ var feng3d;
             // 默认渲染
             this.gl.colorMask(true, true, true, true);
             this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
+            this.gl.clearStencil(0);
             this.gl.clearDepth(1);
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
             this.gl.enable(this.gl.DEPTH_TEST);
             //鼠标拾取渲染
             this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);

@@ -83,6 +83,11 @@ namespace feng3d
          */
         maxSamples: number;
 
+        /**
+         * 支持模板的位数
+         */
+        stencilBits: number;
+
         constructor(gl: GL)
         {
             gl.capabilities = this;
@@ -139,6 +144,7 @@ namespace feng3d
             this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
 
             this.maxSamples = this.isWebGL2 ? gl.getParameter(gl2.MAX_SAMPLES) : 0;
+            this.stencilBits = gl.getParameter(gl.STENCIL_BITS);
         }
 
     }
