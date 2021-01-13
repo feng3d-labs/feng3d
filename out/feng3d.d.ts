@@ -12889,22 +12889,20 @@ declare namespace feng3d {
          */
         selfBoundsChanged: Component;
     }
-    interface ComponentMap {
-        BoundingBox: BoundingBox;
-    }
     /**
      * 轴对称包围盒
      *
      * 用于优化计算射线碰撞检测以及视锥剔除等。
      */
-    class BoundingBox extends Component {
+    class BoundingBox {
+        private _gameObject;
         protected _selfBounds: Box3;
         protected _selfWorldBounds: Box3;
         protected _worldBounds: Box3;
         protected _selfBoundsInvalid: boolean;
         protected _selfWorldBoundsInvalid: boolean;
         protected _worldBoundsInvalid: boolean;
-        init(): void;
+        constructor(gameObject: GameObject);
         /**
          * 自身包围盒通常有Renderable组件提供
          */

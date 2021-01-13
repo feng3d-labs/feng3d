@@ -27143,23 +27143,18 @@ var feng3d;
      *
      * 用于优化计算射线碰撞检测以及视锥剔除等。
      */
-    var BoundingBox = /** @class */ (function (_super) {
-        __extends(BoundingBox, _super);
-        function BoundingBox() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._selfBounds = new feng3d.Box3();
-            _this._selfWorldBounds = new feng3d.Box3();
-            _this._worldBounds = new feng3d.Box3();
-            _this._selfBoundsInvalid = true;
-            _this._selfWorldBoundsInvalid = true;
-            _this._worldBoundsInvalid = true;
-            return _this;
+    var BoundingBox = /** @class */ (function () {
+        function BoundingBox(gameObject) {
+            this._selfBounds = new feng3d.Box3();
+            this._selfWorldBounds = new feng3d.Box3();
+            this._worldBounds = new feng3d.Box3();
+            this._selfBoundsInvalid = true;
+            this._selfWorldBoundsInvalid = true;
+            this._worldBoundsInvalid = true;
+            this._gameObject = gameObject;
+            gameObject.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);
+            gameObject.on("scenetransformChanged", this._invalidateSelfWorldBounds, this);
         }
-        BoundingBox.prototype.init = function () {
-            _super.prototype.init.call(this);
-            this.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);
-            this.on("scenetransformChanged", this._invalidateSelfWorldBounds, this);
-        };
         Object.defineProperty(BoundingBox.prototype, "selfBounds", {
             /**
              * 自身包围盒通常有Renderable组件提供
@@ -27211,7 +27206,7 @@ var feng3d;
             var bounds = this._selfBounds.empty();
             // 获取对象上的包围盒
             var data = { bounds: [] };
-            this.dispatch("getSelfBounds", data);
+            this._gameObject.dispatch("getSelfBounds", data);
             data.bounds.forEach(function (b) {
                 bounds.union(b);
             });
@@ -27220,7 +27215,7 @@ var feng3d;
          * 更新自身世界包围盒
          */
         BoundingBox.prototype._updateSelfWorldBounds = function () {
-            this._selfWorldBounds.copy(this.selfBounds).applyMatrix(this.transform.localToWorldMatrix);
+            this._selfWorldBounds.copy(this.selfBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix);
         };
         /**
          * 更新世界包围盒
@@ -27229,9 +27224,8 @@ var feng3d;
             var _this = this;
             this._worldBounds.copy(this.selfWorldBounds);
             // 获取子对象的世界包围盒与自身世界包围盒进行合并
-            var boundingBoxs = this.gameObject.children.map(function (g) { return g.getComponent("BoundingBox"); });
-            boundingBoxs.forEach(function (bb) {
-                _this._worldBounds.union(bb.worldBounds);
+            this._gameObject.children.forEach(function (element) {
+                _this._worldBounds.union(element.boundingBox.worldBounds);
             });
         };
         /**
@@ -27260,17 +27254,13 @@ var feng3d;
                 return;
             this._worldBoundsInvalid = true;
             // 世界包围盒失效会影响父对象世界包围盒失效
-            var parent = this.gameObject.parent;
+            var parent = this._gameObject.parent;
             if (!parent)
                 return;
-            var bb = parent.getComponent("BoundingBox");
-            bb._invalidateWorldBounds();
+            var bb = parent.boundingBox._invalidateWorldBounds();
         };
-        BoundingBox = __decorate([
-            feng3d.RegisterComponent()
-        ], BoundingBox);
         return BoundingBox;
-    }(feng3d.Component));
+    }());
     feng3d.BoundingBox = BoundingBox;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -27346,7 +27336,7 @@ var feng3d;
              */
             get: function () {
                 if (!this._boundingBox) {
-                    this._boundingBox = this.getComponent("BoundingBox");
+                    this._boundingBox = new feng3d.BoundingBox(this);
                 }
                 return this._boundingBox;
             },
@@ -28182,7 +28172,7 @@ var feng3d;
             this.gl.clearDepth(1);
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
             this.gl.enable(this.gl.DEPTH_TEST);
-            //鼠标拾取渲染
+            // 鼠标拾取渲染
             this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
             //绘制阴影图
             feng3d.shadowRenderer.draw(this.gl, this.scene, this.camera);
@@ -29038,7 +29028,8 @@ var feng3d;
              * 所有 SkyBox
              */
             get: function () {
-                return this._skyBoxs = this._skyBoxs || this.getComponentsInChildren("SkyBox");
+                this._skyBoxs = this._skyBoxs || this.getComponentsInChildren("SkyBox");
+                return this._skyBoxs;
             },
             enumerable: false,
             configurable: true
@@ -29108,7 +29099,8 @@ var feng3d;
         });
         Object.defineProperty(Scene.prototype, "behaviours", {
             get: function () {
-                return this._behaviours = this._behaviours || this.getComponentsInChildren("Behaviour");
+                this._behaviours = this._behaviours || this.getComponentsInChildren("Behaviour");
+                return this._behaviours;
             },
             enumerable: false,
             configurable: true

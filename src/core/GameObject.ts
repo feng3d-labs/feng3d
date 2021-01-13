@@ -134,7 +134,7 @@ namespace feng3d
         {
             if (!this._boundingBox)
             {
-                this._boundingBox = this.getComponent("BoundingBox");
+                this._boundingBox = new BoundingBox(this);
             }
             return this._boundingBox;
         }

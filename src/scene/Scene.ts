@@ -117,7 +117,8 @@ namespace feng3d
          */
         get skyBoxs()
         {
-            return this._skyBoxs = this._skyBoxs || this.getComponentsInChildren("SkyBox");
+            this._skyBoxs = this._skyBoxs || this.getComponentsInChildren("SkyBox");
+            return this._skyBoxs;
         }
 
         get activeSkyBoxs()
@@ -167,7 +168,8 @@ namespace feng3d
 
         get behaviours()
         {
-            return this._behaviours = this._behaviours || this.getComponentsInChildren("Behaviour");
+            this._behaviours = this._behaviours || this.getComponentsInChildren("Behaviour");
+            return this._behaviours;
         }
 
         get activeBehaviours()

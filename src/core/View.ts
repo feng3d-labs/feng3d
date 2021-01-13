@@ -195,7 +195,7 @@ namespace feng3d
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
             this.gl.enable(this.gl.DEPTH_TEST);
 
-            //鼠标拾取渲染
+            // 鼠标拾取渲染
             this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
             //绘制阴影图
             shadowRenderer.draw(this.gl, this.scene, this.camera);
