@@ -11707,13 +11707,13 @@ var feng3d;
          * 与射线相交
          * @param position 射线起点
          * @param direction 射线方向
-         * @param targetNormal 相交处法线
+         * @param outTargetNormal 相交处法线
          * @return 起点到包围盒距离
          *
          * @todo 可用以下方法优化？
          * @see 3D数学基础：图形与游戏开发 P290
          */
-        Box3.prototype.rayIntersection = function (position, direction, targetNormal) {
+        Box3.prototype.rayIntersection = function (position, direction, outTargetNormal) {
             if (this.containsPoint(position))
                 return 0;
             var halfExtentsX = (this.max.x - this.min.x) / 2;
@@ -11740,10 +11740,10 @@ var feng3d;
                     iy = py + rayEntryDistance * vy;
                     iz = pz + rayEntryDistance * vz;
                     if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = 1;
-                            targetNormal.y = 0;
-                            targetNormal.z = 0;
+                        if (outTargetNormal) {
+                            outTargetNormal.x = 1;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = 0;
                         }
                         intersects = true;
                     }
@@ -11755,10 +11755,10 @@ var feng3d;
                     iy = py + rayEntryDistance * vy;
                     iz = pz + rayEntryDistance * vz;
                     if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = -1;
-                            targetNormal.y = 0;
-                            targetNormal.z = 0;
+                        if (outTargetNormal) {
+                            outTargetNormal.x = -1;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = 0;
                         }
                         intersects = true;
                     }
@@ -11770,10 +11770,10 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iz = pz + rayEntryDistance * vz;
                     if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = 1;
-                            targetNormal.z = 0;
+                        if (outTargetNormal) {
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = 1;
+                            outTargetNormal.z = 0;
                         }
                         intersects = true;
                     }
@@ -11785,10 +11785,10 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iz = pz + rayEntryDistance * vz;
                     if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = -1;
-                            targetNormal.z = 0;
+                        if (outTargetNormal) {
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = -1;
+                            outTargetNormal.z = 0;
                         }
                         intersects = true;
                     }
@@ -11800,10 +11800,10 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iy = py + rayEntryDistance * vy;
                     if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = 0;
-                            targetNormal.z = 1;
+                        if (outTargetNormal) {
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = 1;
                         }
                         intersects = true;
                     }
@@ -11815,10 +11815,10 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iy = py + rayEntryDistance * vy;
                     if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
-                        if (targetNormal) {
-                            targetNormal.x = 0;
-                            targetNormal.y = 0;
-                            targetNormal.z = -1;
+                        if (outTargetNormal) {
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = -1;
                         }
                         intersects = true;
                     }
@@ -27145,7 +27145,7 @@ var feng3d;
      */
     var BoundingBox = /** @class */ (function () {
         function BoundingBox(gameObject) {
-            this._selfBounds = new feng3d.Box3();
+            this._selfLocalBounds = new feng3d.Box3();
             this._selfWorldBounds = new feng3d.Box3();
             this._worldBounds = new feng3d.Box3();
             this._selfBoundsInvalid = true;
@@ -27155,16 +27155,16 @@ var feng3d;
             gameObject.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);
             gameObject.on("scenetransformChanged", this._invalidateSelfWorldBounds, this);
         }
-        Object.defineProperty(BoundingBox.prototype, "selfBounds", {
+        Object.defineProperty(BoundingBox.prototype, "selfLocalBounds", {
             /**
-             * 自身包围盒通常有Renderable组件提供
+             * 自身局部包围盒通常有Renderable组件提供
              */
             get: function () {
                 if (this._selfBoundsInvalid) {
                     this._updateSelfBounds();
                     this._selfBoundsInvalid = false;
                 }
-                return this._selfBounds;
+                return this._selfLocalBounds;
             },
             enumerable: false,
             configurable: true
@@ -27203,7 +27203,7 @@ var feng3d;
          * 自身包围盒通常有Renderable组件提供
          */
         BoundingBox.prototype._updateSelfBounds = function () {
-            var bounds = this._selfBounds.empty();
+            var bounds = this._selfLocalBounds.empty();
             // 获取对象上的包围盒
             var data = { bounds: [] };
             this._gameObject.dispatch("getSelfBounds", data);
@@ -27215,7 +27215,7 @@ var feng3d;
          * 更新自身世界包围盒
          */
         BoundingBox.prototype._updateSelfWorldBounds = function () {
-            this._selfWorldBounds.copy(this.selfBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix);
+            this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix);
         };
         /**
          * 更新世界包围盒
@@ -27257,7 +27257,7 @@ var feng3d;
             var parent = this._gameObject.parent;
             if (!parent)
                 return;
-            var bb = parent.boundingBox._invalidateWorldBounds();
+            parent.boundingBox._invalidateWorldBounds();
         };
         return BoundingBox;
     }());
@@ -34486,6 +34486,19 @@ var feng3d;
     var Raycaster = /** @class */ (function () {
         function Raycaster() {
         }
+        Raycaster.prototype.pickObject = function (ray3, gameObject, pickChildren) {
+            if (pickChildren === void 0) { pickChildren = true; }
+            var rayEntryDistance = -1;
+            var localNormal = new feng3d.Vector3();
+            if (pickChildren) {
+                rayEntryDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
+            }
+            else {
+                rayEntryDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
+                if (rayEntryDistance) {
+                }
+            }
+        };
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
@@ -35812,6 +35825,7 @@ var feng3d;
         Mouse3DManager.prototype.pick = function (view, scene, camera) {
             if (this._mouseEventTypes.length == 0)
                 return;
+            feng3d.raycaster.pickObject(view.mouseRay3D, scene.gameObject);
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = feng3d.raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;

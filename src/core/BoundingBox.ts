@@ -22,7 +22,7 @@ namespace feng3d
     {
         private _gameObject: GameObject;
 
-        protected _selfBounds = new Box3();
+        protected _selfLocalBounds = new Box3();
         protected _selfWorldBounds = new Box3();
         protected _worldBounds = new Box3();
 
@@ -38,16 +38,16 @@ namespace feng3d
         }
 
         /**
-         * 自身包围盒通常有Renderable组件提供
+         * 自身局部包围盒通常有Renderable组件提供
          */
-        get selfBounds()
+        get selfLocalBounds()
         {
             if (this._selfBoundsInvalid)
             {
                 this._updateSelfBounds();
                 this._selfBoundsInvalid = false;
             }
-            return this._selfBounds;
+            return this._selfLocalBounds;
         }
 
 		/**
@@ -84,7 +84,7 @@ namespace feng3d
          */
         protected _updateSelfBounds()
         {
-            var bounds = this._selfBounds.empty();
+            var bounds = this._selfLocalBounds.empty();
 
             // 获取对象上的包围盒
             var data: { bounds: Box3[]; } = { bounds: [] };
@@ -101,7 +101,7 @@ namespace feng3d
          */
         protected _updateSelfWorldBounds()
         {
-            this._selfWorldBounds.copy(this.selfBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix);
+            this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix);
         }
 
         /**
@@ -152,7 +152,7 @@ namespace feng3d
             // 世界包围盒失效会影响父对象世界包围盒失效
             var parent = this._gameObject.parent;
             if (!parent) return;
-            var bb = parent.boundingBox._invalidateWorldBounds();
+            parent.boundingBox._invalidateWorldBounds();
         }
     }
 }

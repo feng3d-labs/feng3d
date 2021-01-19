@@ -11,6 +11,23 @@ namespace feng3d
 	 */
     export class Raycaster 
     {
+        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren = true)
+        {
+            let rayEntryDistance = -1;
+            let localNormal = new Vector3();
+            if (pickChildren)
+            {
+                rayEntryDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
+            } else
+            {
+                rayEntryDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
+                if (rayEntryDistance)
+                {
+
+                }
+            }
+        }
+
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
@@ -158,4 +175,7 @@ namespace feng3d
          */
         cullFace: CullFace;
     }
+
+
+
 }

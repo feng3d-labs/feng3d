@@ -347,13 +347,13 @@ namespace feng3d
          * 与射线相交
          * @param position 射线起点
          * @param direction 射线方向
-         * @param targetNormal 相交处法线
+         * @param outTargetNormal 相交处法线
          * @return 起点到包围盒距离
          * 
          * @todo 可用以下方法优化？
          * @see 3D数学基础：图形与游戏开发 P290
          */
-        rayIntersection(position: Vector3, direction: Vector3, targetNormal?: Vector3)
+        rayIntersection(position: Vector3, direction: Vector3, outTargetNormal?: Vector3)
         {
             if (this.containsPoint(position))
                 return 0;
@@ -390,11 +390,11 @@ namespace feng3d
                     iz = pz + rayEntryDistance * vz;
                     if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ)
                     {
-                        if (targetNormal)
+                        if (outTargetNormal)
                         {
-                            targetNormal.x = 1;
-                            targetNormal.y = 0;
-                            targetNormal.z = 0;
+                            outTargetNormal.x = 1;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = 0;
                         }
 
                         intersects = true;
@@ -410,11 +410,11 @@ namespace feng3d
                     iz = pz + rayEntryDistance * vz;
                     if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ)
                     {
-                        if (targetNormal)
+                        if (outTargetNormal)
                         {
-                            targetNormal.x = -1;
-                            targetNormal.y = 0;
-                            targetNormal.z = 0;
+                            outTargetNormal.x = -1;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = 0;
                         }
                         intersects = true;
                     }
@@ -429,11 +429,11 @@ namespace feng3d
                     iz = pz + rayEntryDistance * vz;
                     if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ)
                     {
-                        if (targetNormal)
+                        if (outTargetNormal)
                         {
-                            targetNormal.x = 0;
-                            targetNormal.y = 1;
-                            targetNormal.z = 0;
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = 1;
+                            outTargetNormal.z = 0;
                         }
                         intersects = true;
                     }
@@ -448,11 +448,11 @@ namespace feng3d
                     iz = pz + rayEntryDistance * vz;
                     if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ)
                     {
-                        if (targetNormal)
+                        if (outTargetNormal)
                         {
-                            targetNormal.x = 0;
-                            targetNormal.y = -1;
-                            targetNormal.z = 0;
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = -1;
+                            outTargetNormal.z = 0;
                         }
                         intersects = true;
                     }
@@ -467,11 +467,11 @@ namespace feng3d
                     iy = py + rayEntryDistance * vy;
                     if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX)
                     {
-                        if (targetNormal)
+                        if (outTargetNormal)
                         {
-                            targetNormal.x = 0;
-                            targetNormal.y = 0;
-                            targetNormal.z = 1;
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = 1;
                         }
                         intersects = true;
                     }
@@ -486,11 +486,11 @@ namespace feng3d
                     iy = py + rayEntryDistance * vy;
                     if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX)
                     {
-                        if (targetNormal)
+                        if (outTargetNormal)
                         {
-                            targetNormal.x = 0;
-                            targetNormal.y = 0;
-                            targetNormal.z = -1;
+                            outTargetNormal.x = 0;
+                            outTargetNormal.y = 0;
+                            outTargetNormal.z = -1;
                         }
                         intersects = true;
                     }

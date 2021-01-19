@@ -6061,13 +6061,13 @@ declare namespace feng3d {
          * 与射线相交
          * @param position 射线起点
          * @param direction 射线方向
-         * @param targetNormal 相交处法线
+         * @param outTargetNormal 相交处法线
          * @return 起点到包围盒距离
          *
          * @todo 可用以下方法优化？
          * @see 3D数学基础：图形与游戏开发 P290
          */
-        rayIntersection(position: Vector3, direction: Vector3, targetNormal?: Vector3): number;
+        rayIntersection(position: Vector3, direction: Vector3, outTargetNormal?: Vector3): number;
         /**
          * 获取包围盒上距离指定点最近的点
          *
@@ -12896,7 +12896,7 @@ declare namespace feng3d {
      */
     class BoundingBox {
         private _gameObject;
-        protected _selfBounds: Box3;
+        protected _selfLocalBounds: Box3;
         protected _selfWorldBounds: Box3;
         protected _worldBounds: Box3;
         protected _selfBoundsInvalid: boolean;
@@ -12904,9 +12904,9 @@ declare namespace feng3d {
         protected _worldBoundsInvalid: boolean;
         constructor(gameObject: GameObject);
         /**
-         * 自身包围盒通常有Renderable组件提供
+         * 自身局部包围盒通常有Renderable组件提供
          */
-        get selfBounds(): Box3;
+        get selfLocalBounds(): Box3;
         /**
          * 自身世界空间的包围盒
          */
@@ -15753,6 +15753,7 @@ declare namespace feng3d {
      * 射线投射拾取器
      */
     class Raycaster {
+        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren?: boolean): void;
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
