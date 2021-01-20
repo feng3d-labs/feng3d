@@ -492,20 +492,20 @@ namespace feng3d
 
         formMatrix4x4(matrix4x4: Matrix4x4)
         {
-            var arr4 = matrix4x4.rawData;
-            var arr3 = this.elements;
+            var m4 = matrix4x4.elements;
+            var m3 = this.elements;
 
-            arr3[0] = arr4[0];
-            arr3[1] = arr4[1];
-            arr3[2] = arr4[2];
+            m3[0] = m4[0];
+            m3[1] = m4[1];
+            m3[2] = m4[2];
 
-            arr3[3] = arr4[4];
-            arr3[4] = arr4[5];
-            arr3[5] = arr4[6];
+            m3[3] = m4[4];
+            m3[4] = m4[5];
+            m3[5] = m4[6];
 
-            arr3[6] = arr4[8];
-            arr3[7] = arr4[9];
-            arr3[8] = arr4[10];
+            m3[6] = m4[8];
+            m3[7] = m4[9];
+            m3[8] = m4[10];
 
             return this;
         }
@@ -531,7 +531,7 @@ namespace feng3d
          */
         toMatrix4x4(out = new Matrix4x4())
         {
-            var outdata = out.rawData;
+            var outdata = out.elements;
             var indata = this.elements;
 
             outdata[0] = indata[0];

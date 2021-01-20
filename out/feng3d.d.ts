@@ -4904,11 +4904,11 @@ declare namespace feng3d {
         static fromQuaternion(q: Quaternion): Matrix4x4;
         /**
          * 创建缩放矩阵
-         * @param   xScale      用于沿 x 轴缩放对象的乘数。
-         * @param   yScale      用于沿 y 轴缩放对象的乘数。
-         * @param   zScale      用于沿 z 轴缩放对象的乘数。
+         * @param   sx      用于沿 x 轴缩放对象的乘数。
+         * @param   sy      用于沿 y 轴缩放对象的乘数。
+         * @param   sz      用于沿 z 轴缩放对象的乘数。
          */
-        static fromScale(xScale: number, yScale: number, zScale: number): Matrix4x4;
+        static fromScale(sx: number, sy: number, sz: number): Matrix4x4;
         /**
          * 创建位移矩阵
          * @param   x   沿 x 轴的增量平移。
@@ -4919,7 +4919,7 @@ declare namespace feng3d {
         /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        rawData: NmberArray16;
+        elements: NmberArray16;
         /**
          * 获取位移
          *
@@ -5032,11 +5032,11 @@ declare namespace feng3d {
         appendRotation(axis: Vector3, degrees: number, pivotPoint?: Vector3): this;
         /**
          * 在 Matrix4x4 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
-         * @param   xScale      用于沿 x 轴缩放对象的乘数。
-         * @param   yScale      用于沿 y 轴缩放对象的乘数。
-         * @param   zScale      用于沿 z 轴缩放对象的乘数。
+         * @param   sx      用于沿 x 轴缩放对象的乘数。
+         * @param   sy      用于沿 y 轴缩放对象的乘数。
+         * @param   sz      用于沿 z 轴缩放对象的乘数。
          */
-        appendScale(xScale: number, yScale: number, zScale: number): this;
+        appendScale(sx: number, sy: number, sz: number): this;
         /**
          * 在 Matrix4x4 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
          * @param   x   沿 x 轴的增量平移。
@@ -6456,9 +6456,9 @@ declare namespace feng3d {
         /**
          * 从矩阵初始化
          *
-         * @param m 矩阵
+         * @param matrix4x4 矩阵
          */
-        fromMatrix(m: Matrix4x4): this;
+        fromMatrix(matrix4x4: Matrix4x4): this;
         /**
          * 是否与球体相交
          *

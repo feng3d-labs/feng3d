@@ -460,27 +460,27 @@ namespace feng3d
          */
         toMatrix(target = new Matrix4x4())
         {
-            var rawData = target.rawData;
+            var elements = target.elements;
             var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
             var yz2 = 2.0 * this.y * this.z, yw2 = 2.0 * this.y * this.w, zw2 = 2.0 * this.z * this.w;
             var xx = this.x * this.x, yy = this.y * this.y, zz = this.z * this.z, ww = this.w * this.w;
 
-            rawData[0] = xx - yy - zz + ww;
-            rawData[4] = xy2 - zw2;
-            rawData[8] = xz2 + yw2;
-            rawData[12] = 0;
-            rawData[1] = xy2 + zw2;
-            rawData[5] = -xx + yy - zz + ww;
-            rawData[9] = yz2 - xw2;
-            rawData[13] = 0;
-            rawData[2] = xz2 - yw2;
-            rawData[6] = yz2 + xw2;
-            rawData[10] = -xx - yy + zz + ww;
-            rawData[14] = 0;
-            rawData[3] = 0.0;
-            rawData[7] = 0.0;
-            rawData[11] = 0;
-            rawData[15] = 1;
+            elements[0] = xx - yy - zz + ww;
+            elements[4] = xy2 - zw2;
+            elements[8] = xz2 + yw2;
+            elements[12] = 0;
+            elements[1] = xy2 + zw2;
+            elements[5] = -xx + yy - zz + ww;
+            elements[9] = yz2 - xw2;
+            elements[13] = 0;
+            elements[2] = xz2 - yw2;
+            elements[6] = yz2 + xw2;
+            elements[10] = -xx - yy + zz + ww;
+            elements[14] = 0;
+            elements[3] = 0.0;
+            elements[7] = 0.0;
+            elements[11] = 0;
+            elements[15] = 1;
             return target;
         }
 

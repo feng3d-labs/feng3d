@@ -70,12 +70,12 @@ namespace feng3d
 		/**
 		 * 从矩阵初始化
 		 * 
-		 * @param m 矩阵
+		 * @param matrix4x4 矩阵
 		 */
-		fromMatrix(m: Matrix4x4)
+		fromMatrix(matrix4x4: Matrix4x4)
 		{
 			var planes = this.planes;
-			var me = m.rawData;
+			var me = matrix4x4.elements;
 			var me0 = me[0], me1 = me[1], me2 = me[2], me3 = me[3];
 			var me4 = me[4], me5 = me[5], me6 = me[6], me7 = me[7];
 			var me8 = me[8], me9 = me[9], me10 = me[10], me11 = me[11];

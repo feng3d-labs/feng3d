@@ -183,7 +183,7 @@ namespace feng3d
         set matrix(v)
         {
             v.toTRS(this._position, this._rotation, this._scale);
-            this._matrix.fromArray(v.rawData);
+            this._matrix.fromArray(v.elements);
             this._matrixInvalid = false;
         }
 
@@ -632,7 +632,7 @@ namespace feng3d
             if (this.parent)
                 this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
             this.dispatch("updateLocalToWorldMatrix", this);
-            console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
+            console.assert(!isNaN(this._localToWorldMatrix.elements[0]));
         }
     }
 }

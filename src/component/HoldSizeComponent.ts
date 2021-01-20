@@ -58,7 +58,7 @@ namespace feng3d
                 vec[2].scaleNumber(depthScale * this.holdSize);
                 _localToWorldMatrix.fromTRS(vec[0], vec[1], vec[2]);
 
-                console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
+                console.assert(!isNaN(_localToWorldMatrix.elements[0]));
             }
         }
 

@@ -82,17 +82,17 @@ namespace feng3d
 
         /**
          * 创建缩放矩阵
-         * @param   xScale      用于沿 x 轴缩放对象的乘数。
-         * @param   yScale      用于沿 y 轴缩放对象的乘数。
-         * @param   zScale      用于沿 z 轴缩放对象的乘数。
+         * @param   sx      用于沿 x 轴缩放对象的乘数。
+         * @param   sy      用于沿 y 轴缩放对象的乘数。
+         * @param   sz      用于沿 z 轴缩放对象的乘数。
          */
-        static fromScale(xScale: number, yScale: number, zScale: number)
+        static fromScale(sx: number, sy: number, sz: number)
         {
             var rotationMat = new Matrix4x4([//
-                xScale, 0.0000, 0.0000, 0,//
-                0.0000, yScale, 0.0000, 0,//
-                0.0000, 0.0000, zScale, 0,//
-                0.0000, 0.0000, 0.0000, 1//
+                sx, 0., 0., 0,//
+                0., sy, 0., 0,//
+                0., 0., sz, 0,//
+                0., 0., 0., 1//
             ]);
             return rotationMat;
         }
@@ -118,7 +118,7 @@ namespace feng3d
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         @serialize
-        rawData: NmberArray16;
+        elements: NmberArray16;
 
         /**
          * 获取位移
@@ -127,9 +127,9 @@ namespace feng3d
          */
         getPosition(value = new Vector3())
         {
-            value.x = this.rawData[12];
-            value.y = this.rawData[13];
-            value.z = this.rawData[14];
+            value.x = this.elements[12];
+            value.y = this.elements[13];
+            value.z = this.elements[14];
             return value;
         }
 
@@ -140,9 +140,9 @@ namespace feng3d
          */
         setPosition(value: Vector3)
         {
-            this.rawData[12] = value.x;
-            this.rawData[13] = value.y;
-            this.rawData[14] = value.z;
+            this.elements[12] = value.x;
+            this.elements[13] = value.y;
+            this.elements[14] = value.z;
             return this;
         }
 
@@ -182,7 +182,7 @@ namespace feng3d
          */
         getScale(scale = new Vector3)
         {
-            var rawData = this.rawData;
+            var rawData = this.elements;
             var v = new Vector3();
             scale.x = v.set(rawData[0], rawData[1], rawData[2]).length;
             scale.y = v.set(rawData[4], rawData[5], rawData[6]).length;
@@ -199,7 +199,7 @@ namespace feng3d
         {
             var oldS = this.getScale();
 
-            var te = this.rawData;
+            var te = this.elements;
             var sx = scale.x / oldS.x;
             var sy = scale.y / oldS.y;
             var sz = scale.z / oldS.z;
@@ -223,12 +223,12 @@ namespace feng3d
         get determinant()
         {
             return (//
-                (this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) //
-                - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) //
-                + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) //
-                + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) //
-                - (this.rawData[4] * this.rawData[13] - this.rawData[12] * this.rawData[5]) * (this.rawData[2] * this.rawData[11] - this.rawData[10] * this.rawData[3]) //
-                + (this.rawData[8] * this.rawData[13] - this.rawData[12] * this.rawData[9]) * (this.rawData[2] * this.rawData[7] - this.rawData[6] * this.rawData[3])//
+                (this.elements[0] * this.elements[5] - this.elements[4] * this.elements[1]) * (this.elements[10] * this.elements[15] - this.elements[14] * this.elements[11]) //
+                - (this.elements[0] * this.elements[9] - this.elements[8] * this.elements[1]) * (this.elements[6] * this.elements[15] - this.elements[14] * this.elements[7]) //
+                + (this.elements[0] * this.elements[13] - this.elements[12] * this.elements[1]) * (this.elements[6] * this.elements[11] - this.elements[10] * this.elements[7]) //
+                + (this.elements[4] * this.elements[9] - this.elements[8] * this.elements[5]) * (this.elements[2] * this.elements[15] - this.elements[14] * this.elements[3]) //
+                - (this.elements[4] * this.elements[13] - this.elements[12] * this.elements[5]) * (this.elements[2] * this.elements[11] - this.elements[10] * this.elements[3]) //
+                + (this.elements[8] * this.elements[13] - this.elements[12] * this.elements[9]) * (this.elements[2] * this.elements[7] - this.elements[6] * this.elements[3])//
             );
         }
 
@@ -239,7 +239,7 @@ namespace feng3d
          */
         getAxisX(out = new Vector3())
         {
-            return out.set(this.rawData[0], this.rawData[1], this.rawData[2]);
+            return out.set(this.elements[0], this.elements[1], this.elements[2]);
         }
 
         /**
@@ -249,9 +249,9 @@ namespace feng3d
          */
         setAxisX(vector = new Vector3())
         {
-            this.rawData[0] = vector.x;
-            this.rawData[1] = vector.y;
-            this.rawData[2] = vector.z;
+            this.elements[0] = vector.x;
+            this.elements[1] = vector.y;
+            this.elements[2] = vector.z;
             return this;
         }
 
@@ -262,7 +262,7 @@ namespace feng3d
          */
         getAxisY(out = new Vector3())
         {
-            return out.set(this.rawData[4], this.rawData[5], this.rawData[6]);
+            return out.set(this.elements[4], this.elements[5], this.elements[6]);
         }
 
         /**
@@ -272,9 +272,9 @@ namespace feng3d
          */
         setAxisY(vector = new Vector3())
         {
-            this.rawData[4] = vector.x;
-            this.rawData[5] = vector.y;
-            this.rawData[6] = vector.z;
+            this.elements[4] = vector.x;
+            this.elements[5] = vector.y;
+            this.elements[6] = vector.z;
             return this;
         }
 
@@ -285,7 +285,7 @@ namespace feng3d
          */
         getAxisZ(out = new Vector3())
         {
-            return out.set(this.rawData[8], this.rawData[9], this.rawData[10]);
+            return out.set(this.elements[8], this.elements[9], this.elements[10]);
         }
 
         /**
@@ -299,7 +299,7 @@ namespace feng3d
             0, 0, 0, 1,//
         ])
         {
-            this.rawData = rawData;
+            this.elements = rawData;
         }
 
         /**
@@ -352,7 +352,7 @@ namespace feng3d
 
             arr.forEach((v, i) =>
             {
-                this.rawData[i] = v;
+                this.elements[i] = v;
             });
             return this;
         }
@@ -363,37 +363,37 @@ namespace feng3d
         append(lhs: Matrix4x4)
         {
             var //
-                m111 = this.rawData[0], m121 = this.rawData[4], m131 = this.rawData[8], m141 = this.rawData[12],//
-                m112 = this.rawData[1], m122 = this.rawData[5], m132 = this.rawData[9], m142 = this.rawData[13],//
-                m113 = this.rawData[2], m123 = this.rawData[6], m133 = this.rawData[10], m143 = this.rawData[14],//
-                m114 = this.rawData[3], m124 = this.rawData[7], m134 = this.rawData[11], m144 = this.rawData[15], //
+                m111 = this.elements[0], m121 = this.elements[4], m131 = this.elements[8], m141 = this.elements[12],//
+                m112 = this.elements[1], m122 = this.elements[5], m132 = this.elements[9], m142 = this.elements[13],//
+                m113 = this.elements[2], m123 = this.elements[6], m133 = this.elements[10], m143 = this.elements[14],//
+                m114 = this.elements[3], m124 = this.elements[7], m134 = this.elements[11], m144 = this.elements[15], //
 
-                m211 = lhs.rawData[0], m221 = lhs.rawData[4], m231 = lhs.rawData[8], m241 = lhs.rawData[12], //
-                m212 = lhs.rawData[1], m222 = lhs.rawData[5], m232 = lhs.rawData[9], m242 = lhs.rawData[13], //
-                m213 = lhs.rawData[2], m223 = lhs.rawData[6], m233 = lhs.rawData[10], m243 = lhs.rawData[14], //
-                m214 = lhs.rawData[3], m224 = lhs.rawData[7], m234 = lhs.rawData[11], m244 = lhs.rawData[15];
+                m211 = lhs.elements[0], m221 = lhs.elements[4], m231 = lhs.elements[8], m241 = lhs.elements[12], //
+                m212 = lhs.elements[1], m222 = lhs.elements[5], m232 = lhs.elements[9], m242 = lhs.elements[13], //
+                m213 = lhs.elements[2], m223 = lhs.elements[6], m233 = lhs.elements[10], m243 = lhs.elements[14], //
+                m214 = lhs.elements[3], m224 = lhs.elements[7], m234 = lhs.elements[11], m244 = lhs.elements[15];
 
-            this.rawData[0] = m111 * m211 + m112 * m221 + m113 * m231 + m114 * m241;
-            this.rawData[1] = m111 * m212 + m112 * m222 + m113 * m232 + m114 * m242;
-            this.rawData[2] = m111 * m213 + m112 * m223 + m113 * m233 + m114 * m243;
-            this.rawData[3] = m111 * m214 + m112 * m224 + m113 * m234 + m114 * m244;
+            this.elements[0] = m111 * m211 + m112 * m221 + m113 * m231 + m114 * m241;
+            this.elements[1] = m111 * m212 + m112 * m222 + m113 * m232 + m114 * m242;
+            this.elements[2] = m111 * m213 + m112 * m223 + m113 * m233 + m114 * m243;
+            this.elements[3] = m111 * m214 + m112 * m224 + m113 * m234 + m114 * m244;
 
-            this.rawData[4] = m121 * m211 + m122 * m221 + m123 * m231 + m124 * m241;
-            this.rawData[5] = m121 * m212 + m122 * m222 + m123 * m232 + m124 * m242;
-            this.rawData[6] = m121 * m213 + m122 * m223 + m123 * m233 + m124 * m243;
-            this.rawData[7] = m121 * m214 + m122 * m224 + m123 * m234 + m124 * m244;
+            this.elements[4] = m121 * m211 + m122 * m221 + m123 * m231 + m124 * m241;
+            this.elements[5] = m121 * m212 + m122 * m222 + m123 * m232 + m124 * m242;
+            this.elements[6] = m121 * m213 + m122 * m223 + m123 * m233 + m124 * m243;
+            this.elements[7] = m121 * m214 + m122 * m224 + m123 * m234 + m124 * m244;
 
-            this.rawData[8] = m131 * m211 + m132 * m221 + m133 * m231 + m134 * m241;
-            this.rawData[9] = m131 * m212 + m132 * m222 + m133 * m232 + m134 * m242;
-            this.rawData[10] = m131 * m213 + m132 * m223 + m133 * m233 + m134 * m243;
-            this.rawData[11] = m131 * m214 + m132 * m224 + m133 * m234 + m134 * m244;
+            this.elements[8] = m131 * m211 + m132 * m221 + m133 * m231 + m134 * m241;
+            this.elements[9] = m131 * m212 + m132 * m222 + m133 * m232 + m134 * m242;
+            this.elements[10] = m131 * m213 + m132 * m223 + m133 * m233 + m134 * m243;
+            this.elements[11] = m131 * m214 + m132 * m224 + m133 * m234 + m134 * m244;
 
-            this.rawData[12] = m141 * m211 + m142 * m221 + m143 * m231 + m144 * m241;
-            this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
-            this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
-            this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
+            this.elements[12] = m141 * m211 + m142 * m221 + m143 * m231 + m144 * m241;
+            this.elements[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
+            this.elements[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
+            this.elements[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
 
-            console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
+            console.assert(this.elements[0] !== NaN && this.elements[4] !== NaN && this.elements[8] !== NaN && this.elements[12] !== NaN);
 
             return this;
         }
@@ -424,13 +424,13 @@ namespace feng3d
 
         /**
          * 在 Matrix4x4 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
-         * @param   xScale      用于沿 x 轴缩放对象的乘数。
-         * @param   yScale      用于沿 y 轴缩放对象的乘数。
-         * @param   zScale      用于沿 z 轴缩放对象的乘数。
+         * @param   sx      用于沿 x 轴缩放对象的乘数。
+         * @param   sy      用于沿 y 轴缩放对象的乘数。
+         * @param   sz      用于沿 z 轴缩放对象的乘数。
          */
-        appendScale(xScale: number, yScale: number, zScale: number)
+        appendScale(sx: number, sy: number, sz: number)
         {
-            var scaleMat = Matrix4x4.fromScale(xScale, yScale, zScale);
+            var scaleMat = Matrix4x4.fromScale(sx, sy, sz);
             this.append(scaleMat);
             return this;
         }
@@ -443,10 +443,10 @@ namespace feng3d
          */
         appendTranslation(x: number, y: number, z: number)
         {
-            const te = this.rawData;
-            te[0] += x * te[3]; te[4] += x * te[7]; te[8] += x * te[11]; te[12] += x * te[15];
-            te[1] += y * te[3]; te[5] += y * te[7]; te[9] += y * te[11]; te[13] += y * te[15];
-            te[2] += z * te[3]; te[6] += z * te[7]; te[10] += z * te[11]; te[14] += z * te[15];
+            const m = this.elements;
+            m[0] += x * m[3]; m[4] += x * m[7]; m[8] += x * m[11]; m[12] += x * m[15];
+            m[1] += y * m[3]; m[5] += y * m[7]; m[9] += y * m[11]; m[13] += y * m[15];
+            m[2] += z * m[3]; m[6] += z * m[7]; m[10] += z * m[11]; m[14] += z * m[15];
             return this;
         }
 
@@ -468,7 +468,7 @@ namespace feng3d
         {
             for (var i = 0; i < 16; i++)
             {
-                this.rawData[i] = source.rawData[i];
+                this.elements[i] = source.elements[i];
             }
             return this;
         }
@@ -488,7 +488,7 @@ namespace feng3d
             }
             for (var i = 0; i < 16; i++)
             {
-                this.rawData[i] = array[index + i];
+                this.elements[i] = array[index + i];
             }
             if (transpose)
             {
@@ -512,7 +512,7 @@ namespace feng3d
             }
             for (var i = 0; i < 16; i++)
             {
-                array[i + index] = this.rawData[i];
+                array[i + index] = this.elements[i];
             }
             if (transpose)
             {
@@ -531,10 +531,10 @@ namespace feng3d
          */
         fromTRS(position: Vector3, rotation: Vector3, scale: Vector3, order = defaultRotationOrder)
         {
-            var te = this.rawData;
+            var m = this.elements;
             //
-            te[11] = 0;
-            te[15] = 1;
+            m[11] = 0;
+            m[15] = 1;
             //
             rotation = rotation.scaleNumberTo(Math.DEG2RAD);
             var px = position.x;
@@ -547,9 +547,9 @@ namespace feng3d
             var sy = scale.y;
             var sz = scale.z;
             //
-            te[12] = px;
-            te[13] = py;
-            te[14] = pz;
+            m[12] = px;
+            m[13] = py;
+            m[14] = pz;
             //
             var cosX = Math.cos(rx), sinX = Math.sin(rx);
             var cosY = Math.cos(ry), sinY = Math.sin(ry);
@@ -559,112 +559,112 @@ namespace feng3d
             {
                 var ae = cosX * cosZ, af = cosX * sinZ, be = sinX * cosZ, bf = sinX * sinZ;
 
-                te[0] = cosY * cosZ;
-                te[4] = - cosY * sinZ;
-                te[8] = sinY;
+                m[0] = cosY * cosZ;
+                m[4] = - cosY * sinZ;
+                m[8] = sinY;
 
-                te[1] = af + be * sinY;
-                te[5] = ae - bf * sinY;
-                te[9] = - sinX * cosY;
+                m[1] = af + be * sinY;
+                m[5] = ae - bf * sinY;
+                m[9] = - sinX * cosY;
 
-                te[2] = bf - ae * sinY;
-                te[6] = be + af * sinY;
-                te[10] = cosX * cosY;
+                m[2] = bf - ae * sinY;
+                m[6] = be + af * sinY;
+                m[10] = cosX * cosY;
 
             } else if (order === RotationOrder.YXZ)
             {
                 var ce = cosY * cosZ, cf = cosY * sinZ, de = sinY * cosZ, df = sinY * sinZ;
 
-                te[0] = ce + df * sinX;
-                te[4] = de * sinX - cf;
-                te[8] = cosX * sinY;
+                m[0] = ce + df * sinX;
+                m[4] = de * sinX - cf;
+                m[8] = cosX * sinY;
 
-                te[1] = cosX * sinZ;
-                te[5] = cosX * cosZ;
-                te[9] = - sinX;
+                m[1] = cosX * sinZ;
+                m[5] = cosX * cosZ;
+                m[9] = - sinX;
 
-                te[2] = cf * sinX - de;
-                te[6] = df + ce * sinX;
-                te[10] = cosX * cosY;
+                m[2] = cf * sinX - de;
+                m[6] = df + ce * sinX;
+                m[10] = cosX * cosY;
 
             } else if (order === RotationOrder.ZXY)
             {
                 var ce = cosY * cosZ, cf = cosY * sinZ, de = sinY * cosZ, df = sinY * sinZ;
 
-                te[0] = ce - df * sinX;
-                te[4] = - cosX * sinZ;
-                te[8] = de + cf * sinX;
+                m[0] = ce - df * sinX;
+                m[4] = - cosX * sinZ;
+                m[8] = de + cf * sinX;
 
-                te[1] = cf + de * sinX;
-                te[5] = cosX * cosZ;
-                te[9] = df - ce * sinX;
+                m[1] = cf + de * sinX;
+                m[5] = cosX * cosZ;
+                m[9] = df - ce * sinX;
 
-                te[2] = - cosX * sinY;
-                te[6] = sinX;
-                te[10] = cosX * cosY;
+                m[2] = - cosX * sinY;
+                m[6] = sinX;
+                m[10] = cosX * cosY;
 
             } else if (order === RotationOrder.ZYX)
             {
                 var ae = cosX * cosZ, af = cosX * sinZ, be = sinX * cosZ, bf = sinX * sinZ;
 
-                te[0] = cosY * cosZ;
-                te[4] = be * sinY - af;
-                te[8] = ae * sinY + bf;
+                m[0] = cosY * cosZ;
+                m[4] = be * sinY - af;
+                m[8] = ae * sinY + bf;
 
-                te[1] = cosY * sinZ;
-                te[5] = bf * sinY + ae;
-                te[9] = af * sinY - be;
+                m[1] = cosY * sinZ;
+                m[5] = bf * sinY + ae;
+                m[9] = af * sinY - be;
 
-                te[2] = - sinY;
-                te[6] = sinX * cosY;
-                te[10] = cosX * cosY;
+                m[2] = - sinY;
+                m[6] = sinX * cosY;
+                m[10] = cosX * cosY;
 
             } else if (order === RotationOrder.YZX)
             {
                 var ac = cosX * cosY, ad = cosX * sinY, bc = sinX * cosY, bd = sinX * sinY;
 
-                te[0] = cosY * cosZ;
-                te[4] = bd - ac * sinZ;
-                te[8] = bc * sinZ + ad;
+                m[0] = cosY * cosZ;
+                m[4] = bd - ac * sinZ;
+                m[8] = bc * sinZ + ad;
 
-                te[1] = sinZ;
-                te[5] = cosX * cosZ;
-                te[9] = - sinX * cosZ;
+                m[1] = sinZ;
+                m[5] = cosX * cosZ;
+                m[9] = - sinX * cosZ;
 
-                te[2] = - sinY * cosZ;
-                te[6] = ad * sinZ + bc;
-                te[10] = ac - bd * sinZ;
+                m[2] = - sinY * cosZ;
+                m[6] = ad * sinZ + bc;
+                m[10] = ac - bd * sinZ;
 
             } else if (order === RotationOrder.XZY)
             {
                 var ac = cosX * cosY, ad = cosX * sinY, bc = sinX * cosY, bd = sinX * sinY;
 
-                te[0] = cosY * cosZ;
-                te[4] = - sinZ;
-                te[8] = sinY * cosZ;
+                m[0] = cosY * cosZ;
+                m[4] = - sinZ;
+                m[8] = sinY * cosZ;
 
-                te[1] = ac * sinZ + bd;
-                te[5] = cosX * cosZ;
-                te[9] = ad * sinZ - bc;
+                m[1] = ac * sinZ + bd;
+                m[5] = cosX * cosZ;
+                m[9] = ad * sinZ - bc;
 
-                te[2] = bc * sinZ - ad;
-                te[6] = sinX * cosZ;
-                te[10] = bd * sinZ + ac;
+                m[2] = bc * sinZ - ad;
+                m[6] = sinX * cosZ;
+                m[10] = bd * sinZ + ac;
 
             } else
             {
                 console.error(`初始化矩阵时错误旋转顺序 ${order}`);
             }
             //
-            te[0] *= sx;
-            te[1] *= sx;
-            te[2] *= sx;
-            te[4] *= sy;
-            te[5] *= sy;
-            te[6] *= sy;
-            te[8] *= sz;
-            te[9] *= sz;
-            te[10] *= sz;
+            m[0] *= sx;
+            m[1] *= sx;
+            m[2] *= sx;
+            m[4] *= sy;
+            m[5] *= sy;
+            m[6] *= sy;
+            m[8] *= sz;
+            m[9] *= sz;
+            m[10] *= sz;
 
             return this;
         }
@@ -681,14 +681,14 @@ namespace feng3d
         {
             var clamp = Math.clamp;
             //
-            var rawData = this.rawData;
-            var m11 = rawData[0], m12 = rawData[4], m13 = rawData[8];
-            var m21 = rawData[1], m22 = rawData[5], m23 = rawData[9];
-            var m31 = rawData[2], m32 = rawData[6], m33 = rawData[10];
+            var m = this.elements;
+            var m11 = m[0], m12 = m[4], m13 = m[8];
+            var m21 = m[1], m22 = m[5], m23 = m[9];
+            var m31 = m[2], m32 = m[6], m33 = m[10];
             //
-            position.x = rawData[12];
-            position.y = rawData[13];
-            position.z = rawData[14];
+            position.x = m[12];
+            position.y = m[13];
+            position.z = m[14];
             //
             scale.x = Math.sqrt(m11 * m11 + m21 * m21 + m31 * m31);
             m11 /= scale.x;
@@ -788,11 +788,11 @@ namespace feng3d
          */
         identity()
         {
-            var r = this.rawData;
-            r[0] = 1; r[1] = 0; r[2] = 0; r[3] = 0;
-            r[4] = 0; r[5] = 1; r[6] = 0; r[7] = 0;
-            r[8] = 0; r[9] = 0; r[10] = 1; r[11] = 0;
-            r[12] = 0; r[13] = 0; r[14] = 0; r[15] = 1;
+            var m = this.elements;
+            m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
+            m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
+            m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
+            m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
             return this;
         }
 
@@ -811,29 +811,29 @@ namespace feng3d
             }
             d = 1 / d;
 
-            var r = this.rawData;
+            var m = this.elements;
 
-            var m11 = r[0]; var m21 = r[4]; var m31 = r[8]; var m41 = r[12];
-            var m12 = r[1]; var m22 = r[5]; var m32 = r[9]; var m42 = r[13];
-            var m13 = r[2]; var m23 = r[6]; var m33 = r[10]; var m43 = r[14];
-            var m14 = r[3]; var m24 = r[7]; var m34 = r[11]; var m44 = r[15];
+            var m11 = m[0]; var m21 = m[4]; var m31 = m[8]; var m41 = m[12];
+            var m12 = m[1]; var m22 = m[5]; var m32 = m[9]; var m42 = m[13];
+            var m13 = m[2]; var m23 = m[6]; var m33 = m[10]; var m43 = m[14];
+            var m14 = m[3]; var m24 = m[7]; var m34 = m[11]; var m44 = m[15];
 
-            r[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
-            r[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
-            r[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
-            r[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
-            r[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
-            r[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
-            r[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
-            r[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
-            r[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
-            r[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
-            r[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
-            r[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
-            r[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
-            r[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
-            r[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
-            r[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
+            m[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
+            m[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
+            m[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
+            m[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
+            m[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
+            m[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
+            m[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
+            m[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
+            m[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
+            m[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
+            m[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
+            m[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
+            m[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
+            m[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
+            m[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
+            m[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
             return this;
         }
 
@@ -877,16 +877,16 @@ namespace feng3d
 
         prependScale1(xScale: number, yScale: number, zScale: number)
         {
-            var rawData = this.rawData;
-            rawData[0] *= xScale;
-            rawData[1] *= xScale;
-            rawData[2] *= xScale;
-            rawData[4] *= yScale;
-            rawData[5] *= yScale;
-            rawData[6] *= yScale;
-            rawData[8] *= zScale;
-            rawData[9] *= zScale;
-            rawData[10] *= zScale;
+            var m = this.elements;
+            m[0] *= xScale;
+            m[1] *= xScale;
+            m[2] *= xScale;
+            m[4] *= yScale;
+            m[5] *= yScale;
+            m[6] *= yScale;
+            m[8] *= zScale;
+            m[9] *= zScale;
+            m[10] *= zScale;
 
             return this;
         }
@@ -947,7 +947,7 @@ namespace feng3d
          */
         transformPoint3(vin: Vector3, vout = new Vector3())
         {
-            var m = this.rawData;
+            var m = this.elements;
             var m0 = m[0], m1 = m[1], m2 = m[2];
             var m4 = m[4], m5 = m[5], m6 = m[6];
             var m8 = m[8], m9 = m[9], m10 = m[10];
@@ -974,7 +974,7 @@ namespace feng3d
          */
         transformVector3(vin: Vector3, vout = new Vector3())
         {
-            var m = this.rawData;
+            var m = this.elements;
             var m0 = m[0], m1 = m[1], m2 = m[2];
             var m4 = m[4], m5 = m[5], m6 = m[6];
             var m8 = m[8], m9 = m[9], m10 = m[10];
@@ -998,7 +998,7 @@ namespace feng3d
          */
         transformVector4(vin: Vector4, vout = new Vector4())
         {
-            var m = this.rawData;
+            var m = this.elements;
             var m0 = m[0], m1 = m[1], m2 = m[2], m3 = m[3];
             var m4 = m[4], m5 = m[5], m6 = m[6], m7 = m[7];
             var m8 = m[8], m9 = m[9], m10 = m[10], m11 = m[11];
@@ -1025,7 +1025,7 @@ namespace feng3d
          */
         transformPoints(vin: number[], vout: number[] = [])
         {
-            var m = this.rawData;
+            var m = this.elements;
             var m0 = m[0], m1 = m[1], m2 = m[2];
             var m4 = m[4], m5 = m[5], m6 = m[6];
             var m8 = m[8], m9 = m[9], m10 = m[10];
@@ -1098,16 +1098,16 @@ namespace feng3d
          */
         transpose()
         {
-            var swap: number;
-            for (var i = 0; i < 4; i++)
-            {
-                for (var j = 0; j < i; j++)
-                {
-                    swap = this.rawData[i * 4 + j];
-                    this.rawData[i * 4 + j] = this.rawData[j * 4 + i];
-                    this.rawData[j * 4 + i] = swap;
-                }
-            }
+            const m = this.elements;
+            let tmp: number;
+
+            tmp = m[1]; m[1] = m[4]; m[4] = tmp;
+            tmp = m[2]; m[2] = m[8]; m[8] = tmp;
+            tmp = m[6]; m[6] = m[9]; m[9] = tmp;
+
+            tmp = m[3]; m[3] = m[12]; m[12] = tmp;
+            tmp = m[7]; m[7] = m[13]; m[13] = tmp;
+            tmp = m[11]; m[11] = m[14]; m[14] = tmp;
             return this;
         }
 
@@ -1116,10 +1116,10 @@ namespace feng3d
          */
         equals(matrix: Matrix4x4, precision = Math.PRECISION)
         {
-            var r2 = matrix.rawData;
+            var r2 = matrix.elements;
             for (var i = 0; i < 16; ++i)
             {
-                if (!Math.equals(this.rawData[i] - r2[i], 0, precision))
+                if (!Math.equals(this.elements[i] - r2[i], 0, precision))
                     return false;
             }
 
@@ -1167,25 +1167,25 @@ namespace feng3d
             yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
             yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
 
-            this.rawData[0] = scale.x * xAxis.x;
-            this.rawData[1] = scale.x * xAxis.y;
-            this.rawData[2] = scale.x * xAxis.z;
-            this.rawData[3] = 0;
+            this.elements[0] = scale.x * xAxis.x;
+            this.elements[1] = scale.x * xAxis.y;
+            this.elements[2] = scale.x * xAxis.z;
+            this.elements[3] = 0;
 
-            this.rawData[4] = scale.y * yAxis.x;
-            this.rawData[5] = scale.y * yAxis.y;
-            this.rawData[6] = scale.y * yAxis.z;
-            this.rawData[7] = 0;
+            this.elements[4] = scale.y * yAxis.x;
+            this.elements[5] = scale.y * yAxis.y;
+            this.elements[6] = scale.y * yAxis.z;
+            this.elements[7] = 0;
 
-            this.rawData[8] = scale.z * zAxis.x;
-            this.rawData[9] = scale.z * zAxis.y;
-            this.rawData[10] = scale.z * zAxis.z;
-            this.rawData[11] = 0;
+            this.elements[8] = scale.z * zAxis.x;
+            this.elements[9] = scale.z * zAxis.y;
+            this.elements[10] = scale.z * zAxis.z;
+            this.elements[11] = 0;
 
-            this.rawData[12] = position.x;
-            this.rawData[13] = position.y;
-            this.rawData[14] = position.z;
-            this.rawData[15] = 1;
+            this.elements[12] = position.x;
+            this.elements[13] = position.y;
+            this.elements[14] = position.z;
+            this.elements[15] = 1;
             return this;
         }
 
@@ -1194,10 +1194,10 @@ namespace feng3d
          */
         getMaxScaleOnAxis()
         {
-            var te = this.rawData;
-            var scaleXSq = te[0] * te[0] + te[1] * te[1] + te[2] * te[2];
-            var scaleYSq = te[4] * te[4] + te[5] * te[5] + te[6] * te[6];
-            var scaleZSq = te[8] * te[8] + te[9] * te[9] + te[10] * te[10];
+            var m = this.elements;
+            var scaleXSq = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
+            var scaleYSq = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
+            var scaleZSq = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
             return Math.sqrt(Math.max(scaleXSq, scaleYSq, scaleZSq));
         }
 
@@ -1216,12 +1216,12 @@ namespace feng3d
          */
         setOrtho(left: number, right: number, top: number, bottom: number, near: number, far: number)
         {
-            var r = this.rawData;
+            var m = this.elements;
 
-            r[0] = 2 / (right - left); r[4] = 0; /**/             r[8] = 0; /**/            r[12] = -(right + left) / (right - left);// 
-            r[1] = 0; /**/             r[5] = 2 / (top - bottom); r[9] = 0;/**/             r[13] = -(top + bottom) / (top - bottom);// 
-            r[2] = 0; /**/             r[6] = 0; /**/             r[10] = 2 / (far - near); r[14] = -(far + near) / (far - near);//
-            r[3] = 0; /**/             r[7] = 0; /**/             r[11] = 0; /**/           r[15] = 1;//
+            m[0] = 2 / (right - left); m[4] = 0; /**/             m[8] = 0; /**/            m[12] = -(right + left) / (right - left);// 
+            m[1] = 0; /**/             m[5] = 2 / (top - bottom); m[9] = 0;/**/             m[13] = -(top + bottom) / (top - bottom);// 
+            m[2] = 0; /**/             m[6] = 0; /**/             m[10] = 2 / (far - near); m[14] = -(far + near) / (far - near);//
+            m[3] = 0; /**/             m[7] = 0; /**/             m[11] = 0; /**/           m[15] = 1;//
 
             return this;
         }
@@ -1237,14 +1237,14 @@ namespace feng3d
          */
         setPerspectiveFromFOV(fov: number, aspect: number, near: number, far: number)
         {
-            var r = this.rawData;
+            var m = this.elements;
 
             var tanfov2 = Math.tan(fov * Math.PI / 360);
 
-            r[0] = 1 / (aspect * tanfov2); r[4] = 0; /**/      r[8] = 0; /**/                       r[12] = 0;// 
-            r[1] = 0; /**/                 r[5] = 1 / tanfov2; r[9] = 0;/**/                        r[13] = 0;// 
-            r[2] = 0; /**/                 r[6] = 0; /**/      r[10] = (far + near) / (far - near); r[14] = -2 * (far * near) / (far - near);//
-            r[3] = 0; /**/                 r[7] = 0; /**/      r[11] = 1; /**/                      r[15] = 0;//
+            m[0] = 1 / (aspect * tanfov2); m[4] = 0; /**/      m[8] = 0; /**/                       m[12] = 0;// 
+            m[1] = 0; /**/                 m[5] = 1 / tanfov2; m[9] = 0;/**/                        m[13] = 0;// 
+            m[2] = 0; /**/                 m[6] = 0; /**/      m[10] = (far + near) / (far - near); m[14] = -2 * (far * near) / (far - near);//
+            m[3] = 0; /**/                 m[7] = 0; /**/      m[11] = 1; /**/                      m[15] = 0;//
 
             return this;
         }
@@ -1264,12 +1264,12 @@ namespace feng3d
          */
         setPerspective(left: number, right: number, top: number, bottom: number, near: number, far: number)
         {
-            var r = this.rawData;
+            var m = this.elements;
 
-            r[0] = 2 * near / (right - left); r[4] = 0; /**/     r[8] = 0; /**/                       r[12] = 0;// 
-            r[1] = 0; /**/       r[5] = 2 * near / (top - bottom); r[9] = 0;/**/                        r[13] = 0;// 
-            r[2] = 0; /**/       r[6] = 0; /**/     r[10] = (far + near) / (far - near); r[14] = -2 * (far * near) / (far - near);//
-            r[3] = 0; /**/       r[7] = 0; /**/     r[11] = 1; /**/                      r[15] = 0;//
+            m[0] = 2 * near / (right - left); m[4] = 0; /**/     m[8] = 0; /**/                       m[12] = 0;// 
+            m[1] = 0; /**/       m[5] = 2 * near / (top - bottom); m[9] = 0;/**/                        m[13] = 0;// 
+            m[2] = 0; /**/       m[6] = 0; /**/     m[10] = (far + near) / (far - near); m[14] = -2 * (far * near) / (far - near);//
+            m[3] = 0; /**/       m[7] = 0; /**/     m[11] = 1; /**/                      m[15] = 0;//
 
             return this;
         }
@@ -1282,7 +1282,7 @@ namespace feng3d
         toMatrix3x3(out = new Matrix3x3())
         {
             var outdata = out.elements;
-            var indata = this.rawData;
+            var indata = this.elements;
 
             outdata[0] = indata[0];
             outdata[1] = indata[1];
@@ -1304,7 +1304,7 @@ namespace feng3d
          */
         toString(): string
         {
-            return "Matrix4x4 [" + this.rawData.toString() + "]";
+            return "Matrix4x4 [" + this.elements.toString() + "]";
         }
     }
 }

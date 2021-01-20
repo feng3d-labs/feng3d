@@ -86,17 +86,17 @@ namespace feng3d
             var projectionMatrix = mirrorCamera.lens.matrix;
 
             var q = new Vector4();
-            q.x = (clipPlane.x / Math.abs(clipPlane.x) + projectionMatrix.rawData[8]) / projectionMatrix.rawData[0];
-            q.y = (clipPlane.y / Math.abs(clipPlane.y) + projectionMatrix.rawData[9]) / projectionMatrix.rawData[5];
+            q.x = (clipPlane.x / Math.abs(clipPlane.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];
+            q.y = (clipPlane.y / Math.abs(clipPlane.y) + projectionMatrix.elements[9]) / projectionMatrix.elements[5];
             q.z = - 1.0;
-            q.w = (1.0 + projectionMatrix.rawData[10]) / projectionMatrix.rawData[14];
+            q.w = (1.0 + projectionMatrix.elements[10]) / projectionMatrix.elements[14];
 
             clipPlane.scale(2.0 / clipPlane.dot(q));
 
-            projectionMatrix.rawData[2] = clipPlane.x;
-            projectionMatrix.rawData[6] = clipPlane.y;
-            projectionMatrix.rawData[10] = clipPlane.z + 1.0 - clipBias;
-            projectionMatrix.rawData[14] = clipPlane.w;
+            projectionMatrix.elements[2] = clipPlane.x;
+            projectionMatrix.elements[6] = clipPlane.y;
+            projectionMatrix.elements[10] = clipPlane.z + 1.0 - clipBias;
+            projectionMatrix.elements[14] = clipPlane.w;
 
             var eye = camera.transform.worldPosition;
 
