@@ -9086,9 +9086,19 @@ var feng3d;
          * @param   z   沿 z 轴的增量平移。
          */
         Matrix4x4.prototype.appendTranslation = function (x, y, z) {
-            this.rawData[12] += x;
-            this.rawData[13] += y;
-            this.rawData[14] += z;
+            var te = this.rawData;
+            te[0] += x * te[3];
+            te[4] += x * te[7];
+            te[8] += x * te[11];
+            te[12] += x * te[15];
+            te[1] += y * te[3];
+            te[5] += y * te[7];
+            te[9] += y * te[11];
+            te[13] += y * te[15];
+            te[2] += z * te[3];
+            te[6] += z * te[7];
+            te[10] += z * te[11];
+            te[14] += z * te[15];
             return this;
         };
         /**
