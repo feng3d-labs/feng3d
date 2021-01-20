@@ -8296,7 +8296,11 @@ var feng3d;
          * @param elements 九个元素的数组
          */
         function Matrix3x3(elements) {
-            if (elements === void 0) { elements = [1, 0, 0, 0, 1, 0, 0, 0, 1]; }
+            if (elements === void 0) { elements = [
+                1, 0, 0,
+                0, 1, 0,
+                0, 0, 1
+            ]; }
             this.elements = elements;
         }
         /**
@@ -8739,12 +8743,13 @@ var feng3d;
          * @param   rawData    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         function Matrix4x4(rawData) {
-            if (rawData)
-                this.rawData = rawData;
-            else {
-                this.rawData = [];
-                this.identity();
-            }
+            if (rawData === void 0) { rawData = [
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1,
+            ]; }
+            this.rawData = rawData;
         }
         /**
          * 通过位移旋转缩放重组矩阵

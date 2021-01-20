@@ -4704,6 +4704,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    type NmberArray9 = [number, number, number, number, number, number, number, number, number];
     /**
      * Matrix3x3 类表示一个转换矩阵，该矩阵确定二维 (2D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x 和 y 轴重新定位）、旋转和缩放（调整大小）。
@@ -4721,17 +4722,17 @@ declare namespace feng3d {
      *  ---                                   ---
      * ```
      */
-    class Matrix3x3 {
+    export class Matrix3x3 {
         /**
          * 长度为9的向量，包含所有的矩阵元素
          */
-        elements: [number, number, number, number, number, number, number, number, number];
+        elements: NmberArray9;
         /**
          * 构建3x3矩阵
          *
          * @param elements 九个元素的数组
          */
-        constructor(elements?: [number, number, number, number, number, number, number, number, number]);
+        constructor(elements?: NmberArray9);
         /**
          * 设置矩阵为单位矩阵
          */
@@ -4841,8 +4842,10 @@ declare namespace feng3d {
          */
         toMatrix4x4(out?: Matrix4x4): Matrix4x4;
     }
+    export {};
 }
 declare namespace feng3d {
+    type NmberArray16 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
     /**
      * Matrix4x4 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。
@@ -4867,7 +4870,7 @@ declare namespace feng3d {
      * @see https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
      * @see https://docs.unity3d.com/ScriptReference/Matrix4x4.html
      */
-    class Matrix4x4 {
+    export class Matrix4x4 {
         /**
          * 通过位移旋转缩放重组矩阵
          *
@@ -4916,7 +4919,7 @@ declare namespace feng3d {
         /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        rawData: number[];
+        rawData: NmberArray16;
         /**
          * 获取位移
          *
@@ -4993,7 +4996,7 @@ declare namespace feng3d {
          * 创建 Matrix4x4 对象。
          * @param   rawData    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        constructor(rawData?: number[]);
+        constructor(rawData?: NmberArray16);
         /**
          * 从欧拉角旋转角度初始化矩阵。
          *
@@ -5246,6 +5249,7 @@ declare namespace feng3d {
          */
         toString(): string;
     }
+    export {};
 }
 declare namespace feng3d {
     /**

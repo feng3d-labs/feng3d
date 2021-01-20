@@ -1,5 +1,11 @@
 namespace feng3d
 {
+    type NmberArray9 = [
+        number, number, number,
+        number, number, number,
+        number, number, number,
+    ];
+
     /**
      * Matrix3x3 类表示一个转换矩阵，该矩阵确定二维 (2D) 显示对象的位置和方向。
      * 该矩阵可以执行转换功能，包括平移（沿 x 和 y 轴重新定位）、旋转和缩放（调整大小）。
@@ -22,14 +28,17 @@ namespace feng3d
         /**
          * 长度为9的向量，包含所有的矩阵元素
          */
-        elements: [number, number, number, number, number, number, number, number, number];
+        elements: NmberArray9;
 
         /**
          * 构建3x3矩阵
          * 
          * @param elements 九个元素的数组
          */
-        constructor(elements: [number, number, number, number, number, number, number, number, number] = [1, 0, 0, 0, 1, 0, 0, 0, 1])
+        constructor(elements: NmberArray9 = [
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1])
         {
             this.elements = elements;
         }

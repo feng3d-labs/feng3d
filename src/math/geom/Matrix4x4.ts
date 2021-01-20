@@ -1,5 +1,11 @@
 namespace feng3d
 {
+    type NmberArray16 = [
+        number, number, number, number,
+        number, number, number, number,
+        number, number, number, number,
+        number, number, number, number,
+    ];
 
     /**
      * Matrix4x4 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
@@ -112,7 +118,7 @@ namespace feng3d
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         @serialize
-        rawData: number[];
+        rawData: NmberArray16;
 
         /**
          * 获取位移
@@ -286,15 +292,14 @@ namespace feng3d
          * 创建 Matrix4x4 对象。
          * @param   rawData    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
-        constructor(rawData?: number[])
+        constructor(rawData: NmberArray16 = [
+            1, 0, 0, 0,//
+            0, 1, 0, 0,//
+            0, 0, 1, 0,//
+            0, 0, 0, 1,//
+        ])
         {
-            if (rawData)
-                this.rawData = rawData;
-            else
-            {
-                this.rawData = [];
-                this.identity();
-            }
+            this.rawData = rawData;
         }
 
         /**
