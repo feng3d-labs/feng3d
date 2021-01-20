@@ -31,7 +31,7 @@ namespace feng3d
         {
             if (this._mouseEventTypes.length == 0) return;
 
-            raycaster.pickObject(view.mouseRay3D, scene.gameObject);
+            const result = raycaster.pickObject(view.mouseRay3D, scene.gameObject);
 
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);

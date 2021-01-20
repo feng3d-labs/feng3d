@@ -11758,7 +11758,7 @@ var feng3d;
             var ix;
             var iy;
             var iz;
-            var rayEntryDistance = -1;
+            var rayEntryDistance = Number.MAX_VALUE;
             // 射线与平面相交测试
             var intersects = false;
             if (vx < 0) {
@@ -11851,7 +11851,7 @@ var feng3d;
                     }
                 }
             }
-            return intersects ? rayEntryDistance : -1;
+            return intersects ? rayEntryDistance : Number.MAX_VALUE;
         };
         /**
          * 获取包围盒上距离指定点最近的点
@@ -28727,7 +28727,7 @@ var feng3d;
             var localNormal = new feng3d.Vector3();
             //检测射线与边界的碰撞
             var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.origin, localRay.direction, localNormal);
-            if (rayEntryDistance < 0)
+            if (rayEntryDistance === Number.MAX_VALUE)
                 return null;
             //保存碰撞数据
             var pickingCollisionVO = {
@@ -34513,18 +34513,50 @@ var feng3d;
     var Raycaster = /** @class */ (function () {
         function Raycaster() {
         }
-        Raycaster.prototype.pickObject = function (ray3, gameObject, pickChildren) {
+        Raycaster.prototype.pickObject = function (ray3, gameObject, pickChildren, pickResult) {
+            var _this = this;
             if (pickChildren === void 0) { pickChildren = true; }
-            var rayEntryDistance = -1;
-            var localNormal = new feng3d.Vector3();
-            if (pickChildren) {
-                rayEntryDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
-            }
-            else {
-                rayEntryDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
-                if (rayEntryDistance) {
+            if (pickResult === void 0) { pickResult = { list: [], worldShortestCollisionDistance: Number.MAX_VALUE }; }
+            var item = { gameObject: gameObject };
+            pickResult.list.push(item);
+            // 检测世界包围盒与射线相交
+            item.rayWorldBoxNormal = new feng3d.Vector3();
+            item.rayWorldBoxDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, item.rayWorldBoxNormal);
+            if (item.rayWorldBoxDistance < pickResult.worldShortestCollisionDistance) {
+                // 检测自身世界空间的包围盒与射线相交
+                item.raySelfWorldBoundsNormal = new feng3d.Vector3();
+                item.raySelfWorldBoundsDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, item.raySelfWorldBoundsNormal);
+                if (item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance) {
+                    // 获取渲染数据
+                    item.renderable = gameObject.getComponent("Renderable");
+                    item.geometry = item.renderable.geometry;
+                    item.material = item.renderable.material;
+                    var localRay = gameObject.transform.rayWorldToLocal(ray3);
+                    // 直接几何体射线拾取
+                    var result = item.geometry.raycast(localRay, Number.MAX_VALUE, item.material.renderParams.cullFace);
+                    if (result) {
+                        item.localNormal = result.localNormal;
+                        item.localPosition = result.localPosition;
+                        item.index = result.index;
+                        item.uv = result.uv;
+                        // 
+                        item.worldPosition = new feng3d.Vector3();
+                        gameObject.transform.localToWorldMatrix.transformPoint3(result.localPosition, item.worldPosition);
+                        // 
+                        item.worldCollisionDistance = item.worldPosition.distance(ray3.origin);
+                        if (item.worldCollisionDistance < pickResult.worldShortestCollisionDistance) {
+                            pickResult.worldShortestCollisionDistance = item.worldCollisionDistance;
+                            pickResult.shortestCollisionItem = item;
+                        }
+                    }
+                }
+                if (pickChildren) {
+                    gameObject.children.forEach(function (child) {
+                        _this.pickObject(ray3, child, pickChildren, pickResult);
+                    });
                 }
             }
+            return pickResult;
         };
         /**
          * 获取射线穿过的实体
@@ -35852,7 +35884,7 @@ var feng3d;
         Mouse3DManager.prototype.pick = function (view, scene, camera) {
             if (this._mouseEventTypes.length == 0)
                 return;
-            feng3d.raycaster.pickObject(view.mouseRay3D, scene.gameObject);
+            var result = feng3d.raycaster.pickObject(view.mouseRay3D, scene.gameObject);
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = feng3d.raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;

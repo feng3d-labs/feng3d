@@ -377,7 +377,7 @@ namespace feng3d
             var ix: number;
             var iy: number;
             var iz: number;
-            var rayEntryDistance = -1;
+            var rayEntryDistance = Number.MAX_VALUE;
 
             // 射线与平面相交测试
             var intersects = false;
@@ -497,7 +497,7 @@ namespace feng3d
                 }
             }
 
-            return intersects ? rayEntryDistance : -1;
+            return intersects ? rayEntryDistance : Number.MAX_VALUE;
         }
 
         /**

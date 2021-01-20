@@ -6,26 +6,138 @@ namespace feng3d
 	 */
     export var raycaster: Raycaster;
 
+    type PickResultItem = {
+        /**
+         * 测试的对象
+         */
+        gameObject: GameObject,
+        /**
+         * 射线到世界包围盒的距离
+         */
+        rayWorldBoxDistance?: number,
+
+        /**
+         * 射线与世界包围盒交点处法线
+         */
+        rayWorldBoxNormal?: Vector3
+
+        /**
+         * 射线到自身世界空间的包围盒的距离
+         */
+        raySelfWorldBoundsDistance?: number,
+
+        /**
+         * 射线与自身世界空间的包围盒交点处法线
+         */
+        raySelfWorldBoundsNormal?: Vector3
+
+        /**
+         * 
+         */
+        renderable?: Renderable;
+
+        geometry?: GeometryLike;
+
+        material?: Material;
+
+        /**
+         * 局部空间射线与几何体相交法线
+         */
+        localNormal?: Vector3;
+
+        /**
+         * 与射线局部空间交点的坐标
+         */
+        localPosition?: Vector3;
+
+        /**
+         * 与射线相交的多边形索引
+         */
+        index?: number;
+
+        /**
+         * 与射线交点的uv
+         */
+        uv?: Vector2;
+
+        /**
+         * 与射线世界空间交点的坐标
+         */
+        worldPosition?: Vector3;
+
+        /**
+         * 在世界空间射线起点到交点的距离
+         */
+        worldCollisionDistance?: number;
+    };
+
 	/**
 	 * 射线投射拾取器
 	 */
     export class Raycaster 
     {
-        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren = true)
+        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren = true, pickResult: {
+            /**
+             * 拾取检测的列表
+             */
+            list: PickResultItem[],
+            /**
+             * 当前世界空间射线离碰撞点最短距离
+             */
+            worldShortestCollisionDistance: Number,
+            /**
+             * 最近碰到元素
+             */
+            shortestCollisionItem?: PickResultItem,
+        } = { list: [], worldShortestCollisionDistance: Number.MAX_VALUE })
         {
-            let rayEntryDistance = -1;
-            let localNormal = new Vector3();
-            if (pickChildren)
-            {
-                rayEntryDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
-            } else
-            {
-                rayEntryDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, localNormal);
-                if (rayEntryDistance)
-                {
+            const item: PickResultItem = { gameObject };
+            pickResult.list.push(item);
 
+            // 检测世界包围盒与射线相交
+            item.rayWorldBoxNormal = new Vector3();
+            item.rayWorldBoxDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, item.rayWorldBoxNormal);
+            if (item.rayWorldBoxDistance < pickResult.worldShortestCollisionDistance)
+            {
+                // 检测自身世界空间的包围盒与射线相交
+                item.raySelfWorldBoundsNormal = new Vector3();
+                item.raySelfWorldBoundsDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, item.raySelfWorldBoundsNormal);
+                if (item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance)
+                {
+                    // 获取渲染数据
+                    item.renderable = gameObject.getComponent("Renderable");
+                    item.geometry = item.renderable.geometry;
+                    item.material = item.renderable.material;
+                    const localRay = gameObject.transform.rayWorldToLocal(ray3);
+                    // 直接几何体射线拾取
+                    var result = item.geometry.raycast(localRay, Number.MAX_VALUE, item.material.renderParams.cullFace);
+                    if (result)
+                    {
+                        item.localNormal = result.localNormal;
+                        item.localPosition = result.localPosition;
+                        item.index = result.index;
+                        item.uv = result.uv;
+                        // 
+                        item.worldPosition = new Vector3();
+                        gameObject.transform.localToWorldMatrix.transformPoint3(result.localPosition, item.worldPosition);
+                        // 
+                        item.worldCollisionDistance = item.worldPosition.distance(ray3.origin);
+                        if (item.worldCollisionDistance < pickResult.worldShortestCollisionDistance)
+                        {
+                            pickResult.worldShortestCollisionDistance = item.worldCollisionDistance;
+                            pickResult.shortestCollisionItem = item;
+                        }
+                    }
+                }
+                if (pickChildren)
+                {
+                    gameObject.children.forEach(child =>
+                    {
+                        this.pickObject(ray3, child, pickChildren, pickResult);
+                    });
                 }
             }
+            return pickResult;
         }
 
         /**

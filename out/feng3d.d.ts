@@ -15752,12 +15752,90 @@ declare namespace feng3d {
     /**
      * 射线投射拾取器
      */
-    var raycaster: Raycaster;
+    export var raycaster: Raycaster;
+    type PickResultItem = {
+        /**
+         * 测试的对象
+         */
+        gameObject: GameObject;
+        /**
+         * 射线到世界包围盒的距离
+         */
+        rayWorldBoxDistance?: number;
+        /**
+         * 射线与世界包围盒交点处法线
+         */
+        rayWorldBoxNormal?: Vector3;
+        /**
+         * 射线到自身世界空间的包围盒的距离
+         */
+        raySelfWorldBoundsDistance?: number;
+        /**
+         * 射线与自身世界空间的包围盒交点处法线
+         */
+        raySelfWorldBoundsNormal?: Vector3;
+        /**
+         *
+         */
+        renderable?: Renderable;
+        geometry?: GeometryLike;
+        material?: Material;
+        /**
+         * 局部空间射线与几何体相交法线
+         */
+        localNormal?: Vector3;
+        /**
+         * 与射线局部空间交点的坐标
+         */
+        localPosition?: Vector3;
+        /**
+         * 与射线相交的多边形索引
+         */
+        index?: number;
+        /**
+         * 与射线交点的uv
+         */
+        uv?: Vector2;
+        /**
+         * 与射线世界空间交点的坐标
+         */
+        worldPosition?: Vector3;
+        /**
+         * 在世界空间射线起点到交点的距离
+         */
+        worldCollisionDistance?: number;
+    };
     /**
      * 射线投射拾取器
      */
-    class Raycaster {
-        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren?: boolean): void;
+    export class Raycaster {
+        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren?: boolean, pickResult?: {
+            /**
+             * 拾取检测的列表
+             */
+            list: PickResultItem[];
+            /**
+             * 当前世界空间射线离碰撞点最短距离
+             */
+            worldShortestCollisionDistance: Number;
+            /**
+             * 最近碰到元素
+             */
+            shortestCollisionItem?: PickResultItem;
+        }): {
+            /**
+             * 拾取检测的列表
+             */
+            list: PickResultItem[];
+            /**
+             * 当前世界空间射线离碰撞点最短距离
+             */
+            worldShortestCollisionDistance: Number;
+            /**
+             * 最近碰到元素
+             */
+            shortestCollisionItem?: PickResultItem;
+        };
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
@@ -15776,7 +15854,7 @@ declare namespace feng3d {
     /**
      * 拾取的碰撞数据
      */
-    interface PickingCollisionVO {
+    export interface PickingCollisionVO {
         /**
          * 第一个穿过的物体
          */
@@ -15818,6 +15896,7 @@ declare namespace feng3d {
          */
         cullFace: CullFace;
     }
+    export {};
 }
 declare namespace feng3d {
     var audioCtx: AudioContext;

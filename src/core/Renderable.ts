@@ -114,7 +114,7 @@ namespace feng3d
 
             //检测射线与边界的碰撞
             var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.origin, localRay.direction, localNormal);
-            if (rayEntryDistance < 0)
+            if (rayEntryDistance === Number.MAX_VALUE)
                 return null;
 
             //保存碰撞数据
