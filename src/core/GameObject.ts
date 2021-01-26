@@ -622,21 +622,6 @@ namespace feng3d
         }
 
         /**
-         * 世界包围盒
-         */
-        get worldBounds()
-        {
-            var model = this.getComponent("Renderable");
-            var box = model ? model.selfWorldBounds : new Box3(this.transform.worldPosition, this.transform.worldPosition);
-            this.children.forEach(element =>
-            {
-                var ebox = element.worldBounds;
-                box.union(ebox);
-            });
-            return box;
-        }
-
-        /**
          * 监听对象的所有事件并且传播到所有组件中
          */
         private _onAnyListener(e: Event<any>)

@@ -27779,22 +27779,6 @@ var feng3d;
             }
             return removeComponents;
         };
-        Object.defineProperty(GameObject.prototype, "worldBounds", {
-            /**
-             * 世界包围盒
-             */
-            get: function () {
-                var model = this.getComponent("Renderable");
-                var box = model ? model.selfWorldBounds : new feng3d.Box3(this.transform.worldPosition, this.transform.worldPosition);
-                this.children.forEach(function (element) {
-                    var ebox = element.worldBounds;
-                    box.union(ebox);
-                });
-                return box;
-            },
-            enumerable: false,
-            configurable: true
-        });
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
@@ -33726,7 +33710,7 @@ var feng3d;
          */
         DirectionalLight.prototype.updateShadowByCamera = function (scene, viewCamera, models) {
             var worldBounds = models.reduce(function (pre, i) {
-                var box = i.gameObject.worldBounds;
+                var box = i.gameObject.boundingBox.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);

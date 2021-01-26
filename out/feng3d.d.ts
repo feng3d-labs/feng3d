@@ -13222,10 +13222,6 @@ declare namespace feng3d {
          */
         removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
-         * 世界包围盒
-         */
-        get worldBounds(): Box3;
-        /**
          * 监听对象的所有事件并且传播到所有组件中
          */
         private _onAnyListener;
