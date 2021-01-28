@@ -355,6 +355,8 @@ namespace feng3d
          */
         rayIntersection(position: Vector3, direction: Vector3, outTargetNormal?: Vector3)
         {
+            if (this.isEmpty())
+                return Number.MAX_VALUE;
             if (this.containsPoint(position))
                 return 0;
 

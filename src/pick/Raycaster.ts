@@ -1,9 +1,9 @@
 namespace feng3d
 {
 
-	/**
-	 * 射线投射拾取器
-	 */
+    /**
+     * 射线投射拾取器
+     */
     export var raycaster: Raycaster;
 
     interface PickBoxResultItem
@@ -75,12 +75,12 @@ namespace feng3d
         worldCollisionDistance?: number;
     }
 
-	/**
-	 * 射线投射拾取器
-	 */
+    /**
+     * 射线投射拾取器
+     */
     export class Raycaster 
     {
-        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren = true, pickResult: {
+        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren = true, useMouseEnabled = true, pickResult: {
             /**
              * 拾取检测的列表
              */
@@ -95,6 +95,11 @@ namespace feng3d
             shortestCollisionItem?: PickResultItem,
         } = { list: [], worldShortestCollisionDistance: Number.MAX_VALUE })
         {
+            if (!(useMouseEnabled && gameObject.mouseEnabled))
+            {
+                return pickResult;
+            }
+
             // 检测世界包围盒与射线相交
             const rayWorldBoxNormal = new Vector3();
             const rayWorldBoxDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, rayWorldBoxNormal);
@@ -124,7 +129,7 @@ namespace feng3d
                 {
                     gameObject.children.forEach(child =>
                     {
-                        this.pickObject(ray3, child, pickChildren, pickResult);
+                        this.pickObject(ray3, child, pickChildren, true, pickResult);
                     });
                 }
             }
@@ -136,6 +141,8 @@ namespace feng3d
              * 拾取检测的列表
              */
             list: PickResultItem[],
+            geometryPickList?: PickResultItem[],
+            collisionList?: PickResultItem[],
             /**
              * 当前世界空间射线离碰撞点最短距离
              */
@@ -144,8 +151,10 @@ namespace feng3d
              * 最近碰到元素
              */
             shortestCollisionItem?: PickResultItem,
-        })
+        }, needAll = false)
         {
+            pickResult.geometryPickList = pickResult.geometryPickList || [];
+            pickResult.collisionList = pickResult.collisionList || [];
             const list = pickResult.list;
             list.sort((a, b) =>
             {
@@ -159,7 +168,7 @@ namespace feng3d
                 const gameObject = item.gameObject;
                 const geometry = item.geometry;
                 const material = item.material;
-                if (item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance)
+                if (needAll || item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance)
                 {
                     const localRay = gameObject.transform.rayWorldToLocal(ray3);
                     // 直接几何体射线拾取
@@ -180,12 +189,15 @@ namespace feng3d
                             pickResult.worldShortestCollisionDistance = item.worldCollisionDistance;
                             pickResult.shortestCollisionItem = item;
                         }
+                        pickResult.collisionList.push(item);
                     }
+                    pickResult.geometryPickList.push(item);
                 } else
                 {
                     break;
                 }
             }
+            return pickResult;
         }
 
         /**
@@ -281,53 +293,53 @@ namespace feng3d
     raycaster = new Raycaster();
 
     /**
-	 * 拾取的碰撞数据
-	 */
+     * 拾取的碰撞数据
+     */
     export interface PickingCollisionVO
     {
-		/**
-		 * 第一个穿过的物体
-		 */
+        /**
+         * 第一个穿过的物体
+         */
         gameObject: GameObject;
 
-		/**
-		 * 碰撞的uv坐标
-		 */
+        /**
+         * 碰撞的uv坐标
+         */
         uv?: Vector2;
 
-		/**
-		 * 实体上碰撞本地坐标
-		 */
+        /**
+         * 实体上碰撞本地坐标
+         */
         localPosition?: Vector3;
 
-		/**
-		 * 射线顶点到实体的距离
-		 */
+        /**
+         * 射线顶点到实体的距离
+         */
         rayEntryDistance: number;
 
-		/**
-		 * 本地坐标系射线
-		 */
+        /**
+         * 本地坐标系射线
+         */
         localRay: Ray3;
 
-		/**
-		 * 本地坐标碰撞法线
-		 */
+        /**
+         * 本地坐标碰撞法线
+         */
         localNormal: Vector3;
 
-		/**
-		 * 射线坐标是否在边界内
-		 */
+        /**
+         * 射线坐标是否在边界内
+         */
         rayOriginIsInsideBounds: boolean;
 
-		/**
-		 * 碰撞三角形索引
-		 */
+        /**
+         * 碰撞三角形索引
+         */
         index?: number;
 
-		/**
-		 * 碰撞关联的渲染对象
-		 */
+        /**
+         * 碰撞关联的渲染对象
+         */
         geometry: Geometry;
 
         /**

@@ -31,17 +31,21 @@ namespace feng3d
         {
             if (this._mouseEventTypes.length == 0) return;
 
+            console.log('.................');
+
             console.time('pickObject');
             const result = raycaster.pickObject(view.mouseRay3D, scene.gameObject);
             const result1 = raycaster.pickObject1(result);
+            console.log(result1);
             console.timeEnd('pickObject');
 
-            console.log(result.shortestCollisionItem && result.shortestCollisionItem.gameObject.name);
+            console.log(result1.worldShortestCollisionDistance);
 
             //计算得到鼠标射线相交的物体
             console.time('pick');
             var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
             console.timeEnd('pick');
+            console.log(pickingCollisionVO && pickingCollisionVO.rayEntryDistance);
 
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
@@ -186,10 +190,10 @@ namespace feng3d
         catchMouseMove = false;
 
         /**
-		 * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-		 * @param type                      事件的类型。类型区分大小写。
-		 * @param data                      事件携带的自定义数据。
-		 * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
         dispatch(type: string, data?: any, bubbles = false)
         {

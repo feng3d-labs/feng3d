@@ -11741,6 +11741,8 @@ var feng3d;
          * @see 3D数学基础：图形与游戏开发 P290
          */
         Box3.prototype.rayIntersection = function (position, direction, outTargetNormal) {
+            if (this.isEmpty())
+                return Number.MAX_VALUE;
             if (this.containsPoint(position))
                 return 0;
             var halfExtentsX = (this.max.x - this.min.x) / 2;
@@ -34497,10 +34499,14 @@ var feng3d;
     var Raycaster = /** @class */ (function () {
         function Raycaster() {
         }
-        Raycaster.prototype.pickObject = function (ray3, gameObject, pickChildren, pickResult) {
+        Raycaster.prototype.pickObject = function (ray3, gameObject, pickChildren, useMouseEnabled, pickResult) {
             var _this = this;
             if (pickChildren === void 0) { pickChildren = true; }
+            if (useMouseEnabled === void 0) { useMouseEnabled = true; }
             if (pickResult === void 0) { pickResult = { list: [], worldShortestCollisionDistance: Number.MAX_VALUE }; }
+            if (!(useMouseEnabled && gameObject.mouseEnabled)) {
+                return pickResult;
+            }
             // 检测世界包围盒与射线相交
             var rayWorldBoxNormal = new feng3d.Vector3();
             var rayWorldBoxDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, rayWorldBoxNormal);
@@ -34525,13 +34531,16 @@ var feng3d;
                 }
                 if (pickChildren) {
                     gameObject.children.forEach(function (child) {
-                        _this.pickObject(ray3, child, pickChildren, pickResult);
+                        _this.pickObject(ray3, child, pickChildren, true, pickResult);
                     });
                 }
             }
             return pickResult;
         };
-        Raycaster.prototype.pickObject1 = function (pickResult) {
+        Raycaster.prototype.pickObject1 = function (pickResult, needAll) {
+            if (needAll === void 0) { needAll = false; }
+            pickResult.geometryPickList = pickResult.geometryPickList || [];
+            pickResult.collisionList = pickResult.collisionList || [];
             var list = pickResult.list;
             list.sort(function (a, b) {
                 return a.raySelfWorldBoundsDistance - b.raySelfWorldBoundsDistance;
@@ -34542,7 +34551,7 @@ var feng3d;
                 var gameObject = item.gameObject;
                 var geometry = item.geometry;
                 var material = item.material;
-                if (item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance) {
+                if (needAll || item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance) {
                     var localRay = gameObject.transform.rayWorldToLocal(ray3);
                     // 直接几何体射线拾取
                     var result = geometry.raycast(localRay, Number.MAX_VALUE, material.renderParams.cullFace);
@@ -34560,12 +34569,15 @@ var feng3d;
                             pickResult.worldShortestCollisionDistance = item.worldCollisionDistance;
                             pickResult.shortestCollisionItem = item;
                         }
+                        pickResult.collisionList.push(item);
                     }
+                    pickResult.geometryPickList.push(item);
                 }
                 else {
                     break;
                 }
             }
+            return pickResult;
         };
         /**
          * 获取射线穿过的实体
@@ -35893,15 +35905,18 @@ var feng3d;
         Mouse3DManager.prototype.pick = function (view, scene, camera) {
             if (this._mouseEventTypes.length == 0)
                 return;
+            console.log('.................');
             console.time('pickObject');
             var result = feng3d.raycaster.pickObject(view.mouseRay3D, scene.gameObject);
             var result1 = feng3d.raycaster.pickObject1(result);
+            console.log(result1);
             console.timeEnd('pickObject');
-            console.log(result.shortestCollisionItem && result.shortestCollisionItem.gameObject.name);
+            console.log(result1.worldShortestCollisionDistance);
             //计算得到鼠标射线相交的物体
             console.time('pick');
             var pickingCollisionVO = feng3d.raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
             console.timeEnd('pick');
+            console.log(pickingCollisionVO && pickingCollisionVO.rayEntryDistance);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
         };

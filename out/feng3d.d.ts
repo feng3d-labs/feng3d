@@ -15808,7 +15808,7 @@ declare namespace feng3d {
      * 射线投射拾取器
      */
     export class Raycaster {
-        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren?: boolean, pickResult?: {
+        pickObject(ray3: Ray3, gameObject: GameObject, pickChildren?: boolean, useMouseEnabled?: boolean, pickResult?: {
             /**
              * 拾取检测的列表
              */
@@ -15840,6 +15840,8 @@ declare namespace feng3d {
              * 拾取检测的列表
              */
             list: PickResultItem[];
+            geometryPickList?: PickResultItem[];
+            collisionList?: PickResultItem[];
             /**
              * 当前世界空间射线离碰撞点最短距离
              */
@@ -15848,7 +15850,22 @@ declare namespace feng3d {
              * 最近碰到元素
              */
             shortestCollisionItem?: PickResultItem;
-        }): void;
+        }, needAll?: boolean): {
+            /**
+             * 拾取检测的列表
+             */
+            list: PickResultItem[];
+            geometryPickList?: PickResultItem[];
+            collisionList?: PickResultItem[];
+            /**
+             * 当前世界空间射线离碰撞点最短距离
+             */
+            worldShortestCollisionDistance?: Number;
+            /**
+             * 最近碰到元素
+             */
+            shortestCollisionItem?: PickResultItem;
+        };
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
