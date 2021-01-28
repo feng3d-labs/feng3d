@@ -6,7 +6,9 @@ namespace feng3d
 	 */
     export var raycaster: Raycaster;
 
-    type PickResultItem = {
+    interface PickBoxResultItem
+    {
+        ray3: Ray3;
         /**
          * 测试的对象
          */
@@ -14,32 +16,34 @@ namespace feng3d
         /**
          * 射线到世界包围盒的距离
          */
-        rayWorldBoxDistance?: number,
+        rayWorldBoxDistance: number,
 
         /**
          * 射线与世界包围盒交点处法线
          */
-        rayWorldBoxNormal?: Vector3
+        rayWorldBoxNormal: Vector3
 
         /**
          * 射线到自身世界空间的包围盒的距离
          */
-        raySelfWorldBoundsDistance?: number,
+        raySelfWorldBoundsDistance: number,
 
         /**
          * 射线与自身世界空间的包围盒交点处法线
          */
-        raySelfWorldBoundsNormal?: Vector3
-
+        raySelfWorldBoundsNormal: Vector3
         /**
          * 
          */
-        renderable?: Renderable;
+        renderable: Renderable;
 
-        geometry?: GeometryLike;
+        geometry: GeometryLike;
 
-        material?: Material;
+        material: Material;
+    }
 
+    interface PickResultItem extends PickBoxResultItem
+    {
         /**
          * 局部空间射线与几何体相交法线
          */
@@ -69,7 +73,7 @@ namespace feng3d
          * 在世界空间射线起点到交点的距离
          */
         worldCollisionDistance?: number;
-    };
+    }
 
 	/**
 	 * 射线投射拾取器
@@ -80,37 +84,86 @@ namespace feng3d
             /**
              * 拾取检测的列表
              */
-            list: PickResultItem[],
+            list: PickBoxResultItem[],
             /**
              * 当前世界空间射线离碰撞点最短距离
              */
-            worldShortestCollisionDistance: Number,
+            worldShortestCollisionDistance?: Number,
             /**
              * 最近碰到元素
              */
             shortestCollisionItem?: PickResultItem,
         } = { list: [], worldShortestCollisionDistance: Number.MAX_VALUE })
         {
-            const item: PickResultItem = { gameObject };
-            pickResult.list.push(item);
-
             // 检测世界包围盒与射线相交
-            item.rayWorldBoxNormal = new Vector3();
-            item.rayWorldBoxDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, item.rayWorldBoxNormal);
-            if (item.rayWorldBoxDistance < pickResult.worldShortestCollisionDistance)
+            const rayWorldBoxNormal = new Vector3();
+            const rayWorldBoxDistance = gameObject.boundingBox.worldBounds.rayIntersection(ray3.origin, ray3.direction, rayWorldBoxNormal);
+            if (rayWorldBoxDistance < pickResult.worldShortestCollisionDistance)
             {
                 // 检测自身世界空间的包围盒与射线相交
-                item.raySelfWorldBoundsNormal = new Vector3();
-                item.raySelfWorldBoundsDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, item.raySelfWorldBoundsNormal);
-                if (item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance)
+                const raySelfWorldBoundsNormal = new Vector3();
+                const raySelfWorldBoundsDistance = gameObject.boundingBox.selfWorldBounds.rayIntersection(ray3.origin, ray3.direction, raySelfWorldBoundsNormal);
+                if (raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance)
                 {
                     // 获取渲染数据
-                    item.renderable = gameObject.getComponent("Renderable");
-                    item.geometry = item.renderable.geometry;
-                    item.material = item.renderable.material;
+                    const renderable = gameObject.getComponent("Renderable");
+
+                    pickResult.list.push({
+                        ray3: ray3,
+                        gameObject: gameObject,
+                        rayWorldBoxNormal: rayWorldBoxNormal,
+                        rayWorldBoxDistance: rayWorldBoxDistance,
+                        raySelfWorldBoundsNormal: raySelfWorldBoundsNormal,
+                        raySelfWorldBoundsDistance: raySelfWorldBoundsDistance,
+                        renderable: renderable,
+                        geometry: renderable.geometry,
+                        material: renderable.material,
+                    });
+                }
+                if (pickChildren)
+                {
+                    gameObject.children.forEach(child =>
+                    {
+                        this.pickObject(ray3, child, pickChildren, pickResult);
+                    });
+                }
+            }
+            return pickResult;
+        }
+
+        pickObject1(pickResult: {
+            /**
+             * 拾取检测的列表
+             */
+            list: PickResultItem[],
+            /**
+             * 当前世界空间射线离碰撞点最短距离
+             */
+            worldShortestCollisionDistance?: Number,
+            /**
+             * 最近碰到元素
+             */
+            shortestCollisionItem?: PickResultItem,
+        })
+        {
+            const list = pickResult.list;
+            list.sort((a, b) =>
+            {
+                return a.raySelfWorldBoundsDistance - b.raySelfWorldBoundsDistance;
+            });
+
+            for (let i = 0, n = list.length; i < n; i++)
+            {
+                const item = list[i];
+                const ray3 = item.ray3;
+                const gameObject = item.gameObject;
+                const geometry = item.geometry;
+                const material = item.material;
+                if (item.raySelfWorldBoundsDistance < pickResult.worldShortestCollisionDistance)
+                {
                     const localRay = gameObject.transform.rayWorldToLocal(ray3);
                     // 直接几何体射线拾取
-                    var result = item.geometry.raycast(localRay, Number.MAX_VALUE, item.material.renderParams.cullFace);
+                    var result = geometry.raycast(localRay, Number.MAX_VALUE, material.renderParams.cullFace);
                     if (result)
                     {
                         item.localNormal = result.localNormal;
@@ -128,16 +181,11 @@ namespace feng3d
                             pickResult.shortestCollisionItem = item;
                         }
                     }
-                }
-                if (pickChildren)
+                } else
                 {
-                    gameObject.children.forEach(child =>
-                    {
-                        this.pickObject(ray3, child, pickChildren, pickResult);
-                    });
+                    break;
                 }
             }
-            return pickResult;
         }
 
         /**

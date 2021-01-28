@@ -33,10 +33,11 @@ namespace feng3d
 
             console.time('pickObject');
             const result = raycaster.pickObject(view.mouseRay3D, scene.gameObject);
+            const result1 = raycaster.pickObject1(result);
             console.timeEnd('pickObject');
-            
+
             console.log(result.shortestCollisionItem && result.shortestCollisionItem.gameObject.name);
-            
+
             //计算得到鼠标射线相交的物体
             console.time('pick');
             var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
