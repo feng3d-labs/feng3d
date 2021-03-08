@@ -36029,4 +36029,4 @@ var feng3d;
      */
     feng3d.defaultRotationOrder = feng3d.RotationOrder.YXZ;
 })(feng3d || (feng3d = {}));
-//# sourceMappingURL=feng3d.js.map
+//# sourceMappingURL=index.js.map

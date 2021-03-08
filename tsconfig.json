@@ -8,10 +8,10 @@
         "composite": true,
         "experimentalDecorators": true,
         "lib": [
-            "ES2015",
-            "DOM",
+            "ES2017",
+            "DOM"
         ],
-        "outFile": "out/feng3d.js",
+        "outFile": "./dist/index.js",
     },
     "files": [
         // 事件模块

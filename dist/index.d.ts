@@ -16348,4 +16348,4 @@ declare namespace feng3d {
      */
     var version: string;
 }
-//# sourceMappingURL=feng3d.d.ts.map
+//# sourceMappingURL=index.d.ts.map
