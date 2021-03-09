@@ -206,6 +206,14 @@ namespace feng3d
         }
 
         /**
+         * Remove all listeners, or those of the specified event.
+         */
+        offAll(obj: any, type: string)
+        {
+            this.off(obj, type);
+        }
+
+        /**
          * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
          * 
          * @param obj                       被监听对象。

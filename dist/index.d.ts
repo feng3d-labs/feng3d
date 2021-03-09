@@ -81,6 +81,10 @@ declare namespace feng3d {
          */
         off(obj: Object, type?: string, listener?: (event: Event<any>) => any, thisObject?: any): void;
         /**
+         * Remove all listeners, or those of the specified event.
+         */
+        offAll(obj: any, type: string): void;
+        /**
          * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
          *
          * @param obj                       被监听对象。
@@ -246,6 +250,10 @@ declare namespace feng3d {
          * @param listener					要删除的侦听器对象。
          */
         off(type?: string, listener?: (event: Event<any>) => void, thisObject?: any): void;
+        /**
+         * Remove all listeners, or those of the specified event.
+         */
+        offAll(type: string): void;
         /**
          * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
          *

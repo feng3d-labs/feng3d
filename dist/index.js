@@ -175,6 +175,12 @@ var feng3d;
             }
         };
         /**
+         * Remove all listeners, or those of the specified event.
+         */
+        FEvent.prototype.offAll = function (obj, type) {
+            this.off(obj, type);
+        };
+        /**
          * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
          *
          * @param obj                       被监听对象。
@@ -399,6 +405,12 @@ var feng3d;
          */
         EventEmitter.prototype.off = function (type, listener, thisObject) {
             feng3d.event.off(this, type, listener, thisObject);
+        };
+        /**
+         * Remove all listeners, or those of the specified event.
+         */
+        EventEmitter.prototype.offAll = function (type) {
+            feng3d.event.off(this, type);
         };
         /**
          * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
