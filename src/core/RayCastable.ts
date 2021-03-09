@@ -67,7 +67,7 @@ namespace feng3d
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
 
-            this.dispatch("selfBoundsChanged", this);
+            this.emit("selfBoundsChanged", this);
         }
 
         protected _updateBounds()

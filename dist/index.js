@@ -30,6 +30,28 @@ var feng3d;
             return [target["parent"]];
         };
         /**
+         * Return an array listing the events for which the emitter has registered
+         * listeners.
+         */
+        FEvent.prototype.eventNames = function (obj) {
+            var names = Object.keys(this.feventMap.get(obj));
+            return names;
+        };
+        // /**
+        //  * Return the listeners registered for a given event.
+        //  */
+        // listeners(obj: any, type: string)
+        // {
+        //     return this.feventMap.get(obj)?.[type] || [];
+        // }
+        /**
+         * Return the number of listeners listening to a given event.
+         */
+        FEvent.prototype.listenerCount = function (obj, type) {
+            var _a, _b;
+            return ((_b = (_a = this.feventMap.get(obj)) === null || _a === void 0 ? void 0 : _a[type]) === null || _b === void 0 ? void 0 : _b.length) || 0;
+        };
+        /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
          * @param listener					处理事件的监听器函数。
@@ -65,7 +87,7 @@ var feng3d;
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        FEvent.prototype.dispatch = function (obj, type, data, bubbles) {
+        FEvent.prototype.emit = function (obj, type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
             var e = this.makeEvent(type, data, bubbles);
             this.dispatchEvent(obj, e);
@@ -79,10 +101,7 @@ var feng3d;
          * @return 			                如果指定类型的监听器已注册，则值为 true；否则，值为 false。
          */
         FEvent.prototype.has = function (obj, type) {
-            var objectListener = this.feventMap.get(obj);
-            if (!objectListener)
-                return false;
-            return !!(objectListener[type] && objectListener[type].length);
+            return this.listenerCount(obj, type) > 0;
         };
         /**
          * 为监听对象新增指定类型的事件监听。
@@ -104,6 +123,7 @@ var feng3d;
                 objectListener = { __anyEventType__: [] };
                 this.feventMap.set(obj, objectListener);
             }
+            thisObject = thisObject || obj;
             var listeners = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -140,6 +160,7 @@ var feng3d;
                 delete objectListener[type];
                 return;
             }
+            thisObject = thisObject || obj;
             var listeners = objectListener[type];
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
@@ -294,9 +315,29 @@ var feng3d;
     /**
      * 事件适配器
      */
-    var EventDispatcher = /** @class */ (function () {
-        function EventDispatcher() {
+    var EventEmitter = /** @class */ (function () {
+        function EventEmitter() {
         }
+        /**
+         * Return an array listing the events for which the emitter has registered
+         * listeners.
+         */
+        EventEmitter.prototype.eventNames = function () {
+            feng3d.event.eventNames(this);
+        };
+        // /**
+        //  * Return the listeners registered for a given event.
+        //  */
+        // listeners(type: string)
+        // {
+        //     return event.listeners(this, type);
+        // }
+        /**
+         * Return the number of listeners listening to a given event.
+         */
+        EventEmitter.prototype.listenerCount = function (type) {
+            return feng3d.event.listenerCount(this, type);
+        };
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -304,7 +345,7 @@ var feng3d;
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
+        EventEmitter.prototype.once = function (type, listener, thisObject, priority) {
             if (thisObject === void 0) { thisObject = null; }
             if (priority === void 0) { priority = 0; }
             feng3d.event.on(this, type, listener, thisObject, priority, true);
@@ -317,7 +358,7 @@ var feng3d;
          * @param e   事件对象
          * @returns 返回事件是否被该对象处理
          */
-        EventDispatcher.prototype.dispatchEvent = function (e) {
+        EventEmitter.prototype.emitEvent = function (e) {
             return feng3d.event.dispatchEvent(this, e);
         };
         /**
@@ -326,9 +367,9 @@ var feng3d;
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
+        EventEmitter.prototype.emit = function (type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            return feng3d.event.dispatch(this, type, data, bubbles);
+            return feng3d.event.emit(this, type, data, bubbles);
         };
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
@@ -336,7 +377,7 @@ var feng3d;
          * @param type		事件的类型。
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
-        EventDispatcher.prototype.has = function (type) {
+        EventEmitter.prototype.has = function (type) {
             return feng3d.event.has(this, type);
         };
         /**
@@ -345,7 +386,7 @@ var feng3d;
          * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
+        EventEmitter.prototype.on = function (type, listener, thisObject, priority, once) {
             if (priority === void 0) { priority = 0; }
             if (once === void 0) { once = false; }
             feng3d.event.on(this, type, listener, thisObject, priority, once);
@@ -356,7 +397,7 @@ var feng3d;
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          */
-        EventDispatcher.prototype.off = function (type, listener, thisObject) {
+        EventEmitter.prototype.off = function (type, listener, thisObject) {
             feng3d.event.off(this, type, listener, thisObject);
         };
         /**
@@ -366,7 +407,7 @@ var feng3d;
          * @param thisObject                监听器的上下文。可选。
          * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
          */
-        EventDispatcher.prototype.onAny = function (listener, thisObject, priority) {
+        EventEmitter.prototype.onAny = function (listener, thisObject, priority) {
             if (priority === void 0) { priority = 0; }
             feng3d.event.onAny(this, listener, thisObject, priority);
         };
@@ -376,26 +417,26 @@ var feng3d;
          * @param listener                  处理事件的监听器函数。
          * @param thisObject                监听器的上下文。可选。
          */
-        EventDispatcher.prototype.offAny = function (listener, thisObject) {
+        EventEmitter.prototype.offAny = function (listener, thisObject) {
             feng3d.event.offAny(this, listener, thisObject);
         };
         /**
          * 处理事件
          * @param e 事件
          */
-        EventDispatcher.prototype.handleEvent = function (e) {
+        EventEmitter.prototype.handleEvent = function (e) {
             feng3d.event["handleEvent"](this, e);
         };
         /**
          * 处理事件冒泡
          * @param e 事件
          */
-        EventDispatcher.prototype.handelEventBubbles = function (e) {
+        EventEmitter.prototype.handelEventBubbles = function (e) {
             feng3d.event["handelEventBubbles"](this, e);
         };
-        return EventDispatcher;
+        return EventEmitter;
     }());
-    feng3d.EventDispatcher = EventDispatcher;
+    feng3d.EventEmitter = EventEmitter;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -17903,7 +17944,7 @@ var feng3d;
         IndexedDBFS.prototype.deleteFile = function (path, callback) {
             // 删除文件
             feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
-            feng3d.globalDispatcher.dispatch("fs.delete", path);
+            feng3d.globalEmitter.emit("fs.delete", path);
         };
         /**
          * 写文件
@@ -17913,7 +17954,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            feng3d.globalDispatcher.dispatch("fs.write", path);
+            feng3d.globalEmitter.emit("fs.write", path);
         };
         /**
          * 写文件
@@ -17923,7 +17964,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeString = function (path, data, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            feng3d.globalDispatcher.dispatch("fs.write", path);
+            feng3d.globalEmitter.emit("fs.write", path);
         };
         /**
          * 写文件
@@ -17933,7 +17974,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeObject = function (path, object, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
-            feng3d.globalDispatcher.dispatch("fs.write", path);
+            feng3d.globalEmitter.emit("fs.write", path);
         };
         /**
          * 写图片
@@ -17945,7 +17986,7 @@ var feng3d;
             var _this = this;
             feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
                 _this.writeArrayBuffer(path, arraybuffer, callback);
-                feng3d.globalDispatcher.dispatch("fs.write", path);
+                feng3d.globalEmitter.emit("fs.write", path);
             });
         };
         /**
@@ -18148,7 +18189,7 @@ var feng3d;
                 // event.clientY = this.clientY;
                 // event.pageX = this.pageX;
                 // event.pageY = this.pageY;
-                _this.dispatchEvent(event);
+                _this.emitEvent(event);
             };
             _this.target = target;
             return _this;
@@ -18233,7 +18274,7 @@ var feng3d;
             this.deltaY = 0;
         };
         return EventProxy;
-    }(feng3d.EventDispatcher));
+    }(feng3d.EventEmitter));
     feng3d.EventProxy = EventProxy;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -18422,7 +18463,7 @@ var feng3d;
                 }
             }
             this._keyStateDic[key] = true;
-            this.dispatch(key, data);
+            this.emit(key, data);
         };
         /**
          * 释放键
@@ -18437,7 +18478,7 @@ var feng3d;
                 }
             }
             this._keyStateDic[key] = false;
-            this.dispatch(key, data);
+            this.emit(key, data);
         };
         /**
          * 获取按键状态
@@ -18447,7 +18488,7 @@ var feng3d;
             return !!this._keyStateDic[key];
         };
         return KeyState;
-    }(feng3d.EventDispatcher));
+    }(feng3d.EventEmitter));
     feng3d.KeyState = KeyState;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -18501,7 +18542,7 @@ var feng3d;
          */
         ShortCutCapture.prototype.dispatchCommands = function (commands, data) {
             for (var i = 0; i < commands.length; i++) {
-                this._shortCut.dispatch(commands[i], data);
+                this._shortCut.emit(commands[i], data);
             }
         };
         /**
@@ -18794,7 +18835,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
             return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
         };
         return ShortCut;
-    }(feng3d.EventDispatcher));
+    }(feng3d.EventEmitter));
     feng3d.ShortCut = ShortCut;
     feng3d.shortcut = new ShortCut();
 })(feng3d || (feng3d = {}));
@@ -21090,7 +21131,7 @@ var feng3d;
     /**
      * 全局事件
      */
-    feng3d.globalDispatcher = new feng3d.EventDispatcher();
+    feng3d.globalEmitter = new feng3d.EventEmitter();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -21387,7 +21428,7 @@ var feng3d;
                 // 保存执行结果
                 _this._wrapFResult[cuuid] = args;
                 // 通知执行完成
-                feng3d.event.dispatch(_this, cuuid);
+                feng3d.event.emit(_this, cuuid);
             }));
         };
         return FunctionWrap;
@@ -23876,7 +23917,7 @@ var feng3d;
             feng3d.serialize
         ], Feng3dObject.prototype, "hideFlags", void 0);
         return Feng3dObject;
-    }(feng3d.EventDispatcher));
+    }(feng3d.EventEmitter));
     feng3d.Feng3dObject = Feng3dObject;
     Object.defineProperty(Feng3dObject, "objectLib", { value: {} });
     feng3d.serialization.serializeHandlers.push(
@@ -24361,11 +24402,11 @@ var feng3d;
             this.isLoading = true;
             this.readMeta(function (err) {
                 if (err) {
-                    feng3d.event.dispatch(_this, eventtype);
+                    feng3d.event.emit(_this, eventtype);
                     return;
                 }
                 _this.readFile(function (err) {
-                    feng3d.event.dispatch(_this, eventtype);
+                    feng3d.event.emit(_this, eventtype);
                 });
             });
         };
@@ -25358,7 +25399,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.globalDispatcher.on("asset.shaderChanged", function () {
+    feng3d.globalEmitter.on("asset.shaderChanged", function () {
         feng3d.shaderlib.clearCache();
     });
 })(feng3d || (feng3d = {}));
@@ -25572,7 +25613,7 @@ var feng3d;
             // super.drawGameObject(gl, renderAtomic, shader);
         };
         return MouseRenderer;
-    }(feng3d.EventDispatcher));
+    }(feng3d.EventEmitter));
     feng3d.MouseRenderer = MouseRenderer;
     feng3d.mouseRenderer = new MouseRenderer();
 })(feng3d || (feng3d = {}));
@@ -26012,7 +26053,7 @@ var feng3d;
          */
         Component.prototype._onAnyListener = function (e) {
             if (this._gameObject)
-                this._gameObject.dispatchEvent(e);
+                this._gameObject.emitEvent(e);
         };
         /**
          * 该方法仅在GameObject中使用
@@ -26860,7 +26901,7 @@ var feng3d;
             if (this._matrixInvalid)
                 return;
             this._matrixInvalid = true;
-            this.dispatch("transformChanged", this);
+            this.emit("transformChanged", this);
             this._invalidateSceneTransform();
         };
         Transform.prototype._invalidateSceneTransform = function () {
@@ -26870,7 +26911,7 @@ var feng3d;
             this._worldToLocalMatrixInvalid = true;
             this._ITlocalToWorldMatrixInvalid = true;
             this._localToWorldRotationMatrixInvalid = true;
-            this.dispatch("scenetransformChanged", this);
+            this.emit("scenetransformChanged", this);
             //
             if (this.gameObject) {
                 for (var i = 0, n = this.gameObject.numChildren; i < n; i++) {
@@ -26885,7 +26926,7 @@ var feng3d;
             this._localToWorldMatrix.copy(this.matrix);
             if (this.parent)
                 this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
-            this.dispatch("updateLocalToWorldMatrix", this);
+            this.emit("updateLocalToWorldMatrix", this);
             console.assert(!isNaN(this._localToWorldMatrix.elements[0]));
         };
         __decorate([
@@ -27123,11 +27164,11 @@ var feng3d;
         };
         TransformLayout.prototype._invalidateSize = function () {
             this._invalidateLayout();
-            this.dispatch("sizeChanged", this);
+            this.emit("sizeChanged", this);
         };
         TransformLayout.prototype._invalidatePivot = function () {
             this._invalidateLayout();
-            this.dispatch("pivotChanged", this);
+            this.emit("pivotChanged", this);
         };
         __decorate([
             feng3d.oav({ tooltip: "当anchorMin.x == anchorMax.x时对position.x赋值生效，当 anchorMin.y == anchorMax.y 时对position.y赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
@@ -27235,7 +27276,7 @@ var feng3d;
             var bounds = this._selfLocalBounds.empty();
             // 获取对象上的包围盒
             var data = { bounds: [] };
-            this._gameObject.dispatch("getSelfBounds", data);
+            this._gameObject.emit("getSelfBounds", data);
             data.bounds.forEach(function (b) {
                 bounds.union(b);
             });
@@ -27510,8 +27551,8 @@ var feng3d;
                     child._parent.removeChild(child);
                 child._setParent(this);
                 this._children.push(child);
-                child.dispatch("added", { parent: this });
-                this.dispatch("addChild", { child: child, parent: this }, true);
+                child.emit("added", { parent: this });
+                this.emit("addChild", { child: child, parent: this }, true);
             }
             return child;
         };
@@ -27743,7 +27784,7 @@ var feng3d;
             console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.dispatch("removeComponent", { component: component, gameobject: this }, true);
+            this.emit("removeComponent", { component: component, gameobject: this }, true);
             component.dispose();
             return component;
         };
@@ -27786,7 +27827,7 @@ var feng3d;
          */
         GameObject.prototype._onAnyListener = function (e) {
             this.components.forEach(function (element) {
-                element.dispatchEvent(e);
+                element.emitEvent(e);
             });
         };
         /**
@@ -27929,11 +27970,11 @@ var feng3d;
             if (this._scene == newScene)
                 return;
             if (this._scene) {
-                this.dispatch("removedFromScene", this);
+                this.emit("removedFromScene", this);
             }
             this._scene = newScene;
             if (this._scene) {
-                this.dispatch("addedToScene", this);
+                this.emit("addedToScene", this);
             }
             this.updateChildrenScene();
         };
@@ -27946,8 +27987,8 @@ var feng3d;
             childIndex = childIndex;
             this._children.splice(childIndex, 1);
             child._setParent(null);
-            child.dispatch("removed", { parent: this });
-            this.dispatch("removeChild", { child: child, parent: this }, true);
+            child.emit("removed", { parent: this });
+            this.emit("removeChild", { child: child, parent: this }, true);
         };
         /**
          * 判断是否拥有组件
@@ -27978,7 +28019,7 @@ var feng3d;
             component.setGameObject(this);
             component.init();
             //派发添加组件事件
-            this.dispatch("addComponent", { component: component, gameobject: this }, true);
+            this.emit("addComponent", { component: component, gameobject: this }, true);
         };
         /**
          * 创建指定类型的游戏对象。
@@ -28610,7 +28651,7 @@ var feng3d;
         RayCastable.prototype._onBoundsInvalid = function () {
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
-            this.dispatch("selfBoundsChanged", this);
+            this.emit("selfBoundsChanged", this);
         };
         RayCastable.prototype._updateBounds = function () {
             throw "请在子类中实现！";
@@ -28839,7 +28880,7 @@ var feng3d;
         });
         ScriptComponent.prototype.init = function () {
             _super.prototype.init.call(this);
-            feng3d.globalDispatcher.on("asset.scriptChanged", this._invalidateScriptInstance, this);
+            feng3d.globalEmitter.on("asset.scriptChanged", this._invalidateScriptInstance, this);
         };
         ScriptComponent.prototype._updateScriptInstance = function () {
             var oldInstance = this._scriptInstance;
@@ -28888,7 +28929,7 @@ var feng3d;
                 this._scriptInstance = null;
             }
             _super.prototype.dispose.call(this);
-            feng3d.globalDispatcher.off("asset.scriptChanged", this._invalidateScriptInstance, this);
+            feng3d.globalEmitter.off("asset.scriptChanged", this._invalidateScriptInstance, this);
         };
         __decorate([
             feng3d.serialize,
@@ -29650,7 +29691,7 @@ var feng3d;
          */
         Geometry.prototype.invalidateBounds = function () {
             this._bounding = null;
-            this.dispatch("boundsInvalid", this);
+            this.emit("boundsInvalid", this);
         };
         Object.defineProperty(Geometry.prototype, "bounding", {
             get: function () {
@@ -30634,7 +30675,7 @@ var feng3d;
             console.assert(!isNaN(this.aspect));
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
-            this.dispatch("lensChanged", this);
+            this.emit("lensChanged", this);
         };
         LensBase.prototype._updateInverseMatrix = function () {
             this._inverseMatrix.copy(this.matrix);
@@ -30872,8 +30913,8 @@ var feng3d;
                     this._lens.on("lensChanged", this.invalidateViewProjection, this);
                 }
                 this.invalidateViewProjection();
-                this.dispatch("refreshView");
-                this.dispatch("lensChanged");
+                this.emit("refreshView");
+                this.emit("lensChanged");
             },
             enumerable: false,
             configurable: true
@@ -32799,7 +32840,7 @@ var feng3d;
         });
         Texture2D.prototype.onItemLoadCompleted = function () {
             if (this._loadings.length == 0)
-                this.dispatch("loadCompleted");
+                this.emit("loadCompleted");
         };
         /**
          * 已加载完成或者加载完成时立即调用
@@ -33066,7 +33107,7 @@ var feng3d;
         };
         TextureCube.prototype._onItemLoadCompleted = function () {
             if (this._loading.length == 0)
-                this.dispatch("loadCompleted");
+                this.emit("loadCompleted");
         };
         /**
          * 已加载完成或者加载完成时立即调用
@@ -33106,7 +33147,7 @@ var feng3d;
             _this.renderAtomic = new feng3d.RenderAtomic();
             _this.preview = "";
             _this.name = "";
-            feng3d.globalDispatcher.on("asset.shaderChanged", _this._onShaderChanged, _this);
+            feng3d.globalEmitter.on("asset.shaderChanged", _this._onShaderChanged, _this);
             _this.shaderName = "standard";
             _this.uniforms = new feng3d.StandardUniforms();
             _this.renderParams = new feng3d.RenderParams();
@@ -35865,9 +35906,9 @@ var feng3d;
             var _this = this;
             if (this._selectedGameObject != value) {
                 if (this._selectedGameObject)
-                    this._selectedGameObject.dispatch("mouseout", null, true);
+                    this._selectedGameObject.emit("mouseout", null, true);
                 if (value)
-                    value.dispatch("mouseover", null, true);
+                    value.emit("mouseover", null, true);
             }
             this._selectedGameObject = value;
             this._mouseEventTypes.forEach(function (element) {
@@ -35877,7 +35918,7 @@ var feng3d;
                             _this.gameObjectClickNum = 0;
                             _this.preMouseDownGameObject = _this._selectedGameObject;
                         }
-                        _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                        _this._selectedGameObject && _this._selectedGameObject.emit(element, null, true);
                         break;
                     case "mouseup":
                         if (_this._selectedGameObject == _this.preMouseDownGameObject) {
@@ -35887,18 +35928,18 @@ var feng3d;
                             _this.gameObjectClickNum = 0;
                             _this.preMouseDownGameObject = null;
                         }
-                        _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                        _this._selectedGameObject && _this._selectedGameObject.emit(element, null, true);
                         break;
                     case "mousemove":
-                        _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                        _this._selectedGameObject && _this._selectedGameObject.emit(element, null, true);
                         break;
                     case "click":
                         if (_this.gameObjectClickNum > 0)
-                            _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                            _this._selectedGameObject && _this._selectedGameObject.emit(element, null, true);
                         break;
                     case "dblclick":
                         if (_this.gameObjectClickNum > 1) {
-                            _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                            _this._selectedGameObject && _this._selectedGameObject.emit(element, null, true);
                             _this.gameObjectClickNum = 0;
                         }
                         break;
@@ -35935,27 +35976,27 @@ var feng3d;
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        MouseInput.prototype.dispatch = function (type, data, bubbles) {
+        MouseInput.prototype.emit = function (type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
             if (!this.enable)
                 return null;
             if (!this.catchMouseMove && type == "mousemove")
                 return null;
-            return _super.prototype.dispatch.call(this, type, data, bubbles);
+            return _super.prototype.emit.call(this, type, data, bubbles);
         };
         /**
          * 派发事件
          * @param event   事件对象
          */
-        MouseInput.prototype.dispatchEvent = function (event) {
+        MouseInput.prototype.emitEvent = function (event) {
             if (!this.enable)
                 return false;
             if (!this.catchMouseMove && event.type == "mousemove")
                 return false;
-            return _super.prototype.dispatchEvent.call(this, event);
+            return _super.prototype.emitEvent.call(this, event);
         };
         return MouseInput;
-    }(feng3d.EventDispatcher));
+    }(feng3d.EventEmitter));
     feng3d.MouseInput = MouseInput;
     /**
      * 鼠标事件列表
@@ -36000,7 +36041,7 @@ var feng3d;
                     type = ["", "middle", "right"][event.button] + event.type;
                 }
             }
-            this.dispatch(type, { mouseX: event.clientX, mouseY: event.clientY });
+            this.emit(type, { mouseX: event.clientX, mouseY: event.clientY });
         };
         return WindowMouseInput;
     }(MouseInput));

@@ -162,12 +162,12 @@ namespace feng3d
             {
                 if (err)
                 {
-                    event.dispatch(this, eventtype);
+                    event.emit(this, eventtype);
                     return;
                 }
                 this.readFile((err) =>
                 {
-                    event.dispatch(this, eventtype);
+                    event.emit(this, eventtype);
                 });
             });
         }

@@ -246,13 +246,13 @@ namespace feng3d
         private _invalidateSize()
         {
             this._invalidateLayout();
-            this.dispatch("sizeChanged", this);
+            this.emit("sizeChanged", this);
         }
 
         private _invalidatePivot()
         {
             this._invalidateLayout();
-            this.dispatch("pivotChanged", this);
+            this.emit("pivotChanged", this);
         }
     }
 }

@@ -3,7 +3,7 @@ namespace feng3d
     export interface WindowEventProxy
     {
         once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean);
+        emit<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean);
         has<K extends keyof WindowEventMap>(type: K): boolean;
         on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): void;
@@ -12,7 +12,7 @@ namespace feng3d
     export interface IEventProxy<T>
     {
         once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean);
+        emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean);
         has<K extends keyof T>(type: K): boolean;
         on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;

@@ -64,7 +64,7 @@ namespace feng3d
         constructor()
         {
             super();
-            globalDispatcher.on("asset.shaderChanged", this._onShaderChanged, this);
+            globalEmitter.on("asset.shaderChanged", this._onShaderChanged, this);
             this.shaderName = "standard";
             this.uniforms = new StandardUniforms();
             this.renderParams = new RenderParams();

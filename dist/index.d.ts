@@ -8,7 +8,7 @@ declare namespace feng3d {
      */
     export interface ObjectEventDispatcher<O, T> {
         once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(target: O, type: K): boolean;
         on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
@@ -19,6 +19,15 @@ declare namespace feng3d {
     export class FEvent {
         private feventMap;
         private getBubbleTargets;
+        /**
+         * Return an array listing the events for which the emitter has registered
+         * listeners.
+         */
+        eventNames(obj: any): string[];
+        /**
+         * Return the number of listeners listening to a given event.
+         */
+        listenerCount(obj: any, type: string): number;
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -42,7 +51,7 @@ declare namespace feng3d {
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(obj: Object, type: string, data?: any, bubbles?: boolean): Event<any>;
+        emit(obj: Object, type: string, data?: any, bubbles?: boolean): Event<any>;
         /**
          * 检查 被监听对象 是否为特定事件类型注册了任何监听器.
          *
@@ -172,9 +181,9 @@ declare namespace feng3d {
     export {};
 }
 declare namespace feng3d {
-    interface IEventDispatcher<T> {
+    interface IEventEmitter<T> {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(type: K): boolean;
         on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
@@ -182,7 +191,16 @@ declare namespace feng3d {
     /**
      * 事件适配器
      */
-    class EventDispatcher {
+    class EventEmitter {
+        /**
+         * Return an array listing the events for which the emitter has registered
+         * listeners.
+         */
+        eventNames(): void;
+        /**
+         * Return the number of listeners listening to a given event.
+         */
+        listenerCount(type: string): number;
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -199,14 +217,14 @@ declare namespace feng3d {
          * @param e   事件对象
          * @returns 返回事件是否被该对象处理
          */
-        dispatchEvent(e: Event<any>): boolean;
+        emitEvent(e: Event<any>): boolean;
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
          * @param type                      事件的类型。类型区分大小写。
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(type: string, data?: any, bubbles?: boolean): Event<any>;
+        emit(type: string, data?: any, bubbles?: boolean): Event<any>;
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
          *
@@ -8450,7 +8468,7 @@ declare namespace feng3d {
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
      */
-    class EventProxy extends EventDispatcher {
+    class EventProxy extends EventEmitter {
         pageX: number;
         pageY: number;
         clientX: number;
@@ -8507,14 +8525,14 @@ declare namespace feng3d {
 declare namespace feng3d {
     interface WindowEventProxy {
         once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
+        emit<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
         has<K extends keyof WindowEventMap>(type: K): boolean;
         on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): void;
     }
     interface IEventProxy<T> {
         once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
+        emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
         has<K extends keyof T>(type: K): boolean;
         on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;
@@ -8582,7 +8600,7 @@ declare namespace feng3d {
      * 按键状态
 
      */
-    class KeyState extends EventDispatcher {
+    class KeyState extends EventEmitter {
         /**
          * 按键状态{key:键名称,value:是否按下}
          */
@@ -8754,7 +8772,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
      * </pre>
      */
-    class ShortCut extends EventDispatcher {
+    class ShortCut extends EventEmitter {
         /**
          * 按键状态
          */
@@ -10335,7 +10353,7 @@ declare namespace feng3d {
     /**
      * 全局事件
      */
-    var globalDispatcher: IEventDispatcher<GlobalEvents>;
+    var globalEmitter: IEventEmitter<GlobalEvents>;
     /**
      * 事件列表
      */
@@ -11128,7 +11146,7 @@ declare namespace feng3d {
     /**
      * 所有feng3d对象的基类
      */
-    class Feng3dObject extends EventDispatcher implements IDisposable {
+    class Feng3dObject extends EventEmitter implements IDisposable {
         /**
          * 名称
          */
@@ -12206,7 +12224,7 @@ declare namespace feng3d {
     /**
      * 鼠标拾取渲染器
      */
-    class MouseRenderer extends EventDispatcher {
+    class MouseRenderer extends EventEmitter {
         private objects;
         /**
          * 渲染
@@ -12304,7 +12322,7 @@ declare namespace feng3d {
     type Components = ComponentMap[ComponentNames];
     interface Component {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
+        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
         on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
@@ -13009,7 +13027,7 @@ declare namespace feng3d {
     }
     interface GameObject {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
+        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
         on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
@@ -13873,7 +13891,7 @@ declare namespace feng3d {
     }
     interface Geometry {
         once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
+        emit<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
         has<K extends keyof GeometryEventMap>(type: K): boolean;
         on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): void;
@@ -15016,7 +15034,7 @@ declare namespace feng3d {
     }
     interface Texture2D {
         once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
+        emit<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
         has<K extends keyof Texture2DEventMap>(type: K): boolean;
         on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): void;
@@ -15131,7 +15149,7 @@ declare namespace feng3d {
     }
     interface TextureCube {
         once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
+        emit<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
         has<K extends keyof TextureCubeEventMap>(type: K): boolean;
         on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): void;
@@ -16216,7 +16234,7 @@ declare namespace feng3d {
     /**
      * 鼠标事件输入
      */
-    class MouseInput extends EventDispatcher {
+    class MouseInput extends EventEmitter {
         /**
          * 是否启动
          */
@@ -16231,12 +16249,12 @@ declare namespace feng3d {
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(type: string, data?: any, bubbles?: boolean): Event<any>;
+        emit(type: string, data?: any, bubbles?: boolean): Event<any>;
         /**
          * 派发事件
          * @param event   事件对象
          */
-        dispatchEvent(event: Event<any>): boolean;
+        emitEvent(event: Event<any>): boolean;
     }
     /**
      * Window鼠标事件输入

@@ -5,7 +5,7 @@ namespace feng3d
 	 * 按键状态
 
 	 */
-	export class KeyState extends EventDispatcher
+	export class KeyState extends EventEmitter
 	{
 		/**
 		 * 按键状态{key:键名称,value:是否按下}
@@ -37,7 +37,7 @@ namespace feng3d
 				}
 			}
 			this._keyStateDic[key] = true;
-			this.dispatch(key, data);
+			this.emit(key, data);
 		}
 
 		/**
@@ -56,7 +56,7 @@ namespace feng3d
 				}
 			}
 			this._keyStateDic[key] = false;
-			this.dispatch(key, data);
+			this.emit(key, data);
 		}
 
 		/**
