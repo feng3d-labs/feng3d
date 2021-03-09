@@ -2,8 +2,8 @@
   "name": "feng3d",
   "version": "0.1.3",
   "description": "webgl 3d engine",
-  "main": "out/feng3d.js",
-  "types": "out/feng3d.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && npm run shaderpack",
     "build:w": "tsc -w",
