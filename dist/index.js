@@ -62,6 +62,7 @@ var feng3d;
             if (thisObject === void 0) { thisObject = null; }
             if (priority === void 0) { priority = 0; }
             this.on(obj, type, listener, thisObject, priority, true);
+            return this;
         };
         /**
          * 派发事件
@@ -139,6 +140,7 @@ var feng3d;
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
+            return this;
         };
         /**
          * 移除监听
@@ -173,12 +175,14 @@ var feng3d;
                     delete objectListener[type];
                 }
             }
+            return this;
         };
         /**
          * Remove all listeners, or those of the specified event.
          */
         FEvent.prototype.offAll = function (obj, type) {
             this.off(obj, type);
+            return this;
         };
         /**
          * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
@@ -210,6 +214,7 @@ var feng3d;
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: false });
+            return this;
         };
         /**
          * 移除监听对象的任意事件。
@@ -234,6 +239,7 @@ var feng3d;
                     }
                 }
             }
+            return this;
         };
         /**
          * 初始化事件对象
@@ -355,6 +361,7 @@ var feng3d;
             if (thisObject === void 0) { thisObject = null; }
             if (priority === void 0) { priority = 0; }
             feng3d.event.on(this, type, listener, thisObject, priority, true);
+            return this;
         };
         /**
          * 派发事件
@@ -396,6 +403,7 @@ var feng3d;
             if (priority === void 0) { priority = 0; }
             if (once === void 0) { once = false; }
             feng3d.event.on(this, type, listener, thisObject, priority, once);
+            return this;
         };
         /**
          * 移除监听
@@ -405,12 +413,14 @@ var feng3d;
          */
         EventEmitter.prototype.off = function (type, listener, thisObject) {
             feng3d.event.off(this, type, listener, thisObject);
+            return this;
         };
         /**
          * Remove all listeners, or those of the specified event.
          */
         EventEmitter.prototype.offAll = function (type) {
-            feng3d.event.off(this, type);
+            feng3d.event.offAll(this, type);
+            return this;
         };
         /**
          * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
@@ -422,6 +432,7 @@ var feng3d;
         EventEmitter.prototype.onAny = function (listener, thisObject, priority) {
             if (priority === void 0) { priority = 0; }
             feng3d.event.onAny(this, listener, thisObject, priority);
+            return this;
         };
         /**
          * 移除监听对象的任意事件。
@@ -431,6 +442,7 @@ var feng3d;
          */
         EventEmitter.prototype.offAny = function (listener, thisObject) {
             feng3d.event.offAny(this, listener, thisObject);
+            return this;
         };
         /**
          * 处理事件
@@ -18238,6 +18250,7 @@ var feng3d;
          */
         EventProxy.prototype.once = function (type, listener, thisObject, priority) {
             this.on(type, listener, thisObject, priority, true);
+            return this;
         };
         /**
          * 添加监听
@@ -18253,6 +18266,7 @@ var feng3d;
                 this.listentypes.push(type);
                 this._target.addEventListener(type, this.onMouseKey);
             }
+            return this;
         };
         /**
          * 移除监听
@@ -18273,6 +18287,7 @@ var feng3d;
                 this._target.removeEventListener(type, this.onMouseKey);
                 this.listentypes.splice(this.listentypes.indexOf(type), 1);
             }
+            return this;
         };
         /**
          * 清理数据

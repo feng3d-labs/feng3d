@@ -62,9 +62,10 @@ namespace feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number)
         {
-            this.on(type, listener, thisObject, priority, true)
+            this.on(type, listener, thisObject, priority, true);
+            return this;
         }
 
         /**
@@ -81,6 +82,7 @@ namespace feng3d
                 this.listentypes.push(type);
                 this._target.addEventListener(type, this.onMouseKey);
             }
+            return this;
         }
 
         /**
@@ -104,6 +106,7 @@ namespace feng3d
                 this._target.removeEventListener(type, this.onMouseKey);
                 this.listentypes.splice(this.listentypes.indexOf(type), 1);
             }
+            return this;
         }
 
         /**

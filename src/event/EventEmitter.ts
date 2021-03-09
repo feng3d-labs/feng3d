@@ -3,11 +3,11 @@ namespace feng3d
 
     export interface IEventEmitter<T>
     {
-        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): this;
         emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(type: K): boolean;
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
+        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
     }
 
 	/**
@@ -50,6 +50,7 @@ namespace feng3d
         once(type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
         {
             event.on(this, type, listener, thisObject, priority, true);
+            return this;
         }
 
         /**
@@ -96,6 +97,7 @@ namespace feng3d
         on(type: string, listener: (event: Event<any>) => void, thisObject?: any, priority = 0, once = false)
         {
             event.on(this, type, listener, thisObject, priority, once);
+            return this;
         }
 
         /**
@@ -107,14 +109,16 @@ namespace feng3d
         off(type?: string, listener?: (event: Event<any>) => void, thisObject?: any)
         {
             event.off(this, type, listener, thisObject);
+            return this;
         }
 
         /**
          * Remove all listeners, or those of the specified event.
          */
-        offAll(type: string)
+        offAll(type?: string)
         {
-            event.off(this, type);
+            event.offAll(this, type);
+            return this;
         }
 
         /**
@@ -127,6 +131,7 @@ namespace feng3d
         onAny(listener: (event: Event<any>) => void, thisObject?: any, priority = 0)
         {
             event.onAny(this, listener, thisObject, priority);
+            return this;
         }
 
         /**
@@ -138,6 +143,7 @@ namespace feng3d
         offAny(listener?: (event: Event<any>) => void, thisObject?: any)
         {
             event.offAny(this, listener, thisObject);
+            return this;
         }
 
         /**

@@ -11,11 +11,11 @@ namespace feng3d
      */
     export interface ObjectEventDispatcher<O, T>
     {
-        once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): this;
         emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(target: O, type: K): boolean;
-        on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
+        on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
     }
 
     /**
@@ -66,6 +66,7 @@ namespace feng3d
         once(obj: Object, type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
         {
             this.on(obj, type, listener, thisObject, priority, true);
+            return this;
         }
 
         /**
@@ -158,6 +159,7 @@ namespace feng3d
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
+            return this;
         }
 
         /**
@@ -203,14 +205,16 @@ namespace feng3d
                     delete objectListener[type];
                 }
             }
+            return this;
         }
 
         /**
          * Remove all listeners, or those of the specified event.
          */
-        offAll(obj: any, type: string)
+        offAll(obj: any, type?: string)
         {
             this.off(obj, type);
+            return this;
         }
 
         /**
@@ -249,6 +253,7 @@ namespace feng3d
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: false });
+            return this;
         }
 
         /**
@@ -279,6 +284,7 @@ namespace feng3d
                     }
                 }
             }
+            return this;
         }
 
         /**
