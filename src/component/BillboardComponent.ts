@@ -3,7 +3,7 @@ namespace feng3d
 
     export interface ComponentMap { BillboardComponent: BillboardComponent; }
 
-    @feng3d.AddComponentMenu("Layout/BillboardComponent")
+    @AddComponentMenu("Layout/BillboardComponent")
     @RegisterComponent()
     export class BillboardComponent extends Component3D
     {

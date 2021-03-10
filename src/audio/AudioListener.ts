@@ -100,8 +100,8 @@ namespace feng3d
 
     window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
 
-    var audioCtx = feng3d.audioCtx = new AudioContext();
-    var globalGain = feng3d.globalGain = audioCtx.createGain();
+    var audioCtx = audioCtx = new AudioContext();
+    var globalGain = globalGain = audioCtx.createGain();
     // 新增无音Gain，避免没有AudioListener组件时暂停声音播放进度
     var zeroGain = audioCtx.createGain();
     zeroGain.connect(audioCtx.destination);

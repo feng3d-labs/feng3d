@@ -198,7 +198,7 @@ namespace feng3d
          * @param targetAxis 要重用的向量对象，用于存储轴
          * @return 一个数组，第一个元素是轴，第二个元素是弧度
          */
-        toAxisAngle(targetAxis = new feng3d.Vector3())
+        toAxisAngle(targetAxis = new Vector3())
         {
             this.normalize(); // 如果w>1 acos和sqrt会产生错误，那么如果四元数被标准化，就不会发生这种情况
             var angle = 2 * Math.acos(this.w);

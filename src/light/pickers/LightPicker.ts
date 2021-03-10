@@ -15,7 +15,7 @@ namespace feng3d
             var directionalLights: DirectionalLight[] = [];
             var spotLights: SpotLight[] = [];
 
-            var scene = this._model.gameObject.scene;
+            var scene = this._model.transform.scene;
             if (scene)
             {
                 pointLights = scene.activePointLights;

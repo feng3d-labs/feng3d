@@ -5,14 +5,14 @@ namespace feng3d
         /**
          * 控制对象
          */
-        protected _targetObject: GameObject | undefined;
+        protected _targetObject: Transform | undefined;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject?: GameObject)
+        constructor(transform?: Transform)
         {
-            this.targetObject = targetObject;
+            this.targetObject = transform;
         }
 
         /**

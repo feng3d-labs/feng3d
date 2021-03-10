@@ -10,6 +10,13 @@ namespace feng3d
     @RegisterComponent()
     export class DirectionalLight extends Light
     {
+        static create(name = "DirectionalLight")
+        {
+            var gameObject = new GameObject();
+            gameObject.name = name;
+            var directionalLight = gameObject.addComponent("DirectionalLight");
+            return directionalLight;
+        }
         __class__: "feng3d.DirectionalLight";
 
         lightType = LightType.Directional;
@@ -37,7 +44,7 @@ namespace feng3d
         {
             var worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
-                var box = i.gameObject.boundingBox.worldBounds;
+                var box = i.transform.boundingBox.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);

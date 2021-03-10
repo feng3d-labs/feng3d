@@ -19,7 +19,7 @@ namespace feng3d
     }
 
     shaderConfig.shaders["segment"].cls = SegmentUniforms;
-    shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES, enableBlend: true };
+    shaderConfig.shaders["segment"].renderParams = { renderMode: RenderMode.LINES, enableBlend: true };
 
     export interface DefaultMaterial
     {

@@ -3,14 +3,14 @@ namespace feng3d
     export class LookAtController extends ControllerBase
     {
         protected _lookAtPosition: Vector3;
-        protected _lookAtObject: GameObject;
+        protected _lookAtObject: Transform;
         protected _origin: Vector3 = new Vector3(0.0, 0.0, 0.0);
         protected _upAxis: Vector3 = Vector3.Y_AXIS;
         protected _pos: Vector3 = new Vector3();
 
-        constructor(target?: GameObject, lookAtObject?: GameObject)
+        constructor(transform?: Transform, lookAtObject?: Transform)
         {
-            super(target);
+            super(transform);
 
             if (lookAtObject)
                 this.lookAtObject = lookAtObject;

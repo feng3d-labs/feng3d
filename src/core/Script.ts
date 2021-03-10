@@ -18,7 +18,7 @@ namespace feng3d
          */
         get transform()
         {
-            return this.gameObject.transform;
+            return this.component.transform;
         }
 
         /**

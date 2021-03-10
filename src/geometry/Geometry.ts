@@ -364,13 +364,13 @@ namespace feng3d
          * 
          * @param result 
          */
-        getVertices(result: feng3d.Vector3[] = [])
+        getVertices(result: Vector3[] = [])
         {
             var positions = this.positions;
-            var result: feng3d.Vector3[] = []
+            var result: Vector3[] = []
             for (let i = 0, n = positions.length; i < n; i += 3)
             {
-                result.push(new feng3d.Vector3(positions[i], positions[i + 1], positions[i + 2]));
+                result.push(new Vector3(positions[i], positions[i + 1], positions[i + 2]));
             }
 
             return result;

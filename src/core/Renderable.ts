@@ -119,7 +119,7 @@ namespace feng3d
 
             //保存碰撞数据
             var pickingCollisionVO: PickingCollisionVO = {
-                gameObject: this.gameObject,
+                transform: this.transform,
                 localNormal: localNormal,
                 localRay: localRay,
                 rayEntryDistance: rayEntryDistance,

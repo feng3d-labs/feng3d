@@ -140,27 +140,30 @@ namespace feng3d
             function createJoint(i: number)
             {
                 if (jointGameobjects[i])
-                    return jointGameobjects[i].gameObject;
+                    return jointGameobjects[i];
 
                 var skeletonJoint = joints[i];
-                var parentGameobject: GameObject;
+                var parentGameobject: Transform;
                 if (skeletonJoint.parentIndex != -1)
                 {
                     parentGameobject = createJoint(skeletonJoint.parentIndex);
                     joints[skeletonJoint.parentIndex].children.push(i);
                 } else
                 {
-                    parentGameobject = skeleton.gameObject
+                    parentGameobject = skeleton.transform
                 }
 
-                var jointGameobject = parentGameobject.find(skeletonJoint.name);
-                if (!jointGameobject)
+                var jointTransform = parentGameobject.find(skeletonJoint.name);
+                if (!jointTransform)
                 {
-                    jointGameobject = serialization.setValue(new GameObject(), { name: skeletonJoint.name, hideFlags: feng3d.HideFlags.DontSave });
-                    parentGameobject.addChild(jointGameobject);
+                    var gameObject = new GameObject();
+                    gameObject.name = skeletonJoint.name;
+                    gameObject.hideFlags = HideFlags.DontSave;
+                    jointTransform = gameObject.addComponent("Transform");
+                    parentGameobject.addChild(jointTransform);
                 }
 
-                var transform = jointGameobject.transform;
+                var transform = jointTransform.transform;
 
                 var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1)
@@ -176,7 +179,7 @@ namespace feng3d
 
                 jointGameobjects[i] = transform;
                 jointGameObjectMap[skeletonJoint.name] = transform;
-                return jointGameobject;
+                return jointTransform;
             }
         }
     }

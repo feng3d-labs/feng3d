@@ -36,7 +36,7 @@ namespace feng3d
         {
             return ["polyfill", this.a, this.oldf()].join("-")
         }
-        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        functionwrap.extendFunction(a, "f", function (r)
         {
             return ["polyfill", this.a, r].join("-");
         });

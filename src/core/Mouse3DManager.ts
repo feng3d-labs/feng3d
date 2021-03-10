@@ -8,11 +8,11 @@ namespace feng3d
         @watch("_mouseInputChanged")
         mouseInput: MouseInput;
 
-        get selectedGameObject()
+        get selectedTransform()
         {
-            return this._selectedGameObject;
+            return this._selectedTransform;
         }
-        set selectedGameObject(v)
+        set selectedTransform(v)
         {
             this.setSelectedGameObject(v);
         }
@@ -33,8 +33,8 @@ namespace feng3d
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
 
-            var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
-            return gameobject;
+            var transform = pickingCollisionVO && pickingCollisionVO.transform;
+            return transform;
         }
 
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
@@ -44,13 +44,13 @@ namespace feng3d
             this.viewport = viewport;
         }
 
-        private _selectedGameObject: GameObject;
+        private _selectedTransform: Transform;
         private _mouseEventTypes: string[] = [];
 
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownGameObject: GameObject | null;
+        private preMouseDownGameObject: Transform;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
@@ -98,30 +98,30 @@ namespace feng3d
         /**
          * 设置选中对象
          */
-        private setSelectedGameObject(value: GameObject)
+        private setSelectedGameObject(value: Transform)
         {
-            if (this._selectedGameObject != value)
+            if (this._selectedTransform != value)
             {
-                if (this._selectedGameObject)
-                    this._selectedGameObject.emit("mouseout", null, true);
+                if (this._selectedTransform)
+                    this._selectedTransform.emit("mouseout", null, true);
                 if (value)
                     value.emit("mouseover", null, true);
             }
-            this._selectedGameObject = value;
+            this._selectedTransform = value;
             this._mouseEventTypes.forEach(element =>
             {
                 switch (element)
                 {
                     case "mousedown":
-                        if (this.preMouseDownGameObject != this._selectedGameObject)
+                        if (this.preMouseDownGameObject != this._selectedTransform)
                         {
                             this.gameObjectClickNum = 0;
-                            this.preMouseDownGameObject = this._selectedGameObject;
+                            this.preMouseDownGameObject = this._selectedTransform;
                         }
-                        this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                        this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "mouseup":
-                        if (this._selectedGameObject == this.preMouseDownGameObject)
+                        if (this._selectedTransform == this.preMouseDownGameObject)
                         {
                             this.gameObjectClickNum++;
                         } else
@@ -129,19 +129,19 @@ namespace feng3d
                             this.gameObjectClickNum = 0;
                             this.preMouseDownGameObject = null;
                         }
-                        this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                        this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "mousemove":
-                        this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                        this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "click":
                         if (this.gameObjectClickNum > 0)
-                            this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                            this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "dblclick":
                         if (this.gameObjectClickNum > 1)
                         {
-                            this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
+                            this._selectedTransform && this._selectedTransform.emit(element, null, true);
                             this.gameObjectClickNum = 0;
                         }
                         break;

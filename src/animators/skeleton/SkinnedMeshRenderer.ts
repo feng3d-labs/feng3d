@@ -85,12 +85,12 @@ namespace feng3d
         {
             if (!this.cacheSkeletonComponent)
             {
-                var gameObject: GameObject = this.gameObject;
+                var transform = this.transform;
                 var skeletonComponent: SkeletonComponent = null;
-                while (gameObject && !skeletonComponent)
+                while (transform && !skeletonComponent)
                 {
-                    skeletonComponent = gameObject.getComponent("SkeletonComponent")
-                    gameObject = gameObject.parent;
+                    skeletonComponent = transform.getComponent("SkeletonComponent")
+                    transform = transform.parent;
                 }
                 this.cacheSkeletonComponent = skeletonComponent;
             }

@@ -47,7 +47,7 @@ namespace feng3d
 
         protected drawRenderables(gl: GL, renderable: Renderable)
         {
-            if (renderable.gameObject.mouseEnabled)
+            if (renderable.transform.mouseEnabled)
             {
                 var object = renderable.gameObject;
                 var u_objectID = this.objects.length;

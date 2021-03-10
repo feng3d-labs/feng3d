@@ -14,6 +14,13 @@ namespace feng3d
     @RegisterComponent()
     export class Camera extends Component3D
     {
+        static create(name = "Camera")
+        {
+            var gameObject = new GameObject();
+            gameObject.name = name;
+            var camera = gameObject.addComponent("Camera");
+            return camera;
+        }
         __class__: "feng3d.Camera";
 
         get single() { return true; }

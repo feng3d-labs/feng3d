@@ -10320,7 +10320,7 @@ declare namespace feng3d {
     /**
      * 添加组件菜单
      *
-     * 在组件类上新增 @feng3d.AddComponentMenu("UI/Text") 可以把该组件添加到组件菜单上。
+     * 在组件类上新增 @AddComponentMenu("UI/Text") 可以把该组件添加到组件菜单上。
      *
      * @param path 组件菜单中路径
      * @param componentOrder 组件菜单中组件的顺序(从低到高)。
@@ -11370,7 +11370,7 @@ declare namespace feng3d {
         /**
          * 游戏对象
          */
-        gameobject = "gameobject",
+        gameObject = "gameObject",
         /**
          * 场景
          */
@@ -12328,12 +12328,14 @@ declare namespace feng3d {
     }
     type ComponentNames = keyof ComponentMap;
     type Components = ComponentMap[ComponentNames];
+    interface ComponentEventMap extends GameObjectEventMap {
+    }
     interface Component {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): this;
+        once<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): this;
+        emit<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean): Event<ComponentEventMap[K]>;
+        has<K extends keyof ComponentEventMap>(type: K): boolean;
+        on<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any): this;
     }
     /**
      * 组件
@@ -12371,32 +12373,81 @@ declare namespace feng3d {
          */
         init(): void;
         /**
-         * Returns the component of Type type if the game object has one attached, null if it doesn't.
-         * @param type				The type of Component to retrieve.
+         * 获取指定位置索引的子组件
+         * @param index			位置索引
+         * @return				子组件
+         */
+        getComponentAt(index: number): Component;
+        /**
+         * 添加指定组件类型到游戏对象
+         *
+         * @type type 被添加组件
+         */
+        addComponent<T extends ComponentNames>(type: T, callback?: (component: ComponentMap[T]) => void): ComponentMap[T];
+        /**
+         * 添加脚本
+         * @param script   脚本路径
+         */
+        addScript(scriptName: string): ScriptComponent;
+        /**
+         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         *
+         * @param type				类定义
          * @return                  返回指定类型组件
          */
         getComponent<T extends ComponentNames>(type: T): ComponentMap[T];
         /**
-         * Returns all components of Type type in the GameObject.
+         * 获取游戏对象上所有指定类型的组件数组
+         *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends ComponentNames>(type?: T): ComponentMap[T][];
+        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][];
         /**
-         * Returns all components of Type type in the GameObject.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
+         * 设置子组件的位置
+         * @param component				子组件
+         * @param index				位置索引
          */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: ComponentMap[T][]): ComponentMap[T][];
+        setComponentIndex(component: Components, index: number): void;
         /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
          */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][];
+        setComponentAt(component: Components, index: number): void;
+        /**
+         * 移除组件
+         * @param component 被移除组件
+         */
+        removeComponent(component: Components): void;
+        /**
+         * 获取组件在容器的索引位置
+         * @param component			查询的组件
+         * @return				    组件在容器的索引位置
+         */
+        getComponentIndex(component: Components): number;
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): Component;
+        /**
+         * 交换子组件位置
+         * @param index1		第一个子组件的索引位置
+         * @param index2		第二个子组件的索引位置
+         */
+        swapComponentsAt(index1: number, index2: number): void;
+        /**
+         * 交换子组件位置
+         * @param a		第一个子组件
+         * @param b		第二个子组件
+         */
+        swapComponents(a: Components, b: Components): void;
+        /**
+         * 移除指定类型组件
+         * @param type 组件类型
+         */
+        removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
          * 销毁
          */
@@ -12417,6 +12468,15 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface Component3DEventMap extends ComponentEventMap, MouseEventMap {
+    }
+    interface Component3D {
+        once<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => void, thisObject?: any, priority?: number): this;
+        emit<K extends keyof Component3DEventMap>(type: K, data?: Component3DEventMap[K], bubbles?: boolean): Event<Component3DEventMap[K]>;
+        has<K extends keyof Component3DEventMap>(type: K): boolean;
+        on<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof Component3DEventMap>(type?: K, listener?: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any): this;
+    }
     /**
      * 3D组件
      * GameObject必须拥有Transform组件的
@@ -12426,6 +12486,21 @@ declare namespace feng3d {
          * The Transform attached to this GameObject (null if there is none attached).
          */
         get transform(): Transform;
+        /**
+         * Returns all components of Type type in the GameObject.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: ComponentMap[T][]): ComponentMap[T][];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][];
     }
 }
 declare namespace feng3d {
@@ -12481,7 +12556,7 @@ declare namespace feng3d {
     /**
      * 天空盒组件
      */
-    class SkyBox extends Component {
+    class SkyBox extends Component3D {
         __class__: "feng3d.SkyBox";
         s_skyboxTexture: TextureCube;
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
@@ -12587,6 +12662,40 @@ declare namespace feng3d {
 declare namespace feng3d {
     interface GameObjectEventMap {
         /**
+         * 添加了子对象，当child被添加到parent中时派发冒泡事件
+         */
+        addChild: {
+            parent: Transform;
+            child: Transform;
+        };
+        /**
+         * 删除了子对象，当child被parent移除时派发冒泡事件
+         */
+        removeChild: {
+            parent: Transform;
+            child: Transform;
+        };
+        /**
+         * 自身被添加到父对象中事件
+         */
+        added: {
+            parent: Transform;
+        };
+        /**
+         * 自身从父对象中移除事件
+         */
+        removed: {
+            parent: Transform;
+        };
+        /**
+         * 当GameObject的scene属性被设置是由Scene派发
+         */
+        addedToScene: Transform;
+        /**
+         * 当GameObject的scene属性被清空时由Scene派发
+         */
+        removedFromScene: Transform;
+        /**
          * 变换矩阵变化
          */
         transformChanged: Transform;
@@ -12613,6 +12722,10 @@ declare namespace feng3d {
         __class__: "feng3d.Transform";
         get single(): boolean;
         /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        mouseEnabled: boolean;
+        /**
          * 创建一个实体，该类为虚类
          */
         constructor();
@@ -12620,7 +12733,6 @@ declare namespace feng3d {
          * 世界坐标
          */
         get worldPosition(): Vector3;
-        get parent(): Transform;
         /**
          * X轴坐标。
          */
@@ -12687,6 +12799,18 @@ declare namespace feng3d {
         get scale(): Vector3;
         set scale(v: Vector3);
         /**
+         * 是否显示
+         */
+        get visible(): boolean;
+        set visible(v: boolean);
+        private _visible;
+        /**
+         * 全局是否可见
+         */
+        get globalVisible(): boolean;
+        protected _globalVisible: boolean;
+        protected _globalVisibleInvalid: boolean;
+        /**
          * 本地变换矩阵
          */
         get matrix(): Matrix4x4;
@@ -12695,6 +12819,19 @@ declare namespace feng3d {
          * 本地旋转矩阵
          */
         get rotationMatrix(): Matrix4x4;
+        /**
+         * 轴对称包围盒
+         */
+        get boundingBox(): BoundingBox;
+        private _boundingBox;
+        get parent(): Transform;
+        get scene(): Scene;
+        /**
+         * 子对象
+         */
+        get children(): Transform[];
+        set children(value: Transform[]);
+        get numChildren(): number;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
         moveLeft(distance: number): void;
@@ -12737,6 +12874,60 @@ declare namespace feng3d {
         get worldToLocalMatrix(): Matrix4x4;
         get localToWorldRotationMatrix(): Matrix4x4;
         get worldToLocalRotationMatrix(): Matrix4x4;
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
+        find(name: string): Transform;
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
+        contains(child: Transform): boolean;
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
+        addChild(child: Transform): Transform;
+        /**
+         * 添加子对象
+         *
+         * @param children 子对象
+         */
+        addChildren(...children: Transform[]): void;
+        /**
+         * 移除自身
+         */
+        remove(): void;
+        /**
+         * 移除所有子对象
+         */
+        removeChildren(): void;
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
+        removeChild(child: Transform): void;
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
+        removeChildAt(index: number): void;
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
+        getChildAt(index: number): Transform;
+        /**
+         * 获取子对象列表（备份）
+         */
+        getChildren(): Transform[];
         /**
          * 将方向从局部空间转换到世界空间。
          *
@@ -12811,7 +13002,29 @@ declare namespace feng3d {
          * @param localRay 局部空间射线。
          */
         rayWorldToLocal(worldRay: Ray3, localRay?: Ray3): Ray3;
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: ComponentMap[T][]): ComponentMap[T][];
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][];
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
+        /**
+         * 销毁
+         */
+        dispose(): void;
+        disposeWithChildren(): void;
         private readonly _position;
         private readonly _rotation;
         private readonly _orientation;
@@ -12828,14 +13041,41 @@ declare namespace feng3d {
         protected _worldToLocalMatrixInvalid: boolean;
         protected readonly _localToWorldRotationMatrix: Matrix4x4;
         protected _localToWorldRotationMatrixInvalid: boolean;
+        protected _parent: Transform;
+        protected _children: Transform[];
+        protected _scene: Scene;
         private _renderAtomic;
         private _positionChanged;
         private _rotationChanged;
         private _scaleChanged;
+        private _setParent;
+        private updateScene;
+        private updateChildrenScene;
+        private removeChildInternal;
         private _invalidateTransform;
         private _invalidateSceneTransform;
         private _updateMatrix;
         private _updateLocalToWorldMatrix;
+        /**
+         * 是否加载完成
+         */
+        get isSelfLoaded(): boolean;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onSelfLoadCompleted(callback: () => void): void;
+        /**
+         * 是否加载完成
+         */
+        get isLoaded(): boolean;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
+        protected _updateGlobalVisible(): void;
+        protected _invalidateGlobalVisible(): void;
     }
 }
 declare namespace feng3d {
@@ -12933,14 +13173,14 @@ declare namespace feng3d {
      * 用于优化计算射线碰撞检测以及视锥剔除等。
      */
     class BoundingBox {
-        private _gameObject;
+        private _transform;
         protected _selfLocalBounds: Box3;
         protected _selfWorldBounds: Box3;
         protected _worldBounds: Box3;
         protected _selfBoundsInvalid: boolean;
         protected _selfWorldBoundsInvalid: boolean;
         protected _worldBoundsInvalid: boolean;
-        constructor(gameObject: GameObject);
+        constructor(transform: Transform);
         /**
          * 自身局部包围盒通常有Renderable组件提供
          */
@@ -12983,55 +13223,21 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     type Constructor<T> = (new (...args: any[]) => T);
-    interface GameObjectEventMap extends MouseEventMap {
+    interface GameObjectEventMap {
         /**
          * 添加子组件事件
          */
         addComponent: {
-            gameobject: GameObject;
+            gameObject: GameObject;
             component: Component;
         };
         /**
          * 移除子组件事件
          */
         removeComponent: {
-            gameobject: GameObject;
+            gameObject: GameObject;
             component: Component;
         };
-        /**
-         * 添加了子对象，当child被添加到parent中时派发冒泡事件
-         */
-        addChild: {
-            parent: GameObject;
-            child: GameObject;
-        };
-        /**
-         * 删除了子对象，当child被parent移除时派发冒泡事件
-         */
-        removeChild: {
-            parent: GameObject;
-            child: GameObject;
-        };
-        /**
-         * 自身被添加到父对象中事件
-         */
-        added: {
-            parent: GameObject;
-        };
-        /**
-         * 自身从父对象中移除事件
-         */
-        removed: {
-            parent: GameObject;
-        };
-        /**
-         * 当GameObject的scene属性被设置是由Scene派发
-         */
-        addedToScene: GameObject;
-        /**
-         * 当GameObject的scene属性被清空时由Scene派发
-         */
-        removedFromScene: GameObject;
         /**
          * 包围盒失效
          */
@@ -13067,101 +13273,15 @@ declare namespace feng3d {
          */
         name: string;
         /**
-         * 是否显示
-         */
-        get visible(): boolean;
-        set visible(v: boolean);
-        private _visible;
-        /**
-         * 自身以及子对象是否支持鼠标拾取
-         */
-        mouseEnabled: boolean;
-        /**
-         * 变换
-         */
-        get transform(): Transform;
-        private _transform;
-        /**
-         * 轴对称包围盒
-         */
-        get boundingBox(): BoundingBox;
-        private _boundingBox;
-        get parent(): GameObject;
-        /**
-         * 子对象
-         */
-        get children(): GameObject[];
-        set children(value: GameObject[]);
-        get numChildren(): number;
-        /**
          * 子组件个数
          */
         get numComponents(): number;
-        /**
-         * 全局是否可见
-         */
-        get globalVisible(): boolean;
-        get scene(): Scene;
         get components(): Components[];
         set components(value: Components[]);
         /**
          * 构建3D对象
          */
         constructor();
-        /**
-         * 根据名称查找对象
-         *
-         * @param name 对象名称
-         */
-        find(name: string): GameObject;
-        /**
-         * 是否包含指定对象
-         *
-         * @param child 可能的子孙对象
-         */
-        contains(child: GameObject): boolean;
-        /**
-         * 添加子对象
-         *
-         * @param child 子对象
-         */
-        addChild(child: GameObject): GameObject;
-        /**
-         * 添加子对象
-         *
-         * @param childarray 子对象
-         */
-        addChildren(...childarray: GameObject[]): void;
-        /**
-         * 移除自身
-         */
-        remove(): void;
-        /**
-         * 移除所有子对象
-         */
-        removeChildren(): void;
-        /**
-         * 移除子对象
-         *
-         * @param child 子对象
-         */
-        removeChild(child: GameObject): void;
-        /**
-         * 删除指定位置的子对象
-         *
-         * @param index 需要删除子对象的所有
-         */
-        removeChildAt(index: number): void;
-        /**
-         * 获取指定位置的子对象
-         *
-         * @param index
-         */
-        getChildAt(index: number): GameObject;
-        /**
-         * 获取子对象列表（备份）
-         */
-        getChildren(): GameObject[];
         /**
          * 获取指定位置索引的子组件
          * @param index			位置索引
@@ -13193,23 +13313,6 @@ declare namespace feng3d {
          * @return			返回与给出类定义一致的组件
          */
         getComponents<T extends ComponentNames>(type: T): ComponentMap[T][];
-        /**
-         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: ComponentMap[T][]): ComponentMap[T][];
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][];
         /**
          * 设置子组件的位置
          * @param component				子组件
@@ -13263,25 +13366,6 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
-        disposeWithChildren(): void;
-        /**
-         * 是否加载完成
-         */
-        get isSelfLoaded(): boolean;
-        /**
-         * 已加载完成或者加载完成时立即调用
-         * @param callback 完成回调
-         */
-        onSelfLoadCompleted(callback: () => void): void;
-        /**
-         * 是否加载完成
-         */
-        get isLoaded(): boolean;
-        /**
-         * 已加载完成或者加载完成时立即调用
-         * @param callback 完成回调
-         */
-        onLoadCompleted(callback: () => void): void;
         /**
          * 查找指定名称的游戏对象
          *
@@ -13292,17 +13376,6 @@ declare namespace feng3d {
          * 组件列表
          */
         protected _components: Components[];
-        protected _children: GameObject[];
-        protected _scene: Scene;
-        protected _parent: GameObject;
-        protected _globalVisible: boolean;
-        protected _globalVisibleInvalid: boolean;
-        protected _updateGlobalVisible(): void;
-        protected _invalidateGlobalVisible(): void;
-        private _setParent;
-        private updateScene;
-        private updateChildrenScene;
-        private removeChildInternal;
         /**
          * 判断是否拥有组件
          * @param com	被检测的组件
@@ -13430,8 +13503,8 @@ declare namespace feng3d {
          * @param start 起点
          * @param end 终点
          */
-        getObjectsInGlobalArea(start: feng3d.Vector2, end: feng3d.Vector2): GameObject[];
-        protected selectedObject: GameObject;
+        getObjectsInGlobalArea(start: Vector2, end: Vector2): GameObject[];
+        protected selectedTransform: Transform;
         static createNewScene(): Scene;
     }
 }
@@ -13800,7 +13873,7 @@ declare namespace feng3d {
         get activeAnimations(): Animation[];
         get behaviours(): Behaviour[];
         get activeBehaviours(): Behaviour[];
-        get mouseCheckObjects(): GameObject[];
+        get mouseCheckObjects(): Transform[];
         /**
          * 获取拾取缓存
          * @param camera
@@ -13816,7 +13889,7 @@ declare namespace feng3d {
          * @param camera
          */
         getModelsByCamera(camera: Camera): Renderable[];
-        private _mouseCheckObjects;
+        private _mouseCheckTransforms;
         private _models;
         private _visibleAndEnabledModels;
         private _skyBoxs;
@@ -14046,7 +14119,7 @@ declare namespace feng3d {
          *
          * @param result
          */
-        getVertices(result?: feng3d.Vector3[]): Vector3[];
+        getVertices(result?: Vector3[]): Vector3[];
         getFaces(result?: number[][]): number[][];
         /**
          * 克隆一个几何体
@@ -14473,6 +14546,7 @@ declare namespace feng3d {
      * 摄像机
      */
     class Camera extends Component3D {
+        static create(name?: string): Camera;
         __class__: "feng3d.Camera";
         get single(): boolean;
         get projection(): Projection;
@@ -15554,6 +15628,7 @@ declare namespace feng3d {
      * 方向光源
      */
     class DirectionalLight extends Light {
+        static create(name?: string): DirectionalLight;
         __class__: "feng3d.DirectionalLight";
         lightType: LightType;
         private orthographicLens;
@@ -15646,33 +15721,33 @@ declare namespace feng3d {
         /**
          * 控制对象
          */
-        protected _targetObject: GameObject | undefined;
+        protected _targetObject: Transform | undefined;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject?: GameObject);
+        constructor(transform?: Transform);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        get targetObject(): GameObject;
-        set targetObject(val: GameObject);
+        get targetObject(): Transform;
+        set targetObject(val: Transform);
     }
 }
 declare namespace feng3d {
     class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3;
-        protected _lookAtObject: GameObject;
+        protected _lookAtObject: Transform;
         protected _origin: Vector3;
         protected _upAxis: Vector3;
         protected _pos: Vector3;
-        constructor(target?: GameObject, lookAtObject?: GameObject);
+        constructor(transform?: Transform, lookAtObject?: Transform);
         get upAxis(): Vector3;
         set upAxis(upAxis: Vector3);
         get lookAtPosition(): Vector3;
         set lookAtPosition(val: Vector3);
-        get lookAtObject(): GameObject;
-        set lookAtObject(value: GameObject);
+        get lookAtObject(): Transform;
+        set lookAtObject(value: Transform);
         update(interpolate?: boolean): void;
     }
 }
@@ -15710,7 +15785,7 @@ declare namespace feng3d {
         set yFactor(val: number);
         get wrapPanAngle(): boolean;
         set wrapPanAngle(val: boolean);
-        constructor(targetObject?: GameObject, lookAtObject?: GameObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+        constructor(transform?: Transform, lookAtObject?: Transform, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
         update(interpolate?: boolean): void;
     }
 }
@@ -15790,10 +15865,10 @@ declare namespace feng3d {
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param gameObjects 实体列表
+         * @param transforms 实体列表
          * @return
          */
-        pick(ray3D: Ray3, gameObjects: GameObject[]): PickingCollisionVO;
+        pick(ray3D: Ray3, transforms: Transform[]): PickingCollisionVO;
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
@@ -15809,7 +15884,7 @@ declare namespace feng3d {
         /**
          * 第一个穿过的物体
          */
-        gameObject: GameObject;
+        transform: Transform;
         /**
          * 碰撞的uv坐标
          */
@@ -15988,7 +16063,6 @@ declare namespace feng3d {
         dispose(): void;
     }
 }
-declare function createPanner(): PannerNode;
 declare namespace feng3d {
     interface ComponentMap {
         Water: Water;
@@ -16207,8 +16281,8 @@ declare namespace feng3d {
      */
     class Mouse3DManager {
         mouseInput: MouseInput;
-        get selectedGameObject(): GameObject;
-        set selectedGameObject(v: GameObject);
+        get selectedTransform(): Transform;
+        set selectedTransform(v: Transform);
         /**
          * 视窗，鼠标在该矩形内时为有效事件
          */
@@ -16218,9 +16292,9 @@ declare namespace feng3d {
          * @param scene 场景
          * @param camera 摄像机
          */
-        pick(view: View, scene: Scene, camera: Camera): GameObject;
+        pick(view: View, scene: Scene, camera: Camera): Transform;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
-        private _selectedGameObject;
+        private _selectedTransform;
         private _mouseEventTypes;
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click

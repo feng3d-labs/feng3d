@@ -325,7 +325,7 @@ namespace feng3d
          */
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            feng3d._indexedDB.getObjectStoreNames(this.DBname, (err, objectStoreNames) =>
+            _indexedDB.getObjectStoreNames(this.DBname, (err, objectStoreNames) =>
             {
                 if (err) { callback(false); return; }
                 callback(objectStoreNames.indexOf(projectname) != -1);
@@ -339,7 +339,7 @@ namespace feng3d
         initproject(projectname: string, callback: (err: Error) => void)
         {
             this.projectname = projectname;
-            feng3d._indexedDB.createObjectStore(this.DBname, projectname, callback);
+            _indexedDB.createObjectStore(this.DBname, projectname, callback);
         }
     }
 

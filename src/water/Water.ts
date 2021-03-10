@@ -23,8 +23,8 @@ namespace feng3d
 
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
-            var uniforms = <feng3d.WaterUniforms>this.material.uniforms;
-            var sun = this.gameObject.scene.activeDirectionalLights[0];
+            var uniforms = <WaterUniforms>this.material.uniforms;
+            var sun = this.transform.scene.activeDirectionalLights[0];
             if (sun)
             {
                 uniforms.u_sunColor = sun.color;

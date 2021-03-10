@@ -148,9 +148,9 @@ namespace feng3d
         }
 
 
-        constructor(targetObject?: GameObject, lookAtObject?: GameObject, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
+        constructor(transform?: Transform, lookAtObject?: Transform, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
         {
-            super(targetObject, lookAtObject);
+            super(transform, lookAtObject);
             this.distance = distance;
             this.panAngle = panAngle;
             this.tiltAngle = tiltAngle;

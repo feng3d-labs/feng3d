@@ -29,13 +29,17 @@ namespace feng3d
     export type ComponentNames = keyof ComponentMap;
     export type Components = ComponentMap[ComponentNames];
 
+    export interface ComponentEventMap extends GameObjectEventMap
+    {
+    }
+
     export interface Component
     {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): this;
+        once<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): this;
+        emit<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean): Event<ComponentEventMap[K]>;
+        has<K extends keyof ComponentEventMap>(type: K): boolean;
+        on<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any): this;
     }
 
 	/**
@@ -100,8 +104,38 @@ namespace feng3d
         }
 
         /**
-         * Returns the component of Type type if the game object has one attached, null if it doesn't.
-         * @param type				The type of Component to retrieve.
+         * 获取指定位置索引的子组件
+         * @param index			位置索引
+         * @return				子组件
+         */
+        getComponentAt(index: number): Component
+        {
+            return this.gameObject.getComponentAt(index);
+        }
+
+        /**
+         * 添加指定组件类型到游戏对象
+         * 
+         * @type type 被添加组件
+         */
+        addComponent<T extends ComponentNames>(type: T, callback: (component: ComponentMap[T]) => void = null): ComponentMap[T]
+        {
+            return this.gameObject.addComponent(type, callback);
+        }
+
+        /**
+         * 添加脚本
+         * @param script   脚本路径
+         */
+        addScript(scriptName: string)
+        {
+            return this.gameObject.addScript(scriptName);
+        }
+
+        /**
+         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 
+         * @param type				类定义
          * @return                  返回指定类型组件
          */
         getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
@@ -110,33 +144,92 @@ namespace feng3d
         }
 
         /**
-         * Returns all components of Type type in the GameObject.
+         * 获取游戏对象上所有指定类型的组件数组
+         * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends ComponentNames>(type?: T): ComponentMap[T][]
+        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][]
         {
             return this.gameObject.getComponents(type);
         }
 
         /**
-         * Returns all components of Type type in the GameObject.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
+         * 设置子组件的位置
+         * @param component				子组件
+         * @param index				位置索引
          */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
+        setComponentIndex(component: Components, index: number): void
         {
-            return this.gameObject.getComponentsInChildren(type, filter, result);
+            this.gameObject.setComponentIndex(component, index);
         }
 
         /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
          */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
+        setComponentAt(component: Components, index: number)
         {
-            return this.gameObject.getComponentsInParents(type, result);
+            this.gameObject.setComponentAt(component, index);
+        }
+
+        /**
+         * 移除组件
+         * @param component 被移除组件
+         */
+        removeComponent(component: Components): void
+        {
+            this.gameObject.removeComponent(component);
+        }
+
+        /**
+         * 获取组件在容器的索引位置
+         * @param component			查询的组件
+         * @return				    组件在容器的索引位置
+         */
+        getComponentIndex(component: Components): number
+        {
+            return this.gameObject.getComponentIndex(component);
+        }
+
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): Component
+        {
+            return this.gameObject.removeComponentAt(index);
+        }
+
+        /**
+         * 交换子组件位置
+         * @param index1		第一个子组件的索引位置
+         * @param index2		第二个子组件的索引位置
+         */
+        swapComponentsAt(index1: number, index2: number): void
+        {
+            this.swapComponentsAt(index1, index2);
+        }
+
+        /**
+         * 交换子组件位置
+         * @param a		第一个子组件
+         * @param b		第二个子组件
+         */
+        swapComponents(a: Components, b: Components): void
+        {
+            this.swapComponents(a, b);
+        }
+
+        /**
+         * 移除指定类型组件
+         * @param type 组件类型
+         */
+        removeComponentsByType<T extends Components>(type: Constructor<T>)
+        {
+            var removeComponents = this.gameObject.removeComponentsByType(type);
+            return removeComponents;
         }
 
         /**

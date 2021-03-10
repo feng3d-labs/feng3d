@@ -14,14 +14,14 @@ namespace feng3d
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param gameObjects 实体列表
+         * @param transforms 实体列表
          * @return
          */
-        pick(ray3D: Ray3, gameObjects: GameObject[])
+        pick(ray3D: Ray3, transforms: Transform[])
         {
-            if (gameObjects.length == 0) return null;
+            if (transforms.length == 0) return null;
 
-            var pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
+            var pickingCollisionVOs = transforms.reduce((pv: PickingCollisionVO[], gameObject) =>
             {
                 var model = gameObject.getComponent("RayCastable");
                 var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
@@ -111,7 +111,7 @@ namespace feng3d
         /**
          * 第一个穿过的物体
          */
-        gameObject: GameObject;
+        transform: Transform;
 
         /**
          * 碰撞的uv坐标
