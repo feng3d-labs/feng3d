@@ -12660,7 +12660,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GameObjectEventMap {
+    interface Component3DEventMap {
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */

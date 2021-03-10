@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GameObjectEventMap
+    export interface Component3DEventMap
     {
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
