@@ -36200,7 +36200,6 @@ var feng3d;
      * three.js 右手坐标系统。
      * playcanvas 右手坐标系统。
      * unity    左手坐标系统。
-     *
      */
     feng3d.coordinateSystem = feng3d.CoordinateSystem.LEFT_HANDED;
     /**
