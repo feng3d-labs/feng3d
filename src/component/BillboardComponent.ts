@@ -5,7 +5,7 @@ namespace feng3d
 
     @feng3d.AddComponentMenu("Layout/BillboardComponent")
     @RegisterComponent()
-    export class BillboardComponent extends Component
+    export class BillboardComponent extends Component3D
     {
         __class__: "feng3d.BillboardComponent";
 

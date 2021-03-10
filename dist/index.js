@@ -25999,16 +25999,6 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Component.prototype, "transform", {
-            /**
-             * The Transform attached to this GameObject (null if there is none attached).
-             */
-            get: function () {
-                return this._gameObject && this._gameObject.transform;
-            },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(Component.prototype, "single", {
             /**
              * 是否唯一，同类型3D对象组件只允许一个
@@ -26097,6 +26087,31 @@ var feng3d;
         return Component;
     }(feng3d.Feng3dObject));
     feng3d.Component = Component;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3D组件
+     * GameObject必须拥有Transform组件的
+     */
+    var Component3D = /** @class */ (function (_super) {
+        __extends(Component3D, _super);
+        function Component3D() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(Component3D.prototype, "transform", {
+            /**
+             * The Transform attached to this GameObject (null if there is none attached).
+             */
+            get: function () {
+                return this._gameObject && this._gameObject.transform;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return Component3D;
+    }(feng3d.Component));
+    feng3d.Component3D = Component3D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26207,7 +26222,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], Behaviour);
         return Behaviour;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.Behaviour = Behaviour;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -26996,7 +27011,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], Transform);
         return Transform;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.Transform = Transform;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -27230,7 +27245,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], TransformLayout);
         return TransformLayout;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.TransformLayout = TransformLayout;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -28430,7 +28445,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], HoldSizeComponent);
         return HoldSizeComponent;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.HoldSizeComponent = HoldSizeComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -28479,7 +28494,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], BillboardComponent);
         return BillboardComponent;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.BillboardComponent = BillboardComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -29277,7 +29292,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], Scene);
         return Scene;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.Scene = Scene;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -31049,7 +31064,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], Camera);
         return Camera;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.Camera = Camera;
     // 投影后可视区域
     var visibleBox = new feng3d.Box3(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
@@ -35465,7 +35480,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], SkeletonComponent);
         return SkeletonComponent;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.SkeletonComponent = SkeletonComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;

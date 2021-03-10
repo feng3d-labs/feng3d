@@ -12352,10 +12352,6 @@ declare namespace feng3d {
          */
         tag: string;
         /**
-         * The Transform attached to this GameObject (null if there is none attached).
-         */
-        get transform(): Transform;
-        /**
          * 是否唯一，同类型3D对象组件只允许一个
          */
         get single(): boolean;
@@ -12422,6 +12418,18 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 3D组件
+     * GameObject必须拥有Transform组件的
+     */
+    class Component3D extends Component {
+        /**
+         * The Transform attached to this GameObject (null if there is none attached).
+         */
+        get transform(): Transform;
+    }
+}
+declare namespace feng3d {
+    /**
      * Graphics 类包含一组可用来创建矢量形状的方法。
      */
     class Graphics extends Component {
@@ -12445,7 +12453,7 @@ declare namespace feng3d {
      *
      * 可以控制开关的组件
      */
-    class Behaviour extends Component {
+    class Behaviour extends Component3D {
         /**
          * 是否启用update方法
          */
@@ -12601,7 +12609,7 @@ declare namespace feng3d {
      *
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
-    class Transform extends Component {
+    class Transform extends Component3D {
         __class__: "feng3d.Transform";
         get single(): boolean;
         /**
@@ -12851,7 +12859,7 @@ declare namespace feng3d {
      *
      * 通过修改Transform的数值实现
      */
-    class TransformLayout extends Component {
+    class TransformLayout extends Component3D {
         get single(): boolean;
         /**
          * 创建一个实体，该类为虚类
@@ -13431,7 +13439,7 @@ declare namespace feng3d {
     interface ComponentMap {
         HoldSizeComponent: HoldSizeComponent;
     }
-    class HoldSizeComponent extends Component {
+    class HoldSizeComponent extends Component3D {
         __class__: "feng3d.HoldSizeComponent";
         /**
          * 保持缩放尺寸
@@ -13453,7 +13461,7 @@ declare namespace feng3d {
     interface ComponentMap {
         BillboardComponent: BillboardComponent;
     }
-    class BillboardComponent extends Component {
+    class BillboardComponent extends Component3D {
         __class__: "feng3d.BillboardComponent";
         /**
          * 相机
@@ -13741,7 +13749,7 @@ declare namespace feng3d {
     /**
      * 3D场景
      */
-    class Scene extends Component {
+    class Scene extends Component3D {
         __class__: "feng3d.Scene";
         /**
          * 背景颜色
@@ -14464,7 +14472,7 @@ declare namespace feng3d {
     /**
      * 摄像机
      */
-    class Camera extends Component {
+    class Camera extends Component3D {
         __class__: "feng3d.Camera";
         get single(): boolean;
         get projection(): Projection;
@@ -16050,7 +16058,7 @@ declare namespace feng3d {
     interface ComponentMap {
         SkeletonComponent: SkeletonComponent;
     }
-    class SkeletonComponent extends Component {
+    class SkeletonComponent extends Component3D {
         __class__: "feng3d.SkeletonComponent";
         /** 骨骼关节数据列表 */
         joints: SkeletonJoint[];

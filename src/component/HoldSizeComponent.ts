@@ -5,7 +5,7 @@ namespace feng3d
 
     @AddComponentMenu("Layout/HoldSizeComponent")
     @RegisterComponent()
-    export class HoldSizeComponent extends Component
+    export class HoldSizeComponent extends Component3D
     {
 
         __class__: "feng3d.HoldSizeComponent";

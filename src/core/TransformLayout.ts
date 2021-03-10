@@ -24,7 +24,7 @@ namespace feng3d
      */
     @AddComponentMenu("Layout/TransformLayout")
     @RegisterComponent()
-    export class TransformLayout extends Component
+    export class TransformLayout extends Component3D
     {
         get single() { return true; }
 

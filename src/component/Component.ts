@@ -65,14 +65,6 @@ namespace feng3d
         tag: string;
 
         /**
-         * The Transform attached to this GameObject (null if there is none attached).
-         */
-        get transform()
-        {
-            return this._gameObject && this._gameObject.transform;
-        }
-
-        /**
          * 是否唯一，同类型3D对象组件只允许一个
          */
         get single()

@@ -3,7 +3,7 @@ namespace feng3d
     export interface ComponentMap { SkeletonComponent: SkeletonComponent; }
 
     @RegisterComponent()
-    export class SkeletonComponent extends Component
+    export class SkeletonComponent extends Component3D
     {
 
         __class__: "feng3d.SkeletonComponent";
