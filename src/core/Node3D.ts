@@ -62,7 +62,7 @@ namespace feng3d
 
         get single() { return true; }
 
-        assetType = AssetType.transform;
+        assetType = AssetType.node3d;
 
         /**
          * 预设资源编号

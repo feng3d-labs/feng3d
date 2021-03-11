@@ -70,9 +70,9 @@ namespace feng3d
          */
         geometry = "geometry",
         /**
-         * 游戏对象
+         * 3d节点
          */
-        transform = "transform",
+        node3d = "node3d",
         /**
          * 场景
          */

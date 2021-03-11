@@ -24292,9 +24292,9 @@ var feng3d;
          */
         AssetType["geometry"] = "geometry";
         /**
-         * 游戏对象
+         * 3d节点
          */
-        AssetType["transform"] = "transform";
+        AssetType["node3d"] = "node3d";
         /**
          * 场景
          */
@@ -26509,7 +26509,7 @@ var feng3d;
          */
         function Node3D() {
             var _this = _super.call(this) || this;
-            _this.assetType = feng3d.AssetType.transform;
+            _this.assetType = feng3d.AssetType.node3d;
             /**
              * 自身以及子对象是否支持鼠标拾取
              */
