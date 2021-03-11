@@ -24294,7 +24294,7 @@ var feng3d;
         /**
          * 游戏对象
          */
-        AssetType["gameObject"] = "gameObject";
+        AssetType["transform"] = "transform";
         /**
          * 场景
          */
@@ -26510,6 +26510,7 @@ var feng3d;
          */
         function Transform() {
             var _this = _super.call(this) || this;
+            _this.assetType = feng3d.AssetType.transform;
             /**
              * 自身以及子对象是否支持鼠标拾取
              */
@@ -27457,6 +27458,12 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize
+        ], Transform.prototype, "prefabId", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Transform.prototype, "assetId", void 0);
+        __decorate([
+            feng3d.serialize
         ], Transform.prototype, "mouseEnabled", void 0);
         __decorate([
             feng3d.serialize
@@ -27884,7 +27891,6 @@ var feng3d;
          */
         function GameObject() {
             var _this = _super.call(this) || this;
-            _this.assetType = feng3d.AssetType.gameObject;
             //------------------------------------------
             // Protected Properties
             //------------------------------------------
@@ -28158,12 +28164,13 @@ var feng3d;
          */
         GameObject.createPrimitive = function (type, param) {
             var g = new GameObject();
+            g.addComponent("Transform");
             g.name = type;
             var createHandler = this._registerPrimitives[type];
             if (createHandler != null)
                 createHandler(g);
             feng3d.serialization.setValue(g, param);
-            return g;
+            return g.getComponent("Transform");
         };
         /**
          * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
@@ -28177,12 +28184,6 @@ var feng3d;
             this._registerPrimitives[type] = handler;
         };
         GameObject._registerPrimitives = {};
-        __decorate([
-            feng3d.serialize
-        ], GameObject.prototype, "prefabId", void 0);
-        __decorate([
-            feng3d.serialize
-        ], GameObject.prototype, "assetId", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVGameObjectName" })
@@ -28279,7 +28280,7 @@ var feng3d;
              * 根结点
              */
             get: function () {
-                return this.scene.gameObject;
+                return this.scene.transform;
             },
             enumerable: false,
             configurable: true

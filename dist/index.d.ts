@@ -11370,7 +11370,7 @@ declare namespace feng3d {
         /**
          * 游戏对象
          */
-        gameObject = "gameObject",
+        transform = "transform",
         /**
          * 场景
          */
@@ -12721,6 +12721,15 @@ declare namespace feng3d {
     class Transform extends Component3D {
         __class__: "feng3d.Transform";
         get single(): boolean;
+        assetType: AssetType;
+        /**
+         * 预设资源编号
+         */
+        prefabId: string;
+        /**
+         * 资源编号
+         */
+        assetId: string;
         /**
          * 自身以及子对象是否支持鼠标拾取
          */
@@ -13259,15 +13268,6 @@ declare namespace feng3d {
      */
     class GameObject extends Feng3dObject implements IDisposable {
         __class__: "feng3d.GameObject";
-        assetType: AssetType;
-        /**
-         * 预设资源编号
-         */
-        prefabId: string;
-        /**
-         * 资源编号
-         */
-        assetId: string;
         /**
          * 名称
          */
@@ -13394,7 +13394,7 @@ declare namespace feng3d {
          * @param type 游戏对象类型。
          * @param param 游戏对象参数。
          */
-        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): GameObject;
+        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): Transform;
         /**
          * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
          *
@@ -13435,7 +13435,7 @@ declare namespace feng3d {
         /**
          * 根结点
          */
-        get root(): GameObject;
+        get root(): Transform;
         get gl(): GL;
         /**
          * 鼠标在3D视图中的位置

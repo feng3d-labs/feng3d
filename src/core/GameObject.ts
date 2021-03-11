@@ -41,20 +41,6 @@ namespace feng3d
 
         __class__: "feng3d.GameObject";
 
-        assetType = AssetType.gameObject;
-
-        /**
-         * 预设资源编号
-         */
-        @serialize
-        prefabId: string;
-
-        /**
-         * 资源编号
-         */
-        @serialize
-        assetId: string;
-
         /**
          * 名称
          */
@@ -399,13 +385,14 @@ namespace feng3d
         static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>)
         {
             var g = new GameObject();
+            g.addComponent("Transform");
             g.name = type;
 
             var createHandler = this._registerPrimitives[type];
             if (createHandler != null) createHandler(g);
 
             serialization.setValue(g, param);
-            return g;
+            return g.getComponent("Transform");
         }
 
         /**

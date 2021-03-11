@@ -62,6 +62,20 @@ namespace feng3d
 
         get single() { return true; }
 
+        assetType = AssetType.transform;
+
+        /**
+         * 预设资源编号
+         */
+        @serialize
+        prefabId: string;
+
+        /**
+         * 资源编号
+         */
+        @serialize
+        assetId: string;
+
         /**
          * 自身以及子对象是否支持鼠标拾取
          */

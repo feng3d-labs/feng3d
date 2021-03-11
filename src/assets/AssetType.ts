@@ -72,7 +72,7 @@ namespace feng3d
         /**
          * 游戏对象
          */
-        gameObject = "gameObject",
+        transform = "transform",
         /**
          * 场景
          */

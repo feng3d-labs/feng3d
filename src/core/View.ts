@@ -49,7 +49,7 @@ namespace feng3d
          */
         get root()
         {
-            return this.scene.gameObject;
+            return this.scene.transform;
         }
 
         get gl()
