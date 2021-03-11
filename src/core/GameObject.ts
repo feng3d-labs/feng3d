@@ -87,7 +87,6 @@ namespace feng3d
         {
             super();
             this.name = "GameObject";
-            this.addComponent("Node3D");
 
             this.onAny(this._onAnyListener, this);
         }
@@ -375,6 +374,35 @@ namespace feng3d
             //派发添加组件事件
             this.emit("addComponent", { component: component, gameObject: this }, true);
         }
+
+        /**
+         * @deprecated
+         */
+        set children(v: GameObject[])
+        {
+            var node3ds = v.map(v => v.getComponent("Node3D"));
+            var node3d = this.getComponent("Node3D");
+            if (node3d)
+            {
+                node3d.children = node3ds;
+            } else
+            {
+                var f = (e: Event<{
+                    gameObject: GameObject;
+                    component: Component;
+                }>) =>
+                {
+                    if (e.data.gameObject == this && e.data.component instanceof Node3D)
+                    {
+                        e.data.component.children = node3ds;
+                        this.off("addComponent", f);
+                    }
+                };
+                this.on("addComponent", f);
+            }
+            this._children = v;
+        }
+        private _children: GameObject[];
 
         /**
          * 创建指定类型的游戏对象。

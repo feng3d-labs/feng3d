@@ -949,7 +949,7 @@ namespace feng3d
         {
             this._parent = value;
             this.updateScene();
-            this.node3d["_invalidateSceneTransform"]();
+            this._invalidateSceneTransform();
         }
 
         private updateScene()

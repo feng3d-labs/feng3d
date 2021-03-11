@@ -27308,7 +27308,7 @@ var feng3d;
         Node3D.prototype._setParent = function (value) {
             this._parent = value;
             this.updateScene();
-            this.node3d["_invalidateSceneTransform"]();
+            this._invalidateSceneTransform();
         };
         Node3D.prototype.updateScene = function () {
             var _a;
@@ -27900,7 +27900,6 @@ var feng3d;
              */
             _this._components = [];
             _this.name = "GameObject";
-            _this.addComponent("Node3D");
             _this.onAny(_this._onAnyListener, _this);
             return _this;
         }
@@ -28157,6 +28156,31 @@ var feng3d;
             //派发添加组件事件
             this.emit("addComponent", { component: component, gameObject: this }, true);
         };
+        Object.defineProperty(GameObject.prototype, "children", {
+            /**
+             * @deprecated
+             */
+            set: function (v) {
+                var _this = this;
+                var node3ds = v.map(function (v) { return v.getComponent("Node3D"); });
+                var node3d = this.getComponent("Node3D");
+                if (node3d) {
+                    node3d.children = node3ds;
+                }
+                else {
+                    var f = function (e) {
+                        if (e.data.gameObject == _this && e.data.component instanceof feng3d.Node3D) {
+                            e.data.component.children = node3ds;
+                            _this.off("addComponent", f);
+                        }
+                    };
+                    this.on("addComponent", f);
+                }
+                this._children = v;
+            },
+            enumerable: false,
+            configurable: true
+        });
         /**
          * 创建指定类型的游戏对象。
          *
@@ -28247,7 +28271,7 @@ var feng3d;
                 console.log('GraphicsDevice: WebGL context restored.');
                 // #endif
             }, false);
-            _this.scene = scene || feng3d.serialization.setValue(new feng3d.GameObject(), { name: "scene" }).addComponent("Scene");
+            _this.scene = scene || feng3d.serialization.setValue(new feng3d.GameObject(), { name: "scene" }).addComponent("Node3D").addComponent("Scene");
             _this.camera = camera;
             _this.start();
             _this.mouse3DManager = new feng3d.Mouse3DManager(new feng3d.WindowMouseInput(), function () { return _this.viewRect; });

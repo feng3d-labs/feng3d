@@ -13389,6 +13389,11 @@ declare namespace feng3d {
          */
         private addComponentAt;
         /**
+         * @deprecated
+         */
+        set children(v: GameObject[]);
+        private _children;
+        /**
          * 创建指定类型的游戏对象。
          *
          * @param type 游戏对象类型。
