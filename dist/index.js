@@ -26000,6 +26000,19 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(Component.prototype, "name", {
+            get: function () {
+                var _a;
+                return (_a = this._gameObject) === null || _a === void 0 ? void 0 : _a.name;
+            },
+            set: function (v) {
+                if (this._gameObject) {
+                    this._gameObject.name = v;
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(Component.prototype, "single", {
             /**
              * 是否唯一，同类型3D对象组件只允许一个
@@ -26120,14 +26133,6 @@ var feng3d;
          */
         Component.prototype.swapComponents = function (a, b) {
             this.swapComponents(a, b);
-        };
-        /**
-         * 移除指定类型组件
-         * @param type 组件类型
-         */
-        Component.prototype.removeComponentsByType = function (type) {
-            var removeComponents = this.gameObject.removeComponentsByType(type);
-            return removeComponents;
         };
         /**
          * 销毁
@@ -27927,8 +27932,6 @@ var feng3d;
                     var compnent = value[i];
                     if (!compnent)
                         continue;
-                    if (compnent.single)
-                        this.removeComponentsByType(compnent.constructor);
                     this.addComponentAt(value[i], this.numComponents);
                 }
             },
@@ -28074,6 +28077,14 @@ var feng3d;
             console.assert(this.hasComponent(b), "第二个子组件不在容器中");
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         };
+        GameObject.prototype.getComponentsByType = function (type) {
+            var removeComponents = [];
+            for (var i = 0; i < this._components.length; i++) {
+                if (this._components[i] instanceof type)
+                    removeComponents.push(this._components[i]);
+            }
+            return removeComponents;
+        };
         /**
          * 移除指定类型组件
          * @param type 组件类型
@@ -28148,8 +28159,13 @@ var feng3d;
                 return;
             }
             //组件唯一时移除同类型的组件
-            if (component.single)
-                this.removeComponentsByType(component.constructor);
+            if (component.single) {
+                var oldComponents = this.getComponentsByType(component.constructor);
+                if (oldComponents.length > 0) {
+                    console.assert(oldComponents.length == 1);
+                    this.removeComponent(oldComponents[0]);
+                }
+            }
             this._components.splice(index, 0, component);
             component.setGameObject(this);
             component.init();

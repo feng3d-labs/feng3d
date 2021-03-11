@@ -12349,6 +12349,8 @@ declare namespace feng3d {
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
         get gameObject(): GameObject;
+        get name(): string;
+        set name(v: string);
         /**
          * 标签
          */
@@ -12443,11 +12445,6 @@ declare namespace feng3d {
          * @param b		第二个子组件
          */
         swapComponents(a: Components, b: Components): void;
-        /**
-         * 移除指定类型组件
-         * @param type 组件类型
-         */
-        removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
          * 销毁
          */
@@ -13353,6 +13350,7 @@ declare namespace feng3d {
          * @param b		第二个子组件
          */
         swapComponents(a: Components, b: Components): void;
+        getComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
          * 移除指定类型组件
          * @param type 组件类型

@@ -72,7 +72,6 @@ namespace feng3d
             {
                 var compnent = value[i];
                 if (!compnent) continue;
-                if (compnent.single) this.removeComponentsByType(<any>compnent.constructor);
                 this.addComponentAt(value[i], this.numComponents);
             }
         }
@@ -264,6 +263,17 @@ namespace feng3d
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         }
 
+        getComponentsByType<T extends Components>(type: Constructor<T>)
+        {
+            var removeComponents: T[] = [];
+            for (let i = 0; i < this._components.length; i++)
+            {
+                if (this._components[i] instanceof type)
+                    removeComponents.push(<any>this._components[i]);
+            }
+            return removeComponents;
+        }
+
         /**
          * 移除指定类型组件
          * @param type 组件类型
@@ -366,7 +376,14 @@ namespace feng3d
             }
             //组件唯一时移除同类型的组件
             if (component.single)
-                this.removeComponentsByType(<Constructor<Components>>component.constructor);
+            {
+                var oldComponents = this.getComponentsByType(<Constructor<Components>>component.constructor);
+                if (oldComponents.length > 0)
+                {
+                    console.assert(oldComponents.length == 1);
+                    this.removeComponent(oldComponents[0]);
+                }
+            }
 
             this._components.splice(index, 0, component);
             component.setGameObject(this);

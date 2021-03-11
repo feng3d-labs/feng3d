@@ -62,6 +62,19 @@ namespace feng3d
             return this._gameObject;
         }
 
+        get name()
+        {
+            return this._gameObject?.name;
+        }
+
+        set name(v)
+        {
+            if (this._gameObject)
+            {
+                this._gameObject.name = v;
+            }
+        }
+
         /**
          * 标签
          */
@@ -220,16 +233,6 @@ namespace feng3d
         swapComponents(a: Components, b: Components): void
         {
             this.swapComponents(a, b);
-        }
-
-        /**
-         * 移除指定类型组件
-         * @param type 组件类型
-         */
-        removeComponentsByType<T extends Components>(type: Constructor<T>)
-        {
-            var removeComponents = this.gameObject.removeComponentsByType(type);
-            return removeComponents;
         }
 
         /**
