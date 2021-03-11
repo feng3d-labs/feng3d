@@ -49,7 +49,7 @@ namespace feng3d
 					if (y > maxY) maxY = y;
 				}
 
-				// minX, minY and invSize are later used to transform coords into integers for z-order calculation
+				// minX, minY and invSize are later used to node3d coords into integers for z-order calculation
 				// 计算尺寸的倒数，用于后面运算
 				invSize = Math.max(maxX - minX, maxY - minY);
 				invSize = invSize !== 0 ? 1 / invSize : 0;

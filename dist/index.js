@@ -14296,7 +14296,7 @@ var feng3d;
                     if (y > maxY)
                         maxY = y;
                 }
-                // minX, minY and invSize are later used to transform coords into integers for z-order calculation
+                // minX, minY and invSize are later used to node3d coords into integers for z-order calculation
                 // 计算尺寸的倒数，用于后面运算
                 invSize = Math.max(maxX - minX, maxY - minY);
                 invSize = invSize !== 0 ? 1 / invSize : 0;
@@ -29502,19 +29502,19 @@ var feng3d;
         SceneUtil.prototype.getActiveRenderers = function (scene, camera) {
             var renderers = [];
             var frustum = camera.frustum;
-            var transforms = [scene.node3d];
-            while (transforms.length > 0) {
-                var transform = transforms.pop();
-                if (!transform.visible)
+            var node3ds = [scene.node3d];
+            while (node3ds.length > 0) {
+                var node3d = node3ds.pop();
+                if (!node3d.visible)
                     continue;
-                var renderer = transform.getComponent("Renderable");
+                var renderer = node3d.getComponent("Renderable");
                 if (renderer && renderer.enabled) {
                     if (renderer.selfWorldBounds) {
                         if (frustum.intersectsBox(renderer.selfWorldBounds))
                             renderers.push(renderer);
                     }
                 }
-                transforms = transforms.concat(transform.children);
+                node3ds = node3ds.concat(node3d.children);
             }
             return renderers;
         };
