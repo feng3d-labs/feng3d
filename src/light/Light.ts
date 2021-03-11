@@ -37,7 +37,7 @@ namespace feng3d
          */
         get position()
         {
-            return this.node.worldPosition;
+            return this.node3d.worldPosition;
         }
 
         /**
@@ -45,7 +45,7 @@ namespace feng3d
          */
         get direction()
         {
-            return this.node.localToWorldMatrix.getAxisZ();
+            return this.node3d.localToWorldMatrix.getAxisZ();
         }
 
         /**
@@ -100,7 +100,7 @@ namespace feng3d
         @oav({ tooltip: "是否调试阴影图" })
         debugShadowMap = false;
 
-        private debugShadowMapObject: Node3D;
+        private debugShadowMapNode3D: Node3D;
 
         constructor()
         {
@@ -110,19 +110,19 @@ namespace feng3d
 
         updateDebugShadowMap(scene: Scene, viewCamera: Camera)
         {
-            var transform = this.debugShadowMapObject;
-            if (!transform)
+            var node3d = this.debugShadowMapNode3D;
+            if (!node3d)
             {
                 var gameObject = new GameObject();
                 gameObject.name = "debugShadowMapObject";
-                transform = gameObject.addComponent("Node3D");
-                transform.gameObject.addComponent("MeshRenderer").geometry = Geometry.getDefault("Plane");
-                transform.hideFlags = HideFlags.Hide | HideFlags.DontSave;
-                transform.mouseEnabled = false;
-                transform.addComponent("BillboardComponent");
+                node3d = gameObject.addComponent("Node3D");
+                node3d.gameObject.addComponent("MeshRenderer").geometry = Geometry.getDefault("Plane");
+                node3d.hideFlags = HideFlags.Hide | HideFlags.DontSave;
+                node3d.mouseEnabled = false;
+                node3d.addComponent("BillboardComponent");
 
                 //材质
-                var model = transform.getComponent("Renderable");
+                var model = node3d.getComponent("Renderable");
                 model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType == LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
@@ -134,17 +134,17 @@ namespace feng3d
             }
 
             var depth = viewCamera.lens.near * 2;
-            var transform = transform.getComponent("Node3D");
-            transform.position = viewCamera.node.worldPosition.addTo(viewCamera.node.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
-            var billboardComponent = transform.getComponent("BillboardComponent");
+            var node3d = node3d.getComponent("Node3D");
+            node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            var billboardComponent = node3d.getComponent("BillboardComponent");
             billboardComponent.camera = viewCamera;
 
             if (this.debugShadowMap)
             {
-                scene.node.addChild(transform);
+                scene.node3d.addChild(node3d);
             } else
             {
-                transform.remove();
+                node3d.remove();
             }
         }
     }

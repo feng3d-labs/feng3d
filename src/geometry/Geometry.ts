@@ -245,18 +245,18 @@ namespace feng3d
         /**
          * 添加几何体
          * @param geometry          被添加的几何体
-         * @param transform         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
+         * @param matrix         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
          */
-        addGeometry(geometry: Geometry, transform?: Matrix4x4)
+        addGeometry(geometry: Geometry, matrix?: Matrix4x4)
         {
             //更新几何体
             this.updateGrometry();
             geometry.updateGrometry();
             //变换被添加的几何体
-            if (transform != null)
+            if (matrix != null)
             {
                 geometry = geometry.clone();
-                geometry.applyTransformation(transform);
+                geometry.applyTransformation(matrix);
             }
 
             //如果自身为空几何体
@@ -294,9 +294,9 @@ namespace feng3d
 
         /**
 		 * 应用变换矩阵
-		 * @param transform 变换矩阵
+		 * @param matrix 变换矩阵
 		 */
-        applyTransformation(transform: Matrix4x4)
+        applyTransformation(matrix: Matrix4x4)
         {
             this.updateGrometry();
 
@@ -304,7 +304,7 @@ namespace feng3d
             var normals = this.normals;
             var tangents = this.tangents;
 
-            geometryUtils.applyTransformation(transform, vertices, normals, tangents);
+            geometryUtils.applyTransformation(matrix, vertices, normals, tangents);
 
             this.positions = vertices;
             this.normals = normals;

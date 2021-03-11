@@ -12485,7 +12485,7 @@ declare namespace feng3d {
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        get node(): Node3D;
+        get node3d(): Node3D;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
@@ -13182,14 +13182,14 @@ declare namespace feng3d {
      * 用于优化计算射线碰撞检测以及视锥剔除等。
      */
     class BoundingBox {
-        private _transform;
+        private _node3d;
         protected _selfLocalBounds: Box3;
         protected _selfWorldBounds: Box3;
         protected _worldBounds: Box3;
         protected _selfBoundsInvalid: boolean;
         protected _selfWorldBoundsInvalid: boolean;
         protected _worldBoundsInvalid: boolean;
-        constructor(transform: Node3D);
+        constructor(node3d: Node3D);
         /**
          * 自身局部包围盒通常有Renderable组件提供
          */
@@ -13787,7 +13787,7 @@ declare namespace feng3d {
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        get transform(): Node3D;
+        get node3d(): Node3D;
         /**
          * 宿主组件
          */
@@ -14081,14 +14081,14 @@ declare namespace feng3d {
         /**
          * 添加几何体
          * @param geometry          被添加的几何体
-         * @param transform         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
+         * @param matrix         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
          */
-        addGeometry(geometry: Geometry, transform?: Matrix4x4): void;
+        addGeometry(geometry: Geometry, matrix?: Matrix4x4): void;
         /**
          * 应用变换矩阵
-         * @param transform 变换矩阵
+         * @param matrix 变换矩阵
          */
-        applyTransformation(transform: Matrix4x4): void;
+        applyTransformation(matrix: Matrix4x4): void;
         /**
          * 纹理U缩放，默认为1。
          */
@@ -14235,12 +14235,12 @@ declare namespace feng3d {
         };
         /**
          * 应用变换矩阵
-         * @param transform 变换矩阵
+         * @param matrix 变换矩阵
          * @param positions 顶点数据
          * @param normals 顶点法线数据
          * @param tangents 顶点切线数据
          */
-        applyTransformation(transform: Matrix4x4, positions: number[], normals?: number[], tangents?: number[]): void;
+        applyTransformation(matrix: Matrix4x4, positions: number[], normals?: number[], tangents?: number[]): void;
         /**
          * 合并几何体
          * @param geometrys 几何体列表
@@ -15616,7 +15616,7 @@ declare namespace feng3d {
          */
         frameBufferObject: FrameBufferObject;
         debugShadowMap: boolean;
-        private debugShadowMapObject;
+        private debugShadowMapNode3D;
         constructor();
         updateDebugShadowMap(scene: Scene, viewCamera: Camera): void;
     }
@@ -15722,27 +15722,27 @@ declare namespace feng3d {
         /**
          * 控制对象
          */
-        protected _targetObject: Node3D | undefined;
+        protected _targetNode: Node3D | undefined;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(transform?: Node3D);
+        constructor(node3d?: Node3D);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        get targetObject(): Node3D;
-        set targetObject(val: Node3D);
+        get targetNode(): Node3D;
+        set targetNode(val: Node3D);
     }
 }
 declare namespace feng3d {
     class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3;
-        protected _lookAtObject: Node3D;
+        protected _lookAtNode3D: Node3D;
         protected _origin: Vector3;
         protected _upAxis: Vector3;
         protected _pos: Vector3;
-        constructor(transform?: Node3D, lookAtObject?: Node3D);
+        constructor(node3d?: Node3D, Node3D?: Node3D);
         get upAxis(): Vector3;
         set upAxis(upAxis: Vector3);
         get lookAtPosition(): Vector3;
@@ -15786,7 +15786,7 @@ declare namespace feng3d {
         set yFactor(val: number);
         get wrapPanAngle(): boolean;
         set wrapPanAngle(val: boolean);
-        constructor(transform?: Node3D, lookAtObject?: Node3D, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+        constructor(node3d?: Node3D, lookAtObject?: Node3D, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
         update(interpolate?: boolean): void;
     }
 }
@@ -15873,10 +15873,10 @@ declare namespace feng3d {
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param transforms 实体列表
+         * @param node3ds 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3, transforms: Node3D[]): PickingCollisionVO[];
+        pickAll(ray3D: Ray3, node3ds: Node3D[]): PickingCollisionVO[];
     }
     /**
      * 拾取的碰撞数据
@@ -15885,7 +15885,7 @@ declare namespace feng3d {
         /**
          * 第一个穿过的物体
          */
-        transform: Node3D;
+        node3d: Node3D;
         /**
          * 碰撞的uv坐标
          */

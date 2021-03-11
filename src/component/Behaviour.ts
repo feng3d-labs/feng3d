@@ -29,7 +29,7 @@ namespace feng3d
          */
         get isVisibleAndEnabled()
         {
-            var v = this.enabled && this.node?.globalVisible;
+            var v = this.enabled && this.node3d?.globalVisible;
             return v;
         }
 

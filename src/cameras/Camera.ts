@@ -94,7 +94,7 @@ namespace feng3d
             if (this._viewProjectionInvalid)
             {
                 //场景空间转摄像机空间
-                this._viewProjection.copy(this.node.worldToLocalMatrix);
+                this._viewProjection.copy(this.node3d.worldToLocalMatrix);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
                 this._viewProjection.append(this.lens.matrix);
                 this._viewProjectionInvalid = false;
@@ -136,7 +136,7 @@ namespace feng3d
 		 */
         getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
         {
-            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.node.localToWorldMatrix);
+            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.node3d.localToWorldMatrix);
         }
 
 		/**
@@ -146,7 +146,7 @@ namespace feng3d
 		 */
         project(point3d: Vector3): Vector3
         {
-            var v: Vector3 = this.lens.project(this.node.worldToLocalMatrix.transformPoint3(point3d));
+            var v: Vector3 = this.lens.project(this.node3d.worldToLocalMatrix.transformPoint3(point3d));
             return v;
         }
 
@@ -160,7 +160,7 @@ namespace feng3d
 		 */
         unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
         {
-            return this.node.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
+            return this.node3d.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
         }
 
         /**

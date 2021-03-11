@@ -78,9 +78,9 @@ namespace feng3d
 
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
-            this.renderAtomic.uniforms.u_viewMatrix = camera.node.worldToLocalMatrix
-            this.renderAtomic.uniforms.u_cameraMatrix = camera.node.localToWorldMatrix;
-            this.renderAtomic.uniforms.u_cameraPos = camera.node.worldPosition;
+            this.renderAtomic.uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix
+            this.renderAtomic.uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
+            this.renderAtomic.uniforms.u_cameraPos = camera.node3d.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
             gl.render(this.renderAtomic);

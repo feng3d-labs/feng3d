@@ -25551,9 +25551,9 @@ var feng3d;
             //
             uniforms.u_projectionMatrix = camera.lens.matrix;
             uniforms.u_viewProjection = camera.viewProjection;
-            uniforms.u_viewMatrix = camera.node.worldToLocalMatrix;
-            uniforms.u_cameraMatrix = camera.node.localToWorldMatrix;
-            uniforms.u_cameraPos = camera.node.worldPosition;
+            uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.node3d.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene.ambientColor;
@@ -25621,7 +25621,7 @@ var feng3d;
             return this.objects[id];
         };
         MouseRenderer.prototype.drawRenderables = function (gl, renderable) {
-            if (renderable.node.mouseEnabled) {
+            if (renderable.node3d.mouseEnabled) {
                 var object = renderable.gameObject;
                 var u_objectID = this.objects.length;
                 this.objects[u_objectID] = object;
@@ -25678,7 +25678,7 @@ var feng3d;
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             var shadowCamera = light.shadowCamera;
-            shadowCamera.node.localToWorldMatrix = light.node.localToWorldMatrix;
+            shadowCamera.node3d.localToWorldMatrix = light.node3d.localToWorldMatrix;
             var renderAtomic = this.renderAtomic;
             // 获取影响阴影图的渲染对象
             var models = scene.getModelsByCamera(shadowCamera);
@@ -25690,9 +25690,9 @@ var feng3d;
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.node.worldPosition;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.position;
@@ -25737,10 +25737,10 @@ var feng3d;
             // negative Y
             cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
             var shadowCamera = light.shadowCamera;
-            shadowCamera.node.position = light.node.position;
+            shadowCamera.node3d.position = light.node3d.position;
             var renderAtomic = this.renderAtomic;
             for (var face = 0; face < 6; face++) {
-                shadowCamera.node.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
+                shadowCamera.node3d.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
                 // 获取影响阴影图的渲染对象
                 var models = scene.getModelsByCamera(shadowCamera);
                 // 筛选投射阴影的渲染对象
@@ -25751,9 +25751,9 @@ var feng3d;
                 //
                 renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
                 renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-                renderAtomic.uniforms.u_viewMatrix = shadowCamera.node.worldToLocalMatrix;
-                renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node.localToWorldMatrix;
-                renderAtomic.uniforms.u_cameraPos = shadowCamera.node.worldPosition;
+                renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.worldToLocalMatrix;
+                renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.localToWorldMatrix;
+                renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
                 //
                 renderAtomic.uniforms.u_lightType = light.lightType;
                 renderAtomic.uniforms.u_lightPosition = light.position;
@@ -25785,12 +25785,12 @@ var feng3d;
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.node.worldPosition;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = shadowCamera.node.worldPosition;
+            renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.worldPosition;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
@@ -25911,9 +25911,9 @@ var feng3d;
             //
             uniforms.u_projectionMatrix = camera.lens.matrix;
             uniforms.u_viewProjection = camera.viewProjection;
-            uniforms.u_viewMatrix = camera.node.worldToLocalMatrix;
-            uniforms.u_cameraMatrix = camera.node.localToWorldMatrix;
-            uniforms.u_cameraPos = camera.node.worldPosition;
+            uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.node3d.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             //
@@ -26171,7 +26171,7 @@ var feng3d;
         function Component3D() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(Component3D.prototype, "node", {
+        Object.defineProperty(Component3D.prototype, "node3d", {
             /**
              * The Transform attached to this GameObject (null if there is none attached).
              */
@@ -26188,7 +26188,7 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         Component3D.prototype.getComponentsInChildren = function (type, filter, result) {
-            return this.node.getComponentsInChildren(type, filter, result);
+            return this.node3d.getComponentsInChildren(type, filter, result);
         };
         /**
          * 从父类中获取组件
@@ -26196,7 +26196,7 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         Component3D.prototype.getComponentsInParents = function (type, result) {
-            return this.node.getComponentsInParents(type, result);
+            return this.node3d.getComponentsInParents(type, result);
         };
         return Component3D;
     }(feng3d.Component));
@@ -26289,7 +26289,7 @@ var feng3d;
              */
             get: function () {
                 var _a;
-                var v = this.enabled && ((_a = this.node) === null || _a === void 0 ? void 0 : _a.globalVisible);
+                var v = this.enabled && ((_a = this.node3d) === null || _a === void 0 ? void 0 : _a.globalVisible);
                 return v;
             },
             enumerable: false,
@@ -26408,9 +26408,9 @@ var feng3d;
             skybox.beforeRender(this.renderAtomic, scene, camera);
             //
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
-            this.renderAtomic.uniforms.u_viewMatrix = camera.node.worldToLocalMatrix;
-            this.renderAtomic.uniforms.u_cameraMatrix = camera.node.localToWorldMatrix;
-            this.renderAtomic.uniforms.u_cameraPos = camera.node.worldPosition;
+            this.renderAtomic.uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix;
+            this.renderAtomic.uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
+            this.renderAtomic.uniforms.u_cameraPos = camera.node3d.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             gl.render(this.renderAtomic);
         };
@@ -27307,7 +27307,7 @@ var feng3d;
         Node3D.prototype._setParent = function (value) {
             this._parent = value;
             this.updateScene();
-            this.node["_invalidateSceneTransform"]();
+            this.node3d["_invalidateSceneTransform"]();
         };
         Node3D.prototype.updateScene = function () {
             var newScene = this._parent ? this._parent._scene : null;
@@ -27352,7 +27352,7 @@ var feng3d;
             //
             if (this.gameObject) {
                 for (var i = 0, n = this.numChildren; i < n; i++) {
-                    this.getChildAt(i).node._invalidateSceneTransform();
+                    this.getChildAt(i).node3d._invalidateSceneTransform();
                 }
             }
         };
@@ -27648,7 +27648,7 @@ var feng3d;
             var _a, _b;
             if (!this._layoutInvalid)
                 return;
-            var transformLayout = (_b = (_a = this.node) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.getComponent("TransformLayout");
+            var transformLayout = (_b = (_a = this.node3d) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.getComponent("TransformLayout");
             if (!transformLayout)
                 return;
             // 中心点基于anchorMin的坐标
@@ -27693,9 +27693,9 @@ var feng3d;
                 position.z = leftTop.z + pivot.z * size.z;
             }
             //
-            this.node.position.x = anchorLeftTop.x + position.x;
-            this.node.position.y = anchorLeftTop.y + position.y;
-            this.node.position.z = anchorLeftTop.z + position.z;
+            this.node3d.position.x = anchorLeftTop.x + position.x;
+            this.node3d.position.y = anchorLeftTop.y + position.y;
+            this.node3d.position.z = anchorLeftTop.z + position.z;
             //
             this._layoutInvalid = false;
             feng3d.ticker.offframe(this._updateLayout, this);
@@ -27756,16 +27756,16 @@ var feng3d;
      * 用于优化计算射线碰撞检测以及视锥剔除等。
      */
     var BoundingBox = /** @class */ (function () {
-        function BoundingBox(transform) {
+        function BoundingBox(node3d) {
             this._selfLocalBounds = new feng3d.Box3();
             this._selfWorldBounds = new feng3d.Box3();
             this._worldBounds = new feng3d.Box3();
             this._selfBoundsInvalid = true;
             this._selfWorldBoundsInvalid = true;
             this._worldBoundsInvalid = true;
-            this._transform = transform;
-            transform.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);
-            transform.on("scenetransformChanged", this._invalidateSelfWorldBounds, this);
+            this._node3d = node3d;
+            node3d.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);
+            node3d.on("scenetransformChanged", this._invalidateSelfWorldBounds, this);
         }
         Object.defineProperty(BoundingBox.prototype, "selfLocalBounds", {
             /**
@@ -27818,7 +27818,7 @@ var feng3d;
             var bounds = this._selfLocalBounds.empty();
             // 获取对象上的包围盒
             var data = { bounds: [] };
-            this._transform.emit("getSelfBounds", data);
+            this._node3d.emit("getSelfBounds", data);
             data.bounds.forEach(function (b) {
                 bounds.union(b);
             });
@@ -27827,7 +27827,7 @@ var feng3d;
          * 更新自身世界包围盒
          */
         BoundingBox.prototype._updateSelfWorldBounds = function () {
-            this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._transform.localToWorldMatrix);
+            this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._node3d.localToWorldMatrix);
         };
         /**
          * 更新世界包围盒
@@ -27836,7 +27836,7 @@ var feng3d;
             var _this = this;
             this._worldBounds.copy(this.selfWorldBounds);
             // 获取子对象的世界包围盒与自身世界包围盒进行合并
-            this._transform.children.forEach(function (element) {
+            this._node3d.children.forEach(function (element) {
                 _this._worldBounds.union(element.boundingBox.worldBounds);
             });
         };
@@ -27866,7 +27866,7 @@ var feng3d;
                 return;
             this._worldBoundsInvalid = true;
             // 世界包围盒失效会影响父对象世界包围盒失效
-            var parent = this._transform.parent;
+            var parent = this._node3d.parent;
             if (!parent)
                 return;
             parent.boundingBox._invalidateWorldBounds();
@@ -28260,7 +28260,7 @@ var feng3d;
                     var cameras = this.scene.getComponentsInChildren("Camera");
                     if (cameras.length == 0) {
                         this._camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "defaultCamera" }).addComponent("Camera");
-                        this.scene.node.addChild(this._camera.node);
+                        this.scene.node3d.addChild(this._camera.node3d);
                     }
                     else {
                         this._camera = cameras[0];
@@ -28279,7 +28279,7 @@ var feng3d;
              * 根结点
              */
             get: function () {
-                return this.scene.node;
+                return this.scene.node3d;
             },
             enumerable: false,
             configurable: true
@@ -28422,7 +28422,7 @@ var feng3d;
             var rect = new feng3d.Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
             //
             var transforms = this.scene.getComponentsInChildren("Node3D").filter(function (t) {
-                if (t == _this.scene.node)
+                if (t == _this.scene.node3d)
                     return false;
                 var m = t.getComponent("Renderable");
                 if (m) {
@@ -28443,14 +28443,14 @@ var feng3d;
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
             var camera = feng3d.Camera.create("Main Camera");
             camera.gameObject.addComponent("AudioListener");
-            camera.node.position = new feng3d.Vector3(0, 1, -10);
-            scene.node.addChild(camera.node);
+            camera.node3d.position = new feng3d.Vector3(0, 1, -10);
+            scene.node3d.addChild(camera.node3d);
             var directionalLight = feng3d.DirectionalLight.create("DirectionalLight");
             directionalLight.shadowType = feng3d.ShadowType.Hard_Shadows;
-            directionalLight.node.rx = 50;
-            directionalLight.node.ry = -30;
-            directionalLight.node.y = 3;
-            scene.node.addChild(directionalLight.node);
+            directionalLight.node3d.rx = 50;
+            directionalLight.node3d.ry = -30;
+            directionalLight.node3d.y = 3;
+            scene.node3d.addChild(directionalLight.node3d);
             return scene;
         };
         return View;
@@ -28471,11 +28471,11 @@ var feng3d;
             return _this;
         }
         HoldSizeComponent.prototype.init = function () {
-            this.node.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node3d.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
         };
         HoldSizeComponent.prototype.dispose = function () {
             this.camera = null;
-            this.node.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node3d.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             _super.prototype.dispose.call(this);
         };
         HoldSizeComponent.prototype._onCameraChanged = function (property, oldValue, value) {
@@ -28487,10 +28487,10 @@ var feng3d;
         };
         HoldSizeComponent.prototype._invalidateSceneTransform = function () {
             if (this._gameObject)
-                this.node["_invalidateSceneTransform"]();
+                this.node3d["_invalidateSceneTransform"]();
         };
         HoldSizeComponent.prototype._onUpdateLocalToWorldMatrix = function () {
-            var _localToWorldMatrix = this.node["_localToWorldMatrix"];
+            var _localToWorldMatrix = this.node3d["_localToWorldMatrix"];
             if (this.holdSize && this.camera && _localToWorldMatrix) {
                 var depthScale = this._getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.toTRS();
@@ -28500,8 +28500,8 @@ var feng3d;
             }
         };
         HoldSizeComponent.prototype._getDepthScale = function (camera) {
-            var cameraTranform = camera.node.localToWorldMatrix;
-            var distance = this.node.worldPosition.subTo(cameraTranform.getPosition());
+            var cameraTranform = camera.node3d.localToWorldMatrix;
+            var distance = this.node3d.worldPosition.subTo(cameraTranform.getPosition());
             if (distance.length == 0)
                 distance.x = 1;
             var depth = distance.dot(cameraTranform.getAxisZ());
@@ -28535,7 +28535,7 @@ var feng3d;
         }
         BillboardComponent.prototype.init = function () {
             _super.prototype.init.call(this);
-            this.node.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node3d.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             this._invalidHoldSizeMatrix();
         };
         BillboardComponent.prototype._onCameraChanged = function (property, oldValue, value) {
@@ -28547,20 +28547,20 @@ var feng3d;
         };
         BillboardComponent.prototype._invalidHoldSizeMatrix = function () {
             if (this._gameObject)
-                this.node["_invalidateSceneTransform"]();
+                this.node3d["_invalidateSceneTransform"]();
         };
         BillboardComponent.prototype._onUpdateLocalToWorldMatrix = function () {
-            var _localToWorldMatrix = this.node["_localToWorldMatrix"];
+            var _localToWorldMatrix = this.node3d["_localToWorldMatrix"];
             if (_localToWorldMatrix && this.camera) {
                 var camera = this.camera;
-                var cameraPos = camera.node.worldPosition;
-                var yAxis = camera.node.localToWorldMatrix.getAxisY();
+                var cameraPos = camera.node3d.worldPosition;
+                var yAxis = camera.node3d.localToWorldMatrix.getAxisY();
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);
             }
         };
         BillboardComponent.prototype.dispose = function () {
             this.camera = null;
-            this.node.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node3d.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             _super.prototype.dispose.call(this);
         };
         __decorate([
@@ -28763,7 +28763,7 @@ var feng3d;
          * 更新世界边界
          */
         RayCastable.prototype._updateWorldBounds = function () {
-            this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.node.localToWorldMatrix);
+            this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.node3d.localToWorldMatrix);
         };
         /**
          * 处理包围盒变换事件
@@ -28859,7 +28859,7 @@ var feng3d;
          * @return 相交信息
          */
         Renderable.prototype.worldRayIntersection = function (worldRay) {
-            var localRay = this.node.rayWorldToLocal(worldRay);
+            var localRay = this.node3d.rayWorldToLocal(worldRay);
             var pickingCollisionVO = this.localRayIntersection(localRay);
             return pickingCollisionVO;
         };
@@ -28878,7 +28878,7 @@ var feng3d;
                 return null;
             //保存碰撞数据
             var pickingCollisionVO = {
-                transform: this.node,
+                node3d: this.node3d,
                 localNormal: localNormal,
                 localRay: localRay,
                 rayEntryDistance: rayEntryDistance,
@@ -29093,12 +29093,12 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Script.prototype, "transform", {
+        Object.defineProperty(Script.prototype, "node3d", {
             /**
              * The Transform attached to this GameObject (null if there is none attached).
              */
             get: function () {
-                return this.component.node;
+                return this.component.node3d;
             },
             enumerable: false,
             configurable: true
@@ -29153,7 +29153,7 @@ var feng3d;
         }
         Scene.prototype.init = function () {
             _super.prototype.init.call(this);
-            this.node.hideFlags = this.node.hideFlags | feng3d.HideFlags.Hide;
+            this.node3d.hideFlags = this.node3d.hideFlags | feng3d.HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | feng3d.HideFlags.DontTransform;
             //
             this._gameObject["_scene"] = this;
@@ -29189,7 +29189,7 @@ var feng3d;
              * 所有 Model
              */
             get: function () {
-                this._models = this._models || this.node.getComponentsInChildren("Renderable");
+                this._models = this._models || this.node3d.getComponentsInChildren("Renderable");
                 return this._models;
             },
             enumerable: false,
@@ -29210,7 +29210,7 @@ var feng3d;
              * 所有 SkyBox
              */
             get: function () {
-                this._skyBoxs = this._skyBoxs || this.node.getComponentsInChildren("SkyBox");
+                this._skyBoxs = this._skyBoxs || this.node3d.getComponentsInChildren("SkyBox");
                 return this._skyBoxs;
             },
             enumerable: false,
@@ -29218,14 +29218,14 @@ var feng3d;
         });
         Object.defineProperty(Scene.prototype, "activeSkyBoxs", {
             get: function () {
-                return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(function (i) { return i.node.globalVisible; });
+                return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(function (i) { return i.node3d.globalVisible; });
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(Scene.prototype, "directionalLights", {
             get: function () {
-                return this._directionalLights = this._directionalLights || this.node.getComponentsInChildren("DirectionalLight");
+                return this._directionalLights = this._directionalLights || this.node3d.getComponentsInChildren("DirectionalLight");
             },
             enumerable: false,
             configurable: true
@@ -29239,7 +29239,7 @@ var feng3d;
         });
         Object.defineProperty(Scene.prototype, "pointLights", {
             get: function () {
-                return this._pointLights = this._pointLights || this.node.getComponentsInChildren("PointLight");
+                return this._pointLights = this._pointLights || this.node3d.getComponentsInChildren("PointLight");
             },
             enumerable: false,
             configurable: true
@@ -29253,7 +29253,7 @@ var feng3d;
         });
         Object.defineProperty(Scene.prototype, "spotLights", {
             get: function () {
-                return this._spotLights = this._spotLights || this.node.getComponentsInChildren("SpotLight");
+                return this._spotLights = this._spotLights || this.node3d.getComponentsInChildren("SpotLight");
             },
             enumerable: false,
             configurable: true
@@ -29267,7 +29267,7 @@ var feng3d;
         });
         Object.defineProperty(Scene.prototype, "animations", {
             get: function () {
-                return this._animations = this._animations || this.node.getComponentsInChildren("Animation");
+                return this._animations = this._animations || this.node3d.getComponentsInChildren("Animation");
             },
             enumerable: false,
             configurable: true
@@ -29281,7 +29281,7 @@ var feng3d;
         });
         Object.defineProperty(Scene.prototype, "behaviours", {
             get: function () {
-                this._behaviours = this._behaviours || this.node.getComponentsInChildren("Behaviour");
+                this._behaviours = this._behaviours || this.node3d.getComponentsInChildren("Behaviour");
                 return this._behaviours;
             },
             enumerable: false,
@@ -29298,7 +29298,7 @@ var feng3d;
             get: function () {
                 if (this._mouseCheckTransforms)
                     return this._mouseCheckTransforms;
-                var checkList = this.node.getChildren();
+                var checkList = this.node3d.getChildren();
                 this._mouseCheckTransforms = [];
                 var i = 0;
                 //获取所有需要拾取的对象并分层存储
@@ -29332,7 +29332,7 @@ var feng3d;
          * @param light
          */
         Scene.prototype.getPickByDirectionalLight = function (light) {
-            var openlist = [this.node];
+            var openlist = [this.node3d];
             var targets = [];
             while (openlist.length > 0) {
                 var item = openlist.shift();
@@ -29408,19 +29408,19 @@ var feng3d;
                     return this._activeModels;
                 var models = this._activeModels = [];
                 var frustum = this.camera.frustum;
-                var transfoms = [this.scene.node];
-                while (transfoms.length > 0) {
-                    var transform = transfoms.pop();
-                    if (!transform.visible)
+                var node3ds = [this.scene.node3d];
+                while (node3ds.length > 0) {
+                    var node3d = node3ds.pop();
+                    if (!node3d.visible)
                         continue;
-                    var model = transform.getComponent("Renderable");
+                    var model = node3d.getComponent("Renderable");
                     if (model && model.enabled) {
                         if (model.selfWorldBounds) {
                             if (frustum.intersectsBox(model.selfWorldBounds))
                                 models.push(model);
                         }
                     }
-                    transfoms = transfoms.concat(transform.children);
+                    node3ds = node3ds.concat(node3d.children);
                 }
                 return models;
             },
@@ -29435,10 +29435,10 @@ var feng3d;
                 if (this._blenditems)
                     return this._blenditems;
                 var models = this.activeModels;
-                var camerapos = this.camera.node.worldPosition;
+                var camerapos = this.camera.node3d.worldPosition;
                 var blenditems = this._blenditems = models.filter(function (item) {
                     return item.material.renderParams.enableBlend;
-                }).sort(function (b, a) { return a.node.worldPosition.subTo(camerapos).lengthSquared - b.node.worldPosition.subTo(camerapos).lengthSquared; });
+                }).sort(function (b, a) { return a.node3d.worldPosition.subTo(camerapos).lengthSquared - b.node3d.worldPosition.subTo(camerapos).lengthSquared; });
                 return blenditems;
             },
             enumerable: false,
@@ -29452,10 +29452,10 @@ var feng3d;
                 if (this._unblenditems)
                     return this._unblenditems;
                 var models = this.activeModels;
-                var camerapos = this.camera.node.worldPosition;
+                var camerapos = this.camera.node3d.worldPosition;
                 var unblenditems = this._unblenditems = models.filter(function (item) {
                     return !item.material.renderParams.enableBlend;
-                }).sort(function (a, b) { return a.node.worldPosition.subTo(camerapos).lengthSquared - b.node.worldPosition.subTo(camerapos).lengthSquared; });
+                }).sort(function (a, b) { return a.node3d.worldPosition.subTo(camerapos).lengthSquared - b.node3d.worldPosition.subTo(camerapos).lengthSquared; });
                 return unblenditems;
             },
             enumerable: false,
@@ -29502,7 +29502,7 @@ var feng3d;
         SceneUtil.prototype.getActiveRenderers = function (scene, camera) {
             var renderers = [];
             var frustum = camera.frustum;
-            var transforms = [scene.node];
+            var transforms = [scene.node3d];
             while (transforms.length > 0) {
                 var transform = transforms.pop();
                 if (!transform.visible)
@@ -29761,16 +29761,16 @@ var feng3d;
         /**
          * 添加几何体
          * @param geometry          被添加的几何体
-         * @param transform         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
+         * @param matrix         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
          */
-        Geometry.prototype.addGeometry = function (geometry, transform) {
+        Geometry.prototype.addGeometry = function (geometry, matrix) {
             //更新几何体
             this.updateGrometry();
             geometry.updateGrometry();
             //变换被添加的几何体
-            if (transform != null) {
+            if (matrix != null) {
                 geometry = geometry.clone();
-                geometry.applyTransformation(transform);
+                geometry.applyTransformation(matrix);
             }
             //如果自身为空几何体
             if (!this.indices) {
@@ -29802,14 +29802,14 @@ var feng3d;
         };
         /**
          * 应用变换矩阵
-         * @param transform 变换矩阵
+         * @param matrix 变换矩阵
          */
-        Geometry.prototype.applyTransformation = function (transform) {
+        Geometry.prototype.applyTransformation = function (matrix) {
             this.updateGrometry();
             var vertices = this.positions;
             var normals = this.normals;
             var tangents = this.tangents;
-            feng3d.geometryUtils.applyTransformation(transform, vertices, normals, tangents);
+            feng3d.geometryUtils.applyTransformation(matrix, vertices, normals, tangents);
             this.positions = vertices;
             this.normals = normals;
             this.tangents = tangents;
@@ -30262,12 +30262,12 @@ var feng3d;
         };
         /**
          * 应用变换矩阵
-         * @param transform 变换矩阵
+         * @param matrix 变换矩阵
          * @param positions 顶点数据
          * @param normals 顶点法线数据
          * @param tangents 顶点切线数据
          */
-        GeometryUtils.prototype.applyTransformation = function (transform, positions, normals, tangents) {
+        GeometryUtils.prototype.applyTransformation = function (matrix, positions, normals, tangents) {
             var posStride = 3;
             var normalStride = 3;
             var tangentStride = 3;
@@ -30278,7 +30278,7 @@ var feng3d;
             var bakeTangents = tangents != null;
             var invTranspose = new feng3d.Matrix4x4();
             if (bakeNormals || bakeTangents) {
-                invTranspose.copy(transform);
+                invTranspose.copy(matrix);
                 invTranspose.invert();
                 invTranspose.transpose();
             }
@@ -30292,7 +30292,7 @@ var feng3d;
                 vector.x = positions[vi0];
                 vector.y = positions[i1];
                 vector.z = positions[i2];
-                vector = transform.transformPoint3(vector);
+                vector = matrix.transformPoint3(vector);
                 positions[vi0] = vector.x;
                 positions[i1] = vector.y;
                 positions[i2] = vector.z;
@@ -31061,7 +31061,7 @@ var feng3d;
             get: function () {
                 if (this._viewProjectionInvalid) {
                     //场景空间转摄像机空间
-                    this._viewProjection.copy(this.node.worldToLocalMatrix);
+                    this._viewProjection.copy(this.node3d.worldToLocalMatrix);
                     //+摄像机空间转投影空间 = 场景空间转投影空间
                     this._viewProjection.append(this.lens.matrix);
                     this._viewProjectionInvalid = false;
@@ -31103,7 +31103,7 @@ var feng3d;
          */
         Camera.prototype.getRay3D = function (x, y, ray3D) {
             if (ray3D === void 0) { ray3D = new feng3d.Ray3(); }
-            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.node.localToWorldMatrix);
+            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.node3d.localToWorldMatrix);
         };
         /**
          * 投影坐标（世界坐标转换为3D视图坐标）
@@ -31111,7 +31111,7 @@ var feng3d;
          * @return 屏幕的绝对坐标
          */
         Camera.prototype.project = function (point3d) {
-            var v = this.lens.project(this.node.worldToLocalMatrix.transformPoint3(point3d));
+            var v = this.lens.project(this.node3d.worldToLocalMatrix.transformPoint3(point3d));
             return v;
         };
         /**
@@ -31124,7 +31124,7 @@ var feng3d;
          */
         Camera.prototype.unproject = function (sX, sY, sZ, v) {
             if (v === void 0) { v = new feng3d.Vector3(); }
-            return this.node.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
+            return this.node3d.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
         };
         /**
          * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
@@ -33757,7 +33757,7 @@ var feng3d;
              * 光源位置
              */
             get: function () {
-                return this.node.worldPosition;
+                return this.node3d.worldPosition;
             },
             enumerable: false,
             configurable: true
@@ -33767,7 +33767,7 @@ var feng3d;
              * 光照方向
              */
             get: function () {
-                return this.node.localToWorldMatrix.getAxisZ();
+                return this.node3d.localToWorldMatrix.getAxisZ();
             },
             enumerable: false,
             configurable: true
@@ -33810,17 +33810,17 @@ var feng3d;
             configurable: true
         });
         Light.prototype.updateDebugShadowMap = function (scene, viewCamera) {
-            var transform = this.debugShadowMapObject;
-            if (!transform) {
+            var node3d = this.debugShadowMapNode3D;
+            if (!node3d) {
                 var gameObject = new feng3d.GameObject();
                 gameObject.name = "debugShadowMapObject";
-                transform = gameObject.addComponent("Node3D");
-                transform.gameObject.addComponent("MeshRenderer").geometry = feng3d.Geometry.getDefault("Plane");
-                transform.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
-                transform.mouseEnabled = false;
-                transform.addComponent("BillboardComponent");
+                node3d = gameObject.addComponent("Node3D");
+                node3d.gameObject.addComponent("MeshRenderer").geometry = feng3d.Geometry.getDefault("Plane");
+                node3d.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
+                node3d.mouseEnabled = false;
+                node3d.addComponent("BillboardComponent");
                 //材质
-                var model = transform.getComponent("Renderable");
+                var model = node3d.getComponent("Renderable");
                 model.geometry = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = feng3d.serialization.setValue(new feng3d.Material(), { shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
@@ -33831,15 +33831,15 @@ var feng3d;
                 textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
             }
             var depth = viewCamera.lens.near * 2;
-            var transform = transform.getComponent("Node3D");
-            transform.position = viewCamera.node.worldPosition.addTo(viewCamera.node.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
-            var billboardComponent = transform.getComponent("BillboardComponent");
+            var node3d = node3d.getComponent("Node3D");
+            node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            var billboardComponent = node3d.getComponent("BillboardComponent");
             billboardComponent.camera = viewCamera;
             if (this.debugShadowMap) {
-                scene.node.addChild(transform);
+                scene.node3d.addChild(node3d);
             }
             else {
-                transform.remove();
+                node3d.remove();
             }
         };
         __decorate([
@@ -33888,7 +33888,7 @@ var feng3d;
              * 光源位置
              */
             get: function () {
-                return this.shadowCamera.node.worldPosition;
+                return this.shadowCamera.node3d.worldPosition;
             },
             enumerable: false,
             configurable: true
@@ -33899,7 +33899,7 @@ var feng3d;
          */
         DirectionalLight.prototype.updateShadowByCamera = function (scene, viewCamera, models) {
             var worldBounds = models.reduce(function (pre, i) {
-                var box = i.node.boundingBox.worldBounds;
+                var box = i.node3d.boundingBox.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);
@@ -33909,8 +33909,8 @@ var feng3d;
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
             // 
-            this.shadowCamera.node.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-            this.shadowCamera.node.lookAt(center, this.shadowCamera.node.matrix.getAxisY());
+            this.shadowCamera.node3d.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            this.shadowCamera.node3d.lookAt(center, this.shadowCamera.node3d.matrix.getAxisY());
             //
             if (!this.orthographicLens) {
                 this.shadowCamera.lens = this.orthographicLens = new feng3d.OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
@@ -34074,7 +34074,7 @@ var feng3d;
             var pointLights = [];
             var directionalLights = [];
             var spotLights = [];
-            var scene = this._model.node.scene;
+            var scene = this._model.node3d.scene;
             if (scene) {
                 pointLights = scene.activePointLights;
                 directionalLights = scene.activeDirectionalLights;
@@ -34161,8 +34161,8 @@ var feng3d;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        function ControllerBase(transform) {
-            this.targetObject = transform;
+        function ControllerBase(node3d) {
+            this.targetNode = node3d;
         }
         /**
          * 手动应用更新到目标3D对象
@@ -34171,12 +34171,12 @@ var feng3d;
             if (interpolate === void 0) { interpolate = true; }
             throw new Error("Abstract method");
         };
-        Object.defineProperty(ControllerBase.prototype, "targetObject", {
+        Object.defineProperty(ControllerBase.prototype, "targetNode", {
             get: function () {
-                return this._targetObject;
+                return this._targetNode;
             },
             set: function (val) {
-                this._targetObject = val;
+                this._targetNode = val;
             },
             enumerable: false,
             configurable: true
@@ -34189,13 +34189,13 @@ var feng3d;
 (function (feng3d) {
     var LookAtController = /** @class */ (function (_super) {
         __extends(LookAtController, _super);
-        function LookAtController(transform, lookAtObject) {
-            var _this = _super.call(this, transform) || this;
+        function LookAtController(node3d, Node3D) {
+            var _this = _super.call(this, node3d) || this;
             _this._origin = new feng3d.Vector3(0.0, 0.0, 0.0);
             _this._upAxis = feng3d.Vector3.Y_AXIS;
             _this._pos = new feng3d.Vector3();
-            if (lookAtObject)
-                _this.lookAtObject = lookAtObject;
+            if (Node3D)
+                _this.lookAtObject = Node3D;
             else
                 _this.lookAtPosition = new feng3d.Vector3();
             return _this;
@@ -34222,25 +34222,25 @@ var feng3d;
         });
         Object.defineProperty(LookAtController.prototype, "lookAtObject", {
             get: function () {
-                return this._lookAtObject;
+                return this._lookAtNode3D;
             },
             set: function (value) {
-                if (this._lookAtObject == value)
+                if (this._lookAtNode3D == value)
                     return;
-                this._lookAtObject = value;
+                this._lookAtNode3D = value;
             },
             enumerable: false,
             configurable: true
         });
         LookAtController.prototype.update = function (interpolate) {
             if (interpolate === void 0) { interpolate = true; }
-            if (this._targetObject) {
+            if (this._targetNode) {
                 if (this._lookAtPosition) {
-                    this._targetObject.node.lookAt(this.lookAtPosition, this._upAxis);
+                    this._targetNode.node3d.lookAt(this.lookAtPosition, this._upAxis);
                 }
-                else if (this._lookAtObject) {
-                    this._pos = this._lookAtObject.node.position;
-                    this._targetObject.node.lookAt(this._pos, this._upAxis);
+                else if (this._lookAtNode3D) {
+                    this._pos = this._lookAtNode3D.node3d.position;
+                    this._targetNode.node3d.lookAt(this._pos, this._upAxis);
                 }
             }
         };
@@ -34252,7 +34252,7 @@ var feng3d;
 (function (feng3d) {
     var HoverController = /** @class */ (function (_super) {
         __extends(HoverController, _super);
-        function HoverController(transform, lookAtObject, panAngle, tiltAngle, distance, minTiltAngle, maxTiltAngle, minPanAngle, maxPanAngle, steps, yFactor, wrapPanAngle) {
+        function HoverController(node3d, lookAtObject, panAngle, tiltAngle, distance, minTiltAngle, maxTiltAngle, minPanAngle, maxPanAngle, steps, yFactor, wrapPanAngle) {
             if (panAngle === void 0) { panAngle = 0; }
             if (tiltAngle === void 0) { tiltAngle = 90; }
             if (distance === void 0) { distance = 1000; }
@@ -34263,7 +34263,7 @@ var feng3d;
             if (steps === void 0) { steps = 8; }
             if (yFactor === void 0) { yFactor = 2; }
             if (wrapPanAngle === void 0) { wrapPanAngle = false; }
-            var _this = _super.call(this, transform, lookAtObject) || this;
+            var _this = _super.call(this, node3d, lookAtObject) || this;
             _this._currentPanAngle = 0;
             _this._currentTiltAngle = 90;
             _this._panAngle = 0;
@@ -34453,32 +34453,32 @@ var feng3d;
                     this._currentPanAngle = this._panAngle;
                 }
             }
-            if (!this._targetObject)
+            if (!this._targetNode)
                 return;
             if (this._lookAtPosition) {
                 this._pos.x = this._lookAtPosition.x;
                 this._pos.y = this._lookAtPosition.y;
                 this._pos.z = this._lookAtPosition.z;
             }
-            else if (this._lookAtObject) {
-                if (this._targetObject.node.parent && this._lookAtObject.node.parent) {
-                    if (this._targetObject.node.parent != this._lookAtObject.node.parent) {
-                        this._pos.x = this._lookAtObject.node.worldPosition.x;
-                        this._pos.y = this._lookAtObject.node.worldPosition.y;
-                        this._pos.z = this._lookAtObject.node.worldPosition.z;
-                        this._targetObject.node.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
+            else if (this._lookAtNode3D) {
+                if (this._targetNode.node3d.parent && this._lookAtNode3D.node3d.parent) {
+                    if (this._targetNode.node3d.parent != this._lookAtNode3D.node3d.parent) {
+                        this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
+                        this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
+                        this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
+                        this._targetNode.node3d.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
                     }
                     else {
-                        this._pos.copy(this._lookAtObject.node.position);
+                        this._pos.copy(this._lookAtNode3D.node3d.position);
                     }
                 }
-                else if (this._lookAtObject.scene) {
-                    this._pos.x = this._lookAtObject.node.worldPosition.x;
-                    this._pos.y = this._lookAtObject.node.worldPosition.y;
-                    this._pos.z = this._lookAtObject.node.worldPosition.z;
+                else if (this._lookAtNode3D.scene) {
+                    this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
+                    this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
+                    this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
                 }
                 else {
-                    this._pos.copy(this._lookAtObject.node.position);
+                    this._pos.copy(this._lookAtNode3D.node3d.position);
                 }
             }
             else {
@@ -34486,9 +34486,9 @@ var feng3d;
                 this._pos.y = this._origin.y;
                 this._pos.z = this._origin.z;
             }
-            this._targetObject.node.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.node.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.node.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
+            this._targetNode.node3d.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.node3d.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.node3d.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
             _super.prototype.update.call(this);
         };
         return HoverController;
@@ -34582,14 +34582,14 @@ var feng3d;
                 offsetPoint.y *= 0.15;
                 // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
-                var matrix = this.node.localToWorldMatrix;
+                var matrix = this.node3d.localToWorldMatrix;
                 matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
                 var up = feng3d.Vector3.Y_AXIS.clone();
                 if (matrix.getAxisY().dot(up) < 0) {
                     up.scaleNumber(-1);
                 }
                 matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-                this.node.localToWorldMatrix = matrix;
+                this.node3d.localToWorldMatrix = matrix;
                 //
                 this.preMousePoint = this.mousePoint;
                 this.mousePoint = null;
@@ -34605,9 +34605,9 @@ var feng3d;
             accelerationVec.scaleNumber(this.acceleration);
             //计算速度
             this.velocity.add(accelerationVec);
-            var right = this.node.matrix.getAxisX();
-            var up = this.node.matrix.getAxisY();
-            var forward = this.node.matrix.getAxisZ();
+            var right = this.node3d.matrix.getAxisX();
+            var up = this.node3d.matrix.getAxisY();
+            var forward = this.node3d.matrix.getAxisZ();
             right.scaleNumber(this.velocity.x);
             up.scaleNumber(this.velocity.y);
             forward.scaleNumber(this.velocity.z);
@@ -34615,9 +34615,9 @@ var feng3d;
             var displacement = right.clone();
             displacement.add(up);
             displacement.add(forward);
-            this.node.x += displacement.x;
-            this.node.y += displacement.y;
-            this.node.z += displacement.z;
+            this.node3d.x += displacement.x;
+            this.node3d.y += displacement.y;
+            this.node3d.z += displacement.z;
         };
         /**
          * 处理鼠标移动事件
@@ -34731,14 +34731,14 @@ var feng3d;
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param transforms 实体列表
+         * @param node3ds 实体列表
          * @return
          */
-        Raycaster.prototype.pickAll = function (ray3D, transforms) {
-            if (transforms.length == 0)
+        Raycaster.prototype.pickAll = function (ray3D, node3ds) {
+            if (node3ds.length == 0)
                 return [];
-            var pickingCollisionVOs = transforms.reduce(function (pv, transform) {
-                var model = transform.getComponent("RayCastable");
+            var pickingCollisionVOs = node3ds.reduce(function (pv, node3d) {
+                var model = node3d.getComponent("RayCastable");
                 var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO)
                     pv.push(pickingCollisionVO);
@@ -34801,7 +34801,7 @@ var feng3d;
             this._onScenetransformChanged();
         };
         AudioListener.prototype._onScenetransformChanged = function () {
-            var localToWorldMatrix = this.node.localToWorldMatrix;
+            var localToWorldMatrix = this.node3d.localToWorldMatrix;
             var position = localToWorldMatrix.getPosition();
             var forward = localToWorldMatrix.getAxisZ();
             var up = localToWorldMatrix.getAxisY();
@@ -35119,7 +35119,7 @@ var feng3d;
             }
         };
         AudioSource.prototype._onScenetransformChanged = function () {
-            var localToWorldMatrix = this.node.localToWorldMatrix;
+            var localToWorldMatrix = this.node3d.localToWorldMatrix;
             var scenePosition = localToWorldMatrix.getPosition();
             //
             var panner = this.panner;
@@ -35270,10 +35270,10 @@ var feng3d;
         }
         Water.prototype.beforeRender = function (renderAtomic, scene, camera) {
             var uniforms = this.material.uniforms;
-            var sun = this.node.scene.activeDirectionalLights[0];
+            var sun = this.node3d.scene.activeDirectionalLights[0];
             if (sun) {
                 uniforms.u_sunColor = sun.color;
-                uniforms.u_sunDirection = sun.node.localToWorldMatrix.getAxisZ().negate();
+                uniforms.u_sunDirection = sun.node3d.localToWorldMatrix.getAxisZ().negate();
             }
             var clipBias = 0;
             uniforms.u_time += 1.0 / 60.0;
@@ -35282,16 +35282,16 @@ var feng3d;
             if (1)
                 return;
             //
-            var mirrorWorldPosition = this.node.worldPosition;
-            var cameraWorldPosition = camera.node.worldPosition;
-            var rotationMatrix = this.node.rotationMatrix;
+            var mirrorWorldPosition = this.node3d.worldPosition;
+            var cameraWorldPosition = camera.node3d.worldPosition;
+            var rotationMatrix = this.node3d.rotationMatrix;
             var normal = rotationMatrix.getAxisZ();
             var view = mirrorWorldPosition.subTo(cameraWorldPosition);
             if (view.dot(normal) > 0)
                 return;
             view.reflect(normal).negate();
             view.add(mirrorWorldPosition);
-            rotationMatrix = camera.node.rotationMatrix;
+            rotationMatrix = camera.node3d.rotationMatrix;
             var lookAtPosition = new feng3d.Vector3(0, 0, -1);
             lookAtPosition.applyMatrix4x4(rotationMatrix);
             lookAtPosition.add(cameraWorldPosition);
@@ -35299,8 +35299,8 @@ var feng3d;
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
             var mirrorCamera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "waterMirrorCamera" }).addComponent("Camera");
-            mirrorCamera.node.position = view;
-            mirrorCamera.node.lookAt(target, rotationMatrix.getAxisY());
+            mirrorCamera.node3d.position = view;
+            mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
             mirrorCamera.lens = camera.lens.clone();
             var textureMatrix = new feng3d.Matrix4x4([
                 0.5, 0.0, 0.0, 0.0,
@@ -35309,7 +35309,7 @@ var feng3d;
                 0.5, 0.5, 0.5, 1.0
             ]);
             textureMatrix.append(mirrorCamera.viewProjection);
-            var mirrorPlane = feng3d.Plane.fromNormalAndPoint(mirrorCamera.node.worldToLocalMatrix.transformVector3(normal), mirrorCamera.node.worldToLocalMatrix.transformPoint3(mirrorWorldPosition));
+            var mirrorPlane = feng3d.Plane.fromNormalAndPoint(mirrorCamera.node3d.worldToLocalMatrix.transformVector3(normal), mirrorCamera.node3d.worldToLocalMatrix.transformPoint3(mirrorWorldPosition));
             var clipPlane = new feng3d.Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
             var projectionMatrix = mirrorCamera.lens.matrix;
             var q = new feng3d.Vector4();
@@ -35322,7 +35322,7 @@ var feng3d;
             projectionMatrix.elements[6] = clipPlane.y;
             projectionMatrix.elements[10] = clipPlane.z + 1.0 - clipBias;
             projectionMatrix.elements[14] = clipPlane.w;
-            var eye = camera.node.worldPosition;
+            var eye = camera.node3d.worldPosition;
             // 不支持直接操作gl，下面代码暂时注释掉！
             // // 
             // var frameBufferObject = this.frameBufferObject;
@@ -35519,7 +35519,7 @@ var feng3d;
                     return globalMatrixs[index];
                 var jointPose = joints[index];
                 var jointGameobject = jointGameobjects[index];
-                globalMatrixs[index] = jointGameobject.node.matrix.clone();
+                globalMatrixs[index] = jointGameobject.node3d.matrix.clone();
                 if (jointPose.parentIndex >= 0) {
                     var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
                     globalMatrixs[index].append(parentGlobalMatrix);
@@ -35555,7 +35555,7 @@ var feng3d;
                     joints[skeletonJoint.parentIndex].children.push(i);
                 }
                 else {
-                    parentGameobject = skeleton.node;
+                    parentGameobject = skeleton.node3d;
                 }
                 var jointTransform = parentGameobject.find(skeletonJoint.name);
                 if (!jointTransform) {
@@ -35565,17 +35565,17 @@ var feng3d;
                     jointTransform = gameObject.addComponent("Node3D");
                     parentGameobject.addChild(jointTransform);
                 }
-                var transform = jointTransform.node;
+                var node3d = jointTransform.node3d;
                 var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1) {
                     matrix = matrix.clone().append(joints[skeletonJoint.parentIndex].invertMatrix);
                 }
-                transform.matrix = matrix;
-                transform.on("transformChanged", function () {
+                node3d.matrix = matrix;
+                node3d.on("transformChanged", function () {
                     skeleton.invalidjoint(i);
                 });
-                jointGameobjects[i] = transform;
-                jointGameObjectMap[skeletonJoint.name] = transform;
+                jointGameobjects[i] = node3d;
+                jointGameObjectMap[skeletonJoint.name] = node3d;
                 return jointTransform;
             }
         };
@@ -35642,8 +35642,8 @@ var feng3d;
         Object.defineProperty(SkinnedMeshRenderer.prototype, "u_modelMatrix", {
             get: function () {
                 if (this.cacheSkeletonComponent)
-                    return this.cacheSkeletonComponent.node.localToWorldMatrix;
-                return this.node.localToWorldMatrix;
+                    return this.cacheSkeletonComponent.node3d.localToWorldMatrix;
+                return this.node3d.localToWorldMatrix;
             },
             enumerable: false,
             configurable: true
@@ -35651,8 +35651,8 @@ var feng3d;
         Object.defineProperty(SkinnedMeshRenderer.prototype, "u_ITModelMatrix", {
             get: function () {
                 if (this.cacheSkeletonComponent)
-                    return this.cacheSkeletonComponent.node.ITlocalToWorldMatrix;
-                return this.node.ITlocalToWorldMatrix;
+                    return this.cacheSkeletonComponent.node3d.ITlocalToWorldMatrix;
+                return this.node3d.ITlocalToWorldMatrix;
             },
             enumerable: false,
             configurable: true
@@ -35660,11 +35660,11 @@ var feng3d;
         Object.defineProperty(SkinnedMeshRenderer.prototype, "u_skeletonGlobalMatriices", {
             get: function () {
                 if (!this.cacheSkeletonComponent) {
-                    var transform = this.node;
+                    var node3d = this.node3d;
                     var skeletonComponent = null;
-                    while (transform && !skeletonComponent) {
-                        skeletonComponent = transform.getComponent("SkeletonComponent");
-                        transform = transform.parent;
+                    while (node3d && !skeletonComponent) {
+                        skeletonComponent = node3d.getComponent("SkeletonComponent");
+                        node3d = node3d.parent;
                     }
                     this.cacheSkeletonComponent = skeletonComponent;
                 }
@@ -36017,8 +36017,8 @@ var feng3d;
                 return;
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = feng3d.raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
-            var transform = pickingCollisionVO && pickingCollisionVO.transform;
-            return transform;
+            var node3d = pickingCollisionVO === null || pickingCollisionVO === void 0 ? void 0 : pickingCollisionVO.node3d;
+            return node3d;
         };
         Mouse3DManager.prototype._mouseInputChanged = function (property, oldValue, newValue) {
             var _this = this;

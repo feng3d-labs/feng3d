@@ -162,7 +162,7 @@ namespace feng3d
         {
             if (!this._layoutInvalid) return;
 
-            var transformLayout = this.node?.parent?.getComponent("TransformLayout");
+            var transformLayout = this.node3d?.parent?.getComponent("TransformLayout");
             if (!transformLayout) return;
 
             // 中心点基于anchorMin的坐标
@@ -224,9 +224,9 @@ namespace feng3d
             }
 
             //
-            this.node.position.x = anchorLeftTop.x + position.x;
-            this.node.position.y = anchorLeftTop.y + position.y;
-            this.node.position.z = anchorLeftTop.z + position.z;
+            this.node3d.position.x = anchorLeftTop.x + position.x;
+            this.node3d.position.y = anchorLeftTop.y + position.y;
+            this.node3d.position.z = anchorLeftTop.z + position.z;
             //
             this._layoutInvalid = false;
             ticker.offframe(this._updateLayout, this);

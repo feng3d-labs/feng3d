@@ -47,7 +47,7 @@ namespace feng3d
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             var shadowCamera = light.shadowCamera;
-            shadowCamera.node.localToWorldMatrix = light.node.localToWorldMatrix;
+            shadowCamera.node3d.localToWorldMatrix = light.node3d.localToWorldMatrix;
 
             var renderAtomic = this.renderAtomic;
 
@@ -63,9 +63,9 @@ namespace feng3d
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.node.worldPosition;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.position;
@@ -120,13 +120,13 @@ namespace feng3d
             cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
 
             var shadowCamera = light.shadowCamera;
-            shadowCamera.node.position = light.node.position;
+            shadowCamera.node3d.position = light.node3d.position;
 
             var renderAtomic = this.renderAtomic;
 
             for (var face = 0; face < 6; face++)
             {
-                shadowCamera.node.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
+                shadowCamera.node3d.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
 
                 // 获取影响阴影图的渲染对象
                 var models = scene.getModelsByCamera(shadowCamera);
@@ -140,9 +140,9 @@ namespace feng3d
                 //
                 renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
                 renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-                renderAtomic.uniforms.u_viewMatrix = shadowCamera.node.worldToLocalMatrix;
-                renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node.localToWorldMatrix;
-                renderAtomic.uniforms.u_cameraPos = shadowCamera.node.worldPosition;
+                renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.worldToLocalMatrix;
+                renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.localToWorldMatrix;
+                renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
                 //
                 renderAtomic.uniforms.u_lightType = light.lightType;
                 renderAtomic.uniforms.u_lightPosition = light.position;
@@ -183,12 +183,12 @@ namespace feng3d
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.node.worldPosition;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = shadowCamera.node.worldPosition;
+            renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.worldPosition;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //

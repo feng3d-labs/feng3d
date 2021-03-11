@@ -60,9 +60,9 @@ namespace feng3d
             //
             uniforms.u_projectionMatrix = camera.lens.matrix;
             uniforms.u_viewProjection = camera.viewProjection;
-            uniforms.u_viewMatrix = camera.node.worldToLocalMatrix;
-            uniforms.u_cameraMatrix = camera.node.localToWorldMatrix;
-            uniforms.u_cameraPos = camera.node.worldPosition;
+            uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.node3d.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
 

@@ -949,7 +949,7 @@ namespace feng3d
         {
             this._parent = value;
             this.updateScene();
-            this.node["_invalidateSceneTransform"]();
+            this.node3d["_invalidateSceneTransform"]();
         }
 
         private updateScene()
@@ -1011,7 +1011,7 @@ namespace feng3d
             {
                 for (var i = 0, n = this.numChildren; i < n; i++)
                 {
-                    this.getChildAt(i).node._invalidateSceneTransform();
+                    this.getChildAt(i).node3d._invalidateSceneTransform();
                 }
             }
         }

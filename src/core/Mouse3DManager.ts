@@ -33,8 +33,8 @@ namespace feng3d
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
 
-            var transform = pickingCollisionVO && pickingCollisionVO.transform;
-            return transform;
+            var node3d = pickingCollisionVO?.node3d;
+            return node3d;
         }
 
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)

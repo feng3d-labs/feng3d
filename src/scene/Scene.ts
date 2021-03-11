@@ -57,7 +57,7 @@ namespace feng3d
         init()
         {
             super.init();
-            this.node.hideFlags = this.node.hideFlags | HideFlags.Hide;
+            this.node3d.hideFlags = this.node3d.hideFlags | HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.DontTransform;
 
             //
@@ -100,7 +100,7 @@ namespace feng3d
          */
         get models()
         {
-            this._models = this._models || this.node.getComponentsInChildren("Renderable");
+            this._models = this._models || this.node3d.getComponentsInChildren("Renderable");
             return this._models
         }
 
@@ -117,18 +117,18 @@ namespace feng3d
          */
         get skyBoxs()
         {
-            this._skyBoxs = this._skyBoxs || this.node.getComponentsInChildren("SkyBox");
+            this._skyBoxs = this._skyBoxs || this.node3d.getComponentsInChildren("SkyBox");
             return this._skyBoxs;
         }
 
         get activeSkyBoxs()
         {
-            return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(i => i.node.globalVisible);
+            return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(i => i.node3d.globalVisible);
         }
 
         get directionalLights()
         {
-            return this._directionalLights = this._directionalLights || this.node.getComponentsInChildren("DirectionalLight");
+            return this._directionalLights = this._directionalLights || this.node3d.getComponentsInChildren("DirectionalLight");
         }
 
         get activeDirectionalLights()
@@ -138,7 +138,7 @@ namespace feng3d
 
         get pointLights()
         {
-            return this._pointLights = this._pointLights || this.node.getComponentsInChildren("PointLight");
+            return this._pointLights = this._pointLights || this.node3d.getComponentsInChildren("PointLight");
         }
 
         get activePointLights()
@@ -148,7 +148,7 @@ namespace feng3d
 
         get spotLights()
         {
-            return this._spotLights = this._spotLights || this.node.getComponentsInChildren("SpotLight");
+            return this._spotLights = this._spotLights || this.node3d.getComponentsInChildren("SpotLight");
         }
 
         get activeSpotLights()
@@ -158,7 +158,7 @@ namespace feng3d
 
         get animations()
         {
-            return this._animations = this._animations || this.node.getComponentsInChildren("Animation");
+            return this._animations = this._animations || this.node3d.getComponentsInChildren("Animation");
         }
 
         get activeAnimations()
@@ -168,7 +168,7 @@ namespace feng3d
 
         get behaviours()
         {
-            this._behaviours = this._behaviours || this.node.getComponentsInChildren("Behaviour");
+            this._behaviours = this._behaviours || this.node3d.getComponentsInChildren("Behaviour");
             return this._behaviours;
         }
 
@@ -182,7 +182,7 @@ namespace feng3d
             if (this._mouseCheckTransforms)
                 return this._mouseCheckTransforms;
 
-            var checkList = this.node.getChildren();
+            var checkList = this.node3d.getChildren();
             this._mouseCheckTransforms = [];
             var i = 0;
             //获取所有需要拾取的对象并分层存储
@@ -220,7 +220,7 @@ namespace feng3d
          */
         getPickByDirectionalLight(light: DirectionalLight)
         {
-            var openlist = [this.node];
+            var openlist = [this.node3d];
             var targets: Renderable[] = [];
             while (openlist.length > 0)
             {

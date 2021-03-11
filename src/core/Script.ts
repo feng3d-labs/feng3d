@@ -16,9 +16,9 @@ namespace feng3d
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        get transform()
+        get node3d()
         {
-            return this.component.node;
+            return this.component.node3d;
         }
 
         /**

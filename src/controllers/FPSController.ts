@@ -130,7 +130,7 @@ namespace feng3d
                 // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
-                var matrix = this.node.localToWorldMatrix;
+                var matrix = this.node3d.localToWorldMatrix;
                 matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
                 var up = Vector3.Y_AXIS.clone();
                 if (matrix.getAxisY().dot(up) < 0)
@@ -138,7 +138,7 @@ namespace feng3d
                     up.scaleNumber(-1);
                 }
                 matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-                this.node.localToWorldMatrix = matrix;
+                this.node3d.localToWorldMatrix = matrix;
                 //
                 this.preMousePoint = this.mousePoint;
                 this.mousePoint = null;
@@ -157,9 +157,9 @@ namespace feng3d
             accelerationVec.scaleNumber(this.acceleration);
             //计算速度
             this.velocity.add(accelerationVec);
-            var right = this.node.matrix.getAxisX();
-            var up = this.node.matrix.getAxisY();
-            var forward = this.node.matrix.getAxisZ();
+            var right = this.node3d.matrix.getAxisX();
+            var up = this.node3d.matrix.getAxisY();
+            var forward = this.node3d.matrix.getAxisZ();
             right.scaleNumber(this.velocity.x);
             up.scaleNumber(this.velocity.y);
             forward.scaleNumber(this.velocity.z);
@@ -167,9 +167,9 @@ namespace feng3d
             var displacement = right.clone();
             displacement.add(up);
             displacement.add(forward);
-            this.node.x += displacement.x;
-            this.node.y += displacement.y;
-            this.node.z += displacement.z;
+            this.node3d.x += displacement.x;
+            this.node3d.y += displacement.y;
+            this.node3d.z += displacement.z;
         }
         private mousePoint: Vector2 | null;
         /**

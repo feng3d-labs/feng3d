@@ -148,9 +148,9 @@ namespace feng3d
         }
 
 
-        constructor(transform?: Node3D, lookAtObject?: Node3D, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
+        constructor(node3d?: Node3D, lookAtObject?: Node3D, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
         {
-            super(transform, lookAtObject);
+            super(node3d, lookAtObject);
             this.distance = distance;
             this.panAngle = panAngle;
             this.tiltAngle = tiltAngle;
@@ -202,7 +202,7 @@ namespace feng3d
                     this._currentPanAngle = this._panAngle;
                 }
             }
-            if (!this._targetObject)
+            if (!this._targetNode)
                 return;
             if (this._lookAtPosition)
             {
@@ -210,31 +210,31 @@ namespace feng3d
                 this._pos.y = this._lookAtPosition.y;
                 this._pos.z = this._lookAtPosition.z;
             }
-            else if (this._lookAtObject)
+            else if (this._lookAtNode3D)
             {
-                if (this._targetObject.node.parent && this._lookAtObject.node.parent)
+                if (this._targetNode.node3d.parent && this._lookAtNode3D.node3d.parent)
                 {
-                    if (this._targetObject.node.parent != this._lookAtObject.node.parent)
+                    if (this._targetNode.node3d.parent != this._lookAtNode3D.node3d.parent)
                     {
-                        this._pos.x = this._lookAtObject.node.worldPosition.x;
-                        this._pos.y = this._lookAtObject.node.worldPosition.y;
-                        this._pos.z = this._lookAtObject.node.worldPosition.z;
-                        this._targetObject.node.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
+                        this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
+                        this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
+                        this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
+                        this._targetNode.node3d.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
                     }
                     else
                     {
-                        this._pos.copy(this._lookAtObject.node.position);
+                        this._pos.copy(this._lookAtNode3D.node3d.position);
                     }
                 }
-                else if (this._lookAtObject.scene)
+                else if (this._lookAtNode3D.scene)
                 {
-                    this._pos.x = this._lookAtObject.node.worldPosition.x;
-                    this._pos.y = this._lookAtObject.node.worldPosition.y;
-                    this._pos.z = this._lookAtObject.node.worldPosition.z;
+                    this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
+                    this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
+                    this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
                 }
                 else
                 {
-                    this._pos.copy(this._lookAtObject.node.position);
+                    this._pos.copy(this._lookAtNode3D.node3d.position);
                 }
             }
             else
@@ -243,9 +243,9 @@ namespace feng3d
                 this._pos.y = this._origin.y;
                 this._pos.z = this._origin.z;
             }
-            this._targetObject.node.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.node.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.node.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
+            this._targetNode.node3d.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.node3d.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.node3d.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
             super.update();
         }
 

@@ -99,7 +99,7 @@ namespace feng3d
                 var jointPose = joints[index];
 
                 var jointGameobject = jointGameobjects[index];
-                globalMatrixs[index] = jointGameobject.node.matrix.clone();
+                globalMatrixs[index] = jointGameobject.node3d.matrix.clone();
                 if (jointPose.parentIndex >= 0)
                 {
                     var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
@@ -150,7 +150,7 @@ namespace feng3d
                     joints[skeletonJoint.parentIndex].children.push(i);
                 } else
                 {
-                    parentGameobject = skeleton.node
+                    parentGameobject = skeleton.node3d
                 }
 
                 var jointTransform = parentGameobject.find(skeletonJoint.name);
@@ -163,22 +163,22 @@ namespace feng3d
                     parentGameobject.addChild(jointTransform);
                 }
 
-                var transform = jointTransform.node;
+                var node3d = jointTransform.node3d;
 
                 var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1)
                 {
                     matrix = matrix.clone().append(joints[skeletonJoint.parentIndex].invertMatrix);
                 }
-                transform.matrix = matrix;
+                node3d.matrix = matrix;
 
-                transform.on("transformChanged", () =>
+                node3d.on("transformChanged", () =>
                 {
                     skeleton.invalidjoint(i);
                 });
 
-                jointGameobjects[i] = transform;
-                jointGameObjectMap[skeletonJoint.name] = transform;
+                jointGameobjects[i] = node3d;
+                jointGameObjectMap[skeletonJoint.name] = node3d;
                 return jointTransform;
             }
         }

@@ -23,7 +23,7 @@ namespace feng3d
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        get node()
+        get node3d()
         {
             return this._gameObject?.getComponent("Node3D");
         }
@@ -35,7 +35,7 @@ namespace feng3d
          */
         getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
         {
-            return this.node.getComponentsInChildren(type, filter, result);
+            return this.node3d.getComponentsInChildren(type, filter, result);
         }
 
         /**
@@ -45,7 +45,7 @@ namespace feng3d
          */
         getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
         {
-            return this.node.getComponentsInParents(type, result);
+            return this.node3d.getComponentsInParents(type, result);
         }
     }
 }

@@ -65,16 +65,16 @@ namespace feng3d
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param transforms 实体列表
+         * @param node3ds 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3, transforms: Node3D[])
+        pickAll(ray3D: Ray3, node3ds: Node3D[])
         {
-            if (transforms.length == 0) return [];
+            if (node3ds.length == 0) return [];
 
-            var pickingCollisionVOs = transforms.reduce((pv: PickingCollisionVO[], transform) =>
+            var pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3d) =>
             {
-                var model = transform.getComponent("RayCastable");
+                var model = node3d.getComponent("RayCastable");
                 var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO) pv.push(pickingCollisionVO);
                 return pv;
@@ -111,7 +111,7 @@ namespace feng3d
         /**
          * 第一个穿过的物体
          */
-        transform: Node3D;
+        node3d: Node3D;
 
         /**
          * 碰撞的uv坐标
