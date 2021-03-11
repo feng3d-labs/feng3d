@@ -59,10 +59,9 @@ namespace feng3d
             super.init();
             this.node3d.hideFlags = this.node3d.hideFlags | HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.DontTransform;
-
             //
-            this._gameObject["_scene"] = this;
-            this._gameObject["updateChildrenScene"]();
+            this.node3d["_scene"] = this;
+            this.node3d["updateChildrenScene"]();
         }
 
         update(interval?: number)

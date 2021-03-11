@@ -954,7 +954,7 @@ namespace feng3d
 
         private updateScene()
         {
-            var newScene = this._parent ? this._parent._scene : null;
+            var newScene = this._parent?._scene;
             if (this._scene == newScene)
                 return;
             if (this._scene)

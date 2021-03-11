@@ -1168,6 +1168,7 @@ var feng3d;
          */
         ClassUtils.prototype.getInstanceByName = function (name) {
             var cls = this.getDefinitionByName(name);
+            console.assert(cls, "\u65E0\u6CD5\u83B7\u53D6\u540D\u79F0\u4E3A " + name + " \u7684\u5B9E\u4F8B!");
             var instance = this.getInstanceByDefinition(cls);
             return instance;
         };
@@ -27310,7 +27311,8 @@ var feng3d;
             this.node3d["_invalidateSceneTransform"]();
         };
         Node3D.prototype.updateScene = function () {
-            var newScene = this._parent ? this._parent._scene : null;
+            var _a;
+            var newScene = (_a = this._parent) === null || _a === void 0 ? void 0 : _a._scene;
             if (this._scene == newScene)
                 return;
             if (this._scene) {
@@ -29156,8 +29158,8 @@ var feng3d;
             this.node3d.hideFlags = this.node3d.hideFlags | feng3d.HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | feng3d.HideFlags.DontTransform;
             //
-            this._gameObject["_scene"] = this;
-            this._gameObject["updateChildrenScene"]();
+            this.node3d["_scene"] = this;
+            this.node3d["updateChildrenScene"]();
         };
         Scene.prototype.update = function (interval) {
             var _this = this;
@@ -34852,33 +34854,33 @@ var feng3d;
         return AudioListener;
     }(feng3d.Behaviour));
     feng3d.AudioListener = AudioListener;
+    (function () {
+        if (typeof window == "undefined")
+            return;
+        window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
+        feng3d.audioCtx = new AudioContext();
+        feng3d.globalGain = feng3d.audioCtx.createGain();
+        // 新增无音Gain，避免没有AudioListener组件时暂停声音播放进度
+        var zeroGain = feng3d.audioCtx.createGain();
+        zeroGain.connect(feng3d.audioCtx.destination);
+        feng3d.globalGain.connect(zeroGain);
+        zeroGain.gain.setTargetAtTime(0, feng3d.audioCtx.currentTime, 0.01);
+        //
+        var listener = feng3d.audioCtx.listener;
+        feng3d.audioCtx.createGain();
+        if (listener.forwardX) {
+            listener.forwardX.value = 0;
+            listener.forwardY.value = 0;
+            listener.forwardZ.value = -1;
+            listener.upX.value = 0;
+            listener.upY.value = 1;
+            listener.upZ.value = 0;
+        }
+        else {
+            listener.setOrientation(0, 0, -1, 0, 1, 0);
+        }
+    })();
 })(feng3d || (feng3d = {}));
-(function () {
-    if (typeof window == "undefined")
-        return;
-    window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
-    var audioCtx = audioCtx = new AudioContext();
-    var globalGain = globalGain = audioCtx.createGain();
-    // 新增无音Gain，避免没有AudioListener组件时暂停声音播放进度
-    var zeroGain = audioCtx.createGain();
-    zeroGain.connect(audioCtx.destination);
-    globalGain.connect(zeroGain);
-    zeroGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
-    //
-    var listener = audioCtx.listener;
-    audioCtx.createGain();
-    if (listener.forwardX) {
-        listener.forwardX.value = 0;
-        listener.forwardY.value = 0;
-        listener.forwardZ.value = -1;
-        listener.upX.value = 0;
-        listener.upY.value = 1;
-        listener.upZ.value = 0;
-    }
-    else {
-        listener.setOrientation(0, 0, -1, 0, 1, 0);
-    }
-})();
 var feng3d;
 (function (feng3d) {
     /**
