@@ -56,7 +56,7 @@ namespace feng3d
 		 */
         protected _updateWorldBounds()
         {
-            this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.transform.localToWorldMatrix);
+            this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.node.localToWorldMatrix);
         }
 
         /**

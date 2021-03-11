@@ -24,11 +24,11 @@ namespace feng3d
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
             var uniforms = <WaterUniforms>this.material.uniforms;
-            var sun = this.transform.scene.activeDirectionalLights[0];
+            var sun = this.node.scene.activeDirectionalLights[0];
             if (sun)
             {
                 uniforms.u_sunColor = sun.color;
-                uniforms.u_sunDirection = sun.transform.localToWorldMatrix.getAxisZ().negate();
+                uniforms.u_sunDirection = sun.node.localToWorldMatrix.getAxisZ().negate();
             }
 
             var clipBias = 0;
@@ -41,10 +41,10 @@ namespace feng3d
 
             if (1) return;
             //
-            var mirrorWorldPosition = this.transform.worldPosition;
-            var cameraWorldPosition = camera.transform.worldPosition;
+            var mirrorWorldPosition = this.node.worldPosition;
+            var cameraWorldPosition = camera.node.worldPosition;
 
-            var rotationMatrix = this.transform.rotationMatrix;
+            var rotationMatrix = this.node.rotationMatrix;
 
             var normal = rotationMatrix.getAxisZ();
 
@@ -54,7 +54,7 @@ namespace feng3d
             view.reflect(normal).negate();
             view.add(mirrorWorldPosition);
 
-            rotationMatrix = camera.transform.rotationMatrix;
+            rotationMatrix = camera.node.rotationMatrix;
 
             var lookAtPosition = new Vector3(0, 0, -1);
             lookAtPosition.applyMatrix4x4(rotationMatrix);
@@ -65,8 +65,8 @@ namespace feng3d
             target.add(mirrorWorldPosition);
 
             var mirrorCamera = serialization.setValue(new GameObject(), { name: "waterMirrorCamera" }).addComponent("Camera");
-            mirrorCamera.transform.position = view;
-            mirrorCamera.transform.lookAt(target, rotationMatrix.getAxisY());
+            mirrorCamera.node.position = view;
+            mirrorCamera.node.lookAt(target, rotationMatrix.getAxisY());
 
             mirrorCamera.lens = camera.lens.clone();
 
@@ -80,7 +80,7 @@ namespace feng3d
             );
             textureMatrix.append(mirrorCamera.viewProjection);
 
-            var mirrorPlane = Plane.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.transformVector3(normal), mirrorCamera.transform.worldToLocalMatrix.transformPoint3(mirrorWorldPosition));
+            var mirrorPlane = Plane.fromNormalAndPoint(mirrorCamera.node.worldToLocalMatrix.transformVector3(normal), mirrorCamera.node.worldToLocalMatrix.transformPoint3(mirrorWorldPosition));
             var clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
             var projectionMatrix = mirrorCamera.lens.matrix;
@@ -98,7 +98,7 @@ namespace feng3d
             projectionMatrix.elements[10] = clipPlane.z + 1.0 - clipBias;
             projectionMatrix.elements[14] = clipPlane.w;
 
-            var eye = camera.transform.worldPosition;
+            var eye = camera.node.worldPosition;
 
             // 不支持直接操作gl，下面代码暂时注释掉！
             // // 

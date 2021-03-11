@@ -37,7 +37,7 @@ namespace feng3d
          */
         get position()
         {
-            return this.transform.worldPosition;
+            return this.node.worldPosition;
         }
 
         /**
@@ -45,7 +45,7 @@ namespace feng3d
          */
         get direction()
         {
-            return this.transform.localToWorldMatrix.getAxisZ();
+            return this.node.localToWorldMatrix.getAxisZ();
         }
 
         /**
@@ -100,7 +100,7 @@ namespace feng3d
         @oav({ tooltip: "是否调试阴影图" })
         debugShadowMap = false;
 
-        private debugShadowMapObject: Transform;
+        private debugShadowMapObject: Node3D;
 
         constructor()
         {
@@ -115,7 +115,7 @@ namespace feng3d
             {
                 var gameObject = new GameObject();
                 gameObject.name = "debugShadowMapObject";
-                transform = gameObject.addComponent("Transform");
+                transform = gameObject.addComponent("Node3D");
                 transform.gameObject.addComponent("MeshRenderer").geometry = Geometry.getDefault("Plane");
                 transform.hideFlags = HideFlags.Hide | HideFlags.DontSave;
                 transform.mouseEnabled = false;
@@ -134,14 +134,14 @@ namespace feng3d
             }
 
             var depth = viewCamera.lens.near * 2;
-            var transform = transform.getComponent("Transform");
-            transform.position = viewCamera.transform.worldPosition.addTo(viewCamera.transform.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            var transform = transform.getComponent("Node3D");
+            transform.position = viewCamera.node.worldPosition.addTo(viewCamera.node.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
             var billboardComponent = transform.getComponent("BillboardComponent");
             billboardComponent.camera = viewCamera;
 
             if (this.debugShadowMap)
             {
-                scene.transform.addChild(transform);
+                scene.node.addChild(transform);
             } else
             {
                 transform.remove();

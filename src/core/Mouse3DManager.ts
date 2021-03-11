@@ -44,13 +44,13 @@ namespace feng3d
             this.viewport = viewport;
         }
 
-        private _selectedTransform: Transform;
+        private _selectedTransform: Node3D;
         private _mouseEventTypes: string[] = [];
 
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownGameObject: Transform;
+        private preMouseDownGameObject: Node3D;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
@@ -98,7 +98,7 @@ namespace feng3d
         /**
          * 设置选中对象
          */
-        private setSelectedGameObject(value: Transform)
+        private setSelectedGameObject(value: Node3D)
         {
             if (this._selectedTransform != value)
             {

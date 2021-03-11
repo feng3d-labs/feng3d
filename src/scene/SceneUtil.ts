@@ -38,7 +38,7 @@ namespace feng3d
             var renderers: Renderable[] = [];
             var frustum = camera.frustum;
 
-            var transforms = [scene.transform];
+            var transforms = [scene.node];
             while (transforms.length > 0)
             {
                 var transform = transforms.pop();

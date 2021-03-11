@@ -87,7 +87,7 @@ namespace feng3d
         {
             super();
             this.name = "GameObject";
-            this.addComponent("Transform");
+            this.addComponent("Node3D");
 
             this.onAny(this._onAnyListener, this);
         }
@@ -385,14 +385,14 @@ namespace feng3d
         static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>)
         {
             var g = new GameObject();
-            g.addComponent("Transform");
+            g.addComponent("Node3D");
             g.name = type;
 
             var createHandler = this._registerPrimitives[type];
             if (createHandler != null) createHandler(g);
 
             serialization.setValue(g, param);
-            return g.getComponent("Transform");
+            return g.getComponent("Node3D");
         }
 
         /**

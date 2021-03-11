@@ -35,8 +35,8 @@ namespace feng3d
 
         //
         private isInitJoints = false;
-        private jointGameobjects: Transform[];
-        private jointGameObjectMap: { [jointname: string]: Transform };
+        private jointGameobjects: Node3D[];
+        private jointGameObjectMap: { [jointname: string]: Node3D };
         private _globalPropertiesInvalid: boolean;
         private _jointsInvalid: boolean[];
         private _globalMatrixsInvalid: boolean[];
@@ -99,7 +99,7 @@ namespace feng3d
                 var jointPose = joints[index];
 
                 var jointGameobject = jointGameobjects[index];
-                globalMatrixs[index] = jointGameobject.transform.matrix.clone();
+                globalMatrixs[index] = jointGameobject.node.matrix.clone();
                 if (jointPose.parentIndex >= 0)
                 {
                     var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
@@ -143,14 +143,14 @@ namespace feng3d
                     return jointGameobjects[i];
 
                 var skeletonJoint = joints[i];
-                var parentGameobject: Transform;
+                var parentGameobject: Node3D;
                 if (skeletonJoint.parentIndex != -1)
                 {
                     parentGameobject = createJoint(skeletonJoint.parentIndex);
                     joints[skeletonJoint.parentIndex].children.push(i);
                 } else
                 {
-                    parentGameobject = skeleton.transform
+                    parentGameobject = skeleton.node
                 }
 
                 var jointTransform = parentGameobject.find(skeletonJoint.name);
@@ -159,11 +159,11 @@ namespace feng3d
                     var gameObject = new GameObject();
                     gameObject.name = skeletonJoint.name;
                     gameObject.hideFlags = HideFlags.DontSave;
-                    jointTransform = gameObject.addComponent("Transform");
+                    jointTransform = gameObject.addComponent("Node3D");
                     parentGameobject.addChild(jointTransform);
                 }
 
-                var transform = jointTransform.transform;
+                var transform = jointTransform.node;
 
                 var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1)

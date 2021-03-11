@@ -14,7 +14,7 @@ namespace feng3d
         {
             var gameObject = new GameObject();
             gameObject.name = name;
-            gameObject.addComponent("Transform");
+            gameObject.addComponent("Node3D");
             var meshRenderer = gameObject.addComponent("MeshRenderer", callback);
             return meshRenderer;
         }

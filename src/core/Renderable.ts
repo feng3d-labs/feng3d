@@ -96,7 +96,7 @@ namespace feng3d
          */
         worldRayIntersection(worldRay: Ray3)
         {
-            var localRay = this.transform.rayWorldToLocal(worldRay);
+            var localRay = this.node.rayWorldToLocal(worldRay);
             var pickingCollisionVO = this.localRayIntersection(localRay);
             return pickingCollisionVO;
         }
@@ -119,7 +119,7 @@ namespace feng3d
 
             //保存碰撞数据
             var pickingCollisionVO: PickingCollisionVO = {
-                transform: this.transform,
+                transform: this.node,
                 localNormal: localNormal,
                 localRay: localRay,
                 rayEntryDistance: rayEntryDistance,

@@ -20,7 +20,7 @@ namespace feng3d
      */
     export class BoundingBox
     {
-        private _transform: Transform;
+        private _transform: Node3D;
 
         protected _selfLocalBounds = new Box3();
         protected _selfWorldBounds = new Box3();
@@ -30,7 +30,7 @@ namespace feng3d
         protected _selfWorldBoundsInvalid = true;
         protected _worldBoundsInvalid = true;
 
-        constructor(transform: Transform)
+        constructor(transform: Node3D)
         {
             this._transform = transform;
             transform.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);

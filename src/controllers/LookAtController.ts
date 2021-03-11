@@ -3,12 +3,12 @@ namespace feng3d
     export class LookAtController extends ControllerBase
     {
         protected _lookAtPosition: Vector3;
-        protected _lookAtObject: Transform;
+        protected _lookAtObject: Node3D;
         protected _origin: Vector3 = new Vector3(0.0, 0.0, 0.0);
         protected _upAxis: Vector3 = Vector3.Y_AXIS;
         protected _pos: Vector3 = new Vector3();
 
-        constructor(transform?: Transform, lookAtObject?: Transform)
+        constructor(transform?: Node3D, lookAtObject?: Node3D)
         {
             super(transform);
 
@@ -57,12 +57,12 @@ namespace feng3d
             {
                 if (this._lookAtPosition)
                 {
-                    this._targetObject.transform.lookAt(this.lookAtPosition, this._upAxis);
+                    this._targetObject.node.lookAt(this.lookAtPosition, this._upAxis);
                 }
                 else if (this._lookAtObject)
                 {
-                    this._pos = this._lookAtObject.transform.position;
-                    this._targetObject.transform.lookAt(this._pos, this._upAxis);
+                    this._pos = this._lookAtObject.node.position;
+                    this._targetObject.node.lookAt(this._pos, this._upAxis);
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace feng3d
         init()
         {
             super.init();
-            this.transform.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             this._invalidHoldSizeMatrix();
         }
 
@@ -32,17 +32,17 @@ namespace feng3d
 
         private _invalidHoldSizeMatrix()
         {
-            if (this._gameObject) this.transform["_invalidateSceneTransform"]();
+            if (this._gameObject) this.node["_invalidateSceneTransform"]();
         }
 
         private _onUpdateLocalToWorldMatrix()
         {
-            var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
+            var _localToWorldMatrix = this.node["_localToWorldMatrix"];
             if (_localToWorldMatrix && this.camera)
             {
                 var camera = this.camera;
-                var cameraPos = camera.transform.worldPosition;
-                var yAxis = camera.transform.localToWorldMatrix.getAxisY();
+                var cameraPos = camera.node.worldPosition;
+                var yAxis = camera.node.localToWorldMatrix.getAxisY();
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);
             }
         }
@@ -50,7 +50,7 @@ namespace feng3d
         dispose()
         {
             this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             super.dispose();
         }
     }

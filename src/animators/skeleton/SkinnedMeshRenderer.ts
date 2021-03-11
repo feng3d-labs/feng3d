@@ -70,22 +70,22 @@ namespace feng3d
         private get u_modelMatrix()
         {
             if (this.cacheSkeletonComponent)
-                return this.cacheSkeletonComponent.transform.localToWorldMatrix;
-            return this.transform.localToWorldMatrix
+                return this.cacheSkeletonComponent.node.localToWorldMatrix;
+            return this.node.localToWorldMatrix
         }
 
         private get u_ITModelMatrix()
         {
             if (this.cacheSkeletonComponent)
-                return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
-            return this.transform.ITlocalToWorldMatrix
+                return this.cacheSkeletonComponent.node.ITlocalToWorldMatrix;
+            return this.node.ITlocalToWorldMatrix
         }
 
         private get u_skeletonGlobalMatriices() 
         {
             if (!this.cacheSkeletonComponent)
             {
-                var transform = this.transform;
+                var transform = this.node;
                 var skeletonComponent: SkeletonComponent = null;
                 while (transform && !skeletonComponent)
                 {

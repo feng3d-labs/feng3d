@@ -5,12 +5,12 @@ namespace feng3d
         /**
          * 控制对象
          */
-        protected _targetObject: Transform | undefined;
+        protected _targetObject: Node3D | undefined;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(transform?: Transform)
+        constructor(transform?: Node3D)
         {
             this.targetObject = transform;
         }

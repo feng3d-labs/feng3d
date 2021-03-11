@@ -12485,7 +12485,7 @@ declare namespace feng3d {
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        get transform(): Transform;
+        get node(): Node3D;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
@@ -12665,51 +12665,51 @@ declare namespace feng3d {
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
         addChild: {
-            parent: Transform;
-            child: Transform;
+            parent: Node3D;
+            child: Node3D;
         };
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
         removeChild: {
-            parent: Transform;
-            child: Transform;
+            parent: Node3D;
+            child: Node3D;
         };
         /**
          * 自身被添加到父对象中事件
          */
         added: {
-            parent: Transform;
+            parent: Node3D;
         };
         /**
          * 自身从父对象中移除事件
          */
         removed: {
-            parent: Transform;
+            parent: Node3D;
         };
         /**
          * 当GameObject的scene属性被设置是由Scene派发
          */
-        addedToScene: Transform;
+        addedToScene: Node3D;
         /**
          * 当GameObject的scene属性被清空时由Scene派发
          */
-        removedFromScene: Transform;
+        removedFromScene: Node3D;
         /**
          * 变换矩阵变化
          */
-        transformChanged: Transform;
+        transformChanged: Node3D;
         /**
          *
          */
-        updateLocalToWorldMatrix: Transform;
+        updateLocalToWorldMatrix: Node3D;
         /**
          * 场景矩阵变化
          */
-        scenetransformChanged: Transform;
+        scenetransformChanged: Node3D;
     }
     interface ComponentMap {
-        Transform: Transform;
+        Node3D: Node3D;
     }
     /**
      * 变换
@@ -12718,7 +12718,7 @@ declare namespace feng3d {
      *
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
-    class Transform extends Component3D {
+    class Node3D extends Component3D {
         __class__: "feng3d.Transform";
         get single(): boolean;
         assetType: AssetType;
@@ -12833,13 +12833,13 @@ declare namespace feng3d {
          */
         get boundingBox(): BoundingBox;
         private _boundingBox;
-        get parent(): Transform;
+        get parent(): Node3D;
         get scene(): Scene;
         /**
          * 子对象
          */
-        get children(): Transform[];
-        set children(value: Transform[]);
+        get children(): Node3D[];
+        set children(value: Node3D[]);
         get numChildren(): number;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
@@ -12888,25 +12888,25 @@ declare namespace feng3d {
          *
          * @param name 对象名称
          */
-        find(name: string): Transform;
+        find(name: string): Node3D;
         /**
          * 是否包含指定对象
          *
          * @param child 可能的子孙对象
          */
-        contains(child: Transform): boolean;
+        contains(child: Node3D): boolean;
         /**
          * 添加子对象
          *
          * @param child 子对象
          */
-        addChild(child: Transform): Transform;
+        addChild(child: Node3D): Node3D;
         /**
          * 添加子对象
          *
          * @param children 子对象
          */
-        addChildren(...children: Transform[]): void;
+        addChildren(...children: Node3D[]): void;
         /**
          * 移除自身
          */
@@ -12920,7 +12920,7 @@ declare namespace feng3d {
          *
          * @param child 子对象
          */
-        removeChild(child: Transform): void;
+        removeChild(child: Node3D): void;
         /**
          * 删除指定位置的子对象
          *
@@ -12932,11 +12932,11 @@ declare namespace feng3d {
          *
          * @param index
          */
-        getChildAt(index: number): Transform;
+        getChildAt(index: number): Node3D;
         /**
          * 获取子对象列表（备份）
          */
-        getChildren(): Transform[];
+        getChildren(): Node3D[];
         /**
          * 将方向从局部空间转换到世界空间。
          *
@@ -13050,8 +13050,8 @@ declare namespace feng3d {
         protected _worldToLocalMatrixInvalid: boolean;
         protected readonly _localToWorldRotationMatrix: Matrix4x4;
         protected _localToWorldRotationMatrixInvalid: boolean;
-        protected _parent: Transform;
-        protected _children: Transform[];
+        protected _parent: Node3D;
+        protected _children: Node3D[];
         protected _scene: Scene;
         private _renderAtomic;
         private _positionChanged;
@@ -13189,7 +13189,7 @@ declare namespace feng3d {
         protected _selfBoundsInvalid: boolean;
         protected _selfWorldBoundsInvalid: boolean;
         protected _worldBoundsInvalid: boolean;
-        constructor(transform: Transform);
+        constructor(transform: Node3D);
         /**
          * 自身局部包围盒通常有Renderable组件提供
          */
@@ -13394,7 +13394,7 @@ declare namespace feng3d {
          * @param type 游戏对象类型。
          * @param param 游戏对象参数。
          */
-        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): Transform;
+        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): Node3D;
         /**
          * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
          *
@@ -13435,7 +13435,7 @@ declare namespace feng3d {
         /**
          * 根结点
          */
-        get root(): Transform;
+        get root(): Node3D;
         get gl(): GL;
         /**
          * 鼠标在3D视图中的位置
@@ -13503,8 +13503,8 @@ declare namespace feng3d {
          * @param start 起点
          * @param end 终点
          */
-        getObjectsInGlobalArea(start: Vector2, end: Vector2): Transform[];
-        protected selectedTransform: Transform;
+        getObjectsInGlobalArea(start: Vector2, end: Vector2): Node3D[];
+        protected selectedTransform: Node3D;
         static createNewScene(): Scene;
     }
 }
@@ -13787,7 +13787,7 @@ declare namespace feng3d {
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        get transform(): Transform;
+        get transform(): Node3D;
         /**
          * 宿主组件
          */
@@ -13874,7 +13874,7 @@ declare namespace feng3d {
         get activeAnimations(): Animation[];
         get behaviours(): Behaviour[];
         get activeBehaviours(): Behaviour[];
-        get mouseCheckObjects(): Transform[];
+        get mouseCheckObjects(): Node3D[];
         /**
          * 获取拾取缓存
          * @param camera
@@ -15722,33 +15722,33 @@ declare namespace feng3d {
         /**
          * 控制对象
          */
-        protected _targetObject: Transform | undefined;
+        protected _targetObject: Node3D | undefined;
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(transform?: Transform);
+        constructor(transform?: Node3D);
         /**
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        get targetObject(): Transform;
-        set targetObject(val: Transform);
+        get targetObject(): Node3D;
+        set targetObject(val: Node3D);
     }
 }
 declare namespace feng3d {
     class LookAtController extends ControllerBase {
         protected _lookAtPosition: Vector3;
-        protected _lookAtObject: Transform;
+        protected _lookAtObject: Node3D;
         protected _origin: Vector3;
         protected _upAxis: Vector3;
         protected _pos: Vector3;
-        constructor(transform?: Transform, lookAtObject?: Transform);
+        constructor(transform?: Node3D, lookAtObject?: Node3D);
         get upAxis(): Vector3;
         set upAxis(upAxis: Vector3);
         get lookAtPosition(): Vector3;
         set lookAtPosition(val: Vector3);
-        get lookAtObject(): Transform;
-        set lookAtObject(value: Transform);
+        get lookAtObject(): Node3D;
+        set lookAtObject(value: Node3D);
         update(interpolate?: boolean): void;
     }
 }
@@ -15786,7 +15786,7 @@ declare namespace feng3d {
         set yFactor(val: number);
         get wrapPanAngle(): boolean;
         set wrapPanAngle(val: boolean);
-        constructor(transform?: Transform, lookAtObject?: Transform, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+        constructor(transform?: Node3D, lookAtObject?: Node3D, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
         update(interpolate?: boolean): void;
     }
 }
@@ -15869,14 +15869,14 @@ declare namespace feng3d {
          * @param transforms 实体列表
          * @return
          */
-        pick(ray3D: Ray3, transforms: Transform[]): PickingCollisionVO;
+        pick(ray3D: Ray3, transforms: Node3D[]): PickingCollisionVO;
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
          * @param transforms 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3, transforms: Transform[]): PickingCollisionVO[];
+        pickAll(ray3D: Ray3, transforms: Node3D[]): PickingCollisionVO[];
     }
     /**
      * 拾取的碰撞数据
@@ -15885,7 +15885,7 @@ declare namespace feng3d {
         /**
          * 第一个穿过的物体
          */
-        transform: Transform;
+        transform: Node3D;
         /**
          * 碰撞的uv坐标
          */
@@ -16282,8 +16282,8 @@ declare namespace feng3d {
      */
     class Mouse3DManager {
         mouseInput: MouseInput;
-        get selectedTransform(): Transform;
-        set selectedTransform(v: Transform);
+        get selectedTransform(): Node3D;
+        set selectedTransform(v: Node3D);
         /**
          * 视窗，鼠标在该矩形内时为有效事件
          */
@@ -16293,7 +16293,7 @@ declare namespace feng3d {
          * @param scene 场景
          * @param camera 摄像机
          */
-        pick(view: View, scene: Scene, camera: Camera): Transform;
+        pick(view: View, scene: Scene, camera: Camera): Node3D;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedTransform;
         private _mouseEventTypes;

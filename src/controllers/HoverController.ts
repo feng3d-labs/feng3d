@@ -148,7 +148,7 @@ namespace feng3d
         }
 
 
-        constructor(transform?: Transform, lookAtObject?: Transform, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
+        constructor(transform?: Node3D, lookAtObject?: Node3D, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
         {
             super(transform, lookAtObject);
             this.distance = distance;
@@ -212,29 +212,29 @@ namespace feng3d
             }
             else if (this._lookAtObject)
             {
-                if (this._targetObject.transform.parent && this._lookAtObject.transform.parent)
+                if (this._targetObject.node.parent && this._lookAtObject.node.parent)
                 {
-                    if (this._targetObject.transform.parent != this._lookAtObject.transform.parent)
+                    if (this._targetObject.node.parent != this._lookAtObject.node.parent)
                     {
-                        this._pos.x = this._lookAtObject.transform.worldPosition.x;
-                        this._pos.y = this._lookAtObject.transform.worldPosition.y;
-                        this._pos.z = this._lookAtObject.transform.worldPosition.z;
-                        this._targetObject.transform.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
+                        this._pos.x = this._lookAtObject.node.worldPosition.x;
+                        this._pos.y = this._lookAtObject.node.worldPosition.y;
+                        this._pos.z = this._lookAtObject.node.worldPosition.z;
+                        this._targetObject.node.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
                     }
                     else
                     {
-                        this._pos.copy(this._lookAtObject.transform.position);
+                        this._pos.copy(this._lookAtObject.node.position);
                     }
                 }
                 else if (this._lookAtObject.scene)
                 {
-                    this._pos.x = this._lookAtObject.transform.worldPosition.x;
-                    this._pos.y = this._lookAtObject.transform.worldPosition.y;
-                    this._pos.z = this._lookAtObject.transform.worldPosition.z;
+                    this._pos.x = this._lookAtObject.node.worldPosition.x;
+                    this._pos.y = this._lookAtObject.node.worldPosition.y;
+                    this._pos.z = this._lookAtObject.node.worldPosition.z;
                 }
                 else
                 {
-                    this._pos.copy(this._lookAtObject.transform.position);
+                    this._pos.copy(this._lookAtObject.node.position);
                 }
             }
             else
@@ -243,9 +243,9 @@ namespace feng3d
                 this._pos.y = this._origin.y;
                 this._pos.z = this._origin.z;
             }
-            this._targetObject.transform.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.transform.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.transform.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
+            this._targetObject.node.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetObject.node.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetObject.node.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
             super.update();
         }
 

@@ -275,7 +275,7 @@ namespace feng3d
 
         private _onScenetransformChanged()
         {
-            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var localToWorldMatrix = this.node.localToWorldMatrix;
             var scenePosition = localToWorldMatrix.getPosition();
 
             //

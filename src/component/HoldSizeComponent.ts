@@ -26,13 +26,13 @@ namespace feng3d
 
         init()
         {
-            this.transform.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
         }
 
         dispose()
         {
             this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             super.dispose();
         }
 
@@ -45,12 +45,12 @@ namespace feng3d
 
         private _invalidateSceneTransform()
         {
-            if (this._gameObject) this.transform["_invalidateSceneTransform"]();
+            if (this._gameObject) this.node["_invalidateSceneTransform"]();
         }
 
         private _onUpdateLocalToWorldMatrix()
         {
-            var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
+            var _localToWorldMatrix = this.node["_localToWorldMatrix"];
             if (this.holdSize && this.camera && _localToWorldMatrix)
             {
                 var depthScale = this._getDepthScale(this.camera);
@@ -64,8 +64,8 @@ namespace feng3d
 
         private _getDepthScale(camera: Camera)
         {
-            var cameraTranform = camera.transform.localToWorldMatrix;
-            var distance = this.transform.worldPosition.subTo(cameraTranform.getPosition());
+            var cameraTranform = camera.node.localToWorldMatrix;
+            var distance = this.node.worldPosition.subTo(cameraTranform.getPosition());
             if (distance.length == 0)
                 distance.x = 1;
             var depth = distance.dot(cameraTranform.getAxisZ());

@@ -49,7 +49,7 @@ namespace feng3d
 
         private _onScenetransformChanged()
         {
-            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var localToWorldMatrix = this.node.localToWorldMatrix;
             var position = localToWorldMatrix.getPosition();
             var forward = localToWorldMatrix.getAxisZ();
             var up = localToWorldMatrix.getAxisY();

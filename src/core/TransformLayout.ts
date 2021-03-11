@@ -63,14 +63,14 @@ namespace feng3d
             this.on("removed", this._onRemoved, this);
         }
 
-        private _onAdded(event: Event<{ parent: Transform; }>)
+        private _onAdded(event: Event<{ parent: Node3D; }>)
         {
             event.data.parent.on("sizeChanged", this._invalidateLayout, this);
             event.data.parent.on("pivotChanged", this._invalidateLayout, this);
             this._invalidateLayout();
         }
 
-        private _onRemoved(event: Event<{ parent: Transform; }>)
+        private _onRemoved(event: Event<{ parent: Node3D; }>)
         {
             event.data.parent.off("sizeChanged", this._invalidateLayout, this);
             event.data.parent.off("pivotChanged", this._invalidateLayout, this);
@@ -162,7 +162,7 @@ namespace feng3d
         {
             if (!this._layoutInvalid) return;
 
-            var transformLayout = this.transform?.parent?.getComponent("TransformLayout");
+            var transformLayout = this.node?.parent?.getComponent("TransformLayout");
             if (!transformLayout) return;
 
             // 中心点基于anchorMin的坐标
@@ -224,9 +224,9 @@ namespace feng3d
             }
 
             //
-            this.transform.position.x = anchorLeftTop.x + position.x;
-            this.transform.position.y = anchorLeftTop.y + position.y;
-            this.transform.position.z = anchorLeftTop.z + position.z;
+            this.node.position.x = anchorLeftTop.x + position.x;
+            this.node.position.y = anchorLeftTop.y + position.y;
+            this.node.position.z = anchorLeftTop.z + position.z;
             //
             this._layoutInvalid = false;
             ticker.offframe(this._updateLayout, this);

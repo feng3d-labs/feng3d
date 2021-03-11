@@ -28,7 +28,7 @@ namespace feng3d
          */
         get position()
         {
-            return this.shadowCamera.transform.worldPosition;
+            return this.shadowCamera.node.worldPosition;
         }
 
         constructor()
@@ -44,7 +44,7 @@ namespace feng3d
         {
             var worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
-                var box = i.transform.boundingBox.worldBounds;
+                var box = i.node.boundingBox.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);
@@ -55,8 +55,8 @@ namespace feng3d
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
             // 
-            this.shadowCamera.transform.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-            this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.matrix.getAxisY());
+            this.shadowCamera.node.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            this.shadowCamera.node.lookAt(center, this.shadowCamera.node.matrix.getAxisY());
             //
             if (!this.orthographicLens)
             {

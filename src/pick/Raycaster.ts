@@ -17,7 +17,7 @@ namespace feng3d
          * @param transforms 实体列表
          * @return
          */
-        pick(ray3D: Ray3, transforms: Transform[])
+        pick(ray3D: Ray3, transforms: Node3D[])
         {
             if (transforms.length == 0) return null;
 
@@ -68,7 +68,7 @@ namespace feng3d
          * @param transforms 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3, transforms: Transform[])
+        pickAll(ray3D: Ray3, transforms: Node3D[])
         {
             if (transforms.length == 0) return [];
 
@@ -111,7 +111,7 @@ namespace feng3d
         /**
          * 第一个穿过的物体
          */
-        transform: Transform;
+        transform: Node3D;
 
         /**
          * 碰撞的uv坐标

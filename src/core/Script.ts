@@ -18,7 +18,7 @@ namespace feng3d
          */
         get transform()
         {
-            return this.component.transform;
+            return this.component.node;
         }
 
         /**

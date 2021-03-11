@@ -27,7 +27,7 @@ namespace feng3d
                 if (cameras.length == 0)
                 {
                     this._camera = serialization.setValue(new GameObject(), { name: "defaultCamera" }).addComponent("Camera");
-                    this.scene.transform.addChild(this._camera.transform);
+                    this.scene.node.addChild(this._camera.node);
                 } else
                 {
                     this._camera = cameras[0];
@@ -49,7 +49,7 @@ namespace feng3d
          */
         get root()
         {
-            return this.scene.transform;
+            return this.scene.node;
         }
 
         get gl()
@@ -284,9 +284,9 @@ namespace feng3d
             var max = s.clone().max(e);
             var rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
             //
-            var transforms = this.scene.getComponentsInChildren("Transform").filter(t =>
+            var transforms = this.scene.getComponentsInChildren("Node3D").filter(t =>
             {
-                if (t == this.scene.transform) return false;
+                if (t == this.scene.node) return false;
                 var m = t.getComponent("Renderable");
                 if (m)
                 {
@@ -303,7 +303,7 @@ namespace feng3d
             return transforms;
         }
 
-        protected selectedTransform: Transform;
+        protected selectedTransform: Node3D;
 
         static createNewScene()
         {
@@ -313,15 +313,15 @@ namespace feng3d
 
             var camera = Camera.create("Main Camera");
             camera.gameObject.addComponent("AudioListener");
-            camera.transform.position = new Vector3(0, 1, -10);
-            scene.transform.addChild(camera.transform);
+            camera.node.position = new Vector3(0, 1, -10);
+            scene.node.addChild(camera.node);
 
             var directionalLight = DirectionalLight.create("DirectionalLight");
             directionalLight.shadowType = ShadowType.Hard_Shadows;
-            directionalLight.transform.rx = 50;
-            directionalLight.transform.ry = -30;
-            directionalLight.transform.y = 3;
-            scene.transform.addChild(directionalLight.transform);
+            directionalLight.node.rx = 50;
+            directionalLight.node.ry = -30;
+            directionalLight.node.y = 3;
+            scene.node.addChild(directionalLight.node);
 
             return scene;
         }

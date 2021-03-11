@@ -38,7 +38,7 @@ namespace feng3d
             var models: Renderable[] = this._activeModels = [];
             var frustum = this.camera.frustum;
 
-            var transfoms = [this.scene.transform];
+            var transfoms = [this.scene.node];
             while (transfoms.length > 0)
             {
                 var transform = transfoms.pop();
@@ -68,12 +68,12 @@ namespace feng3d
                 return this._blenditems;
 
             var models = this.activeModels;
-            var camerapos = this.camera.transform.worldPosition;
+            var camerapos = this.camera.node.worldPosition;
 
             var blenditems = this._blenditems = models.filter((item) =>
             {
                 return item.material.renderParams.enableBlend;
-            }).sort((b, a) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+            }).sort((b, a) => a.node.worldPosition.subTo(camerapos).lengthSquared - b.node.worldPosition.subTo(camerapos).lengthSquared);
 
             return blenditems;
         }
@@ -87,12 +87,12 @@ namespace feng3d
                 return this._unblenditems;
 
             var models = this.activeModels;
-            var camerapos = this.camera.transform.worldPosition;
+            var camerapos = this.camera.node.worldPosition;
 
             var unblenditems = this._unblenditems = models.filter((item) =>
             {
                 return !item.material.renderParams.enableBlend;
-            }).sort((a, b) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+            }).sort((a, b) => a.node.worldPosition.subTo(camerapos).lengthSquared - b.node.worldPosition.subTo(camerapos).lengthSquared);
 
             return unblenditems;
         }

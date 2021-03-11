@@ -5,48 +5,48 @@ namespace feng3d
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        addChild: { parent: Transform, child: Transform }
+        addChild: { parent: Node3D, child: Node3D }
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removeChild: { parent: Transform, child: Transform };
+        removeChild: { parent: Node3D, child: Node3D };
 
         /**
          * 自身被添加到父对象中事件
          */
-        added: { parent: Transform };
+        added: { parent: Node3D };
 
         /**
          * 自身从父对象中移除事件
          */
-        removed: { parent: Transform };
+        removed: { parent: Node3D };
 
         /**
          * 当GameObject的scene属性被设置是由Scene派发
          */
-        addedToScene: Transform;
+        addedToScene: Node3D;
 
         /**
          * 当GameObject的scene属性被清空时由Scene派发
          */
-        removedFromScene: Transform;
+        removedFromScene: Node3D;
 
         /**
          * 变换矩阵变化
          */
-        transformChanged: Transform;
+        transformChanged: Node3D;
         /**
          * 
          */
-        updateLocalToWorldMatrix: Transform;
+        updateLocalToWorldMatrix: Node3D;
 
         /**
          * 场景矩阵变化
          */
-        scenetransformChanged: Transform;
+        scenetransformChanged: Node3D;
     }
 
-    export interface ComponentMap { Transform: Transform; }
+    export interface ComponentMap { Node3D: Node3D; }
 
 	/**
      * 变换
@@ -56,7 +56,7 @@ namespace feng3d
 	 * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
 	 */
     @RegisterComponent()
-    export class Transform extends Component3D
+    export class Node3D extends Component3D
     {
         __class__: "feng3d.Transform";
 
@@ -519,7 +519,7 @@ namespace feng3d
          * 
          * @param name 对象名称
          */
-        find(name: string): Transform
+        find(name: string): Node3D
         {
             if (this.name == name)
                 return this;
@@ -537,7 +537,7 @@ namespace feng3d
          * 
          * @param child 可能的子孙对象
          */
-        contains(child: Transform)
+        contains(child: Node3D)
         {
             var checkitem = child;
             do
@@ -554,7 +554,7 @@ namespace feng3d
          * 
          * @param child 子对象
          */
-        addChild(child: Transform)
+        addChild(child: Node3D)
         {
             if (child == null)
                 return;
@@ -585,7 +585,7 @@ namespace feng3d
          * 
          * @param children 子对象
          */
-        addChildren(...children: Transform[])
+        addChildren(...children: Node3D[])
         {
             for (let i = 0; i < children.length; i++)
             {
@@ -617,7 +617,7 @@ namespace feng3d
          * 
          * @param child 子对象
          */
-        removeChild(child: Transform)
+        removeChild(child: Node3D)
         {
             if (child == null) return;
             var childIndex = this._children.indexOf(child);
@@ -917,8 +917,8 @@ namespace feng3d
         protected readonly _localToWorldRotationMatrix = new Matrix4x4();
         protected _localToWorldRotationMatrixInvalid = false;
 
-        protected _parent: Transform;
-        protected _children: Transform[] = [];
+        protected _parent: Node3D;
+        protected _children: Node3D[] = [];
         protected _scene: Scene;
 
         private _renderAtomic = new RenderAtomic();
@@ -945,11 +945,11 @@ namespace feng3d
         }
 
 
-        private _setParent(value: Transform)
+        private _setParent(value: Node3D)
         {
             this._parent = value;
             this.updateScene();
-            this.transform["_invalidateSceneTransform"]();
+            this.node["_invalidateSceneTransform"]();
         }
 
         private updateScene()
@@ -977,7 +977,7 @@ namespace feng3d
             }
         }
 
-        private removeChildInternal(childIndex: number, child: Transform)
+        private removeChildInternal(childIndex: number, child: Node3D)
         {
             childIndex = childIndex;
             this._children.splice(childIndex, 1);
@@ -1011,7 +1011,7 @@ namespace feng3d
             {
                 for (var i = 0, n = this.numChildren; i < n; i++)
                 {
-                    this.getChildAt(i).transform._invalidateSceneTransform();
+                    this.getChildAt(i).node._invalidateSceneTransform();
                 }
             }
         }

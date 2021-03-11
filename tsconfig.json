@@ -235,7 +235,7 @@
         //
         "src/core/HideFlags.ts",
         "src/core/RunEnvironment.ts",
-        "src/core/Transform.ts",
+        "src/core/Node3D.ts",
         "src/core/TransformLayout.ts",
         "src/core/BoundingBox.ts",
         "src/core/GameObject.ts",
