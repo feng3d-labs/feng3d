@@ -13503,7 +13503,7 @@ declare namespace feng3d {
          * @param start 起点
          * @param end 终点
          */
-        getObjectsInGlobalArea(start: Vector2, end: Vector2): GameObject[];
+        getObjectsInGlobalArea(start: Vector2, end: Vector2): Transform[];
         protected selectedTransform: Transform;
         static createNewScene(): Scene;
     }
@@ -13554,7 +13554,7 @@ declare namespace feng3d {
     /**
      * 线框组件，将会对拥有该组件的对象绘制线框
      */
-    class WireframeComponent extends Component {
+    class WireframeComponent extends Component3D {
         __class__: "feng3d.WireframeComponent";
         color: Color4;
     }
@@ -13742,6 +13742,7 @@ declare namespace feng3d {
      */
     class MeshRenderer extends Renderable {
         __class__: "feng3d.MeshRenderer";
+        static create(name?: string, callback?: (component: MeshRenderer) => void): MeshRenderer;
     }
 }
 declare namespace feng3d {
@@ -15872,10 +15873,10 @@ declare namespace feng3d {
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param gameObjects 实体列表
+         * @param transforms 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3, gameObjects: GameObject[]): PickingCollisionVO[];
+        pickAll(ray3D: Ray3, transforms: Transform[]): PickingCollisionVO[];
     }
     /**
      * 拾取的碰撞数据

@@ -284,7 +284,7 @@ namespace feng3d
             var max = s.clone().max(e);
             var rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
             //
-            var gs = this.scene.getComponentsInChildren("Transform").filter(t =>
+            var transforms = this.scene.getComponentsInChildren("Transform").filter(t =>
             {
                 if (t == this.scene.transform) return false;
                 var m = t.getComponent("Renderable");
@@ -299,8 +299,8 @@ namespace feng3d
                 }
                 var p = this.project(t.worldPosition);
                 return rect.contains(p.x, p.y);
-            }).map(t => t.gameObject);
-            return gs;
+            });
+            return transforms;
         }
 
         protected selectedTransform: Transform;

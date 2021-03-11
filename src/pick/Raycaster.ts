@@ -65,16 +65,16 @@ namespace feng3d
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param gameObjects 实体列表
+         * @param transforms 实体列表
          * @return
          */
-        pickAll(ray3D: Ray3, gameObjects: GameObject[])
+        pickAll(ray3D: Ray3, transforms: Transform[])
         {
-            if (gameObjects.length == 0) return [];
+            if (transforms.length == 0) return [];
 
-            var pickingCollisionVOs = gameObjects.reduce((pv: PickingCollisionVO[], gameObject) =>
+            var pickingCollisionVOs = transforms.reduce((pv: PickingCollisionVO[], transform) =>
             {
-                var model = gameObject.getComponent("RayCastable");
+                var model = transform.getComponent("RayCastable");
                 var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO) pv.push(pickingCollisionVO);
                 return pv;

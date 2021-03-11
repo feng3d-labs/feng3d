@@ -28421,7 +28421,7 @@ var feng3d;
             var max = s.clone().max(e);
             var rect = new feng3d.Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
             //
-            var gs = this.scene.getComponentsInChildren("Transform").filter(function (t) {
+            var transforms = this.scene.getComponentsInChildren("Transform").filter(function (t) {
                 if (t == _this.scene.transform)
                     return false;
                 var m = t.getComponent("Renderable");
@@ -28434,8 +28434,8 @@ var feng3d;
                 }
                 var p = _this.project(t.worldPosition);
                 return rect.contains(p.x, p.y);
-            }).map(function (t) { return t.gameObject; });
-            return gs;
+            });
+            return transforms;
         };
         View.createNewScene = function () {
             var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent("Scene");
@@ -28594,7 +28594,7 @@ var feng3d;
             feng3d.RegisterComponent()
         ], WireframeComponent);
         return WireframeComponent;
-    }(feng3d.Component));
+    }(feng3d.Component3D));
     feng3d.WireframeComponent = WireframeComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -28965,6 +28965,14 @@ var feng3d;
         function MeshRenderer() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        MeshRenderer.create = function (name, callback) {
+            if (name === void 0) { name = "Mesh"; }
+            var gameObject = new feng3d.GameObject();
+            gameObject.name = name;
+            gameObject.addComponent("Transform");
+            var meshRenderer = gameObject.addComponent("MeshRenderer", callback);
+            return meshRenderer;
+        };
         MeshRenderer = __decorate([
             feng3d.RegisterComponent()
         ], MeshRenderer);
@@ -34723,14 +34731,14 @@ var feng3d;
         /**
          * 获取射线穿过的实体
          * @param ray3D 射线
-         * @param gameObjects 实体列表
+         * @param transforms 实体列表
          * @return
          */
-        Raycaster.prototype.pickAll = function (ray3D, gameObjects) {
-            if (gameObjects.length == 0)
+        Raycaster.prototype.pickAll = function (ray3D, transforms) {
+            if (transforms.length == 0)
                 return [];
-            var pickingCollisionVOs = gameObjects.reduce(function (pv, gameObject) {
-                var model = gameObject.getComponent("RayCastable");
+            var pickingCollisionVOs = transforms.reduce(function (pv, transform) {
+                var model = transform.getComponent("RayCastable");
                 var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO)
                     pv.push(pickingCollisionVO);

@@ -9,5 +9,14 @@ namespace feng3d
     export class MeshRenderer extends Renderable
     {
         __class__: "feng3d.MeshRenderer";
+
+        static create(name = "Mesh", callback?: (component: MeshRenderer) => void)
+        {
+            var gameObject = new GameObject();
+            gameObject.name = name;
+            gameObject.addComponent("Transform");
+            var meshRenderer = gameObject.addComponent("MeshRenderer", callback);
+            return meshRenderer;
+        }
     }
 }
