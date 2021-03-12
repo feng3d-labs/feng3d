@@ -58,7 +58,7 @@ namespace feng3d
     @RegisterComponent()
     export class Node3D extends Component3D
     {
-        __class__: "feng3d.Transform";
+        __class__: "feng3d.Node3D";
 
         get single() { return true; }
 

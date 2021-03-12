@@ -57,9 +57,20 @@ namespace feng3d
         /**
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
+        @serialize
         get gameObject()
         {
             return this._gameObject;
+        }
+
+        set gameObject(v)
+        {
+            if (this._gameObject === v)
+            {
+                return;
+            }
+            console.assert(!this._gameObject, "组件无法再次加入其它GameObject中!");
+            this._gameObject = v;
         }
 
         get name()

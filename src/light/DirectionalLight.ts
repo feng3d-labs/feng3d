@@ -14,7 +14,7 @@ namespace feng3d
         {
             var gameObject = new GameObject();
             gameObject.name = name;
-            var directionalLight = gameObject.addComponent("DirectionalLight");
+            var directionalLight = gameObject.addComponent("Node3D").addComponent("DirectionalLight");
             return directionalLight;
         }
         __class__: "feng3d.DirectionalLight";

@@ -105,7 +105,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.shadowCamera = serialization.setValue(new GameObject(), { name: "LightShadowCamera" }).addComponent("Camera");
+            this.shadowCamera = serialization.setValue(new GameObject(), { name: "LightShadowCamera" }).addComponent("Node3D").addComponent("Camera");
         }
 
         updateDebugShadowMap(scene: Scene, viewCamera: Camera)

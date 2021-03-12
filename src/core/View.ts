@@ -26,7 +26,7 @@ namespace feng3d
                 var cameras = this.scene.getComponentsInChildren("Camera");
                 if (cameras.length == 0)
                 {
-                    this._camera = serialization.setValue(new GameObject(), { name: "defaultCamera" }).addComponent("Camera");
+                    this._camera = serialization.setValue(new GameObject(), { name: "defaultCamera" }).addComponent("Node3D").addComponent("Camera");
                     this.scene.node3d.addChild(this._camera.node3d);
                 } else
                 {
