@@ -100,7 +100,7 @@ namespace feng3d
 
     export enum PropertyClipPathItemType
     {
-        GameObject,
+        Entity,
         Component,
     }
 }

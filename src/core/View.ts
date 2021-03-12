@@ -26,7 +26,7 @@ namespace feng3d
                 var cameras = this.scene.getComponentsInChildren("Camera");
                 if (cameras.length == 0)
                 {
-                    this._camera = serialization.setValue(new GameObject(), { name: "defaultCamera" }).addComponent("Node3D").addComponent("Camera");
+                    this._camera = serialization.setValue(new Entity(), { name: "defaultCamera" }).addComponent("Node3D").addComponent("Camera");
                     this.scene.node3d.addChild(this._camera.node3d);
                 } else
                 {
@@ -118,7 +118,7 @@ namespace feng3d
                 // #endif
             }, false);
 
-            this.scene = scene || serialization.setValue(new GameObject(), { name: "scene" }).addComponent("Node3D").addComponent("Scene");
+            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent("Node3D").addComponent("Scene");
             this.camera = camera;
 
             this.start();
@@ -307,12 +307,12 @@ namespace feng3d
 
         static createNewScene()
         {
-            var scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent("Scene")
+            var scene = serialization.setValue(new Entity(), { name: "Untitled" }).addComponent("Scene")
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
             var camera = Camera.create("Main Camera");
-            camera.gameObject.addComponent("AudioListener");
+            camera.entity.addComponent("AudioListener");
             camera.node3d.position = new Vector3(0, 1, -10);
             scene.node3d.addChild(camera.node3d);
 

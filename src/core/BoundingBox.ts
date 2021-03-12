@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
         /**
          * 获取自身包围盒

@@ -105,7 +105,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.shadowCamera = serialization.setValue(new GameObject(), { name: "LightShadowCamera" }).addComponent("Node3D").addComponent("Camera");
+            this.shadowCamera = serialization.setValue(new Entity(), { name: "LightShadowCamera" }).addComponent("Node3D").addComponent("Camera");
         }
 
         updateDebugShadowMap(scene: Scene, viewCamera: Camera)
@@ -113,10 +113,10 @@ namespace feng3d
             var node3d = this.debugShadowMapNode3D;
             if (!node3d)
             {
-                var gameObject = new GameObject();
+                var gameObject = new Entity();
                 gameObject.name = "debugShadowMapObject";
                 node3d = gameObject.addComponent("Node3D");
-                node3d.gameObject.addComponent("MeshRenderer").geometry = Geometry.getDefault("Plane");
+                node3d.entity.addComponent("MeshRenderer").geometry = Geometry.getDefault("Plane");
                 node3d.hideFlags = HideFlags.Hide | HideFlags.DontSave;
                 node3d.mouseEnabled = false;
                 node3d.addComponent("BillboardComponent");

@@ -233,13 +233,13 @@ namespace feng3d
     }
     Geometry.setDefault("Capsule", new CapsuleGeometry());
 
-    GameObject.registerPrimitive("Capsule", (g) =>
+    Entity.registerPrimitive("Capsule", (g) =>
     {
         g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Capsule");
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        Capsule: GameObject;
+        Capsule: Entity;
     }
 }

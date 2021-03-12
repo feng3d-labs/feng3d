@@ -68,13 +68,13 @@ namespace feng3d
         }
     }
 
-    GameObject.registerPrimitive("Spot light", (g) =>
+    Entity.registerPrimitive("Spot light", (g) =>
     {
         g.addComponent("SpotLight");
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        "Spot light": GameObject;
+        "Spot light": Entity;
     }
 }

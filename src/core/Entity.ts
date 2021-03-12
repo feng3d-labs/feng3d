@@ -1,17 +1,17 @@
 namespace feng3d
 {
-    export type Constructor<T> = (new (...args) => T);
+    export type Constructor<T> = (new (...args: any[]) => T);
 
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
         /**
 		 * 添加子组件事件
 		 */
-        addComponent: { gameObject: GameObject, component: Component };
+        addComponent: { gameObject: Entity, component: Component };
 		/**
 		 * 移除子组件事件
 		 */
-        removeComponent: { gameObject: GameObject, component: Component };
+        removeComponent: { gameObject: Entity, component: Component };
 
         /**
 		 * 包围盒失效
@@ -24,22 +24,22 @@ namespace feng3d
         refreshView: any;
     }
 
-    export interface GameObject
+    export interface Entity
     {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): this;
+        once<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => void, thisObject?: any, priority?: number): this;
+        emit<K extends keyof EntityEventMap>(type: K, data?: EntityEventMap[K], bubbles?: boolean): Event<EntityEventMap[K]>;
+        has<K extends keyof EntityEventMap>(type: K): boolean;
+        on<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof EntityEventMap>(type?: K, listener?: (event: Event<EntityEventMap[K]>) => any, thisObject?: any): this;
     }
 
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends Feng3dObject implements IDisposable
+    export class Entity extends Feng3dObject implements IDisposable
     {
 
-        __class__: "feng3d.GameObject";
+        __class__: "feng3d.Entity";
 
         /**
          * 名称
@@ -85,7 +85,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.name = "GameObject";
+            this.name = "Entity";
 
             this.onAny(this._onAnyListener, this);
         }
@@ -322,7 +322,7 @@ namespace feng3d
          */
         static find(name: string)
         {
-            var gameObjects = Feng3dObject.getObjects(GameObject)
+            var gameObjects = Feng3dObject.getObjects(Entity)
             var result = gameObjects.filter(v => !v.disposed && (v.name == name));
             return result[0];
         }
@@ -395,7 +395,7 @@ namespace feng3d
         /**
          * @deprecated
          */
-        set children(v: GameObject[])
+        set children(v: Entity[])
         {
             var node3ds = v.map(v => v.getComponent("Node3D"));
             var node3d = this.getComponent("Node3D");
@@ -405,7 +405,7 @@ namespace feng3d
             } else
             {
                 var f = (e: Event<{
-                    gameObject: GameObject;
+                    gameObject: Entity;
                     component: Component;
                 }>) =>
                 {
@@ -419,7 +419,7 @@ namespace feng3d
             }
             this._children = v;
         }
-        private _children: GameObject[];
+        private _children: Entity[];
 
         /**
          * 创建指定类型的游戏对象。
@@ -427,9 +427,9 @@ namespace feng3d
          * @param type 游戏对象类型。
          * @param param 游戏对象参数。
          */
-        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>)
+        static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>)
         {
-            var g = new GameObject();
+            var g = new Entity();
             g.addComponent("Node3D");
             g.name = type;
 
@@ -441,24 +441,24 @@ namespace feng3d
         }
 
         /**
-         * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
+         * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
          * 
          * @param type 原始游戏对象类型。
          * @param handler 构建原始游戏对象的函数。
          */
-        static registerPrimitive<K extends keyof PrimitiveGameObject>(type: K, handler: (gameObject: GameObject) => void)
+        static registerPrimitive<K extends keyof PrimitiveEntity>(type: K, handler: (entity: Entity) => void)
         {
             if (this._registerPrimitives[type])
                 console.warn(`重复注册原始游戏对象 ${type} ！`);
             this._registerPrimitives[type] = handler;
         }
-        static _registerPrimitives: { [type: string]: (gameObject: GameObject) => void } = {};
+        static _registerPrimitives: { [type: string]: (gameObject: Entity) => void } = {};
     }
 
     /**
-     * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
+     * 原始游戏对象，可以通过Entity.createPrimitive进行创建。
      */
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
     }
 }

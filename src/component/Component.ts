@@ -8,7 +8,7 @@ namespace feng3d
     /**
      * 注册组件
      * 
-     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 GameObject.getComponent 等方法。
+     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 Entity.getComponent 等方法。
      * 
      * @param component 组件名称，默认使用类名称
      */
@@ -29,7 +29,7 @@ namespace feng3d
     export type ComponentNames = keyof ComponentMap;
     export type Components = ComponentMap[ComponentNames];
 
-    export interface ComponentEventMap extends GameObjectEventMap
+    export interface ComponentEventMap extends EntityEventMap
     {
     }
 
@@ -45,9 +45,9 @@ namespace feng3d
 	/**
      * 组件
      * 
-     * 所有附加到GameObjects的基类。
+     * 所有附加到Entity的基类。
      * 
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
+     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
 	 */
     export class Component extends Feng3dObject implements IDisposable
     {
@@ -58,31 +58,31 @@ namespace feng3d
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
         @serialize
-        get gameObject()
+        get entity()
         {
-            return this._gameObject;
+            return this._entity;
         }
 
-        set gameObject(v)
+        set entity(v)
         {
-            if (this._gameObject === v)
+            if (this._entity === v)
             {
                 return;
             }
-            console.assert(!this._gameObject, "组件无法再次加入其它GameObject中!");
-            this._gameObject = v;
+            console.assert(!this._entity, "组件无法再次加入其它Entity中!");
+            this._entity = v;
         }
 
         get name()
         {
-            return this._gameObject?.name;
+            return this._entity?.name;
         }
 
         set name(v)
         {
-            if (this._gameObject)
+            if (this._entity)
             {
-                this._gameObject.name = v;
+                this._entity.name = v;
             }
         }
 
@@ -134,7 +134,7 @@ namespace feng3d
          */
         getComponentAt(index: number): Component
         {
-            return this.gameObject.getComponentAt(index);
+            return this.entity.getComponentAt(index);
         }
 
         /**
@@ -144,7 +144,7 @@ namespace feng3d
          */
         addComponent<T extends ComponentNames>(type: T, callback: (component: ComponentMap[T]) => void = null): ComponentMap[T]
         {
-            return this.gameObject.addComponent(type, callback);
+            return this.entity.addComponent(type, callback);
         }
 
         /**
@@ -153,7 +153,7 @@ namespace feng3d
          */
         addScript(scriptName: string)
         {
-            return this.gameObject.addScript(scriptName);
+            return this.entity.addScript(scriptName);
         }
 
         /**
@@ -164,7 +164,7 @@ namespace feng3d
          */
         getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
         {
-            return this.gameObject.getComponent(type);
+            return this.entity.getComponent(type);
         }
 
         /**
@@ -175,7 +175,7 @@ namespace feng3d
          */
         getComponents<T extends ComponentNames>(type: T): ComponentMap[T][]
         {
-            return this.gameObject.getComponents(type);
+            return this.entity.getComponents(type);
         }
 
         /**
@@ -185,7 +185,7 @@ namespace feng3d
          */
         setComponentIndex(component: Components, index: number): void
         {
-            this.gameObject.setComponentIndex(component, index);
+            this.entity.setComponentIndex(component, index);
         }
 
         /**
@@ -195,7 +195,7 @@ namespace feng3d
          */
         setComponentAt(component: Components, index: number)
         {
-            this.gameObject.setComponentAt(component, index);
+            this.entity.setComponentAt(component, index);
         }
 
         /**
@@ -204,7 +204,7 @@ namespace feng3d
          */
         removeComponent(component: Components): void
         {
-            this.gameObject.removeComponent(component);
+            this.entity.removeComponent(component);
         }
 
         /**
@@ -214,7 +214,7 @@ namespace feng3d
          */
         getComponentIndex(component: Components): number
         {
-            return this.gameObject.getComponentIndex(component);
+            return this.entity.getComponentIndex(component);
         }
 
         /**
@@ -223,7 +223,7 @@ namespace feng3d
          */
         removeComponentAt(index: number): Component
         {
-            return this.gameObject.removeComponentAt(index);
+            return this.entity.removeComponentAt(index);
         }
 
         /**
@@ -251,7 +251,7 @@ namespace feng3d
          */
         dispose()
         {
-            this._gameObject = <any>null;
+            this._entity = <any>null;
             this._disposed = true;
         }
 
@@ -265,8 +265,8 @@ namespace feng3d
          */
         private _onAnyListener(e: Event<any>)
         {
-            if (this._gameObject)
-                this._gameObject.emitEvent(e);
+            if (this._entity)
+                this._entity.emitEvent(e);
         }
 
         /**
@@ -275,9 +275,9 @@ namespace feng3d
          * 
          * @param gameObject 游戏对象
          */
-        setGameObject(gameObject: GameObject)
+        setGameObject(gameObject: Entity)
         {
-            this._gameObject = gameObject;
+            this._entity = gameObject;
         }
 
         //------------------------------------------
@@ -287,7 +287,7 @@ namespace feng3d
         //------------------------------------------
         // Protected Properties
         //------------------------------------------
-        protected _gameObject: GameObject;
+        protected _entity: Entity;
 
         //------------------------------------------
         // Protected Functions

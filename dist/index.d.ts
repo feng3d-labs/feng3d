@@ -12237,7 +12237,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, viewRect: Rectangle): GameObject;
+        draw(gl: GL, viewRect: Rectangle): Entity;
         protected drawRenderables(gl: GL, renderable: Renderable): void;
         /**
          * 绘制3D对象
@@ -12315,7 +12315,7 @@ declare namespace feng3d {
     /**
      * 注册组件
      *
-     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 GameObject.getComponent 等方法。
+     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 Entity.getComponent 等方法。
      *
      * @param component 组件名称，默认使用类名称
      */
@@ -12328,7 +12328,7 @@ declare namespace feng3d {
     }
     type ComponentNames = keyof ComponentMap;
     type Components = ComponentMap[ComponentNames];
-    interface ComponentEventMap extends GameObjectEventMap {
+    interface ComponentEventMap extends EntityEventMap {
     }
     interface Component {
         once<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): this;
@@ -12340,16 +12340,16 @@ declare namespace feng3d {
     /**
      * 组件
      *
-     * 所有附加到GameObjects的基类。
+     * 所有附加到Entity的基类。
      *
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
+     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
      */
     class Component extends Feng3dObject implements IDisposable {
         /**
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
-        get gameObject(): GameObject;
-        set gameObject(v: GameObject);
+        get entity(): Entity;
+        set entity(v: Entity);
         get name(): string;
         set name(v: string);
         /**
@@ -12461,8 +12461,8 @@ declare namespace feng3d {
          *
          * @param gameObject 游戏对象
          */
-        setGameObject(gameObject: GameObject): void;
-        protected _gameObject: GameObject;
+        setGameObject(gameObject: Entity): void;
+        protected _entity: Entity;
     }
 }
 declare namespace feng3d {
@@ -12481,11 +12481,11 @@ declare namespace feng3d {
      */
     class Component3D extends Component {
         /**
-         * The Transform attached to this GameObject (null if there is none attached).
+         * The Transform attached to this Entity (null if there is none attached).
          */
         get node3d(): Node3D;
         /**
-         * Returns all components of Type type in the GameObject.
+         * Returns all components of Type type in the Entity.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -13086,7 +13086,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GameObjectEventMap {
+    interface EntityEventMap {
         /**
          * 尺寸变化事件
          */
@@ -13162,7 +13162,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GameObjectEventMap {
+    interface EntityEventMap {
         /**
          * 获取自身包围盒
          */
@@ -13230,19 +13230,19 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     type Constructor<T> = (new (...args: any[]) => T);
-    interface GameObjectEventMap {
+    interface EntityEventMap {
         /**
          * 添加子组件事件
          */
         addComponent: {
-            gameObject: GameObject;
+            gameObject: Entity;
             component: Component;
         };
         /**
          * 移除子组件事件
          */
         removeComponent: {
-            gameObject: GameObject;
+            gameObject: Entity;
             component: Component;
         };
         /**
@@ -13254,18 +13254,18 @@ declare namespace feng3d {
          */
         refreshView: any;
     }
-    interface GameObject {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): this;
+    interface Entity {
+        once<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => void, thisObject?: any, priority?: number): this;
+        emit<K extends keyof EntityEventMap>(type: K, data?: EntityEventMap[K], bubbles?: boolean): Event<EntityEventMap[K]>;
+        has<K extends keyof EntityEventMap>(type: K): boolean;
+        on<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof EntityEventMap>(type?: K, listener?: (event: Event<EntityEventMap[K]>) => any, thisObject?: any): this;
     }
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    class GameObject extends Feng3dObject implements IDisposable {
-        __class__: "feng3d.GameObject";
+    class Entity extends Feng3dObject implements IDisposable {
+        __class__: "feng3d.Entity";
         /**
          * 名称
          */
@@ -13370,7 +13370,7 @@ declare namespace feng3d {
          *
          * @param name
          */
-        static find(name: string): GameObject;
+        static find(name: string): Entity;
         /**
          * 组件列表
          */
@@ -13390,7 +13390,7 @@ declare namespace feng3d {
         /**
          * @deprecated
          */
-        set children(v: GameObject[]);
+        set children(v: Entity[]);
         private _children;
         /**
          * 创建指定类型的游戏对象。
@@ -13398,22 +13398,22 @@ declare namespace feng3d {
          * @param type 游戏对象类型。
          * @param param 游戏对象参数。
          */
-        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): Node3D;
+        static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>): Node3D;
         /**
-         * 注册原始游戏对象，被注册后可以使用 GameObject.createPrimitive 进行创建。
+         * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
          *
          * @param type 原始游戏对象类型。
          * @param handler 构建原始游戏对象的函数。
          */
-        static registerPrimitive<K extends keyof PrimitiveGameObject>(type: K, handler: (gameObject: GameObject) => void): void;
+        static registerPrimitive<K extends keyof PrimitiveEntity>(type: K, handler: (entity: Entity) => void): void;
         static _registerPrimitives: {
-            [type: string]: (gameObject: GameObject) => void;
+            [type: string]: (gameObject: Entity) => void;
         };
     }
     /**
-     * 原始游戏对象，可以通过GameObject.createPrimitive进行创建。
+     * 原始游戏对象，可以通过Entity.createPrimitive进行创建。
      */
-    interface PrimitiveGameObject {
+    interface PrimitiveEntity {
     }
 }
 interface HTMLCanvasElement {
@@ -13787,9 +13787,9 @@ declare namespace feng3d {
         /**
          * The game object this component is attached to. A component is always attached to a game object.
          */
-        get gameObject(): GameObject;
+        get gameObject(): Entity;
         /**
-         * The Transform attached to this GameObject (null if there is none attached).
+         * The Transform attached to this Entity (null if there is none attached).
          */
         get node3d(): Node3D;
         /**
@@ -13816,9 +13816,9 @@ declare namespace feng3d {
     /**
      * 组件事件
      */
-    interface GameObjectEventMap {
-        addToScene: GameObject;
-        removeFromScene: GameObject;
+    interface EntityEventMap {
+        addToScene: Entity;
+        removeFromScene: Entity;
         addComponentToScene: Component;
     }
     interface ComponentMap {
@@ -14364,8 +14364,8 @@ declare namespace feng3d {
          */
         endColor: Color4;
     }
-    interface PrimitiveGameObject {
-        Segment: GameObject;
+    interface PrimitiveEntity {
+        Segment: Entity;
     }
 }
 declare namespace feng3d {
@@ -14541,7 +14541,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface GameObjectEventMap {
+    interface EntityEventMap {
         lensChanged: any;
     }
     interface ComponentMap {
@@ -14612,8 +14612,8 @@ declare namespace feng3d {
         private _frustum;
         private _frustumInvalid;
     }
-    interface PrimitiveGameObject {
-        Camera: GameObject;
+    interface PrimitiveEntity {
+        Camera: Entity;
     }
 }
 declare namespace feng3d {
@@ -14630,8 +14630,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Quad: QuadGeometry;
     }
-    interface PrimitiveGameObject {
-        Quad: GameObject;
+    interface PrimitiveEntity {
+        Quad: Entity;
     }
 }
 declare namespace feng3d {
@@ -14708,8 +14708,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Plane: PlaneGeometry;
     }
-    interface PrimitiveGameObject {
-        Plane: GameObject;
+    interface PrimitiveEntity {
+        Plane: Entity;
     }
 }
 declare namespace feng3d {
@@ -14794,8 +14794,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Cube: CubeGeometry;
     }
-    interface PrimitiveGameObject {
-        Cube: GameObject;
+    interface PrimitiveEntity {
+        Cube: Entity;
     }
 }
 declare namespace feng3d {
@@ -14850,8 +14850,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Sphere: SphereGeometry;
     }
-    interface PrimitiveGameObject {
-        Sphere: GameObject;
+    interface PrimitiveEntity {
+        Sphere: Entity;
     }
 }
 declare namespace feng3d {
@@ -14910,8 +14910,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Capsule: CapsuleGeometry;
     }
-    interface PrimitiveGameObject {
-        Capsule: GameObject;
+    interface PrimitiveEntity {
+        Capsule: Entity;
     }
 }
 declare namespace feng3d {
@@ -14982,8 +14982,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Cylinder: CylinderGeometry;
     }
-    interface PrimitiveGameObject {
-        Cylinder: GameObject;
+    interface PrimitiveEntity {
+        Cylinder: Entity;
     }
 }
 declare namespace feng3d {
@@ -15010,8 +15010,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Cone: ConeGeometry;
     }
-    interface PrimitiveGameObject {
-        Cone: GameObject;
+    interface PrimitiveEntity {
+        Cone: Entity;
     }
 }
 declare namespace feng3d {
@@ -15078,8 +15078,8 @@ declare namespace feng3d {
     interface DefaultGeometry {
         Torus: TorusGeometry;
     }
-    interface PrimitiveGameObject {
-        Torus: GameObject;
+    interface PrimitiveEntity {
+        Torus: Entity;
     }
 }
 declare namespace feng3d {
@@ -15648,8 +15648,8 @@ declare namespace feng3d {
          */
         updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void;
     }
-    interface PrimitiveGameObject {
-        "Directional light": GameObject;
+    interface PrimitiveEntity {
+        "Directional light": Entity;
     }
 }
 declare namespace feng3d {
@@ -15675,8 +15675,8 @@ declare namespace feng3d {
         constructor();
         private invalidRange;
     }
-    interface PrimitiveGameObject {
-        "Point light": GameObject;
+    interface PrimitiveEntity {
+        "Point light": Entity;
     }
 }
 declare namespace feng3d {
@@ -15710,8 +15710,8 @@ declare namespace feng3d {
         private _invalidRange;
         private _invalidAngle;
     }
-    interface PrimitiveGameObject {
-        "Spot light": GameObject;
+    interface PrimitiveEntity {
+        "Spot light": Entity;
     }
 }
 declare namespace feng3d {
@@ -16085,8 +16085,8 @@ declare namespace feng3d {
         private frameBufferObject;
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
     }
-    interface PrimitiveGameObject {
-        Water: GameObject;
+    interface PrimitiveEntity {
+        Water: Entity;
     }
 }
 declare namespace feng3d {
@@ -16232,7 +16232,7 @@ declare namespace feng3d {
     type ClipPropertyType = number | Vector3 | Quaternion;
     type PropertyClipPath = [PropertyClipPathItemType, string][];
     enum PropertyClipPathItemType {
-        GameObject = 0,
+        Entity = 0,
         Component = 1
     }
 }

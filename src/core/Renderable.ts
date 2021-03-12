@@ -80,7 +80,7 @@ namespace feng3d
             this.material.beforeRender(renderAtomic);
             this._lightPicker.beforeRender(renderAtomic);
 
-            this.gameObject.components.forEach(element =>
+            this.entity.components.forEach(element =>
             {
                 if (element != this)
                     element.beforeRender(renderAtomic, scene, camera);

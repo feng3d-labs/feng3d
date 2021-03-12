@@ -818,7 +818,7 @@ namespace feng3d
             result = result || [];
             var findchildren = true;
             var cls: any = componentMap[type];
-            var components = this.gameObject.components;
+            var components = this.entity.components;
             for (var i = 0, n = components.length; i < n; i++)
             {
                 var item = <ComponentMap[T]>components[i];
@@ -1007,7 +1007,7 @@ namespace feng3d
 
             this.emit("scenetransformChanged", this);
             //
-            if (this.gameObject)
+            if (this.entity)
             {
                 for (var i = 0, n = this.numChildren; i < n; i++)
                 {

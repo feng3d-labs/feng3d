@@ -12,7 +12,7 @@ namespace feng3d
 
         static create(name = "Mesh", callback?: (component: MeshRenderer) => void)
         {
-            var gameObject = new GameObject();
+            var gameObject = new Entity();
             gameObject.name = name;
             gameObject.addComponent("Node3D");
             var meshRenderer = gameObject.addComponent("MeshRenderer", callback);

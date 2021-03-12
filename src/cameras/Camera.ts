@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
         lensChanged;
     }
@@ -16,7 +16,7 @@ namespace feng3d
     {
         static create(name = "Camera")
         {
-            var gameObject = new GameObject();
+            var gameObject = new Entity();
             gameObject.name = name;
             var camera = gameObject.addComponent("Node3D").addComponent("Camera");
             return camera;
@@ -196,13 +196,13 @@ namespace feng3d
     // 投影后可视区域
     var visibleBox = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 
-    GameObject.registerPrimitive("Camera", (g) =>
+    Entity.registerPrimitive("Camera", (g) =>
     {
         g.addComponent("Camera");
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        Camera: GameObject;
+        Camera: Entity;
     }
 }

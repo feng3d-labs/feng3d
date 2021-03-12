@@ -21,15 +21,15 @@ namespace feng3d
     export class Component3D extends Component
     {
         /**
-         * The Transform attached to this GameObject (null if there is none attached).
+         * The Transform attached to this Entity (null if there is none attached).
          */
         get node3d()
         {
-            return this._gameObject?.getComponent("Node3D");
+            return this._entity?.getComponent("Node3D");
         }
 
         /**
-         * Returns all components of Type type in the GameObject.
+         * Returns all components of Type type in the Entity.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */

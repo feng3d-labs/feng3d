@@ -10,11 +10,11 @@ namespace feng3d
          */
         get gameObject()
         {
-            return this.component.gameObject;
+            return this.component.entity;
         }
 
         /**
-         * The Transform attached to this GameObject (null if there is none attached).
+         * The Transform attached to this Entity (null if there is none attached).
          */
         get node3d()
         {

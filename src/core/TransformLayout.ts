@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
         /**
          * 尺寸变化事件

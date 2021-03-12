@@ -3,10 +3,10 @@ namespace feng3d
     /**
 	 * 组件事件
 	 */
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
-        addToScene: GameObject;
-        removeFromScene: GameObject;
+        addToScene: Entity;
+        removeFromScene: Entity;
         addComponentToScene: Component;
     }
 
@@ -58,7 +58,7 @@ namespace feng3d
         {
             super.init();
             this.node3d.hideFlags = this.node3d.hideFlags | HideFlags.Hide;
-            this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.DontTransform;
+            this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
             //
             this.node3d["_scene"] = this;
             this.node3d["updateChildrenScene"]();
