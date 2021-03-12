@@ -12311,7 +12311,7 @@ declare namespace feng3d {
     /**
      * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
      */
-    const componentMap: ComponentMap;
+    const componentMap: {};
     /**
      * 注册组件
      *
@@ -12320,6 +12320,7 @@ declare namespace feng3d {
      * @param component 组件名称，默认使用类名称
      */
     function RegisterComponent(component?: string): (constructor: Function) => void;
+    function getComponentType<T extends Components>(type: Constructor<T> | ComponentNames): Constructor<T>;
     /**
      * 组件名称与类定义映射，新建组件一般都需扩展该接口。
      */
@@ -13291,7 +13292,7 @@ declare namespace feng3d {
          *
          * @type type 被添加组件
          */
-        addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T;
+        addComponent<T extends Components>(type: Constructor<T> | ComponentNames, callback?: (component: T) => void): T;
         /**
          * 添加脚本
          * @param script   脚本路径
@@ -13303,14 +13304,14 @@ declare namespace feng3d {
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Components>(type: Constructor<T>): T;
+        getComponent<T extends Components>(type: Constructor<T> | ComponentNames): T;
         /**
          * 获取游戏对象上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type: Constructor<T>): T[];
+        getComponents<T extends Components>(type: Constructor<T> | ComponentNames): T[];
         /**
          * 设置子组件的位置
          * @param component				子组件

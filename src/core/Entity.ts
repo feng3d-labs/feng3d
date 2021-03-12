@@ -70,8 +70,8 @@ namespace feng3d
             if (!value) return;
             for (var i = 0, n = value.length; i < n; i++)
             {
-                var compnent = value[i];
-                if (!compnent) continue;
+                var component = value[i];
+                if (!component) continue;
                 this.addComponentAt(value[i], this.numComponents);
             }
         }
@@ -106,8 +106,9 @@ namespace feng3d
          * 
 		 * @type type 被添加组件
 		 */
-        addComponent<T extends Components>(type: Constructor<T>, callback: (component: T) => void = null): T
+        addComponent<T extends Components>(type: Constructor<T> | ComponentNames, callback: (component: T) => void = null): T
         {
+            type = getComponentType(type);
             var component = this.getComponent(type);
             if (component && component.single)
             {
@@ -138,7 +139,7 @@ namespace feng3d
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Components>(type: Constructor<T>): T
+        getComponent<T extends Components>(type: Constructor<T> | ComponentNames): T
         {
             var component = this.getComponents(type)[0];
             return component;
@@ -150,8 +151,9 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type: Constructor<T>): T[]
+        getComponents<T extends Components>(type: Constructor<T> | ComponentNames): T[]
         {
+            type = getComponentType(type);
             console.assert(!!type, `类型不能为空！`);
 
             var cls = type;

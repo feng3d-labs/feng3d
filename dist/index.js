@@ -25966,6 +25966,13 @@ var feng3d;
         };
     }
     feng3d.RegisterComponent = RegisterComponent;
+    function getComponentType(type) {
+        if (typeof type === "string") {
+            return feng3d.componentMap[type];
+        }
+        return type;
+    }
+    feng3d.getComponentType = getComponentType;
     /**
      * 组件
      *
@@ -27941,8 +27948,8 @@ var feng3d;
                 if (!value)
                     return;
                 for (var i = 0, n = value.length; i < n; i++) {
-                    var compnent = value[i];
-                    if (!compnent)
+                    var component = value[i];
+                    if (!component)
                         continue;
                     this.addComponentAt(value[i], this.numComponents);
                 }
@@ -27966,6 +27973,7 @@ var feng3d;
          */
         Entity.prototype.addComponent = function (type, callback) {
             if (callback === void 0) { callback = null; }
+            type = feng3d.getComponentType(type);
             var component = this.getComponent(type);
             if (component && component.single) {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
@@ -28003,6 +28011,7 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         Entity.prototype.getComponents = function (type) {
+            type = feng3d.getComponentType(type);
             console.assert(!!type, "\u7C7B\u578B\u4E0D\u80FD\u4E3A\u7A7A\uFF01");
             var cls = type;
             if (!cls) {
