@@ -25,7 +25,7 @@ namespace feng3d
          */
         get node3d()
         {
-            return this._entity?.getComponent("Node3D");
+            return this._entity?.getComponent(Node3D);
         }
 
         /**
@@ -33,7 +33,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
         {
             return this.node3d.getComponentsInChildren(type, filter, result);
         }
@@ -43,7 +43,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
         {
             return this.node3d.getComponentsInParents(type, result);
         }

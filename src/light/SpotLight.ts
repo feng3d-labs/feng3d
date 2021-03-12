@@ -70,7 +70,7 @@ namespace feng3d
 
     Entity.registerPrimitive("Spot light", (g) =>
     {
-        g.addComponent("SpotLight");
+        g.addComponent(SpotLight);
     });
 
     export interface PrimitiveEntity

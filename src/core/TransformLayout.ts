@@ -162,7 +162,7 @@ namespace feng3d
         {
             if (!this._layoutInvalid) return;
 
-            var transformLayout = this.node3d?.parent?.getComponent("TransformLayout");
+            var transformLayout = this.node3d?.parent?.getComponent(TransformLayout);
             if (!transformLayout) return;
 
             // 中心点基于anchorMin的坐标

@@ -14,7 +14,7 @@ namespace feng3d
         {
             var gameObject = new Entity();
             gameObject.name = name;
-            var directionalLight = gameObject.addComponent("Node3D").addComponent("DirectionalLight");
+            var directionalLight = gameObject.addComponent(Node3D).addComponent(DirectionalLight);
             return directionalLight;
         }
         __class__: "feng3d.DirectionalLight";
@@ -70,7 +70,7 @@ namespace feng3d
 
     Entity.registerPrimitive("Directional light", (g) =>
     {
-        g.addComponent("DirectionalLight");
+        g.addComponent(DirectionalLight);
     });
 
     export interface PrimitiveEntity

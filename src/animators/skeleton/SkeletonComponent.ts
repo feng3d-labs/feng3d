@@ -159,7 +159,7 @@ namespace feng3d
                     var gameObject = new Entity();
                     gameObject.name = skeletonJoint.name;
                     gameObject.hideFlags = HideFlags.DontSave;
-                    jointTransform = gameObject.addComponent("Node3D");
+                    jointTransform = gameObject.addComponent(Node3D);
                     parentGameobject.addChild(jointTransform);
                 }
 

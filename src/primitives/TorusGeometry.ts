@@ -241,7 +241,7 @@ namespace feng3d
 
     Entity.registerPrimitive("Torus", (g) =>
     {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Torus");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Torus");
     });
 
     export interface PrimitiveEntity

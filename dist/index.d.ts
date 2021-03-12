@@ -12386,7 +12386,7 @@ declare namespace feng3d {
          *
          * @type type 被添加组件
          */
-        addComponent<T extends ComponentNames>(type: T, callback?: (component: ComponentMap[T]) => void): ComponentMap[T];
+        addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T;
         /**
          * 添加脚本
          * @param script   脚本路径
@@ -12398,14 +12398,14 @@ declare namespace feng3d {
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends ComponentNames>(type: T): ComponentMap[T];
+        getComponent<T extends Components>(type: Constructor<T>): T;
         /**
          * 获取游戏对象上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][];
+        getComponents<T extends Components>(type: Constructor<T>): T[];
         /**
          * 设置子组件的位置
          * @param component				子组件
@@ -12489,16 +12489,16 @@ declare namespace feng3d {
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => {
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
             findchildren: boolean;
             value: boolean;
-        }, result?: ComponentMap[T][]): ComponentMap[T][];
+        }, result?: T[]): T[];
         /**
          * 从父类中获取组件
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][];
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
     }
 }
 declare namespace feng3d {
@@ -13015,17 +13015,17 @@ declare namespace feng3d {
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => {
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
             findchildren: boolean;
             value: boolean;
-        }, result?: ComponentMap[T][]): ComponentMap[T][];
+        }, result?: T[]): T[];
         /**
          * 从父代（父亲，父亲的父亲，...）中获取组件
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][];
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
          * 销毁
@@ -13291,7 +13291,7 @@ declare namespace feng3d {
          *
          * @type type 被添加组件
          */
-        addComponent<T extends ComponentNames>(type: T, callback?: (component: ComponentMap[T]) => void): ComponentMap[T];
+        addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T;
         /**
          * 添加脚本
          * @param script   脚本路径
@@ -13303,14 +13303,14 @@ declare namespace feng3d {
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends ComponentNames>(type: T): ComponentMap[T];
+        getComponent<T extends Components>(type: Constructor<T>): T;
         /**
          * 获取游戏对象上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][];
+        getComponents<T extends Components>(type: Constructor<T>): T[];
         /**
          * 设置子组件的位置
          * @param component				子组件

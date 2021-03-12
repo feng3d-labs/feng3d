@@ -235,7 +235,7 @@ namespace feng3d
 
     Entity.registerPrimitive("Capsule", (g) =>
     {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Capsule");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Capsule");
     });
 
     export interface PrimitiveEntity

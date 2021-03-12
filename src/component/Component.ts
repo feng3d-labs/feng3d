@@ -142,7 +142,7 @@ namespace feng3d
          * 
          * @type type 被添加组件
          */
-        addComponent<T extends ComponentNames>(type: T, callback: (component: ComponentMap[T]) => void = null): ComponentMap[T]
+        addComponent<T extends Components>(type: Constructor<T>, callback: (component: T) => void = null): T
         {
             return this.entity.addComponent(type, callback);
         }
@@ -162,7 +162,7 @@ namespace feng3d
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
+        getComponent<T extends Components>(type: Constructor<T>): T
         {
             return this.entity.getComponent(type);
         }
@@ -173,7 +173,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][]
+        getComponents<T extends Components>(type: Constructor<T>): T[]
         {
             return this.entity.getComponents(type);
         }

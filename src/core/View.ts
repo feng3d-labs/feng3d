@@ -23,10 +23,10 @@ namespace feng3d
         {
             if (!this._camera)
             {
-                var cameras = this.scene.getComponentsInChildren("Camera");
+                var cameras = this.scene.getComponentsInChildren(Camera);
                 if (cameras.length == 0)
                 {
-                    this._camera = serialization.setValue(new Entity(), { name: "defaultCamera" }).addComponent("Node3D").addComponent("Camera");
+                    this._camera = serialization.setValue(new Entity(), { name: "defaultCamera" }).addComponent(Node3D).addComponent(Camera);
                     this.scene.node3d.addChild(this._camera.node3d);
                 } else
                 {
@@ -118,7 +118,7 @@ namespace feng3d
                 // #endif
             }, false);
 
-            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent("Node3D").addComponent("Scene");
+            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent(Node3D).addComponent(Scene);
             this.camera = camera;
 
             this.start();
@@ -284,10 +284,10 @@ namespace feng3d
             var max = s.clone().max(e);
             var rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
             //
-            var transforms = this.scene.getComponentsInChildren("Node3D").filter(t =>
+            var transforms = this.scene.getComponentsInChildren(Node3D).filter(t =>
             {
                 if (t == this.scene.node3d) return false;
-                var m = t.getComponent("Renderable");
+                var m = t.getComponent(Renderable);
                 if (m)
                 {
                     var include = m.selfWorldBounds.toPoints().every(pos =>
@@ -307,12 +307,12 @@ namespace feng3d
 
         static createNewScene()
         {
-            var scene = serialization.setValue(new Entity(), { name: "Untitled" }).addComponent("Scene")
+            var scene = serialization.setValue(new Entity(), { name: "Untitled" }).addComponent(Scene)
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
             var camera = Camera.create("Main Camera");
-            camera.entity.addComponent("AudioListener");
+            camera.entity.addComponent(AudioListener);
             camera.node3d.position = new Vector3(0, 1, -10);
             scene.node3d.addChild(camera.node3d);
 

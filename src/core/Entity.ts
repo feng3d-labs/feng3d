@@ -106,7 +106,7 @@ namespace feng3d
          * 
 		 * @type type 被添加组件
 		 */
-        addComponent<T extends ComponentNames>(type: T, callback: (component: ComponentMap[T]) => void = null): ComponentMap[T]
+        addComponent<T extends Components>(type: Constructor<T>, callback: (component: T) => void = null): T
         {
             var component = this.getComponent(type);
             if (component && component.single)
@@ -114,8 +114,7 @@ namespace feng3d
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
-            var cls: any = componentMap[type];
-            component = new cls();
+            component = new type();
             this.addComponentAt(component, this._components.length);
             callback && callback(component);
             return component;
@@ -139,7 +138,7 @@ namespace feng3d
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
+        getComponent<T extends Components>(type: Constructor<T>): T
         {
             var component = this.getComponents(type)[0];
             return component;
@@ -151,14 +150,14 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][]
+        getComponents<T extends Components>(type: Constructor<T>): T[]
         {
             console.assert(!!type, `类型不能为空！`);
 
-            var cls: any = componentMap[type];
+            var cls = type;
             if (!cls)
             {
-                console.warn(`无法找到 ${type} 组件类定义，请使用 @RegisterComponent() 在组件类上标记。`);
+                console.warn(`无法找到 ${type.name} 组件类定义，请使用 @RegisterComponent() 在组件类上标记。`);
                 return [];
             }
             var filterResult: any = this._components.filter(v => v instanceof cls);
@@ -397,8 +396,8 @@ namespace feng3d
          */
         set children(v: Entity[])
         {
-            var node3ds = v.map(v => v.getComponent("Node3D"));
-            var node3d = this.getComponent("Node3D");
+            var node3ds = v.map(v => v.getComponent(Node3D));
+            var node3d = this.getComponent(Node3D);
             if (node3d)
             {
                 node3d.children = node3ds;
@@ -430,14 +429,14 @@ namespace feng3d
         static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>)
         {
             var g = new Entity();
-            g.addComponent("Node3D");
+            g.addComponent(Node3D);
             g.name = type;
 
             var createHandler = this._registerPrimitives[type];
             if (createHandler != null) createHandler(g);
 
             serialization.setValue(g, param);
-            return g.getComponent("Node3D");
+            return g.getComponent(Node3D);
         }
 
         /**

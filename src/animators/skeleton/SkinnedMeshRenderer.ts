@@ -30,7 +30,7 @@ namespace feng3d
             super.beforeRender(renderAtomic, scene, camera);
 
             var frameId: string = null;
-            var animation = this.getComponentsInParents("Animation")[0];
+            var animation = this.getComponentsInParents(Animation)[0];
             if (animation)
             {
                 frameId = animation.clipName + "&" + animation.frame;
@@ -89,7 +89,7 @@ namespace feng3d
                 var skeletonComponent: SkeletonComponent = null;
                 while (node3d && !skeletonComponent)
                 {
-                    skeletonComponent = node3d.getComponent("SkeletonComponent")
+                    skeletonComponent = node3d.getComponent(SkeletonComponent)
                     node3d = node3d.parent;
                 }
                 this.cacheSkeletonComponent = skeletonComponent;

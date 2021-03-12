@@ -528,7 +528,7 @@ namespace feng3d
 
     Entity.registerPrimitive("Cube", (g) =>
     {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cube");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Cube");
     });
 
     export interface PrimitiveEntity

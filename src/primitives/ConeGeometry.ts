@@ -34,7 +34,7 @@ namespace feng3d
 
     Entity.registerPrimitive("Cone", (g) =>
     {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cone");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Cone");
     });
 
     export interface PrimitiveEntity

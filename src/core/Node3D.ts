@@ -813,15 +813,15 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
+        getComponentsInChildren<T extends Components>(type?:Constructor< T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
         {
             result = result || [];
             var findchildren = true;
-            var cls: any = componentMap[type];
+            var cls = type;
             var components = this.entity.components;
             for (var i = 0, n = components.length; i < n; i++)
             {
-                var item = <ComponentMap[T]>components[i];
+                var item = <T>components[i];
                 if (!cls)
                 {
                     result.push(item);
@@ -855,7 +855,7 @@ namespace feng3d
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
         {
             result = result || [];
             var parent = this.parent;
@@ -1035,7 +1035,7 @@ namespace feng3d
          */
         get isSelfLoaded()
         {
-            var model = this.getComponent("Renderable");
+            var model = this.getComponent(Renderable);
             if (model) return model.isLoaded
             return true;
         }
@@ -1051,7 +1051,7 @@ namespace feng3d
                 callback();
                 return;
             }
-            var model = this.getComponent("Renderable");
+            var model = this.getComponent(Renderable);
             if (model)
             {
                 model.onLoadCompleted(callback);
