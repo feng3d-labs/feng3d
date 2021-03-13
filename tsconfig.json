@@ -224,6 +224,7 @@
         "src/render/renderer/ShadowRenderer.ts",
         "src/render/renderer/OutlineRenderer.ts",
         "src/render/renderer/WireframeRenderer.ts",
+        //
         // 组件模块
         "src/component/Component.ts",
         "src/component/Component3D.ts",
@@ -233,6 +234,7 @@
         "src/skybox/SkyBox.ts",
         "src/skybox/SkyBoxRenderer.ts",
         //
+        "src/core/Container.ts",
         "src/core/HideFlags.ts",
         "src/core/RunEnvironment.ts",
         "src/core/Node3D.ts",

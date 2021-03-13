@@ -26445,6 +26445,169 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     *
+     */
+    var Container = /** @class */ (function (_super) {
+        __extends(Container, _super);
+        function Container() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._children = [];
+            return _this;
+        }
+        Object.defineProperty(Container.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Container.prototype._setParent = function (value) {
+            this._parent = value;
+        };
+        Object.defineProperty(Container.prototype, "numChildren", {
+            get: function () {
+                return this._children.length;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
+        Container.prototype.find = function (name) {
+            if (this.name == name)
+                return this;
+            for (var i = 0; i < this._children.length; i++) {
+                var target = this._children[i].find(name);
+                if (target)
+                    return target;
+            }
+            return null;
+        };
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
+        Container.prototype.contains = function (child) {
+            var checkitem = child;
+            do {
+                if (checkitem == this)
+                    return true;
+                checkitem = checkitem.parent;
+            } while (checkitem);
+            return false;
+        };
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
+        Container.prototype.addChild = function (child) {
+            if (child == null)
+                return;
+            if (child.parent == this) {
+                // 把子对象移动到最后
+                var childIndex = this._children.indexOf(child);
+                if (childIndex != -1)
+                    this._children.splice(childIndex, 1);
+                this._children.push(child);
+            }
+            else {
+                if (child.contains(this)) {
+                    console.error("无法添加到自身中!");
+                    return;
+                }
+                if (child._parent)
+                    child._parent.removeChild(child);
+                child._setParent(this);
+                this._children.push(child);
+                child.emit("added", { parent: this });
+                this.emit("addChild", { child: child, parent: this }, true);
+            }
+            return child;
+        };
+        /**
+         * 添加子对象
+         *
+         * @param children 子对象
+         */
+        Container.prototype.addChildren = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
+            }
+            for (var i = 0; i < children.length; i++) {
+                this.addChild(children[i]);
+            }
+        };
+        /**
+         * 移除自身
+         */
+        Container.prototype.remove = function () {
+            if (this.parent)
+                this.parent.removeChild(this);
+        };
+        /**
+         * 移除所有子对象
+         */
+        Container.prototype.removeChildren = function () {
+            for (var i = this.numChildren - 1; i >= 0; i--) {
+                this.removeChildAt(i);
+            }
+        };
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
+        Container.prototype.removeChild = function (child) {
+            if (child == null)
+                return;
+            var childIndex = this._children.indexOf(child);
+            if (childIndex != -1)
+                this.removeChildInternal(childIndex, child);
+        };
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
+        Container.prototype.removeChildAt = function (index) {
+            var child = this._children[index];
+            return this.removeChildInternal(index, child);
+        };
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
+        Container.prototype.getChildAt = function (index) {
+            index = index;
+            return this._children[index];
+        };
+        /**
+         * 获取子对象列表（备份）
+         */
+        Container.prototype.getChildren = function () {
+            return this._children.concat();
+        };
+        Container.prototype.removeChildInternal = function (childIndex, child) {
+            childIndex = childIndex;
+            this._children.splice(childIndex, 1);
+            child._setParent(null);
+            child.emit("removed", { parent: this });
+            this.emit("removeChild", { child: child, parent: this }, true);
+        };
+        return Container;
+    }(feng3d.EventEmitter));
+    feng3d.Container = Container;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 在检查器中控制对象销毁、保存和可见性的位掩码。
      */
     var HideFlags;

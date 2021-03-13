@@ -12589,6 +12589,112 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ContainerEventMap {
+        /**
+         * 添加了子对象，当child被添加到parent中时派发冒泡事件
+         */
+        addChild: {
+            parent: Container;
+            child: Container;
+        };
+        /**
+         * 删除了子对象，当child被parent移除时派发冒泡事件
+         */
+        removeChild: {
+            parent: Container;
+            child: Container;
+        };
+        /**
+         * 自身被添加到父对象中事件
+         */
+        added: {
+            parent: Container;
+        };
+        /**
+         * 自身从父对象中移除事件
+         */
+        removed: {
+            parent: Container;
+        };
+    }
+    interface Container {
+        once<K extends keyof ContainerEventMap>(type: K, listener: (event: Event<ContainerEventMap[K]>) => void, thisObject?: any, priority?: number): this;
+        emit<K extends keyof ContainerEventMap>(type: K, data?: ContainerEventMap[K], bubbles?: boolean): Event<ContainerEventMap[K]>;
+        has<K extends keyof ContainerEventMap>(type: K): boolean;
+        on<K extends keyof ContainerEventMap>(type: K, listener: (event: Event<ContainerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
+        off<K extends keyof ContainerEventMap>(type?: K, listener?: (event: Event<ContainerEventMap[K]>) => any, thisObject?: any): this;
+    }
+    /**
+     *
+     */
+    class Container extends EventEmitter {
+        /**
+         * 名称
+         */
+        name: string;
+        protected _parent: Container;
+        protected _children: Container[];
+        get parent(): Container;
+        private _setParent;
+        get numChildren(): number;
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
+        find(name: string): Container;
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
+        contains(child: Container): boolean;
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
+        addChild(child: Container): Container;
+        /**
+         * 添加子对象
+         *
+         * @param children 子对象
+         */
+        addChildren(...children: Container[]): void;
+        /**
+         * 移除自身
+         */
+        remove(): void;
+        /**
+         * 移除所有子对象
+         */
+        removeChildren(): void;
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
+        removeChild(child: Container): void;
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
+        removeChildAt(index: number): void;
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
+        getChildAt(index: number): Container;
+        /**
+         * 获取子对象列表（备份）
+         */
+        getChildren(): Container[];
+        private removeChildInternal;
+    }
+}
+declare namespace feng3d {
     /**
      * 在检查器中控制对象销毁、保存和可见性的位掩码。
      */
