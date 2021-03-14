@@ -10,6 +10,13 @@ namespace feng3d
     @RegisterComponent()
     export class DirectionalLight extends Light
     {
+        static create(name = "DirectionalLight")
+        {
+            var gameObject = new Entity();
+            gameObject.name = name;
+            var directionalLight = gameObject.addComponent(Node3D).addComponent(DirectionalLight);
+            return directionalLight;
+        }
         __class__: "feng3d.DirectionalLight";
 
         lightType = LightType.Directional;
@@ -21,7 +28,7 @@ namespace feng3d
          */
         get position()
         {
-            return this.shadowCamera.transform.worldPosition;
+            return this.shadowCamera.node3d.worldPosition;
         }
 
         constructor()
@@ -37,7 +44,7 @@ namespace feng3d
         {
             var worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
-                var box = i.gameObject.boundingBox.worldBounds;
+                var box = i.node3d.boundingBox.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);
@@ -48,8 +55,8 @@ namespace feng3d
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
             // 
-            this.shadowCamera.transform.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-            this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.matrix.getAxisY());
+            this.shadowCamera.node3d.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            this.shadowCamera.node3d.lookAt(center, this.shadowCamera.node3d.matrix.getAxisY());
             //
             if (!this.orthographicLens)
             {
@@ -61,13 +68,13 @@ namespace feng3d
         }
     }
 
-    GameObject.registerPrimitive("Directional light", (g) =>
+    Entity.registerPrimitive("Directional light", (g) =>
     {
-        g.addComponent("DirectionalLight");
+        g.addComponent(DirectionalLight);
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        "Directional light": GameObject;
+        "Directional light": Entity;
     }
 }

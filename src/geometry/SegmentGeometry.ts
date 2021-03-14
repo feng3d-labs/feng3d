@@ -103,15 +103,15 @@ namespace feng3d
         endColor = new Color4();
     }
 
-    GameObject.registerPrimitive("Segment", (g) =>
+    Entity.registerPrimitive("Segment", (g) =>
     {
-        var model = g.addComponent("MeshRenderer");
+        var model = g.addComponent(MeshRenderer);
         model.geometry = new SegmentGeometry();
         model.material = Material.getDefault("Segment-Material");
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        Segment: GameObject;
+        Segment: Entity;
     }
 }

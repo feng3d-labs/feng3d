@@ -8,7 +8,7 @@ namespace feng3d
      * 可以控制开关的组件
      */
     @RegisterComponent()
-    export class Behaviour extends Component
+    export class Behaviour extends Component3D
     {
 
         /**
@@ -29,7 +29,7 @@ namespace feng3d
          */
         get isVisibleAndEnabled()
         {
-            var v = this.enabled && this.gameObject && this.gameObject.visible;
+            var v = this.enabled && this.node3d?.globalVisible;
             return v;
         }
 

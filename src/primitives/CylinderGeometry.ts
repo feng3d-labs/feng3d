@@ -440,13 +440,13 @@ namespace feng3d
 
     Geometry.setDefault("Cylinder", new CylinderGeometry());
 
-    GameObject.registerPrimitive("Cylinder", (g) =>
+    Entity.registerPrimitive("Cylinder", (g) =>
     {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cylinder");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Cylinder");
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        Cylinder: GameObject;
+        Cylinder: Entity;
     }
 }

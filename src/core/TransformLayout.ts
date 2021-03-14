@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
         /**
          * 尺寸变化事件
@@ -24,7 +24,7 @@ namespace feng3d
      */
     @AddComponentMenu("Layout/TransformLayout")
     @RegisterComponent()
-    export class TransformLayout extends Component
+    export class TransformLayout extends Component3D
     {
         get single() { return true; }
 
@@ -63,14 +63,14 @@ namespace feng3d
             this.on("removed", this._onRemoved, this);
         }
 
-        private _onAdded(event: Event<{ parent: GameObject; }>)
+        private _onAdded(event: Event<{ parent: Node3D; }>)
         {
             event.data.parent.on("sizeChanged", this._invalidateLayout, this);
             event.data.parent.on("pivotChanged", this._invalidateLayout, this);
             this._invalidateLayout();
         }
 
-        private _onRemoved(event: Event<{ parent: GameObject; }>)
+        private _onRemoved(event: Event<{ parent: Node3D; }>)
         {
             event.data.parent.off("sizeChanged", this._invalidateLayout, this);
             event.data.parent.off("pivotChanged", this._invalidateLayout, this);
@@ -162,7 +162,7 @@ namespace feng3d
         {
             if (!this._layoutInvalid) return;
 
-            var transformLayout = this.gameObject && this.gameObject.parent && this.gameObject.parent.getComponent("TransformLayout");
+            var transformLayout = this.node3d?.parent?.getComponent(TransformLayout);
             if (!transformLayout) return;
 
             // 中心点基于anchorMin的坐标
@@ -224,9 +224,9 @@ namespace feng3d
             }
 
             //
-            this.transform.position.x = anchorLeftTop.x + position.x;
-            this.transform.position.y = anchorLeftTop.y + position.y;
-            this.transform.position.z = anchorLeftTop.z + position.z;
+            this.node3d.position.x = anchorLeftTop.x + position.x;
+            this.node3d.position.y = anchorLeftTop.y + position.y;
+            this.node3d.position.z = anchorLeftTop.z + position.z;
             //
             this._layoutInvalid = false;
             ticker.offframe(this._updateLayout, this);
@@ -246,13 +246,13 @@ namespace feng3d
         private _invalidateSize()
         {
             this._invalidateLayout();
-            this.dispatch("sizeChanged", this);
+            this.emit("sizeChanged", this);
         }
 
         private _invalidatePivot()
         {
             this._invalidateLayout();
-            this.dispatch("pivotChanged", this);
+            this.emit("pivotChanged", this);
         }
     }
 }

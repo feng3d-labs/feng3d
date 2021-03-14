@@ -120,6 +120,7 @@ namespace feng3d
         getInstanceByName(name: string)
         {
             var cls = this.getDefinitionByName(name);
+            console.assert(cls, `无法获取名称为 ${name} 的实例!`);
             var instance = this.getInstanceByDefinition(cls);
             return instance;
         }

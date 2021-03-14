@@ -245,7 +245,7 @@ namespace feng3d
         {
             // 删除文件
             _indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
-            globalDispatcher.dispatch("fs.delete", path);
+            globalEmitter.emit("fs.delete", path);
         }
 
         /**
@@ -257,7 +257,7 @@ namespace feng3d
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            globalDispatcher.dispatch("fs.write", path);
+            globalEmitter.emit("fs.write", path);
         }
 
         /**
@@ -269,7 +269,7 @@ namespace feng3d
         writeString(path: string, data: string, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            globalDispatcher.dispatch("fs.write", path);
+            globalEmitter.emit("fs.write", path);
         }
 
         /**
@@ -281,7 +281,7 @@ namespace feng3d
         writeObject(path: string, object: Object, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
-            globalDispatcher.dispatch("fs.write", path);
+            globalEmitter.emit("fs.write", path);
         }
 
         /**
@@ -295,7 +295,7 @@ namespace feng3d
             dataTransform.imageToArrayBuffer(image, (arraybuffer) =>
             {
                 this.writeArrayBuffer(path, arraybuffer, callback);
-                globalDispatcher.dispatch("fs.write", path);
+                globalEmitter.emit("fs.write", path);
             });
         }
 
@@ -325,7 +325,7 @@ namespace feng3d
          */
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            feng3d._indexedDB.getObjectStoreNames(this.DBname, (err, objectStoreNames) =>
+            _indexedDB.getObjectStoreNames(this.DBname, (err, objectStoreNames) =>
             {
                 if (err) { callback(false); return; }
                 callback(objectStoreNames.indexOf(projectname) != -1);
@@ -339,7 +339,7 @@ namespace feng3d
         initproject(projectname: string, callback: (err: Error) => void)
         {
             this.projectname = projectname;
-            feng3d._indexedDB.createObjectStore(this.DBname, projectname, callback);
+            _indexedDB.createObjectStore(this.DBname, projectname, callback);
         }
     }
 

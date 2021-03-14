@@ -510,10 +510,10 @@ namespace feng3d
          */
         rasterize()
         {
-            var aabb = feng3d.Box3.fromPoints([this.p0, this.p1, this.p2]);
+            var aabb = Box3.fromPoints([this.p0, this.p1, this.p2]);
             aabb.min.round();
             aabb.max.round();
-            var point = new feng3d.Vector3();
+            var point = new Vector3();
             var result: number[] = [];
             for (let x = aabb.min.x; x <= aabb.max.x; x++)
             {
@@ -609,7 +609,7 @@ namespace feng3d
          */
         static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3)
         {
-            return new feng3d.Triangle3(p0, p1, p2).onWithPoint(p);
+            return new Triangle3(p0, p1, p2).onWithPoint(p);
         }
     }
 }

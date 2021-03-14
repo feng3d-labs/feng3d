@@ -275,7 +275,7 @@ namespace feng3d
 
         private _onScenetransformChanged()
         {
-            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var localToWorldMatrix = this.node3d.localToWorldMatrix;
             var scenePosition = localToWorldMatrix.getPosition();
 
             //
@@ -365,20 +365,20 @@ namespace feng3d
             super.dispose();
         }
     }
-}
 
-function createPanner()
-{
-    var panner = this.panner = feng3d.audioCtx.createPanner();
+    function createPanner()
+    {
+        var panner = this.panner = audioCtx.createPanner();
 
-    if (panner.orientationX)
-    {
-        panner.orientationX.value = 1;
-        panner.orientationY.value = 0;
-        panner.orientationZ.value = 0;
-    } else
-    {
-        panner.setOrientation(1, 0, 0);
+        if (panner.orientationX)
+        {
+            panner.orientationX.value = 1;
+            panner.orientationY.value = 0;
+            panner.orientationZ.value = 0;
+        } else
+        {
+            panner.setOrientation(1, 0, 0);
+        }
+        return panner;
     }
-    return panner;
 }

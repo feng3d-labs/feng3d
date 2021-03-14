@@ -3,12 +3,12 @@ namespace feng3d
     /**
      * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
      */
-    export const componentMap: ComponentMap = <any>{};
+    export const componentMap = {};
 
     /**
      * 注册组件
      * 
-     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 GameObject.getComponent 等方法。
+     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 Entity.getComponent 等方法。
      * 
      * @param component 组件名称，默认使用类名称
      */
@@ -17,8 +17,17 @@ namespace feng3d
         return (constructor: Function) =>
         {
             component = component || constructor["name"];
-            componentMap[<string>component] = constructor;
+            componentMap[component] = constructor;
         }
+    }
+
+    export function getComponentType<T extends Components>(type: Constructor<T> | ComponentNames): Constructor<T>
+    {
+        if (typeof type === "string")
+        {
+            return componentMap[type];
+        }
+        return type;
     }
 
     /**
@@ -29,23 +38,18 @@ namespace feng3d
     export type ComponentNames = keyof ComponentMap;
     export type Components = ComponentMap[ComponentNames];
 
-    export interface Component
+    export interface ComponentEventMap extends EntityEventMap
     {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
     }
 
 	/**
      * 组件
      * 
-     * 所有附加到GameObjects的基类。
+     * 所有附加到Entity的基类。
      * 
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
+     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
 	 */
-    export class Component extends Feng3dObject implements IDisposable
+    export class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable
     {
         //------------------------------------------
         // Variables
@@ -53,9 +57,33 @@ namespace feng3d
         /**
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
-        get gameObject()
+        @serialize
+        get entity()
         {
-            return this._gameObject;
+            return this._entity;
+        }
+
+        set entity(v)
+        {
+            if (this._entity === v)
+            {
+                return;
+            }
+            console.assert(!this._entity, "组件无法再次加入其它Entity中!");
+            this._entity = v;
+        }
+
+        get name()
+        {
+            return this._entity?.name;
+        }
+
+        set name(v)
+        {
+            if (this._entity)
+            {
+                this._entity.name = v;
+            }
         }
 
         /**
@@ -63,14 +91,6 @@ namespace feng3d
          */
         @serialize
         tag: string;
-
-        /**
-         * The Transform attached to this GameObject (null if there is none attached).
-         */
-        get transform()
-        {
-            return this._gameObject && this._gameObject.transform;
-        }
 
         /**
          * 是否唯一，同类型3D对象组件只允许一个
@@ -108,43 +128,122 @@ namespace feng3d
         }
 
         /**
-         * Returns the component of Type type if the game object has one attached, null if it doesn't.
-         * @param type				The type of Component to retrieve.
+         * 获取指定位置索引的子组件
+         * @param index			位置索引
+         * @return				子组件
+         */
+        getComponentAt(index: number): Component
+        {
+            return this.entity.getComponentAt(index);
+        }
+
+        /**
+         * 添加指定组件类型到游戏对象
+         * 
+         * @type type 被添加组件
+         */
+        addComponent<T extends Components>(type: Constructor<T>, callback: (component: T) => void = null): T
+        {
+            return this.entity.addComponent(type, callback);
+        }
+
+        /**
+         * 添加脚本
+         * @param script   脚本路径
+         */
+        addScript(scriptName: string)
+        {
+            return this.entity.addScript(scriptName);
+        }
+
+        /**
+         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 
+         * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
+        getComponent<T extends Components>(type: Constructor<T>): T
         {
-            return this.gameObject.getComponent(type);
+            return this.entity.getComponent(type);
         }
 
         /**
-         * Returns all components of Type type in the GameObject.
+         * 获取游戏对象上所有指定类型的组件数组
+         * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends ComponentNames>(type?: T): ComponentMap[T][]
+        getComponents<T extends Components>(type: Constructor<T>): T[]
         {
-            return this.gameObject.getComponents(type);
+            return this.entity.getComponents(type);
         }
 
         /**
-         * Returns all components of Type type in the GameObject.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
+         * 设置子组件的位置
+         * @param component				子组件
+         * @param index				位置索引
          */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
+        setComponentIndex(component: Components, index: number): void
         {
-            return this.gameObject.getComponentsInChildren(type, filter, result);
+            this.entity.setComponentIndex(component, index);
         }
 
         /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
          */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
+        setComponentAt(component: Components, index: number)
         {
-            return this.gameObject.getComponentsInParents(type, result);
+            this.entity.setComponentAt(component, index);
+        }
+
+        /**
+         * 移除组件
+         * @param component 被移除组件
+         */
+        removeComponent(component: Components): void
+        {
+            this.entity.removeComponent(component);
+        }
+
+        /**
+         * 获取组件在容器的索引位置
+         * @param component			查询的组件
+         * @return				    组件在容器的索引位置
+         */
+        getComponentIndex(component: Components): number
+        {
+            return this.entity.getComponentIndex(component);
+        }
+
+        /**
+         * 移除组件
+         * @param index		要删除的 Component 的子索引。
+         */
+        removeComponentAt(index: number): Component
+        {
+            return this.entity.removeComponentAt(index);
+        }
+
+        /**
+         * 交换子组件位置
+         * @param index1		第一个子组件的索引位置
+         * @param index2		第二个子组件的索引位置
+         */
+        swapComponentsAt(index1: number, index2: number): void
+        {
+            this.swapComponentsAt(index1, index2);
+        }
+
+        /**
+         * 交换子组件位置
+         * @param a		第一个子组件
+         * @param b		第二个子组件
+         */
+        swapComponents(a: Components, b: Components): void
+        {
+            this.swapComponents(a, b);
         }
 
         /**
@@ -152,7 +251,7 @@ namespace feng3d
          */
         dispose()
         {
-            this._gameObject = <any>null;
+            this._entity = <any>null;
             this._disposed = true;
         }
 
@@ -166,8 +265,8 @@ namespace feng3d
          */
         private _onAnyListener(e: Event<any>)
         {
-            if (this._gameObject)
-                this._gameObject.dispatchEvent(e);
+            if (this._entity)
+                this._entity.emitEvent(e);
         }
 
         /**
@@ -176,9 +275,9 @@ namespace feng3d
          * 
          * @param gameObject 游戏对象
          */
-        setGameObject(gameObject: GameObject)
+        setGameObject(gameObject: Entity)
         {
-            this._gameObject = gameObject;
+            this._entity = gameObject;
         }
 
         //------------------------------------------
@@ -188,7 +287,7 @@ namespace feng3d
         //------------------------------------------
         // Protected Properties
         //------------------------------------------
-        protected _gameObject: GameObject;
+        protected _entity: Entity;
 
         //------------------------------------------
         // Protected Functions

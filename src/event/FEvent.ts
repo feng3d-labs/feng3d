@@ -7,18 +7,6 @@ namespace feng3d
     export var event: FEvent;
 
     /**
-     * 用于适配不同对象对于的事件
-     */
-    export interface ObjectEventDispatcher<O, T>
-    {
-        once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
-        has<K extends keyof T>(target: O, type: K): boolean;
-        on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
-    }
-
-    /**
      * 事件
      */
     export class FEvent
@@ -31,6 +19,32 @@ namespace feng3d
         }
 
         /**
+         * Return an array listing the events for which the emitter has registered
+         * listeners.
+         */
+        eventNames(obj: any)
+        {
+            const names = Object.keys(this.feventMap.get(obj));
+            return names;
+        }
+
+        // /**
+        //  * Return the listeners registered for a given event.
+        //  */
+        // listeners(obj: any, type: string)
+        // {
+        //     return this.feventMap.get(obj)?.[type] || [];
+        // }
+
+        /**
+         * Return the number of listeners listening to a given event.
+         */
+        listenerCount(obj: any, type: string)
+        {
+            return this.feventMap.get(obj)?.[type]?.length || 0;
+        }
+
+        /**
          * 监听一次事件后将会被移除
 		 * @param type						事件的类型。
 		 * @param listener					处理事件的监听器函数。
@@ -40,6 +54,7 @@ namespace feng3d
         once(obj: Object, type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
         {
             this.on(obj, type, listener, thisObject, priority, true);
+            return this;
         }
 
         /**
@@ -72,7 +87,7 @@ namespace feng3d
 		 * @param data                      事件携带的自定义数据。
 		 * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(obj: Object, type: string, data?: any, bubbles = false)
+        emit(obj: Object, type: string, data?: any, bubbles = false)
         {
             var e: Event<any> = this.makeEvent(type, data, bubbles);
             this.dispatchEvent(obj, e);
@@ -86,11 +101,9 @@ namespace feng3d
 		 * @param type		                事件的类型。
 		 * @return 			                如果指定类型的监听器已注册，则值为 true；否则，值为 false。
          */
-        has(obj: Object, type: string): boolean
+        has(obj: Object, type: string)
         {
-            var objectListener = this.feventMap.get(obj);
-            if (!objectListener) return false;
-            return !!(objectListener[type] && objectListener[type].length);
+            return this.listenerCount(obj, type) > 0;
         }
 
         /**
@@ -114,6 +127,7 @@ namespace feng3d
                 this.feventMap.set(obj, objectListener)
             }
 
+            thisObject = thisObject || obj;
             var listeners: ListenerVO[] = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++)
             {
@@ -133,6 +147,7 @@ namespace feng3d
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
+            return this;
         }
 
         /**
@@ -150,6 +165,7 @@ namespace feng3d
                 this.feventMap.delete(obj)
                 return;
             }
+
             var objectListener = this.feventMap.get(obj);
             if (!objectListener) return;
 
@@ -158,6 +174,9 @@ namespace feng3d
                 delete objectListener[type];
                 return;
             }
+
+            thisObject = thisObject || obj;
+
             var listeners = objectListener[type];
             if (listeners)
             {
@@ -174,6 +193,16 @@ namespace feng3d
                     delete objectListener[type];
                 }
             }
+            return this;
+        }
+
+        /**
+         * Remove all listeners, or those of the specified event.
+         */
+        offAll(obj: any, type?: string)
+        {
+            this.off(obj, type);
+            return this;
         }
 
         /**
@@ -212,6 +241,7 @@ namespace feng3d
                 }
             }
             listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: false });
+            return this;
         }
 
         /**
@@ -242,6 +272,7 @@ namespace feng3d
                     }
                 }
             }
+            return this;
         }
 
         /**

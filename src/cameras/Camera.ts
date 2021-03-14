@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
         lensChanged;
     }
@@ -12,8 +12,15 @@ namespace feng3d
 	 */
     @AddComponentMenu("Rendering/Camera")
     @RegisterComponent()
-    export class Camera extends Component
+    export class Camera extends Component3D
     {
+        static create(name = "Camera")
+        {
+            var gameObject = new Entity();
+            gameObject.name = name;
+            var camera = gameObject.addComponent(Node3D).addComponent(Camera);
+            return camera;
+        }
         __class__: "feng3d.Camera";
 
         get single() { return true; }
@@ -74,8 +81,8 @@ namespace feng3d
 
             this.invalidateViewProjection();
 
-            this.dispatch("refreshView");
-            this.dispatch("lensChanged");
+            this.emit("refreshView");
+            this.emit("lensChanged");
         }
         private _lens: LensBase;
 
@@ -87,7 +94,7 @@ namespace feng3d
             if (this._viewProjectionInvalid)
             {
                 //场景空间转摄像机空间
-                this._viewProjection.copy(this.transform.worldToLocalMatrix);
+                this._viewProjection.copy(this.node3d.worldToLocalMatrix);
                 //+摄像机空间转投影空间 = 场景空间转投影空间
                 this._viewProjection.append(this.lens.matrix);
                 this._viewProjectionInvalid = false;
@@ -129,7 +136,7 @@ namespace feng3d
 		 */
         getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
         {
-            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
+            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.node3d.localToWorldMatrix);
         }
 
 		/**
@@ -139,7 +146,7 @@ namespace feng3d
 		 */
         project(point3d: Vector3): Vector3
         {
-            var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformPoint3(point3d));
+            var v: Vector3 = this.lens.project(this.node3d.worldToLocalMatrix.transformPoint3(point3d));
             return v;
         }
 
@@ -153,7 +160,7 @@ namespace feng3d
 		 */
         unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
         {
-            return this.transform.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
+            return this.node3d.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
         }
 
         /**
@@ -189,13 +196,13 @@ namespace feng3d
     // 投影后可视区域
     var visibleBox = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 
-    GameObject.registerPrimitive("Camera", (g) =>
+    Entity.registerPrimitive("Camera", (g) =>
     {
-        g.addComponent("Camera");
+        g.addComponent(Camera);
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        Camera: GameObject;
+        Camera: Entity;
     }
 }

@@ -79,7 +79,7 @@ namespace feng3d
          */
         writeFile(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
         {
-            var ext = feng3d.pathUtils.extname(path);
+            var ext = pathUtils.extname(path);
             ext = ext.split(".").pop();
             var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "mp3": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
             var type = fileTypedic[ext];

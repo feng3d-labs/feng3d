@@ -5,14 +5,14 @@ namespace feng3d
         /**
          * 控制对象
          */
-        protected _targetObject: GameObject | undefined;
+        protected _targetNode: Node3D | undefined;
 
         /**
          * 控制器基类，用于动态调整3D对象的属性
          */
-        constructor(targetObject?: GameObject)
+        constructor(node3d?: Node3D)
         {
-            this.targetObject = targetObject;
+            this.targetNode = node3d;
         }
 
         /**
@@ -23,14 +23,14 @@ namespace feng3d
             throw new Error("Abstract method");
         }
 
-        get targetObject()
+        get targetNode()
         {
-            return this._targetObject;
+            return this._targetNode;
         }
 
-        set targetObject(val)
+        set targetNode(val)
         {
-            this._targetObject = val;
+            this._targetNode = val;
         }
     }
 }

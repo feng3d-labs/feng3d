@@ -144,7 +144,7 @@ namespace feng3d
         drawLine(start: Vector2, end: Vector2, color: Color4)
         {
             var length = end.subTo(start).length;
-            var p = new feng3d.Vector2();
+            var p = new Vector2();
             for (let i = 0; i <= length; i++)
             {
                 start.lerpNumberTo(end, i / length, p);
@@ -383,7 +383,7 @@ namespace feng3d
                 curpos1.x = rect.x + i;
                 curpos1.y = rect.y + y1;
 
-                this.drawLine(new feng3d.Vector2(rect.x + i, rect.y + y0), new feng3d.Vector2(rect.x + i, rect.y + y1), fillcolor);
+                this.drawLine(new Vector2(rect.x + i, rect.y + y0), new Vector2(rect.x + i, rect.y + y1), fillcolor);
                 if (i > 0)
                 {
                     this.drawLine(prepos0, curpos0, curveColor);

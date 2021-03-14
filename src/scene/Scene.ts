@@ -3,10 +3,10 @@ namespace feng3d
     /**
 	 * 组件事件
 	 */
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
-        addToScene: GameObject;
-        removeFromScene: GameObject;
+        addToScene: Entity;
+        removeFromScene: Entity;
         addComponentToScene: Component;
     }
 
@@ -16,7 +16,7 @@ namespace feng3d
      * 3D场景
      */
     @RegisterComponent()
-    export class Scene extends Component
+    export class Scene extends Component3D
     {
 
         __class__: "feng3d.Scene";
@@ -57,19 +57,18 @@ namespace feng3d
         init()
         {
             super.init();
-            this.transform.hideFlags = this.transform.hideFlags | HideFlags.Hide;
-            this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.DontTransform;
-
+            this.node3d.hideFlags = this.node3d.hideFlags | HideFlags.Hide;
+            this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
             //
-            this._gameObject["_scene"] = this;
-            this._gameObject["updateChildrenScene"]();
+            this.node3d["_scene"] = this;
+            this.node3d["updateChildrenScene"]();
         }
 
         update(interval?: number)
         {
             interval = interval || (1000 / feng3d.ticker.frameRate);
 
-            this._mouseCheckObjects = null;
+            this._mouseCheckTransforms = null;
             this._models = null;
             this._visibleAndEnabledModels = null;
             this._skyBoxs = null;
@@ -100,7 +99,7 @@ namespace feng3d
          */
         get models()
         {
-            this._models = this._models || this.getComponentsInChildren("Renderable");
+            this._models = this._models || this.node3d.getComponentsInChildren(Renderable);
             return this._models
         }
 
@@ -117,18 +116,18 @@ namespace feng3d
          */
         get skyBoxs()
         {
-            this._skyBoxs = this._skyBoxs || this.getComponentsInChildren("SkyBox");
+            this._skyBoxs = this._skyBoxs || this.node3d.getComponentsInChildren(SkyBox);
             return this._skyBoxs;
         }
 
         get activeSkyBoxs()
         {
-            return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(i => i.gameObject.globalVisible);
+            return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(i => i.node3d.globalVisible);
         }
 
         get directionalLights()
         {
-            return this._directionalLights = this._directionalLights || this.getComponentsInChildren("DirectionalLight");
+            return this._directionalLights = this._directionalLights || this.node3d.getComponentsInChildren(DirectionalLight);
         }
 
         get activeDirectionalLights()
@@ -138,7 +137,7 @@ namespace feng3d
 
         get pointLights()
         {
-            return this._pointLights = this._pointLights || this.getComponentsInChildren("PointLight");
+            return this._pointLights = this._pointLights || this.node3d.getComponentsInChildren(PointLight);
         }
 
         get activePointLights()
@@ -148,7 +147,7 @@ namespace feng3d
 
         get spotLights()
         {
-            return this._spotLights = this._spotLights || this.getComponentsInChildren("SpotLight");
+            return this._spotLights = this._spotLights || this.node3d.getComponentsInChildren(SpotLight);
         }
 
         get activeSpotLights()
@@ -158,7 +157,7 @@ namespace feng3d
 
         get animations()
         {
-            return this._animations = this._animations || this.getComponentsInChildren("Animation");
+            return this._animations = this._animations || this.node3d.getComponentsInChildren(Animation);
         }
 
         get activeAnimations()
@@ -168,7 +167,7 @@ namespace feng3d
 
         get behaviours()
         {
-            this._behaviours = this._behaviours || this.getComponentsInChildren("Behaviour");
+            this._behaviours = this._behaviours || this.node3d.getComponentsInChildren(Behaviour);
             return this._behaviours;
         }
 
@@ -179,11 +178,11 @@ namespace feng3d
 
         get mouseCheckObjects()
         {
-            if (this._mouseCheckObjects)
-                return this._mouseCheckObjects;
+            if (this._mouseCheckTransforms)
+                return this._mouseCheckTransforms;
 
-            var checkList = this.gameObject.getChildren();
-            this._mouseCheckObjects = [];
+            var checkList = this.node3d.getChildren();
+            this._mouseCheckTransforms = [];
             var i = 0;
             //获取所有需要拾取的对象并分层存储
             while (i < checkList.length)
@@ -191,14 +190,14 @@ namespace feng3d
                 var checkObject = checkList[i++];
                 if (checkObject.mouseEnabled)
                 {
-                    if (checkObject.getComponents("Renderable"))
+                    if (checkObject.getComponents(Renderable))
                     {
-                        this._mouseCheckObjects.push(checkObject);
+                        this._mouseCheckTransforms.push(checkObject);
                     }
                     checkList = checkList.concat(checkObject.getChildren());
                 }
             }
-            return this._mouseCheckObjects;
+            return this._mouseCheckTransforms;
         }
 
         /**
@@ -220,13 +219,13 @@ namespace feng3d
          */
         getPickByDirectionalLight(light: DirectionalLight)
         {
-            var openlist = [this.gameObject];
+            var openlist = [this.node3d];
             var targets: Renderable[] = [];
             while (openlist.length > 0)
             {
                 var item = openlist.shift();
                 if (!item.visible) continue;
-                var model = item.getComponent("Renderable");
+                var model = item.getComponent(Renderable);
                 if (model && (model.castShadows || model.receiveShadows)
                     && !model.material.renderParams.enableBlend
                     && model.material.renderParams.renderMode == RenderMode.TRIANGLES
@@ -252,7 +251,7 @@ namespace feng3d
 
             var results = this.visibleAndEnabledModels.filter(i =>
             {
-                var model = i.getComponent("Renderable");
+                var model = i.getComponent(Renderable);
                 if (model.selfWorldBounds)
                 {
                     if (frustum.intersectsBox(model.selfWorldBounds))
@@ -264,7 +263,7 @@ namespace feng3d
         }
 
         //
-        private _mouseCheckObjects: GameObject[];
+        private _mouseCheckTransforms: Node3D[];
         private _models: Renderable[];
         private _visibleAndEnabledModels: Renderable[];
         private _skyBoxs: SkyBox[];

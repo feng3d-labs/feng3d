@@ -80,7 +80,7 @@ namespace feng3d
             this.material.beforeRender(renderAtomic);
             this._lightPicker.beforeRender(renderAtomic);
 
-            this.gameObject.components.forEach(element =>
+            this.entity.components.forEach(element =>
             {
                 if (element != this)
                     element.beforeRender(renderAtomic, scene, camera);
@@ -96,7 +96,7 @@ namespace feng3d
          */
         worldRayIntersection(worldRay: Ray3)
         {
-            var localRay = this.transform.rayWorldToLocal(worldRay);
+            var localRay = this.node3d.rayWorldToLocal(worldRay);
             var pickingCollisionVO = this.localRayIntersection(localRay);
             return pickingCollisionVO;
         }
@@ -119,7 +119,7 @@ namespace feng3d
 
             //保存碰撞数据
             var pickingCollisionVO: PickingCollisionVO = {
-                gameObject: this.gameObject,
+                node3d: this.node3d,
                 localNormal: localNormal,
                 localRay: localRay,
                 rayEntryDistance: rayEntryDistance,
@@ -162,7 +162,7 @@ namespace feng3d
         //
         private _lightPicker: LightPicker;
 
-        private _onGeometryChanged(property: string, oldValue: GeometryLike, value: GeometryLike)
+        private _onGeometryChanged(property: string, oldValue: Geometry, value: Geometry)
         {
             if (oldValue)
             {

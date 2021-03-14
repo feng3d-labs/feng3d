@@ -6,27 +6,17 @@ namespace feng3d
 
     export interface GeometryEventMap
     {
-		/**
-		 * 包围盒失效
-		 */
+        /**
+         * 包围盒失效
+         */
         boundsInvalid: Geometry;
-    }
-
-    export interface Geometry
-    {
-        once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
-        has<K extends keyof GeometryEventMap>(type: K): boolean;
-        on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**
      * 几何体
      */
-    export class Geometry extends Feng3dObject
+    export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Feng3dObject<T>
     {
-
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";
 
@@ -64,9 +54,9 @@ namespace feng3d
             return this._indexBuffer.indices;
         }
 
-		/**
-		 * 更新顶点索引数据
-		 */
+        /**
+         * 更新顶点索引数据
+         */
         set indices(value: number[])
         {
             this._indexBuffer.indices = value;
@@ -190,8 +180,8 @@ namespace feng3d
         }
 
         /**
-		 * 创建一个几何体
-		 */
+         * 创建一个几何体
+         */
         constructor()
         {
             super();
@@ -245,18 +235,18 @@ namespace feng3d
         /**
          * 添加几何体
          * @param geometry          被添加的几何体
-         * @param transform         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
+         * @param matrix         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
          */
-        addGeometry(geometry: Geometry, transform?: Matrix4x4)
+        addGeometry(geometry: Geometry, matrix?: Matrix4x4)
         {
             //更新几何体
             this.updateGrometry();
             geometry.updateGrometry();
             //变换被添加的几何体
-            if (transform != null)
+            if (matrix != null)
             {
                 geometry = geometry.clone();
-                geometry.applyTransformation(transform);
+                geometry.applyTransformation(matrix);
             }
 
             //如果自身为空几何体
@@ -293,10 +283,10 @@ namespace feng3d
         }
 
         /**
-		 * 应用变换矩阵
-		 * @param transform 变换矩阵
-		 */
-        applyTransformation(transform: Matrix4x4)
+         * 应用变换矩阵
+         * @param matrix 变换矩阵
+         */
+        applyTransformation(matrix: Matrix4x4)
         {
             this.updateGrometry();
 
@@ -304,7 +294,7 @@ namespace feng3d
             var normals = this.normals;
             var tangents = this.tangents;
 
-            geometryUtils.applyTransformation(transform, vertices, normals, tangents);
+            geometryUtils.applyTransformation(matrix, vertices, normals, tangents);
 
             this.positions = vertices;
             this.normals = normals;
@@ -331,7 +321,7 @@ namespace feng3d
         invalidateBounds()
         {
             this._bounding = <any>null;
-            this.dispatch("boundsInvalid", this);
+            this.emit("boundsInvalid", this);
         }
 
         get bounding()
@@ -364,13 +354,13 @@ namespace feng3d
          * 
          * @param result 
          */
-        getVertices(result: feng3d.Vector3[] = [])
+        getVertices(result: Vector3[] = [])
         {
             var positions = this.positions;
-            var result: feng3d.Vector3[] = []
+            var result: Vector3[] = []
             for (let i = 0, n = positions.length; i < n; i += 3)
             {
-                result.push(new feng3d.Vector3(positions[i], positions[i + 1], positions[i + 2]));
+                result.push(new Vector3(positions[i], positions[i + 1], positions[i + 2]));
             }
 
             return result;

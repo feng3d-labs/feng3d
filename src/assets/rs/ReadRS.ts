@@ -108,7 +108,7 @@ namespace feng3d
             AssetData.addAssetData(asset.assetId, asset.data);
 
             // 计算扩展名
-            var extenson = feng3d.path.extname(fileName);
+            var extenson = path.extname(fileName);
             if (extenson == "") extenson = cls["extenson"];
             console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
 

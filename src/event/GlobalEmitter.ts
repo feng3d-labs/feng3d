@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 全局事件
      */
-    export var globalDispatcher: IEventDispatcher<GlobalEvents> = new EventDispatcher();
+    export var globalEmitter = new EventEmitter<GlobalEvents>();
 
     /**
      * 事件列表

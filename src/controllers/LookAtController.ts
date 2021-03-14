@@ -3,17 +3,17 @@ namespace feng3d
     export class LookAtController extends ControllerBase
     {
         protected _lookAtPosition: Vector3;
-        protected _lookAtObject: GameObject;
+        protected _lookAtNode3D: Node3D;
         protected _origin: Vector3 = new Vector3(0.0, 0.0, 0.0);
         protected _upAxis: Vector3 = Vector3.Y_AXIS;
         protected _pos: Vector3 = new Vector3();
 
-        constructor(target?: GameObject, lookAtObject?: GameObject)
+        constructor(node3d?: Node3D, Node3D?: Node3D)
         {
-            super(target);
+            super(node3d);
 
-            if (lookAtObject)
-                this.lookAtObject = lookAtObject;
+            if (Node3D)
+                this.lookAtObject = Node3D;
             else
                 this.lookAtPosition = new Vector3();
         }
@@ -40,29 +40,29 @@ namespace feng3d
 
         get lookAtObject()
         {
-            return this._lookAtObject;
+            return this._lookAtNode3D;
         }
 
         set lookAtObject(value)
         {
-            if (this._lookAtObject == value)
+            if (this._lookAtNode3D == value)
                 return;
 
-            this._lookAtObject = value;
+            this._lookAtNode3D = value;
         }
 
         update(interpolate = true): void
         {
-            if (this._targetObject)
+            if (this._targetNode)
             {
                 if (this._lookAtPosition)
                 {
-                    this._targetObject.transform.lookAt(this.lookAtPosition, this._upAxis);
+                    this._targetNode.node3d.lookAt(this.lookAtPosition, this._upAxis);
                 }
-                else if (this._lookAtObject)
+                else if (this._lookAtNode3D)
                 {
-                    this._pos = this._lookAtObject.transform.position;
-                    this._targetObject.transform.lookAt(this._pos, this._upAxis);
+                    this._pos = this._lookAtNode3D.node3d.position;
+                    this._targetNode.node3d.lookAt(this._pos, this._upAxis);
                 }
             }
         }

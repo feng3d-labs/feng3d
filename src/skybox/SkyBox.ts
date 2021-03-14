@@ -7,7 +7,7 @@ namespace feng3d
      */
     @AddComponentMenu("SkyBox/SkyBox")
     @RegisterComponent()
-    export class SkyBox extends Component
+    export class SkyBox extends Component3D
     {
         __class__: "feng3d.SkyBox";
 

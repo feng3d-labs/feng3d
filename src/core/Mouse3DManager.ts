@@ -8,11 +8,11 @@ namespace feng3d
         @watch("_mouseInputChanged")
         mouseInput: MouseInput;
 
-        get selectedGameObject()
+        get selectedTransform()
         {
-            return this._selectedGameObject;
+            return this._selectedTransform;
         }
-        set selectedGameObject(v)
+        set selectedTransform(v)
         {
             this.setSelectedGameObject(v);
         }
@@ -33,8 +33,8 @@ namespace feng3d
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
 
-            var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
-            return gameobject;
+            var node3d = pickingCollisionVO?.node3d;
+            return node3d;
         }
 
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
@@ -44,13 +44,13 @@ namespace feng3d
             this.viewport = viewport;
         }
 
-        private _selectedGameObject: GameObject;
+        private _selectedTransform: Node3D;
         private _mouseEventTypes: string[] = [];
 
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownGameObject: GameObject | null;
+        private preMouseDownGameObject: Node3D;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
@@ -98,30 +98,30 @@ namespace feng3d
         /**
          * 设置选中对象
          */
-        private setSelectedGameObject(value: GameObject)
+        private setSelectedGameObject(value: Node3D)
         {
-            if (this._selectedGameObject != value)
+            if (this._selectedTransform != value)
             {
-                if (this._selectedGameObject)
-                    this._selectedGameObject.dispatch("mouseout", null, true);
+                if (this._selectedTransform)
+                    this._selectedTransform.emit("mouseout", null, true);
                 if (value)
-                    value.dispatch("mouseover", null, true);
+                    value.emit("mouseover", null, true);
             }
-            this._selectedGameObject = value;
+            this._selectedTransform = value;
             this._mouseEventTypes.forEach(element =>
             {
                 switch (element)
                 {
                     case "mousedown":
-                        if (this.preMouseDownGameObject != this._selectedGameObject)
+                        if (this.preMouseDownGameObject != this._selectedTransform)
                         {
                             this.gameObjectClickNum = 0;
-                            this.preMouseDownGameObject = this._selectedGameObject;
+                            this.preMouseDownGameObject = this._selectedTransform;
                         }
-                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "mouseup":
-                        if (this._selectedGameObject == this.preMouseDownGameObject)
+                        if (this._selectedTransform == this.preMouseDownGameObject)
                         {
                             this.gameObjectClickNum++;
                         } else
@@ -129,19 +129,19 @@ namespace feng3d
                             this.gameObjectClickNum = 0;
                             this.preMouseDownGameObject = null;
                         }
-                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "mousemove":
-                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "click":
                         if (this.gameObjectClickNum > 0)
-                            this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                            this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "dblclick":
                         if (this.gameObjectClickNum > 1)
                         {
-                            this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                            this._selectedTransform && this._selectedTransform.emit(element, null, true);
                             this.gameObjectClickNum = 0;
                         }
                         break;
@@ -151,19 +151,10 @@ namespace feng3d
         }
     }
 
-    export interface MouseInput
-    {
-        once<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-
-        has<K extends keyof MouseEventMap>(type: K): boolean;
-        on<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof MouseEventMap>(type?: K, listener?: (event: Event<MouseEventMap[K]>) => any, thisObject?: any): void;
-    }
-
     /**
      * 鼠标事件输入
      */
-    export class MouseInput extends EventDispatcher
+    export class MouseInput<T = MouseEventMap> extends EventEmitter<T>
     {
         /**
          * 是否启动
@@ -181,26 +172,26 @@ namespace feng3d
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(type: string, data?: any, bubbles = false)
+        emit<K extends keyof T>(type: K, data?: T[K], bubbles = false)
         {
             if (!this.enable)
                 return null;
             if (!this.catchMouseMove && type == "mousemove")
                 return null;
-            return super.dispatch(type, data, bubbles);
+            return super.emit(type, data, bubbles);
         }
 
         /**
          * 派发事件
          * @param event   事件对象
          */
-        dispatchEvent(event: Event<any>)
+        emitEvent(event: Event<any>)
         {
             if (!this.enable)
                 return false;
             if (!this.catchMouseMove && event.type == "mousemove")
                 return false;
-            return super.dispatchEvent(event);
+            return super.emitEvent(event);
         }
     }
 
@@ -242,19 +233,19 @@ namespace feng3d
         /**
          * 监听鼠标事件收集事件类型
          */
-        private onMouseEvent(event: MouseEvent)
+        private onMouseEvent(event: Event<MouseEvent>)
         {
             var type = event.type;
             // 处理鼠标中键与右键
-            if (event instanceof MouseEvent)
+            if (event.data instanceof MouseEvent)
             {
                 if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1)
                 {
-                    type = ["", "middle", "right"][event.button] + event.type;
+                    type = ["", "middle", "right"][event.data.button] + event.type;
                 }
             }
 
-            this.dispatch(<any>type, { mouseX: event.clientX, mouseY: event.clientY });
+            this.emit(<any>type, { mouseX: event.data.clientX, mouseY: event.data.clientY });
         }
     }
 

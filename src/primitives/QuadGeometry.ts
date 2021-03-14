@@ -29,13 +29,13 @@ namespace feng3d
     }
     Geometry.setDefault("Quad", new QuadGeometry());
 
-    GameObject.registerPrimitive("Quad", (g) =>
+    Entity.registerPrimitive("Quad", (g) =>
     {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Quad");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Quad");
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        Quad: GameObject;
+        Quad: Entity;
     }
 }

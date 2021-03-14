@@ -297,12 +297,12 @@ namespace feng3d
 
         /**
          * 应用变换矩阵
-         * @param transform 变换矩阵
+         * @param matrix 变换矩阵
          * @param positions 顶点数据
          * @param normals 顶点法线数据
          * @param tangents 顶点切线数据
          */
-        applyTransformation(transform: Matrix4x4, positions: number[], normals?: number[], tangents?: number[])
+        applyTransformation(matrix: Matrix4x4, positions: number[], normals?: number[], tangents?: number[])
         {
             var posStride = 3;
             var normalStride = 3;
@@ -318,7 +318,7 @@ namespace feng3d
 
             if (bakeNormals || bakeTangents)
             {
-                invTranspose.copy(transform);
+                invTranspose.copy(matrix);
                 invTranspose.invert();
                 invTranspose.transpose();
             }
@@ -336,7 +336,7 @@ namespace feng3d
                 vector.x = positions[vi0];
                 vector.y = positions[i1];
                 vector.z = positions[i2];
-                vector = transform.transformPoint3(vector);
+                vector = matrix.transformPoint3(vector);
                 positions[vi0] = vector.x;
                 positions[i1] = vector.y;
                 positions[i2] = vector.z;

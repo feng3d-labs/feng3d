@@ -5,10 +5,10 @@ namespace feng3d
     /**
      * 鼠标拾取渲染器
      */
-    export class MouseRenderer extends EventDispatcher
+    export class MouseRenderer extends EventEmitter
     {
 
-        private objects: GameObject[] = [];
+        private objects: Entity[] = [];
 
         /**
 		 * 渲染
@@ -47,9 +47,9 @@ namespace feng3d
 
         protected drawRenderables(gl: GL, renderable: Renderable)
         {
-            if (renderable.gameObject.mouseEnabled)
+            if (renderable.node3d.mouseEnabled)
             {
-                var object = renderable.gameObject;
+                var object = renderable.entity;
                 var u_objectID = this.objects.length;
                 this.objects[u_objectID] = object;
 

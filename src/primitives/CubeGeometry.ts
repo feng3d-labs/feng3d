@@ -526,13 +526,13 @@ namespace feng3d
 
     Geometry.setDefault("Cube", new CubeGeometry());
 
-    GameObject.registerPrimitive("Cube", (g) =>
+    Entity.registerPrimitive("Cube", (g) =>
     {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Cube");
+        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Cube");
     });
 
-    export interface PrimitiveGameObject
+    export interface PrimitiveEntity
     {
-        Cube: GameObject;
+        Cube: Entity;
     }
 }

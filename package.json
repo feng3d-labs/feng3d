@@ -8,11 +8,10 @@
     "build": "tsc && npm run shaderpack",
     "build:w": "tsc -w",
     "shaderpack": "node shaderpack.js",
-    "shaderpack:w": "node shaderpack.js -w",
-    "typedoc": "typedoc --mode file --tsconfig tsconfig.json --out api"
+    "shaderpack:w": "node shaderpack.js -w"
   },
   "files": [
-    "out",
+    "dist",
     "src"
   ],
   "repository": {
@@ -25,7 +24,6 @@
     "3d engine"
   ],
   "author": "feng",
-  "license": "ISC",
   "bugs": {
     "url": "https://gitee.com/feng3d/feng3d/issues"
   },

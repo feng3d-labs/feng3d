@@ -27,9 +27,9 @@ namespace feng3d
             //
             uniforms.u_projectionMatrix = camera.lens.matrix;
             uniforms.u_viewProjection = camera.viewProjection;
-            uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
-            uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-            uniforms.u_cameraPos = camera.transform.worldPosition;
+            uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.node3d.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene.ambientColor;

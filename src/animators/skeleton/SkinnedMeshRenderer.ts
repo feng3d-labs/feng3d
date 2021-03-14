@@ -30,7 +30,7 @@ namespace feng3d
             super.beforeRender(renderAtomic, scene, camera);
 
             var frameId: string = null;
-            var animation = this.getComponentsInParents("Animation")[0];
+            var animation = this.getComponentsInParents(Animation)[0];
             if (animation)
             {
                 frameId = animation.clipName + "&" + animation.frame;
@@ -70,27 +70,27 @@ namespace feng3d
         private get u_modelMatrix()
         {
             if (this.cacheSkeletonComponent)
-                return this.cacheSkeletonComponent.transform.localToWorldMatrix;
-            return this.transform.localToWorldMatrix
+                return this.cacheSkeletonComponent.node3d.localToWorldMatrix;
+            return this.node3d.localToWorldMatrix
         }
 
         private get u_ITModelMatrix()
         {
             if (this.cacheSkeletonComponent)
-                return this.cacheSkeletonComponent.transform.ITlocalToWorldMatrix;
-            return this.transform.ITlocalToWorldMatrix
+                return this.cacheSkeletonComponent.node3d.ITlocalToWorldMatrix;
+            return this.node3d.ITlocalToWorldMatrix
         }
 
         private get u_skeletonGlobalMatriices() 
         {
             if (!this.cacheSkeletonComponent)
             {
-                var gameObject: GameObject = this.gameObject;
+                var node3d = this.node3d;
                 var skeletonComponent: SkeletonComponent = null;
-                while (gameObject && !skeletonComponent)
+                while (node3d && !skeletonComponent)
                 {
-                    skeletonComponent = gameObject.getComponent("SkeletonComponent")
-                    gameObject = gameObject.parent;
+                    skeletonComponent = node3d.getComponent(SkeletonComponent)
+                    node3d = node3d.parent;
                 }
                 this.cacheSkeletonComponent = skeletonComponent;
             }

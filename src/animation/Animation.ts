@@ -98,7 +98,7 @@ namespace feng3d
             if (!propertyClip.cacheIndex)
                 propertyClip.cacheIndex = autoobjectCacheID++;
 
-            var propertyHost: any = this.gameObject;
+            var propertyHost: any = this.entity;
             var path = propertyClip.path;
 
             for (var i = 0; i < path.length; i++)
@@ -106,7 +106,7 @@ namespace feng3d
                 var element = path[i];
                 switch (element[0])
                 {
-                    case PropertyClipPathItemType.GameObject:
+                    case PropertyClipPathItemType.Entity:
                         propertyHost = propertyHost.find(element[1]);
                         break;
                     case PropertyClipPathItemType.Component:

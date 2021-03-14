@@ -3,18 +3,9 @@ namespace feng3d
     export interface TextureCubeEventMap
     {
         /**
-		 * 加载完成
-		 */
+         * 加载完成
+         */
         loadCompleted: any;
-    }
-
-    export interface TextureCube
-    {
-        once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
-        has<K extends keyof TextureCubeEventMap>(type: K): boolean;
-        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): void;
     }
 
     export type TextureCubeImageName = "positive_x_url" | "positive_y_url" | "positive_z_url" | "negative_x_url" | "negative_y_url" | "negative_z_url";
@@ -22,7 +13,7 @@ namespace feng3d
     /**
      * 立方体纹理
      */
-    export class TextureCube extends TextureInfo
+    export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> extends TextureInfo<T>
     {
         __class__: "feng3d.TextureCube";
 
@@ -167,7 +158,7 @@ namespace feng3d
 
         private _onItemLoadCompleted()
         {
-            if (this._loading.length == 0) this.dispatch("loadCompleted");
+            if (this._loading.length == 0) this.emit("loadCompleted");
         }
 
         /**

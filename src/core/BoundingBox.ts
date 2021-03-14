@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface GameObjectEventMap
+    export interface EntityEventMap
     {
         /**
          * 获取自身包围盒
@@ -20,7 +20,7 @@ namespace feng3d
      */
     export class BoundingBox
     {
-        private _gameObject: GameObject;
+        private _node3d: Node3D;
 
         protected _selfLocalBounds = new Box3();
         protected _selfWorldBounds = new Box3();
@@ -30,11 +30,11 @@ namespace feng3d
         protected _selfWorldBoundsInvalid = true;
         protected _worldBoundsInvalid = true;
 
-        constructor(gameObject: GameObject)
+        constructor(node3d: Node3D)
         {
-            this._gameObject = gameObject;
-            gameObject.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);
-            gameObject.on("scenetransformChanged", this._invalidateSelfWorldBounds, this);
+            this._node3d = node3d;
+            node3d.on("selfBoundsChanged", this._invalidateSelfLocalBounds, this);
+            node3d.on("scenetransformChanged", this._invalidateSelfWorldBounds, this);
         }
 
         /**
@@ -88,7 +88,7 @@ namespace feng3d
 
             // 获取对象上的包围盒
             var data: { bounds: Box3[]; } = { bounds: [] };
-            this._gameObject.dispatch("getSelfBounds", data);
+            this._node3d.emit("getSelfBounds", data);
 
             data.bounds.forEach(b =>
             {
@@ -101,7 +101,7 @@ namespace feng3d
          */
         protected _updateSelfWorldBounds()
         {
-            this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix);
+            this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._node3d.localToWorldMatrix);
         }
 
         /**
@@ -112,7 +112,7 @@ namespace feng3d
             this._worldBounds.copy(this.selfWorldBounds);
 
             // 获取子对象的世界包围盒与自身世界包围盒进行合并
-            this._gameObject.children.forEach(element =>
+            this._node3d.children.forEach(element =>
             {
                 this._worldBounds.union(element.boundingBox.worldBounds);
             });
@@ -150,7 +150,7 @@ namespace feng3d
             this._worldBoundsInvalid = true;
 
             // 世界包围盒失效会影响父对象世界包围盒失效
-            var parent = this._gameObject.parent;
+            var parent = this._node3d.parent;
             if (!parent) return;
             parent.boundingBox._invalidateWorldBounds();
         }

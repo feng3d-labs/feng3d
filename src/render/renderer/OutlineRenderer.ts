@@ -34,7 +34,7 @@ namespace feng3d
             for (var i = 0; i < unblenditems.length; i++)
             {
                 var renderable = unblenditems[i];
-                if (renderable.getComponent("OutLineComponent") || renderable.getComponent("CartoonComponent"))
+                if (renderable.getComponent(OutLineComponent) || renderable.getComponent(CartoonComponent))
                 {
                     var renderAtomic = renderable.renderAtomic;
                     renderable.beforeRender(renderAtomic, scene, camera);

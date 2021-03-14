@@ -38,14 +38,14 @@ namespace feng3d
             var renderers: Renderable[] = [];
             var frustum = camera.frustum;
 
-            var gameObjects = [scene.gameObject];
-            while (gameObjects.length > 0)
+            var node3ds = [scene.node3d];
+            while (node3ds.length > 0)
             {
-                var gameObject = gameObjects.pop();
+                var node3d = node3ds.pop();
 
-                if (!gameObject.visible)
+                if (!node3d.visible)
                     continue;
-                var renderer = gameObject.getComponent("Renderable");
+                var renderer = node3d.getComponent(Renderable);
                 if (renderer && renderer.enabled)
                 {
                     if (renderer.selfWorldBounds)
@@ -54,7 +54,7 @@ namespace feng3d
                             renderers.push(renderer);
                     }
                 }
-                gameObjects = gameObjects.concat(gameObject.children);
+                node3ds = node3ds.concat(node3d.children);
             }
             return renderers;
         }

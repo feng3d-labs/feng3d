@@ -38,14 +38,14 @@ namespace feng3d
             var models: Renderable[] = this._activeModels = [];
             var frustum = this.camera.frustum;
 
-            var gameObjects = [this.scene.gameObject];
-            while (gameObjects.length > 0)
+            var node3ds = [this.scene.node3d];
+            while (node3ds.length > 0)
             {
-                var gameObject = gameObjects.pop();
+                var node3d = node3ds.pop();
 
-                if (!gameObject.visible)
+                if (!node3d.visible)
                     continue;
-                var model = gameObject.getComponent("Renderable");
+                var model = node3d.getComponent(Renderable);
                 if (model && model.enabled)
                 {
                     if (model.selfWorldBounds)
@@ -54,7 +54,7 @@ namespace feng3d
                             models.push(model);
                     }
                 }
-                gameObjects = gameObjects.concat(gameObject.children);
+                node3ds = node3ds.concat(node3d.children);
             }
             return models;
         }
@@ -68,12 +68,12 @@ namespace feng3d
                 return this._blenditems;
 
             var models = this.activeModels;
-            var camerapos = this.camera.transform.worldPosition;
+            var camerapos = this.camera.node3d.worldPosition;
 
             var blenditems = this._blenditems = models.filter((item) =>
             {
                 return item.material.renderParams.enableBlend;
-            }).sort((b, a) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+            }).sort((b, a) => a.node3d.worldPosition.subTo(camerapos).lengthSquared - b.node3d.worldPosition.subTo(camerapos).lengthSquared);
 
             return blenditems;
         }
@@ -87,12 +87,12 @@ namespace feng3d
                 return this._unblenditems;
 
             var models = this.activeModels;
-            var camerapos = this.camera.transform.worldPosition;
+            var camerapos = this.camera.node3d.worldPosition;
 
             var unblenditems = this._unblenditems = models.filter((item) =>
             {
                 return !item.material.renderParams.enableBlend;
-            }).sort((a, b) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+            }).sort((a, b) => a.node3d.worldPosition.subTo(camerapos).lengthSquared - b.node3d.worldPosition.subTo(camerapos).lengthSquared);
 
             return unblenditems;
         }

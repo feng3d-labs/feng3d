@@ -36,7 +36,7 @@ namespace feng3d
         {
             return ["polyfill", this.a, this.oldf()].join("-")
         }
-        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        functionwrap.extendFunction(a, "f", function (r)
         {
             return ["polyfill", this.a, r].join("-");
         });
@@ -190,7 +190,7 @@ namespace feng3d
                 // 保存执行结果
                 this._wrapFResult[cuuid] = args;
                 // 通知执行完成
-                event.dispatch(this, cuuid);
+                event.emit(this, cuuid);
             }));
         }
 

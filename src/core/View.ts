@@ -23,11 +23,11 @@ namespace feng3d
         {
             if (!this._camera)
             {
-                var cameras = this.scene.getComponentsInChildren("Camera");
+                var cameras = this.scene.getComponentsInChildren(Camera);
                 if (cameras.length == 0)
                 {
-                    this._camera = serialization.setValue(new GameObject(), { name: "defaultCamera" }).addComponent("Camera");
-                    this.scene.gameObject.addChild(this._camera.gameObject);
+                    this._camera = serialization.setValue(new Entity(), { name: "defaultCamera" }).addComponent(Node3D).addComponent(Camera);
+                    this.scene.node3d.addChild(this._camera.node3d);
                 } else
                 {
                     this._camera = cameras[0];
@@ -49,7 +49,7 @@ namespace feng3d
          */
         get root()
         {
-            return this.scene.gameObject;
+            return this.scene.node3d;
         }
 
         get gl()
@@ -118,7 +118,7 @@ namespace feng3d
                 // #endif
             }, false);
 
-            this.scene = scene || serialization.setValue(new GameObject(), { name: "scene" }).addComponent("Scene");
+            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent(Node3D).addComponent(Scene);
             this.camera = camera;
 
             this.start();
@@ -152,7 +152,7 @@ namespace feng3d
         update(interval?: number)
         {
             this.render(interval);
-            this.mouse3DManager.selectedGameObject = this.selectedObject;
+            this.mouse3DManager.selectedTransform = this.selectedTransform;
         }
 
         /**
@@ -196,7 +196,7 @@ namespace feng3d
             this.gl.enable(this.gl.DEPTH_TEST);
 
             // 鼠标拾取渲染
-            this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
+            this.selectedTransform = this.mouse3DManager.pick(this, this.scene, this.camera);
             //绘制阴影图
             shadowRenderer.draw(this.gl, this.scene, this.camera);
             skyboxRenderer.draw(this.gl, this.scene, this.camera);
@@ -274,7 +274,7 @@ namespace feng3d
          * @param start 起点
          * @param end 终点
          */
-        getObjectsInGlobalArea(start: feng3d.Vector2, end: feng3d.Vector2)
+        getObjectsInGlobalArea(start: Vector2, end: Vector2)
         {
             var s = this.viewRect.clampPoint(start);
             var e = this.viewRect.clampPoint(end);
@@ -284,10 +284,10 @@ namespace feng3d
             var max = s.clone().max(e);
             var rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
             //
-            var gs = this.scene.getComponentsInChildren("Transform").filter(t =>
+            var transforms = this.scene.getComponentsInChildren(Node3D).filter(t =>
             {
-                if (t == this.scene.transform) return false;
-                var m = t.getComponent("Renderable");
+                if (t == this.scene.node3d) return false;
+                var m = t.getComponent(Renderable);
                 if (m)
                 {
                     var include = m.selfWorldBounds.toPoints().every(pos =>
@@ -299,29 +299,29 @@ namespace feng3d
                 }
                 var p = this.project(t.worldPosition);
                 return rect.contains(p.x, p.y);
-            }).map(t => t.gameObject);
-            return gs;
+            });
+            return transforms;
         }
 
-        protected selectedObject: GameObject;
+        protected selectedTransform: Node3D;
 
         static createNewScene()
         {
-            var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent("Scene")
+            var scene = serialization.setValue(new Entity(), { name: "Untitled" }).addComponent(Scene)
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
-            var camera = feng3d.GameObject.createPrimitive("Camera", { name: "Main Camera" });
-            camera.addComponent("AudioListener");
-            camera.transform.position = new feng3d.Vector3(0, 1, -10);
-            scene.gameObject.addChild(camera);
+            var camera = Camera.create("Main Camera");
+            camera.entity.addComponent(AudioListener);
+            camera.node3d.position = new Vector3(0, 1, -10);
+            scene.node3d.addChild(camera.node3d);
 
-            var directionalLight = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "DirectionalLight" });
-            directionalLight.addComponent("DirectionalLight").shadowType = feng3d.ShadowType.Hard_Shadows;
-            directionalLight.transform.rx = 50;
-            directionalLight.transform.ry = -30;
-            directionalLight.transform.y = 3;
-            scene.gameObject.addChild(directionalLight);
+            var directionalLight = DirectionalLight.create("DirectionalLight");
+            directionalLight.shadowType = ShadowType.Hard_Shadows;
+            directionalLight.node3d.rx = 50;
+            directionalLight.node3d.ry = -30;
+            directionalLight.node3d.y = 3;
+            scene.node3d.addChild(directionalLight.node3d);
 
             return scene;
         }

@@ -7,7 +7,7 @@ namespace feng3d
      * 线框组件，将会对拥有该组件的对象绘制线框
      */
     @RegisterComponent()
-    export class WireframeComponent extends Component
+    export class WireframeComponent extends Component3D
     {
 
         __class__: "feng3d.WireframeComponent";

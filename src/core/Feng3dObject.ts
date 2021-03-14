@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 所有feng3d对象的基类
      */
-    export class Feng3dObject extends EventDispatcher implements IDisposable
+    export class Feng3dObject<T = any> extends EventEmitter<T> implements IDisposable
     {
         /**
          * 名称

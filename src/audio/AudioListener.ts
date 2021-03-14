@@ -49,7 +49,7 @@ namespace feng3d
 
         private _onScenetransformChanged()
         {
-            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var localToWorldMatrix = this.node3d.localToWorldMatrix;
             var position = localToWorldMatrix.getPosition();
             var forward = localToWorldMatrix.getAxisZ();
             var up = localToWorldMatrix.getAxisY();
@@ -92,34 +92,34 @@ namespace feng3d
             super.dispose();
         }
     }
+
+    (() =>
+    {
+        if (typeof window == "undefined") return;
+    
+        window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
+    
+        audioCtx = new AudioContext();
+        globalGain = audioCtx.createGain();
+        // 新增无音Gain，避免没有AudioListener组件时暂停声音播放进度
+        var zeroGain = audioCtx.createGain();
+        zeroGain.connect(audioCtx.destination);
+        globalGain.connect(zeroGain);
+        zeroGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+        //
+        var listener = audioCtx.listener;
+        audioCtx.createGain();
+        if (listener.forwardX)
+        {
+            listener.forwardX.value = 0;
+            listener.forwardY.value = 0;
+            listener.forwardZ.value = -1;
+            listener.upX.value = 0;
+            listener.upY.value = 1;
+            listener.upZ.value = 0;
+        } else
+        {
+            listener.setOrientation(0, 0, -1, 0, 1, 0);
+        }
+    })();
 }
-
-(() =>
-{
-    if (typeof window == "undefined") return;
-
-    window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
-
-    var audioCtx = feng3d.audioCtx = new AudioContext();
-    var globalGain = feng3d.globalGain = audioCtx.createGain();
-    // 新增无音Gain，避免没有AudioListener组件时暂停声音播放进度
-    var zeroGain = audioCtx.createGain();
-    zeroGain.connect(audioCtx.destination);
-    globalGain.connect(zeroGain);
-    zeroGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
-    //
-    var listener = audioCtx.listener;
-    audioCtx.createGain();
-    if (listener.forwardX)
-    {
-        listener.forwardX.value = 0;
-        listener.forwardY.value = 0;
-        listener.forwardZ.value = -1;
-        listener.upX.value = 0;
-        listener.upY.value = 1;
-        listener.upZ.value = 0;
-    } else
-    {
-        listener.setOrientation(0, 0, -1, 0, 1, 0);
-    }
-})();

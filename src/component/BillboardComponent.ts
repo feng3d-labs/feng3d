@@ -3,9 +3,9 @@ namespace feng3d
 
     export interface ComponentMap { BillboardComponent: BillboardComponent; }
 
-    @feng3d.AddComponentMenu("Layout/BillboardComponent")
+    @AddComponentMenu("Layout/BillboardComponent")
     @RegisterComponent()
-    export class BillboardComponent extends Component
+    export class BillboardComponent extends Component3D
     {
         __class__: "feng3d.BillboardComponent";
 
@@ -19,7 +19,7 @@ namespace feng3d
         init()
         {
             super.init();
-            this.transform.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node3d.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             this._invalidHoldSizeMatrix();
         }
 
@@ -32,17 +32,17 @@ namespace feng3d
 
         private _invalidHoldSizeMatrix()
         {
-            if (this._gameObject) this.transform["_invalidateSceneTransform"]();
+            if (this._entity) this.node3d["_invalidateSceneTransform"]();
         }
 
         private _onUpdateLocalToWorldMatrix()
         {
-            var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
+            var _localToWorldMatrix = this.node3d["_localToWorldMatrix"];
             if (_localToWorldMatrix && this.camera)
             {
                 var camera = this.camera;
-                var cameraPos = camera.transform.worldPosition;
-                var yAxis = camera.transform.localToWorldMatrix.getAxisY();
+                var cameraPos = camera.node3d.worldPosition;
+                var yAxis = camera.node3d.localToWorldMatrix.getAxisY();
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);
             }
         }
@@ -50,7 +50,7 @@ namespace feng3d
         dispose()
         {
             this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
+            this.node3d.off("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
             super.dispose();
         }
     }

@@ -3,7 +3,7 @@ namespace feng3d
     export interface ComponentMap { SkeletonComponent: SkeletonComponent; }
 
     @RegisterComponent()
-    export class SkeletonComponent extends Component
+    export class SkeletonComponent extends Component3D
     {
 
         __class__: "feng3d.SkeletonComponent";
@@ -35,8 +35,8 @@ namespace feng3d
 
         //
         private isInitJoints = false;
-        private jointGameobjects: Transform[];
-        private jointGameObjectMap: { [jointname: string]: Transform };
+        private jointGameobjects: Node3D[];
+        private jointGameObjectMap: { [jointname: string]: Node3D };
         private _globalPropertiesInvalid: boolean;
         private _jointsInvalid: boolean[];
         private _globalMatrixsInvalid: boolean[];
@@ -99,7 +99,7 @@ namespace feng3d
                 var jointPose = joints[index];
 
                 var jointGameobject = jointGameobjects[index];
-                globalMatrixs[index] = jointGameobject.transform.matrix.clone();
+                globalMatrixs[index] = jointGameobject.node3d.matrix.clone();
                 if (jointPose.parentIndex >= 0)
                 {
                     var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
@@ -140,43 +140,46 @@ namespace feng3d
             function createJoint(i: number)
             {
                 if (jointGameobjects[i])
-                    return jointGameobjects[i].gameObject;
+                    return jointGameobjects[i];
 
                 var skeletonJoint = joints[i];
-                var parentGameobject: GameObject;
+                var parentGameobject: Node3D;
                 if (skeletonJoint.parentIndex != -1)
                 {
                     parentGameobject = createJoint(skeletonJoint.parentIndex);
                     joints[skeletonJoint.parentIndex].children.push(i);
                 } else
                 {
-                    parentGameobject = skeleton.gameObject
+                    parentGameobject = skeleton.node3d
                 }
 
-                var jointGameobject = parentGameobject.find(skeletonJoint.name);
-                if (!jointGameobject)
+                var jointTransform = parentGameobject.find(skeletonJoint.name);
+                if (!jointTransform)
                 {
-                    jointGameobject = serialization.setValue(new GameObject(), { name: skeletonJoint.name, hideFlags: feng3d.HideFlags.DontSave });
-                    parentGameobject.addChild(jointGameobject);
+                    var gameObject = new Entity();
+                    gameObject.name = skeletonJoint.name;
+                    gameObject.hideFlags = HideFlags.DontSave;
+                    jointTransform = gameObject.addComponent(Node3D);
+                    parentGameobject.addChild(jointTransform);
                 }
 
-                var transform = jointGameobject.transform;
+                var node3d = jointTransform.node3d;
 
                 var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1)
                 {
                     matrix = matrix.clone().append(joints[skeletonJoint.parentIndex].invertMatrix);
                 }
-                transform.matrix = matrix;
+                node3d.matrix = matrix;
 
-                transform.on("transformChanged", () =>
+                node3d.on("transformChanged", () =>
                 {
                     skeleton.invalidjoint(i);
                 });
 
-                jointGameobjects[i] = transform;
-                jointGameObjectMap[skeletonJoint.name] = transform;
-                return jointGameobject;
+                jointGameobjects[i] = node3d;
+                jointGameObjectMap[skeletonJoint.name] = node3d;
+                return jointTransform;
             }
         }
     }
