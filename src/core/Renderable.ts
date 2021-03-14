@@ -162,7 +162,7 @@ namespace feng3d
         //
         private _lightPicker: LightPicker;
 
-        private _onGeometryChanged(property: string, oldValue: GeometryLike, value: GeometryLike)
+        private _onGeometryChanged(property: string, oldValue: Geometry, value: Geometry)
         {
             if (oldValue)
             {

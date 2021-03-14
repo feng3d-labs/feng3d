@@ -358,7 +358,6 @@ var feng3d;
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
         EventEmitter.prototype.once = function (type, listener, thisObject, priority) {
-            if (thisObject === void 0) { thisObject = null; }
             if (priority === void 0) { priority = 0; }
             feng3d.event.on(this, type, listener, thisObject, priority, true);
             return this;
@@ -18214,7 +18213,7 @@ var feng3d;
                 // event.clientY = this.clientY;
                 // event.pageX = this.pageX;
                 // event.pageY = this.pageY;
-                _this.emitEvent(event);
+                _this.emit(event.type, event);
             };
             _this.target = target;
             return _this;
@@ -18307,16 +18306,8 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var WindowEventProxy = /** @class */ (function (_super) {
-        __extends(WindowEventProxy, _super);
-        function WindowEventProxy() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return WindowEventProxy;
-    }(feng3d.EventProxy));
-    feng3d.WindowEventProxy = WindowEventProxy;
-    if (typeof window != "undefined")
-        feng3d.windowEventProxy = new WindowEventProxy(window);
+    if (typeof self != "undefined")
+        feng3d.windowEventProxy = new feng3d.EventProxy(self);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -18413,8 +18404,8 @@ var feng3d;
             if (!feng3d.shortcut.enable)
                 return;
             var mouseKey = event.type;
-            this._keyState.pressKey(mouseKey, event);
-            this._keyState.releaseKey(mouseKey, event);
+            this._keyState.pressKey(mouseKey, event.data);
+            this._keyState.releaseKey(mouseKey, event.data);
         };
         /**
          * 鼠标事件
@@ -18423,8 +18414,8 @@ var feng3d;
             if (!feng3d.shortcut.enable)
                 return;
             var mouseKey = event.type;
-            this._keyState.pressKey(mouseKey, event);
-            this._keyState.releaseKey(mouseKey, event);
+            this._keyState.pressKey(mouseKey, event.data);
+            this._keyState.releaseKey(mouseKey, event.data);
         };
         /**
          * 键盘按下事件
@@ -18432,14 +18423,14 @@ var feng3d;
         KeyCapture.prototype.onKeydown = function (event) {
             if (!feng3d.shortcut.enable)
                 return;
-            var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
-            boardKey = boardKey || event.key;
+            var boardKey = feng3d.KeyBoard.getKey(event.data.keyCode);
+            boardKey = boardKey || event.data.key;
             if (boardKey) {
                 boardKey = boardKey.toLocaleLowerCase();
-                this._keyState.pressKey(boardKey, event);
+                this._keyState.pressKey(boardKey, event.data);
             }
             else {
-                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
+                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.data.key);
             }
         };
         /**
@@ -18448,14 +18439,14 @@ var feng3d;
         KeyCapture.prototype.onKeyup = function (event) {
             if (!feng3d.shortcut.enable)
                 return;
-            var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
-            boardKey = boardKey || event.key;
+            var boardKey = feng3d.KeyBoard.getKey(event.data.keyCode);
+            boardKey = boardKey || event.data.key;
             if (boardKey) {
                 boardKey = boardKey.toLocaleLowerCase();
-                this._keyState.releaseKey(boardKey, event);
+                this._keyState.releaseKey(boardKey, event.data);
             }
             else {
-                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
+                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.data.key);
             }
         };
         return KeyCapture;
@@ -34854,7 +34845,7 @@ var feng3d;
          * 处理鼠标移动事件
          */
         FPSController.prototype.onMouseMove = function (event) {
-            this.mousePoint = new feng3d.Vector2(event.clientX, event.clientY);
+            this.mousePoint = new feng3d.Vector2(event.data.clientX, event.data.clientY);
             if (this.preMousePoint == null) {
                 this.preMousePoint = this.mousePoint;
                 this.mousePoint = null;
@@ -34864,7 +34855,7 @@ var feng3d;
          * 键盘按下事件
          */
         FPSController.prototype.onKeydown = function (event) {
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
             if (!this.keyDownDic[boardKey])
@@ -34875,7 +34866,7 @@ var feng3d;
          * 键盘弹起事件
          */
         FPSController.prototype.onKeyup = function (event) {
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
             this.keyDownDic[boardKey] = false;
@@ -36416,12 +36407,12 @@ var feng3d;
         WindowMouseInput.prototype.onMouseEvent = function (event) {
             var type = event.type;
             // 处理鼠标中键与右键
-            if (event instanceof MouseEvent) {
+            if (event.data instanceof MouseEvent) {
                 if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1) {
-                    type = ["", "middle", "right"][event.button] + event.type;
+                    type = ["", "middle", "right"][event.data.button] + event.type;
                 }
             }
-            this.emit(type, { mouseX: event.clientX, mouseY: event.clientY });
+            this.emit(type, { mouseX: event.data.clientX, mouseY: event.data.clientY });
         };
         return WindowMouseInput;
     }(MouseInput));
