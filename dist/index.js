@@ -36145,7 +36145,7 @@ var feng3d;
                 return this._objectCache[propertyClip.cacheIndex];
             if (!propertyClip.cacheIndex)
                 propertyClip.cacheIndex = autoobjectCacheID++;
-            var propertyHost = this.entity;
+            var propertyHost = this.node3d;
             var path = propertyClip.path;
             for (var i = 0; i < path.length; i++) {
                 var element = path[i];
@@ -36154,7 +36154,8 @@ var feng3d;
                         propertyHost = propertyHost.find(element[1]);
                         break;
                     case feng3d.PropertyClipPathItemType.Component:
-                        propertyHost = propertyHost.getComponent(element[1]);
+                        var componentCls = feng3d.getComponentType(element[1]);
+                        propertyHost = propertyHost.getComponent(componentCls);
                         break;
                     default:
                         console.error("\u65E0\u6CD5\u83B7\u53D6 PropertyHost " + element);
