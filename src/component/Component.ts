@@ -42,15 +42,6 @@ namespace feng3d
     {
     }
 
-    export interface Component
-    {
-        once<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof ComponentEventMap>(type: K, data?: ComponentEventMap[K], bubbles?: boolean): Event<ComponentEventMap[K]>;
-        has<K extends keyof ComponentEventMap>(type: K): boolean;
-        on<K extends keyof ComponentEventMap>(type: K, listener: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof ComponentEventMap>(type?: K, listener?: (event: Event<ComponentEventMap[K]>) => any, thisObject?: any): this;
-    }
-
 	/**
      * 组件
      * 
@@ -58,7 +49,7 @@ namespace feng3d
      * 
      * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
 	 */
-    export class Component extends Feng3dObject implements IDisposable
+    export class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable
     {
         //------------------------------------------
         // Variables

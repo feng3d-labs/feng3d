@@ -36,24 +36,15 @@ namespace feng3d
     export interface Texture2DEventMap
     {
         /**
-		 * 加载完成
-		 */
+         * 加载完成
+         */
         loadCompleted: any;
-    }
-
-    export interface Texture2D
-    {
-        once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
-        has<K extends keyof Texture2DEventMap>(type: K): boolean;
-        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): this;
     }
 
     /**
      * 2D纹理
      */
-    export class Texture2D extends TextureInfo
+    export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends TextureInfo<T>
     {
         __class__: "feng3d.Texture2D";
 

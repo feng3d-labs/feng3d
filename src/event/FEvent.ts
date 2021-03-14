@@ -7,18 +7,6 @@ namespace feng3d
     export var event: FEvent;
 
     /**
-     * 用于适配不同对象对于的事件
-     */
-    export interface ObjectEventDispatcher<O, T>
-    {
-        once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
-        has<K extends keyof T>(target: O, type: K): boolean;
-        on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
-    }
-
-    /**
      * 事件
      */
     export class FEvent

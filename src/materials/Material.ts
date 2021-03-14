@@ -106,7 +106,7 @@ namespace feng3d
             var uniforms = this.uniforms;
             for (const key in uniforms)
             {
-                var texture = uniforms[key];
+                var texture: Texture2D<Texture2DEventMap> | TextureCube<TextureCubeEventMap> = uniforms[key];
                 if (texture instanceof Texture2D || texture instanceof TextureCube)
                 {
                     if (!texture.isLoaded)

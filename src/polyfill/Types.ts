@@ -1,6 +1,11 @@
 namespace feng3d
 {
     /**
+     * 构造函数
+     */
+    export type Constructor<T> = (new (...args: any[]) => T);
+
+    /**
      * 让T中以及所有键值中的所有键都是可选的
      */
     export type gPartial<T> = {

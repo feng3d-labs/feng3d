@@ -22,19 +22,10 @@ namespace feng3d
         removed: { parent: Container };
     }
 
-    export interface Container
-    {
-        once<K extends keyof ContainerEventMap>(type: K, listener: (event: Event<ContainerEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof ContainerEventMap>(type: K, data?: ContainerEventMap[K], bubbles?: boolean): Event<ContainerEventMap[K]>;
-        has<K extends keyof ContainerEventMap>(type: K): boolean;
-        on<K extends keyof ContainerEventMap>(type: K, listener: (event: Event<ContainerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof ContainerEventMap>(type?: K, listener?: (event: Event<ContainerEventMap[K]>) => any, thisObject?: any): this;
-    }
-
     /**
      * 
      */
-    export class Container extends EventEmitter
+    export class Container<T extends ContainerEventMap = ContainerEventMap> extends EventEmitter<T>
     {
         /**
          * 名称

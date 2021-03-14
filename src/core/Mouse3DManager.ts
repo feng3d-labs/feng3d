@@ -151,18 +151,10 @@ namespace feng3d
         }
     }
 
-    export interface MouseInput
-    {
-        once<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        has<K extends keyof MouseEventMap>(type: K): boolean;
-        on<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof MouseEventMap>(type?: K, listener?: (event: Event<MouseEventMap[K]>) => any, thisObject?: any): this;
-    }
-
     /**
      * 鼠标事件输入
      */
-    export class MouseInput extends EventEmitter
+    export class MouseInput<T = MouseEventMap> extends EventEmitter<T>
     {
         /**
          * 是否启动
@@ -180,7 +172,7 @@ namespace feng3d
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        emit(type: string, data?: any, bubbles = false)
+        emit<K extends keyof T>(type: K, data?: T[K], bubbles = false)
         {
             if (!this.enable)
                 return null;
@@ -241,19 +233,19 @@ namespace feng3d
         /**
          * 监听鼠标事件收集事件类型
          */
-        private onMouseEvent(event: MouseEvent)
+        private onMouseEvent(event: Event<MouseEvent>)
         {
             var type = event.type;
             // 处理鼠标中键与右键
-            if (event instanceof MouseEvent)
+            if (event.data instanceof MouseEvent)
             {
                 if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1)
                 {
-                    type = ["", "middle", "right"][event.button] + event.type;
+                    type = ["", "middle", "right"][event.data.button] + event.type;
                 }
             }
 
-            this.emit(<any>type, { mouseX: event.clientX, mouseY: event.clientY });
+            this.emit(<any>type, { mouseX: event.data.clientX, mouseY: event.data.clientY });
         }
     }
 

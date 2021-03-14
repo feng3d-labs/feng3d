@@ -1,21 +1,20 @@
 namespace feng3d
 {
-    export type Constructor<T> = (new (...args: any[]) => T);
 
     export interface EntityEventMap
     {
         /**
-		 * 添加子组件事件
-		 */
+         * 添加子组件事件
+         */
         addComponent: { gameObject: Entity, component: Component };
-		/**
-		 * 移除子组件事件
-		 */
+        /**
+         * 移除子组件事件
+         */
         removeComponent: { gameObject: Entity, component: Component };
 
         /**
-		 * 包围盒失效
-		 */
+         * 包围盒失效
+         */
         boundsInvalid: Geometry;
 
         /**
@@ -24,19 +23,10 @@ namespace feng3d
         refreshView: any;
     }
 
-    export interface Entity
-    {
-        once<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof EntityEventMap>(type: K, data?: EntityEventMap[K], bubbles?: boolean): Event<EntityEventMap[K]>;
-        has<K extends keyof EntityEventMap>(type: K): boolean;
-        on<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof EntityEventMap>(type?: K, listener?: (event: Event<EntityEventMap[K]>) => any, thisObject?: any): this;
-    }
-
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class Entity extends Feng3dObject implements IDisposable
+    export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObject<T> implements IDisposable
     {
 
         __class__: "feng3d.Entity";
@@ -51,9 +41,9 @@ namespace feng3d
         //------------------------------------------
         // Variables
         //------------------------------------------
-		/**
-		 * 子组件个数
-		 */
+        /**
+         * 子组件个数
+         */
         get numComponents()
         {
             return this._components.length;
@@ -101,11 +91,11 @@ namespace feng3d
             return this._components[index];
         }
 
-		/**
+        /**
          * 添加指定组件类型到游戏对象
          * 
-		 * @type type 被添加组件
-		 */
+         * @type type 被添加组件
+         */
         addComponent<T extends Components>(type: Constructor<T> | ComponentNames, callback: (component: T) => void = null): T
         {
             type = getComponentType(type);
@@ -182,11 +172,11 @@ namespace feng3d
             this._components.splice(index, 0, component);
         }
 
-		/**
-		 * 设置组件到指定位置
-		 * @param component		被设置的组件
-		 * @param index			索引
-		 */
+        /**
+         * 设置组件到指定位置
+         * @param component		被设置的组件
+         * @param index			索引
+         */
         setComponentAt(component: Components, index: number)
         {
             if (this._components[index])
@@ -196,10 +186,10 @@ namespace feng3d
             this.addComponentAt(component, index);
         }
 
-		/**
-		 * 移除组件
-		 * @param component 被移除组件
-		 */
+        /**
+         * 移除组件
+         * @param component 被移除组件
+         */
         removeComponent(component: Components): void
         {
             console.assert(this.hasComponent(component), "只能移除在容器中的组件");
@@ -332,8 +322,8 @@ namespace feng3d
         // Protected Properties
         //------------------------------------------
         /**
-		 * 组件列表
-		 */
+         * 组件列表
+         */
         protected _components: Components[] = [];
 
         //------------------------------------------
@@ -358,11 +348,11 @@ namespace feng3d
             return this._components.indexOf(com) != -1;
         }
 
-		/**
-		 * 添加组件到指定位置
-		 * @param component		被添加的组件
-		 * @param index			插入的位置
-		 */
+        /**
+         * 添加组件到指定位置
+         * @param component		被添加的组件
+         * @param index			插入的位置
+         */
         private addComponentAt(component: Components, index: number): void
         {
             if (component == null)

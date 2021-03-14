@@ -6,27 +6,17 @@ namespace feng3d
 
     export interface GeometryEventMap
     {
-		/**
-		 * 包围盒失效
-		 */
+        /**
+         * 包围盒失效
+         */
         boundsInvalid: Geometry;
-    }
-
-    export interface Geometry
-    {
-        once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
-        has<K extends keyof GeometryEventMap>(type: K): boolean;
-        on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): any;
     }
 
     /**
      * 几何体
      */
-    export class Geometry extends Feng3dObject
+    export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Feng3dObject<T>
     {
-
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";
 
@@ -64,9 +54,9 @@ namespace feng3d
             return this._indexBuffer.indices;
         }
 
-		/**
-		 * 更新顶点索引数据
-		 */
+        /**
+         * 更新顶点索引数据
+         */
         set indices(value: number[])
         {
             this._indexBuffer.indices = value;
@@ -190,8 +180,8 @@ namespace feng3d
         }
 
         /**
-		 * 创建一个几何体
-		 */
+         * 创建一个几何体
+         */
         constructor()
         {
             super();
@@ -293,9 +283,9 @@ namespace feng3d
         }
 
         /**
-		 * 应用变换矩阵
-		 * @param matrix 变换矩阵
-		 */
+         * 应用变换矩阵
+         * @param matrix 变换矩阵
+         */
         applyTransformation(matrix: Matrix4x4)
         {
             this.updateGrometry();
