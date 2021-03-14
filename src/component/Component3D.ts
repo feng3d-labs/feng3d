@@ -5,20 +5,11 @@ namespace feng3d
     {
     }
 
-    export interface Component3D
-    {
-        once<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof Component3DEventMap>(type: K, data?: Component3DEventMap[K], bubbles?: boolean): Event<Component3DEventMap[K]>;
-        has<K extends keyof Component3DEventMap>(type: K): boolean;
-        on<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof Component3DEventMap>(type?: K, listener?: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any): this;
-    }
-
     /**
      * 3D组件
      * GameObject必须拥有Transform组件的
      */
-    export class Component3D extends Component
+    export class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T>
     {
         /**
          * The Transform attached to this Entity (null if there is none attached).

@@ -25958,10 +25958,7 @@ var feng3d;
     }
     feng3d.RegisterComponent = RegisterComponent;
     function getComponentType(type) {
-        if (typeof type === "string") {
-            return feng3d.componentMap[type];
-        }
-        return type;
+        return feng3d.componentMap[type];
     }
     feng3d.getComponentType = getComponentType;
     /**
@@ -28126,8 +28123,6 @@ var feng3d;
          * @type type 被添加组件
          */
         Entity.prototype.addComponent = function (type, callback) {
-            if (callback === void 0) { callback = null; }
-            type = feng3d.getComponentType(type);
             var component = this.getComponent(type);
             if (component && component.single) {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
@@ -28165,7 +28160,6 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         Entity.prototype.getComponents = function (type) {
-            type = feng3d.getComponentType(type);
             console.assert(!!type, "\u7C7B\u578B\u4E0D\u80FD\u4E3A\u7A7A\uFF01");
             var cls = type;
             if (!cls) {
@@ -34802,8 +34796,8 @@ var feng3d;
                 var offsetPoint = this.mousePoint.subTo(this.preMousePoint);
                 offsetPoint.x *= 0.15;
                 offsetPoint.y *= 0.15;
-                // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
-                // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
+                // this.targetObject.node3d.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.node3d.position);
+                // this.targetObject.node3d.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.node3d.position);
                 var matrix = this.node3d.localToWorldMatrix;
                 matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
                 var up = feng3d.Vector3.Y_AXIS.clone();

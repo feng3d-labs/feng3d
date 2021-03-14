@@ -127,8 +127,8 @@ namespace feng3d
                 var offsetPoint = this.mousePoint.subTo(this.preMousePoint)
                 offsetPoint.x *= 0.15;
                 offsetPoint.y *= 0.15;
-                // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
-                // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
+                // this.targetObject.node3d.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.node3d.position);
+                // this.targetObject.node3d.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.node3d.position);
 
                 var matrix = this.node3d.localToWorldMatrix;
                 matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());

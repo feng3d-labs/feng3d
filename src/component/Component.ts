@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
      */
-    export const componentMap = {};
+    export const componentMap: any = {};
 
     /**
      * 注册组件
@@ -21,13 +21,9 @@ namespace feng3d
         }
     }
 
-    export function getComponentType<T extends Components>(type: Constructor<T> | ComponentNames): Constructor<T>
+    export function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>
     {
-        if (typeof type === "string")
-        {
-            return componentMap[type];
-        }
-        return type;
+        return componentMap[type];
     }
 
     /**
