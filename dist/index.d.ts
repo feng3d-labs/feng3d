@@ -12289,10 +12289,17 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentInfo {
+        name: string;
+        type: Constructor<Component>;
+        dependencies: Constructor<Component>[];
+    }
     /**
      * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
      */
-    const componentMap: any;
+    export const componentMap: {
+        [name: string]: ComponentInfo;
+    };
     /**
      * 注册组件
      *
@@ -12300,17 +12307,26 @@ declare namespace feng3d {
      *
      * @param component 组件名称，默认使用类名称
      */
-    function RegisterComponent(component?: string): (constructor: Function) => void;
-    function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>;
+    export function RegisterComponent(component?: {
+        /**
+         * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
+         */
+        name?: string;
+        /**
+         * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
+         */
+        dependencies?: Constructor<Component>[];
+    }): (constructor: Function) => void;
+    export function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>;
     /**
      * 组件名称与类定义映射，新建组件一般都需扩展该接口。
      */
-    interface ComponentMap {
+    export interface ComponentMap {
         Component: Component;
     }
-    type ComponentNames = keyof ComponentMap;
-    type Components = ComponentMap[ComponentNames];
-    interface ComponentEventMap extends EntityEventMap {
+    export type ComponentNames = keyof ComponentMap;
+    export type Components = ComponentMap[ComponentNames];
+    export interface ComponentEventMap extends EntityEventMap {
     }
     /**
      * 组件
@@ -12319,7 +12335,7 @@ declare namespace feng3d {
      *
      * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
      */
-    class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable {
+    export class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable {
         /**
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
@@ -12439,6 +12455,7 @@ declare namespace feng3d {
         setGameObject(gameObject: Entity): void;
         protected _entity: Entity;
     }
+    export {};
 }
 declare namespace feng3d {
     interface Component3DEventMap extends ComponentEventMap, MouseEventMap {

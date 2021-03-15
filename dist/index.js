@@ -25951,14 +25951,23 @@ var feng3d;
      * @param component 组件名称，默认使用类名称
      */
     function RegisterComponent(component) {
+        if (component === void 0) { component = {}; }
         return function (constructor) {
-            component = component || constructor["name"];
-            feng3d.componentMap[component] = constructor;
+            var info = component;
+            info.name = info.name || constructor["name"];
+            info.type = constructor;
+            info.dependencies = info.dependencies || [];
+            if (feng3d.componentMap[info.name]) {
+                console.warn("\u91CD\u590D\u5B9A\u4E49\u7EC4\u4EF6" + info.name + "\uFF0C" + feng3d.componentMap[info.name].type + " " + constructor + " \uFF01");
+            }
+            else {
+                feng3d.componentMap[info.name] = info;
+            }
         };
     }
     feng3d.RegisterComponent = RegisterComponent;
     function getComponentType(type) {
-        return feng3d.componentMap[type];
+        return feng3d.componentMap[type].constructor;
     }
     feng3d.getComponentType = getComponentType;
     /**
@@ -31368,7 +31377,7 @@ var feng3d;
         ], Camera.prototype, "lens", null);
         Camera = Camera_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/Camera"),
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
         ], Camera);
         return Camera;
     }(feng3d.Component3D));

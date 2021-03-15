@@ -1,9 +1,16 @@
 namespace feng3d
 {
+    interface ComponentInfo
+    {
+        name: string
+        type: Constructor<Component>;
+        dependencies: Constructor<Component>[];
+    }
+
     /**
      * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
      */
-    export const componentMap: any = {};
+    export const componentMap: { [name: string]: ComponentInfo } = {};
 
     /**
      * 注册组件
@@ -12,18 +19,36 @@ namespace feng3d
      * 
      * @param component 组件名称，默认使用类名称
      */
-    export function RegisterComponent(component?: string)
+    export function RegisterComponent(component: {
+        /**
+         * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
+         */
+        name?: string,
+        /**
+         * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
+         */
+        dependencies?: Constructor<Component>[]
+    } = {})
     {
         return (constructor: Function) =>
         {
-            component = component || constructor["name"];
-            componentMap[component] = constructor;
+            var info = component as ComponentInfo;
+            info.name = info.name || constructor["name"];
+            info.type = <any>constructor;
+            info.dependencies = info.dependencies || [];
+            if (componentMap[info.name])
+            {
+                console.warn(`重复定义组件${info.name}，${componentMap[info.name].type} ${constructor} ！`);
+            } else
+            {
+                componentMap[info.name] = info;
+            }
         }
     }
 
     export function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>
     {
-        return componentMap[type];
+        return <any>componentMap[type].constructor;
     }
 
     /**
