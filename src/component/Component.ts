@@ -136,7 +136,6 @@ namespace feng3d
         constructor()
         {
             super();
-            this.onAny(this._onAnyListener, this);
         }
 
         /**
@@ -282,12 +281,12 @@ namespace feng3d
         }
 
         /**
-         * 监听对象的所有事件并且传播到所有组件中
+         * 申明冒泡函数
+         * feng3d.__event_bubble_function__
          */
-        private _onAnyListener(e: Event<any>)
+        protected __event_bubble_function__(): any[]
         {
-            if (this._entity)
-                this._entity.emitEvent(e);
+            return [this.entity];
         }
 
         /**

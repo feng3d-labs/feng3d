@@ -172,7 +172,7 @@ namespace feng3d
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        emit<K extends keyof T>(type: K, data?: T[K], bubbles = false)
+        emit<K extends keyof T & string>(type: K, data?: T[K], bubbles = false)
         {
             if (!this.enable)
                 return null;
@@ -185,7 +185,7 @@ namespace feng3d
          * 派发事件
          * @param event   事件对象
          */
-        emitEvent(event: Event<any>)
+        emitEvent<K extends keyof T & string>(event: Event<T[K]>)
         {
             if (!this.enable)
                 return false;

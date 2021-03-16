@@ -74,7 +74,7 @@ namespace feng3d
          * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority = 0, once = false)
+        on<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority = 0, once = false): this
         {
             super.on(type, listener, thisObject, priority, once);
             if (this.listentypes.indexOf(type) == -1)
@@ -91,7 +91,7 @@ namespace feng3d
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          */
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any)
+        off<K extends keyof T & string>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this
         {
             super.off(type, listener, thisObject);
             if (!type)

@@ -1126,5 +1126,14 @@ namespace feng3d
                 c._invalidateGlobalVisible();
             });
         }
+
+        /**
+         * 申明冒泡函数
+         * feng3d.__event_bubble_function__
+         */
+        protected __event_bubble_function__(): any[]
+        {
+            return [this.entity as any].concat(this.entity.components, this.parent);
+        }
     }
 }
