@@ -169,7 +169,7 @@ namespace feng3d
          */
         makeEvent<T>(type: string, data: T, bubbles = false): Event<T>
         {
-            return { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [], handles: [] };
+            return { type: type, data: data, bubbles: bubbles };
         }
     }
 

@@ -107,17 +107,52 @@ namespace feng3d
          */
         emitEvent<K extends keyof T & string>(e: Event<T[K]>)
         {
-            var targets = e.targets = e.targets || [];
+            // 是否为初次派发
+            const isEventStart = !e.target;
+            if (isEventStart)
+            {
+                // 初始化事件
+                e.target = e.target || null;
+                e.currentTarget = e.currentTarget || null;
+                e.isStop = e.isStop || false;
+                e.isStopBubbles = e.isStopBubbles || false;
+                e.targets = e.targets || [];
+                e.handles = e.handles || [];
+                e.targetsIndex = e.targetsIndex || 0;
+                e.targetsBubblesIndex = e.targetsBubblesIndex || 0;
+            }
+
+            var targets = e.targets;
             if (targets.indexOf(this[__event_emitter_target__]) != -1)
                 return false;
             targets.push(this[__event_emitter_target__]);
 
-            e.handles = [];
-
-            this.handleEvent(e);
-
-            this.handelEventBubbles(e);
-
+            // 
+            let index = e.targetsIndex;
+            while (targets.length > index)
+            {
+                const n = targets.length;
+                // 派发事件
+                while (e.targetsIndex < n)
+                {
+                    var eventEmitter = EventEmitter.getOrCreateEventEmitter(targets[e.targetsIndex++]);
+                    eventEmitter.handleEvent(e); // 传递到其它对象中去，将会增加 targets 的长度。
+                }
+                index = e.targetsIndex;
+                if (isEventStart)   // 统一在派发事件入口处理冒泡
+                {
+                    // 处理冒泡
+                    if (e.bubbles && !e.isStopBubbles)
+                    {
+                        while (e.targetsBubblesIndex < n)
+                        {
+                            var eventEmitter = EventEmitter.getOrCreateEventEmitter(targets[e.targetsBubblesIndex++]);
+                            eventEmitter.handelEventBubbles(e); // 冒泡到其它对象中去，将会增加 targets 的长度。
+                        }
+                        index = e.targetsBubblesIndex;
+                    }
+                }
+            }
             return true;
         }
 
@@ -367,21 +402,16 @@ namespace feng3d
          */
         protected handelEventBubbles<K extends keyof T & string>(e: Event<T[K]>)
         {
-            if (e.bubbles && !e.isStopBubbles)
+            if (typeof this[__event_emitter_target__]?.[__event_bubble_function__] === "function")
             {
-                if (typeof this[__event_emitter_target__]?.[__event_bubble_function__] === "function")
+                var bubbleTargets: any[] = this[__event_emitter_target__][__event_bubble_function__]();
+                bubbleTargets.forEach(v =>
                 {
-                    var bubbleTargets: EventEmitter[] = this[__event_emitter_target__][__event_bubble_function__]();
-                    bubbleTargets = bubbleTargets.filter(v => (v !== undefined && v !== null)).map(v => EventEmitter.getOrCreateEventEmitter(v));
-                    for (var i = 0, n = bubbleTargets.length; i < n; i++)
+                    if (v !== undefined && e.targets.indexOf(v) === -1)
                     {
-                        var bubbleTarget = bubbleTargets[i];
-                        if (!e.isStop)
-                        {
-                            bubbleTarget.emitEvent(e);
-                        }
+                        e.targets.push(v);
                     }
-                }
+                });
             }
         }
     }
@@ -410,12 +440,12 @@ namespace feng3d
         /**
          * 事件目标。
          */
-        target: any;
+        target?: any;
 
         /**
          * 当前正在使用某个事件监听器处理 Event 对象的对象。
          */
-        currentTarget: any;
+        currentTarget?: any;
 
         /**
          * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
@@ -425,22 +455,32 @@ namespace feng3d
         /**
          * 是否停止冒泡
          */
-        isStopBubbles: boolean;
+        isStopBubbles?: boolean;
 
         /**
          * 是否停止处理事件监听器
          */
-        isStop: boolean;
+        isStop?: boolean;
 
         /**
          * 事件流过的对象列表，事件路径
          */
-        targets: any[];
+        targets?: any[];
+
+        /**
+         * 当前事件流到targets的索引
+         */
+        targetsIndex?: number;
+
+        /**
+         * 当前事件冒泡流到targets的索引
+         */
+        targetsBubblesIndex?: number;
 
         /**
          * 处理列表
          */
-        handles: ListenerVO[];
+        handles?: ListenerVO[];
     }
 
     /**

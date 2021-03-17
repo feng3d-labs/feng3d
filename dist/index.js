@@ -174,7 +174,7 @@ var feng3d;
          */
         FEvent.prototype.makeEvent = function (type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            return { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [], handles: [] };
+            return { type: type, data: data, bubbles: bubbles };
         };
         return FEvent;
     }());
@@ -270,13 +270,45 @@ var feng3d;
          * @returns 返回事件是否被该对象处理
          */
         EventEmitter.prototype.emitEvent = function (e) {
-            var targets = e.targets = e.targets || [];
+            // 是否为初次派发
+            var isEventStart = !e.target;
+            if (isEventStart) {
+                // 初始化事件
+                e.target = e.target || null;
+                e.currentTarget = e.currentTarget || null;
+                e.isStop = e.isStop || false;
+                e.isStopBubbles = e.isStopBubbles || false;
+                e.targets = e.targets || [];
+                e.handles = e.handles || [];
+                e.targetsIndex = e.targetsIndex || 0;
+                e.targetsBubblesIndex = e.targetsBubblesIndex || 0;
+            }
+            var targets = e.targets;
             if (targets.indexOf(this[feng3d.__event_emitter_target__]) != -1)
                 return false;
             targets.push(this[feng3d.__event_emitter_target__]);
-            e.handles = [];
-            this.handleEvent(e);
-            this.handelEventBubbles(e);
+            // 
+            var index = e.targetsIndex;
+            while (targets.length > index) {
+                var n = targets.length;
+                // 派发事件
+                while (e.targetsIndex < n) {
+                    var eventEmitter = EventEmitter.getOrCreateEventEmitter(targets[e.targetsIndex++]);
+                    eventEmitter.handleEvent(e); // 传递到其它对象中去，将会增加 targets 的长度。
+                }
+                index = e.targetsIndex;
+                if (isEventStart) // 统一在派发事件入口处理冒泡
+                 {
+                    // 处理冒泡
+                    if (e.bubbles && !e.isStopBubbles) {
+                        while (e.targetsBubblesIndex < n) {
+                            var eventEmitter = EventEmitter.getOrCreateEventEmitter(targets[e.targetsBubblesIndex++]);
+                            eventEmitter.handelEventBubbles(e); // 冒泡到其它对象中去，将会增加 targets 的长度。
+                        }
+                        index = e.targetsBubblesIndex;
+                    }
+                }
+            }
             return true;
         };
         /**
@@ -483,17 +515,13 @@ var feng3d;
          */
         EventEmitter.prototype.handelEventBubbles = function (e) {
             var _a;
-            if (e.bubbles && !e.isStopBubbles) {
-                if (typeof ((_a = this[feng3d.__event_emitter_target__]) === null || _a === void 0 ? void 0 : _a[feng3d.__event_bubble_function__]) === "function") {
-                    var bubbleTargets = this[feng3d.__event_emitter_target__][feng3d.__event_bubble_function__]();
-                    bubbleTargets = bubbleTargets.filter(function (v) { return (v !== undefined && v !== null); }).map(function (v) { return EventEmitter.getOrCreateEventEmitter(v); });
-                    for (var i = 0, n = bubbleTargets.length; i < n; i++) {
-                        var bubbleTarget = bubbleTargets[i];
-                        if (!e.isStop) {
-                            bubbleTarget.emitEvent(e);
-                        }
+            if (typeof ((_a = this[feng3d.__event_emitter_target__]) === null || _a === void 0 ? void 0 : _a[feng3d.__event_bubble_function__]) === "function") {
+                var bubbleTargets = this[feng3d.__event_emitter_target__][feng3d.__event_bubble_function__]();
+                bubbleTargets.forEach(function (v) {
+                    if (v !== undefined && e.targets.indexOf(v) === -1) {
+                        e.targets.push(v);
                     }
-                }
+                });
             }
         };
         EventEmitter.targetMap = new Map();

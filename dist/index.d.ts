@@ -240,11 +240,11 @@ declare namespace feng3d {
         /**
          * 事件目标。
          */
-        target: any;
+        target?: any;
         /**
          * 当前正在使用某个事件监听器处理 Event 对象的对象。
          */
-        currentTarget: any;
+        currentTarget?: any;
         /**
          * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
@@ -252,19 +252,27 @@ declare namespace feng3d {
         /**
          * 是否停止冒泡
          */
-        isStopBubbles: boolean;
+        isStopBubbles?: boolean;
         /**
          * 是否停止处理事件监听器
          */
-        isStop: boolean;
+        isStop?: boolean;
         /**
          * 事件流过的对象列表，事件路径
          */
-        targets: any[];
+        targets?: any[];
+        /**
+         * 当前事件流到targets的索引
+         */
+        targetsIndex?: number;
+        /**
+         * 当前事件冒泡流到targets的索引
+         */
+        targetsBubblesIndex?: number;
         /**
          * 处理列表
          */
-        handles: ListenerVO[];
+        handles?: ListenerVO[];
     }
     /**
      * 监听数据
