@@ -48,13 +48,13 @@ namespace feng3d
 
     export interface ComponentMap { Node3D: Node3D; }
 
-	/**
+    /**
      * 变换
      * 
-	 * 物体的位置、旋转和比例。
+     * 物体的位置、旋转和比例。
      * 
-	 * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
-	 */
+     * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
+     */
     @RegisterComponent()
     export class Node3D extends Component3D
     {
@@ -82,9 +82,9 @@ namespace feng3d
         @serialize
         mouseEnabled = true;
 
-		/**
-		 * 创建一个实体，该类为虚类
-		 */
+        /**
+         * 创建一个实体，该类为虚类
+         */
         constructor()
         {
             super();
@@ -1133,7 +1133,7 @@ namespace feng3d
          */
         protected __event_bubble_function__(): any[]
         {
-            return [this.entity as any].concat(this.entity.components, this.parent);
+            return [this.parent];
         }
     }
 }

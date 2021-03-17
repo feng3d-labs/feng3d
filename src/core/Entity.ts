@@ -76,6 +76,8 @@ namespace feng3d
         {
             super();
             this.name = "Entity";
+
+            this.onAny(this._onAnyListener, this);
         }
 
         /**
@@ -277,12 +279,14 @@ namespace feng3d
         }
 
         /**
-         * 申明冒泡函数
-         * feng3d.__event_bubble_function__
+         * 监听对象的所有事件并且传播到所有组件中
          */
-        protected __event_bubble_function__(): any[]
+        private _onAnyListener(e: Event<any>)
         {
-            return this.components;
+            this.components.forEach((element: Component) =>
+            {
+                element.emitEvent(e);
+            });
         }
 
         /**

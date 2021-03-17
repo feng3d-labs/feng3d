@@ -26028,6 +26028,7 @@ var feng3d;
         function Component() {
             var _this = _super.call(this) || this;
             _this._disposed = false;
+            _this.onAny(_this._onAnyListener, _this);
             return _this;
         }
         Object.defineProperty(Component.prototype, "entity", {
@@ -26194,11 +26195,11 @@ var feng3d;
         Component.prototype.beforeRender = function (renderAtomic, scene, camera) {
         };
         /**
-         * 申明冒泡函数
-         * feng3d.__event_bubble_function__
+         * 监听对象的所有事件并且传播到所有组件中
          */
-        Component.prototype.__event_bubble_function__ = function () {
-            return [this.entity];
+        Component.prototype._onAnyListener = function (e) {
+            if (this._entity)
+                this._entity.emitEvent(e);
         };
         /**
          * 该方法仅在GameObject中使用
@@ -27683,7 +27684,7 @@ var feng3d;
          * feng3d.__event_bubble_function__
          */
         Node3D.prototype.__event_bubble_function__ = function () {
-            return [this.entity].concat(this.entity.components, this.parent);
+            return [this.parent];
         };
         __decorate([
             feng3d.serialize
@@ -28130,6 +28131,7 @@ var feng3d;
              */
             _this._components = [];
             _this.name = "Entity";
+            _this.onAny(_this._onAnyListener, _this);
             return _this;
         }
         Object.defineProperty(Entity.prototype, "numComponents", {
@@ -28320,11 +28322,12 @@ var feng3d;
             return removeComponents;
         };
         /**
-         * 申明冒泡函数
-         * feng3d.__event_bubble_function__
+         * 监听对象的所有事件并且传播到所有组件中
          */
-        Entity.prototype.__event_bubble_function__ = function () {
-            return this.components;
+        Entity.prototype._onAnyListener = function (e) {
+            this.components.forEach(function (element) {
+                element.emitEvent(e);
+            });
         };
         /**
          * 销毁

@@ -12468,10 +12468,9 @@ declare namespace feng3d {
         dispose(): void;
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
-         * 申明冒泡函数
-         * feng3d.__event_bubble_function__
+         * 监听对象的所有事件并且传播到所有组件中
          */
-        protected __event_bubble_function__(): any[];
+        private _onAnyListener;
         /**
          * 该方法仅在GameObject中使用
          * @private
@@ -13465,10 +13464,9 @@ declare namespace feng3d {
          */
         removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
-         * 申明冒泡函数
-         * feng3d.__event_bubble_function__
+         * 监听对象的所有事件并且传播到所有组件中
          */
-        protected __event_bubble_function__(): any[];
+        private _onAnyListener;
         /**
          * 销毁
          */
