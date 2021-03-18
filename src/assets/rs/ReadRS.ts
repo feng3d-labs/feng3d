@@ -396,7 +396,7 @@ namespace feng3d
             this.readAssetDatas(assetids, (err, result) =>
             {
                 // 创建资源数据实例
-                var assetData = classUtils.getInstanceByName(object[CLASS_KEY]);
+                var assetData = classUtils.getInstanceByName(object[__class__]);
                 //默认反序列
                 serialization.setValue(assetData, object);
                 callback(assetData);

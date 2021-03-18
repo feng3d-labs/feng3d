@@ -33,7 +33,7 @@ namespace feng3d
         return (constructor: Function) =>
         {
             var info = component as ComponentInfo;
-            info.name = info.name || constructor["name"];
+            info.name = info.name || constructor.name;
             info.type = <any>constructor;
             info.dependencies = info.dependencies || [];
             if (componentMap[info.name])

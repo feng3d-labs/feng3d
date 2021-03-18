@@ -1141,7 +1141,7 @@ Object.assignDeepDefaultHandlers = [
 ];
 var feng3d;
 (function (feng3d) {
-    feng3d.CLASS_KEY = "__class__";
+    feng3d.__class__ = "__class__";
     /**
      * 类工具
      */
@@ -1166,8 +1166,8 @@ var feng3d;
                 });
             }
             var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-            if (prototype.hasOwnProperty(feng3d.CLASS_KEY))
-                return prototype[feng3d.CLASS_KEY];
+            if (prototype.hasOwnProperty(feng3d.__class__))
+                return prototype[feng3d.__class__];
             var className = prototype.constructor.name;
             if (_global[className] == prototype.constructor)
                 return className;
@@ -1278,7 +1278,7 @@ var feng3d;
      */
     function registerClass(classDefinition, className) {
         var prototype = classDefinition.prototype;
-        Object.defineProperty(prototype, feng3d.CLASS_KEY, { value: className, writable: true, enumerable: false });
+        Object.defineProperty(prototype, feng3d.__class__, { value: className, writable: true, enumerable: false });
     }
     feng3d.registerClass = registerClass;
 })(feng3d || (feng3d = {}));
@@ -1992,7 +1992,7 @@ var feng3d;
         Serialization.prototype.deleteCLASS_KEY = function (obj) {
             if (Object.isBaseType(obj))
                 return;
-            delete obj[feng3d.CLASS_KEY];
+            delete obj[feng3d.__class__];
             for (var key in obj) {
                 this.deleteCLASS_KEY(obj[key]);
             }
@@ -2126,7 +2126,7 @@ var feng3d;
             var spv = source[property];
             if (spv && typeof spv == "function") {
                 var object = {};
-                object[feng3d.CLASS_KEY] = "function";
+                object[feng3d.__class__] = "function";
                 object.data = spv.toString();
                 target[property] = object;
                 return true;
@@ -2153,7 +2153,7 @@ var feng3d;
             if (spv && spv["serialize"]) {
                 var object = {};
                 target[property] = object;
-                object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
+                object[feng3d.__class__] = feng3d.classUtils.getQualifiedClassName(spv);
                 spv["serialize"](object);
                 return true;
             }
@@ -2208,7 +2208,7 @@ var feng3d;
                 keys.forEach(function (key) {
                     propertyHandler(object_2, spv, key, param);
                 });
-                object_2[feng3d.CLASS_KEY] = className;
+                object_2[feng3d.__class__] = className;
                 return true;
             }
             // 执行默认忽略默认值
@@ -2222,7 +2222,7 @@ var feng3d;
                 if (!(inst instanceof spv.constructor))
                     inst = spv.constructor.inst = new spv.constructor();
                 var diff = param.serialization.different(spv, inst);
-                diff[feng3d.CLASS_KEY] = className;
+                diff[feng3d.__class__] = className;
                 target[property] = diff;
             }
             else {
@@ -2273,7 +2273,7 @@ var feng3d;
             priority: 0,
             handler: function (target, source, property) {
                 var spv = source[property];
-                if (spv && spv[feng3d.CLASS_KEY] == "function") {
+                if (spv && spv[feng3d.__class__] == "function") {
                     target[property] = eval("(" + spv.data + ")");
                     return true;
                 }
@@ -2315,7 +2315,7 @@ var feng3d;
             handler: function (target, source, property, param) {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == null) {
+                if (Object.isObject(spv) && spv[feng3d.__class__] == null) {
                     var obj = {};
                     if (tpv)
                         obj = tpv;
@@ -2336,7 +2336,7 @@ var feng3d;
             handler: function (target, source, property) {
                 var tpv = target[property];
                 var spv = source[property];
-                var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
+                var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.__class__]);
                 //处理自定义反序列化对象
                 if (inst && inst["deserialize"]) {
                     if (tpv && tpv.constructor == inst.constructor) {
@@ -2355,7 +2355,7 @@ var feng3d;
             handler: function (target, source, property, param) {
                 var tpv = target[property];
                 var spv = source[property];
-                var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
+                var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.__class__]);
                 if (inst) {
                     if (tpv && tpv.constructor == inst.constructor) {
                         inst = tpv;
@@ -2363,7 +2363,7 @@ var feng3d;
                     //默认反序列
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
-                        if (key != feng3d.CLASS_KEY)
+                        if (key != feng3d.__class__)
                             propertyHandler(inst, spv, key, param);
                     });
                     target[property] = inst;
@@ -2540,7 +2540,7 @@ var feng3d;
             handler: function (target, source, property, param) {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == undefined) {
+                if (Object.isObject(spv) && spv[feng3d.__class__] == undefined) {
                     console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
@@ -2560,7 +2560,7 @@ var feng3d;
                 var spv = source[property];
                 var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
                 // 相同对象类型
-                if (targetClassName == spv[feng3d.CLASS_KEY]) {
+                if (targetClassName == spv[feng3d.__class__]) {
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, param);
@@ -24112,7 +24112,7 @@ var feng3d;
                 return false;
             if (asset instanceof AssetData)
                 return true;
-            if (feng3d.classUtils.getDefaultInstanceByName(asset[feng3d.CLASS_KEY]) instanceof AssetData)
+            if (feng3d.classUtils.getDefaultInstanceByName(asset[feng3d.__class__]) instanceof AssetData)
                 return true;
         };
         /**
@@ -24122,7 +24122,7 @@ var feng3d;
          */
         AssetData.serialize = function (asset) {
             var obj = {};
-            obj[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(asset);
+            obj[feng3d.__class__] = feng3d.classUtils.getQualifiedClassName(asset);
             obj.assetId = asset.assetId;
             return obj;
         };
@@ -25040,7 +25040,7 @@ var feng3d;
             // 加载包含的资源数据
             this.readAssetDatas(assetids, function (err, result) {
                 // 创建资源数据实例
-                var assetData = feng3d.classUtils.getInstanceByName(object[feng3d.CLASS_KEY]);
+                var assetData = feng3d.classUtils.getInstanceByName(object[feng3d.__class__]);
                 //默认反序列
                 feng3d.serialization.setValue(assetData, object);
                 callback(assetData);
@@ -26022,7 +26022,7 @@ var feng3d;
         if (component === void 0) { component = {}; }
         return function (constructor) {
             var info = component;
-            info.name = info.name || constructor["name"];
+            info.name = info.name || constructor.name;
             info.type = constructor;
             info.dependencies = info.dependencies || [];
             if (feng3d.componentMap[info.name]) {
@@ -26247,265 +26247,6 @@ var feng3d;
         return Component;
     }(feng3d.Feng3dObject));
     feng3d.Component = Component;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 3D组件
-     * GameObject必须拥有Transform组件的
-     */
-    var Component3D = /** @class */ (function (_super) {
-        __extends(Component3D, _super);
-        function Component3D() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        Object.defineProperty(Component3D.prototype, "node3d", {
-            /**
-             * The Transform attached to this Entity (null if there is none attached).
-             */
-            get: function () {
-                var _a;
-                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node3D);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * Returns all components of Type type in the Entity.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component3D.prototype.getComponentsInChildren = function (type, filter, result) {
-            return this.node3d.getComponentsInChildren(type, filter, result);
-        };
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component3D.prototype.getComponentsInParents = function (type, result) {
-            return this.node3d.getComponentsInParents(type, result);
-        };
-        return Component3D;
-    }(feng3d.Component));
-    feng3d.Component3D = Component3D;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Graphics 类包含一组可用来创建矢量形状的方法。
-     */
-    var Graphics = /** @class */ (function (_super) {
-        __extends(Graphics, _super);
-        function Graphics() {
-            var _this = _super.call(this) || this;
-            _this.canvas = document.createElement("canvas");
-            _this.canvas.width = _this.width;
-            _this.canvas.height = _this.height;
-            _this.context2D = _this.canvas.getContext('2d');
-            //
-            watchContext2D(_this.context2D);
-            return _this;
-        }
-        Graphics.prototype.draw = function (width, height, callback) {
-            var _this = this;
-            var canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            var ctxt = canvas.getContext('2d');
-            callback(ctxt);
-            feng3d.dataTransform.canvasToImage(canvas, "png", 1, function (img) {
-                _this.image = img;
-            });
-            return this;
-        };
-        return Graphics;
-    }(feng3d.Component));
-    feng3d.Graphics = Graphics;
-    function watchContext2D(context2D, watchFuncs) {
-        if (watchFuncs === void 0) { watchFuncs = ["rect"]; }
-        watchFuncs.forEach(function (v) {
-            var oldFunc = context2D[v];
-            context2D[v] = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                oldFunc.apply(context2D, args);
-                // 标记更改
-                context2D["__changed"] = true;
-            };
-        });
-    }
-    feng3d.watchContext2D = watchContext2D;
-})(feng3d || (feng3d = {}));
-// var ctxts = [];
-// var num = 100;
-// for (var i = 0; i < num; i++)
-// {
-//     var canvas = document.createElement("canvas");
-//     canvas.width = 100;
-//     canvas.height = 100;
-//     var ctxt = canvas.getContext('2d');
-//     ctxts.push(ctxt);
-// }
-var feng3d;
-(function (feng3d) {
-    /**
-     * 行为
-     *
-     * 可以控制开关的组件
-     */
-    var Behaviour = /** @class */ (function (_super) {
-        __extends(Behaviour, _super);
-        function Behaviour() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 是否启用update方法
-             */
-            _this.enabled = true;
-            /**
-             * 可运行环境
-             */
-            _this.runEnvironment = feng3d.RunEnvironment.all;
-            return _this;
-        }
-        Object.defineProperty(Behaviour.prototype, "isVisibleAndEnabled", {
-            /**
-             * Has the Behaviour had enabled called.
-             * 是否所在GameObject显示且该行为已启动。
-             */
-            get: function () {
-                var _a;
-                var v = this.enabled && ((_a = this.node3d) === null || _a === void 0 ? void 0 : _a.globalVisible);
-                return v;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 每帧执行
-         */
-        Behaviour.prototype.update = function (interval) {
-        };
-        Behaviour.prototype.dispose = function () {
-            this.enabled = false;
-            _super.prototype.dispose.call(this);
-        };
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Behaviour.prototype, "enabled", void 0);
-        Behaviour = __decorate([
-            feng3d.RegisterComponent()
-        ], Behaviour);
-        return Behaviour;
-    }(feng3d.Component3D));
-    feng3d.Behaviour = Behaviour;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 天空盒组件
-     */
-    var SkyBox = /** @class */ (function (_super) {
-        __extends(SkyBox, _super);
-        function SkyBox() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.s_skyboxTexture = feng3d.TextureCube.default;
-            return _this;
-        }
-        SkyBox.prototype.beforeRender = function (renderAtomic, scene, camera) {
-            var _this = this;
-            renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
-        ], SkyBox.prototype, "s_skyboxTexture", void 0);
-        SkyBox = __decorate([
-            feng3d.AddComponentMenu("SkyBox/SkyBox"),
-            feng3d.RegisterComponent()
-        ], SkyBox);
-        return SkyBox;
-    }(feng3d.Component3D));
-    feng3d.SkyBox = SkyBox;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 天空盒渲染器
-     */
-    var SkyBoxRenderer = /** @class */ (function () {
-        function SkyBoxRenderer() {
-        }
-        SkyBoxRenderer.prototype.init = function () {
-            if (!this.renderAtomic) {
-                var renderAtomic = this.renderAtomic = new feng3d.RenderAtomic();
-                //八个顶点，32个number
-                var vertexPositionData = [
-                    -1, 1, -1,
-                    1, 1, -1,
-                    1, 1, 1,
-                    -1, 1, 1,
-                    -1, -1, -1,
-                    1, -1, -1,
-                    1, -1, 1,
-                    -1, -1, 1 //
-                ];
-                renderAtomic.attributes.a_position = new feng3d.Attribute("a_position", vertexPositionData, 3);
-                //6个面，12个三角形，36个顶点索引
-                var indices = [
-                    0, 1, 2, 2, 3, 0,
-                    6, 5, 4, 4, 7, 6,
-                    2, 6, 7, 7, 3, 2,
-                    4, 5, 1, 1, 0, 4,
-                    4, 0, 3, 3, 7, 4,
-                    2, 1, 5, 5, 6, 2 //
-                ];
-                renderAtomic.indexBuffer = new feng3d.Index();
-                renderAtomic.indexBuffer.indices = indices;
-                //
-                var renderParams = renderAtomic.renderParams;
-                renderParams.cullFace = feng3d.CullFace.NONE;
-                //
-                renderAtomic.shader = new feng3d.Shader("skybox");
-            }
-        };
-        /**
-         * 绘制场景中天空盒
-         * @param gl
-         * @param scene 场景
-         * @param camera 摄像机
-         */
-        SkyBoxRenderer.prototype.draw = function (gl, scene, camera) {
-            var skybox = scene.activeSkyBoxs[0];
-            this.drawSkyBox(gl, skybox, scene, camera);
-        };
-        /**
-         * 绘制天空盒
-         * @param gl
-         * @param skybox 天空盒
-         * @param camera 摄像机
-         */
-        SkyBoxRenderer.prototype.drawSkyBox = function (gl, skybox, scene, camera) {
-            if (!skybox)
-                return;
-            this.init();
-            //
-            skybox.beforeRender(this.renderAtomic, scene, camera);
-            //
-            this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
-            this.renderAtomic.uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix;
-            this.renderAtomic.uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
-            this.renderAtomic.uniforms.u_cameraPos = camera.node3d.worldPosition;
-            this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            gl.render(this.renderAtomic);
-        };
-        return SkyBoxRenderer;
-    }());
-    feng3d.SkyBoxRenderer = SkyBoxRenderer;
-    feng3d.skyboxRenderer = new SkyBoxRenderer();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27572,9 +27313,12 @@ var feng3d;
             if (this._scene) {
                 this.emit("addedToScene", this);
             }
-            this.updateChildrenScene();
+            this._updateChildrenScene();
         };
-        Node3D.prototype.updateChildrenScene = function () {
+        /**
+         * @private
+         */
+        Node3D.prototype._updateChildrenScene = function () {
             for (var i = 0, n = this._children.length; i < n; i++) {
                 this._children[i].updateScene();
             }
@@ -27604,7 +27348,7 @@ var feng3d;
             //
             if (this.entity) {
                 for (var i = 0, n = this.numChildren; i < n; i++) {
-                    this.getChildAt(i).node3d._invalidateSceneTransform();
+                    this.getChildAt(i)._invalidateSceneTransform();
                 }
             }
         };
@@ -27714,6 +27458,13 @@ var feng3d;
         Node3D.prototype.__event_bubble_function__ = function () {
             return [this.parent];
         };
+        /**
+         * @private
+         * @param v
+         */
+        Node3D.prototype._setScene = function (v) {
+            this._scene = v;
+        };
         __decorate([
             feng3d.serialize
         ], Node3D.prototype, "prefabId", void 0);
@@ -27769,245 +27520,8 @@ var feng3d;
             feng3d.RegisterComponent()
         ], Node3D);
         return Node3D;
-    }(feng3d.Component3D));
+    }(feng3d.Component));
     feng3d.Node3D = Node3D;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 变换布局
-     *
-     * 提供了比Transform更加适用于2D元素的API
-     *
-     * 通过修改Transform的数值实现
-     */
-    var TransformLayout = /** @class */ (function (_super) {
-        __extends(TransformLayout, _super);
-        /**
-         * 创建一个实体，该类为虚类
-         */
-        function TransformLayout() {
-            var _this = _super.call(this) || this;
-            _this._position = new feng3d.Vector3();
-            _this._size = new feng3d.Vector3(1, 1, 1);
-            _this._leftTop = new feng3d.Vector3(0, 0, 0);
-            _this._rightBottom = new feng3d.Vector3(0, 0, 0);
-            /**
-             * 最小锚点，父Transform2D中左上角锚定的规范化位置。
-             */
-            _this.anchorMin = new feng3d.Vector3(0.5, 0.5, 0.5);
-            /**
-             * 最大锚点，父Transform2D中左上角锚定的规范化位置。
-             */
-            _this.anchorMax = new feng3d.Vector3(0.5, 0.5, 0.5);
-            /**
-             * The normalized position in this RectTransform that it rotates around.
-             */
-            _this.pivot = new feng3d.Vector3(0.5, 0.5, 0.5);
-            /**
-             * 布局是否失效
-             */
-            _this._layoutInvalid = true;
-            feng3d.watcher.watch(_this._position, "x", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this._position, "y", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this._position, "z", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this.anchorMin, "x", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this.anchorMin, "y", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this.anchorMin, "z", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this.anchorMax, "x", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this.anchorMax, "y", _this._invalidateLayout, _this);
-            feng3d.watcher.watch(_this.anchorMax, "z", _this._invalidateLayout, _this);
-            //
-            feng3d.watcher.watch(_this._leftTop, "x", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this._leftTop, "y", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this._leftTop, "z", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this._rightBottom, "x", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this._rightBottom, "y", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this._rightBottom, "z", _this._invalidateSize, _this);
-            //
-            feng3d.watcher.watch(_this._size, "x", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this._size, "y", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this._size, "z", _this._invalidateSize, _this);
-            feng3d.watcher.watch(_this.pivot, "x", _this._invalidatePivot, _this);
-            feng3d.watcher.watch(_this.pivot, "y", _this._invalidatePivot, _this);
-            feng3d.watcher.watch(_this.pivot, "z", _this._invalidatePivot, _this);
-            //
-            _this.on("added", _this._onAdded, _this);
-            _this.on("removed", _this._onRemoved, _this);
-            return _this;
-        }
-        TransformLayout_1 = TransformLayout;
-        Object.defineProperty(TransformLayout.prototype, "single", {
-            get: function () { return true; },
-            enumerable: false,
-            configurable: true
-        });
-        TransformLayout.prototype._onAdded = function (event) {
-            event.data.parent.on("sizeChanged", this._invalidateLayout, this);
-            event.data.parent.on("pivotChanged", this._invalidateLayout, this);
-            this._invalidateLayout();
-        };
-        TransformLayout.prototype._onRemoved = function (event) {
-            event.data.parent.off("sizeChanged", this._invalidateLayout, this);
-            event.data.parent.off("pivotChanged", this._invalidateLayout, this);
-        };
-        Object.defineProperty(TransformLayout.prototype, "position", {
-            /**
-             * 位移
-             */
-            get: function () {
-                this._updateLayout();
-                return this._position;
-            },
-            set: function (v) { this._position.copy(v); },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(TransformLayout.prototype, "size", {
-            /**
-             * 尺寸，宽高。
-             */
-            get: function () {
-                this._updateLayout();
-                return this._size;
-            },
-            set: function (v) { this._size.copy(v); },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(TransformLayout.prototype, "leftTop", {
-            /**
-             * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
-             */
-            get: function () {
-                return this._leftTop;
-            },
-            set: function (v) {
-                this._leftTop.copy(v);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(TransformLayout.prototype, "rightBottom", {
-            /**
-             * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
-             */
-            get: function () {
-                return this._rightBottom;
-            },
-            set: function (v) {
-                this._rightBottom.copy(v);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        TransformLayout.prototype.beforeRender = function (renderAtomic, scene, camera) {
-            // renderAtomic.uniforms.u_rect = this.rect;
-        };
-        TransformLayout.prototype._updateLayout = function () {
-            var _a, _b;
-            if (!this._layoutInvalid)
-                return;
-            var transformLayout = (_b = (_a = this.node3d) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.getComponent(TransformLayout_1);
-            if (!transformLayout)
-                return;
-            // 中心点基于anchorMin的坐标
-            var position = this._position;
-            // 尺寸
-            var size = this._size;
-            var leftTop = this._leftTop;
-            var rightBottom = this._rightBottom;
-            // 最小锚点
-            var anchorMin = this.anchorMin.clone();
-            // 最大锚点
-            var anchorMax = this.anchorMax.clone();
-            var pivot = this.pivot.clone();
-            // 父对象显示区域宽高
-            var parentSize = transformLayout.size;
-            var parentPivot = transformLayout.pivot;
-            // 锚点在父Transform2D中锚定的 leftRightTopBottom 位置。
-            var anchorLeftTop = new feng3d.Vector3(anchorMin.x * parentSize.x - parentPivot.x * parentSize.x, anchorMin.y * parentSize.y - parentPivot.y * parentSize.y, anchorMin.z * parentSize.z - parentPivot.z * parentSize.z);
-            var anchorRightBottom = new feng3d.Vector3(anchorMax.x * parentSize.x - parentPivot.x * parentSize.x, anchorMax.y * parentSize.y - parentPivot.y * parentSize.y, anchorMax.z * parentSize.z - parentPivot.z * parentSize.z);
-            if (anchorMin.x == anchorMax.x) {
-                leftTop.x = (-pivot.x * size.x + position.x) - anchorLeftTop.x;
-                rightBottom.x = anchorRightBottom.x - (size.x - pivot.x * size.x + position.x);
-            }
-            else {
-                size.x = (anchorRightBottom.x - rightBottom.x) - (anchorLeftTop.x + leftTop.x);
-                position.x = leftTop.x + pivot.x * size.x;
-            }
-            if (anchorMin.y == anchorMax.y) {
-                leftTop.y = (-pivot.y * size.y + position.y) - anchorLeftTop.y;
-                rightBottom.y = anchorRightBottom.y - (size.y - pivot.y * size.y + position.y);
-            }
-            else {
-                size.y = (anchorRightBottom.y - rightBottom.y) - (anchorLeftTop.y + leftTop.y);
-                position.y = leftTop.y + pivot.y * size.y;
-            }
-            if (anchorMin.z == anchorMax.z) {
-                leftTop.z = (-pivot.z * size.z + position.z) - anchorLeftTop.z;
-                rightBottom.z = anchorRightBottom.z - (size.z - pivot.z * size.z + position.z);
-            }
-            else {
-                size.z = (anchorRightBottom.z - rightBottom.z) - (anchorLeftTop.z + leftTop.z);
-                position.z = leftTop.z + pivot.z * size.z;
-            }
-            //
-            this.node3d.position.x = anchorLeftTop.x + position.x;
-            this.node3d.position.y = anchorLeftTop.y + position.y;
-            this.node3d.position.z = anchorLeftTop.z + position.z;
-            //
-            this._layoutInvalid = false;
-            feng3d.ticker.offframe(this._updateLayout, this);
-        };
-        TransformLayout.prototype._invalidateLayout = function () {
-            this._layoutInvalid = true;
-            feng3d.ticker.onframe(this._updateLayout, this);
-        };
-        TransformLayout.prototype._invalidateSize = function () {
-            this._invalidateLayout();
-            this.emit("sizeChanged", this);
-        };
-        TransformLayout.prototype._invalidatePivot = function () {
-            this._invalidateLayout();
-            this.emit("pivotChanged", this);
-        };
-        var TransformLayout_1;
-        __decorate([
-            feng3d.oav({ tooltip: "当anchorMin.x == anchorMax.x时对position.x赋值生效，当 anchorMin.y == anchorMax.y 时对position.y赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
-            feng3d.serialize
-        ], TransformLayout.prototype, "position", null);
-        __decorate([
-            feng3d.oav({ tooltip: "宽度，不会影响到缩放值。当 anchorMin.x == anchorMax.x 时对 size.x 赋值生效，当anchorMin.y == anchorMax.y时对 size.y 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
-            feng3d.serialize
-        ], TransformLayout.prototype, "size", null);
-        __decorate([
-            feng3d.oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
-            feng3d.serialize
-        ], TransformLayout.prototype, "leftTop", null);
-        __decorate([
-            feng3d.oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
-            feng3d.serialize
-        ], TransformLayout.prototype, "rightBottom", null);
-        __decorate([
-            feng3d.oav({ tooltip: "父Transform2D中左上角锚定的规范化位置。", componentParam: { step: 0.01, stepScale: 0.01, stepDownup: 0.01 } }),
-            feng3d.serialize
-        ], TransformLayout.prototype, "anchorMin", void 0);
-        __decorate([
-            feng3d.oav({ tooltip: "最大锚点，父Transform2D中左上角锚定的规范化位置。", componentParam: { step: 0.01, stepScale: 0.01, stepDownup: 0.01 } }),
-            feng3d.serialize
-        ], TransformLayout.prototype, "anchorMax", void 0);
-        __decorate([
-            feng3d.oav({ tooltip: "中心点" }),
-            feng3d.serialize
-        ], TransformLayout.prototype, "pivot", void 0);
-        TransformLayout = TransformLayout_1 = __decorate([
-            feng3d.AddComponentMenu("Layout/TransformLayout"),
-            feng3d.RegisterComponent()
-        ], TransformLayout);
-        return TransformLayout;
-    }(feng3d.Component3D));
-    feng3d.TransformLayout = TransformLayout;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28207,11 +27721,19 @@ var feng3d;
          * @type type 被添加组件
          */
         Entity.prototype.addComponent = function (type, callback) {
+            var _this = this;
             var component = this.getComponent(type);
             if (component && component.single) {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
+            var compnentInfo = feng3d.componentMap[type.name];
+            console.assert(compnentInfo.type == type, "");
+            // 先添加依赖
+            compnentInfo.dependencies.forEach(function (dependency) {
+                _this.addComponent(dependency);
+            });
+            // 
             component = new type();
             this.addComponentAt(component, this._components.length);
             callback && callback(component);
@@ -28539,7 +28061,7 @@ var feng3d;
                 console.log('GraphicsDevice: WebGL context restored.');
                 // #endif
             }, false);
-            _this.scene = scene || feng3d.serialization.setValue(new feng3d.Entity(), { name: "scene" }).addComponent(feng3d.Node3D).addComponent(feng3d.Scene);
+            _this.scene = scene || feng3d.serialization.setValue(new feng3d.Entity(), { name: "scene" }).addComponent(feng3d.Scene);
             _this.camera = camera;
             _this.start();
             _this.mouse3DManager = new feng3d.Mouse3DManager(new feng3d.WindowMouseInput(), function () { return _this.viewRect; });
@@ -28752,6 +28274,505 @@ var feng3d;
     feng3d.View = View;
 })(feng3d || (feng3d = {}));
 // var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3D组件
+     * GameObject必须拥有Transform组件的
+     */
+    var Component3D = /** @class */ (function (_super) {
+        __extends(Component3D, _super);
+        function Component3D() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(Component3D.prototype, "node3d", {
+            /**
+             * The Transform attached to this Entity (null if there is none attached).
+             */
+            get: function () {
+                var _a;
+                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node3D);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * Returns all components of Type type in the Entity.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component3D.prototype.getComponentsInChildren = function (type, filter, result) {
+            return this.node3d.getComponentsInChildren(type, filter, result);
+        };
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component3D.prototype.getComponentsInParents = function (type, result) {
+            return this.node3d.getComponentsInParents(type, result);
+        };
+        Component3D = __decorate([
+            feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
+        ], Component3D);
+        return Component3D;
+    }(feng3d.Component));
+    feng3d.Component3D = Component3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Graphics 类包含一组可用来创建矢量形状的方法。
+     */
+    var Graphics = /** @class */ (function (_super) {
+        __extends(Graphics, _super);
+        function Graphics() {
+            var _this = _super.call(this) || this;
+            _this.canvas = document.createElement("canvas");
+            _this.canvas.width = _this.width;
+            _this.canvas.height = _this.height;
+            _this.context2D = _this.canvas.getContext('2d');
+            //
+            watchContext2D(_this.context2D);
+            return _this;
+        }
+        Graphics.prototype.draw = function (width, height, callback) {
+            var _this = this;
+            var canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            var ctxt = canvas.getContext('2d');
+            callback(ctxt);
+            feng3d.dataTransform.canvasToImage(canvas, "png", 1, function (img) {
+                _this.image = img;
+            });
+            return this;
+        };
+        return Graphics;
+    }(feng3d.Component));
+    feng3d.Graphics = Graphics;
+    function watchContext2D(context2D, watchFuncs) {
+        if (watchFuncs === void 0) { watchFuncs = ["rect"]; }
+        watchFuncs.forEach(function (v) {
+            var oldFunc = context2D[v];
+            context2D[v] = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                oldFunc.apply(context2D, args);
+                // 标记更改
+                context2D["__changed"] = true;
+            };
+        });
+    }
+    feng3d.watchContext2D = watchContext2D;
+})(feng3d || (feng3d = {}));
+// var ctxts = [];
+// var num = 100;
+// for (var i = 0; i < num; i++)
+// {
+//     var canvas = document.createElement("canvas");
+//     canvas.width = 100;
+//     canvas.height = 100;
+//     var ctxt = canvas.getContext('2d');
+//     ctxts.push(ctxt);
+// }
+var feng3d;
+(function (feng3d) {
+    /**
+     * 行为
+     *
+     * 可以控制开关的组件
+     */
+    var Behaviour = /** @class */ (function (_super) {
+        __extends(Behaviour, _super);
+        function Behaviour() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 是否启用update方法
+             */
+            _this.enabled = true;
+            /**
+             * 可运行环境
+             */
+            _this.runEnvironment = feng3d.RunEnvironment.all;
+            return _this;
+        }
+        Object.defineProperty(Behaviour.prototype, "isVisibleAndEnabled", {
+            /**
+             * Has the Behaviour had enabled called.
+             * 是否所在GameObject显示且该行为已启动。
+             */
+            get: function () {
+                var _a;
+                var v = this.enabled && ((_a = this.node3d) === null || _a === void 0 ? void 0 : _a.globalVisible);
+                return v;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 每帧执行
+         */
+        Behaviour.prototype.update = function (interval) {
+        };
+        Behaviour.prototype.dispose = function () {
+            this.enabled = false;
+            _super.prototype.dispose.call(this);
+        };
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Behaviour.prototype, "enabled", void 0);
+        Behaviour = __decorate([
+            feng3d.RegisterComponent()
+        ], Behaviour);
+        return Behaviour;
+    }(feng3d.Component3D));
+    feng3d.Behaviour = Behaviour;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 变换布局
+     *
+     * 提供了比Transform更加适用于2D元素的API
+     *
+     * 通过修改Transform的数值实现
+     */
+    var TransformLayout = /** @class */ (function (_super) {
+        __extends(TransformLayout, _super);
+        /**
+         * 创建一个实体，该类为虚类
+         */
+        function TransformLayout() {
+            var _this = _super.call(this) || this;
+            _this._position = new feng3d.Vector3();
+            _this._size = new feng3d.Vector3(1, 1, 1);
+            _this._leftTop = new feng3d.Vector3(0, 0, 0);
+            _this._rightBottom = new feng3d.Vector3(0, 0, 0);
+            /**
+             * 最小锚点，父Transform2D中左上角锚定的规范化位置。
+             */
+            _this.anchorMin = new feng3d.Vector3(0.5, 0.5, 0.5);
+            /**
+             * 最大锚点，父Transform2D中左上角锚定的规范化位置。
+             */
+            _this.anchorMax = new feng3d.Vector3(0.5, 0.5, 0.5);
+            /**
+             * The normalized position in this RectTransform that it rotates around.
+             */
+            _this.pivot = new feng3d.Vector3(0.5, 0.5, 0.5);
+            /**
+             * 布局是否失效
+             */
+            _this._layoutInvalid = true;
+            feng3d.watcher.watch(_this._position, "x", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this._position, "y", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this._position, "z", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this.anchorMin, "x", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this.anchorMin, "y", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this.anchorMin, "z", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this.anchorMax, "x", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this.anchorMax, "y", _this._invalidateLayout, _this);
+            feng3d.watcher.watch(_this.anchorMax, "z", _this._invalidateLayout, _this);
+            //
+            feng3d.watcher.watch(_this._leftTop, "x", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this._leftTop, "y", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this._leftTop, "z", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this._rightBottom, "x", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this._rightBottom, "y", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this._rightBottom, "z", _this._invalidateSize, _this);
+            //
+            feng3d.watcher.watch(_this._size, "x", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this._size, "y", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this._size, "z", _this._invalidateSize, _this);
+            feng3d.watcher.watch(_this.pivot, "x", _this._invalidatePivot, _this);
+            feng3d.watcher.watch(_this.pivot, "y", _this._invalidatePivot, _this);
+            feng3d.watcher.watch(_this.pivot, "z", _this._invalidatePivot, _this);
+            //
+            _this.on("added", _this._onAdded, _this);
+            _this.on("removed", _this._onRemoved, _this);
+            return _this;
+        }
+        TransformLayout_1 = TransformLayout;
+        Object.defineProperty(TransformLayout.prototype, "single", {
+            get: function () { return true; },
+            enumerable: false,
+            configurable: true
+        });
+        TransformLayout.prototype._onAdded = function (event) {
+            event.data.parent.on("sizeChanged", this._invalidateLayout, this);
+            event.data.parent.on("pivotChanged", this._invalidateLayout, this);
+            this._invalidateLayout();
+        };
+        TransformLayout.prototype._onRemoved = function (event) {
+            event.data.parent.off("sizeChanged", this._invalidateLayout, this);
+            event.data.parent.off("pivotChanged", this._invalidateLayout, this);
+        };
+        Object.defineProperty(TransformLayout.prototype, "position", {
+            /**
+             * 位移
+             */
+            get: function () {
+                this._updateLayout();
+                return this._position;
+            },
+            set: function (v) { this._position.copy(v); },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(TransformLayout.prototype, "size", {
+            /**
+             * 尺寸，宽高。
+             */
+            get: function () {
+                this._updateLayout();
+                return this._size;
+            },
+            set: function (v) { this._size.copy(v); },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(TransformLayout.prototype, "leftTop", {
+            /**
+             * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+             */
+            get: function () {
+                return this._leftTop;
+            },
+            set: function (v) {
+                this._leftTop.copy(v);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(TransformLayout.prototype, "rightBottom", {
+            /**
+             * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+             */
+            get: function () {
+                return this._rightBottom;
+            },
+            set: function (v) {
+                this._rightBottom.copy(v);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        TransformLayout.prototype.beforeRender = function (renderAtomic, scene, camera) {
+            // renderAtomic.uniforms.u_rect = this.rect;
+        };
+        TransformLayout.prototype._updateLayout = function () {
+            var _a, _b;
+            if (!this._layoutInvalid)
+                return;
+            var transformLayout = (_b = (_a = this.node3d) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.getComponent(TransformLayout_1);
+            if (!transformLayout)
+                return;
+            // 中心点基于anchorMin的坐标
+            var position = this._position;
+            // 尺寸
+            var size = this._size;
+            var leftTop = this._leftTop;
+            var rightBottom = this._rightBottom;
+            // 最小锚点
+            var anchorMin = this.anchorMin.clone();
+            // 最大锚点
+            var anchorMax = this.anchorMax.clone();
+            var pivot = this.pivot.clone();
+            // 父对象显示区域宽高
+            var parentSize = transformLayout.size;
+            var parentPivot = transformLayout.pivot;
+            // 锚点在父Transform2D中锚定的 leftRightTopBottom 位置。
+            var anchorLeftTop = new feng3d.Vector3(anchorMin.x * parentSize.x - parentPivot.x * parentSize.x, anchorMin.y * parentSize.y - parentPivot.y * parentSize.y, anchorMin.z * parentSize.z - parentPivot.z * parentSize.z);
+            var anchorRightBottom = new feng3d.Vector3(anchorMax.x * parentSize.x - parentPivot.x * parentSize.x, anchorMax.y * parentSize.y - parentPivot.y * parentSize.y, anchorMax.z * parentSize.z - parentPivot.z * parentSize.z);
+            if (anchorMin.x == anchorMax.x) {
+                leftTop.x = (-pivot.x * size.x + position.x) - anchorLeftTop.x;
+                rightBottom.x = anchorRightBottom.x - (size.x - pivot.x * size.x + position.x);
+            }
+            else {
+                size.x = (anchorRightBottom.x - rightBottom.x) - (anchorLeftTop.x + leftTop.x);
+                position.x = leftTop.x + pivot.x * size.x;
+            }
+            if (anchorMin.y == anchorMax.y) {
+                leftTop.y = (-pivot.y * size.y + position.y) - anchorLeftTop.y;
+                rightBottom.y = anchorRightBottom.y - (size.y - pivot.y * size.y + position.y);
+            }
+            else {
+                size.y = (anchorRightBottom.y - rightBottom.y) - (anchorLeftTop.y + leftTop.y);
+                position.y = leftTop.y + pivot.y * size.y;
+            }
+            if (anchorMin.z == anchorMax.z) {
+                leftTop.z = (-pivot.z * size.z + position.z) - anchorLeftTop.z;
+                rightBottom.z = anchorRightBottom.z - (size.z - pivot.z * size.z + position.z);
+            }
+            else {
+                size.z = (anchorRightBottom.z - rightBottom.z) - (anchorLeftTop.z + leftTop.z);
+                position.z = leftTop.z + pivot.z * size.z;
+            }
+            //
+            this.node3d.position.x = anchorLeftTop.x + position.x;
+            this.node3d.position.y = anchorLeftTop.y + position.y;
+            this.node3d.position.z = anchorLeftTop.z + position.z;
+            //
+            this._layoutInvalid = false;
+            feng3d.ticker.offframe(this._updateLayout, this);
+        };
+        TransformLayout.prototype._invalidateLayout = function () {
+            this._layoutInvalid = true;
+            feng3d.ticker.onframe(this._updateLayout, this);
+        };
+        TransformLayout.prototype._invalidateSize = function () {
+            this._invalidateLayout();
+            this.emit("sizeChanged", this);
+        };
+        TransformLayout.prototype._invalidatePivot = function () {
+            this._invalidateLayout();
+            this.emit("pivotChanged", this);
+        };
+        var TransformLayout_1;
+        __decorate([
+            feng3d.oav({ tooltip: "当anchorMin.x == anchorMax.x时对position.x赋值生效，当 anchorMin.y == anchorMax.y 时对position.y赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
+            feng3d.serialize
+        ], TransformLayout.prototype, "position", null);
+        __decorate([
+            feng3d.oav({ tooltip: "宽度，不会影响到缩放值。当 anchorMin.x == anchorMax.x 时对 size.x 赋值生效，当anchorMin.y == anchorMax.y时对 size.y 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
+            feng3d.serialize
+        ], TransformLayout.prototype, "size", null);
+        __decorate([
+            feng3d.oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
+            feng3d.serialize
+        ], TransformLayout.prototype, "leftTop", null);
+        __decorate([
+            feng3d.oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } }),
+            feng3d.serialize
+        ], TransformLayout.prototype, "rightBottom", null);
+        __decorate([
+            feng3d.oav({ tooltip: "父Transform2D中左上角锚定的规范化位置。", componentParam: { step: 0.01, stepScale: 0.01, stepDownup: 0.01 } }),
+            feng3d.serialize
+        ], TransformLayout.prototype, "anchorMin", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "最大锚点，父Transform2D中左上角锚定的规范化位置。", componentParam: { step: 0.01, stepScale: 0.01, stepDownup: 0.01 } }),
+            feng3d.serialize
+        ], TransformLayout.prototype, "anchorMax", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "中心点" }),
+            feng3d.serialize
+        ], TransformLayout.prototype, "pivot", void 0);
+        TransformLayout = TransformLayout_1 = __decorate([
+            feng3d.AddComponentMenu("Layout/TransformLayout"),
+            feng3d.RegisterComponent()
+        ], TransformLayout);
+        return TransformLayout;
+    }(feng3d.Component3D));
+    feng3d.TransformLayout = TransformLayout;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 天空盒组件
+     */
+    var SkyBox = /** @class */ (function (_super) {
+        __extends(SkyBox, _super);
+        function SkyBox() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.s_skyboxTexture = feng3d.TextureCube.default;
+            return _this;
+        }
+        SkyBox.prototype.beforeRender = function (renderAtomic, scene, camera) {
+            var _this = this;
+            renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
+        ], SkyBox.prototype, "s_skyboxTexture", void 0);
+        SkyBox = __decorate([
+            feng3d.AddComponentMenu("SkyBox/SkyBox"),
+            feng3d.RegisterComponent()
+        ], SkyBox);
+        return SkyBox;
+    }(feng3d.Component3D));
+    feng3d.SkyBox = SkyBox;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 天空盒渲染器
+     */
+    var SkyBoxRenderer = /** @class */ (function () {
+        function SkyBoxRenderer() {
+        }
+        SkyBoxRenderer.prototype.init = function () {
+            if (!this.renderAtomic) {
+                var renderAtomic = this.renderAtomic = new feng3d.RenderAtomic();
+                //八个顶点，32个number
+                var vertexPositionData = [
+                    -1, 1, -1,
+                    1, 1, -1,
+                    1, 1, 1,
+                    -1, 1, 1,
+                    -1, -1, -1,
+                    1, -1, -1,
+                    1, -1, 1,
+                    -1, -1, 1 //
+                ];
+                renderAtomic.attributes.a_position = new feng3d.Attribute("a_position", vertexPositionData, 3);
+                //6个面，12个三角形，36个顶点索引
+                var indices = [
+                    0, 1, 2, 2, 3, 0,
+                    6, 5, 4, 4, 7, 6,
+                    2, 6, 7, 7, 3, 2,
+                    4, 5, 1, 1, 0, 4,
+                    4, 0, 3, 3, 7, 4,
+                    2, 1, 5, 5, 6, 2 //
+                ];
+                renderAtomic.indexBuffer = new feng3d.Index();
+                renderAtomic.indexBuffer.indices = indices;
+                //
+                var renderParams = renderAtomic.renderParams;
+                renderParams.cullFace = feng3d.CullFace.NONE;
+                //
+                renderAtomic.shader = new feng3d.Shader("skybox");
+            }
+        };
+        /**
+         * 绘制场景中天空盒
+         * @param gl
+         * @param scene 场景
+         * @param camera 摄像机
+         */
+        SkyBoxRenderer.prototype.draw = function (gl, scene, camera) {
+            var skybox = scene.activeSkyBoxs[0];
+            this.drawSkyBox(gl, skybox, scene, camera);
+        };
+        /**
+         * 绘制天空盒
+         * @param gl
+         * @param skybox 天空盒
+         * @param camera 摄像机
+         */
+        SkyBoxRenderer.prototype.drawSkyBox = function (gl, skybox, scene, camera) {
+            if (!skybox)
+                return;
+            this.init();
+            //
+            skybox.beforeRender(this.renderAtomic, scene, camera);
+            //
+            this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
+            this.renderAtomic.uniforms.u_viewMatrix = camera.node3d.worldToLocalMatrix;
+            this.renderAtomic.uniforms.u_cameraMatrix = camera.node3d.localToWorldMatrix;
+            this.renderAtomic.uniforms.u_cameraPos = camera.node3d.worldPosition;
+            this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+            gl.render(this.renderAtomic);
+        };
+        return SkyBoxRenderer;
+    }());
+    feng3d.SkyBoxRenderer = SkyBoxRenderer;
+    feng3d.skyboxRenderer = new SkyBoxRenderer();
+})(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     var HoldSizeComponent = /** @class */ (function (_super) {
@@ -29449,11 +29470,10 @@ var feng3d;
         }
         Scene.prototype.init = function () {
             _super.prototype.init.call(this);
-            this.node3d.hideFlags = this.node3d.hideFlags | feng3d.HideFlags.Hide;
+            this.entity.hideFlags = this.entity.hideFlags | feng3d.HideFlags.Hide;
             this.entity.hideFlags = this.entity.hideFlags | feng3d.HideFlags.DontTransform;
             //
-            this.node3d["_scene"] = this;
-            this.node3d["updateChildrenScene"]();
+            this.node3d._setScene(this);
         };
         Scene.prototype.update = function (interval) {
             var _this = this;
@@ -29671,7 +29691,7 @@ var feng3d;
             feng3d.oav()
         ], Scene.prototype, "ambientColor", void 0);
         Scene = __decorate([
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
         ], Scene);
         return Scene;
     }(feng3d.Component3D));
@@ -34179,7 +34199,7 @@ var feng3d;
             if (name === void 0) { name = "DirectionalLight"; }
             var gameObject = new feng3d.Entity();
             gameObject.name = name;
-            var directionalLight = gameObject.addComponent(feng3d.Node3D).addComponent(DirectionalLight_1);
+            var directionalLight = gameObject.addComponent(DirectionalLight_1);
             return directionalLight;
         };
         Object.defineProperty(DirectionalLight.prototype, "position", {
@@ -34221,7 +34241,7 @@ var feng3d;
         var DirectionalLight_1;
         DirectionalLight = DirectionalLight_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/DirectionalLight"),
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
         ], DirectionalLight);
         return DirectionalLight;
     }(feng3d.Light));
@@ -34536,11 +34556,11 @@ var feng3d;
             if (interpolate === void 0) { interpolate = true; }
             if (this._targetNode) {
                 if (this._lookAtPosition) {
-                    this._targetNode.node3d.lookAt(this.lookAtPosition, this._upAxis);
+                    this._targetNode.lookAt(this.lookAtPosition, this._upAxis);
                 }
                 else if (this._lookAtNode3D) {
-                    this._pos = this._lookAtNode3D.node3d.position;
-                    this._targetNode.node3d.lookAt(this._pos, this._upAxis);
+                    this._pos = this._lookAtNode3D.position;
+                    this._targetNode.lookAt(this._pos, this._upAxis);
                 }
             }
         };
@@ -34761,24 +34781,24 @@ var feng3d;
                 this._pos.z = this._lookAtPosition.z;
             }
             else if (this._lookAtNode3D) {
-                if (this._targetNode.node3d.parent && this._lookAtNode3D.node3d.parent) {
-                    if (this._targetNode.node3d.parent != this._lookAtNode3D.node3d.parent) {
-                        this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
-                        this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
-                        this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
-                        this._targetNode.node3d.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
+                if (this._targetNode.parent && this._lookAtNode3D.parent) {
+                    if (this._targetNode.parent != this._lookAtNode3D.parent) {
+                        this._pos.x = this._lookAtNode3D.worldPosition.x;
+                        this._pos.y = this._lookAtNode3D.worldPosition.y;
+                        this._pos.z = this._lookAtNode3D.worldPosition.z;
+                        this._targetNode.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
                     }
                     else {
-                        this._pos.copy(this._lookAtNode3D.node3d.position);
+                        this._pos.copy(this._lookAtNode3D.position);
                     }
                 }
                 else if (this._lookAtNode3D.scene) {
-                    this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
-                    this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
-                    this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
+                    this._pos.x = this._lookAtNode3D.worldPosition.x;
+                    this._pos.y = this._lookAtNode3D.worldPosition.y;
+                    this._pos.z = this._lookAtNode3D.worldPosition.z;
                 }
                 else {
-                    this._pos.copy(this._lookAtNode3D.node3d.position);
+                    this._pos.copy(this._lookAtNode3D.position);
                 }
             }
             else {
@@ -34786,9 +34806,9 @@ var feng3d;
                 this._pos.y = this._origin.y;
                 this._pos.z = this._origin.z;
             }
-            this._targetNode.node3d.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetNode.node3d.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetNode.node3d.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
+            this._targetNode.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
             _super.prototype.update.call(this);
         };
         return HoverController;
@@ -35819,7 +35839,7 @@ var feng3d;
                     return globalMatrixs[index];
                 var jointPose = joints[index];
                 var jointGameobject = jointGameobjects[index];
-                globalMatrixs[index] = jointGameobject.node3d.matrix.clone();
+                globalMatrixs[index] = jointGameobject.matrix.clone();
                 if (jointPose.parentIndex >= 0) {
                     var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
                     globalMatrixs[index].append(parentGlobalMatrix);
@@ -35865,7 +35885,7 @@ var feng3d;
                     jointTransform = gameObject.addComponent(feng3d.Node3D);
                     parentGameobject.addChild(jointTransform);
                 }
-                var node3d = jointTransform.node3d;
+                var node3d = jointTransform;
                 var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1) {
                     matrix = matrix.clone().append(joints[skeletonJoint.parentIndex].invertMatrix);

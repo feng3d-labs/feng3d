@@ -118,7 +118,7 @@ namespace feng3d
                 // #endif
             }, false);
 
-            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent(Node3D).addComponent(Scene);
+            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent(Scene);
             this.camera = camera;
 
             this.start();

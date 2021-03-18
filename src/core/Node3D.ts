@@ -56,7 +56,7 @@ namespace feng3d
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
     @RegisterComponent()
-    export class Node3D extends Component3D
+    export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T>
     {
         __class__: "feng3d.Node3D";
 
@@ -966,10 +966,13 @@ namespace feng3d
             {
                 this.emit("addedToScene", this);
             }
-            this.updateChildrenScene();
+            this._updateChildrenScene();
         }
 
-        private updateChildrenScene()
+        /**
+         * @private
+         */
+        private _updateChildrenScene()
         {
             for (let i = 0, n = this._children.length; i < n; i++)
             {
@@ -1011,7 +1014,7 @@ namespace feng3d
             {
                 for (var i = 0, n = this.numChildren; i < n; i++)
                 {
-                    this.getChildAt(i).node3d._invalidateSceneTransform();
+                    this.getChildAt(i)._invalidateSceneTransform();
                 }
             }
         }
@@ -1134,6 +1137,15 @@ namespace feng3d
         protected __event_bubble_function__(): any[]
         {
             return [this.parent];
+        }
+
+        /**
+         * @private
+         * @param v 
+         */
+        _setScene(v: Scene)
+        {
+            this._scene = v;
         }
     }
 }

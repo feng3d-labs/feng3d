@@ -98,7 +98,7 @@ namespace feng3d
         {
             if (!asset || asset.assetId == undefined) return false;
             if (asset instanceof AssetData) return true;
-            if (classUtils.getDefaultInstanceByName(asset[CLASS_KEY]) instanceof AssetData) return true;
+            if (classUtils.getDefaultInstanceByName(asset[__class__]) instanceof AssetData) return true;
         }
 
         /**
@@ -114,7 +114,7 @@ namespace feng3d
         static serialize(asset: AssetData)
         {
             var obj = <any>{};
-            obj[CLASS_KEY] = classUtils.getQualifiedClassName(asset);
+            obj[__class__] = classUtils.getQualifiedClassName(asset);
             obj.assetId = asset.assetId;
             return obj;
         }

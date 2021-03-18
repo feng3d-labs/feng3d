@@ -237,7 +237,7 @@ namespace feng3d
         {
             if (Object.isBaseType(obj)) return;
 
-            delete obj[CLASS_KEY];
+            delete obj[__class__];
 
             for (const key in obj)
             {
@@ -409,7 +409,7 @@ namespace feng3d
                 if (spv && typeof spv == "function")
                 {
                     let object: any = {};
-                    object[CLASS_KEY] = "function";
+                    object[__class__] = "function";
                     object.data = spv.toString();
                     target[property] = object;
                     return true;
@@ -440,7 +440,7 @@ namespace feng3d
                 {
                     let object = {};
                     target[property] = object;
-                    object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                    object[__class__] = classUtils.getQualifiedClassName(spv);
                     spv["serialize"](object);
                     return true;
                 }
@@ -505,7 +505,7 @@ namespace feng3d
                     {
                         propertyHandler(object, spv, key, param);
                     });
-                    object[CLASS_KEY] = className;
+                    object[__class__] = className;
                     return true;
                 }
 
@@ -521,7 +521,7 @@ namespace feng3d
                     if (!(inst instanceof spv.constructor))
                         inst = spv.constructor.inst = new spv.constructor();
                     var diff: any = param.serialization.different(spv, inst);
-                    diff[CLASS_KEY] = className;
+                    diff[__class__] = className;
                     target[property] = diff;
                 } else
                 {
@@ -585,7 +585,7 @@ namespace feng3d
             handler: function (target, source, property)
             {
                 var spv = source[property];
-                if (spv && spv[CLASS_KEY] == "function")
+                if (spv && spv[__class__] == "function")
                 {
                     target[property] = eval(`(${spv.data})`);
                     return true;
@@ -634,7 +634,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isObject(spv) && spv[CLASS_KEY] == null)
+                if (Object.isObject(spv) && spv[__class__] == null)
                 {
                     var obj = {};
                     if (tpv) obj = tpv;
@@ -657,7 +657,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+                var inst = classUtils.getInstanceByName(spv[__class__]);
                 //处理自定义反序列化对象
                 if (inst && inst["deserialize"])
                 {
@@ -679,7 +679,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+                var inst = classUtils.getInstanceByName(spv[__class__]);
                 if (inst)
                 {
                     if (tpv && tpv.constructor == inst.constructor)
@@ -690,7 +690,7 @@ namespace feng3d
                     var keys = Object.keys(spv);
                     keys.forEach(key =>
                     {
-                        if (key != CLASS_KEY)
+                        if (key != __class__)
                             propertyHandler(inst, spv, key, param);
                     });
                     target[property] = inst;
@@ -897,7 +897,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isObject(spv) && spv[CLASS_KEY] == undefined)
+                if (Object.isObject(spv) && spv[__class__] == undefined)
                 {
                     console.assert(!!tpv);
                     var keys = Object.keys(spv);
@@ -921,7 +921,7 @@ namespace feng3d
 
                 var targetClassName = classUtils.getQualifiedClassName(target[property]);
                 // 相同对象类型
-                if (targetClassName == spv[CLASS_KEY])
+                if (targetClassName == spv[__class__])
                 {
                     var keys = Object.keys(spv);
                     keys.forEach(key =>

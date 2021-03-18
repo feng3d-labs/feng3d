@@ -7,20 +7,23 @@ namespace feng3d
      * 方向光源
      */
     @AddComponentMenu("Rendering/DirectionalLight")
-    @RegisterComponent()
+    @RegisterComponent({ dependencies: [Node3D] })
     export class DirectionalLight extends Light
     {
         static create(name = "DirectionalLight")
         {
             var gameObject = new Entity();
             gameObject.name = name;
-            var directionalLight = gameObject.addComponent(Node3D).addComponent(DirectionalLight);
+            var directionalLight = gameObject.addComponent(DirectionalLight);
             return directionalLight;
         }
         __class__: "feng3d.DirectionalLight";
 
         lightType = LightType.Directional;
 
+        /**
+         * 用于计算方向光   
+         */
         private orthographicLens: OrthographicLens;
 
         /**

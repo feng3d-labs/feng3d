@@ -212,29 +212,29 @@ namespace feng3d
             }
             else if (this._lookAtNode3D)
             {
-                if (this._targetNode.node3d.parent && this._lookAtNode3D.node3d.parent)
+                if (this._targetNode.parent && this._lookAtNode3D.parent)
                 {
-                    if (this._targetNode.node3d.parent != this._lookAtNode3D.node3d.parent)
+                    if (this._targetNode.parent != this._lookAtNode3D.parent)
                     {
-                        this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
-                        this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
-                        this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
-                        this._targetNode.node3d.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
+                        this._pos.x = this._lookAtNode3D.worldPosition.x;
+                        this._pos.y = this._lookAtNode3D.worldPosition.y;
+                        this._pos.z = this._lookAtNode3D.worldPosition.z;
+                        this._targetNode.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
                     }
                     else
                     {
-                        this._pos.copy(this._lookAtNode3D.node3d.position);
+                        this._pos.copy(this._lookAtNode3D.position);
                     }
                 }
                 else if (this._lookAtNode3D.scene)
                 {
-                    this._pos.x = this._lookAtNode3D.node3d.worldPosition.x;
-                    this._pos.y = this._lookAtNode3D.node3d.worldPosition.y;
-                    this._pos.z = this._lookAtNode3D.node3d.worldPosition.z;
+                    this._pos.x = this._lookAtNode3D.worldPosition.x;
+                    this._pos.y = this._lookAtNode3D.worldPosition.y;
+                    this._pos.z = this._lookAtNode3D.worldPosition.z;
                 }
                 else
                 {
-                    this._pos.copy(this._lookAtNode3D.node3d.position);
+                    this._pos.copy(this._lookAtNode3D.position);
                 }
             }
             else
@@ -243,9 +243,9 @@ namespace feng3d
                 this._pos.y = this._origin.y;
                 this._pos.z = this._origin.z;
             }
-            this._targetNode.node3d.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetNode.node3d.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetNode.node3d.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
+            this._targetNode.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
+            this._targetNode.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
             super.update();
         }
 

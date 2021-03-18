@@ -688,7 +688,7 @@ interface ObjectConstructor {
     assignDeepDefaultHandlers: AssignDeepHandler[];
 }
 declare namespace feng3d {
-    var CLASS_KEY: string;
+    var __class__: string;
     /**
      * 类工具
      */
@@ -12491,121 +12491,6 @@ declare namespace feng3d {
     export {};
 }
 declare namespace feng3d {
-    interface Component3DEventMap extends ComponentEventMap, MouseEventMap {
-    }
-    /**
-     * 3D组件
-     * GameObject必须拥有Transform组件的
-     */
-    class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
-        /**
-         * The Transform attached to this Entity (null if there is none attached).
-         */
-        get node3d(): Node3D;
-        /**
-         * Returns all components of Type type in the Entity.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
-    }
-}
-declare namespace feng3d {
-    /**
-     * Graphics 类包含一组可用来创建矢量形状的方法。
-     */
-    class Graphics extends Component {
-        __class__: "feng3d.Graphics";
-        private image;
-        private context2D;
-        private canvas;
-        private width;
-        private height;
-        constructor();
-        draw(width: number, height: number, callback: (context2D: CanvasRenderingContext2D) => void): this;
-    }
-    function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs?: string[]): void;
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        Behaviour: Behaviour;
-    }
-    /**
-     * 行为
-     *
-     * 可以控制开关的组件
-     */
-    class Behaviour extends Component3D {
-        /**
-         * 是否启用update方法
-         */
-        enabled: boolean;
-        /**
-         * 可运行环境
-         */
-        runEnvironment: RunEnvironment;
-        /**
-         * Has the Behaviour had enabled called.
-         * 是否所在GameObject显示且该行为已启动。
-         */
-        get isVisibleAndEnabled(): boolean;
-        /**
-         * 每帧执行
-         */
-        update(interval?: number): void;
-        dispose(): void;
-    }
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        SkyBox: SkyBox;
-    }
-    /**
-     * 天空盒组件
-     */
-    class SkyBox extends Component3D {
-        __class__: "feng3d.SkyBox";
-        s_skyboxTexture: TextureCube<TextureCubeEventMap>;
-        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 天空盒渲染器
-     */
-    var skyboxRenderer: SkyBoxRenderer;
-    /**
-     * 天空盒渲染器
-     */
-    class SkyBoxRenderer {
-        private renderAtomic;
-        init(): void;
-        /**
-         * 绘制场景中天空盒
-         * @param gl
-         * @param scene 场景
-         * @param camera 摄像机
-         */
-        draw(gl: GL, scene: Scene, camera: Camera): void;
-        /**
-         * 绘制天空盒
-         * @param gl
-         * @param skybox 天空盒
-         * @param camera 摄像机
-         */
-        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera): void;
-    }
-}
-declare namespace feng3d {
     interface ContainerEventMap {
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
@@ -12833,7 +12718,7 @@ declare namespace feng3d {
      *
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
-    class Node3D extends Component3D {
+    class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
         __class__: "feng3d.Node3D";
         get single(): boolean;
         assetType: AssetType;
@@ -12948,13 +12833,13 @@ declare namespace feng3d {
          */
         get boundingBox(): BoundingBox;
         private _boundingBox;
-        get parent(): Node3D;
+        get parent(): Node3D<Component3DEventMap>;
         get scene(): Scene;
         /**
          * 子对象
          */
-        get children(): Node3D[];
-        set children(value: Node3D[]);
+        get children(): Node3D<Component3DEventMap>[];
+        set children(value: Node3D<Component3DEventMap>[]);
         get numChildren(): number;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
@@ -13015,7 +12900,7 @@ declare namespace feng3d {
          *
          * @param child 子对象
          */
-        addChild(child: Node3D): Node3D;
+        addChild(child: Node3D): Node3D<Component3DEventMap>;
         /**
          * 添加子对象
          *
@@ -13047,11 +12932,11 @@ declare namespace feng3d {
          *
          * @param index
          */
-        getChildAt(index: number): Node3D;
+        getChildAt(index: number): Node3D<Component3DEventMap>;
         /**
          * 获取子对象列表（备份）
          */
-        getChildren(): Node3D[];
+        getChildren(): Node3D<Component3DEventMap>[];
         /**
          * 将方向从局部空间转换到世界空间。
          *
@@ -13174,7 +13059,10 @@ declare namespace feng3d {
         private _scaleChanged;
         private _setParent;
         private updateScene;
-        private updateChildrenScene;
+        /**
+         * @private
+         */
+        private _updateChildrenScene;
         private removeChildInternal;
         private _invalidateTransform;
         private _invalidateSceneTransform;
@@ -13205,82 +13093,11 @@ declare namespace feng3d {
          * feng3d.__event_bubble_function__
          */
         protected __event_bubble_function__(): any[];
-    }
-}
-declare namespace feng3d {
-    interface EntityEventMap {
         /**
-         * 尺寸变化事件
+         * @private
+         * @param v
          */
-        sizeChanged: TransformLayout;
-        /**
-         * 中心点变化事件
-         */
-        pivotChanged: TransformLayout;
-    }
-    interface ComponentMap {
-        TransformLayout: TransformLayout;
-    }
-    /**
-     * 变换布局
-     *
-     * 提供了比Transform更加适用于2D元素的API
-     *
-     * 通过修改Transform的数值实现
-     */
-    class TransformLayout extends Component3D {
-        get single(): boolean;
-        /**
-         * 创建一个实体，该类为虚类
-         */
-        constructor();
-        private _onAdded;
-        private _onRemoved;
-        /**
-         * 位移
-         */
-        get position(): Vector3;
-        set position(v: Vector3);
-        private readonly _position;
-        /**
-         * 尺寸，宽高。
-         */
-        get size(): Vector3;
-        set size(v: Vector3);
-        private _size;
-        /**
-         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
-         */
-        get leftTop(): Vector3;
-        set leftTop(v: Vector3);
-        private _leftTop;
-        /**
-         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
-         */
-        get rightBottom(): Vector3;
-        set rightBottom(v: Vector3);
-        private _rightBottom;
-        /**
-         * 最小锚点，父Transform2D中左上角锚定的规范化位置。
-         */
-        anchorMin: Vector3;
-        /**
-         * 最大锚点，父Transform2D中左上角锚定的规范化位置。
-         */
-        anchorMax: Vector3;
-        /**
-         * The normalized position in this RectTransform that it rotates around.
-         */
-        pivot: Vector3;
-        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
-        private _updateLayout;
-        /**
-         * 布局是否失效
-         */
-        private _layoutInvalid;
-        private _invalidateLayout;
-        private _invalidateSize;
-        private _invalidatePivot;
+        _setScene(v: Scene): void;
     }
 }
 declare namespace feng3d {
@@ -13512,7 +13329,7 @@ declare namespace feng3d {
          * @param type 游戏对象类型。
          * @param param 游戏对象参数。
          */
-        static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>): Node3D;
+        static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>): Node3D<Component3DEventMap>;
         /**
          * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
          *
@@ -13553,7 +13370,7 @@ declare namespace feng3d {
         /**
          * 根结点
          */
-        get root(): Node3D;
+        get root(): Node3D<Component3DEventMap>;
         get gl(): GL;
         /**
          * 鼠标在3D视图中的位置
@@ -13621,9 +13438,200 @@ declare namespace feng3d {
          * @param start 起点
          * @param end 终点
          */
-        getObjectsInGlobalArea(start: Vector2, end: Vector2): Node3D[];
+        getObjectsInGlobalArea(start: Vector2, end: Vector2): Node3D<Component3DEventMap>[];
         protected selectedTransform: Node3D;
         static createNewScene(): Scene;
+    }
+}
+declare namespace feng3d {
+    interface Component3DEventMap extends ComponentEventMap, MouseEventMap {
+    }
+    /**
+     * 3D组件
+     * GameObject必须拥有Transform组件的
+     */
+    class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
+        /**
+         * The Transform attached to this Entity (null if there is none attached).
+         */
+        get node3d(): Node3D<Component3DEventMap>;
+        /**
+         * Returns all components of Type type in the Entity.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * Graphics 类包含一组可用来创建矢量形状的方法。
+     */
+    class Graphics extends Component {
+        __class__: "feng3d.Graphics";
+        private image;
+        private context2D;
+        private canvas;
+        private width;
+        private height;
+        constructor();
+        draw(width: number, height: number, callback: (context2D: CanvasRenderingContext2D) => void): this;
+    }
+    function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs?: string[]): void;
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        Behaviour: Behaviour;
+    }
+    /**
+     * 行为
+     *
+     * 可以控制开关的组件
+     */
+    class Behaviour extends Component3D {
+        /**
+         * 是否启用update方法
+         */
+        enabled: boolean;
+        /**
+         * 可运行环境
+         */
+        runEnvironment: RunEnvironment;
+        /**
+         * Has the Behaviour had enabled called.
+         * 是否所在GameObject显示且该行为已启动。
+         */
+        get isVisibleAndEnabled(): boolean;
+        /**
+         * 每帧执行
+         */
+        update(interval?: number): void;
+        dispose(): void;
+    }
+}
+declare namespace feng3d {
+    interface EntityEventMap {
+        /**
+         * 尺寸变化事件
+         */
+        sizeChanged: TransformLayout;
+        /**
+         * 中心点变化事件
+         */
+        pivotChanged: TransformLayout;
+    }
+    interface ComponentMap {
+        TransformLayout: TransformLayout;
+    }
+    /**
+     * 变换布局
+     *
+     * 提供了比Transform更加适用于2D元素的API
+     *
+     * 通过修改Transform的数值实现
+     */
+    class TransformLayout extends Component3D {
+        get single(): boolean;
+        /**
+         * 创建一个实体，该类为虚类
+         */
+        constructor();
+        private _onAdded;
+        private _onRemoved;
+        /**
+         * 位移
+         */
+        get position(): Vector3;
+        set position(v: Vector3);
+        private readonly _position;
+        /**
+         * 尺寸，宽高。
+         */
+        get size(): Vector3;
+        set size(v: Vector3);
+        private _size;
+        /**
+         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+         */
+        get leftTop(): Vector3;
+        set leftTop(v: Vector3);
+        private _leftTop;
+        /**
+         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+         */
+        get rightBottom(): Vector3;
+        set rightBottom(v: Vector3);
+        private _rightBottom;
+        /**
+         * 最小锚点，父Transform2D中左上角锚定的规范化位置。
+         */
+        anchorMin: Vector3;
+        /**
+         * 最大锚点，父Transform2D中左上角锚定的规范化位置。
+         */
+        anchorMax: Vector3;
+        /**
+         * The normalized position in this RectTransform that it rotates around.
+         */
+        pivot: Vector3;
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
+        private _updateLayout;
+        /**
+         * 布局是否失效
+         */
+        private _layoutInvalid;
+        private _invalidateLayout;
+        private _invalidateSize;
+        private _invalidatePivot;
+    }
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        SkyBox: SkyBox;
+    }
+    /**
+     * 天空盒组件
+     */
+    class SkyBox extends Component3D {
+        __class__: "feng3d.SkyBox";
+        s_skyboxTexture: TextureCube<TextureCubeEventMap>;
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 天空盒渲染器
+     */
+    var skyboxRenderer: SkyBoxRenderer;
+    /**
+     * 天空盒渲染器
+     */
+    class SkyBoxRenderer {
+        private renderAtomic;
+        init(): void;
+        /**
+         * 绘制场景中天空盒
+         * @param gl
+         * @param scene 场景
+         * @param camera 摄像机
+         */
+        draw(gl: GL, scene: Scene, camera: Camera): void;
+        /**
+         * 绘制天空盒
+         * @param gl
+         * @param skybox 天空盒
+         * @param camera 摄像机
+         */
+        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -13905,7 +13913,7 @@ declare namespace feng3d {
         /**
          * The Transform attached to this Entity (null if there is none attached).
          */
-        get node3d(): Node3D;
+        get node3d(): Node3D<Component3DEventMap>;
         /**
          * 宿主组件
          */
@@ -13992,7 +14000,7 @@ declare namespace feng3d {
         get activeAnimations(): Animation[];
         get behaviours(): Behaviour[];
         get activeBehaviours(): Behaviour[];
-        get mouseCheckObjects(): Node3D[];
+        get mouseCheckObjects(): Node3D<Component3DEventMap>[];
         /**
          * 获取拾取缓存
          * @param camera
@@ -15729,6 +15737,9 @@ declare namespace feng3d {
         static create(name?: string): DirectionalLight;
         __class__: "feng3d.DirectionalLight";
         lightType: LightType;
+        /**
+         * 用于计算方向光
+         */
         private orthographicLens;
         /**
          * 光源位置
@@ -15828,8 +15839,8 @@ declare namespace feng3d {
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        get targetNode(): Node3D;
-        set targetNode(val: Node3D);
+        get targetNode(): Node3D<Component3DEventMap>;
+        set targetNode(val: Node3D<Component3DEventMap>);
     }
 }
 declare namespace feng3d {
@@ -15844,8 +15855,8 @@ declare namespace feng3d {
         set upAxis(upAxis: Vector3);
         get lookAtPosition(): Vector3;
         set lookAtPosition(val: Vector3);
-        get lookAtObject(): Node3D;
-        set lookAtObject(value: Node3D);
+        get lookAtObject(): Node3D<Component3DEventMap>;
+        set lookAtObject(value: Node3D<Component3DEventMap>);
         update(interpolate?: boolean): void;
     }
 }
@@ -16379,8 +16390,8 @@ declare namespace feng3d {
      */
     class Mouse3DManager {
         mouseInput: MouseInput;
-        get selectedTransform(): Node3D;
-        set selectedTransform(v: Node3D);
+        get selectedTransform(): Node3D<Component3DEventMap>;
+        set selectedTransform(v: Node3D<Component3DEventMap>);
         /**
          * 视窗，鼠标在该矩形内时为有效事件
          */
@@ -16390,7 +16401,7 @@ declare namespace feng3d {
          * @param scene 场景
          * @param camera 摄像机
          */
-        pick(view: View, scene: Scene, camera: Camera): Node3D;
+        pick(view: View, scene: Scene, camera: Camera): Node3D<Component3DEventMap>;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedTransform;
         private _mouseEventTypes;

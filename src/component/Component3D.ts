@@ -9,6 +9,7 @@ namespace feng3d
      * 3D组件
      * GameObject必须拥有Transform组件的
      */
+    @RegisterComponent({ dependencies: [Node3D] })
     export class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T>
     {
         /**

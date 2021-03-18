@@ -99,7 +99,7 @@ namespace feng3d
                 var jointPose = joints[index];
 
                 var jointGameobject = jointGameobjects[index];
-                globalMatrixs[index] = jointGameobject.node3d.matrix.clone();
+                globalMatrixs[index] = jointGameobject.matrix.clone();
                 if (jointPose.parentIndex >= 0)
                 {
                     var parentGlobalMatrix = globalMatrix(jointPose.parentIndex);
@@ -163,7 +163,7 @@ namespace feng3d
                     parentGameobject.addChild(jointTransform);
                 }
 
-                var node3d = jointTransform.node3d;
+                var node3d = jointTransform;
 
                 var matrix = skeletonJoint.matrix;
                 if (skeletonJoint.parentIndex != -1)

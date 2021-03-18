@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export var CLASS_KEY = "__class__";
+    export var __class__ = "__class__";
 
     /**
      * 类工具
@@ -35,8 +35,8 @@ namespace feng3d
             }
 
             var prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-            if (prototype.hasOwnProperty(CLASS_KEY))
-                return prototype[CLASS_KEY];
+            if (prototype.hasOwnProperty(__class__))
+                return prototype[__class__];
 
             var className: string = prototype.constructor.name;
             if (_global[className] == prototype.constructor)
@@ -172,6 +172,6 @@ namespace feng3d
     export function registerClass(classDefinition: any, className: string): void
     {
         var prototype = classDefinition.prototype;
-        Object.defineProperty(prototype, CLASS_KEY, { value: className, writable: true, enumerable: false });
+        Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
     }
 }

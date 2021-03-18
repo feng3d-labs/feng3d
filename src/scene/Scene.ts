@@ -15,7 +15,7 @@ namespace feng3d
     /**
      * 3D场景
      */
-    @RegisterComponent()
+    @RegisterComponent({ dependencies: [Node3D] })
     export class Scene extends Component3D
     {
 
@@ -57,11 +57,10 @@ namespace feng3d
         init()
         {
             super.init();
-            this.node3d.hideFlags = this.node3d.hideFlags | HideFlags.Hide;
+            this.entity.hideFlags = this.entity.hideFlags | HideFlags.Hide;
             this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
             //
-            this.node3d["_scene"] = this;
-            this.node3d["updateChildrenScene"]();
+            this.node3d._setScene(this);
         }
 
         update(interval?: number)

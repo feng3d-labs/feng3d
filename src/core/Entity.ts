@@ -104,6 +104,14 @@ namespace feng3d
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
+            const compnentInfo = componentMap[type.name];
+            console.assert(compnentInfo.type == type, ``);
+            // 先添加依赖
+            compnentInfo.dependencies.forEach((dependency) =>
+            {
+                this.addComponent(dependency);
+            });
+            // 
             component = new type();
             this.addComponentAt(component, this._components.length);
             callback && callback(component);
