@@ -15,7 +15,7 @@ namespace feng3d
     /**
      * 3D场景
      */
-    @RegisterComponent({ dependencies: [Node3D] })
+    @RegisterComponent()
     export class Scene extends Component3D
     {
 

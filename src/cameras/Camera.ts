@@ -11,7 +11,7 @@ namespace feng3d
 	 * 摄像机
 	 */
     @AddComponentMenu("Rendering/Camera")
-    @RegisterComponent({ dependencies: [Node3D] })
+    @RegisterComponent()
     export class Camera extends Component3D
     {
         static create(name = "Camera")

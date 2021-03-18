@@ -8,9 +8,9 @@ namespace feng3d
     }
 
     /**
-     * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+     * 组件信息属性常量，保存组件名称与组件依赖ComponentInfo，由 @RegisterComponent 装饰器进行填充。
      */
-    export const componentMap: { [name: string]: ComponentInfo } = {};
+    const __component__ = "__component__";
 
     /**
      * 注册组件
@@ -30,25 +30,27 @@ namespace feng3d
         dependencies?: Constructor<Component>[]
     } = {})
     {
-        return (constructor: Function) =>
+        return (constructor: Constructor<Component>) =>
         {
             var info = component as ComponentInfo;
             info.name = info.name || constructor.name;
             info.type = <any>constructor;
             info.dependencies = info.dependencies || [];
-            if (componentMap[info.name])
+            constructor.prototype[__component__] = info;
+
+            if (Component._componentMap[info.name])
             {
-                console.warn(`重复定义组件${info.name}，${componentMap[info.name].type} ${constructor} ！`);
+                console.warn(`重复定义组件${info.name}，${Component._componentMap[info.name]} ${constructor} ！`);
             } else
             {
-                componentMap[info.name] = info;
+                Component._componentMap[info.name] = constructor;
             }
         }
     }
 
     export function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>
     {
-        return <any>componentMap[type].constructor;
+        return Component._componentMap[type] as any;
     }
 
     /**
@@ -72,6 +74,27 @@ namespace feng3d
 	 */
     export class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable
     {
+        /**
+         * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+         * @private
+         */
+        static _componentMap: { [name: string]: Constructor<Component> } = {};
+
+        /**
+         * 获取组件依赖列表
+         * @param type 
+         */
+        static getDependencies(type: Constructor<Component>)
+        {
+            var prototype = type.prototype;
+            var dependencies: Constructor<Component>[] = [];
+            while (prototype)
+            {
+                dependencies = dependencies.concat((prototype[__component__] as ComponentInfo)?.dependencies || []);
+                prototype = prototype["__proto__"];
+            }
+            return dependencies;
+        }
         //------------------------------------------
         // Variables
         //------------------------------------------

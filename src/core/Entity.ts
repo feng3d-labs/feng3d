@@ -104,10 +104,9 @@ namespace feng3d
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
-            const compnentInfo = componentMap[type.name];
-            console.assert(compnentInfo.type == type, ``);
+            const dependencies = Component.getDependencies(type);
             // 先添加依赖
-            compnentInfo.dependencies.forEach((dependency) =>
+            dependencies.forEach((dependency) =>
             {
                 this.addComponent(dependency);
             });
@@ -390,6 +389,7 @@ namespace feng3d
         }
 
         /**
+         * 为了兼容以往json序列化格式
          * @deprecated
          */
         set children(v: Entity[])
@@ -416,6 +416,7 @@ namespace feng3d
             }
             this._children = v;
         }
+        // debug
         private _children: Entity[];
 
         /**

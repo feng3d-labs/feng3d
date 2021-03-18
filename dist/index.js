@@ -26008,9 +26008,9 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+     * 组件信息属性常量，保存组件名称与组件依赖ComponentInfo，由 @RegisterComponent 装饰器进行填充。
      */
-    feng3d.componentMap = {};
+    var __component__ = "__component__";
     /**
      * 注册组件
      *
@@ -26025,17 +26025,18 @@ var feng3d;
             info.name = info.name || constructor.name;
             info.type = constructor;
             info.dependencies = info.dependencies || [];
-            if (feng3d.componentMap[info.name]) {
-                console.warn("\u91CD\u590D\u5B9A\u4E49\u7EC4\u4EF6" + info.name + "\uFF0C" + feng3d.componentMap[info.name].type + " " + constructor + " \uFF01");
+            constructor.prototype[__component__] = info;
+            if (Component._componentMap[info.name]) {
+                console.warn("\u91CD\u590D\u5B9A\u4E49\u7EC4\u4EF6" + info.name + "\uFF0C" + Component._componentMap[info.name] + " " + constructor + " \uFF01");
             }
             else {
-                feng3d.componentMap[info.name] = info;
+                Component._componentMap[info.name] = constructor;
             }
         };
     }
     feng3d.RegisterComponent = RegisterComponent;
     function getComponentType(type) {
-        return feng3d.componentMap[type].constructor;
+        return Component._componentMap[type];
     }
     feng3d.getComponentType = getComponentType;
     /**
@@ -26059,6 +26060,20 @@ var feng3d;
             _this.onAny(_this._onAnyListener, _this);
             return _this;
         }
+        /**
+         * 获取组件依赖列表
+         * @param type
+         */
+        Component.getDependencies = function (type) {
+            var _a;
+            var prototype = type.prototype;
+            var dependencies = [];
+            while (prototype) {
+                dependencies = dependencies.concat(((_a = prototype[__component__]) === null || _a === void 0 ? void 0 : _a.dependencies) || []);
+                prototype = prototype["__proto__"];
+            }
+            return dependencies;
+        };
         Object.defineProperty(Component.prototype, "entity", {
             //------------------------------------------
             // Variables
@@ -26238,6 +26253,11 @@ var feng3d;
         Component.prototype.setGameObject = function (gameObject) {
             this._entity = gameObject;
         };
+        /**
+         * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+         * @private
+         */
+        Component._componentMap = {};
         __decorate([
             feng3d.serialize
         ], Component.prototype, "entity", null);
@@ -27727,10 +27747,9 @@ var feng3d;
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
-            var compnentInfo = feng3d.componentMap[type.name];
-            console.assert(compnentInfo.type == type, "");
+            var dependencies = feng3d.Component.getDependencies(type);
             // 先添加依赖
-            compnentInfo.dependencies.forEach(function (dependency) {
+            dependencies.forEach(function (dependency) {
                 _this.addComponent(dependency);
             });
             // 
@@ -27948,6 +27967,7 @@ var feng3d;
         };
         Object.defineProperty(Entity.prototype, "children", {
             /**
+             * 为了兼容以往json序列化格式
              * @deprecated
              */
             set: function (v) {
@@ -29691,7 +29711,7 @@ var feng3d;
             feng3d.oav()
         ], Scene.prototype, "ambientColor", void 0);
         Scene = __decorate([
-            feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
+            feng3d.RegisterComponent()
         ], Scene);
         return Scene;
     }(feng3d.Component3D));
@@ -31472,7 +31492,7 @@ var feng3d;
         ], Camera.prototype, "lens", null);
         Camera = Camera_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/Camera"),
-            feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
+            feng3d.RegisterComponent()
         ], Camera);
         return Camera;
     }(feng3d.Component3D));
@@ -34241,7 +34261,7 @@ var feng3d;
         var DirectionalLight_1;
         DirectionalLight = DirectionalLight_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/DirectionalLight"),
-            feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
+            feng3d.RegisterComponent()
         ], DirectionalLight);
         return DirectionalLight;
     }(feng3d.Light));

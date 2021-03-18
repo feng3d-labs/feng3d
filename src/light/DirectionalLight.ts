@@ -7,7 +7,7 @@ namespace feng3d
      * 方向光源
      */
     @AddComponentMenu("Rendering/DirectionalLight")
-    @RegisterComponent({ dependencies: [Node3D] })
+    @RegisterComponent()
     export class DirectionalLight extends Light
     {
         static create(name = "DirectionalLight")
