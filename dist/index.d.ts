@@ -15722,7 +15722,7 @@ declare namespace feng3d {
          */
         frameBufferObject: FrameBufferObject;
         debugShadowMap: boolean;
-        private debugShadowMapNode3D;
+        private debugShadowMapModel;
         constructor();
         updateDebugShadowMap(scene: Scene, viewCamera: Camera): void;
     }

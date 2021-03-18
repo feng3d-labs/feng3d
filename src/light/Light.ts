@@ -100,29 +100,28 @@ namespace feng3d
         @oav({ tooltip: "是否调试阴影图" })
         debugShadowMap = false;
 
-        private debugShadowMapNode3D: Node3D;
+        private debugShadowMapModel: MeshRenderer;
 
         constructor()
         {
             super();
-            this.shadowCamera = serialization.setValue(new Entity(), { name: "LightShadowCamera" }).addComponent(Node3D).addComponent(Camera);
+            this.shadowCamera = serialization.setValue(new Entity(), { name: "LightShadowCamera" }).addComponent(Camera);
         }
 
         updateDebugShadowMap(scene: Scene, viewCamera: Camera)
         {
-            var node3d = this.debugShadowMapNode3D;
-            if (!node3d)
+            var model = this.debugShadowMapModel;
+            if (!model)
             {
                 var gameObject = new Entity();
                 gameObject.name = "debugShadowMapObject";
-                node3d = gameObject.addComponent(Node3D);
-                node3d.entity.addComponent(MeshRenderer).geometry = Geometry.getDefault("Plane");
-                node3d.hideFlags = HideFlags.Hide | HideFlags.DontSave;
-                node3d.mouseEnabled = false;
-                node3d.addComponent(BillboardComponent);
+                model = gameObject.addComponent(MeshRenderer);
+                model.geometry = Geometry.getDefault("Plane");
+                model.hideFlags = HideFlags.Hide | HideFlags.DontSave;
+                model.node3d.mouseEnabled = false;
+                model.addComponent(BillboardComponent);
 
                 //材质
-                var model = node3d.getComponent(Renderable);
                 model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType == LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
@@ -134,17 +133,16 @@ namespace feng3d
             }
 
             var depth = viewCamera.lens.near * 2;
-            var node3d = node3d.getComponent(Node3D);
-            node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
-            var billboardComponent = node3d.getComponent(BillboardComponent);
+            model.node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            var billboardComponent = model.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
 
             if (this.debugShadowMap)
             {
-                scene.node3d.addChild(node3d);
+                scene.node3d.addChild(model.node3d);
             } else
             {
-                node3d.remove();
+                model.node3d.remove();
             }
         }
     }

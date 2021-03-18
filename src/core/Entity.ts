@@ -428,7 +428,6 @@ namespace feng3d
         static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>)
         {
             var g = new Entity();
-            g.addComponent(Node3D);
             g.name = type;
 
             var createHandler = this._registerPrimitives[type];

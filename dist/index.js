@@ -27999,7 +27999,6 @@ var feng3d;
          */
         Entity.createPrimitive = function (type, param) {
             var g = new Entity();
-            g.addComponent(feng3d.Node3D);
             g.name = type;
             var createHandler = this._registerPrimitives[type];
             if (createHandler != null)
@@ -28095,7 +28094,7 @@ var feng3d;
                 if (!this._camera) {
                     var cameras = this.scene.getComponentsInChildren(feng3d.Camera);
                     if (cameras.length == 0) {
-                        this._camera = feng3d.serialization.setValue(new feng3d.Entity(), { name: "defaultCamera" }).addComponent(feng3d.Node3D).addComponent(feng3d.Camera);
+                        this._camera = feng3d.serialization.setValue(new feng3d.Entity(), { name: "defaultCamera" }).addComponent(feng3d.Camera);
                         this.scene.node3d.addChild(this._camera.node3d);
                     }
                     else {
@@ -29305,7 +29304,6 @@ var feng3d;
             if (name === void 0) { name = "Mesh"; }
             var gameObject = new feng3d.Entity();
             gameObject.name = name;
-            gameObject.addComponent(feng3d.Node3D);
             var meshRenderer = gameObject.addComponent(MeshRenderer_1, callback);
             return meshRenderer;
         };
@@ -31329,7 +31327,7 @@ var feng3d;
             if (name === void 0) { name = "Camera"; }
             var gameObject = new feng3d.Entity();
             gameObject.name = name;
-            var camera = gameObject.addComponent(feng3d.Node3D).addComponent(Camera_1);
+            var camera = gameObject.addComponent(Camera_1);
             return camera;
         };
         Object.defineProperty(Camera.prototype, "single", {
@@ -34087,7 +34085,7 @@ var feng3d;
              */
             _this.frameBufferObject = new feng3d.FrameBufferObject();
             _this.debugShadowMap = false;
-            _this.shadowCamera = feng3d.serialization.setValue(new feng3d.Entity(), { name: "LightShadowCamera" }).addComponent(feng3d.Node3D).addComponent(feng3d.Camera);
+            _this.shadowCamera = feng3d.serialization.setValue(new feng3d.Entity(), { name: "LightShadowCamera" }).addComponent(feng3d.Camera);
             return _this;
         }
         Object.defineProperty(Light.prototype, "position", {
@@ -34148,17 +34146,16 @@ var feng3d;
             configurable: true
         });
         Light.prototype.updateDebugShadowMap = function (scene, viewCamera) {
-            var node3d = this.debugShadowMapNode3D;
-            if (!node3d) {
+            var model = this.debugShadowMapModel;
+            if (!model) {
                 var gameObject = new feng3d.Entity();
                 gameObject.name = "debugShadowMapObject";
-                node3d = gameObject.addComponent(feng3d.Node3D);
-                node3d.entity.addComponent(feng3d.MeshRenderer).geometry = feng3d.Geometry.getDefault("Plane");
-                node3d.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
-                node3d.mouseEnabled = false;
-                node3d.addComponent(feng3d.BillboardComponent);
+                model = gameObject.addComponent(feng3d.MeshRenderer);
+                model.geometry = feng3d.Geometry.getDefault("Plane");
+                model.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
+                model.node3d.mouseEnabled = false;
+                model.addComponent(feng3d.BillboardComponent);
                 //材质
-                var model = node3d.getComponent(feng3d.Renderable);
                 model.geometry = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = feng3d.serialization.setValue(new feng3d.Material(), { shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
@@ -34169,15 +34166,14 @@ var feng3d;
                 textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
             }
             var depth = viewCamera.lens.near * 2;
-            var node3d = node3d.getComponent(feng3d.Node3D);
-            node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
-            var billboardComponent = node3d.getComponent(feng3d.BillboardComponent);
+            model.node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            var billboardComponent = model.getComponent(feng3d.BillboardComponent);
             billboardComponent.camera = viewCamera;
             if (this.debugShadowMap) {
-                scene.node3d.addChild(node3d);
+                scene.node3d.addChild(model.node3d);
             }
             else {
-                node3d.remove();
+                model.node3d.remove();
             }
         };
         __decorate([
@@ -35638,7 +35634,7 @@ var feng3d;
             var target = mirrorWorldPosition.subTo(lookAtPosition);
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
-            var mirrorCamera = feng3d.serialization.setValue(new feng3d.Entity(), { name: "waterMirrorCamera" }).addComponent(feng3d.Node3D).addComponent(feng3d.Camera);
+            var mirrorCamera = feng3d.serialization.setValue(new feng3d.Entity(), { name: "waterMirrorCamera" }).addComponent(feng3d.Camera);
             mirrorCamera.node3d.position = view;
             mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
             mirrorCamera.lens = camera.lens.clone();
