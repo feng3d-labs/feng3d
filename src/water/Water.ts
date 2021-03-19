@@ -64,7 +64,7 @@ namespace feng3d
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
 
-            var mirrorCamera = serialization.setValue(new Entity(), { name: "waterMirrorCamera" }).addComponent(Node3D).addComponent(Camera);
+            var mirrorCamera = serialization.setValue(new Entity(), { name: "waterMirrorCamera" }).addComponent(Camera);
             mirrorCamera.node3d.position = view;
             mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
 
