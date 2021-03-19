@@ -196,6 +196,12 @@ namespace feng3d
 						cpy2 = outline[i++] * scale + offsetY;
 						path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
 						break;
+					case 'z':
+						path.closePath();
+						break;
+					default:
+						console.assert(action.trim() == '');
+						break;
 				}
 			}
 		}

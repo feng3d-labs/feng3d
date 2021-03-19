@@ -15807,9 +15807,17 @@ var feng3d;
             this.currentPath.splineThru(pts);
             return this;
         };
+        ShapePath2.prototype.closePath = function () {
+            this.currentPath.closePath();
+        };
         ShapePath2.prototype.toShapes = function (isCCW, noHoles) {
             if (isCCW === void 0) { isCCW = false; }
             if (noHoles === void 0) { noHoles = false; }
+            /**
+             * 转换没有孔的路径为形状
+             *
+             * @param inSubpaths
+             */
             function toShapesNoHoles(inSubpaths) {
                 var shapes = [];
                 for (var i = 0, l = inSubpaths.length; i < l; i++) {
@@ -15820,6 +15828,11 @@ var feng3d;
                 }
                 return shapes;
             }
+            /**
+             * 判断点是否在多边形内
+             * @param inPt
+             * @param inPolygon
+             */
             function isPointInsidePolygon(inPt, inPolygon) {
                 var polyLen = inPolygon.length;
                 // inPt on polygon contour => immediate success    or
@@ -15872,6 +15885,7 @@ var feng3d;
             var subPaths = this.subPaths;
             if (subPaths.length === 0)
                 return [];
+            // 处理无孔形状
             if (noHoles === true)
                 return toShapesNoHoles(subPaths);
             var solid, tmpPath, tmpShape;
@@ -15883,8 +15897,12 @@ var feng3d;
                 shapes.push(tmpShape);
                 return shapes;
             }
+            // 第一个是否为空
             var holesFirst = !feng3d.ShapeUtils.isClockWise(subPaths[0].getPoints());
-            holesFirst = isCCW ? !holesFirst : holesFirst;
+            if (isCCW) // 判断是否为孔
+             {
+                holesFirst = !holesFirst;
+            }
             // console.log("Holes first", holesFirst);
             var betterShapeHoles = [];
             var newShapes = [];
@@ -15897,7 +15915,10 @@ var feng3d;
                 tmpPath = subPaths[i];
                 tmpPoints = tmpPath.getPoints();
                 solid = feng3d.ShapeUtils.isClockWise(tmpPoints);
-                solid = isCCW ? !solid : solid;
+                if (isCCW) // 判断是否为实线
+                 {
+                    solid = !solid;
+                }
                 if (solid) {
                     if ((!holesFirst) && (newShapes[mainIdx]))
                         mainIdx++;
@@ -16115,6 +16136,12 @@ var feng3d;
                         cpx2 = outline[i++] * scale + offsetX;
                         cpy2 = outline[i++] * scale + offsetY;
                         path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
+                        break;
+                    case 'z':
+                        path.closePath();
+                        break;
+                    default:
+                        console.assert(action.trim() == '');
                         break;
                 }
             }
@@ -19717,6 +19744,7 @@ var feng3d;
          * 32-bit floating point number
          */
         GLArrayType["FLOAT"] = "FLOAT";
+        GLArrayType["UNSIGNED_INT"] = "UNSIGNED_INT";
         // /**
         //  * using a WebGL 2 context
         //  * 16-bit floating point number
@@ -20608,7 +20636,7 @@ var feng3d;
             /**
              * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
              */
-            this.type = feng3d.GLArrayType.UNSIGNED_SHORT;
+            this.type = feng3d.GLArrayType.UNSIGNED_INT;
             /**
              * 索引偏移
              */
@@ -20659,7 +20687,7 @@ var feng3d;
                 }
                 gl.cache.indices.set(index, buffer);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(index.indices), gl.STATIC_DRAW);
             }
             return buffer;
         };

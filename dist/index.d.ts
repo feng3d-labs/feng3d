@@ -7548,6 +7548,7 @@ declare namespace feng3d {
         quadraticCurveTo(aCPx: number, aCPy: number, aX: number, aY: number): this;
         bezierCurveTo(aCP1x: number, aCP1y: number, aCP2x: number, aCP2y: number, aX: number, aY: number): this;
         splineThru(pts: Vector2[]): this;
+        closePath(): void;
         toShapes(isCCW?: boolean, noHoles?: boolean): Shape2[];
     }
 }
@@ -9219,7 +9220,8 @@ declare namespace feng3d {
         /**
          * 32-bit floating point number
          */
-        FLOAT = "FLOAT"
+        FLOAT = "FLOAT",
+        UNSIGNED_INT = "UNSIGNED_INT"
     }
 }
 declare namespace feng3d {

@@ -44,8 +44,18 @@ namespace feng3d
 			return this;
 		}
 
+		closePath()
+		{
+			this.currentPath.closePath();
+		}
+
 		toShapes(isCCW = false, noHoles = false)
 		{
+			/**
+			 * 转换没有孔的路径为形状
+			 * 
+			 * @param inSubpaths 
+			 */
 			function toShapesNoHoles(inSubpaths: Path2[])
 			{
 				const shapes: Shape2[] = [];
@@ -62,6 +72,11 @@ namespace feng3d
 				return shapes;
 			}
 
+			/**
+			 * 判断点是否在多边形内
+			 * @param inPt 
+			 * @param inPolygon 
+			 */
 			function isPointInsidePolygon(inPt: Vector2, inPolygon: Vector2[])
 			{
 				const polyLen = inPolygon.length;
@@ -118,6 +133,7 @@ namespace feng3d
 			const subPaths = this.subPaths;
 			if (subPaths.length === 0) return [];
 
+			// 处理无孔形状
 			if (noHoles === true) return toShapesNoHoles(subPaths);
 
 			let solid: boolean, tmpPath: Path2, tmpShape: Shape2;
@@ -132,8 +148,12 @@ namespace feng3d
 				return shapes;
 			}
 
+			// 第一个是否为空
 			let holesFirst = !ShapeUtils.isClockWise(subPaths[0].getPoints());
-			holesFirst = isCCW ? !holesFirst : holesFirst;
+			if (isCCW)// 判断是否为孔
+			{
+				holesFirst = !holesFirst;
+			}
 
 			// console.log("Holes first", holesFirst);
 
@@ -151,7 +171,10 @@ namespace feng3d
 				tmpPath = subPaths[i];
 				tmpPoints = tmpPath.getPoints();
 				solid = ShapeUtils.isClockWise(tmpPoints);
-				solid = isCCW ? !solid : solid;
+				if (isCCW)// 判断是否为实线
+				{
+					solid = !solid;
+				}
 
 				if (solid)
 				{

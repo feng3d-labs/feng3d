@@ -27,6 +27,7 @@ namespace feng3d
          * 32-bit floating point number
          */
         FLOAT = "FLOAT",
+        UNSIGNED_INT = "UNSIGNED_INT",
         // /**
         //  * using a WebGL 2 context
         //  * 16-bit floating point number
