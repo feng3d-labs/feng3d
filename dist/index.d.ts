@@ -7517,6 +7517,24 @@ declare namespace feng3d {
             shape: Vector2[];
             holes: Vector2[][];
         };
+        extractArray(divisions?: number): {
+            points: number[];
+            holes: number[][];
+        };
+        triangulate(geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            points: number[];
+            indices: number[];
+        };
+        static triangulate(points: number[], holes?: number[][], geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            points: number[];
+            indices: number[];
+        };
     }
 }
 declare namespace feng3d {
@@ -7530,29 +7548,54 @@ declare namespace feng3d {
         quadraticCurveTo(aCPx: number, aCPy: number, aX: number, aY: number): this;
         bezierCurveTo(aCP1x: number, aCP1y: number, aCP2x: number, aCP2y: number, aX: number, aY: number): this;
         splineThru(pts: Vector2[]): this;
-        toShapes(isCCW?: boolean, noHoles?: boolean): any[];
+        toShapes(isCCW?: boolean, noHoles?: boolean): Shape2[];
     }
 }
 declare namespace feng3d {
     export class Font {
         data: FontData;
+        private charGeometryCache;
         constructor(data: FontData);
-        generateShapes(text: string, size: number): ShapePath2[];
+        generateShapes(text: string, size: number, lineHeight?: number, align?: 'left' | 'center' | 'right'): Shape2[];
+        generateCharGeometry(char: string, geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            geometry: {
+                points: number[];
+                indices: number[];
+            };
+            width: number;
+        };
+        calculateGeometry(text: string, fontSize: number, lineHeight?: number, align?: 'left' | 'center' | 'right', textBaseline?: 'alphabetic' | 'top' | 'middle' | 'bottom', tabCharWidth?: number): {
+            vertices: Float32Array;
+            normals: Float32Array;
+            uvs: Float32Array;
+            indices: Uint32Array;
+        };
+    }
+    export interface Glyph {
+        ha: number;
+        x_min: number;
+        x_max: number;
+        o: string;
+        _cachedOutline?: any[];
     }
     interface FontData {
-        underlineThickness: number;
-        resolution: number;
-        boundingBox: {
-            yMax: number;
-            yMin: number;
-        };
-        familyName: string;
         glyphs: {
-            [k: string]: {
-                o: string;
-                _cachedOutline: any;
-                ha: number;
-            };
+            [index: string]: Glyph;
+        };
+        unitsPerEm: number;
+        ascender: number;
+        descender: number;
+        underlinePosition: number;
+        underlineThickness: number;
+        familyName: string;
+        boundingBox: {
+            yMin: number;
+            xMin: number;
+            yMax: number;
+            xMax: number;
         };
     }
     export {};

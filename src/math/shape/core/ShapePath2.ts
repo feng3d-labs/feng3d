@@ -121,7 +121,7 @@ namespace feng3d
 			if (noHoles === true) return toShapesNoHoles(subPaths);
 
 			let solid: boolean, tmpPath: Path2, tmpShape: Shape2;
-			const shapes = [];
+			const shapes: Shape2[] = [];
 
 			if (subPaths.length === 1)
 			{
