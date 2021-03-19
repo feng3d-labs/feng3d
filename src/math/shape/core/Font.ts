@@ -3,6 +3,7 @@ namespace feng3d
 	export class Font
 	{
 		data: FontData;
+		isCCW = false;
 		private charGeometryCache: {
 			[char: string]: {
 				geometry: {
@@ -34,7 +35,7 @@ namespace feng3d
 
 			for (let p = 0, pl = paths.length; p < pl; p++)
 			{
-				const path_shapes = paths[p].toShapes();
+				const path_shapes = paths[p].toShapes(this.isCCW);
 				for (let i = 0, il = path_shapes.length; i < il; i++)
 				{
 					shapes.push(path_shapes[i]);
@@ -51,7 +52,7 @@ namespace feng3d
 				return this.charGeometryCache[char];
 			}
 			const { path, offsetX } = createPath(char, 1, 0, 0, this.data);
-			const shapes = path.toShapes();
+			const shapes = path.toShapes(this.isCCW);
 			for (let i = 0, n = shapes.length; i < n; i++)
 			{
 				shapes[i].triangulate(geometry);

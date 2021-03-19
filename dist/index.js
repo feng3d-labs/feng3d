@@ -15993,6 +15993,7 @@ var feng3d;
 (function (feng3d) {
     var Font = /** @class */ (function () {
         function Font(data) {
+            this.isCCW = false;
             this.charGeometryCache = {};
             this.data = data;
         }
@@ -16007,7 +16008,7 @@ var feng3d;
             var shapes = [];
             var paths = createPaths(text, size, lineHeight, this.data, align);
             for (var p = 0, pl = paths.length; p < pl; p++) {
-                var path_shapes = paths[p].toShapes();
+                var path_shapes = paths[p].toShapes(this.isCCW);
                 for (var i = 0, il = path_shapes.length; i < il; i++) {
                     shapes.push(path_shapes[i]);
                 }
@@ -16020,7 +16021,7 @@ var feng3d;
                 return this.charGeometryCache[char];
             }
             var _a = createPath(char, 1, 0, 0, this.data), path = _a.path, offsetX = _a.offsetX;
-            var shapes = path.toShapes();
+            var shapes = path.toShapes(this.isCCW);
             for (var i = 0, n = shapes.length; i < n; i++) {
                 shapes[i].triangulate(geometry);
             }

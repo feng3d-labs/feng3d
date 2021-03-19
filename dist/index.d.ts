@@ -7555,6 +7555,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     export class Font {
         data: FontData;
+        isCCW: boolean;
         private charGeometryCache;
         constructor(data: FontData);
         generateShapes(text: string, size: number, lineHeight?: number, align?: 'left' | 'center' | 'right'): Shape2[];
