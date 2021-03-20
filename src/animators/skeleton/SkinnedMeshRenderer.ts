@@ -2,12 +2,10 @@ namespace feng3d
 {
     export interface ComponentMap { SkinnedMeshRenderer: SkinnedMeshRenderer }
 
-    @RegisterComponent()
+    @RegisterComponent({ single: true })
     export class SkinnedMeshRenderer extends Renderable
     {
         __class__: "feng3d.SkinnedMeshRenderer";
-
-        get single() { return true; }
 
         @serialize
         @oav()

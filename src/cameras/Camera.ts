@@ -11,7 +11,7 @@ namespace feng3d
 	 * 摄像机
 	 */
     @AddComponentMenu("Rendering/Camera")
-    @RegisterComponent()
+    @RegisterComponent({ single: true })
     export class Camera extends Component3D
     {
         static create(name = "Camera")
@@ -22,8 +22,6 @@ namespace feng3d
             return camera;
         }
         __class__: "feng3d.Camera";
-
-        get single() { return true; }
 
         @oav({ component: "OAVEnum", componentParam: { enumClass: Projection } })
         get projection()

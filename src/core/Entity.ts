@@ -94,12 +94,12 @@ namespace feng3d
         /**
          * 添加指定组件类型到游戏对象
          * 
-         * @type type 被添加组件
+         * @type type 被添加组件类定义
          */
         addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T
         {
             var component = this.getComponent(type);
-            if (component && component.single)
+            if (Component.isSingleComponent(type))
             {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
@@ -371,9 +371,10 @@ namespace feng3d
                 return;
             }
             //组件唯一时移除同类型的组件
-            if (component.single)
+            var type = <Constructor<Components>>component.constructor;
+            if (Component.isSingleComponent(type))
             {
-                var oldComponents = this.getComponentsByType(<Constructor<Components>>component.constructor);
+                var oldComponents = this.getComponentsByType(type);
                 if (oldComponents.length > 0)
                 {
                     console.assert(oldComponents.length == 1);

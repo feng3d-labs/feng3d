@@ -12,11 +12,9 @@ namespace feng3d
      * 
      * See Also: Renderer components for meshes, particles, lines and trails.
      */
-    @RegisterComponent()
+    @RegisterComponent({ single: true })
     export class Renderable extends RayCastable
     {
-        get single() { return true; }
-
         readonly renderAtomic = new RenderAtomic();
 
         /**

@@ -12381,6 +12381,10 @@ declare namespace feng3d {
          */
         name?: string;
         /**
+         * 是否唯一，同类型组件只允许一个。
+         */
+        single?: boolean;
+        /**
          * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
          */
         dependencies?: Constructor<Component>[];
@@ -12413,9 +12417,16 @@ declare namespace feng3d {
         };
         /**
          * 获取组件依赖列表
-         * @param type
+         *
+         * @param type 组件类定义
          */
         static getDependencies(type: Constructor<Component>): Constructor<Component<ComponentEventMap>>[];
+        /**
+         * 判断组件是否为唯一组件。
+         *
+         * @param type 组件类定义
+         */
+        static isSingleComponent(type: Constructor<Component>): boolean;
         /**
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
@@ -12427,10 +12438,6 @@ declare namespace feng3d {
          * 标签
          */
         tag: string;
-        /**
-         * 是否唯一，同类型3D对象组件只允许一个
-         */
-        get single(): boolean;
         /**
          * 是否已销毁
          */
@@ -12766,7 +12773,6 @@ declare namespace feng3d {
      */
     class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
         __class__: "feng3d.Node3D";
-        get single(): boolean;
         assetType: AssetType;
         /**
          * 预设资源编号
@@ -13266,7 +13272,7 @@ declare namespace feng3d {
         /**
          * 添加指定组件类型到游戏对象
          *
-         * @type type 被添加组件
+         * @type type 被添加组件类定义
          */
         addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T;
         /**
@@ -13587,7 +13593,6 @@ declare namespace feng3d {
      * 通过修改Transform的数值实现
      */
     class TransformLayout extends Component3D {
-        get single(): boolean;
         /**
          * 创建一个实体，该类为虚类
          */
@@ -13843,7 +13848,6 @@ declare namespace feng3d {
      * See Also: Renderer components for meshes, particles, lines and trails.
      */
     class Renderable extends RayCastable {
-        get single(): boolean;
         readonly renderAtomic: RenderAtomic;
         /**
          * 几何体
@@ -14715,7 +14719,6 @@ declare namespace feng3d {
     class Camera extends Component3D {
         static create(name?: string): Camera;
         __class__: "feng3d.Camera";
-        get single(): boolean;
         get projection(): Projection;
         set projection(v: Projection);
         /**
@@ -16320,7 +16323,6 @@ declare namespace feng3d {
     }
     class SkinnedMeshRenderer extends Renderable {
         __class__: "feng3d.SkinnedMeshRenderer";
-        get single(): boolean;
         skinSkeleton: SkinSkeleton;
         initMatrix: Matrix4x4;
         /**

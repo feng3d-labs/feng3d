@@ -26329,7 +26329,8 @@ var feng3d;
         }
         /**
          * 获取组件依赖列表
-         * @param type
+         *
+         * @param type 组件类定义
          */
         Component.getDependencies = function (type) {
             var _a;
@@ -26340,6 +26341,21 @@ var feng3d;
                 prototype = prototype["__proto__"];
             }
             return dependencies;
+        };
+        /**
+         * 判断组件是否为唯一组件。
+         *
+         * @param type 组件类定义
+         */
+        Component.isSingleComponent = function (type) {
+            var _a;
+            var prototype = type.prototype;
+            var isSingle = false;
+            while (prototype && !isSingle) {
+                isSingle = !!((_a = prototype[__component__]) === null || _a === void 0 ? void 0 : _a.single);
+                prototype = prototype["__proto__"];
+            }
+            return isSingle;
         };
         Object.defineProperty(Component.prototype, "entity", {
             //------------------------------------------
@@ -26370,16 +26386,6 @@ var feng3d;
                 if (this._entity) {
                     this._entity.name = v;
                 }
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Component.prototype, "single", {
-            /**
-             * 是否唯一，同类型3D对象组件只允许一个
-             */
-            get: function () {
-                return false;
             },
             enumerable: false,
             configurable: true
@@ -26827,11 +26833,6 @@ var feng3d;
             _this._renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
             return _this;
         }
-        Object.defineProperty(Node3D.prototype, "single", {
-            get: function () { return true; },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(Node3D.prototype, "worldPosition", {
             /**
              * 世界坐标
@@ -27804,7 +27805,7 @@ var feng3d;
             feng3d.serialize
         ], Node3D.prototype, "children", null);
         Node3D = __decorate([
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ single: true })
         ], Node3D);
         return Node3D;
     }(feng3d.Component));
@@ -28005,12 +28006,12 @@ var feng3d;
         /**
          * 添加指定组件类型到游戏对象
          *
-         * @type type 被添加组件
+         * @type type 被添加组件类定义
          */
         Entity.prototype.addComponent = function (type, callback) {
             var _this = this;
             var component = this.getComponent(type);
-            if (component && component.single) {
+            if (feng3d.Component.isSingleComponent(type)) {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
@@ -28219,8 +28220,9 @@ var feng3d;
                 return;
             }
             //组件唯一时移除同类型的组件
-            if (component.single) {
-                var oldComponents = this.getComponentsByType(component.constructor);
+            var type = component.constructor;
+            if (feng3d.Component.isSingleComponent(type)) {
+                var oldComponents = this.getComponentsByType(type);
                 if (oldComponents.length > 0) {
                     console.assert(oldComponents.length == 1);
                     this.removeComponent(oldComponents[0]);
@@ -28783,11 +28785,6 @@ var feng3d;
             return _this;
         }
         TransformLayout_1 = TransformLayout;
-        Object.defineProperty(TransformLayout.prototype, "single", {
-            get: function () { return true; },
-            enumerable: false,
-            configurable: true
-        });
         TransformLayout.prototype._onAdded = function (event) {
             event.data.parent.on("sizeChanged", this._invalidateLayout, this);
             event.data.parent.on("pivotChanged", this._invalidateLayout, this);
@@ -28949,7 +28946,7 @@ var feng3d;
         ], TransformLayout.prototype, "pivot", void 0);
         TransformLayout = TransformLayout_1 = __decorate([
             feng3d.AddComponentMenu("Layout/TransformLayout"),
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ single: true })
         ], TransformLayout);
         return TransformLayout;
     }(feng3d.Component3D));
@@ -29409,11 +29406,6 @@ var feng3d;
             _this._lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
-        Object.defineProperty(Renderable.prototype, "single", {
-            get: function () { return true; },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(Renderable.prototype, "material", {
             /**
              * 材质
@@ -29550,7 +29542,7 @@ var feng3d;
             feng3d.serialize
         ], Renderable.prototype, "receiveShadows", void 0);
         Renderable = __decorate([
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ single: true })
         ], Renderable);
         return Renderable;
     }(feng3d.RayCastable));
@@ -31597,11 +31589,6 @@ var feng3d;
             var camera = gameObject.addComponent(Camera_1);
             return camera;
         };
-        Object.defineProperty(Camera.prototype, "single", {
-            get: function () { return true; },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(Camera.prototype, "projection", {
             get: function () {
                 return this.lens && this.lens.projectionType;
@@ -31757,7 +31744,7 @@ var feng3d;
         ], Camera.prototype, "lens", null);
         Camera = Camera_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/Camera"),
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ single: true })
         ], Camera);
         return Camera;
     }(feng3d.Component3D));
@@ -36202,11 +36189,6 @@ var feng3d;
             _this.cacheU_skeletonGlobalMatriices = {};
             return _this;
         }
-        Object.defineProperty(SkinnedMeshRenderer.prototype, "single", {
-            get: function () { return true; },
-            enumerable: false,
-            configurable: true
-        });
         /**
          * 创建一个骨骼动画类
          */
@@ -36298,7 +36280,7 @@ var feng3d;
             feng3d.serialize
         ], SkinnedMeshRenderer.prototype, "initMatrix", void 0);
         SkinnedMeshRenderer = __decorate([
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ single: true })
         ], SkinnedMeshRenderer);
         return SkinnedMeshRenderer;
     }(feng3d.Renderable));

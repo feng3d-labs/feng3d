@@ -2,8 +2,21 @@ namespace feng3d
 {
     interface ComponentInfo
     {
-        name: string
+        /**
+         * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
+         */
+        name: string;
+        /**
+         * 是否唯一，同类型组件只允许一个。
+         */
+        single: boolean;
+        /**
+         * 构造函数
+         */
         type: Constructor<Component>;
+        /**
+         * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
+         */
         dependencies: Constructor<Component>[];
     }
 
@@ -24,6 +37,10 @@ namespace feng3d
          * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
          */
         name?: string,
+        /**
+         * 是否唯一，同类型组件只允许一个。
+         */
+        single?: boolean,
         /**
          * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
          */
@@ -82,7 +99,8 @@ namespace feng3d
 
         /**
          * 获取组件依赖列表
-         * @param type 
+         * 
+         * @param type 组件类定义
          */
         static getDependencies(type: Constructor<Component>)
         {
@@ -95,6 +113,24 @@ namespace feng3d
             }
             return dependencies;
         }
+
+        /**
+         * 判断组件是否为唯一组件。
+         * 
+         * @param type 组件类定义
+         */
+        static isSingleComponent(type: Constructor<Component>)
+        {
+            var prototype = type.prototype;
+            var isSingle = false;
+            while (prototype && !isSingle)
+            {
+                isSingle = !!((prototype[__component__] as ComponentInfo)?.single);
+                prototype = prototype["__proto__"];
+            }
+            return isSingle;
+        }
+
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -135,14 +171,6 @@ namespace feng3d
          */
         @serialize
         tag: string;
-
-        /**
-         * 是否唯一，同类型3D对象组件只允许一个
-         */
-        get single()
-        {
-            return false;
-        }
 
         /**
          * 是否已销毁
