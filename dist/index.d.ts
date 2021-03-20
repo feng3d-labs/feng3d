@@ -13265,6 +13265,7 @@ declare namespace feng3d {
         constructor();
         /**
          * 获取指定位置索引的子组件
+         *
          * @param index			位置索引
          * @return				子组件
          */
@@ -13277,6 +13278,7 @@ declare namespace feng3d {
         addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T;
         /**
          * 添加脚本
+         *
          * @param script   脚本路径
          */
         addScript(scriptName: string): ScriptComponent;
@@ -13296,47 +13298,60 @@ declare namespace feng3d {
         getComponents<T extends Components>(type: Constructor<T>): T[];
         /**
          * 设置子组件的位置
+         *
          * @param component				子组件
          * @param index				位置索引
          */
         setComponentIndex(component: Components, index: number): void;
         /**
          * 设置组件到指定位置
+         *
          * @param component		被设置的组件
          * @param index			索引
          */
         setComponentAt(component: Components, index: number): void;
         /**
          * 移除组件
+         *
          * @param component 被移除组件
          */
         removeComponent(component: Components): void;
         /**
          * 获取组件在容器的索引位置
+         *
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
         getComponentIndex(component: Components): number;
         /**
          * 移除组件
+         *
          * @param index		要删除的 Component 的子索引。
          */
         removeComponentAt(index: number): Component;
         /**
          * 交换子组件位置
+         *
          * @param index1		第一个子组件的索引位置
          * @param index2		第二个子组件的索引位置
          */
         swapComponentsAt(index1: number, index2: number): void;
         /**
          * 交换子组件位置
+         *
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
         swapComponents(a: Components, b: Components): void;
+        /**
+         * 获取指定类型组件
+         *
+         * @param type 组件类型
+         */
         getComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
          * 移除指定类型组件
+         *
          * @param type 组件类型
          */
         removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
@@ -13360,18 +13375,21 @@ declare namespace feng3d {
         protected _components: Components[];
         /**
          * 判断是否拥有组件
+         *
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
         private hasComponent;
         /**
          * 添加组件到指定位置
+         *
          * @param component		被添加的组件
          * @param index			插入的位置
          */
         private addComponentAt;
         /**
          * 为了兼容以往json序列化格式
+         *
          * @deprecated
          */
         set children(v: Entity[]);
