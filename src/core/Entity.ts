@@ -6,12 +6,12 @@ namespace feng3d
         /**
          * 添加子组件事件
          */
-        addComponent: { gameObject: Entity, component: Component };
+        addComponent: { entity: Entity, component: Component };
 
         /**
          * 移除子组件事件
          */
-        removeComponent: { gameObject: Entity, component: Component };
+        removeComponent: { entity: Entity, component: Component };
 
         /**
          * 包围盒失效
@@ -25,7 +25,7 @@ namespace feng3d
     }
 
     /**
-     * 游戏对象，场景唯一存在的对象类型
+     * 实体，场景唯一存在的对象类型
      */
     export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObject<T> implements IDisposable
     {
@@ -38,6 +38,11 @@ namespace feng3d
         @serialize
         @oav({ component: "OAVGameObjectName" })
         name: string;
+        /**
+         * 标签
+         */
+        @serialize
+        tag: string;
 
         //------------------------------------------
         // Variables
@@ -94,14 +99,14 @@ namespace feng3d
         }
 
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          * 
          * @type type 被添加组件类定义
          */
         addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T
         {
             var component = this.getComponent(type);
-            if (Component.isSingleComponent(type))
+            if (component && Component.isSingleComponent(type))
             {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
@@ -133,7 +138,7 @@ namespace feng3d
         }
 
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          * 
          * @param type				类定义
          * @return                  返回指定类型组件
@@ -145,7 +150,7 @@ namespace feng3d
         }
 
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -234,7 +239,7 @@ namespace feng3d
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.emit("removeComponent", { component: component, gameObject: this }, true);
+            this.emit("removeComponent", { component: component, entity: this }, true);
             component.dispose();
             return component;
         }
@@ -328,14 +333,14 @@ namespace feng3d
         // Static Functions
         //------------------------------------------
         /**
-         * 查找指定名称的游戏对象
+         * 查找指定名称的实体
          * 
          * @param name 
          */
         static find(name: string)
         {
-            var gameObjects = Feng3dObject.getObjects(Entity)
-            var result = gameObjects.filter(v => !v.disposed && (v.name == name));
+            var entitys = Feng3dObject.getObjects(Entity)
+            var result = entitys.filter(v => !v.disposed && (v.name == name));
             return result[0];
         }
 
@@ -401,10 +406,10 @@ namespace feng3d
             }
 
             this._components.splice(index, 0, component);
-            component.setGameObject(this);
+            component._setEntity(this);
             component.init();
             //派发添加组件事件
-            this.emit("addComponent", { component: component, gameObject: this }, true);
+            this.emit("addComponent", { component: component, entity: this }, true);
         }
 
         /**
@@ -422,11 +427,11 @@ namespace feng3d
             } else
             {
                 var f = (e: Event<{
-                    gameObject: Entity;
+                    entity: Entity;
                     component: Component;
                 }>) =>
                 {
-                    if (e.data.gameObject == this && e.data.component instanceof Node3D)
+                    if (e.data.entity == this && e.data.component instanceof Node3D)
                     {
                         e.data.component.children = node3ds;
                         this.off("addComponent", f);
@@ -440,10 +445,10 @@ namespace feng3d
         private _children: Entity[];
 
         /**
-         * 创建指定类型的游戏对象。
+         * 创建指定类型的实体。
          * 
-         * @param type 游戏对象类型。
-         * @param param 游戏对象参数。
+         * @param type 实体类型。
+         * @param param 实体参数。
          */
         static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>)
         {
@@ -458,22 +463,22 @@ namespace feng3d
         }
 
         /**
-         * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
+         * 注册原始实体，被注册后可以使用 Entity.createPrimitive 进行创建。
          * 
-         * @param type 原始游戏对象类型。
-         * @param handler 构建原始游戏对象的函数。
+         * @param type 原始实体类型。
+         * @param handler 构建原始实体的函数。
          */
         static registerPrimitive<K extends keyof PrimitiveEntity>(type: K, handler: (entity: Entity) => void)
         {
             if (this._registerPrimitives[type])
-                console.warn(`重复注册原始游戏对象 ${type} ！`);
+                console.warn(`重复注册原始实体 ${type} ！`);
             this._registerPrimitives[type] = handler;
         }
         static _registerPrimitives: { [type: string]: (gameObject: Entity) => void } = {};
     }
 
     /**
-     * 原始游戏对象，可以通过Entity.createPrimitive进行创建。
+     * 原始实体，可以通过Entity.createPrimitive进行创建。
      */
     export interface PrimitiveEntity
     {

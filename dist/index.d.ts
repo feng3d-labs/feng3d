@@ -12405,7 +12405,7 @@ declare namespace feng3d {
      *
      * 所有附加到Entity的基类。
      *
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
+     * 注意，您的代码不会直接创建 Component，而是您编写脚本代码，然后将该脚本附加到 Entity。
      */
     class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable {
         /**
@@ -12428,16 +12428,24 @@ declare namespace feng3d {
          */
         static isSingleComponent(type: Constructor<Component>): boolean;
         /**
-         * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
+         * 此组件附加到的实体。组件总是附加到实体上。
          */
         get entity(): Entity<EntityEventMap>;
         set entity(v: Entity<EntityEventMap>);
+        /**
+         * 名称。
+         *
+         * 组件与实体及所有附加组件使用相同的名称。
+         */
         get name(): string;
         set name(v: string);
         /**
-         * 标签
+         * 此实体的标签。
+         *
+         * 可使用标签来识别实体。
          */
-        tag: string;
+        get tag(): string;
+        set tag(v: string);
         /**
          * 是否已销毁
          */
@@ -12450,7 +12458,7 @@ declare namespace feng3d {
         /**
          * 初始化组件
          *
-         * 在添加到GameObject时立即被调用。
+         * 在添加到Entity时立即被调用。
          */
         init(): void;
         /**
@@ -12460,7 +12468,7 @@ declare namespace feng3d {
          */
         getComponentAt(index: number): Component;
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          *
          * @type type 被添加组件
          */
@@ -12471,14 +12479,14 @@ declare namespace feng3d {
          */
         addScript(scriptName: string): ScriptComponent;
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          *
          * @param type				类定义
          * @return                  返回指定类型组件
          */
         getComponent<T extends Components>(type: Constructor<T>): T;
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -12534,12 +12542,12 @@ declare namespace feng3d {
          */
         private _onAnyListener;
         /**
-         * 该方法仅在GameObject中使用
+         * 该方法仅在Entity中使用
          * @private
          *
-         * @param gameObject 游戏对象
+         * @param entity 实体
          */
-        setGameObject(gameObject: Entity): void;
+        _setEntity(entity: Entity): void;
         protected _entity: Entity;
     }
 }
@@ -13065,13 +13073,19 @@ declare namespace feng3d {
          */
         rayWorldToLocal(worldRay: Ray3, localRay?: Ray3): Ray3;
         /**
-         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
          *
-         * @param type		类定义
+         * @param type		要检索的组件的类型。
          * @return			返回与给出类定义一致的组件
          */
         getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
             findchildren: boolean;
+            /**
+             * 是否为需要查找的组件
+             */
             value: boolean;
         }, result?: T[]): T[];
         /**
@@ -13226,14 +13240,14 @@ declare namespace feng3d {
          * 添加子组件事件
          */
         addComponent: {
-            gameObject: Entity;
+            entity: Entity;
             component: Component;
         };
         /**
          * 移除子组件事件
          */
         removeComponent: {
-            gameObject: Entity;
+            entity: Entity;
             component: Component;
         };
         /**
@@ -13246,7 +13260,7 @@ declare namespace feng3d {
         refreshView: any;
     }
     /**
-     * 游戏对象，场景唯一存在的对象类型
+     * 实体，场景唯一存在的对象类型
      */
     class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObject<T> implements IDisposable {
         __class__: "feng3d.Entity";
@@ -13254,6 +13268,10 @@ declare namespace feng3d {
          * 名称
          */
         name: string;
+        /**
+         * 标签
+         */
+        tag: string;
         /**
          * 子组件个数
          */
@@ -13272,7 +13290,7 @@ declare namespace feng3d {
          */
         getComponentAt(index: number): Component;
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          *
          * @type type 被添加组件类定义
          */
@@ -13284,14 +13302,14 @@ declare namespace feng3d {
          */
         addScript(scriptName: string): ScriptComponent;
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          *
          * @param type				类定义
          * @return                  返回指定类型组件
          */
         getComponent<T extends Components>(type: Constructor<T>): T;
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -13365,7 +13383,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         /**
-         * 查找指定名称的游戏对象
+         * 查找指定名称的实体
          *
          * @param name
          */
@@ -13396,17 +13414,17 @@ declare namespace feng3d {
         set children(v: Entity[]);
         private _children;
         /**
-         * 创建指定类型的游戏对象。
+         * 创建指定类型的实体。
          *
-         * @param type 游戏对象类型。
-         * @param param 游戏对象参数。
+         * @param type 实体类型。
+         * @param param 实体参数。
          */
         static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>): Node3D<Component3DEventMap>;
         /**
-         * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
+         * 注册原始实体，被注册后可以使用 Entity.createPrimitive 进行创建。
          *
-         * @param type 原始游戏对象类型。
-         * @param handler 构建原始游戏对象的函数。
+         * @param type 原始实体类型。
+         * @param handler 构建原始实体的函数。
          */
         static registerPrimitive<K extends keyof PrimitiveEntity>(type: K, handler: (entity: Entity) => void): void;
         static _registerPrimitives: {
@@ -13414,7 +13432,7 @@ declare namespace feng3d {
         };
     }
     /**
-     * 原始游戏对象，可以通过Entity.createPrimitive进行创建。
+     * 原始实体，可以通过Entity.createPrimitive进行创建。
      */
     interface PrimitiveEntity {
     }
@@ -13506,7 +13524,7 @@ declare namespace feng3d {
         mouseRay3D: Ray3;
         private calcMouseRay3D;
         /**
-         * 获取屏幕区域内所有游戏对象
+         * 获取屏幕区域内所有实体
          * @param start 起点
          * @param end 终点
          */
@@ -13520,15 +13538,21 @@ declare namespace feng3d {
     }
     /**
      * 3D组件
-     * GameObject必须拥有Transform组件的
+     *
+     * 所有基于3D空间的组件均可继承于该组件。
      */
     class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
         /**
-         * The Transform attached to this Entity (null if there is none attached).
+         * The Node3D attached to this Entity (null if there is none attached).
+         *
+         * 附加到此 Entity 的 Node3D。
          */
         get node3d(): Node3D<Component3DEventMap>;
         /**
          * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -13979,7 +14003,7 @@ declare namespace feng3d {
         /**
          * The game object this component is attached to. A component is always attached to a game object.
          */
-        get gameObject(): Entity<EntityEventMap>;
+        get entity(): Entity<EntityEventMap>;
         /**
          * The Transform attached to this Entity (null if there is none attached).
          */
@@ -16320,8 +16344,8 @@ declare namespace feng3d {
          */
         get globalMatrices(): Matrix4x4[];
         private isInitJoints;
-        private jointGameobjects;
-        private jointGameObjectMap;
+        private jointNode3Ds;
+        private jointNode3DMap;
         private _globalPropertiesInvalid;
         private _jointsInvalid;
         private _globalMatrixsInvalid;
@@ -16333,7 +16357,7 @@ declare namespace feng3d {
          */
         private updateGlobalProperties;
         private invalidjoint;
-        private createSkeletonGameObject;
+        private createSkeletonNode3D;
     }
 }
 declare namespace feng3d {
@@ -16476,11 +16500,11 @@ declare namespace feng3d {
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownGameObject;
+        private preMouseDownNode3D;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
-        private gameObjectClickNum;
+        private node3DClickNum;
         private _mouseInputChanged;
         private dispatch;
         /**
@@ -16490,7 +16514,7 @@ declare namespace feng3d {
         /**
          * 设置选中对象
          */
-        private setSelectedGameObject;
+        private setSelectedNode3D;
     }
     /**
      * 鼠标事件输入

@@ -26311,7 +26311,7 @@ var feng3d;
      *
      * 所有附加到Entity的基类。
      *
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
+     * 注意，您的代码不会直接创建 Component，而是您编写脚本代码，然后将该脚本附加到 Entity。
      */
     var Component = /** @class */ (function (_super) {
         __extends(Component, _super);
@@ -26362,7 +26362,7 @@ var feng3d;
             // Variables
             //------------------------------------------
             /**
-             * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
+             * 此组件附加到的实体。组件总是附加到实体上。
              */
             get: function () {
                 return this._entity;
@@ -26378,14 +26378,32 @@ var feng3d;
             configurable: true
         });
         Object.defineProperty(Component.prototype, "name", {
+            /**
+             * 名称。
+             *
+             * 组件与实体及所有附加组件使用相同的名称。
+             */
             get: function () {
                 var _a;
                 return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.name;
             },
             set: function (v) {
-                if (this._entity) {
-                    this._entity.name = v;
-                }
+                this._entity.name = v;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Component.prototype, "tag", {
+            /**
+             * 此实体的标签。
+             *
+             * 可使用标签来识别实体。
+             */
+            get: function () {
+                return this._entity.tag;
+            },
+            set: function (v) {
+                this._entity.tag = v;
             },
             enumerable: false,
             configurable: true
@@ -26401,7 +26419,7 @@ var feng3d;
         /**
          * 初始化组件
          *
-         * 在添加到GameObject时立即被调用。
+         * 在添加到Entity时立即被调用。
          */
         Component.prototype.init = function () {
         };
@@ -26414,7 +26432,7 @@ var feng3d;
             return this.entity.getComponentAt(index);
         };
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          *
          * @type type 被添加组件
          */
@@ -26430,7 +26448,7 @@ var feng3d;
             return this.entity.addScript(scriptName);
         };
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          *
          * @param type				类定义
          * @return                  返回指定类型组件
@@ -26439,7 +26457,7 @@ var feng3d;
             return this.entity.getComponent(type);
         };
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -26518,13 +26536,13 @@ var feng3d;
                 this._entity.emitEvent(e);
         };
         /**
-         * 该方法仅在GameObject中使用
+         * 该方法仅在Entity中使用
          * @private
          *
-         * @param gameObject 游戏对象
+         * @param entity 实体
          */
-        Component.prototype.setGameObject = function (gameObject) {
-            this._entity = gameObject;
+        Component.prototype._setEntity = function (entity) {
+            this._entity = entity;
         };
         /**
          * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
@@ -26534,9 +26552,6 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], Component.prototype, "entity", null);
-        __decorate([
-            feng3d.serialize
-        ], Component.prototype, "tag", void 0);
         return Component;
     }(feng3d.Feng3dObject));
     feng3d.Component = Component;
@@ -27506,9 +27521,9 @@ var feng3d;
             return localRay;
         };
         /**
-         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
          *
-         * @param type		类定义
+         * @param type		要检索的组件的类型。
          * @return			返回与给出类定义一致的组件
          */
         Node3D.prototype.getComponentsInChildren = function (type, filter, result) {
@@ -27946,7 +27961,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 游戏对象，场景唯一存在的对象类型
+     * 实体，场景唯一存在的对象类型
      */
     var Entity = /** @class */ (function (_super) {
         __extends(Entity, _super);
@@ -28010,14 +28025,14 @@ var feng3d;
             return this._components[index];
         };
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          *
          * @type type 被添加组件类定义
          */
         Entity.prototype.addComponent = function (type, callback) {
             var _this = this;
             var component = this.getComponent(type);
-            if (feng3d.Component.isSingleComponent(type)) {
+            if (component && feng3d.Component.isSingleComponent(type)) {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
@@ -28044,7 +28059,7 @@ var feng3d;
             return scriptComponent;
         };
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          *
          * @param type				类定义
          * @return                  返回指定类型组件
@@ -28054,7 +28069,7 @@ var feng3d;
             return component;
         };
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -28124,7 +28139,7 @@ var feng3d;
             console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.emit("removeComponent", { component: component, gameObject: this }, true);
+            this.emit("removeComponent", { component: component, entity: this }, true);
             component.dispose();
             return component;
         };
@@ -28199,13 +28214,13 @@ var feng3d;
         // Static Functions
         //------------------------------------------
         /**
-         * 查找指定名称的游戏对象
+         * 查找指定名称的实体
          *
          * @param name
          */
         Entity.find = function (name) {
-            var gameObjects = feng3d.Feng3dObject.getObjects(Entity);
-            var result = gameObjects.filter(function (v) { return !v.disposed && (v.name == name); });
+            var entitys = feng3d.Feng3dObject.getObjects(Entity);
+            var result = entitys.filter(function (v) { return !v.disposed && (v.name == name); });
             return result[0];
         };
         //------------------------------------------
@@ -28251,10 +28266,10 @@ var feng3d;
                 }
             }
             this._components.splice(index, 0, component);
-            component.setGameObject(this);
+            component._setEntity(this);
             component.init();
             //派发添加组件事件
-            this.emit("addComponent", { component: component, gameObject: this }, true);
+            this.emit("addComponent", { component: component, entity: this }, true);
         };
         Object.defineProperty(Entity.prototype, "children", {
             /**
@@ -28271,7 +28286,7 @@ var feng3d;
                 }
                 else {
                     var f = function (e) {
-                        if (e.data.gameObject == _this && e.data.component instanceof feng3d.Node3D) {
+                        if (e.data.entity == _this && e.data.component instanceof feng3d.Node3D) {
                             e.data.component.children = node3ds;
                             _this.off("addComponent", f);
                         }
@@ -28284,10 +28299,10 @@ var feng3d;
             configurable: true
         });
         /**
-         * 创建指定类型的游戏对象。
+         * 创建指定类型的实体。
          *
-         * @param type 游戏对象类型。
-         * @param param 游戏对象参数。
+         * @param type 实体类型。
+         * @param param 实体参数。
          */
         Entity.createPrimitive = function (type, param) {
             var g = new Entity();
@@ -28299,14 +28314,14 @@ var feng3d;
             return g.getComponent(feng3d.Node3D);
         };
         /**
-         * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
+         * 注册原始实体，被注册后可以使用 Entity.createPrimitive 进行创建。
          *
-         * @param type 原始游戏对象类型。
-         * @param handler 构建原始游戏对象的函数。
+         * @param type 原始实体类型。
+         * @param handler 构建原始实体的函数。
          */
         Entity.registerPrimitive = function (type, handler) {
             if (this._registerPrimitives[type])
-                console.warn("\u91CD\u590D\u6CE8\u518C\u539F\u59CB\u6E38\u620F\u5BF9\u8C61 " + type + " \uFF01");
+                console.warn("\u91CD\u590D\u6CE8\u518C\u539F\u59CB\u5B9E\u4F53 " + type + " \uFF01");
             this._registerPrimitives[type] = handler;
         };
         Entity._registerPrimitives = {};
@@ -28314,6 +28329,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ component: "OAVGameObjectName" })
         ], Entity.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Entity.prototype, "tag", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVComponentList" })
@@ -28534,7 +28552,7 @@ var feng3d;
             this.mouseRay3D = this.camera.getRay3D(gpuPos.x, gpuPos.y);
         };
         /**
-         * 获取屏幕区域内所有游戏对象
+         * 获取屏幕区域内所有实体
          * @param start 起点
          * @param end 终点
          */
@@ -28589,7 +28607,8 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D组件
-     * GameObject必须拥有Transform组件的
+     *
+     * 所有基于3D空间的组件均可继承于该组件。
      */
     var Component3D = /** @class */ (function (_super) {
         __extends(Component3D, _super);
@@ -28598,7 +28617,9 @@ var feng3d;
         }
         Object.defineProperty(Component3D.prototype, "node3d", {
             /**
-             * The Transform attached to this Entity (null if there is none attached).
+             * The Node3D attached to this Entity (null if there is none attached).
+             *
+             * 附加到此 Entity 的 Node3D。
              */
             get: function () {
                 var _a;
@@ -28609,6 +28630,9 @@ var feng3d;
         });
         /**
          * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -29584,9 +29608,9 @@ var feng3d;
         MeshRenderer_1 = MeshRenderer;
         MeshRenderer.create = function (name, callback) {
             if (name === void 0) { name = "Mesh"; }
-            var gameObject = new feng3d.Entity();
-            gameObject.name = name;
-            var meshRenderer = gameObject.addComponent(MeshRenderer_1, callback);
+            var entity = new feng3d.Entity();
+            entity.name = name;
+            var meshRenderer = entity.addComponent(MeshRenderer_1, callback);
             return meshRenderer;
         };
         var MeshRenderer_1;
@@ -29700,7 +29724,7 @@ var feng3d;
     var Script = /** @class */ (function () {
         function Script() {
         }
-        Object.defineProperty(Script.prototype, "gameObject", {
+        Object.defineProperty(Script.prototype, "entity", {
             /**
              * The game object this component is attached to. A component is always attached to a game object.
              */
@@ -31607,9 +31631,9 @@ var feng3d;
         Camera_1 = Camera;
         Camera.create = function (name) {
             if (name === void 0) { name = "Camera"; }
-            var gameObject = new feng3d.Entity();
-            gameObject.name = name;
-            var camera = gameObject.addComponent(Camera_1);
+            var entity = new feng3d.Entity();
+            entity.name = name;
+            var camera = entity.addComponent(Camera_1);
             return camera;
         };
         Object.defineProperty(Camera.prototype, "projection", {
@@ -34425,9 +34449,9 @@ var feng3d;
         Light.prototype.updateDebugShadowMap = function (scene, viewCamera) {
             var model = this.debugShadowMapModel;
             if (!model) {
-                var gameObject = new feng3d.Entity();
-                gameObject.name = "debugShadowMapObject";
-                model = gameObject.addComponent(feng3d.MeshRenderer);
+                var entity = new feng3d.Entity();
+                entity.name = "debugShadowMapObject";
+                model = entity.addComponent(feng3d.MeshRenderer);
                 model.geometry = feng3d.Geometry.getDefault("Plane");
                 model.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
                 model.node3d.mouseEnabled = false;
@@ -34490,9 +34514,9 @@ var feng3d;
         DirectionalLight_1 = DirectionalLight;
         DirectionalLight.create = function (name) {
             if (name === void 0) { name = "DirectionalLight"; }
-            var gameObject = new feng3d.Entity();
-            gameObject.name = name;
-            var directionalLight = gameObject.addComponent(DirectionalLight_1);
+            var entity = new feng3d.Entity();
+            entity.name = name;
+            var directionalLight = entity.addComponent(DirectionalLight_1);
             return directionalLight;
         };
         Object.defineProperty(DirectionalLight.prototype, "position", {
@@ -35308,8 +35332,8 @@ var feng3d;
         Raycaster.prototype.pick = function (ray3D, transforms) {
             if (transforms.length == 0)
                 return null;
-            var pickingCollisionVOs = transforms.reduce(function (pv, gameObject) {
-                var model = gameObject.getComponent(feng3d.RayCastable);
+            var pickingCollisionVOs = transforms.reduce(function (pv, node3d) {
+                var model = node3d.getComponent(feng3d.RayCastable);
                 var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO)
                     pv.push(pickingCollisionVO);
@@ -36090,10 +36114,10 @@ var feng3d;
             configurable: true
         });
         SkeletonComponent.prototype.initSkeleton = function () {
-            this.jointGameobjects = [];
-            this.jointGameObjectMap = {};
+            this.jointNode3Ds = [];
+            this.jointNode3DMap = {};
             //
-            this.createSkeletonGameObject();
+            this.createSkeletonNode3D();
             //
             this._globalPropertiesInvalid = true;
             this._jointsInvalid = [];
@@ -36115,7 +36139,7 @@ var feng3d;
         SkeletonComponent.prototype.updateGlobalProperties = function () {
             //姿势变换矩阵
             var joints = this.joints;
-            var jointGameobjects = this.jointGameobjects;
+            var jointGameobjects = this.jointNode3Ds;
             var globalMatrixs = this.globalMatrixs;
             var _globalMatrixsInvalid = this._globalMatrixsInvalid;
             //遍历每个关节
@@ -36150,33 +36174,33 @@ var feng3d;
                 _this.invalidjoint(element);
             });
         };
-        SkeletonComponent.prototype.createSkeletonGameObject = function () {
+        SkeletonComponent.prototype.createSkeletonNode3D = function () {
             var skeleton = this;
             var joints = skeleton.joints;
-            var jointGameobjects = this.jointGameobjects;
-            var jointGameObjectMap = this.jointGameObjectMap;
+            var jointNode3Ds = this.jointNode3Ds;
+            var jointNode3DMap = this.jointNode3DMap;
             for (var i = 0; i < joints.length; i++) {
                 createJoint(i);
             }
             function createJoint(i) {
-                if (jointGameobjects[i])
-                    return jointGameobjects[i];
+                if (jointNode3Ds[i])
+                    return jointNode3Ds[i];
                 var skeletonJoint = joints[i];
-                var parentGameobject;
+                var parentNode3D;
                 if (skeletonJoint.parentIndex != -1) {
-                    parentGameobject = createJoint(skeletonJoint.parentIndex);
+                    parentNode3D = createJoint(skeletonJoint.parentIndex);
                     joints[skeletonJoint.parentIndex].children.push(i);
                 }
                 else {
-                    parentGameobject = skeleton.node3d;
+                    parentNode3D = skeleton.node3d;
                 }
-                var jointTransform = parentGameobject.find(skeletonJoint.name);
+                var jointTransform = parentNode3D.find(skeletonJoint.name);
                 if (!jointTransform) {
-                    var gameObject = new feng3d.Entity();
-                    gameObject.name = skeletonJoint.name;
-                    gameObject.hideFlags = feng3d.HideFlags.DontSave;
-                    jointTransform = gameObject.addComponent(feng3d.Node3D);
-                    parentGameobject.addChild(jointTransform);
+                    var entity = new feng3d.Entity();
+                    entity.name = skeletonJoint.name;
+                    entity.hideFlags = feng3d.HideFlags.DontSave;
+                    jointTransform = entity.addComponent(feng3d.Node3D);
+                    parentNode3D.addChild(jointTransform);
                 }
                 var node3d = jointTransform;
                 var matrix = skeletonJoint.matrix;
@@ -36187,8 +36211,8 @@ var feng3d;
                 node3d.on("transformChanged", function () {
                     skeleton.invalidjoint(i);
                 });
-                jointGameobjects[i] = node3d;
-                jointGameObjectMap[skeletonJoint.name] = node3d;
+                jointNode3Ds[i] = node3d;
+                jointNode3DMap[skeletonJoint.name] = node3d;
                 return jointTransform;
             }
         };
@@ -36611,7 +36635,7 @@ var feng3d;
                 return this._selectedTransform;
             },
             set: function (v) {
-                this.setSelectedGameObject(v);
+                this.setSelectedNode3D(v);
             },
             enumerable: false,
             configurable: true
@@ -36660,7 +36684,7 @@ var feng3d;
         /**
          * 设置选中对象
          */
-        Mouse3DManager.prototype.setSelectedGameObject = function (value) {
+        Mouse3DManager.prototype.setSelectedNode3D = function (value) {
             var _this = this;
             if (this._selectedTransform != value) {
                 if (this._selectedTransform)
@@ -36672,19 +36696,19 @@ var feng3d;
             this._mouseEventTypes.forEach(function (element) {
                 switch (element) {
                     case "mousedown":
-                        if (_this.preMouseDownGameObject != _this._selectedTransform) {
-                            _this.gameObjectClickNum = 0;
-                            _this.preMouseDownGameObject = _this._selectedTransform;
+                        if (_this.preMouseDownNode3D != _this._selectedTransform) {
+                            _this.node3DClickNum = 0;
+                            _this.preMouseDownNode3D = _this._selectedTransform;
                         }
                         _this._selectedTransform && _this._selectedTransform.emit(element, null, true);
                         break;
                     case "mouseup":
-                        if (_this._selectedTransform == _this.preMouseDownGameObject) {
-                            _this.gameObjectClickNum++;
+                        if (_this._selectedTransform == _this.preMouseDownNode3D) {
+                            _this.node3DClickNum++;
                         }
                         else {
-                            _this.gameObjectClickNum = 0;
-                            _this.preMouseDownGameObject = null;
+                            _this.node3DClickNum = 0;
+                            _this.preMouseDownNode3D = null;
                         }
                         _this._selectedTransform && _this._selectedTransform.emit(element, null, true);
                         break;
@@ -36692,13 +36716,13 @@ var feng3d;
                         _this._selectedTransform && _this._selectedTransform.emit(element, null, true);
                         break;
                     case "click":
-                        if (_this.gameObjectClickNum > 0)
+                        if (_this.node3DClickNum > 0)
                             _this._selectedTransform && _this._selectedTransform.emit(element, null, true);
                         break;
                     case "dblclick":
-                        if (_this.gameObjectClickNum > 1) {
+                        if (_this.node3DClickNum > 1) {
                             _this._selectedTransform && _this._selectedTransform.emit(element, null, true);
-                            _this.gameObjectClickNum = 0;
+                            _this.node3DClickNum = 0;
                         }
                         break;
                 }

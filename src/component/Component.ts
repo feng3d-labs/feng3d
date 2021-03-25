@@ -165,17 +165,23 @@ namespace feng3d
 
         set name(v)
         {
-            if (this._entity)
-            {
-                this._entity.name = v;
-            }
+            this._entity.name = v;
         }
 
         /**
-         * 标签
+         * 此实体的标签。
+         * 
+         * 可使用标签来识别实体。 
          */
-        @serialize
-        tag: string;
+        get tag()
+        {
+            return this._entity.tag;
+        }
+
+        set tag(v)
+        {
+            this._entity.tag = v;
+        }
 
         /**
          * 是否已销毁
@@ -198,7 +204,7 @@ namespace feng3d
         /**
          * 初始化组件
          * 
-         * 在添加到GameObject时立即被调用。
+         * 在添加到Entity时立即被调用。
          */
         init()
         {
@@ -347,14 +353,14 @@ namespace feng3d
         }
 
         /**
-         * 该方法仅在GameObject中使用
+         * 该方法仅在Entity中使用
          * @private
          * 
-         * @param gameObject 实体
+         * @param entity 实体
          */
-        setGameObject(gameObject: Entity)
+        _setEntity(entity: Entity)
         {
-            this._entity = gameObject;
+            this._entity = entity;
         }
 
         //------------------------------------------

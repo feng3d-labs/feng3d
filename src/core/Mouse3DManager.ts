@@ -14,7 +14,7 @@ namespace feng3d
         }
         set selectedTransform(v)
         {
-            this.setSelectedGameObject(v);
+            this.setSelectedNode3D(v);
         }
 
         /**
@@ -50,11 +50,11 @@ namespace feng3d
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownGameObject: Node3D;
+        private preMouseDownNode3D: Node3D;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
-        private gameObjectClickNum: number;
+        private node3DClickNum: number;
 
         private _mouseInputChanged(property: string, oldValue: MouseInput, newValue: MouseInput)
         {
@@ -98,7 +98,7 @@ namespace feng3d
         /**
          * 设置选中对象
          */
-        private setSelectedGameObject(value: Node3D)
+        private setSelectedNode3D(value: Node3D)
         {
             if (this._selectedTransform != value)
             {
@@ -113,21 +113,21 @@ namespace feng3d
                 switch (element)
                 {
                     case "mousedown":
-                        if (this.preMouseDownGameObject != this._selectedTransform)
+                        if (this.preMouseDownNode3D != this._selectedTransform)
                         {
-                            this.gameObjectClickNum = 0;
-                            this.preMouseDownGameObject = this._selectedTransform;
+                            this.node3DClickNum = 0;
+                            this.preMouseDownNode3D = this._selectedTransform;
                         }
                         this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "mouseup":
-                        if (this._selectedTransform == this.preMouseDownGameObject)
+                        if (this._selectedTransform == this.preMouseDownNode3D)
                         {
-                            this.gameObjectClickNum++;
+                            this.node3DClickNum++;
                         } else
                         {
-                            this.gameObjectClickNum = 0;
-                            this.preMouseDownGameObject = null;
+                            this.node3DClickNum = 0;
+                            this.preMouseDownNode3D = null;
                         }
                         this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
@@ -135,14 +135,14 @@ namespace feng3d
                         this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "click":
-                        if (this.gameObjectClickNum > 0)
+                        if (this.node3DClickNum > 0)
                             this._selectedTransform && this._selectedTransform.emit(element, null, true);
                         break;
                     case "dblclick":
-                        if (this.gameObjectClickNum > 1)
+                        if (this.node3DClickNum > 1)
                         {
                             this._selectedTransform && this._selectedTransform.emit(element, null, true);
-                            this.gameObjectClickNum = 0;
+                            this.node3DClickNum = 0;
                         }
                         break;
                 }

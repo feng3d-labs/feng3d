@@ -16,9 +16,9 @@ namespace feng3d
     {
         static create(name = "Camera")
         {
-            var gameObject = new Entity();
-            gameObject.name = name;
-            var camera = gameObject.addComponent(Camera);
+            var entity = new Entity();
+            entity.name = name;
+            var camera = entity.addComponent(Camera);
             return camera;
         }
         __class__: "feng3d.Camera";

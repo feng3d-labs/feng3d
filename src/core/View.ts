@@ -270,7 +270,7 @@ namespace feng3d
         }
 
         /**
-         * 获取屏幕区域内所有游戏对象
+         * 获取屏幕区域内所有实体
          * @param start 起点
          * @param end 终点
          */

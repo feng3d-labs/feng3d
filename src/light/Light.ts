@@ -113,9 +113,9 @@ namespace feng3d
             var model = this.debugShadowMapModel;
             if (!model)
             {
-                var gameObject = new Entity();
-                gameObject.name = "debugShadowMapObject";
-                model = gameObject.addComponent(MeshRenderer);
+                var entity = new Entity();
+                entity.name = "debugShadowMapObject";
+                model = entity.addComponent(MeshRenderer);
                 model.geometry = Geometry.getDefault("Plane");
                 model.hideFlags = HideFlags.Hide | HideFlags.DontSave;
                 model.node3d.mouseEnabled = false;
