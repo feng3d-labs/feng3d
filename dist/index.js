@@ -26833,6 +26833,10 @@ var feng3d;
             _this._renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
             return _this;
         }
+        Node3D_1 = Node3D;
+        Node3D.prototype.create = function () {
+            new feng3d.Entity().addComponent(Node3D_1);
+        };
         Object.defineProperty(Node3D.prototype, "worldPosition", {
             /**
              * 世界坐标
@@ -27753,6 +27757,7 @@ var feng3d;
         Node3D.prototype._setScene = function (v) {
             this._scene = v;
         };
+        var Node3D_1;
         __decorate([
             feng3d.serialize
         ], Node3D.prototype, "prefabId", void 0);
@@ -27804,7 +27809,7 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], Node3D.prototype, "children", null);
-        Node3D = __decorate([
+        Node3D = Node3D_1 = __decorate([
             feng3d.RegisterComponent({ single: true })
         ], Node3D);
         return Node3D;

@@ -87,7 +87,7 @@ namespace feng3d
      * 
      * 所有附加到Entity的基类。
      * 
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
+     * 注意，您的代码不会直接创建 Component，而是您编写脚本代码，然后将该脚本附加到 Entity。
 	 */
     export class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable
     {
@@ -135,7 +135,7 @@ namespace feng3d
         // Variables
         //------------------------------------------
         /**
-         * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
+         * 此组件附加到的实体。组件总是附加到实体上。
          */
         @serialize
         get entity()
@@ -153,6 +153,11 @@ namespace feng3d
             this._entity = v;
         }
 
+        /**
+         * 名称。
+         * 
+         * 组件与实体及所有附加组件使用相同的名称。
+         */
         get name()
         {
             return this._entity?.name;
@@ -210,7 +215,7 @@ namespace feng3d
         }
 
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          * 
          * @type type 被添加组件
          */
@@ -229,7 +234,7 @@ namespace feng3d
         }
 
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          * 
          * @param type				类定义
          * @return                  返回指定类型组件
@@ -240,7 +245,7 @@ namespace feng3d
         }
 
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -345,7 +350,7 @@ namespace feng3d
          * 该方法仅在GameObject中使用
          * @private
          * 
-         * @param gameObject 游戏对象
+         * @param gameObject 实体
          */
         setGameObject(gameObject: Entity)
         {

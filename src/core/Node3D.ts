@@ -62,6 +62,11 @@ namespace feng3d
 
         assetType = AssetType.node3d;
 
+        create()
+        {
+            new Entity().addComponent(Node3D);
+        }
+
         /**
          * 预设资源编号
          */
@@ -804,14 +809,22 @@ namespace feng3d
             return localRay;
         }
 
-
         /**
-         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
          * 
-         * @param type		类定义
+         * @param type		要检索的组件的类型。
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
+            findchildren: boolean,
+            /**
+             * 是否为需要查找的组件
+             */
+            value: boolean
+        }, result?: T[]): T[]
         {
             result = result || [];
             var findchildren = true;

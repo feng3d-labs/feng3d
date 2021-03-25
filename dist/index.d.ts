@@ -12774,6 +12774,7 @@ declare namespace feng3d {
     class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
         __class__: "feng3d.Node3D";
         assetType: AssetType;
+        create(): void;
         /**
          * 预设资源编号
          */
