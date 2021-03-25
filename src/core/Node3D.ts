@@ -1157,6 +1157,7 @@ namespace feng3d
         _setScene(v: Scene)
         {
             this._scene = v;
+            this._updateChildrenScene();
         }
     }
 }

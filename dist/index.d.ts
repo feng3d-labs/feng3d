@@ -10619,8 +10619,8 @@ declare namespace feng3d {
             component: "OAVComponentList";
             componentParam: Object;
         };
-        OAVGameObjectName: {
-            component: "OAVGameObjectName";
+        OAVEntityName: {
+            component: "OAVEntityName";
             componentParam: Object;
         };
         OAVMaterialName: {

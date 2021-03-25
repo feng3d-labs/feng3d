@@ -36,7 +36,7 @@ namespace feng3d
          * 名称
          */
         @serialize
-        @oav({ component: "OAVGameObjectName" })
+        @oav({ component: "OAVEntityName" })
         name: string;
         /**
          * 标签

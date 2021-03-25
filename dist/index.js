@@ -27771,6 +27771,7 @@ var feng3d;
          */
         Node3D.prototype._setScene = function (v) {
             this._scene = v;
+            this._updateChildrenScene();
         };
         var Node3D_1;
         __decorate([
@@ -28327,7 +28328,7 @@ var feng3d;
         Entity._registerPrimitives = {};
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVGameObjectName" })
+            feng3d.oav({ component: "OAVEntityName" })
         ], Entity.prototype, "name", void 0);
         __decorate([
             feng3d.serialize
