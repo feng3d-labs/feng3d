@@ -11,19 +11,17 @@ namespace feng3d
 	 * 摄像机
 	 */
     @AddComponentMenu("Rendering/Camera")
-    @RegisterComponent()
+    @RegisterComponent({ single: true })
     export class Camera extends Component3D
     {
         static create(name = "Camera")
         {
-            var gameObject = new Entity();
-            gameObject.name = name;
-            var camera = gameObject.addComponent(Node3D).addComponent(Camera);
+            var entity = new Entity();
+            entity.name = name;
+            var camera = entity.addComponent(Camera);
             return camera;
         }
         __class__: "feng3d.Camera";
-
-        get single() { return true; }
 
         @oav({ component: "OAVEnum", componentParam: { enumClass: Projection } })
         get projection()

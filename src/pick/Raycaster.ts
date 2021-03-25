@@ -21,9 +21,9 @@ namespace feng3d
         {
             if (transforms.length == 0) return null;
 
-            var pickingCollisionVOs = transforms.reduce((pv: PickingCollisionVO[], gameObject) =>
+            var pickingCollisionVOs = transforms.reduce((pv: PickingCollisionVO[], node3d) =>
             {
-                var model = gameObject.getComponent(RayCastable);
+                var model = node3d.getComponent(RayCastable);
                 var pickingCollisionVO = model && model.worldRayIntersection(ray3D);
                 if (pickingCollisionVO) pv.push(pickingCollisionVO);
                 return pv;

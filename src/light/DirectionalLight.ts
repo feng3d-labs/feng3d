@@ -12,15 +12,18 @@ namespace feng3d
     {
         static create(name = "DirectionalLight")
         {
-            var gameObject = new Entity();
-            gameObject.name = name;
-            var directionalLight = gameObject.addComponent(Node3D).addComponent(DirectionalLight);
+            var entity = new Entity();
+            entity.name = name;
+            var directionalLight = entity.addComponent(DirectionalLight);
             return directionalLight;
         }
         __class__: "feng3d.DirectionalLight";
 
         lightType = LightType.Directional;
 
+        /**
+         * 用于计算方向光   
+         */
         private orthographicLens: OrthographicLens;
 
         /**

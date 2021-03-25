@@ -48,21 +48,24 @@ namespace feng3d
 
     export interface ComponentMap { Node3D: Node3D; }
 
-	/**
+    /**
      * 变换
      * 
-	 * 物体的位置、旋转和比例。
+     * 物体的位置、旋转和比例。
      * 
-	 * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
-	 */
-    @RegisterComponent()
-    export class Node3D extends Component3D
+     * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
+     */
+    @RegisterComponent({ single: true })
+    export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T>
     {
         __class__: "feng3d.Node3D";
 
-        get single() { return true; }
-
         assetType = AssetType.node3d;
+
+        create()
+        {
+            new Entity().addComponent(Node3D);
+        }
 
         /**
          * 预设资源编号
@@ -82,9 +85,9 @@ namespace feng3d
         @serialize
         mouseEnabled = true;
 
-		/**
-		 * 创建一个实体，该类为虚类
-		 */
+        /**
+         * 创建一个实体，该类为虚类
+         */
         constructor()
         {
             super();
@@ -806,14 +809,22 @@ namespace feng3d
             return localRay;
         }
 
-
         /**
-         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
          * 
-         * @param type		类定义
+         * @param type		要检索的组件的类型。
          * @return			返回与给出类定义一致的组件
          */
-        getComponentsInChildren<T extends Components>(type?:Constructor< T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
+            findchildren: boolean,
+            /**
+             * 是否为需要查找的组件
+             */
+            value: boolean
+        }, result?: T[]): T[]
         {
             result = result || [];
             var findchildren = true;
@@ -966,10 +977,13 @@ namespace feng3d
             {
                 this.emit("addedToScene", this);
             }
-            this.updateChildrenScene();
+            this._updateChildrenScene();
         }
 
-        private updateChildrenScene()
+        /**
+         * @private
+         */
+        private _updateChildrenScene()
         {
             for (let i = 0, n = this._children.length; i < n; i++)
             {
@@ -1011,7 +1025,7 @@ namespace feng3d
             {
                 for (var i = 0, n = this.numChildren; i < n; i++)
                 {
-                    this.getChildAt(i).node3d._invalidateSceneTransform();
+                    this.getChildAt(i)._invalidateSceneTransform();
                 }
             }
         }
@@ -1125,6 +1139,25 @@ namespace feng3d
             {
                 c._invalidateGlobalVisible();
             });
+        }
+
+        /**
+         * 申明冒泡函数
+         * feng3d.__event_bubble_function__
+         */
+        protected __event_bubble_function__(): any[]
+        {
+            return [this.parent];
+        }
+
+        /**
+         * @private
+         * @param v 
+         */
+        _setScene(v: Scene)
+        {
+            this._scene = v;
+            this._updateChildrenScene();
         }
     }
 }

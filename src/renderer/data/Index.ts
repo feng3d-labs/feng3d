@@ -36,7 +36,7 @@ namespace feng3d
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
-        type = GLArrayType.UNSIGNED_SHORT;
+        type = GLArrayType.UNSIGNED_INT;
 
         /**
          * 索引偏移
@@ -80,7 +80,7 @@ namespace feng3d
                 gl.cache.indices.set(index, buffer);
 
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(index.indices), gl.STATIC_DRAW);
             }
             return buffer;
         }

@@ -5,23 +5,18 @@ namespace feng3d
     {
     }
 
-    export interface Component3D
-    {
-        once<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof Component3DEventMap>(type: K, data?: Component3DEventMap[K], bubbles?: boolean): Event<Component3DEventMap[K]>;
-        has<K extends keyof Component3DEventMap>(type: K): boolean;
-        on<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof Component3DEventMap>(type?: K, listener?: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any): this;
-    }
-
     /**
      * 3D组件
-     * GameObject必须拥有Transform组件的
+     * 
+     * 所有基于3D空间的组件均可继承于该组件。
      */
-    export class Component3D extends Component
+    @RegisterComponent({ dependencies: [Node3D] })
+    export class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T>
     {
         /**
-         * The Transform attached to this Entity (null if there is none attached).
+         * The Node3D attached to this Entity (null if there is none attached).
+         * 
+         * 附加到此 Entity 的 Node3D。
          */
         get node3d()
         {
@@ -30,6 +25,9 @@ namespace feng3d
 
         /**
          * Returns all components of Type type in the Entity.
+         * 
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */

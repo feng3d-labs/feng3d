@@ -6,11 +6,12 @@ namespace feng3d
         /**
          * 添加子组件事件
          */
-        addComponent: { gameObject: Entity, component: Component };
+        addComponent: { entity: Entity, component: Component };
+
         /**
          * 移除子组件事件
          */
-        removeComponent: { gameObject: Entity, component: Component };
+        removeComponent: { entity: Entity, component: Component };
 
         /**
          * 包围盒失效
@@ -24,7 +25,7 @@ namespace feng3d
     }
 
     /**
-     * 游戏对象，场景唯一存在的对象类型
+     * 实体，场景唯一存在的对象类型
      */
     export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObject<T> implements IDisposable
     {
@@ -35,8 +36,13 @@ namespace feng3d
          * 名称
          */
         @serialize
-        @oav({ component: "OAVGameObjectName" })
+        @oav({ component: "OAVEntityName" })
         name: string;
+        /**
+         * 标签
+         */
+        @serialize
+        tag: string;
 
         //------------------------------------------
         // Variables
@@ -82,6 +88,7 @@ namespace feng3d
 
         /**
          * 获取指定位置索引的子组件
+         * 
          * @param index			位置索引
          * @return				子组件
          */
@@ -92,19 +99,25 @@ namespace feng3d
         }
 
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          * 
-         * @type type 被添加组件
+         * @type type 被添加组件类定义
          */
-        addComponent<T extends Components>(type: Constructor<T> | ComponentNames, callback: (component: T) => void = null): T
+        addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T
         {
-            type = getComponentType(type);
             var component = this.getComponent(type);
-            if (component && component.single)
+            if (component && Component.isSingleComponent(type))
             {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
+            const dependencies = Component.getDependencies(type);
+            // 先添加依赖
+            dependencies.forEach((dependency) =>
+            {
+                this.addComponent(dependency);
+            });
+            // 
             component = new type();
             this.addComponentAt(component, this._components.length);
             callback && callback(component);
@@ -113,6 +126,7 @@ namespace feng3d
 
         /**
          * 添加脚本
+         * 
          * @param script   脚本路径
          */
         addScript(scriptName: string)
@@ -124,26 +138,25 @@ namespace feng3d
         }
 
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          * 
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Components>(type: Constructor<T> | ComponentNames): T
+        getComponent<T extends Components>(type: Constructor<T>): T
         {
             var component = this.getComponents(type)[0];
             return component;
         }
 
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type: Constructor<T> | ComponentNames): T[]
+        getComponents<T extends Components>(type: Constructor<T>): T[]
         {
-            type = getComponentType(type);
             console.assert(!!type, `类型不能为空！`);
 
             var cls = type;
@@ -158,6 +171,7 @@ namespace feng3d
 
         /**
          * 设置子组件的位置
+         * 
          * @param component				子组件
          * @param index				位置索引
          */
@@ -174,6 +188,7 @@ namespace feng3d
 
         /**
          * 设置组件到指定位置
+         * 
          * @param component		被设置的组件
          * @param index			索引
          */
@@ -188,6 +203,7 @@ namespace feng3d
 
         /**
          * 移除组件
+         * 
          * @param component 被移除组件
          */
         removeComponent(component: Components): void
@@ -200,6 +216,7 @@ namespace feng3d
 
         /**
          * 获取组件在容器的索引位置
+         * 
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
@@ -213,6 +230,7 @@ namespace feng3d
 
         /**
          * 移除组件
+         * 
          * @param index		要删除的 Component 的子索引。
          */
         removeComponentAt(index: number): Component
@@ -221,13 +239,14 @@ namespace feng3d
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.emit("removeComponent", { component: component, gameObject: this }, true);
+            this.emit("removeComponent", { component: component, entity: this }, true);
             component.dispose();
             return component;
         }
 
         /**
          * 交换子组件位置
+         * 
          * @param index1		第一个子组件的索引位置
          * @param index2		第二个子组件的索引位置
          */
@@ -243,6 +262,7 @@ namespace feng3d
 
         /**
          * 交换子组件位置
+         * 
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
@@ -254,6 +274,11 @@ namespace feng3d
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         }
 
+        /**
+         * 获取指定类型组件
+         * 
+         * @param type 组件类型
+         */
         getComponentsByType<T extends Components>(type: Constructor<T>)
         {
             var removeComponents: T[] = [];
@@ -267,6 +292,7 @@ namespace feng3d
 
         /**
          * 移除指定类型组件
+         * 
          * @param type 组件类型
          */
         removeComponentsByType<T extends Components>(type: Constructor<T>)
@@ -285,7 +311,7 @@ namespace feng3d
          */
         private _onAnyListener(e: Event<any>)
         {
-            this.components.forEach(element =>
+            this.components.forEach((element: Component) =>
             {
                 element.emitEvent(e);
             });
@@ -307,14 +333,14 @@ namespace feng3d
         // Static Functions
         //------------------------------------------
         /**
-         * 查找指定名称的游戏对象
+         * 查找指定名称的实体
          * 
          * @param name 
          */
         static find(name: string)
         {
-            var gameObjects = Feng3dObject.getObjects(Entity)
-            var result = gameObjects.filter(v => !v.disposed && (v.name == name));
+            var entitys = Feng3dObject.getObjects(Entity)
+            var result = entitys.filter(v => !v.disposed && (v.name == name));
             return result[0];
         }
 
@@ -340,6 +366,7 @@ namespace feng3d
 
         /**
          * 判断是否拥有组件
+         * 
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
@@ -350,6 +377,7 @@ namespace feng3d
 
         /**
          * 添加组件到指定位置
+         * 
          * @param component		被添加的组件
          * @param index			插入的位置
          */
@@ -366,9 +394,10 @@ namespace feng3d
                 return;
             }
             //组件唯一时移除同类型的组件
-            if (component.single)
+            var type = <Constructor<Components>>component.constructor;
+            if (Component.isSingleComponent(type))
             {
-                var oldComponents = this.getComponentsByType(<Constructor<Components>>component.constructor);
+                var oldComponents = this.getComponentsByType(type);
                 if (oldComponents.length > 0)
                 {
                     console.assert(oldComponents.length == 1);
@@ -377,13 +406,15 @@ namespace feng3d
             }
 
             this._components.splice(index, 0, component);
-            component.setGameObject(this);
+            component._setEntity(this);
             component.init();
             //派发添加组件事件
-            this.emit("addComponent", { component: component, gameObject: this }, true);
+            this.emit("addComponent", { component: component, entity: this }, true);
         }
 
         /**
+         * 为了兼容以往json序列化格式
+         * 
          * @deprecated
          */
         set children(v: Entity[])
@@ -396,11 +427,11 @@ namespace feng3d
             } else
             {
                 var f = (e: Event<{
-                    gameObject: Entity;
+                    entity: Entity;
                     component: Component;
                 }>) =>
                 {
-                    if (e.data.gameObject == this && e.data.component instanceof Node3D)
+                    if (e.data.entity == this && e.data.component instanceof Node3D)
                     {
                         e.data.component.children = node3ds;
                         this.off("addComponent", f);
@@ -410,18 +441,18 @@ namespace feng3d
             }
             this._children = v;
         }
+        // debug
         private _children: Entity[];
 
         /**
-         * 创建指定类型的游戏对象。
+         * 创建指定类型的实体。
          * 
-         * @param type 游戏对象类型。
-         * @param param 游戏对象参数。
+         * @param type 实体类型。
+         * @param param 实体参数。
          */
         static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>)
         {
             var g = new Entity();
-            g.addComponent(Node3D);
             g.name = type;
 
             var createHandler = this._registerPrimitives[type];
@@ -432,22 +463,22 @@ namespace feng3d
         }
 
         /**
-         * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
+         * 注册原始实体，被注册后可以使用 Entity.createPrimitive 进行创建。
          * 
-         * @param type 原始游戏对象类型。
-         * @param handler 构建原始游戏对象的函数。
+         * @param type 原始实体类型。
+         * @param handler 构建原始实体的函数。
          */
         static registerPrimitive<K extends keyof PrimitiveEntity>(type: K, handler: (entity: Entity) => void)
         {
             if (this._registerPrimitives[type])
-                console.warn(`重复注册原始游戏对象 ${type} ！`);
+                console.warn(`重复注册原始实体 ${type} ！`);
             this._registerPrimitives[type] = handler;
         }
         static _registerPrimitives: { [type: string]: (gameObject: Entity) => void } = {};
     }
 
     /**
-     * 原始游戏对象，可以通过Entity.createPrimitive进行创建。
+     * 原始实体，可以通过Entity.createPrimitive进行创建。
      */
     export interface PrimitiveEntity
     {

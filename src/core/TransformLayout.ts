@@ -23,11 +23,9 @@ namespace feng3d
      * 通过修改Transform的数值实现
      */
     @AddComponentMenu("Layout/TransformLayout")
-    @RegisterComponent()
+    @RegisterComponent({ single: true })
     export class TransformLayout extends Component3D
     {
-        get single() { return true; }
-
 		/**
 		 * 创建一个实体，该类为虚类
 		 */

@@ -8,7 +8,7 @@ namespace feng3d
         /**
          * The game object this component is attached to. A component is always attached to a game object.
          */
-        get gameObject()
+        get entity()
         {
             return this.component.entity;
         }

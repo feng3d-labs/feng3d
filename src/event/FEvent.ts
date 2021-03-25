@@ -7,41 +7,29 @@ namespace feng3d
     export var event: FEvent;
 
     /**
-     * 事件
+     * 可针对（除undefined、null、Symbol外）的任意对象（0, 1, true, false, "1", {}）派发事件
      */
     export class FEvent
     {
-        private feventMap = new Map<any, ObjectListener>();
-
-        private getBubbleTargets(target: Object)
-        {
-            return [target["parent"]];
-        }
-
         /**
          * Return an array listing the events for which the emitter has registered
          * listeners.
          */
         eventNames(obj: any)
         {
-            const names = Object.keys(this.feventMap.get(obj));
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            const names = EventEmitter.getEventEmitter(obj)?.eventNames() || [];
             return names;
         }
-
-        // /**
-        //  * Return the listeners registered for a given event.
-        //  */
-        // listeners(obj: any, type: string)
-        // {
-        //     return this.feventMap.get(obj)?.[type] || [];
-        // }
 
         /**
          * Return the number of listeners listening to a given event.
          */
         listenerCount(obj: any, type: string)
         {
-            return this.feventMap.get(obj)?.[type]?.length || 0;
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            const count = EventEmitter.getEventEmitter(obj)?.listenerCount(type) || 0;
+            return count;
         }
 
         /**
@@ -53,7 +41,8 @@ namespace feng3d
          */
         once(obj: Object, type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
         {
-            this.on(obj, type, listener, thisObject, priority, true);
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            EventEmitter.getOrCreateEventEmitter(obj).once(type, listener, thisObject, priority);
             return this;
         }
 
@@ -65,33 +54,24 @@ namespace feng3d
          * @param e                 事件对象。
          * @returns                 返回事件是否被该对象处理。
          */
-        dispatchEvent(obj: Object, e: Event<any>)
+        emitEvent(obj: Object, e: Event<any>)
         {
-            var targets = e.targets = e.targets || [];
-            if (targets.indexOf(obj) != -1)
-                return false;
-            targets.push(obj);
-
-            e.handles = [];
-
-            this.handleEvent(obj, e);
-
-            this.handelEventBubbles(obj, e);
-
-            return true;
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            var result = EventEmitter.getOrCreateEventEmitter(obj).emitEvent(e) || false;
+            return result;
         }
 
         /**
-		 * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+		 * 将事件调度到事件流中. 事件目标是对其调用 emitEvent() 方法的 IEvent 对象。
 		 * @param type                      事件的类型。类型区分大小写。
 		 * @param data                      事件携带的自定义数据。
 		 * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
         emit(obj: Object, type: string, data?: any, bubbles = false)
         {
-            var e: Event<any> = this.makeEvent(type, data, bubbles);
-            this.dispatchEvent(obj, e);
-            return e;
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            var result = EventEmitter.getOrCreateEventEmitter(obj).emit(type, data, bubbles) || false;
+            return result;
         }
 
         /**
@@ -103,7 +83,9 @@ namespace feng3d
          */
         has(obj: Object, type: string)
         {
-            return this.listenerCount(obj, type) > 0;
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            var result = EventEmitter.getEventEmitter(obj)?.has(type) || false;
+            return result;
         }
 
         /**
@@ -118,35 +100,8 @@ namespace feng3d
          */
         on(obj: Object, type: string, listener: (event: Event<any>) => any, thisObject?: any, priority = 0, once = false)
         {
-            if (listener == null) return;
-
-            var objectListener = this.feventMap.get(obj);
-            if (!objectListener)
-            {
-                objectListener = { __anyEventType__: [] }
-                this.feventMap.set(obj, objectListener)
-            }
-
-            thisObject = thisObject || obj;
-            var listeners: ListenerVO[] = objectListener[type] = objectListener[type] || [];
-            for (var i = 0; i < listeners.length; i++)
-            {
-                var element = listeners[i];
-                if (element.listener == listener && element.thisObject == thisObject)
-                {
-                    listeners.splice(i, 1);
-                    break;
-                }
-            }
-            for (var i = 0; i < listeners.length; i++)
-            {
-                var element = listeners[i];
-                if (priority > element.priority)
-                {
-                    break;
-                }
-            }
-            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            EventEmitter.getOrCreateEventEmitter(obj).on(type, listener, thisObject, priority, once);
             return this;
         }
 
@@ -160,39 +115,8 @@ namespace feng3d
          */
         off(obj: Object, type?: string, listener?: (event: Event<any>) => any, thisObject?: any)
         {
-            if (!type)
-            {
-                this.feventMap.delete(obj)
-                return;
-            }
-
-            var objectListener = this.feventMap.get(obj);
-            if (!objectListener) return;
-
-            if (!listener)
-            {
-                delete objectListener[type];
-                return;
-            }
-
-            thisObject = thisObject || obj;
-
-            var listeners = objectListener[type];
-            if (listeners)
-            {
-                for (var i = listeners.length - 1; i >= 0; i--)
-                {
-                    var element = listeners[i];
-                    if (element.listener == listener && element.thisObject == thisObject)
-                    {
-                        listeners.splice(i, 1);
-                    }
-                }
-                if (listeners.length == 0)
-                {
-                    delete objectListener[type];
-                }
-            }
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            EventEmitter.getEventEmitter(obj)?.off(type, listener, thisObject);
             return this;
         }
 
@@ -201,7 +125,8 @@ namespace feng3d
          */
         offAll(obj: any, type?: string)
         {
-            this.off(obj, type);
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            EventEmitter.getEventEmitter(obj)?.offAll(type);
             return this;
         }
 
@@ -212,35 +137,12 @@ namespace feng3d
          * @param listener                  处理事件的监听器函数。
          * @param thisObject                监听器的上下文。可选。
          * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
+         * @param once                      值为true时在监听一次事件后该监听器将被移除。默认为false。
          */
-        onAny(obj: Object, listener: (event: Event<any>) => void, thisObject?: any, priority = 0)
+        onAny(obj: Object, listener: (event: Event<any>) => void, thisObject?: any, priority = 0, once = false)
         {
-            var objectListener = this.feventMap.get(obj);
-            if (!objectListener)
-            {
-                objectListener = { __anyEventType__: [] };
-                this.feventMap.set(obj, objectListener)
-            }
-
-            var listeners: ListenerVO[] = objectListener.__anyEventType__;
-            for (var i = 0; i < listeners.length; i++)
-            {
-                var element = listeners[i];
-                if (element.listener == listener && element.thisObject == thisObject)
-                {
-                    listeners.splice(i, 1);
-                    break;
-                }
-            }
-            for (var i = 0; i < listeners.length; i++)
-            {
-                var element = listeners[i];
-                if (priority > element.priority)
-                {
-                    break;
-                }
-            }
-            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: false });
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            EventEmitter.getOrCreateEventEmitter(obj).onAny(listener, thisObject, priority, once);
             return this;
         }
 
@@ -253,25 +155,8 @@ namespace feng3d
          */
         offAny(obj: Object, listener?: (event: any) => void, thisObject?: any)
         {
-            var objectListener = this.feventMap.get(obj);
-            if (!listener)
-            {
-                if (objectListener)
-                    objectListener.__anyEventType__.length = 0;
-                return;
-            }
-            if (objectListener)
-            {
-                var listeners = objectListener.__anyEventType__;
-                for (var i = listeners.length - 1; i >= 0; i--)
-                {
-                    var element = listeners[i];
-                    if (element.listener == listener && element.thisObject == thisObject)
-                    {
-                        listeners.splice(i, 1);
-                    }
-                }
-            }
+            console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
+            EventEmitter.getEventEmitter(obj)?.offAny(listener, thisObject);
             return this;
         }
 
@@ -284,169 +169,9 @@ namespace feng3d
          */
         makeEvent<T>(type: string, data: T, bubbles = false): Event<T>
         {
-            return { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [], handles: [] };
+            return { type: type, data: data, bubbles: bubbles };
         }
-
-        /**
-         * 处理事件
-         * @param e 事件
-         */
-        protected handleEvent(obj: Object, e: Event<any>)
-        {
-            //设置目标
-            e.target || (e.target = obj);
-            try
-            {
-                //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
-                e.currentTarget = obj;
-            } catch (error) { }
-            //
-            var objectListener = this.feventMap.get(obj);
-            if (!objectListener) return;
-
-            var listeners: ListenerVO[] = objectListener[e.type];
-            if (listeners)
-            {
-                //遍历调用事件回调函数
-                var listeners0 = listeners.concat();
-                for (var i = 0; i < listeners0.length && !e.isStop; i++)
-                {
-                    listeners0[i].listener.call(listeners0[i].thisObject, e);//此处可能会删除当前事件，所以上面必须拷贝
-                    e.handles.push(listeners0[i]);
-                }
-                for (var i = listeners.length - 1; i >= 0; i--)
-                {
-                    if (listeners[i].once)
-                        listeners.splice(i, 1);
-                }
-                if (listeners.length == 0)
-                    delete objectListener[e.type];
-            }
-            // Any_EVENT_Type
-            listeners = objectListener.__anyEventType__;
-            if (listeners)
-            {
-                //遍历调用事件回调函数
-                var listeners0 = listeners.concat();
-                for (var i = 0; i < listeners0.length && !e.isStop; i++)
-                {
-                    listeners0[i].listener.call(listeners0[i].thisObject, e);//此处可能会删除当前事件，所以上面必须拷贝
-                }
-                for (var i = listeners.length - 1; i >= 0; i--)
-                {
-                    if (listeners[i].once)
-                        listeners.splice(i, 1);
-                }
-            }
-        }
-
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        protected handelEventBubbles(obj: Object, e: Event<any>)
-        {
-            if (e.bubbles && !e.isStopBubbles)
-            {
-                var bubbleTargets = this.getBubbleTargets(obj);
-                for (var i = 0, n = bubbleTargets.length; i < n; i++)
-                {
-                    var bubbleTarget = bubbleTargets[i];
-                    if (!e.isStop && bubbleTarget)
-                    {
-                        if (bubbleTarget.dispatchEvent)
-                        {
-                            bubbleTarget.dispatchEvent(e);
-                        } else
-                        {
-                            this.dispatchEvent(bubbleTarget, e);
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     event = new FEvent();
-
-    interface ObjectListener
-    {
-        [type: string]: ListenerVO[];
-        __anyEventType__: ListenerVO[];
-    }
-
-	/**
-	 * 事件
-	 */
-    export interface Event<T>
-    {
-		/**
-		 * 事件的类型。类型区分大小写。
-		 */
-        type: string;
-
-        /**
-         * 事件携带的自定义数据
-         */
-        data: T;
-
-		/**
-		 * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-		 */
-        bubbles: boolean
-
-		/**
-		 * 事件目标。
-		 */
-        target: any;
-
-		/**
-		 * 当前正在使用某个事件监听器处理 Event 对象的对象。
-		 */
-        currentTarget: any;
-
-        /**
-         * 是否停止处理事件监听器
-         */
-        isStop: boolean
-
-        /**
-         * 是否停止冒泡
-         */
-        isStopBubbles: boolean
-
-        /**
-         * 事件流过的对象列表，事件路径
-         */
-        targets: any[];
-
-        /**
-         * 处理列表
-         */
-        handles: ListenerVO[];
-    }
-
-    /**
-     * 监听数据
-     */
-    interface ListenerVO
-    {
-        /**
-         * 监听函数
-         */
-        listener: (event: Event<any>) => void;
-        /**
-         * 监听函数作用域
-         */
-        thisObject: any;
-        /**
-         * 优先级
-         */
-        priority: number;
-        /**
-         * 是否只监听一次
-         */
-        once: boolean;
-    }
 }

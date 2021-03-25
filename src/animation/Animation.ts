@@ -98,7 +98,7 @@ namespace feng3d
             if (!propertyClip.cacheIndex)
                 propertyClip.cacheIndex = autoobjectCacheID++;
 
-            var propertyHost: any = this.entity;
+            var propertyHost: any = this.node3d;
             var path = propertyClip.path;
 
             for (var i = 0; i < path.length; i++)
@@ -110,7 +110,8 @@ namespace feng3d
                         propertyHost = propertyHost.find(element[1]);
                         break;
                     case PropertyClipPathItemType.Component:
-                        propertyHost = propertyHost.getComponent(element[1]);
+                        var componentCls = getComponentType(<any>element[1]);
+                        propertyHost = propertyHost.getComponent(componentCls);
                         break;
                     default:
                         console.error(`无法获取 PropertyHost ${element}`);

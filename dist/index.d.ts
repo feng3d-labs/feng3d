@@ -2,13 +2,11 @@ declare namespace feng3d {
     /**
      * 事件
      */
-    export var event: FEvent;
+    var event: FEvent;
     /**
-     * 事件
+     * 可针对（除undefined、null、Symbol外）的任意对象（0, 1, true, false, "1", {}）派发事件
      */
-    export class FEvent {
-        private feventMap;
-        private getBubbleTargets;
+    class FEvent {
         /**
          * Return an array listing the events for which the emitter has registered
          * listeners.
@@ -34,14 +32,14 @@ declare namespace feng3d {
          * @param e                 事件对象。
          * @returns                 返回事件是否被该对象处理。
          */
-        dispatchEvent(obj: Object, e: Event<any>): boolean;
+        emitEvent(obj: Object, e: Event<any>): boolean;
         /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * 将事件调度到事件流中. 事件目标是对其调用 emitEvent() 方法的 IEvent 对象。
          * @param type                      事件的类型。类型区分大小写。
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        emit(obj: Object, type: string, data?: any, bubbles?: boolean): Event<any>;
+        emit(obj: Object, type: string, data?: any, bubbles?: boolean): boolean;
         /**
          * 检查 被监听对象 是否为特定事件类型注册了任何监听器.
          *
@@ -81,8 +79,9 @@ declare namespace feng3d {
          * @param listener                  处理事件的监听器函数。
          * @param thisObject                监听器的上下文。可选。
          * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
+         * @param once                      值为true时在监听一次事件后该监听器将被移除。默认为false。
          */
-        onAny(obj: Object, listener: (event: Event<any>) => void, thisObject?: any, priority?: number): this;
+        onAny(obj: Object, listener: (event: Event<any>) => void, thisObject?: any, priority?: number, once?: boolean): this;
         /**
          * 移除监听对象的任意事件。
          *
@@ -99,16 +98,132 @@ declare namespace feng3d {
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
         makeEvent<T>(type: string, data: T, bubbles?: boolean): Event<T>;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 事件属性名称常量
+     */
+    export const __event__ = "__event__";
+    /**
+     * 事件派发器代理的对象
+     */
+    export const __event_emitter_target__ = "__event_emitter_target__";
+    /**
+     * 事件冒泡函数名称常量，冒泡的对象需要定义该名称的函数。
+     *
+     * function __event_bubble_function__(): any[];
+     *
+     * var bubbleObject: { __event_bubble_function__: () => any[] }
+     */
+    export const __event_bubble_function__ = "__event_bubble_function__";
+    /**
+     * 事件派发器
+     */
+    export class EventEmitter<T = any> {
+        private static targetMap;
+        /**
+         * 获取事件派发器
+         * @param target
+         */
+        static getEventEmitter(target: any): EventEmitter<any>;
+        /**
+         * 获取事件派发器，当没有找到对应派发器时，返回新建的事件派发器。
+         * @param target
+         */
+        static getOrCreateEventEmitter(target: any): EventEmitter<any>;
+        constructor(target?: any);
+        /**
+         * 返回监听的事件类型列表。
+         */
+        eventNames<K extends keyof T & string>(): K[];
+        /**
+         * 返回指定事件类型的监听数量。
+         *
+         * @param type 事件的类型。
+         */
+        listenerCount<K extends keyof T & string>(type: K): number;
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): this;
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        emitEvent<K extends keyof T & string>(e: Event<T[K]>): boolean;
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 emitEvent() 方法的 Event 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        emit<K extends keyof T & string>(type: K, data?: T[K], bubbles?: boolean): boolean;
+        /**
+         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        has<K extends keyof T & string>(type: K): boolean;
+        /**
+         * 为监听对象新增指定类型的事件监听。
+         *
+         * @param type						事件的类型。
+         * @param listener					处理事件的监听器函数。
+         * @param thisObject                监听器的上下文。可选。
+         * @param priority					事件监听器的优先级。数字越大，优先级越高。默认为0。
+         * @param once                      值为true时在监听一次事件后该监听器将被移除。默认为false。
+         */
+        on<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
+        /**
+         * 移除监听
+         *
+         * @param type						事件的类型。可选。该值为空时所有被监听对象上的监听均将被移除。
+         * @param listener					要删除的监听器对象。可选。该值为空时所有指定类型的监听均将被移除。
+         * @param thisObject                监听器的上下文。可选。
+         */
+        off<K extends keyof T & string>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
+        /**
+         * 移除所有监听
+         *
+         * @param type						事件的类型。可选。该值为空时所有被监听对象上的监听均将被移除。
+         */
+        offAll<K extends keyof T & string>(type?: K): this;
+        /**
+         * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
+         *
+         * @param listener                  处理事件的监听器函数。
+         * @param thisObject                监听器的上下文。可选。
+         * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
+         * @param once                      值为true时在监听一次事件后该监听器将被移除。默认为false。
+         */
+        onAny<K extends keyof T & string>(listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
+        /**
+         * 移除监听对象的任意事件。
+         *
+         * @param listener                  处理事件的监听器函数。
+         * @param thisObject                监听器的上下文。可选。
+         */
+        offAny<K extends keyof T & string>(listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
         /**
          * 处理事件
          * @param e 事件
          */
-        protected handleEvent(obj: Object, e: Event<any>): void;
+        protected handleEvent<K extends keyof T & string>(e: Event<T[K]>): void;
         /**
          * 处理事件冒泡
          * @param e 事件
          */
-        protected handelEventBubbles(obj: Object, e: Event<any>): void;
+        protected handelEventBubbles<K extends keyof T & string>(e: Event<T[K]>): void;
     }
     /**
      * 事件
@@ -123,33 +238,41 @@ declare namespace feng3d {
          */
         data: T;
         /**
+         * 事件目标。
+         */
+        target?: any;
+        /**
+         * 当前正在使用某个事件监听器处理 Event 对象的对象。
+         */
+        currentTarget?: any;
+        /**
          * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
         bubbles: boolean;
         /**
-         * 事件目标。
+         * 是否停止冒泡
          */
-        target: any;
-        /**
-         * 当前正在使用某个事件监听器处理 Event 对象的对象。
-         */
-        currentTarget: any;
+        isStopBubbles?: boolean;
         /**
          * 是否停止处理事件监听器
          */
-        isStop: boolean;
-        /**
-         * 是否停止冒泡
-         */
-        isStopBubbles: boolean;
+        isStop?: boolean;
         /**
          * 事件流过的对象列表，事件路径
          */
-        targets: any[];
+        targets?: any[];
+        /**
+         * 当前事件流到targets的索引
+         */
+        targetsIndex?: number;
+        /**
+         * 当前事件冒泡流到targets的索引
+         */
+        targetsBubblesIndex?: number;
         /**
          * 处理列表
          */
-        handles: ListenerVO[];
+        handles?: ListenerVO[];
     }
     /**
      * 监听数据
@@ -176,96 +299,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 事件适配器
-     */
-    class EventEmitter<T = any> {
-        /**
-         * Return an array listing the events for which the emitter has registered
-         * listeners.
-         */
-        eventNames(): void;
-        /**
-         * Return the number of listeners listening to a given event.
-         */
-        listenerCount(type: string): number;
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): this;
-        /**
-         * 派发事件
-         *
-         * 当事件重复流向一个对象时将不会被处理。
-         *
-         * @param e   事件对象
-         * @returns 返回事件是否被该对象处理
-         */
-        emitEvent(e: Event<T>): boolean;
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-         * @param type                      事件的类型。类型区分大小写。
-         * @param data                      事件携带的自定义数据。
-         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
-        /**
-         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        has<K extends keyof T>(type: K): boolean;
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
-        /**
-         * Remove all listeners, or those of the specified event.
-         */
-        offAll<K extends keyof T>(type?: K): this;
-        /**
-         * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
-         *
-         * @param listener                  处理事件的监听器函数。
-         * @param thisObject                监听器的上下文。可选。
-         * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
-         */
-        onAny<K extends keyof T>(listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): this;
-        /**
-         * 移除监听对象的任意事件。
-         *
-         * @param listener                  处理事件的监听器函数。
-         * @param thisObject                监听器的上下文。可选。
-         */
-        offAny<K extends keyof T>(listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
-        /**
-         * 处理事件
-         * @param e 事件
-         */
-        protected handleEvent(e: Event<any>): void;
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        protected handelEventBubbles(e: Event<any>): void;
-    }
-}
-declare namespace feng3d {
-    /**
      * 只针对Object的事件
      */
     var objectevent: ObjectEventDispatcher<Object, ObjectEventType>;
@@ -274,7 +307,7 @@ declare namespace feng3d {
      */
     interface ObjectEventDispatcher<O, T> {
         once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): boolean;
         has<K extends keyof T>(target: O, type: K): boolean;
         on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
         off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
@@ -655,7 +688,7 @@ interface ObjectConstructor {
     assignDeepDefaultHandlers: AssignDeepHandler[];
 }
 declare namespace feng3d {
-    var CLASS_KEY: string;
+    var __class__: string;
     /**
      * 类工具
      */
@@ -7484,6 +7517,24 @@ declare namespace feng3d {
             shape: Vector2[];
             holes: Vector2[][];
         };
+        extractArray(divisions?: number): {
+            points: number[];
+            holes: number[][];
+        };
+        triangulate(geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            points: number[];
+            indices: number[];
+        };
+        static triangulate(points: number[], holes?: number[][], geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            points: number[];
+            indices: number[];
+        };
     }
 }
 declare namespace feng3d {
@@ -7497,29 +7548,56 @@ declare namespace feng3d {
         quadraticCurveTo(aCPx: number, aCPy: number, aX: number, aY: number): this;
         bezierCurveTo(aCP1x: number, aCP1y: number, aCP2x: number, aCP2y: number, aX: number, aY: number): this;
         splineThru(pts: Vector2[]): this;
-        toShapes(isCCW?: boolean, noHoles?: boolean): any[];
+        closePath(): void;
+        toShapes(isCCW?: boolean, noHoles?: boolean): Shape2[];
     }
 }
 declare namespace feng3d {
     export class Font {
         data: FontData;
+        isCCW: boolean;
+        private charGeometryCache;
         constructor(data: FontData);
-        generateShapes(text: string, size: number): ShapePath2[];
+        generateShapes(text: string, size: number, lineHeight?: number, align?: 'left' | 'center' | 'right'): Shape2[];
+        generateCharGeometry(char: string, geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            geometry: {
+                points: number[];
+                indices: number[];
+            };
+            width: number;
+        };
+        calculateGeometry(text: string, fontSize: number, lineHeight?: number, align?: 'left' | 'center' | 'right', textBaseline?: 'alphabetic' | 'top' | 'middle' | 'bottom', tabCharWidth?: number): {
+            vertices: Float32Array;
+            normals: Float32Array;
+            uvs: Float32Array;
+            indices: Uint32Array;
+        };
+    }
+    export interface Glyph {
+        ha: number;
+        x_min: number;
+        x_max: number;
+        o: string;
+        _cachedOutline?: any[];
     }
     interface FontData {
-        underlineThickness: number;
-        resolution: number;
-        boundingBox: {
-            yMax: number;
-            yMin: number;
-        };
-        familyName: string;
         glyphs: {
-            [k: string]: {
-                o: string;
-                _cachedOutline: any;
-                ha: number;
-            };
+            [index: string]: Glyph;
+        };
+        unitsPerEm: number;
+        ascender: number;
+        descender: number;
+        underlinePosition: number;
+        underlineThickness: number;
+        familyName: string;
+        boundingBox: {
+            yMin: number;
+            xMin: number;
+            yMax: number;
+            xMax: number;
         };
     }
     export {};
@@ -8504,14 +8582,14 @@ declare namespace feng3d {
          * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
+        on<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): this;
         /**
          * 移除监听
          * @param dispatcher 派发器
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          */
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
+        off<K extends keyof T & string>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this;
         /**
          * 处理鼠标按下时同时出发 "mousemove" 事件bug
          */
@@ -9143,7 +9221,8 @@ declare namespace feng3d {
         /**
          * 32-bit floating point number
          */
-        FLOAT = "FLOAT"
+        FLOAT = "FLOAT",
+        UNSIGNED_INT = "UNSIGNED_INT"
     }
 }
 declare namespace feng3d {
@@ -10540,8 +10619,8 @@ declare namespace feng3d {
             component: "OAVComponentList";
             componentParam: Object;
         };
-        OAVGameObjectName: {
-            component: "OAVGameObjectName";
+        OAVEntityName: {
+            component: "OAVEntityName";
             componentParam: Object;
         };
         OAVMaterialName: {
@@ -12290,18 +12369,27 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
-     */
-    const componentMap: {};
-    /**
      * 注册组件
      *
      * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 Entity.getComponent 等方法。
      *
      * @param component 组件名称，默认使用类名称
      */
-    function RegisterComponent(component?: string): (constructor: Function) => void;
-    function getComponentType<T extends Components>(type: Constructor<T> | ComponentNames): Constructor<T>;
+    function RegisterComponent(component?: {
+        /**
+         * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
+         */
+        name?: string;
+        /**
+         * 是否唯一，同类型组件只允许一个。
+         */
+        single?: boolean;
+        /**
+         * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
+         */
+        dependencies?: Constructor<Component>[];
+    }): (constructor: Constructor<Component>) => void;
+    function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>;
     /**
      * 组件名称与类定义映射，新建组件一般都需扩展该接口。
      */
@@ -12317,24 +12405,47 @@ declare namespace feng3d {
      *
      * 所有附加到Entity的基类。
      *
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
+     * 注意，您的代码不会直接创建 Component，而是您编写脚本代码，然后将该脚本附加到 Entity。
      */
     class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable {
         /**
-         * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
+         * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+         * @private
+         */
+        static _componentMap: {
+            [name: string]: Constructor<Component>;
+        };
+        /**
+         * 获取组件依赖列表
+         *
+         * @param type 组件类定义
+         */
+        static getDependencies(type: Constructor<Component>): Constructor<Component<ComponentEventMap>>[];
+        /**
+         * 判断组件是否为唯一组件。
+         *
+         * @param type 组件类定义
+         */
+        static isSingleComponent(type: Constructor<Component>): boolean;
+        /**
+         * 此组件附加到的实体。组件总是附加到实体上。
          */
         get entity(): Entity<EntityEventMap>;
         set entity(v: Entity<EntityEventMap>);
+        /**
+         * 名称。
+         *
+         * 组件与实体及所有附加组件使用相同的名称。
+         */
         get name(): string;
         set name(v: string);
         /**
-         * 标签
+         * 此实体的标签。
+         *
+         * 可使用标签来识别实体。
          */
-        tag: string;
-        /**
-         * 是否唯一，同类型3D对象组件只允许一个
-         */
-        get single(): boolean;
+        get tag(): string;
+        set tag(v: string);
         /**
          * 是否已销毁
          */
@@ -12347,7 +12458,7 @@ declare namespace feng3d {
         /**
          * 初始化组件
          *
-         * 在添加到GameObject时立即被调用。
+         * 在添加到Entity时立即被调用。
          */
         init(): void;
         /**
@@ -12357,7 +12468,7 @@ declare namespace feng3d {
          */
         getComponentAt(index: number): Component;
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          *
          * @type type 被添加组件
          */
@@ -12368,14 +12479,14 @@ declare namespace feng3d {
          */
         addScript(scriptName: string): ScriptComponent;
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          *
          * @param type				类定义
          * @return                  返回指定类型组件
          */
         getComponent<T extends Components>(type: Constructor<T>): T;
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -12431,135 +12542,13 @@ declare namespace feng3d {
          */
         private _onAnyListener;
         /**
-         * 该方法仅在GameObject中使用
+         * 该方法仅在Entity中使用
          * @private
          *
-         * @param gameObject 游戏对象
+         * @param entity 实体
          */
-        setGameObject(gameObject: Entity): void;
+        _setEntity(entity: Entity): void;
         protected _entity: Entity;
-    }
-}
-declare namespace feng3d {
-    interface Component3DEventMap extends ComponentEventMap, MouseEventMap {
-    }
-    interface Component3D {
-        once<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => void, thisObject?: any, priority?: number): this;
-        emit<K extends keyof Component3DEventMap>(type: K, data?: Component3DEventMap[K], bubbles?: boolean): Event<Component3DEventMap[K]>;
-        has<K extends keyof Component3DEventMap>(type: K): boolean;
-        on<K extends keyof Component3DEventMap>(type: K, listener: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): this;
-        off<K extends keyof Component3DEventMap>(type?: K, listener?: (event: Event<Component3DEventMap[K]>) => any, thisObject?: any): this;
-    }
-    /**
-     * 3D组件
-     * GameObject必须拥有Transform组件的
-     */
-    class Component3D extends Component {
-        /**
-         * The Transform attached to this Entity (null if there is none attached).
-         */
-        get node3d(): Node3D;
-        /**
-         * Returns all components of Type type in the Entity.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
-    }
-}
-declare namespace feng3d {
-    /**
-     * Graphics 类包含一组可用来创建矢量形状的方法。
-     */
-    class Graphics extends Component {
-        __class__: "feng3d.Graphics";
-        private image;
-        private context2D;
-        private canvas;
-        private width;
-        private height;
-        constructor();
-        draw(width: number, height: number, callback: (context2D: CanvasRenderingContext2D) => void): this;
-    }
-    function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs?: string[]): void;
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        Behaviour: Behaviour;
-    }
-    /**
-     * 行为
-     *
-     * 可以控制开关的组件
-     */
-    class Behaviour extends Component3D {
-        /**
-         * 是否启用update方法
-         */
-        enabled: boolean;
-        /**
-         * 可运行环境
-         */
-        runEnvironment: RunEnvironment;
-        /**
-         * Has the Behaviour had enabled called.
-         * 是否所在GameObject显示且该行为已启动。
-         */
-        get isVisibleAndEnabled(): boolean;
-        /**
-         * 每帧执行
-         */
-        update(interval?: number): void;
-        dispose(): void;
-    }
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        SkyBox: SkyBox;
-    }
-    /**
-     * 天空盒组件
-     */
-    class SkyBox extends Component3D {
-        __class__: "feng3d.SkyBox";
-        s_skyboxTexture: TextureCube<TextureCubeEventMap>;
-        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 天空盒渲染器
-     */
-    var skyboxRenderer: SkyBoxRenderer;
-    /**
-     * 天空盒渲染器
-     */
-    class SkyBoxRenderer {
-        private renderAtomic;
-        init(): void;
-        /**
-         * 绘制场景中天空盒
-         * @param gl
-         * @param scene 场景
-         * @param camera 摄像机
-         */
-        draw(gl: GL, scene: Scene, camera: Camera): void;
-        /**
-         * 绘制天空盒
-         * @param gl
-         * @param skybox 天空盒
-         * @param camera 摄像机
-         */
-        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -12790,10 +12779,10 @@ declare namespace feng3d {
      *
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
-    class Node3D extends Component3D {
+    class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
         __class__: "feng3d.Node3D";
-        get single(): boolean;
         assetType: AssetType;
+        create(): void;
         /**
          * 预设资源编号
          */
@@ -12905,13 +12894,13 @@ declare namespace feng3d {
          */
         get boundingBox(): BoundingBox;
         private _boundingBox;
-        get parent(): Node3D;
+        get parent(): Node3D<Component3DEventMap>;
         get scene(): Scene;
         /**
          * 子对象
          */
-        get children(): Node3D[];
-        set children(value: Node3D[]);
+        get children(): Node3D<Component3DEventMap>[];
+        set children(value: Node3D<Component3DEventMap>[]);
         get numChildren(): number;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
@@ -12972,7 +12961,7 @@ declare namespace feng3d {
          *
          * @param child 子对象
          */
-        addChild(child: Node3D): Node3D;
+        addChild(child: Node3D): Node3D<Component3DEventMap>;
         /**
          * 添加子对象
          *
@@ -13004,11 +12993,11 @@ declare namespace feng3d {
          *
          * @param index
          */
-        getChildAt(index: number): Node3D;
+        getChildAt(index: number): Node3D<Component3DEventMap>;
         /**
          * 获取子对象列表（备份）
          */
-        getChildren(): Node3D[];
+        getChildren(): Node3D<Component3DEventMap>[];
         /**
          * 将方向从局部空间转换到世界空间。
          *
@@ -13084,13 +13073,19 @@ declare namespace feng3d {
          */
         rayWorldToLocal(worldRay: Ray3, localRay?: Ray3): Ray3;
         /**
-         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
          *
-         * @param type		类定义
+         * @param type		要检索的组件的类型。
          * @return			返回与给出类定义一致的组件
          */
         getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
             findchildren: boolean;
+            /**
+             * 是否为需要查找的组件
+             */
             value: boolean;
         }, result?: T[]): T[];
         /**
@@ -13131,7 +13126,10 @@ declare namespace feng3d {
         private _scaleChanged;
         private _setParent;
         private updateScene;
-        private updateChildrenScene;
+        /**
+         * @private
+         */
+        private _updateChildrenScene;
         private removeChildInternal;
         private _invalidateTransform;
         private _invalidateSceneTransform;
@@ -13157,82 +13155,16 @@ declare namespace feng3d {
         onLoadCompleted(callback: () => void): void;
         protected _updateGlobalVisible(): void;
         protected _invalidateGlobalVisible(): void;
-    }
-}
-declare namespace feng3d {
-    interface EntityEventMap {
         /**
-         * 尺寸变化事件
+         * 申明冒泡函数
+         * feng3d.__event_bubble_function__
          */
-        sizeChanged: TransformLayout;
+        protected __event_bubble_function__(): any[];
         /**
-         * 中心点变化事件
+         * @private
+         * @param v
          */
-        pivotChanged: TransformLayout;
-    }
-    interface ComponentMap {
-        TransformLayout: TransformLayout;
-    }
-    /**
-     * 变换布局
-     *
-     * 提供了比Transform更加适用于2D元素的API
-     *
-     * 通过修改Transform的数值实现
-     */
-    class TransformLayout extends Component3D {
-        get single(): boolean;
-        /**
-         * 创建一个实体，该类为虚类
-         */
-        constructor();
-        private _onAdded;
-        private _onRemoved;
-        /**
-         * 位移
-         */
-        get position(): Vector3;
-        set position(v: Vector3);
-        private readonly _position;
-        /**
-         * 尺寸，宽高。
-         */
-        get size(): Vector3;
-        set size(v: Vector3);
-        private _size;
-        /**
-         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
-         */
-        get leftTop(): Vector3;
-        set leftTop(v: Vector3);
-        private _leftTop;
-        /**
-         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
-         */
-        get rightBottom(): Vector3;
-        set rightBottom(v: Vector3);
-        private _rightBottom;
-        /**
-         * 最小锚点，父Transform2D中左上角锚定的规范化位置。
-         */
-        anchorMin: Vector3;
-        /**
-         * 最大锚点，父Transform2D中左上角锚定的规范化位置。
-         */
-        anchorMax: Vector3;
-        /**
-         * The normalized position in this RectTransform that it rotates around.
-         */
-        pivot: Vector3;
-        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
-        private _updateLayout;
-        /**
-         * 布局是否失效
-         */
-        private _layoutInvalid;
-        private _invalidateLayout;
-        private _invalidateSize;
-        private _invalidatePivot;
+        _setScene(v: Scene): void;
     }
 }
 declare namespace feng3d {
@@ -13308,14 +13240,14 @@ declare namespace feng3d {
          * 添加子组件事件
          */
         addComponent: {
-            gameObject: Entity;
+            entity: Entity;
             component: Component;
         };
         /**
          * 移除子组件事件
          */
         removeComponent: {
-            gameObject: Entity;
+            entity: Entity;
             component: Component;
         };
         /**
@@ -13328,7 +13260,7 @@ declare namespace feng3d {
         refreshView: any;
     }
     /**
-     * 游戏对象，场景唯一存在的对象类型
+     * 实体，场景唯一存在的对象类型
      */
     class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObject<T> implements IDisposable {
         __class__: "feng3d.Entity";
@@ -13336,6 +13268,10 @@ declare namespace feng3d {
          * 名称
          */
         name: string;
+        /**
+         * 标签
+         */
+        tag: string;
         /**
          * 子组件个数
          */
@@ -13348,78 +13284,93 @@ declare namespace feng3d {
         constructor();
         /**
          * 获取指定位置索引的子组件
+         *
          * @param index			位置索引
          * @return				子组件
          */
         getComponentAt(index: number): Component;
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          *
-         * @type type 被添加组件
+         * @type type 被添加组件类定义
          */
-        addComponent<T extends Components>(type: Constructor<T> | ComponentNames, callback?: (component: T) => void): T;
+        addComponent<T extends Components>(type: Constructor<T>, callback?: (component: T) => void): T;
         /**
          * 添加脚本
+         *
          * @param script   脚本路径
          */
         addScript(scriptName: string): ScriptComponent;
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          *
          * @param type				类定义
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Components>(type: Constructor<T> | ComponentNames): T;
+        getComponent<T extends Components>(type: Constructor<T>): T;
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type: Constructor<T> | ComponentNames): T[];
+        getComponents<T extends Components>(type: Constructor<T>): T[];
         /**
          * 设置子组件的位置
+         *
          * @param component				子组件
          * @param index				位置索引
          */
         setComponentIndex(component: Components, index: number): void;
         /**
          * 设置组件到指定位置
+         *
          * @param component		被设置的组件
          * @param index			索引
          */
         setComponentAt(component: Components, index: number): void;
         /**
          * 移除组件
+         *
          * @param component 被移除组件
          */
         removeComponent(component: Components): void;
         /**
          * 获取组件在容器的索引位置
+         *
          * @param component			查询的组件
          * @return				    组件在容器的索引位置
          */
         getComponentIndex(component: Components): number;
         /**
          * 移除组件
+         *
          * @param index		要删除的 Component 的子索引。
          */
         removeComponentAt(index: number): Component;
         /**
          * 交换子组件位置
+         *
          * @param index1		第一个子组件的索引位置
          * @param index2		第二个子组件的索引位置
          */
         swapComponentsAt(index1: number, index2: number): void;
         /**
          * 交换子组件位置
+         *
          * @param a		第一个子组件
          * @param b		第二个子组件
          */
         swapComponents(a: Components, b: Components): void;
+        /**
+         * 获取指定类型组件
+         *
+         * @param type 组件类型
+         */
         getComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
          * 移除指定类型组件
+         *
          * @param type 组件类型
          */
         removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
@@ -13432,7 +13383,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         /**
-         * 查找指定名称的游戏对象
+         * 查找指定名称的实体
          *
          * @param name
          */
@@ -13443,33 +13394,37 @@ declare namespace feng3d {
         protected _components: Components[];
         /**
          * 判断是否拥有组件
+         *
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
          */
         private hasComponent;
         /**
          * 添加组件到指定位置
+         *
          * @param component		被添加的组件
          * @param index			插入的位置
          */
         private addComponentAt;
         /**
+         * 为了兼容以往json序列化格式
+         *
          * @deprecated
          */
         set children(v: Entity[]);
         private _children;
         /**
-         * 创建指定类型的游戏对象。
+         * 创建指定类型的实体。
          *
-         * @param type 游戏对象类型。
-         * @param param 游戏对象参数。
+         * @param type 实体类型。
+         * @param param 实体参数。
          */
-        static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>): Node3D;
+        static createPrimitive<K extends keyof PrimitiveEntity>(type: K, param?: gPartial<Entity>): Node3D<Component3DEventMap>;
         /**
-         * 注册原始游戏对象，被注册后可以使用 Entity.createPrimitive 进行创建。
+         * 注册原始实体，被注册后可以使用 Entity.createPrimitive 进行创建。
          *
-         * @param type 原始游戏对象类型。
-         * @param handler 构建原始游戏对象的函数。
+         * @param type 原始实体类型。
+         * @param handler 构建原始实体的函数。
          */
         static registerPrimitive<K extends keyof PrimitiveEntity>(type: K, handler: (entity: Entity) => void): void;
         static _registerPrimitives: {
@@ -13477,7 +13432,7 @@ declare namespace feng3d {
         };
     }
     /**
-     * 原始游戏对象，可以通过Entity.createPrimitive进行创建。
+     * 原始实体，可以通过Entity.createPrimitive进行创建。
      */
     interface PrimitiveEntity {
     }
@@ -13505,7 +13460,7 @@ declare namespace feng3d {
         /**
          * 根结点
          */
-        get root(): Node3D;
+        get root(): Node3D<Component3DEventMap>;
         get gl(): GL;
         /**
          * 鼠标在3D视图中的位置
@@ -13569,13 +13524,209 @@ declare namespace feng3d {
         mouseRay3D: Ray3;
         private calcMouseRay3D;
         /**
-         * 获取屏幕区域内所有游戏对象
+         * 获取屏幕区域内所有实体
          * @param start 起点
          * @param end 终点
          */
-        getObjectsInGlobalArea(start: Vector2, end: Vector2): Node3D[];
+        getObjectsInGlobalArea(start: Vector2, end: Vector2): Node3D<Component3DEventMap>[];
         protected selectedTransform: Node3D;
         static createNewScene(): Scene;
+    }
+}
+declare namespace feng3d {
+    interface Component3DEventMap extends ComponentEventMap, MouseEventMap {
+    }
+    /**
+     * 3D组件
+     *
+     * 所有基于3D空间的组件均可继承于该组件。
+     */
+    class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
+        /**
+         * The Node3D attached to this Entity (null if there is none attached).
+         *
+         * 附加到此 Entity 的 Node3D。
+         */
+        get node3d(): Node3D<Component3DEventMap>;
+        /**
+         * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * Graphics 类包含一组可用来创建矢量形状的方法。
+     */
+    class Graphics extends Component {
+        __class__: "feng3d.Graphics";
+        private image;
+        private context2D;
+        private canvas;
+        private width;
+        private height;
+        constructor();
+        draw(width: number, height: number, callback: (context2D: CanvasRenderingContext2D) => void): this;
+    }
+    function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs?: string[]): void;
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        Behaviour: Behaviour;
+    }
+    /**
+     * 行为
+     *
+     * 可以控制开关的组件
+     */
+    class Behaviour extends Component3D {
+        /**
+         * 是否启用update方法
+         */
+        enabled: boolean;
+        /**
+         * 可运行环境
+         */
+        runEnvironment: RunEnvironment;
+        /**
+         * Has the Behaviour had enabled called.
+         * 是否所在GameObject显示且该行为已启动。
+         */
+        get isVisibleAndEnabled(): boolean;
+        /**
+         * 每帧执行
+         */
+        update(interval?: number): void;
+        dispose(): void;
+    }
+}
+declare namespace feng3d {
+    interface EntityEventMap {
+        /**
+         * 尺寸变化事件
+         */
+        sizeChanged: TransformLayout;
+        /**
+         * 中心点变化事件
+         */
+        pivotChanged: TransformLayout;
+    }
+    interface ComponentMap {
+        TransformLayout: TransformLayout;
+    }
+    /**
+     * 变换布局
+     *
+     * 提供了比Transform更加适用于2D元素的API
+     *
+     * 通过修改Transform的数值实现
+     */
+    class TransformLayout extends Component3D {
+        /**
+         * 创建一个实体，该类为虚类
+         */
+        constructor();
+        private _onAdded;
+        private _onRemoved;
+        /**
+         * 位移
+         */
+        get position(): Vector3;
+        set position(v: Vector3);
+        private readonly _position;
+        /**
+         * 尺寸，宽高。
+         */
+        get size(): Vector3;
+        set size(v: Vector3);
+        private _size;
+        /**
+         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+         */
+        get leftTop(): Vector3;
+        set leftTop(v: Vector3);
+        private _leftTop;
+        /**
+         * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+         */
+        get rightBottom(): Vector3;
+        set rightBottom(v: Vector3);
+        private _rightBottom;
+        /**
+         * 最小锚点，父Transform2D中左上角锚定的规范化位置。
+         */
+        anchorMin: Vector3;
+        /**
+         * 最大锚点，父Transform2D中左上角锚定的规范化位置。
+         */
+        anchorMax: Vector3;
+        /**
+         * The normalized position in this RectTransform that it rotates around.
+         */
+        pivot: Vector3;
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
+        private _updateLayout;
+        /**
+         * 布局是否失效
+         */
+        private _layoutInvalid;
+        private _invalidateLayout;
+        private _invalidateSize;
+        private _invalidatePivot;
+    }
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        SkyBox: SkyBox;
+    }
+    /**
+     * 天空盒组件
+     */
+    class SkyBox extends Component3D {
+        __class__: "feng3d.SkyBox";
+        s_skyboxTexture: TextureCube<TextureCubeEventMap>;
+        beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 天空盒渲染器
+     */
+    var skyboxRenderer: SkyBoxRenderer;
+    /**
+     * 天空盒渲染器
+     */
+    class SkyBoxRenderer {
+        private renderAtomic;
+        init(): void;
+        /**
+         * 绘制场景中天空盒
+         * @param gl
+         * @param scene 场景
+         * @param camera 摄像机
+         */
+        draw(gl: GL, scene: Scene, camera: Camera): void;
+        /**
+         * 绘制天空盒
+         * @param gl
+         * @param skybox 天空盒
+         * @param camera 摄像机
+         */
+        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -13740,7 +13891,6 @@ declare namespace feng3d {
      * See Also: Renderer components for meshes, particles, lines and trails.
      */
     class Renderable extends RayCastable {
-        get single(): boolean;
         readonly renderAtomic: RenderAtomic;
         /**
          * 几何体
@@ -13853,11 +14003,11 @@ declare namespace feng3d {
         /**
          * The game object this component is attached to. A component is always attached to a game object.
          */
-        get gameObject(): Entity<EntityEventMap>;
+        get entity(): Entity<EntityEventMap>;
         /**
          * The Transform attached to this Entity (null if there is none attached).
          */
-        get node3d(): Node3D;
+        get node3d(): Node3D<Component3DEventMap>;
         /**
          * 宿主组件
          */
@@ -13944,7 +14094,7 @@ declare namespace feng3d {
         get activeAnimations(): Animation[];
         get behaviours(): Behaviour[];
         get activeBehaviours(): Behaviour[];
-        get mouseCheckObjects(): Node3D[];
+        get mouseCheckObjects(): Node3D<Component3DEventMap>[];
         /**
          * 获取拾取缓存
          * @param camera
@@ -14612,7 +14762,6 @@ declare namespace feng3d {
     class Camera extends Component3D {
         static create(name?: string): Camera;
         __class__: "feng3d.Camera";
-        get single(): boolean;
         get projection(): Projection;
         set projection(v: Projection);
         /**
@@ -15665,7 +15814,7 @@ declare namespace feng3d {
          */
         frameBufferObject: FrameBufferObject;
         debugShadowMap: boolean;
-        private debugShadowMapNode3D;
+        private debugShadowMapModel;
         constructor();
         updateDebugShadowMap(scene: Scene, viewCamera: Camera): void;
     }
@@ -15681,6 +15830,9 @@ declare namespace feng3d {
         static create(name?: string): DirectionalLight;
         __class__: "feng3d.DirectionalLight";
         lightType: LightType;
+        /**
+         * 用于计算方向光
+         */
         private orthographicLens;
         /**
          * 光源位置
@@ -15780,8 +15932,8 @@ declare namespace feng3d {
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        get targetNode(): Node3D;
-        set targetNode(val: Node3D);
+        get targetNode(): Node3D<Component3DEventMap>;
+        set targetNode(val: Node3D<Component3DEventMap>);
     }
 }
 declare namespace feng3d {
@@ -15796,8 +15948,8 @@ declare namespace feng3d {
         set upAxis(upAxis: Vector3);
         get lookAtPosition(): Vector3;
         set lookAtPosition(val: Vector3);
-        get lookAtObject(): Node3D;
-        set lookAtObject(value: Node3D);
+        get lookAtObject(): Node3D<Component3DEventMap>;
+        set lookAtObject(value: Node3D<Component3DEventMap>);
         update(interpolate?: boolean): void;
     }
 }
@@ -16192,8 +16344,8 @@ declare namespace feng3d {
          */
         get globalMatrices(): Matrix4x4[];
         private isInitJoints;
-        private jointGameobjects;
-        private jointGameObjectMap;
+        private jointNode3Ds;
+        private jointNode3DMap;
         private _globalPropertiesInvalid;
         private _jointsInvalid;
         private _globalMatrixsInvalid;
@@ -16205,7 +16357,7 @@ declare namespace feng3d {
          */
         private updateGlobalProperties;
         private invalidjoint;
-        private createSkeletonGameObject;
+        private createSkeletonNode3D;
     }
 }
 declare namespace feng3d {
@@ -16214,7 +16366,6 @@ declare namespace feng3d {
     }
     class SkinnedMeshRenderer extends Renderable {
         __class__: "feng3d.SkinnedMeshRenderer";
-        get single(): boolean;
         skinSkeleton: SkinSkeleton;
         initMatrix: Matrix4x4;
         /**
@@ -16331,8 +16482,8 @@ declare namespace feng3d {
      */
     class Mouse3DManager {
         mouseInput: MouseInput;
-        get selectedTransform(): Node3D;
-        set selectedTransform(v: Node3D);
+        get selectedTransform(): Node3D<Component3DEventMap>;
+        set selectedTransform(v: Node3D<Component3DEventMap>);
         /**
          * 视窗，鼠标在该矩形内时为有效事件
          */
@@ -16342,18 +16493,18 @@ declare namespace feng3d {
          * @param scene 场景
          * @param camera 摄像机
          */
-        pick(view: View, scene: Scene, camera: Camera): Node3D;
+        pick(view: View, scene: Scene, camera: Camera): Node3D<Component3DEventMap>;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedTransform;
         private _mouseEventTypes;
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */
-        private preMouseDownGameObject;
+        private preMouseDownNode3D;
         /**
          * 统计处理click次数，判断是否达到dblclick
          */
-        private gameObjectClickNum;
+        private node3DClickNum;
         private _mouseInputChanged;
         private dispatch;
         /**
@@ -16363,7 +16514,7 @@ declare namespace feng3d {
         /**
          * 设置选中对象
          */
-        private setSelectedGameObject;
+        private setSelectedNode3D;
     }
     /**
      * 鼠标事件输入
@@ -16383,12 +16534,12 @@ declare namespace feng3d {
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        emit<K extends keyof T & string>(type: K, data?: T[K], bubbles?: boolean): boolean;
         /**
          * 派发事件
          * @param event   事件对象
          */
-        emitEvent(event: Event<any>): boolean;
+        emitEvent<K extends keyof T & string>(event: Event<T[K]>): boolean;
     }
     /**
      * Window鼠标事件输入

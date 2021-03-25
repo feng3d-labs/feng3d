@@ -1,9 +1,29 @@
 namespace feng3d
 {
+    interface ComponentInfo
+    {
+        /**
+         * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
+         */
+        name: string;
+        /**
+         * 是否唯一，同类型组件只允许一个。
+         */
+        single: boolean;
+        /**
+         * 构造函数
+         */
+        type: Constructor<Component>;
+        /**
+         * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
+         */
+        dependencies: Constructor<Component>[];
+    }
+
     /**
-     * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+     * 组件信息属性常量，保存组件名称与组件依赖ComponentInfo，由 @RegisterComponent 装饰器进行填充。
      */
-    export const componentMap = {};
+    const __component__ = "__component__";
 
     /**
      * 注册组件
@@ -12,22 +32,42 @@ namespace feng3d
      * 
      * @param component 组件名称，默认使用类名称
      */
-    export function RegisterComponent(component?: string)
+    export function RegisterComponent(component: {
+        /**
+         * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
+         */
+        name?: string,
+        /**
+         * 是否唯一，同类型组件只允许一个。
+         */
+        single?: boolean,
+        /**
+         * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
+         */
+        dependencies?: Constructor<Component>[]
+    } = {})
     {
-        return (constructor: Function) =>
+        return (constructor: Constructor<Component>) =>
         {
-            component = component || constructor["name"];
-            componentMap[component] = constructor;
+            var info = component as ComponentInfo;
+            info.name = info.name || constructor.name;
+            info.type = <any>constructor;
+            info.dependencies = info.dependencies || [];
+            constructor.prototype[__component__] = info;
+
+            if (Component._componentMap[info.name])
+            {
+                console.warn(`重复定义组件${info.name}，${Component._componentMap[info.name]} ${constructor} ！`);
+            } else
+            {
+                Component._componentMap[info.name] = constructor;
+            }
         }
     }
 
-    export function getComponentType<T extends Components>(type: Constructor<T> | ComponentNames): Constructor<T>
+    export function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>
     {
-        if (typeof type === "string")
-        {
-            return componentMap[type];
-        }
-        return type;
+        return Component._componentMap[type] as any;
     }
 
     /**
@@ -47,15 +87,55 @@ namespace feng3d
      * 
      * 所有附加到Entity的基类。
      * 
-     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Entity(游戏物体)上。
+     * 注意，您的代码不会直接创建 Component，而是您编写脚本代码，然后将该脚本附加到 Entity。
 	 */
     export class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable
     {
+        /**
+         * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
+         * @private
+         */
+        static _componentMap: { [name: string]: Constructor<Component> } = {};
+
+        /**
+         * 获取组件依赖列表
+         * 
+         * @param type 组件类定义
+         */
+        static getDependencies(type: Constructor<Component>)
+        {
+            var prototype = type.prototype;
+            var dependencies: Constructor<Component>[] = [];
+            while (prototype)
+            {
+                dependencies = dependencies.concat((prototype[__component__] as ComponentInfo)?.dependencies || []);
+                prototype = prototype["__proto__"];
+            }
+            return dependencies;
+        }
+
+        /**
+         * 判断组件是否为唯一组件。
+         * 
+         * @param type 组件类定义
+         */
+        static isSingleComponent(type: Constructor<Component>)
+        {
+            var prototype = type.prototype;
+            var isSingle = false;
+            while (prototype && !isSingle)
+            {
+                isSingle = !!((prototype[__component__] as ComponentInfo)?.single);
+                prototype = prototype["__proto__"];
+            }
+            return isSingle;
+        }
+
         //------------------------------------------
         // Variables
         //------------------------------------------
         /**
-         * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
+         * 此组件附加到的实体。组件总是附加到实体上。
          */
         @serialize
         get entity()
@@ -73,6 +153,11 @@ namespace feng3d
             this._entity = v;
         }
 
+        /**
+         * 名称。
+         * 
+         * 组件与实体及所有附加组件使用相同的名称。
+         */
         get name()
         {
             return this._entity?.name;
@@ -80,24 +165,22 @@ namespace feng3d
 
         set name(v)
         {
-            if (this._entity)
-            {
-                this._entity.name = v;
-            }
+            this._entity.name = v;
         }
 
         /**
-         * 标签
+         * 此实体的标签。
+         * 
+         * 可使用标签来识别实体。 
          */
-        @serialize
-        tag: string;
-
-        /**
-         * 是否唯一，同类型3D对象组件只允许一个
-         */
-        get single()
+        get tag()
         {
-            return false;
+            return this._entity.tag;
+        }
+
+        set tag(v)
+        {
+            this._entity.tag = v;
         }
 
         /**
@@ -121,7 +204,7 @@ namespace feng3d
         /**
          * 初始化组件
          * 
-         * 在添加到GameObject时立即被调用。
+         * 在添加到Entity时立即被调用。
          */
         init()
         {
@@ -138,7 +221,7 @@ namespace feng3d
         }
 
         /**
-         * 添加指定组件类型到游戏对象
+         * 添加指定组件类型到实体
          * 
          * @type type 被添加组件
          */
@@ -157,7 +240,7 @@ namespace feng3d
         }
 
         /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 获取实体上第一个指定类型的组件，不存在时返回null
          * 
          * @param type				类定义
          * @return                  返回指定类型组件
@@ -168,7 +251,7 @@ namespace feng3d
         }
 
         /**
-         * 获取游戏对象上所有指定类型的组件数组
+         * 获取实体上所有指定类型的组件数组
          * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
@@ -270,14 +353,14 @@ namespace feng3d
         }
 
         /**
-         * 该方法仅在GameObject中使用
+         * 该方法仅在Entity中使用
          * @private
          * 
-         * @param gameObject 游戏对象
+         * @param entity 实体
          */
-        setGameObject(gameObject: Entity)
+        _setEntity(entity: Entity)
         {
-            this._entity = gameObject;
+            this._entity = entity;
         }
 
         //------------------------------------------

@@ -26,7 +26,7 @@ namespace feng3d
                 var cameras = this.scene.getComponentsInChildren(Camera);
                 if (cameras.length == 0)
                 {
-                    this._camera = serialization.setValue(new Entity(), { name: "defaultCamera" }).addComponent(Node3D).addComponent(Camera);
+                    this._camera = serialization.setValue(new Entity(), { name: "defaultCamera" }).addComponent(Camera);
                     this.scene.node3d.addChild(this._camera.node3d);
                 } else
                 {
@@ -118,7 +118,7 @@ namespace feng3d
                 // #endif
             }, false);
 
-            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent(Node3D).addComponent(Scene);
+            this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent(Scene);
             this.camera = camera;
 
             this.start();
@@ -270,7 +270,7 @@ namespace feng3d
         }
 
         /**
-         * 获取屏幕区域内所有游戏对象
+         * 获取屏幕区域内所有实体
          * @param start 起点
          * @param end 终点
          */
