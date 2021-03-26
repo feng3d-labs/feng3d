@@ -15,7 +15,7 @@ namespace feng3d
     /**
      * 3D场景
      */
-    @RegisterComponent()
+    @RegisterComponent({ single: true })
     export class Scene extends Component3D
     {
 

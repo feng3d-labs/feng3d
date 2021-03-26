@@ -30016,7 +30016,7 @@ var feng3d;
             feng3d.oav()
         ], Scene.prototype, "ambientColor", void 0);
         Scene = __decorate([
-            feng3d.RegisterComponent()
+            feng3d.RegisterComponent({ single: true })
         ], Scene);
         return Scene;
     }(feng3d.Component3D));
