@@ -13465,8 +13465,18 @@ declare namespace feng3d {
         /**
          * 鼠标在3D视图中的位置
          */
-        mousePos: Vector2;
-        viewRect: Rectangle;
+        get mousePos(): Vector2;
+        private _mousePos;
+        /**
+         * 视窗区域
+         */
+        get viewRect(): Rectangle;
+        private _viewRect;
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        get mouseRay3D(): Ray3;
+        private _mouseRay3D;
         /**
          * 鼠标事件管理
          */
@@ -13518,11 +13528,6 @@ declare namespace feng3d {
          * @param   depth   深度
          */
         getScaleByDepth(depth: number, dir?: Vector2): number;
-        /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        mouseRay3D: Ray3;
-        private calcMouseRay3D;
         /**
          * 获取屏幕区域内所有实体
          * @param start 起点
@@ -14065,10 +14070,6 @@ declare namespace feng3d {
          * 鼠标射线，在渲染时被设置
          */
         mouseRay3D: Ray3;
-        /**
-         * 上次渲染时用的摄像机
-         */
-        camera: Camera;
         init(): void;
         update(interval?: number): void;
         /**

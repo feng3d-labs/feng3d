@@ -62,9 +62,39 @@ namespace feng3d
         /**
          * 鼠标在3D视图中的位置
          */
-        mousePos = new Vector2();
+        get mousePos()
+        {
+            var clientRect = this.canvas.getBoundingClientRect();
+            this._mousePos.x = windowEventProxy.clientX - clientRect.left;
+            this._mousePos.y = windowEventProxy.clientY - clientRect.top;
+            return this._mousePos;
+        }
+        private _mousePos = new Vector2();
 
-        viewRect = new Rectangle();
+        /**
+         * 视窗区域
+         */
+        get viewRect()
+        {
+            var clientRect = this.canvas.getBoundingClientRect();
+            this._viewRect.x = clientRect.left;
+            this._viewRect.y = clientRect.top;
+            this._viewRect.width = clientRect.width;
+            this._viewRect.height = clientRect.height
+            return this._viewRect;
+        }
+        private _viewRect = new Rectangle();
+
+        /**
+		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
+		 */
+        get mouseRay3D()
+        {
+            var gpuPos = this.screenToGpuPosition(this.mousePos);
+            this._mouseRay3D = this.camera.getRay3D(gpuPos.x, gpuPos.y);
+            return this._mouseRay3D;
+        }
+        private _mouseRay3D: Ray3;
 
         /**
          * 鼠标事件管理
@@ -169,23 +199,9 @@ namespace feng3d
             this.canvas.height = this.canvas.clientHeight;
             if (this.canvas.width * this.canvas.height == 0) return;
 
-            var clientRect = this.canvas.getBoundingClientRect();
-
-            this.viewRect.x = clientRect.left;
-            this.viewRect.y = clientRect.top;
-            this.viewRect.width = clientRect.width;
-            this.viewRect.height = clientRect.height
-
-            this.mousePos.x = windowEventProxy.clientX - clientRect.left;
-            this.mousePos.y = windowEventProxy.clientY - clientRect.top;
-
             this.camera.lens.aspect = this.viewRect.width / this.viewRect.height;
 
-            // 设置鼠标射线
-            this.calcMouseRay3D();
-
             this.scene.mouseRay3D = this.mouseRay3D;
-            this.scene.camera = this.camera;
 
             // 默认渲染
             this.gl.colorMask(true, true, true, true);
@@ -256,17 +272,6 @@ namespace feng3d
             var scale = this.camera.getScaleByDepth(depth, dir);
             scale = scale / new Vector2(this.viewRect.width * dir.x, this.viewRect.height * dir.y).length;
             return scale;
-        }
-
-        /**
-		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
-		 */
-        mouseRay3D: Ray3;
-
-        private calcMouseRay3D()
-        {
-            var gpuPos = this.screenToGpuPosition(this.mousePos);
-            this.mouseRay3D = this.camera.getRay3D(gpuPos.x, gpuPos.y);
         }
 
         /**
