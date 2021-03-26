@@ -854,7 +854,7 @@ namespace feng3d
             {
                 for (var i = 0, n = this.numChildren; i < n; i++)
                 {
-                    this.getChildAt(i).getComponentsInChildren(type, filter, result);
+                    this._children[i].getComponentsInChildren(type, filter, result);
                 }
             }
             return result;
@@ -902,7 +902,7 @@ namespace feng3d
         {
             this.dispose();
             while (this.numChildren > 0)
-                this.getChildAt(0).dispose();
+                this._children[0].dispose();
         }
 
         private readonly _position = new Vector3();
@@ -1025,7 +1025,7 @@ namespace feng3d
             {
                 for (var i = 0, n = this.numChildren; i < n; i++)
                 {
-                    this.getChildAt(i)._invalidateSceneTransform();
+                    this.children[i]._invalidateSceneTransform();
                 }
             }
         }

@@ -27549,7 +27549,7 @@ var feng3d;
             }
             if (findchildren) {
                 for (var i = 0, n = this.numChildren; i < n; i++) {
-                    this.getChildAt(i).getComponentsInChildren(type, filter, result);
+                    this._children[i].getComponentsInChildren(type, filter, result);
                 }
             }
             return result;
@@ -27587,7 +27587,7 @@ var feng3d;
         Node3D.prototype.disposeWithChildren = function () {
             this.dispose();
             while (this.numChildren > 0)
-                this.getChildAt(0).dispose();
+                this._children[0].dispose();
         };
         Node3D.prototype._positionChanged = function (newValue, oldValue, object, property) {
             if (!Math.equals(newValue, oldValue))
@@ -27655,7 +27655,7 @@ var feng3d;
             //
             if (this.entity) {
                 for (var i = 0, n = this.numChildren; i < n; i++) {
-                    this.getChildAt(i)._invalidateSceneTransform();
+                    this.children[i]._invalidateSceneTransform();
                 }
             }
         };
