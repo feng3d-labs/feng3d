@@ -13548,6 +13548,7 @@ declare namespace feng3d {
          * 附加到此 Entity 的 Node3D。
          */
         get node3d(): Node3D<Component3DEventMap>;
+        private _node3d;
         /**
          * Returns all components of Type type in the Entity.
          *

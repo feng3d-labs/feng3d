@@ -26384,8 +26384,7 @@ var feng3d;
              * 组件与实体及所有附加组件使用相同的名称。
              */
             get: function () {
-                var _a;
-                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.name;
+                return this._entity.name;
             },
             set: function (v) {
                 this._entity.name = v;
@@ -26429,7 +26428,7 @@ var feng3d;
          * @return				子组件
          */
         Component.prototype.getComponentAt = function (index) {
-            return this.entity.getComponentAt(index);
+            return this._entity.getComponentAt(index);
         };
         /**
          * 添加指定组件类型到实体
@@ -26438,14 +26437,14 @@ var feng3d;
          */
         Component.prototype.addComponent = function (type, callback) {
             if (callback === void 0) { callback = null; }
-            return this.entity.addComponent(type, callback);
+            return this._entity.addComponent(type, callback);
         };
         /**
          * 添加脚本
          * @param script   脚本路径
          */
         Component.prototype.addScript = function (scriptName) {
-            return this.entity.addScript(scriptName);
+            return this._entity.addScript(scriptName);
         };
         /**
          * 获取实体上第一个指定类型的组件，不存在时返回null
@@ -26454,7 +26453,7 @@ var feng3d;
          * @return                  返回指定类型组件
          */
         Component.prototype.getComponent = function (type) {
-            return this.entity.getComponent(type);
+            return this._entity.getComponent(type);
         };
         /**
          * 获取实体上所有指定类型的组件数组
@@ -26463,7 +26462,7 @@ var feng3d;
          * @return			返回与给出类定义一致的组件
          */
         Component.prototype.getComponents = function (type) {
-            return this.entity.getComponents(type);
+            return this._entity.getComponents(type);
         };
         /**
          * 设置子组件的位置
@@ -26471,7 +26470,7 @@ var feng3d;
          * @param index				位置索引
          */
         Component.prototype.setComponentIndex = function (component, index) {
-            this.entity.setComponentIndex(component, index);
+            this._entity.setComponentIndex(component, index);
         };
         /**
          * 设置组件到指定位置
@@ -26479,14 +26478,14 @@ var feng3d;
          * @param index			索引
          */
         Component.prototype.setComponentAt = function (component, index) {
-            this.entity.setComponentAt(component, index);
+            this._entity.setComponentAt(component, index);
         };
         /**
          * 移除组件
          * @param component 被移除组件
          */
         Component.prototype.removeComponent = function (component) {
-            this.entity.removeComponent(component);
+            this._entity.removeComponent(component);
         };
         /**
          * 获取组件在容器的索引位置
@@ -26494,14 +26493,14 @@ var feng3d;
          * @return				    组件在容器的索引位置
          */
         Component.prototype.getComponentIndex = function (component) {
-            return this.entity.getComponentIndex(component);
+            return this._entity.getComponentIndex(component);
         };
         /**
          * 移除组件
          * @param index		要删除的 Component 的子索引。
          */
         Component.prototype.removeComponentAt = function (index) {
-            return this.entity.removeComponentAt(index);
+            return this._entity.removeComponentAt(index);
         };
         /**
          * 交换子组件位置
@@ -28623,8 +28622,10 @@ var feng3d;
              * 附加到此 Entity 的 Node3D。
              */
             get: function () {
-                var _a;
-                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node3D);
+                console.assert(!!this._entity);
+                this._node3d = this._node3d || this._entity.getComponent(feng3d.Node3D);
+                console.assert(!!this._node3d);
+                return this._node3d;
             },
             enumerable: false,
             configurable: true

@@ -160,7 +160,7 @@ namespace feng3d
          */
         get name()
         {
-            return this._entity?.name;
+            return this._entity.name;
         }
 
         set name(v)
@@ -217,7 +217,7 @@ namespace feng3d
          */
         getComponentAt(index: number): Component
         {
-            return this.entity.getComponentAt(index);
+            return this._entity.getComponentAt(index);
         }
 
         /**
@@ -227,7 +227,7 @@ namespace feng3d
          */
         addComponent<T extends Components>(type: Constructor<T>, callback: (component: T) => void = null): T
         {
-            return this.entity.addComponent(type, callback);
+            return this._entity.addComponent(type, callback);
         }
 
         /**
@@ -236,7 +236,7 @@ namespace feng3d
          */
         addScript(scriptName: string)
         {
-            return this.entity.addScript(scriptName);
+            return this._entity.addScript(scriptName);
         }
 
         /**
@@ -247,7 +247,7 @@ namespace feng3d
          */
         getComponent<T extends Components>(type: Constructor<T>): T
         {
-            return this.entity.getComponent(type);
+            return this._entity.getComponent(type);
         }
 
         /**
@@ -258,7 +258,7 @@ namespace feng3d
          */
         getComponents<T extends Components>(type: Constructor<T>): T[]
         {
-            return this.entity.getComponents(type);
+            return this._entity.getComponents(type);
         }
 
         /**
@@ -268,7 +268,7 @@ namespace feng3d
          */
         setComponentIndex(component: Components, index: number): void
         {
-            this.entity.setComponentIndex(component, index);
+            this._entity.setComponentIndex(component, index);
         }
 
         /**
@@ -278,7 +278,7 @@ namespace feng3d
          */
         setComponentAt(component: Components, index: number)
         {
-            this.entity.setComponentAt(component, index);
+            this._entity.setComponentAt(component, index);
         }
 
         /**
@@ -287,7 +287,7 @@ namespace feng3d
          */
         removeComponent(component: Components): void
         {
-            this.entity.removeComponent(component);
+            this._entity.removeComponent(component);
         }
 
         /**
@@ -297,7 +297,7 @@ namespace feng3d
          */
         getComponentIndex(component: Components): number
         {
-            return this.entity.getComponentIndex(component);
+            return this._entity.getComponentIndex(component);
         }
 
         /**
@@ -306,7 +306,7 @@ namespace feng3d
          */
         removeComponentAt(index: number): Component
         {
-            return this.entity.removeComponentAt(index);
+            return this._entity.removeComponentAt(index);
         }
 
         /**

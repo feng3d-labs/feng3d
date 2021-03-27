@@ -20,8 +20,12 @@ namespace feng3d
          */
         get node3d()
         {
-            return this._entity?.getComponent(Node3D);
+            console.assert(!!this._entity);
+            this._node3d = this._node3d || this._entity.getComponent(Node3D);
+            console.assert(!!this._node3d);
+            return this._node3d;
         }
+        private _node3d: Node3D;
 
         /**
          * Returns all components of Type type in the Entity.
