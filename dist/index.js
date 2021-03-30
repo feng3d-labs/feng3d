@@ -28602,7 +28602,6 @@ var feng3d;
     }(feng3d.Feng3dObject));
     feng3d.View = View;
 })(feng3d || (feng3d = {}));
-// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
 var feng3d;
 (function (feng3d) {
     /**
@@ -29796,8 +29795,8 @@ var feng3d;
         }
         Scene.prototype.init = function () {
             _super.prototype.init.call(this);
-            this.entity.hideFlags = this.entity.hideFlags | feng3d.HideFlags.Hide;
-            this.entity.hideFlags = this.entity.hideFlags | feng3d.HideFlags.DontTransform;
+            // this.entity.hideFlags = this.entity.hideFlags | HideFlags.Hide;
+            // this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
             //
             this.node3d._setScene(this);
         };

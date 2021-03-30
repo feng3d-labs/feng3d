@@ -328,5 +328,3 @@ namespace feng3d
     }
 
 }
-
-// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };

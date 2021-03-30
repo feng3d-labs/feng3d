@@ -57,8 +57,8 @@ namespace feng3d
         init()
         {
             super.init();
-            this.entity.hideFlags = this.entity.hideFlags | HideFlags.Hide;
-            this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
+            // this.entity.hideFlags = this.entity.hideFlags | HideFlags.Hide;
+            // this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
             //
             this.node3d._setScene(this);
         }
