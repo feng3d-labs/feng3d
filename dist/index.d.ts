@@ -10386,19 +10386,23 @@ declare namespace feng3d {
      * @param componentOrder 组件菜单中组件的顺序(从低到高)。
      */
     function AddComponentMenu(path: string, componentOrder?: number): (target: Constructor<Components>) => void;
+    class MenuConfig {
+        private _componentOrderInvalid;
+        /**
+         * 新增组件菜单
+         * @param componentMenu
+         */
+        addComponent(componentMenu: ComponentMenu): void;
+        /**
+         * 组件菜单
+         */
+        get component(): ComponentMenu[];
+        private _component;
+    }
     /**
      * 菜单配置
      */
     const menuConfig: MenuConfig;
-    /**
-     * 菜单配置
-     */
-    interface MenuConfig {
-        /**
-         * 组件菜单
-         */
-        component?: ComponentMenu[];
-    }
     /**
      * 组件菜单
      */

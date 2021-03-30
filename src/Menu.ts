@@ -12,29 +12,45 @@ namespace feng3d
     {
         return (target: Constructor<Components>) =>
         {
-            if (!menuConfig.component) menuConfig.component = [];
-            menuConfig.component.push({ path: path, order: componentOrder, type: <any>target["name"] })
-
-            menuConfig.component.sort((a, b) => { if (a.path < b.path) return -1; return 1 })
-            menuConfig.component.sort((a, b) => a.order - b.order);
+            menuConfig.addComponent({ path: path, order: componentOrder, type: <any>target["name"] });
         }
     }
 
-    /**
-     * 菜单配置
-     */
-    export const menuConfig: MenuConfig = {};
+    export class MenuConfig
+    {
+        private _componentOrderInvalid = false;
+
+        /**
+         * 新增组件菜单
+         * @param componentMenu 
+         */
+        addComponent(componentMenu: ComponentMenu)
+        {
+            this._component.push(componentMenu);
+            this._componentOrderInvalid = true;
+        }
+
+        /**
+         * 组件菜单
+         */
+        get component()
+        {
+            if (this._componentOrderInvalid)
+            {
+                this._component.sort((a, b) => { if (a.path < b.path) return -1; return 1 })
+                this._component.sort((a, b) => a.order - b.order);
+                this._componentOrderInvalid = false;
+            }
+            return this._component;
+        }
+        private _component: ComponentMenu[] = [];
+
+    }
 
     /**
      * 菜单配置
      */
-    export interface MenuConfig
-    {
-        /**
-         * 组件菜单
-         */
-        component?: ComponentMenu[];
-    }
+    export const menuConfig = new MenuConfig();
 
     /**
      * 组件菜单

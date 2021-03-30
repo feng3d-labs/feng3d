@@ -21466,19 +21466,46 @@ var feng3d;
     function AddComponentMenu(path, componentOrder) {
         if (componentOrder === void 0) { componentOrder = 0; }
         return function (target) {
-            if (!feng3d.menuConfig.component)
-                feng3d.menuConfig.component = [];
-            feng3d.menuConfig.component.push({ path: path, order: componentOrder, type: target["name"] });
-            feng3d.menuConfig.component.sort(function (a, b) { if (a.path < b.path)
-                return -1; return 1; });
-            feng3d.menuConfig.component.sort(function (a, b) { return a.order - b.order; });
+            feng3d.menuConfig.addComponent({ path: path, order: componentOrder, type: target["name"] });
         };
     }
     feng3d.AddComponentMenu = AddComponentMenu;
+    var MenuConfig = /** @class */ (function () {
+        function MenuConfig() {
+            this._componentOrderInvalid = false;
+            this._component = [];
+        }
+        /**
+         * 新增组件菜单
+         * @param componentMenu
+         */
+        MenuConfig.prototype.addComponent = function (componentMenu) {
+            this._component.push(componentMenu);
+            this._componentOrderInvalid = true;
+        };
+        Object.defineProperty(MenuConfig.prototype, "component", {
+            /**
+             * 组件菜单
+             */
+            get: function () {
+                if (this._componentOrderInvalid) {
+                    this._component.sort(function (a, b) { if (a.path < b.path)
+                        return -1; return 1; });
+                    this._component.sort(function (a, b) { return a.order - b.order; });
+                    this._componentOrderInvalid = false;
+                }
+                return this._component;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return MenuConfig;
+    }());
+    feng3d.MenuConfig = MenuConfig;
     /**
      * 菜单配置
      */
-    feng3d.menuConfig = {};
+    feng3d.menuConfig = new MenuConfig();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
