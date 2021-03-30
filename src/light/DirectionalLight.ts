@@ -10,11 +10,11 @@ namespace feng3d
     @RegisterComponent()
     export class DirectionalLight extends Light
     {
-        static create(name = "DirectionalLight")
+        @AddEntityMenu("Light/Directional Light")
+        static create(name = "Directional Light")
         {
-            var entity = new Entity();
-            entity.name = name;
-            var directionalLight = entity.addComponent(DirectionalLight);
+            var directionalLight = new Entity().addComponent(DirectionalLight);
+            directionalLight.name = name;
             return directionalLight;
         }
         __class__: "feng3d.DirectionalLight";

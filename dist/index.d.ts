@@ -10386,18 +10386,38 @@ declare namespace feng3d {
      * @param componentOrder 组件菜单中组件的顺序(从低到高)。
      */
     function AddComponentMenu(path: string, componentOrder?: number): (target: Constructor<Components>) => void;
+    /**
+     * 添加实体菜单
+     *
+     * 在创建实体函数上新增 @AddEntityMenu("3D对象/平面") 可以添加到实体菜单上。
+     *
+     * @param path 菜单中路径
+     * @param componentOrder 菜单中顺序(从低到高)。
+     */
+    function AddEntityMenu(path: string, componentOrder?: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
     class MenuConfig {
         private _componentOrderInvalid;
+        /**
+         * 组件菜单
+         */
+        get component(): ComponentMenu[];
+        private _component;
         /**
          * 新增组件菜单
          * @param componentMenu
          */
         addComponent(componentMenu: ComponentMenu): void;
         /**
-         * 组件菜单
+         * 实体菜单
          */
-        get component(): ComponentMenu[];
-        private _component;
+        get entity(): EntityMenu[];
+        /**
+         * 新增实体菜单
+         * @param componentMenu
+         */
+        addEntity(item: EntityMenu): void;
+        private _entity;
+        private _entityOrderInvalid;
     }
     /**
      * 菜单配置
@@ -10419,6 +10439,11 @@ declare namespace feng3d {
          * 组件类定义
          */
         type: ComponentNames;
+    }
+    interface EntityMenu {
+        path: string;
+        order: number;
+        func: () => Component;
     }
 }
 declare namespace feng3d {
@@ -12786,7 +12811,7 @@ declare namespace feng3d {
     class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
         __class__: "feng3d.Node3D";
         assetType: AssetType;
-        create(): void;
+        static create(name?: string): Node3D<Component3DEventMap>;
         /**
          * 预设资源编号
          */
@@ -14838,6 +14863,7 @@ declare namespace feng3d {
      */
     class QuadGeometry extends Geometry {
         __class__: "feng3d.QuadGeometry";
+        create(name?: string): MeshRenderer;
         constructor();
     }
     interface DefaultGeometry {
@@ -14856,6 +14882,7 @@ declare namespace feng3d {
      */
     class PlaneGeometry extends Geometry {
         __class__: "feng3d.PlaneGeometry";
+        create(name?: string): MeshRenderer;
         /**
          * 宽度
          */
@@ -14935,6 +14962,7 @@ declare namespace feng3d {
     class CubeGeometry extends Geometry {
         __class__: "feng3d.CubeGeometry";
         name: string;
+        create(name?: string): MeshRenderer;
         /**
          * 宽度
          */
@@ -15021,6 +15049,7 @@ declare namespace feng3d {
      */
     class SphereGeometry extends Geometry {
         __class__: "feng3d.SphereGeometry";
+        create(name?: string): MeshRenderer;
         /**
          * 球体半径
          */
@@ -15076,6 +15105,7 @@ declare namespace feng3d {
      */
     class CapsuleGeometry extends Geometry {
         __class__: "feng3d.CapsuleGeometry";
+        create(name?: string): MeshRenderer;
         /**
          * 胶囊体半径
          */
@@ -15137,6 +15167,7 @@ declare namespace feng3d {
      */
     class CylinderGeometry extends Geometry {
         __class__: "feng3d.CylinderGeometry" | "feng3d.ConeGeometry";
+        create(name?: string): MeshRenderer;
         /**
          * 顶部半径
          */
@@ -15207,6 +15238,7 @@ declare namespace feng3d {
     class ConeGeometry extends CylinderGeometry {
         __class__: "feng3d.ConeGeometry";
         name: string;
+        create(name?: string): MeshRenderer;
         /**
          * 底部半径 private
          */
@@ -15236,6 +15268,7 @@ declare namespace feng3d {
      */
     class TorusGeometry extends Geometry {
         __class__: "feng3d.TorusGeometry";
+        create(name?: string): MeshRenderer;
         /**
          * 半径
          */
@@ -15864,6 +15897,7 @@ declare namespace feng3d {
     class PointLight extends Light {
         __class__: "feng3d.PointLight";
         lightType: LightType;
+        static create(name?: string): PointLight;
         /**
          * 光照范围
          */
@@ -15890,6 +15924,7 @@ declare namespace feng3d {
      */
     class SpotLight extends Light {
         lightType: LightType;
+        static create(name?: string): SpotLight;
         /**
          * 光照范围
          */

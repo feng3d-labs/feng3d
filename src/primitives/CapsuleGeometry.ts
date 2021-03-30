@@ -10,6 +10,15 @@ namespace feng3d
 
         __class__: "feng3d.CapsuleGeometry";
 
+        @AddEntityMenu("Node3D/Capsule")
+        create(name = "Capsule")
+        {
+            var mesh = new Entity().addComponent(MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = Geometry.getDefault("Capsule");
+            return mesh;
+        }
+
         /**
          * 胶囊体半径
          */

@@ -10,6 +10,15 @@ namespace feng3d
 
         name = "Cone";
 
+        @AddEntityMenu("Node3D/Cone")
+        create(name = "Cone")
+        {
+            var mesh = new Entity().addComponent(MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = Geometry.getDefault("Cone");
+            return mesh;
+        }
+        
         /**
          * 底部半径 private
          */

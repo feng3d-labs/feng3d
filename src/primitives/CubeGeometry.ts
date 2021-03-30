@@ -12,6 +12,15 @@ namespace feng3d
 
         name = "Cube";
 
+        @AddEntityMenu("Node3D/Cube")
+        create(name = "Cube")
+        {
+            var mesh = new Entity().addComponent(MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = Geometry.getDefault("Cube");
+            return mesh;
+        }
+
         /**
          * 宽度
          */

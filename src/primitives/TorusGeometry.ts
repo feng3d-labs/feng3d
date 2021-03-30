@@ -11,6 +11,15 @@ namespace feng3d
 
 		__class__: "feng3d.TorusGeometry" = "feng3d.TorusGeometry";
 
+		@AddEntityMenu("Node3D/Torus")
+		create(name = "Torus")
+		{
+			var mesh = new Entity().addComponent(MeshRenderer);
+			mesh.name = name;
+			mesh.geometry = Geometry.getDefault("Torus");
+			return mesh;
+		}
+
 		/**
 		 * 半径
 		 */
@@ -239,13 +248,13 @@ namespace feng3d
 	}
 	Geometry.setDefault("Torus", new TorusGeometry());
 
-    Entity.registerPrimitive("Torus", (g) =>
-    {
-        g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Torus");
-    });
+	Entity.registerPrimitive("Torus", (g) =>
+	{
+		g.addComponent(MeshRenderer).geometry = Geometry.getDefault("Torus");
+	});
 
-    export interface PrimitiveEntity
-    {
-        Torus: Entity;
-    }
+	export interface PrimitiveEntity
+	{
+		Torus: Entity;
+	}
 }

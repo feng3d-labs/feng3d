@@ -9,6 +9,15 @@ namespace feng3d
     {
         __class__: "feng3d.QuadGeometry";
 
+        @AddEntityMenu("Node3D/Quad")
+        create(name = "Quad")
+        {
+            var mesh = new Entity().addComponent(MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = Geometry.getDefault("Quad");
+            return mesh;
+        }
+
         constructor()
         {
             super();

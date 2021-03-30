@@ -10,6 +10,15 @@ namespace feng3d
 
         __class__: "feng3d.PlaneGeometry";
 
+        @AddEntityMenu("Node3D/Plane")
+        create(name = "Plane")
+        {
+            var mesh = new Entity().addComponent(MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = Geometry.getDefault("Plane");
+            return mesh;
+        }
+
         /**
          * 宽度
          */

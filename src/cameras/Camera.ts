@@ -7,13 +7,14 @@ namespace feng3d
 
     export interface ComponentMap { Camera: Camera; }
 
-	/**
-	 * 摄像机
-	 */
+    /**
+     * 摄像机
+     */
     @AddComponentMenu("Rendering/Camera")
     @RegisterComponent({ single: true })
     export class Camera extends Component3D
     {
+        @AddEntityMenu("Camera")
         static create(name = "Camera")
         {
             var entity = new Entity();
@@ -55,8 +56,8 @@ namespace feng3d
         }
 
         /**
-		 * 镜头
-		 */
+         * 镜头
+         */
         @serialize
         @oav({ component: "OAVObjectView" })
         get lens()
@@ -84,9 +85,9 @@ namespace feng3d
         }
         private _lens: LensBase;
 
-		/**
-		 * 场景投影矩阵，世界空间转投影空间
-		 */
+        /**
+         * 场景投影矩阵，世界空间转投影空间
+         */
         get viewProjection(): Matrix4x4
         {
             if (this._viewProjectionInvalid)
@@ -114,9 +115,9 @@ namespace feng3d
             return this._frustum;
         }
 
-		/**
-		 * 创建一个摄像机
-		 */
+        /**
+         * 创建一个摄像机
+         */
         init()
         {
             super.init();
@@ -127,21 +128,21 @@ namespace feng3d
         }
 
         /**
-		 * 获取与坐标重叠的射线
-		 * @param x view3D上的X坐标
-		 * @param y view3D上的X坐标
-		 * @return
-		 */
+         * 获取与坐标重叠的射线
+         * @param x view3D上的X坐标
+         * @param y view3D上的X坐标
+         * @return
+         */
         getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
         {
             return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.node3d.localToWorldMatrix);
         }
 
-		/**
-		 * 投影坐标（世界坐标转换为3D视图坐标）
-		 * @param point3d 世界坐标
-		 * @return 屏幕的绝对坐标
-		 */
+        /**
+         * 投影坐标（世界坐标转换为3D视图坐标）
+         * @param point3d 世界坐标
+         * @return 屏幕的绝对坐标
+         */
         project(point3d: Vector3): Vector3
         {
             var v: Vector3 = this.lens.project(this.node3d.worldToLocalMatrix.transformPoint3(point3d));
@@ -149,13 +150,13 @@ namespace feng3d
         }
 
         /**
-		 * 屏幕坐标投影到场景坐标
-		 * @param nX 屏幕坐标X ([0-width])
-		 * @param nY 屏幕坐标Y ([0-height])
-		 * @param sZ 到屏幕的距离
-		 * @param v 场景坐标（输出）
-		 * @return 场景坐标
-		 */
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
         unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
         {
             return this.node3d.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);

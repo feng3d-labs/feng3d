@@ -21470,19 +21470,28 @@ var feng3d;
         };
     }
     feng3d.AddComponentMenu = AddComponentMenu;
+    /**
+     * 添加实体菜单
+     *
+     * 在创建实体函数上新增 @AddEntityMenu("3D对象/平面") 可以添加到实体菜单上。
+     *
+     * @param path 菜单中路径
+     * @param componentOrder 菜单中顺序(从低到高)。
+     */
+    function AddEntityMenu(path, componentOrder) {
+        if (componentOrder === void 0) { componentOrder = 0; }
+        return function (target, propertyKey, descriptor) {
+            feng3d.menuConfig.addEntity({ path: path, order: componentOrder, func: target[propertyKey].bind(target) });
+        };
+    }
+    feng3d.AddEntityMenu = AddEntityMenu;
     var MenuConfig = /** @class */ (function () {
         function MenuConfig() {
             this._componentOrderInvalid = false;
             this._component = [];
+            this._entity = [];
+            this._entityOrderInvalid = false;
         }
-        /**
-         * 新增组件菜单
-         * @param componentMenu
-         */
-        MenuConfig.prototype.addComponent = function (componentMenu) {
-            this._component.push(componentMenu);
-            this._componentOrderInvalid = true;
-        };
         Object.defineProperty(MenuConfig.prototype, "component", {
             /**
              * 组件菜单
@@ -21499,6 +21508,37 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
+        /**
+         * 新增组件菜单
+         * @param componentMenu
+         */
+        MenuConfig.prototype.addComponent = function (componentMenu) {
+            this._component.push(componentMenu);
+            this._componentOrderInvalid = true;
+        };
+        Object.defineProperty(MenuConfig.prototype, "entity", {
+            /**
+             * 实体菜单
+             */
+            get: function () {
+                if (this._entityOrderInvalid) {
+                    // this._entity.sort((a, b) => { if (a.path < b.path) return -1; return 1 })
+                    this._entity.sort(function (a, b) { return a.order - b.order; });
+                    this._entityOrderInvalid = false;
+                }
+                return this._entity;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 新增实体菜单
+         * @param componentMenu
+         */
+        MenuConfig.prototype.addEntity = function (item) {
+            this._entity.push(item);
+            this._entityOrderInvalid = true;
+        };
         return MenuConfig;
     }());
     feng3d.MenuConfig = MenuConfig;
@@ -26875,8 +26915,11 @@ var feng3d;
             return _this;
         }
         Node3D_1 = Node3D;
-        Node3D.prototype.create = function () {
-            new feng3d.Entity().addComponent(Node3D_1);
+        Node3D.create = function (name) {
+            if (name === void 0) { name = "Node3D"; }
+            var node3d = new feng3d.Entity().addComponent(Node3D_1);
+            node3d.name = name;
+            return node3d;
         };
         Object.defineProperty(Node3D.prototype, "worldPosition", {
             /**
@@ -27851,6 +27894,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], Node3D.prototype, "children", null);
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Empty")
+        ], Node3D, "create", null);
         Node3D = Node3D_1 = __decorate([
             feng3d.RegisterComponent({ single: true })
         ], Node3D);
@@ -31817,6 +31863,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })
         ], Camera.prototype, "lens", null);
+        __decorate([
+            feng3d.AddEntityMenu("Camera")
+        ], Camera, "create", null);
         Camera = Camera_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/Camera"),
             feng3d.RegisterComponent({ single: true })
@@ -31847,6 +31896,16 @@ var feng3d;
             _this.tangents = feng3d.geometryUtils.createVertexTangents(_this.indices, _this.positions, _this.uvs, true);
             return _this;
         }
+        QuadGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Quad"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Quad");
+            return mesh;
+        };
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Quad")
+        ], QuadGeometry.prototype, "create", null);
         return QuadGeometry;
     }(feng3d.Geometry));
     feng3d.QuadGeometry = QuadGeometry;
@@ -31887,6 +31946,13 @@ var feng3d;
             _this.name = "Plane";
             return _this;
         }
+        PlaneGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Plane"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Plane");
+            return mesh;
+        };
         /**
          * 构建几何体数据
          */
@@ -32042,6 +32108,9 @@ var feng3d;
             return data;
         };
         __decorate([
+            feng3d.AddEntityMenu("Node3D/Plane")
+        ], PlaneGeometry.prototype, "create", null);
+        __decorate([
             feng3d.oav(),
             feng3d.serialize,
             feng3d.watch("invalidateGeometry")
@@ -32114,6 +32183,13 @@ var feng3d;
             _this.tile6 = false;
             return _this;
         }
+        CubeGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Cube"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Cube");
+            return mesh;
+        };
         CubeGeometry.prototype.buildGeometry = function () {
             var vertexPositionData = this.buildPosition();
             this.positions = vertexPositionData;
@@ -32459,6 +32535,9 @@ var feng3d;
             return data;
         };
         __decorate([
+            feng3d.AddEntityMenu("Node3D/Cube")
+        ], CubeGeometry.prototype, "create", null);
+        __decorate([
             feng3d.serialize,
             feng3d.oav(),
             feng3d.watch("invalidateGeometry")
@@ -32530,6 +32609,13 @@ var feng3d;
             _this.name = "Sphere";
             return _this;
         }
+        SphereGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Sphere"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Sphere");
+            return mesh;
+        };
         /**
          * 构建几何体数据
          * @param this.radius 球体半径
@@ -32663,6 +32749,9 @@ var feng3d;
             return data;
         };
         __decorate([
+            feng3d.AddEntityMenu("Node3D/Sphere")
+        ], SphereGeometry.prototype, "create", null);
+        __decorate([
             feng3d.serialize,
             feng3d.oav(),
             feng3d.watch("invalidateGeometry")
@@ -32722,6 +32811,13 @@ var feng3d;
             _this.name = "Capsule";
             return _this;
         }
+        CapsuleGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Capsule"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Capsule");
+            return mesh;
+        };
         /**
          * 构建几何体数据
          * @param radius 胶囊体半径
@@ -32856,6 +32952,9 @@ var feng3d;
             return data;
         };
         __decorate([
+            feng3d.AddEntityMenu("Node3D/Capsule")
+        ], CapsuleGeometry.prototype, "create", null);
+        __decorate([
             feng3d.serialize,
             feng3d.oav(),
             feng3d.watch("invalidateGeometry")
@@ -32937,6 +33036,13 @@ var feng3d;
             _this.name = "Cylinder";
             return _this;
         }
+        CylinderGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Cylinder"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Cylinder");
+            return mesh;
+        };
         /**
          * 构建几何体数据
          */
@@ -33193,6 +33299,9 @@ var feng3d;
             return data;
         };
         __decorate([
+            feng3d.AddEntityMenu("Node3D/Cylinder")
+        ], CylinderGeometry.prototype, "create", null);
+        __decorate([
             feng3d.serialize,
             feng3d.oav(),
             feng3d.watch("invalidateGeometry")
@@ -33271,6 +33380,16 @@ var feng3d;
             _this.surfaceClosed = true;
             return _this;
         }
+        ConeGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Cone"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Cone");
+            return mesh;
+        };
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Cone")
+        ], ConeGeometry.prototype, "create", null);
         return ConeGeometry;
     }(feng3d.CylinderGeometry));
     feng3d.ConeGeometry = ConeGeometry;
@@ -33315,6 +33434,13 @@ var feng3d;
             _this._vertexTangentStride = 3;
             return _this;
         }
+        TorusGeometry.prototype.create = function (name) {
+            if (name === void 0) { name = "Torus"; }
+            var mesh = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = feng3d.Geometry.getDefault("Torus");
+            return mesh;
+        };
         /**
          * 添加顶点数据
          */
@@ -33444,6 +33570,9 @@ var feng3d;
             // build real data from raw data
             this.uvs = data;
         };
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Torus")
+        ], TorusGeometry.prototype, "create", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
@@ -34541,10 +34670,9 @@ var feng3d;
         }
         DirectionalLight_1 = DirectionalLight;
         DirectionalLight.create = function (name) {
-            if (name === void 0) { name = "DirectionalLight"; }
-            var entity = new feng3d.Entity();
-            entity.name = name;
-            var directionalLight = entity.addComponent(DirectionalLight_1);
+            if (name === void 0) { name = "Directional Light"; }
+            var directionalLight = new feng3d.Entity().addComponent(DirectionalLight_1);
+            directionalLight.name = name;
             return directionalLight;
         };
         Object.defineProperty(DirectionalLight.prototype, "position", {
@@ -34584,6 +34712,9 @@ var feng3d;
             }
         };
         var DirectionalLight_1;
+        __decorate([
+            feng3d.AddEntityMenu("Light/Directional Light")
+        ], DirectionalLight, "create", null);
         DirectionalLight = DirectionalLight_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/DirectionalLight"),
             feng3d.RegisterComponent()
@@ -34609,6 +34740,13 @@ var feng3d;
             _this.shadowCamera.lens = new feng3d.PerspectiveLens(90, 1, 0.1, _this.range);
             return _this;
         }
+        PointLight_1 = PointLight;
+        PointLight.create = function (name) {
+            if (name === void 0) { name = "Point Light"; }
+            var pointlight = new feng3d.Entity().addComponent(PointLight_1);
+            pointlight.name = name;
+            return pointlight;
+        };
         Object.defineProperty(PointLight.prototype, "range", {
             /**
              * 光照范围
@@ -34639,11 +34777,15 @@ var feng3d;
             if (this.shadowCamera)
                 this.shadowCamera.lens.far = this.range;
         };
+        var PointLight_1;
         __decorate([
             feng3d.oav(),
             feng3d.serialize
         ], PointLight.prototype, "range", null);
-        PointLight = __decorate([
+        __decorate([
+            feng3d.AddEntityMenu("Light/Point Light")
+        ], PointLight, "create", null);
+        PointLight = PointLight_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/PointLight"),
             feng3d.RegisterComponent()
         ], PointLight);
@@ -34679,6 +34821,13 @@ var feng3d;
             _this.perspectiveLens = _this.shadowCamera.lens = new feng3d.PerspectiveLens(_this.angle, 1, 0.1, _this.range);
             return _this;
         }
+        SpotLight_1 = SpotLight;
+        SpotLight.create = function (name) {
+            if (name === void 0) { name = "Spot Light"; }
+            var spotlight = new feng3d.Entity().addComponent(SpotLight_1);
+            spotlight.name = name;
+            return spotlight;
+        };
         Object.defineProperty(SpotLight.prototype, "coneCos", {
             /**
              * 椎体cos值
@@ -34704,6 +34853,7 @@ var feng3d;
             if (this.perspectiveLens)
                 this.perspectiveLens.fov = this.angle;
         };
+        var SpotLight_1;
         __decorate([
             feng3d.oav(),
             feng3d.serialize,
@@ -34718,7 +34868,10 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], SpotLight.prototype, "penumbra", void 0);
-        SpotLight = __decorate([
+        __decorate([
+            feng3d.AddEntityMenu("Light/Spot Light")
+        ], SpotLight, "create", null);
+        SpotLight = SpotLight_1 = __decorate([
             feng3d.RegisterComponent()
         ], SpotLight);
         return SpotLight;

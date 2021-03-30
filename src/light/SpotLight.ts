@@ -11,6 +11,14 @@ namespace feng3d
     {
         lightType = LightType.Spot;
 
+        @AddEntityMenu("Light/Spot Light")
+        static create(name = "Spot Light")
+        {
+            var spotlight = new Entity().addComponent(SpotLight);
+            spotlight.name = name;
+            return spotlight;
+        }
+
         /**
          * 光照范围
          */

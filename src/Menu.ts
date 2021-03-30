@@ -16,19 +16,25 @@ namespace feng3d
         }
     }
 
+    /**
+     * 添加实体菜单
+     * 
+     * 在创建实体函数上新增 @AddEntityMenu("3D对象/平面") 可以添加到实体菜单上。
+     * 
+     * @param path 菜单中路径
+     * @param componentOrder 菜单中顺序(从低到高)。
+     */
+    export function AddEntityMenu(path: string, componentOrder = 0)
+    {
+        return (target: any, propertyKey: string, descriptor: PropertyDescriptor) =>
+        {
+            menuConfig.addEntity({ path: path, order: componentOrder, func: target[propertyKey].bind(target) });
+        }
+    }
+
     export class MenuConfig
     {
         private _componentOrderInvalid = false;
-
-        /**
-         * 新增组件菜单
-         * @param componentMenu 
-         */
-        addComponent(componentMenu: ComponentMenu)
-        {
-            this._component.push(componentMenu);
-            this._componentOrderInvalid = true;
-        }
 
         /**
          * 组件菜单
@@ -45,6 +51,42 @@ namespace feng3d
         }
         private _component: ComponentMenu[] = [];
 
+        /**
+         * 新增组件菜单
+         * @param componentMenu 
+         */
+        addComponent(componentMenu: ComponentMenu)
+        {
+            this._component.push(componentMenu);
+            this._componentOrderInvalid = true;
+        }
+
+        /**
+         * 实体菜单
+         */
+        get entity()
+        {
+            if (this._entityOrderInvalid)
+            {
+                // this._entity.sort((a, b) => { if (a.path < b.path) return -1; return 1 })
+                this._entity.sort((a, b) => a.order - b.order);
+                this._entityOrderInvalid = false;
+            }
+            return this._entity;
+        }
+
+        /**
+         * 新增实体菜单
+         * @param componentMenu 
+         */
+        addEntity(item: EntityMenu)
+        {
+            this._entity.push(item);
+            this._entityOrderInvalid = true;
+        }
+
+        private _entity: EntityMenu[] = [];
+        private _entityOrderInvalid = false;
     }
 
     /**
@@ -69,5 +111,12 @@ namespace feng3d
          * 组件类定义
          */
         type: ComponentNames;
+    }
+
+    export interface EntityMenu
+    {
+        path: string;
+        order: number;
+        func: () => Component;
     }
 }

@@ -11,6 +11,15 @@ namespace feng3d
     {
         __class__: "feng3d.CylinderGeometry" | "feng3d.ConeGeometry";
 
+		@AddEntityMenu("Node3D/Cylinder")
+		create(name = "Cylinder")
+		{
+			var mesh = new Entity().addComponent(MeshRenderer);
+			mesh.name = name;
+			mesh.geometry = Geometry.getDefault("Cylinder");
+			return mesh;
+		}
+
         /**
          * 顶部半径
          */

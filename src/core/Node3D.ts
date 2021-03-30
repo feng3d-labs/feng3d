@@ -62,9 +62,12 @@ namespace feng3d
 
         assetType = AssetType.node3d;
 
-        create()
+        @AddEntityMenu("Node3D/Empty")
+        static create(name = "Node3D")
         {
-            new Entity().addComponent(Node3D);
+            var node3d = new Entity().addComponent(Node3D);
+            node3d.name = name;
+            return node3d;
         }
 
         /**

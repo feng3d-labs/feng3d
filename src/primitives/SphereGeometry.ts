@@ -11,6 +11,15 @@ namespace feng3d
 
         __class__: "feng3d.SphereGeometry";
 
+        @AddEntityMenu("Node3D/Sphere")
+        create(name = "Sphere")
+        {
+            var mesh = new Entity().addComponent(MeshRenderer);
+            mesh.name = name;
+            mesh.geometry = Geometry.getDefault("Sphere");
+            return mesh;
+        }
+
         /**
          * 球体半径
          */
