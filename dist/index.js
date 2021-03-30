@@ -11623,6 +11623,9 @@ var feng3d;
          */
         Box3.prototype.getCenter = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
+            if (this.isEmpty) {
+                return null;
+            }
             return vout.copy(this.min).add(this.max).scaleNumber(0.5);
         };
         /**
@@ -31292,6 +31295,14 @@ var feng3d;
             _this.segments = [];
             return _this;
         }
+        SegmentGeometry.create = function (name) {
+            if (name === void 0) { name = "Segment"; }
+            var model = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            model.geometry = new SegmentGeometry();
+            model.name = name;
+            model.material = feng3d.Material.getDefault("Segment-Material");
+            return model;
+        };
         /**
          * 添加线段
          *
@@ -31331,6 +31342,9 @@ var feng3d;
             feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return new Segment(); } } }),
             feng3d.watch("invalidateGeometry")
         ], SegmentGeometry.prototype, "segments", void 0);
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Segment")
+        ], SegmentGeometry, "create", null);
         return SegmentGeometry;
     }(feng3d.Geometry));
     feng3d.SegmentGeometry = SegmentGeometry;
@@ -34698,7 +34712,7 @@ var feng3d;
                 return pre;
             }, null) || new feng3d.Box3(new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
             // 
-            var center = worldBounds.getCenter();
+            var center = worldBounds.getCenter() || new feng3d.Vector3();
             var radius = worldBounds.getSize().length / 2;
             // 
             this.shadowCamera.node3d.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
@@ -36086,6 +36100,13 @@ var feng3d;
             _this.frameBufferObject = new feng3d.FrameBufferObject();
             return _this;
         }
+        Water_1 = Water;
+        Water.create = function (name) {
+            if (name === void 0) { name = "Water"; }
+            var water = new feng3d.Entity().addComponent(Water_1);
+            water.name = name;
+            return water;
+        };
         Water.prototype.beforeRender = function (renderAtomic, scene, camera) {
             var uniforms = this.material.uniforms;
             var sun = this.node3d.scene.activeDirectionalLights[0];
@@ -36157,7 +36178,11 @@ var feng3d;
             // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
             uniforms.u_textureMatrix = textureMatrix;
         };
-        Water = __decorate([
+        var Water_1;
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Water")
+        ], Water, "create", null);
+        Water = Water_1 = __decorate([
             feng3d.AddComponentMenu("Graphics/Water"),
             feng3d.RegisterComponent()
         ], Water);

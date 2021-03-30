@@ -48,6 +48,10 @@ namespace feng3d
          */
         getCenter(vout = new Vector3())
         {
+            if (this.isEmpty)
+            {
+                return null;
+            }
             return vout.copy(this.min).add(this.max).scaleNumber(0.5);
         }
 

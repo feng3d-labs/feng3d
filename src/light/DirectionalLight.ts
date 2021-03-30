@@ -55,7 +55,7 @@ namespace feng3d
             }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
 
             // 
-            var center = worldBounds.getCenter();
+            var center = worldBounds.getCenter() || new Vector3();
             var radius = worldBounds.getSize().length / 2;
             // 
             this.shadowCamera.node3d.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());

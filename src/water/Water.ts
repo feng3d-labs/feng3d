@@ -12,6 +12,14 @@ namespace feng3d
     {
         __class__: "feng3d.Water";
 
+        @AddEntityMenu("Node3D/Water")
+        static create(name = "Water")
+        {
+            var water = new Entity().addComponent(Water);
+            water.name = name;
+            return water;
+        }
+
         geometry = Geometry.getDefault("Plane");
 
         material = Material.getDefault("Water-Material");

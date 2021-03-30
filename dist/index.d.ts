@@ -14565,6 +14565,7 @@ declare namespace feng3d {
     class SegmentGeometry extends Geometry {
         __class__: "feng3d.SegmentGeometry";
         name: string;
+        static create(name?: string): MeshRenderer;
         /**
          * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -16314,6 +16315,7 @@ declare namespace feng3d {
      */
     class Water extends Renderable {
         __class__: "feng3d.Water";
+        static create(name?: string): Water;
         geometry: PlaneGeometry;
         material: Material;
         /**
