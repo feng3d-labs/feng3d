@@ -21,4 +21,13 @@ namespace feng3d
     }
 
     shaderConfig.shaders["point"].cls = PointUniforms;
+    shaderConfig.shaders["point"].renderParams = { renderMode: RenderMode.POINTS, enableBlend: true };
+
+    export interface DefaultMaterial
+    {
+        "Point-Material": Material;
+    }
+
+    Material.setDefault("Point-Material", { shaderName: "point" });
+    
 }

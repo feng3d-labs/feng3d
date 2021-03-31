@@ -21,7 +21,7 @@ namespace feng3d
         private preview = "";
 
         @oav()
-        name: string;
+        name: string = "Geometry";
 
         /**
          * 资源编号

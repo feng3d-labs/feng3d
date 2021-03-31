@@ -30253,6 +30253,7 @@ var feng3d;
         function Geometry() {
             var _this = _super.call(this) || this;
             _this.preview = "";
+            _this.name = "Geometry";
             _this.assetType = feng3d.AssetType.geometry;
             /**
              * 纹理U缩放，默认为1。
@@ -31233,6 +31234,7 @@ var feng3d;
         __extends(PointGeometry, _super);
         function PointGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.name = "Point";
             /**
              * 点数据列表
              * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -31240,6 +31242,14 @@ var feng3d;
             _this.points = [];
             return _this;
         }
+        PointGeometry.create = function (name) {
+            if (name === void 0) { name = "Point"; }
+            var model = new feng3d.Entity().addComponent(feng3d.MeshRenderer);
+            model.geometry = new PointGeometry();
+            model.name = name;
+            model.material = feng3d.Material.getDefault("Point-Material");
+            return model;
+        };
         /**
          * 构建几何体
          */
@@ -31247,36 +31257,53 @@ var feng3d;
             var numPoints = this.points.length;
             var indices = [];
             var positionData = [];
-            var normalData = [];
-            var uvData = [];
             var colors = [];
             numPoints = Math.max(1, numPoints);
             for (var i = 0; i < numPoints; i++) {
                 var element = this.points[i];
                 var position = (element && element.position) || feng3d.Vector3.ZERO;
                 var color = (element && element.color) || feng3d.Color4.WHITE;
-                var normal = (element && element.normal) || feng3d.Vector3.ZERO;
-                var uv = (element && element.uv) || feng3d.Vector2.ZERO;
                 indices[i] = i;
                 positionData.push(position.x, position.y, position.z);
-                normalData.push(normal.x, normal.y, normal.z);
-                uvData.push(uv.x, uv.y);
                 colors.push(color.r, color.g, color.b, color.a);
             }
             this.positions = positionData;
-            this.uvs = uvData;
-            this.normals = normalData;
             this.indices = indices;
             this.colors = colors;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
+            feng3d.oav({ component: "OAVArray", tooltip: "点数据列表", componentParam: { defaultItem: function () { return new PointInfo(); } } }),
             feng3d.watch("invalidateGeometry")
         ], PointGeometry.prototype, "points", void 0);
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Point")
+        ], PointGeometry, "create", null);
         return PointGeometry;
     }(feng3d.Geometry));
     feng3d.PointGeometry = PointGeometry;
+    /**
+     * 点信息
+     */
+    var PointInfo = /** @class */ (function () {
+        function PointInfo() {
+            this.position = new feng3d.Vector3();
+            /**
+             * 起点颜色
+             */
+            this.color = new feng3d.Color4();
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "坐标" })
+        ], PointInfo.prototype, "position", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "颜色" })
+        ], PointInfo.prototype, "color", void 0);
+        return PointInfo;
+    }());
+    feng3d.PointInfo = PointInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31339,7 +31366,7 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return new Segment(); } } }),
+            feng3d.oav({ component: "OAVArray", tooltip: "线段列表", componentParam: { defaultItem: function () { return new Segment(); } } }),
             feng3d.watch("invalidateGeometry")
         ], SegmentGeometry.prototype, "segments", void 0);
         __decorate([
@@ -34407,6 +34434,8 @@ var feng3d;
     }());
     feng3d.PointUniforms = PointUniforms;
     feng3d.shaderConfig.shaders["point"].cls = PointUniforms;
+    feng3d.shaderConfig.shaders["point"].renderParams = { renderMode: feng3d.RenderMode.POINTS, enableBlend: true };
+    feng3d.Material.setDefault("Point-Material", { shaderName: "point" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -14535,6 +14535,8 @@ declare namespace feng3d {
      */
     class PointGeometry extends Geometry {
         __class__: "feng3d.PointGeometry";
+        name: string;
+        static create(name?: string): MeshRenderer;
         /**
          * 点数据列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -14548,11 +14550,12 @@ declare namespace feng3d {
     /**
      * 点信息
      */
-    interface PointInfo {
-        position?: Vector3;
-        color?: Color4;
-        normal?: Vector3;
-        uv?: Vector2;
+    class PointInfo {
+        position: Vector3;
+        /**
+         * 起点颜色
+         */
+        color: Color4;
     }
 }
 declare namespace feng3d {
@@ -15702,6 +15705,9 @@ declare namespace feng3d {
          * 点绘制时点的尺寸
          */
         u_PointSize: number;
+    }
+    interface DefaultMaterial {
+        "Point-Material": Material;
     }
 }
 declare namespace feng3d {
