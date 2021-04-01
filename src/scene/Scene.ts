@@ -19,6 +19,13 @@ namespace feng3d
     export class Scene extends Component3D
     {
 
+        static create(name = "Scene")
+        {
+            var scene = new Entity().addComponent(Scene);
+            scene.name = name;
+            return scene;
+        }
+
         __class__: "feng3d.Scene";
 
         /**

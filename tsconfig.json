@@ -107,7 +107,6 @@
         "src/math/shape/core/Path2.ts",
         "src/math/shape/core/Shape2.ts",
         "src/math/shape/core/ShapePath2.ts",
-        "src/math/shape/core/Font.ts",
         //
         "src/math/shape/curves/LineCurve2.ts",
         "src/math/shape/curves/LineCurve3.ts",

@@ -7553,56 +7553,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    export class Font {
-        data: FontData;
-        isCCW: boolean;
-        private charGeometryCache;
-        constructor(data: FontData);
-        generateShapes(text: string, size: number, lineHeight?: number, align?: 'left' | 'center' | 'right'): Shape2[];
-        generateCharGeometry(char: string, geometry?: {
-            points: number[];
-            indices: number[];
-        }): {
-            geometry: {
-                points: number[];
-                indices: number[];
-            };
-            width: number;
-        };
-        calculateGeometry(text: string, fontSize: number, lineHeight?: number, align?: 'left' | 'center' | 'right', textBaseline?: 'alphabetic' | 'top' | 'middle' | 'bottom', tabCharWidth?: number): {
-            vertices: Float32Array;
-            normals: Float32Array;
-            uvs: Float32Array;
-            indices: Uint32Array;
-        };
-    }
-    export interface Glyph {
-        ha: number;
-        x_min: number;
-        x_max: number;
-        o: string;
-        _cachedOutline?: any[];
-    }
-    interface FontData {
-        glyphs: {
-            [index: string]: Glyph;
-        };
-        unitsPerEm: number;
-        ascender: number;
-        descender: number;
-        underlinePosition: number;
-        underlineThickness: number;
-        familyName: string;
-        boundingBox: {
-            yMin: number;
-            xMin: number;
-            yMax: number;
-            xMax: number;
-        };
-    }
-    export {};
-}
-declare namespace feng3d {
     class LineCurve2 extends Curve<Vector2> {
         v1: Vector2;
         v2: Vector2;
@@ -14049,6 +13999,7 @@ declare namespace feng3d {
      * 3D场景
      */
     class Scene extends Component3D {
+        static create(name?: string): Scene;
         __class__: "feng3d.Scene";
         /**
          * 背景颜色

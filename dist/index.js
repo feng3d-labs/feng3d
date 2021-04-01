@@ -15991,284 +15991,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var Font = /** @class */ (function () {
-        function Font(data) {
-            this.isCCW = false;
-            this.charGeometryCache = {};
-            this.data = data;
-        }
-        Font.prototype.generateShapes = function (text, size, lineHeight, align) {
-            if (align === void 0) { align = 'left'; }
-            if (size === undefined) {
-                size = 100;
-            }
-            if (lineHeight === undefined) {
-                lineHeight = size * 1.25;
-            }
-            var shapes = [];
-            var paths = createPaths(text, size, lineHeight, this.data, align);
-            for (var p = 0, pl = paths.length; p < pl; p++) {
-                var path_shapes = paths[p].toShapes(this.isCCW);
-                for (var i = 0, il = path_shapes.length; i < il; i++) {
-                    shapes.push(path_shapes[i]);
-                }
-            }
-            return shapes;
-        };
-        Font.prototype.generateCharGeometry = function (char, geometry) {
-            if (geometry === void 0) { geometry = { points: [], indices: [] }; }
-            if (this.charGeometryCache[char]) {
-                return this.charGeometryCache[char];
-            }
-            var _a = createPath(char, 1, 0, 0, this.data), path = _a.path, offsetX = _a.offsetX;
-            var shapes = path.toShapes(this.isCCW);
-            for (var i = 0, n = shapes.length; i < n; i++) {
-                shapes[i].triangulate(geometry);
-            }
-            return this.charGeometryCache[char] = { geometry: geometry, width: offsetX };
-        };
-        Font.prototype.calculateGeometry = function (text, fontSize, lineHeight, align, textBaseline, tabCharWidth) {
-            if (align === void 0) { align = 'left'; }
-            if (textBaseline === void 0) { textBaseline = 'alphabetic'; }
-            if (tabCharWidth === void 0) { tabCharWidth = 128; }
-            if (lineHeight === undefined) {
-                lineHeight = fontSize * 1.25;
-            }
-            lineHeight = lineHeight / fontSize * this.data.unitsPerEm;
-            var textInfo = calculateTextInfo(this, text, tabCharWidth);
-            var _a = calculateTextStyle(textInfo, fontSize, lineHeight, align, textBaseline), vertices = _a.vertices, indices = _a.indices;
-            var _b = calculateNormalUV(vertices), normals = _b.normals, uvs = _b.uvs;
-            return { vertices: vertices, normals: normals, uvs: uvs, indices: indices };
-        };
-        return Font;
-    }());
-    feng3d.Font = Font;
-    function createPaths(text, size, lineHeight, data, align) {
-        if (align === void 0) { align = 'left'; }
-        var scale = size / data.unitsPerEm;
-        var line_height = lineHeight;
-        var paths = [];
-        var offsetX = 0;
-        var offsetY = 0;
-        var lines = text.split('\n');
-        var lineWidths = [];
-        var maxLineWidth = 0;
-        for (var i = 0, ni = lines.length; i < ni; i++) {
-            var lineStr = lines[i];
-            if (i > 0) {
-                offsetX = 0;
-            }
-            var chars = Array.from ? Array.from(lineStr) : String(lineStr).split(''); // see #13988
-            for (var j = 0, nj = chars.length; j < nj; j++) {
-                var char = chars[j];
-                if (char.charCodeAt(0) === 9) {
-                    offsetX += 20;
-                }
-                else {
-                    var glyph = data.glyphs[char] || data.glyphs['?'];
-                    if (glyph) {
-                        offsetX += glyph.ha * scale;
-                    }
-                }
-            }
-            lineWidths[i] = offsetX;
-            maxLineWidth = Math.max(maxLineWidth, offsetX);
-        }
-        for (var i = 0, ni = lines.length; i < ni; i++) {
-            var lineStr = lines[i];
-            offsetX = 0;
-            offsetY = -line_height * i;
-            if (align === 'center') {
-                offsetX = (maxLineWidth - lineWidths[i]) / 2;
-            }
-            else if (align === 'right') {
-                offsetX = maxLineWidth - lineWidths[i];
-            }
-            var chars = Array.from ? Array.from(lineStr) : String(lineStr).split(''); // see #13988
-            for (var j = 0, nj = chars.length; j < nj; j++) {
-                var char = chars[j];
-                if (char.charCodeAt(0) === 9) {
-                    offsetX += 20;
-                }
-                else {
-                    var ret = createPath(char, scale, offsetX, offsetY, data);
-                    offsetX += ret.offsetX;
-                    paths.push(ret.path);
-                }
-            }
-        }
-        return paths;
-    }
-    function createPath(char, scale, offsetX, offsetY, data) {
-        var glyph = data.glyphs[char] || data.glyphs['?'];
-        if (!glyph) {
-            console.error('THREE.Font: character "' + char + '" does not exists in font family ' + data.familyName + '.');
-            return;
-        }
-        var path = new feng3d.ShapePath2();
-        var x, y, cpx, cpy, cpx1, cpy1, cpx2, cpy2;
-        if (glyph.o) {
-            var outline = glyph._cachedOutline || (glyph._cachedOutline = glyph.o.split(' '));
-            for (var i = 0, l = outline.length; i < l;) {
-                var action = outline[i++];
-                switch (action) {
-                    case 'm': // moveTo
-                        x = outline[i++] * scale + offsetX;
-                        y = outline[i++] * scale + offsetY;
-                        path.moveTo(x, y);
-                        break;
-                    case 'l': // lineTo
-                        x = outline[i++] * scale + offsetX;
-                        y = outline[i++] * scale + offsetY;
-                        path.lineTo(x, y);
-                        break;
-                    case 'q': // quadraticCurveTo
-                        cpx = outline[i++] * scale + offsetX;
-                        cpy = outline[i++] * scale + offsetY;
-                        cpx1 = outline[i++] * scale + offsetX;
-                        cpy1 = outline[i++] * scale + offsetY;
-                        path.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
-                        break;
-                    case 'b': // bezierCurveTo
-                        cpx = outline[i++] * scale + offsetX;
-                        cpy = outline[i++] * scale + offsetY;
-                        cpx1 = outline[i++] * scale + offsetX;
-                        cpy1 = outline[i++] * scale + offsetY;
-                        cpx2 = outline[i++] * scale + offsetX;
-                        cpy2 = outline[i++] * scale + offsetY;
-                        path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
-                        break;
-                    case 'z':
-                        path.closePath();
-                        break;
-                    default:
-                        console.assert(action.trim() == '');
-                        break;
-                }
-            }
-        }
-        return { offsetX: glyph.ha * scale, path: path };
-    }
-    function calculateTextInfo(font, text, tabCharWidth) {
-        var textInfo = { text: text, font: font, width: 0, numVertices: 0, numIndices: 0, lines: [] };
-        //
-        var lines = text.split('\n');
-        for (var i = 0, ni = lines.length; i < ni; i++) {
-            textInfo.lines[i] = { text: lines[i], width: 0, numVertices: 0, numIndices: 0, chars: [] };
-            var lineItem = textInfo.lines[i];
-            if (i > 0) {
-                lineItem.width = 0;
-            }
-            var chars = Array.from ? Array.from(lineItem.text) : String(lineItem.text).split(''); // see #13988
-            for (var j = 0, nj = chars.length; j < nj; j++) {
-                var char = chars[j];
-                if (char === '\t') {
-                    lineItem.width += tabCharWidth;
-                }
-                else {
-                    var charVertices = font.generateCharGeometry(char);
-                    var charItem = lineItem.chars[j] = {
-                        text: char,
-                        width: charVertices.width,
-                        offsetX: lineItem.width,
-                        offsetVertices: textInfo.numVertices,
-                        offsetIndices: textInfo.numIndices,
-                        numVertices: charVertices.geometry.points.length,
-                        numIndices: charVertices.geometry.indices.length,
-                        geometry: charVertices.geometry,
-                    };
-                    lineItem.width += charItem.width;
-                    lineItem.numVertices += charItem.numVertices;
-                    lineItem.numIndices += charItem.numIndices;
-                    textInfo.numVertices += charItem.numVertices;
-                    textInfo.numIndices += charItem.numIndices;
-                }
-            }
-            textInfo.width = Math.max(textInfo.width, lineItem.width);
-        }
-        return textInfo;
-    }
-    function calculateTextStyle(textInfo, fontSize, lineHeight, align, textBaseline) {
-        var _a = textInfo.font.data, unitsPerEm = _a.unitsPerEm, ascender = _a.ascender, descender = _a.descender;
-        var scale = fontSize / unitsPerEm;
-        var vertices = new Float32Array(textInfo.numVertices / 2 * 3);
-        var indices = new Uint32Array(textInfo.numIndices);
-        var baselineOffsetY = 0;
-        if (textBaseline === 'top') {
-            baselineOffsetY = ascender;
-        }
-        else if (textBaseline === 'bottom') {
-            baselineOffsetY = descender;
-        }
-        else if (textBaseline === 'middle') {
-            baselineOffsetY = (ascender + descender) / 2;
-        }
-        else if (textBaseline === 'alphabetic') {
-            baselineOffsetY = 0;
-        }
-        //
-        var lines = textInfo.lines, maxLineWidth = textInfo.width;
-        for (var i = 0, ni = lines.length; i < ni; i++) {
-            var _b = lines[i], lineWidth = _b.width, chars = _b.chars;
-            var alignOffsetX = 0;
-            var offsetY = -lineHeight * i;
-            if (align === 'center') {
-                alignOffsetX = (maxLineWidth - lineWidth) / 2;
-            }
-            else if (align === 'right') {
-                alignOffsetX = maxLineWidth - lineWidth;
-            }
-            for (var j = 0, nj = chars.length; j < nj; j++) {
-                var charItem = chars[j];
-                if (!charItem) {
-                    continue;
-                }
-                var charOffsetX = charItem.offsetX, offsetVertices = charItem.offsetVertices, offsetIndices = charItem.offsetIndices, geometry = charItem.geometry;
-                updateCharGeometry({
-                    offsetX: alignOffsetX + charOffsetX, offsetY: offsetY - baselineOffsetY,
-                    scale: scale,
-                    targetVertices: vertices, targetIndices: indices,
-                    offsetVertices: offsetVertices, offsetIndices: offsetIndices,
-                    sourceVertices: geometry.points, sourceIndices: geometry.indices
-                });
-            }
-        }
-        return { vertices: vertices, indices: indices };
-        function updateCharGeometry(_a) {
-            var offsetX = _a.offsetX, offsetY = _a.offsetY, scale = _a.scale, targetVertices = _a.targetVertices, targetIndices = _a.targetIndices, offsetVertices = _a.offsetVertices, offsetIndices = _a.offsetIndices, sourceVertices = _a.sourceVertices, sourceIndices = _a.sourceIndices;
-            var offsetVertices3 = offsetVertices / 2 * 3;
-            var offsetVertices2 = 0;
-            for (var i = 0, n = sourceVertices.length / 2; i < n; i++) {
-                targetVertices[offsetVertices3++] = (sourceVertices[offsetVertices2++] + offsetX) * scale;
-                targetVertices[offsetVertices3++] = -(sourceVertices[offsetVertices2++] + offsetY) * scale;
-                targetVertices[offsetVertices3++] = 0;
-            }
-            var offsetVerticesIndex = offsetVertices / 2;
-            for (var i = 0, n = sourceIndices.length; i < n; i++) {
-                targetIndices[offsetIndices + i] = sourceIndices[i] + offsetVerticesIndex;
-            }
-        }
-    }
-    function calculateNormalUV(vertices) {
-        var normals = new Float32Array(vertices.length);
-        var uvs = new Float32Array(vertices.length / 3 * 2);
-        var verticesIndex = 0;
-        var normalsIndex = 0;
-        var uvsIndex = 0;
-        for (var i = 0, n = vertices.length / 3; i < n; i++) {
-            uvs[uvsIndex++] = vertices[verticesIndex++];
-            uvs[uvsIndex++] = vertices[verticesIndex++];
-            verticesIndex++;
-            //
-            normals[normalsIndex++] = 0;
-            normals[normalsIndex++] = 0;
-            normals[normalsIndex++] = 1;
-        }
-        return { normals: normals, uvs: uvs };
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var LineCurve2 = /** @class */ (function (_super) {
         __extends(LineCurve2, _super);
         function LineCurve2(v1, v2) {
@@ -29816,6 +29538,13 @@ var feng3d;
             _this._pickMap = new Map();
             return _this;
         }
+        Scene_1 = Scene;
+        Scene.create = function (name) {
+            if (name === void 0) { name = "Scene"; }
+            var scene = new feng3d.Entity().addComponent(Scene_1);
+            scene.name = name;
+            return scene;
+        };
         Scene.prototype.init = function () {
             _super.prototype.init.call(this);
             this.entity.hideFlags = this.entity.hideFlags | feng3d.HideFlags.Hide;
@@ -30030,6 +29759,7 @@ var feng3d;
             });
             return results;
         };
+        var Scene_1;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
@@ -30038,7 +29768,7 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav()
         ], Scene.prototype, "ambientColor", void 0);
-        Scene = __decorate([
+        Scene = Scene_1 = __decorate([
             feng3d.RegisterComponent({ single: true })
         ], Scene);
         return Scene;
