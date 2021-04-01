@@ -16,7 +16,7 @@ namespace feng3d
                 this.renderAtomic = new RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = RenderMode.LINES;
-                // renderParams.depthMask = false;
+                renderParams.depthtest = false;
             }
         }
 

@@ -25925,7 +25925,7 @@ var feng3d;
                 this.renderAtomic = new feng3d.RenderAtomic();
                 var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = feng3d.RenderMode.LINES;
-                // renderParams.depthMask = false;
+                renderParams.depthtest = false;
             }
         };
         /**
