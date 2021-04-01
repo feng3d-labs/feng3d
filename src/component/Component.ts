@@ -82,13 +82,13 @@ namespace feng3d
     {
     }
 
-	/**
+    /**
      * 组件
      * 
      * 所有附加到Entity的基类。
      * 
      * 注意，您的代码不会直接创建 Component，而是您编写脚本代码，然后将该脚本附加到 Entity。
-	 */
+     */
     export class Component<T extends ComponentEventMap = ComponentEventMap> extends Feng3dObject<T> implements IDisposable
     {
         /**
@@ -192,9 +192,9 @@ namespace feng3d
         //------------------------------------------
         // Functions
         //------------------------------------------
-		/**
-		 * 创建一个组件
-		 */
+        /**
+         * 创建一个组件
+         */
         constructor()
         {
             super();
