@@ -18,6 +18,13 @@ namespace feng3d
     @RegisterComponent({ single: true })
     export class Scene extends Component3D
     {
+        @AddEntityMenu("Node3D/Scene")
+        static create(name = "Scene")
+        {
+            var node = new Entity().addComponent(Scene);
+            node.name = name;
+            return node;
+        }
 
         __class__: "feng3d.Scene";
 

@@ -68,7 +68,6 @@ namespace feng3d
          */
         set(x = 0, y = x): Vector2
         {
-            console.assert(x !== undefined && y !== undefined);
             this.x = x;
             this.y = y;
             return this;

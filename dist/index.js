@@ -6529,7 +6529,6 @@ var feng3d;
         Vector2.prototype.set = function (x, y) {
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = x; }
-            console.assert(x !== undefined && y !== undefined);
             this.x = x;
             this.y = y;
             return this;
@@ -31410,6 +31409,13 @@ var feng3d;
             _this._pickMap = new Map();
             return _this;
         }
+        Scene_1 = Scene;
+        Scene.create = function (name) {
+            if (name === void 0) { name = "Scene"; }
+            var node = new feng3d.Entity().addComponent(Scene_1);
+            node.name = name;
+            return node;
+        };
         Scene.prototype.init = function () {
             _super.prototype.init.call(this);
             // this.entity.hideFlags = this.entity.hideFlags | HideFlags.Hide;
@@ -31624,6 +31630,7 @@ var feng3d;
             });
             return results;
         };
+        var Scene_1;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
@@ -31632,7 +31639,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav()
         ], Scene.prototype, "ambientColor", void 0);
-        Scene = __decorate([
+        __decorate([
+            feng3d.AddEntityMenu("Node3D/Scene")
+        ], Scene, "create", null);
+        Scene = Scene_1 = __decorate([
             feng3d.RegisterComponent({ single: true })
         ], Scene);
         return Scene;

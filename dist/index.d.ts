@@ -14616,6 +14616,7 @@ declare namespace feng3d {
      * 3D场景
      */
     class Scene extends Component3D {
+        static create(name?: string): Scene;
         __class__: "feng3d.Scene";
         /**
          * 背景颜色
