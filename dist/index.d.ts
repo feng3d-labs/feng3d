@@ -3775,7 +3775,7 @@ declare namespace feng3d {
          * @param x 该对象的x属性值
          * @param y 该对象的y属性值
          */
-        set(x: number, y: number): Vector2;
+        set(x?: number, y?: number): Vector2;
         /**
          * 克隆点对象
          */
@@ -7782,117 +7782,6 @@ declare namespace feng3d {
     function getBits(n: number): number[][];
 }
 declare namespace feng3d {
-    interface IPointData {
-        x: number;
-        y: number;
-    }
-    /**
-     * Common interface for points. Both Point and ObservablePoint implement it
-     * @interface IPointData
-     */
-    /**
-     * X coord.IPointData#
-     * @member {number} x
-     */
-    /**
-     * Y coord.IPointData#
-     * @member {number} y
-     */
-}
-declare namespace feng3d {
-    interface IPoint extends IPointData {
-        copyFrom(p: IPointData): this;
-        copyTo<T extends IPoint>(p: T): T;
-        equals(p: IPointData): boolean;
-        set(x?: number, y?: number): void;
-    }
-    /**
-     * Common interface for points. Both Point and ObservablePoint implement it
-     * @interface IPoint
-     */
-    /**
-     * Sets the point to a new x and y position.
-     * If y is omitted, both x and y will be set to x.
-     *
-     * @method set.IPoint#
-     * @param {number} [x=0] - position of the point on the x axis
-     * @param {number} [y=x] - position of the point on the y axis
-     */
-    /**
-     * Copies x and y from the given point
-     * @method copyFrom.IPoint#
-     * @param {PIXI.IPointData} p - The point to copy from
-     * @returns {this} Returns itself.
-     */
-    /**
-     * Copies x and y into the given point
-     * @method copyTo.IPoint#
-     * @param {PIXI.IPoint} p - The point to copy.
-     * @returns {PIXI.IPoint} Given point with values updated
-     */
-    /**
-     * Returns true if the given point is equal to this point
-     *
-     * @method equals.IPoint#
-     * @param {PIXI.IPointData} p - The point to check
-     * @returns {boolean} Whether the given point equal to this point
-     */
-}
-declare namespace feng3d {
-    /**
-     * The Point object represents a location in a two-dimensional coordinate system, where x represents
-     * the horizontal axis and y represents the vertical axis.
-     *
-     * @implements IPoint
-     */
-    class Point implements IPoint {
-        x: number;
-        y: number;
-        /**
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=0] - position of the point on the y axis
-         */
-        constructor(x?: number, y?: number);
-        /**
-         * Creates a clone of this point
-         *
-         * @return {PIXI.Point} a copy of the point
-         */
-        clone(): Point;
-        /**
-         * Copies x and y from the given point
-         *
-         * @param {PIXI.IPointData} p - The point to copy from
-         * @returns {this} Returns itself.
-         */
-        copyFrom(p: IPointData): this;
-        /**
-         * Copies x and y into the given point
-         *
-         * @param {PIXI.IPoint} p - The point to copy.
-         * @returns {PIXI.IPoint} Given point with values updated
-         */
-        copyTo<T extends IPoint>(p: T): T;
-        /**
-         * Returns true if the given point is equal to this point
-         *
-         * @param {PIXI.IPointData} p - The point to check
-         * @returns {boolean} Whether the given point equal to this point
-         */
-        equals(p: IPointData): boolean;
-        /**
-         * Sets the point to a new x and y position.
-         * If y is omitted, both x and y will be set to x.
-         *
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=x] - position of the point on the y axis
-         * @returns {this} Returns itself.
-         */
-        set(x?: number, y?: number): this;
-        toString(): string;
-    }
-}
-declare namespace feng3d {
     /**
      * The PixiJS Matrix as a class makes it a lot faster.
      *
@@ -7962,7 +7851,7 @@ declare namespace feng3d {
          * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
          * @return {PIXI.Point} The new point, transformed through this matrix
          */
-        apply<P extends IPointData = Point>(pos: IPointData, newPos?: P): P;
+        apply(pos: Vector2, newPos?: Vector2): Vector2;
         /**
          * Get a new position with the inverse of the current transformation applied.
          * Can be used to go from the world coordinate space to a child's coordinate space. (e.g. input)
@@ -7971,7 +7860,7 @@ declare namespace feng3d {
          * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
          * @return {PIXI.Point} The new point, inverse-transformed through this matrix
          */
-        applyInverse<P extends IPointData = Point>(pos: IPointData, newPos?: P): P;
+        applyInverse(pos: Vector2, newPos?: Vector2): Vector2;
         /**
          * Translates the matrix on the x and y.
          *
@@ -8101,19 +7990,19 @@ declare namespace feng3d {
         /**
          * The coordinate of the object relative to the local coordinates of the parent.
          */
-        readonly position: Point;
+        readonly position: Vector2;
         /**
          * The scale factor of the object.
          */
-        readonly scale: Point;
+        readonly scale: Vector2;
         /**
          * The pivot point of the displayObject that it rotates around.
          */
-        readonly pivot: Point;
+        readonly pivot: Vector2;
         /**
          * The skew amount, on the x and y axis.
          */
-        readonly skew: Point;
+        readonly skew: Vector2;
         _parentID: number;
         _worldID: number;
         protected _rotation: number;
@@ -14081,7 +13970,7 @@ declare namespace feng3d {
          * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
          * @return {PIXI.Point} A point object representing the position of this object.
          */
-        toGlobal<P extends IPointData = Point>(position: IPointData, point?: P, skipUpdate?: boolean): P;
+        toGlobal(position: Vector2, point?: Vector2, skipUpdate?: boolean): Vector2;
         /**
          * Calculates the local position of the display object relative to another point.
          *
@@ -14092,7 +13981,7 @@ declare namespace feng3d {
          * @param {boolean} [skipUpdate=false] - Should we skip the update transform
          * @return {PIXI.Point} A point object representing the position of this object
          */
-        toLocal<P extends IPointData = Point>(position: IPointData, from?: Node2D, point?: P, skipUpdate?: boolean): P;
+        toLocal(position: Vector2, from?: Node2D, point?: Vector2, skipUpdate?: boolean): Vector2;
         /**
          * Set the parent Container of this Node2D.
          *
@@ -14153,28 +14042,28 @@ declare namespace feng3d {
         /**
          * The coordinate of the object relative to the local coordinates of the parent.
          */
-        get position(): Point;
-        set position(value: Point);
+        get position(): Vector2;
+        set position(value: Vector2);
         /**
          * The scale factors of this object along the local coordinate axes.
          *
          * The default scale is (1, 1).
          */
-        get scale(): Point;
-        set scale(value: Point);
+        get scale(): Vector2;
+        set scale(value: Vector2);
         /**
          * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
          * is the projection of `pivot` in the parent's local space.
          *
          * By default, the pivot is the origin (0, 0).
          */
-        get pivot(): Point;
-        set pivot(value: Point);
+        get pivot(): Vector2;
+        set pivot(value: Vector2);
         /**
          * The skew factor for the object in radians.
          */
-        get skew(): Point;
-        set skew(value: Point);
+        get skew(): Vector2;
+        set skew(value: Vector2);
         /**
          * The rotation of the object in radians.
          * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.

@@ -167,9 +167,9 @@ namespace feng3d
          * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
          * @return {PIXI.Point} The new point, transformed through this matrix
          */
-        apply<P extends IPointData = Point>(pos: IPointData, newPos?: P): P
+        apply(pos: Vector2, newPos?: Vector2)
         {
-            newPos = (newPos || new Point()) as P;
+            newPos = newPos || new Vector2();
 
             const x = pos.x;
             const y = pos.y;
@@ -188,9 +188,9 @@ namespace feng3d
          * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
          * @return {PIXI.Point} The new point, inverse-transformed through this matrix
          */
-        applyInverse<P extends IPointData = Point>(pos: IPointData, newPos?: P): P
+        applyInverse(pos: Vector2, newPos?: Vector2)
         {
-            newPos = (newPos || new Point()) as P;
+            newPos = newPos || new Vector2();
 
             const id = 1 / ((this.a * this.d) + (this.c * -this.b));
 

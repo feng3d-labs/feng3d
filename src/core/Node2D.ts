@@ -164,7 +164,7 @@ namespace feng3d
          * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
          * @return {PIXI.Point} A point object representing the position of this object.
          */
-        toGlobal<P extends IPointData = Point>(position: IPointData, point?: P, skipUpdate = false): P
+        toGlobal(position: Vector2, point?: Vector2, skipUpdate = false): Vector2
         {
             if (!skipUpdate)
             {
@@ -186,7 +186,7 @@ namespace feng3d
             }
 
             // don't need to update the lot
-            return this.worldTransform.apply<P>(position, point);
+            return this.worldTransform.apply(position, point);
         }
 
         /**
@@ -199,7 +199,7 @@ namespace feng3d
          * @param {boolean} [skipUpdate=false] - Should we skip the update transform
          * @return {PIXI.Point} A point object representing the position of this object
          */
-        toLocal<P extends IPointData = Point>(position: IPointData, from?: Node2D, point?: P, skipUpdate?: boolean): P
+        toLocal(position: Vector2, from?: Node2D, point?: Vector2, skipUpdate?: boolean): Vector2
         {
             if (from)
             {
@@ -226,7 +226,7 @@ namespace feng3d
             }
 
             // simply apply the matrix..
-            return this.worldTransform.applyInverse<P>(position, point);
+            return this.worldTransform.applyInverse(position, point);
         }
 
         /**
@@ -356,7 +356,7 @@ namespace feng3d
 
         set position(value)
         {
-            this.transform.position.copyFrom(value);
+            this.transform.position.copy(value);
         }
 
         /**
@@ -372,7 +372,7 @@ namespace feng3d
 
         set scale(value)
         {
-            this.transform.scale.copyFrom(value);
+            this.transform.scale.copy(value);
         }
 
         /**
@@ -389,7 +389,7 @@ namespace feng3d
 
         set pivot(value)
         {
-            this.transform.pivot.copyFrom(value);
+            this.transform.pivot.copy(value);
         }
 
         /**
@@ -403,7 +403,7 @@ namespace feng3d
 
         set skew(value)
         {
-            this.transform.skew.copyFrom(value);
+            this.transform.skew.copy(value);
         }
 
         /**

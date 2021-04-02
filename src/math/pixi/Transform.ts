@@ -22,22 +22,22 @@ namespace feng3d
         /**
          * The coordinate of the object relative to the local coordinates of the parent.
          */
-        public readonly position = new Point();
+        public readonly position = new Vector2();
 
         /**
          * The scale factor of the object.
          */
-        public readonly scale = new Point(1, 1);
+        public readonly scale = new Vector2(1, 1);
 
         /**
          * The pivot point of the displayObject that it rotates around.
          */
-        public readonly pivot = new Point();
+        public readonly pivot = new Vector2();
 
         /**
          * The skew amount, on the x and y axis.
          */
-        public readonly skew = new Point();
+        public readonly skew = new Vector2();
         public _parentID: number;
         _worldID: number;
 

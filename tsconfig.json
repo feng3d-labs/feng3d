@@ -122,9 +122,6 @@
         //
         "src/math/Noise.ts",
         // pixi
-        "src/math/pixi/IPointData.ts",
-        "src/math/pixi/IPoint.ts",
-        "src/math/pixi/Point.ts",
         "src/math/pixi/Matrix.ts",
         "src/math/pixi/Transform.ts",
         //

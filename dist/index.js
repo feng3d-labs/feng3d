@@ -6527,6 +6527,9 @@ var feng3d;
          * @param y 该对象的y属性值
          */
         Vector2.prototype.set = function (x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = x; }
+            console.assert(x !== undefined && y !== undefined);
             this.x = x;
             this.y = y;
             return this;
@@ -17076,93 +17079,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * The Point object represents a location in a two-dimensional coordinate system, where x represents
-     * the horizontal axis and y represents the vertical axis.
-     *
-     * @implements IPoint
-     */
-    var Point = /** @class */ (function () {
-        /**
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=0] - position of the point on the y axis
-         */
-        function Point(x, y) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            /**
-             * @member {number}
-             * @default 0
-             */
-            this.x = x;
-            /**
-             * @member {number}
-             * @default 0
-             */
-            this.y = y;
-        }
-        /**
-         * Creates a clone of this point
-         *
-         * @return {PIXI.Point} a copy of the point
-         */
-        Point.prototype.clone = function () {
-            return new Point(this.x, this.y);
-        };
-        /**
-         * Copies x and y from the given point
-         *
-         * @param {PIXI.IPointData} p - The point to copy from
-         * @returns {this} Returns itself.
-         */
-        Point.prototype.copyFrom = function (p) {
-            this.set(p.x, p.y);
-            return this;
-        };
-        /**
-         * Copies x and y into the given point
-         *
-         * @param {PIXI.IPoint} p - The point to copy.
-         * @returns {PIXI.IPoint} Given point with values updated
-         */
-        Point.prototype.copyTo = function (p) {
-            p.set(this.x, this.y);
-            return p;
-        };
-        /**
-         * Returns true if the given point is equal to this point
-         *
-         * @param {PIXI.IPointData} p - The point to check
-         * @returns {boolean} Whether the given point equal to this point
-         */
-        Point.prototype.equals = function (p) {
-            return (p.x === this.x) && (p.y === this.y);
-        };
-        /**
-         * Sets the point to a new x and y position.
-         * If y is omitted, both x and y will be set to x.
-         *
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=x] - position of the point on the y axis
-         * @returns {this} Returns itself.
-         */
-        Point.prototype.set = function (x, y) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = x; }
-            this.x = x;
-            this.y = y;
-            return this;
-        };
-        // #if _DEBUG
-        Point.prototype.toString = function () {
-            return "[@pixi/math:Point x=" + this.x + " y=" + this.y + "]";
-        };
-        return Point;
-    }());
-    feng3d.Point = Point;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * The PixiJS Matrix as a class makes it a lot faster.
      *
      * Here is a representation of it:
@@ -17306,7 +17222,7 @@ var feng3d;
          * @return {PIXI.Point} The new point, transformed through this matrix
          */
         Matrix.prototype.apply = function (pos, newPos) {
-            newPos = (newPos || new feng3d.Point());
+            newPos = newPos || new feng3d.Vector2();
             var x = pos.x;
             var y = pos.y;
             newPos.x = (this.a * x) + (this.c * y) + this.tx;
@@ -17322,7 +17238,7 @@ var feng3d;
          * @return {PIXI.Point} The new point, inverse-transformed through this matrix
          */
         Matrix.prototype.applyInverse = function (pos, newPos) {
-            newPos = (newPos || new feng3d.Point());
+            newPos = newPos || new feng3d.Vector2();
             var id = 1 / ((this.a * this.d) + (this.c * -this.b));
             var x = pos.x;
             var y = pos.y;
@@ -17600,19 +17516,19 @@ var feng3d;
             /**
              * The coordinate of the object relative to the local coordinates of the parent.
              */
-            this.position = new feng3d.Point();
+            this.position = new feng3d.Vector2();
             /**
              * The scale factor of the object.
              */
-            this.scale = new feng3d.Point(1, 1);
+            this.scale = new feng3d.Vector2(1, 1);
             /**
              * The pivot point of the displayObject that it rotates around.
              */
-            this.pivot = new feng3d.Point();
+            this.pivot = new feng3d.Vector2();
             /**
              * The skew amount, on the x and y axis.
              */
-            this.skew = new feng3d.Point();
+            this.skew = new feng3d.Vector2();
             /**
              * The world transformation matrix.
              *
@@ -30147,7 +30063,7 @@ var feng3d;
                 return this.transform.position;
             },
             set: function (value) {
-                this.transform.position.copyFrom(value);
+                this.transform.position.copy(value);
             },
             enumerable: false,
             configurable: true
@@ -30162,7 +30078,7 @@ var feng3d;
                 return this.transform.scale;
             },
             set: function (value) {
-                this.transform.scale.copyFrom(value);
+                this.transform.scale.copy(value);
             },
             enumerable: false,
             configurable: true
@@ -30178,7 +30094,7 @@ var feng3d;
                 return this.transform.pivot;
             },
             set: function (value) {
-                this.transform.pivot.copyFrom(value);
+                this.transform.pivot.copy(value);
             },
             enumerable: false,
             configurable: true
@@ -30191,7 +30107,7 @@ var feng3d;
                 return this.transform.skew;
             },
             set: function (value) {
-                this.transform.skew.copyFrom(value);
+                this.transform.skew.copy(value);
             },
             enumerable: false,
             configurable: true
