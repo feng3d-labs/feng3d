@@ -18,10 +18,26 @@ namespace feng3d
 
         public worldTransform: Matrix;
         public localTransform: Matrix;
-        public position: ObservablePoint;
-        public scale: ObservablePoint;
-        public pivot: ObservablePoint;
-        public skew: ObservablePoint;
+
+        /**
+         * The coordinate of the object relative to the local coordinates of the parent.
+         */
+        public readonly position = new Point();
+
+        /**
+         * The scale factor of the object.
+         */
+        public readonly scale = new Point(1, 1);
+
+        /**
+         * The pivot point of the displayObject that it rotates around.
+         */
+        public readonly pivot = new Point();
+
+        /**
+         * The skew amount, on the x and y axis.
+         */
+        public readonly skew = new Point();
         public _parentID: number;
         _worldID: number;
 
@@ -49,33 +65,14 @@ namespace feng3d
              */
             this.localTransform = new Matrix();
 
-            /**
-             * The coordinate of the object relative to the local coordinates of the parent.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.position = new ObservablePoint(this.onChange, this, 0, 0);
-
-            /**
-             * The scale factor of the object.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.scale = new ObservablePoint(this.onChange, this, 1, 1);
-
-            /**
-             * The pivot point of the displayObject that it rotates around.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.pivot = new ObservablePoint(this.onChange, this, 0, 0);
-
-            /**
-             * The skew amount, on the x and y axis.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.skew = new ObservablePoint(this.updateSkew, this, 0, 0);
+            watcher.watch(this.position, "x", this.onChange, this);
+            watcher.watch(this.position, "y", this.onChange, this);
+            watcher.watch(this.scale, "x", this.onChange, this);
+            watcher.watch(this.scale, "y", this.onChange, this);
+            watcher.watch(this.pivot, "x", this.onChange, this);
+            watcher.watch(this.pivot, "y", this.onChange, this);
+            watcher.watch(this.skew, "x", this.updateSkew, this);
+            watcher.watch(this.skew, "y", this.updateSkew, this);
 
             /**
              * The rotation amount.

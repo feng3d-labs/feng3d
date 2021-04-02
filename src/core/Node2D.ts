@@ -347,17 +347,14 @@ namespace feng3d
 
         /**
          * The coordinate of the object relative to the local coordinates of the parent.
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
         @oav()
-        get position(): ObservablePoint
+        get position()
         {
             return this.transform.position;
         }
 
-        set position(value: ObservablePoint)
+        set position(value)
         {
             this.transform.position.copyFrom(value);
         }
@@ -366,17 +363,14 @@ namespace feng3d
          * The scale factors of this object along the local coordinate axes.
          *
          * The default scale is (1, 1).
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
         @oav()
-        get scale(): ObservablePoint
+        get scale()
         {
             return this.transform.scale;
         }
 
-        set scale(value: ObservablePoint)
+        set scale(value)
         {
             this.transform.scale.copyFrom(value);
         }
@@ -386,34 +380,28 @@ namespace feng3d
          * is the projection of `pivot` in the parent's local space.
          *
          * By default, the pivot is the origin (0, 0).
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
         @oav()
-        get pivot(): ObservablePoint
+        get pivot()
         {
             return this.transform.pivot;
         }
 
-        set pivot(value: ObservablePoint)
+        set pivot(value)
         {
             this.transform.pivot.copyFrom(value);
         }
 
         /**
          * The skew factor for the object in radians.
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
         @oav()
-        get skew(): ObservablePoint
+        get skew()
         {
             return this.transform.skew;
         }
 
-        set skew(value: ObservablePoint)
+        set skew(value)
         {
             this.transform.skew.copyFrom(value);
         }
@@ -421,8 +409,6 @@ namespace feng3d
         /**
          * The rotation of the object in radians.
          * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-         *
-         * @member {number}
          */
         @oav()
         get rotation(): number
@@ -438,8 +424,6 @@ namespace feng3d
         /**
          * The angle of the object in degrees.
          * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-         *
-         * @member {number}
          */
         @oav()
         get angle(): number
@@ -454,9 +438,6 @@ namespace feng3d
 
         /**
          * Indicates if the object is globally visible.
-         *
-         * @member {boolean}
-         * @readonly
          */
         get worldVisible(): boolean
         {

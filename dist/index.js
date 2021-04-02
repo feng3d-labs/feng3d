@@ -17163,142 +17163,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * The Point object represents a location in a two-dimensional coordinate system, where x represents
-     * the horizontal axis and y represents the vertical axis.
-     *
-     * An ObservablePoint is a point that triggers a callback when the point's position is changed.
-     *
-     * @implements IPoint
-     */
-    var ObservablePoint = /** @class */ (function () {
-        /**
-         * @param {Function} cb - callback when changed
-         * @param {object} scope - owner of callback
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=0] - position of the point on the y axis
-         */
-        function ObservablePoint(cb, scope, x, y) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            this._x = x;
-            this._y = y;
-            this.cb = cb;
-            this.scope = scope;
-        }
-        /**
-         * Creates a clone of this point.
-         * The callback and scope params can be overridden otherwise they will default
-         * to the clone object's values.
-         *
-         * @override
-         * @param {Function} [cb=null] - callback when changed
-         * @param {object} [scope=null] - owner of callback
-         * @return {PIXI.ObservablePoint} a copy of the point
-         */
-        ObservablePoint.prototype.clone = function (cb, scope) {
-            if (cb === void 0) { cb = this.cb; }
-            if (scope === void 0) { scope = this.scope; }
-            return new ObservablePoint(cb, scope, this._x, this._y);
-        };
-        /**
-         * Sets the point to a new x and y position.
-         * If y is omitted, both x and y will be set to x.
-         *
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=x] - position of the point on the y axis
-         * @returns {this} Returns itself.
-         */
-        ObservablePoint.prototype.set = function (x, y) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = x; }
-            if (this._x !== x || this._y !== y) {
-                this._x = x;
-                this._y = y;
-                this.cb.call(this.scope);
-            }
-            return this;
-        };
-        /**
-         * Copies x and y from the given point
-         *
-         * @param {PIXI.IPointData} p - The point to copy from.
-         * @returns {this} Returns itself.
-         */
-        ObservablePoint.prototype.copyFrom = function (p) {
-            if (this._x !== p.x || this._y !== p.y) {
-                this._x = p.x;
-                this._y = p.y;
-                this.cb.call(this.scope);
-            }
-            return this;
-        };
-        /**
-         * Copies x and y into the given point
-         *
-         * @param {PIXI.IPoint} p - The point to copy.
-         * @returns {PIXI.IPoint} Given point with values updated
-         */
-        ObservablePoint.prototype.copyTo = function (p) {
-            p.set(this._x, this._y);
-            return p;
-        };
-        /**
-         * Returns true if the given point is equal to this point
-         *
-         * @param {PIXI.IPointData} p - The point to check
-         * @returns {boolean} Whether the given point equal to this point
-         */
-        ObservablePoint.prototype.equals = function (p) {
-            return (p.x === this._x) && (p.y === this._y);
-        };
-        // #if _DEBUG
-        ObservablePoint.prototype.toString = function () {
-            return "[@pixi/math:ObservablePoint x=" + 0 + " y=" + 0 + " scope=" + this.scope + "]";
-        };
-        Object.defineProperty(ObservablePoint.prototype, "x", {
-            // #endif
-            /**
-             * The position of the displayObject on the x axis relative to the local coordinates of the parent.
-             *
-             * @member {number}
-             */
-            get: function () {
-                return this._x;
-            },
-            set: function (value) {
-                if (this._x !== value) {
-                    this._x = value;
-                    this.cb.call(this.scope);
-                }
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(ObservablePoint.prototype, "y", {
-            /**
-             * The position of the displayObject on the x axis relative to the local coordinates of the parent.
-             *
-             * @member {number}
-             */
-            get: function () {
-                return this._y;
-            },
-            set: function (value) {
-                if (this._y !== value) {
-                    this._y = value;
-                    this.cb.call(this.scope);
-                }
-            },
-            enumerable: false,
-            configurable: true
-        });
-        return ObservablePoint;
-    }());
-    feng3d.ObservablePoint = ObservablePoint;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * The PixiJS Matrix as a class makes it a lot faster.
      *
      * Here is a representation of it:
@@ -17734,6 +17598,22 @@ var feng3d;
     var Transform = /** @class */ (function () {
         function Transform() {
             /**
+             * The coordinate of the object relative to the local coordinates of the parent.
+             */
+            this.position = new feng3d.Point();
+            /**
+             * The scale factor of the object.
+             */
+            this.scale = new feng3d.Point(1, 1);
+            /**
+             * The pivot point of the displayObject that it rotates around.
+             */
+            this.pivot = new feng3d.Point();
+            /**
+             * The skew amount, on the x and y axis.
+             */
+            this.skew = new feng3d.Point();
+            /**
              * The world transformation matrix.
              *
              * @member {PIXI.Matrix}
@@ -17745,30 +17625,14 @@ var feng3d;
              * @member {PIXI.Matrix}
              */
             this.localTransform = new feng3d.Matrix();
-            /**
-             * The coordinate of the object relative to the local coordinates of the parent.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.position = new feng3d.ObservablePoint(this.onChange, this, 0, 0);
-            /**
-             * The scale factor of the object.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.scale = new feng3d.ObservablePoint(this.onChange, this, 1, 1);
-            /**
-             * The pivot point of the displayObject that it rotates around.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.pivot = new feng3d.ObservablePoint(this.onChange, this, 0, 0);
-            /**
-             * The skew amount, on the x and y axis.
-             *
-             * @member {PIXI.ObservablePoint}
-             */
-            this.skew = new feng3d.ObservablePoint(this.updateSkew, this, 0, 0);
+            feng3d.watcher.watch(this.position, "x", this.onChange, this);
+            feng3d.watcher.watch(this.position, "y", this.onChange, this);
+            feng3d.watcher.watch(this.scale, "x", this.onChange, this);
+            feng3d.watcher.watch(this.scale, "y", this.onChange, this);
+            feng3d.watcher.watch(this.pivot, "x", this.onChange, this);
+            feng3d.watcher.watch(this.pivot, "y", this.onChange, this);
+            feng3d.watcher.watch(this.skew, "x", this.updateSkew, this);
+            feng3d.watcher.watch(this.skew, "y", this.updateSkew, this);
             /**
              * The rotation amount.
              *
@@ -30278,9 +30142,6 @@ var feng3d;
         Object.defineProperty(Node2D.prototype, "position", {
             /**
              * The coordinate of the object relative to the local coordinates of the parent.
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
              */
             get: function () {
                 return this.transform.position;
@@ -30296,9 +30157,6 @@ var feng3d;
              * The scale factors of this object along the local coordinate axes.
              *
              * The default scale is (1, 1).
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
              */
             get: function () {
                 return this.transform.scale;
@@ -30315,9 +30173,6 @@ var feng3d;
              * is the projection of `pivot` in the parent's local space.
              *
              * By default, the pivot is the origin (0, 0).
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
              */
             get: function () {
                 return this.transform.pivot;
@@ -30331,9 +30186,6 @@ var feng3d;
         Object.defineProperty(Node2D.prototype, "skew", {
             /**
              * The skew factor for the object in radians.
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
              */
             get: function () {
                 return this.transform.skew;
@@ -30348,8 +30200,6 @@ var feng3d;
             /**
              * The rotation of the object in radians.
              * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-             *
-             * @member {number}
              */
             get: function () {
                 return this.transform.rotation;
@@ -30364,8 +30214,6 @@ var feng3d;
             /**
              * The angle of the object in degrees.
              * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-             *
-             * @member {number}
              */
             get: function () {
                 return this.transform.rotation * Math.RAD2DEG;
@@ -30379,9 +30227,6 @@ var feng3d;
         Object.defineProperty(Node2D.prototype, "worldVisible", {
             /**
              * Indicates if the object is globally visible.
-             *
-             * @member {boolean}
-             * @readonly
              */
             get: function () {
                 var item = this;

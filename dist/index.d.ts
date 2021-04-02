@@ -7894,85 +7894,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * The Point object represents a location in a two-dimensional coordinate system, where x represents
-     * the horizontal axis and y represents the vertical axis.
-     *
-     * An ObservablePoint is a point that triggers a callback when the point's position is changed.
-     *
-     * @implements IPoint
-     */
-    class ObservablePoint<T = any> implements IPoint {
-        cb: (this: T) => any;
-        scope: any;
-        _x: number;
-        _y: number;
-        /**
-         * @param {Function} cb - callback when changed
-         * @param {object} scope - owner of callback
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=0] - position of the point on the y axis
-         */
-        constructor(cb: (this: T) => any, scope: T, x?: number, y?: number);
-        /**
-         * Creates a clone of this point.
-         * The callback and scope params can be overridden otherwise they will default
-         * to the clone object's values.
-         *
-         * @override
-         * @param {Function} [cb=null] - callback when changed
-         * @param {object} [scope=null] - owner of callback
-         * @return {PIXI.ObservablePoint} a copy of the point
-         */
-        clone(cb?: (this: T) => any, scope?: any): ObservablePoint;
-        /**
-         * Sets the point to a new x and y position.
-         * If y is omitted, both x and y will be set to x.
-         *
-         * @param {number} [x=0] - position of the point on the x axis
-         * @param {number} [y=x] - position of the point on the y axis
-         * @returns {this} Returns itself.
-         */
-        set(x?: number, y?: number): this;
-        /**
-         * Copies x and y from the given point
-         *
-         * @param {PIXI.IPointData} p - The point to copy from.
-         * @returns {this} Returns itself.
-         */
-        copyFrom(p: IPointData): this;
-        /**
-         * Copies x and y into the given point
-         *
-         * @param {PIXI.IPoint} p - The point to copy.
-         * @returns {PIXI.IPoint} Given point with values updated
-         */
-        copyTo<T extends IPoint>(p: T): T;
-        /**
-         * Returns true if the given point is equal to this point
-         *
-         * @param {PIXI.IPointData} p - The point to check
-         * @returns {boolean} Whether the given point equal to this point
-         */
-        equals(p: IPointData): boolean;
-        toString(): string;
-        /**
-         * The position of the displayObject on the x axis relative to the local coordinates of the parent.
-         *
-         * @member {number}
-         */
-        get x(): number;
-        set x(value: number);
-        /**
-         * The position of the displayObject on the x axis relative to the local coordinates of the parent.
-         *
-         * @member {number}
-         */
-        get y(): number;
-        set y(value: number);
-    }
-}
-declare namespace feng3d {
-    /**
      * The PixiJS Matrix as a class makes it a lot faster.
      *
      * Here is a representation of it:
@@ -8177,10 +8098,22 @@ declare namespace feng3d {
         static readonly IDENTITY: Transform;
         worldTransform: Matrix;
         localTransform: Matrix;
-        position: ObservablePoint;
-        scale: ObservablePoint;
-        pivot: ObservablePoint;
-        skew: ObservablePoint;
+        /**
+         * The coordinate of the object relative to the local coordinates of the parent.
+         */
+        readonly position: Point;
+        /**
+         * The scale factor of the object.
+         */
+        readonly scale: Point;
+        /**
+         * The pivot point of the displayObject that it rotates around.
+         */
+        readonly pivot: Point;
+        /**
+         * The skew amount, on the x and y axis.
+         */
+        readonly skew: Point;
         _parentID: number;
         _worldID: number;
         protected _rotation: number;
@@ -14219,62 +14152,43 @@ declare namespace feng3d {
         get localTransform(): Matrix;
         /**
          * The coordinate of the object relative to the local coordinates of the parent.
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
-        get position(): ObservablePoint;
-        set position(value: ObservablePoint);
+        get position(): Point;
+        set position(value: Point);
         /**
          * The scale factors of this object along the local coordinate axes.
          *
          * The default scale is (1, 1).
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
-        get scale(): ObservablePoint;
-        set scale(value: ObservablePoint);
+        get scale(): Point;
+        set scale(value: Point);
         /**
          * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
          * is the projection of `pivot` in the parent's local space.
          *
          * By default, the pivot is the origin (0, 0).
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
-        get pivot(): ObservablePoint;
-        set pivot(value: ObservablePoint);
+        get pivot(): Point;
+        set pivot(value: Point);
         /**
          * The skew factor for the object in radians.
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
          */
-        get skew(): ObservablePoint;
-        set skew(value: ObservablePoint);
+        get skew(): Point;
+        set skew(value: Point);
         /**
          * The rotation of the object in radians.
          * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-         *
-         * @member {number}
          */
         get rotation(): number;
         set rotation(value: number);
         /**
          * The angle of the object in degrees.
          * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-         *
-         * @member {number}
          */
         get angle(): number;
         set angle(value: number);
         /**
          * Indicates if the object is globally visible.
-         *
-         * @member {boolean}
-         * @readonly
          */
         get worldVisible(): boolean;
         /**
