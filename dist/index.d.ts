@@ -7782,6 +7782,454 @@ declare namespace feng3d {
     function getBits(n: number): number[][];
 }
 declare namespace feng3d {
+    interface IPointData {
+        x: number;
+        y: number;
+    }
+    /**
+     * Common interface for points. Both Point and ObservablePoint implement it
+     * @interface IPointData
+     */
+    /**
+     * X coord.IPointData#
+     * @member {number} x
+     */
+    /**
+     * Y coord.IPointData#
+     * @member {number} y
+     */
+}
+declare namespace feng3d {
+    interface IPoint extends IPointData {
+        copyFrom(p: IPointData): this;
+        copyTo<T extends IPoint>(p: T): T;
+        equals(p: IPointData): boolean;
+        set(x?: number, y?: number): void;
+    }
+    /**
+     * Common interface for points. Both Point and ObservablePoint implement it
+     * @interface IPoint
+     */
+    /**
+     * Sets the point to a new x and y position.
+     * If y is omitted, both x and y will be set to x.
+     *
+     * @method set.IPoint#
+     * @param {number} [x=0] - position of the point on the x axis
+     * @param {number} [y=x] - position of the point on the y axis
+     */
+    /**
+     * Copies x and y from the given point
+     * @method copyFrom.IPoint#
+     * @param {PIXI.IPointData} p - The point to copy from
+     * @returns {this} Returns itself.
+     */
+    /**
+     * Copies x and y into the given point
+     * @method copyTo.IPoint#
+     * @param {PIXI.IPoint} p - The point to copy.
+     * @returns {PIXI.IPoint} Given point with values updated
+     */
+    /**
+     * Returns true if the given point is equal to this point
+     *
+     * @method equals.IPoint#
+     * @param {PIXI.IPointData} p - The point to check
+     * @returns {boolean} Whether the given point equal to this point
+     */
+}
+declare namespace feng3d {
+    /**
+     * The Point object represents a location in a two-dimensional coordinate system, where x represents
+     * the horizontal axis and y represents the vertical axis.
+     *
+     * @implements IPoint
+     */
+    class Point implements IPoint {
+        x: number;
+        y: number;
+        /**
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=0] - position of the point on the y axis
+         */
+        constructor(x?: number, y?: number);
+        /**
+         * Creates a clone of this point
+         *
+         * @return {PIXI.Point} a copy of the point
+         */
+        clone(): Point;
+        /**
+         * Copies x and y from the given point
+         *
+         * @param {PIXI.IPointData} p - The point to copy from
+         * @returns {this} Returns itself.
+         */
+        copyFrom(p: IPointData): this;
+        /**
+         * Copies x and y into the given point
+         *
+         * @param {PIXI.IPoint} p - The point to copy.
+         * @returns {PIXI.IPoint} Given point with values updated
+         */
+        copyTo<T extends IPoint>(p: T): T;
+        /**
+         * Returns true if the given point is equal to this point
+         *
+         * @param {PIXI.IPointData} p - The point to check
+         * @returns {boolean} Whether the given point equal to this point
+         */
+        equals(p: IPointData): boolean;
+        /**
+         * Sets the point to a new x and y position.
+         * If y is omitted, both x and y will be set to x.
+         *
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=x] - position of the point on the y axis
+         * @returns {this} Returns itself.
+         */
+        set(x?: number, y?: number): this;
+        toString(): string;
+    }
+}
+declare namespace feng3d {
+    /**
+     * The Point object represents a location in a two-dimensional coordinate system, where x represents
+     * the horizontal axis and y represents the vertical axis.
+     *
+     * An ObservablePoint is a point that triggers a callback when the point's position is changed.
+     *
+     * @implements IPoint
+     */
+    class ObservablePoint<T = any> implements IPoint {
+        cb: (this: T) => any;
+        scope: any;
+        _x: number;
+        _y: number;
+        /**
+         * @param {Function} cb - callback when changed
+         * @param {object} scope - owner of callback
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=0] - position of the point on the y axis
+         */
+        constructor(cb: (this: T) => any, scope: T, x?: number, y?: number);
+        /**
+         * Creates a clone of this point.
+         * The callback and scope params can be overridden otherwise they will default
+         * to the clone object's values.
+         *
+         * @override
+         * @param {Function} [cb=null] - callback when changed
+         * @param {object} [scope=null] - owner of callback
+         * @return {PIXI.ObservablePoint} a copy of the point
+         */
+        clone(cb?: (this: T) => any, scope?: any): ObservablePoint;
+        /**
+         * Sets the point to a new x and y position.
+         * If y is omitted, both x and y will be set to x.
+         *
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=x] - position of the point on the y axis
+         * @returns {this} Returns itself.
+         */
+        set(x?: number, y?: number): this;
+        /**
+         * Copies x and y from the given point
+         *
+         * @param {PIXI.IPointData} p - The point to copy from.
+         * @returns {this} Returns itself.
+         */
+        copyFrom(p: IPointData): this;
+        /**
+         * Copies x and y into the given point
+         *
+         * @param {PIXI.IPoint} p - The point to copy.
+         * @returns {PIXI.IPoint} Given point with values updated
+         */
+        copyTo<T extends IPoint>(p: T): T;
+        /**
+         * Returns true if the given point is equal to this point
+         *
+         * @param {PIXI.IPointData} p - The point to check
+         * @returns {boolean} Whether the given point equal to this point
+         */
+        equals(p: IPointData): boolean;
+        toString(): string;
+        /**
+         * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+         *
+         * @member {number}
+         */
+        get x(): number;
+        set x(value: number);
+        /**
+         * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+         *
+         * @member {number}
+         */
+        get y(): number;
+        set y(value: number);
+    }
+}
+declare namespace feng3d {
+    /**
+     * The PixiJS Matrix as a class makes it a lot faster.
+     *
+     * Here is a representation of it:
+     * ```js
+     * | a | c | tx|
+     * | b | d | ty|
+     * | 0 | 0 | 1 |
+     * ```
+     */
+    class Matrix {
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+        tx: number;
+        ty: number;
+        array: Float32Array | null;
+        /**
+         * @param {number} [a=1] - x scale
+         * @param {number} [b=0] - y skew
+         * @param {number} [c=0] - x skew
+         * @param {number} [d=1] - y scale
+         * @param {number} [tx=0] - x translation
+         * @param {number} [ty=0] - y translation
+         */
+        constructor(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number);
+        /**
+         * Creates a Matrix object based on the given array. The Element to Matrix mapping order is as follows:
+         *
+         * a = array[0]
+         * b = array[1]
+         * c = array[3]
+         * d = array[4]
+         * tx = array[2]
+         * ty = array[5]
+         *
+         * @param {number[]} array - The array that the matrix will be populated from.
+         */
+        fromArray(array: number[]): void;
+        /**
+         * sets the matrix properties
+         *
+         * @param {number} a - Matrix component
+         * @param {number} b - Matrix component
+         * @param {number} c - Matrix component
+         * @param {number} d - Matrix component
+         * @param {number} tx - Matrix component
+         * @param {number} ty - Matrix component
+         *
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        set(a: number, b: number, c: number, d: number, tx: number, ty: number): this;
+        /**
+         * Creates an array from the current Matrix object.
+         *
+         * @param {boolean} transpose - Whether we need to transpose the matrix or not
+         * @param {Float32Array} [out=new Float32Array(9)] - If provided the array will be assigned to out
+         * @return {number[]} the newly created array which contains the matrix
+         */
+        toArray(transpose: boolean, out?: Float32Array): Float32Array;
+        /**
+         * Get a new position with the current transformation applied.
+         * Can be used to go from a child's coordinate space to the world coordinate space. (e.g. rendering)
+         *
+         * @param {PIXI.IPointData} pos - The origin
+         * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
+         * @return {PIXI.Point} The new point, transformed through this matrix
+         */
+        apply<P extends IPointData = Point>(pos: IPointData, newPos?: P): P;
+        /**
+         * Get a new position with the inverse of the current transformation applied.
+         * Can be used to go from the world coordinate space to a child's coordinate space. (e.g. input)
+         *
+         * @param {PIXI.IPointData} pos - The origin
+         * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
+         * @return {PIXI.Point} The new point, inverse-transformed through this matrix
+         */
+        applyInverse<P extends IPointData = Point>(pos: IPointData, newPos?: P): P;
+        /**
+         * Translates the matrix on the x and y.
+         *
+         * @param {number} x - How much to translate x by
+         * @param {number} y - How much to translate y by
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        translate(x: number, y: number): this;
+        /**
+         * Applies a scale transformation to the matrix.
+         *
+         * @param {number} x - The amount to scale horizontally
+         * @param {number} y - The amount to scale vertically
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        scale(x: number, y: number): this;
+        /**
+         * Applies a rotation transformation to the matrix.
+         *
+         * @param {number} angle - The angle in radians.
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        rotate(angle: number): this;
+        /**
+         * Appends the given Matrix to this Matrix.
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to append.
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        append(matrix: Matrix): this;
+        /**
+         * Sets the matrix based on all the available properties
+         *
+         * @param {number} x - Position on the x axis
+         * @param {number} y - Position on the y axis
+         * @param {number} pivotX - Pivot on the x axis
+         * @param {number} pivotY - Pivot on the y axis
+         * @param {number} scaleX - Scale on the x axis
+         * @param {number} scaleY - Scale on the y axis
+         * @param {number} rotation - Rotation in radians
+         * @param {number} skewX - Skew on the x axis
+         * @param {number} skewY - Skew on the y axis
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        setTransform(x: number, y: number, pivotX: number, pivotY: number, scaleX: number, scaleY: number, rotation: number, skewX: number, skewY: number): this;
+        /**
+         * Prepends the given Matrix to this Matrix.
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to prepend
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        prepend(matrix: Matrix): this;
+        /**
+         * Decomposes the matrix (x, y, scaleX, scaleY, and rotation) and sets the properties on to a transform.
+         *
+         * @param {PIXI.Transform} transform - The transform to apply the properties to.
+         * @return {PIXI.Transform} The transform with the newly applied properties
+         */
+        decompose(transform: Transform): Transform;
+        /**
+         * Inverts this matrix
+         *
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        invert(): this;
+        /**
+         * Resets this Matrix to an identity (default) matrix.
+         *
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        identity(): this;
+        /**
+         * Creates a new Matrix object with the same values as this one.
+         *
+         * @return {PIXI.Matrix} A copy of this matrix. Good for chaining method calls.
+         */
+        clone(): Matrix;
+        /**
+         * Changes the values of the given matrix to be the same as the ones in this matrix
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to copy to.
+         * @return {PIXI.Matrix} The matrix given in parameter with its values updated.
+         */
+        copyTo(matrix: Matrix): Matrix;
+        /**
+         * Changes the values of the matrix to be the same as the ones in given matrix
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to copy from.
+         * @return {PIXI.Matrix} this
+         */
+        copyFrom(matrix: Matrix): this;
+        toString(): string;
+        /**
+         * A default (identity) matrix
+         *
+         * @static
+         * @const
+         * @member {PIXI.Matrix}
+         */
+        static get IDENTITY(): Matrix;
+        /**
+         * A temp matrix
+         *
+         * @static
+         * @const
+         * @member {PIXI.Matrix}
+         */
+        static get TEMP_MATRIX(): Matrix;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Transform that takes care about its versions
+     *
+     */
+    class Transform {
+        /**
+         * A default (identity) transform
+         *
+         * @static
+         * @constant
+         * @member {PIXI.Transform}
+         */
+        static readonly IDENTITY: Transform;
+        worldTransform: Matrix;
+        localTransform: Matrix;
+        position: ObservablePoint;
+        scale: ObservablePoint;
+        pivot: ObservablePoint;
+        skew: ObservablePoint;
+        _parentID: number;
+        _worldID: number;
+        protected _rotation: number;
+        protected _cx: number;
+        protected _sx: number;
+        protected _cy: number;
+        protected _sy: number;
+        protected _localID: number;
+        protected _currentLocalID: number;
+        constructor();
+        /**
+         * Called when a value changes.
+         *
+         * @protected
+         */
+        protected onChange(): void;
+        /**
+         * Called when the skew or the rotation changes.
+         *
+         * @protected
+         */
+        protected updateSkew(): void;
+        toString(): string;
+        /**
+         * Updates the local transformation matrix.
+         */
+        updateLocalTransform(): void;
+        /**
+         * Updates the local and the world transformation matrices.
+         *
+         * @param {PIXI.Transform} parentTransform - The parent transform
+         */
+        updateTransform(parentTransform: Transform): void;
+        /**
+         * Decomposes a matrix and sets the transforms properties based on it.
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to decompose
+         */
+        setFromMatrix(matrix: Matrix): void;
+        /**
+         * The rotation of the object in radians.
+         *
+         * @member {number}
+         */
+        get rotation(): number;
+        set rotation(value: number);
+    }
+}
+declare namespace feng3d {
     /**
      * 路径工具
      */
@@ -13098,6 +13546,333 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface IDestroyOptions {
+        children?: boolean;
+        texture?: boolean;
+        baseTexture?: boolean;
+    }
+    interface Node2DEventMap extends Component2DEventMap {
+        removed: Node2D;
+        added: Node2D;
+        childAdded: {
+            child: Node2D;
+            parent: Node2D;
+            index: number;
+        };
+        childRemoved: {
+            child: Node2D;
+            parent: Node2D;
+            index: number;
+        };
+    }
+    /**
+     * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
+     * rendering features like masking and filtering.
+     *
+     * It is the base class of all display objects that act as a container for other objects, including Graphics
+     * and Sprite.
+     *
+     * ```js
+     * import { BlurFilter } from '@pixi/filter-blur';
+     * import { Container } from '@pixi/display';
+     * import { Graphics } from '@pixi/graphics';
+     * import { Sprite } from '@pixi/sprite';
+     *
+     * let container = new Container();
+     * let sprite = Sprite.from("https://s3-us-west-2.amazonaws.com/s.cdpn.io/693612/IaUrttj.png");
+     *
+     * sprite.width = 512;
+     * sprite.height = 512;
+     *
+     * // Adds a sprite as a child to this container. As a result, the sprite will be rendered whenever the container
+     * // is rendered.
+     * container.addChild(sprite);
+     *
+     * // Blurs whatever is rendered by the container
+     * container.filters = [new BlurFilter()];
+     *
+     * // Only the contents within a circle at the center should be rendered onto the screen.
+     * container.mask = new Graphics()
+     *  .beginFill(0xffffff)
+     *  .drawCircle(sprite.width / 2, sprite.height / 2, Math.min(sprite.width, sprite.height) / 2)
+     *  .endFill();
+     * ```
+     *
+     */
+    class Node2D<T extends Node2DEventMap = Node2DEventMap> extends Component<T> {
+        static create(name?: string): Node2D<Node2DEventMap>;
+        parent: Node2D;
+        worldAlpha: number;
+        transform: Transform;
+        alpha: number;
+        visible: boolean;
+        readonly children: Node2D[];
+        protected _destroyed: boolean;
+        private tempDisplayObjectParent;
+        displayObjectUpdateTransform: () => void;
+        constructor();
+        /**
+         * Recursively updates transform of all objects from the root to this one
+         * internal function for toLocal()
+         */
+        _recursivePostUpdateTransform(): void;
+        /**
+         * Calculates the global position of the display object.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
+         * @return {PIXI.Point} A point object representing the position of this object.
+         */
+        toGlobal<P extends IPointData = Point>(position: IPointData, point?: P, skipUpdate?: boolean): P;
+        /**
+         * Calculates the local position of the display object relative to another point.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {PIXI.Node2D} [from] - The Node2D to calculate the global position from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform
+         * @return {PIXI.Point} A point object representing the position of this object
+         */
+        toLocal<P extends IPointData = Point>(position: IPointData, from?: Node2D, point?: P, skipUpdate?: boolean): P;
+        /**
+         * Set the parent Container of this Node2D.
+         *
+         * @param {PIXI.Container} container - The Container to add this Node2D to.
+         * @return {PIXI.Container} The Container that this Node2D was added to.
+         */
+        setParent(container: Node2D): Node2D;
+        /**
+         * Convenience function to set the position, scale, skew and pivot at once.
+         *
+         * @param {number} [x=0] - The X position
+         * @param {number} [y=0] - The Y position
+         * @param {number} [scaleX=1] - The X scale value
+         * @param {number} [scaleY=1] - The Y scale value
+         * @param {number} [rotation=0] - The rotation
+         * @param {number} [skewX=0] - The X skew value
+         * @param {number} [skewY=0] - The Y skew value
+         * @param {number} [pivotX=0] - The X pivot value
+         * @param {number} [pivotY=0] - The Y pivot value
+         * @return {PIXI.Node2D} The Node2D instance
+         */
+        setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, pivotX?: number, pivotY?: number): this;
+        /**
+         * @protected
+         * @member {PIXI.Container}
+         */
+        get _tempDisplayObjectParent(): Node2D;
+        /**
+         * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+         * An alias to position.x
+         *
+         * @member {number}
+         */
+        get x(): number;
+        set x(value: number);
+        /**
+         * The position of the displayObject on the y axis relative to the local coordinates of the parent.
+         * An alias to position.y
+         *
+         * @member {number}
+         */
+        get y(): number;
+        set y(value: number);
+        /**
+         * Current transform of the object based on world (parent) factors.
+         *
+         * @member {PIXI.Matrix}
+         * @readonly
+         */
+        get worldTransform(): Matrix;
+        /**
+         * Current transform of the object based on local factors: position, scale, other stuff.
+         *
+         * @member {PIXI.Matrix}
+         * @readonly
+         */
+        get localTransform(): Matrix;
+        /**
+         * The coordinate of the object relative to the local coordinates of the parent.
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get position(): ObservablePoint;
+        set position(value: ObservablePoint);
+        /**
+         * The scale factors of this object along the local coordinate axes.
+         *
+         * The default scale is (1, 1).
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get scale(): ObservablePoint;
+        set scale(value: ObservablePoint);
+        /**
+         * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
+         * is the projection of `pivot` in the parent's local space.
+         *
+         * By default, the pivot is the origin (0, 0).
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get pivot(): ObservablePoint;
+        set pivot(value: ObservablePoint);
+        /**
+         * The skew factor for the object in radians.
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get skew(): ObservablePoint;
+        set skew(value: ObservablePoint);
+        /**
+         * The rotation of the object in radians.
+         * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+         *
+         * @member {number}
+         */
+        get rotation(): number;
+        set rotation(value: number);
+        /**
+         * The angle of the object in degrees.
+         * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+         *
+         * @member {number}
+         */
+        get angle(): number;
+        set angle(value: number);
+        /**
+         * Indicates if the object is globally visible.
+         *
+         * @member {boolean}
+         * @readonly
+         */
+        get worldVisible(): boolean;
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
+         *
+         * @param type		要检索的组件的类型。
+         * @return			返回与给出类定义一致的组件
+         *
+         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
+            findchildren: boolean;
+            /**
+             * 是否为需要查找的组件
+             */
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+        /**
+         * Overridable method that can be used by Container subclasses whenever the children array is modified
+         *
+         * @protected
+         */
+        protected onChildrenChange(_length?: number): void;
+        /**
+         * Adds one or more children to the container.
+         *
+         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
+         *
+         * @param {...PIXI.Node2D} children - The Node2D(s) to add to the container
+         * @return {PIXI.Node2D} The first child that was added.
+         */
+        addChild<T extends Node2D[]>(...children: T): T[0];
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {PIXI.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {PIXI.Node2D} The child that was added.
+         */
+        addChildAt<T extends Node2D>(child: T, index: number): T;
+        /**
+         * Swaps the position of 2 Display Objects within this container.
+         *
+         * @param {PIXI.Node2D} child - First display object to swap
+         * @param {PIXI.Node2D} child2 - Second display object to swap
+         */
+        swapChildren(child: Node2D, child2: Node2D): void;
+        /**
+         * Returns the index position of a child Node2D instance
+         *
+         * @param {PIXI.Node2D} child - The Node2D instance to identify
+         * @return {number} The index position of the child display object to identify
+         */
+        getChildIndex(child: Node2D): number;
+        /**
+         * Changes the position of an existing child in the display object container
+         *
+         * @param {PIXI.Node2D} child - The child Node2D instance for which you want to change the index number
+         * @param {number} index - The resulting index number for the child display object
+         */
+        setChildIndex(child: Node2D, index: number): void;
+        /**
+         * Returns the child at the specified index
+         *
+         * @param {number} index - The index to get the child at
+         * @return {PIXI.Node2D} The child at the given index, if any.
+         */
+        getChildAt(index: number): Node2D;
+        /**
+         * Removes one or more children from the container.
+         *
+         * @param {...PIXI.Node2D} children - The Node2D(s) to remove
+         * @return {PIXI.Node2D} The first child that was removed.
+         */
+        removeChild<T extends Node2D[]>(...children: T): T[0];
+        /**
+         * Removes a child from the specified index position.
+         *
+         * @param {number} index - The index to get the child from
+         * @return {PIXI.Node2D} The child that was removed.
+         */
+        removeChildAt(index: number): Node2D;
+        /**
+         * Removes all children from this container that are within the begin and end indexes.
+         *
+         * @param {number} [beginIndex=0] - The beginning position.
+         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
+         * @returns {PIXI.Node2D[]} List of removed children
+         */
+        removeChildren(beginIndex?: number, endIndex?: number): Node2D[];
+        /**
+         * Updates the transform on all children of this container for rendering
+         */
+        updateTransform(): void;
+        /**
+         * Removes all internal references and listeners as well as removes children from the display list.
+         * Do not use a Container after calling `destroy`.
+         *
+         * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options
+         *  have been set to that value
+         * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
+         *  method called as well. 'options' will be passed on to those calls.
+         * @param {boolean} [options.texture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the texture of the child sprite
+         * @param {boolean} [options.baseTexture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the base texture of the child sprite
+         */
+        destroy(options?: IDestroyOptions | boolean): void;
+    }
+}
+declare namespace feng3d {
     interface EntityEventMap {
         /**
          * 获取自身包围盒
@@ -13500,6 +14275,39 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface Component2DEventMap extends ComponentEventMap {
+    }
+    /**
+     * 3D组件
+     *
+     * 所有基于3D空间的组件均可继承于该组件。
+     */
+    class Component2D<T extends Component2DEventMap = Component2DEventMap> extends Component<T> {
+        /**
+         * The Node2D attached to this Entity (null if there is none attached).
+         *
+         * 附加到此 Entity 的 Node2D。
+         */
+        get node2d(): Node2D<Node2DEventMap>;
+        /**
+         * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+    }
 }
 declare namespace feng3d {
     /**

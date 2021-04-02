@@ -1,4 +1,4 @@
-namespace feng3d.pixi
+namespace feng3d
 {
 
     export interface IPointData

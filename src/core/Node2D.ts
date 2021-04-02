@@ -71,6 +71,9 @@ namespace feng3d
 
         protected _destroyed: boolean;
 
+        private tempDisplayObjectParent: Node2D;
+        public displayObjectUpdateTransform: () => void;
+
         constructor()
         {
             super();
@@ -271,6 +274,21 @@ namespace feng3d
         }
 
         /**
+         * @protected
+         * @member {PIXI.Container}
+         */
+        get _tempDisplayObjectParent(): Node2D
+        {
+            if (this.tempDisplayObjectParent === null)
+            {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                this.tempDisplayObjectParent = Node2D.create();
+            }
+
+            return this.tempDisplayObjectParent;
+        }
+
+        /**
          * The position of the displayObject on the x axis relative to the local coordinates of the parent.
          * An alias to position.x
          *
@@ -417,12 +435,12 @@ namespace feng3d
          */
         get angle(): number
         {
-            return this.transform.rotation * RAD_TO_DEG;
+            return this.transform.rotation * Math.RAD2DEG;
         }
 
         set angle(value: number)
         {
-            this.transform.rotation = value * DEG_TO_RAD;
+            this.transform.rotation = value * Math.DEG2RAD;
         }
 
         /**
@@ -853,4 +871,12 @@ namespace feng3d
         }
 
     }
+
+    /**
+     * Node2D default updateTransform, does not update children of container.
+     * Will crash if there's no parent element.
+     *.Node2D#
+     * @method displayObjectUpdateTransform
+     */
+    Node2D.prototype.displayObjectUpdateTransform = Node2D.prototype.updateTransform;
 }

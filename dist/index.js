@@ -17076,6 +17076,893 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * The Point object represents a location in a two-dimensional coordinate system, where x represents
+     * the horizontal axis and y represents the vertical axis.
+     *
+     * @implements IPoint
+     */
+    var Point = /** @class */ (function () {
+        /**
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=0] - position of the point on the y axis
+         */
+        function Point(x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            /**
+             * @member {number}
+             * @default 0
+             */
+            this.x = x;
+            /**
+             * @member {number}
+             * @default 0
+             */
+            this.y = y;
+        }
+        /**
+         * Creates a clone of this point
+         *
+         * @return {PIXI.Point} a copy of the point
+         */
+        Point.prototype.clone = function () {
+            return new Point(this.x, this.y);
+        };
+        /**
+         * Copies x and y from the given point
+         *
+         * @param {PIXI.IPointData} p - The point to copy from
+         * @returns {this} Returns itself.
+         */
+        Point.prototype.copyFrom = function (p) {
+            this.set(p.x, p.y);
+            return this;
+        };
+        /**
+         * Copies x and y into the given point
+         *
+         * @param {PIXI.IPoint} p - The point to copy.
+         * @returns {PIXI.IPoint} Given point with values updated
+         */
+        Point.prototype.copyTo = function (p) {
+            p.set(this.x, this.y);
+            return p;
+        };
+        /**
+         * Returns true if the given point is equal to this point
+         *
+         * @param {PIXI.IPointData} p - The point to check
+         * @returns {boolean} Whether the given point equal to this point
+         */
+        Point.prototype.equals = function (p) {
+            return (p.x === this.x) && (p.y === this.y);
+        };
+        /**
+         * Sets the point to a new x and y position.
+         * If y is omitted, both x and y will be set to x.
+         *
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=x] - position of the point on the y axis
+         * @returns {this} Returns itself.
+         */
+        Point.prototype.set = function (x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = x; }
+            this.x = x;
+            this.y = y;
+            return this;
+        };
+        // #if _DEBUG
+        Point.prototype.toString = function () {
+            return "[@pixi/math:Point x=" + this.x + " y=" + this.y + "]";
+        };
+        return Point;
+    }());
+    feng3d.Point = Point;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * The Point object represents a location in a two-dimensional coordinate system, where x represents
+     * the horizontal axis and y represents the vertical axis.
+     *
+     * An ObservablePoint is a point that triggers a callback when the point's position is changed.
+     *
+     * @implements IPoint
+     */
+    var ObservablePoint = /** @class */ (function () {
+        /**
+         * @param {Function} cb - callback when changed
+         * @param {object} scope - owner of callback
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=0] - position of the point on the y axis
+         */
+        function ObservablePoint(cb, scope, x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            this._x = x;
+            this._y = y;
+            this.cb = cb;
+            this.scope = scope;
+        }
+        /**
+         * Creates a clone of this point.
+         * The callback and scope params can be overridden otherwise they will default
+         * to the clone object's values.
+         *
+         * @override
+         * @param {Function} [cb=null] - callback when changed
+         * @param {object} [scope=null] - owner of callback
+         * @return {PIXI.ObservablePoint} a copy of the point
+         */
+        ObservablePoint.prototype.clone = function (cb, scope) {
+            if (cb === void 0) { cb = this.cb; }
+            if (scope === void 0) { scope = this.scope; }
+            return new ObservablePoint(cb, scope, this._x, this._y);
+        };
+        /**
+         * Sets the point to a new x and y position.
+         * If y is omitted, both x and y will be set to x.
+         *
+         * @param {number} [x=0] - position of the point on the x axis
+         * @param {number} [y=x] - position of the point on the y axis
+         * @returns {this} Returns itself.
+         */
+        ObservablePoint.prototype.set = function (x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = x; }
+            if (this._x !== x || this._y !== y) {
+                this._x = x;
+                this._y = y;
+                this.cb.call(this.scope);
+            }
+            return this;
+        };
+        /**
+         * Copies x and y from the given point
+         *
+         * @param {PIXI.IPointData} p - The point to copy from.
+         * @returns {this} Returns itself.
+         */
+        ObservablePoint.prototype.copyFrom = function (p) {
+            if (this._x !== p.x || this._y !== p.y) {
+                this._x = p.x;
+                this._y = p.y;
+                this.cb.call(this.scope);
+            }
+            return this;
+        };
+        /**
+         * Copies x and y into the given point
+         *
+         * @param {PIXI.IPoint} p - The point to copy.
+         * @returns {PIXI.IPoint} Given point with values updated
+         */
+        ObservablePoint.prototype.copyTo = function (p) {
+            p.set(this._x, this._y);
+            return p;
+        };
+        /**
+         * Returns true if the given point is equal to this point
+         *
+         * @param {PIXI.IPointData} p - The point to check
+         * @returns {boolean} Whether the given point equal to this point
+         */
+        ObservablePoint.prototype.equals = function (p) {
+            return (p.x === this._x) && (p.y === this._y);
+        };
+        // #if _DEBUG
+        ObservablePoint.prototype.toString = function () {
+            return "[@pixi/math:ObservablePoint x=" + 0 + " y=" + 0 + " scope=" + this.scope + "]";
+        };
+        Object.defineProperty(ObservablePoint.prototype, "x", {
+            // #endif
+            /**
+             * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this._x;
+            },
+            set: function (value) {
+                if (this._x !== value) {
+                    this._x = value;
+                    this.cb.call(this.scope);
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(ObservablePoint.prototype, "y", {
+            /**
+             * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this._y;
+            },
+            set: function (value) {
+                if (this._y !== value) {
+                    this._y = value;
+                    this.cb.call(this.scope);
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return ObservablePoint;
+    }());
+    feng3d.ObservablePoint = ObservablePoint;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * The PixiJS Matrix as a class makes it a lot faster.
+     *
+     * Here is a representation of it:
+     * ```js
+     * | a | c | tx|
+     * | b | d | ty|
+     * | 0 | 0 | 1 |
+     * ```
+     */
+    var Matrix = /** @class */ (function () {
+        /**
+         * @param {number} [a=1] - x scale
+         * @param {number} [b=0] - y skew
+         * @param {number} [c=0] - x skew
+         * @param {number} [d=1] - y scale
+         * @param {number} [tx=0] - x translation
+         * @param {number} [ty=0] - y translation
+         */
+        function Matrix(a, b, c, d, tx, ty) {
+            if (a === void 0) { a = 1; }
+            if (b === void 0) { b = 0; }
+            if (c === void 0) { c = 0; }
+            if (d === void 0) { d = 1; }
+            if (tx === void 0) { tx = 0; }
+            if (ty === void 0) { ty = 0; }
+            this.array = null;
+            /**
+             * @member {number}
+             * @default 1
+             */
+            this.a = a;
+            /**
+             * @member {number}
+             * @default 0
+             */
+            this.b = b;
+            /**
+             * @member {number}
+             * @default 0
+             */
+            this.c = c;
+            /**
+             * @member {number}
+             * @default 1
+             */
+            this.d = d;
+            /**
+             * @member {number}
+             * @default 0
+             */
+            this.tx = tx;
+            /**
+             * @member {number}
+             * @default 0
+             */
+            this.ty = ty;
+        }
+        /**
+         * Creates a Matrix object based on the given array. The Element to Matrix mapping order is as follows:
+         *
+         * a = array[0]
+         * b = array[1]
+         * c = array[3]
+         * d = array[4]
+         * tx = array[2]
+         * ty = array[5]
+         *
+         * @param {number[]} array - The array that the matrix will be populated from.
+         */
+        Matrix.prototype.fromArray = function (array) {
+            this.a = array[0];
+            this.b = array[1];
+            this.c = array[3];
+            this.d = array[4];
+            this.tx = array[2];
+            this.ty = array[5];
+        };
+        /**
+         * sets the matrix properties
+         *
+         * @param {number} a - Matrix component
+         * @param {number} b - Matrix component
+         * @param {number} c - Matrix component
+         * @param {number} d - Matrix component
+         * @param {number} tx - Matrix component
+         * @param {number} ty - Matrix component
+         *
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.set = function (a, b, c, d, tx, ty) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+            this.tx = tx;
+            this.ty = ty;
+            return this;
+        };
+        /**
+         * Creates an array from the current Matrix object.
+         *
+         * @param {boolean} transpose - Whether we need to transpose the matrix or not
+         * @param {Float32Array} [out=new Float32Array(9)] - If provided the array will be assigned to out
+         * @return {number[]} the newly created array which contains the matrix
+         */
+        Matrix.prototype.toArray = function (transpose, out) {
+            if (!this.array) {
+                this.array = new Float32Array(9);
+            }
+            var array = out || this.array;
+            if (transpose) {
+                array[0] = this.a;
+                array[1] = this.b;
+                array[2] = 0;
+                array[3] = this.c;
+                array[4] = this.d;
+                array[5] = 0;
+                array[6] = this.tx;
+                array[7] = this.ty;
+                array[8] = 1;
+            }
+            else {
+                array[0] = this.a;
+                array[1] = this.c;
+                array[2] = this.tx;
+                array[3] = this.b;
+                array[4] = this.d;
+                array[5] = this.ty;
+                array[6] = 0;
+                array[7] = 0;
+                array[8] = 1;
+            }
+            return array;
+        };
+        /**
+         * Get a new position with the current transformation applied.
+         * Can be used to go from a child's coordinate space to the world coordinate space. (e.g. rendering)
+         *
+         * @param {PIXI.IPointData} pos - The origin
+         * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
+         * @return {PIXI.Point} The new point, transformed through this matrix
+         */
+        Matrix.prototype.apply = function (pos, newPos) {
+            newPos = (newPos || new feng3d.Point());
+            var x = pos.x;
+            var y = pos.y;
+            newPos.x = (this.a * x) + (this.c * y) + this.tx;
+            newPos.y = (this.b * x) + (this.d * y) + this.ty;
+            return newPos;
+        };
+        /**
+         * Get a new position with the inverse of the current transformation applied.
+         * Can be used to go from the world coordinate space to a child's coordinate space. (e.g. input)
+         *
+         * @param {PIXI.IPointData} pos - The origin
+         * @param {PIXI.Point} [newPos] - The point that the new position is assigned to (allowed to be same as input)
+         * @return {PIXI.Point} The new point, inverse-transformed through this matrix
+         */
+        Matrix.prototype.applyInverse = function (pos, newPos) {
+            newPos = (newPos || new feng3d.Point());
+            var id = 1 / ((this.a * this.d) + (this.c * -this.b));
+            var x = pos.x;
+            var y = pos.y;
+            newPos.x = (this.d * id * x) + (-this.c * id * y) + (((this.ty * this.c) - (this.tx * this.d)) * id);
+            newPos.y = (this.a * id * y) + (-this.b * id * x) + (((-this.ty * this.a) + (this.tx * this.b)) * id);
+            return newPos;
+        };
+        /**
+         * Translates the matrix on the x and y.
+         *
+         * @param {number} x - How much to translate x by
+         * @param {number} y - How much to translate y by
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.translate = function (x, y) {
+            this.tx += x;
+            this.ty += y;
+            return this;
+        };
+        /**
+         * Applies a scale transformation to the matrix.
+         *
+         * @param {number} x - The amount to scale horizontally
+         * @param {number} y - The amount to scale vertically
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.scale = function (x, y) {
+            this.a *= x;
+            this.d *= y;
+            this.c *= x;
+            this.b *= y;
+            this.tx *= x;
+            this.ty *= y;
+            return this;
+        };
+        /**
+         * Applies a rotation transformation to the matrix.
+         *
+         * @param {number} angle - The angle in radians.
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.rotate = function (angle) {
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            var a1 = this.a;
+            var c1 = this.c;
+            var tx1 = this.tx;
+            this.a = (a1 * cos) - (this.b * sin);
+            this.b = (a1 * sin) + (this.b * cos);
+            this.c = (c1 * cos) - (this.d * sin);
+            this.d = (c1 * sin) + (this.d * cos);
+            this.tx = (tx1 * cos) - (this.ty * sin);
+            this.ty = (tx1 * sin) + (this.ty * cos);
+            return this;
+        };
+        /**
+         * Appends the given Matrix to this Matrix.
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to append.
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.append = function (matrix) {
+            var a1 = this.a;
+            var b1 = this.b;
+            var c1 = this.c;
+            var d1 = this.d;
+            this.a = (matrix.a * a1) + (matrix.b * c1);
+            this.b = (matrix.a * b1) + (matrix.b * d1);
+            this.c = (matrix.c * a1) + (matrix.d * c1);
+            this.d = (matrix.c * b1) + (matrix.d * d1);
+            this.tx = (matrix.tx * a1) + (matrix.ty * c1) + this.tx;
+            this.ty = (matrix.tx * b1) + (matrix.ty * d1) + this.ty;
+            return this;
+        };
+        /**
+         * Sets the matrix based on all the available properties
+         *
+         * @param {number} x - Position on the x axis
+         * @param {number} y - Position on the y axis
+         * @param {number} pivotX - Pivot on the x axis
+         * @param {number} pivotY - Pivot on the y axis
+         * @param {number} scaleX - Scale on the x axis
+         * @param {number} scaleY - Scale on the y axis
+         * @param {number} rotation - Rotation in radians
+         * @param {number} skewX - Skew on the x axis
+         * @param {number} skewY - Skew on the y axis
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.setTransform = function (x, y, pivotX, pivotY, scaleX, scaleY, rotation, skewX, skewY) {
+            this.a = Math.cos(rotation + skewY) * scaleX;
+            this.b = Math.sin(rotation + skewY) * scaleX;
+            this.c = -Math.sin(rotation - skewX) * scaleY;
+            this.d = Math.cos(rotation - skewX) * scaleY;
+            this.tx = x - ((pivotX * this.a) + (pivotY * this.c));
+            this.ty = y - ((pivotX * this.b) + (pivotY * this.d));
+            return this;
+        };
+        /**
+         * Prepends the given Matrix to this Matrix.
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to prepend
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.prepend = function (matrix) {
+            var tx1 = this.tx;
+            if (matrix.a !== 1 || matrix.b !== 0 || matrix.c !== 0 || matrix.d !== 1) {
+                var a1 = this.a;
+                var c1 = this.c;
+                this.a = (a1 * matrix.a) + (this.b * matrix.c);
+                this.b = (a1 * matrix.b) + (this.b * matrix.d);
+                this.c = (c1 * matrix.a) + (this.d * matrix.c);
+                this.d = (c1 * matrix.b) + (this.d * matrix.d);
+            }
+            this.tx = (tx1 * matrix.a) + (this.ty * matrix.c) + matrix.tx;
+            this.ty = (tx1 * matrix.b) + (this.ty * matrix.d) + matrix.ty;
+            return this;
+        };
+        /**
+         * Decomposes the matrix (x, y, scaleX, scaleY, and rotation) and sets the properties on to a transform.
+         *
+         * @param {PIXI.Transform} transform - The transform to apply the properties to.
+         * @return {PIXI.Transform} The transform with the newly applied properties
+         */
+        Matrix.prototype.decompose = function (transform) {
+            // sort out rotation / skew..
+            var a = this.a;
+            var b = this.b;
+            var c = this.c;
+            var d = this.d;
+            var pivot = transform.pivot;
+            var skewX = -Math.atan2(-c, d);
+            var skewY = Math.atan2(b, a);
+            var delta = Math.abs(skewX + skewY);
+            if (delta < 0.00001 || Math.abs(Math.PI * 2 - delta) < 0.00001) {
+                transform.rotation = skewY;
+                transform.skew.x = transform.skew.y = 0;
+            }
+            else {
+                transform.rotation = 0;
+                transform.skew.x = skewX;
+                transform.skew.y = skewY;
+            }
+            // next set scale
+            transform.scale.x = Math.sqrt((a * a) + (b * b));
+            transform.scale.y = Math.sqrt((c * c) + (d * d));
+            // next set position
+            transform.position.x = this.tx + ((pivot.x * a) + (pivot.y * c));
+            transform.position.y = this.ty + ((pivot.x * b) + (pivot.y * d));
+            return transform;
+        };
+        /**
+         * Inverts this matrix
+         *
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.invert = function () {
+            var a1 = this.a;
+            var b1 = this.b;
+            var c1 = this.c;
+            var d1 = this.d;
+            var tx1 = this.tx;
+            var n = (a1 * d1) - (b1 * c1);
+            this.a = d1 / n;
+            this.b = -b1 / n;
+            this.c = -c1 / n;
+            this.d = a1 / n;
+            this.tx = ((c1 * this.ty) - (d1 * tx1)) / n;
+            this.ty = -((a1 * this.ty) - (b1 * tx1)) / n;
+            return this;
+        };
+        /**
+         * Resets this Matrix to an identity (default) matrix.
+         *
+         * @return {PIXI.Matrix} This matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.identity = function () {
+            this.a = 1;
+            this.b = 0;
+            this.c = 0;
+            this.d = 1;
+            this.tx = 0;
+            this.ty = 0;
+            return this;
+        };
+        /**
+         * Creates a new Matrix object with the same values as this one.
+         *
+         * @return {PIXI.Matrix} A copy of this matrix. Good for chaining method calls.
+         */
+        Matrix.prototype.clone = function () {
+            var matrix = new Matrix();
+            matrix.a = this.a;
+            matrix.b = this.b;
+            matrix.c = this.c;
+            matrix.d = this.d;
+            matrix.tx = this.tx;
+            matrix.ty = this.ty;
+            return matrix;
+        };
+        /**
+         * Changes the values of the given matrix to be the same as the ones in this matrix
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to copy to.
+         * @return {PIXI.Matrix} The matrix given in parameter with its values updated.
+         */
+        Matrix.prototype.copyTo = function (matrix) {
+            matrix.a = this.a;
+            matrix.b = this.b;
+            matrix.c = this.c;
+            matrix.d = this.d;
+            matrix.tx = this.tx;
+            matrix.ty = this.ty;
+            return matrix;
+        };
+        /**
+         * Changes the values of the matrix to be the same as the ones in given matrix
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to copy from.
+         * @return {PIXI.Matrix} this
+         */
+        Matrix.prototype.copyFrom = function (matrix) {
+            this.a = matrix.a;
+            this.b = matrix.b;
+            this.c = matrix.c;
+            this.d = matrix.d;
+            this.tx = matrix.tx;
+            this.ty = matrix.ty;
+            return this;
+        };
+        // #if _DEBUG
+        Matrix.prototype.toString = function () {
+            return "[@pixi/math:Matrix a=" + this.a + " b=" + this.b + " c=" + this.c + " d=" + this.d + " tx=" + this.tx + " ty=" + this.ty + "]";
+        };
+        Object.defineProperty(Matrix, "IDENTITY", {
+            // #endif
+            /**
+             * A default (identity) matrix
+             *
+             * @static
+             * @const
+             * @member {PIXI.Matrix}
+             */
+            get: function () {
+                return new Matrix();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Matrix, "TEMP_MATRIX", {
+            /**
+             * A temp matrix
+             *
+             * @static
+             * @const
+             * @member {PIXI.Matrix}
+             */
+            get: function () {
+                return new Matrix();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return Matrix;
+    }());
+    feng3d.Matrix = Matrix;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Transform that takes care about its versions
+     *
+     */
+    var Transform = /** @class */ (function () {
+        function Transform() {
+            /**
+             * The world transformation matrix.
+             *
+             * @member {PIXI.Matrix}
+             */
+            this.worldTransform = new feng3d.Matrix();
+            /**
+             * The local transformation matrix.
+             *
+             * @member {PIXI.Matrix}
+             */
+            this.localTransform = new feng3d.Matrix();
+            /**
+             * The coordinate of the object relative to the local coordinates of the parent.
+             *
+             * @member {PIXI.ObservablePoint}
+             */
+            this.position = new feng3d.ObservablePoint(this.onChange, this, 0, 0);
+            /**
+             * The scale factor of the object.
+             *
+             * @member {PIXI.ObservablePoint}
+             */
+            this.scale = new feng3d.ObservablePoint(this.onChange, this, 1, 1);
+            /**
+             * The pivot point of the displayObject that it rotates around.
+             *
+             * @member {PIXI.ObservablePoint}
+             */
+            this.pivot = new feng3d.ObservablePoint(this.onChange, this, 0, 0);
+            /**
+             * The skew amount, on the x and y axis.
+             *
+             * @member {PIXI.ObservablePoint}
+             */
+            this.skew = new feng3d.ObservablePoint(this.updateSkew, this, 0, 0);
+            /**
+             * The rotation amount.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._rotation = 0;
+            /**
+             * The X-coordinate value of the normalized local X axis,
+             * the first column of the local transformation matrix without a scale.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._cx = 1;
+            /**
+             * The Y-coordinate value of the normalized local X axis,
+             * the first column of the local transformation matrix without a scale.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._sx = 0;
+            /**
+             * The X-coordinate value of the normalized local Y axis,
+             * the second column of the local transformation matrix without a scale.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._cy = 0;
+            /**
+             * The Y-coordinate value of the normalized local Y axis,
+             * the second column of the local transformation matrix without a scale.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._sy = 1;
+            /**
+             * The locally unique ID of the local transform.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._localID = 0;
+            /**
+             * The locally unique ID of the local transform
+             * used to calculate the current local transformation matrix.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._currentLocalID = 0;
+            /**
+             * The locally unique ID of the world transform.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._worldID = 0;
+            /**
+             * The locally unique ID of the parent's world transform
+             * used to calculate the current world transformation matrix.
+             *
+             * @protected
+             * @member {number}
+             */
+            this._parentID = 0;
+        }
+        /**
+         * Called when a value changes.
+         *
+         * @protected
+         */
+        Transform.prototype.onChange = function () {
+            this._localID++;
+        };
+        /**
+         * Called when the skew or the rotation changes.
+         *
+         * @protected
+         */
+        Transform.prototype.updateSkew = function () {
+            this._cx = Math.cos(this._rotation + this.skew.y);
+            this._sx = Math.sin(this._rotation + this.skew.y);
+            this._cy = -Math.sin(this._rotation - this.skew.x); // cos, added PI/2
+            this._sy = Math.cos(this._rotation - this.skew.x); // sin, added PI/2
+            this._localID++;
+        };
+        // #if _DEBUG
+        Transform.prototype.toString = function () {
+            return "[@pixi/math:Transform "
+                + ("position=(" + this.position.x + ", " + this.position.y + ") ")
+                + ("rotation=" + this.rotation + " ")
+                + ("scale=(" + this.scale.x + ", " + this.scale.y + ") ")
+                + ("skew=(" + this.skew.x + ", " + this.skew.y + ") ")
+                + "]";
+        };
+        // #endif
+        /**
+         * Updates the local transformation matrix.
+         */
+        Transform.prototype.updateLocalTransform = function () {
+            var lt = this.localTransform;
+            if (this._localID !== this._currentLocalID) {
+                // get the matrix values of the displayobject based on its transform properties..
+                lt.a = this._cx * this.scale.x;
+                lt.b = this._sx * this.scale.x;
+                lt.c = this._cy * this.scale.y;
+                lt.d = this._sy * this.scale.y;
+                lt.tx = this.position.x - ((this.pivot.x * lt.a) + (this.pivot.y * lt.c));
+                lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
+                this._currentLocalID = this._localID;
+                // force an update..
+                this._parentID = -1;
+            }
+        };
+        /**
+         * Updates the local and the world transformation matrices.
+         *
+         * @param {PIXI.Transform} parentTransform - The parent transform
+         */
+        Transform.prototype.updateTransform = function (parentTransform) {
+            var lt = this.localTransform;
+            if (this._localID !== this._currentLocalID) {
+                // get the matrix values of the displayobject based on its transform properties..
+                lt.a = this._cx * this.scale.x;
+                lt.b = this._sx * this.scale.x;
+                lt.c = this._cy * this.scale.y;
+                lt.d = this._sy * this.scale.y;
+                lt.tx = this.position.x - ((this.pivot.x * lt.a) + (this.pivot.y * lt.c));
+                lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
+                this._currentLocalID = this._localID;
+                // force an update..
+                this._parentID = -1;
+            }
+            if (this._parentID !== parentTransform._worldID) {
+                // concat the parent matrix with the objects transform.
+                var pt = parentTransform.worldTransform;
+                var wt = this.worldTransform;
+                wt.a = (lt.a * pt.a) + (lt.b * pt.c);
+                wt.b = (lt.a * pt.b) + (lt.b * pt.d);
+                wt.c = (lt.c * pt.a) + (lt.d * pt.c);
+                wt.d = (lt.c * pt.b) + (lt.d * pt.d);
+                wt.tx = (lt.tx * pt.a) + (lt.ty * pt.c) + pt.tx;
+                wt.ty = (lt.tx * pt.b) + (lt.ty * pt.d) + pt.ty;
+                this._parentID = parentTransform._worldID;
+                // update the id of the transform..
+                this._worldID++;
+            }
+        };
+        /**
+         * Decomposes a matrix and sets the transforms properties based on it.
+         *
+         * @param {PIXI.Matrix} matrix - The matrix to decompose
+         */
+        Transform.prototype.setFromMatrix = function (matrix) {
+            matrix.decompose(this);
+            this._localID++;
+        };
+        Object.defineProperty(Transform.prototype, "rotation", {
+            /**
+             * The rotation of the object in radians.
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this._rotation;
+            },
+            set: function (value) {
+                if (this._rotation !== value) {
+                    this._rotation = value;
+                    this.updateSkew();
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * A default (identity) transform
+         *
+         * @static
+         * @constant
+         * @member {PIXI.Transform}
+         */
+        Transform.IDENTITY = new Transform();
+        return Transform;
+    }());
+    feng3d.Transform = Transform;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 路径工具
      */
     var PathUtils = /** @class */ (function () {
@@ -27931,6 +28818,743 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
+     * rendering features like masking and filtering.
+     *
+     * It is the base class of all display objects that act as a container for other objects, including Graphics
+     * and Sprite.
+     *
+     * ```js
+     * import { BlurFilter } from '@pixi/filter-blur';
+     * import { Container } from '@pixi/display';
+     * import { Graphics } from '@pixi/graphics';
+     * import { Sprite } from '@pixi/sprite';
+     *
+     * let container = new Container();
+     * let sprite = Sprite.from("https://s3-us-west-2.amazonaws.com/s.cdpn.io/693612/IaUrttj.png");
+     *
+     * sprite.width = 512;
+     * sprite.height = 512;
+     *
+     * // Adds a sprite as a child to this container. As a result, the sprite will be rendered whenever the container
+     * // is rendered.
+     * container.addChild(sprite);
+     *
+     * // Blurs whatever is rendered by the container
+     * container.filters = [new BlurFilter()];
+     *
+     * // Only the contents within a circle at the center should be rendered onto the screen.
+     * container.mask = new Graphics()
+     *  .beginFill(0xffffff)
+     *  .drawCircle(sprite.width / 2, sprite.height / 2, Math.min(sprite.width, sprite.height) / 2)
+     *  .endFill();
+     * ```
+     *
+     */
+    var Node2D = /** @class */ (function (_super) {
+        __extends(Node2D, _super);
+        function Node2D() {
+            var _this = _super.call(this) || this;
+            /**
+             * World transform and local transform of this object.
+             * This will become read-only later, please do not assign anything there unless you know what are you doing.
+             *
+             * @member {PIXI.Transform}
+             */
+            _this.transform = new feng3d.Transform();
+            /**
+             * The opacity of the object.
+             *
+             * @member {number}
+             */
+            _this.alpha = 1;
+            /**
+             * The visibility of the object. If false the object will not be drawn, and
+             * the updateTransform function will not be called.
+             *
+             * Only affects recursive calls from parent. You can ask for bounds or call updateTransform manually.
+             *
+             * @member {boolean}
+             */
+            _this.visible = true;
+            /**
+             * The display object container that contains this display object.
+             *
+             * @member {PIXI.Container}
+             */
+            _this.parent = null;
+            /**
+             * The multiplied alpha of the displayObject.
+             *
+             * @member {number}
+             * @readonly
+             */
+            _this.worldAlpha = 1;
+            /**
+             * If the object has been destroyed via destroy(). If true, it should not be used.
+             *
+             * @member {boolean}
+             * @protected
+             */
+            _this._destroyed = false;
+            /**
+             * The array of children of this container.
+             *
+             * @member {PIXI.Node2D[]}
+             * @readonly
+             */
+            _this.children = [];
+            return _this;
+        }
+        Node2D_1 = Node2D;
+        Node2D.create = function (name) {
+            if (name === void 0) { name = "Node2D"; }
+            var node2d = new feng3d.Entity().addComponent(Node2D_1);
+            node2d.name = name;
+            return node2d;
+        };
+        /**
+         * Recursively updates transform of all objects from the root to this one
+         * internal function for toLocal()
+         */
+        Node2D.prototype._recursivePostUpdateTransform = function () {
+            if (this.parent) {
+                this.parent._recursivePostUpdateTransform();
+                this.transform.updateTransform(this.parent.transform);
+            }
+            else {
+                this.transform.updateTransform(this._tempDisplayObjectParent.transform);
+            }
+        };
+        /**
+         * Calculates the global position of the display object.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
+         * @return {PIXI.Point} A point object representing the position of this object.
+         */
+        Node2D.prototype.toGlobal = function (position, point, skipUpdate) {
+            if (skipUpdate === void 0) { skipUpdate = false; }
+            if (!skipUpdate) {
+                this._recursivePostUpdateTransform();
+                // this parent check is for just in case the item is a root object.
+                // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
+                // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
+                if (!this.parent) {
+                    this.parent = this._tempDisplayObjectParent;
+                    this.displayObjectUpdateTransform();
+                    this.parent = null;
+                }
+                else {
+                    this.displayObjectUpdateTransform();
+                }
+            }
+            // don't need to update the lot
+            return this.worldTransform.apply(position, point);
+        };
+        /**
+         * Calculates the local position of the display object relative to another point.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {PIXI.Node2D} [from] - The Node2D to calculate the global position from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform
+         * @return {PIXI.Point} A point object representing the position of this object
+         */
+        Node2D.prototype.toLocal = function (position, from, point, skipUpdate) {
+            if (from) {
+                position = from.toGlobal(position, point, skipUpdate);
+            }
+            if (!skipUpdate) {
+                this._recursivePostUpdateTransform();
+                // this parent check is for just in case the item is a root object.
+                // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
+                // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
+                if (!this.parent) {
+                    this.parent = this._tempDisplayObjectParent;
+                    this.displayObjectUpdateTransform();
+                    this.parent = null;
+                }
+                else {
+                    this.displayObjectUpdateTransform();
+                }
+            }
+            // simply apply the matrix..
+            return this.worldTransform.applyInverse(position, point);
+        };
+        /**
+         * Set the parent Container of this Node2D.
+         *
+         * @param {PIXI.Container} container - The Container to add this Node2D to.
+         * @return {PIXI.Container} The Container that this Node2D was added to.
+         */
+        Node2D.prototype.setParent = function (container) {
+            if (!container || !container.addChild) {
+                throw new Error('setParent: Argument must be a Container');
+            }
+            container.addChild(this);
+            return container;
+        };
+        /**
+         * Convenience function to set the position, scale, skew and pivot at once.
+         *
+         * @param {number} [x=0] - The X position
+         * @param {number} [y=0] - The Y position
+         * @param {number} [scaleX=1] - The X scale value
+         * @param {number} [scaleY=1] - The Y scale value
+         * @param {number} [rotation=0] - The rotation
+         * @param {number} [skewX=0] - The X skew value
+         * @param {number} [skewY=0] - The Y skew value
+         * @param {number} [pivotX=0] - The X pivot value
+         * @param {number} [pivotY=0] - The Y pivot value
+         * @return {PIXI.Node2D} The Node2D instance
+         */
+        Node2D.prototype.setTransform = function (x, y, scaleX, scaleY, rotation, skewX, skewY, pivotX, pivotY) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            if (scaleX === void 0) { scaleX = 1; }
+            if (scaleY === void 0) { scaleY = 1; }
+            if (rotation === void 0) { rotation = 0; }
+            if (skewX === void 0) { skewX = 0; }
+            if (skewY === void 0) { skewY = 0; }
+            if (pivotX === void 0) { pivotX = 0; }
+            if (pivotY === void 0) { pivotY = 0; }
+            this.position.x = x;
+            this.position.y = y;
+            this.scale.x = !scaleX ? 1 : scaleX;
+            this.scale.y = !scaleY ? 1 : scaleY;
+            this.rotation = rotation;
+            this.skew.x = skewX;
+            this.skew.y = skewY;
+            this.pivot.x = pivotX;
+            this.pivot.y = pivotY;
+            return this;
+        };
+        Object.defineProperty(Node2D.prototype, "_tempDisplayObjectParent", {
+            /**
+             * @protected
+             * @member {PIXI.Container}
+             */
+            get: function () {
+                if (this.tempDisplayObjectParent === null) {
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                    this.tempDisplayObjectParent = Node2D_1.create();
+                }
+                return this.tempDisplayObjectParent;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "x", {
+            /**
+             * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+             * An alias to position.x
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.position.x;
+            },
+            set: function (value) {
+                this.transform.position.x = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "y", {
+            /**
+             * The position of the displayObject on the y axis relative to the local coordinates of the parent.
+             * An alias to position.y
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.position.y;
+            },
+            set: function (value) {
+                this.transform.position.y = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "worldTransform", {
+            /**
+             * Current transform of the object based on world (parent) factors.
+             *
+             * @member {PIXI.Matrix}
+             * @readonly
+             */
+            get: function () {
+                return this.transform.worldTransform;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "localTransform", {
+            /**
+             * Current transform of the object based on local factors: position, scale, other stuff.
+             *
+             * @member {PIXI.Matrix}
+             * @readonly
+             */
+            get: function () {
+                return this.transform.localTransform;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "position", {
+            /**
+             * The coordinate of the object relative to the local coordinates of the parent.
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.position;
+            },
+            set: function (value) {
+                this.transform.position.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "scale", {
+            /**
+             * The scale factors of this object along the local coordinate axes.
+             *
+             * The default scale is (1, 1).
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.scale;
+            },
+            set: function (value) {
+                this.transform.scale.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "pivot", {
+            /**
+             * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
+             * is the projection of `pivot` in the parent's local space.
+             *
+             * By default, the pivot is the origin (0, 0).
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.pivot;
+            },
+            set: function (value) {
+                this.transform.pivot.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "skew", {
+            /**
+             * The skew factor for the object in radians.
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.skew;
+            },
+            set: function (value) {
+                this.transform.skew.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "rotation", {
+            /**
+             * The rotation of the object in radians.
+             * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.transform.rotation;
+            },
+            set: function (value) {
+                this.transform.rotation = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "angle", {
+            /**
+             * The angle of the object in degrees.
+             * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.transform.rotation * Math.RAD2DEG;
+            },
+            set: function (value) {
+                this.transform.rotation = value * Math.DEG2RAD;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "worldVisible", {
+            /**
+             * Indicates if the object is globally visible.
+             *
+             * @member {boolean}
+             * @readonly
+             */
+            get: function () {
+                var item = this;
+                do {
+                    if (!item.visible) {
+                        return false;
+                    }
+                    item = item.parent;
+                } while (item);
+                return true;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
+         *
+         * @param type		要检索的组件的类型。
+         * @return			返回与给出类定义一致的组件
+         *
+         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
+         */
+        Node2D.prototype.getComponentsInChildren = function (type, filter, result) {
+            result = result || [];
+            var findchildren = true;
+            var cls = type;
+            var components = this.entity.components;
+            for (var i = 0, n = components.length; i < n; i++) {
+                var item = components[i];
+                if (!cls) {
+                    result.push(item);
+                }
+                else if (item instanceof cls) {
+                    if (filter) {
+                        var filterresult = filter(item);
+                        filterresult && filterresult.value && result.push(item);
+                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
+                    }
+                    else {
+                        result.push(item);
+                    }
+                }
+            }
+            if (findchildren) {
+                for (var i = 0, n = this.children.length; i < n; i++) {
+                    this.children[i].getComponentsInChildren(type, filter, result);
+                }
+            }
+            return result;
+        };
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Node2D.prototype.getComponentsInParents = function (type, result) {
+            result = result || [];
+            var parent = this.parent;
+            while (parent) {
+                var compnent = parent.getComponent(type);
+                compnent && result.push(compnent);
+                parent = parent.parent;
+            }
+            return result;
+        };
+        /**
+         * Overridable method that can be used by Container subclasses whenever the children array is modified
+         *
+         * @protected
+         */
+        Node2D.prototype.onChildrenChange = function (_length) {
+            /* empty */
+        };
+        /**
+         * Adds one or more children to the container.
+         *
+         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
+         *
+         * @param {...PIXI.Node2D} children - The Node2D(s) to add to the container
+         * @return {PIXI.Node2D} The first child that was added.
+         */
+        Node2D.prototype.addChild = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
+            }
+            // if there is only one argument we can bypass looping through the them
+            if (children.length > 1) {
+                // loop through the array and add all children
+                for (var i = 0; i < children.length; i++) {
+                    // eslint-disable-next-line prefer-rest-params
+                    this.addChild(children[i]);
+                }
+            }
+            else {
+                var child = children[0];
+                // if the child has a parent then lets remove it as PixiJS objects can only exist in one place
+                if (child.parent) {
+                    child.parent.removeChild(child);
+                }
+                child.parent = this;
+                // ensure child transform will be recalculated
+                child.transform._parentID = -1;
+                this.children.push(child);
+                // TODO - lets either do all callbacks or all events.. not both!
+                this.onChildrenChange(this.children.length - 1);
+                this.emit('childAdded', { child: child, parent: this, index: this.children.length - 1 });
+                child.emit('added', this);
+            }
+            return children[0];
+        };
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {PIXI.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {PIXI.Node2D} The child that was added.
+         */
+        Node2D.prototype.addChildAt = function (child, index) {
+            if (index < 0 || index > this.children.length) {
+                throw new Error(child + "addChildAt: The index " + index + " supplied is out of bounds " + this.children.length);
+            }
+            if (child.parent) {
+                child.parent.removeChild(child);
+            }
+            child.parent = this;
+            // ensure child transform will be recalculated
+            child.transform._parentID = -1;
+            this.children.splice(index, 0, child);
+            // TODO - lets either do all callbacks or all events.. not both!
+            this.onChildrenChange(index);
+            child.emit('added', this);
+            this.emit('childAdded', { child: child, parent: this, index: index });
+            return child;
+        };
+        /**
+         * Swaps the position of 2 Display Objects within this container.
+         *
+         * @param {PIXI.Node2D} child - First display object to swap
+         * @param {PIXI.Node2D} child2 - Second display object to swap
+         */
+        Node2D.prototype.swapChildren = function (child, child2) {
+            if (child === child2) {
+                return;
+            }
+            var index1 = this.getChildIndex(child);
+            var index2 = this.getChildIndex(child2);
+            this.children[index1] = child2;
+            this.children[index2] = child;
+            this.onChildrenChange(index1 < index2 ? index1 : index2);
+        };
+        /**
+         * Returns the index position of a child Node2D instance
+         *
+         * @param {PIXI.Node2D} child - The Node2D instance to identify
+         * @return {number} The index position of the child display object to identify
+         */
+        Node2D.prototype.getChildIndex = function (child) {
+            var index = this.children.indexOf(child);
+            if (index === -1) {
+                throw new Error('The supplied Node2D must be a child of the caller');
+            }
+            return index;
+        };
+        /**
+         * Changes the position of an existing child in the display object container
+         *
+         * @param {PIXI.Node2D} child - The child Node2D instance for which you want to change the index number
+         * @param {number} index - The resulting index number for the child display object
+         */
+        Node2D.prototype.setChildIndex = function (child, index) {
+            if (index < 0 || index >= this.children.length) {
+                throw new Error("The index " + index + " supplied is out of bounds " + this.children.length);
+            }
+            var currentIndex = this.getChildIndex(child);
+            this.children.splice(currentIndex, 1); // remove from old position
+            this.children.splice(index, 0, child); // add at new position
+            this.onChildrenChange(index);
+        };
+        /**
+         * Returns the child at the specified index
+         *
+         * @param {number} index - The index to get the child at
+         * @return {PIXI.Node2D} The child at the given index, if any.
+         */
+        Node2D.prototype.getChildAt = function (index) {
+            if (index < 0 || index >= this.children.length) {
+                throw new Error("getChildAt: Index (" + index + ") does not exist.");
+            }
+            return this.children[index];
+        };
+        /**
+         * Removes one or more children from the container.
+         *
+         * @param {...PIXI.Node2D} children - The Node2D(s) to remove
+         * @return {PIXI.Node2D} The first child that was removed.
+         */
+        Node2D.prototype.removeChild = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
+            }
+            // if there is only one argument we can bypass looping through the them
+            if (children.length > 1) {
+                // loop through the arguments property and remove all children
+                for (var i = 0; i < children.length; i++) {
+                    this.removeChild(children[i]);
+                }
+            }
+            else {
+                var child = children[0];
+                var index = this.children.indexOf(child);
+                if (index === -1)
+                    return null;
+                child.parent = null;
+                // ensure child transform will be recalculated
+                child.transform._parentID = -1;
+                this.children.splice(index, 1);
+                // TODO - lets either do all callbacks or all events.. not both!
+                this.onChildrenChange(index);
+                child.emit('removed', this);
+                this.emit('childRemoved', { child: child, parent: this, index: index });
+            }
+            return children[0];
+        };
+        /**
+         * Removes a child from the specified index position.
+         *
+         * @param {number} index - The index to get the child from
+         * @return {PIXI.Node2D} The child that was removed.
+         */
+        Node2D.prototype.removeChildAt = function (index) {
+            var child = this.getChildAt(index);
+            // ensure child transform will be recalculated..
+            child.parent = null;
+            child.transform._parentID = -1;
+            this.children.splice(index, 1);
+            // TODO - lets either do all callbacks or all events.. not both!
+            this.onChildrenChange(index);
+            child.emit('removed', this);
+            this.emit('childRemoved', { child: child, parent: this, index: index });
+            return child;
+        };
+        /**
+         * Removes all children from this container that are within the begin and end indexes.
+         *
+         * @param {number} [beginIndex=0] - The beginning position.
+         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
+         * @returns {PIXI.Node2D[]} List of removed children
+         */
+        Node2D.prototype.removeChildren = function (beginIndex, endIndex) {
+            if (beginIndex === void 0) { beginIndex = 0; }
+            if (endIndex === void 0) { endIndex = this.children.length; }
+            var begin = beginIndex;
+            var end = endIndex;
+            var range = end - begin;
+            var removed;
+            if (range > 0 && range <= end) {
+                removed = this.children.splice(begin, range);
+                for (var i = 0; i < removed.length; ++i) {
+                    removed[i].parent = null;
+                    if (removed[i].transform) {
+                        removed[i].transform._parentID = -1;
+                    }
+                }
+                this.onChildrenChange(beginIndex);
+                for (var i = 0; i < removed.length; ++i) {
+                    removed[i].emit('removed', this);
+                    this.emit('childRemoved', { child: removed[i], parent: this, index: i });
+                }
+                return removed;
+            }
+            else if (range === 0 && this.children.length === 0) {
+                return [];
+            }
+            throw new RangeError('removeChildren: numeric values are outside the acceptable range.');
+        };
+        /**
+         * Updates the transform on all children of this container for rendering
+         */
+        Node2D.prototype.updateTransform = function () {
+            this.transform.updateTransform(this.parent.transform);
+            // TODO: check render flags, how to process stuff here
+            this.worldAlpha = this.alpha * this.parent.worldAlpha;
+            for (var i = 0, j = this.children.length; i < j; ++i) {
+                var child = this.children[i];
+                if (child.visible) {
+                    child.updateTransform();
+                }
+            }
+        };
+        /**
+         * Removes all internal references and listeners as well as removes children from the display list.
+         * Do not use a Container after calling `destroy`.
+         *
+         * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options
+         *  have been set to that value
+         * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
+         *  method called as well. 'options' will be passed on to those calls.
+         * @param {boolean} [options.texture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the texture of the child sprite
+         * @param {boolean} [options.baseTexture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the base texture of the child sprite
+         */
+        Node2D.prototype.destroy = function (options) {
+            if (this.parent) {
+                this.parent.removeChild(this);
+            }
+            this.offAll();
+            this.transform = null;
+            this.parent = null;
+            this._destroyed = true;
+            var destroyChildren = typeof options === 'boolean' ? options : options && options.children;
+            var oldChildren = this.removeChildren(0, this.children.length);
+            if (destroyChildren) {
+                for (var i = 0; i < oldChildren.length; ++i) {
+                    oldChildren[i].destroy(options);
+                }
+            }
+        };
+        var Node2D_1;
+        __decorate([
+            feng3d.AddEntityMenu("Node2D")
+        ], Node2D, "create", null);
+        Node2D = Node2D_1 = __decorate([
+            feng3d.RegisterComponent({ single: true })
+        ], Node2D);
+        return Node2D;
+    }(feng3d.Component));
+    feng3d.Node2D = Node2D;
+    /**
+     * Node2D default updateTransform, does not update children of container.
+     * Will crash if there's no parent element.
+     *.Node2D#
+     * @method displayObjectUpdateTransform
+     */
+    Node2D.prototype.displayObjectUpdateTransform = Node2D.prototype.updateTransform;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 轴对称包围盒
      *
      * 用于优化计算射线碰撞检测以及视锥剔除等。
@@ -28751,6 +30375,57 @@ var feng3d;
         return Component3D;
     }(feng3d.Component));
     feng3d.Component3D = Component3D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3D组件
+     *
+     * 所有基于3D空间的组件均可继承于该组件。
+     */
+    var Component2D = /** @class */ (function (_super) {
+        __extends(Component2D, _super);
+        function Component2D() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(Component2D.prototype, "node2d", {
+            /**
+             * The Node2D attached to this Entity (null if there is none attached).
+             *
+             * 附加到此 Entity 的 Node2D。
+             */
+            get: function () {
+                var _a;
+                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node2D);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component2D.prototype.getComponentsInChildren = function (type, filter, result) {
+            return this.node2d.getComponentsInChildren(type, filter, result);
+        };
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component2D.prototype.getComponentsInParents = function (type, result) {
+            return this.node2d.getComponentsInParents(type, result);
+        };
+        Component2D = __decorate([
+            feng3d.RegisterComponent({ dependencies: [feng3d.Node2D] })
+        ], Component2D);
+        return Component2D;
+    }(feng3d.Component));
+    feng3d.Component2D = Component2D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
