@@ -28818,739 +28818,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
-     * rendering features like masking and filtering.
-     *
-     * It is the base class of all display objects that act as a container for other objects, including Graphics
-     * and Sprite.
-     *
-     * ```js
-     * import { BlurFilter } from '@pixi/filter-blur';
-     * import { Container } from '@pixi/display';
-     * import { Graphics } from '@pixi/graphics';
-     * import { Sprite } from '@pixi/sprite';
-     *
-     * let container = new Container();
-     * let sprite = Sprite.from("https://s3-us-west-2.amazonaws.com/s.cdpn.io/693612/IaUrttj.png");
-     *
-     * sprite.width = 512;
-     * sprite.height = 512;
-     *
-     * // Adds a sprite as a child to this container. As a result, the sprite will be rendered whenever the container
-     * // is rendered.
-     * container.addChild(sprite);
-     *
-     * // Blurs whatever is rendered by the container
-     * container.filters = [new BlurFilter()];
-     *
-     * // Only the contents within a circle at the center should be rendered onto the screen.
-     * container.mask = new Graphics()
-     *  .beginFill(0xffffff)
-     *  .drawCircle(sprite.width / 2, sprite.height / 2, Math.min(sprite.width, sprite.height) / 2)
-     *  .endFill();
-     * ```
-     *
-     */
-    var Node2D = /** @class */ (function (_super) {
-        __extends(Node2D, _super);
-        function Node2D() {
-            var _this = _super.call(this) || this;
-            _this.tempDisplayObjectParent = null;
-            /**
-             * World transform and local transform of this object.
-             * This will become read-only later, please do not assign anything there unless you know what are you doing.
-             *
-             * @member {PIXI.Transform}
-             */
-            _this.transform = new feng3d.Transform();
-            /**
-             * The opacity of the object.
-             *
-             * @member {number}
-             */
-            _this.alpha = 1;
-            /**
-             * The visibility of the object. If false the object will not be drawn, and
-             * the updateTransform function will not be called.
-             *
-             * Only affects recursive calls from parent. You can ask for bounds or call updateTransform manually.
-             *
-             * @member {boolean}
-             */
-            _this.visible = true;
-            /**
-             * The display object container that contains this display object.
-             *
-             * @member {PIXI.Container}
-             */
-            _this.parent = null;
-            /**
-             * The multiplied alpha of the displayObject.
-             *
-             * @member {number}
-             * @readonly
-             */
-            _this.worldAlpha = 1;
-            /**
-             * If the object has been destroyed via destroy(). If true, it should not be used.
-             *
-             * @member {boolean}
-             * @protected
-             */
-            _this._destroyed = false;
-            /**
-             * The array of children of this container.
-             *
-             * @member {feng3d.Node2D[]}
-             * @readonly
-             */
-            _this.children = [];
-            return _this;
-        }
-        Node2D.create = function (name) {
-            if (name === void 0) { name = "Node2D"; }
-            var node2d = new feng3d.Entity().addComponent(Node2D);
-            node2d.name = name;
-            return node2d;
-        };
-        /**
-         * Recursively updates transform of all objects from the root to this one
-         * internal function for toLocal()
-         */
-        Node2D.prototype._recursivePostUpdateTransform = function () {
-            if (this.parent) {
-                this.parent._recursivePostUpdateTransform();
-                this.transform.updateTransform(this.parent.transform);
-            }
-            else {
-                this.transform.updateTransform(this._tempDisplayObjectParent.transform);
-            }
-        };
-        /**
-         * Calculates the global position of the display object.
-         *
-         * @param {PIXI.IPointData} position - The world origin to calculate from.
-         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
-         *  (otherwise will create a new Point).
-         * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
-         * @return {PIXI.Point} A point object representing the position of this object.
-         */
-        Node2D.prototype.toGlobal = function (position, point, skipUpdate) {
-            if (skipUpdate === void 0) { skipUpdate = false; }
-            if (!skipUpdate) {
-                this._recursivePostUpdateTransform();
-                // this parent check is for just in case the item is a root object.
-                // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
-                // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
-                if (!this.parent) {
-                    this.parent = this._tempDisplayObjectParent;
-                    this.displayObjectUpdateTransform();
-                    this.parent = null;
-                }
-                else {
-                    this.displayObjectUpdateTransform();
-                }
-            }
-            // don't need to update the lot
-            return this.worldTransform.apply(position, point);
-        };
-        /**
-         * Calculates the local position of the display object relative to another point.
-         *
-         * @param {PIXI.IPointData} position - The world origin to calculate from.
-         * @param {feng3d.Node2D} [from] - The Node2D to calculate the global position from.
-         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
-         *  (otherwise will create a new Point).
-         * @param {boolean} [skipUpdate=false] - Should we skip the update transform
-         * @return {PIXI.Point} A point object representing the position of this object
-         */
-        Node2D.prototype.toLocal = function (position, from, point, skipUpdate) {
-            if (from) {
-                position = from.toGlobal(position, point, skipUpdate);
-            }
-            if (!skipUpdate) {
-                this._recursivePostUpdateTransform();
-                // this parent check is for just in case the item is a root object.
-                // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
-                // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
-                if (!this.parent) {
-                    this.parent = this._tempDisplayObjectParent;
-                    this.displayObjectUpdateTransform();
-                    this.parent = null;
-                }
-                else {
-                    this.displayObjectUpdateTransform();
-                }
-            }
-            // simply apply the matrix..
-            return this.worldTransform.applyInverse(position, point);
-        };
-        /**
-         * Set the parent Container of this Node2D.
-         *
-         * @param {PIXI.Container} container - The Container to add this Node2D to.
-         * @return {PIXI.Container} The Container that this Node2D was added to.
-         */
-        Node2D.prototype.setParent = function (container) {
-            if (!container || !container.addChild) {
-                throw new Error('setParent: Argument must be a Container');
-            }
-            container.addChild(this);
-            return container;
-        };
-        /**
-         * Convenience function to set the position, scale, skew and pivot at once.
-         *
-         * @param {number} [x=0] - The X position
-         * @param {number} [y=0] - The Y position
-         * @param {number} [scaleX=1] - The X scale value
-         * @param {number} [scaleY=1] - The Y scale value
-         * @param {number} [rotation=0] - The rotation
-         * @param {number} [skewX=0] - The X skew value
-         * @param {number} [skewY=0] - The Y skew value
-         * @param {number} [pivotX=0] - The X pivot value
-         * @param {number} [pivotY=0] - The Y pivot value
-         * @return {feng3d.Node2D} The Node2D instance
-         */
-        Node2D.prototype.setTransform = function (x, y, scaleX, scaleY, rotation, skewX, skewY, pivotX, pivotY) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (scaleX === void 0) { scaleX = 1; }
-            if (scaleY === void 0) { scaleY = 1; }
-            if (rotation === void 0) { rotation = 0; }
-            if (skewX === void 0) { skewX = 0; }
-            if (skewY === void 0) { skewY = 0; }
-            if (pivotX === void 0) { pivotX = 0; }
-            if (pivotY === void 0) { pivotY = 0; }
-            this.position.x = x;
-            this.position.y = y;
-            this.scale.x = !scaleX ? 1 : scaleX;
-            this.scale.y = !scaleY ? 1 : scaleY;
-            this.rotation = rotation;
-            this.skew.x = skewX;
-            this.skew.y = skewY;
-            this.pivot.x = pivotX;
-            this.pivot.y = pivotY;
-            return this;
-        };
-        Object.defineProperty(Node2D.prototype, "_tempDisplayObjectParent", {
-            /**
-             * @protected
-             * @member {PIXI.Container}
-             */
-            get: function () {
-                if (this.tempDisplayObjectParent === null) {
-                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                    this.tempDisplayObjectParent = Node2D.create();
-                }
-                return this.tempDisplayObjectParent;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "x", {
-            /**
-             * The position of the displayObject on the x axis relative to the local coordinates of the parent.
-             * An alias to position.x
-             *
-             * @member {number}
-             */
-            get: function () {
-                return this.position.x;
-            },
-            set: function (value) {
-                this.transform.position.x = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "y", {
-            /**
-             * The position of the displayObject on the y axis relative to the local coordinates of the parent.
-             * An alias to position.y
-             *
-             * @member {number}
-             */
-            get: function () {
-                return this.position.y;
-            },
-            set: function (value) {
-                this.transform.position.y = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "worldTransform", {
-            /**
-             * Current transform of the object based on world (parent) factors.
-             *
-             * @member {PIXI.Matrix}
-             * @readonly
-             */
-            get: function () {
-                return this.transform.worldTransform;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "localTransform", {
-            /**
-             * Current transform of the object based on local factors: position, scale, other stuff.
-             *
-             * @member {PIXI.Matrix}
-             * @readonly
-             */
-            get: function () {
-                return this.transform.localTransform;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "position", {
-            /**
-             * The coordinate of the object relative to the local coordinates of the parent.
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
-             */
-            get: function () {
-                return this.transform.position;
-            },
-            set: function (value) {
-                this.transform.position.copyFrom(value);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "scale", {
-            /**
-             * The scale factors of this object along the local coordinate axes.
-             *
-             * The default scale is (1, 1).
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
-             */
-            get: function () {
-                return this.transform.scale;
-            },
-            set: function (value) {
-                this.transform.scale.copyFrom(value);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "pivot", {
-            /**
-             * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
-             * is the projection of `pivot` in the parent's local space.
-             *
-             * By default, the pivot is the origin (0, 0).
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
-             */
-            get: function () {
-                return this.transform.pivot;
-            },
-            set: function (value) {
-                this.transform.pivot.copyFrom(value);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "skew", {
-            /**
-             * The skew factor for the object in radians.
-             *
-             * @since PixiJS 4
-             * @member {PIXI.ObservablePoint}
-             */
-            get: function () {
-                return this.transform.skew;
-            },
-            set: function (value) {
-                this.transform.skew.copyFrom(value);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "rotation", {
-            /**
-             * The rotation of the object in radians.
-             * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-             *
-             * @member {number}
-             */
-            get: function () {
-                return this.transform.rotation;
-            },
-            set: function (value) {
-                this.transform.rotation = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "angle", {
-            /**
-             * The angle of the object in degrees.
-             * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-             *
-             * @member {number}
-             */
-            get: function () {
-                return this.transform.rotation * Math.RAD2DEG;
-            },
-            set: function (value) {
-                this.transform.rotation = value * Math.DEG2RAD;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "worldVisible", {
-            /**
-             * Indicates if the object is globally visible.
-             *
-             * @member {boolean}
-             * @readonly
-             */
-            get: function () {
-                var item = this;
-                do {
-                    if (!item.visible) {
-                        return false;
-                    }
-                    item = item.parent;
-                } while (item);
-                return true;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
-         *
-         * @param type		要检索的组件的类型。
-         * @return			返回与给出类定义一致的组件
-         *
-         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
-         */
-        Node2D.prototype.getComponentsInChildren = function (type, filter, result) {
-            result = result || [];
-            var findchildren = true;
-            var cls = type;
-            var components = this.entity.components;
-            for (var i = 0, n = components.length; i < n; i++) {
-                var item = components[i];
-                if (!cls) {
-                    result.push(item);
-                }
-                else if (item instanceof cls) {
-                    if (filter) {
-                        var filterresult = filter(item);
-                        filterresult && filterresult.value && result.push(item);
-                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
-                    }
-                    else {
-                        result.push(item);
-                    }
-                }
-            }
-            if (findchildren) {
-                for (var i = 0, n = this.children.length; i < n; i++) {
-                    this.children[i].getComponentsInChildren(type, filter, result);
-                }
-            }
-            return result;
-        };
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Node2D.prototype.getComponentsInParents = function (type, result) {
-            result = result || [];
-            var parent = this.parent;
-            while (parent) {
-                var compnent = parent.getComponent(type);
-                compnent && result.push(compnent);
-                parent = parent.parent;
-            }
-            return result;
-        };
-        /**
-         * Overridable method that can be used by Container subclasses whenever the children array is modified
-         *
-         * @protected
-         */
-        Node2D.prototype.onChildrenChange = function (_length) {
-            /* empty */
-        };
-        /**
-         * Adds one or more children to the container.
-         *
-         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
-         * @return {feng3d.Node2D} The first child that was added.
-         */
-        Node2D.prototype.addChild = function () {
-            var children = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                children[_i] = arguments[_i];
-            }
-            // if there is only one argument we can bypass looping through the them
-            if (children.length > 1) {
-                // loop through the array and add all children
-                for (var i = 0; i < children.length; i++) {
-                    // eslint-disable-next-line prefer-rest-params
-                    this.addChild(children[i]);
-                }
-            }
-            else {
-                var child = children[0];
-                // if the child has a parent then lets remove it as PixiJS objects can only exist in one place
-                if (child.parent) {
-                    child.parent.removeChild(child);
-                }
-                child.parent = this;
-                // ensure child transform will be recalculated
-                child.transform._parentID = -1;
-                this.children.push(child);
-                // TODO - lets either do all callbacks or all events.. not both!
-                this.onChildrenChange(this.children.length - 1);
-                this.emit('childAdded', { child: child, parent: this, index: this.children.length - 1 });
-                child.emit('added', this);
-            }
-            return children[0];
-        };
-        /**
-         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
-         *
-         * @param {feng3d.Node2D} child - The child to add
-         * @param {number} index - The index to place the child in
-         * @return {feng3d.Node2D} The child that was added.
-         */
-        Node2D.prototype.addChildAt = function (child, index) {
-            if (index < 0 || index > this.children.length) {
-                throw new Error(child + "addChildAt: The index " + index + " supplied is out of bounds " + this.children.length);
-            }
-            if (child.parent) {
-                child.parent.removeChild(child);
-            }
-            child.parent = this;
-            // ensure child transform will be recalculated
-            child.transform._parentID = -1;
-            this.children.splice(index, 0, child);
-            // TODO - lets either do all callbacks or all events.. not both!
-            this.onChildrenChange(index);
-            child.emit('added', this);
-            this.emit('childAdded', { child: child, parent: this, index: index });
-            return child;
-        };
-        /**
-         * Swaps the position of 2 Display Objects within this container.
-         *
-         * @param {feng3d.Node2D} child - First display object to swap
-         * @param {feng3d.Node2D} child2 - Second display object to swap
-         */
-        Node2D.prototype.swapChildren = function (child, child2) {
-            if (child === child2) {
-                return;
-            }
-            var index1 = this.getChildIndex(child);
-            var index2 = this.getChildIndex(child2);
-            this.children[index1] = child2;
-            this.children[index2] = child;
-            this.onChildrenChange(index1 < index2 ? index1 : index2);
-        };
-        /**
-         * Returns the index position of a child Node2D instance
-         *
-         * @param {feng3d.Node2D} child - The Node2D instance to identify
-         * @return {number} The index position of the child display object to identify
-         */
-        Node2D.prototype.getChildIndex = function (child) {
-            var index = this.children.indexOf(child);
-            if (index === -1) {
-                throw new Error('The supplied Node2D must be a child of the caller');
-            }
-            return index;
-        };
-        /**
-         * Changes the position of an existing child in the display object container
-         *
-         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
-         * @param {number} index - The resulting index number for the child display object
-         */
-        Node2D.prototype.setChildIndex = function (child, index) {
-            if (index < 0 || index >= this.children.length) {
-                throw new Error("The index " + index + " supplied is out of bounds " + this.children.length);
-            }
-            var currentIndex = this.getChildIndex(child);
-            this.children.splice(currentIndex, 1); // remove from old position
-            this.children.splice(index, 0, child); // add at new position
-            this.onChildrenChange(index);
-        };
-        /**
-         * Returns the child at the specified index
-         *
-         * @param {number} index - The index to get the child at
-         * @return {feng3d.Node2D} The child at the given index, if any.
-         */
-        Node2D.prototype.getChildAt = function (index) {
-            if (index < 0 || index >= this.children.length) {
-                throw new Error("getChildAt: Index (" + index + ") does not exist.");
-            }
-            return this.children[index];
-        };
-        /**
-         * Removes one or more children from the container.
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
-         * @return {feng3d.Node2D} The first child that was removed.
-         */
-        Node2D.prototype.removeChild = function () {
-            var children = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                children[_i] = arguments[_i];
-            }
-            // if there is only one argument we can bypass looping through the them
-            if (children.length > 1) {
-                // loop through the arguments property and remove all children
-                for (var i = 0; i < children.length; i++) {
-                    this.removeChild(children[i]);
-                }
-            }
-            else {
-                var child = children[0];
-                var index = this.children.indexOf(child);
-                if (index === -1)
-                    return null;
-                child.parent = null;
-                // ensure child transform will be recalculated
-                child.transform._parentID = -1;
-                this.children.splice(index, 1);
-                // TODO - lets either do all callbacks or all events.. not both!
-                this.onChildrenChange(index);
-                child.emit('removed', this);
-                this.emit('childRemoved', { child: child, parent: this, index: index });
-            }
-            return children[0];
-        };
-        /**
-         * Removes a child from the specified index position.
-         *
-         * @param {number} index - The index to get the child from
-         * @return {feng3d.Node2D} The child that was removed.
-         */
-        Node2D.prototype.removeChildAt = function (index) {
-            var child = this.getChildAt(index);
-            // ensure child transform will be recalculated..
-            child.parent = null;
-            child.transform._parentID = -1;
-            this.children.splice(index, 1);
-            // TODO - lets either do all callbacks or all events.. not both!
-            this.onChildrenChange(index);
-            child.emit('removed', this);
-            this.emit('childRemoved', { child: child, parent: this, index: index });
-            return child;
-        };
-        /**
-         * Removes all children from this container that are within the begin and end indexes.
-         *
-         * @param {number} [beginIndex=0] - The beginning position.
-         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
-         * @returns {feng3d.Node2D[]} List of removed children
-         */
-        Node2D.prototype.removeChildren = function (beginIndex, endIndex) {
-            if (beginIndex === void 0) { beginIndex = 0; }
-            if (endIndex === void 0) { endIndex = this.children.length; }
-            var begin = beginIndex;
-            var end = endIndex;
-            var range = end - begin;
-            var removed;
-            if (range > 0 && range <= end) {
-                removed = this.children.splice(begin, range);
-                for (var i = 0; i < removed.length; ++i) {
-                    removed[i].parent = null;
-                    if (removed[i].transform) {
-                        removed[i].transform._parentID = -1;
-                    }
-                }
-                this.onChildrenChange(beginIndex);
-                for (var i = 0; i < removed.length; ++i) {
-                    removed[i].emit('removed', this);
-                    this.emit('childRemoved', { child: removed[i], parent: this, index: i });
-                }
-                return removed;
-            }
-            else if (range === 0 && this.children.length === 0) {
-                return [];
-            }
-            throw new RangeError('removeChildren: numeric values are outside the acceptable range.');
-        };
-        /**
-         * Updates the transform on all children of this container for rendering
-         */
-        Node2D.prototype.updateTransform = function () {
-            this.transform.updateTransform(this.parent.transform);
-            // TODO: check render flags, how to process stuff here
-            this.worldAlpha = this.alpha * this.parent.worldAlpha;
-            for (var i = 0, j = this.children.length; i < j; ++i) {
-                var child = this.children[i];
-                if (child.visible) {
-                    child.updateTransform();
-                }
-            }
-        };
-        /**
-         * Removes all internal references and listeners as well as removes children from the display list.
-         * Do not use a Container after calling `destroy`.
-         *
-         * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options
-         *  have been set to that value
-         * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
-         *  method called as well. 'options' will be passed on to those calls.
-         * @param {boolean} [options.texture=false] - Only used for child Sprites if options.children is set to true
-         *  Should it destroy the texture of the child sprite
-         * @param {boolean} [options.baseTexture=false] - Only used for child Sprites if options.children is set to true
-         *  Should it destroy the base texture of the child sprite
-         */
-        Node2D.prototype.destroy = function (options) {
-            if (this.parent) {
-                this.parent.removeChild(this);
-            }
-            this.offAll();
-            this.transform = null;
-            this.parent = null;
-            this._destroyed = true;
-            var destroyChildren = typeof options === 'boolean' ? options : options && options.children;
-            var oldChildren = this.removeChildren(0, this.children.length);
-            if (destroyChildren) {
-                for (var i = 0; i < oldChildren.length; ++i) {
-                    oldChildren[i].destroy(options);
-                }
-            }
-        };
-        __decorate([
-            feng3d.AddEntityMenu("Node2D")
-        ], Node2D, "create", null);
-        return Node2D;
-    }(feng3d.Component));
-    feng3d.Node2D = Node2D;
-    /**
-     * Node2D default updateTransform, does not update children of container.
-     * Will crash if there's no parent element.
-     *.Node2D#
-     * @method displayObjectUpdateTransform
-     */
-    Node2D.prototype.displayObjectUpdateTransform = Node2D.prototype.updateTransform;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 轴对称包围盒
      *
      * 用于优化计算射线碰撞检测以及视锥剔除等。
@@ -30375,57 +29642,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D组件
-     *
-     * 所有基于3D空间的组件均可继承于该组件。
-     */
-    var Component2D = /** @class */ (function (_super) {
-        __extends(Component2D, _super);
-        function Component2D() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        Object.defineProperty(Component2D.prototype, "node2d", {
-            /**
-             * The Node2D attached to this Entity (null if there is none attached).
-             *
-             * 附加到此 Entity 的 Node2D。
-             */
-            get: function () {
-                var _a;
-                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node2D);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        /**
-         * Returns all components of Type type in the Entity.
-         *
-         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component2D.prototype.getComponentsInChildren = function (type, filter, result) {
-            return this.node2d.getComponentsInChildren(type, filter, result);
-        };
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component2D.prototype.getComponentsInParents = function (type, result) {
-            return this.node2d.getComponentsInParents(type, result);
-        };
-        Component2D = __decorate([
-            feng3d.RegisterComponent({ dependencies: [feng3d.Node2D] })
-        ], Component2D);
-        return Component2D;
-    }(feng3d.Component));
-    feng3d.Component2D = Component2D;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * Graphics 类包含一组可用来创建矢量形状的方法。
      */
     var Graphics = /** @class */ (function (_super) {
@@ -30767,6 +29983,843 @@ var feng3d;
         return TransformLayout;
     }(feng3d.Component3D));
     feng3d.TransformLayout = TransformLayout;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
+     * rendering features like masking and filtering.
+     *
+     * It is the base class of all display objects that act as a container for other objects, including Graphics
+     * and Sprite.
+     *
+     * ```js
+     * import { BlurFilter } from '@pixi/filter-blur';
+     * import { Container } from '@pixi/display';
+     * import { Graphics } from '@pixi/graphics';
+     * import { Sprite } from '@pixi/sprite';
+     *
+     * let container = new Container();
+     * let sprite = Sprite.from("https://s3-us-west-2.amazonaws.com/s.cdpn.io/693612/IaUrttj.png");
+     *
+     * sprite.width = 512;
+     * sprite.height = 512;
+     *
+     * // Adds a sprite as a child to this container. As a result, the sprite will be rendered whenever the container
+     * // is rendered.
+     * container.addChild(sprite);
+     *
+     * // Blurs whatever is rendered by the container
+     * container.filters = [new BlurFilter()];
+     *
+     * // Only the contents within a circle at the center should be rendered onto the screen.
+     * container.mask = new Graphics()
+     *  .beginFill(0xffffff)
+     *  .drawCircle(sprite.width / 2, sprite.height / 2, Math.min(sprite.width, sprite.height) / 2)
+     *  .endFill();
+     * ```
+     *
+     */
+    var Node2D = /** @class */ (function (_super) {
+        __extends(Node2D, _super);
+        function Node2D() {
+            var _this = _super.call(this) || this;
+            _this.tempDisplayObjectParent = null;
+            /**
+             * World transform and local transform of this object.
+             * This will become read-only later, please do not assign anything there unless you know what are you doing.
+             *
+             * @member {PIXI.Transform}
+             */
+            _this.transform = new feng3d.Transform();
+            /**
+             * The opacity of the object.
+             *
+             * @member {number}
+             */
+            _this.alpha = 1;
+            /**
+             * The visibility of the object. If false the object will not be drawn, and
+             * the updateTransform function will not be called.
+             *
+             * Only affects recursive calls from parent. You can ask for bounds or call updateTransform manually.
+             *
+             * @member {boolean}
+             */
+            _this.visible = true;
+            /**
+             * The display object container that contains this display object.
+             *
+             * @member {PIXI.Container}
+             */
+            _this.parent = null;
+            /**
+             * The multiplied alpha of the displayObject.
+             *
+             * @member {number}
+             * @readonly
+             */
+            _this.worldAlpha = 1;
+            /**
+             * If the object has been destroyed via destroy(). If true, it should not be used.
+             *
+             * @member {boolean}
+             * @protected
+             */
+            _this._destroyed = false;
+            /**
+             * The array of children of this container.
+             *
+             * @member {feng3d.Node2D[]}
+             * @readonly
+             */
+            _this.children = [];
+            return _this;
+        }
+        Node2D.create = function (name) {
+            if (name === void 0) { name = "Node2D"; }
+            var node2d = new feng3d.Entity().addComponent(Node2D);
+            node2d.name = name;
+            return node2d;
+        };
+        /**
+         * Recursively updates transform of all objects from the root to this one
+         * internal function for toLocal()
+         */
+        Node2D.prototype._recursivePostUpdateTransform = function () {
+            if (this.parent) {
+                this.parent._recursivePostUpdateTransform();
+                this.transform.updateTransform(this.parent.transform);
+            }
+            else {
+                this.transform.updateTransform(this._tempDisplayObjectParent.transform);
+            }
+        };
+        /**
+         * Calculates the global position of the display object.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
+         * @return {PIXI.Point} A point object representing the position of this object.
+         */
+        Node2D.prototype.toGlobal = function (position, point, skipUpdate) {
+            if (skipUpdate === void 0) { skipUpdate = false; }
+            if (!skipUpdate) {
+                this._recursivePostUpdateTransform();
+                // this parent check is for just in case the item is a root object.
+                // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
+                // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
+                if (!this.parent) {
+                    this.parent = this._tempDisplayObjectParent;
+                    this.displayObjectUpdateTransform();
+                    this.parent = null;
+                }
+                else {
+                    this.displayObjectUpdateTransform();
+                }
+            }
+            // don't need to update the lot
+            return this.worldTransform.apply(position, point);
+        };
+        /**
+         * Calculates the local position of the display object relative to another point.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {feng3d.Node2D} [from] - The Node2D to calculate the global position from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform
+         * @return {PIXI.Point} A point object representing the position of this object
+         */
+        Node2D.prototype.toLocal = function (position, from, point, skipUpdate) {
+            if (from) {
+                position = from.toGlobal(position, point, skipUpdate);
+            }
+            if (!skipUpdate) {
+                this._recursivePostUpdateTransform();
+                // this parent check is for just in case the item is a root object.
+                // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
+                // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
+                if (!this.parent) {
+                    this.parent = this._tempDisplayObjectParent;
+                    this.displayObjectUpdateTransform();
+                    this.parent = null;
+                }
+                else {
+                    this.displayObjectUpdateTransform();
+                }
+            }
+            // simply apply the matrix..
+            return this.worldTransform.applyInverse(position, point);
+        };
+        /**
+         * Set the parent Container of this Node2D.
+         *
+         * @param {PIXI.Container} container - The Container to add this Node2D to.
+         * @return {PIXI.Container} The Container that this Node2D was added to.
+         */
+        Node2D.prototype.setParent = function (container) {
+            if (!container || !container.addChild) {
+                throw new Error('setParent: Argument must be a Container');
+            }
+            container.addChild(this);
+            return container;
+        };
+        /**
+         * Convenience function to set the position, scale, skew and pivot at once.
+         *
+         * @param {number} [x=0] - The X position
+         * @param {number} [y=0] - The Y position
+         * @param {number} [scaleX=1] - The X scale value
+         * @param {number} [scaleY=1] - The Y scale value
+         * @param {number} [rotation=0] - The rotation
+         * @param {number} [skewX=0] - The X skew value
+         * @param {number} [skewY=0] - The Y skew value
+         * @param {number} [pivotX=0] - The X pivot value
+         * @param {number} [pivotY=0] - The Y pivot value
+         * @return {feng3d.Node2D} The Node2D instance
+         */
+        Node2D.prototype.setTransform = function (x, y, scaleX, scaleY, rotation, skewX, skewY, pivotX, pivotY) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            if (scaleX === void 0) { scaleX = 1; }
+            if (scaleY === void 0) { scaleY = 1; }
+            if (rotation === void 0) { rotation = 0; }
+            if (skewX === void 0) { skewX = 0; }
+            if (skewY === void 0) { skewY = 0; }
+            if (pivotX === void 0) { pivotX = 0; }
+            if (pivotY === void 0) { pivotY = 0; }
+            this.position.x = x;
+            this.position.y = y;
+            this.scale.x = !scaleX ? 1 : scaleX;
+            this.scale.y = !scaleY ? 1 : scaleY;
+            this.rotation = rotation;
+            this.skew.x = skewX;
+            this.skew.y = skewY;
+            this.pivot.x = pivotX;
+            this.pivot.y = pivotY;
+            return this;
+        };
+        Object.defineProperty(Node2D.prototype, "_tempDisplayObjectParent", {
+            /**
+             * @protected
+             * @member {PIXI.Container}
+             */
+            get: function () {
+                if (this.tempDisplayObjectParent === null) {
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                    this.tempDisplayObjectParent = Node2D.create();
+                }
+                return this.tempDisplayObjectParent;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "x", {
+            /**
+             * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+             * An alias to position.x
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.position.x;
+            },
+            set: function (value) {
+                this.transform.position.x = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "y", {
+            /**
+             * The position of the displayObject on the y axis relative to the local coordinates of the parent.
+             * An alias to position.y
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.position.y;
+            },
+            set: function (value) {
+                this.transform.position.y = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "worldTransform", {
+            /**
+             * Current transform of the object based on world (parent) factors.
+             *
+             * @member {PIXI.Matrix}
+             * @readonly
+             */
+            get: function () {
+                return this.transform.worldTransform;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "localTransform", {
+            /**
+             * Current transform of the object based on local factors: position, scale, other stuff.
+             *
+             * @member {PIXI.Matrix}
+             * @readonly
+             */
+            get: function () {
+                return this.transform.localTransform;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "position", {
+            /**
+             * The coordinate of the object relative to the local coordinates of the parent.
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.position;
+            },
+            set: function (value) {
+                this.transform.position.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "scale", {
+            /**
+             * The scale factors of this object along the local coordinate axes.
+             *
+             * The default scale is (1, 1).
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.scale;
+            },
+            set: function (value) {
+                this.transform.scale.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "pivot", {
+            /**
+             * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
+             * is the projection of `pivot` in the parent's local space.
+             *
+             * By default, the pivot is the origin (0, 0).
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.pivot;
+            },
+            set: function (value) {
+                this.transform.pivot.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "skew", {
+            /**
+             * The skew factor for the object in radians.
+             *
+             * @since PixiJS 4
+             * @member {PIXI.ObservablePoint}
+             */
+            get: function () {
+                return this.transform.skew;
+            },
+            set: function (value) {
+                this.transform.skew.copyFrom(value);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "rotation", {
+            /**
+             * The rotation of the object in radians.
+             * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.transform.rotation;
+            },
+            set: function (value) {
+                this.transform.rotation = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "angle", {
+            /**
+             * The angle of the object in degrees.
+             * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+             *
+             * @member {number}
+             */
+            get: function () {
+                return this.transform.rotation * Math.RAD2DEG;
+            },
+            set: function (value) {
+                this.transform.rotation = value * Math.DEG2RAD;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "worldVisible", {
+            /**
+             * Indicates if the object is globally visible.
+             *
+             * @member {boolean}
+             * @readonly
+             */
+            get: function () {
+                var item = this;
+                do {
+                    if (!item.visible) {
+                        return false;
+                    }
+                    item = item.parent;
+                } while (item);
+                return true;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
+         *
+         * @param type		要检索的组件的类型。
+         * @return			返回与给出类定义一致的组件
+         *
+         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
+         */
+        Node2D.prototype.getComponentsInChildren = function (type, filter, result) {
+            result = result || [];
+            var findchildren = true;
+            var cls = type;
+            var components = this.entity.components;
+            for (var i = 0, n = components.length; i < n; i++) {
+                var item = components[i];
+                if (!cls) {
+                    result.push(item);
+                }
+                else if (item instanceof cls) {
+                    if (filter) {
+                        var filterresult = filter(item);
+                        filterresult && filterresult.value && result.push(item);
+                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
+                    }
+                    else {
+                        result.push(item);
+                    }
+                }
+            }
+            if (findchildren) {
+                for (var i = 0, n = this.children.length; i < n; i++) {
+                    this.children[i].getComponentsInChildren(type, filter, result);
+                }
+            }
+            return result;
+        };
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Node2D.prototype.getComponentsInParents = function (type, result) {
+            result = result || [];
+            var parent = this.parent;
+            while (parent) {
+                var compnent = parent.getComponent(type);
+                compnent && result.push(compnent);
+                parent = parent.parent;
+            }
+            return result;
+        };
+        /**
+         * Overridable method that can be used by Container subclasses whenever the children array is modified
+         *
+         * @protected
+         */
+        Node2D.prototype.onChildrenChange = function (_length) {
+            /* empty */
+        };
+        /**
+         * Adds one or more children to the container.
+         *
+         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
+         *
+         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
+         * @return {feng3d.Node2D} The first child that was added.
+         */
+        Node2D.prototype.addChild = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
+            }
+            // if there is only one argument we can bypass looping through the them
+            if (children.length > 1) {
+                // loop through the array and add all children
+                for (var i = 0; i < children.length; i++) {
+                    // eslint-disable-next-line prefer-rest-params
+                    this.addChild(children[i]);
+                }
+            }
+            else {
+                var child = children[0];
+                // if the child has a parent then lets remove it as PixiJS objects can only exist in one place
+                if (child.parent) {
+                    child.parent.removeChild(child);
+                }
+                child.parent = this;
+                // ensure child transform will be recalculated
+                child.transform._parentID = -1;
+                this.children.push(child);
+                // TODO - lets either do all callbacks or all events.. not both!
+                this.onChildrenChange(this.children.length - 1);
+                this.emit('childAdded', { child: child, parent: this, index: this.children.length - 1 });
+                child.emit('added', this);
+            }
+            return children[0];
+        };
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {feng3d.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {feng3d.Node2D} The child that was added.
+         */
+        Node2D.prototype.addChildAt = function (child, index) {
+            if (index < 0 || index > this.children.length) {
+                throw new Error(child + "addChildAt: The index " + index + " supplied is out of bounds " + this.children.length);
+            }
+            if (child.parent) {
+                child.parent.removeChild(child);
+            }
+            child.parent = this;
+            // ensure child transform will be recalculated
+            child.transform._parentID = -1;
+            this.children.splice(index, 0, child);
+            // TODO - lets either do all callbacks or all events.. not both!
+            this.onChildrenChange(index);
+            child.emit('added', this);
+            this.emit('childAdded', { child: child, parent: this, index: index });
+            return child;
+        };
+        /**
+         * Swaps the position of 2 Display Objects within this container.
+         *
+         * @param {feng3d.Node2D} child - First display object to swap
+         * @param {feng3d.Node2D} child2 - Second display object to swap
+         */
+        Node2D.prototype.swapChildren = function (child, child2) {
+            if (child === child2) {
+                return;
+            }
+            var index1 = this.getChildIndex(child);
+            var index2 = this.getChildIndex(child2);
+            this.children[index1] = child2;
+            this.children[index2] = child;
+            this.onChildrenChange(index1 < index2 ? index1 : index2);
+        };
+        /**
+         * Returns the index position of a child Node2D instance
+         *
+         * @param {feng3d.Node2D} child - The Node2D instance to identify
+         * @return {number} The index position of the child display object to identify
+         */
+        Node2D.prototype.getChildIndex = function (child) {
+            var index = this.children.indexOf(child);
+            if (index === -1) {
+                throw new Error('The supplied Node2D must be a child of the caller');
+            }
+            return index;
+        };
+        /**
+         * Changes the position of an existing child in the display object container
+         *
+         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
+         * @param {number} index - The resulting index number for the child display object
+         */
+        Node2D.prototype.setChildIndex = function (child, index) {
+            if (index < 0 || index >= this.children.length) {
+                throw new Error("The index " + index + " supplied is out of bounds " + this.children.length);
+            }
+            var currentIndex = this.getChildIndex(child);
+            this.children.splice(currentIndex, 1); // remove from old position
+            this.children.splice(index, 0, child); // add at new position
+            this.onChildrenChange(index);
+        };
+        /**
+         * Returns the child at the specified index
+         *
+         * @param {number} index - The index to get the child at
+         * @return {feng3d.Node2D} The child at the given index, if any.
+         */
+        Node2D.prototype.getChildAt = function (index) {
+            if (index < 0 || index >= this.children.length) {
+                throw new Error("getChildAt: Index (" + index + ") does not exist.");
+            }
+            return this.children[index];
+        };
+        /**
+         * Removes one or more children from the container.
+         *
+         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
+         * @return {feng3d.Node2D} The first child that was removed.
+         */
+        Node2D.prototype.removeChild = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
+            }
+            // if there is only one argument we can bypass looping through the them
+            if (children.length > 1) {
+                // loop through the arguments property and remove all children
+                for (var i = 0; i < children.length; i++) {
+                    this.removeChild(children[i]);
+                }
+            }
+            else {
+                var child = children[0];
+                var index = this.children.indexOf(child);
+                if (index === -1)
+                    return null;
+                child.parent = null;
+                // ensure child transform will be recalculated
+                child.transform._parentID = -1;
+                this.children.splice(index, 1);
+                // TODO - lets either do all callbacks or all events.. not both!
+                this.onChildrenChange(index);
+                child.emit('removed', this);
+                this.emit('childRemoved', { child: child, parent: this, index: index });
+            }
+            return children[0];
+        };
+        /**
+         * Removes a child from the specified index position.
+         *
+         * @param {number} index - The index to get the child from
+         * @return {feng3d.Node2D} The child that was removed.
+         */
+        Node2D.prototype.removeChildAt = function (index) {
+            var child = this.getChildAt(index);
+            // ensure child transform will be recalculated..
+            child.parent = null;
+            child.transform._parentID = -1;
+            this.children.splice(index, 1);
+            // TODO - lets either do all callbacks or all events.. not both!
+            this.onChildrenChange(index);
+            child.emit('removed', this);
+            this.emit('childRemoved', { child: child, parent: this, index: index });
+            return child;
+        };
+        /**
+         * Removes all children from this container that are within the begin and end indexes.
+         *
+         * @param {number} [beginIndex=0] - The beginning position.
+         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
+         * @returns {feng3d.Node2D[]} List of removed children
+         */
+        Node2D.prototype.removeChildren = function (beginIndex, endIndex) {
+            if (beginIndex === void 0) { beginIndex = 0; }
+            if (endIndex === void 0) { endIndex = this.children.length; }
+            var begin = beginIndex;
+            var end = endIndex;
+            var range = end - begin;
+            var removed;
+            if (range > 0 && range <= end) {
+                removed = this.children.splice(begin, range);
+                for (var i = 0; i < removed.length; ++i) {
+                    removed[i].parent = null;
+                    if (removed[i].transform) {
+                        removed[i].transform._parentID = -1;
+                    }
+                }
+                this.onChildrenChange(beginIndex);
+                for (var i = 0; i < removed.length; ++i) {
+                    removed[i].emit('removed', this);
+                    this.emit('childRemoved', { child: removed[i], parent: this, index: i });
+                }
+                return removed;
+            }
+            else if (range === 0 && this.children.length === 0) {
+                return [];
+            }
+            throw new RangeError('removeChildren: numeric values are outside the acceptable range.');
+        };
+        /**
+         * Updates the transform on all children of this container for rendering
+         */
+        Node2D.prototype.updateTransform = function () {
+            this.transform.updateTransform(this.parent.transform);
+            // TODO: check render flags, how to process stuff here
+            this.worldAlpha = this.alpha * this.parent.worldAlpha;
+            for (var i = 0, j = this.children.length; i < j; ++i) {
+                var child = this.children[i];
+                if (child.visible) {
+                    child.updateTransform();
+                }
+            }
+        };
+        /**
+         * Removes all internal references and listeners as well as removes children from the display list.
+         * Do not use a Container after calling `destroy`.
+         *
+         * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options
+         *  have been set to that value
+         * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
+         *  method called as well. 'options' will be passed on to those calls.
+         * @param {boolean} [options.texture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the texture of the child sprite
+         * @param {boolean} [options.baseTexture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the base texture of the child sprite
+         */
+        Node2D.prototype.destroy = function (options) {
+            if (this.parent) {
+                this.parent.removeChild(this);
+            }
+            this.offAll();
+            this.transform = null;
+            this.parent = null;
+            this._destroyed = true;
+            var destroyChildren = typeof options === 'boolean' ? options : options && options.children;
+            var oldChildren = this.removeChildren(0, this.children.length);
+            if (destroyChildren) {
+                for (var i = 0; i < oldChildren.length; ++i) {
+                    oldChildren[i].destroy(options);
+                }
+            }
+        };
+        __decorate([
+            feng3d.AddEntityMenu("Node2D")
+        ], Node2D, "create", null);
+        return Node2D;
+    }(feng3d.Component));
+    feng3d.Node2D = Node2D;
+    /**
+     * Node2D default updateTransform, does not update children of container.
+     * Will crash if there's no parent element.
+     *.Node2D#
+     * @method displayObjectUpdateTransform
+     */
+    Node2D.prototype.displayObjectUpdateTransform = Node2D.prototype.updateTransform;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 3D组件
+     *
+     * 所有基于3D空间的组件均可继承于该组件。
+     */
+    var Component2D = /** @class */ (function (_super) {
+        __extends(Component2D, _super);
+        function Component2D() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(Component2D.prototype, "node2d", {
+            /**
+             * The Node2D attached to this Entity (null if there is none attached).
+             *
+             * 附加到此 Entity 的 Node2D。
+             */
+            get: function () {
+                var _a;
+                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node2D);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component2D.prototype.getComponentsInChildren = function (type, filter, result) {
+            return this.node2d.getComponentsInChildren(type, filter, result);
+        };
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component2D.prototype.getComponentsInParents = function (type, result) {
+            return this.node2d.getComponentsInParents(type, result);
+        };
+        Component2D = __decorate([
+            feng3d.RegisterComponent({ dependencies: [feng3d.Node2D] })
+        ], Component2D);
+        return Component2D;
+    }(feng3d.Component));
+    feng3d.Component2D = Component2D;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 2D场景
+     *
+     * Scene2D同时拥有Node2D与Node3D组件。
+     */
+    var Scene2D = /** @class */ (function (_super) {
+        __extends(Scene2D, _super);
+        function Scene2D() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(Scene2D.prototype, "node2d", {
+            /**
+             * 2D 节点
+             *
+             * 拥有以下作用：
+             * 1. Scene2D的根节点。
+             * 1. 作为2D节点放入另一个Scene2D中的。
+             */
+            get: function () {
+                console.assert(!!this._entity);
+                this._node2d = this._node2d || this._entity.getComponent(feng3d.Node2D);
+                console.assert(!!this._node2d);
+                return this._node2d;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Scene2D.prototype, "node3d", {
+            /**
+             * 3D 节点
+             *
+             * 拥有以下作用：
+             * 1. 作为3D节点放入另一个Scene3D中的。
+             */
+            get: function () {
+                console.assert(!!this._entity);
+                this._node3d = this._node3d || this._entity.getComponent(feng3d.Node3D);
+                console.assert(!!this._node3d);
+                return this._node3d;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Scene2D = __decorate([
+            feng3d.RegisterComponent({ single: true, dependencies: [feng3d.Node2D, feng3d.Node3D] }),
+            feng3d.AddComponentMenu("Scene/Scene2D")
+        ], Scene2D);
+        return Scene2D;
+    }(feng3d.Component));
+    feng3d.Scene2D = Scene2D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

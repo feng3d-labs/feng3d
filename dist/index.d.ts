@@ -13546,333 +13546,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface IDestroyOptions {
-        children?: boolean;
-        texture?: boolean;
-        baseTexture?: boolean;
-    }
-    interface Node2DEventMap extends Component2DEventMap {
-        removed: Node2D;
-        added: Node2D;
-        childAdded: {
-            child: Node2D;
-            parent: Node2D;
-            index: number;
-        };
-        childRemoved: {
-            child: Node2D;
-            parent: Node2D;
-            index: number;
-        };
-    }
-    /**
-     * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
-     * rendering features like masking and filtering.
-     *
-     * It is the base class of all display objects that act as a container for other objects, including Graphics
-     * and Sprite.
-     *
-     * ```js
-     * import { BlurFilter } from '@pixi/filter-blur';
-     * import { Container } from '@pixi/display';
-     * import { Graphics } from '@pixi/graphics';
-     * import { Sprite } from '@pixi/sprite';
-     *
-     * let container = new Container();
-     * let sprite = Sprite.from("https://s3-us-west-2.amazonaws.com/s.cdpn.io/693612/IaUrttj.png");
-     *
-     * sprite.width = 512;
-     * sprite.height = 512;
-     *
-     * // Adds a sprite as a child to this container. As a result, the sprite will be rendered whenever the container
-     * // is rendered.
-     * container.addChild(sprite);
-     *
-     * // Blurs whatever is rendered by the container
-     * container.filters = [new BlurFilter()];
-     *
-     * // Only the contents within a circle at the center should be rendered onto the screen.
-     * container.mask = new Graphics()
-     *  .beginFill(0xffffff)
-     *  .drawCircle(sprite.width / 2, sprite.height / 2, Math.min(sprite.width, sprite.height) / 2)
-     *  .endFill();
-     * ```
-     *
-     */
-    class Node2D<T extends Node2DEventMap = Node2DEventMap> extends Component<T> {
-        static create(name?: string): Node2D<Node2DEventMap>;
-        parent: Node2D;
-        worldAlpha: number;
-        transform: Transform;
-        alpha: number;
-        visible: boolean;
-        readonly children: Node2D[];
-        protected _destroyed: boolean;
-        private tempDisplayObjectParent;
-        displayObjectUpdateTransform: () => void;
-        constructor();
-        /**
-         * Recursively updates transform of all objects from the root to this one
-         * internal function for toLocal()
-         */
-        _recursivePostUpdateTransform(): void;
-        /**
-         * Calculates the global position of the display object.
-         *
-         * @param {PIXI.IPointData} position - The world origin to calculate from.
-         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
-         *  (otherwise will create a new Point).
-         * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
-         * @return {PIXI.Point} A point object representing the position of this object.
-         */
-        toGlobal<P extends IPointData = Point>(position: IPointData, point?: P, skipUpdate?: boolean): P;
-        /**
-         * Calculates the local position of the display object relative to another point.
-         *
-         * @param {PIXI.IPointData} position - The world origin to calculate from.
-         * @param {feng3d.Node2D} [from] - The Node2D to calculate the global position from.
-         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
-         *  (otherwise will create a new Point).
-         * @param {boolean} [skipUpdate=false] - Should we skip the update transform
-         * @return {PIXI.Point} A point object representing the position of this object
-         */
-        toLocal<P extends IPointData = Point>(position: IPointData, from?: Node2D, point?: P, skipUpdate?: boolean): P;
-        /**
-         * Set the parent Container of this Node2D.
-         *
-         * @param {PIXI.Container} container - The Container to add this Node2D to.
-         * @return {PIXI.Container} The Container that this Node2D was added to.
-         */
-        setParent(container: Node2D): Node2D;
-        /**
-         * Convenience function to set the position, scale, skew and pivot at once.
-         *
-         * @param {number} [x=0] - The X position
-         * @param {number} [y=0] - The Y position
-         * @param {number} [scaleX=1] - The X scale value
-         * @param {number} [scaleY=1] - The Y scale value
-         * @param {number} [rotation=0] - The rotation
-         * @param {number} [skewX=0] - The X skew value
-         * @param {number} [skewY=0] - The Y skew value
-         * @param {number} [pivotX=0] - The X pivot value
-         * @param {number} [pivotY=0] - The Y pivot value
-         * @return {feng3d.Node2D} The Node2D instance
-         */
-        setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, pivotX?: number, pivotY?: number): this;
-        /**
-         * @protected
-         * @member {PIXI.Container}
-         */
-        get _tempDisplayObjectParent(): Node2D;
-        /**
-         * The position of the displayObject on the x axis relative to the local coordinates of the parent.
-         * An alias to position.x
-         *
-         * @member {number}
-         */
-        get x(): number;
-        set x(value: number);
-        /**
-         * The position of the displayObject on the y axis relative to the local coordinates of the parent.
-         * An alias to position.y
-         *
-         * @member {number}
-         */
-        get y(): number;
-        set y(value: number);
-        /**
-         * Current transform of the object based on world (parent) factors.
-         *
-         * @member {PIXI.Matrix}
-         * @readonly
-         */
-        get worldTransform(): Matrix;
-        /**
-         * Current transform of the object based on local factors: position, scale, other stuff.
-         *
-         * @member {PIXI.Matrix}
-         * @readonly
-         */
-        get localTransform(): Matrix;
-        /**
-         * The coordinate of the object relative to the local coordinates of the parent.
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
-         */
-        get position(): ObservablePoint;
-        set position(value: ObservablePoint);
-        /**
-         * The scale factors of this object along the local coordinate axes.
-         *
-         * The default scale is (1, 1).
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
-         */
-        get scale(): ObservablePoint;
-        set scale(value: ObservablePoint);
-        /**
-         * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
-         * is the projection of `pivot` in the parent's local space.
-         *
-         * By default, the pivot is the origin (0, 0).
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
-         */
-        get pivot(): ObservablePoint;
-        set pivot(value: ObservablePoint);
-        /**
-         * The skew factor for the object in radians.
-         *
-         * @since PixiJS 4
-         * @member {PIXI.ObservablePoint}
-         */
-        get skew(): ObservablePoint;
-        set skew(value: ObservablePoint);
-        /**
-         * The rotation of the object in radians.
-         * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-         *
-         * @member {number}
-         */
-        get rotation(): number;
-        set rotation(value: number);
-        /**
-         * The angle of the object in degrees.
-         * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
-         *
-         * @member {number}
-         */
-        get angle(): number;
-        set angle(value: number);
-        /**
-         * Indicates if the object is globally visible.
-         *
-         * @member {boolean}
-         * @readonly
-         */
-        get worldVisible(): boolean;
-        /**
-         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
-         *
-         * @param type		要检索的组件的类型。
-         * @return			返回与给出类定义一致的组件
-         *
-         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            /**
-             * 是否继续查找子项
-             */
-            findchildren: boolean;
-            /**
-             * 是否为需要查找的组件
-             */
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
-        /**
-         * Overridable method that can be used by Container subclasses whenever the children array is modified
-         *
-         * @protected
-         */
-        protected onChildrenChange(_length?: number): void;
-        /**
-         * Adds one or more children to the container.
-         *
-         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
-         * @return {feng3d.Node2D} The first child that was added.
-         */
-        addChild<T extends Node2D[]>(...children: T): T[0];
-        /**
-         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
-         *
-         * @param {feng3d.Node2D} child - The child to add
-         * @param {number} index - The index to place the child in
-         * @return {feng3d.Node2D} The child that was added.
-         */
-        addChildAt<T extends Node2D>(child: T, index: number): T;
-        /**
-         * Swaps the position of 2 Display Objects within this container.
-         *
-         * @param {feng3d.Node2D} child - First display object to swap
-         * @param {feng3d.Node2D} child2 - Second display object to swap
-         */
-        swapChildren(child: Node2D, child2: Node2D): void;
-        /**
-         * Returns the index position of a child Node2D instance
-         *
-         * @param {feng3d.Node2D} child - The Node2D instance to identify
-         * @return {number} The index position of the child display object to identify
-         */
-        getChildIndex(child: Node2D): number;
-        /**
-         * Changes the position of an existing child in the display object container
-         *
-         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
-         * @param {number} index - The resulting index number for the child display object
-         */
-        setChildIndex(child: Node2D, index: number): void;
-        /**
-         * Returns the child at the specified index
-         *
-         * @param {number} index - The index to get the child at
-         * @return {feng3d.Node2D} The child at the given index, if any.
-         */
-        getChildAt(index: number): Node2D;
-        /**
-         * Removes one or more children from the container.
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
-         * @return {feng3d.Node2D} The first child that was removed.
-         */
-        removeChild<T extends Node2D[]>(...children: T): T[0];
-        /**
-         * Removes a child from the specified index position.
-         *
-         * @param {number} index - The index to get the child from
-         * @return {feng3d.Node2D} The child that was removed.
-         */
-        removeChildAt(index: number): Node2D;
-        /**
-         * Removes all children from this container that are within the begin and end indexes.
-         *
-         * @param {number} [beginIndex=0] - The beginning position.
-         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
-         * @returns {feng3d.Node2D[]} List of removed children
-         */
-        removeChildren(beginIndex?: number, endIndex?: number): Node2D[];
-        /**
-         * Updates the transform on all children of this container for rendering
-         */
-        updateTransform(): void;
-        /**
-         * Removes all internal references and listeners as well as removes children from the display list.
-         * Do not use a Container after calling `destroy`.
-         *
-         * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options
-         *  have been set to that value
-         * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
-         *  method called as well. 'options' will be passed on to those calls.
-         * @param {boolean} [options.texture=false] - Only used for child Sprites if options.children is set to true
-         *  Should it destroy the texture of the child sprite
-         * @param {boolean} [options.baseTexture=false] - Only used for child Sprites if options.children is set to true
-         *  Should it destroy the base texture of the child sprite
-         */
-        destroy(options?: IDestroyOptions | boolean): void;
-    }
-}
-declare namespace feng3d {
     interface EntityEventMap {
         /**
          * 获取自身包围盒
@@ -14275,41 +13948,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface Component2DEventMap extends ComponentEventMap {
-    }
-    /**
-     * 3D组件
-     *
-     * 所有基于3D空间的组件均可继承于该组件。
-     */
-    class Component2D<T extends Component2DEventMap = Component2DEventMap> extends Component<T> {
-        /**
-         * The Node2D attached to this Entity (null if there is none attached).
-         *
-         * 附加到此 Entity 的 Node2D。
-         */
-        get node2d(): Node2D<Node2DEventMap>;
-        /**
-         * Returns all components of Type type in the Entity.
-         *
-         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
-    }
-}
-declare namespace feng3d {
     /**
      * Graphics 类包含一组可用来创建矢量形状的方法。
      */
@@ -14428,6 +14066,395 @@ declare namespace feng3d {
         private _invalidateLayout;
         private _invalidateSize;
         private _invalidatePivot;
+    }
+}
+declare namespace feng3d {
+    interface IDestroyOptions {
+        children?: boolean;
+        texture?: boolean;
+        baseTexture?: boolean;
+    }
+    interface Node2DEventMap extends Component2DEventMap {
+        removed: Node2D;
+        added: Node2D;
+        childAdded: {
+            child: Node2D;
+            parent: Node2D;
+            index: number;
+        };
+        childRemoved: {
+            child: Node2D;
+            parent: Node2D;
+            index: number;
+        };
+    }
+    /**
+     * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
+     * rendering features like masking and filtering.
+     *
+     * It is the base class of all display objects that act as a container for other objects, including Graphics
+     * and Sprite.
+     *
+     * ```js
+     * import { BlurFilter } from '@pixi/filter-blur';
+     * import { Container } from '@pixi/display';
+     * import { Graphics } from '@pixi/graphics';
+     * import { Sprite } from '@pixi/sprite';
+     *
+     * let container = new Container();
+     * let sprite = Sprite.from("https://s3-us-west-2.amazonaws.com/s.cdpn.io/693612/IaUrttj.png");
+     *
+     * sprite.width = 512;
+     * sprite.height = 512;
+     *
+     * // Adds a sprite as a child to this container. As a result, the sprite will be rendered whenever the container
+     * // is rendered.
+     * container.addChild(sprite);
+     *
+     * // Blurs whatever is rendered by the container
+     * container.filters = [new BlurFilter()];
+     *
+     * // Only the contents within a circle at the center should be rendered onto the screen.
+     * container.mask = new Graphics()
+     *  .beginFill(0xffffff)
+     *  .drawCircle(sprite.width / 2, sprite.height / 2, Math.min(sprite.width, sprite.height) / 2)
+     *  .endFill();
+     * ```
+     *
+     */
+    class Node2D<T extends Node2DEventMap = Node2DEventMap> extends Component<T> {
+        static create(name?: string): Node2D<Node2DEventMap>;
+        parent: Node2D;
+        worldAlpha: number;
+        transform: Transform;
+        alpha: number;
+        visible: boolean;
+        readonly children: Node2D[];
+        protected _destroyed: boolean;
+        private tempDisplayObjectParent;
+        displayObjectUpdateTransform: () => void;
+        constructor();
+        /**
+         * Recursively updates transform of all objects from the root to this one
+         * internal function for toLocal()
+         */
+        _recursivePostUpdateTransform(): void;
+        /**
+         * Calculates the global position of the display object.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform.
+         * @return {PIXI.Point} A point object representing the position of this object.
+         */
+        toGlobal<P extends IPointData = Point>(position: IPointData, point?: P, skipUpdate?: boolean): P;
+        /**
+         * Calculates the local position of the display object relative to another point.
+         *
+         * @param {PIXI.IPointData} position - The world origin to calculate from.
+         * @param {feng3d.Node2D} [from] - The Node2D to calculate the global position from.
+         * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
+         *  (otherwise will create a new Point).
+         * @param {boolean} [skipUpdate=false] - Should we skip the update transform
+         * @return {PIXI.Point} A point object representing the position of this object
+         */
+        toLocal<P extends IPointData = Point>(position: IPointData, from?: Node2D, point?: P, skipUpdate?: boolean): P;
+        /**
+         * Set the parent Container of this Node2D.
+         *
+         * @param {PIXI.Container} container - The Container to add this Node2D to.
+         * @return {PIXI.Container} The Container that this Node2D was added to.
+         */
+        setParent(container: Node2D): Node2D;
+        /**
+         * Convenience function to set the position, scale, skew and pivot at once.
+         *
+         * @param {number} [x=0] - The X position
+         * @param {number} [y=0] - The Y position
+         * @param {number} [scaleX=1] - The X scale value
+         * @param {number} [scaleY=1] - The Y scale value
+         * @param {number} [rotation=0] - The rotation
+         * @param {number} [skewX=0] - The X skew value
+         * @param {number} [skewY=0] - The Y skew value
+         * @param {number} [pivotX=0] - The X pivot value
+         * @param {number} [pivotY=0] - The Y pivot value
+         * @return {feng3d.Node2D} The Node2D instance
+         */
+        setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, pivotX?: number, pivotY?: number): this;
+        /**
+         * @protected
+         * @member {PIXI.Container}
+         */
+        get _tempDisplayObjectParent(): Node2D;
+        /**
+         * The position of the displayObject on the x axis relative to the local coordinates of the parent.
+         * An alias to position.x
+         *
+         * @member {number}
+         */
+        get x(): number;
+        set x(value: number);
+        /**
+         * The position of the displayObject on the y axis relative to the local coordinates of the parent.
+         * An alias to position.y
+         *
+         * @member {number}
+         */
+        get y(): number;
+        set y(value: number);
+        /**
+         * Current transform of the object based on world (parent) factors.
+         *
+         * @member {PIXI.Matrix}
+         * @readonly
+         */
+        get worldTransform(): Matrix;
+        /**
+         * Current transform of the object based on local factors: position, scale, other stuff.
+         *
+         * @member {PIXI.Matrix}
+         * @readonly
+         */
+        get localTransform(): Matrix;
+        /**
+         * The coordinate of the object relative to the local coordinates of the parent.
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get position(): ObservablePoint;
+        set position(value: ObservablePoint);
+        /**
+         * The scale factors of this object along the local coordinate axes.
+         *
+         * The default scale is (1, 1).
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get scale(): ObservablePoint;
+        set scale(value: ObservablePoint);
+        /**
+         * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
+         * is the projection of `pivot` in the parent's local space.
+         *
+         * By default, the pivot is the origin (0, 0).
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get pivot(): ObservablePoint;
+        set pivot(value: ObservablePoint);
+        /**
+         * The skew factor for the object in radians.
+         *
+         * @since PixiJS 4
+         * @member {PIXI.ObservablePoint}
+         */
+        get skew(): ObservablePoint;
+        set skew(value: ObservablePoint);
+        /**
+         * The rotation of the object in radians.
+         * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+         *
+         * @member {number}
+         */
+        get rotation(): number;
+        set rotation(value: number);
+        /**
+         * The angle of the object in degrees.
+         * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
+         *
+         * @member {number}
+         */
+        get angle(): number;
+        set angle(value: number);
+        /**
+         * Indicates if the object is globally visible.
+         *
+         * @member {boolean}
+         * @readonly
+         */
+        get worldVisible(): boolean;
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
+         *
+         * @param type		要检索的组件的类型。
+         * @return			返回与给出类定义一致的组件
+         *
+         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
+            findchildren: boolean;
+            /**
+             * 是否为需要查找的组件
+             */
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+        /**
+         * Overridable method that can be used by Container subclasses whenever the children array is modified
+         *
+         * @protected
+         */
+        protected onChildrenChange(_length?: number): void;
+        /**
+         * Adds one or more children to the container.
+         *
+         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
+         *
+         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
+         * @return {feng3d.Node2D} The first child that was added.
+         */
+        addChild<T extends Node2D[]>(...children: T): T[0];
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {feng3d.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {feng3d.Node2D} The child that was added.
+         */
+        addChildAt<T extends Node2D>(child: T, index: number): T;
+        /**
+         * Swaps the position of 2 Display Objects within this container.
+         *
+         * @param {feng3d.Node2D} child - First display object to swap
+         * @param {feng3d.Node2D} child2 - Second display object to swap
+         */
+        swapChildren(child: Node2D, child2: Node2D): void;
+        /**
+         * Returns the index position of a child Node2D instance
+         *
+         * @param {feng3d.Node2D} child - The Node2D instance to identify
+         * @return {number} The index position of the child display object to identify
+         */
+        getChildIndex(child: Node2D): number;
+        /**
+         * Changes the position of an existing child in the display object container
+         *
+         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
+         * @param {number} index - The resulting index number for the child display object
+         */
+        setChildIndex(child: Node2D, index: number): void;
+        /**
+         * Returns the child at the specified index
+         *
+         * @param {number} index - The index to get the child at
+         * @return {feng3d.Node2D} The child at the given index, if any.
+         */
+        getChildAt(index: number): Node2D;
+        /**
+         * Removes one or more children from the container.
+         *
+         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
+         * @return {feng3d.Node2D} The first child that was removed.
+         */
+        removeChild<T extends Node2D[]>(...children: T): T[0];
+        /**
+         * Removes a child from the specified index position.
+         *
+         * @param {number} index - The index to get the child from
+         * @return {feng3d.Node2D} The child that was removed.
+         */
+        removeChildAt(index: number): Node2D;
+        /**
+         * Removes all children from this container that are within the begin and end indexes.
+         *
+         * @param {number} [beginIndex=0] - The beginning position.
+         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
+         * @returns {feng3d.Node2D[]} List of removed children
+         */
+        removeChildren(beginIndex?: number, endIndex?: number): Node2D[];
+        /**
+         * Updates the transform on all children of this container for rendering
+         */
+        updateTransform(): void;
+        /**
+         * Removes all internal references and listeners as well as removes children from the display list.
+         * Do not use a Container after calling `destroy`.
+         *
+         * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options
+         *  have been set to that value
+         * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
+         *  method called as well. 'options' will be passed on to those calls.
+         * @param {boolean} [options.texture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the texture of the child sprite
+         * @param {boolean} [options.baseTexture=false] - Only used for child Sprites if options.children is set to true
+         *  Should it destroy the base texture of the child sprite
+         */
+        destroy(options?: IDestroyOptions | boolean): void;
+    }
+}
+declare namespace feng3d {
+    interface Component2DEventMap extends ComponentEventMap {
+    }
+    /**
+     * 3D组件
+     *
+     * 所有基于3D空间的组件均可继承于该组件。
+     */
+    class Component2D<T extends Component2DEventMap = Component2DEventMap> extends Component<T> {
+        /**
+         * The Node2D attached to this Entity (null if there is none attached).
+         *
+         * 附加到此 Entity 的 Node2D。
+         */
+        get node2d(): Node2D<Node2DEventMap>;
+        /**
+         * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * 2D场景
+     *
+     * Scene2D同时拥有Node2D与Node3D组件。
+     */
+    class Scene2D extends Component {
+        __class__: "feng3d.Scene2D";
+        /**
+         * 2D 节点
+         *
+         * 拥有以下作用：
+         * 1. Scene2D的根节点。
+         * 1. 作为2D节点放入另一个Scene2D中的。
+         */
+        get node2d(): Node2D<Node2DEventMap>;
+        private _node2d;
+        /**
+         * 3D 节点
+         *
+         * 拥有以下作用：
+         * 1. 作为3D节点放入另一个Scene3D中的。
+         */
+        get node3d(): Node3D<Component3DEventMap>;
+        private _node3d;
     }
 }
 declare namespace feng3d {
