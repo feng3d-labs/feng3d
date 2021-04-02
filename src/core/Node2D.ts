@@ -7,16 +7,6 @@ namespace feng3d
         baseTexture?: boolean;
     }
 
-    function sortChildren(a: Node2D, b: Node2D): number
-    {
-        if (a.zIndex === b.zIndex)
-        {
-            return a._lastSortedIndex - b._lastSortedIndex;
-        }
-
-        return a.zIndex - b.zIndex;
-    }
-
     export interface Node2DEventMap extends Component2DEventMap
     {
         removed: Node2D;
@@ -62,72 +52,29 @@ namespace feng3d
     @RegisterComponent({ single: true })
     export class Node2D<T extends Node2DEventMap = Node2DEventMap> extends Component<T>
     {
+
+        @AddEntityMenu("Node2D")
+        static create(name = "Node2D")
+        {
+            var node2d = new Entity().addComponent(Node2D);
+            node2d.name = name;
+            return node2d;
+        }
+
         public parent: Node2D;
         public worldAlpha: number;
         public transform: Transform;
         public alpha: number;
         public visible: boolean;
-        public renderable: boolean;
-        public filterArea: Rectangle;
-        public filters: Filter[];
-        public isSprite: boolean;
-        public isMask: boolean;
-        public _lastSortedIndex: number;
-        public _bounds: Bounds;
-        public _localBounds: Bounds;
 
         public readonly children: Node2D[];
-        public sortableChildren: boolean;
-        public sortDirty: boolean;
-        public containerUpdateTransform: () => void;
 
-        _width: number;
-        _height: number;
-
-        protected _zIndex: number;
-        protected _enabledFilters: Filter[];
-        protected _boundsID: number;
-        protected _boundsRect: Rectangle;
-        _localBoundsRect: Rectangle;
         protected _destroyed: boolean;
-
-        private tempDisplayObjectParent: Node2D;
-        public displayObjectUpdateTransform: () => void;
-
-        /**
-         * Mixes all enumerable properties and methods from a source object to Node2D.
-         *
-         * @param {object} source - The source of properties and methods to mix in.
-         */
-        static mixin(source: Dict<any>): void
-        {
-            // in ES8/ES2017, this would be really easy:
-            // Object.defineProperties(Node2D.prototype, Object.getOwnPropertyDescriptors(source));
-
-            // get all the enumerable property keys
-            const keys = Object.keys(source);
-
-            // loop through properties
-            for (let i = 0; i < keys.length; ++i)
-            {
-                const propertyName = keys[i];
-
-                // Set the property using the property descriptor - this works for accessors and normal value properties
-                Object.defineProperty(
-                    Node2D.prototype,
-                    propertyName,
-                    Object.getOwnPropertyDescriptor(source, propertyName)
-                );
-            }
-        }
 
         constructor()
         {
             super();
 
-            this.tempDisplayObjectParent = null;
-
-            // TODO: need to create Transform from factory
             /**
              * World transform and local transform of this object.
              * This will become read-only later, please do not assign anything there unless you know what are you doing.
@@ -154,16 +101,6 @@ namespace feng3d
             this.visible = true;
 
             /**
-             * Can this object be rendered, if false the object will not be drawn but the updateTransform
-             * methods will still be called.
-             *
-             * Only affects recursive calls from parent. You can ask for bounds manually.
-             *
-             * @member {boolean}
-             */
-            this.renderable = true;
-
-            /**
              * The display object container that contains this display object.
              *
              * @member {PIXI.Container}
@@ -179,88 +116,6 @@ namespace feng3d
             this.worldAlpha = 1;
 
             /**
-             * Which index in the children array the display component was before the previous zIndex sort.
-             * Used by containers to help sort objects with the same zIndex, by using previous array index as the decider.
-             *
-             * @member {number}
-             * @protected
-             */
-            this._lastSortedIndex = 0;
-
-            /**
-             * The zIndex of the displayObject.
-             * A higher value will mean it will be rendered on top of other displayObjects within the same container.
-             *
-             * @member {number}
-             * @protected
-             */
-            this._zIndex = 0;
-
-            /**
-             * The area the filter is applied to. This is used as more of an optimization
-             * rather than figuring out the dimensions of the displayObject each frame you can set this rectangle.
-             *
-             * Also works as an interaction mask.
-             *
-             * @member {?PIXI.Rectangle}
-             */
-            this.filterArea = null;
-
-            /**
-             * Sets the filters for the displayObject.
-             * * IMPORTANT: This is a WebGL only feature and will be ignored by the canvas renderer.
-             * To remove filters simply set this property to `'null'`.
-             *
-             * @member {?PIXI.Filter[]}
-             */
-            this.filters = null;
-
-            /**
-             * Currently enabled filters
-             * @member {PIXI.Filter[]}
-             * @protected
-             */
-            this._enabledFilters = null;
-
-            /**
-             * The bounds object, this is used to calculate and store the bounds of the displayObject.
-             *
-             * @member {PIXI.Bounds}
-             */
-            this._bounds = new Bounds();
-
-            /**
-             * Local bounds object, swapped with `_bounds` when using `getLocalBounds()`.
-             *
-             * @member {PIXI.Bounds}
-             */
-            this._localBounds = null;
-
-            /**
-             * Flags the cached bounds as dirty.
-             *
-             * @member {number}
-             * @protected
-             */
-            this._boundsID = 0;
-
-            /**
-             * Cache of this display-object's bounds-rectangle.
-             *
-             * @member {PIXI.Bounds}
-             * @protected
-             */
-            this._boundsRect = null;
-
-            /**
-             * Cache of this display-object's local-bounds rectangle.
-             *
-             * @member {PIXI.Bounds}
-             * @protected
-             */
-            this._localBoundsRect = null;
-
-            /**
              * If the object has been destroyed via destroy(). If true, it should not be used.
              *
              * @member {boolean}
@@ -269,86 +124,13 @@ namespace feng3d
             this._destroyed = false;
 
             /**
-             * used to fast check if a sprite is.. a sprite!
-             * @member {boolean}
-             */
-            this.isSprite = false;
-
-            /**
-             * Does any other displayObject use this object as a mask?
-             * @member {boolean}
-             */
-            this.isMask = false;
-
-
-            /**
              * The array of children of this container.
              *
              * @member {PIXI.Node2D[]}
              * @readonly
              */
             this.children = [];
-
-            /**
-             * If set to true, the container will sort its children by zIndex value
-             * when updateTransform() is called, or manually if sortChildren() is called.
-             *
-             * This actually changes the order of elements in the array, so should be treated
-             * as a basic solution that is not performant compared to other solutions,
-             * such as @link https://github.com/pixijs/pixi-display
-             *
-             * Also be aware of that this may not work nicely with the addChildAt() function,
-             * as the zIndex sorting may cause the child to automatically sorted to another position.
-             *
-             * @see PIXI.settings.SORTABLE_CHILDREN
-             *
-             * @member {boolean}
-             */
-            this.sortableChildren = settings.SORTABLE_CHILDREN;
-
-            /**
-             * Should children be sorted by zIndex at the next updateTransform call.
-             *
-             * Will get automatically set to true if a new child is added, or if a child's zIndex changes.
-             *
-             * @member {boolean}
-             */
-            this.sortDirty = false;
-
-            /**
-             * Fired when a Node2D is added to this Container.
-             *
-             * @event PIXI.Container#childAdded
-             * @param {PIXI.Node2D} child - The child added to the Container.
-             * @param {PIXI.Container} container - The container that added the child.
-             * @param {number} index - The children's index of the added child.
-             */
-
-            /**
-             * Fired when a Node2D is removed from this Container.
-             *
-             * @event PIXI.Node2D#removedFrom
-             * @param {PIXI.Node2D} child - The child removed from the Container.
-             * @param {PIXI.Container} container - The container that removed removed the child.
-             * @param {number} index - The former children's index of the removed child
-             */
         }
-
-        /**
-         * Fired when this Node2D is added to a Container.
-         *
-         * @instance
-         * @event added
-         * @param {PIXI.Container} container - The container added to.
-         */
-
-        /**
-         * Fired when this Node2D is removed from a Container.
-         *
-         * @instance
-         * @event removed
-         * @param {PIXI.Container} container - The container removed from.
-         */
 
         /**
          * Recursively updates transform of all objects from the root to this one
@@ -365,77 +147,6 @@ namespace feng3d
             {
                 this.transform.updateTransform(this._tempDisplayObjectParent.transform);
             }
-        }
-
-        /**
-         * Calculates and returns the (world) bounds of the display object as a [Rectangle]{@link PIXI.Rectangle}.
-         *
-         * This method is expensive on containers with a large subtree (like the stage). This is because the bounds
-         * of a container depend on its children's bounds, which recursively causes all bounds in the subtree to
-         * be recalculated. The upside, however, is that calling `getBounds` once on a container will indeed update
-         * the bounds of all children (the whole subtree, in fact). This side effect should be exploited by using
-         * `displayObject._bounds.getRectangle()` when traversing through all the bounds in a scene graph. Otherwise,
-         * calling `getBounds` on each object in a subtree will cause the total cost to increase quadratically as
-         * its height increases.
-         *
-         * * The transforms of all objects in a container's **subtree** and of all **ancestors** are updated.
-         * * The world bounds of all display objects in a container's **subtree** will also be recalculated.
-         *
-         * The `_bounds` object stores the last calculation of the bounds. You can use to entirely skip bounds
-         * calculation if needed.
-         *
-         * ```js
-         * const lastCalculatedBounds = displayObject._bounds.getRectangle(optionalRect);
-         * ```
-         *
-         * Do know that usage of `getLocalBounds` can corrupt the `_bounds` of children (the whole subtree, actually). This
-         * is a known issue that has not been solved. See [getLocalBounds]{@link PIXI.Node2D#getLocalBounds} for more
-         * details.
-         *
-         * `getBounds` should be called with `skipUpdate` equal to `true` in a render() call. This is because the transforms
-         * are guaranteed to be update-to-date. In fact, recalculating inside a render() call may cause corruption in certain
-         * cases.
-         *
-         * @param {boolean} [skipUpdate] - Setting to `true` will stop the transforms of the scene graph from
-         *  being updated. This means the calculation returned MAY be out of date BUT will give you a
-         *  nice performance boost.
-         * @param {PIXI.Rectangle} [rect] - Optional rectangle to store the result of the bounds calculation.
-         * @return {PIXI.Rectangle} The minimum axis-aligned rectangle in world space that fits around this object.
-         */
-        getBounds(skipUpdate?: boolean, rect?: Rectangle): Rectangle
-        {
-            if (!skipUpdate)
-            {
-                if (!this.parent)
-                {
-                    this.parent = this._tempDisplayObjectParent;
-                    this.updateTransform();
-                    this.parent = null;
-                }
-                else
-                {
-                    this._recursivePostUpdateTransform();
-                    this.updateTransform();
-                }
-            }
-
-            if (this._bounds.updateID !== this._boundsID)
-            {
-                this.calculateBounds();
-                this._bounds.updateID = this._boundsID;
-            }
-
-            if (!rect)
-            {
-                if (!this._boundsRect)
-                {
-                    this._boundsRect = new Rectangle();
-                }
-
-                rect = this._boundsRect;
-            }
-
-            return this._bounds.getRectangle(rect);
         }
 
         /**
@@ -557,51 +268,6 @@ namespace feng3d
             this.pivot.y = pivotY;
 
             return this;
-        }
-
-        /**
-         * @protected
-         * @member {PIXI.Container}
-         */
-        get _tempDisplayObjectParent(): Node2D
-        {
-            if (this.tempDisplayObjectParent === null)
-            {
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                this.tempDisplayObjectParent = Node2D.create();
-            }
-
-            return this.tempDisplayObjectParent;
-        }
-
-        /**
-         * Used in Renderer, cacheAsBitmap and other places where you call an `updateTransform` on root
-         *
-         * ```
-         * const cacheParent = elem.enableTempParent();
-         * elem.updateTransform();
-         * elem.disableTempParent(cacheParent);
-         * ```
-         *
-         * @returns {PIXI.Node2D} current parent
-         */
-        enableTempParent(): Node2D
-        {
-            const myParent = this.parent;
-
-            this.parent = this._tempDisplayObjectParent;
-
-            return myParent;
-        }
-
-        /**
-         * Pair method for `enableTempParent`
-         *
-         * @param {PIXI.Node2D} cacheParent - Actual parent of element
-         */
-        disableTempParent(cacheParent: Node2D): void
-        {
-            this.parent = cacheParent;
         }
 
         /**
@@ -760,30 +426,6 @@ namespace feng3d
         }
 
         /**
-         * The zIndex of the displayObject.
-         *
-         * If a container has the sortableChildren property set to true, children will be automatically
-         * sorted by zIndex value; a higher value will mean it will be moved towards the end of the array,
-         * and thus rendered on top of other display objects within the same container.
-         *
-         * @member {number}
-         * @see PIXI.Container#sortableChildren
-         */
-        get zIndex(): number
-        {
-            return this._zIndex;
-        }
-
-        set zIndex(value: number)
-        {
-            this._zIndex = value;
-            if (this.parent)
-            {
-                this.parent.sortDirty = true;
-            }
-        }
-
-        /**
          * Indicates if the object is globally visible.
          *
          * @member {boolean}
@@ -804,14 +446,6 @@ namespace feng3d
             } while (item);
 
             return true;
-        }
-
-        @AddEntityMenu("Node2D")
-        static create(name = "Node2D")
-        {
-            var node2d = new Entity().addComponent(Node2D);
-            node2d.name = name;
-            return node2d;
         }
 
         /**
@@ -927,15 +561,11 @@ namespace feng3d
                 }
 
                 child.parent = this;
-                this.sortDirty = true;
 
                 // ensure child transform will be recalculated
                 child.transform._parentID = -1;
 
                 this.children.push(child);
-
-                // ensure bounds will be recalculated
-                this._boundsID++;
 
                 // TODO - lets either do all callbacks or all events.. not both!
                 this.onChildrenChange(this.children.length - 1);
@@ -966,15 +596,11 @@ namespace feng3d
             }
 
             child.parent = this;
-            this.sortDirty = true;
 
             // ensure child transform will be recalculated
             child.transform._parentID = -1;
 
             this.children.splice(index, 0, child);
-
-            // ensure bounds will be recalculated
-            this._boundsID++;
 
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
@@ -1089,9 +715,6 @@ namespace feng3d
                 child.transform._parentID = -1;
                 this.children.splice(index, 1);
 
-                // ensure bounds will be recalculated
-                this._boundsID++;
-
                 // TODO - lets either do all callbacks or all events.. not both!
                 this.onChildrenChange(index);
                 child.emit('removed', this);
@@ -1115,9 +738,6 @@ namespace feng3d
             child.parent = null;
             child.transform._parentID = -1;
             this.children.splice(index, 1);
-
-            // ensure bounds will be recalculated
-            this._boundsID++;
 
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
@@ -1154,8 +774,6 @@ namespace feng3d
                     }
                 }
 
-                this._boundsID++;
-
                 this.onChildrenChange(beginIndex);
 
                 for (let i = 0; i < removed.length; ++i)
@@ -1175,44 +793,10 @@ namespace feng3d
         }
 
         /**
-         * Sorts children by zIndex. Previous order is maintained for 2 children with the same zIndex.
-         */
-        sortChildren(): void
-        {
-            let sortRequired = false;
-
-            for (let i = 0, j = this.children.length; i < j; ++i)
-            {
-                const child = this.children[i];
-
-                child._lastSortedIndex = i;
-
-                if (!sortRequired && child.zIndex !== 0)
-                {
-                    sortRequired = true;
-                }
-            }
-
-            if (sortRequired && this.children.length > 1)
-            {
-                this.children.sort(sortChildren);
-            }
-
-            this.sortDirty = false;
-        }
-
-        /**
          * Updates the transform on all children of this container for rendering
          */
         updateTransform(): void
         {
-            if (this.sortableChildren && this.sortDirty)
-            {
-                this.sortChildren();
-            }
-
-            this._boundsID++;
-
             this.transform.updateTransform(this.parent.transform);
 
             // TODO: check render flags, how to process stuff here
@@ -1252,14 +836,8 @@ namespace feng3d
             this.transform = null;
 
             this.parent = null;
-            this._bounds = null;
-
-            this.filters = null;
-            this.filterArea = null;
 
             this._destroyed = true;
-
-            this.sortDirty = false;
 
             const destroyChildren = typeof options === 'boolean' ? options : options && options.children;
 
@@ -1274,81 +852,5 @@ namespace feng3d
             }
         }
 
-        /**
-         * The width of the Container, setting this will actually modify the scale to achieve the value set
-         *
-         * @member {number}
-         */
-        get width(): number
-        {
-            return this.scale.x * this.getLocalBounds().width;
-        }
-
-        set width(value: number)
-        {
-            const width = this.getLocalBounds().width;
-
-            if (width !== 0)
-            {
-                this.scale.x = value / width;
-            }
-            else
-            {
-                this.scale.x = 1;
-            }
-
-            this._width = value;
-        }
-
-        /**
-         * The height of the Container, setting this will actually modify the scale to achieve the value set
-         *
-         * @member {number}
-         */
-        get height(): number
-        {
-            return this.scale.y * this.getLocalBounds().height;
-        }
-
-        set height(value: number)
-        {
-            const height = this.getLocalBounds().height;
-
-            if (height !== 0)
-            {
-                this.scale.y = value / height;
-            }
-            else
-            {
-                this.scale.y = 1;
-            }
-
-            this._height = value;
-        }
-
-        public containsPoint(point: IPointData): boolean
-        {
-            const r = this.getComponents(Renderable2D).some((v) =>
-            {
-                return v.containsPoint(point);
-            })
-            return r;
-        }
     }
-
-    /**
-     * Container default updateTransform, does update children of container.
-     * Will crash if there's no parent element.
-     *.Container#
-     * @method containerUpdateTransform
-     */
-    Node2D.prototype.containerUpdateTransform = Node2D.prototype.updateTransform;
-
-    /**
-     * Node2D default updateTransform, does not update children of container.
-     * Will crash if there's no parent element.
-     *.Node2D#
-     * @method displayObjectUpdateTransform
-     */
-    Node2D.prototype.displayObjectUpdateTransform = Node2D.prototype.updateTransform;
 }
