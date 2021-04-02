@@ -13500,6 +13500,8 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+}
+declare namespace feng3d {
     /**
      * Graphics 类包含一组可用来创建矢量形状的方法。
      */

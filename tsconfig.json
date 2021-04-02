@@ -231,11 +231,13 @@
         "src/core/HideFlags.ts",
         "src/core/RunEnvironment.ts",
         "src/core/Node3D.ts",
+        "src/core/Node2D.ts",
         "src/core/BoundingBox.ts",
         "src/core/Entity.ts",
         "src/core/View.ts",
         // 组件模块
         "src/component/Component3D.ts",
+        "src/component/Component2D.ts",
         "src/component/Graphics.ts",
         "src/component/Behaviour.ts",
         "src/core/TransformLayout.ts",
