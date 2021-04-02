@@ -76,6 +76,7 @@ namespace feng3d
         {
             super();
 
+            this.tempDisplayObjectParent = null;
             /**
              * World transform and local transform of this object.
              * This will become read-only later, please do not assign anything there unless you know what are you doing.

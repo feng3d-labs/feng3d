@@ -28855,6 +28855,7 @@ var feng3d;
         __extends(Node2D, _super);
         function Node2D() {
             var _this = _super.call(this) || this;
+            _this.tempDisplayObjectParent = null;
             /**
              * World transform and local transform of this object.
              * This will become read-only later, please do not assign anything there unless you know what are you doing.
