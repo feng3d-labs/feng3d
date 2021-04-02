@@ -62,7 +62,11 @@ namespace feng3d
         public parent: Node2D;
         public worldAlpha: number;
         public transform: Transform;
+
+        @oav()
         public alpha: number;
+
+        @oav()
         public visible: boolean;
 
         public readonly children: Node2D[];
@@ -347,6 +351,7 @@ namespace feng3d
          * @since PixiJS 4
          * @member {PIXI.ObservablePoint}
          */
+        @oav()
         get position(): ObservablePoint
         {
             return this.transform.position;
@@ -365,6 +370,7 @@ namespace feng3d
          * @since PixiJS 4
          * @member {PIXI.ObservablePoint}
          */
+        @oav()
         get scale(): ObservablePoint
         {
             return this.transform.scale;
@@ -384,6 +390,7 @@ namespace feng3d
          * @since PixiJS 4
          * @member {PIXI.ObservablePoint}
          */
+        @oav()
         get pivot(): ObservablePoint
         {
             return this.transform.pivot;
@@ -400,6 +407,7 @@ namespace feng3d
          * @since PixiJS 4
          * @member {PIXI.ObservablePoint}
          */
+        @oav()
         get skew(): ObservablePoint
         {
             return this.transform.skew;
@@ -416,6 +424,7 @@ namespace feng3d
          *
          * @member {number}
          */
+        @oav()
         get rotation(): number
         {
             return this.transform.rotation;
@@ -432,6 +441,7 @@ namespace feng3d
          *
          * @member {number}
          */
+        @oav()
         get angle(): number
         {
             return this.transform.rotation * Math.RAD2DEG;

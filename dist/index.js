@@ -30704,6 +30704,30 @@ var feng3d;
             }
         };
         __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "alpha", void 0);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "visible", void 0);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "position", null);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "scale", null);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "pivot", null);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "skew", null);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "rotation", null);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "angle", null);
+        __decorate([
             feng3d.AddEntityMenu("Node2D")
         ], Node2D, "create", null);
         return Node2D;
@@ -30780,6 +30804,13 @@ var feng3d;
         function Scene2D() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Scene2D_1 = Scene2D;
+        Scene2D.create = function (name) {
+            if (name === void 0) { name = "Scene2D"; }
+            var node2d = new feng3d.Entity().addComponent(Scene2D_1);
+            node2d.name = name;
+            return node2d;
+        };
         Object.defineProperty(Scene2D.prototype, "node2d", {
             /**
              * 2D 节点
@@ -30813,7 +30844,11 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        Scene2D = __decorate([
+        var Scene2D_1;
+        __decorate([
+            feng3d.AddEntityMenu("Node2D/Scene2D")
+        ], Scene2D, "create", null);
+        Scene2D = Scene2D_1 = __decorate([
             feng3d.RegisterComponent({ single: true, dependencies: [feng3d.Node2D, feng3d.Node3D] }),
             feng3d.AddComponentMenu("Scene/Scene2D")
         ], Scene2D);

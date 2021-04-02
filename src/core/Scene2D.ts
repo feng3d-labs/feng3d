@@ -9,6 +9,14 @@ namespace feng3d
     @AddComponentMenu("Scene/Scene2D")
     export class Scene2D extends Component
     {
+        @AddEntityMenu("Node2D/Scene2D")
+        static create(name = "Scene2D")
+        {
+            var node2d = new Entity().addComponent(Scene2D);
+            node2d.name = name;
+            return node2d;
+        }
+        
         __class__: "feng3d.Scene2D";
 
         /**

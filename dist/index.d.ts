@@ -14437,6 +14437,7 @@ declare namespace feng3d {
      * Scene2D同时拥有Node2D与Node3D组件。
      */
     class Scene2D extends Component {
+        static create(name?: string): Scene2D;
         __class__: "feng3d.Scene2D";
         /**
          * 2D 节点
