@@ -28901,7 +28901,7 @@ var feng3d;
             /**
              * The array of children of this container.
              *
-             * @member {PIXI.Node2D[]}
+             * @member {feng3d.Node2D[]}
              * @readonly
              */
             _this.children = [];
@@ -28958,7 +28958,7 @@ var feng3d;
          * Calculates the local position of the display object relative to another point.
          *
          * @param {PIXI.IPointData} position - The world origin to calculate from.
-         * @param {PIXI.Node2D} [from] - The Node2D to calculate the global position from.
+         * @param {feng3d.Node2D} [from] - The Node2D to calculate the global position from.
          * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
          *  (otherwise will create a new Point).
          * @param {boolean} [skipUpdate=false] - Should we skip the update transform
@@ -29010,7 +29010,7 @@ var feng3d;
          * @param {number} [skewY=0] - The Y skew value
          * @param {number} [pivotX=0] - The X pivot value
          * @param {number} [pivotY=0] - The Y pivot value
-         * @return {PIXI.Node2D} The Node2D instance
+         * @return {feng3d.Node2D} The Node2D instance
          */
         Node2D.prototype.setTransform = function (x, y, scaleX, scaleY, rotation, skewX, skewY, pivotX, pivotY) {
             if (x === void 0) { x = 0; }
@@ -29292,8 +29292,8 @@ var feng3d;
          *
          * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
          *
-         * @param {...PIXI.Node2D} children - The Node2D(s) to add to the container
-         * @return {PIXI.Node2D} The first child that was added.
+         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
+         * @return {feng3d.Node2D} The first child that was added.
          */
         Node2D.prototype.addChild = function () {
             var children = [];
@@ -29328,9 +29328,9 @@ var feng3d;
         /**
          * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
          *
-         * @param {PIXI.Node2D} child - The child to add
+         * @param {feng3d.Node2D} child - The child to add
          * @param {number} index - The index to place the child in
-         * @return {PIXI.Node2D} The child that was added.
+         * @return {feng3d.Node2D} The child that was added.
          */
         Node2D.prototype.addChildAt = function (child, index) {
             if (index < 0 || index > this.children.length) {
@@ -29352,8 +29352,8 @@ var feng3d;
         /**
          * Swaps the position of 2 Display Objects within this container.
          *
-         * @param {PIXI.Node2D} child - First display object to swap
-         * @param {PIXI.Node2D} child2 - Second display object to swap
+         * @param {feng3d.Node2D} child - First display object to swap
+         * @param {feng3d.Node2D} child2 - Second display object to swap
          */
         Node2D.prototype.swapChildren = function (child, child2) {
             if (child === child2) {
@@ -29368,7 +29368,7 @@ var feng3d;
         /**
          * Returns the index position of a child Node2D instance
          *
-         * @param {PIXI.Node2D} child - The Node2D instance to identify
+         * @param {feng3d.Node2D} child - The Node2D instance to identify
          * @return {number} The index position of the child display object to identify
          */
         Node2D.prototype.getChildIndex = function (child) {
@@ -29381,7 +29381,7 @@ var feng3d;
         /**
          * Changes the position of an existing child in the display object container
          *
-         * @param {PIXI.Node2D} child - The child Node2D instance for which you want to change the index number
+         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
          * @param {number} index - The resulting index number for the child display object
          */
         Node2D.prototype.setChildIndex = function (child, index) {
@@ -29397,7 +29397,7 @@ var feng3d;
          * Returns the child at the specified index
          *
          * @param {number} index - The index to get the child at
-         * @return {PIXI.Node2D} The child at the given index, if any.
+         * @return {feng3d.Node2D} The child at the given index, if any.
          */
         Node2D.prototype.getChildAt = function (index) {
             if (index < 0 || index >= this.children.length) {
@@ -29408,8 +29408,8 @@ var feng3d;
         /**
          * Removes one or more children from the container.
          *
-         * @param {...PIXI.Node2D} children - The Node2D(s) to remove
-         * @return {PIXI.Node2D} The first child that was removed.
+         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
+         * @return {feng3d.Node2D} The first child that was removed.
          */
         Node2D.prototype.removeChild = function () {
             var children = [];
@@ -29443,7 +29443,7 @@ var feng3d;
          * Removes a child from the specified index position.
          *
          * @param {number} index - The index to get the child from
-         * @return {PIXI.Node2D} The child that was removed.
+         * @return {feng3d.Node2D} The child that was removed.
          */
         Node2D.prototype.removeChildAt = function (index) {
             var child = this.getChildAt(index);
@@ -29462,7 +29462,7 @@ var feng3d;
          *
          * @param {number} [beginIndex=0] - The beginning position.
          * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
-         * @returns {PIXI.Node2D[]} List of removed children
+         * @returns {feng3d.Node2D[]} List of removed children
          */
         Node2D.prototype.removeChildren = function (beginIndex, endIndex) {
             if (beginIndex === void 0) { beginIndex = 0; }

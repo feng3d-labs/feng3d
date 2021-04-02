@@ -13630,7 +13630,7 @@ declare namespace feng3d {
          * Calculates the local position of the display object relative to another point.
          *
          * @param {PIXI.IPointData} position - The world origin to calculate from.
-         * @param {PIXI.Node2D} [from] - The Node2D to calculate the global position from.
+         * @param {feng3d.Node2D} [from] - The Node2D to calculate the global position from.
          * @param {PIXI.Point} [point] - A Point object in which to store the value, optional
          *  (otherwise will create a new Point).
          * @param {boolean} [skipUpdate=false] - Should we skip the update transform
@@ -13656,7 +13656,7 @@ declare namespace feng3d {
          * @param {number} [skewY=0] - The Y skew value
          * @param {number} [pivotX=0] - The X pivot value
          * @param {number} [pivotY=0] - The Y pivot value
-         * @return {PIXI.Node2D} The Node2D instance
+         * @return {feng3d.Node2D} The Node2D instance
          */
         setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, pivotX?: number, pivotY?: number): this;
         /**
@@ -13790,36 +13790,36 @@ declare namespace feng3d {
          *
          * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
          *
-         * @param {...PIXI.Node2D} children - The Node2D(s) to add to the container
-         * @return {PIXI.Node2D} The first child that was added.
+         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
+         * @return {feng3d.Node2D} The first child that was added.
          */
         addChild<T extends Node2D[]>(...children: T): T[0];
         /**
          * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
          *
-         * @param {PIXI.Node2D} child - The child to add
+         * @param {feng3d.Node2D} child - The child to add
          * @param {number} index - The index to place the child in
-         * @return {PIXI.Node2D} The child that was added.
+         * @return {feng3d.Node2D} The child that was added.
          */
         addChildAt<T extends Node2D>(child: T, index: number): T;
         /**
          * Swaps the position of 2 Display Objects within this container.
          *
-         * @param {PIXI.Node2D} child - First display object to swap
-         * @param {PIXI.Node2D} child2 - Second display object to swap
+         * @param {feng3d.Node2D} child - First display object to swap
+         * @param {feng3d.Node2D} child2 - Second display object to swap
          */
         swapChildren(child: Node2D, child2: Node2D): void;
         /**
          * Returns the index position of a child Node2D instance
          *
-         * @param {PIXI.Node2D} child - The Node2D instance to identify
+         * @param {feng3d.Node2D} child - The Node2D instance to identify
          * @return {number} The index position of the child display object to identify
          */
         getChildIndex(child: Node2D): number;
         /**
          * Changes the position of an existing child in the display object container
          *
-         * @param {PIXI.Node2D} child - The child Node2D instance for which you want to change the index number
+         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
          * @param {number} index - The resulting index number for the child display object
          */
         setChildIndex(child: Node2D, index: number): void;
@@ -13827,21 +13827,21 @@ declare namespace feng3d {
          * Returns the child at the specified index
          *
          * @param {number} index - The index to get the child at
-         * @return {PIXI.Node2D} The child at the given index, if any.
+         * @return {feng3d.Node2D} The child at the given index, if any.
          */
         getChildAt(index: number): Node2D;
         /**
          * Removes one or more children from the container.
          *
-         * @param {...PIXI.Node2D} children - The Node2D(s) to remove
-         * @return {PIXI.Node2D} The first child that was removed.
+         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
+         * @return {feng3d.Node2D} The first child that was removed.
          */
         removeChild<T extends Node2D[]>(...children: T): T[0];
         /**
          * Removes a child from the specified index position.
          *
          * @param {number} index - The index to get the child from
-         * @return {PIXI.Node2D} The child that was removed.
+         * @return {feng3d.Node2D} The child that was removed.
          */
         removeChildAt(index: number): Node2D;
         /**
@@ -13849,7 +13849,7 @@ declare namespace feng3d {
          *
          * @param {number} [beginIndex=0] - The beginning position.
          * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
-         * @returns {PIXI.Node2D[]} List of removed children
+         * @returns {feng3d.Node2D[]} List of removed children
          */
         removeChildren(beginIndex?: number, endIndex?: number): Node2D[];
         /**
