@@ -28906,10 +28906,9 @@ var feng3d;
             _this.children = [];
             return _this;
         }
-        Node2D_1 = Node2D;
         Node2D.create = function (name) {
             if (name === void 0) { name = "Node2D"; }
-            var node2d = new feng3d.Entity().addComponent(Node2D_1);
+            var node2d = new feng3d.Entity().addComponent(Node2D);
             node2d.name = name;
             return node2d;
         };
@@ -29041,7 +29040,7 @@ var feng3d;
             get: function () {
                 if (this.tempDisplayObjectParent === null) {
                     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                    this.tempDisplayObjectParent = Node2D_1.create();
+                    this.tempDisplayObjectParent = Node2D.create();
                 }
                 return this.tempDisplayObjectParent;
             },
@@ -29534,13 +29533,6 @@ var feng3d;
                 }
             }
         };
-        var Node2D_1;
-        __decorate([
-            feng3d.AddEntityMenu("Node2D")
-        ], Node2D, "create", null);
-        Node2D = Node2D_1 = __decorate([
-            feng3d.RegisterComponent({ single: true })
-        ], Node2D);
         return Node2D;
     }(feng3d.Component));
     feng3d.Node2D = Node2D;
