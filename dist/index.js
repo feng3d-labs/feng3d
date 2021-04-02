@@ -29533,6 +29533,9 @@ var feng3d;
                 }
             }
         };
+        __decorate([
+            feng3d.AddEntityMenu("Node2D")
+        ], Node2D, "create", null);
         return Node2D;
     }(feng3d.Component));
     feng3d.Node2D = Node2D;

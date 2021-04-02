@@ -51,6 +51,7 @@ namespace feng3d
      */
     export class Node2D<T extends Node2DEventMap = Node2DEventMap> extends Component<T>
     {
+        @AddEntityMenu("Node2D")
         static create(name = "Node2D")
         {
             var node2d = new Entity().addComponent(Node2D);
