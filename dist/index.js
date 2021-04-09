@@ -27291,6 +27291,17 @@ var feng3d;
     }(feng3d.Feng3dObject));
     feng3d.Component = Component;
 })(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var Node = /** @class */ (function (_super) {
+        __extends(Node, _super);
+        function Node() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return Node;
+    }(feng3d.Component));
+    feng3d.Node = Node;
+})(feng3d || (feng3d = {}));
 // namespace feng3d
 // {
 //     export interface ContainerEventMap
@@ -28591,7 +28602,7 @@ var feng3d;
             feng3d.RegisterComponent({ single: true })
         ], Node3D);
         return Node3D;
-    }(feng3d.Component));
+    }(feng3d.Node));
     feng3d.Node3D = Node3D;
 })(feng3d || (feng3d = {}));
 var feng3d;

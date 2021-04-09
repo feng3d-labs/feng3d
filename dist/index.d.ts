@@ -12851,6 +12851,48 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentEventMap extends NodeEventMap {
+    }
+    interface NodeEventMap {
+        /**
+         * 添加了子对象，当child被添加到parent中时派发冒泡事件
+         */
+        addChild: {
+            parent: Node;
+            child: Node;
+        };
+        /**
+         * 删除了子对象，当child被parent移除时派发冒泡事件
+         */
+        removeChild: {
+            parent: Node;
+            child: Node;
+        };
+        /**
+         * 自身被添加到父对象中事件
+         */
+        added: {
+            parent: Node;
+        };
+        /**
+         * 自身从父对象中移除事件
+         */
+        removed: {
+            parent: Node;
+        };
+        /**
+         * 当GameObject的scene属性被设置是由Scene派发
+         */
+        addedToScene: Node;
+        /**
+         * 当GameObject的scene属性被清空时由Scene派发
+         */
+        removedFromScene: Node;
+    }
+    class Node<T extends ComponentEventMap = ComponentEventMap> extends Component<T> {
+    }
+}
+declare namespace feng3d {
     /**
      * 在检查器中控制对象销毁、保存和可见性的位掩码。
      */
@@ -12979,7 +13021,7 @@ declare namespace feng3d {
      *
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
-    class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T> {
+    class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Node<T> {
         __class__: "feng3d.Node3D";
         assetType: AssetType;
         static create(name?: string): Node3D<Component3DEventMap>;
