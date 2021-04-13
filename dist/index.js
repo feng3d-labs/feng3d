@@ -27431,7 +27431,7 @@ var feng3d;
             this._children.splice(index, 0, child);
             this.onChildrenChange(index);
             child.emit("added", { parent: this });
-            this.emit("addChild", { child: child, parent: this, index: index }, true);
+            this.emit("childAdded", { child: child, parent: this, index: index }, true);
             return child;
         };
         /**
@@ -27551,7 +27551,7 @@ var feng3d;
             child._setParent(null);
             this.onChildrenChange(index);
             child.emit("removed", { parent: this });
-            this.emit("removeChild", { child: child, parent: this, index: index }, true);
+            this.emit("childRemoved", { child: child, parent: this, index: index }, true);
             return child;
         };
         /**

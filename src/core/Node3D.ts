@@ -3,38 +3,10 @@ namespace feng3d
     export interface Component3DEventMap
     {
         /**
-         * 添加了子对象，当child被添加到parent中时派发冒泡事件
-         */
-        addChild: { parent: Node3D, child: Node3D, index: number }
-        /**
-         * 删除了子对象，当child被parent移除时派发冒泡事件
-         */
-        removeChild: { parent: Node3D, child: Node3D, index: number };
-
-        /**
-         * 自身被添加到父对象中事件
-         */
-        added: { parent: Node3D };
-
-        /**
-         * 自身从父对象中移除事件
-         */
-        removed: { parent: Node3D };
-
-        /**
-         * 当GameObject的scene属性被设置是由Scene派发
-         */
-        addedToScene: Node3D;
-
-        /**
-         * 当GameObject的scene属性被清空时由Scene派发
-         */
-        removedFromScene: Node3D;
-
-        /**
          * 变换矩阵变化
          */
         transformChanged: Node3D;
+
         /**
          * 
          */

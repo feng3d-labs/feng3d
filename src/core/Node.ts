@@ -7,12 +7,12 @@ namespace feng3d
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        addChild: { parent: Node, child: Node, index: number }
+        childAdded: { parent: Node, child: Node, index: number }
 
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removeChild: { parent: Node, child: Node, index: number };
+        childRemoved: { parent: Node, child: Node, index: number };
 
         /**
          * 自身被添加到父对象中事件
@@ -183,8 +183,7 @@ namespace feng3d
 
             this.onChildrenChange(index);
             child.emit("added", { parent: this });
-            this.emit("addChild", { child: child, parent: this, index: index }, true);
-
+            this.emit("childAdded", { child: child, parent: this, index: index }, true);
             return child;
         }
 
@@ -330,8 +329,7 @@ namespace feng3d
 
             this.onChildrenChange(index);
             child.emit("removed", { parent: this });
-            this.emit("removeChild", { child: child, parent: this, index }, true);
-
+            this.emit("childRemoved", { child: child, parent: this, index }, true);
             return child;
         }
 

@@ -7,14 +7,6 @@ namespace feng3d
         baseTexture?: boolean;
     }
 
-    export interface Component2DEventMap
-    {
-        removed: { parent: Node2D };
-        added: { parent: Node2D };
-        addChild: { child: Node2D, parent: Node2D, index: number }
-        removeChild: { child: Node2D, parent: Node2D, index: number }
-    }
-
     export interface Node2D
     {
         /**
