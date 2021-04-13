@@ -27421,14 +27421,14 @@ var feng3d;
             return children[0];
         };
         Node.prototype.addChildAt = function (child, index) {
-            if (index < 0 || index > this.children.length) {
-                throw new Error(child + "addChildAt: The index " + index + " supplied is out of bounds " + this.children.length);
+            if (index < 0 || index > this._children.length) {
+                throw new Error(child + "addChildAt: The index " + index + " supplied is out of bounds " + this._children.length);
             }
             if (child._parent) {
                 child._parent.removeChild(child);
             }
             child._setParent(this);
-            this.children.splice(index, 0, child);
+            this._children.splice(index, 0, child);
             this.onChildrenChange(index);
             child.emit("added", { parent: this });
             this.emit("addChild", { child: child, parent: this, index: index }, true);
@@ -27445,8 +27445,8 @@ var feng3d;
             }
             var index1 = this.getChildIndex(child);
             var index2 = this.getChildIndex(child2);
-            this.children[index1] = child2;
-            this.children[index2] = child;
+            this._children[index1] = child2;
+            this._children[index2] = child;
             this.onChildrenChange(index1 < index2 ? index1 : index2);
             return this;
         };
@@ -27473,12 +27473,12 @@ var feng3d;
          * @param index
          */
         Node.prototype.setChildIndex = function (child, index) {
-            if (index < 0 || index >= this.children.length) {
-                throw new Error("The index " + index + " supplied is out of bounds " + this.children.length);
+            if (index < 0 || index >= this._children.length) {
+                throw new Error("The index " + index + " supplied is out of bounds " + this._children.length);
             }
             var currentIndex = this.getChildIndex(child);
-            this.children.splice(currentIndex, 1);
-            this.children.splice(index, 0, child);
+            this._children.splice(currentIndex, 1);
+            this._children.splice(index, 0, child);
             this.onChildrenChange(index);
         };
         /**
@@ -27507,7 +27507,7 @@ var feng3d;
          */
         Node.prototype.removeChildren = function (beginIndex, endIndex) {
             if (beginIndex === void 0) { beginIndex = 0; }
-            if (endIndex === void 0) { endIndex = this.children.length; }
+            if (endIndex === void 0) { endIndex = this._children.length; }
             beginIndex = Math.clamp(beginIndex, 0, this._children.length);
             endIndex = Math.clamp(endIndex, 0, this._children.length);
             var removed = this._children.slice(beginIndex, endIndex);
@@ -27560,7 +27560,7 @@ var feng3d;
          * @param index
          */
         Node.prototype.getChildAt = function (index) {
-            if (index < 0 || index >= this.children.length) {
+            if (index < 0 || index >= this._children.length) {
                 throw new Error("getChildAt: Index (" + index + ") does not exist.");
             }
             return this._children[index];
@@ -27570,6 +27570,62 @@ var feng3d;
          */
         Node.prototype.getChildren = function (start, end) {
             return this._children.slice(start, end);
+        };
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
+         *
+         * @param type		要检索的组件的类型。
+         * @return			返回与给出类定义一致的组件
+         *
+         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
+         */
+        Node.prototype.getComponentsInChildren = function (type, filter, result) {
+            result = result || [];
+            var findchildren = true;
+            var cls = type;
+            var components = this.entity.components;
+            for (var i = 0, n = components.length; i < n; i++) {
+                var item = components[i];
+                if (!cls) {
+                    result.push(item);
+                }
+                else if (item instanceof cls) {
+                    if (filter) {
+                        var filterresult = filter(item);
+                        filterresult && filterresult.value && result.push(item);
+                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
+                    }
+                    else {
+                        result.push(item);
+                    }
+                }
+            }
+            if (findchildren) {
+                var children = this.children;
+                for (var i = 0, n = children.length; i < n; i++) {
+                    var child = children[i];
+                    if (child instanceof feng3d.Node2D) {
+                        child.getComponentsInChildren(type, filter, result);
+                    }
+                }
+            }
+            return result;
+        };
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Node.prototype.getComponentsInParents = function (type, result) {
+            result = result || [];
+            var parent = this.parent;
+            while (parent) {
+                var compnent = parent.getComponent(type);
+                compnent && result.push(compnent);
+                parent = parent.parent;
+            }
+            return result;
         };
         Node.prototype._setParent = function (value) {
             this._parent = value;
@@ -28395,57 +28451,6 @@ var feng3d;
             if (localRay === void 0) { localRay = new feng3d.Ray3(); }
             this.worldToLocalMatrix.transformRay(worldRay, localRay);
             return localRay;
-        };
-        /**
-         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
-         *
-         * @param type		要检索的组件的类型。
-         * @return			返回与给出类定义一致的组件
-         */
-        Node3D.prototype.getComponentsInChildren = function (type, filter, result) {
-            result = result || [];
-            var findchildren = true;
-            var cls = type;
-            var components = this.entity.components;
-            for (var i = 0, n = components.length; i < n; i++) {
-                var item = components[i];
-                if (!cls) {
-                    result.push(item);
-                }
-                else if (item instanceof cls) {
-                    if (filter) {
-                        var filterresult = filter(item);
-                        filterresult && filterresult.value && result.push(item);
-                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
-                    }
-                    else {
-                        result.push(item);
-                    }
-                }
-            }
-            if (findchildren) {
-                var children = this.children;
-                for (var i = 0, n = this.numChildren; i < n; i++) {
-                    children[i].getComponentsInChildren(type, filter, result);
-                }
-            }
-            return result;
-        };
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Node3D.prototype.getComponentsInParents = function (type, result) {
-            result = result || [];
-            var parent = this.parent;
-            while (parent) {
-                var compnent = parent.getComponent(type);
-                compnent && result.push(compnent);
-                parent = parent.parent;
-            }
-            return result;
         };
         Node3D.prototype.beforeRender = function (renderAtomic, scene, camera) {
             Object.assign(renderAtomic.uniforms, this._renderAtomic.uniforms);
@@ -29922,7 +29927,7 @@ var feng3d;
              *
              * @member {PIXI.Container}
              */
-            _this.parent = null;
+            _this._setParent(null);
             /**
              * The multiplied alpha of the displayObject.
              *
@@ -29957,9 +29962,10 @@ var feng3d;
          * internal function for toLocal()
          */
         Node2D.prototype._recursivePostUpdateTransform = function () {
-            if (this.parent) {
-                this.parent._recursivePostUpdateTransform();
-                this.transform.updateTransform(this.parent.transform);
+            var parent = this.parent;
+            if (parent && parent instanceof Node2D) {
+                parent._recursivePostUpdateTransform();
+                this.transform.updateTransform(parent.transform);
             }
             else {
                 this.transform.updateTransform(this._tempDisplayObjectParent.transform);
@@ -29982,9 +29988,9 @@ var feng3d;
                 // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
                 // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
                 if (!this.parent) {
-                    this.parent = this._tempDisplayObjectParent;
+                    this._setParent(this._tempDisplayObjectParent);
                     this.displayObjectUpdateTransform();
-                    this.parent = null;
+                    this._setParent(null);
                 }
                 else {
                     this.displayObjectUpdateTransform();
@@ -30013,9 +30019,9 @@ var feng3d;
                 // If it is we need to give it a temporary parent so that displayObjectUpdateTransform works correctly
                 // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
                 if (!this.parent) {
-                    this.parent = this._tempDisplayObjectParent;
+                    this._setParent(this._tempDisplayObjectParent);
                     this.displayObjectUpdateTransform();
-                    this.parent = null;
+                    this._setParent(null);
                 }
                 else {
                     this.displayObjectUpdateTransform();
@@ -30232,75 +30238,28 @@ var feng3d;
                         return false;
                     }
                     item = item.parent;
-                } while (item);
+                } while (item && item instanceof Node2D);
                 return true;
             },
             enumerable: false,
             configurable: true
         });
         /**
-         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
-         *
-         * @param type		要检索的组件的类型。
-         * @return			返回与给出类定义一致的组件
-         *
-         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
-         */
-        Node2D.prototype.getComponentsInChildren = function (type, filter, result) {
-            result = result || [];
-            var findchildren = true;
-            var cls = type;
-            var components = this.entity.components;
-            for (var i = 0, n = components.length; i < n; i++) {
-                var item = components[i];
-                if (!cls) {
-                    result.push(item);
-                }
-                else if (item instanceof cls) {
-                    if (filter) {
-                        var filterresult = filter(item);
-                        filterresult && filterresult.value && result.push(item);
-                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
-                    }
-                    else {
-                        result.push(item);
-                    }
-                }
-            }
-            if (findchildren) {
-                for (var i = 0, n = this.children.length; i < n; i++) {
-                    this.children[i].getComponentsInChildren(type, filter, result);
-                }
-            }
-            return result;
-        };
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Node2D.prototype.getComponentsInParents = function (type, result) {
-            result = result || [];
-            var parent = this.parent;
-            while (parent) {
-                var compnent = parent.getComponent(type);
-                compnent && result.push(compnent);
-                parent = parent.parent;
-            }
-            return result;
-        };
-        /**
          * Updates the transform on all children of this container for rendering
          */
         Node2D.prototype.updateTransform = function () {
-            this.transform.updateTransform(this.parent.transform);
-            // TODO: check render flags, how to process stuff here
-            this.worldAlpha = this.alpha * this.parent.worldAlpha;
+            var parent = this.parent;
+            if (parent instanceof Node2D) {
+                this.transform.updateTransform(parent.transform);
+                // TODO: check render flags, how to process stuff here
+                this.worldAlpha = this.alpha * parent.worldAlpha;
+            }
             for (var i = 0, j = this.children.length; i < j; ++i) {
                 var child = this.children[i];
                 if (child.visible) {
-                    child.updateTransform();
+                    if (child instanceof Node2D) {
+                        child.updateTransform();
+                    }
                 }
             }
         };
@@ -30323,7 +30282,7 @@ var feng3d;
             }
             this.offAll();
             this.transform = null;
-            this.parent = null;
+            this._setParent(null);
             this._destroyed = true;
             var destroyChildren = typeof options === 'boolean' ? options : options && options.children;
             var oldChildren = this.removeChildren(0, this.children.length);

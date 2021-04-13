@@ -17,9 +17,6 @@ namespace feng3d
 
     export interface Node2D
     {
-        parent: Node2D;
-        children: Node2D[];
-
         /**
          * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
          *
@@ -157,7 +154,7 @@ namespace feng3d
              *
              * @member {PIXI.Container}
              */
-            this.parent = null;
+            this._setParent(null);
 
             /**
              * The multiplied alpha of the displayObject.
@@ -190,10 +187,11 @@ namespace feng3d
          */
         _recursivePostUpdateTransform(): void
         {
-            if (this.parent)
+            const parent = this.parent;
+            if (parent && parent instanceof Node2D)
             {
-                this.parent._recursivePostUpdateTransform();
-                this.transform.updateTransform(this.parent.transform);
+                parent._recursivePostUpdateTransform();
+                this.transform.updateTransform(parent.transform);
             }
             else
             {
@@ -221,9 +219,9 @@ namespace feng3d
                 // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
                 if (!this.parent)
                 {
-                    this.parent = this._tempDisplayObjectParent;
+                    this._setParent(this._tempDisplayObjectParent);
                     this.displayObjectUpdateTransform();
-                    this.parent = null;
+                    this._setParent(null);
                 }
                 else
                 {
@@ -261,9 +259,9 @@ namespace feng3d
                 // this is mainly to avoid a parent check in the main loop. Every little helps for performance :)
                 if (!this.parent)
                 {
-                    this.parent = this._tempDisplayObjectParent;
+                    this._setParent(this._tempDisplayObjectParent);
                     this.displayObjectUpdateTransform();
-                    this.parent = null;
+                    this._setParent(null);
                 }
                 else
                 {
@@ -475,7 +473,7 @@ namespace feng3d
          */
         get worldVisible(): boolean
         {
-            let item = this as Node2D;
+            let item: Node = this;
 
             do
             {
@@ -485,81 +483,10 @@ namespace feng3d
                 }
 
                 item = item.parent;
-            } while (item);
+
+            } while (item && item instanceof Node2D);
 
             return true;
-        }
-
-        /**
-         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
-         * 
-         * @param type		要检索的组件的类型。
-         * @return			返回与给出类定义一致的组件
-         * 
-         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            /**
-             * 是否继续查找子项
-             */
-            findchildren: boolean,
-            /**
-             * 是否为需要查找的组件
-             */
-            value: boolean
-        }, result?: T[]): T[]
-        {
-            result = result || [];
-            var findchildren = true;
-            var cls = type;
-            var components = this.entity.components;
-            for (var i = 0, n = components.length; i < n; i++)
-            {
-                var item = <T>components[i];
-                if (!cls)
-                {
-                    result.push(item);
-                } else if (item instanceof cls)
-                {
-                    if (filter)
-                    {
-                        var filterresult = filter(item);
-                        filterresult && filterresult.value && result.push(item);
-                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
-                    }
-                    else
-                    {
-                        result.push(item);
-                    }
-                }
-            }
-            if (findchildren)
-            {
-                for (var i = 0, n = this.children.length; i < n; i++)
-                {
-                    this.children[i].getComponentsInChildren(type, filter, result);
-                }
-            }
-            return result;
-        }
-
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         * 
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
-        {
-            result = result || [];
-            var parent = this.parent;
-            while (parent)
-            {
-                var compnent = parent.getComponent(type);
-                compnent && result.push(compnent);
-                parent = parent.parent;
-            }
-            return result;
         }
 
         /**
@@ -567,10 +494,14 @@ namespace feng3d
          */
         updateTransform(): void
         {
-            this.transform.updateTransform(this.parent.transform);
+            const parent = this.parent;
+            if (parent instanceof Node2D)
+            {
+                this.transform.updateTransform(parent.transform);
 
-            // TODO: check render flags, how to process stuff here
-            this.worldAlpha = this.alpha * this.parent.worldAlpha;
+                // TODO: check render flags, how to process stuff here
+                this.worldAlpha = this.alpha * parent.worldAlpha;
+            }
 
             for (let i = 0, j = this.children.length; i < j; ++i)
             {
@@ -578,7 +509,10 @@ namespace feng3d
 
                 if (child.visible)
                 {
-                    child.updateTransform();
+                    if (child instanceof Node2D)
+                    {
+                        child.updateTransform();
+                    }
                 }
             }
         }
@@ -605,7 +539,7 @@ namespace feng3d
             this.offAll();
             this.transform = null;
 
-            this.parent = null;
+            this._setParent(null);
 
             this._destroyed = true;
 

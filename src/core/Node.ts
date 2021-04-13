@@ -167,9 +167,9 @@ namespace feng3d
 
         addChildAt<T extends Node>(child: T, index: number): T
         {
-            if (index < 0 || index > this.children.length)
+            if (index < 0 || index > this._children.length)
             {
-                throw new Error(`${child}addChildAt: The index ${index} supplied is out of bounds ${this.children.length}`);
+                throw new Error(`${child}addChildAt: The index ${index} supplied is out of bounds ${this._children.length}`);
             }
 
             if (child._parent)
@@ -179,7 +179,7 @@ namespace feng3d
 
             child._setParent(this);
 
-            this.children.splice(index, 0, child);
+            this._children.splice(index, 0, child);
 
             this.onChildrenChange(index);
             child.emit("added", { parent: this });
@@ -203,8 +203,8 @@ namespace feng3d
             const index1 = this.getChildIndex(child);
             const index2 = this.getChildIndex(child2);
 
-            this.children[index1] = child2;
-            this.children[index2] = child;
+            this._children[index1] = child2;
+            this._children[index2] = child;
             this.onChildrenChange(index1 < index2 ? index1 : index2);
 
             return this;
@@ -241,15 +241,15 @@ namespace feng3d
          */
         setChildIndex(child: Node, index: number): void
         {
-            if (index < 0 || index >= this.children.length)
+            if (index < 0 || index >= this._children.length)
             {
-                throw new Error(`The index ${index} supplied is out of bounds ${this.children.length}`);
+                throw new Error(`The index ${index} supplied is out of bounds ${this._children.length}`);
             }
 
             const currentIndex = this.getChildIndex(child);
 
-            this.children.splice(currentIndex, 1);
-            this.children.splice(index, 0, child);
+            this._children.splice(currentIndex, 1);
+            this._children.splice(index, 0, child);
 
             this.onChildrenChange(index);
         }
@@ -278,7 +278,7 @@ namespace feng3d
         /**
          * 移除所有子对象
          */
-        removeChildren(beginIndex = 0, endIndex = this.children.length): Node[]
+        removeChildren(beginIndex = 0, endIndex = this._children.length): Node[]
         {
             beginIndex = Math.clamp(beginIndex, 0, this._children.length);
             endIndex = Math.clamp(endIndex, 0, this._children.length);
@@ -342,7 +342,7 @@ namespace feng3d
          */
         getChildAt(index: number)
         {
-            if (index < 0 || index >= this.children.length)
+            if (index < 0 || index >= this._children.length)
             {
                 throw new Error(`getChildAt: Index (${index}) does not exist.`);
             }
@@ -355,6 +355,83 @@ namespace feng3d
         getChildren(start?: number, end?: number)
         {
             return this._children.slice(start, end);
+        }
+
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
+         * 
+         * @param type		要检索的组件的类型。
+         * @return			返回与给出类定义一致的组件
+         * 
+         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
+            findchildren: boolean,
+            /**
+             * 是否为需要查找的组件
+             */
+            value: boolean
+        }, result?: T[]): T[]
+        {
+            result = result || [];
+            var findchildren = true;
+            var cls = type;
+            var components = this.entity.components;
+            for (var i = 0, n = components.length; i < n; i++)
+            {
+                var item = <T>components[i];
+                if (!cls)
+                {
+                    result.push(item);
+                } else if (item instanceof cls)
+                {
+                    if (filter)
+                    {
+                        var filterresult = filter(item);
+                        filterresult && filterresult.value && result.push(item);
+                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
+                    }
+                    else
+                    {
+                        result.push(item);
+                    }
+                }
+            }
+            if (findchildren)
+            {
+                const children = this.children;
+                for (var i = 0, n = children.length; i < n; i++)
+                {
+                    const child = children[i];
+                    if (child instanceof Node2D)
+                    {
+                        child.getComponentsInChildren(type, filter, result);
+                    }
+                }
+            }
+            return result;
+        }
+
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         * 
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
+        {
+            result = result || [];
+            var parent = this.parent;
+            while (parent)
+            {
+                var compnent = parent.getComponent(type);
+                compnent && result.push(compnent);
+                parent = parent.parent;
+            }
+            return result;
         }
 
         protected _setParent(value: Node)

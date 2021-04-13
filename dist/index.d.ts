@@ -12989,6 +12989,31 @@ declare namespace feng3d {
          * 获取子对象列表（备份）
          */
         getChildren(start?: number, end?: number): Node<ComponentEventMap>[];
+        /**
+         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
+         *
+         * @param type		要检索的组件的类型。
+         * @return			返回与给出类定义一致的组件
+         *
+         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            /**
+             * 是否继续查找子项
+             */
+            findchildren: boolean;
+            /**
+             * 是否为需要查找的组件
+             */
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
         protected _setParent(value: Node): void;
         protected _updateGlobalVisible(): void;
         protected _invalidateGlobalVisible(): void;
@@ -13356,29 +13381,6 @@ declare namespace feng3d {
          * @param localRay 局部空间射线。
          */
         rayWorldToLocal(worldRay: Ray3, localRay?: Ray3): Ray3;
-        /**
-         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
-         *
-         * @param type		要检索的组件的类型。
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            /**
-             * 是否继续查找子项
-             */
-            findchildren: boolean;
-            /**
-             * 是否为需要查找的组件
-             */
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
          * 销毁
@@ -13994,8 +13996,6 @@ declare namespace feng3d {
         };
     }
     interface Node2D {
-        parent: Node2D;
-        children: Node2D[];
         /**
          * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
          *
@@ -14197,31 +14197,6 @@ declare namespace feng3d {
          * Indicates if the object is globally visible.
          */
         get worldVisible(): boolean;
-        /**
-         * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
-         *
-         * @param type		要检索的组件的类型。
-         * @return			返回与给出类定义一致的组件
-         *
-         * @todo 与 Node3D.getComponentsInChildren 代码重复，有待优化
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            /**
-             * 是否继续查找子项
-             */
-            findchildren: boolean;
-            /**
-             * 是否为需要查找的组件
-             */
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
         /**
          * Updates the transform on all children of this container for rendering
          */
