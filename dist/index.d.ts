@@ -12933,6 +12933,27 @@ declare namespace feng3d {
         addChild<T extends Node[]>(...children: T): T[0];
         addChildAt<T extends Node>(child: T, index: number): T;
         /**
+         *
+         * @param child
+         * @param child2
+         */
+        swapChildren(child: Node, child2: Node): this;
+        /***
+         *
+         */
+        protected onChildrenChange(index?: number): void;
+        /**
+         *
+         * @param child
+         */
+        getChildIndex(child: Node): number;
+        /**
+         *
+         * @param child
+         * @param index
+         */
+        setChildIndex(child: Node, index: number): void;
+        /**
          * 添加子对象
          *
          * @param children 子对象
@@ -12945,13 +12966,13 @@ declare namespace feng3d {
         /**
          * 移除所有子对象
          */
-        removeChildren(): void;
+        removeChildren(beginIndex?: number, endIndex?: number): Node[];
         /**
          * 移除子对象
          *
          * @param child 子对象
          */
-        removeChild(child: Node): void;
+        removeChild<T extends Node[]>(...children: T): T[0];
         /**
          * 删除指定位置的子对象
          *
@@ -13990,6 +14011,21 @@ declare namespace feng3d {
          * @return {feng3d.Node2D} The child at the given index, if any.
          */
         getChildAt(index: number): Node2D;
+        /**
+         * Removes all children from this container that are within the begin and end indexes.
+         *
+         * @param {number} [beginIndex=0] - The beginning position.
+         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
+         * @returns {feng3d.Node2D[]} List of removed children
+         */
+        removeChildren(beginIndex?: number, endIndex?: number): Node2D[];
+        /**
+         * Removes a child from the specified index position.
+         *
+         * @param {number} index - The index to get the child from
+         * @return {feng3d.Node2D} The child that was removed.
+         */
+        removeChildAt(index: number): Node2D;
     }
     /**
      * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
@@ -14190,49 +14226,6 @@ declare namespace feng3d {
          * @protected
          */
         protected onChildrenChange(_length?: number): void;
-        /**
-         * Swaps the position of 2 Display Objects within this container.
-         *
-         * @param {feng3d.Node2D} child - First display object to swap
-         * @param {feng3d.Node2D} child2 - Second display object to swap
-         */
-        swapChildren(child: Node2D, child2: Node2D): void;
-        /**
-         * Returns the index position of a child Node2D instance
-         *
-         * @param {feng3d.Node2D} child - The Node2D instance to identify
-         * @return {number} The index position of the child display object to identify
-         */
-        getChildIndex(child: Node2D): number;
-        /**
-         * Changes the position of an existing child in the display object container
-         *
-         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
-         * @param {number} index - The resulting index number for the child display object
-         */
-        setChildIndex(child: Node2D, index: number): void;
-        /**
-         * Removes one or more children from the container.
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
-         * @return {feng3d.Node2D} The first child that was removed.
-         */
-        removeChild<T extends Node2D[]>(...children: T): T[0];
-        /**
-         * Removes a child from the specified index position.
-         *
-         * @param {number} index - The index to get the child from
-         * @return {feng3d.Node2D} The child that was removed.
-         */
-        removeChildAt(index: number): Node2D;
-        /**
-         * Removes all children from this container that are within the begin and end indexes.
-         *
-         * @param {number} [beginIndex=0] - The beginning position.
-         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
-         * @returns {feng3d.Node2D[]} List of removed children
-         */
-        removeChildren(beginIndex?: number, endIndex?: number): Node2D[];
         /**
          * Updates the transform on all children of this container for rendering
          */

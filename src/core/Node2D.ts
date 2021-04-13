@@ -35,7 +35,24 @@ namespace feng3d
          * @param {number} index - The index to get the child at
          * @return {feng3d.Node2D} The child at the given index, if any.
          */
-        getChildAt(index: number): Node2D
+        getChildAt(index: number): Node2D;
+
+        /**
+         * Removes all children from this container that are within the begin and end indexes.
+         *
+         * @param {number} [beginIndex=0] - The beginning position.
+         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
+         * @returns {feng3d.Node2D[]} List of removed children
+         */
+        removeChildren(beginIndex?: number, endIndex?: number): Node2D[];
+
+        /**
+         * Removes a child from the specified index position.
+         *
+         * @param {number} index - The index to get the child from
+         * @return {feng3d.Node2D} The child that was removed.
+         */
+        removeChildAt(index: number): Node2D;
     }
 
     /**
@@ -575,112 +592,6 @@ namespace feng3d
         }
 
         /**
-         * Swaps the position of 2 Display Objects within this container.
-         *
-         * @param {feng3d.Node2D} child - First display object to swap
-         * @param {feng3d.Node2D} child2 - Second display object to swap
-         */
-        swapChildren(child: Node2D, child2: Node2D): void
-        {
-            if (child === child2)
-            {
-                return;
-            }
-
-            const index1 = this.getChildIndex(child);
-            const index2 = this.getChildIndex(child2);
-
-            this.children[index1] = child2;
-            this.children[index2] = child;
-            this.onChildrenChange(index1 < index2 ? index1 : index2);
-        }
-
-        /**
-         * Returns the index position of a child Node2D instance
-         *
-         * @param {feng3d.Node2D} child - The Node2D instance to identify
-         * @return {number} The index position of the child display object to identify
-         */
-        getChildIndex(child: Node2D): number
-        {
-            const index = this.children.indexOf(child);
-
-            if (index === -1)
-            {
-                throw new Error('The supplied Node2D must be a child of the caller');
-            }
-
-            return index;
-        }
-
-        /**
-         * Changes the position of an existing child in the display object container
-         *
-         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
-         * @param {number} index - The resulting index number for the child display object
-         */
-        setChildIndex(child: Node2D, index: number): void
-        {
-            if (index < 0 || index >= this.children.length)
-            {
-                throw new Error(`The index ${index} supplied is out of bounds ${this.children.length}`);
-            }
-
-            const currentIndex = this.getChildIndex(child);
-
-            this.children.splice(currentIndex, 1); // remove from old position
-            this.children.splice(index, 0, child); // add at new position
-
-            this.onChildrenChange(index);
-        }
-
-        /**
-         * Returns the child at the specified index
-         *
-         * @param {number} index - The index to get the child at
-         * @return {feng3d.Node2D} The child at the given index, if any.
-         */
-        getChildAt(index: number): Node2D
-        {
-            if (index < 0 || index >= this.children.length)
-            {
-                throw new Error(`getChildAt: Index (${index}) does not exist.`);
-            }
-
-            return this.children[index];
-        }
-
-        /**
-         * Removes one or more children from the container.
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
-         * @return {feng3d.Node2D} The first child that was removed.
-         */
-        removeChild<T extends Node2D[]>(...children: T): T[0]
-        {
-            // if there is only one argument we can bypass looping through the them
-            if (children.length > 1)
-            {
-                // loop through the arguments property and remove all children
-                for (let i = 0; i < children.length; i++)
-                {
-                    this.removeChild(children[i]);
-                }
-            }
-            else
-            {
-                const child = children[0];
-                const index = this.children.indexOf(child);
-
-                if (index === -1) return null;
-
-                this.removeChildAt(index);
-            }
-
-            return children[0];
-        }
-
-        /**
          * Removes a child from the specified index position.
          *
          * @param {number} index - The index to get the child from
@@ -688,64 +599,11 @@ namespace feng3d
          */
         removeChildAt(index: number): Node2D
         {
-            const child = this.getChildAt(index);
+            const child = super.removeChildAt(index) as Node2D;
 
-            // ensure child transform will be recalculated..
-            child.parent = null;
             child.transform._parentID = -1;
-            this.children.splice(index, 1);
-
-            // TODO - lets either do all callbacks or all events.. not both!
-            this.onChildrenChange(index);
-            child.emit('removed', this);
-            this.emit('removeChild', { child: child, parent: this, index: index });
 
             return child;
-        }
-
-        /**
-         * Removes all children from this container that are within the begin and end indexes.
-         *
-         * @param {number} [beginIndex=0] - The beginning position.
-         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
-         * @returns {feng3d.Node2D[]} List of removed children
-         */
-        removeChildren(beginIndex = 0, endIndex = this.children.length): Node2D[]
-        {
-            const begin = beginIndex;
-            const end = endIndex;
-            const range = end - begin;
-            let removed: Node2D[];
-
-            if (range > 0 && range <= end)
-            {
-                removed = this.children.splice(begin, range);
-
-                for (let i = 0; i < removed.length; ++i)
-                {
-                    removed[i].parent = null;
-                    if (removed[i].transform)
-                    {
-                        removed[i].transform._parentID = -1;
-                    }
-                }
-
-                this.onChildrenChange(beginIndex);
-
-                for (let i = 0; i < removed.length; ++i)
-                {
-                    removed[i].emit('removed', this);
-                    this.emit('removeChild', { child: removed[i], parent: this, index: i });
-                }
-
-                return removed;
-            }
-            else if (range === 0 && this.children.length === 0)
-            {
-                return [];
-            }
-
-            throw new RangeError('removeChildren: numeric values are outside the acceptable range.');
         }
 
         /**

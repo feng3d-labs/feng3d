@@ -181,10 +181,77 @@ namespace feng3d
 
             this.children.splice(index, 0, child);
 
+            this.onChildrenChange(index);
             child.emit("added", { parent: this });
             this.emit("addChild", { child: child, parent: this, index: index }, true);
 
             return child;
+        }
+
+        /**
+         * 
+         * @param child 
+         * @param child2 
+         */
+        swapChildren(child: Node, child2: Node)
+        {
+            if (child === child2)
+            {
+                return;
+            }
+
+            const index1 = this.getChildIndex(child);
+            const index2 = this.getChildIndex(child2);
+
+            this.children[index1] = child2;
+            this.children[index2] = child;
+            this.onChildrenChange(index1 < index2 ? index1 : index2);
+
+            return this;
+        }
+
+        /***
+         * 
+         */
+        protected onChildrenChange(index?: number): void
+        {
+            /* empty */
+        }
+
+        /**
+         * 
+         * @param child 
+         */
+        getChildIndex(child: Node): number
+        {
+            const index = this._children.indexOf(child);
+
+            if (index === -1)
+            {
+                throw new Error('The supplied Node must be a child of the caller');
+            }
+
+            return index;
+        }
+
+        /**
+         * 
+         * @param child 
+         * @param index 
+         */
+        setChildIndex(child: Node, index: number): void
+        {
+            if (index < 0 || index >= this.children.length)
+            {
+                throw new Error(`The index ${index} supplied is out of bounds ${this.children.length}`);
+            }
+
+            const currentIndex = this.getChildIndex(child);
+
+            this.children.splice(currentIndex, 1);
+            this.children.splice(index, 0, child);
+
+            this.onChildrenChange(index);
         }
 
         /**
@@ -211,12 +278,17 @@ namespace feng3d
         /**
          * 移除所有子对象
          */
-        removeChildren()
+        removeChildren(beginIndex = 0, endIndex = this.children.length): Node[]
         {
-            for (let i = this.numChildren - 1; i >= 0; i--)
+            beginIndex = Math.clamp(beginIndex, 0, this._children.length);
+            endIndex = Math.clamp(endIndex, 0, this._children.length);
+
+            var removed = this._children.slice(beginIndex, endIndex);
+            for (let i = endIndex - 1; i >= beginIndex; i--)
             {
                 this.removeChildAt(i);
             }
+            return removed;
         }
 
         /**
@@ -224,14 +296,25 @@ namespace feng3d
          * 
          * @param child 子对象
          */
-        removeChild(child: Node)
+        removeChild<T extends Node[]>(...children: T): T[0]
         {
-            if (child == null) return;
-            var childIndex = this._children.indexOf(child);
-            if (childIndex != -1)
+            if (children.length > 1)
             {
-                this.removeChildAt(childIndex);
+                for (let i = 0; i < children.length; i++)
+                {
+                    this.removeChild(children[i]);
+                }
             }
+            else
+            {
+                const child = children[0];
+                const index = this._children.indexOf(child);
+
+                if (index === -1) return null;
+
+                this.removeChildAt(index);
+            }
+            return children[0];
         }
 
         /**
@@ -245,8 +328,10 @@ namespace feng3d
             this._children.splice(index, 1);
             child._setParent(null);
 
+            this.onChildrenChange(index);
             child.emit("removed", { parent: this });
             this.emit("removeChild", { child: child, parent: this, index }, true);
+
             return child;
         }
 

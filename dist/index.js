@@ -27429,9 +27429,57 @@ var feng3d;
             }
             child._setParent(this);
             this.children.splice(index, 0, child);
+            this.onChildrenChange(index);
             child.emit("added", { parent: this });
             this.emit("addChild", { child: child, parent: this, index: index }, true);
             return child;
+        };
+        /**
+         *
+         * @param child
+         * @param child2
+         */
+        Node.prototype.swapChildren = function (child, child2) {
+            if (child === child2) {
+                return;
+            }
+            var index1 = this.getChildIndex(child);
+            var index2 = this.getChildIndex(child2);
+            this.children[index1] = child2;
+            this.children[index2] = child;
+            this.onChildrenChange(index1 < index2 ? index1 : index2);
+            return this;
+        };
+        /***
+         *
+         */
+        Node.prototype.onChildrenChange = function (index) {
+            /* empty */
+        };
+        /**
+         *
+         * @param child
+         */
+        Node.prototype.getChildIndex = function (child) {
+            var index = this._children.indexOf(child);
+            if (index === -1) {
+                throw new Error('The supplied Node must be a child of the caller');
+            }
+            return index;
+        };
+        /**
+         *
+         * @param child
+         * @param index
+         */
+        Node.prototype.setChildIndex = function (child, index) {
+            if (index < 0 || index >= this.children.length) {
+                throw new Error("The index " + index + " supplied is out of bounds " + this.children.length);
+            }
+            var currentIndex = this.getChildIndex(child);
+            this.children.splice(currentIndex, 1);
+            this.children.splice(index, 0, child);
+            this.onChildrenChange(index);
         };
         /**
          * 添加子对象
@@ -27457,23 +27505,40 @@ var feng3d;
         /**
          * 移除所有子对象
          */
-        Node.prototype.removeChildren = function () {
-            for (var i = this.numChildren - 1; i >= 0; i--) {
+        Node.prototype.removeChildren = function (beginIndex, endIndex) {
+            if (beginIndex === void 0) { beginIndex = 0; }
+            if (endIndex === void 0) { endIndex = this.children.length; }
+            beginIndex = Math.clamp(beginIndex, 0, this._children.length);
+            endIndex = Math.clamp(endIndex, 0, this._children.length);
+            var removed = this._children.slice(beginIndex, endIndex);
+            for (var i = endIndex - 1; i >= beginIndex; i--) {
                 this.removeChildAt(i);
             }
+            return removed;
         };
         /**
          * 移除子对象
          *
          * @param child 子对象
          */
-        Node.prototype.removeChild = function (child) {
-            if (child == null)
-                return;
-            var childIndex = this._children.indexOf(child);
-            if (childIndex != -1) {
-                this.removeChildAt(childIndex);
+        Node.prototype.removeChild = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
             }
+            if (children.length > 1) {
+                for (var i = 0; i < children.length; i++) {
+                    this.removeChild(children[i]);
+                }
+            }
+            else {
+                var child = children[0];
+                var index = this._children.indexOf(child);
+                if (index === -1)
+                    return null;
+                this.removeChildAt(index);
+            }
+            return children[0];
         };
         /**
          * 删除指定位置的子对象
@@ -27484,6 +27549,7 @@ var feng3d;
             var child = this._children[index];
             this._children.splice(index, 1);
             child._setParent(null);
+            this.onChildrenChange(index);
             child.emit("removed", { parent: this });
             this.emit("removeChild", { child: child, parent: this, index: index }, true);
             return child;
@@ -30255,139 +30321,15 @@ var feng3d;
             return child;
         };
         /**
-         * Swaps the position of 2 Display Objects within this container.
-         *
-         * @param {feng3d.Node2D} child - First display object to swap
-         * @param {feng3d.Node2D} child2 - Second display object to swap
-         */
-        Node2D.prototype.swapChildren = function (child, child2) {
-            if (child === child2) {
-                return;
-            }
-            var index1 = this.getChildIndex(child);
-            var index2 = this.getChildIndex(child2);
-            this.children[index1] = child2;
-            this.children[index2] = child;
-            this.onChildrenChange(index1 < index2 ? index1 : index2);
-        };
-        /**
-         * Returns the index position of a child Node2D instance
-         *
-         * @param {feng3d.Node2D} child - The Node2D instance to identify
-         * @return {number} The index position of the child display object to identify
-         */
-        Node2D.prototype.getChildIndex = function (child) {
-            var index = this.children.indexOf(child);
-            if (index === -1) {
-                throw new Error('The supplied Node2D must be a child of the caller');
-            }
-            return index;
-        };
-        /**
-         * Changes the position of an existing child in the display object container
-         *
-         * @param {feng3d.Node2D} child - The child Node2D instance for which you want to change the index number
-         * @param {number} index - The resulting index number for the child display object
-         */
-        Node2D.prototype.setChildIndex = function (child, index) {
-            if (index < 0 || index >= this.children.length) {
-                throw new Error("The index " + index + " supplied is out of bounds " + this.children.length);
-            }
-            var currentIndex = this.getChildIndex(child);
-            this.children.splice(currentIndex, 1); // remove from old position
-            this.children.splice(index, 0, child); // add at new position
-            this.onChildrenChange(index);
-        };
-        /**
-         * Returns the child at the specified index
-         *
-         * @param {number} index - The index to get the child at
-         * @return {feng3d.Node2D} The child at the given index, if any.
-         */
-        Node2D.prototype.getChildAt = function (index) {
-            if (index < 0 || index >= this.children.length) {
-                throw new Error("getChildAt: Index (" + index + ") does not exist.");
-            }
-            return this.children[index];
-        };
-        /**
-         * Removes one or more children from the container.
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to remove
-         * @return {feng3d.Node2D} The first child that was removed.
-         */
-        Node2D.prototype.removeChild = function () {
-            var children = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                children[_i] = arguments[_i];
-            }
-            // if there is only one argument we can bypass looping through the them
-            if (children.length > 1) {
-                // loop through the arguments property and remove all children
-                for (var i = 0; i < children.length; i++) {
-                    this.removeChild(children[i]);
-                }
-            }
-            else {
-                var child = children[0];
-                var index = this.children.indexOf(child);
-                if (index === -1)
-                    return null;
-                this.removeChildAt(index);
-            }
-            return children[0];
-        };
-        /**
          * Removes a child from the specified index position.
          *
          * @param {number} index - The index to get the child from
          * @return {feng3d.Node2D} The child that was removed.
          */
         Node2D.prototype.removeChildAt = function (index) {
-            var child = this.getChildAt(index);
-            // ensure child transform will be recalculated..
-            child.parent = null;
+            var child = _super.prototype.removeChildAt.call(this, index);
             child.transform._parentID = -1;
-            this.children.splice(index, 1);
-            // TODO - lets either do all callbacks or all events.. not both!
-            this.onChildrenChange(index);
-            child.emit('removed', this);
-            this.emit('removeChild', { child: child, parent: this, index: index });
             return child;
-        };
-        /**
-         * Removes all children from this container that are within the begin and end indexes.
-         *
-         * @param {number} [beginIndex=0] - The beginning position.
-         * @param {number} [endIndex=this.children.length] - The ending position. Default value is size of the container.
-         * @returns {feng3d.Node2D[]} List of removed children
-         */
-        Node2D.prototype.removeChildren = function (beginIndex, endIndex) {
-            if (beginIndex === void 0) { beginIndex = 0; }
-            if (endIndex === void 0) { endIndex = this.children.length; }
-            var begin = beginIndex;
-            var end = endIndex;
-            var range = end - begin;
-            var removed;
-            if (range > 0 && range <= end) {
-                removed = this.children.splice(begin, range);
-                for (var i = 0; i < removed.length; ++i) {
-                    removed[i].parent = null;
-                    if (removed[i].transform) {
-                        removed[i].transform._parentID = -1;
-                    }
-                }
-                this.onChildrenChange(beginIndex);
-                for (var i = 0; i < removed.length; ++i) {
-                    removed[i].emit('removed', this);
-                    this.emit('removeChild', { child: removed[i], parent: this, index: i });
-                }
-                return removed;
-            }
-            else if (range === 0 && this.children.length === 0) {
-                return [];
-            }
-            throw new RangeError('removeChildren: numeric values are outside the acceptable range.');
         };
         /**
          * Updates the transform on all children of this container for rendering
