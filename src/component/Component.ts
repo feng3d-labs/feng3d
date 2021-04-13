@@ -153,6 +153,21 @@ namespace feng3d
             this._entity = v;
         }
 
+        get node()
+        {
+            return this._node;
+        }
+        set node(v)
+        {
+            if (this._node === v)
+            {
+                return;
+            }
+            console.assert(!this._node, "无法重复赋值!");
+            this._node = v;
+        }
+        private _node: Node;
+
         /**
          * 名称。
          * 
@@ -208,6 +223,8 @@ namespace feng3d
          */
         init()
         {
+            this.node = this._entity.getComponent(Node);
+            console.assert(!!this.node);
         }
 
         /**
@@ -348,19 +365,7 @@ namespace feng3d
          */
         private _onAnyListener(e: Event<any>)
         {
-            if (this._entity)
-                this._entity.emitEvent(e);
-        }
-
-        /**
-         * 该方法仅在Entity中使用
-         * @private
-         * 
-         * @param entity 实体
-         */
-        _setEntity(entity: Entity)
-        {
-            this._entity = entity;
+            this._entity.emitEvent(e);
         }
 
         //------------------------------------------
@@ -370,7 +375,7 @@ namespace feng3d
         //------------------------------------------
         // Protected Properties
         //------------------------------------------
-        protected _entity: Entity;
+        private _entity: Entity = null;
 
         //------------------------------------------
         // Protected Functions

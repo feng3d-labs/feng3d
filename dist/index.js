@@ -27060,6 +27060,13 @@ var feng3d;
         function Component() {
             var _this = _super.call(this) || this;
             _this._disposed = false;
+            //------------------------------------------
+            // Static Functions
+            //------------------------------------------
+            //------------------------------------------
+            // Protected Properties
+            //------------------------------------------
+            _this._entity = null;
             _this.onAny(_this._onAnyListener, _this);
             return _this;
         }
@@ -27113,6 +27120,20 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(Component.prototype, "node", {
+            get: function () {
+                return this._node;
+            },
+            set: function (v) {
+                if (this._node === v) {
+                    return;
+                }
+                console.assert(!this._node, "无法重复赋值!");
+                this._node = v;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(Component.prototype, "name", {
             /**
              * 名称。
@@ -27157,6 +27178,8 @@ var feng3d;
          * 在添加到Entity时立即被调用。
          */
         Component.prototype.init = function () {
+            this.node = this._entity.getComponent(feng3d.Node);
+            console.assert(!!this.node);
         };
         /**
          * 获取指定位置索引的子组件
@@ -27267,17 +27290,7 @@ var feng3d;
          * 监听对象的所有事件并且传播到所有组件中
          */
         Component.prototype._onAnyListener = function (e) {
-            if (this._entity)
-                this._entity.emitEvent(e);
-        };
-        /**
-         * 该方法仅在Entity中使用
-         * @private
-         *
-         * @param entity 实体
-         */
-        Component.prototype._setEntity = function (entity) {
-            this._entity = entity;
+            this._entity.emitEvent(e);
         };
         /**
          * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
@@ -27651,194 +27664,13 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], Node.prototype, "visible", null);
+        Node = __decorate([
+            feng3d.RegisterComponent({ single: true })
+        ], Node);
         return Node;
     }(feng3d.Component));
     feng3d.Node = Node;
 })(feng3d || (feng3d = {}));
-// namespace feng3d
-// {
-//     export interface ContainerEventMap
-//     {
-//         /**
-//          * 添加了子对象，当child被添加到parent中时派发冒泡事件
-//          */
-//         addChild: { parent: Container, child: Container }
-//         /**
-//          * 删除了子对象，当child被parent移除时派发冒泡事件
-//          */
-//         removeChild: { parent: Container, child: Container };
-//         /**
-//          * 自身被添加到父对象中事件
-//          */
-//         added: { parent: Container };
-//         /**
-//          * 自身从父对象中移除事件
-//          */
-//         removed: { parent: Container };
-//     }
-//     /**
-//      * 
-//      */
-//     export class Container<T extends ContainerEventMap = ContainerEventMap> extends EventEmitter<T>
-//     {
-//         /**
-//          * 名称
-//          */
-//         name: string;
-//         protected _parent: Container;
-//         protected _children: Container[] = [];
-//         get parent()
-//         {
-//             return this._parent;
-//         }
-//         private _setParent(value: Container)
-//         {
-//             this._parent = value;
-//         }
-//         get numChildren()
-//         {
-//             return this._children.length;
-//         }
-//         /**
-//          * 根据名称查找对象
-//          * 
-//          * @param name 对象名称
-//          */
-//         find(name: string): Container
-//         {
-//             if (this.name == name)
-//                 return this;
-//             for (var i = 0; i < this._children.length; i++)
-//             {
-//                 var target = this._children[i].find(name);
-//                 if (target)
-//                     return target;
-//             }
-//             return null;
-//         }
-//         /**
-//          * 是否包含指定对象
-//          * 
-//          * @param child 可能的子孙对象
-//          */
-//         contains(child: Container)
-//         {
-//             var checkitem = child;
-//             do
-//             {
-//                 if (checkitem == this)
-//                     return true;
-//                 checkitem = checkitem.parent;
-//             } while (checkitem);
-//             return false;
-//         }
-//         /**
-//          * 添加子对象
-//          * 
-//          * @param child 子对象
-//          */
-//         addChild(child: Container)
-//         {
-//             if (child == null)
-//                 return;
-//             if (child.parent == this)
-//             {
-//                 // 把子对象移动到最后
-//                 var childIndex = this._children.indexOf(child);
-//                 if (childIndex != -1) this._children.splice(childIndex, 1);
-//                 this._children.push(child);
-//             } else
-//             {
-//                 if (child.contains(this))
-//                 {
-//                     console.error("无法添加到自身中!");
-//                     return;
-//                 }
-//                 if (child._parent) child._parent.removeChild(child);
-//                 child._setParent(this);
-//                 this._children.push(child);
-//                 child.emit("added", { parent: this });
-//                 this.emit("addChild", { child: child, parent: this }, true);
-//             }
-//             return child;
-//         }
-//         /**
-//          * 添加子对象
-//          * 
-//          * @param children 子对象
-//          */
-//         addChildren(...children: Container[])
-//         {
-//             for (let i = 0; i < children.length; i++)
-//             {
-//                 this.addChild(children[i]);
-//             }
-//         }
-//         /**
-//          * 移除自身
-//          */
-//         remove()
-//         {
-//             if (this.parent) this.parent.removeChild(this);
-//         }
-//         /**
-//          * 移除所有子对象
-//          */
-//         removeChildren()
-//         {
-//             for (let i = this.numChildren - 1; i >= 0; i--)
-//             {
-//                 this.removeChildAt(i);
-//             }
-//         }
-//         /**
-//          * 移除子对象
-//          * 
-//          * @param child 子对象
-//          */
-//         removeChild(child: Container)
-//         {
-//             if (child == null) return;
-//             var childIndex = this._children.indexOf(child);
-//             if (childIndex != -1) this.removeChildInternal(childIndex, child);
-//         }
-//         /**
-//          * 删除指定位置的子对象
-//          * 
-//          * @param index 需要删除子对象的所有
-//          */
-//         removeChildAt(index: number)
-//         {
-//             var child = this._children[index];
-//             return this.removeChildInternal(index, child);
-//         }
-//         /**
-//          * 获取指定位置的子对象
-//          * 
-//          * @param index 
-//          */
-//         getChildAt(index: number)
-//         {
-//             index = index;
-//             return this._children[index];
-//         }
-//         /**
-//          * 获取子对象列表（备份）
-//          */
-//         getChildren()
-//         {
-//             return this._children.concat();
-//         }
-//         private removeChildInternal(childIndex: number, child: Container)
-//         {
-//             childIndex = childIndex;
-//             this._children.splice(childIndex, 1);
-//             child._setParent(null);
-//             child.emit("removed", { parent: this });
-//             this.emit("removeChild", { child: child, parent: this }, true);
-//         }
-//     }
-// }
 var feng3d;
 (function (feng3d) {
     /**
@@ -27964,10 +27796,9 @@ var feng3d;
             _this._renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
             return _this;
         }
-        Node3D_1 = Node3D;
         Node3D.create = function (name) {
             if (name === void 0) { name = "Node3D"; }
-            var node3d = new feng3d.Entity().addComponent(Node3D_1);
+            var node3d = new feng3d.Entity().addComponent(Node3D);
             node3d.name = name;
             return node3d;
         };
@@ -28634,7 +28465,6 @@ var feng3d;
             this._scene = v;
             this._updateChildrenScene();
         };
-        var Node3D_1;
         __decorate([
             feng3d.serialize
         ], Node3D.prototype, "prefabId", void 0);
@@ -28683,9 +28513,6 @@ var feng3d;
         __decorate([
             feng3d.AddEntityMenu("Node3D/Empty")
         ], Node3D, "create", null);
-        Node3D = Node3D_1 = __decorate([
-            feng3d.RegisterComponent({ single: true })
-        ], Node3D);
         return Node3D;
     }(feng3d.Node));
     feng3d.Node3D = Node3D;
@@ -29125,7 +28952,7 @@ var feng3d;
                 }
             }
             this._components.splice(index, 0, component);
-            component._setEntity(this);
+            component.entity = this;
             component.init();
             //派发添加组件事件
             this.emit("addComponent", { component: component, entity: this }, true);
@@ -29480,8 +29307,8 @@ var feng3d;
              * 附加到此 Entity 的 Node3D。
              */
             get: function () {
-                console.assert(!!this._entity);
-                this._node3d = this._node3d || this._entity.getComponent(feng3d.Node3D);
+                console.assert(!!this.entity);
+                this._node3d = this._node3d || this.entity.getComponent(feng3d.Node3D);
                 console.assert(!!this._node3d);
                 return this._node3d;
             },
@@ -30350,7 +30177,7 @@ var feng3d;
              */
             get: function () {
                 var _a;
-                return (_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node2D);
+                return (_a = this.entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node2D);
             },
             enumerable: false,
             configurable: true
@@ -30400,45 +30227,12 @@ var feng3d;
             node2d.name = name;
             return node2d;
         };
-        Object.defineProperty(Scene2D.prototype, "node2d", {
-            /**
-             * 2D 节点
-             *
-             * 拥有以下作用：
-             * 1. Scene2D的根节点。
-             * 1. 作为2D节点放入另一个Scene2D中的。
-             */
-            get: function () {
-                console.assert(!!this._entity);
-                this._node2d = this._node2d || this._entity.getComponent(feng3d.Node2D);
-                console.assert(!!this._node2d);
-                return this._node2d;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Scene2D.prototype, "node3d", {
-            /**
-             * 3D 节点
-             *
-             * 拥有以下作用：
-             * 1. 作为3D节点放入另一个Scene3D中的。
-             */
-            get: function () {
-                console.assert(!!this._entity);
-                this._node3d = this._node3d || this._entity.getComponent(feng3d.Node3D);
-                console.assert(!!this._node3d);
-                return this._node3d;
-            },
-            enumerable: false,
-            configurable: true
-        });
         var Scene2D_1;
         __decorate([
             feng3d.AddEntityMenu("Node2D/Scene2D")
         ], Scene2D, "create", null);
         Scene2D = Scene2D_1 = __decorate([
-            feng3d.RegisterComponent({ single: true, dependencies: [feng3d.Node2D, feng3d.Node3D] }),
+            feng3d.RegisterComponent({ single: true }),
             feng3d.AddComponentMenu("Scene/Scene2D")
         ], Scene2D);
         return Scene2D;
@@ -30577,8 +30371,7 @@ var feng3d;
             this._invalidateSceneTransform();
         };
         HoldSizeComponent.prototype._invalidateSceneTransform = function () {
-            if (this._entity)
-                this.node3d["_invalidateSceneTransform"]();
+            this.node3d["_invalidateSceneTransform"]();
         };
         HoldSizeComponent.prototype._onUpdateLocalToWorldMatrix = function () {
             var _localToWorldMatrix = this.node3d["_localToWorldMatrix"];
@@ -30637,7 +30430,7 @@ var feng3d;
             this._invalidHoldSizeMatrix();
         };
         BillboardComponent.prototype._invalidHoldSizeMatrix = function () {
-            if (this._entity)
+            if (this.entity)
                 this.node3d["_invalidateSceneTransform"]();
         };
         BillboardComponent.prototype._onUpdateLocalToWorldMatrix = function () {

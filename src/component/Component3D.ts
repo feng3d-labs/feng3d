@@ -20,8 +20,8 @@ namespace feng3d
          */
         get node3d()
         {
-            console.assert(!!this._entity);
-            this._node3d = this._node3d || this._entity.getComponent(Node3D);
+            console.assert(!!this.entity);
+            this._node3d = this._node3d || this.entity.getComponent(Node3D);
             console.assert(!!this._node3d);
             return this._node3d;
         }

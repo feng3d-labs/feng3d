@@ -231,7 +231,6 @@
         //
         "src/component/Component.ts",
         "src/core/Node.ts",
-        "src/core/Container.ts",
         "src/core/HideFlags.ts",
         "src/core/RunEnvironment.ts",
         "src/core/Node3D.ts",

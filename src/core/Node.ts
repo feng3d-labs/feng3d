@@ -35,6 +35,7 @@ namespace feng3d
         removedFromScene: Node;
     }
 
+    @RegisterComponent({ single: true })
     export class Node<T extends ComponentEventMap = ComponentEventMap> extends Component<T>
     {
         protected _children: Node[] = [];

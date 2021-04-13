@@ -12731,6 +12731,9 @@ declare namespace feng3d {
          */
         get entity(): Entity<EntityEventMap>;
         set entity(v: Entity<EntityEventMap>);
+        get node(): Node<ComponentEventMap>;
+        set node(v: Node<ComponentEventMap>);
+        private _node;
         /**
          * 名称。
          *
@@ -12840,14 +12843,7 @@ declare namespace feng3d {
          * 监听对象的所有事件并且传播到所有组件中
          */
         private _onAnyListener;
-        /**
-         * 该方法仅在Entity中使用
-         * @private
-         *
-         * @param entity 实体
-         */
-        _setEntity(entity: Entity): void;
-        protected _entity: Entity;
+        private _entity;
     }
 }
 declare namespace feng3d {
@@ -14207,23 +14203,6 @@ declare namespace feng3d {
     class Scene2D extends Component {
         static create(name?: string): Scene2D;
         __class__: "feng3d.Scene2D";
-        /**
-         * 2D 节点
-         *
-         * 拥有以下作用：
-         * 1. Scene2D的根节点。
-         * 1. 作为2D节点放入另一个Scene2D中的。
-         */
-        get node2d(): Node2D<Component2DEventMap>;
-        private _node2d;
-        /**
-         * 3D 节点
-         *
-         * 拥有以下作用：
-         * 1. 作为3D节点放入另一个Scene3D中的。
-         */
-        get node3d(): Node3D<Component3DEventMap>;
-        private _node3d;
     }
 }
 declare namespace feng3d {

@@ -39,7 +39,6 @@ namespace feng3d
      * 
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
-    @RegisterComponent({ single: true })
     export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends Node<T>
     {
         __class__: "feng3d.Node3D";

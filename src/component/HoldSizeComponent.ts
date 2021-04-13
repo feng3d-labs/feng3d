@@ -45,7 +45,7 @@ namespace feng3d
 
         private _invalidateSceneTransform()
         {
-            if (this._entity) this.node3d["_invalidateSceneTransform"]();
+            this.node3d["_invalidateSceneTransform"]();
         }
 
         private _onUpdateLocalToWorldMatrix()

@@ -32,7 +32,7 @@ namespace feng3d
 
         private _invalidHoldSizeMatrix()
         {
-            if (this._entity) this.node3d["_invalidateSceneTransform"]();
+            if (this.entity) this.node3d["_invalidateSceneTransform"]();
         }
 
         private _onUpdateLocalToWorldMatrix()
