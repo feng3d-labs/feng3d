@@ -78,7 +78,8 @@ namespace feng3d
         @serialize
         get visible()
         {
-            this.on("added",(e)=>{
+            this.on("added", (e) =>
+            {
                 e.data.parent
             })
             return this._visible;
@@ -147,38 +148,42 @@ namespace feng3d
          * 
          * @param child 子对象
          */
-        addChild(child: Node)
+        addChild<T extends Node[]>(...children: T): T[0]
         {
-            if (child == null)
-                return;
-            if (child.parent == this)
+            if (children.length > 1)
             {
-                // 把子对象移动到最后
-                var childIndex = this._children.indexOf(child);
-                if (childIndex != -1) this._children.splice(childIndex, 1);
-                this._children.push(child);
-            } else
-            {
-                if (child.contains(this))
+                for (let i = 0; i < children.length; i++)
                 {
-                    console.error("无法添加到自身中!");
-                    return;
+                    this.addChild(children[i]);
                 }
+            }
+            else
+            {
+                const child = children[0];
                 this.addChildAt(child, this._children.length);
             }
-            return child;
+            return children[0];
         }
 
         addChildAt<T extends Node>(child: T, index: number): T
         {
+            if (index < 0 || index > this.children.length)
+            {
+                throw new Error(`${child}addChildAt: The index ${index} supplied is out of bounds ${this.children.length}`);
+            }
+
             if (child._parent)
             {
                 child._parent.removeChild(child);
             }
+
             child._setParent(this);
-            this._children.push(child);
+
+            this.children.splice(index, 0, child);
+
             child.emit("added", { parent: this });
             this.emit("addChild", { child: child, parent: this, index: index }, true);
+
             return child;
         }
 
@@ -252,7 +257,10 @@ namespace feng3d
          */
         getChildAt(index: number)
         {
-            index = index;
+            if (index < 0 || index >= this.children.length)
+            {
+                throw new Error(`getChildAt: Index (${index}) does not exist.`);
+            }
             return this._children[index];
         }
 

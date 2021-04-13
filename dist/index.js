@@ -27296,8 +27296,239 @@ var feng3d;
     var Node = /** @class */ (function (_super) {
         __extends(Node, _super);
         function Node() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._children = [];
+            _this._visible = true;
+            _this._globalVisible = false;
+            _this._globalVisibleInvalid = true;
+            return _this;
         }
+        Object.defineProperty(Node.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node.prototype, "children", {
+            /**
+             * 子对象
+             */
+            get: function () {
+                return this._children.concat();
+            },
+            set: function (value) {
+                if (!value)
+                    return;
+                for (var i = this._children.length - 1; i >= 0; i--) {
+                    this.removeChildAt(i);
+                }
+                for (var i = 0; i < value.length; i++) {
+                    this.addChild(value[i]);
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node.prototype, "numChildren", {
+            get: function () {
+                return this._children.length;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node.prototype, "visible", {
+            /**
+             * 是否显示
+             */
+            get: function () {
+                this.on("added", function (e) {
+                    e.data.parent;
+                });
+                return this._visible;
+            },
+            set: function (v) {
+                if (this._visible == v)
+                    return;
+                this._visible = v;
+                this._invalidateGlobalVisible();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node.prototype, "globalVisible", {
+            /**
+             * 全局是否可见
+             */
+            get: function () {
+                if (this._globalVisibleInvalid) {
+                    this._updateGlobalVisible();
+                    this._globalVisibleInvalid = false;
+                }
+                return this._globalVisible;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
+        Node.prototype.find = function (name) {
+            if (this.name == name)
+                return this;
+            for (var i = 0; i < this._children.length; i++) {
+                var target = this._children[i].find(name);
+                if (target)
+                    return target;
+            }
+            return null;
+        };
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
+        Node.prototype.contains = function (child) {
+            var checkitem = child;
+            do {
+                if (checkitem == this)
+                    return true;
+                checkitem = checkitem.parent;
+            } while (checkitem);
+            return false;
+        };
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
+        Node.prototype.addChild = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
+            }
+            if (children.length > 1) {
+                for (var i = 0; i < children.length; i++) {
+                    this.addChild(children[i]);
+                }
+            }
+            else {
+                var child = children[0];
+                this.addChildAt(child, this._children.length);
+            }
+            return children[0];
+        };
+        Node.prototype.addChildAt = function (child, index) {
+            if (index < 0 || index > this.children.length) {
+                throw new Error(child + "addChildAt: The index " + index + " supplied is out of bounds " + this.children.length);
+            }
+            if (child._parent) {
+                child._parent.removeChild(child);
+            }
+            child._setParent(this);
+            this.children.splice(index, 0, child);
+            child.emit("added", { parent: this });
+            this.emit("addChild", { child: child, parent: this, index: index }, true);
+            return child;
+        };
+        /**
+         * 添加子对象
+         *
+         * @param children 子对象
+         */
+        Node.prototype.addChildren = function () {
+            var children = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                children[_i] = arguments[_i];
+            }
+            for (var i = 0; i < children.length; i++) {
+                this.addChild(children[i]);
+            }
+        };
+        /**
+         * 移除自身
+         */
+        Node.prototype.remove = function () {
+            if (this.parent)
+                this.parent.removeChild(this);
+        };
+        /**
+         * 移除所有子对象
+         */
+        Node.prototype.removeChildren = function () {
+            for (var i = this.numChildren - 1; i >= 0; i--) {
+                this.removeChildAt(i);
+            }
+        };
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
+        Node.prototype.removeChild = function (child) {
+            if (child == null)
+                return;
+            var childIndex = this._children.indexOf(child);
+            if (childIndex != -1) {
+                this.removeChildAt(childIndex);
+            }
+        };
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
+        Node.prototype.removeChildAt = function (index) {
+            var child = this._children[index];
+            this._children.splice(index, 1);
+            child._setParent(null);
+            child.emit("removed", { parent: this });
+            this.emit("removeChild", { child: child, parent: this, index: index }, true);
+            return child;
+        };
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
+        Node.prototype.getChildAt = function (index) {
+            if (index < 0 || index >= this.children.length) {
+                throw new Error("getChildAt: Index (" + index + ") does not exist.");
+            }
+            return this._children[index];
+        };
+        /**
+         * 获取子对象列表（备份）
+         */
+        Node.prototype.getChildren = function (start, end) {
+            return this._children.slice(start, end);
+        };
+        Node.prototype._setParent = function (value) {
+            this._parent = value;
+        };
+        Node.prototype._updateGlobalVisible = function () {
+            var visible = this.visible;
+            if (this.parent) {
+                visible = visible && this.parent.globalVisible;
+            }
+            this._globalVisible = visible;
+        };
+        Node.prototype._invalidateGlobalVisible = function () {
+            if (this._globalVisibleInvalid)
+                return;
+            this._globalVisibleInvalid = true;
+            this._children.forEach(function (c) {
+                c._invalidateGlobalVisible();
+            });
+        };
+        __decorate([
+            feng3d.serialize
+        ], Node.prototype, "children", null);
+        __decorate([
+            feng3d.serialize
+        ], Node.prototype, "visible", null);
         return Node;
     }(feng3d.Component));
     feng3d.Node = Node;
@@ -27581,9 +27812,6 @@ var feng3d;
              * 自身以及子对象是否支持鼠标拾取
              */
             _this.mouseEnabled = true;
-            _this._visible = true;
-            _this._globalVisible = false;
-            _this._globalVisibleInvalid = true;
             _this._position = new feng3d.Vector3();
             _this._rotation = new feng3d.Vector3();
             _this._orientation = new feng3d.Quaternion();
@@ -27600,7 +27828,6 @@ var feng3d;
             _this._worldToLocalMatrixInvalid = false;
             _this._localToWorldRotationMatrix = new feng3d.Matrix4x4();
             _this._localToWorldRotationMatrixInvalid = false;
-            _this._children = [];
             _this._renderAtomic = new feng3d.RenderAtomic();
             feng3d.watcher.watch(_this._position, "x", _this._positionChanged, _this);
             feng3d.watcher.watch(_this._position, "y", _this._positionChanged, _this);
@@ -27756,36 +27983,6 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Node3D.prototype, "visible", {
-            /**
-             * 是否显示
-             */
-            get: function () {
-                return this._visible;
-            },
-            set: function (v) {
-                if (this._visible == v)
-                    return;
-                this._visible = v;
-                this._invalidateGlobalVisible();
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node3D.prototype, "globalVisible", {
-            /**
-             * 全局是否可见
-             */
-            get: function () {
-                if (this._globalVisibleInvalid) {
-                    this._updateGlobalVisible();
-                    this._globalVisibleInvalid = false;
-                }
-                return this._globalVisible;
-            },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(Node3D.prototype, "matrix", {
             /**
              * 本地变换矩阵
@@ -27832,43 +28029,9 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Node3D.prototype, "parent", {
-            get: function () {
-                return this._parent;
-            },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(Node3D.prototype, "scene", {
             get: function () {
                 return this._scene;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node3D.prototype, "children", {
-            /**
-             * 子对象
-             */
-            get: function () {
-                return this._children.concat();
-            },
-            set: function (value) {
-                if (!value)
-                    return;
-                for (var i = this._children.length - 1; i >= 0; i--) {
-                    this.removeChildAt(i);
-                }
-                for (var i = 0; i < value.length; i++) {
-                    this.addChild(value[i]);
-                }
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node3D.prototype, "numChildren", {
-            get: function () {
-                return this._children.length;
             },
             enumerable: false,
             configurable: true
@@ -28037,129 +28200,6 @@ var feng3d;
             configurable: true
         });
         /**
-         * 根据名称查找对象
-         *
-         * @param name 对象名称
-         */
-        Node3D.prototype.find = function (name) {
-            if (this.name == name)
-                return this;
-            for (var i = 0; i < this._children.length; i++) {
-                var target = this._children[i].find(name);
-                if (target)
-                    return target;
-            }
-            return null;
-        };
-        /**
-         * 是否包含指定对象
-         *
-         * @param child 可能的子孙对象
-         */
-        Node3D.prototype.contains = function (child) {
-            var checkitem = child;
-            do {
-                if (checkitem == this)
-                    return true;
-                checkitem = checkitem.parent;
-            } while (checkitem);
-            return false;
-        };
-        /**
-         * 添加子对象
-         *
-         * @param child 子对象
-         */
-        Node3D.prototype.addChild = function (child) {
-            if (child == null)
-                return;
-            if (child.parent == this) {
-                // 把子对象移动到最后
-                var childIndex = this._children.indexOf(child);
-                if (childIndex != -1)
-                    this._children.splice(childIndex, 1);
-                this._children.push(child);
-            }
-            else {
-                if (child.contains(this)) {
-                    console.error("无法添加到自身中!");
-                    return;
-                }
-                if (child._parent)
-                    child._parent.removeChild(child);
-                child._setParent(this);
-                this._children.push(child);
-                child.emit("added", { parent: this });
-                this.emit("addChild", { child: child, parent: this }, true);
-            }
-            return child;
-        };
-        /**
-         * 添加子对象
-         *
-         * @param children 子对象
-         */
-        Node3D.prototype.addChildren = function () {
-            var children = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                children[_i] = arguments[_i];
-            }
-            for (var i = 0; i < children.length; i++) {
-                this.addChild(children[i]);
-            }
-        };
-        /**
-         * 移除自身
-         */
-        Node3D.prototype.remove = function () {
-            if (this.parent)
-                this.parent.removeChild(this);
-        };
-        /**
-         * 移除所有子对象
-         */
-        Node3D.prototype.removeChildren = function () {
-            for (var i = this.numChildren - 1; i >= 0; i--) {
-                this.removeChildAt(i);
-            }
-        };
-        /**
-         * 移除子对象
-         *
-         * @param child 子对象
-         */
-        Node3D.prototype.removeChild = function (child) {
-            if (child == null)
-                return;
-            var childIndex = this._children.indexOf(child);
-            if (childIndex != -1)
-                this.removeChildInternal(childIndex, child);
-        };
-        /**
-         * 删除指定位置的子对象
-         *
-         * @param index 需要删除子对象的所有
-         */
-        Node3D.prototype.removeChildAt = function (index) {
-            var child = this._children[index];
-            return this.removeChildInternal(index, child);
-        };
-        /**
-         * 获取指定位置的子对象
-         *
-         * @param index
-         */
-        Node3D.prototype.getChildAt = function (index) {
-            index = index;
-            return this._children[index];
-        };
-        /**
-         * 获取子对象列表（备份）
-         */
-        Node3D.prototype.getChildren = function () {
-            return this._children.concat();
-        };
-        /**
          * 将方向从局部空间转换到世界空间。
          *
          * @param direction 局部空间方向
@@ -28318,8 +28358,9 @@ var feng3d;
                 }
             }
             if (findchildren) {
+                var children = this.children;
                 for (var i = 0, n = this.numChildren; i < n; i++) {
-                    this._children[i].getComponentsInChildren(type, filter, result);
+                    children[i].getComponentsInChildren(type, filter, result);
                 }
             }
             return result;
@@ -28380,7 +28421,7 @@ var feng3d;
         };
         Node3D.prototype.updateScene = function () {
             var _a;
-            var newScene = (_a = this._parent) === null || _a === void 0 ? void 0 : _a._scene;
+            var newScene = (_a = this.parent) === null || _a === void 0 ? void 0 : _a._scene;
             if (this._scene == newScene)
                 return;
             if (this._scene) {
@@ -28396,16 +28437,10 @@ var feng3d;
          * @private
          */
         Node3D.prototype._updateChildrenScene = function () {
+            var children = this.children;
             for (var i = 0, n = this._children.length; i < n; i++) {
-                this._children[i].updateScene();
+                children[i].updateScene();
             }
-        };
-        Node3D.prototype.removeChildInternal = function (childIndex, child) {
-            childIndex = childIndex;
-            this._children.splice(childIndex, 1);
-            child._setParent(null);
-            child.emit("removed", { parent: this });
-            this.emit("removeChild", { child: child, parent: this }, true);
         };
         Node3D.prototype._invalidateTransform = function () {
             if (this._matrixInvalid)
@@ -28513,21 +28548,6 @@ var feng3d;
             if (loadingNum == 0)
                 callback();
         };
-        Node3D.prototype._updateGlobalVisible = function () {
-            var visible = this.visible;
-            if (this.parent) {
-                visible = visible && this.parent.globalVisible;
-            }
-            this._globalVisible = visible;
-        };
-        Node3D.prototype._invalidateGlobalVisible = function () {
-            if (this._globalVisibleInvalid)
-                return;
-            this._globalVisibleInvalid = true;
-            this._children.forEach(function (c) {
-                c._invalidateGlobalVisible();
-            });
-        };
         /**
          * 申明冒泡函数
          * feng3d.__event_bubble_function__
@@ -28589,12 +28609,6 @@ var feng3d;
         __decorate([
             feng3d.oav({ tooltip: "本地缩放" })
         ], Node3D.prototype, "scale", null);
-        __decorate([
-            feng3d.serialize
-        ], Node3D.prototype, "visible", null);
-        __decorate([
-            feng3d.serialize
-        ], Node3D.prototype, "children", null);
         __decorate([
             feng3d.AddEntityMenu("Node3D/Empty")
         ], Node3D, "create", null);
@@ -30228,44 +30242,6 @@ var feng3d;
             /* empty */
         };
         /**
-         * Adds one or more children to the container.
-         *
-         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
-         * @return {feng3d.Node2D} The first child that was added.
-         */
-        Node2D.prototype.addChild = function () {
-            var children = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                children[_i] = arguments[_i];
-            }
-            // if there is only one argument we can bypass looping through the them
-            if (children.length > 1) {
-                // loop through the array and add all children
-                for (var i = 0; i < children.length; i++) {
-                    // eslint-disable-next-line prefer-rest-params
-                    this.addChild(children[i]);
-                }
-            }
-            else {
-                var child = children[0];
-                // if the child has a parent then lets remove it as PixiJS objects can only exist in one place
-                if (child.parent) {
-                    child.parent.removeChild(child);
-                }
-                child.parent = this;
-                // ensure child transform will be recalculated
-                child.transform._parentID = -1;
-                this.children.push(child);
-                // TODO - lets either do all callbacks or all events.. not both!
-                this.onChildrenChange(this.children.length - 1);
-                this.emit('childAdded', { child: child, parent: this, index: this.children.length - 1 });
-                child.emit('added', this);
-            }
-            return children[0];
-        };
-        /**
          * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
          *
          * @param {feng3d.Node2D} child - The child to add
@@ -30273,20 +30249,9 @@ var feng3d;
          * @return {feng3d.Node2D} The child that was added.
          */
         Node2D.prototype.addChildAt = function (child, index) {
-            if (index < 0 || index > this.children.length) {
-                throw new Error(child + "addChildAt: The index " + index + " supplied is out of bounds " + this.children.length);
-            }
-            if (child.parent) {
-                child.parent.removeChild(child);
-            }
-            child.parent = this;
-            // ensure child transform will be recalculated
-            child.transform._parentID = -1;
-            this.children.splice(index, 0, child);
+            _super.prototype.addChildAt.call(this, child, index);
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
-            child.emit('added', this);
-            this.emit('childAdded', { child: child, parent: this, index: index });
             return child;
         };
         /**
@@ -30368,14 +30333,7 @@ var feng3d;
                 var index = this.children.indexOf(child);
                 if (index === -1)
                     return null;
-                child.parent = null;
-                // ensure child transform will be recalculated
-                child.transform._parentID = -1;
-                this.children.splice(index, 1);
-                // TODO - lets either do all callbacks or all events.. not both!
-                this.onChildrenChange(index);
-                child.emit('removed', this);
-                this.emit('childRemoved', { child: child, parent: this, index: index });
+                this.removeChildAt(index);
             }
             return children[0];
         };
@@ -30394,7 +30352,7 @@ var feng3d;
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
             child.emit('removed', this);
-            this.emit('childRemoved', { child: child, parent: this, index: index });
+            this.emit('removeChild', { child: child, parent: this, index: index });
             return child;
         };
         /**
@@ -30422,7 +30380,7 @@ var feng3d;
                 this.onChildrenChange(beginIndex);
                 for (var i = 0; i < removed.length; ++i) {
                     removed[i].emit('removed', this);
-                    this.emit('childRemoved', { child: removed[i], parent: this, index: i });
+                    this.emit('removeChild', { child: removed[i], parent: this, index: i });
                 }
                 return removed;
             }
@@ -30502,7 +30460,7 @@ var feng3d;
             feng3d.AddEntityMenu("Node2D")
         ], Node2D, "create", null);
         return Node2D;
-    }(feng3d.Component));
+    }(feng3d.Node));
     feng3d.Node2D = Node2D;
     /**
      * Node2D default updateTransform, does not update children of container.
@@ -30515,7 +30473,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 3D组件
+     * 2D组件
      *
      * 所有基于3D空间的组件均可继承于该组件。
      */

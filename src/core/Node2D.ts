@@ -9,10 +9,33 @@ namespace feng3d
 
     export interface Component2DEventMap
     {
-        // removed: { parent: Node2D };
-        // added: { parent: Node2D };
-        // childAdded: { child: Node2D, parent: Node2D, index: number }
-        // childRemoved: { child: Node2D, parent: Node2D, index: number }
+        removed: { parent: Node2D };
+        added: { parent: Node2D };
+        addChild: { child: Node2D, parent: Node2D, index: number }
+        removeChild: { child: Node2D, parent: Node2D, index: number }
+    }
+
+    export interface Node2D
+    {
+        parent: Node2D;
+        children: Node2D[];
+
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {feng3d.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {feng3d.Node2D} The child that was added.
+         */
+        addChildAt<T extends Node2D>(child: T, index: number): T;
+
+        /**
+         * Returns the child at the specified index
+         *
+         * @param {number} index - The index to get the child at
+         * @return {feng3d.Node2D} The child at the given index, if any.
+         */
+        getChildAt(index: number): Node2D
     }
 
     /**
@@ -59,7 +82,6 @@ namespace feng3d
             return node2d;
         }
 
-        public parent: Node2D;
         public worldAlpha: number;
         public transform: Transform;
 
@@ -68,8 +90,6 @@ namespace feng3d
 
         @oav()
         public visible: boolean;
-
-        public readonly children: Node2D[];
 
         protected _destroyed: boolean;
 
@@ -539,52 +559,6 @@ namespace feng3d
         }
 
         /**
-         * Adds one or more children to the container.
-         *
-         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
-         * @return {feng3d.Node2D} The first child that was added.
-         */
-        addChild<T extends Node2D[]>(...children: T): T[0]
-        {
-            // if there is only one argument we can bypass looping through the them
-            if (children.length > 1)
-            {
-                // loop through the array and add all children
-                for (let i = 0; i < children.length; i++)
-                {
-                    // eslint-disable-next-line prefer-rest-params
-                    this.addChild(children[i]);
-                }
-            }
-            else
-            {
-                const child = children[0];
-                // if the child has a parent then lets remove it as PixiJS objects can only exist in one place
-
-                if (child.parent)
-                {
-                    child.parent.removeChild(child);
-                }
-
-                child.parent = this;
-
-                // ensure child transform will be recalculated
-                child.transform._parentID = -1;
-
-                this.children.push(child);
-
-                // TODO - lets either do all callbacks or all events.. not both!
-                this.onChildrenChange(this.children.length - 1);
-                this.emit('childAdded', { child: child, parent: this, index: this.children.length - 1 });
-                child.emit('added', this);
-            }
-
-            return children[0];
-        }
-
-        /**
          * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
          *
          * @param {feng3d.Node2D} child - The child to add
@@ -593,27 +567,9 @@ namespace feng3d
          */
         addChildAt<T extends Node2D>(child: T, index: number): T
         {
-            if (index < 0 || index > this.children.length)
-            {
-                throw new Error(`${child}addChildAt: The index ${index} supplied is out of bounds ${this.children.length}`);
-            }
-
-            if (child.parent)
-            {
-                child.parent.removeChild(child);
-            }
-
-            child.parent = this;
-
-            // ensure child transform will be recalculated
-            child.transform._parentID = -1;
-
-            this.children.splice(index, 0, child);
-
+            super.addChildAt(child, index);
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
-            child.emit('added', this);
-            this.emit('childAdded', { child: child, parent: this, index: index });
 
             return child;
         }
@@ -718,15 +674,7 @@ namespace feng3d
 
                 if (index === -1) return null;
 
-                child.parent = null;
-                // ensure child transform will be recalculated
-                child.transform._parentID = -1;
-                this.children.splice(index, 1);
-
-                // TODO - lets either do all callbacks or all events.. not both!
-                this.onChildrenChange(index);
-                child.emit('removed', this);
-                this.emit('childRemoved', { child: child, parent: this, index: index });
+                this.removeChildAt(index);
             }
 
             return children[0];
@@ -750,7 +698,7 @@ namespace feng3d
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
             child.emit('removed', this);
-            this.emit('childRemoved', { child: child, parent: this, index: index });
+            this.emit('removeChild', { child: child, parent: this, index: index });
 
             return child;
         }
@@ -787,7 +735,7 @@ namespace feng3d
                 for (let i = 0; i < removed.length; ++i)
                 {
                     removed[i].emit('removed', this);
-                    this.emit('childRemoved', { child: removed[i], parent: this, index: i });
+                    this.emit('removeChild', { child: removed[i], parent: this, index: i });
                 }
 
                 return removed;

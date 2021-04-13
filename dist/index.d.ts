@@ -12860,6 +12860,7 @@ declare namespace feng3d {
         addChild: {
             parent: Node;
             child: Node;
+            index: number;
         };
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
@@ -12867,6 +12868,7 @@ declare namespace feng3d {
         removeChild: {
             parent: Node;
             child: Node;
+            index: number;
         };
         /**
          * 自身被添加到父对象中事件
@@ -12890,6 +12892,85 @@ declare namespace feng3d {
         removedFromScene: Node;
     }
     class Node<T extends ComponentEventMap = ComponentEventMap> extends Component<T> {
+        protected _children: Node[];
+        get parent(): Node<ComponentEventMap>;
+        protected _parent: Node;
+        /**
+         * 子对象
+         */
+        get children(): Node<ComponentEventMap>[];
+        set children(value: Node<ComponentEventMap>[]);
+        get numChildren(): number;
+        /**
+         * 是否显示
+         */
+        get visible(): boolean;
+        set visible(v: boolean);
+        private _visible;
+        /**
+         * 全局是否可见
+         */
+        get globalVisible(): boolean;
+        protected _globalVisible: boolean;
+        protected _globalVisibleInvalid: boolean;
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
+        find(name: string): Node;
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
+        contains(child: Node): boolean;
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
+        addChild<T extends Node[]>(...children: T): T[0];
+        addChildAt<T extends Node>(child: T, index: number): T;
+        /**
+         * 添加子对象
+         *
+         * @param children 子对象
+         */
+        addChildren(...children: Node[]): void;
+        /**
+         * 移除自身
+         */
+        remove(): void;
+        /**
+         * 移除所有子对象
+         */
+        removeChildren(): void;
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
+        removeChild(child: Node): void;
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
+        removeChildAt(index: number): Node<ComponentEventMap>;
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
+        getChildAt(index: number): Node<ComponentEventMap>;
+        /**
+         * 获取子对象列表（备份）
+         */
+        getChildren(start?: number, end?: number): Node<ComponentEventMap>[];
+        protected _setParent(value: Node): void;
+        protected _updateGlobalVisible(): void;
+        protected _invalidateGlobalVisible(): void;
     }
 }
 declare namespace feng3d {
@@ -12970,6 +13051,7 @@ declare namespace feng3d {
         addChild: {
             parent: Node3D;
             child: Node3D;
+            index: number;
         };
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
@@ -12977,6 +13059,7 @@ declare namespace feng3d {
         removeChild: {
             parent: Node3D;
             child: Node3D;
+            index: number;
         };
         /**
          * 自身被添加到父对象中事件
@@ -13014,6 +13097,15 @@ declare namespace feng3d {
     interface ComponentMap {
         Node3D: Node3D;
     }
+    interface Node3D {
+        getChildren(start?: number, end?: number): Node3D[];
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
+        find(name: string): Node3D;
+    }
     /**
      * 变换
      *
@@ -13025,6 +13117,8 @@ declare namespace feng3d {
         __class__: "feng3d.Node3D";
         assetType: AssetType;
         static create(name?: string): Node3D<Component3DEventMap>;
+        parent: Node3D;
+        children: Node3D[];
         /**
          * 预设资源编号
          */
@@ -13111,18 +13205,6 @@ declare namespace feng3d {
         get scale(): Vector3;
         set scale(v: Vector3);
         /**
-         * 是否显示
-         */
-        get visible(): boolean;
-        set visible(v: boolean);
-        private _visible;
-        /**
-         * 全局是否可见
-         */
-        get globalVisible(): boolean;
-        protected _globalVisible: boolean;
-        protected _globalVisibleInvalid: boolean;
-        /**
          * 本地变换矩阵
          */
         get matrix(): Matrix4x4;
@@ -13136,14 +13218,7 @@ declare namespace feng3d {
          */
         get boundingBox(): BoundingBox;
         private _boundingBox;
-        get parent(): Node3D<Component3DEventMap>;
         get scene(): Scene;
-        /**
-         * 子对象
-         */
-        get children(): Node3D<Component3DEventMap>[];
-        set children(value: Node3D<Component3DEventMap>[]);
-        get numChildren(): number;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
         moveLeft(distance: number): void;
@@ -13186,60 +13261,6 @@ declare namespace feng3d {
         get worldToLocalMatrix(): Matrix4x4;
         get localToWorldRotationMatrix(): Matrix4x4;
         get worldToLocalRotationMatrix(): Matrix4x4;
-        /**
-         * 根据名称查找对象
-         *
-         * @param name 对象名称
-         */
-        find(name: string): Node3D;
-        /**
-         * 是否包含指定对象
-         *
-         * @param child 可能的子孙对象
-         */
-        contains(child: Node3D): boolean;
-        /**
-         * 添加子对象
-         *
-         * @param child 子对象
-         */
-        addChild(child: Node3D): Node3D<Component3DEventMap>;
-        /**
-         * 添加子对象
-         *
-         * @param children 子对象
-         */
-        addChildren(...children: Node3D[]): void;
-        /**
-         * 移除自身
-         */
-        remove(): void;
-        /**
-         * 移除所有子对象
-         */
-        removeChildren(): void;
-        /**
-         * 移除子对象
-         *
-         * @param child 子对象
-         */
-        removeChild(child: Node3D): void;
-        /**
-         * 删除指定位置的子对象
-         *
-         * @param index 需要删除子对象的所有
-         */
-        removeChildAt(index: number): void;
-        /**
-         * 获取指定位置的子对象
-         *
-         * @param index
-         */
-        getChildAt(index: number): Node3D<Component3DEventMap>;
-        /**
-         * 获取子对象列表（备份）
-         */
-        getChildren(): Node3D<Component3DEventMap>[];
         /**
          * 将方向从局部空间转换到世界空间。
          *
@@ -13359,20 +13380,17 @@ declare namespace feng3d {
         protected _worldToLocalMatrixInvalid: boolean;
         protected readonly _localToWorldRotationMatrix: Matrix4x4;
         protected _localToWorldRotationMatrixInvalid: boolean;
-        protected _parent: Node3D;
-        protected _children: Node3D[];
         protected _scene: Scene;
         private _renderAtomic;
         private _positionChanged;
         private _rotationChanged;
         private _scaleChanged;
-        private _setParent;
+        protected _setParent(value: Node3D): void;
         private updateScene;
         /**
          * @private
          */
         private _updateChildrenScene;
-        private removeChildInternal;
         private _invalidateTransform;
         private _invalidateSceneTransform;
         private _updateMatrix;
@@ -13395,8 +13413,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
-        protected _updateGlobalVisible(): void;
-        protected _invalidateGlobalVisible(): void;
         /**
          * 申明冒泡函数
          * feng3d.__event_bubble_function__
@@ -13938,19 +13954,42 @@ declare namespace feng3d {
         texture?: boolean;
         baseTexture?: boolean;
     }
-    interface Node2DEventMap extends Component2DEventMap {
-        removed: Node2D;
-        added: Node2D;
-        childAdded: {
+    interface Component2DEventMap {
+        removed: {
+            parent: Node2D;
+        };
+        added: {
+            parent: Node2D;
+        };
+        addChild: {
             child: Node2D;
             parent: Node2D;
             index: number;
         };
-        childRemoved: {
+        removeChild: {
             child: Node2D;
             parent: Node2D;
             index: number;
         };
+    }
+    interface Node2D {
+        parent: Node2D;
+        children: Node2D[];
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {feng3d.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {feng3d.Node2D} The child that was added.
+         */
+        addChildAt<T extends Node2D>(child: T, index: number): T;
+        /**
+         * Returns the child at the specified index
+         *
+         * @param {number} index - The index to get the child at
+         * @return {feng3d.Node2D} The child at the given index, if any.
+         */
+        getChildAt(index: number): Node2D;
     }
     /**
      * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
@@ -13986,14 +14025,12 @@ declare namespace feng3d {
      * ```
      *
      */
-    class Node2D<T extends Node2DEventMap = Node2DEventMap> extends Component<T> {
-        static create(name?: string): Node2D<Node2DEventMap>;
-        parent: Node2D;
+    class Node2D<T extends Component2DEventMap = Component2DEventMap> extends Node<T> {
+        static create(name?: string): Node2D<Component2DEventMap>;
         worldAlpha: number;
         transform: Transform;
         alpha: number;
         visible: boolean;
-        readonly children: Node2D[];
         protected _destroyed: boolean;
         private tempDisplayObjectParent;
         displayObjectUpdateTransform: () => void;
@@ -14154,23 +14191,6 @@ declare namespace feng3d {
          */
         protected onChildrenChange(_length?: number): void;
         /**
-         * Adds one or more children to the container.
-         *
-         * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
-         *
-         * @param {...feng3d.Node2D} children - The Node2D(s) to add to the container
-         * @return {feng3d.Node2D} The first child that was added.
-         */
-        addChild<T extends Node2D[]>(...children: T): T[0];
-        /**
-         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
-         *
-         * @param {feng3d.Node2D} child - The child to add
-         * @param {number} index - The index to place the child in
-         * @return {feng3d.Node2D} The child that was added.
-         */
-        addChildAt<T extends Node2D>(child: T, index: number): T;
-        /**
          * Swaps the position of 2 Display Objects within this container.
          *
          * @param {feng3d.Node2D} child - First display object to swap
@@ -14191,13 +14211,6 @@ declare namespace feng3d {
          * @param {number} index - The resulting index number for the child display object
          */
         setChildIndex(child: Node2D, index: number): void;
-        /**
-         * Returns the child at the specified index
-         *
-         * @param {number} index - The index to get the child at
-         * @return {feng3d.Node2D} The child at the given index, if any.
-         */
-        getChildAt(index: number): Node2D;
         /**
          * Removes one or more children from the container.
          *
@@ -14244,7 +14257,7 @@ declare namespace feng3d {
     interface Component2DEventMap extends ComponentEventMap {
     }
     /**
-     * 3D组件
+     * 2D组件
      *
      * 所有基于3D空间的组件均可继承于该组件。
      */
@@ -14254,7 +14267,7 @@ declare namespace feng3d {
          *
          * 附加到此 Entity 的 Node2D。
          */
-        get node2d(): Node2D<Node2DEventMap>;
+        get node2d(): Node2D<Component2DEventMap>;
         /**
          * Returns all components of Type type in the Entity.
          *
@@ -14291,7 +14304,7 @@ declare namespace feng3d {
          * 1. Scene2D的根节点。
          * 1. 作为2D节点放入另一个Scene2D中的。
          */
-        get node2d(): Node2D<Node2DEventMap>;
+        get node2d(): Node2D<Component2DEventMap>;
         private _node2d;
         /**
          * 3D 节点
