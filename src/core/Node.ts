@@ -7,12 +7,12 @@ namespace feng3d
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        addChild: { parent: Node, child: Node }
+        addChild: { parent: Node, child: Node, index: number }
 
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removeChild: { parent: Node, child: Node };
+        removeChild: { parent: Node, child: Node, index: number };
 
         /**
          * 自身被添加到父对象中事件
@@ -161,12 +161,21 @@ namespace feng3d
                     console.error("无法添加到自身中!");
                     return;
                 }
-                if (child._parent) child._parent.removeChild(child);
-                child._setParent(this);
-                this._children.push(child);
-                child.emit("added", { parent: this });
-                this.emit("addChild", { child: child, parent: this }, true);
+                this.addChildAt(child, this._children.length);
             }
+            return child;
+        }
+
+        addChildAt<T extends Node>(child: T, index: number): T
+        {
+            if (child._parent)
+            {
+                child._parent.removeChild(child);
+            }
+            child._setParent(this);
+            this._children.push(child);
+            child.emit("added", { parent: this });
+            this.emit("addChild", { child: child, parent: this, index: index }, true);
             return child;
         }
 
@@ -211,7 +220,10 @@ namespace feng3d
         {
             if (child == null) return;
             var childIndex = this._children.indexOf(child);
-            if (childIndex != -1) this.removeChildInternal(childIndex, child);
+            if (childIndex != -1)
+            {
+                this.removeChildAt(childIndex);
+            }
         }
 
         /**
@@ -222,7 +234,12 @@ namespace feng3d
         removeChildAt(index: number)
         {
             var child = this._children[index];
-            return this.removeChildInternal(index, child);
+            this._children.splice(index, 1);
+            child._setParent(null);
+
+            child.emit("removed", { parent: this });
+            this.emit("removeChild", { child: child, parent: this, index }, true);
+            return child;
         }
 
         /**
@@ -242,16 +259,6 @@ namespace feng3d
         getChildren(start?: number, end?: number)
         {
             return this._children.slice(start, end);
-        }
-
-        private removeChildInternal(childIndex: number, child: Node)
-        {
-            childIndex = childIndex;
-            this._children.splice(childIndex, 1);
-            child._setParent(null);
-
-            child.emit("removed", { parent: this });
-            this.emit("removeChild", { child: child, parent: this }, true);
         }
 
         protected _setParent(value: Node)

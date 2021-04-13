@@ -9,8 +9,8 @@ namespace feng3d
 
     export interface Node2DEventMap extends Component2DEventMap
     {
-        removed: Node2D;
-        added: Node2D;
+        removed: { parent: Node2D };
+        added: { parent: Node2D };
         childAdded: { child: Node2D, parent: Node2D, index: number }
         childRemoved: { child: Node2D, parent: Node2D, index: number }
     }
