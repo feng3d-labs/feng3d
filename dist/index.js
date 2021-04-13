@@ -30024,18 +30024,9 @@ var feng3d;
             // simply apply the matrix..
             return this.worldTransform.applyInverse(position, point);
         };
-        /**
-         * Set the parent Container of this Node2D.
-         *
-         * @param {PIXI.Container} container - The Container to add this Node2D to.
-         * @return {PIXI.Container} The Container that this Node2D was added to.
-         */
-        Node2D.prototype.setParent = function (container) {
-            if (!container || !container.addChild) {
-                throw new Error('setParent: Argument must be a Container');
-            }
-            container.addChild(this);
-            return container;
+        Node2D.prototype._setParent = function (value) {
+            this._parent = value;
+            this.transform._parentID = -1;
         };
         /**
          * Convenience function to set the position, scale, skew and pivot at once.
@@ -30298,38 +30289,6 @@ var feng3d;
                 parent = parent.parent;
             }
             return result;
-        };
-        /**
-         * Overridable method that can be used by Container subclasses whenever the children array is modified
-         *
-         * @protected
-         */
-        Node2D.prototype.onChildrenChange = function (_length) {
-            /* empty */
-        };
-        /**
-         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
-         *
-         * @param {feng3d.Node2D} child - The child to add
-         * @param {number} index - The index to place the child in
-         * @return {feng3d.Node2D} The child that was added.
-         */
-        Node2D.prototype.addChildAt = function (child, index) {
-            _super.prototype.addChildAt.call(this, child, index);
-            // TODO - lets either do all callbacks or all events.. not both!
-            this.onChildrenChange(index);
-            return child;
-        };
-        /**
-         * Removes a child from the specified index position.
-         *
-         * @param {number} index - The index to get the child from
-         * @return {feng3d.Node2D} The child that was removed.
-         */
-        Node2D.prototype.removeChildAt = function (index) {
-            var child = _super.prototype.removeChildAt.call(this, index);
-            child.transform._parentID = -1;
-            return child;
         };
         /**
          * Updates the transform on all children of this container for rendering

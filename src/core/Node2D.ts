@@ -53,6 +53,15 @@ namespace feng3d
          * @return {feng3d.Node2D} The child that was removed.
          */
         removeChildAt(index: number): Node2D;
+
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {feng3d.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {feng3d.Node2D} The child that was added.
+         */
+        addChildAt<T extends Node2D>(child: T, index: number): T
     }
 
     /**
@@ -266,22 +275,10 @@ namespace feng3d
             return this.worldTransform.applyInverse(position, point);
         }
 
-        /**
-         * Set the parent Container of this Node2D.
-         *
-         * @param {PIXI.Container} container - The Container to add this Node2D to.
-         * @return {PIXI.Container} The Container that this Node2D was added to.
-         */
-        setParent(container: Node2D): Node2D
+        protected _setParent(value: Node)
         {
-            if (!container || !container.addChild)
-            {
-                throw new Error('setParent: Argument must be a Container');
-            }
-
-            container.addChild(<any>this);
-
-            return container;
+            this._parent = value;
+            this.transform._parentID = -1;
         }
 
         /**
@@ -563,47 +560,6 @@ namespace feng3d
                 parent = parent.parent;
             }
             return result;
-        }
-
-        /**
-         * Overridable method that can be used by Container subclasses whenever the children array is modified
-         *
-         * @protected
-         */
-        protected onChildrenChange(_length?: number): void
-        {
-            /* empty */
-        }
-
-        /**
-         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
-         *
-         * @param {feng3d.Node2D} child - The child to add
-         * @param {number} index - The index to place the child in
-         * @return {feng3d.Node2D} The child that was added.
-         */
-        addChildAt<T extends Node2D>(child: T, index: number): T
-        {
-            super.addChildAt(child, index);
-            // TODO - lets either do all callbacks or all events.. not both!
-            this.onChildrenChange(index);
-
-            return child;
-        }
-
-        /**
-         * Removes a child from the specified index position.
-         *
-         * @param {number} index - The index to get the child from
-         * @return {feng3d.Node2D} The child that was removed.
-         */
-        removeChildAt(index: number): Node2D
-        {
-            const child = super.removeChildAt(index) as Node2D;
-
-            child.transform._parentID = -1;
-
-            return child;
         }
 
         /**

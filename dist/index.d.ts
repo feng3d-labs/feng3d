@@ -14026,6 +14026,14 @@ declare namespace feng3d {
          * @return {feng3d.Node2D} The child that was removed.
          */
         removeChildAt(index: number): Node2D;
+        /**
+         * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
+         *
+         * @param {feng3d.Node2D} child - The child to add
+         * @param {number} index - The index to place the child in
+         * @return {feng3d.Node2D} The child that was added.
+         */
+        addChildAt<T extends Node2D>(child: T, index: number): T;
     }
     /**
      * Container is a general-purpose display object that holds children. It also adds built-in support for advanced
@@ -14097,13 +14105,7 @@ declare namespace feng3d {
          * @return {PIXI.Point} A point object representing the position of this object
          */
         toLocal(position: Vector2, from?: Node2D, point?: Vector2, skipUpdate?: boolean): Vector2;
-        /**
-         * Set the parent Container of this Node2D.
-         *
-         * @param {PIXI.Container} container - The Container to add this Node2D to.
-         * @return {PIXI.Container} The Container that this Node2D was added to.
-         */
-        setParent(container: Node2D): Node2D;
+        protected _setParent(value: Node): void;
         /**
          * Convenience function to set the position, scale, skew and pivot at once.
          *
@@ -14220,12 +14222,6 @@ declare namespace feng3d {
          * @return			返回与给出类定义一致的组件
          */
         getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
-        /**
-         * Overridable method that can be used by Container subclasses whenever the children array is modified
-         *
-         * @protected
-         */
-        protected onChildrenChange(_length?: number): void;
         /**
          * Updates the transform on all children of this container for rendering
          */
