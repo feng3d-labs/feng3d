@@ -78,6 +78,9 @@ namespace feng3d
         @serialize
         get visible()
         {
+            this.on("added",(e)=>{
+                e.data.parent
+            })
             return this._visible;
         }
         set visible(v)

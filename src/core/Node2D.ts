@@ -7,12 +7,12 @@ namespace feng3d
         baseTexture?: boolean;
     }
 
-    export interface Node2DEventMap extends Component2DEventMap
+    export interface Component2DEventMap
     {
-        removed: { parent: Node2D };
-        added: { parent: Node2D };
-        childAdded: { child: Node2D, parent: Node2D, index: number }
-        childRemoved: { child: Node2D, parent: Node2D, index: number }
+        // removed: { parent: Node2D };
+        // added: { parent: Node2D };
+        // childAdded: { child: Node2D, parent: Node2D, index: number }
+        // childRemoved: { child: Node2D, parent: Node2D, index: number }
     }
 
     /**
@@ -49,7 +49,7 @@ namespace feng3d
      * ```
      *
      */
-    export class Node2D<T extends Node2DEventMap = Node2DEventMap> extends Component<T>
+    export class Node2D<T extends Component2DEventMap = Component2DEventMap> extends Node<T>
     {
         @AddEntityMenu("Node2D")
         static create(name = "Node2D")

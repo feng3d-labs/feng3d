@@ -5,11 +5,11 @@ namespace feng3d
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        addChild: { parent: Node3D, child: Node3D }
+        addChild: { parent: Node3D, child: Node3D, index: number }
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removeChild: { parent: Node3D, child: Node3D };
+        removeChild: { parent: Node3D, child: Node3D, index: number };
 
         /**
          * 自身被添加到父对象中事件
