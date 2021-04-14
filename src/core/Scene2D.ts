@@ -5,7 +5,7 @@ namespace feng3d
      * 
      * Scene2D同时拥有Node2D与Node3D组件。
      */
-    @RegisterComponent({ single: true })
+    @RegisterComponent({ single: true, dependencies: [Node] })
     @AddComponentMenu("Scene/Scene2D")
     export class Scene2D extends Component
     {

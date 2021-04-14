@@ -27059,14 +27059,8 @@ var feng3d;
          */
         function Component() {
             var _this = _super.call(this) || this;
-            _this._disposed = false;
-            //------------------------------------------
-            // Static Functions
-            //------------------------------------------
-            //------------------------------------------
-            // Protected Properties
-            //------------------------------------------
             _this._entity = null;
+            _this._disposed = false;
             _this.onAny(_this._onAnyListener, _this);
             return _this;
         }
@@ -27111,9 +27105,6 @@ var feng3d;
                 return this._entity;
             },
             set: function (v) {
-                if (this._entity === v) {
-                    return;
-                }
                 console.assert(!this._entity, "组件无法再次加入其它Entity中!");
                 this._entity = v;
             },
@@ -27122,12 +27113,11 @@ var feng3d;
         });
         Object.defineProperty(Component.prototype, "node", {
             get: function () {
-                return this._node;
+                var _a;
+                return this._node || ((_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node));
+                ;
             },
             set: function (v) {
-                if (this._node === v) {
-                    return;
-                }
                 console.assert(!this._node, "无法重复赋值!");
                 this._node = v;
             },
@@ -27178,8 +27168,6 @@ var feng3d;
          * 在添加到Entity时立即被调用。
          */
         Component.prototype.init = function () {
-            this.node = this._entity.getComponent(feng3d.Node);
-            console.assert(!!this.node);
         };
         /**
          * 获取指定位置索引的子组件
@@ -27290,7 +27278,8 @@ var feng3d;
          * 监听对象的所有事件并且传播到所有组件中
          */
         Component.prototype._onAnyListener = function (e) {
-            this._entity.emitEvent(e);
+            var _a;
+            (_a = this._entity) === null || _a === void 0 ? void 0 : _a.emitEvent(e);
         };
         /**
          * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
@@ -29307,10 +29296,7 @@ var feng3d;
              * 附加到此 Entity 的 Node3D。
              */
             get: function () {
-                console.assert(!!this.entity);
-                this._node3d = this._node3d || this.entity.getComponent(feng3d.Node3D);
-                console.assert(!!this._node3d);
-                return this._node3d;
+                return this.node;
             },
             enumerable: false,
             configurable: true
@@ -30232,7 +30218,7 @@ var feng3d;
             feng3d.AddEntityMenu("Node2D/Scene2D")
         ], Scene2D, "create", null);
         Scene2D = Scene2D_1 = __decorate([
-            feng3d.RegisterComponent({ single: true }),
+            feng3d.RegisterComponent({ single: true, dependencies: [feng3d.Node] }),
             feng3d.AddComponentMenu("Scene/Scene2D")
         ], Scene2D);
         return Scene2D;
@@ -30356,6 +30342,7 @@ var feng3d;
             return _this;
         }
         HoldSizeComponent.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.node3d.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
         };
         HoldSizeComponent.prototype.dispose = function () {
@@ -30371,7 +30358,8 @@ var feng3d;
             this._invalidateSceneTransform();
         };
         HoldSizeComponent.prototype._invalidateSceneTransform = function () {
-            this.node3d["_invalidateSceneTransform"]();
+            var _a;
+            (_a = this.node3d) === null || _a === void 0 ? void 0 : _a["_invalidateSceneTransform"]();
         };
         HoldSizeComponent.prototype._onUpdateLocalToWorldMatrix = function () {
             var _localToWorldMatrix = this.node3d["_localToWorldMatrix"];
@@ -30798,10 +30786,10 @@ var feng3d;
             if (oldValue) {
                 oldValue.off("boundsInvalid", this._onBoundsInvalid, this);
             }
+            this.geometry = this.geometry || feng3d.Geometry.getDefault("Cube");
             if (value) {
                 value.on("boundsInvalid", this._onBoundsInvalid, this);
             }
-            this.geometry = this.geometry || feng3d.Geometry.getDefault("Cube");
             this._onBoundsInvalid();
         };
         Renderable.prototype._updateBounds = function () {

@@ -145,24 +145,17 @@ namespace feng3d
 
         set entity(v)
         {
-            if (this._entity === v)
-            {
-                return;
-            }
             console.assert(!this._entity, "组件无法再次加入其它Entity中!");
             this._entity = v;
         }
+        private _entity: Entity = null;
 
         get node()
         {
-            return this._node;
+            return this._node || this._entity?.getComponent(Node);;
         }
         set node(v)
         {
-            if (this._node === v)
-            {
-                return;
-            }
             console.assert(!this._node, "无法重复赋值!");
             this._node = v;
         }
@@ -223,8 +216,6 @@ namespace feng3d
          */
         init()
         {
-            this.node = this._entity.getComponent(Node);
-            console.assert(!!this.node);
         }
 
         /**
@@ -365,7 +356,7 @@ namespace feng3d
          */
         private _onAnyListener(e: Event<any>)
         {
-            this._entity.emitEvent(e);
+            this._entity?.emitEvent(e);
         }
 
         //------------------------------------------
@@ -375,7 +366,6 @@ namespace feng3d
         //------------------------------------------
         // Protected Properties
         //------------------------------------------
-        private _entity: Entity = null;
 
         //------------------------------------------
         // Protected Functions

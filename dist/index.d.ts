@@ -12731,6 +12731,7 @@ declare namespace feng3d {
          */
         get entity(): Entity<EntityEventMap>;
         set entity(v: Entity<EntityEventMap>);
+        private _entity;
         get node(): Node<ComponentEventMap>;
         set node(v: Node<ComponentEventMap>);
         private _node;
@@ -12843,7 +12844,6 @@ declare namespace feng3d {
          * 监听对象的所有事件并且传播到所有组件中
          */
         private _onAnyListener;
-        private _entity;
     }
 }
 declare namespace feng3d {
@@ -13789,7 +13789,6 @@ declare namespace feng3d {
          * 附加到此 Entity 的 Node3D。
          */
         get node3d(): Node3D<Component3DEventMap>;
-        private _node3d;
         /**
          * Returns all components of Type type in the Entity.
          *

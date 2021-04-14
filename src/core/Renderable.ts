@@ -166,11 +166,11 @@ namespace feng3d
             {
                 oldValue.off("boundsInvalid", this._onBoundsInvalid, this);
             }
+            this.geometry = this.geometry || Geometry.getDefault("Cube");
             if (value)
             {
                 value.on("boundsInvalid", this._onBoundsInvalid, this);
             }
-            this.geometry = this.geometry || Geometry.getDefault("Cube");
             this._onBoundsInvalid();
         }
 

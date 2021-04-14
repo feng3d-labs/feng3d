@@ -26,6 +26,7 @@ namespace feng3d
 
         init()
         {
+            super.init();
             this.node3d.on("updateLocalToWorldMatrix", this._onUpdateLocalToWorldMatrix, this);
         }
 
@@ -45,7 +46,7 @@ namespace feng3d
 
         private _invalidateSceneTransform()
         {
-            this.node3d["_invalidateSceneTransform"]();
+            this.node3d?.["_invalidateSceneTransform"]();
         }
 
         private _onUpdateLocalToWorldMatrix()
