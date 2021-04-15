@@ -354,7 +354,8 @@ namespace feng3d
             const b = this.b;
             const c = this.c;
             const d = this.d;
-            const pivot = transform.pivot;
+            const pivotX = transform.pivotX;
+            const pivotY = transform.pivotY;
 
             const skewX = -Math.atan2(-c, d);
             const skewY = Math.atan2(b, a);
@@ -364,22 +365,22 @@ namespace feng3d
             if (delta < 0.00001 || Math.abs(Math.PI * 2 - delta) < 0.00001)
             {
                 transform.rotation = skewY;
-                transform.skew.x = transform.skew.y = 0;
+                transform.skewX = transform.skewY = 0;
             }
             else
             {
                 transform.rotation = 0;
-                transform.skew.x = skewX;
-                transform.skew.y = skewY;
+                transform.skewX = skewX;
+                transform.skewY = skewY;
             }
 
             // next set scale
-            transform.scale.x = Math.sqrt((a * a) + (b * b));
-            transform.scale.y = Math.sqrt((c * c) + (d * d));
+            transform.scaleX = Math.sqrt((a * a) + (b * b));
+            transform.scaleY = Math.sqrt((c * c) + (d * d));
 
             // next set position
-            transform.position.x = this.tx + ((pivot.x * a) + (pivot.y * c));
-            transform.position.y = this.ty + ((pivot.x * b) + (pivot.y * d));
+            transform.x = this.tx + ((pivotX * a) + (pivotY * c));
+            transform.y = this.ty + ((pivotX * b) + (pivotY * d));
 
             return transform;
         }

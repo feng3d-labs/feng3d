@@ -17367,25 +17367,26 @@ var feng3d;
             var b = this.b;
             var c = this.c;
             var d = this.d;
-            var pivot = transform.pivot;
+            var pivotX = transform.pivotX;
+            var pivotY = transform.pivotY;
             var skewX = -Math.atan2(-c, d);
             var skewY = Math.atan2(b, a);
             var delta = Math.abs(skewX + skewY);
             if (delta < 0.00001 || Math.abs(Math.PI * 2 - delta) < 0.00001) {
                 transform.rotation = skewY;
-                transform.skew.x = transform.skew.y = 0;
+                transform.skewX = transform.skewY = 0;
             }
             else {
                 transform.rotation = 0;
-                transform.skew.x = skewX;
-                transform.skew.y = skewY;
+                transform.skewX = skewX;
+                transform.skewY = skewY;
             }
             // next set scale
-            transform.scale.x = Math.sqrt((a * a) + (b * b));
-            transform.scale.y = Math.sqrt((c * c) + (d * d));
+            transform.scaleX = Math.sqrt((a * a) + (b * b));
+            transform.scaleY = Math.sqrt((c * c) + (d * d));
             // next set position
-            transform.position.x = this.tx + ((pivot.x * a) + (pivot.y * c));
-            transform.position.y = this.ty + ((pivot.x * b) + (pivot.y * d));
+            transform.x = this.tx + ((pivotX * a) + (pivotY * c));
+            transform.y = this.ty + ((pivotX * b) + (pivotY * d));
             return transform;
         };
         /**
@@ -17512,22 +17513,14 @@ var feng3d;
      */
     var Transform = /** @class */ (function () {
         function Transform() {
-            /**
-             * The coordinate of the object relative to the local coordinates of the parent.
-             */
-            this.position = new feng3d.Vector2();
-            /**
-             * The scale factor of the object.
-             */
-            this.scale = new feng3d.Vector2(1, 1);
-            /**
-             * The pivot point of the displayObject that it rotates around.
-             */
-            this.pivot = new feng3d.Vector2();
-            /**
-             * The skew amount, on the x and y axis.
-             */
-            this.skew = new feng3d.Vector2();
+            this._x = 0;
+            this._y = 0;
+            this._scaleX = 1;
+            this._scaleY = 1;
+            this._pivotX = 0;
+            this._pivotY = 0;
+            this._skewX = 0;
+            this._skewY = 0;
             /**
              * The world transformation matrix.
              *
@@ -17540,14 +17533,6 @@ var feng3d;
              * @member {PIXI.Matrix}
              */
             this.localTransform = new feng3d.Matrix();
-            feng3d.watcher.watch(this.position, "x", this.onChange, this);
-            feng3d.watcher.watch(this.position, "y", this.onChange, this);
-            feng3d.watcher.watch(this.scale, "x", this.onChange, this);
-            feng3d.watcher.watch(this.scale, "y", this.onChange, this);
-            feng3d.watcher.watch(this.pivot, "x", this.onChange, this);
-            feng3d.watcher.watch(this.pivot, "y", this.onChange, this);
-            feng3d.watcher.watch(this.skew, "x", this.updateSkew, this);
-            feng3d.watcher.watch(this.skew, "y", this.updateSkew, this);
             /**
              * The rotation amount.
              *
@@ -17618,6 +17603,122 @@ var feng3d;
              */
             this._parentID = 0;
         }
+        Object.defineProperty(Transform.prototype, "x", {
+            /**
+             * The coordinate of the object relative to the local coordinates of the parent.
+             */
+            get: function () {
+                return this._x;
+            },
+            set: function (v) {
+                if (this._x === v)
+                    return;
+                this._x = v;
+                this.onChange();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "y", {
+            get: function () {
+                return this._y;
+            },
+            set: function (v) {
+                if (this._y === v)
+                    return;
+                this._y = v;
+                this.onChange();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "scaleX", {
+            /**
+             * The scale factor of the object.
+             */
+            get: function () {
+                return this._scaleX;
+            },
+            set: function (v) {
+                if (this._scaleX === v)
+                    return;
+                this._scaleX = v;
+                this.onChange();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "scaleY", {
+            get: function () {
+                return this._scaleY;
+            },
+            set: function (v) {
+                if (this._scaleY === v)
+                    return;
+                this._scaleY = v;
+                this.onChange();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "pivotX", {
+            /**
+             * The pivot point of the displayObject that it rotates around.
+             */
+            get: function () {
+                return this._pivotX;
+            },
+            set: function (v) {
+                if (this._pivotX === v)
+                    return;
+                this._pivotX = v;
+                this.onChange();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "pivotY", {
+            get: function () {
+                return this._pivotY;
+            },
+            set: function (v) {
+                if (this._pivotY === v)
+                    return;
+                this._pivotY = v;
+                this.onChange();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "skewX", {
+            /**
+             * The skew amount, on the x and y axis.
+             */
+            get: function () {
+                return this._skewX;
+            },
+            set: function (v) {
+                if (this._skewX === v)
+                    return;
+                this._skewX = v;
+                this.updateSkew();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Transform.prototype, "skewY", {
+            get: function () {
+                return this._skewY;
+            },
+            set: function (v) {
+                if (this._skewY === v)
+                    return;
+                this._skewY = v;
+                this.updateSkew();
+            },
+            enumerable: false,
+            configurable: true
+        });
         /**
          * Called when a value changes.
          *
@@ -17632,19 +17733,19 @@ var feng3d;
          * @protected
          */
         Transform.prototype.updateSkew = function () {
-            this._cx = Math.cos(this._rotation + this.skew.y);
-            this._sx = Math.sin(this._rotation + this.skew.y);
-            this._cy = -Math.sin(this._rotation - this.skew.x); // cos, added PI/2
-            this._sy = Math.cos(this._rotation - this.skew.x); // sin, added PI/2
+            this._cx = Math.cos(this._rotation + this._skewY);
+            this._sx = Math.sin(this._rotation + this._skewY);
+            this._cy = -Math.sin(this._rotation - this._skewX); // cos, added PI/2
+            this._sy = Math.cos(this._rotation - this._skewX); // sin, added PI/2
             this._localID++;
         };
         // #if _DEBUG
         Transform.prototype.toString = function () {
             return "[@pixi/math:Transform "
-                + ("position=(" + this.position.x + ", " + this.position.y + ") ")
+                + ("position=(" + this.x + ", " + this.y + ") ")
                 + ("rotation=" + this.rotation + " ")
-                + ("scale=(" + this.scale.x + ", " + this.scale.y + ") ")
-                + ("skew=(" + this.skew.x + ", " + this.skew.y + ") ")
+                + ("scale=(" + this._scaleX + ", " + this._scaleY + ") ")
+                + ("skew=(" + this._skewX + ", " + this._skewY + ") ")
                 + "]";
         };
         // #endif
@@ -17655,12 +17756,12 @@ var feng3d;
             var lt = this.localTransform;
             if (this._localID !== this._currentLocalID) {
                 // get the matrix values of the displayobject based on its transform properties..
-                lt.a = this._cx * this.scale.x;
-                lt.b = this._sx * this.scale.x;
-                lt.c = this._cy * this.scale.y;
-                lt.d = this._sy * this.scale.y;
-                lt.tx = this.position.x - ((this.pivot.x * lt.a) + (this.pivot.y * lt.c));
-                lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
+                lt.a = this._cx * this._scaleX;
+                lt.b = this._sx * this._scaleX;
+                lt.c = this._cy * this._scaleY;
+                lt.d = this._sy * this._scaleY;
+                lt.tx = this.x - ((this._pivotX * lt.a) + (this._pivotY * lt.c));
+                lt.ty = this.y - ((this._pivotX * lt.b) + (this._pivotY * lt.d));
                 this._currentLocalID = this._localID;
                 // force an update..
                 this._parentID = -1;
@@ -17675,12 +17776,12 @@ var feng3d;
             var lt = this.localTransform;
             if (this._localID !== this._currentLocalID) {
                 // get the matrix values of the displayobject based on its transform properties..
-                lt.a = this._cx * this.scale.x;
-                lt.b = this._sx * this.scale.x;
-                lt.c = this._cy * this.scale.y;
-                lt.d = this._sy * this.scale.y;
-                lt.tx = this.position.x - ((this.pivot.x * lt.a) + (this.pivot.y * lt.c));
-                lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
+                lt.a = this._cx * this._scaleX;
+                lt.b = this._sx * this._scaleX;
+                lt.c = this._cy * this._scaleY;
+                lt.d = this._sy * this._scaleY;
+                lt.tx = this.x - ((this._pivotX * lt.a) + (this._pivotY * lt.c));
+                lt.ty = this.y - ((this._pivotX * lt.b) + (this._pivotY * lt.d));
                 this._currentLocalID = this._localID;
                 // force an update..
                 this._parentID = -1;
@@ -29868,15 +29969,15 @@ var feng3d;
             if (skewY === void 0) { skewY = 0; }
             if (pivotX === void 0) { pivotX = 0; }
             if (pivotY === void 0) { pivotY = 0; }
-            this.position.x = x;
-            this.position.y = y;
-            this.scale.x = !scaleX ? 1 : scaleX;
-            this.scale.y = !scaleY ? 1 : scaleY;
+            this.x = x;
+            this.y = y;
+            this.scaleX = !scaleX ? 1 : scaleX;
+            this.scaleX = !scaleY ? 1 : scaleY;
             this.rotation = rotation;
-            this.skew.x = skewX;
-            this.skew.y = skewY;
-            this.pivot.x = pivotX;
-            this.pivot.y = pivotY;
+            this.skewX = skewX;
+            this.skewY = skewY;
+            this.pivotX = pivotX;
+            this.pivotY = pivotY;
             return this;
         };
         Object.defineProperty(Node2D.prototype, "_tempDisplayObjectParent", {
@@ -29902,10 +30003,10 @@ var feng3d;
              * @member {number}
              */
             get: function () {
-                return this.position.x;
+                return this.transform.x;
             },
             set: function (value) {
-                this.transform.position.x = value;
+                this.transform.x = value;
             },
             enumerable: false,
             configurable: true
@@ -29918,10 +30019,10 @@ var feng3d;
              * @member {number}
              */
             get: function () {
-                return this.position.y;
+                return this.transform.y;
             },
             set: function (value) {
-                this.transform.position.y = value;
+                this.transform.y = value;
             },
             enumerable: false,
             configurable: true
@@ -29952,35 +30053,32 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Node2D.prototype, "position", {
-            /**
-             * The coordinate of the object relative to the local coordinates of the parent.
-             */
-            get: function () {
-                return this.transform.position;
-            },
-            set: function (value) {
-                this.transform.position.copy(value);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node2D.prototype, "scale", {
+        Object.defineProperty(Node2D.prototype, "scaleX", {
             /**
              * The scale factors of this object along the local coordinate axes.
              *
              * The default scale is (1, 1).
              */
             get: function () {
-                return this.transform.scale;
+                return this.transform.scaleX;
             },
-            set: function (value) {
-                this.transform.scale.copy(value);
+            set: function (v) {
+                this.transform.scaleX = v;
             },
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Node2D.prototype, "pivot", {
+        Object.defineProperty(Node2D.prototype, "scaleY", {
+            get: function () {
+                return this.transform.scaleY;
+            },
+            set: function (v) {
+                this.transform.scaleY = v;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "pivotX", {
             /**
              * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
              * is the projection of `pivot` in the parent's local space.
@@ -29988,23 +30086,43 @@ var feng3d;
              * By default, the pivot is the origin (0, 0).
              */
             get: function () {
-                return this.transform.pivot;
+                return this.transform.pivotX;
             },
             set: function (value) {
-                this.transform.pivot.copy(value);
+                this.transform.pivotX = value;
             },
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Node2D.prototype, "skew", {
+        Object.defineProperty(Node2D.prototype, "pivotY", {
+            get: function () {
+                return this.transform.pivotY;
+            },
+            set: function (value) {
+                this.transform.pivotY = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "skewX", {
             /**
              * The skew factor for the object in radians.
              */
             get: function () {
-                return this.transform.skew;
+                return this.transform.skewX;
             },
             set: function (value) {
-                this.transform.skew.copy(value);
+                this.transform.skewX = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Node2D.prototype, "skewY", {
+            get: function () {
+                return this.transform.skewY;
+            },
+            set: function (value) {
+                this.transform.skewY = value;
             },
             enumerable: false,
             configurable: true
@@ -30059,17 +30177,13 @@ var feng3d;
          */
         Node2D.prototype.updateTransform = function () {
             var parent = this.parent;
-            if (parent instanceof Node2D) {
-                this.transform.updateTransform(parent.transform);
-                // TODO: check render flags, how to process stuff here
-                this.worldAlpha = this.alpha * parent.worldAlpha;
-            }
+            this.transform.updateTransform(parent.transform);
+            // TODO: check render flags, how to process stuff here
+            this.worldAlpha = this.alpha * parent.worldAlpha;
             for (var i = 0, j = this.children.length; i < j; ++i) {
                 var child = this.children[i];
                 if (child.visible) {
-                    if (child instanceof Node2D) {
-                        child.updateTransform();
-                    }
+                    child.updateTransform();
                 }
             }
         };
@@ -30110,16 +30224,19 @@ var feng3d;
         ], Node2D.prototype, "visible", void 0);
         __decorate([
             feng3d.oav()
-        ], Node2D.prototype, "position", null);
+        ], Node2D.prototype, "scaleX", null);
         __decorate([
             feng3d.oav()
-        ], Node2D.prototype, "scale", null);
+        ], Node2D.prototype, "scaleY", null);
         __decorate([
             feng3d.oav()
-        ], Node2D.prototype, "pivot", null);
+        ], Node2D.prototype, "pivotX", null);
         __decorate([
             feng3d.oav()
-        ], Node2D.prototype, "skew", null);
+        ], Node2D.prototype, "skewX", null);
+        __decorate([
+            feng3d.oav()
+        ], Node2D.prototype, "skewY", null);
         __decorate([
             feng3d.oav()
         ], Node2D.prototype, "rotation", null);

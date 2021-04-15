@@ -22,22 +22,111 @@ namespace feng3d
         /**
          * The coordinate of the object relative to the local coordinates of the parent.
          */
-        public readonly position = new Vector2();
+        get x()
+        {
+            return this._x;
+        }
+        set x(v)
+        {
+            if (this._x === v) return;
+            this._x = v;
+            this.onChange();
+        }
+        private _x = 0;
+
+        get y()
+        {
+            return this._y;
+        }
+        set y(v)
+        {
+            if (this._y === v) return;
+            this._y = v;
+            this.onChange();
+        }
+        private _y = 0;
 
         /**
          * The scale factor of the object.
          */
-        public readonly scale = new Vector2(1, 1);
+        get scaleX()
+        {
+            return this._scaleX;
+        }
+        set scaleX(v)
+        {
+            if (this._scaleX === v) return;
+            this._scaleX = v;
+            this.onChange();
+        }
+        private _scaleX = 1;
+
+        get scaleY()
+        {
+            return this._scaleY;
+        }
+        set scaleY(v)
+        {
+            if (this._scaleY === v) return;
+            this._scaleY = v;
+            this.onChange();
+        }
+        private _scaleY = 1;
 
         /**
          * The pivot point of the displayObject that it rotates around.
          */
-        public readonly pivot = new Vector2();
+        get pivotX()
+        {
+            return this._pivotX;
+        }
+        set pivotX(v)
+        {
+            if (this._pivotX === v) return;
+            this._pivotX = v;
+            this.onChange();
+        }
+        private _pivotX = 0;
+
+        get pivotY()
+        {
+            return this._pivotY;
+        }
+        set pivotY(v)
+        {
+            if (this._pivotY === v) return;
+            this._pivotY = v;
+            this.onChange();
+        }
+        private _pivotY = 0;
 
         /**
          * The skew amount, on the x and y axis.
          */
-        public readonly skew = new Vector2();
+        get skewX()
+        {
+            return this._skewX;
+        }
+        set skewX(v)
+        {
+            if (this._skewX === v) return;
+            this._skewX = v;
+            this.updateSkew();
+        }
+        private _skewX = 0;
+
+        get skewY()
+        {
+            return this._skewY;
+        }
+        set skewY(v)
+        {
+            if (this._skewY === v) return;
+            this._skewY = v;
+            this.updateSkew();
+        }
+        private _skewY = 0;
+
         public _parentID: number;
         _worldID: number;
 
@@ -64,15 +153,6 @@ namespace feng3d
              * @member {PIXI.Matrix}
              */
             this.localTransform = new Matrix();
-
-            watcher.watch(this.position, "x", this.onChange, this);
-            watcher.watch(this.position, "y", this.onChange, this);
-            watcher.watch(this.scale, "x", this.onChange, this);
-            watcher.watch(this.scale, "y", this.onChange, this);
-            watcher.watch(this.pivot, "x", this.onChange, this);
-            watcher.watch(this.pivot, "y", this.onChange, this);
-            watcher.watch(this.skew, "x", this.updateSkew, this);
-            watcher.watch(this.skew, "y", this.updateSkew, this);
 
             /**
              * The rotation amount.
@@ -170,10 +250,10 @@ namespace feng3d
          */
         protected updateSkew(): void
         {
-            this._cx = Math.cos(this._rotation + this.skew.y);
-            this._sx = Math.sin(this._rotation + this.skew.y);
-            this._cy = -Math.sin(this._rotation - this.skew.x); // cos, added PI/2
-            this._sy = Math.cos(this._rotation - this.skew.x); // sin, added PI/2
+            this._cx = Math.cos(this._rotation + this._skewY);
+            this._sx = Math.sin(this._rotation + this._skewY);
+            this._cy = -Math.sin(this._rotation - this._skewX); // cos, added PI/2
+            this._sy = Math.cos(this._rotation - this._skewX); // sin, added PI/2
 
             this._localID++;
         }
@@ -182,10 +262,10 @@ namespace feng3d
         toString(): string
         {
             return `[@pixi/math:Transform `
-                + `position=(${this.position.x}, ${this.position.y}) `
+                + `position=(${this.x}, ${this.y}) `
                 + `rotation=${this.rotation} `
-                + `scale=(${this.scale.x}, ${this.scale.y}) `
-                + `skew=(${this.skew.x}, ${this.skew.y}) `
+                + `scale=(${this._scaleX}, ${this._scaleY}) `
+                + `skew=(${this._skewX}, ${this._skewY}) `
                 + `]`;
         }
         // #endif
@@ -200,13 +280,13 @@ namespace feng3d
             if (this._localID !== this._currentLocalID)
             {
                 // get the matrix values of the displayobject based on its transform properties..
-                lt.a = this._cx * this.scale.x;
-                lt.b = this._sx * this.scale.x;
-                lt.c = this._cy * this.scale.y;
-                lt.d = this._sy * this.scale.y;
+                lt.a = this._cx * this._scaleX;
+                lt.b = this._sx * this._scaleX;
+                lt.c = this._cy * this._scaleY;
+                lt.d = this._sy * this._scaleY;
 
-                lt.tx = this.position.x - ((this.pivot.x * lt.a) + (this.pivot.y * lt.c));
-                lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
+                lt.tx = this.x - ((this._pivotX * lt.a) + (this._pivotY * lt.c));
+                lt.ty = this.y - ((this._pivotX * lt.b) + (this._pivotY * lt.d));
                 this._currentLocalID = this._localID;
 
                 // force an update..
@@ -226,13 +306,13 @@ namespace feng3d
             if (this._localID !== this._currentLocalID)
             {
                 // get the matrix values of the displayobject based on its transform properties..
-                lt.a = this._cx * this.scale.x;
-                lt.b = this._sx * this.scale.x;
-                lt.c = this._cy * this.scale.y;
-                lt.d = this._sy * this.scale.y;
+                lt.a = this._cx * this._scaleX;
+                lt.b = this._sx * this._scaleX;
+                lt.c = this._cy * this._scaleY;
+                lt.d = this._sy * this._scaleY;
 
-                lt.tx = this.position.x - ((this.pivot.x * lt.a) + (this.pivot.y * lt.c));
-                lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
+                lt.tx = this.x - ((this._pivotX * lt.a) + (this._pivotY * lt.c));
+                lt.ty = this.y - ((this._pivotX * lt.b) + (this._pivotY * lt.d));
                 this._currentLocalID = this._localID;
 
                 // force an update..

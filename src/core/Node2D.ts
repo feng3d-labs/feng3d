@@ -287,15 +287,15 @@ namespace feng3d
          */
         setTransform(x = 0, y = 0, scaleX = 1, scaleY = 1, rotation = 0, skewX = 0, skewY = 0, pivotX = 0, pivotY = 0): this
         {
-            this.position.x = x;
-            this.position.y = y;
-            this.scale.x = !scaleX ? 1 : scaleX;
-            this.scale.y = !scaleY ? 1 : scaleY;
+            this.x = x;
+            this.y = y;
+            this.scaleX = !scaleX ? 1 : scaleX;
+            this.scaleX = !scaleY ? 1 : scaleY;
             this.rotation = rotation;
-            this.skew.x = skewX;
-            this.skew.y = skewY;
-            this.pivot.x = pivotX;
-            this.pivot.y = pivotY;
+            this.skewX = skewX;
+            this.skewY = skewY;
+            this.pivotX = pivotX;
+            this.pivotY = pivotY;
 
             return this;
         }
@@ -323,12 +323,12 @@ namespace feng3d
          */
         get x(): number
         {
-            return this.position.x;
+            return this.transform.x;
         }
 
         set x(value: number)
         {
-            this.transform.position.x = value;
+            this.transform.x = value;
         }
 
         /**
@@ -339,12 +339,12 @@ namespace feng3d
          */
         get y(): number
         {
-            return this.position.y;
+            return this.transform.y;
         }
 
         set y(value: number)
         {
-            this.transform.position.y = value;
+            this.transform.y = value;
         }
 
         /**
@@ -370,33 +370,30 @@ namespace feng3d
         }
 
         /**
-         * The coordinate of the object relative to the local coordinates of the parent.
-         */
-        @oav()
-        get position()
-        {
-            return this.transform.position;
-        }
-
-        set position(value)
-        {
-            this.transform.position.copy(value);
-        }
-
-        /**
          * The scale factors of this object along the local coordinate axes.
          *
          * The default scale is (1, 1).
          */
         @oav()
-        get scale()
+        get scaleX()
         {
-            return this.transform.scale;
+            return this.transform.scaleX;
         }
 
-        set scale(value)
+        set scaleX(v)
         {
-            this.transform.scale.copy(value);
+            this.transform.scaleX = v;
+        }
+
+        @oav()
+        get scaleY()
+        {
+            return this.transform.scaleY;
+        }
+
+        set scaleY(v)
+        {
+            this.transform.scaleY = v;
         }
 
         /**
@@ -406,28 +403,49 @@ namespace feng3d
          * By default, the pivot is the origin (0, 0).
          */
         @oav()
-        get pivot()
+        get pivotX()
         {
-            return this.transform.pivot;
+            return this.transform.pivotX;
         }
 
-        set pivot(value)
+        set pivotX(value)
         {
-            this.transform.pivot.copy(value);
+            this.transform.pivotX = value;
+        }
+
+        get pivotY()
+        {
+            return this.transform.pivotY;
+        }
+
+        set pivotY(value)
+        {
+            this.transform.pivotY = value;
         }
 
         /**
          * The skew factor for the object in radians.
          */
         @oav()
-        get skew()
+        get skewX()
         {
-            return this.transform.skew;
+            return this.transform.skewX;
         }
 
-        set skew(value)
+        set skewX(value)
         {
-            this.transform.skew.copy(value);
+            this.transform.skewX = value;
+        }
+
+        @oav()
+        get skewY()
+        {
+            return this.transform.skewY;
+        }
+
+        set skewY(value)
+        {
+            this.transform.skewY = value;
         }
 
         /**
@@ -486,25 +504,19 @@ namespace feng3d
          */
         updateTransform(): void
         {
-            const parent = this.parent;
-            if (parent instanceof Node2D)
-            {
-                this.transform.updateTransform(parent.transform);
+            const parent = this.parent as Node2D;
+            this.transform.updateTransform(parent.transform);
 
-                // TODO: check render flags, how to process stuff here
-                this.worldAlpha = this.alpha * parent.worldAlpha;
-            }
+            // TODO: check render flags, how to process stuff here
+            this.worldAlpha = this.alpha * parent.worldAlpha;
 
             for (let i = 0, j = this.children.length; i < j; ++i)
             {
-                const child = this.children[i];
+                const child = this.children[i] as Node2D;
 
                 if (child.visible)
                 {
-                    if (child instanceof Node2D)
-                    {
-                        child.updateTransform();
-                    }
+                    child.updateTransform();
                 }
             }
         }

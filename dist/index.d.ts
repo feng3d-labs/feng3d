@@ -7990,19 +7990,39 @@ declare namespace feng3d {
         /**
          * The coordinate of the object relative to the local coordinates of the parent.
          */
-        readonly position: Vector2;
+        get x(): number;
+        set x(v: number);
+        private _x;
+        get y(): number;
+        set y(v: number);
+        private _y;
         /**
          * The scale factor of the object.
          */
-        readonly scale: Vector2;
+        get scaleX(): number;
+        set scaleX(v: number);
+        private _scaleX;
+        get scaleY(): number;
+        set scaleY(v: number);
+        private _scaleY;
         /**
          * The pivot point of the displayObject that it rotates around.
          */
-        readonly pivot: Vector2;
+        get pivotX(): number;
+        set pivotX(v: number);
+        private _pivotX;
+        get pivotY(): number;
+        set pivotY(v: number);
+        private _pivotY;
         /**
          * The skew amount, on the x and y axis.
          */
-        readonly skew: Vector2;
+        get skewX(): number;
+        set skewX(v: number);
+        private _skewX;
+        get skewY(): number;
+        set skewY(v: number);
+        private _skewY;
         _parentID: number;
         _worldID: number;
         protected _rotation: number;
@@ -14098,30 +14118,31 @@ declare namespace feng3d {
          */
         get localTransform(): Matrix;
         /**
-         * The coordinate of the object relative to the local coordinates of the parent.
-         */
-        get position(): Vector2;
-        set position(value: Vector2);
-        /**
          * The scale factors of this object along the local coordinate axes.
          *
          * The default scale is (1, 1).
          */
-        get scale(): Vector2;
-        set scale(value: Vector2);
+        get scaleX(): number;
+        set scaleX(v: number);
+        get scaleY(): number;
+        set scaleY(v: number);
         /**
          * The center of rotation, scaling, and skewing for this display object in its local space. The `position`
          * is the projection of `pivot` in the parent's local space.
          *
          * By default, the pivot is the origin (0, 0).
          */
-        get pivot(): Vector2;
-        set pivot(value: Vector2);
+        get pivotX(): number;
+        set pivotX(value: number);
+        get pivotY(): number;
+        set pivotY(value: number);
         /**
          * The skew factor for the object in radians.
          */
-        get skew(): Vector2;
-        set skew(value: Vector2);
+        get skewX(): number;
+        set skewX(value: number);
+        get skewY(): number;
+        set skewY(value: number);
         /**
          * The rotation of the object in radians.
          * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
