@@ -108,6 +108,11 @@ namespace feng3d
         protected _globalVisible = false;
         protected _globalVisibleInvalid = true;
 
+        /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        @serialize
+        mouseEnabled = true;
 
         /**
          * 根据名称查找对象

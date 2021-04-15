@@ -12910,6 +12910,10 @@ declare namespace feng3d {
         protected _globalVisible: boolean;
         protected _globalVisibleInvalid: boolean;
         /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        mouseEnabled: boolean;
+        /**
          * 根据名称查找对象
          *
          * @param name 对象名称
@@ -13133,10 +13137,6 @@ declare namespace feng3d {
          * 资源编号
          */
         assetId: string;
-        /**
-         * 自身以及子对象是否支持鼠标拾取
-         */
-        mouseEnabled: boolean;
         /**
          * 创建一个实体，该类为虚类
          */

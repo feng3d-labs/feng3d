@@ -27303,6 +27303,10 @@ var feng3d;
             _this._visible = true;
             _this._globalVisible = false;
             _this._globalVisibleInvalid = true;
+            /**
+             * 自身以及子对象是否支持鼠标拾取
+             */
+            _this.mouseEnabled = true;
             return _this;
         }
         Object.defineProperty(Node.prototype, "parent", {
@@ -27653,6 +27657,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], Node.prototype, "visible", null);
+        __decorate([
+            feng3d.serialize
+        ], Node.prototype, "mouseEnabled", void 0);
         Node = __decorate([
             feng3d.RegisterComponent({ single: true })
         ], Node);
@@ -27751,10 +27758,6 @@ var feng3d;
         function Node3D() {
             var _this = _super.call(this) || this;
             _this.assetType = feng3d.AssetType.node3d;
-            /**
-             * 自身以及子对象是否支持鼠标拾取
-             */
-            _this.mouseEnabled = true;
             _this._position = new feng3d.Vector3();
             _this._rotation = new feng3d.Vector3();
             _this._orientation = new feng3d.Quaternion();
@@ -28460,9 +28463,6 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], Node3D.prototype, "assetId", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Node3D.prototype, "mouseEnabled", void 0);
         __decorate([
             feng3d.serialize
         ], Node3D.prototype, "x", null);

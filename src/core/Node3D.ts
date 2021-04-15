@@ -69,12 +69,6 @@ namespace feng3d
         assetId: string;
 
         /**
-         * 自身以及子对象是否支持鼠标拾取
-         */
-        @serialize
-        mouseEnabled = true;
-
-        /**
          * 创建一个实体，该类为虚类
          */
         constructor()
