@@ -381,7 +381,7 @@ namespace feng3d
          * @param component		被添加的组件
          * @param index			插入的位置
          */
-        private addComponentAt(component: Components, index: number): void
+        addComponentAt(component: Components, index: number): void
         {
             if (component == null)
                 return;

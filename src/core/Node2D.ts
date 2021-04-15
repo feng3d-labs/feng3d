@@ -89,14 +89,6 @@ namespace feng3d
      */
     export class Node2D<T extends Component2DEventMap = Component2DEventMap> extends Node<T>
     {
-        @AddEntityMenu("Node2D")
-        static create(name = "Node2D")
-        {
-            var node2d = new Entity().addComponent(Node2D);
-            node2d.name = name;
-            return node2d;
-        }
-
         public worldAlpha: number;
         public transform: Transform;
 
@@ -108,7 +100,7 @@ namespace feng3d
 
         protected _destroyed: boolean;
 
-        private tempDisplayObjectParent: Node2D;
+        protected tempDisplayObjectParent: Node2D;
         public displayObjectUpdateTransform: () => void;
 
         constructor()
@@ -306,12 +298,6 @@ namespace feng3d
          */
         get _tempDisplayObjectParent(): Node2D
         {
-            if (this.tempDisplayObjectParent === null)
-            {
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                this.tempDisplayObjectParent = Node2D.create();
-            }
-
             return this.tempDisplayObjectParent;
         }
 

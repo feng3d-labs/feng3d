@@ -13666,7 +13666,7 @@ declare namespace feng3d {
          * @param component		被添加的组件
          * @param index			插入的位置
          */
-        private addComponentAt;
+        addComponentAt(component: Components, index: number): void;
         /**
          * 为了兼容以往json序列化格式
          *
@@ -14031,13 +14031,12 @@ declare namespace feng3d {
      *
      */
     class Node2D<T extends Component2DEventMap = Component2DEventMap> extends Node<T> {
-        static create(name?: string): Node2D<Component2DEventMap>;
         worldAlpha: number;
         transform: Transform;
         alpha: number;
         visible: boolean;
         protected _destroyed: boolean;
-        private tempDisplayObjectParent;
+        protected tempDisplayObjectParent: Node2D;
         displayObjectUpdateTransform: () => void;
         constructor();
         /**

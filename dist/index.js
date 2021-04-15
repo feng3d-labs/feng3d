@@ -29862,12 +29862,6 @@ var feng3d;
             _this.children = [];
             return _this;
         }
-        Node2D.create = function (name) {
-            if (name === void 0) { name = "Node2D"; }
-            var node2d = new feng3d.Entity().addComponent(Node2D);
-            node2d.name = name;
-            return node2d;
-        };
         /**
          * Recursively updates transform of all objects from the root to this one
          * internal function for toLocal()
@@ -29986,10 +29980,6 @@ var feng3d;
              * @member {PIXI.Container}
              */
             get: function () {
-                if (this.tempDisplayObjectParent === null) {
-                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                    this.tempDisplayObjectParent = Node2D.create();
-                }
                 return this.tempDisplayObjectParent;
             },
             enumerable: false,
@@ -30243,9 +30233,6 @@ var feng3d;
         __decorate([
             feng3d.oav()
         ], Node2D.prototype, "angle", null);
-        __decorate([
-            feng3d.AddEntityMenu("Node2D")
-        ], Node2D, "create", null);
         return Node2D;
     }(feng3d.Node));
     feng3d.Node2D = Node2D;
