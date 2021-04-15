@@ -27321,7 +27321,7 @@ var feng3d;
              * 子对象
              */
             get: function () {
-                return this._children.concat();
+                return this._children;
             },
             set: function (value) {
                 if (!value)
@@ -27348,9 +27348,6 @@ var feng3d;
              * 是否显示
              */
             get: function () {
-                this.on("added", function (e) {
-                    e.data.parent;
-                });
                 return this._visible;
             },
             set: function (v) {
@@ -30062,17 +30059,13 @@ var feng3d;
          */
         Node2D.prototype.updateTransform = function () {
             var parent = this.parent;
-            if (parent instanceof Node2D) {
-                this.transform.updateTransform(parent.transform);
-                // TODO: check render flags, how to process stuff here
-                this.worldAlpha = this.alpha * parent.worldAlpha;
-            }
+            this.transform.updateTransform(parent.transform);
+            // TODO: check render flags, how to process stuff here
+            this.worldAlpha = this.alpha * parent.worldAlpha;
             for (var i = 0, j = this.children.length; i < j; ++i) {
                 var child = this.children[i];
                 if (child.visible) {
-                    if (child instanceof Node2D) {
-                        child.updateTransform();
-                    }
+                    child.updateTransform();
                 }
             }
         };
@@ -30162,8 +30155,7 @@ var feng3d;
              * 附加到此 Entity 的 Node2D。
              */
             get: function () {
-                var _a;
-                return (_a = this.entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node2D);
+                return this.node;
             },
             enumerable: false,
             configurable: true

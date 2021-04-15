@@ -20,7 +20,7 @@ namespace feng3d
          */
         get node2d()
         {
-            return this.entity?.getComponent(Node2D);
+            return this.node as Node2D;
         }
 
         /**

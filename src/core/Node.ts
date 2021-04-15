@@ -52,7 +52,7 @@ namespace feng3d
         @serialize
         get children()
         {
-            return this._children.concat();
+            return this._children;
         }
 
         set children(value)
@@ -79,10 +79,6 @@ namespace feng3d
         @serialize
         get visible()
         {
-            this.on("added", (e) =>
-            {
-                e.data.parent
-            })
             return this._visible;
         }
         set visible(v)
