@@ -30059,13 +30059,17 @@ var feng3d;
          */
         Node2D.prototype.updateTransform = function () {
             var parent = this.parent;
-            this.transform.updateTransform(parent.transform);
-            // TODO: check render flags, how to process stuff here
-            this.worldAlpha = this.alpha * parent.worldAlpha;
+            if (parent instanceof Node2D) {
+                this.transform.updateTransform(parent.transform);
+                // TODO: check render flags, how to process stuff here
+                this.worldAlpha = this.alpha * parent.worldAlpha;
+            }
             for (var i = 0, j = this.children.length; i < j; ++i) {
                 var child = this.children[i];
                 if (child.visible) {
-                    child.updateTransform();
+                    if (child instanceof Node2D) {
+                        child.updateTransform();
+                    }
                 }
             }
         };
