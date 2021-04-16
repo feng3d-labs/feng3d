@@ -27363,7 +27363,7 @@ var feng3d;
          * @param b		第二个子组件
          */
         Component.prototype.swapComponents = function (a, b) {
-            this.swapComponents(a, b);
+            this._entity.swapComponents(a, b);
         };
         /**
          * 销毁
@@ -29837,7 +29837,7 @@ var feng3d;
              *
              * @member {PIXI.Container}
              */
-            _this._setParent(null);
+            _this._parent = null;
             /**
              * The multiplied alpha of the displayObject.
              *
@@ -30195,7 +30195,7 @@ var feng3d;
             }
             this.offAll();
             this.transform = null;
-            this._setParent(null);
+            this._parent = null;
             this._destroyed = true;
             var destroyChildren = typeof options === 'boolean' ? options : options && options.children;
             var oldChildren = this.removeChildren(0, this.children.length);

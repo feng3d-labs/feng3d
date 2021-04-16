@@ -138,7 +138,7 @@ namespace feng3d
              *
              * @member {PIXI.Container}
              */
-            this._setParent(null);
+            this._parent = null;
 
             /**
              * The multiplied alpha of the displayObject.
@@ -529,7 +529,7 @@ namespace feng3d
             this.offAll();
             this.transform = null;
 
-            this._setParent(null);
+            this._parent = null;
 
             this._destroyed = true;
 
