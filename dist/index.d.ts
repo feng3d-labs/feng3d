@@ -12861,6 +12861,24 @@ declare namespace feng3d {
         dispose(): void;
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera): void;
         /**
+         * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+        /**
          * 监听对象的所有事件并且传播到所有组件中
          */
         private _onAnyListener;
@@ -13809,24 +13827,6 @@ declare namespace feng3d {
          * 附加到此 Entity 的 Node3D。
          */
         get node3d(): Node3D<Component3DEventMap>;
-        /**
-         * Returns all components of Type type in the Entity.
-         *
-         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
     }
 }
 declare namespace feng3d {
@@ -14193,24 +14193,6 @@ declare namespace feng3d {
          * 附加到此 Entity 的 Node2D。
          */
         get node2d(): Node2D<Component2DEventMap>;
-        /**
-         * Returns all components of Type type in the Entity.
-         *
-         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
     }
 }
 declare namespace feng3d {

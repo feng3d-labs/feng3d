@@ -22,28 +22,5 @@ namespace feng3d
         {
             return this.node as Node2D;
         }
-
-        /**
-         * Returns all components of Type type in the Entity.
-         * 
-         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
-         * 
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
-        {
-            return this.node2d.getComponentsInChildren(type, filter, result);
-        }
-
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
-        {
-            return this.node2d.getComponentsInParents(type, result);
-        }
     }
 }

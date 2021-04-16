@@ -152,8 +152,9 @@ namespace feng3d
 
         get node()
         {
-            return this._node || this._entity?.getComponent(Node);;
+            return this._node || this._entity?.getComponent(Node);
         }
+
         set node(v)
         {
             console.assert(!this._node, "无法重复赋值!");
@@ -324,7 +325,7 @@ namespace feng3d
          */
         swapComponentsAt(index1: number, index2: number): void
         {
-            this.swapComponentsAt(index1, index2);
+            this._entity.swapComponentsAt(index1, index2);
         }
 
         /**
@@ -334,7 +335,7 @@ namespace feng3d
          */
         swapComponents(a: Components, b: Components): void
         {
-            this.swapComponents(a, b);
+            this._entity.swapComponents(a, b);
         }
 
         /**
@@ -349,6 +350,29 @@ namespace feng3d
         beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
         {
 
+        }
+
+        /**
+         * Returns all components of Type type in the Entity.
+         * 
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         * 
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
+        {
+            return this.node.getComponentsInChildren(type, filter, result);
+        }
+
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
+        {
+            return this.node.getComponentsInParents(type, result);
         }
 
         /**

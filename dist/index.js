@@ -27216,7 +27216,6 @@ var feng3d;
             get: function () {
                 var _a;
                 return this._node || ((_a = this._entity) === null || _a === void 0 ? void 0 : _a.getComponent(feng3d.Node));
-                ;
             },
             set: function (v) {
                 console.assert(!this._node, "无法重复赋值!");
@@ -27356,7 +27355,7 @@ var feng3d;
          * @param index2		第二个子组件的索引位置
          */
         Component.prototype.swapComponentsAt = function (index1, index2) {
-            this.swapComponentsAt(index1, index2);
+            this._entity.swapComponentsAt(index1, index2);
         };
         /**
          * 交换子组件位置
@@ -27374,6 +27373,25 @@ var feng3d;
             this._disposed = true;
         };
         Component.prototype.beforeRender = function (renderAtomic, scene, camera) {
+        };
+        /**
+         * Returns all components of Type type in the Entity.
+         *
+         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
+         *
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component.prototype.getComponentsInChildren = function (type, filter, result) {
+            return this.node.getComponentsInChildren(type, filter, result);
+        };
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component.prototype.getComponentsInParents = function (type, result) {
+            return this.node.getComponentsInParents(type, result);
         };
         /**
          * 监听对象的所有事件并且传播到所有组件中
@@ -29399,25 +29417,6 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        /**
-         * Returns all components of Type type in the Entity.
-         *
-         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component3D.prototype.getComponentsInChildren = function (type, filter, result) {
-            return this.node3d.getComponentsInChildren(type, filter, result);
-        };
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component3D.prototype.getComponentsInParents = function (type, result) {
-            return this.node3d.getComponentsInParents(type, result);
-        };
         Component3D = __decorate([
             feng3d.RegisterComponent({ dependencies: [feng3d.Node3D] })
         ], Component3D);
@@ -30268,25 +30267,6 @@ var feng3d;
             enumerable: false,
             configurable: true
         });
-        /**
-         * Returns all components of Type type in the Entity.
-         *
-         * 返回 Entity 或其任何子项中类型为 type 的所有组件。
-         *
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component2D.prototype.getComponentsInChildren = function (type, filter, result) {
-            return this.node2d.getComponentsInChildren(type, filter, result);
-        };
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        Component2D.prototype.getComponentsInParents = function (type, result) {
-            return this.node2d.getComponentsInParents(type, result);
-        };
         Component2D = __decorate([
             feng3d.RegisterComponent({ dependencies: [feng3d.Node2D] })
         ], Component2D);
