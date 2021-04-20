@@ -92,16 +92,6 @@ namespace feng3d
         {
             super();
 
-            watcher.watch(this._position, "x", this._positionChanged, this);
-            watcher.watch(this._position, "y", this._positionChanged, this);
-            watcher.watch(this._position, "z", this._positionChanged, this);
-            watcher.watch(this._rotation, "x", this._rotationChanged, this);
-            watcher.watch(this._rotation, "y", this._rotationChanged, this);
-            watcher.watch(this._rotation, "z", this._rotationChanged, this);
-            watcher.watch(this._scale, "x", this._scaleChanged, this);
-            watcher.watch(this._scale, "y", this._scaleChanged, this);
-            watcher.watch(this._scale, "z", this._scaleChanged, this);
-
             this._renderAtomic.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
             this._renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
         }
@@ -118,78 +108,194 @@ namespace feng3d
          * X轴坐标。
          */
         @serialize
-        get x() { return this._position.x; }
-        set x(v) { this._position.x = v; }
+        get x()
+        {
+            return this._x;
+        }
+
+        set x(v)
+        {
+            if (this._x === v) return;
+            this._x = v;
+            this._positionChanged();
+        }
+        private _x = 0;
 
         /**
          * Y轴坐标。
          */
         @serialize
-        get y() { return this._position.y; }
-        set y(v) { this._position.y = v; }
+        get y()
+        {
+            return this._y;
+        }
+
+        set y(v)
+        {
+            if (this._y === v) return;
+            this._y = v;
+            this._positionChanged();
+        }
+        private _y = 0;
 
         /**
          * Z轴坐标。
          */
         @serialize
-        get z() { return this._position.z; }
-        set z(v) { this._position.z = v; }
+        get z()
+        {
+            return this._z;
+        }
+
+        set z(v)
+        {
+            if (this._z === v) return;
+            this._z = v;
+            this._positionChanged();
+        }
+        private _z = 0;
 
         /**
          * X轴旋转角度。
          */
         @serialize
-        get rx() { return this._rotation.x; }
-        set rx(v) { this._rotation.x = v; }
+        get rx()
+        {
+            return this._rx;
+        }
+
+        set rx(v)
+        {
+            if (this._rx === v) return;
+            this._rx = v;
+            this._rotationChanged();
+        }
+        private _rx = 0;
 
         /**
          * Y轴旋转角度。
          */
         @serialize
-        get ry() { return this._rotation.y; }
-        set ry(v) { this._rotation.y = v; }
+        get ry()
+        {
+            return this._ry;
+        }
+
+        set ry(v)
+        {
+            if (this._ry === v) return;
+            this._ry = v;
+
+            this._rotationChanged();
+        }
+        private _ry = 0;
 
         /**
          * Z轴旋转角度。
          */
         @serialize
-        get rz() { return this._rotation.z; }
-        set rz(v) { this._rotation.z = v; }
+        get rz()
+        {
+            return this._rz;
+        }
+        set rz(v)
+        {
+            if (this._rz === v) return;
+            this._rz = v;
+            this._rotationChanged();
+        }
+        private _rz = 0;
 
         /**
          * X轴缩放。
          */
         @serialize
-        get sx() { return this._scale.x; }
-        set sx(v) { this._scale.x = v; }
+        get sx()
+        {
+            return this._sx;
+        }
+
+        set sx(v)
+        {
+            if (this._sx === v) return;
+            this._sx = v;
+            this._scaleChanged();
+        }
+        private _sx = 1;
 
         /**
          * Y轴缩放。
          */
         @serialize
-        get sy() { return this._scale.y; }
-        set sy(v) { this._scale.y = v; }
+        get sy()
+        {
+            return this._sy;
+        }
+
+        set sy(v)
+        {
+            if (this._sy === v) return;
+            this._sy = v;
+            this._scaleChanged();
+        }
+        private _sy = 1;
 
         /**
          * Z轴缩放。
          */
         @serialize
-        get sz() { return this._scale.z; }
-        set sz(v) { this._scale.z = v; }
+        get sz()
+        {
+            return this._sz;
+        }
 
-        /**
-         * 本地位移
-         */
-        @oav({ tooltip: "本地位移" })
-        get position() { return this._position; }
-        set position(v) { this._position.copy(v); }
+        set sz(v)
+        {
+            if (this._sz === v) return;
+            this._sz = v;
+            this._scaleChanged();
+        }
+        private _sz = 1;
 
-        /**
-         * 本地旋转
-         */
-        @oav({ tooltip: "本地旋转", component: "OAVVector3", componentParam: { step: 0.001, stepScale: 30, stepDownup: 30 } })
-        get rotation() { return this._rotation; }
-        set rotation(v) { this._rotation.copy(v); }
+        getPosition<T extends IVector3 = Vector3>(p: T = <any>new Vector3()): T
+        {
+            p.x = this._x;
+            p.y = this._y;
+            p.z = this._z;
+            return p;
+        }
+
+        setPosition<T extends IVector3>(p: T)
+        {
+            this.x = p.x;
+            this.y = p.y;
+            this.z = p.z;
+            return this;
+        }
+
+        getRotation<T extends IVector3 = Vector3>(p: T = <any>new Vector3()): T
+        {
+            p.x = this._rx;
+            p.y = this._ry;
+            p.z = this._rz;
+            return p;
+        }
+
+        setRotation<T extends IVector3>(p: T)
+        {
+            this.rx = p.x;
+            this.ry = p.y;
+            this.rz = p.z;
+            return this;
+        }
+
+        getScale<T extends IVector3 = Vector3>(p: T = <any>new Vector3()): T
+        {
+            p.x = this._sx;
+            p.y = this._sy;
+            p.z = this._sz;
+            return p;
+        }
 
         /**
          * 本地四元素旋转
@@ -204,15 +310,10 @@ namespace feng3d
         {
             var angles = value.toEulerAngles();
             angles.scaleNumber(Math.RAD2DEG);
-            this.rotation = angles;
+            this.rx = angles.x;
+            this.ry = angles.y;
+            this.rz = angles.z;
         }
-
-        /**
-         * 本地缩放
-         */
-        @oav({ tooltip: "本地缩放" })
-        get scale() { return this._scale; }
-        set scale(v) { this._scale.copy(v); }
 
         /**
          * 是否显示
@@ -260,8 +361,21 @@ namespace feng3d
 
         set matrix(v)
         {
-            v.toTRS(this._position, this._rotation, this._scale);
+            var trs = v.toTRS();
+            this._x = trs[0].x;
+            this._y = trs[0].y;
+            this._z = trs[0].z;
+
+            this._rx = trs[1].x;
+            this._ry = trs[1].y;
+            this._rz = trs[1].z;
+
+            this._sx = trs[2].x;
+            this._sy = trs[2].y;
+            this._sz = trs[2].z;
+
             this._matrix.fromArray(v.elements);
+            this._invalidateTransform()
             this._matrixInvalid = false;
         }
 
@@ -272,7 +386,7 @@ namespace feng3d
         {
             if (this._rotationMatrixInvalid)
             {
-                this._rotationMatrix.setRotation(this._rotation);
+                this._rotationMatrix.setRotation(tempVector3_1.set(this._rx, this._ry, this._rz));
                 this._rotationMatrixInvalid = false;
             }
             return this._rotationMatrix;
@@ -397,7 +511,9 @@ namespace feng3d
 
         rotateTo(ax: number, ay: number, az: number)
         {
-            this._rotation.set(ax, ay, az);
+            this.rx = ax;
+            this.ry = ay;
+            this.rz = az;
         }
 
         /**
@@ -410,9 +526,9 @@ namespace feng3d
         rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void
         {
             //转换位移
-            var positionMatrix = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
+            var positionMatrix = Matrix4x4.fromPosition(this._x, this._y, this._z);
             positionMatrix.appendRotation(axis, angle, pivotPoint);
-            this.position = positionMatrix.getPosition();
+            var position = positionMatrix.getPosition();
             //转换旋转
             var rotationMatrix = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix.appendRotation(axis, angle, pivotPoint);
@@ -432,7 +548,14 @@ namespace feng3d
             newrotation.x = toRound(newrotation.x, this.rx);
             newrotation.y = toRound(newrotation.y, this.ry);
             newrotation.z = toRound(newrotation.z, this.rz);
-            this.rotation = newrotation;
+            //
+            this.x = position.x;
+            this.y = position.y;
+            this.z = position.z;
+            this.rx = newrotation.x;
+            this.ry = newrotation.y;
+            this.rz = newrotation.z;
+            //
             this._invalidateSceneTransform();
         }
 
@@ -446,7 +569,18 @@ namespace feng3d
         {
             this._updateMatrix();
             this._matrix.lookAt(target, upAxis);
-            this._matrix.toTRS(this._position, this._rotation, this._scale);
+            var trs = this._matrix.toTRS();
+            //
+            this._x = trs[0].x;
+            this._y = trs[0].y;
+            this._z = trs[0].z;
+            this._rx = trs[1].x;
+            this._ry = trs[1].y;
+            this._rz = trs[1].z;
+            this._sx = trs[2].x;
+            this._sy = trs[2].y;
+            this._sz = trs[2].z;
+            //
             this._matrixInvalid = false;
         }
 
@@ -905,10 +1039,7 @@ namespace feng3d
                 this._children[0].dispose();
         }
 
-        private readonly _position = new Vector3();
-        private readonly _rotation = new Vector3();
         private readonly _orientation = new Quaternion();
-        private readonly _scale = new Vector3(1, 1, 1);
 
         protected readonly _matrix = new Matrix4x4();
         protected _matrixInvalid = false;
@@ -934,27 +1065,20 @@ namespace feng3d
 
         private _renderAtomic = new RenderAtomic();
 
-        private _positionChanged(newValue: number, oldValue: number, object: Vector3, property: string)
+        private _positionChanged()
         {
-            if (!Math.equals(newValue, oldValue))
-                this._invalidateTransform();
+            this._invalidateTransform();
         }
 
-        private _rotationChanged(newValue: number, oldValue: number, object: Vector3, property: string)
+        private _rotationChanged()
         {
-            if (!Math.equals(newValue, oldValue))
-            {
-                this._invalidateTransform();
-                this._rotationMatrixInvalid = true;
-            }
+            this._invalidateTransform();
         }
 
-        private _scaleChanged(newValue: number, oldValue: number, object: Vector3, property: string)
+        private _scaleChanged()
         {
-            if (!Math.equals(newValue, oldValue))
-                this._invalidateTransform();
+            this._invalidateTransform();
         }
-
 
         private _setParent(value: Node3D)
         {
@@ -1005,6 +1129,7 @@ namespace feng3d
         {
             if (this._matrixInvalid) return;
             this._matrixInvalid = true;
+            this._rotationMatrixInvalid = true;
 
             this.emit("transformChanged", this);
             this._invalidateSceneTransform();
@@ -1032,7 +1157,7 @@ namespace feng3d
 
         private _updateMatrix()
         {
-            this._matrix.fromTRS(this._position, this._rotation, this._scale);
+            this._matrix.fromTRS(tempVector3_1.set(this._x, this._y, this._z), tempVector3_2.set(this._rx, this._ry, this._rz), tempVector3_3.set(this._sx, this._sy, this._sz));
         }
 
         private _updateLocalToWorldMatrix()
@@ -1160,4 +1285,9 @@ namespace feng3d
             this._updateChildrenScene();
         }
     }
+
+    const tempVector3_1 = new Vector3();
+    const tempVector3_2 = new Vector3();
+    const tempVector3_3 = new Vector3();
+
 }

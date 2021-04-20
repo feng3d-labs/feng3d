@@ -318,7 +318,9 @@ namespace feng3d
 
             var camera = Camera.create("Main Camera");
             camera.entity.addComponent(AudioListener);
-            camera.node3d.position = new Vector3(0, 1, -10);
+            camera.node3d.x = 0;
+            camera.node3d.y = 1;
+            camera.node3d.z = -10;
             scene.node3d.addChild(camera.node3d);
 
             var directionalLight = DirectionalLight.create("DirectionalLight");

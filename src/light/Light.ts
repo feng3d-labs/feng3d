@@ -133,7 +133,10 @@ namespace feng3d
             }
 
             var depth = viewCamera.lens.near * 2;
-            model.node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            const position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            model.node3d.x = position.x;
+            model.node3d.y = position.y;
+            model.node3d.z = position.z;
             var billboardComponent = model.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
 

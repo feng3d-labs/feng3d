@@ -26064,7 +26064,9 @@ var feng3d;
             // negative Y
             cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
             var shadowCamera = light.shadowCamera;
-            shadowCamera.node3d.position = light.node3d.position;
+            shadowCamera.node3d.x = light.node3d.x;
+            shadowCamera.node3d.y = light.node3d.y;
+            shadowCamera.node3d.z = light.node3d.z;
             var renderAtomic = this.renderAtomic;
             for (var face = 0; face < 6; face++) {
                 shadowCamera.node3d.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
@@ -26814,13 +26816,19 @@ var feng3d;
              * 自身以及子对象是否支持鼠标拾取
              */
             _this.mouseEnabled = true;
+            _this._x = 0;
+            _this._y = 0;
+            _this._z = 0;
+            _this._rx = 0;
+            _this._ry = 0;
+            _this._rz = 0;
+            _this._sx = 1;
+            _this._sy = 1;
+            _this._sz = 1;
             _this._visible = true;
             _this._globalVisible = false;
             _this._globalVisibleInvalid = true;
-            _this._position = new feng3d.Vector3();
-            _this._rotation = new feng3d.Vector3();
             _this._orientation = new feng3d.Quaternion();
-            _this._scale = new feng3d.Vector3(1, 1, 1);
             _this._matrix = new feng3d.Matrix4x4();
             _this._matrixInvalid = false;
             _this._rotationMatrix = new feng3d.Matrix4x4();
@@ -26835,15 +26843,6 @@ var feng3d;
             _this._localToWorldRotationMatrixInvalid = false;
             _this._children = [];
             _this._renderAtomic = new feng3d.RenderAtomic();
-            feng3d.watcher.watch(_this._position, "x", _this._positionChanged, _this);
-            feng3d.watcher.watch(_this._position, "y", _this._positionChanged, _this);
-            feng3d.watcher.watch(_this._position, "z", _this._positionChanged, _this);
-            feng3d.watcher.watch(_this._rotation, "x", _this._rotationChanged, _this);
-            feng3d.watcher.watch(_this._rotation, "y", _this._rotationChanged, _this);
-            feng3d.watcher.watch(_this._rotation, "z", _this._rotationChanged, _this);
-            feng3d.watcher.watch(_this._scale, "x", _this._scaleChanged, _this);
-            feng3d.watcher.watch(_this._scale, "y", _this._scaleChanged, _this);
-            feng3d.watcher.watch(_this._scale, "z", _this._scaleChanged, _this);
             _this._renderAtomic.uniforms.u_modelMatrix = function () { return _this.localToWorldMatrix; };
             _this._renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
             return _this;
@@ -26866,8 +26865,15 @@ var feng3d;
             /**
              * X轴坐标。
              */
-            get: function () { return this._position.x; },
-            set: function (v) { this._position.x = v; },
+            get: function () {
+                return this._x;
+            },
+            set: function (v) {
+                if (this._x === v)
+                    return;
+                this._x = v;
+                this._positionChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26875,8 +26881,15 @@ var feng3d;
             /**
              * Y轴坐标。
              */
-            get: function () { return this._position.y; },
-            set: function (v) { this._position.y = v; },
+            get: function () {
+                return this._y;
+            },
+            set: function (v) {
+                if (this._y === v)
+                    return;
+                this._y = v;
+                this._positionChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26884,8 +26897,15 @@ var feng3d;
             /**
              * Z轴坐标。
              */
-            get: function () { return this._position.z; },
-            set: function (v) { this._position.z = v; },
+            get: function () {
+                return this._z;
+            },
+            set: function (v) {
+                if (this._z === v)
+                    return;
+                this._z = v;
+                this._positionChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26893,8 +26913,15 @@ var feng3d;
             /**
              * X轴旋转角度。
              */
-            get: function () { return this._rotation.x; },
-            set: function (v) { this._rotation.x = v; },
+            get: function () {
+                return this._rx;
+            },
+            set: function (v) {
+                if (this._rx === v)
+                    return;
+                this._rx = v;
+                this._rotationChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26902,8 +26929,15 @@ var feng3d;
             /**
              * Y轴旋转角度。
              */
-            get: function () { return this._rotation.y; },
-            set: function (v) { this._rotation.y = v; },
+            get: function () {
+                return this._ry;
+            },
+            set: function (v) {
+                if (this._ry === v)
+                    return;
+                this._ry = v;
+                this._rotationChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26911,8 +26945,15 @@ var feng3d;
             /**
              * Z轴旋转角度。
              */
-            get: function () { return this._rotation.z; },
-            set: function (v) { this._rotation.z = v; },
+            get: function () {
+                return this._rz;
+            },
+            set: function (v) {
+                if (this._rz === v)
+                    return;
+                this._rz = v;
+                this._rotationChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26920,8 +26961,15 @@ var feng3d;
             /**
              * X轴缩放。
              */
-            get: function () { return this._scale.x; },
-            set: function (v) { this._scale.x = v; },
+            get: function () {
+                return this._sx;
+            },
+            set: function (v) {
+                if (this._sx === v)
+                    return;
+                this._sx = v;
+                this._scaleChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26929,8 +26977,15 @@ var feng3d;
             /**
              * Y轴缩放。
              */
-            get: function () { return this._scale.y; },
-            set: function (v) { this._scale.y = v; },
+            get: function () {
+                return this._sy;
+            },
+            set: function (v) {
+                if (this._sy === v)
+                    return;
+                this._sy = v;
+                this._scaleChanged();
+            },
             enumerable: false,
             configurable: true
         });
@@ -26938,29 +26993,51 @@ var feng3d;
             /**
              * Z轴缩放。
              */
-            get: function () { return this._scale.z; },
-            set: function (v) { this._scale.z = v; },
+            get: function () {
+                return this._sz;
+            },
+            set: function (v) {
+                if (this._sz === v)
+                    return;
+                this._sz = v;
+                this._scaleChanged();
+            },
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Node3D.prototype, "position", {
-            /**
-             * 本地位移
-             */
-            get: function () { return this._position; },
-            set: function (v) { this._position.copy(v); },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node3D.prototype, "rotation", {
-            /**
-             * 本地旋转
-             */
-            get: function () { return this._rotation; },
-            set: function (v) { this._rotation.copy(v); },
-            enumerable: false,
-            configurable: true
-        });
+        Node3D.prototype.getPosition = function (p) {
+            if (p === void 0) { p = new feng3d.Vector3(); }
+            p.x = this._x;
+            p.y = this._y;
+            p.z = this._z;
+            return p;
+        };
+        Node3D.prototype.setPosition = function (p) {
+            this.x = p.x;
+            this.y = p.y;
+            this.z = p.z;
+            return this;
+        };
+        Node3D.prototype.getRotation = function (p) {
+            if (p === void 0) { p = new feng3d.Vector3(); }
+            p.x = this._rx;
+            p.y = this._ry;
+            p.z = this._rz;
+            return p;
+        };
+        Node3D.prototype.setRotation = function (p) {
+            this.rx = p.x;
+            this.ry = p.y;
+            this.rz = p.z;
+            return this;
+        };
+        Node3D.prototype.getScale = function (p) {
+            if (p === void 0) { p = new feng3d.Vector3(); }
+            p.x = this._sx;
+            p.y = this._sy;
+            p.z = this._sz;
+            return p;
+        };
         Object.defineProperty(Node3D.prototype, "orientation", {
             /**
              * 本地四元素旋转
@@ -26972,17 +27049,10 @@ var feng3d;
             set: function (value) {
                 var angles = value.toEulerAngles();
                 angles.scaleNumber(Math.RAD2DEG);
-                this.rotation = angles;
+                this.rx = angles.x;
+                this.ry = angles.y;
+                this.rz = angles.z;
             },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Node3D.prototype, "scale", {
-            /**
-             * 本地缩放
-             */
-            get: function () { return this._scale; },
-            set: function (v) { this._scale.copy(v); },
             enumerable: false,
             configurable: true
         });
@@ -27028,8 +27098,18 @@ var feng3d;
                 return this._matrix;
             },
             set: function (v) {
-                v.toTRS(this._position, this._rotation, this._scale);
+                var trs = v.toTRS();
+                this._x = trs[0].x;
+                this._y = trs[0].y;
+                this._z = trs[0].z;
+                this._rx = trs[1].x;
+                this._ry = trs[1].y;
+                this._rz = trs[1].z;
+                this._sx = trs[2].x;
+                this._sy = trs[2].y;
+                this._sz = trs[2].z;
                 this._matrix.fromArray(v.elements);
+                this._invalidateTransform();
                 this._matrixInvalid = false;
             },
             enumerable: false,
@@ -27041,7 +27121,7 @@ var feng3d;
              */
             get: function () {
                 if (this._rotationMatrixInvalid) {
-                    this._rotationMatrix.setRotation(this._rotation);
+                    this._rotationMatrix.setRotation(tempVector3_1.set(this._rx, this._ry, this._rz));
                     this._rotationMatrixInvalid = false;
                 }
                 return this._rotationMatrix;
@@ -27149,7 +27229,9 @@ var feng3d;
             this.rotate(feng3d.Vector3.Z_AXIS, angle);
         };
         Node3D.prototype.rotateTo = function (ax, ay, az) {
-            this._rotation.set(ax, ay, az);
+            this.rx = ax;
+            this.ry = ay;
+            this.rz = az;
         };
         /**
          * 绕指定轴旋转，不受位移与缩放影响
@@ -27160,9 +27242,9 @@ var feng3d;
          */
         Node3D.prototype.rotate = function (axis, angle, pivotPoint) {
             //转换位移
-            var positionMatrix = feng3d.Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
+            var positionMatrix = feng3d.Matrix4x4.fromPosition(this._x, this._y, this._z);
             positionMatrix.appendRotation(axis, angle, pivotPoint);
-            this.position = positionMatrix.getPosition();
+            var position = positionMatrix.getPosition();
             //转换旋转
             var rotationMatrix = feng3d.Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix.appendRotation(axis, angle, pivotPoint);
@@ -27181,7 +27263,14 @@ var feng3d;
             newrotation.x = toRound(newrotation.x, this.rx);
             newrotation.y = toRound(newrotation.y, this.ry);
             newrotation.z = toRound(newrotation.z, this.rz);
-            this.rotation = newrotation;
+            //
+            this.x = position.x;
+            this.y = position.y;
+            this.z = position.z;
+            this.rx = newrotation.x;
+            this.ry = newrotation.y;
+            this.rz = newrotation.z;
+            //
             this._invalidateSceneTransform();
         };
         /**
@@ -27193,7 +27282,18 @@ var feng3d;
         Node3D.prototype.lookAt = function (target, upAxis) {
             this._updateMatrix();
             this._matrix.lookAt(target, upAxis);
-            this._matrix.toTRS(this._position, this._rotation, this._scale);
+            var trs = this._matrix.toTRS();
+            //
+            this._x = trs[0].x;
+            this._y = trs[0].y;
+            this._z = trs[0].z;
+            this._rx = trs[1].x;
+            this._ry = trs[1].y;
+            this._rz = trs[1].z;
+            this._sx = trs[2].x;
+            this._sy = trs[2].y;
+            this._sz = trs[2].z;
+            //
             this._matrixInvalid = false;
         };
         Object.defineProperty(Node3D.prototype, "localToWorldMatrix", {
@@ -27589,19 +27689,14 @@ var feng3d;
             while (this.numChildren > 0)
                 this._children[0].dispose();
         };
-        Node3D.prototype._positionChanged = function (newValue, oldValue, object, property) {
-            if (!Math.equals(newValue, oldValue))
-                this._invalidateTransform();
+        Node3D.prototype._positionChanged = function () {
+            this._invalidateTransform();
         };
-        Node3D.prototype._rotationChanged = function (newValue, oldValue, object, property) {
-            if (!Math.equals(newValue, oldValue)) {
-                this._invalidateTransform();
-                this._rotationMatrixInvalid = true;
-            }
+        Node3D.prototype._rotationChanged = function () {
+            this._invalidateTransform();
         };
-        Node3D.prototype._scaleChanged = function (newValue, oldValue, object, property) {
-            if (!Math.equals(newValue, oldValue))
-                this._invalidateTransform();
+        Node3D.prototype._scaleChanged = function () {
+            this._invalidateTransform();
         };
         Node3D.prototype._setParent = function (value) {
             this._parent = value;
@@ -27641,6 +27736,7 @@ var feng3d;
             if (this._matrixInvalid)
                 return;
             this._matrixInvalid = true;
+            this._rotationMatrixInvalid = true;
             this.emit("transformChanged", this);
             this._invalidateSceneTransform();
         };
@@ -27660,7 +27756,7 @@ var feng3d;
             }
         };
         Node3D.prototype._updateMatrix = function () {
-            this._matrix.fromTRS(this._position, this._rotation, this._scale);
+            this._matrix.fromTRS(tempVector3_1.set(this._x, this._y, this._z), tempVector3_2.set(this._rx, this._ry, this._rz), tempVector3_3.set(this._sx, this._sy, this._sz));
         };
         Node3D.prototype._updateLocalToWorldMatrix = function () {
             this._localToWorldMatrix.copy(this.matrix);
@@ -27811,15 +27907,6 @@ var feng3d;
             feng3d.serialize
         ], Node3D.prototype, "sz", null);
         __decorate([
-            feng3d.oav({ tooltip: "本地位移" })
-        ], Node3D.prototype, "position", null);
-        __decorate([
-            feng3d.oav({ tooltip: "本地旋转", component: "OAVVector3", componentParam: { step: 0.001, stepScale: 30, stepDownup: 30 } })
-        ], Node3D.prototype, "rotation", null);
-        __decorate([
-            feng3d.oav({ tooltip: "本地缩放" })
-        ], Node3D.prototype, "scale", null);
-        __decorate([
             feng3d.serialize
         ], Node3D.prototype, "visible", null);
         __decorate([
@@ -27831,6 +27918,9 @@ var feng3d;
         return Node3D;
     }(feng3d.Component));
     feng3d.Node3D = Node3D;
+    var tempVector3_1 = new feng3d.Vector3();
+    var tempVector3_2 = new feng3d.Vector3();
+    var tempVector3_3 = new feng3d.Vector3();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27906,6 +27996,10 @@ var feng3d;
             data.bounds.forEach(function (b) {
                 bounds.union(b);
             });
+            if (bounds.isEmpty()) {
+                bounds.min.setZero();
+                bounds.max.setZero();
+            }
         };
         /**
          * 更新自身世界包围盒
@@ -28612,7 +28706,9 @@ var feng3d;
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
             var camera = feng3d.Camera.create("Main Camera");
             camera.entity.addComponent(feng3d.AudioListener);
-            camera.node3d.position = new feng3d.Vector3(0, 1, -10);
+            camera.node3d.x = 0;
+            camera.node3d.y = 1;
+            camera.node3d.z = -10;
             scene.node3d.addChild(camera.node3d);
             var directionalLight = feng3d.DirectionalLight.create("DirectionalLight");
             directionalLight.shadowType = feng3d.ShadowType.Hard_Shadows;
@@ -28967,9 +29063,9 @@ var feng3d;
                 position.z = leftTop.z + pivot.z * size.z;
             }
             //
-            this.node3d.position.x = anchorLeftTop.x + position.x;
-            this.node3d.position.y = anchorLeftTop.y + position.y;
-            this.node3d.position.z = anchorLeftTop.z + position.z;
+            this.node3d.x = anchorLeftTop.x + position.x;
+            this.node3d.y = anchorLeftTop.y + position.y;
+            this.node3d.z = anchorLeftTop.z + position.z;
             //
             this._layoutInvalid = false;
             feng3d.ticker.offframe(this._updateLayout, this);
@@ -34491,7 +34587,10 @@ var feng3d;
                 textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
             }
             var depth = viewCamera.lens.near * 2;
-            model.node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            var position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
+            model.node3d.x = position.x;
+            model.node3d.y = position.y;
+            model.node3d.z = position.z;
             var billboardComponent = model.getComponent(feng3d.BillboardComponent);
             billboardComponent.camera = viewCamera;
             if (this.debugShadowMap) {
@@ -34569,7 +34668,10 @@ var feng3d;
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
             // 
-            this.shadowCamera.node3d.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            var position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            this.shadowCamera.node3d.x = position.x;
+            this.shadowCamera.node3d.y = position.y;
+            this.shadowCamera.node3d.z = position.z;
             this.shadowCamera.node3d.lookAt(center, this.shadowCamera.node3d.matrix.getAxisY());
             //
             if (!this.orthographicLens) {
@@ -34900,7 +35002,7 @@ var feng3d;
                     this._targetNode.lookAt(this.lookAtPosition, this._upAxis);
                 }
                 else if (this._lookAtNode3D) {
-                    this._pos = this._lookAtNode3D.position;
+                    this._pos = this._lookAtNode3D.getPosition();
                     this._targetNode.lookAt(this._pos, this._upAxis);
                 }
             }
@@ -35130,7 +35232,7 @@ var feng3d;
                         this._targetNode.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
                     }
                     else {
-                        this._pos.copy(this._lookAtNode3D.position);
+                        this._lookAtNode3D.getPosition(this._pos);
                     }
                 }
                 else if (this._lookAtNode3D.scene) {
@@ -35139,7 +35241,7 @@ var feng3d;
                     this._pos.z = this._lookAtNode3D.worldPosition.z;
                 }
                 else {
-                    this._pos.copy(this._lookAtNode3D.position);
+                    this._lookAtNode3D.getPosition(this._pos);
                 }
             }
             else {
@@ -35960,7 +36062,9 @@ var feng3d;
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
             var mirrorCamera = feng3d.serialization.setValue(new feng3d.Entity(), { name: "waterMirrorCamera" }).addComponent(feng3d.Camera);
-            mirrorCamera.node3d.position = view;
+            mirrorCamera.node3d.x = view.x;
+            mirrorCamera.node3d.y = view.y;
+            mirrorCamera.node3d.z = view.z;
             mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
             mirrorCamera.lens = camera.lens.clone();
             var textureMatrix = new feng3d.Matrix4x4([
