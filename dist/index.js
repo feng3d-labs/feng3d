@@ -27880,31 +27880,40 @@ var feng3d;
             feng3d.serialize
         ], Node3D.prototype, "mouseEnabled", void 0);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "x", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "y", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "z", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "rx", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "ry", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "rz", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "sx", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "sy", null);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Node3D.prototype, "sz", null);
         __decorate([
             feng3d.serialize

@@ -108,6 +108,7 @@ namespace feng3d
          * X轴坐标。
          */
         @serialize
+        @oav()
         get x()
         {
             return this._x;
@@ -125,6 +126,7 @@ namespace feng3d
          * Y轴坐标。
          */
         @serialize
+        @oav()
         get y()
         {
             return this._y;
@@ -142,6 +144,7 @@ namespace feng3d
          * Z轴坐标。
          */
         @serialize
+        @oav()
         get z()
         {
             return this._z;
@@ -159,6 +162,7 @@ namespace feng3d
          * X轴旋转角度。
          */
         @serialize
+        @oav()
         get rx()
         {
             return this._rx;
@@ -176,6 +180,7 @@ namespace feng3d
          * Y轴旋转角度。
          */
         @serialize
+        @oav()
         get ry()
         {
             return this._ry;
@@ -194,6 +199,7 @@ namespace feng3d
          * Z轴旋转角度。
          */
         @serialize
+        @oav()
         get rz()
         {
             return this._rz;
@@ -210,6 +216,7 @@ namespace feng3d
          * X轴缩放。
          */
         @serialize
+        @oav()
         get sx()
         {
             return this._sx;
@@ -227,6 +234,7 @@ namespace feng3d
          * Y轴缩放。
          */
         @serialize
+        @oav()
         get sy()
         {
             return this._sy;
@@ -244,6 +252,7 @@ namespace feng3d
          * Z轴缩放。
          */
         @serialize
+        @oav()
         get sz()
         {
             return this._sz;
