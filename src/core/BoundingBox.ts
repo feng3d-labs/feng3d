@@ -94,6 +94,11 @@ namespace feng3d
             {
                 bounds.union(b);
             });
+            if (bounds.isEmpty())
+            {
+                bounds.min.setZero();
+                bounds.max.setZero();
+            }
         }
 
         /**

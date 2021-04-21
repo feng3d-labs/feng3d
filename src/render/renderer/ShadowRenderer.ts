@@ -120,7 +120,9 @@ namespace feng3d
             cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
 
             var shadowCamera = light.shadowCamera;
-            shadowCamera.node3d.position = light.node3d.position;
+            shadowCamera.node3d.x = light.node3d.x;
+            shadowCamera.node3d.y = light.node3d.y;
+            shadowCamera.node3d.z = light.node3d.z;
 
             var renderAtomic = this.renderAtomic;
 

@@ -223,7 +223,7 @@ namespace feng3d
                     }
                     else
                     {
-                        this._pos.copy(this._lookAtNode3D.position);
+                        this._lookAtNode3D.getPosition(this._pos);
                     }
                 }
                 else if (this._lookAtNode3D.scene)
@@ -234,7 +234,7 @@ namespace feng3d
                 }
                 else
                 {
-                    this._pos.copy(this._lookAtNode3D.position);
+                    this._lookAtNode3D.getPosition(this._pos);
                 }
             }
             else

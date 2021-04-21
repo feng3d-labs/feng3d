@@ -56,11 +56,6 @@ namespace feng3d
          */
         mouseRay3D: Ray3;
 
-        /**
-         * 上次渲染时用的摄像机
-         */
-        camera: Camera;
-
         init()
         {
             super.init();

@@ -58,7 +58,10 @@ namespace feng3d
             var center = worldBounds.getCenter() || new Vector3();
             var radius = worldBounds.getSize().length / 2;
             // 
-            this.shadowCamera.node3d.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            const position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+            this.shadowCamera.node3d.x = position.x;
+            this.shadowCamera.node3d.y = position.y;
+            this.shadowCamera.node3d.z = position.z;
             this.shadowCamera.node3d.lookAt(center, this.shadowCamera.node3d.matrix.getAxisY());
             //
             if (!this.orthographicLens)

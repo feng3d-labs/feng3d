@@ -222,9 +222,9 @@ namespace feng3d
             }
 
             //
-            this.node3d.position.x = anchorLeftTop.x + position.x;
-            this.node3d.position.y = anchorLeftTop.y + position.y;
-            this.node3d.position.z = anchorLeftTop.z + position.z;
+            this.node3d.x = anchorLeftTop.x + position.x;
+            this.node3d.y = anchorLeftTop.y + position.y;
+            this.node3d.z = anchorLeftTop.z + position.z;
             //
             this._layoutInvalid = false;
             ticker.offframe(this._updateLayout, this);

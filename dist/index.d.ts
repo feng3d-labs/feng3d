@@ -3966,6 +3966,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface IVector3 {
+        x: number;
+        y: number;
+        z: number;
+    }
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
      */
@@ -13188,66 +13193,65 @@ declare namespace feng3d {
          */
         get x(): number;
         set x(v: number);
+        private _x;
         /**
          * Y轴坐标。
          */
         get y(): number;
         set y(v: number);
+        private _y;
         /**
          * Z轴坐标。
          */
         get z(): number;
         set z(v: number);
+        private _z;
         /**
          * X轴旋转角度。
          */
         get rx(): number;
         set rx(v: number);
+        private _rx;
         /**
          * Y轴旋转角度。
          */
         get ry(): number;
         set ry(v: number);
+        private _ry;
         /**
          * Z轴旋转角度。
          */
         get rz(): number;
         set rz(v: number);
+        private _rz;
         /**
          * X轴缩放。
          */
         get sx(): number;
         set sx(v: number);
+        private _sx;
         /**
          * Y轴缩放。
          */
         get sy(): number;
         set sy(v: number);
+        private _sy;
         /**
          * Z轴缩放。
          */
         get sz(): number;
         set sz(v: number);
-        /**
-         * 本地位移
-         */
-        get position(): Vector3;
-        set position(v: Vector3);
-        /**
-         * 本地旋转
-         */
-        get rotation(): Vector3;
-        set rotation(v: Vector3);
+        private _sz;
+        getPosition<T extends IVector3 = Vector3>(p?: T): T;
+        setPosition<T extends IVector3>(p: T): this;
+        getRotation<T extends IVector3 = Vector3>(p?: T): T;
+        setRotation<T extends IVector3>(p: T): this;
+        getScale<T extends IVector3 = Vector3>(p?: T): T;
         /**
          * 本地四元素旋转
          */
         get orientation(): Quaternion;
         set orientation(value: Quaternion);
-        /**
-         * 本地缩放
-         */
-        get scale(): Vector3;
-        set scale(v: Vector3);
         /**
          * 本地变换矩阵
          */
@@ -13385,10 +13389,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         disposeWithChildren(): void;
-        private readonly _position;
-        private readonly _rotation;
         private readonly _orientation;
-        private readonly _scale;
         protected readonly _matrix: Matrix4x4;
         protected _matrixInvalid: boolean;
         protected readonly _rotationMatrix: Matrix4x4;
@@ -13744,8 +13745,18 @@ declare namespace feng3d {
         /**
          * 鼠标在3D视图中的位置
          */
-        mousePos: Vector2;
-        viewRect: Rectangle;
+        get mousePos(): Vector2;
+        private _mousePos;
+        /**
+         * 视窗区域
+         */
+        get viewRect(): Rectangle;
+        private _viewRect;
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        get mouseRay3D(): Ray3;
+        private _mouseRay3D;
         /**
          * 鼠标事件管理
          */
@@ -13797,11 +13808,6 @@ declare namespace feng3d {
          * @param   depth   深度
          */
         getScaleByDepth(depth: number, dir?: Vector2): number;
-        /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        mouseRay3D: Ray3;
-        private calcMouseRay3D;
         /**
          * 获取屏幕区域内所有实体
          * @param start 起点
@@ -14583,10 +14589,6 @@ declare namespace feng3d {
          * 鼠标射线，在渲染时被设置
          */
         mouseRay3D: Ray3;
-        /**
-         * 上次渲染时用的摄像机
-         */
-        camera: Camera;
         init(): void;
         update(interval?: number): void;
         /**
