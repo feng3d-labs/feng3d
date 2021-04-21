@@ -307,6 +307,8 @@ namespace feng3d
          *
          * @member {number}
          */
+        @oav()
+        @serialize
         get x(): number
         {
             return this.transform.x;
@@ -323,6 +325,8 @@ namespace feng3d
          *
          * @member {number}
          */
+        @oav()
+        @serialize
         get y(): number
         {
             return this.transform.y;
@@ -361,6 +365,7 @@ namespace feng3d
          * The default scale is (1, 1).
          */
         @oav()
+        @serialize
         get scaleX()
         {
             return this.transform.scaleX;
@@ -372,6 +377,7 @@ namespace feng3d
         }
 
         @oav()
+        @serialize
         get scaleY()
         {
             return this.transform.scaleY;
@@ -389,6 +395,7 @@ namespace feng3d
          * By default, the pivot is the origin (0, 0).
          */
         @oav()
+        @serialize
         get pivotX()
         {
             return this.transform.pivotX;
@@ -399,6 +406,8 @@ namespace feng3d
             this.transform.pivotX = value;
         }
 
+        @oav()
+        @serialize
         get pivotY()
         {
             return this.transform.pivotY;
@@ -413,6 +422,7 @@ namespace feng3d
          * The skew factor for the object in radians.
          */
         @oav()
+        @serialize
         get skewX()
         {
             return this.transform.skewX;
@@ -424,6 +434,7 @@ namespace feng3d
         }
 
         @oav()
+        @serialize
         get skewY()
         {
             return this.transform.skewY;
@@ -439,6 +450,7 @@ namespace feng3d
          * 'rotation' and 'angle' have the same effect on a display object; rotation is in radians, angle is in degrees.
          */
         @oav()
+        @serialize
         get rotation(): number
         {
             return this.transform.rotation;

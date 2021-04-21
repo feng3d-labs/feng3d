@@ -14,7 +14,7 @@ namespace feng3d
     @RegisterComponent({ single: true })
     export class Camera extends Component3D
     {
-        @AddEntityMenu("Camera")
+        @AddEntityMenu("Node3D/Camera")
         static create(name = "Camera")
         {
             var entity = new Entity();

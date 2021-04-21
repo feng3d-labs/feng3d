@@ -30340,22 +30340,40 @@ var feng3d;
             feng3d.oav()
         ], Node2D.prototype, "visible", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize
+        ], Node2D.prototype, "x", null);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Node2D.prototype, "y", null);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
         ], Node2D.prototype, "scaleX", null);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize
         ], Node2D.prototype, "scaleY", null);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize
         ], Node2D.prototype, "pivotX", null);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize
+        ], Node2D.prototype, "pivotY", null);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
         ], Node2D.prototype, "skewX", null);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize
         ], Node2D.prototype, "skewY", null);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize
         ], Node2D.prototype, "rotation", null);
         __decorate([
             feng3d.oav()
@@ -33274,7 +33292,7 @@ var feng3d;
             feng3d.oav({ component: "OAVObjectView" })
         ], Camera.prototype, "lens", null);
         __decorate([
-            feng3d.AddEntityMenu("Camera")
+            feng3d.AddEntityMenu("Node3D/Camera")
         ], Camera, "create", null);
         Camera = Camera_1 = __decorate([
             feng3d.AddComponentMenu("Rendering/Camera"),
