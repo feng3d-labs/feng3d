@@ -1,5 +1,10 @@
-/debug
-**/node_modules
+node_modules
+editor/package-lock.json
 /package-lock.json
-/api
-*.tsbuildinfo
+/yarn.lock
+/out
+/lerna-debug.log
+**/dist
+
+**/index.d.ts
+/docs
