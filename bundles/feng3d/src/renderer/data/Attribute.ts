@@ -1,5 +1,5 @@
 import { serialize } from "@feng3d/serialization";
-import { watch } from "../../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { GLArrayType } from "../gl/enums/GLArrayType";
 import type { GL } from "../gl/GL";
 

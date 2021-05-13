@@ -3,7 +3,7 @@ import { RegisterComponent } from "../component/Component";
 import { AddComponentMenu } from "../Menu";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 
 declare module "../component/Component"
 {

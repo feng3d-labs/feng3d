@@ -6,7 +6,7 @@ import { raycaster } from "../pick/Raycaster";
 import { Lazy, lazy } from "@feng3d/polyfill";
 import { Scene } from "../scene/Scene";
 import { windowEventProxy } from "../shortcut/WindowEventProxy";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { Node3D } from "./Node3D";
 import { View } from "./View";
 

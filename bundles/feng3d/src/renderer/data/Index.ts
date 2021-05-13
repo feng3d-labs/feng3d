@@ -1,4 +1,4 @@
-import { watch } from "../../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { GLArrayType } from "../gl/enums/GLArrayType";
 import { GL } from "../gl/GL";
 

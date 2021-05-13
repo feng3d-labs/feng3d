@@ -12,7 +12,7 @@ import { Texture2D } from "../textures/Texture2D";
 import { TextureCube } from "../textures/TextureCube";
 import { oav } from "@feng3d/objectview";
 import { serialization, serialize } from "@feng3d/serialization";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 
 export interface UniformsTypes { }
 export type ShaderNames = keyof UniformsTypes;

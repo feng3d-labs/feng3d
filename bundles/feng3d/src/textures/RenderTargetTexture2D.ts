@@ -1,7 +1,7 @@
 import { TextureFormat } from "../renderer/gl/enums/TextureFormat";
 import { TextureMagFilter } from "../renderer/gl/enums/TextureMagFilter";
 import { TextureMinFilter } from "../renderer/gl/enums/TextureMinFilter";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { Texture2D } from "./Texture2D";
 
 /**

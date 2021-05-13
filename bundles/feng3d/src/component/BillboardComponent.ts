@@ -1,7 +1,7 @@
 import { Camera } from "../cameras/Camera";
 import { AddComponentMenu } from "../Menu";
 import { oav } from "@feng3d/objectview";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { RegisterComponent } from "./Component";
 import { Component3D } from "./Component3D";
 

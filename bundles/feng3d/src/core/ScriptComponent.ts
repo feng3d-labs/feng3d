@@ -5,7 +5,7 @@ import { AddComponentMenu } from "../Menu";
 import { classUtils } from "@feng3d/polyfill";
 import { oav } from "@feng3d/objectview";
 import { serialization, serialize } from "@feng3d/serialization";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { RunEnvironment } from "./RunEnvironment";
 import { Script } from "./Script";
 

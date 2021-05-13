@@ -1,9 +1,9 @@
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
+import { watch } from "@feng3d/watcher";
 import { Behaviour } from "../component/Behaviour";
 import { getComponentType, RegisterComponent } from "../component/Component";
 import { AddComponentMenu } from "../Menu";
-import { watch } from "../utils/Watcher";
 import { AnimationClip } from "./AnimationClip";
 import { PropertyClip, PropertyClipPathItemType } from "./PropertyClip";
 

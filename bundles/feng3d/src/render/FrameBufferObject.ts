@@ -4,7 +4,7 @@ import { GL } from "../renderer/gl/GL";
 import { GLCache } from "../renderer/gl/GLCache";
 import { RenderBuffer } from "../renderer/RenderBuffer";
 import { RenderTargetTexture2D } from "../textures/RenderTargetTexture2D";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 
 /**
  * 帧缓冲对象

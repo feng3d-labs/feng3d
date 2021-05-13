@@ -3,7 +3,7 @@ import { RegisterComponent } from "../component/Component";
 import { Entity } from "../core/Entity";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { Light } from "./Light";
 import { LightType } from "./LightType";
 

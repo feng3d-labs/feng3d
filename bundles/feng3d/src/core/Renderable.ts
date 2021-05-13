@@ -12,7 +12,7 @@ import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { Node3D } from "./Node3D";
 import { RayCastable } from "./RayCastable";
 

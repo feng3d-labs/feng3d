@@ -11,7 +11,7 @@ import { TextureWrap } from "../../renderer/gl/enums/TextureWrap";
 import { ImageUtil } from "../../utils/ImageUtil";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
-import { watch } from "../../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 
 export enum ImageDatas
 {

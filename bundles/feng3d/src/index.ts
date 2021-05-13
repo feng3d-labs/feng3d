@@ -20,6 +20,7 @@ export { Serialization, serialization, serialize } from '@feng3d/serialization';
 export type { SerializationTempInfo } from '@feng3d/serialization';
 export { task } from '@feng3d/task';
 export type { TaskFunction } from '@feng3d/task';
+export { watch, Watcher, watcher } from '@feng3d/watcher';
 export { Animation } from './animation/Animation';
 export { AnimationClip } from './animation/AnimationClip';
 export { PropertyClip } from './animation/PropertyClip';
@@ -164,7 +165,6 @@ export { RegExps } from './utils/RegExps';
 export { Stats } from './utils/Stats';
 export { Ticker } from './utils/Ticker';
 export { Uuid } from './utils/Uuid';
-export { watch, Watcher, watcher } from './utils/Watcher';
 export { Water } from './water/Water';
 export { WaterUniforms } from './water/WaterMaterial';
 

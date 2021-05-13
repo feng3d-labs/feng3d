@@ -1,4 +1,4 @@
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { GL } from "./gl/GL";
 
 export class RenderBuffer

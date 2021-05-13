@@ -3,7 +3,7 @@ import { MeshRenderer } from "../core/MeshRenderer";
 import { Geometry } from "../geometry/Geometry";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 
 declare module "../geometry/Geometry"
 {

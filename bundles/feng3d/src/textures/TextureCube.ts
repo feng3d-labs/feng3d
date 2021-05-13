@@ -6,7 +6,7 @@ import { ImageDatas, TextureInfo } from "../render/data/TextureInfo";
 import { TextureType } from "../renderer/gl/enums/TextureType";
 import { oav } from "@feng3d/objectview";
 import { serialization, serialize } from "@feng3d/serialization";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { Texture2D } from "./Texture2D";
 
 export interface TextureCubeEventMap

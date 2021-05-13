@@ -9,7 +9,7 @@ import { Scene } from "../scene/Scene";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
 import { ticker } from "../utils/Ticker";
-import { watcher } from "../utils/Watcher";
+import { watcher } from "@feng3d/watcher";
 import { Node3D } from "./Node3D";
 
 declare module "../core/Entity"

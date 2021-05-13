@@ -2,7 +2,7 @@ import { Matrix4x4, Ray3, Vector3, Vector4 } from "@feng3d/math";
 import { Feng3dObject } from "../../core/Feng3dObject";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";
-import { watch } from "../../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { Projection } from "../Projection";
 
 /**

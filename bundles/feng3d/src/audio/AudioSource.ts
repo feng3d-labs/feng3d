@@ -4,7 +4,7 @@ import { serialize } from "@feng3d/serialization";
 import { Behaviour } from "../component/Behaviour";
 import { RegisterComponent } from "../component/Component";
 import { AddComponentMenu } from "../Menu";
-import { watch } from "../utils/Watcher";
+import { watch } from "@feng3d/watcher";
 import { audioCtx, globalGain } from "./AudioListener";
 
 /**
