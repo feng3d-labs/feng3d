@@ -1,11 +1,7 @@
 import { oav } from "../../utils/ObjectView";
 import { serialize } from "../../utils/Serialization";
-import { Matrix3x3 } from "./Matrix3x3";
-import { Matrix4x4 } from "./Matrix4x4";
-import { Quaternion } from "./Quaternion";
 import { Vector } from "./Vector";
 import { Vector2 } from "./Vector2";
-import { Vector4 } from "./Vector4";
 
 export interface IVector3
 {
@@ -173,17 +169,6 @@ export class Vector3 implements Vector
     toVector2(vector = new Vector2())
     {
         return vector.set(this.x, this.y);
-    }
-
-    /**
-     * 转换为Vector4
-     */
-    toVector4(vector4 = new Vector4())
-    {
-        vector4.x = this.x;
-        vector4.y = this.y;
-        vector4.z = this.z;
-        return vector4;
     }
 
     /**
@@ -840,41 +825,6 @@ export class Vector3 implements Vector
     }
 
     /**
-     * 应用矩阵
-     * @param mat 矩阵
-     */
-    applyMatrix4x4(mat: Matrix4x4)
-    {
-        mat.transformPoint3(this, this);
-        return this;
-    }
-
-    /**
-     * 应用四元素
-     * @param q 四元素
-     */
-    applyQuaternion(q: Quaternion)
-    {
-        var x = this.x, y = this.y, z = this.z;
-        var qx = q.x, qy = q.y, qz = q.z, qw = q.w;
-
-        // calculate quat * vector
-
-        var ix = qw * x + qy * z - qz * y;
-        var iy = qw * y + qz * x - qx * z;
-        var iz = qw * z + qx * y - qy * x;
-        var iw = - qx * x - qy * y - qz * z;
-
-        // calculate result * inverse quat
-
-        this.x = ix * qw + iw * - qx + iy * - qz - iz * - qy;
-        this.y = iy * qw + iw * - qy + iz * - qx - ix * - qz;
-        this.z = iz * qw + iw * - qz + ix * - qy - iy * - qx;
-
-        return this;
-    }
-
-    /**
      * 反射
      * @param normal 
      */
@@ -934,17 +884,6 @@ export class Vector3 implements Vector
     isParallel(v: Vector3, precision = Math.PRECISION)
     {
         return Math.equals(this.crossTo(v).lengthSquared, 0, precision);
-    }
-
-    /**
-     * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
-     * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
-     */
-    crossmat()
-    {
-        return new Matrix3x3([0, -this.z, this.y,
-            this.z, 0, -this.x,
-            -this.y, this.x, 0]);
     }
 
     /**

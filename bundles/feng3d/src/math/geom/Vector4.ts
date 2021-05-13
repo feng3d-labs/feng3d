@@ -372,3 +372,26 @@ export class Vector4
         return "<" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ">";
     }
 }
+
+declare module './Vector3'
+{
+    interface Vector3
+    {
+        /**
+         * 转换为Vector4
+         */
+        toVector4(vector4?: Vector4): Vector4;
+    }
+}
+
+/**
+ * 转换为Vector4
+ */
+Vector3.prototype.toVector4 = function (vector4 = new Vector4())
+{
+    vector4.x = this.x;
+    vector4.y = this.y;
+    vector4.z = this.z;
+
+    return vector4;
+};

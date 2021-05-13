@@ -1381,3 +1381,90 @@ Matrix3x3.prototype.toMatrix4x4 = function toMatrix4x4(out = new Matrix4x4())
 
     return out;
 };
+
+declare module './Vector3'
+{
+    interface Vector3
+    {
+        /**
+         * 应用矩阵
+         * @param mat 矩阵
+         */
+        applyMatrix4x4(mat: Matrix4x4): Vector3;
+    }
+}
+
+Vector3.prototype.applyMatrix4x4 = function applyMatrix4x4(this: Vector3, mat: Matrix4x4)
+{
+    mat.transformPoint3(this, this);
+
+    return this;
+};
+
+declare module './Matrix3x3'
+{
+    interface Matrix3x3
+    {
+        /**
+         * 转换为4x4矩阵
+         *
+         * @param out 4x4矩阵
+         */
+        toMatrix4x4(out?: Matrix4x4): Matrix4x4
+
+        formMatrix4x4(matrix4x4: Matrix4x4): Matrix3x3;
+    }
+}
+
+Matrix3x3.prototype.formMatrix4x4 = function formMatrix4x4(this: Matrix3x3, matrix4x4: Matrix4x4)
+{
+    const arr4 = matrix4x4.elements;
+    const arr3 = this.elements;
+
+    arr3[0] = arr4[0];
+    arr3[1] = arr4[1];
+    arr3[2] = arr4[2];
+
+    arr3[3] = arr4[4];
+    arr3[4] = arr4[5];
+    arr3[5] = arr4[6];
+
+    arr3[6] = arr4[8];
+    arr3[7] = arr4[9];
+    arr3[8] = arr4[10];
+
+    return this;
+};
+
+/**
+ * 转换为4x4矩阵
+ *
+ * @param out 4x4矩阵
+ */
+Matrix3x3.prototype.toMatrix4x4 = function toMatrix4x4(this: Matrix3x3, out = new Matrix4x4())
+{
+    const outdata = out.elements;
+    const indata = this.elements;
+
+    outdata[0] = indata[0];
+    outdata[1] = indata[1];
+    outdata[2] = 0;
+    outdata[3] = 0;
+
+    outdata[4] = indata[3];
+    outdata[5] = indata[4];
+    outdata[6] = 0;
+    outdata[7] = 0;
+
+    outdata[8] = 0;
+    outdata[9] = 0;
+    outdata[10] = 1;
+    outdata[11] = 0;
+
+    outdata[12] = indata[6];
+    outdata[13] = indata[7];
+    outdata[14] = 0;
+    outdata[15] = 1;
+
+    return out;
+};

@@ -505,3 +505,22 @@ export class Matrix3x3
         return array;
     }
 }
+
+declare module './Vector3'
+{
+    interface Vector3
+    {
+        /**
+         * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
+         * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
+         */
+        crossmat(): Matrix3x3;
+    }
+}
+
+Vector3.prototype.crossmat = function crossmat(this: Vector3)
+{
+    return new Matrix3x3([0, -this.z, this.y,
+        this.z, 0, -this.x,
+        -this.y, this.x, 0]);
+};

@@ -13,7 +13,7 @@ import { Scene } from "../scene/Scene";
 import { oav } from "../utils/ObjectView";
 import { serialize } from "../utils/Serialization";
 import { BoundingBox } from "./BoundingBox";
-import { Entity } from "./Entity";
+import type { Entity } from "./Entity";
 import { Renderable } from "./Renderable";
 
 declare module "../component/Component3D"
@@ -83,11 +83,6 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     __class__: "feng3d.Node3D";
 
     assetType = AssetType.node3d;
-
-    create()
-    {
-        new Entity().addComponent(Node3D);
-    }
 
     /**
      * 预设资源编号
