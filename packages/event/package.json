@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/event",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "",
   "standalone": true,
   "types": "dist/index.d.ts",
@@ -16,5 +16,5 @@
     "dist/",
     "*.d.ts"
   ],
-  "gitHead": "23b321f970cd6aa560b89680f7940a33bd8cae3f"
+  "gitHead": "acbb4394b3829f71728b323edb37ec478d785b31"
 }
