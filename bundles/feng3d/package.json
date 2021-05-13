@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "",
   "standalone": true,
   "types": "dist/index.d.ts",
@@ -17,17 +17,17 @@
     "*.d.ts"
   ],
   "dependencies": {
-    "@feng3d/filesystem": "0.3.1",
-    "@feng3d/math": "0.3.1",
-    "@feng3d/watcher": "0.3.1",
-    "@feng3d/serialization": "0.3.1",
-    "@feng3d/objectview": "0.3.1",
-    "@feng3d/renderer": "0.3.1",
-    "@feng3d/polyfill": "0.3.1",
-    "@feng3d/shortcut": "0.3.1",
-    "@feng3d/task": "0.3.1",
-    "@feng3d/core": "0.3.1",
-    "@feng3d/event": "0.3.1"
+    "@feng3d/core": "0.3.2",
+    "@feng3d/event": "0.3.2",
+    "@feng3d/filesystem": "0.3.2",
+    "@feng3d/math": "0.3.2",
+    "@feng3d/objectview": "0.3.2",
+    "@feng3d/polyfill": "0.3.2",
+    "@feng3d/renderer": "0.3.2",
+    "@feng3d/serialization": "0.3.2",
+    "@feng3d/shortcut": "0.3.2",
+    "@feng3d/task": "0.3.2",
+    "@feng3d/watcher": "0.3.2"
   },
   "gitHead": "acbb4394b3829f71728b323edb37ec478d785b31"
 }

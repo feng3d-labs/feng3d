@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/task",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "串联或并联一组异步函数为一个异步函数",
   "standalone": true,
   "types": "dist/index.d.ts",
