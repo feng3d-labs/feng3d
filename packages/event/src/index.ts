@@ -5,4 +5,3 @@ export { globalEmitter } from './GlobalEmitter';
 export type { GlobalEvents } from './GlobalEmitter';
 export { objectevent } from './ObjectEvent';
 export type { ObjectEventType } from './ObjectEvent';
-

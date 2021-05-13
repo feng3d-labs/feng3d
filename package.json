@@ -25,6 +25,11 @@
     "type": "git",
     "url": "https://gitee.com/feng3d/workspace.git"
   },
+  "workspaces": [
+    "packages/*",
+    "bundles/*"
+  ],
+  "private": true,
   "author": "feng",
   "devDependencies": {
     "@types/qunit": "^2.11.1",
