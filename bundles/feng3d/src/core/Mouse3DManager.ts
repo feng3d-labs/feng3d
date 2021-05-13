@@ -5,7 +5,7 @@ import { Rectangle } from "@feng3d/math";
 import { raycaster } from "../pick/Raycaster";
 import { Lazy, lazy } from "@feng3d/polyfill";
 import { Scene } from "../scene/Scene";
-import { windowEventProxy } from "../shortcut/WindowEventProxy";
+import { windowEventProxy } from "@feng3d/shortcut";
 import { watch } from "@feng3d/watcher";
 import { Node3D } from "./Node3D";
 import { View } from "./View";

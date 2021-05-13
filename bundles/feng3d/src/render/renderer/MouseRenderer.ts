@@ -1,10 +1,10 @@
 import { EventEmitter } from "@feng3d/event";
+import { Rectangle } from "@feng3d/math";
+import { windowEventProxy } from "@feng3d/shortcut";
 import { Entity, EntityEventMap } from "../../core/Entity";
 import { Renderable } from "../../core/Renderable";
-import { Rectangle } from "@feng3d/math";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { GL } from "../../renderer/gl/GL";
-import { windowEventProxy } from "../../shortcut/WindowEventProxy";
 
 /**
  * 鼠标拾取渲染器
