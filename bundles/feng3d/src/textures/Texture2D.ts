@@ -1,11 +1,11 @@
+import { loader } from "@feng3d/filesystem";
+import { serialization, serialize } from "@feng3d/serialization";
 import { AssetType } from "../assets/AssetType";
 import { AssetData } from "../core/AssetData";
 import { HideFlags } from "../core/HideFlags";
-import { loader } from "../filesystem/base/Loader";
 import { ImageDatas, TextureInfo } from "../render/data/TextureInfo";
 import { TextureFormat } from "../renderer/gl/enums/TextureFormat";
 import { TextureType } from "../renderer/gl/enums/TextureType";
-import { serialization, serialize } from "@feng3d/serialization";
 
 export interface Texture2DEventMap
 {

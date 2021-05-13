@@ -1,4 +1,4 @@
-import { task } from "../utils/Task";
+import { task } from "@feng3d/task";
 import { FSType } from "./FSType";
 import { basefs } from "./HttpFS";
 import { IReadFS } from "./IReadFS";

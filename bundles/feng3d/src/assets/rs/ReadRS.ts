@@ -1,11 +1,9 @@
-import { AssetData } from "../../core/AssetData";
-import { pathUtils } from "../../filesystem/PathUtils";
-import { fs, ReadFS } from "../../filesystem/ReadFS";
-import { classUtils, __class__ } from "@feng3d/polyfill";
-import { Constructor, gPartial } from "@feng3d/polyfill";
-import { path } from "../../utils/Path";
+import { fs, pathUtils, ReadFS } from "@feng3d/filesystem";
+import { classUtils, Constructor, gPartial, __class__ } from "@feng3d/polyfill";
 import { serialization } from "@feng3d/serialization";
-import { task } from "../../utils/Task";
+import { task } from "@feng3d/task";
+import { AssetData } from "../../core/AssetData";
+import { path } from "../../utils/Path";
 import { FileAsset } from "../FileAsset";
 import { FolderAsset } from "../FolderAsset";
 

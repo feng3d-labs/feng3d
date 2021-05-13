@@ -1,7 +1,7 @@
 import { AssetType } from "../assets/AssetType";
 import { AssetData } from "../core/AssetData";
 import { HideFlags } from "../core/HideFlags";
-import { fs } from "../filesystem/ReadFS";
+import { fs } from "@feng3d/filesystem";
 import { ImageDatas, TextureInfo } from "../render/data/TextureInfo";
 import { TextureType } from "../renderer/gl/enums/TextureType";
 import { oav } from "@feng3d/objectview";

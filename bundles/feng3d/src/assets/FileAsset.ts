@@ -1,5 +1,5 @@
 import { event } from "@feng3d/event";
-import { pathUtils } from "../filesystem/PathUtils";
+import { pathUtils } from "@feng3d/filesystem";
 import { serialize } from "@feng3d/serialization";
 import { ticker } from "../utils/Ticker";
 import { AssetMeta } from "./AssetMeta";
