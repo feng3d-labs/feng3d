@@ -1,4 +1,4 @@
-import { Event, EventEmitter } from "./EventEmitter";
+import { Event, EventEmitter } from './EventEmitter';
 
 /**
  * 可针对（除undefined、null、Symbol外）的任意对象（0, 1, true, false, "1", {}）派发事件
@@ -13,6 +13,7 @@ export class FEvent
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         const names = EventEmitter.getEventEmitter(obj)?.eventNames() || [];
+
         return names;
     }
 
@@ -23,6 +24,7 @@ export class FEvent
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         const count = EventEmitter.getEventEmitter(obj)?.listenerCount(type) || 0;
+
         return count;
     }
 
@@ -42,16 +44,17 @@ export class FEvent
 
     /**
      * 派发事件
-     * 
+     *
      * 当事件重复流向一个对象时将不会被处理。
-     * 
+     *
      * @param e                 事件对象。
      * @returns                 返回事件是否被该对象处理。
      */
     emitEvent(obj: Object, e: Event<any>)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
-        var result = EventEmitter.getOrCreateEventEmitter(obj).emitEvent(e) || false;
+        const result = EventEmitter.getOrCreateEventEmitter(obj).emitEvent(e) || false;
+
         return result;
     }
 
@@ -64,13 +67,14 @@ export class FEvent
     emit(obj: Object, type: string, data?: any, bubbles = false)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
-        var result = EventEmitter.getOrCreateEventEmitter(obj).emit(type, data, bubbles) || false;
+        const result = EventEmitter.getOrCreateEventEmitter(obj).emit(type, data, bubbles) || false;
+
         return result;
     }
 
     /**
-     * 检查 被监听对象 是否为特定事件类型注册了任何监听器. 
-     * 
+     * 检查 被监听对象 是否为特定事件类型注册了任何监听器.
+     *
      * @param obj                       被监听对象。
      * @param type		                事件的类型。
      * @return 			                如果指定类型的监听器已注册，则值为 true；否则，值为 false。
@@ -78,13 +82,14 @@ export class FEvent
     has(obj: Object, type: string)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
-        var result = EventEmitter.getEventEmitter(obj)?.has(type) || false;
+        const result = EventEmitter.getEventEmitter(obj)?.has(type) || false;
+
         return result;
     }
 
     /**
      * 为监听对象新增指定类型的事件监听。
-     * 
+     *
      * @param obj                       被监听对象。
      * @param type						事件的类型。
      * @param listener					处理事件的监听器函数。
@@ -101,7 +106,7 @@ export class FEvent
 
     /**
      * 移除监听
-     * 
+     *
      * @param obj                       被监听对象。
      * @param type						事件的类型。可选。该值为空时所有被监听对象上的监听均将被移除。
      * @param listener					要删除的监听器对象。可选。该值为空时所有指定类型的监听均将被移除。
@@ -126,7 +131,7 @@ export class FEvent
 
     /**
      * 监听对象的任意事件，该对象的任意事件都将触发该监听器的调用。
-     * 
+     *
      * @param obj                       被监听对象。
      * @param listener                  处理事件的监听器函数。
      * @param thisObject                监听器的上下文。可选。
@@ -142,7 +147,7 @@ export class FEvent
 
     /**
      * 移除监听对象的任意事件。
-     * 
+     *
      * @param obj                       被监听对象。
      * @param listener                  处理事件的监听器函数。
      * @param thisObject                监听器的上下文。可选。
@@ -156,14 +161,14 @@ export class FEvent
 
     /**
      * 初始化事件对象
-     * 
+     *
      * @param type                      事件的类型。类型区分大小写。
      * @param data                      事件携带的自定义数据。
      * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
      */
     makeEvent<T>(type: string, data: T, bubbles = false): Event<T>
     {
-        return { type: type, data: data, bubbles: bubbles };
+        return { type, data, bubbles };
     }
 }
 

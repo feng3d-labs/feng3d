@@ -1,4 +1,4 @@
-import { EventEmitter } from "./EventEmitter";
+import { EventEmitter } from './EventEmitter';
 
 /**
  * 全局事件
@@ -13,25 +13,25 @@ export interface GlobalEvents
     /**
      * shader资源发生变化
      */
-    "asset.shaderChanged"
+    'asset.shaderChanged'
     /**
      * 脚本发生变化
      */
-    "asset.scriptChanged"
+    'asset.scriptChanged'
     /**
      * 图片资源发生变化
      */
-    "asset.imageAssetChanged": { url: string }
+    'asset.imageAssetChanged': { url: string }
     /**
      * 解析出资源
      */
-    "asset.parsed"
+    'asset.parsed'
     /**
      * 删除文件
      */
-    "fs.delete": string;
+    'fs.delete': string;
     /**
      * 写文件
      */
-    "fs.write": string;
+    'fs.write': string;
 }

@@ -173,9 +173,9 @@
 ```
 #### 效果如下
 
-![](docs/event_tooltip1.png)
+![](readme/event_tooltip1.png)
 
-![](docs/event_tooltip2.png)
+![](readme/event_tooltip2.png)
 
 ## feng3d.EventDispatcher
 EventDispatcher 功能的实现几乎由 FEvent 实现，但提供了一个事件派发器的基类。
@@ -290,11 +290,11 @@ https://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/events
 
 ## 比较
 
-|引擎事件系统     |  基础API   | 事件派发器基类  | 监听回调上下文 | 优先级 | 批量移除监听 | 事件冒泡 | 事件名称提示
-|:--------------:|:----------:|:-------------:|:-------------:|:------:|:-----------:|:-------:|:-------:|
-|feng3d          |     √      |       √       |       √       |   √    |       √     |    √    |    √    |
-|three.js        |     √      |       √       |       ×       |   ×    |       √     |    ×    |    ×    |
-|playcanvas      |     √      |       √       |       √       |   ×    |       √     |    ×    |    ×    |
-|babylonjs       |     √      |       √       |       √       |   √    |       √     |    √    |    ×    |
-|pixi.js         |     √      |       √       |       √       |   ×    |       √     |    ×    |    ×    |
-|adobe flash     |     √      |       √       |       √       |   √    |       ×     |    √    |    √    |
+| 引擎事件系统 | 基础API | 事件派发器基类 | 监听回调上下文 | 优先级 | 批量移除监听 | 事件冒泡 | 事件名称提示 |
+| :----------: | :-----: | :------------: | :------------: | :----: | :----------: | :------: | :----------: |
+|    feng3d    |    √    |       √        |       √        |   √    |      √       |    √     |      √       |
+|   three.js   |    √    |       √        |       ×        |   ×    |      √       |    ×     |      ×       |
+|  playcanvas  |    √    |       √        |       √        |   ×    |      √       |    ×     |      ×       |
+|  babylonjs   |    √    |       √        |       √        |   √    |      √       |    √     |      ×       |
+|   pixi.js    |    √    |       √        |       √        |   ×    |      √       |    ×     |      ×       |
+| adobe flash  |    √    |       √        |       √        |   √    |      ×       |    √     |      √       |
