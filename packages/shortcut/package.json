@@ -17,7 +17,7 @@
     "*.d.ts"
   ],
   "dependencies": {
-    "@feng3d/event": "0.3.3"
+    "@feng3d/event": "0.3.4"
   },
   "gitHead": "7a968379054159e52658180408513eeb95004348"
 }
