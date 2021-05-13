@@ -5,5 +5,16 @@
     // 定义控制块的左括号是否放置在新的一行。
     "typescript.format.placeOpenBraceOnNewLineForControlBlocks": true,
     "javascript.format.placeOpenBraceOnNewLineForFunctions": true,
-    "javascript.format.placeOpenBraceOnNewLineForControlBlocks": true
+    "javascript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "search.exclude": {
+        "**/node_modules": true,
+        "editor/resource/template": true,
+        "feng3d.com/feng3d": true,
+        "feng3d.com/examples": true,
+        "feng3d.com/editor": true,
+        "**/bower_components": true
+    },
+    "git.ignoreLimitWarning": true,
+    "liveServer.settings.port": 5503,
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

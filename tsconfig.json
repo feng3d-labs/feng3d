@@ -1,332 +1,39 @@
 {
     "compilerOptions": {
-        "target": "ES5",
-        "noImplicitAny": false,
+        "target": "ES2015",
+        "allowJs": false,
         "sourceMap": true,
-        "declarationMap": true,
-        "declaration": true,
-        "composite": true,
+        "removeComments": false,
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
         "experimentalDecorators": true,
-        "lib": [
-            "ES2017",
-            "DOM"
-        ],
-        "outFile": "./dist/index.js",
+        "baseUrl": "./",
+        "paths": {
+            "@feng3d/*": [
+                "packages/*/src"
+            ],
+            "feng3d": [
+                "bundles/feng3d/src"
+            ]
+        },
+        "outDir": "./out",
+        "declaration": true
     },
-    "files": [
-        // 事件模块
-        "src/event/FEvent.ts",
-        "src/event/EventEmitter.ts",
-        "src/event/ObjectEvent.ts",
-        //
-        "src/utils/Task.ts",
-        //
-        "src/utils/Watcher.ts",
-        // Polyfill
-        "src/polyfill/Types.ts",
-        "src/polyfill/Object.ts",
-        "src/polyfill/ClassUtils.ts",
-        "src/polyfill/DataTransform.ts",
-        "src/polyfill/Map.ts",
-        "src/polyfill/Array.ts",
-        "src/polyfill/Math.ts",
-        //
-        "src/utils/Serialization.ts",
-        //
-        "src/utils/ObjectView.ts",
-        // 数据结构
-        "src/algorithms/utils/Comparator.ts",
-        "src/algorithms/LinkedList.ts",
-        "src/algorithms/DoublyLinkedList.ts",
-        "src/algorithms/Queue.ts",
-        "src/algorithms/Stack.ts",
-        "src/algorithms/Heap.ts",
-        "src/algorithms/MaxHeap.ts",
-        "src/algorithms/MinHeap.ts",
-        "src/algorithms/HashTable.ts",
-        "src/algorithms/PriorityQueue.ts",
-        "src/algorithms/PriorityQueue1.ts",
-        "src/algorithms/BloomFilter.ts",
-        "src/algorithms/DisjointSet.ts",
-        "src/algorithms/Graph.ts",
-        "src/algorithms/BinaryTreeNode.ts",
-        "src/algorithms/BinarySearchTreeNode.ts",
-        "src/algorithms/BinarySearchTree.ts",
-        "src/algorithms/AvlTree.ts",
-        // 数学相关程序
-        // 函数方程
-        "src/math/EquationSolving.ts",
-        "src/math/HighFunction.ts",
-        //
-        "src/math/enums/CoordinateSystem.ts",
-        "src/math/enums/RotationOrder.ts",
-        "src/math/enums/PlaneClassification.ts",
-        // 颜色
-        "src/math/Color3.ts",
-        "src/math/Color4.ts",
-        // 几何运算
-        "src/math/geom/Vector.ts",
-        "src/math/geom/Vector2.ts",
-        "src/math/geom/Vector3.ts",
-        "src/math/geom/Vector4.ts",
-        "src/math/geom/Rectangle.ts",
-        "src/math/geom/Matrix3x3.ts",
-        "src/math/geom/Matrix4x4.ts",
-        "src/math/geom/Quaternion.ts",
-        "src/math/geom/Line3.ts",
-        "src/math/geom/Segment3.ts",
-        "src/math/geom/Ray3.ts",
-        "src/math/geom/Triangle3.ts",
-        "src/math/geom/Box3.ts",
-        "src/math/geom/Sphere.ts",
-        "src/math/geom/Plane.ts",
-        "src/math/geom/Frustum.ts",
-        "src/math/geom/TriangleGeometry.ts",
-        // 颜色渐变
-        "src/math/gradient/GradientMode.ts",
-        "src/math/gradient/GradientAlphaKey.ts",
-        "src/math/gradient/GradientColorKey.ts",
-        "src/math/gradient/Gradient.ts",
-        "src/math/gradient/MinMaxGradientMode.ts",
-        "src/math/gradient/MinMaxGradient.ts",
-        // 曲线
-        "src/math/curve/BezierCurve.ts",
-        "src/math/curve/AnimationCurveKeyframe.ts",
-        "src/math/curve/WrapMode.ts",
-        "src/math/curve/AnimationCurve.ts",
-        "src/math/curve/MinMaxCurveMode.ts",
-        "src/math/curve/MinMaxCurve.ts",
-        "src/math/curve/MinMaxCurveVector3.ts",
-        // 形状
-        "src/math/shape/Earcut.ts",
-        "src/math/shape/ShapeUtils.ts",
-        //
-        "src/math/shape/core/Interpolations.ts",
-        "src/math/shape/core/Curve.ts",
-        "src/math/shape/core/CurvePath.ts",
-        "src/math/shape/core/Path2.ts",
-        "src/math/shape/core/Shape2.ts",
-        "src/math/shape/core/ShapePath2.ts",
-        "src/math/shape/core/Font.ts",
-        //
-        "src/math/shape/curves/LineCurve2.ts",
-        "src/math/shape/curves/LineCurve3.ts",
-        "src/math/shape/curves/SplineCurve2.ts",
-        "src/math/shape/curves/EllipseCurve2.ts",
-        "src/math/shape/curves/ArcCurve2.ts",
-        "src/math/shape/curves/CatmullRomCurve3.ts",
-        "src/math/shape/curves/CubicBezierCurve2.ts",
-        "src/math/shape/curves/CubicBezierCurve3.ts",
-        "src/math/shape/curves/QuadraticBezierCurve2.ts",
-        "src/math/shape/curves/QuadraticBezierCurve3.ts",
-        //
-        "src/math/Noise.ts",
-        //
-        "src/filesystem/PathUtils.ts",
-        //
-        "src/filesystem/base/Loader.ts",
-        "src/filesystem/base/LoaderDataFormat.ts",
-        "src/filesystem/base/_IndexedDB.ts",
-        //
-        "src/filesystem/FSType.ts",
-        "src/filesystem/IReadFS.ts",
-        "src/filesystem/ReadFS.ts",
-        "src/filesystem/IReadWriteFS.ts",
-        "src/filesystem/ReadWriteFS.ts",
-        //
-        "src/filesystem/IndexedDBFS.ts",
-        "src/filesystem/HttpFS.ts",
-        // 快捷键
-        "src/shortcut/EventProxy.ts",
-        "src/shortcut/WindowEventProxy.ts",
-        "src/shortcut/Keyboard.ts",
-        "src/shortcut/handle/KeyCapture.ts",
-        "src/shortcut/handle/KeyState.ts",
-        "src/shortcut/handle/ShortCutCapture.ts",
-        "src/shortcut/handle/ShortCutEvent.ts",
-        "src/shortcut/ShortCut.ts",
-        //
-        "src/renderer/gl/enums/RenderMode.ts",
-        "src/renderer/gl/enums/TextureType.ts",
-        "src/renderer/gl/enums/BlendEquation.ts",
-        "src/renderer/gl/enums/BlendFactor.ts",
-        "src/renderer/gl/enums/CullFace.ts",
-        "src/renderer/gl/enums/ColorMask.ts",
-        "src/renderer/gl/enums/FrontFace.ts",
-        "src/renderer/gl/enums/TextureFormat.ts",
-        "src/renderer/gl/enums/TextureDataType.ts",
-        "src/renderer/gl/enums/TextureMinFilter.ts",
-        "src/renderer/gl/enums/TextureMagFilter.ts",
-        "src/renderer/gl/enums/TextureWrap.ts",
-        "src/renderer/gl/enums/GLArrayType.ts",
-        "src/renderer/gl/enums/AttributeUsage.ts",
-        "src/renderer/gl/enums/DepthFunc.ts",
-        "src/renderer/gl/enums/StencilFunc.ts",
-        "src/renderer/gl/enums/StencilOp.ts",
-        "src/renderer/gl/GL.ts",
-        "src/renderer/gl/GLCache.ts",
-        "src/renderer/gl/GLExtension.ts",
-        "src/renderer/gl/GLCapabilities.ts",
-        //
-        "src/renderer/data/Uniform.ts",
-        "src/renderer/data/Shader.ts",
-        "src/renderer/data/RenderParams.ts",
-        "src/renderer/data/RenderAtomic.ts",
-        "src/renderer/data/Index.ts",
-        "src/renderer/data/Attribute.ts",
-        "src/renderer/data/Attributes.ts",
-        "src/renderer/data/Texture.ts",
-        "src/renderer/data/FrameBuffer.ts",
-        //
-        "src/renderer/RenderBuffer.ts",
-        //
-        "src/renderer/shader/ShaderMacroUtils.ts",
-        "src/renderer/shader/Macro.ts",
-        "src/renderer/shader/ShaderLib.ts",
-        //
-        "src/renderer/WebGLRenderer.ts",
-        //
-        "src/Menu.ts",
-        //
-        "src/event/GlobalEmitter.ts",
-        // 自动生成文件
-        "src/autofiles/ShaderConfig.ts",
-        //基础工具
-        "src/utils/FunctionWarp.ts",
-        "src/utils/Uuid.ts",
-        "src/utils/debug.ts",
-        "src/utils/ObjectViewDefinitions.ts",
-        //
-        "src/utils/Ticker.ts",
-        "src/utils/ImageUtil.ts",
-        "src/utils/Stats.ts",
-        "src/utils/Path.ts",
-        "src/utils/RegExps.ts",
-        "src/utils/Pool.ts",
-        //
-        "src/core/Feng3dObject.ts",
-        "src/core/AssetData.ts",
-        //
-        "src/assets/AssetMeta.ts",
-        "src/assets/AssetType.ts",
-        "src/assets/FileAsset.ts",
-        "src/assets/FolderAsset.ts",
-        "src/assets/rs/ReadRS.ts",
-        "src/assets/rs/ReadWriteRS.ts",
-        //
-        "src/render/data/Uniform.ts",
-        "src/render/data/TextureInfo.ts",
-        "src/render/shader/ShaderLib.ts",
-        "src/render/FrameBufferObject.ts",
-        //
-        "src/render/renderer/ForwardRenderer.ts",
-        "src/render/renderer/MouseRenderer.ts",
-        "src/render/renderer/ShadowRenderer.ts",
-        "src/render/renderer/OutlineRenderer.ts",
-        "src/render/renderer/WireframeRenderer.ts",
-        //
-        //
-        "src/component/Component.ts",
-        "src/core/Container.ts",
-        "src/core/HideFlags.ts",
-        "src/core/RunEnvironment.ts",
-        "src/core/Node3D.ts",
-        "src/core/BoundingBox.ts",
-        "src/core/Entity.ts",
-        "src/core/View.ts",
-        // 组件模块
-        "src/component/Component3D.ts",
-        "src/component/Graphics.ts",
-        "src/component/Behaviour.ts",
-        "src/core/TransformLayout.ts",
-        // 天空盒
-        "src/skybox/SkyBox.ts",
-        "src/skybox/SkyBoxRenderer.ts",
-        // 组件
-        "src/component/HoldSizeComponent.ts",
-        "src/component/BillboardComponent.ts",
-        "src/component/WireframeComponent.ts",
-        "src/component/CartoonComponent.ts",
-        "src/component/OutLineComponent.ts",
-        "src/core/RayCastable.ts",
-        "src/core/Renderable.ts",
-        "src/core/MeshRenderer.ts",
-        "src/core/ScriptComponent.ts",
-        "src/core/Script.ts",
-        // 场景
-        "src/scene/Scene.ts",
-        "src/scene/ScenePickCache.ts",
-        "src/scene/SceneUtil.ts",
-        // 几何体
-        "src/geometry/Geometry.ts",
-        "src/geometry/CustomGeometry.ts",
-        "src/geometry/GeometryUtils.ts",
-        // 几何体组件
-        "src/geometry/PointGeometry.ts",
-        "src/geometry/SegmentGeometry.ts",
-        // 摄像机
-        "src/cameras/lenses/LensBase.ts",
-        "src/cameras/lenses/OrthographicLens.ts",
-        "src/cameras/lenses/PerspectiveLens.ts",
-        "src/cameras/Projection.ts",
-        "src/cameras/Camera.ts",
-        // 几何体
-        "src/primitives/QuadGeometry.ts",
-        "src/primitives/PlaneGeometry.ts",
-        "src/primitives/CubeGeometry.ts",
-        "src/primitives/SphereGeometry.ts",
-        "src/primitives/CapsuleGeometry.ts",
-        "src/primitives/CylinderGeometry.ts",
-        "src/primitives/ConeGeometry.ts",
-        "src/primitives/TorusGeometry.ts",
-        "src/primitives/ParametricGeometry.ts",
-        // 纹理
-        "src/textures/Texture2D.ts",
-        "src/textures/ImageTexture2D.ts",
-        "src/textures/ImageDataTexture2D.ts",
-        "src/textures/CanvasTexture2D.ts",
-        "src/textures/VideoTexture2D.ts",
-        "src/textures/RenderTargetTexture2D.ts",
-        "src/textures/TextureCube.ts",
-        // 材质
-        "src/materials/Material.ts",
-        "src/materials/StandardMaterial.ts",
-        "src/materials/PointMaterial.ts",
-        "src/materials/ColorMaterial.ts",
-        "src/materials/TextureMaterial.ts",
-        "src/materials/SegmentMaterial.ts",
-        // 灯光
-        "src/light/shadow/ShadowType.ts",
-        "src/light/LightType.ts",
-        "src/light/Light.ts",
-        "src/light/DirectionalLight.ts",
-        "src/light/PointLight.ts",
-        "src/light/SpotLight.ts",
-        //
-        "src/light/pickers/LightPicker.ts",
-        // 控制器
-        "src/controllers/ControllerBase.ts",
-        "src/controllers/LookAtController.ts",
-        "src/controllers/HoverController.ts",
-        "src/controllers/FPSController.ts",
-        // 拾取
-        "src/pick/Raycaster.ts",
-        // 声音
-        "src/audio/AudioListener.ts",
-        "src/audio/AudioSource.ts",
-        //水
-        "src/water/Water.ts",
-        "src/water/WaterMaterial.ts",
-        //骨骼动画
-        "src/animators/skeleton/Skeleton.ts",
-        "src/animators/skeleton/SkeletonComponent.ts",
-        "src/animators/skeleton/SkinnedMeshRenderer.ts",
-        //
-        "src/animation/PropertyClip.ts",
-        "src/animation/AnimationClip.ts",
-        "src/animation/Animation.ts",
-        //
-        "src/core/Mouse3DManager.ts",
-        "src/Feng3d.ts",
-    ]
+    "exclude": [
+        "node_modules",
+        "**/dist/**",
+        "**/lib/**",
+        "**/out/**",
+        "**/tests/**",
+        "**/scripts/**",
+        "**/types/**",
+        "rollup.config.js"
+    ],
+    "ts-node": {
+        "files": true,
+        "compilerOptions": {
+            "esModuleInterop": true
+        }
+    }
 }
