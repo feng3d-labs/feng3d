@@ -1,4 +1,6 @@
 import { Feng3dObject } from "../../core/Feng3dObject";
+import { ColorKeywords } from "../../math/Color3";
+import { Color4 } from "../../math/Color4";
 import { Vector2 } from "../../math/geom/Vector2";
 import { dataTransform } from "../../polyfill/DataTransform";
 import { Texture } from "../../renderer/data/Texture";
@@ -8,10 +10,39 @@ import { TextureMagFilter } from "../../renderer/gl/enums/TextureMagFilter";
 import { TextureMinFilter } from "../../renderer/gl/enums/TextureMinFilter";
 import { TextureType } from "../../renderer/gl/enums/TextureType";
 import { TextureWrap } from "../../renderer/gl/enums/TextureWrap";
-import { imageDatas } from "../../textures/Texture2D";
+import { ImageUtil } from "../../utils/ImageUtil";
 import { oav } from "../../utils/ObjectView";
 import { serialize } from "../../utils/Serialization";
 import { watch } from "../../utils/Watcher";
+
+export enum ImageDatas
+{
+    black = "black",
+    white = "white",
+    red = "red",
+    green = "green",
+    blue = "blue",
+    defaultNormal = "defaultNormal",
+    defaultParticle = "defaultParticle",
+}
+
+export const imageDatas: {
+    black: ImageData;
+    white: ImageData;
+    red: ImageData;
+    green: ImageData;
+    blue: ImageData;
+    defaultNormal: ImageData;
+    defaultParticle: ImageData;
+} = {
+    black: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.black)).imageData,
+    white: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.white)).imageData,
+    red: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.red)).imageData,
+    green: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.green)).imageData,
+    blue: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.blue)).imageData,
+    defaultNormal: new ImageUtil(1, 1, Color4.fromUnit24(0x8080ff)).imageData,
+    defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
+}
 
 /**
  * 纹理信息

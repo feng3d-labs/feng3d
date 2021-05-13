@@ -2,12 +2,12 @@ import { AssetType } from "../assets/AssetType";
 import { AssetData } from "../core/AssetData";
 import { HideFlags } from "../core/HideFlags";
 import { fs } from "../filesystem/ReadFS";
-import { TextureInfo } from "../render/data/TextureInfo";
+import { ImageDatas, TextureInfo } from "../render/data/TextureInfo";
 import { TextureType } from "../renderer/gl/enums/TextureType";
 import { oav } from "../utils/ObjectView";
 import { serialization, serialize } from "../utils/Serialization";
 import { watch } from "../utils/Watcher";
-import { ImageDatas, Texture2D } from "./Texture2D";
+import { Texture2D } from "./Texture2D";
 
 export interface TextureCubeEventMap
 {

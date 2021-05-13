@@ -256,3 +256,30 @@ export class Color4
         return new Color4(this.r, this.g, this.b, this.a);
     }
 }
+
+declare module './Color3'
+{
+    interface Color3
+    {
+        toColor4(color4?: Color4): Color4;
+    }
+
+    namespace Color3
+    {
+        function fromColor4(color4: Color4): Color3;
+    }
+}
+
+Color3.prototype.toColor4 = function toColor4(color4 = new Color4())
+{
+    color4.r = this.r;
+    color4.g = this.g;
+    color4.b = this.b;
+
+    return color4;
+};
+
+Color3.fromColor4 = function fromColor4(color4: Color4)
+{
+    return new Color3(color4.r, color4.g, color4.b);
+}

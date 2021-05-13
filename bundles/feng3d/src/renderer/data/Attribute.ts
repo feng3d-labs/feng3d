@@ -1,7 +1,7 @@
 import { serialize } from "../../utils/Serialization";
 import { watch } from "../../utils/Watcher";
 import { GLArrayType } from "../gl/enums/GLArrayType";
-import { GL } from "../gl/GL";
+import type { GL } from "../gl/GL";
 
 /**
  * 属性渲染数据
@@ -133,16 +133,20 @@ export class Attribute
 
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attribute.data), gl.STATIC_DRAW);
+
+            attribute.glList.push(gl);
         }
         return buffer;
     }
+
+    private glList: GL[] = [];
 
     /**
      * 清理缓冲
      */
     static clear(attribute: Attribute)
     {
-        GL.glList.forEach(gl =>
+        attribute.glList.forEach(gl =>
         {
             var buffer = gl.cache.attributes.get(attribute);
             if (buffer)
@@ -151,5 +155,6 @@ export class Attribute
                 gl.cache.attributes.delete(attribute);
             }
         });
+        attribute.glList = [];
     }
 }

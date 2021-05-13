@@ -82,16 +82,20 @@ export class Index
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(index.indices), gl.STATIC_DRAW);
+
+            index.glList.push(gl);
         }
         return buffer;
     }
+
+    private glList: GL[] = [];
 
     /**
      * 清理缓冲
      */
     static clear(index: Index)
     {
-        GL.glList.forEach(gl =>
+        index.glList.forEach(gl =>
         {
             var buffer = gl.cache.indices.get(index);
             if (buffer)
@@ -100,5 +104,6 @@ export class Index
                 gl.cache.indices.delete(index);
             }
         });
+        index.glList = [];
     }
 }

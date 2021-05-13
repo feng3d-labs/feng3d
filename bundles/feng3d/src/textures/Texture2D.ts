@@ -2,43 +2,10 @@ import { AssetType } from "../assets/AssetType";
 import { AssetData } from "../core/AssetData";
 import { HideFlags } from "../core/HideFlags";
 import { loader } from "../filesystem/base/Loader";
-import { ColorKeywords } from "../math/Color3";
-import { Color4 } from "../math/Color4";
-import { TextureInfo } from "../render/data/TextureInfo";
+import { ImageDatas, TextureInfo } from "../render/data/TextureInfo";
 import { TextureFormat } from "../renderer/gl/enums/TextureFormat";
 import { TextureType } from "../renderer/gl/enums/TextureType";
-import { ImageUtil } from "../utils/ImageUtil";
 import { serialization, serialize } from "../utils/Serialization";
-
-export enum ImageDatas
-{
-    black = "black",
-    white = "white",
-    red = "red",
-    green = "green",
-    blue = "blue",
-    defaultNormal = "defaultNormal",
-    defaultParticle = "defaultParticle",
-}
-
-export const imageDatas: {
-    black: ImageData;
-    white: ImageData;
-    red: ImageData;
-    green: ImageData;
-    blue: ImageData;
-    defaultNormal: ImageData;
-    defaultParticle: ImageData;
-} = {
-    black: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.black)).imageData,
-    white: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.white)).imageData,
-    red: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.red)).imageData,
-    green: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.green)).imageData,
-    blue: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.blue)).imageData,
-    defaultNormal: new ImageUtil(1, 1, Color4.fromUnit24(0x8080ff)).imageData,
-    defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
-}
-
 
 export interface Texture2DEventMap
 {

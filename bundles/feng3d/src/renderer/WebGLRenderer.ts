@@ -8,7 +8,7 @@ import { Texture } from "./data/Texture";
 import { Uniforms } from "./data/Uniform";
 import { ColorMask } from "./gl/enums/ColorMask";
 import { CullFace } from "./gl/enums/CullFace";
-import { GL } from "./gl/GL";
+import type { GL } from "./gl/GL";
 
 /**
  * WEBGL 渲染器

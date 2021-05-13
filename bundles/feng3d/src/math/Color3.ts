@@ -1,6 +1,5 @@
 import { oav } from "../utils/ObjectView";
 import { serialize } from "../utils/Serialization";
-import { Color4 } from "./Color4";
 import { Vector3 } from "./geom/Vector3";
 
 /**
@@ -16,11 +15,6 @@ export class Color3
     static fromUnit(color: number)
     {
         return new Color3().fromUnit(color);
-    }
-
-    static fromColor4(color4: Color4)
-    {
-        return new Color3(color4.r, color4.g, color4.b);
     }
 
     /**
@@ -173,14 +167,6 @@ export class Color3
         vector3.y = this.g;
         vector3.z = this.b;
         return vector3;
-    }
-
-    toColor4(color4 = new Color4())
-    {
-        color4.r = this.r;
-        color4.g = this.g;
-        color4.b = this.b;
-        return color4;
     }
 
     /**
