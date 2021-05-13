@@ -1,7 +1,7 @@
 import { PerspectiveLens } from "../cameras/lenses/PerspectiveLens";
 import { RegisterComponent } from "../component/Component";
 import { Entity } from "../core/Entity";
-import { Vector2 } from "../math/geom/Vector2";
+import { Vector2 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
 import { oav } from "../utils/ObjectView";
 import { serialize } from "../utils/Serialization";

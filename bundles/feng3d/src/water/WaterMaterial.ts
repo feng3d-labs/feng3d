@@ -1,7 +1,7 @@
 import { Material } from "../materials/Material";
-import { Color3 } from "../math/Color3";
-import { Matrix4x4 } from "../math/geom/Matrix4x4";
-import { Vector3 } from "../math/geom/Vector3";
+import { Color3 } from "@feng3d/math";
+import { Matrix4x4 } from "@feng3d/math";
+import { Vector3 } from "@feng3d/math";
 import { shaderlib } from "../renderer/shader/ShaderLib";
 import { Texture2D, Texture2DEventMap } from "../textures/Texture2D";
 import { oav } from "../utils/ObjectView";

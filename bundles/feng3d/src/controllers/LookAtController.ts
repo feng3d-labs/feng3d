@@ -1,6 +1,6 @@
 import { Component3DEventMap } from "../component/Component3D";
 import { Node3D } from "../core/Node3D";
-import { Vector3 } from "../math/geom/Vector3";
+import { Vector3 } from "@feng3d/math";
 import { ControllerBase } from "./ControllerBase";
 
 export class LookAtController extends ControllerBase

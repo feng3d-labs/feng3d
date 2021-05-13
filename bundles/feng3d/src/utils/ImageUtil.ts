@@ -1,9 +1,4 @@
-import { Color3 } from "../math/Color3";
-import { Color4 } from "../math/Color4";
-import { AnimationCurve } from "../math/curve/AnimationCurve";
-import { Rectangle } from "../math/geom/Rectangle";
-import { Vector2 } from "../math/geom/Vector2";
-import { Gradient } from "../math/gradient/Gradient";
+import { AnimationCurve, Color3, Color4, Gradient, Rectangle, Vector2 } from "@feng3d/math";
 import { dataTransform } from "@feng3d/polyfill";
 
 

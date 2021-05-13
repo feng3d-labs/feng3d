@@ -1,8 +1,5 @@
+import { Matrix4x4, Ray3, Vector3, Vector4 } from "@feng3d/math";
 import { Feng3dObject } from "../../core/Feng3dObject";
-import { Matrix4x4 } from "../../math/geom/Matrix4x4";
-import { Ray3 } from "../../math/geom/Ray3";
-import { Vector3 } from "../../math/geom/Vector3";
-import { Vector4 } from "../../math/geom/Vector4";
 import { oav } from "../../utils/ObjectView";
 import { serialize } from "../../utils/Serialization";
 import { watch } from "../../utils/Watcher";

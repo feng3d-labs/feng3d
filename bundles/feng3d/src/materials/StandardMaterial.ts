@@ -1,5 +1,5 @@
-import { Color3 } from "../math/Color3";
-import { Color4 } from "../math/Color4";
+import { Color3 } from "@feng3d/math";
+import { Color4 } from "@feng3d/math";
 import { shaderlib } from "../renderer/shader/ShaderLib";
 import { Texture2D, Texture2DEventMap } from "../textures/Texture2D";
 import { TextureCube, TextureCubeEventMap } from "../textures/TextureCube";

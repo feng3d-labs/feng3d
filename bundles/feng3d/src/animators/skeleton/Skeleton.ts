@@ -1,5 +1,5 @@
 
-import { Matrix4x4 } from "../../math/geom/Matrix4x4";
+import { Matrix4x4 } from "@feng3d/math";
 import { serialize } from "../../utils/Serialization";
 
     /**

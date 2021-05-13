@@ -3,7 +3,7 @@ import { Camera } from "../../cameras/Camera";
 import { RegisterComponent } from "../../component/Component";
 import { HideFlags } from "../../core/HideFlags";
 import { Renderable } from "../../core/Renderable";
-import { Matrix4x4 } from "../../math/geom/Matrix4x4";
+import { Matrix4x4 } from "@feng3d/math";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { Scene } from "../../scene/Scene";
 import { oav } from "../../utils/ObjectView";

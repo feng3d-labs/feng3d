@@ -1,6 +1,5 @@
+import { Color4, Vector4 } from "@feng3d/math";
 import { Camera } from "../cameras/Camera";
-import { Color4 } from "../math/Color4";
-import { Vector4 } from "../math/geom/Vector4";
 import { AddComponentMenu } from "../Menu";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Uniforms } from "../renderer/data/Uniform";

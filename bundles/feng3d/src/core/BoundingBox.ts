@@ -1,5 +1,5 @@
 import { Component } from "../component/Component";
-import { Box3 } from "../math/geom/Box3";
+import { Box3 } from "@feng3d/math";
 import { Node3D } from "./Node3D";
 
 declare module "../core/Entity"

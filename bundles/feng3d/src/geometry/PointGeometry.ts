@@ -1,6 +1,6 @@
-import { Color4 } from "../math/Color4";
-import { Vector2 } from "../math/geom/Vector2";
-import { Vector3 } from "../math/geom/Vector3";
+import { Color4 } from "@feng3d/math";
+import { Vector2 } from "@feng3d/math";
+import { Vector3 } from "@feng3d/math";
 import { oav } from "../utils/ObjectView";
 import { serialize } from "../utils/Serialization";
 import { watch } from "../utils/Watcher";

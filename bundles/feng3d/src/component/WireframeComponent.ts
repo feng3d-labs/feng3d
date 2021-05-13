@@ -1,4 +1,4 @@
-import { Color4 } from "../math/Color4";
+import { Color4 } from "@feng3d/math";
 import { oav } from "../utils/ObjectView";
 import { RegisterComponent } from "./Component";
 import { Component3D } from "./Component3D";

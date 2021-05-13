@@ -2,7 +2,7 @@ import { Camera } from "../cameras/Camera";
 import { RegisterComponent } from "../component/Component";
 import { Component3D } from "../component/Component3D";
 import { Event } from "@feng3d/event";
-import { Vector3 } from "../math/geom/Vector3";
+import { Vector3 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";

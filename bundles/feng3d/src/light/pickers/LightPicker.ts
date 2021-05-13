@@ -1,5 +1,5 @@
 import { Renderable } from "../../core/Renderable";
-import { Matrix4x4 } from "../../math/geom/Matrix4x4";
+import { Matrix4x4 } from "@feng3d/math";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { Texture2D } from "../../textures/Texture2D";
 import { DirectionalLight } from "../DirectionalLight";

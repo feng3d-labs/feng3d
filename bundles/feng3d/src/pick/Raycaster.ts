@@ -1,9 +1,9 @@
 import { Node3D } from "../core/Node3D";
 import { RayCastable } from "../core/RayCastable";
 import { Geometry } from "../geometry/Geometry";
-import { Ray3 } from "../math/geom/Ray3";
-import { Vector2 } from "../math/geom/Vector2";
-import { Vector3 } from "../math/geom/Vector3";
+import { Ray3 } from "@feng3d/math";
+import { Vector2 } from "@feng3d/math";
+import { Vector3 } from "@feng3d/math";
 import { CullFace } from "../renderer/gl/enums/CullFace";
 
 /**

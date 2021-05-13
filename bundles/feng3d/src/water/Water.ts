@@ -1,13 +1,10 @@
+import { Matrix4x4, Plane, Vector3, Vector4 } from "@feng3d/math";
 import { Camera } from "../cameras/Camera";
 import { RegisterComponent } from "../component/Component";
 import { Entity } from "../core/Entity";
 import { Renderable } from "../core/Renderable";
 import { Geometry } from "../geometry/Geometry";
 import { Material } from "../materials/Material";
-import { Matrix4x4 } from "../math/geom/Matrix4x4";
-import { Plane } from "../math/geom/Plane";
-import { Vector3 } from "../math/geom/Vector3";
-import { Vector4 } from "../math/geom/Vector4";
 import { AddComponentMenu } from "../Menu";
 import { PlaneGeometry } from "../primitives/PlaneGeometry";
 import { FrameBufferObject } from "../render/FrameBufferObject";

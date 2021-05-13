@@ -1,5 +1,4 @@
-import { CoordinateSystem } from "./math/enums/CoordinateSystem";
-import { RotationOrder } from "./math/enums/RotationOrder";
+import { CoordinateSystem, RotationOrder } from "@feng3d/math";
 
 export class Setting
 {

@@ -1,5 +1,5 @@
 import { Camera } from "../cameras/Camera";
-import { Color4 } from "../math/Color4";
+import { Color4 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";

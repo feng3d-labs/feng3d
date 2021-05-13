@@ -1,7 +1,7 @@
 import { EventEmitter } from "@feng3d/event";
 import { Entity, EntityEventMap } from "../../core/Entity";
 import { Renderable } from "../../core/Renderable";
-import { Rectangle } from "../../math/geom/Rectangle";
+import { Rectangle } from "@feng3d/math";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { GL } from "../../renderer/gl/GL";
 import { windowEventProxy } from "../../shortcut/WindowEventProxy";

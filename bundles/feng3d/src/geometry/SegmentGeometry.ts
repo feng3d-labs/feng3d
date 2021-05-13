@@ -1,8 +1,8 @@
 import { Entity } from "../core/Entity";
 import { MeshRenderer } from "../core/MeshRenderer";
 import { Material } from "../materials/Material";
-import { Color4 } from "../math/Color4";
-import { Vector3 } from "../math/geom/Vector3";
+import { Color4 } from "@feng3d/math";
+import { Vector3 } from "@feng3d/math";
 import { oav } from "../utils/ObjectView";
 import { serialize, serialization } from "../utils/Serialization";
 import { watch } from "../utils/Watcher";

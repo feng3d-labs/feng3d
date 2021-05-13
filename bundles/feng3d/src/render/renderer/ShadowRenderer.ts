@@ -1,11 +1,10 @@
+import { Rectangle, Vector3 } from "@feng3d/math";
 import { Camera } from "../../cameras/Camera";
 import { Renderable } from "../../core/Renderable";
 import { DirectionalLight } from "../../light/DirectionalLight";
 import { PointLight } from "../../light/PointLight";
 import { ShadowType } from "../../light/shadow/ShadowType";
 import { SpotLight } from "../../light/SpotLight";
-import { Rectangle } from "../../math/geom/Rectangle";
-import { Vector3 } from "../../math/geom/Vector3";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { Shader } from "../../renderer/data/Shader";
 import { GL } from "../../renderer/gl/GL";
