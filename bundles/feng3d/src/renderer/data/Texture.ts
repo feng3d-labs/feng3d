@@ -4,7 +4,7 @@ import { TextureMagFilter } from "../gl/enums/TextureMagFilter";
 import { TextureMinFilter } from "../gl/enums/TextureMinFilter";
 import { TextureType } from "../gl/enums/TextureType";
 import { TextureWrap } from "../gl/enums/TextureWrap";
-import { GL } from "../gl/GL";
+import type { GL } from "../gl/GL";
 
 export interface Texture
 {
@@ -167,9 +167,12 @@ export class Texture
             {
                 gl.generateMipmap(textureType);
             }
+            data.glList.push(gl);
         }
         return texture;
     }
+
+    private glList: GL[] = [];
 
     /**
      * 清除纹理
@@ -178,7 +181,7 @@ export class Texture
      */
     static clear(data: Texture)
     {
-        GL.glList.forEach(gl =>
+        data.glList.forEach(gl =>
         {
             var tex = gl.cache.textures.get(data);
             if (tex)
@@ -187,6 +190,7 @@ export class Texture
                 gl.cache.textures.delete(data);
             }
         });
+        data.glList = [];
     }
 }
 

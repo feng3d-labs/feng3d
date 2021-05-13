@@ -15,7 +15,6 @@ import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { CullFace } from "../renderer/gl/enums/CullFace";
 import { oav } from "../utils/ObjectView";
 import { serialization, serialize } from "../utils/Serialization";
-import { CustomGeometry } from "./CustomGeometry";
 import { geometryUtils } from "./GeometryUtils";
 
 export interface GeometryTypes { }
@@ -414,7 +413,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     clone()
     {
-        var geometry = new CustomGeometry();
+        var geometry = new Geometry();
         geometry.cloneFrom(this);
         return geometry;
     }

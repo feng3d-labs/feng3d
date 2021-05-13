@@ -13,7 +13,6 @@ import { TextureCube } from "../textures/TextureCube";
 import { oav } from "../utils/ObjectView";
 import { serialization, serialize } from "../utils/Serialization";
 import { watch } from "../utils/Watcher";
-import { StandardUniforms } from "./StandardMaterial";
 
 export interface UniformsTypes { }
 export type ShaderNames = keyof UniformsTypes;
@@ -89,8 +88,6 @@ export class Material extends Feng3dObject
         super();
         globalEmitter.on("asset.shaderChanged", this._onShaderChanged, this);
         this.shaderName = "standard";
-        this.uniforms = new StandardUniforms();
-        this.renderParams = new RenderParams();
     }
 
     beforeRender(renderAtomic: RenderAtomic)

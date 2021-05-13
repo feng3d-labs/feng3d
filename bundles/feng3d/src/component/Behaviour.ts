@@ -17,7 +17,6 @@ declare module "../component/Component"
 @RegisterComponent()
 export class Behaviour extends Component3D
 {
-
     /**
      * 是否启用update方法
      */

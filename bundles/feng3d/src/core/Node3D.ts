@@ -1,7 +1,7 @@
 import { AssetType } from "../assets/AssetType";
 import { Camera } from "../cameras/Camera";
 import { Component, Components, RegisterComponent } from "../component/Component";
-import { Component3DEventMap } from "../component/Component3D";
+import type { Component3DEventMap } from "../component/Component3D";
 import { Box3 } from "../math/geom/Box3";
 import { Matrix4x4 } from "../math/geom/Matrix4x4";
 import { Quaternion } from "../math/geom/Quaternion";
@@ -13,7 +13,6 @@ import { Scene } from "../scene/Scene";
 import { oav } from "../utils/ObjectView";
 import { serialize } from "../utils/Serialization";
 import { BoundingBox } from "./BoundingBox";
-import type { Entity } from "./Entity";
 import { Renderable } from "./Renderable";
 
 declare module "../component/Component3D"

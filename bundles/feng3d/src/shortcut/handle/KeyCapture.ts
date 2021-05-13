@@ -1,6 +1,6 @@
 import { Event } from "../../event/EventEmitter";
 import { KeyBoard } from "../Keyboard";
-import { ShortCut, shortcut } from "../ShortCut";
+import type { ShortCut } from "../ShortCut";
 import { windowEventProxy } from "../WindowEventProxy";
 import { KeyState } from "./KeyState";
 
@@ -19,14 +19,16 @@ export class KeyCapture
 	 * 按键状态
 	 */
 	private _keyState: KeyState;
+	private shortcut: ShortCut;
 
 	/**
 	 * 构建
 	 * @param stage		舞台
 	 */
-	constructor(shortCut: ShortCut)
+	constructor(shortcut: ShortCut)
 	{
-		this._keyState = shortCut.keyState;
+		this.shortcut = shortcut;
+		this._keyState = shortcut.keyState;
 		//
 		if (!windowEventProxy)
 		{
@@ -57,7 +59,7 @@ export class KeyCapture
 	 */
 	private onMouseOnce(event: Event<MouseEvent>): void
 	{
-		if (!shortcut.enable)
+		if (!this.shortcut.enable)
 			return;
 		var mouseKey: string = event.type;
 		this._keyState.pressKey(mouseKey, event.data);
@@ -69,7 +71,7 @@ export class KeyCapture
 	 */
 	private onMousewheel(event: Event<WheelEvent>): void
 	{
-		if (!shortcut.enable)
+		if (!this.shortcut.enable)
 			return;
 		var mouseKey: string = event.type;
 		this._keyState.pressKey(mouseKey, event.data);
@@ -81,7 +83,7 @@ export class KeyCapture
 	 */
 	private onKeydown(event: Event<KeyboardEvent>): void
 	{
-		if (!shortcut.enable)
+		if (!this.shortcut.enable)
 			return;
 		var boardKey: string = KeyBoard.getKey(event.data.keyCode);
 		boardKey = boardKey || event.data.key;
@@ -100,7 +102,7 @@ export class KeyCapture
 	 */
 	private onKeyup(event: Event<KeyboardEvent>): void
 	{
-		if (!shortcut.enable)
+		if (!this.shortcut.enable)
 			return;
 		var boardKey: string = KeyBoard.getKey(event.data.keyCode);
 		boardKey = boardKey || event.data.key;

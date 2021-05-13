@@ -4,9 +4,8 @@ import { serialize } from "../utils/Serialization";
 import { ticker } from "../utils/Ticker";
 import { AssetMeta } from "./AssetMeta";
 import { AssetType } from "./AssetType";
-import { FolderAsset } from "./FolderAsset";
-import { rs } from "./rs/ReadRS";
-import { ReadWriteRS } from "./rs/ReadWriteRS";
+import type { FolderAsset } from "./FolderAsset";
+import type { ReadWriteRS } from "./rs/ReadWriteRS";
 
 export function getAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K)
 {
@@ -220,7 +219,7 @@ export abstract class FileAsset
             this.deleteFile((err) =>
             {
                 // 删除映射
-                rs.deleteAssetById(this.assetId);
+                this.rs.deleteAssetById(this.assetId);
                 callback && callback();
             });
         });
