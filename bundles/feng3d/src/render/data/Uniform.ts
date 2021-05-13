@@ -6,7 +6,7 @@ import { SpotLight } from "../../light/SpotLight";
 import { Texture2D } from "../../textures/Texture2D";
 import { TextureCube } from "../../textures/TextureCube";
 
-declare module "../../renderer/data/Uniform"
+declare module "@feng3d/renderer"
 {
     export interface Uniforms
     {

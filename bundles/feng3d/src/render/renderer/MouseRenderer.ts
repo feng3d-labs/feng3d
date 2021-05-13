@@ -3,8 +3,8 @@ import { Rectangle } from "@feng3d/math";
 import { windowEventProxy } from "@feng3d/shortcut";
 import { Entity, EntityEventMap } from "../../core/Entity";
 import { Renderable } from "../../core/Renderable";
-import { RenderAtomic } from "../../renderer/data/RenderAtomic";
-import { GL } from "../../renderer/gl/GL";
+import { RenderAtomic } from "@feng3d/renderer";
+import { GL } from "@feng3d/renderer";
 
 /**
  * 鼠标拾取渲染器

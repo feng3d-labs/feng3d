@@ -7,7 +7,7 @@ import { AssetType } from "../assets/AssetType";
 import { Camera } from "../cameras/Camera";
 import { Component, Components, RegisterComponent } from "../component/Component";
 import type { Component3DEventMap } from "../component/Component3D";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
+import { RenderAtomic } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
 import { BoundingBox } from "./BoundingBox";
 

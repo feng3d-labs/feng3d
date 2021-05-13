@@ -4,7 +4,7 @@ import { Geometry } from "../geometry/Geometry";
 import { Ray3 } from "@feng3d/math";
 import { Vector2 } from "@feng3d/math";
 import { Vector3 } from "@feng3d/math";
-import { CullFace } from "../renderer/gl/enums/CullFace";
+import { CullFace } from "@feng3d/renderer";
 
 /**
  * 射线投射拾取器

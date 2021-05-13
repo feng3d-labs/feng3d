@@ -1,13 +1,11 @@
 import { Rectangle, Vector3 } from "@feng3d/math";
+import { GL, RenderAtomic, Shader } from "@feng3d/renderer";
 import { Camera } from "../../cameras/Camera";
 import { Renderable } from "../../core/Renderable";
 import { DirectionalLight } from "../../light/DirectionalLight";
 import { PointLight } from "../../light/PointLight";
 import { ShadowType } from "../../light/shadow/ShadowType";
 import { SpotLight } from "../../light/SpotLight";
-import { RenderAtomic } from "../../renderer/data/RenderAtomic";
-import { Shader } from "../../renderer/data/Shader";
-import { GL } from "../../renderer/gl/GL";
 import { Scene } from "../../scene/Scene";
 import { FrameBufferObject } from "../FrameBufferObject";
 
@@ -245,7 +243,7 @@ var cubeDirections = [
     new Vector3(0, 0, - 1), new Vector3(0, 1, 0), new Vector3(0, - 1, 0)
 ];
 
-declare module "../../renderer/data/RenderAtomic"
+declare module "@feng3d/renderer"
 {
     export interface RenderAtomic
     {

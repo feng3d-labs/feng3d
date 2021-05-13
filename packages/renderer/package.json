@@ -1,0 +1,26 @@
+{
+  "name": "@feng3d/renderer",
+  "version": "0.2.6",
+  "description": "",
+  "standalone": true,
+  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "bundle": "dist/browser/index.js",
+  "bundleModule": "dist/browser/index.mjs",
+  "bundleOutput": {
+    "name": "feng3d"
+  },
+  "author": "feng",
+  "files": [
+    "dist/",
+    "*.d.ts"
+  ],
+  "dependencies": {
+    "@feng3d/objectview": "0.2.6",
+    "@feng3d/polyfill": "0.2.6",
+    "@feng3d/serialization": "0.2.6",
+    "@feng3d/watcher": "0.2.6"
+  },
+  "gitHead": "39df3a91f10082e7e56c3fc9ce86bee20c3714ef"
+}

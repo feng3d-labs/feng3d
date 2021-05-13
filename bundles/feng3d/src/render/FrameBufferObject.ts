@@ -1,10 +1,6 @@
-import { FrameBuffer } from "../renderer/data/FrameBuffer";
-import { Texture } from "../renderer/data/Texture";
-import { GL } from "../renderer/gl/GL";
-import { GLCache } from "../renderer/gl/GLCache";
-import { RenderBuffer } from "../renderer/RenderBuffer";
-import { RenderTargetTexture2D } from "../textures/RenderTargetTexture2D";
+import { FrameBuffer, GL, GLCache, RenderBuffer, Texture } from "@feng3d/renderer";
 import { watch } from "@feng3d/watcher";
+import { RenderTargetTexture2D } from "../textures/RenderTargetTexture2D";
 
 /**
  * 帧缓冲对象
@@ -127,7 +123,7 @@ export class FrameBufferObject
     }
 }
 
-declare module "../renderer/gl/GLCache"
+declare module "@feng3d/renderer"
 {
     export interface GLCache
     {

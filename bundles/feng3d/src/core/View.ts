@@ -11,7 +11,7 @@ import { forwardRenderer } from "../render/renderer/ForwardRenderer";
 import { outlineRenderer } from "../render/renderer/OutlineRenderer";
 import { shadowRenderer } from "../render/renderer/ShadowRenderer";
 import { wireframeRenderer } from "../render/renderer/WireframeRenderer";
-import { GL } from "../renderer/gl/GL";
+import { GL } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
 import { windowEventProxy } from "@feng3d/shortcut";
 import { skyboxRenderer } from "../skybox/SkyboxRenderer";

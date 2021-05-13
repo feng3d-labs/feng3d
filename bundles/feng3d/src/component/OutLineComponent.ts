@@ -1,10 +1,10 @@
-import { Camera } from "../cameras/Camera";
 import { Color4 } from "@feng3d/math";
-import { AddComponentMenu } from "../Menu";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
-import { Scene } from "../scene/Scene";
 import { oav } from "@feng3d/objectview";
+import { RenderAtomic } from "@feng3d/renderer";
 import { serialize } from "@feng3d/serialization";
+import { Camera } from "../cameras/Camera";
+import { AddComponentMenu } from "../Menu";
+import { Scene } from "../scene/Scene";
 import { Component, RegisterComponent } from "./Component";
 
 declare module "./Component"
@@ -38,7 +38,7 @@ export class OutLineComponent extends Component
     }
 }
 
-declare module "../renderer/data/Uniform"
+declare module "@feng3d/renderer"
 {
     export interface Uniforms
     {

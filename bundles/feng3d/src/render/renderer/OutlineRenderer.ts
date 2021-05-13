@@ -1,10 +1,7 @@
+import { CullFace, GL, RenderAtomic, Shader } from "@feng3d/renderer";
 import { Camera } from "../../cameras/Camera";
 import { CartoonComponent } from "../../component/CartoonComponent";
 import { OutLineComponent } from "../../component/OutLineComponent";
-import { RenderAtomic } from "../../renderer/data/RenderAtomic";
-import { Shader } from "../../renderer/data/Shader";
-import { CullFace } from "../../renderer/gl/enums/CullFace";
-import { GL } from "../../renderer/gl/GL";
 import { Scene } from "../../scene/Scene";
 
 /**

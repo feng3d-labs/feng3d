@@ -3,7 +3,7 @@ import { AssetData } from "../core/AssetData";
 import { HideFlags } from "../core/HideFlags";
 import { fs } from "@feng3d/filesystem";
 import { ImageDatas, TextureInfo } from "../render/data/TextureInfo";
-import { TextureType } from "../renderer/gl/enums/TextureType";
+import { TextureType } from "@feng3d/renderer";
 import { oav } from "@feng3d/objectview";
 import { serialization, serialize } from "@feng3d/serialization";
 import { watch } from "@feng3d/watcher";

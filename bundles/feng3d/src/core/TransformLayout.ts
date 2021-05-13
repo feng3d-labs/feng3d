@@ -4,7 +4,7 @@ import { Component3D } from "../component/Component3D";
 import { Event } from "@feng3d/event";
 import { Vector3 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
+import { RenderAtomic } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";

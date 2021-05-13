@@ -1,3 +1,7 @@
+import { Color3, Vector2, Vector3 } from "@feng3d/math";
+import { oav } from "@feng3d/objectview";
+import { BlendFactor } from "@feng3d/renderer";
+import { serialization, serialize } from "@feng3d/serialization";
 import { Camera } from "../cameras/Camera";
 import { Behaviour } from "../component/Behaviour";
 import { BillboardComponent } from "../component/BillboardComponent";
@@ -6,16 +10,10 @@ import { HideFlags } from "../core/HideFlags";
 import { MeshRenderer } from "../core/MeshRenderer";
 import { Geometry } from "../geometry/Geometry";
 import { Material } from "../materials/Material";
-import { Color3 } from "@feng3d/math";
-import { Vector2 } from "@feng3d/math";
-import { Vector3 } from "@feng3d/math";
 import { PlaneGeometry } from "../primitives/PlaneGeometry";
 import { FrameBufferObject } from "../render/FrameBufferObject";
-import { BlendFactor } from "../renderer/gl/enums/BlendFactor";
 import { Scene } from "../scene/Scene";
 import { RenderTargetTexture2D } from "../textures/RenderTargetTexture2D";
-import { oav } from "@feng3d/objectview";
-import { serialization, serialize } from "@feng3d/serialization";
 import { LightType } from "./LightType";
 import { ShadowType } from "./shadow/ShadowType";
 

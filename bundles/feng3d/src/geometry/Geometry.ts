@@ -1,20 +1,12 @@
+import { Box3, Matrix4x4, Ray3, Vector2, Vector3 } from "@feng3d/math";
+import { oav } from "@feng3d/objectview";
+import { gPartial } from "@feng3d/polyfill";
+import { Attribute, Attributes, CullFace, Index, RenderAtomic } from "@feng3d/renderer";
+import { serialization, serialize } from "@feng3d/serialization";
 import { AssetType } from "../assets/AssetType";
 import { AssetData } from "../core/AssetData";
 import { Feng3dObject } from "../core/Feng3dObject";
 import { HideFlags } from "../core/HideFlags";
-import { Box3 } from "@feng3d/math";
-import { Matrix4x4 } from "@feng3d/math";
-import { Ray3 } from "@feng3d/math";
-import { Vector2 } from "@feng3d/math";
-import { Vector3 } from "@feng3d/math";
-import { gPartial } from "@feng3d/polyfill";
-import { Attribute } from "../renderer/data/Attribute";
-import { Attributes } from "../renderer/data/Attributes";
-import { Index } from "../renderer/data/Index";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
-import { CullFace } from "../renderer/gl/enums/CullFace";
-import { oav } from "@feng3d/objectview";
-import { serialization, serialize } from "@feng3d/serialization";
 import { geometryUtils } from "./GeometryUtils";
 
 export interface GeometryTypes { }

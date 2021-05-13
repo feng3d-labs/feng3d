@@ -1,4 +1,4 @@
-import { shaderlib } from "../renderer/shader/ShaderLib";
+import { shaderlib } from "@feng3d/renderer";
 
 shaderlib.shaderConfig = {
 	"shaders": {

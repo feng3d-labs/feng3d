@@ -13,7 +13,7 @@ import { PointLight } from "../light/PointLight";
 import { SpotLight } from "../light/SpotLight";
 import { Color4 } from "@feng3d/math";
 import { Ray3 } from "@feng3d/math";
-import { RenderMode } from "../renderer/gl/enums/RenderMode";
+import { RenderMode } from "@feng3d/renderer";
 import { SkyBox } from "../skybox/SkyBox";
 import { oav } from "@feng3d/objectview";
 import { serialize } from "@feng3d/serialization";

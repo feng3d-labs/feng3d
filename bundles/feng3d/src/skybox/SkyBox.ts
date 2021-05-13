@@ -2,7 +2,7 @@ import { Camera } from "../cameras/Camera";
 import { RegisterComponent } from "../component/Component";
 import { Component3D } from "../component/Component3D";
 import { AddComponentMenu } from "../Menu";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
+import { RenderAtomic } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
 import { TextureCube } from "../textures/TextureCube";
 import { oav } from "@feng3d/objectview";

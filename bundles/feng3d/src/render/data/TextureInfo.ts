@@ -1,17 +1,11 @@
 import { Color4, ColorKeywords, Vector2 } from "@feng3d/math";
-import { dataTransform } from "@feng3d/polyfill";
-import { Feng3dObject } from "../../core/Feng3dObject";
-import { Texture } from "../../renderer/data/Texture";
-import { TextureDataType } from "../../renderer/gl/enums/TextureDataType";
-import { TextureFormat } from "../../renderer/gl/enums/TextureFormat";
-import { TextureMagFilter } from "../../renderer/gl/enums/TextureMagFilter";
-import { TextureMinFilter } from "../../renderer/gl/enums/TextureMinFilter";
-import { TextureType } from "../../renderer/gl/enums/TextureType";
-import { TextureWrap } from "../../renderer/gl/enums/TextureWrap";
-import { ImageUtil } from "../../utils/ImageUtil";
 import { oav } from "@feng3d/objectview";
+import { dataTransform } from "@feng3d/polyfill";
+import { Texture, TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from "@feng3d/renderer";
 import { serialize } from "@feng3d/serialization";
 import { watch } from "@feng3d/watcher";
+import { Feng3dObject } from "../../core/Feng3dObject";
+import { ImageUtil } from "../../utils/ImageUtil";
 
 export enum ImageDatas
 {

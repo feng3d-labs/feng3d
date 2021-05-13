@@ -1,4 +1,4 @@
-import { Attributes } from "../renderer/data/Attributes";
+import { Attributes } from "@feng3d/renderer";
 import { serialize } from "@feng3d/serialization";
 import { Geometry } from "./Geometry";
 

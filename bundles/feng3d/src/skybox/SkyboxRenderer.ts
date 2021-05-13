@@ -1,10 +1,10 @@
 import { Camera } from "../cameras/Camera";
-import { Attribute } from "../renderer/data/Attribute";
-import { Index } from "../renderer/data/Index";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
-import { Shader } from "../renderer/data/Shader";
-import { CullFace } from "../renderer/gl/enums/CullFace";
-import { GL } from "../renderer/gl/GL";
+import { Attribute } from "@feng3d/renderer";
+import { Index } from "@feng3d/renderer";
+import { RenderAtomic } from "@feng3d/renderer";
+import { Shader } from "@feng3d/renderer";
+import { CullFace } from "@feng3d/renderer";
+import { GL } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
 import { SkyBox } from "./SkyBox";
 

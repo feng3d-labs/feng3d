@@ -8,7 +8,7 @@ import { Material } from "../materials/Material";
 import { AddComponentMenu } from "../Menu";
 import { PlaneGeometry } from "../primitives/PlaneGeometry";
 import { FrameBufferObject } from "../render/FrameBufferObject";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
+import { RenderAtomic } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
 import { serialization } from "@feng3d/serialization";
 import { WaterUniforms } from "./WaterMaterial";

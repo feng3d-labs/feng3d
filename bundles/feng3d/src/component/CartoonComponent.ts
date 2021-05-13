@@ -1,11 +1,10 @@
 import { Color4, Vector4 } from "@feng3d/math";
+import { oav } from "@feng3d/objectview";
+import { RenderAtomic, Uniforms } from "@feng3d/renderer";
+import { serialize } from "@feng3d/serialization";
 import { Camera } from "../cameras/Camera";
 import { AddComponentMenu } from "../Menu";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
-import { Uniforms } from "../renderer/data/Uniform";
 import { Scene } from "../scene/Scene";
-import { oav } from "@feng3d/objectview";
-import { serialize } from "@feng3d/serialization";
 import { Component, RegisterComponent } from "./Component";
 
 declare module "./Component"
@@ -78,7 +77,7 @@ export class CartoonComponent extends Component
 }
 
 
-declare module "../renderer/data/Uniform"
+declare module "@feng3d/renderer"
 {
     export interface Uniforms
     {

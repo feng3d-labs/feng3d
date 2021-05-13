@@ -1,18 +1,16 @@
+import { Event } from "@feng3d/event";
+import { Box3, Ray3, Vector3 } from "@feng3d/math";
+import { oav } from "@feng3d/objectview";
+import { RenderAtomic } from "@feng3d/renderer";
+import { serialize } from "@feng3d/serialization";
+import { watch } from "@feng3d/watcher";
 import { Camera } from "../cameras/Camera";
 import { RegisterComponent } from "../component/Component";
-import { Event } from "@feng3d/event";
 import { Geometry, GeometryLike } from "../geometry/Geometry";
 import { LightPicker } from "../light/pickers/LightPicker";
 import { Material } from "../materials/Material";
-import { Box3 } from "@feng3d/math";
-import { Ray3 } from "@feng3d/math";
-import { Vector3 } from "@feng3d/math";
 import { PickingCollisionVO } from "../pick/Raycaster";
-import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
-import { oav } from "@feng3d/objectview";
-import { serialize } from "@feng3d/serialization";
-import { watch } from "@feng3d/watcher";
 import { Node3D } from "./Node3D";
 import { RayCastable } from "./RayCastable";
 

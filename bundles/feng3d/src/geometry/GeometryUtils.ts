@@ -3,7 +3,7 @@ import { Matrix4x4 } from "@feng3d/math";
 import { Ray3 } from "@feng3d/math";
 import { Vector2 } from "@feng3d/math";
 import { Vector3 } from "@feng3d/math";
-import { CullFace } from "../renderer/gl/enums/CullFace";
+import { CullFace } from "@feng3d/renderer";
 
 export class GeometryUtils 
 {
