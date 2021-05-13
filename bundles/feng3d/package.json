@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "",
   "standalone": true,
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
     "*.d.ts"
   ],
   "dependencies": {
-    "@feng3d/event": "0.2.11"
+    "@feng3d/event": "0.2.12"
   },
   "gitHead": "acbb4394b3829f71728b323edb37ec478d785b31"
 }
