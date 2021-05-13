@@ -1,6 +1,6 @@
+import { globalEmitter } from "@feng3d/event";
 import { Behaviour } from "../component/Behaviour";
 import { RegisterComponent } from "../component/Component";
-import { globalEmitter } from "../event/GlobalEmitter";
 import { AddComponentMenu } from "../Menu";
 import { classUtils } from "../polyfill/ClassUtils";
 import { oav } from "../utils/ObjectView";

@@ -1,6 +1,6 @@
 import { Component, Components } from "../component/Component";
 import { Component3DEventMap } from "../component/Component3D";
-import { Event } from "../event/EventEmitter";
+import { Event } from "@feng3d/event";
 import { Geometry } from "../geometry/Geometry";
 import { Constructor, gPartial, IDisposable } from "../polyfill/Types";
 import { oav } from "../utils/ObjectView";

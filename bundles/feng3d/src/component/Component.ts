@@ -2,7 +2,7 @@ import { Camera } from "../cameras/Camera";
 import { Entity, EntityEventMap } from "../core/Entity";
 import { Feng3dObject } from "../core/Feng3dObject";
 import { ScriptComponent } from "../core/ScriptComponent";
-import { Event } from "../event/EventEmitter";
+import { Event } from "@feng3d/event";
 import { Constructor, IDisposable } from "../polyfill/Types";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";

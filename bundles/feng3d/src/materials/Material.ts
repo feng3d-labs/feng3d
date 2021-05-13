@@ -1,7 +1,7 @@
 import { AssetData } from "../core/AssetData";
 import { Feng3dObject } from "../core/Feng3dObject";
 import { HideFlags } from "../core/HideFlags";
-import { globalEmitter } from "../event/GlobalEmitter";
+import { globalEmitter } from "@feng3d/event";
 import { gPartial } from "../polyfill/Types";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { RenderParams } from "../renderer/data/RenderParams";

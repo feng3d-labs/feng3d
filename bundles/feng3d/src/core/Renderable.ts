@@ -1,6 +1,6 @@
 import { Camera } from "../cameras/Camera";
 import { RegisterComponent } from "../component/Component";
-import { Event } from "../event/EventEmitter";
+import { Event } from "@feng3d/event";
 import { Geometry, GeometryLike } from "../geometry/Geometry";
 import { LightPicker } from "../light/pickers/LightPicker";
 import { Material } from "../materials/Material";

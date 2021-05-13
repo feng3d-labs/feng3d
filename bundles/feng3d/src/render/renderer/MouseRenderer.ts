@@ -1,6 +1,6 @@
+import { EventEmitter } from "@feng3d/event";
 import { Entity, EntityEventMap } from "../../core/Entity";
 import { Renderable } from "../../core/Renderable";
-import { EventEmitter } from "../../event/EventEmitter";
 import { Rectangle } from "../../math/geom/Rectangle";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { GL } from "../../renderer/gl/GL";

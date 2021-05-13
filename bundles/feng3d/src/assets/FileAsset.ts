@@ -1,4 +1,4 @@
-import { event } from "../event/FEvent";
+import { event } from "@feng3d/event";
 import { pathUtils } from "../filesystem/PathUtils";
 import { serialize } from "../utils/Serialization";
 import { ticker } from "../utils/Ticker";

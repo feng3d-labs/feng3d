@@ -1,4 +1,4 @@
-import { event } from '../event/FEvent';
+import { event } from '@feng3d/event';
 import { FunctionPropertyNames } from "../polyfill/Types";
 import { uuid } from "./Uuid";
 

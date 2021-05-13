@@ -1,7 +1,7 @@
 import { Behaviour } from "../component/Behaviour";
 import { RegisterComponent } from "../component/Component";
 import { RunEnvironment } from "../core/RunEnvironment";
-import { Event } from "../event/EventEmitter";
+import { Event } from "@feng3d/event";
 import { Vector2 } from "../math/geom/Vector2";
 import { Vector3 } from "../math/geom/Vector3";
 import { AddComponentMenu } from "../Menu";

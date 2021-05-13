@@ -1,6 +1,6 @@
 import { ShortCut } from "../ShortCut";
 import { KeyState } from "./KeyState";
-import { Event } from "../../event/EventEmitter";
+import { Event } from "@feng3d/event";
 
 /**
  * 快捷键捕获

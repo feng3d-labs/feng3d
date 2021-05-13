@@ -1,4 +1,4 @@
-import { globalEmitter } from "../event/GlobalEmitter";
+import { globalEmitter } from "@feng3d/event";
 import { dataTransform } from "../polyfill/DataTransform";
 import { _indexedDB } from "./base/_IndexedDB";
 import { FSType } from "./FSType";
