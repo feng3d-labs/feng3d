@@ -1,4 +1,4 @@
-import { ov } from "../utils/ObjectView";
+import { ov } from "@feng3d/objectview";
 import { AssetType } from "./AssetType";
 import { FileAsset, setAssetTypeClass } from "./FileAsset";
 

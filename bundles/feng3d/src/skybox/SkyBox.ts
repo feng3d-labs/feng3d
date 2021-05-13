@@ -5,8 +5,8 @@ import { AddComponentMenu } from "../Menu";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
 import { TextureCube } from "../textures/TextureCube";
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 
 declare module "../component/Component"
 {

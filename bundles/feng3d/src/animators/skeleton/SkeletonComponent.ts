@@ -1,11 +1,11 @@
 import { Matrix4x4 } from "@feng3d/math";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { RegisterComponent } from "../../component/Component";
 import { Component3D } from "../../component/Component3D";
 import { Entity } from "../../core/Entity";
 import { HideFlags } from "../../core/HideFlags";
 import { Node3D } from "../../core/Node3D";
-import { oav } from "../../utils/ObjectView";
-import { serialize } from "../../utils/Serialization";
 import { SkeletonJoint } from "./Skeleton";
 
 declare module "../../component/Component"

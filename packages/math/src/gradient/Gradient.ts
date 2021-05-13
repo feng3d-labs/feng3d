@@ -1,4 +1,4 @@
-import { serialize } from "../../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 import { Color3 } from "../Color3";
 import { Color4 } from "../Color4";
 import { GradientAlphaKey } from "./GradientAlphaKey";

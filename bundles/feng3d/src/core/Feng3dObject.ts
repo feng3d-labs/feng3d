@@ -1,6 +1,6 @@
 import { EventEmitter } from "@feng3d/event";
 import { Constructor, IDisposable } from "@feng3d/polyfill";
-import { serialization, serialize } from "../utils/Serialization";
+import { serialization, serialize } from "@feng3d/serialization";
 import { HideFlags } from "./HideFlags";
 
 /**

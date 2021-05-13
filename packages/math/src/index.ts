@@ -27,6 +27,7 @@ export { TriangleGeometry } from './geom/TriangleGeometry';
 export type { Vector } from './geom/Vector';
 export { Vector2 } from './geom/Vector2';
 export { Vector3 } from './geom/Vector3';
+export type { IVector3 } from './geom/Vector3';
 export { Vector4 } from './geom/Vector4';
 export { Gradient } from './gradient/Gradient';
 export type { GradientAlphaKey } from './gradient/GradientAlphaKey';
@@ -55,3 +56,4 @@ export { QuadraticBezierCurve3 } from './shape/curves/QuadraticBezierCurve3';
 export { SplineCurve2 } from './shape/curves/SplineCurve2';
 export { Earcut } from './shape/Earcut';
 export { ShapeUtils } from './shape/ShapeUtils';
+

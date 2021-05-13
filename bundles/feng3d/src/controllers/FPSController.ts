@@ -6,7 +6,7 @@ import { Vector2 } from "@feng3d/math";
 import { Vector3 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
 import { windowEventProxy } from "../shortcut/WindowEventProxy";
-import { oav } from "../utils/ObjectView";
+import { oav } from "@feng3d/objectview";
 
 declare module "../component/Component"
 {

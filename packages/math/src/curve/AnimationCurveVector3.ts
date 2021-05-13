@@ -1,4 +1,4 @@
-import { serialize } from "../../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 import { Vector3 } from "../geom/Vector3";
 import { AnimationCurve } from "./AnimationCurve";
 

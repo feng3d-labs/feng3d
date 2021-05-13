@@ -1,17 +1,14 @@
+import type { IVector3 } from "@feng3d/math";
+import { Box3, Matrix4x4, Quaternion, Ray3, Vector3 } from "@feng3d/math";
+import { oav } from "@feng3d/objectview";
+import { Constructor } from "@feng3d/polyfill";
+import { serialize } from "@feng3d/serialization";
 import { AssetType } from "../assets/AssetType";
 import { Camera } from "../cameras/Camera";
 import { Component, Components, RegisterComponent } from "../component/Component";
 import type { Component3DEventMap } from "../component/Component3D";
-import { Box3 } from "@feng3d/math";
-import { Matrix4x4 } from "@feng3d/math";
-import { Quaternion } from "@feng3d/math";
-import { Ray3 } from "@feng3d/math";
-import { IVector3, Vector3 } from "@feng3d/math";
-import { Constructor } from "@feng3d/polyfill";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
 import { BoundingBox } from "./BoundingBox";
 
 declare module "../component/Component3D"

@@ -15,7 +15,7 @@ import { GL } from "../renderer/gl/GL";
 import { Scene } from "../scene/Scene";
 import { windowEventProxy } from "../shortcut/WindowEventProxy";
 import { skyboxRenderer } from "../skybox/SkyboxRenderer";
-import { serialization } from "../utils/Serialization";
+import { serialization } from "@feng3d/serialization";
 import { ticker } from "../utils/Ticker";
 import { Entity } from "./Entity";
 import { Feng3dObject } from "./Feng3dObject";

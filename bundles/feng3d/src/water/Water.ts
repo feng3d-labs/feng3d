@@ -10,7 +10,7 @@ import { PlaneGeometry } from "../primitives/PlaneGeometry";
 import { FrameBufferObject } from "../render/FrameBufferObject";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
-import { serialization } from "../utils/Serialization";
+import { serialization } from "@feng3d/serialization";
 import { WaterUniforms } from "./WaterMaterial";
 
 declare module "../component/Component"

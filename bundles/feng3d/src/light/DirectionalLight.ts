@@ -7,7 +7,7 @@ import { Box3 } from "@feng3d/math";
 import { Vector3 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
 import { Scene } from "../scene/Scene";
-import { serialization } from "../utils/Serialization";
+import { serialization } from "@feng3d/serialization";
 import { Light } from "./Light";
 import { LightType } from "./LightType";
 

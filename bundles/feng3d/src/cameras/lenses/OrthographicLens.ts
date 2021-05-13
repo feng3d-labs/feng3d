@@ -1,5 +1,5 @@
-import { oav } from "../../utils/ObjectView";
-import { serialize } from "../../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { watch } from "../../utils/Watcher";
 import { Projection } from "../Projection";
 import { LensBase } from "./LensBase";

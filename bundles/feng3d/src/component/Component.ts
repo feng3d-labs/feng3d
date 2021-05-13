@@ -6,7 +6,7 @@ import { Event } from "@feng3d/event";
 import { Constructor, IDisposable } from "@feng3d/polyfill";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
-import { serialize } from "../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 
 interface ComponentInfo
 {

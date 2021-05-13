@@ -10,8 +10,8 @@ import { RenderMode } from "../renderer/gl/enums/RenderMode";
 import { shaderlib } from "../renderer/shader/ShaderLib";
 import { Texture2D } from "../textures/Texture2D";
 import { TextureCube } from "../textures/TextureCube";
-import { oav } from "../utils/ObjectView";
-import { serialization, serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialization, serialize } from "@feng3d/serialization";
 import { watch } from "../utils/Watcher";
 
 export interface UniformsTypes { }

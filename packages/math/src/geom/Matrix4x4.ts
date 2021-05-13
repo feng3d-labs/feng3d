@@ -1,4 +1,4 @@
-import { serialize } from "../../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 import { defaultRotationOrder, RotationOrder } from "../enums/RotationOrder";
 import { Matrix3x3 } from "./Matrix3x3";
 import { Quaternion } from "./Quaternion";

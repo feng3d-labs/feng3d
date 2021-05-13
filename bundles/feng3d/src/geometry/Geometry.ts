@@ -13,8 +13,8 @@ import { Attributes } from "../renderer/data/Attributes";
 import { Index } from "../renderer/data/Index";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { CullFace } from "../renderer/gl/enums/CullFace";
-import { oav } from "../utils/ObjectView";
-import { serialization, serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialization, serialize } from "@feng3d/serialization";
 import { geometryUtils } from "./GeometryUtils";
 
 export interface GeometryTypes { }

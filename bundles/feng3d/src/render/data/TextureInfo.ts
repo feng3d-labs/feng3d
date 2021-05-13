@@ -9,8 +9,8 @@ import { TextureMinFilter } from "../../renderer/gl/enums/TextureMinFilter";
 import { TextureType } from "../../renderer/gl/enums/TextureType";
 import { TextureWrap } from "../../renderer/gl/enums/TextureWrap";
 import { ImageUtil } from "../../utils/ImageUtil";
-import { oav } from "../../utils/ObjectView";
-import { serialize } from "../../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { watch } from "../../utils/Watcher";
 
 export enum ImageDatas

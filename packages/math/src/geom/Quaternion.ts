@@ -1,4 +1,4 @@
-import { serialize } from "../../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 import { Matrix4x4 } from "./Matrix4x4";
 import { Vector3 } from "./Vector3";
 

@@ -1,5 +1,5 @@
 import { Attributes } from "../renderer/data/Attributes";
-import { serialize } from "../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 import { Geometry } from "./Geometry";
 
 export interface GeometryTypes { CustomGeometry: CustomGeometry }

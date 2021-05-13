@@ -3,8 +3,8 @@ import { Color4 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { Component, RegisterComponent } from "./Component";
 
 declare module "./Component"

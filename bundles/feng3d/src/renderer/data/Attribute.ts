@@ -1,4 +1,4 @@
-import { serialize } from "../../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 import { watch } from "../../utils/Watcher";
 import { GLArrayType } from "../gl/enums/GLArrayType";
 import type { GL } from "../gl/GL";

@@ -3,8 +3,8 @@ import { MeshRenderer } from "../core/MeshRenderer";
 import { Material } from "../materials/Material";
 import { Color4 } from "@feng3d/math";
 import { Vector3 } from "@feng3d/math";
-import { oav } from "../utils/ObjectView";
-import { serialize, serialization } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize, serialization } from "@feng3d/serialization";
 import { watch } from "../utils/Watcher";
 import { Geometry } from "./Geometry";
 

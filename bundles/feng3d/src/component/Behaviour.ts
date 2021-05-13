@@ -1,6 +1,6 @@
 import { RunEnvironment } from "../core/RunEnvironment";
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { RegisterComponent } from "./Component";
 import { Component3D } from "./Component3D";
 

@@ -1,4 +1,4 @@
-import { serialize } from "../../utils/Serialization";
+import { serialize } from "@feng3d/serialization";
 import { AnimationCurve } from "./AnimationCurve";
 import { MinMaxCurveMode } from "./MinMaxCurveMode";
 

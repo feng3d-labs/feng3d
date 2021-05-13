@@ -15,8 +15,8 @@ import { Color4 } from "@feng3d/math";
 import { Ray3 } from "@feng3d/math";
 import { RenderMode } from "../renderer/gl/enums/RenderMode";
 import { SkyBox } from "../skybox/SkyBox";
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { ticker } from "../utils/Ticker";
 import { ScenePickCache } from "./ScenePickCache";
 

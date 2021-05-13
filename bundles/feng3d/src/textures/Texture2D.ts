@@ -5,7 +5,7 @@ import { loader } from "../filesystem/base/Loader";
 import { ImageDatas, TextureInfo } from "../render/data/TextureInfo";
 import { TextureFormat } from "../renderer/gl/enums/TextureFormat";
 import { TextureType } from "../renderer/gl/enums/TextureType";
-import { serialization, serialize } from "../utils/Serialization";
+import { serialization, serialize } from "@feng3d/serialization";
 
 export interface Texture2DEventMap
 {

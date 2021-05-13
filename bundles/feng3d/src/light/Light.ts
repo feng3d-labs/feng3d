@@ -14,8 +14,8 @@ import { FrameBufferObject } from "../render/FrameBufferObject";
 import { BlendFactor } from "../renderer/gl/enums/BlendFactor";
 import { Scene } from "../scene/Scene";
 import { RenderTargetTexture2D } from "../textures/RenderTargetTexture2D";
-import { oav } from "../utils/ObjectView";
-import { serialization, serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialization, serialize } from "@feng3d/serialization";
 import { LightType } from "./LightType";
 import { ShadowType } from "./shadow/ShadowType";
 

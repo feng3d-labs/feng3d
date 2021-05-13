@@ -1,14 +1,8 @@
+import { Color3, Color4, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4 } from "@feng3d/math";
 import { DirectionalLight } from "../../light/DirectionalLight";
 import { LightType } from "../../light/LightType";
 import { PointLight } from "../../light/PointLight";
 import { SpotLight } from "../../light/SpotLight";
-import { Color3 } from "@feng3d/math";
-import { Color4 } from "@feng3d/math";
-import { Matrix3x3 } from "../../math/geom/Matrix3x3";
-import { Matrix4x4 } from "@feng3d/math";
-import { Vector2 } from "@feng3d/math";
-import { Vector3 } from "@feng3d/math";
-import { Vector4 } from "@feng3d/math";
 import { Texture2D } from "../../textures/Texture2D";
 import { TextureCube } from "../../textures/TextureCube";
 

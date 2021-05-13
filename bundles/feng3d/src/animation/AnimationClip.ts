@@ -1,7 +1,7 @@
 import { AssetType } from "../assets/AssetType";
 import { Feng3dObject } from "../core/Feng3dObject";
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { PropertyClip } from "./PropertyClip";
 
 export class AnimationClip extends Feng3dObject

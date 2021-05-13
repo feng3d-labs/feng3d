@@ -1,5 +1,5 @@
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { Color3 } from "./Color3";
 import { Vector4 } from "./geom/Vector4";
 

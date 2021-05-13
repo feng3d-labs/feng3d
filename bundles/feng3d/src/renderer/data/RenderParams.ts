@@ -1,5 +1,5 @@
-import { oav } from "../../utils/ObjectView";
-import { serialize } from "../../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { BlendEquation } from "../gl/enums/BlendEquation";
 import { BlendFactor } from "../gl/enums/BlendFactor";
 import { ColorMask } from "../gl/enums/ColorMask";

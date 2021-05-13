@@ -2,8 +2,8 @@ import { Behaviour } from "../component/Behaviour";
 import { RegisterComponent } from "../component/Component";
 import { fs } from "../filesystem/ReadFS";
 import { AddComponentMenu } from "../Menu";
-import { oav } from "../utils/ObjectView";
-import { serialize } from "../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { watch } from "../utils/Watcher";
 import { audioCtx, globalGain } from "./AudioListener";
 

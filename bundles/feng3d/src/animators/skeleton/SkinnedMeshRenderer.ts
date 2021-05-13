@@ -6,8 +6,8 @@ import { Renderable } from "../../core/Renderable";
 import { Matrix4x4 } from "@feng3d/math";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { Scene } from "../../scene/Scene";
-import { oav } from "../../utils/ObjectView";
-import { serialize } from "../../utils/Serialization";
+import { oav } from "@feng3d/objectview";
+import { serialize } from "@feng3d/serialization";
 import { SkeletonComponent } from "./SkeletonComponent";
 
 declare module "../../component/Component"
