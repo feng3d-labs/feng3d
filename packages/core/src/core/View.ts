@@ -1,21 +1,18 @@
+import { Ray3, Rectangle, Vector2, Vector3 } from "@feng3d/math";
+import { GL } from "@feng3d/renderer";
+import { serialization } from "@feng3d/serialization";
+import { windowEventProxy } from "@feng3d/shortcut";
 import { AudioListener } from "../audio/AudioListener";
 import { Camera } from "../cameras/Camera";
 import { Component3DEventMap } from "../component/Component3D";
 import { DirectionalLight } from "../light/DirectionalLight";
 import { ShadowType } from "../light/shadow/ShadowType";
-import { Ray3 } from "@feng3d/math";
-import { Rectangle } from "@feng3d/math";
-import { Vector2 } from "@feng3d/math";
-import { Vector3 } from "@feng3d/math";
 import { forwardRenderer } from "../render/renderer/ForwardRenderer";
 import { outlineRenderer } from "../render/renderer/OutlineRenderer";
 import { shadowRenderer } from "../render/renderer/ShadowRenderer";
 import { wireframeRenderer } from "../render/renderer/WireframeRenderer";
-import { GL } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
-import { windowEventProxy } from "@feng3d/shortcut";
 import { skyboxRenderer } from "../skybox/SkyboxRenderer";
-import { serialization } from "@feng3d/serialization";
 import { ticker } from "../utils/Ticker";
 import { Entity } from "./Entity";
 import { Feng3dObject } from "./Feng3dObject";
@@ -160,17 +157,13 @@ export class View extends Feng3dObject
         {
             event.preventDefault();
             this.contextLost = true;
-            // #ifdef DEBUG
             console.log('GraphicsDevice: WebGL context lost.');
-            // #endif
         }, false);
 
         canvas.addEventListener("webglcontextrestored", () =>
         {
             this.contextLost = false;
-            // #ifdef DEBUG
             console.log('GraphicsDevice: WebGL context restored.');
-            // #endif
         }, false);
 
         this.scene = scene || serialization.setValue(new Entity(), { name: "scene" }).addComponent(Scene);
