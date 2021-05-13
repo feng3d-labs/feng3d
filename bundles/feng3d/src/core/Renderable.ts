@@ -13,6 +13,7 @@ import { Scene } from "../scene/Scene";
 import { oav } from "../utils/ObjectView";
 import { serialize } from "../utils/Serialization";
 import { watch } from "../utils/Watcher";
+import { Node3D } from "./Node3D";
 import { RayCastable } from "./RayCastable";
 
 declare module "../component/Component"
@@ -201,4 +202,44 @@ export class Renderable extends RayCastable
         event.data.bounds.push(this.geometry.bounding);
     }
 
+}
+
+declare module "./Node3D"
+{
+    interface Node3D
+    {
+        /**
+         * 是否加载完成
+         */
+        isSelfLoaded: boolean;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onSelfLoadCompleted(callback: () => void): void;
+    }
+}
+
+Object.defineProperty(Node3D.prototype, "isSelfLoaded", {
+    get: function get(this: Node3D)
+    {
+        var model = this.getComponent(Renderable);
+        if (model) return model.isLoaded
+        return true;
+    }
+});
+
+Node3D.prototype.onSelfLoadCompleted = function onSelfLoadCompleted(this: Node3D, callback: () => void)
+{
+    if (this.isSelfLoaded)
+    {
+        callback();
+        return;
+    }
+    var model = this.getComponent(Renderable);
+    if (model)
+    {
+        model.onLoadCompleted(callback);
+    }
+    else callback();
 }

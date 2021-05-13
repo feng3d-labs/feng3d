@@ -13,7 +13,6 @@ import { Scene } from "../scene/Scene";
 import { oav } from "../utils/ObjectView";
 import { serialize } from "../utils/Serialization";
 import { BoundingBox } from "./BoundingBox";
-import { Renderable } from "./Renderable";
 
 declare module "../component/Component3D"
 {
@@ -1192,35 +1191,6 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
             this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
         this.emit("updateLocalToWorldMatrix", this);
         console.assert(!isNaN(this._localToWorldMatrix.elements[0]));
-    }
-
-    /**
-     * 是否加载完成
-     */
-    get isSelfLoaded()
-    {
-        var model = this.getComponent(Renderable);
-        if (model) return model.isLoaded
-        return true;
-    }
-
-    /**
-     * 已加载完成或者加载完成时立即调用
-     * @param callback 完成回调
-     */
-    onSelfLoadCompleted(callback: () => void)
-    {
-        if (this.isSelfLoaded)
-        {
-            callback();
-            return;
-        }
-        var model = this.getComponent(Renderable);
-        if (model)
-        {
-            model.onLoadCompleted(callback);
-        }
-        else callback();
     }
 
     /**
