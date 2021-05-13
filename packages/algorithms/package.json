@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/algorithms",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
   "standalone": true,
   "types": "dist/index.d.ts",
