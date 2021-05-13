@@ -1,4 +1,4 @@
-import { dataTransform } from "../polyfill/DataTransform";
+import { dataTransform } from "@feng3d/polyfill";
 import { Component } from "./Component";
 
 /**

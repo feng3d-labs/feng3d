@@ -1,5 +1,5 @@
 import { AssetType } from "../assets/AssetType";
-import { classUtils, __class__ } from "../polyfill/ClassUtils";
+import { classUtils, __class__ } from "@feng3d/polyfill";
 import { serialization, serialize } from "../utils/Serialization";
 import { Feng3dObject } from "./Feng3dObject";
 

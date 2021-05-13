@@ -1,8 +1,8 @@
+import { dataTransform } from "@feng3d/polyfill";
 import { Feng3dObject } from "../../core/Feng3dObject";
 import { ColorKeywords } from "../../math/Color3";
 import { Color4 } from "../../math/Color4";
 import { Vector2 } from "../../math/geom/Vector2";
-import { dataTransform } from "../../polyfill/DataTransform";
 import { Texture } from "../../renderer/data/Texture";
 import { TextureDataType } from "../../renderer/gl/enums/TextureDataType";
 import { TextureFormat } from "../../renderer/gl/enums/TextureFormat";

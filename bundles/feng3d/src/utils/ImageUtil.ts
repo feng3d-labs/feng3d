@@ -4,7 +4,7 @@ import { AnimationCurve } from "../math/curve/AnimationCurve";
 import { Rectangle } from "../math/geom/Rectangle";
 import { Vector2 } from "../math/geom/Vector2";
 import { Gradient } from "../math/gradient/Gradient";
-import { dataTransform } from "../polyfill/DataTransform";
+import { dataTransform } from "@feng3d/polyfill";
 
 
 /**

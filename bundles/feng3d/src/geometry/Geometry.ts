@@ -7,7 +7,7 @@ import { Matrix4x4 } from "../math/geom/Matrix4x4";
 import { Ray3 } from "../math/geom/Ray3";
 import { Vector2 } from "../math/geom/Vector2";
 import { Vector3 } from "../math/geom/Vector3";
-import { gPartial } from "../polyfill/Types";
+import { gPartial } from "@feng3d/polyfill";
 import { Attribute } from "../renderer/data/Attribute";
 import { Attributes } from "../renderer/data/Attributes";
 import { Index } from "../renderer/data/Index";

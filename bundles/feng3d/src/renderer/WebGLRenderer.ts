@@ -1,4 +1,4 @@
-import { lazy } from "../polyfill/Types";
+import { lazy } from "@feng3d/polyfill";
 import { Attribute } from "./data/Attribute";
 import { Index } from "./data/Index";
 import { RenderAtomic, RenderAtomicData } from "./data/RenderAtomic";

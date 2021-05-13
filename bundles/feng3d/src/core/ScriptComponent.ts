@@ -2,7 +2,7 @@ import { globalEmitter } from "@feng3d/event";
 import { Behaviour } from "../component/Behaviour";
 import { RegisterComponent } from "../component/Component";
 import { AddComponentMenu } from "../Menu";
-import { classUtils } from "../polyfill/ClassUtils";
+import { classUtils } from "@feng3d/polyfill";
 import { oav } from "../utils/ObjectView";
 import { serialization, serialize } from "../utils/Serialization";
 import { watch } from "../utils/Watcher";

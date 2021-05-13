@@ -1,6 +1,6 @@
 import { MouseEventMap } from "../core/Mouse3DManager";
 import { Node3D } from "../core/Node3D";
-import { Constructor } from "../polyfill/Types";
+import { Constructor } from "@feng3d/polyfill";
 import { Component, ComponentEventMap, Components, RegisterComponent } from "./Component";
 
 

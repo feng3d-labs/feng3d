@@ -1,4 +1,4 @@
-import { dataTransform } from "../polyfill/DataTransform";
+import { dataTransform } from "@feng3d/polyfill";
 import { IReadWriteFS } from "./IReadWriteFS";
 import { pathUtils } from "./PathUtils";
 import { ReadFS } from "./ReadFS";

@@ -1,5 +1,5 @@
 import { event } from '@feng3d/event';
-import { FunctionPropertyNames } from "../polyfill/Types";
+import { FunctionPropertyNames } from "@feng3d/polyfill";
 import { uuid } from "./Uuid";
 
 type Wraps<T, K extends keyof T> = {

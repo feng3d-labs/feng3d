@@ -1,5 +1,5 @@
-import { classUtils, __class__ } from "../polyfill/ClassUtils";
-import { gPartial } from "../polyfill/Types";
+import { classUtils, __class__ } from "@feng3d/polyfill";
+import { gPartial } from "@feng3d/polyfill";
 
 /**
  * 序列化装饰器

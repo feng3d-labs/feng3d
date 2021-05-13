@@ -1,7 +1,7 @@
 import { Camera } from "../../cameras/Camera";
 import { defaultRotationOrder } from "../../math/enums/RotationOrder";
 import { Vector4 } from "../../math/geom/Vector4";
-import { lazy, LazyObject } from "../../polyfill/Types";
+import { lazy, LazyObject } from "@feng3d/polyfill";
 import { Uniforms } from "../../renderer/data/Uniform";
 import { GL } from "../../renderer/gl/GL";
 import { Scene } from "../../scene/Scene";

@@ -2,7 +2,7 @@ import { Camera } from "../../cameras/Camera";
 import { WireframeComponent } from "../../component/WireframeComponent";
 import { Renderable } from "../../core/Renderable";
 import { Color4 } from "../../math/Color4";
-import { lazy } from "../../polyfill/Types";
+import { lazy } from "@feng3d/polyfill";
 import { Index } from "../../renderer/data/Index";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { Shader } from "../../renderer/data/Shader";

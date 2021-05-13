@@ -7,7 +7,7 @@ import { Matrix4x4 } from "../math/geom/Matrix4x4";
 import { Quaternion } from "../math/geom/Quaternion";
 import { Ray3 } from "../math/geom/Ray3";
 import { IVector3, Vector3 } from "../math/geom/Vector3";
-import { Constructor } from "../polyfill/Types";
+import { Constructor } from "@feng3d/polyfill";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
 import { oav } from "../utils/ObjectView";

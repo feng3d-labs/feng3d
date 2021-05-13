@@ -2,7 +2,7 @@ import { Component, Components } from "../component/Component";
 import { Component3DEventMap } from "../component/Component3D";
 import { Event } from "@feng3d/event";
 import { Geometry } from "../geometry/Geometry";
-import { Constructor, gPartial, IDisposable } from "../polyfill/Types";
+import { Constructor, gPartial, IDisposable } from "@feng3d/polyfill";
 import { oav } from "../utils/ObjectView";
 import { serialization, serialize } from "../utils/Serialization";
 import { Feng3dObject } from "./Feng3dObject";

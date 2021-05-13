@@ -3,7 +3,7 @@ import { Entity, EntityEventMap } from "../core/Entity";
 import { Feng3dObject } from "../core/Feng3dObject";
 import { ScriptComponent } from "../core/ScriptComponent";
 import { Event } from "@feng3d/event";
-import { Constructor, IDisposable } from "../polyfill/Types";
+import { Constructor, IDisposable } from "@feng3d/polyfill";
 import { RenderAtomic } from "../renderer/data/RenderAtomic";
 import { Scene } from "../scene/Scene";
 import { serialize } from "../utils/Serialization";

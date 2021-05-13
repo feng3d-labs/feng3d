@@ -1,8 +1,8 @@
 import { AssetData } from "../../core/AssetData";
 import { pathUtils } from "../../filesystem/PathUtils";
 import { fs, ReadFS } from "../../filesystem/ReadFS";
-import { classUtils, __class__ } from "../../polyfill/ClassUtils";
-import { Constructor, gPartial } from "../../polyfill/Types";
+import { classUtils, __class__ } from "@feng3d/polyfill";
+import { Constructor, gPartial } from "@feng3d/polyfill";
 import { path } from "../../utils/Path";
 import { serialization } from "../../utils/Serialization";
 import { task } from "../../utils/Task";

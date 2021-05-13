@@ -1,4 +1,4 @@
-import { Lazy, lazy, LazyObject } from "../../polyfill/Types";
+import { Lazy, lazy, LazyObject } from "@feng3d/polyfill";
 import { ShaderMacro } from "../shader/Macro";
 import { Attribute } from "./Attribute";
 import { Attributes } from "./Attributes";
