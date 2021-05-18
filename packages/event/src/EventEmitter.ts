@@ -224,7 +224,7 @@ export class EventEmitter<T = any>
                 break;
             }
         }
-        for (let i = 0; i < listeners.length; i++)
+        for (i = 0; i < listeners.length; i++)
         {
             const element = listeners[i];
 
