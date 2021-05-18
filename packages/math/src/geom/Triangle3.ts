@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 import { Line3 } from "./Line3";
 import { Plane } from "./Plane";
 import { Segment3 } from "./Segment3";
@@ -266,7 +267,7 @@ export class Triangle3
      * @param p 点
      * @param precision 精度，如果距离小于精度则判定为在三角形上
      */
-    onWithPoint(p: Vector3, precision = Math.PRECISION)
+    onWithPoint(p: Vector3, precision = mathUtil.PRECISION)
     {
         var p0 = this.p0;
         var p1 = this.p1;
@@ -274,7 +275,7 @@ export class Triangle3
 
         // 判断点是否在平面上
         var dot = p0.subTo(p1).cross(p1.subTo(p2)).dot(p.subTo(p0));
-        if (!Math.equals(dot, 0, precision))
+        if (!mathUtil.equals(dot, 0, precision))
             return false;
 
         // 求点的重心坐标系坐标
@@ -355,7 +356,7 @@ export class Triangle3
             v4 = p.y - p2y;
         }
         var denom = v1 * u2 - v2 * u1;
-        // if (Math.equals(denom, 0))
+        // if (mathUtil.equals(denom, 0))
         // {
         //     return null;
         // }

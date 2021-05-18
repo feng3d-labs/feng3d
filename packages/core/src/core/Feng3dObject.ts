@@ -1,5 +1,5 @@
 import { EventEmitter } from "@feng3d/event";
-import { Constructor, IDisposable } from "@feng3d/polyfill";
+import { Constructor, IDisposable, mathUtil } from "@feng3d/polyfill";
 import { serialization, serialize } from "@feng3d/serialization";
 import { HideFlags } from "./HideFlags";
 
@@ -46,7 +46,7 @@ export class Feng3dObject<T = any> extends EventEmitter<T> implements IDisposabl
     constructor()
     {
         super();
-        Object.defineProperty(this, "uuid", { value: Math.uuid() });
+        Object.defineProperty(this, "uuid", { value: mathUtil.uuid() });
         Object.defineProperty(this, "disposed", { value: false, configurable: true });
         console.assert(!Feng3dObject.objectLib[this.uuid], `唯一标识符存在重复！？`);
         Feng3dObject.objectLib[this.uuid] = this;

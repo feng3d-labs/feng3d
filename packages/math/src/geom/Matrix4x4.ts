@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 import { serialize } from "@feng3d/serialization";
 import { defaultRotationOrder, RotationOrder } from "../enums/RotationOrder";
 import { Matrix3x3 } from "./Matrix3x3";
@@ -542,7 +543,7 @@ export class Matrix4x4
         m[11] = 0;
         m[15] = 1;
         //
-        rotation = rotation.scaleNumberTo(Math.DEG2RAD);
+        rotation = rotation.scaleNumberTo(mathUtil.DEG2RAD);
         var px = position.x;
         var py = position.y;
         var pz = position.z;
@@ -685,7 +686,7 @@ export class Matrix4x4
      */
     toTRS(position = new Vector3(), rotation = new Vector3(), scale = new Vector3(), order = defaultRotationOrder)
     {
-        var clamp = Math.clamp;
+        var clamp = mathUtil.clamp;
         //
         var m = this.elements;
         var m11 = m[0], m12 = m[4], m13 = m[8];
@@ -785,7 +786,7 @@ export class Matrix4x4
         {
             console.error(`初始化矩阵时错误旋转顺序 ${order}`);
         }
-        rotation.scaleNumber(Math.RAD2DEG);
+        rotation.scaleNumber(mathUtil.RAD2DEG);
         return [position, rotation, scale];
     }
 
@@ -1120,12 +1121,12 @@ export class Matrix4x4
     /**
      * 比较矩阵是否相等
      */
-    equals(matrix: Matrix4x4, precision = Math.PRECISION)
+    equals(matrix: Matrix4x4, precision = mathUtil.PRECISION)
     {
         var r2 = matrix.elements;
         for (var i = 0; i < 16; ++i)
         {
-            if (!Math.equals(this.elements[i] - r2[i], 0, precision))
+            if (!mathUtil.equals(this.elements[i] - r2[i], 0, precision))
                 return false;
         }
 

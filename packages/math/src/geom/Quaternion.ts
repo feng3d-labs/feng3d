@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 import { serialize } from "@feng3d/serialization";
 import { Matrix4x4 } from "./Matrix4x4";
 import { Vector3 } from "./Vector3";
@@ -494,7 +495,7 @@ export class Quaternion
     fromMatrix(matrix: Matrix4x4)
     {
         var v: Vector3 = matrix.toTRS()[1];
-        v.scaleNumber(Math.RAD2DEG);
+        v.scaleNumber(mathUtil.RAD2DEG);
         this.fromEulerAngles(v.x, v.y, v.z);
         return this;
     }

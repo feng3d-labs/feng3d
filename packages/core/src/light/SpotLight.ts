@@ -1,9 +1,10 @@
+import { oav } from "@feng3d/objectview";
+import { mathUtil } from "@feng3d/polyfill";
+import { serialize } from "@feng3d/serialization";
+import { watch } from "@feng3d/watcher";
 import { PerspectiveLens } from "../cameras/lenses/PerspectiveLens";
 import { RegisterComponent } from "../component/Component";
 import { Entity } from "../core/Entity";
-import { oav } from "@feng3d/objectview";
-import { serialize } from "@feng3d/serialization";
-import { watch } from "@feng3d/watcher";
 import { Light } from "./Light";
 import { LightType } from "./LightType";
 
@@ -55,12 +56,12 @@ export class SpotLight extends Light
      */
     get coneCos()
     {
-        return Math.cos(this.angle * 0.5 * Math.DEG2RAD);
+        return Math.cos(this.angle * 0.5 * mathUtil.DEG2RAD);
     }
 
     get penumbraCos()
     {
-        return Math.cos(this.angle * 0.5 * Math.DEG2RAD * (1 - this.penumbra));
+        return Math.cos(this.angle * 0.5 * mathUtil.DEG2RAD * (1 - this.penumbra));
     }
 
     private perspectiveLens: PerspectiveLens;

@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 import { serialize } from "@feng3d/serialization";
 import { Color3 } from "../Color3";
 import { Color4 } from "../Color4";
@@ -88,7 +89,7 @@ export class Gradient
             if (t < time && time < nt)
             {
                 if (this.mode == GradientMode.Fixed) return nv;
-                return Math.mapLinear(time, t, nt, v, nv);
+                return mathUtil.mapLinear(time, t, nt, v, nv);
             }
         }
         return 1;

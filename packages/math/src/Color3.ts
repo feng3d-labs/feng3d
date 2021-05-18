@@ -1,4 +1,5 @@
 import { oav } from "@feng3d/objectview";
+import { mathUtil } from "@feng3d/polyfill";
 import { serialize } from "@feng3d/serialization";
 import { Vector3 } from "./geom/Vector3";
 
@@ -134,13 +135,13 @@ export class Color3
     /**
      * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
      */
-    equals(object: Color3, precision = Math.PRECISION)
+    equals(object: Color3, precision = mathUtil.PRECISION)
     {
-        if (!Math.equals(this.r - object.r, 0, precision))
+        if (!mathUtil.equals(this.r - object.r, 0, precision))
             return false;
-        if (!Math.equals(this.g - object.g, 0, precision))
+        if (!mathUtil.equals(this.g - object.g, 0, precision))
             return false;
-        if (!Math.equals(this.b - object.b, 0, precision))
+        if (!mathUtil.equals(this.b - object.b, 0, precision))
             return false;
         return true;
     }

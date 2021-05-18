@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 import { Box3 } from "./Box3";
 import { Matrix4x4 } from "./Matrix4x4";
 import { Plane } from "./Plane";
@@ -151,7 +152,7 @@ export class Frustum
 	 * 
 	 * @param point 
 	 */
-	containsPoint(point: Vector3, precision = Math.PRECISION)
+	containsPoint(point: Vector3, precision = mathUtil.PRECISION)
 	{
 		var planes = this.planes;
 		for (var i = 0; i < 6; i++)

@@ -1,13 +1,13 @@
 import type { IVector3 } from "@feng3d/math";
 import { Box3, Matrix4x4, Quaternion, Ray3, Vector3 } from "@feng3d/math";
 import { oav } from "@feng3d/objectview";
-import { Constructor } from "@feng3d/polyfill";
+import { Constructor, mathUtil } from "@feng3d/polyfill";
+import { RenderAtomic } from "@feng3d/renderer";
 import { serialize } from "@feng3d/serialization";
 import { AssetType } from "../assets/AssetType";
 import { Camera } from "../cameras/Camera";
 import { Component, Components, RegisterComponent } from "../component/Component";
 import type { Component3DEventMap } from "../component/Component3D";
-import { RenderAtomic } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
 import { BoundingBox } from "./BoundingBox";
 
@@ -330,7 +330,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     set orientation(value)
     {
         var angles = value.toEulerAngles();
-        angles.scaleNumber(Math.RAD2DEG);
+        angles.scaleNumber(mathUtil.RAD2DEG);
         this.rx = angles.x;
         this.ry = angles.y;
         this.rz = angles.z;

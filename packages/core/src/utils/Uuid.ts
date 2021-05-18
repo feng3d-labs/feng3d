@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 
 /**
  * 通用唯一标识符（Universally Unique Identifier）
@@ -35,7 +36,7 @@ export class Uuid
         }
         if (!object[__uuid__])
         {
-            Object.defineProperty(object, __uuid__, { value: Math.uuid() });
+            Object.defineProperty(object, __uuid__, { value: mathUtil.uuid() });
         }
         return object[__uuid__];
     }

@@ -1,6 +1,6 @@
 import { Color4, ColorKeywords, Vector2 } from "@feng3d/math";
 import { oav } from "@feng3d/objectview";
-import { dataTransform } from "@feng3d/polyfill";
+import { dataTransform, mathUtil } from "@feng3d/polyfill";
 import { Texture, TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from "@feng3d/renderer";
 import { serialize } from "@feng3d/serialization";
 import { watch } from "@feng3d/watcher";
@@ -169,9 +169,9 @@ export abstract class TextureInfo<T = any> extends Feng3dObject<T> implements Te
     {
         if (this.isRenderTarget)
         {
-            if (this.OFFSCREEN_WIDTH == 0 || !Math.isPowerOfTwo(this.OFFSCREEN_WIDTH))
+            if (this.OFFSCREEN_WIDTH == 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_WIDTH))
                 return false;
-            if (this.OFFSCREEN_HEIGHT == 0 || !Math.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
+            if (this.OFFSCREEN_HEIGHT == 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
                 return false;
             return true;
         }
@@ -182,9 +182,9 @@ export abstract class TextureInfo<T = any> extends Feng3dObject<T> implements Te
         for (let i = 0; i < pixels.length; i++)
         {
             const element = pixels[i];
-            if (element.width == 0 || !Math.isPowerOfTwo(element.width))
+            if (element.width == 0 || !mathUtil.isPowerOfTwo(element.width))
                 return false;
-            if (element.height == 0 || !Math.isPowerOfTwo(element.height))
+            if (element.height == 0 || !mathUtil.isPowerOfTwo(element.height))
                 return false;
         }
         return true;

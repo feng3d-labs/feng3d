@@ -1,5 +1,5 @@
 import { fs, pathUtils, ReadFS } from "@feng3d/filesystem";
-import { classUtils, Constructor, gPartial, __class__ } from "@feng3d/polyfill";
+import { classUtils, Constructor, gPartial, mathUtil, __class__ } from "@feng3d/polyfill";
 import { serialization } from "@feng3d/serialization";
 import { task } from "@feng3d/task";
 import { AssetData } from "../../core/AssetData";
@@ -99,7 +99,7 @@ export class ReadRS
         parent = parent || this.root;
         //
         var asset: FileAsset = new cls();
-        var assetId = Math.uuid()
+        var assetId = mathUtil.uuid()
 
         // 初始化
         asset.rs = <any>this;

@@ -1,5 +1,5 @@
 import { AnimationCurve, Color3, Color4, Gradient, Rectangle, Vector2 } from "@feng3d/math";
-import { dataTransform } from "@feng3d/polyfill";
+import { dataTransform, mathUtil } from "@feng3d/polyfill";
 
 
 /**
@@ -224,7 +224,7 @@ export class ImageUtil
         {
             for (let j = 0; j < size; j++)
             {
-                var l = Math.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
+                var l = mathUtil.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
                 var f = 1 - l;
                 f = f * f;
 
@@ -333,7 +333,7 @@ export class ImageUtil
             //
             var y = curve.getValue(i / (rect.width - 1));
 
-            y = Math.mapLinear(y, range[0], range[1], 0, 1);
+            y = mathUtil.mapLinear(y, range[0], range[1], 0, 1);
 
             var j = Math.round(y * (rect.height - 1));
 
@@ -373,8 +373,8 @@ export class ImageUtil
             var y0 = curve.getValue(i / (rect.width - 1));
             var y1 = curve1.getValue(i / (rect.width - 1));
 
-            y0 = Math.mapLinear(y0, range[0], range[1], 0, 1);
-            y1 = Math.mapLinear(y1, range[0], range[1], 0, 1);
+            y0 = mathUtil.mapLinear(y0, range[0], range[1], 0, 1);
+            y1 = mathUtil.mapLinear(y1, range[0], range[1], 0, 1);
 
             y0 = Math.round(y0 * (rect.height - 1));
             y1 = Math.round(y1 * (rect.height - 1));

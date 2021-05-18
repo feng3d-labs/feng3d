@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 import { Matrix4x4 } from "../../geom/Matrix4x4";
 import { Vector } from "../../geom/Vector";
 import { Vector3 } from "../../geom/Vector3";
@@ -287,8 +288,8 @@ export class Curve<T extends Vector>
 			{
 				vec.normalize();
 
-				const theta = Math.acos(Math.clamp(tangents[i - 1].dot(tangents[i]), - 1, 1)); // clamp for floating pt errors
-				mat.fromAxisRotate(vec, theta * Math.RAD2DEG);
+				const theta = Math.acos(mathUtil.clamp(tangents[i - 1].dot(tangents[i]), - 1, 1)); // clamp for floating pt errors
+				mat.fromAxisRotate(vec, theta * mathUtil.RAD2DEG);
 				mat.transformPoint3(normals[i], normals[i]);
 			}
 
@@ -299,7 +300,7 @@ export class Curve<T extends Vector>
 
 		if (closed === true)
 		{
-			let theta = Math.acos(Math.clamp(normals[0].dot(normals[segments]), - 1, 1));
+			let theta = Math.acos(mathUtil.clamp(normals[0].dot(normals[segments]), - 1, 1));
 			theta /= segments;
 
 			if (tangents[0].dot(normals[0].crossTo(normals[segments], vec)) > 0)
@@ -310,7 +311,7 @@ export class Curve<T extends Vector>
 			for (let i = 1; i <= segments; i++)
 			{
 				// twist a little...
-				mat.fromAxisRotate(tangents[i], theta * i * Math.RAD2DEG).transformPoint3(normals[i], normals[i]);
+				mat.fromAxisRotate(tangents[i], theta * i * mathUtil.RAD2DEG).transformPoint3(normals[i], normals[i]);
 				tangents[i].crossTo(normals[i], binormals[i]);
 			}
 		}

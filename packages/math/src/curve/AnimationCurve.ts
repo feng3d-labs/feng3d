@@ -1,3 +1,4 @@
+import { mathUtil } from "@feng3d/polyfill";
 import { serialize } from "@feng3d/serialization";
 import { AnimationCurveKeyframe } from "./AnimationCurveKeyframe";
 import { bezierCurve } from "./BezierCurve";
@@ -133,7 +134,7 @@ export class AnimationCurve
         switch (wrapMode)
         {
             case WrapMode.Clamp:
-                t = Math.clamp(t, min, max);
+                t = mathUtil.clamp(t, min, max);
                 break;
             case WrapMode.Loop:
                 t = ((t - min) % cycle + cycle) % cycle + min;
