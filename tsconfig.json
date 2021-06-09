@@ -1,39 +1,33 @@
 {
     "compilerOptions": {
-        "target": "ES2015",
+        "target": "es5",
         "allowJs": false,
         "sourceMap": true,
         "removeComments": false,
-        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "strictNullChecks": false,
+        "esModuleInterop": true,
         "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "experimentalDecorators": true,
         "baseUrl": "./",
         "paths": {
-            "@feng3d/*": [
-                "packages/*/src"
-            ],
-            "feng3d": [
-                "bundles/feng3d/src"
-            ]
+            "@pixi/*": ["packages/*/src", "packages/filters/*/src", "packages/canvas/*/src"],
+            "pixi.js": ["bundles/pixi.js/src"],
+            "pixi.js-legacy": ["bundles/pixi.js-legacy/src"]
         },
-        "outDir": "./out",
-        "declaration": true
+        "outDir": "./out"
     },
     "exclude": [
         "node_modules",
         "**/dist/**",
         "**/lib/**",
-        "**/out/**",
-        "**/tests/**",
+        "**/test/**",
         "**/scripts/**",
         "**/types/**",
+        "bundles/**/*.d.ts",
         "rollup.config.js"
-    ],
-    "ts-node": {
-        "files": true,
-        "compilerOptions": {
-            "esModuleInterop": true
-        }
-    }
+    ]
 }

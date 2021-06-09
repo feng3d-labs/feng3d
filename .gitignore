@@ -1,10 +1,42 @@
-node_modules
-editor/package-lock.json
-/package-lock.json
-/yarn.lock
-/out
-/lerna-debug.log
-**/dist
+# package.lock
+packages/**/package-lock.json
 
-**/index.d.ts
-/docs
+# sublime text files
+*.sublime*
+*.*~*.TMP
+
+# temp files
+.DS_Store
+Thumbs.db
+Desktop.ini
+npm-debug.log
+lerna-debug.log
+
+# project files
+.project
+
+# vim swap files
+*.sw*
+
+# emacs temp files
+*~
+\#*#
+
+# project ignores
+!.gitkeep
+*__temp
+node_modules
+docs
+coverage
+.nyc_output
+lib
+dist
+bundles/*/*.d.ts
+
+# jetBrains IDE ignores
+.idea
+
+# VSCode ignores
+.vscode
+pixi.code-workspace
+/yarn.lock

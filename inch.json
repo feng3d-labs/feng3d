@@ -1,0 +1,11 @@
+{
+  "files": {
+    "included": [
+      "bundles/*/src/**/*.js",
+      "packages/*/src/**/*.js"
+    ],
+    "excluded": [
+      "bundles/*/src/polyfill/"
+    ]
+  }
+}
