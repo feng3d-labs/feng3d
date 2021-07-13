@@ -35,6 +35,7 @@ export class EventEmitter<T = any>
         {
             return target;
         }
+
         return this.targetMap.get(target);
     }
 
@@ -50,6 +51,7 @@ export class EventEmitter<T = any>
         {
             eventEmitter = new EventEmitter(target);
         }
+
         return eventEmitter;
     }
 
@@ -94,6 +96,7 @@ export class EventEmitter<T = any>
     once<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority = 0): this
     {
         this.on(type, listener, thisObject, priority, true);
+
         return this;
     }
 
@@ -161,6 +164,7 @@ export class EventEmitter<T = any>
                 }
             }
         }
+
         return true;
     }
 
@@ -234,6 +238,7 @@ export class EventEmitter<T = any>
             }
         }
         listeners.splice(i, 0, { listener, thisObject, priority, once });
+
         return this;
     }
 
@@ -249,6 +254,7 @@ export class EventEmitter<T = any>
         if (!type)
         {
             this[EVENT_KEY] = undefined;
+
             return;
         }
 
@@ -259,6 +265,7 @@ export class EventEmitter<T = any>
         if (!listener)
         {
             delete objectListener[type];
+
             return;
         }
 
@@ -282,6 +289,7 @@ export class EventEmitter<T = any>
                 delete objectListener[type];
             }
         }
+
         return this;
     }
 
@@ -293,6 +301,7 @@ export class EventEmitter<T = any>
     offAll<K extends keyof T & string>(type?: K)
     {
         this.off(type);
+
         return this;
     }
 
@@ -338,6 +347,7 @@ export class EventEmitter<T = any>
             }
         }
         listeners.splice(i, 0, { listener, thisObject, priority, once });
+
         return this;
     }
 
@@ -357,6 +367,7 @@ export class EventEmitter<T = any>
             {
                 objectListener.__anyEventType__.length = 0;
             }
+
             return;
         }
         if (objectListener)
@@ -373,6 +384,7 @@ export class EventEmitter<T = any>
                 }
             }
         }
+
         return this;
     }
 

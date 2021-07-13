@@ -4,7 +4,7 @@ import { event } from './FEvent';
 /**
  * 只针对Object的事件
  */
-export const objectevent: ObjectEventDispatcher<Object, ObjectEventType> = event;
+export const objectevent: ObjectEventDispatcher<any, ObjectEventType> = event;
 
 /**
  * 用于适配不同对象对于的事件

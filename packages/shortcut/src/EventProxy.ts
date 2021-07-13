@@ -1,4 +1,4 @@
-import { Event, EventEmitter } from "@feng3d/event";
+import { Event, EventEmitter } from '@feng3d/event';
 
 /**
  * 代理 EventTarget, 处理js事件中this关键字问题
@@ -15,11 +15,11 @@ export class EventProxy<T = any> extends EventEmitter<T>
      */
     rightmouse = false;
 
-    key: string = "";
+    key = '';
 
-    keyCode: number = 0;
+    keyCode = 0;
 
-    deltaY: number = 0;
+    deltaY = 0;
 
     private listentypes: (keyof T)[] = [];
 
@@ -29,10 +29,10 @@ export class EventProxy<T = any> extends EventEmitter<T>
     }
     set target(v)
     {
-        if (this._target == v) return;
+        if (this._target === v) return;
         if (this._target)
         {
-            this.listentypes.forEach(element =>
+            this.listentypes.forEach((element) =>
             {
                 this._target.removeEventListener(element as any, this.onMouseKey);
             });
@@ -40,7 +40,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
         this._target = v;
         if (this._target)
         {
-            this.listentypes.forEach(element =>
+            this.listentypes.forEach((element) =>
             {
                 this._target.addEventListener(element as any, this.onMouseKey);
             });
@@ -65,6 +65,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
     once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number)
     {
         this.on(type as any, listener, thisObject, priority, true);
+
         return this;
     }
 
@@ -77,11 +78,12 @@ export class EventProxy<T = any> extends EventEmitter<T>
     on<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority = 0, once = false): this
     {
         super.on(type, listener, thisObject, priority, once);
-        if (this.listentypes.indexOf(type) == -1)
+        if (this.listentypes.indexOf(type) === -1)
         {
             this.listentypes.push(type);
             this._target.addEventListener(type as any, this.onMouseKey);
         }
+
         return this;
     }
 
@@ -96,16 +98,18 @@ export class EventProxy<T = any> extends EventEmitter<T>
         super.off(type, listener, thisObject);
         if (!type)
         {
-            this.listentypes.forEach(element =>
+            this.listentypes.forEach((element) =>
             {
                 this._target.removeEventListener(element as any, this.onMouseKey);
             });
             this.listentypes.length = 0;
-        } else if (!this.has(type))
+        }
+        else if (!this.has(type))
         {
             this._target.removeEventListener(type, this.onMouseKey);
             this.listentypes.splice(this.listentypes.indexOf(type), 1);
         }
+
         return this;
     }
 
@@ -121,7 +125,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
     {
         // this.clear();
 
-        if (event["clientX"] != undefined)
+        if (event.clientX !== undefined)
         {
             this.clientX = event.clientX;
             this.clientY = event.clientY;
@@ -131,27 +135,27 @@ export class EventProxy<T = any> extends EventEmitter<T>
 
         if (event instanceof MouseEvent)
         {
-            this.rightmouse = event.button == 2;
+            this.rightmouse = event.button === 2;
 
             // 处理鼠标按下时同时出发 "mousemove" 事件bug
             if (this.handleMouseMoveBug)
             {
-                if (event.type == "mousedown")
+                if (event.type === 'mousedown')
                 {
                     this.mousedownposition = { x: event.clientX, y: event.clientY };
                 }
-                if (event.type == "mousemove")
+                if (event.type === 'mousemove')
                 {
                     if (this.mousedownposition)
                     {
-                        if (this.mousedownposition.x == event.clientX && this.mousedownposition.y == event.clientY)
+                        if (this.mousedownposition.x === event.clientX && this.mousedownposition.y === event.clientY)
                         {
                             // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
                             return;
                         }
                     }
                 }
-                if (event.type == "mouseup")
+                if (event.type === 'mouseup')
                 {
                     this.mousedownposition = null;
                 }
@@ -176,7 +180,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
         // event.pageY = this.pageY;
 
         this.emit(event.type, event);
-    }
+    };
 
     /**
      * 清理数据
@@ -186,7 +190,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
         this.clientX = 0;
         this.clientY = 0;
         this.rightmouse = false;
-        this.key = "";
+        this.key = '';
         this.keyCode = 0;
         this.deltaY = 0;
     }

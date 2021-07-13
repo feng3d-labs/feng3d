@@ -1,7 +1,7 @@
-import { EventEmitter } from "@feng3d/event";
-import { KeyCapture } from "./handle/KeyCapture";
-import { KeyState } from "./handle/KeyState";
-import { ShortCutCapture } from "./handle/ShortCutCapture";
+import { EventEmitter } from '@feng3d/event';
+import { KeyCapture } from './handle/KeyCapture';
+import { KeyState } from './handle/KeyState';
+import { ShortCutCapture } from './handle/ShortCutCapture';
 
 /**
  * 初始化快捷键模块
@@ -28,130 +28,134 @@ trace("接受到命令：" + e.type);
  */
 export class ShortCut extends EventEmitter
 {
-	/**
-	 * 按键状态
-	 */
-	keyState: KeyState;
+    /**
+     * 按键状态
+     */
+    keyState: KeyState;
 
-	/**
-	 * 状态字典
-	 */
-	stateDic: {};
+    /**
+     * 状态字典
+     */
+    stateDic: { [state: string]: boolean };
 
-	/**
-	 * 按键捕获
-	 */
-	keyCapture: KeyCapture;
+    /**
+     * 按键捕获
+     */
+    keyCapture: KeyCapture;
 
-	/**
-	 * 捕获字典
-	 */
-	captureDic: {};
+    /**
+     * 捕获字典
+     */
+    captureDic: { [capture: string]: ShortCutCapture };
 
-	/**
-	 * 启动
-	 */
-	enable = true;
+    /**
+     * 启动
+     */
+    enable = true;
 
-	/**
-	 * 初始化快捷键模块
-	 */
-	constructor()
-	{
-		super();
-		this.keyState = new KeyState();
-		this.keyCapture = new KeyCapture(this)
+    /**
+     * 初始化快捷键模块
+     */
+    constructor()
+    {
+        super();
+        this.keyState = new KeyState();
+        this.keyCapture = new KeyCapture(this);
 
-		this.captureDic = {};
-		this.stateDic = {};
-	}
+        this.captureDic = {};
+        this.stateDic = {};
+    }
 
-	/**
-	 * 添加快捷键
-	 * @param shortcuts 快捷键列表
-	 */
-	addShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
-	{
-		for (var i = 0; i < shortcuts.length; i++)
-		{
-			var shortcut = shortcuts[i];
-			var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcut);
-			this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
-		}
-	}
+    /**
+     * 添加快捷键
+     * @param shortcuts 快捷键列表
+     */
+    addShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
+    {
+        for (let i = 0; i < shortcuts.length; i++)
+        {
+            const shortcut = shortcuts[i];
+            const shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcut);
 
-	/**
-	 * 删除快捷键
-	 * @param shortcuts 快捷键列表
-	 */
-	removeShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
-	{
-		for (var i = 0; i < shortcuts.length; i++)
-		{
-			var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcuts[i]);
-			var shortCutCapture: ShortCutCapture = this.captureDic[shortcutUniqueKey];
-			if (ShortCutCapture != null)
-			{
-				shortCutCapture.destroy();
-			}
-			delete this.captureDic[shortcutUniqueKey];
-		}
-	}
+            this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
+        }
+    }
 
-	/**
-	 * 移除所有快捷键
-	 */
-	removeAllShortCuts(): void
-	{
-		var keys: string[] = [];
-		var key: string;
-		for (key in this.captureDic)
-		{
-			keys.push(key);
-		}
+    /**
+     * 删除快捷键
+     * @param shortcuts 快捷键列表
+     */
+    removeShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
+    {
+        for (let i = 0; i < shortcuts.length; i++)
+        {
+            const shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcuts[i]);
+            const shortCutCapture: ShortCutCapture = this.captureDic[shortcutUniqueKey];
 
-		keys.forEach(key =>
-		{
-			var shortCutCapture: ShortCutCapture = this.captureDic[key];
-			shortCutCapture.destroy();
-			delete this.captureDic[key];
-		});
-	}
+            if (ShortCutCapture !== null)
+            {
+                shortCutCapture.destroy();
+            }
+            delete this.captureDic[shortcutUniqueKey];
+        }
+    }
 
-	/**
-	 * 激活状态
-	 * @param state 状态名称
-	 */
-	activityState(state: string): void
-	{
-		this.stateDic[state] = true;
-	}
+    /**
+     * 移除所有快捷键
+     */
+    removeAllShortCuts(): void
+    {
+        const keys: string[] = [];
+        let key: string;
 
-	/**
-	 * 取消激活状态
-	 * @param state 状态名称
-	 */
-	deactivityState(state: string): void
-	{
-		delete this.stateDic[state];
-	}
+        for (key in this.captureDic)
+        {
+            keys.push(key);
+        }
 
-	/**
-	 * 获取状态
-	 * @param state 状态名称
-	 */
-	getState(state: string): boolean
-	{
-		return !!this.stateDic[state];
-	}
+        keys.forEach((key) =>
+        {
+            const shortCutCapture: ShortCutCapture = this.captureDic[key];
 
-	/**
-	 * 获取快捷键唯一字符串
-	 */
-	private getShortcutUniqueKey(shortcut: { key: string, command?: string, stateCommand?: string, when?: string }): string
-	{
-		return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
-	}
+            shortCutCapture.destroy();
+            delete this.captureDic[key];
+        });
+    }
+
+    /**
+     * 激活状态
+     * @param state 状态名称
+     */
+    activityState(state: string): void
+    {
+        this.stateDic[state] = true;
+    }
+
+    /**
+     * 取消激活状态
+     * @param state 状态名称
+     */
+    deactivityState(state: string): void
+    {
+        delete this.stateDic[state];
+    }
+
+    /**
+     * 获取状态
+     * @param state 状态名称
+     */
+    getState(state: string): boolean
+    {
+        return !!this.stateDic[state];
+    }
+
+    /**
+     * 获取快捷键唯一字符串
+     */
+    private getShortcutUniqueKey(shortcut: { key: string, command?: string, stateCommand?: string, when?: string }): string
+    {
+        return `${shortcut.key},${shortcut.command},${shortcut.stateCommand},${shortcut.when}`;
+    }
 }
 
 /**
