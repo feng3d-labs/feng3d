@@ -106,15 +106,18 @@ export class WireframeRenderer
  */
 export const wireframeRenderer = new WireframeRenderer();
 
-declare module "@feng3d/renderer"
+declare global
 {
-    export interface RenderAtomic
+    namespace GlobalMixins
     {
-        /**
-         * 顶点索引缓冲
-         */
-        wireframeindexBuffer: Index;
+        interface RenderAtomic
+        {
+            /**
+             * 顶点索引缓冲
+             */
+            wireframeindexBuffer: Index;
 
-        wireframeShader: Shader;
+            wireframeShader: Shader;
+        }
     }
 }

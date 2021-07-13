@@ -16,7 +16,7 @@ declare module "./Component"
  * 参考
  */
 @AddComponentMenu("Rendering/CartoonComponent")
-@RegisterComponent()
+@RegisterComponent({ name: 'CartoonComponent' })
 export class CartoonComponent extends Component
 {
 
@@ -77,13 +77,16 @@ export class CartoonComponent extends Component
 }
 
 
-declare module "@feng3d/renderer"
+declare global
 {
-    export interface Uniforms
+    namespace GlobalMixins
     {
-        u_diffuseSegment: Vector4;
-        u_diffuseSegmentValue: Vector4;
+        interface Uniforms
+        {
+            u_diffuseSegment: Vector4;
+            u_diffuseSegmentValue: Vector4;
 
-        u_specularSegment: number;
+            u_specularSegment: number;
+        }
     }
 }

@@ -41,7 +41,7 @@ declare module "../component/Component"
 /**
  * 3D场景
  */
-@RegisterComponent({ single: true })
+@RegisterComponent({ name: 'Scene', single: true })
 export class Scene extends Component3D
 {
 

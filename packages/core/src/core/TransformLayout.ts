@@ -40,7 +40,7 @@ declare module "../component/Component"
  * 通过修改Transform的数值实现
  */
 @AddComponentMenu("Layout/TransformLayout")
-@RegisterComponent({ single: true })
+@RegisterComponent({ name: 'TransformLayout', single: true })
 export class TransformLayout extends Component3D
 {
     /**

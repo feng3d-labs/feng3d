@@ -12,7 +12,7 @@ declare module "../component/Component"
 /**
  * 可射线捕获
  */
-@RegisterComponent()
+@RegisterComponent({ name: 'RayCastable' })
 export class RayCastable extends Behaviour
 {
     protected _selfLocalBounds: Box3;

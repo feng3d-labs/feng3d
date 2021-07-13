@@ -243,10 +243,13 @@ var cubeDirections = [
     new Vector3(0, 0, - 1), new Vector3(0, 1, 0), new Vector3(0, - 1, 0)
 ];
 
-declare module "@feng3d/renderer"
+declare global
 {
-    export interface RenderAtomic
+    namespace GlobalMixins
     {
-        shadowShader: Shader;
+        interface RenderAtomic
+        {
+            shadowShader: Shader;
+        }
     }
 }

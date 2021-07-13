@@ -12,7 +12,5 @@
     "lib/",
     "dist/"
   ],
-  "dependencies": {
-    "@feng3d/polyfill": "0.3.3"
-  }
+  "dependencies": {}
 }

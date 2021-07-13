@@ -13,7 +13,7 @@ declare module "./Component"
 }
 
 @AddComponentMenu("Rendering/OutLineComponent")
-@RegisterComponent()
+@RegisterComponent({ name: 'OutLineComponent' })
 export class OutLineComponent extends Component
 {
     __class__: "feng3d.OutLineComponent";
@@ -38,22 +38,25 @@ export class OutLineComponent extends Component
     }
 }
 
-declare module "@feng3d/renderer"
+declare global
 {
-    export interface Uniforms
+    namespace GlobalMixins
     {
-        /**
-         * 描边宽度
-         */
-        u_outlineSize: number;
-        /**
-         * 描边颜色
-         */
-        u_outlineColor: Color4;
-        /**
-         * 描边形态因子
-         * (0.0，1.0):0.0表示延法线方向，1.0表示延顶点方向
-         */
-        u_outlineMorphFactor: number;
+        interface Uniforms
+        {
+            /**
+             * 描边宽度
+             */
+            u_outlineSize: number;
+            /**
+             * 描边颜色
+             */
+            u_outlineColor: Color4;
+            /**
+             * 描边形态因子
+             * (0.0，1.0):0.0表示延法线方向，1.0表示延顶点方向
+             */
+            u_outlineMorphFactor: number;
+        }
     }
 }

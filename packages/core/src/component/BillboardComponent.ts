@@ -11,7 +11,7 @@ declare module "../component/Component"
 }
 
 @AddComponentMenu("Layout/BillboardComponent")
-@RegisterComponent()
+@RegisterComponent({ name: 'BillboardComponent' })
 export class BillboardComponent extends Component3D
 {
     __class__: "feng3d.BillboardComponent";

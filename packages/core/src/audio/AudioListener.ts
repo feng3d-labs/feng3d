@@ -14,7 +14,7 @@ declare module "../component/Component"
  * 声音监听器
  */
 @AddComponentMenu("Audio/AudioListener")
-@RegisterComponent()
+@RegisterComponent({ name: 'AudioListener' })
 export class AudioListener extends Behaviour
 {
     gain: GainNode;

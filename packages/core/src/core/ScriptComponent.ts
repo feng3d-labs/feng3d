@@ -18,7 +18,7 @@ declare module "../component/Component"
  * 3d对象脚本
  */
 @AddComponentMenu("Script/Script")
-@RegisterComponent()
+@RegisterComponent({ name: 'ScriptComponent' })
 export class ScriptComponent extends Behaviour
 {
     runEnvironment = RunEnvironment.feng3d;

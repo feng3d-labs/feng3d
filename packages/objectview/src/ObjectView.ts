@@ -1,4 +1,3 @@
-import { propertyIsWritable } from '@feng3d/polyfill';
 
 /**
  * 标记objectview对象界面类
@@ -891,3 +890,37 @@ export type GetObjectViewParam = {
 	 */
 	editable?: boolean;
 };
+
+/**
+ * 属性是否可写
+ * @param obj 对象
+ * @param property 属性名称
+ */
+function propertyIsWritable(obj: Object, property: string): boolean
+{
+	var data = getPropertyDescriptor(obj, property);
+	if (!data) return false;
+	if (data.get && !data.set) return false;
+	return true;
+}
+
+/**
+ * 从对象自身或者对象的原型中获取属性描述
+ * 
+ * @param object 对象
+ * @param property 属性名称
+ */
+function getPropertyDescriptor(object: Object, property: string): PropertyDescriptor | undefined
+{
+	var data = Object.getOwnPropertyDescriptor(object, property);
+	if (data)
+	{
+		return data;
+	}
+	var prototype = Object.getPrototypeOf(object);
+	if (prototype)
+	{
+		return getPropertyDescriptor(prototype, property);
+	}
+	return undefined;
+}

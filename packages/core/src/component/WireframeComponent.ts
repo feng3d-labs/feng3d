@@ -11,7 +11,7 @@ declare module "../component/Component"
 /**
  * 线框组件，将会对拥有该组件的对象绘制线框
  */
-@RegisterComponent()
+@RegisterComponent({ name: 'WireframeComponent' })
 export class WireframeComponent extends Component3D
 {
 

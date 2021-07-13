@@ -28,7 +28,7 @@ declare module "../component/Component"
  * 
  * See Also: Renderer components for meshes, particles, lines and trails.
  */
-@RegisterComponent({ single: true })
+@RegisterComponent({ name: 'Renderable', single: true })
 export class Renderable extends RayCastable
 {
     readonly renderAtomic = new RenderAtomic();

@@ -30,7 +30,7 @@ declare module "../core/Entity"
  * The Water component renders the terrain.
  */
 @AddComponentMenu("Graphics/Water")
-@RegisterComponent()
+@RegisterComponent({ name: 'Water' })
 export class Water extends Renderable
 {
     __class__: "feng3d.Water";

@@ -1,11 +1,12 @@
-export { Loader, loader } from './base/Loader';
-export { LoaderDataFormat } from './base/LoaderDataFormat';
-export { _IndexedDB, _indexedDB } from './base/_IndexedDB';
-export { FSType } from './FSType';
-export { HttpFS } from './HttpFS';
-export { indexedDBFS } from './IndexedDBFS';
-export type { IReadFS } from './IReadFS';
-export type { IReadWriteFS } from './IReadWriteFS';
-export { PathUtils, pathUtils } from './PathUtils';
-export { fs, ReadFS } from './ReadFS';
-export { ReadWriteFS } from './ReadWriteFS';
+export * from './base/Loader';
+export * from './base/LoaderDataFormat';
+export * from './base/_IndexedDB';
+export * from './FSType';
+export * from './HttpFS';
+export * from './IndexedDBFS';
+export * from './IReadFS';
+export * from './IReadWriteFS';
+export * from './PathUtils';
+export * from './ReadFS';
+export * from './ReadWriteFS';
+

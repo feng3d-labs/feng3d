@@ -15,7 +15,7 @@ declare module "../../component/Component"
     export interface ComponentMap { SkinnedMeshRenderer: SkinnedMeshRenderer }
 }
 
-@RegisterComponent({ single: true })
+@RegisterComponent({ name: 'SkinnedMeshRenderer', single: true })
 export class SkinnedMeshRenderer extends Renderable
 {
     __class__: "feng3d.SkinnedMeshRenderer";

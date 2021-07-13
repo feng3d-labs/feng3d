@@ -7,11 +7,11 @@ import { Component3D } from "./Component3D";
 
 declare module "../component/Component"
 {
-export interface ComponentMap { HoldSizeComponent: HoldSizeComponent; }
+    export interface ComponentMap { HoldSizeComponent: HoldSizeComponent; }
 }
 
 @AddComponentMenu("Layout/HoldSizeComponent")
-@RegisterComponent()
+@RegisterComponent({ name: 'HoldSizeComponent' })
 export class HoldSizeComponent extends Component3D
 {
 

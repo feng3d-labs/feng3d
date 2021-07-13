@@ -145,3 +145,5 @@ declare module "@feng3d/objectview"
         }
     }
 }
+
+export { }

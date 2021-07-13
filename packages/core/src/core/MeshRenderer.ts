@@ -10,7 +10,7 @@ declare module "../component/Component"
 /**
  * 网格渲染器
  */
-@RegisterComponent()
+@RegisterComponent({ name: 'MeshRenderer' })
 export class MeshRenderer extends Renderable
 {
     __class__: "feng3d.MeshRenderer";

@@ -14,7 +14,7 @@ declare module "../component/Component"
  * 
  * 可以控制开关的组件
  */
-@RegisterComponent()
+@RegisterComponent({ name: 'Behaviour' })
 export class Behaviour extends Component3D
 {
     /**

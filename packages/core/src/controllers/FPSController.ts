@@ -15,7 +15,7 @@ declare module "../component/Component"
  * FPS模式控制器
  */
 @AddComponentMenu("Controller/FPSController")
-@RegisterComponent()
+@RegisterComponent({ name: 'FPSController' })
 export class FPSController extends Behaviour
 {
     /**

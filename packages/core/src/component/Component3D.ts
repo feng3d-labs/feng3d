@@ -13,7 +13,7 @@ export interface Component3DEventMap extends ComponentEventMap, MouseEventMap
  * 
  * 所有基于3D空间的组件均可继承于该组件。
  */
-@RegisterComponent({ dependencies: [Node3D] })
+@RegisterComponent({ name: 'Component3D', dependencies: [Node3D] })
 export class Component3D<T extends Component3DEventMap = Component3DEventMap> extends Component<T>
 {
     /**

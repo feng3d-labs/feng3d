@@ -17,7 +17,7 @@ declare module "../component/Component"
  * 天空盒组件
  */
 @AddComponentMenu("SkyBox/SkyBox")
-@RegisterComponent()
+@RegisterComponent({ name: 'SkyBox' })
 export class SkyBox extends Component3D
 {
     __class__: "feng3d.SkyBox";

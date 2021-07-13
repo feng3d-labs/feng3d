@@ -120,3 +120,18 @@ export interface RenderAtomicData
     indexBuffer: Index;
     instanceCount: number;
 }
+
+export interface RenderAtomic extends GlobalMixins.RenderAtomic
+{
+}
+
+declare global
+{
+    namespace GlobalMixins
+    {
+        interface RenderAtomic
+        {
+
+        }
+    }
+}

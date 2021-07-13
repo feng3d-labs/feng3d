@@ -13,7 +13,7 @@ declare module "../component/Component"
 }
 
 @AddComponentMenu("Animator/Animation")
-@RegisterComponent()
+@RegisterComponent({ name: 'Animation' })
 export class Animation extends Behaviour
 {
     @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })

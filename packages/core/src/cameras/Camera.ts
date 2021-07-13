@@ -31,7 +31,7 @@ declare module "../component/Component"
  * 摄像机
  */
 @AddComponentMenu("Rendering/Camera")
-@RegisterComponent({ single: true })
+@RegisterComponent({ name: 'Camera', single: true })
 export class Camera extends Component3D
 {
     static create(name = "Camera")

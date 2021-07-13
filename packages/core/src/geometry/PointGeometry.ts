@@ -6,8 +6,10 @@ import { serialize } from "@feng3d/serialization";
 import { watch } from "@feng3d/watcher";
 import { Geometry } from "./Geometry";
 
-
-export interface GeometryTypes { PointGeometry: PointGeometry }
+declare module "./Geometry"
+{
+    export interface GeometryTypes { PointGeometry: PointGeometry }
+}
 
 /**
  * 点几何体

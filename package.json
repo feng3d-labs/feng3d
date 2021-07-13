@@ -5,8 +5,7 @@
   "license": "ISC",
   "scripts": {
     "start": "npm run watch",
-    "clean:build": "rimraf \"{bundles,packages}/*/{lib,dist}\"",
-    "preclean": "npm run clean:build",
+    "clean": "rimraf \"{bundles,packages}/*/{lib,dist}\"",
     "build": "rollup -c",
     "build:prod": "cross-env NODE_ENV=production rollup -c",
     "watch": "rollup -cw",

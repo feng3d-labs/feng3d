@@ -2,7 +2,10 @@ import { Attributes } from "@feng3d/renderer";
 import { serialize } from "@feng3d/serialization";
 import { Geometry } from "./Geometry";
 
-export interface GeometryTypes { CustomGeometry: CustomGeometry }
+declare module "./Geometry"
+{
+    export interface GeometryTypes { CustomGeometry: CustomGeometry }
+}
 
 export class CustomGeometry extends Geometry
 {

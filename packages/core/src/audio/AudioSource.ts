@@ -39,7 +39,7 @@ declare module "../component/Component"
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
  */
 @AddComponentMenu("Audio/AudioSource")
-@RegisterComponent()
+@RegisterComponent({ name: 'AudioSource' })
 export class AudioSource extends Behaviour
 {
     private panner: PannerNode;

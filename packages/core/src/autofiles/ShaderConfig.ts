@@ -112,3 +112,4 @@ shaderlib.shaderConfig = {
 		"worldposition_vert": "//获取全局坐标\r\nvec4 worldPosition = u_modelMatrix * position;\r\n//输出全局坐标\r\nv_worldPosition = worldPosition.xyz;"
 	}
 }
+export { }

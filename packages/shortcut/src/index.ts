@@ -1,6 +1,7 @@
-export { EventProxy } from './EventProxy';
-export { KeyState } from './handle/KeyState';
-export { ShortCutCapture } from './handle/ShortCutCapture';
-export { KeyBoard } from './Keyboard';
-export { ShortCut } from './ShortCut';
-export { windowEventProxy } from './WindowEventProxy';
+export * from './EventProxy';
+export * from './handle/KeyState';
+export * from './handle/ShortCutCapture';
+export * from './Keyboard';
+export * from './ShortCut';
+export * from './WindowEventProxy';
+

@@ -20,7 +20,7 @@ declare module "../component/Component"
  * 方向光源
  */
 @AddComponentMenu("Rendering/DirectionalLight")
-@RegisterComponent()
+@RegisterComponent({ name: 'DirectionalLight' })
 export class DirectionalLight extends Light
 {
     static create(name = "DirectionalLight")

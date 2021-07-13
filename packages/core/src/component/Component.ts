@@ -44,7 +44,7 @@ export function RegisterComponent(component: {
     /**
      * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
      */
-    name?: string,
+    name: string,
     /**
      * 是否唯一，同类型组件只允许一个。
      */
@@ -53,12 +53,12 @@ export function RegisterComponent(component: {
      * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
      */
     dependencies?: Constructor<Component>[]
-} = {})
+})
 {
     return (constructor: Constructor<Component>) =>
     {
         var info = component as ComponentInfo;
-        info.name = info.name || constructor.name;
+        console.assert(!!info.name,`组件名称不能空！`)
         info.type = constructor;
         info.dependencies = info.dependencies || [];
         constructor.prototype[__component__] = info;

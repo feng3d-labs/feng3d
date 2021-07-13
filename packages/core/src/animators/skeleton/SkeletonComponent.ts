@@ -12,7 +12,7 @@ declare module "../../component/Component"
 {
     export interface ComponentMap { SkeletonComponent: SkeletonComponent; }
 }
-@RegisterComponent()
+@RegisterComponent({ name: 'SkeletonComponent' })
 export class SkeletonComponent extends Component3D
 {
 
