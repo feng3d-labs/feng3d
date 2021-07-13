@@ -2,9 +2,9 @@ import { binarySearchInsert } from './utils/binarySearchInsert';
 
 /**
  * 优先队列
- * 
+ *
  * 所有元素按优先级排序
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
  */
 export class PriorityQueue<T>
@@ -49,11 +49,13 @@ export class PriorityQueue<T>
      */
     push(...items: T[])
     {
-        items.forEach(item =>
+        items.forEach((item) =>
         {
-            var insert = binarySearchInsert(this.items, item, this._compare);
+            const insert = binarySearchInsert(this.items, item, this._compare);
+
             this.items.splice(insert, 0, item);
         });
+
         return this.items.length;
     }
 

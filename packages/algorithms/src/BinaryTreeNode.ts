@@ -1,9 +1,9 @@
-import { HashTable } from "./HashTable";
-import { Comparator } from "./utils/Comparator";
+import { HashTable } from './HashTable';
+import { Comparator } from './utils/Comparator';
 
 /**
  * 二叉树结点
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
  */
 export class BinaryTreeNode<T>
@@ -34,7 +34,7 @@ export class BinaryTreeNode<T>
 
     /**
      * 构建二叉树结点
-     * 
+     *
      * @param value 结点值
      */
     constructor(value: T = null)
@@ -124,18 +124,19 @@ export class BinaryTreeNode<T>
 
     /**
      * 设置结点值
-     * 
+     *
      * @param value 值
      */
     setValue(value: T)
     {
         this.value = value;
+
         return this;
     }
 
     /**
      * 设置左结点
-     * 
+     *
      * @param node 结点
      */
     setLeft(node: BinaryTreeNode<T> | null)
@@ -157,7 +158,7 @@ export class BinaryTreeNode<T>
 
     /**
      * 设置右结点
-     * 
+     *
      * @param node 结点
      */
     setRight(node: BinaryTreeNode<T> | null)
@@ -179,7 +180,7 @@ export class BinaryTreeNode<T>
 
     /**
      * 移除子结点
-     * 
+     *
      * @param nodeToRemove 子结点
      */
     removeChild(nodeToRemove: BinaryTreeNode<T>)
@@ -187,12 +188,14 @@ export class BinaryTreeNode<T>
         if (this.left && this.nodeComparator.equal(this.left, nodeToRemove))
         {
             this.left = null;
+
             return true;
         }
 
         if (this.right && this.nodeComparator.equal(this.right, nodeToRemove))
         {
             this.right = null;
+
             return true;
         }
 
@@ -201,7 +204,7 @@ export class BinaryTreeNode<T>
 
     /**
      * 替换节点
-     * 
+     *
      * @param nodeToReplace 被替换的节点
      * @param replacementNode 替换后的节点
      */
@@ -215,12 +218,14 @@ export class BinaryTreeNode<T>
         if (this.left && this.nodeComparator.equal(this.left, nodeToReplace))
         {
             this.left = replacementNode;
+
             return true;
         }
 
         if (this.right && this.nodeComparator.equal(this.right, nodeToReplace))
         {
             this.right = replacementNode;
+
             return true;
         }
 
@@ -229,7 +234,7 @@ export class BinaryTreeNode<T>
 
     /**
      * 拷贝节点
-     * 
+     *
      * @param sourceNode 源节点
      * @param targetNode 目标节点
      */

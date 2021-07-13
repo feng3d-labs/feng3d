@@ -1,10 +1,9 @@
-import { BinaryTreeNode } from "./BinaryTreeNode";
-import { Comparator, CompareFunction } from "./utils/Comparator";
-
+import { BinaryTreeNode } from './BinaryTreeNode';
+import { Comparator, CompareFunction } from './utils/Comparator';
 
 /**
  * 二叉查找树结点
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTreeNode.js
  */
 export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
@@ -36,7 +35,7 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
 
     /**
      * 构建二叉查找树结点
-     * 
+     *
      * @param value 结点值
      * @param compareFunction 比较函数
      */
@@ -50,7 +49,7 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
 
     /**
      * 插入值
-     * 
+     *
      * @param value 值
      */
     insert(value: T)
@@ -71,6 +70,7 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
             }
 
             const newNode = new BinarySearchTreeNode(value, this.compareFunction);
+
             this.setLeft(newNode);
 
             return newNode;
@@ -85,6 +85,7 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
             }
 
             const newNode = new BinarySearchTreeNode(value, this.compareFunction);
+
             this.setRight(newNode);
 
             return newNode;
@@ -95,7 +96,7 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
 
     /**
      * 查找结点
-     * 
+     *
      * @param value 值
      */
     find(value: T): BinarySearchTreeNode<T>
@@ -123,7 +124,7 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
 
     /**
      * 是否包含指定值
-     * 
+     *
      * @param value 结点值
      */
     contains(value: T)
@@ -133,7 +134,7 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
 
     /**
      * 移除指定值
-     * 
+     *
      * @param value 结点值
      */
     remove(value: T)
@@ -153,27 +154,32 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
             if (parent)
             {
                 parent.removeChild(nodeToRemove);
-            } else
+            }
+            else
             {
                 // 节点没有父节点。只需清除当前节点值。
                 nodeToRemove.setValue(undefined);
             }
-        } else if (nodeToRemove.left && nodeToRemove.right)
+        }
+        else if (nodeToRemove.left && nodeToRemove.right)
         {
             // 删除拥有两个子结点的结点
             // 查找下一个最大的值(右分支中的最小值)，并用下一个最大的值替换当前值节点。
             const nextBiggerNode = nodeToRemove.right.findMin();
+
             if (!this.nodeComparator.equal(nextBiggerNode, nodeToRemove.right))
             {
                 this.remove(nextBiggerNode.value);
                 nodeToRemove.setValue(nextBiggerNode.value);
-            } else
+            }
+            else
             {
-                //如果下一个右值是下一个更大的值，它没有左子节点，那么就用右节点替换要删除的节点。
+                // 如果下一个右值是下一个更大的值，它没有左子节点，那么就用右节点替换要删除的节点。
                 nodeToRemove.setValue(nodeToRemove.right.value);
                 nodeToRemove.setRight(nodeToRemove.right.right);
             }
-        } else
+        }
+        else
         {
             // 删除拥有一个子结点的结点
             // 使此子节点成为当前节点的父节点的一个子节点。
@@ -182,7 +188,8 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
             if (parent)
             {
                 parent.replaceChild(nodeToRemove, childNode);
-            } else
+            }
+            else
             {
                 BinaryTreeNode.copyNode(childNode, nodeToRemove);
             }

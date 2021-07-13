@@ -1,11 +1,11 @@
-import { BinarySearchTree } from "./BinarySearchTree";
-import { BinarySearchTreeNode } from "./BinarySearchTreeNode";
+import { BinarySearchTree } from './BinarySearchTree';
+import { BinarySearchTreeNode } from './BinarySearchTreeNode';
 
 /**
  * 平衡二叉树
- * 
+ *
  * AVL树（以发明者Adelson-Velsky和Landis 命名）是自平衡二叉搜索树。
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/tree/master/src/data-structures/tree/avl-tree
  * @see https://en.wikipedia.org/wiki/AVL_tree
  * @see https://www.tutorialspoint.com/data_structures_algorithms/avl_tree_algorithm.htm
@@ -23,6 +23,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
 
         // Let's move up to the root and check balance factors along the way.
         let currentNode = this.root.find(value);
+
         while (currentNode)
         {
             this.balance(currentNode);
@@ -36,7 +37,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
     remove(value: T)
     {
         // Do standard BST removal.
-        var result = super.remove(value);
+        const result = super.remove(value);
 
         // Balance the tree starting from the root node.
         this.balance(this.root);
@@ -57,19 +58,22 @@ export class AvlTree<T> extends BinarySearchTree<T>
             {
                 // Left-Left rotation
                 this.rotateLeftLeft(node);
-            } else if (node.left.balanceFactor < 0)
+            }
+            else if (node.left.balanceFactor < 0)
             {
                 // Left-Right rotation.
                 this.rotateLeftRight(node);
             }
-        } else if (node.balanceFactor < -1)
+        }
+        else if (node.balanceFactor < -1)
         {
             // Right rotation.
             if (node.right.balanceFactor < 0)
             {
                 // Right-Right rotation
                 this.rotateRightRight(node);
-            } else if (node.right.balanceFactor > 0)
+            }
+            else if (node.right.balanceFactor > 0)
             {
                 // Right-Left rotation.
                 this.rotateRightLeft(node);
@@ -84,13 +88,15 @@ export class AvlTree<T> extends BinarySearchTree<T>
     {
         // Detach left node from root node.
         const leftNode = rootNode.left;
+
         rootNode.setLeft(null);
 
         // Make left node to be a child of rootNode's parent.
         if (rootNode.parent)
         {
             rootNode.parent.setLeft(leftNode);
-        } else if (rootNode === this.root)
+        }
+        else if (rootNode === this.root)
         {
             // If root node is root then make left node to be a new root.
             this.root = leftNode;
@@ -114,10 +120,12 @@ export class AvlTree<T> extends BinarySearchTree<T>
     {
         // Detach left node from rootNode since it is going to be replaced.
         const leftNode = rootNode.left;
+
         rootNode.setLeft(null);
 
         // Detach right node from leftNode.
         const leftRightNode = leftNode.right;
+
         leftNode.setRight(null);
 
         // Preserve leftRightNode's left subtree.
@@ -144,10 +152,12 @@ export class AvlTree<T> extends BinarySearchTree<T>
     {
         // Detach right node from rootNode since it is going to be replaced.
         const rightNode = rootNode.right;
+
         rootNode.setRight(null);
 
         // Detach left node from rightNode.
         const rightLeftNode = rightNode.left;
+
         rightNode.setLeft(null);
 
         if (rightLeftNode.right)
@@ -173,13 +183,15 @@ export class AvlTree<T> extends BinarySearchTree<T>
     {
         // Detach right node from root node.
         const rightNode = rootNode.right;
+
         rootNode.setRight(null);
 
         // Make right node to be a child of rootNode's parent.
         if (rootNode.parent)
         {
             rootNode.parent.setRight(rightNode);
-        } else if (rootNode === this.root)
+        }
+        else if (rootNode === this.root)
         {
             // If root node is root then make right node to be a new root.
             this.root = rightNode;

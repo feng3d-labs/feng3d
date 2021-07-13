@@ -1,16 +1,14 @@
-
 /**
  * 并查集
- * 
+ *
  * 并查集是一种树型的数据结构，用于处理一些不交集（Disjoint Sets）的合并及查询问题。
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/disjoint-set/DisjointSet.js
  * @see https://en.wikipedia.org/wiki/Disjoint-set_data_structure
  * @see https://www.youtube.com/watch?v=wU6udHRIkcc&index=14&t=0s&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
  */
 export class DisjointSet<T>
 {
-
     private items: { [key: string]: DisjointSetNode<T> };
 
     /**
@@ -30,8 +28,8 @@ export class DisjointSet<T>
 
     /**
      * 创建集合
-     * 
-     * @param nodeValue 结点值 
+     *
+     * @param nodeValue 结点值
      */
     makeSet(nodeValue: T)
     {
@@ -47,7 +45,7 @@ export class DisjointSet<T>
 
     /**
      * 查找给出值所在集合根结点键值
-     * 
+     *
      * @param nodeValue 结点值
      */
     find(nodeValue: T)
@@ -66,7 +64,7 @@ export class DisjointSet<T>
 
     /**
      * 合并两个值所在的集合
-     * 
+     *
      * @param valueA 值a
      * @param valueB 值b
      */
@@ -103,7 +101,7 @@ export class DisjointSet<T>
 
     /**
      * 判断两个值是否在相同集合中
-     * 
+     *
      * @param valueA 值A
      * @param valueB 值B
      */
@@ -146,7 +144,7 @@ export class DisjointSetNode<T>
 
     /**
      * 构建 并查集 项
-     * 
+     *
      * @param value 值
      * @param keyCallback 计算键值函数
      */
@@ -167,6 +165,7 @@ export class DisjointSetNode<T>
         {
             return this.keyCallback(this.value);
         }
+
         return this.value as any as string;
     }
 
@@ -212,7 +211,8 @@ export class DisjointSetNode<T>
      */
     getChildren()
     {
-        var values = Object.keys(this.children).map(key => this.children[key]);
+        const values = Object.keys(this.children).map((key) => this.children[key]);
+
         return values;
     }
 
@@ -224,6 +224,7 @@ export class DisjointSetNode<T>
     {
         this.parent = parentNode;
         this.parent.children[this.getKey()] = this;
+
         return this;
     }
 
@@ -235,8 +236,8 @@ export class DisjointSetNode<T>
     {
         this.children[childNode.getKey()] = childNode;
         childNode.parent = this;
+
         return this;
     }
 }
-
 

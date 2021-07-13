@@ -1,8 +1,8 @@
-import { Comparator, CompareFunction } from "./utils/Comparator";
+import { Comparator, CompareFunction } from './utils/Comparator';
 
 /**
  * 双向链表
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/doubly-linked-list/DoublyLinkedList.js
  */
 export class DoublyLinkedList<T>
@@ -23,7 +23,7 @@ export class DoublyLinkedList<T>
 
     /**
      * 构建双向链表
-     * 
+     *
      * @param comparatorFunction 比较函数
      */
     constructor(comparatorFunction?: CompareFunction<T>)
@@ -52,35 +52,39 @@ export class DoublyLinkedList<T>
 
     /**
      * 添加新结点到表头
-     * 
+     *
      * @param value 结点数据
      */
     addHead(value: T)
     {
-        const newNode: DoublyLinkedListNode<T> = { value: value, previous: null, next: this.head };
+        const newNode: DoublyLinkedListNode<T> = { value, previous: null, next: this.head };
+
         if (this.head) this.head.previous = newNode;
         this.head = newNode;
         if (!this.tail) this.tail = newNode;
+
         return this;
     }
 
     /**
      * 添加新结点到表尾
-     * 
+     *
      * @param value 结点数据
      */
     addTail(value: T)
     {
-        var newNode: DoublyLinkedListNode<T> = { value: value, previous: this.tail, next: null };
+        const newNode: DoublyLinkedListNode<T> = { value, previous: this.tail, next: null };
+
         if (this.tail) this.tail.next = newNode;
         this.tail = newNode;
         if (!this.head) this.head = newNode;
+
         return this;
     }
 
     /**
      * 删除链表中第一个与指定值相等的结点
-     * 
+     *
      * @param value 结点值
      */
     delete(value: T)
@@ -109,7 +113,8 @@ export class DoublyLinkedList<T>
                     deletedNode = currentNode.next;
                     currentNode.next = currentNode.next.next;
                     if (currentNode.next) currentNode.next.previous = currentNode;
-                } else
+                }
+                else
                 {
                     currentNode = currentNode.next;
                 }
@@ -117,7 +122,7 @@ export class DoublyLinkedList<T>
         }
 
         // currentNode 是否为表尾
-        if (currentNode == null || currentNode.next == null)
+        if (currentNode === null || currentNode.next === null)
         {
             this.tail = currentNode;
         }
@@ -127,7 +132,7 @@ export class DoublyLinkedList<T>
 
     /**
      * 删除链表中所有与指定值相等的结点
-     * 
+     *
      * @param value 结点值
      */
     deleteAll(value: T)
@@ -156,7 +161,8 @@ export class DoublyLinkedList<T>
                     deletedNode = currentNode.next;
                     currentNode.next = currentNode.next.next;
                     if (currentNode.next) currentNode.next.previous = currentNode;
-                } else
+                }
+                else
                 {
                     currentNode = currentNode.next;
                 }
@@ -164,7 +170,7 @@ export class DoublyLinkedList<T>
         }
 
         // currentNode 是否为表尾
-        if (currentNode == null || currentNode.next == null)
+        if (currentNode === null || currentNode.next === null)
         {
             this.tail = currentNode;
         }
@@ -174,7 +180,7 @@ export class DoublyLinkedList<T>
 
     /**
      * 查找与结点值相等的结点
-     * 
+     *
      * @param value 结点值
      */
     find(value: T)
@@ -188,15 +194,16 @@ export class DoublyLinkedList<T>
             if (this.compare.equal(currentNode.value, value)) return currentNode;
             currentNode = currentNode.next;
         }
+
         return null;
     }
 
     /**
      * 查找与结点值相等的结点
-     * 
+     *
      * @param callback 判断是否为查找的元素
      */
-    findByFunc(callback: (value: T) => Boolean)
+    findByFunc(callback: (value: T) => boolean)
     {
         if (!this.head) return null;
 
@@ -207,6 +214,7 @@ export class DoublyLinkedList<T>
             if (callback(currentNode.value)) return currentNode;
             currentNode = currentNode.next;
         }
+
         return null;
     }
 
@@ -223,7 +231,8 @@ export class DoublyLinkedList<T>
         {
             this.head = this.head.next;
             this.head.previous = null;
-        } else
+        }
+        else
         {
             this.head = null;
             this.tail = null;
@@ -257,13 +266,14 @@ export class DoublyLinkedList<T>
 
     /**
      * 从数组中初始化链表
-     * 
+     *
      * @param values 结点值列表
      */
     fromArray(values: T[])
     {
         this.empty();
-        values.forEach(value => this.addTail(value));
+        values.forEach((value) => this.addTail(value));
+
         return this;
     }
 
@@ -272,13 +282,15 @@ export class DoublyLinkedList<T>
      */
     toArray()
     {
-        var values: T[] = [];
-        var currentNode = this.head;
+        const values: T[] = [];
+        let currentNode = this.head;
+
         while (currentNode)
         {
             values.push(currentNode.value);
             currentNode = currentNode.next;
         }
+
         return values;
     }
 
@@ -288,7 +300,7 @@ export class DoublyLinkedList<T>
      */
     toString(valueToString?: (value: T) => string)
     {
-        return this.toArray().map(value => valueToString ? valueToString(value) : `${value}`).toString();
+        return this.toArray().map((value) => (valueToString ? valueToString(value) : `${value}`)).toString();
     }
 
     /**
@@ -332,7 +344,8 @@ export class DoublyLinkedList<T>
         if (this.head)
         {
             // 核查正向链表
-            var currNode = this.head;
+            let currNode = this.head;
+
             while (currNode.next)
             {
                 currNode = currNode.next;
@@ -345,8 +358,10 @@ export class DoublyLinkedList<T>
             {
                 currNode = currNode.previous;
             }
-            return this.head == currNode;
+
+            return this.head === currNode;
         }
+
         return !this.tail;
     }
 }
