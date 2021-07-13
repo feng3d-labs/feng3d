@@ -549,7 +549,7 @@ serialization.serializeHandlers.push(
             // 执行默认忽略默认值
             if (tpv === null || tpv.constructor !== spv.constructor)
             {
-                var className = classUtils.getQualifiedClassName(spv);
+                const className = classUtils.getQualifiedClassName(spv);
                 // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。
                 let inst = spv.constructor.inst;
 
@@ -562,15 +562,14 @@ serialization.serializeHandlers.push(
                 {
                     inst = spv.constructor.inst = new spv.constructor();
                 }
-                var diff: any = param.serialization.different(spv, inst);
+                const diff: any = param.serialization.different(spv, inst);
 
                 diff[__class__] = className;
                 target[property] = diff;
             }
             else
             {
-                debugger;
-                var diff: any = param.serialization.different(spv, tpv);
+                const diff: any = param.serialization.different(spv, tpv);
 
                 if (diff)
                 {
@@ -643,6 +642,7 @@ serialization.deserializeHandlers = [
             {
                 console.assert(`function 序列化使用了eval，编译警告，暂时注释掉！`);
                 // target[property] = eval(`(${spv.data})`);
+
                 return true;
             }
 
@@ -910,7 +910,7 @@ serialization.setValueHandlers = [
     // 值相等时直接返回
     {
         priority: 0,
-        handler(target, source, property, handlers)
+        handler(target, source, property, _handlers)
         {
             if (target[property] === source[property])
             {
@@ -943,7 +943,6 @@ serialization.setValueHandlers = [
         priority: 0,
         handler(target, source, property)
         {
-            const tpv = target[property];
             const spv = source[property];
 
             if (Object.isBaseType(spv))
@@ -986,7 +985,6 @@ serialization.setValueHandlers = [
         priority: 0,
         handler(target, source, property, param)
         {
-            const tpv = target[property];
             const spv = source[property];
 
             if (!Object.isObject(spv))
