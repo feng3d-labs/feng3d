@@ -127,9 +127,9 @@ export class View extends Feng3dObject
 
     /**
      * 构建3D视图
-     * @param canvas    画布
-     * @param scene     3D场景
-     * @param camera    摄像机
+     * @param canvas 画布
+     * @param scene 3D场景
+     * @param camera 摄像机
      */
     constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera, contextAttributes?: WebGLContextAttributes)
     {
@@ -243,7 +243,7 @@ export class View extends Feng3dObject
     /**
      * 屏幕坐标转GPU坐标
      * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
-     * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+     * @returns GPU坐标 (x: [-1, 1], y: [-1, 1])
      */
     screenToGpuPosition(screenPos: Vector2): Vector2
     {
@@ -257,7 +257,7 @@ export class View extends Feng3dObject
     /**
      * 投影坐标（世界坐标转换为3D视图坐标）
      * @param point3d 世界坐标
-     * @return 屏幕的绝对坐标
+     * @returns 屏幕的绝对坐标
      */
     project(point3d: Vector3): Vector3
     {
@@ -273,7 +273,7 @@ export class View extends Feng3dObject
      * @param nY 屏幕坐标Y ([0-height])
      * @param sZ 到屏幕的距离
      * @param v 场景坐标（输出）
-     * @return 场景坐标
+     * @returns 场景坐标
      */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
@@ -283,7 +283,7 @@ export class View extends Feng3dObject
 
     /**
      * 获取单位像素在指定深度映射的大小
-     * @param   depth   深度
+     * @param depth 深度
      */
     getScaleByDepth(depth: number, dir = new Vector2(0, 1))
     {

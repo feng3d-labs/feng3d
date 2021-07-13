@@ -11,9 +11,9 @@ export class Triangle3
 {
     /**
      * 通过3顶点定义一个三角形
-     * @param p0		点0
-     * @param p1		点1
-     * @param p2		点2
+     * @param p0 点0
+     * @param p1 点1
+     * @param p2 点2
      */
     static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
     {
@@ -150,9 +150,9 @@ export class Triangle3
 
     /**
      * 通过3顶点定义一个三角形
-     * @param p0		点0
-     * @param p1		点1
-     * @param p2		点2
+     * @param p0 点0
+     * @param p1 点1
+     * @param p2 点2
      */
     fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
     {
@@ -213,7 +213,7 @@ export class Triangle3
         }
 
         // 直线分别于三边相交
-        var crossSegment: Segment3 = <any>null;
+        var crossSegment: Segment3 = null;
         var ps = this.getSegments().reduce((v: Vector3[], segment) =>
         {
             var r = segment.intersectionWithLine(line);

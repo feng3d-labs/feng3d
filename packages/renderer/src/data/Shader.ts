@@ -11,7 +11,7 @@ export class Shader
     /**
      * shader 中的 宏
      */
-    shaderMacro: ShaderMacro = <any>{};
+    shaderMacro: ShaderMacro = {} as any;
 
     constructor(shaderName = "")
     {
@@ -81,7 +81,7 @@ export class Shader
      * @param gl GL上下文
      * @param type 着色器类型
      * @param code 着色器代码
-     * @return 编译后的着色器对象
+     * @returns 编译后的着色器对象
      */
     private compileShaderCode(gl: GL, type: number, code: string)
     {

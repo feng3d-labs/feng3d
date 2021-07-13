@@ -72,7 +72,7 @@ export class EquationSolving
      * @param f 函数f(x)
      * @param a 区间起点
      * @param b 区间终点
-     * @param errorcallback  错误回调函数
+     * @param errorcallback 错误回调函数
      * 
      * @returns 是否有解
      */
@@ -102,7 +102,7 @@ export class EquationSolving
      * @param a 区间起点
      * @param b 区间终点
      * @param precision 求解精度
-     * @param errorcallback  错误回调函数
+     * @param errorcallback 错误回调函数
      * 
      * @returns 不存在解时返回 undefined ，存在时返回 解
      */
@@ -152,7 +152,7 @@ export class EquationSolving
      * @param a 区间起点
      * @param b 区间终点
      * @param precision 求解精度
-     * @param errorcallback  错误回调函数
+     * @param errorcallback 错误回调函数
      * 
      * @returns 不存在解时返回 undefined ，存在时返回 解
      */
@@ -208,7 +208,7 @@ export class EquationSolving
      * @param a 区间起点
      * @param b 区间终点
      * @param precision 求解精度
-     * @param errorcallback  错误回调函数
+     * @param errorcallback 错误回调函数
      * 
      * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
      */
@@ -316,7 +316,7 @@ export class EquationSolving
      * @param a 区间起点
      * @param b 区间终点
      * @param precision 求解精度
-     * @param errorcallback  错误回调函数
+     * @param errorcallback 错误回调函数
      * 
      * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
      */

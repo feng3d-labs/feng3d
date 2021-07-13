@@ -1,6 +1,6 @@
-import './Array';
-import './Map';
-import './Object';
+export * from './Array';
+export * from './Map';
+export * from './Object';
 export { ClassUtils, classUtils, __class__ } from './ClassUtils';
 export { DataTransform, dataTransform } from './DataTransform';
 export { MathUtil, mathUtil } from './Math';

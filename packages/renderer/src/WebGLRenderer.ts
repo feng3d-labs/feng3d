@@ -1,4 +1,4 @@
-import { lazy } from "@feng3d/polyfill";
+import { deleteItem, lazy } from "@feng3d/polyfill";
 import { Attribute } from "./data/Attribute";
 import { Index } from "./data/Index";
 import { RenderAtomic, RenderAtomicData } from "./data/RenderAtomic";
@@ -19,7 +19,7 @@ export class WebGLRenderer
 {
     /**
      * 绘制
-     * @param renderAtomic  渲染原子
+     * @param renderAtomic 渲染原子
      */
     readonly draw: (renderAtomic: RenderAtomic) => void;
 
@@ -224,7 +224,7 @@ export class WebGLRenderer
                 var buffer: Attribute = renderAtomic.attributes[name];
                 Attribute.active(gl, activeInfo.location, buffer);
                 activeAttributes.push(activeInfo.location);
-                Array.delete(preActiveAttributes, activeInfo.location);
+                deleteItem(preActiveAttributes, activeInfo.location);
             }
             preActiveAttributes.forEach(location =>
             {
@@ -285,7 +285,7 @@ export class WebGLRenderer
                     break;
                 case gl.SAMPLER_2D:
                 case gl.SAMPLER_CUBE:
-                    var textureInfo = <Texture>data;
+                    var textureInfo = data as Texture;
                     //激活纹理编号
                     gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
                     Texture.active(gl, textureInfo);

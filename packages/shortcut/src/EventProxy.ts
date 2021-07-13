@@ -34,7 +34,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
         {
             this.listentypes.forEach(element =>
             {
-                this._target.removeEventListener(<any>element, this.onMouseKey);
+                this._target.removeEventListener(element as any, this.onMouseKey);
             });
         }
         this._target = v;
@@ -42,7 +42,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
         {
             this.listentypes.forEach(element =>
             {
-                this._target.addEventListener(<any>element, this.onMouseKey);
+                this._target.addEventListener(element as any, this.onMouseKey);
             });
         }
     }
@@ -57,22 +57,22 @@ export class EventProxy<T = any> extends EventEmitter<T>
 
     /**
      * 监听一次事件后将会被移除
-     * @param type						事件的类型。
-     * @param listener					处理事件的侦听器函数。
-     * @param thisObject                listener函数作用域
-     * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+     * @param type 事件的类型。
+     * @param listener 处理事件的侦听器函数。
+     * @param thisObject listener函数作用域
+     * @param priority 事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
      */
     once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number)
     {
-        this.on(<any>type, listener, thisObject, priority, true);
+        this.on(type as any, listener, thisObject, priority, true);
         return this;
     }
 
     /**
      * 添加监听
-     * @param type						事件的类型。
-     * @param listener					处理事件的侦听器函数。
-     * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+     * @param type 事件的类型。
+     * @param listener 处理事件的侦听器函数。
+     * @param priority 事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
      */
     on<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority = 0, once = false): this
     {
@@ -80,7 +80,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
         if (this.listentypes.indexOf(type) == -1)
         {
             this.listentypes.push(type);
-            this._target.addEventListener(<any>type, this.onMouseKey);
+            this._target.addEventListener(type as any, this.onMouseKey);
         }
         return this;
     }
@@ -88,8 +88,8 @@ export class EventProxy<T = any> extends EventEmitter<T>
     /**
      * 移除监听
      * @param dispatcher 派发器
-     * @param type						事件的类型。
-     * @param listener					要删除的侦听器对象。
+     * @param type 事件的类型。
+     * @param listener 要删除的侦听器对象。
      */
     off<K extends keyof T & string>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): this
     {
@@ -98,12 +98,12 @@ export class EventProxy<T = any> extends EventEmitter<T>
         {
             this.listentypes.forEach(element =>
             {
-                this._target.removeEventListener(<any>element, this.onMouseKey);
+                this._target.removeEventListener(element as any, this.onMouseKey);
             });
             this.listentypes.length = 0;
         } else if (!this.has(type))
         {
-            this._target.removeEventListener(<any>type, this.onMouseKey);
+            this._target.removeEventListener(type, this.onMouseKey);
             this.listentypes.splice(this.listentypes.indexOf(type), 1);
         }
         return this;
@@ -123,7 +123,6 @@ export class EventProxy<T = any> extends EventEmitter<T>
 
         if (event["clientX"] != undefined)
         {
-            event = <MouseEvent>event;
             this.clientX = event.clientX;
             this.clientY = event.clientY;
             this.pageX = event.pageX;

@@ -17,7 +17,7 @@ export class ReadWriteFS extends ReadFS
 
     get fs(): IReadWriteFS
     {
-        return <any>this._fs;
+        return this._fs as any;
     }
     set fs(value: IReadWriteFS)
     {
@@ -212,8 +212,8 @@ export class ReadWriteFS extends ReadFS
 
     /**
      * 复制文件
-     * @param src    源路径
-     * @param dest    目标路径
+     * @param src 源路径
+     * @param dest 目标路径
      * @param callback 回调函数
      */
     copyFile(src: string, dest: string, callback?: (err: Error) => void)
@@ -353,7 +353,7 @@ export class ReadWriteFS extends ReadFS
     {
         if (copylists.length > 0)
         {
-            var copyitem: [string, string] = <any>copylists.shift();
+            var copyitem: [string, string] = copylists.shift();
             this.copyFile(copyitem[0], copyitem[1], (err) =>
             {
                 if (err)
@@ -377,7 +377,7 @@ export class ReadWriteFS extends ReadFS
     {
         if (deletelists.length > 0)
         {
-            this.deleteFile(<string>deletelists.shift(), (err) =>
+            this.deleteFile(deletelists.shift(), (err) =>
             {
                 if (err)
                 {

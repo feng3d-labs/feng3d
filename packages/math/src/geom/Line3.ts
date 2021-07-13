@@ -155,7 +155,7 @@ export class Line3
             return null;
 
         var plane = this.getPlane();
-        var point = <Vector3>plane.intersectWithLine3(line3D);
+        var point = plane.intersectWithLine3(line3D) as Vector3;
         if (this.onWithPoint(point))
             return point;
         return null;
@@ -176,7 +176,7 @@ export class Line3
      * 与指定向量比较是否相等
      * @param v 比较的向量
      * @param precision 允许误差
-     * @return 相等返回true，否则false
+     * @returns 相等返回true，否则false
      */
     equals(line: Line3, precision = mathUtil.PRECISION)
     {

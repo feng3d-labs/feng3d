@@ -54,10 +54,6 @@ export class SphereGeometry extends Geometry
 
     /**
      * 构建几何体数据
-     * @param this.radius 球体半径
-     * @param this.segmentsW 横向分割数
-     * @param this.segmentsH 纵向分割数
-     * @param this.yUp 正面朝向 true:Y+ false:Z+
      */
     protected buildGeometry()
     {
@@ -156,9 +152,6 @@ export class SphereGeometry extends Geometry
 
     /**
      * 构建顶点索引
-     * @param this.segmentsW 横向分割数
-     * @param this.segmentsH 纵向分割数
-     * @param this.yUp 正面朝向 true:Y+ false:Z+
      */
     private buildIndices()
     {
@@ -206,8 +199,6 @@ export class SphereGeometry extends Geometry
 
     /**
      * 构建uv
-     * @param this.segmentsW 横向分割数
-     * @param this.segmentsH 纵向分割数
      */
     private buildUVs()
     {

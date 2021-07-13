@@ -51,7 +51,7 @@ export class Sphere
      * @param position 射线起点
      * @param direction 射线方向
      * @param targetNormal 目标法线
-     * @return 射线起点到交点的距离
+     * @returns 射线起点到交点的距离
      */
     rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number
     {

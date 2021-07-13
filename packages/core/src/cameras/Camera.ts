@@ -61,7 +61,7 @@ export class Camera extends Component3D
             aspect = this.lens.aspect;
             near = this.lens.near;
             far = this.lens.far;
-            serialization.setValue(this._backups, <any>this.lens);
+            serialization.setValue(this._backups, this.lens as any);
         }
         var fov = this._backups ? this._backups.fov : 60;
         var size = this._backups ? this._backups.size : 1;
@@ -160,7 +160,7 @@ export class Camera extends Component3D
     /**
      * 投影坐标（世界坐标转换为3D视图坐标）
      * @param point3d 世界坐标
-     * @return 屏幕的绝对坐标
+     * @returns 屏幕的绝对坐标
      */
     project(point3d: Vector3): Vector3
     {
@@ -174,7 +174,7 @@ export class Camera extends Component3D
      * @param nY 屏幕坐标Y ([0-height])
      * @param sZ 到屏幕的距离
      * @param v 场景坐标（输出）
-     * @return 场景坐标
+     * @returns 场景坐标
      */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
@@ -184,7 +184,7 @@ export class Camera extends Component3D
     /**
      * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
      * 
-     * @param   depth   深度
+     * @param depth 深度
      */
     getScaleByDepth(depth: number, dir = new Vector2(0, 1))
     {

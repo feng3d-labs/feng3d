@@ -199,7 +199,7 @@ export class Quaternion
      * 将四元数转换为轴/角表示形式
      * 
      * @param targetAxis 要重用的向量对象，用于存储轴
-     * @return 一个数组，第一个元素是轴，第二个元素是弧度
+     * @returns 一个数组，第一个元素是轴，第二个元素是弧度
      */
     toAxisAngle(targetAxis = new Vector3())
     {
@@ -363,9 +363,9 @@ export class Quaternion
     /**
      * Fills the quaternion object with values representing the given euler rotation.
      *
-     * @param    ax        The angle in radians of the rotation around the ax axis.
-     * @param    ay        The angle in radians of the rotation around the ay axis.
-     * @param    az        The angle in radians of the rotation around the az axis.
+     * @param ax The angle in radians of the rotation around the ax axis.
+     * @param ay The angle in radians of the rotation around the ay axis.
+     * @param az The angle in radians of the rotation around the az axis.
      */
     fromEulerAngles(ax: number, ay: number, az: number)
     {
@@ -384,7 +384,7 @@ export class Quaternion
     /**
      * Fills a target Vector3 object with the Euler angles that form the rotation represented by this quaternion.
      * @param target An optional Vector3 object to contain the Euler angles. If not provided, a new object is created.
-     * @return The Vector3 containing the Euler angles.
+     * @returns The Vector3 containing the Euler angles.
      */
     toEulerAngles(target?: Vector3): Vector3
     {
@@ -564,7 +564,7 @@ export class Quaternion
      * @param angularVelocity
      * @param dt
      * @param angularFactor
-     * @param  target
+     * @param target
      */
     integrateTo(angularVelocity: Vector3, dt: number, angularFactor: Vector3, target = new Quaternion())
     {

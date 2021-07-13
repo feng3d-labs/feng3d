@@ -6,8 +6,8 @@ import { gPartial } from "@feng3d/polyfill";
  * 
  * 在属性定义前使用 @serialize 进行标记需要序列化
  * 
- * @param {*} target                序列化原型
- * @param {string} propertyKey      序列化属性
+ * @param target 序列化原型
+ * @param propertyKey 序列化属性
  */
 export function serialize(target: any, propertyKey: string)
 {
@@ -27,9 +27,6 @@ export function serialize(target: any, propertyKey: string)
  * @param target 序列化后的对象，存放序列化后属性值的对象。
  * @param source 被序列化的对象，提供序列化前属性值的对象。
  * @param property 序列化属性名称
- * @param handlers 序列化属性函数列表
- * @param beforeHandler 在处理列表前执行
- * @param affterHandler 在处理列表后执行
  */
 function propertyHandler<T extends HandlerParam>(target: Object, source: Object, property: string, param: T)
 {
@@ -213,7 +210,7 @@ export class Serialization
         var handlers = this.serializeHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
 
         var param: SerializeHandlerParam = {
-            handlers: handlers, serialization: this, root: <any>target,
+            handlers: handlers, serialization: this, root: target as any,
             serializedMap: new Map(),
             autoRefID: 1,
         };
@@ -276,7 +273,7 @@ export class Serialization
      * 比较两个对象的不同，提取出不同的数据(可能会经过反序列化处理)
      * 
      * @param target 用于检测不同的数据
-     * @param source   模板（默认）数据
+     * @param source 模板（默认）数据
      * @param different 比较得出的不同（简单结构）数据
      * 
      * @returns 比较得出的不同数据（由Object与Array组合可 JSON.stringify 的简单结构）
@@ -474,7 +471,7 @@ serialization.serializeHandlers.push(
             var spv = source[property];
             if (Object.isObject(spv))
             {
-                let object = <any>{};
+                let object = {};
                 target[property] = object;
                 let keys = Object.keys(spv);
                 keys.forEach(key =>
@@ -496,7 +493,7 @@ serialization.serializeHandlers.push(
 
             if (!param.serialization.omitDefault)
             {
-                let object = <any>{};
+                let object = {};
                 target[property] = object;
                 var className = classUtils.getQualifiedClassName(spv);
                 var keys = getSerializableMembers(spv);
@@ -953,6 +950,6 @@ serialization.setValueHandlers = [
 
 //     element.prototype["deserialize"] = function (object: { value: number[] })
 //     {
-//         return new (<any>(this.constructor))(object.value);
+//         return new (this.constructor as any)(object.value);
 //     }
 // });

@@ -45,7 +45,7 @@ export class RayCastable extends Behaviour
      * 
      * @param worldRay 世界空间射线
      * 
-     * @return 相交信息
+     * @returns 相交信息
      */
     worldRayIntersection(worldRay: Ray3): PickingCollisionVO
     {

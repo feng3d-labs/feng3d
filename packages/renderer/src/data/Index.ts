@@ -72,7 +72,7 @@ export class Index
         var buffer = gl.cache.indices.get(index);
         if (!buffer)
         {
-            buffer = <any>gl.createBuffer();
+            buffer = gl.createBuffer();
             if (!buffer)
             {
                 console.error("createBuffer 失败！");

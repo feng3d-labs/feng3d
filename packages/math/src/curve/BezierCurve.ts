@@ -362,7 +362,7 @@ export class BezierCurve
      * 
      * @param ps 点列表
      * @param numSamples 采样次数，用于分段查找极值
-     * @param precision  查找精度
+     * @param precision 查找精度
      * 
      * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
      */
@@ -419,7 +419,7 @@ export class BezierCurve
      * @param targetV 目标值
      * @param ps 点列表
      * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
-     * @param precision  查找精度
+     * @param precision 查找精度
      * 
      * @returns 返回解数组
      */

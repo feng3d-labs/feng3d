@@ -18,7 +18,7 @@ export class ForwardRenderer
         var blenditems = scene.getPickCache(camera).blenditems;
         var unblenditems = scene.getPickCache(camera).unblenditems;
 
-        var uniforms: LazyObject<Uniforms> = <any>{};
+        var uniforms: LazyObject<Uniforms> = {} as any;
         //
         uniforms.u_projectionMatrix = camera.lens.matrix;
         uniforms.u_viewProjection = camera.viewProjection;

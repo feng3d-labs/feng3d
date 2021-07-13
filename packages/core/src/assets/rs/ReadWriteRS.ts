@@ -16,7 +16,7 @@ export class ReadWriteRS extends ReadRS
      * 文件系统
      */
     get fs() { return this._fs; }
-    protected _fs: ReadWriteFS;
+    protected _fs: ReadWriteFS = null;
 
     /**
      * 延迟保存执行函数
@@ -111,7 +111,7 @@ export class ReadWriteRS extends ReadRS
         var fp = folder;
         while (fp)
         {
-            if (fp == <any>asset)
+            if (fp == asset)
             {
                 callback && callback(new Error(`无法移动达到子文件夹中`));
                 return;

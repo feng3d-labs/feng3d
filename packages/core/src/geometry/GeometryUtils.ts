@@ -388,7 +388,7 @@ export class GeometryUtils
     {
         // 此处存在隐患。
         // 优化方案，遍历所有几何体，找到所有共有属性后进行合并。
-        var result: { indices: number[], positions: number[], uvs?: number[], normals?: number[], tangents?: number[] } = <any>{};
+        var result: { indices: number[], positions: number[], uvs?: number[], normals?: number[], tangents?: number[] } = {} as any;
         for (let i = 0; i < geometrys.length; i++)
         {
             var geometry = geometrys[i];
@@ -414,9 +414,9 @@ export class GeometryUtils
 
     /**
      * 射线投影几何体
-     * @param ray                           射线
-     * @param shortestCollisionDistance     当前最短碰撞距离
-     * @param cullFace                      裁剪面枚举
+     * @param ray 射线
+     * @param shortestCollisionDistance 当前最短碰撞距离
+     * @param cullFace 裁剪面枚举
      * 
      * @todo
      * @see 3D数学基础：图形与游戏开发 P278 是否可用该内容优化运算效率？
@@ -445,7 +445,7 @@ export class GeometryUtils
 
         var numIndices = indices.length;
 
-        var result: { rayEntryDistance: number, localPosition: Vector3, localNormal: Vector3, uv: Vector2, index: number } = <any>{};
+        var result: { rayEntryDistance: number, localPosition: Vector3, localNormal: Vector3, uv: Vector2, index: number } = {} as any;
 
         //遍历每个三角形 检测碰撞
         for (var index = 0; index < numIndices; index += 3)
@@ -546,9 +546,7 @@ export class GeometryUtils
          * @param v
          * @param w
          * @param u
-         * @param uvOffset
-         * @param uvStride
-         * @return 碰撞uv
+         * @returns 碰撞uv
          */
         function getCollisionUV(indices: number[], uvs: number[], triangleIndex: number, v: number, w: number, u: number)
         {

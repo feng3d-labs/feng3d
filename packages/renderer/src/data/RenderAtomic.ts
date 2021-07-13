@@ -25,12 +25,12 @@ export class RenderAtomic
     /**
      * 属性数据列表
      */
-    attributes: Attributes = <any>{};
+    attributes: Attributes = {} as any;
 
     /**
      * Uniform渲染数据
      */
-    uniforms: LazyUniforms = <any>{};
+    uniforms: LazyUniforms = {} as any;
 
     /**
      * 渲染实例数量
@@ -45,7 +45,7 @@ export class RenderAtomic
     /**
      * shader 中的 宏
      */
-    shaderMacro: ShaderMacro = <any>{};
+    shaderMacro: ShaderMacro = {} as any;
 
     /**
      * 渲染参数
@@ -58,7 +58,7 @@ export class RenderAtomic
         return (this.next && this.next.getIndexBuffer());
     }
 
-    getAttributes(attributes: Attributes = <any>{})
+    getAttributes(attributes: Attributes = {} as any)
     {
         this.next && this.next.getAttributes(attributes);
         Object.assign(attributes, this.attributes);
@@ -71,7 +71,7 @@ export class RenderAtomic
         return (this.next && this.next.getAttributeByKey(key));
     }
 
-    getUniforms(uniforms: LazyUniforms = <any>{}): LazyObject<Uniforms>
+    getUniforms(uniforms: LazyUniforms = {} as any): LazyObject<Uniforms>
     {
         this.next && this.next.getUniforms(uniforms);
         Object.assign(uniforms, this.uniforms);
@@ -103,7 +103,7 @@ export class RenderAtomic
         return renderParams;
     }
 
-    getShaderMacro(shaderMacro: ShaderMacro = <any>{})
+    getShaderMacro(shaderMacro: ShaderMacro = {} as any)
     {
         this.next && this.next.getShaderMacro(shaderMacro);
         Object.assign(shaderMacro, this.shaderMacro);

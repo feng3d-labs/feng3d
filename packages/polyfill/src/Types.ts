@@ -103,7 +103,7 @@ export const lazy = {
     getvalue: function <T>(lazyItem: Lazy<T>): T
     {
         if (typeof lazyItem == "function")
-            return (<any>lazyItem)();
+            return (lazyItem as any)();
         return lazyItem;
     }
 };

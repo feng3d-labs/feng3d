@@ -47,7 +47,7 @@ export class Vector3 implements Vector
      * 从数组中初始化向量
      * @param array 数组
      * @param offset 偏移
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     static fromArray(array: ArrayLike<number>, offset = 0)
     {
@@ -187,7 +187,7 @@ export class Vector3 implements Vector
     /**
      * 加上指定向量得到新向量
      * @param v 加向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     addTo(v: Vector3, vout = new Vector3())
     {
@@ -200,7 +200,7 @@ export class Vector3 implements Vector
     /**
      * 减去向量
      * @param a 减去的向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     sub(a: Vector3)
     {
@@ -213,7 +213,7 @@ export class Vector3 implements Vector
     /**
      * 减去向量返回新向量
      * @param v 减去的向量
-     * @return 返回的新向量
+     * @returns 返回的新向量
      */
     subTo(v: Vector3, vout = new Vector3())
     {
@@ -289,7 +289,7 @@ export class Vector3 implements Vector
 
     /**
      * 将源 Vector3 对象中的所有矢量数据复制到调用方 Vector3 对象中。
-     * @return 要从中复制数据的 Vector3 对象。
+     * @returns 要从中复制数据的 Vector3 对象。
      */
     copy(v: Vector3)
     {
@@ -346,7 +346,7 @@ export class Vector3 implements Vector
      * Scale a vector and add it to this vector. Save the result in "this". (this = this + vector * scalar)
      * @param scalar
      * @param vector
-     * @param  target The vector to save the result in.
+     * @param target The vector to save the result in.
      */
     addScaledVector(scalar: number, vector: Vector3)
     {
@@ -360,7 +360,7 @@ export class Vector3 implements Vector
      * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
      * @param scalar
      * @param vector
-     * @param  target The vector to save the result in.
+     * @param target The vector to save the result in.
      */
     addScaledVectorTo(scalar: number, vector: Vector3, target = new Vector3())
     {
@@ -452,8 +452,8 @@ export class Vector3 implements Vector
     /**
      * 检查这个向量是否与另一个向量反平行。
      * 
-     * @param  v
-     * @param  precision 设置为零以进行精确比较
+     * @param v
+     * @param precision 设置为零以进行精确比较
      */
     isAntiparallelTo(v: Vector3, precision = mathUtil.PRECISION)
     {
@@ -562,7 +562,7 @@ export class Vector3 implements Vector
 
     /**
      * 返回一个新 Vector3 对象，它是与当前 Vector3 对象完全相同的副本。
-     * @return 一个新 Vector3 对象，它是当前 Vector3 对象的副本。
+     * @returns 一个新 Vector3 对象，它是当前 Vector3 对象的副本。
      */
     clone()
     {
@@ -690,7 +690,7 @@ export class Vector3 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerp(v: Vector3, alpha: Vector3)
     {
@@ -704,7 +704,7 @@ export class Vector3 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerpTo(v: Vector3, alpha: Vector3, vout = new Vector3())
     {
@@ -718,7 +718,7 @@ export class Vector3 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerpNumber(v: Vector3, alpha: number)
     {
@@ -732,7 +732,7 @@ export class Vector3 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerpNumberTo(v: Vector3, alpha: number, vout = new Vector3())
     {
@@ -899,7 +899,7 @@ export class Vector3 implements Vector
      * 转换为数组
      * @param array 数组
      * @param offset 偏移
-     * @return 返回数组
+     * @returns 返回数组
      */
     toArray(array: number[] = [], offset = 0)
     {

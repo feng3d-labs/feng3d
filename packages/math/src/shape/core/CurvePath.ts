@@ -25,7 +25,7 @@ export class CurvePath<T extends Vector> extends Curve<T>
 
 		if (!startPoint.equals(endPoint))
 		{
-			this.curves.push(<any>new LineCurve2(<any>endPoint, <any>startPoint));
+			this.curves.push(new LineCurve2(endPoint as any, startPoint as any) as any);
 		}
 	}
 

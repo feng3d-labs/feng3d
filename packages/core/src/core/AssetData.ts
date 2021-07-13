@@ -19,7 +19,7 @@ export class AssetData extends Feng3dObject
         return this._name;
     }
     set name(v) { this._name = v; }
-    protected _name: string;
+    protected _name: string = null;
 
     /**
      * 资源编号
@@ -113,7 +113,7 @@ export class AssetData extends Feng3dObject
      */
     static serialize(asset: AssetData)
     {
-        var obj = <any>{};
+        var obj = {} as any;
         obj[__class__] = classUtils.getQualifiedClassName(asset);
         obj.assetId = asset.assetId;
         return obj;
@@ -160,9 +160,6 @@ export class AssetData extends Feng3dObject
     static idAssetMap = new Map<string, any>();
 }
 
-/**
- * 设置函数列表
- */
 serialization.setValueHandlers.push(
     // 处理资源
     {
@@ -215,7 +212,7 @@ serialization.serializeHandlers.push(
                 {
                     return false;
                 }
-                target[property] = AssetData.serialize(<any>spv);
+                target[property] = AssetData.serialize(spv);
                 return true;
             }
             return false;

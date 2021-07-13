@@ -11,23 +11,6 @@ declare global
         unique<T>(array: T[], compare?: (a: T, b: T) => boolean): T[];
 
         /**
-         * 判断数组是否唯一
-         * 
-         * @param array 被检查数组
-         * @param compare 比较函数
-         */
-        isUnique<T>(array: T[], compare?: (a: T, b: T) => boolean): boolean;
-
-        /**
-         * 删除元素
-         * 
-         * @param array 被操作数组
-         * @param item 被删除元素
-         * @returns 被删除元素在数组中的位置
-         */
-        delete<T>(array: T[], item: T): number;
-
-        /**
          * 连接一个或多个数组到自身
          * 
          * @param array 被操作数组
@@ -63,23 +46,23 @@ declare global
 
         /**
          * 二分查找,如果有多个则返回第一个
-         * @param   array   数组
-         * @param	target	寻找的目标
-         * @param	compare	比较函数
-         * @param   start   起始位置
-         * @param   end     结束位置
-         * @return          查找到目标时返回所在位置，否则返回-1
+         * @param array 数组
+         * @param target 寻找的目标
+         * @param compare 比较函数
+         * @param start 起始位置
+         * @param end 结束位置
+         * @returns          查找到目标时返回所在位置，否则返回-1
          */
         binarySearch<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
 
         /**
          * 二分查找插入位置,如果有多个则返回第一个
-         * @param   array   数组
-         * @param	target	寻找的目标
-         * @param	compare	比较函数
-         * @param   start   起始位置
-         * @param   end     结束位置
-         * @return          目标所在位置（如果该位置上不是目标对象，则该索引为该目标可插入的位置）
+         * @param array 数组
+         * @param target 寻找的目标
+         * @param compare 比较函数
+         * @param start 起始位置
+         * @param end 结束位置
+         * @returns          目标所在位置（如果该位置上不是目标对象，则该索引为该目标可插入的位置）
          */
         binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
     }
@@ -159,10 +142,12 @@ Array.unique = function (arr, compare = (a, b) => a == b)
 }
 
 /**
- * 数组元素是否唯一
- * @param equalFn 比较函数
+ * 判断数组是否唯一
+ * 
+ * @param array 被检查数组
+ * @param compare 比较函数
  */
-Array.isUnique = function (array, compare = (a, b) => a == b)
+export function isUnique<T>(array: T[], compare?: (a: T, b: T) => boolean): boolean
 {
     for (let i = array.length - 1; i >= 0; i--)
     {
@@ -177,10 +162,17 @@ Array.isUnique = function (array, compare = (a, b) => a == b)
     return true;
 }
 
-Array.delete = function (arr, item)
+/**
+ * 删除元素
+ * 
+ * @param array 被操作数组
+ * @param item 被删除元素
+ * @returns 被删除元素在数组中的位置
+ */
+export function deleteItem<T>(array: T[], item: T): number
 {
-    var index = arr.indexOf(item);
-    if (index != -1) arr.splice(index, 1);
+    var index = array.indexOf(item);
+    if (index != -1) array.splice(index, 1);
     return index;
 }
 

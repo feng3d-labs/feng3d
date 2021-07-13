@@ -11,7 +11,7 @@ export class ImageTexture2D extends Texture2D
     @watch("_imageChanged")
     get image(): HTMLImageElement
     {
-        return <any>this._pixels;
+        return this._pixels as any;
     }
 
     private _imageChanged()

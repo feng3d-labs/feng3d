@@ -142,8 +142,7 @@ export class DisjointSetNode<T>
     /**
      * 子结点
      */
-    // children: { [key: string]: DisjointSetNode<T> };
-    children: any;
+    children: { [key: string]: DisjointSetNode<T> };
 
     /**
      * 构建 并查集 项
@@ -168,7 +167,7 @@ export class DisjointSetNode<T>
         {
             return this.keyCallback(this.value);
         }
-        return <string><any>this.value;
+        return this.value as any as string;
     }
 
     /**

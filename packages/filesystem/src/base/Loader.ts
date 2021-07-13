@@ -8,25 +8,25 @@ export class Loader
 
     /**
      * 加载文本
-     * @param url   路径
+     * @param url 路径
      */
     loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: Error) => void)
     {
-        xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.TEXT, onCompleted: <any>onCompleted, onProgress: onRequestProgress, onError: onError });
+        xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
     }
 
     /**
      * 加载二进制
-     * @param url   路径
+     * @param url 路径
      */
     loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: Error) => void)
     {
-        xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.BINARY, onCompleted: <any>onCompleted, onProgress: onRequestProgress, onError: onError });
+        xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
     }
 
     /**
      * 加载图片
-     * @param url   路径
+     * @param url 路径
      */
     loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: Error) => void)
     {
@@ -65,8 +65,8 @@ interface LoadItem
 
 /**
  * 使用XMLHttpRequest加载
- * @param url           加载路径
- * @param dataFormat    数据类型
+ * @param url 加载路径
+ * @param dataFormat 数据类型
  */
 function xmlHttpRequestLoad(loadItem: LoadItem)
 {
@@ -100,7 +100,7 @@ function onRequestReadystatechange(request: XMLHttpRequest, loadItem: LoadItem)
         if (request.readyState == 4)
         {// 4 = "loaded"
 
-            request.onreadystatechange = <any>null;
+            request.onreadystatechange = null;
 
             if (request.status >= 200 && request.status < 300)
             {

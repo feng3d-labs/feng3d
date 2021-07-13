@@ -11,9 +11,9 @@ export class Ticker
     frameRate = 60
     /**
      * 注册帧函数
-     * @param func  执行方法
-     * @param thisObject    方法this指针
-     * @param priority      执行优先级
+     * @param func 执行方法
+     * @param thisObject 方法this指针
+     * @param priority 执行优先级
      */
     onframe(func: (interval: number) => void, thisObject?: Object, priority = 0)
     {
@@ -22,9 +22,9 @@ export class Ticker
     }
     /**
      * 下一帧执行方法
-     * @param func  执行方法
-     * @param thisObject    方法this指针
-     * @param priority      执行优先级
+     * @param func 执行方法
+     * @param thisObject 方法this指针
+     * @param priority 执行优先级
      */
     nextframe(func: (interval: number) => void, thisObject?: Object, priority = 0)
     {
@@ -33,9 +33,9 @@ export class Ticker
     }
     /**
      * 注销帧函数（只执行一次）
-     * @param func  执行方法
-     * @param thisObject    方法this指针
-     * @param priority      执行优先级
+     * @param func 执行方法
+     * @param thisObject 方法this指针
+     * @param priority 执行优先级
      */
     offframe(func: (interval: number) => void, thisObject?: Object)
     {
@@ -44,10 +44,10 @@ export class Ticker
     }
     /**
      * 注册周期函数
-     * @param interval  执行周期，以ms为单位
-     * @param func  执行方法
-     * @param thisObject    方法this指针
-     * @param priority      执行优先级
+     * @param interval 执行周期，以ms为单位
+     * @param func 执行方法
+     * @param thisObject 方法this指针
+     * @param priority 执行优先级
      */
     on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority = 0)
     {
@@ -56,10 +56,10 @@ export class Ticker
     }
     /**
      * 注册周期函数（只执行一次）
-     * @param interval  执行周期，以ms为单位
-     * @param func  执行方法
-     * @param thisObject    方法this指针
-     * @param priority      执行优先级
+     * @param interval 执行周期，以ms为单位
+     * @param func 执行方法
+     * @param thisObject 方法this指针
+     * @param priority 执行优先级
      */
     once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority = 0)
     {
@@ -68,9 +68,9 @@ export class Ticker
     }
     /**
      * 注销周期函数
-     * @param interval  执行周期，以ms为单位
-     * @param func  执行方法
-     * @param thisObject    方法this指针
+     * @param interval 执行周期，以ms为单位
+     * @param func 执行方法
+     * @param thisObject 方法this指针
      */
     off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object)
     {
@@ -79,11 +79,11 @@ export class Ticker
     }
     /**
      * 重复指定次数 执行函数
-     * @param interval  执行周期，以ms为单位
-     * @param 	repeatCount     执行次数
-     * @param func  执行方法
-     * @param thisObject    方法this指针
-     * @param priority      执行优先级
+     * @param interval 执行周期，以ms为单位
+     * @param repeatCount 执行次数
+     * @param func 执行方法
+     * @param thisObject 方法this指针
+     * @param priority 执行优先级
      */
     repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority = 0)
     {
@@ -220,14 +220,14 @@ function runTickerFuncs()
     //倒序，优先级高的排在后面
     tickerFuncs.sort((a, b) =>
     {
-        return <number>a.priority - <number>b.priority;
+        return a.priority - b.priority;
     });
     var currenttime = Date.now();
     var needTickerFuncItems: TickerFuncItem[] = [];
     for (let i = tickerFuncs.length - 1; i >= 0; i--)
     {
         var element = tickerFuncs[i];
-        if (<number>element.runtime < currenttime)
+        if (element.runtime < currenttime)
         {
             needTickerFuncItems.push(element);
             if (element.once)
@@ -235,7 +235,7 @@ function runTickerFuncs()
                 tickerFuncs.splice(i, 1);
                 continue;
             }
-            element.runtime = nextRuntime(<number>element.runtime, lazy.getvalue(element.interval));
+            element.runtime = nextRuntime(element.runtime, lazy.getvalue(element.interval));
         }
     }
     needTickerFuncItems.reverse();
@@ -286,7 +286,7 @@ if (typeof requestAnimationFrame == "undefined")
             window["msRequestAnimationFrame"];
     } else if (typeof global != "undefined")
     {
-        _global = <any>global;
+        _global = global;
     }
     if (localrequestAnimationFrame == undefined)
     {

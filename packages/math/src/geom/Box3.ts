@@ -352,7 +352,7 @@ export class Box3
      * @param position 射线起点
      * @param direction 射线方向
      * @param outTargetNormal 相交处法线
-     * @return 起点到包围盒距离
+     * @returns 起点到包围盒距离
      * 
      * @todo 可用以下方法优化？
      * @see 3D数学基础：图形与游戏开发 P290

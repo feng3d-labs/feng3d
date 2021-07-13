@@ -12,8 +12,6 @@ export class Queue<T>
 
     /**
      * 构建队列
-     * 
-     * @param comparatorFunction 比较函数
      */
     constructor()
     {

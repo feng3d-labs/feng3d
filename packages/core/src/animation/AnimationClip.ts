@@ -18,7 +18,7 @@ export class AnimationClip extends Feng3dObject
     {
         this._name = v;
     }
-    protected _name: string;
+    protected _name: string = null;
 
     /**
      * 动画时长，单位ms

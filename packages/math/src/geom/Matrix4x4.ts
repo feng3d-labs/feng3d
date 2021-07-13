@@ -56,8 +56,8 @@ export class Matrix4x4
     /**
      * 从轴与旋转角度创建矩阵
      * 
-     * @param   axis            旋转轴
-     * @param   degrees         角度
+     * @param axis 旋转轴
+     * @param degrees 角度
      */
     static fromAxisRotate(axis: Vector3, degrees: number)
     {
@@ -67,10 +67,10 @@ export class Matrix4x4
     /**
      * 从欧拉角旋转角度初始化矩阵。
      * 
-     * @param   rx      用于沿 x 轴旋转对象的角度。
-     * @param   ry      用于沿 y 轴旋转对象的角度。
-     * @param   rz      用于沿 z 轴旋转对象的角度。  
-     * @param   order   绕轴旋转的顺序。
+     * @param rx 用于沿 x 轴旋转对象的角度。
+     * @param ry 用于沿 y 轴旋转对象的角度。
+     * @param rz 用于沿 z 轴旋转对象的角度。  
+     * @param order 绕轴旋转的顺序。
      */
     static fromRotation(rx: number, ry: number, rz: number, order = defaultRotationOrder): Matrix4x4
     {
@@ -89,9 +89,9 @@ export class Matrix4x4
 
     /**
      * 创建缩放矩阵
-     * @param   sx      用于沿 x 轴缩放对象的乘数。
-     * @param   sy      用于沿 y 轴缩放对象的乘数。
-     * @param   sz      用于沿 z 轴缩放对象的乘数。
+     * @param sx 用于沿 x 轴缩放对象的乘数。
+     * @param sy 用于沿 y 轴缩放对象的乘数。
+     * @param sz 用于沿 z 轴缩放对象的乘数。
      */
     static fromScale(sx: number, sy: number, sz: number)
     {
@@ -106,9 +106,9 @@ export class Matrix4x4
 
     /**
      * 创建位移矩阵
-     * @param   x   沿 x 轴的增量平移。
-     * @param   y   沿 y 轴的增量平移。
-     * @param   z   沿 z 轴的增量平移。
+     * @param x 沿 x 轴的增量平移。
+     * @param y 沿 y 轴的增量平移。
+     * @param z 沿 z 轴的增量平移。
      */
     static fromPosition(x: number, y: number, z: number)
     {
@@ -157,7 +157,7 @@ export class Matrix4x4
      * 获取欧拉旋转角度。
      * 
      * @param rotation 欧拉旋转角度。
-     * @param order   绕轴旋转的顺序。
+     * @param order 绕轴旋转的顺序。
      */
     getRotation(rotation = new Vector3(), order = defaultRotationOrder)
     {
@@ -297,7 +297,7 @@ export class Matrix4x4
 
     /**
      * 创建 Matrix4x4 对象。
-     * @param   rawData    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
+     * @param rawData 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
     constructor(rawData: NmberArray16 = [
         1, 0, 0, 0,//
@@ -312,10 +312,10 @@ export class Matrix4x4
     /**
      * 从欧拉角旋转角度初始化矩阵。
      * 
-     * @param   rx      用于沿 x 轴旋转对象的角度。
-     * @param   ry      用于沿 y 轴旋转对象的角度。
-     * @param   rz      用于沿 z 轴旋转对象的角度。  
-     * @param   order   绕轴旋转的顺序。
+     * @param rx 用于沿 x 轴旋转对象的角度。
+     * @param ry 用于沿 y 轴旋转对象的角度。
+     * @param rz 用于沿 z 轴旋转对象的角度。  
+     * @param order 绕轴旋转的顺序。
      */
     fromRotation(rx: number, ry: number, rz: number, order = defaultRotationOrder)
     {
@@ -337,8 +337,8 @@ export class Matrix4x4
     /**
      * 从轴与旋转角度创建矩阵
      * 
-     * @param   axis            旋转轴
-     * @param   degrees         角度
+     * @param axis 旋转轴
+     * @param degrees 角度
      */
     fromAxisRotate(axis: Vector3, degrees: number)
     {
@@ -407,9 +407,9 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上后置一个增量旋转。
-     * @param   axis            旋转轴
-     * @param   degrees         角度
-     * @param   pivotPoint      旋转中心点
+     * @param axis 旋转轴
+     * @param degrees 角度
+     * @param pivotPoint 旋转中心点
      */
     appendRotation(axis: Vector3, degrees: number, pivotPoint?: Vector3)
     {
@@ -431,9 +431,9 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上后置一个增量缩放，沿 x、y 和 z 轴改变位置。
-     * @param   sx      用于沿 x 轴缩放对象的乘数。
-     * @param   sy      用于沿 y 轴缩放对象的乘数。
-     * @param   sz      用于沿 z 轴缩放对象的乘数。
+     * @param sx 用于沿 x 轴缩放对象的乘数。
+     * @param sy 用于沿 y 轴缩放对象的乘数。
+     * @param sz 用于沿 z 轴缩放对象的乘数。
      */
     appendScale(sx: number, sy: number, sz: number)
     {
@@ -444,9 +444,9 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上后置一个增量平移，沿 x、y 和 z 轴重新定位。
-     * @param   x   沿 x 轴的增量平移。
-     * @param   y   沿 y 轴的增量平移。
-     * @param   z   沿 z 轴的增量平移。
+     * @param x 沿 x 轴的增量平移。
+     * @param y 沿 y 轴的增量平移。
+     * @param z 沿 z 轴的增量平移。
      */
     appendTranslation(x: number, y: number, z: number)
     {
@@ -469,7 +469,7 @@ export class Matrix4x4
 
     /**
      * 将源 Matrix4x4 对象中的所有矩阵数据复制到调用方 Matrix4x4 对象中。
-     * @param   source      要从中复制数据的 Matrix4x4 对象。
+     * @param source 要从中复制数据的 Matrix4x4 对象。
      */
     copy(source: Matrix4x4)
     {
@@ -483,9 +483,9 @@ export class Matrix4x4
     /**
      * 从数组中初始化
      * 
-     * @param   array       包含矩阵数据的数组
-     * @param   index       数组中的起始位置
-     * @param   transpose   是否转置
+     * @param array 包含矩阵数据的数组
+     * @param index 数组中的起始位置
+     * @param transpose 是否转置
      */
     fromArray(array: number[], index = 0, transpose = false)
     {
@@ -507,9 +507,9 @@ export class Matrix4x4
     /**
      * 将矩阵数据转换为数组
      * 
-     * @param   array       保存矩阵数据的数组
-     * @param   index       数组中的起始位置
-     * @param   transpose   是否转置
+     * @param array 保存矩阵数据的数组
+     * @param index 数组中的起始位置
+     * @param transpose 是否转置
      */
     toArray(array: number[] | Float32Array = [], index = 0, transpose = false)
     {
@@ -805,7 +805,7 @@ export class Matrix4x4
 
     /**
      * 反转当前矩阵。逆矩阵
-     * @return      如果成功反转矩阵，则返回 该矩阵。
+     * @returns      如果成功反转矩阵，则返回 该矩阵。
      */
     invert()
     {
@@ -846,7 +846,7 @@ export class Matrix4x4
 
     /**
      * 通过将当前 Matrix4x4 对象与另一个 Matrix4x4 对象相乘来前置一个矩阵。得到的结果将合并两个矩阵转换。
-     * @param   rhs     个右侧矩阵，它与当前 Matrix4x4 对象相乘。
+     * @param rhs 个右侧矩阵，它与当前 Matrix4x4 对象相乘。
      */
     prepend(rhs: Matrix4x4)
     {
@@ -858,9 +858,9 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上前置一个增量旋转。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行旋转，然后再执行其他转换。
-     * @param   axis        旋转的轴或方向。常见的轴为 X_AXIS (Vector3(1,0,0))、Y_AXIS (Vector3(0,1,0)) 和 Z_AXIS (Vector3(0,0,1))。此矢量的长度应为 1。
-     * @param   degrees     旋转的角度。
-     * @param   pivotPoint  一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
+     * @param axis 旋转的轴或方向。常见的轴为 X_AXIS (Vector3(1,0,0))、Y_AXIS (Vector3(0,1,0)) 和 Z_AXIS (Vector3(0,0,1))。此矢量的长度应为 1。
+     * @param degrees 旋转的角度。
+     * @param pivotPoint 一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
      */
     prependRotation(axis: Vector3, degrees: number, pivotPoint: Vector3 = new Vector3())
     {
@@ -871,9 +871,9 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上前置一个增量缩放，沿 x、y 和 z 轴改变位置。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行缩放更改，然后再执行其他转换。
-     * @param   xScale      用于沿 x 轴缩放对象的乘数。
-     * @param   yScale      用于沿 y 轴缩放对象的乘数。
-     * @param   zScale      用于沿 z 轴缩放对象的乘数。
+     * @param xScale 用于沿 x 轴缩放对象的乘数。
+     * @param yScale 用于沿 y 轴缩放对象的乘数。
+     * @param zScale 用于沿 z 轴缩放对象的乘数。
      */
     prependScale(xScale: number, yScale: number, zScale: number)
     {
@@ -900,9 +900,9 @@ export class Matrix4x4
 
     /**
      * 在 Matrix4x4 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行平移更改，然后再执行其他转换。
-     * @param   x   沿 x 轴的增量平移。
-     * @param   y   沿 y 轴的增量平移。
-     * @param   z   沿 z 轴的增量平移。
+     * @param x 沿 x 轴的增量平移。
+     * @param y 沿 y 轴的增量平移。
+     * @param z 沿 z 轴的增量平移。
      */
     prependTranslation(x: number, y: number, z: number)
     {
@@ -913,7 +913,7 @@ export class Matrix4x4
 
     /**
      * X轴方向移动
-     * @param distance  移动距离
+     * @param distance 移动距离
      */
     moveRight(distance: number)
     {
@@ -925,7 +925,7 @@ export class Matrix4x4
 
     /**
      * Y轴方向移动
-     * @param distance  移动距离
+     * @param distance 移动距离
      */
     moveUp(distance: number)
     {
@@ -937,7 +937,7 @@ export class Matrix4x4
 
     /**
      * Z轴方向移动
-     * @param distance  移动距离
+     * @param distance 移动距离
      */
     moveForward(distance: number)
     {
@@ -949,8 +949,8 @@ export class Matrix4x4
 
     /**
      * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
-     * @param   vin   一个容纳要转换的坐标的 Vector3 对象。
-     * @return  一个包含转换后的坐标的 Vector3 对象。
+     * @param vin 一个容纳要转换的坐标的 Vector3 对象。
+     * @returns  一个包含转换后的坐标的 Vector3 对象。
      */
     transformPoint3(vin: Vector3, vout = new Vector3())
     {
@@ -976,8 +976,8 @@ export class Matrix4x4
      * 
      * 与变换点不同，并不会受到矩阵平移分量的影响。
      * 
-     * @param vin   被变换的向量
-     * @param vout  变换后的向量
+     * @param vin 被变换的向量
+     * @param vout 变换后的向量
      */
     transformVector3(vin: Vector3, vout = new Vector3())
     {
@@ -1000,8 +1000,8 @@ export class Matrix4x4
     /**
      * 变换Vector4向量
      * 
-     * @param vin   被变换的向量
-     * @param vout  变换后的向量
+     * @param vin 被变换的向量
+     * @param vout 变换后的向量
      */
     transformVector4(vin: Vector4, vout = new Vector4())
     {
@@ -1027,8 +1027,8 @@ export class Matrix4x4
     /**
      * 变换坐标数组数据
      * 
-     * @param   vin     被变换坐标数组数据
-     * @param   vout    变换后的坐标数组数据
+     * @param vin 被变换坐标数组数据
+     * @param vout 变换后的坐标数组数据
      */
     transformPoints(vin: number[], vout: number[] = [])
     {
@@ -1054,8 +1054,8 @@ export class Matrix4x4
     /**
      * 变换旋转角度
      * 
-     * @param vin   被变换的旋转角度
-     * @param vout  变换后的旋转角度
+     * @param vin 被变换的旋转角度
+     * @param vout 变换后的旋转角度
      */
     transformRotation(vin: Vector3, vout = new Vector3())
     {
@@ -1135,8 +1135,8 @@ export class Matrix4x4
 
     /**
      * 看向目标位置
-     * @param target    目标位置
-     * @param upAxis    向上朝向
+     * @param target 目标位置
+     * @param upAxis 向上朝向
      */
     lookAt(target: Vector3, upAxis?: Vector3)
     {

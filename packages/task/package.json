@@ -1,20 +1,15 @@
 {
   "name": "@feng3d/task",
   "version": "0.3.3",
-  "description": "串联或并联一组异步函数为一个异步函数",
-  "standalone": true,
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "bundle": "dist/index.js",
   "types": "dist/index.d.ts",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "bundle": "dist/browser/index.js",
-  "bundleModule": "dist/browser/index.mjs",
-  "bundleOutput": {
-    "name": "feng3d"
-  },
   "author": "feng",
+  "license": "MIT",
+  "description": "串联或并联一组异步函数为一个异步函数",
   "files": [
-    "dist/",
-    "*.d.ts"
-  ],
-  "gitHead": "7a968379054159e52658180408513eeb95004348"
+    "lib/",
+    "dist/"
+  ]
 }

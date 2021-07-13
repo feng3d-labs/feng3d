@@ -1,7 +1,6 @@
 import { Quaternion, Vector3 } from "@feng3d/math";
 import { serialize } from "@feng3d/serialization";
 
-
 export class PropertyClip
 {
     /**
@@ -28,7 +27,7 @@ export class PropertyClip
         if (this._cacheValues[frame] != undefined)
             return this._cacheValues[frame];
 
-        this._propertyValues = this._propertyValues || <any>this.propertyValues.map(v =>
+        this._propertyValues = this._propertyValues || this.propertyValues.map(v =>
         {
             return [v[0], this.getpropertyValue(v[1])];
         });
@@ -62,17 +61,17 @@ export class PropertyClip
         if (prevalue instanceof Quaternion)
         {
             propertyValue = prevalue.clone();
-            propertyValue.lerp(prevalue, <Quaternion>nextValue, factor);
+            propertyValue.lerp(prevalue, nextValue as Quaternion, factor);
         } else if (prevalue instanceof Vector3)
         {
             propertyValue = new Vector3(
-                prevalue.x * (1 - factor) + (<Vector3>nextValue).x * factor,
-                prevalue.y * (1 - factor) + (<Vector3>nextValue).y * factor,
-                prevalue.z * (1 - factor) + (<Vector3>nextValue).z * factor,
+                prevalue.x * (1 - factor) + (nextValue as Vector3).x * factor,
+                prevalue.y * (1 - factor) + (nextValue as Vector3).y * factor,
+                prevalue.z * (1 - factor) + (nextValue as Vector3).z * factor,
             );
         } else
         {
-            propertyValue = prevalue * (1 - factor) + <number>nextValue * factor;
+            propertyValue = prevalue * (1 - factor) + (nextValue as number) * factor;
         }
         return propertyValue;
     }
@@ -93,9 +92,6 @@ export class PropertyClip
     cacheIndex: number;
 }
 
-/**
- * [time:number,value:number | Vector3 | Quaternion]
- */
 export type ClipPropertyType = number | Vector3 | Quaternion;
 export type PropertyClipPath = [PropertyClipPathItemType, string][];
 

@@ -1,23 +1,18 @@
 {
   "name": "@feng3d/serialization",
   "version": "0.3.3",
-  "description": "",
-  "standalone": true,
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "bundle": "dist/index.js",
   "types": "dist/index.d.ts",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "bundle": "dist/browser/index.js",
-  "bundleModule": "dist/browser/index.mjs",
-  "bundleOutput": {
-    "name": "feng3d"
-  },
   "author": "feng",
+  "license": "MIT",
+  "description": "",
   "files": [
-    "dist/",
-    "*.d.ts"
+    "lib/",
+    "dist/"
   ],
   "dependencies": {
     "@feng3d/polyfill": "0.3.3"
-  },
-  "gitHead": "7a968379054159e52658180408513eeb95004348"
+  }
 }

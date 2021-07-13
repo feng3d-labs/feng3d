@@ -354,7 +354,7 @@ export class ImageUtil
      * 绘制双曲线
      * @param curve 曲线
      * @param curve1 曲线
-     * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
+     * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
      * @param curveColor 颜色
      */
     drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5), rect = null)

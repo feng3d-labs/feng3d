@@ -23,7 +23,7 @@ export class KeyCapture
 
 	/**
 	 * 构建
-	 * @param stage		舞台
+	 * @param stage 舞台
 	 */
 	constructor(shortcut: ShortCut)
 	{
@@ -49,7 +49,7 @@ export class KeyCapture
 		];
 		for (var i = 0; i < mouseEvents.length; i++)
 		{
-			windowEventProxy.on(<any>mouseEvents[i], this.onMouseOnce, this);
+			windowEventProxy.on(mouseEvents[i] as any, this.onMouseOnce, this);
 		}
 		windowEventProxy.on("wheel", this.onMousewheel, this);
 	}

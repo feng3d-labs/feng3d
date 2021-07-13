@@ -131,7 +131,7 @@ export class _IndexedDB
             this._dbStatus[dbname].onsuccessCallbacks.length = 0;
             callbacks.forEach(element =>
             {
-                element(<any>event, <any>null);
+                element(event as any, null);
             });
         };
     }
@@ -186,7 +186,7 @@ export class _IndexedDB
             var objectStoreNames: string[] = [];
             for (let i = 0; i < database.objectStoreNames.length; i++)
             {
-                objectStoreNames.push(<string>database.objectStoreNames.item(i));
+                objectStoreNames.push(database.objectStoreNames.item(i));
             }
             callback(null, objectStoreNames)
         });

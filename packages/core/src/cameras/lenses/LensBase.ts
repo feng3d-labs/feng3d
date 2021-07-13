@@ -89,7 +89,7 @@ export abstract class LensBase extends Feng3dObject
 	 * 摄像机空间坐标投影到GPU空间坐标
 	 * @param point3d 摄像机空间坐标
 	 * @param v GPU空间坐标
-	 * @return GPU空间坐标
+	 * @returns GPU空间坐标
 	 */
 	project(point3d: Vector3, v = new Vector3()): Vector3
 	{
@@ -140,7 +140,7 @@ export abstract class LensBase extends Feng3dObject
 	 * @param nY GPU空间坐标Y
 	 * @param sZ 到摄像机的距离
 	 * @param v 摄像机空间坐标（输出）
-	 * @return 摄像机空间坐标
+	 * @returns 摄像机空间坐标
 	 */
 	unprojectWithDepth(nX: number, nY: number, sZ: number, v = new Vector3())
 	{

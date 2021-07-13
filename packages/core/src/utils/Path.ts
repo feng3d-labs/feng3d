@@ -176,7 +176,7 @@ const CHAR_BACKWARD_SLASH = 92;
  */
 const process = {
     platform: 'win32',
-    env: <any>{},
+    env: {},
     cwd: function () { return ""; },
 };
 
@@ -1462,8 +1462,8 @@ class Win32Path implements Path
 
     sep: "\\" | "/" = '\\';
     delimiter: ";" | ":" = ';';
-    win32: Win32Path = <any>null;
-    posix: PosixPath = <any>null;
+    win32: Win32Path = null;
+    posix: PosixPath = null;
 };
 
 class PosixPath implements Path
@@ -1986,8 +1986,8 @@ class PosixPath implements Path
 
     sep: "\\" | "/" = '/';
     delimiter: ";" | ":" = ':';
-    win32: Win32Path = <any>null;
-    posix: PosixPath = <any>null;
+    win32: Win32Path = null;
+    posix: PosixPath = null;
 };
 
 const win32 = new Win32Path();

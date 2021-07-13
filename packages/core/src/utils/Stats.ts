@@ -1,8 +1,5 @@
 import { ticker } from "./Ticker";
 
-/**
- * @author mrdoob / http://mrdoob.com/
- */
 declare global
 {
     interface Performance
@@ -59,7 +56,7 @@ export class Stats
         {
             for (var i = 0; i < container.children.length; i++)
             {
-                (<HTMLCanvasElement>container.children[i]).style.display = i === id ? 'block' : 'none';
+                (container.children[i] as HTMLCanvasElement).style.display = i === id ? 'block' : 'none';
             }
             mode = id;
         }

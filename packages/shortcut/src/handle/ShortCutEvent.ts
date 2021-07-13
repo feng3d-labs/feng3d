@@ -11,7 +11,7 @@
 
 	// 	/**
 	// 	 * 构建
-	// 	 * @param command		命令名称
+	// 	 * @param command 命令名称
 	// 	 */
 	// 	constructor(command: string, data: InputEvent)
 	// 	{

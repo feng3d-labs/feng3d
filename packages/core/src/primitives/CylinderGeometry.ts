@@ -309,9 +309,6 @@ export class CylinderGeometry extends Geometry
 
     /**
      * 构建顶点索引
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
-     * @param yUp 正面朝向 true:Y+ false:Z+
      */
     private buildIndices()
     {
@@ -376,8 +373,6 @@ export class CylinderGeometry extends Geometry
 
     /**
      * 构建uv
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
      */
     private buildUVs()
     {

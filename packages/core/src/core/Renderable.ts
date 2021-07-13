@@ -106,7 +106,7 @@ export class Renderable extends RayCastable
      * 
      * @param worldRay 世界空间射线
      * 
-     * @return 相交信息
+     * @returns 相交信息
      */
     worldRayIntersection(worldRay: Ray3)
     {
@@ -120,7 +120,7 @@ export class Renderable extends RayCastable
      * 
      * @param ray3D 局部空间射线
      * 
-     * @return 相交信息
+     * @returns 相交信息
      */
     localRayIntersection(localRay: Ray3)
     {
@@ -168,8 +168,8 @@ export class Renderable extends RayCastable
      */
     dispose()
     {
-        this.geometry = <any>null;
-        this.material = <any>null;
+        this.geometry = null;
+        this.material = null;
         super.dispose();
     }
 

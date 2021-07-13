@@ -2,7 +2,7 @@ import { oav } from "@feng3d/objectview";
 import { mathUtil } from "@feng3d/polyfill";
 import { serialize } from "@feng3d/serialization";
 import { Vector } from "./Vector";
-import { Vector3 } from "./Vector3";
+import type { Vector3 } from "./Vector3";
 
 
 var DEG_TO_RAD = Math.PI / 180;
@@ -134,7 +134,7 @@ export class Vector2 implements Vector
     /**
      * 减去向量返回新向量
      * @param v 减去的向量
-     * @return 返回的新向量
+     * @returns 返回的新向量
      */
     subTo(v: Vector2, vout = new Vector2())
     {
@@ -337,7 +337,7 @@ export class Vector2 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerp(p: Vector2, alpha: Vector2): Vector2
     {
@@ -350,7 +350,7 @@ export class Vector2 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     lerpTo(v: Vector2, alpha: Vector2, vout = new Vector2())
     {
@@ -361,7 +361,7 @@ export class Vector2 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerpNumber(v: Vector2, alpha: number)
     {
@@ -374,7 +374,7 @@ export class Vector2 implements Vector
      * 插值到指定向量
      * @param v 目标向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerpNumberTo(v: Vector2, alpha: number, vout = new Vector2())
     {
@@ -449,7 +449,7 @@ export class Vector2 implements Vector
      * 转换为数组
      * @param array 数组
      * @param offset 偏移
-     * @return 返回数组
+     * @returns 返回数组
      */
     toArray(array: number[] = [], offset = 0)
     {

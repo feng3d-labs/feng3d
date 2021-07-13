@@ -1,7 +1,7 @@
 /**
  * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
  * @param str A string to be decoded.
- * @return A new string in which certain characters have been unescaped.
+ * @returns A new string in which certain characters have been unescaped.
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
  */
 declare function unescape(str: string): string;
@@ -9,7 +9,7 @@ declare function unescape(str: string): string;
 /**
  * The escape() function computes a new string in which certain characters have been replaced by a hexadecimal escape sequence.
  * @param str A string to be encoded.
- * @return A new string in which certain characters have been escaped.
+ * @returns A new string in which certain characters have been escaped.
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape
  */
 declare function escape(str: string): string;
@@ -29,7 +29,7 @@ export class DataTransform
         var reader = new FileReader();
         reader.onload = function (e)
         {
-            callback(<any>e.target["result"]);
+            callback(e.target.result as ArrayBuffer);
         };
         reader.readAsArrayBuffer(blob);
     }
@@ -59,7 +59,7 @@ export class DataTransform
      */
     uint8ToArrayBuffer(uint8Array: Uint8Array)
     {
-        var buffer = <ArrayBuffer>uint8Array.buffer;
+        var buffer = uint8Array.buffer as ArrayBuffer;
         return buffer;
     }
 
@@ -70,7 +70,7 @@ export class DataTransform
     arrayToArrayBuffer(array: number[])
     {
         var uint8 = new Uint8Array(array);
-        var buffer = <ArrayBuffer>uint8.buffer;
+        var buffer = uint8.buffer as ArrayBuffer;
         return buffer;
     }
 
@@ -114,7 +114,7 @@ export class DataTransform
         var a = new FileReader();
         a.onload = function (e)
         {
-            callback(<any>e.target["result"]);
+            callback(e.target["result"] as any);
         };
         a.readAsDataURL(blob);
     }
@@ -124,7 +124,7 @@ export class DataTransform
      */
     dataURLtoBlob(dataurl: string)
     {
-        var arr = dataurl.split(","), mime = (<any>arr[0].match(/:(.*?);/))[1],
+        var arr = dataurl.split(","), mime = (arr[0].match(/:(.*?);/))[1],
             bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
         while (n--)
         {
@@ -248,7 +248,7 @@ export class DataTransform
     blobToText(blob: Blob, callback: (content: string) => void)
     {
         var a = new FileReader();
-        a.onload = function (e) { callback(<any>e.target["result"]); };
+        a.onload = function (e) { callback(e.target["result"] as any); };
         a.readAsText(blob);
     }
 

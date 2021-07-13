@@ -8,6 +8,7 @@ import { oav } from "@feng3d/objectview";
 import { serialization, serialize } from "@feng3d/serialization";
 import { watch } from "@feng3d/watcher";
 import { Texture2D } from "./Texture2D";
+import { deleteItem } from "packages/polyfill/src/Array";
 
 export interface TextureCubeEventMap
 {
@@ -137,7 +138,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
                 this._pixels[index] = texture.image;
                 this.invalidate();
             }
-            Array.delete(this._loading, texture);
+            deleteItem(this._loading, texture);
             this._onItemLoadCompleted();
         });
     }
@@ -160,7 +161,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
                 this._pixels[index] = img;
                 this.invalidate();
             }
-            Array.delete(this._loading, imagepath);
+            deleteItem(this._loading, imagepath);
             this._onItemLoadCompleted();
         });
     }

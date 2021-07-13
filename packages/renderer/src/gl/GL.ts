@@ -107,12 +107,12 @@ export class GL
     {
         var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
         // var contextIds = ["webgl"];
-        var gl: GL = <any>null;
+        var gl: GL = null;
         for (var i = 0; i < contextIds.length; ++i)
         {
             try
             {
-                gl = <any>canvas.getContext(contextIds[i], contextAttributes);
+                gl = canvas.getContext(contextIds[i], contextAttributes) as any;
                 gl.contextId = contextIds[i];
                 gl.contextAttributes = contextAttributes;
                 break;

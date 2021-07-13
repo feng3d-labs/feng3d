@@ -1,5 +1,5 @@
 import { fs, pathUtils, ReadFS } from "@feng3d/filesystem";
-import { classUtils, Constructor, gPartial, mathUtil, __class__ } from "@feng3d/polyfill";
+import { classUtils, Constructor, deleteItem, gPartial, mathUtil, __class__ } from "@feng3d/polyfill";
 import { serialization } from "@feng3d/serialization";
 import { task } from "@feng3d/task";
 import { AssetData } from "../../core/AssetData";
@@ -65,12 +65,12 @@ export class ReadRS
         {
             if (object)
             {
-                var allAssets: FileAsset[] = <any>serialization.deserialize(object);
+                var allAssets: FileAsset[] = serialization.deserialize(object) as any;
                 //
                 allAssets.forEach(asset =>
                 {
                     // 设置资源系统
-                    asset.rs = <any>this;
+                    asset.rs = this as any;
                     // 新增映射
                     this.addAsset(asset);
                 });
@@ -102,8 +102,8 @@ export class ReadRS
         var assetId = mathUtil.uuid()
 
         // 初始化
-        asset.rs = <any>this;
-        serialization.setValue(<T>asset, value);
+        asset.rs = this as any;
+        serialization.setValue(asset, value);
         asset.assetId = assetId;
         asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
         asset.initAsset();
@@ -136,7 +136,7 @@ export class ReadRS
         //
         asset.write((err) =>
         {
-            callback && callback(null, <T>asset);
+            callback && callback(null, asset as T);
         });
     }
 
@@ -233,7 +233,7 @@ export class ReadRS
     getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[]
     {
         var assets = Object.keys(this._idMap).map(v => this._idMap[v]);
-        return <any>assets.filter(v => v instanceof type);
+        return assets.filter(v => v instanceof type) as any;
     }
 
     /**
@@ -244,7 +244,7 @@ export class ReadRS
     getLoadedAssetDatasByType<T extends any>(type: Constructor<T>): T[]
     {
         var assets = AssetData.getAllLoadedAssetDatas();
-        return <any>assets.filter(v => v instanceof type);
+        return assets.filter(v => v instanceof type);
     }
 
     /**
@@ -393,7 +393,7 @@ export class ReadRS
         // 获取所包含的资源列表
         var assetids = this.getAssetsWithObject(object);
         // 不需要加载本资源，移除自身资源
-        Array.delete(assetids, object.assetId);
+        deleteItem(assetids, object.assetId);
         // 加载包含的资源数据
         this.readAssetDatas(assetids, (err, result) =>
         {

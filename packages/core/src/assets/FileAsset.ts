@@ -20,7 +20,7 @@ export function setAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K, cl
 export interface AssetTypeClassMap
 {
 }
-export const assetTypeClassMap: AssetTypeClassMap = <any>{};
+export const assetTypeClassMap: AssetTypeClassMap = {} as any;
 
 /**
  * feng3d资源

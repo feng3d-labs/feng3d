@@ -90,10 +90,10 @@ export class TorusGeometry extends Geometry
 
 	/**
 	 * 添加三角形索引数据
-	 * @param currentTriangleIndex		当前三角形索引
-	 * @param cwVertexIndex0			索引0
-	 * @param cwVertexIndex1			索引1
-	 * @param cwVertexIndex2			索引2
+	 * @param currentTriangleIndex 当前三角形索引
+	 * @param cwVertexIndex0 索引0
+	 * @param cwVertexIndex1 索引1
+	 * @param cwVertexIndex2 索引2
 	 */
 	private addTriangleClockWise(currentTriangleIndex: number, cwVertexIndex0: number, cwVertexIndex1: number, cwVertexIndex2: number)
 	{

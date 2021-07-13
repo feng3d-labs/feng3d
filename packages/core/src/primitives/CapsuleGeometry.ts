@@ -62,11 +62,6 @@ export class CapsuleGeometry extends Geometry
 
     /**
      * 构建几何体数据
-     * @param radius 胶囊体半径
-     * @param height 胶囊体高度
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
-     * @param yUp 正面朝向 true:Y+ false:Z+
      */
     protected buildGeometry()
     {
@@ -164,9 +159,6 @@ export class CapsuleGeometry extends Geometry
 
     /**
      * 构建顶点索引
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
-     * @param yUp 正面朝向 true:Y+ false:Z+
      */
     private buildIndices()
     {
@@ -213,8 +205,6 @@ export class CapsuleGeometry extends Geometry
 
     /**
      * 构建uv
-     * @param segmentsW 横向分割数
-     * @param segmentsH 纵向分割数
      */
     private buildUVs()
     {

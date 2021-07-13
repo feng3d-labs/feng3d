@@ -12,9 +12,9 @@ export class Plane
 {
     /**
      * 通过3顶点定义一个平面
-     * @param p0		点0
-     * @param p1		点1
-     * @param p2		点2
+     * @param p0 点0
+     * @param p1 点1
+     * @param p2 点2
      */
     static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
     {
@@ -23,8 +23,8 @@ export class Plane
 
     /**
      * 根据法线与点定义平面
-     * @param normal		平面法线
-     * @param point			平面上任意一点
+     * @param normal 平面法线
+     * @param point 平面上任意一点
      */
     static fromNormalAndPoint(normal: Vector3, point: Vector3)
     {
@@ -66,10 +66,10 @@ export class Plane
 
     /**
      * 创建一个平面
-     * @param a		A系数
-     * @param b		B系数
-     * @param c		C系数
-     * @param d		D系数
+     * @param a A系数
+     * @param b B系数
+     * @param c C系数
+     * @param d D系数
      */
     constructor(a = 0, b = 1, c = 0, d = 0)
     {
@@ -82,10 +82,10 @@ export class Plane
     /**
      * 设置
      * 
-     * @param a		A系数
-     * @param b		B系数
-     * @param c		C系数
-     * @param d		D系数
+     * @param a A系数
+     * @param b B系数
+     * @param c C系数
+     * @param d D系数
      */
     set(a: number, b: number, c: number, d: number)
     {
@@ -124,9 +124,9 @@ export class Plane
 
     /**
      * 通过3顶点定义一个平面
-     * @param p0		点0
-     * @param p1		点1
-     * @param p2		点2
+     * @param p0 点0
+     * @param p1 点1
+     * @param p2 点2
      */
     fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
     {
@@ -143,8 +143,8 @@ export class Plane
 
     /**
      * 根据法线与点定义平面
-     * @param normal		平面法线
-     * @param point			平面上任意一点
+     * @param normal 平面法线
+     * @param point 平面上任意一点
      */
     fromNormalAndPoint(normal: Vector3, point: Vector3)
     {
@@ -158,7 +158,7 @@ export class Plane
 
     /**
      * 计算点与平面的距离
-     * @param p		点
+     * @param p 点
      * @returns		距离
      */
     distanceWithPoint(p: Vector3)
@@ -178,8 +178,8 @@ export class Plane
     /**
      * 顶点分类
      * <p>把顶点分为后面、前面、相交三类</p>
-     * @param p			顶点
-     * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
+     * @param p 顶点
+     * @returns 		顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
      */
     classifyPoint(p: Vector3, precision = mathUtil.PRECISION)
     {

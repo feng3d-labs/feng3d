@@ -20,21 +20,6 @@ declare global
     interface ObjectConstructor
     {
         /**
-         * 从对象自身或者对象的原型中获取属性描述
-         * 
-         * @param object 对象
-         * @param property 属性名称
-         */
-        getPropertyDescriptor(object: Object, property: string): PropertyDescriptor | undefined;
-
-        /**
-         * 属性是否可写
-         * @param obj 对象
-         * @param property 属性名称
-         */
-        propertyIsWritable(obj: Object, property: string): boolean;
-
-        /**
          * 判断是否为基础类型 undefined,null,boolean,string,number
          */
         isBaseType(object: any): boolean;
@@ -123,24 +108,35 @@ Object.isBaseType = function (object: any)
     return false;
 }
 
-Object.getPropertyDescriptor = function (host: any, property: string)
+/**
+ * 从对象自身或者对象的原型中获取属性描述
+ * 
+ * @param object 对象
+ * @param property 属性名称
+ */
+export function getPropertyDescriptor(object: Object, property: string): PropertyDescriptor | undefined
 {
-    var data = Object.getOwnPropertyDescriptor(host, property);
+    var data = Object.getOwnPropertyDescriptor(object, property);
     if (data)
     {
         return data;
     }
-    var prototype = Object.getPrototypeOf(host);
+    var prototype = Object.getPrototypeOf(object);
     if (prototype)
     {
-        return Object.getPropertyDescriptor(prototype, property);
+        return getPropertyDescriptor(prototype, property);
     }
     return undefined;
 }
 
-Object.propertyIsWritable = function (host: any, property: string): boolean
+/**
+ * 属性是否可写
+ * @param obj 对象
+ * @param property 属性名称
+ */
+export function propertyIsWritable(obj: Object, property: string): boolean
 {
-    var data = Object.getPropertyDescriptor(host, property);
+    var data = getPropertyDescriptor(obj, property);
     if (!data) return false;
     if (data.get && !data.set) return false;
     return true;

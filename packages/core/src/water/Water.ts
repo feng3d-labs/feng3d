@@ -46,7 +46,7 @@ export class Water extends Renderable
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
-        var uniforms = <WaterUniforms>this.material.uniforms;
+        var uniforms = this.material.uniforms as WaterUniforms;
         var sun = this.node3d.scene.activeDirectionalLights[0];
         if (sun)
         {

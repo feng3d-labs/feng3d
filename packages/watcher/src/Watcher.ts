@@ -1,4 +1,4 @@
-import { gPartial, PropertyNames } from "@feng3d/polyfill";
+import { getPropertyDescriptor, gPartial, PropertyNames } from "@feng3d/polyfill";
 
 
 /**
@@ -58,21 +58,21 @@ export class Watcher
                 writable: false,
             });
         }
-        var _property: string = <any>property;
+        var _property: string = property as any;
         var watchs: Watchs = object[__watchs__];
         if (!watchs[_property])
         {
             var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, _property);
             watchs[_property] = { value: object[_property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
             //
-            var data = Object.getPropertyDescriptor(object, _property);
+            var data = getPropertyDescriptor(object, _property);
             if (data && data.set && data.get)
             {
                 data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                 var orgSet = data.set;
                 data.set = function (value)
                 {
-                    var oldValue = this[<any>_property];
+                    var oldValue = this[_property];
                     if (oldValue != value)
                     {
                         orgSet && orgSet.call(this, value);
@@ -123,7 +123,7 @@ export class Watcher
     {
         var watchs: Watchs = object[__watchs__];
         if (!watchs) return;
-        var _property: string = <any>property;
+        var _property: string = property as any;
         if (watchs[_property])
         {
             var handlers = watchs[_property].handlers;
@@ -164,16 +164,16 @@ export class Watcher
     {
         var fun0 = () =>
         {
-            object1[property1] = <any>object0[property0];
+            object1[property1] = object0[property0] as any;
         }
         var fun1 = () =>
         {
-            object0[property0] = <any>object1[property1];
+            object0[property0] = object1[property1] as any;
         }
         this.watch(object0, property0, fun0);
         this.watch(object1, property1, fun1);
 
-        this._binds.push([object0, <any>property0, fun0, object1, <any>property1, fun1]);
+        this._binds.push([object0, property0 as any, fun0, object1, property1 as any, fun1]);
     }
 
     /**

@@ -41,9 +41,9 @@ export class Color3
 
     /**
      * 构建颜色
-     * @param r     红[0,1]
-     * @param g     绿[0,1]
-     * @param b     蓝[0,1]
+     * @param r 红[0,1]
+     * @param g 绿[0,1]
+     * @param b 蓝[0,1]
      */
     constructor(r = 1, g = 1, b = 1)
     {
@@ -93,7 +93,7 @@ export class Color3
     /**
      * 混合颜色
      * @param color 混入的颜色
-     * @param rate  混入比例
+     * @param rate 混入比例
      */
     mix(color: Color3, rate: number)
     {
@@ -106,7 +106,7 @@ export class Color3
     /**
      * 混合颜色
      * @param color 混入的颜色
-     * @param rate  混入比例
+     * @param rate 混入比例
      */
     mixTo(color: Color3, rate: number, vout = new Color3())
     {

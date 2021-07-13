@@ -155,7 +155,7 @@ if (typeof window != "undefined")
     _global = window;
 } else if (typeof global != "undefined")
 {
-    _global = <any>global;
+    _global = global;
 }
 
 var _classNameSpaces = ["feng3d"];

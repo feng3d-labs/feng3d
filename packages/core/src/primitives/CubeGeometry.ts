@@ -91,12 +91,6 @@ export class CubeGeometry extends Geometry
 
     /**
      * 构建坐标
-     * @param   width           宽度
-     * @param   height          高度
-     * @param   depth           深度
-     * @param   segmentsW       宽度方向分割
-     * @param   segmentsH       高度方向分割
-     * @param   segmentsD       深度方向分割
      */
     private buildPosition()
     {
@@ -181,9 +175,6 @@ export class CubeGeometry extends Geometry
 
     /**
      * 构建法线
-     * @param   segmentsW       宽度方向分割
-     * @param   segmentsH       高度方向分割
-     * @param   segmentsD       深度方向分割
      */
     private buildNormal()
     {
@@ -246,9 +237,6 @@ export class CubeGeometry extends Geometry
 
     /**
      * 构建切线
-     * @param   segmentsW       宽度方向分割
-     * @param   segmentsH       高度方向分割
-     * @param   segmentsD       深度方向分割
      */
     private buildTangent()
     {
@@ -315,9 +303,6 @@ export class CubeGeometry extends Geometry
 
     /**
      * 构建索引
-     * @param   segmentsW       宽度方向分割
-     * @param   segmentsH       高度方向分割
-     * @param   segmentsD       深度方向分割
      */
     private buildIndices()
     {
@@ -427,10 +412,6 @@ export class CubeGeometry extends Geometry
 
     /**
      * 构建uv
-     * @param   segmentsW       宽度方向分割
-     * @param   segmentsH       高度方向分割
-     * @param   segmentsD       深度方向分割
-     * @param   tile6           是否为6块贴图
      */
     private buildUVs()
     {

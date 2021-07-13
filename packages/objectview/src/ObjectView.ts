@@ -1,3 +1,4 @@
+import { propertyIsWritable } from '@feng3d/polyfill';
 
 /**
  * 标记objectview对象界面类
@@ -7,7 +8,7 @@ export function OVComponent(component?: string)
 	return (constructor: Function) =>
 	{
 		component = component || constructor["name"];
-		objectview.OVComponent[<string>component] = constructor;
+		objectview.OVComponent[component] = constructor;
 	}
 }
 
@@ -19,7 +20,7 @@ export function OBVComponent(component?: string)
 	return (constructor: Function) =>
 	{
 		component = component || constructor["name"];
-		objectview.OBVComponent[<string>component] = constructor;
+		objectview.OBVComponent[component] = constructor;
 	}
 }
 
@@ -31,7 +32,7 @@ export function OAVComponent(component?: string)
 	return (constructor: Function) =>
 	{
 		component = component || constructor["name"];
-		objectview.OAVComponent[<string>component] = constructor;
+		objectview.OAVComponent[component] = constructor;
 	}
 }
 
@@ -45,7 +46,7 @@ export function ov<K extends keyof OVComponentParamMap>(param: { component?: K; 
 		if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
 			constructor["prototype"][OBJECTVIEW_KEY] = {};
 		var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
-		objectview.component = <string>param.component;
+		objectview.component = param.component as string;
 		objectview.componentParam = param.componentParam;
 	}
 }
@@ -188,8 +189,8 @@ export class ObjectView
 	 * 获取属性界面
 	 * 
 	 * @static
-	 * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
-	 * @returns {egret.DisplayObject}						属性界面
+	 * @param attributeViewInfo 属性界面信息
+	 * @returns						属性界面
 	 * 
 	 * @memberOf ObjectView
 	 */
@@ -221,8 +222,8 @@ export class ObjectView
 	 * 获取块界面
 	 * 
 	 * @static
-	 * @param {BlockViewInfo} blockViewInfo			块界面信息
-	 * @returns {egret.DisplayObject}				块界面
+	 * @param blockViewInfo 块界面信息
+	 * @returns				块界面
 	 * 
 	 * @memberOf ObjectView
 	 */
@@ -253,9 +254,9 @@ export class ObjectView
 
 	/**
 	 * 获取对象信息
-	 * @param object				对象
-	 * @param autocreate			当对象没有注册属性时是否自动创建属性信息
-	 * @param excludeAttrs			排除属性列表
+	 * @param object 对象
+	 * @param autocreate 当对象没有注册属性时是否自动创建属性信息
+	 * @param excludeAttrs 排除属性列表
 	 * @return
 	 */
 	getObjectInfo(object: Object, autocreate = true, excludeAttrs: string[] = []): ObjectViewInfo
@@ -286,9 +287,9 @@ export class ObjectView
 			if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
 			{
 				var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
-				editable = editable && Object.propertyIsWritable(object, attributeDefinition.name);
+				editable = editable && propertyIsWritable(object, attributeDefinition.name);
 
-				var obj: AttributeViewInfo = <any>{ owner: object, type: getAttributeType(object[attributeDefinition.name]) };
+				var obj: AttributeViewInfo = { owner: object, type: getAttributeType(object[attributeDefinition.name]) } as any;
 				Object.assign(obj, attributeDefinition);
 				obj.editable = editable;
 				objectAttributeInfos.push(obj);
@@ -359,7 +360,7 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
 			});
 			if (!isfound)
 			{
-				var attributeDefinition: AttributeDefinition = <any>{};
+				var attributeDefinition: AttributeDefinition = {} as any;
 				Object.assign(attributeDefinition, newAttributeDefinition);
 				oldClassDefinition.attributeDefinitionVec.push(attributeDefinition);
 			}
@@ -382,7 +383,7 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
 			});
 			if (!isfound)
 			{
-				var blockDefinition: BlockDefinition = <any>{};
+				var blockDefinition: BlockDefinition = {} as any;
 				Object.assign(blockDefinition, newBlockDefinition);
 				oldClassDefinition.blockDefinitionVec.push(blockDefinition);
 			}
@@ -404,7 +405,7 @@ function getInheritClassDefinition(object: Object, autocreate = true)
 	var resultclassConfig: ClassDefinition;
 	if (classConfigVec.length > 0)
 	{
-		resultclassConfig = <any>{};
+		resultclassConfig = {} as any;
 		for (var i = classConfigVec.length - 1; i >= 0; i--)
 		{
 			mergeClassDefinition(resultclassConfig, classConfigVec[i]);
@@ -453,8 +454,8 @@ function getDefaultClassConfig(object: Object, filterReg = /(([a-zA-Z0-9])+|(\d+
 
 /**
  * 获取对象块信息列表
- * @param {Object} object			对象
- * @returns {BlockViewInfo[]}		对象块信息列表
+ * @param object 对象
+ * @returns		对象块信息列表
  */
 function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeViewInfo[], blockDefinitionVec?: BlockDefinition[]): BlockViewInfo[]
 {
@@ -720,7 +721,7 @@ export interface IObjectBlockView
 
 	/**
 	 * 获取属性界面
-	 * @param attributeName		属性名称
+	 * @param attributeName 属性名称
 	 */
 	getAttributeView(attributeName: string): IObjectAttributeView;
 }
@@ -742,13 +743,13 @@ export interface IObjectView
 
 	/**
 	 * 获取块界面
-	 * @param blockName		块名称
+	 * @param blockName 块名称
 	 */
 	getblockView(blockName: string): IObjectBlockView;
 
 	/**
 	 * 获取属性界面
-	 * @param attributeName		属性名称
+	 * @param attributeName 属性名称
 	 */
 	getAttributeView(attributeName: string): IObjectAttributeView;
 }

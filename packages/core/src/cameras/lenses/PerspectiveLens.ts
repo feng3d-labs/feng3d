@@ -51,7 +51,7 @@ export class PerspectiveLens extends LensBase
      * 
      * @param point3d 摄像机空间坐标
      * @param v GPU空间坐标
-     * @return GPU空间坐标
+     * @returns GPU空间坐标
      */
     project(point3d: Vector3, v = new Vector3()): Vector3
     {

@@ -85,7 +85,7 @@ export class TriangleGeometry
     /**
      * 给指定点分类
      * @param p 点
-     * @return 点相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
+     * @returns 点相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
      * 方案：当指定点不在几何体上时，在几何体上找到距离指定点最近点，最近点到给定点形成的向量与最近点所在面（当最近点在多个面上时取点乘摸最大的面）法线点乘大于0时给定点在几何体内，否则在几何体外。
      */
     classifyPoint(p: Vector3)
@@ -125,7 +125,7 @@ export class TriangleGeometry
     /**
      * 给指定线段分类
      * @param segment 线段
-     * @return 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
+     * @returns 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
      */
     classifySegment(segment: Segment3)
     {
@@ -159,7 +159,7 @@ export class TriangleGeometry
     /**
      * 给指定三角形分类
      * @param triangle 三角形
-     * @return 三角形相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
+     * @returns 三角形相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
      */
     classifyTriangle(triangle: Triangle3)
     {
@@ -197,7 +197,7 @@ export class TriangleGeometry
     /**
      * 与线段相交
      * @param segment 线段
-     * @return 不相交时返回null，相交时返回 碰撞线段列表与碰撞点列表
+     * @returns 不相交时返回null，相交时返回 碰撞线段列表与碰撞点列表
      */
     intersectionWithSegment(segment: Segment3)
     {

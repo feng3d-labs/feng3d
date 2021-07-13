@@ -26,7 +26,7 @@ export class Comparator<T>
      */
     constructor(compareFunction?: CompareFunction<T>)
     {
-        this.compare = compareFunction || <any>Comparator.defaultCompareFunction;
+        this.compare = compareFunction || Comparator.defaultCompareFunction as any;
     }
 
     /**

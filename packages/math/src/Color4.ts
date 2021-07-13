@@ -57,10 +57,10 @@ export class Color4
 
     /**
      * 构建颜色
-     * @param r     红[0,1]
-     * @param g     绿[0,1]
-     * @param b     蓝[0,1]
-     * @param a     透明度[0,1]
+     * @param r 红[0,1]
+     * @param g 绿[0,1]
+     * @param b 蓝[0,1]
+     * @param a 透明度[0,1]
      */
     constructor(r = 1, g = 1, b = 1, a = 1)
     {
@@ -122,7 +122,7 @@ export class Color4
     /**
      * 混合颜色
      * @param color 混入的颜色
-     * @param rate  混入比例
+     * @param rate 混入比例
      */
     mix(color: Color4, rate = 0.5)
     {
@@ -136,7 +136,7 @@ export class Color4
     /**
      * 混合颜色
      * @param color 混入的颜色
-     * @param rate  混入比例
+     * @param rate 混入比例
      */
     mixTo(color: Color4, rate: number, vout = new Color4())
     {
@@ -146,7 +146,7 @@ export class Color4
     /**
      * 乘以指定颜色
      * @param c 乘以的颜色
-     * @return 返回自身
+     * @returns 返回自身
      */
     multiply(c: Color4)
     {
@@ -160,7 +160,7 @@ export class Color4
     /**
      * 乘以指定颜色
      * @param v 乘以的颜色
-     * @return 返回新颜色
+     * @returns 返回新颜色
      */
     multiplyTo(v: Color4, vout = new Color4())
     {
@@ -171,7 +171,7 @@ export class Color4
      * 乘以指定常量
      * 
      * @param scale 缩放常量
-     * @return 返回自身
+     * @returns 返回自身
      */
     multiplyNumber(scale: number)
     {

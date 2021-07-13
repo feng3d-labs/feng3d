@@ -1,3 +1,4 @@
+import { binarySearchInsert } from './utils/binarySearchInsert';
 
 /**
  * 优先队列
@@ -34,7 +35,7 @@ export class PriorityQueue<T>
 
     /**
      * 构建优先数组
-     * @param   compare     比较函数
+     * @param compare 比较函数
      */
     constructor(compare: (a: T, b: T) => number)
     {
@@ -50,7 +51,7 @@ export class PriorityQueue<T>
     {
         items.forEach(item =>
         {
-            var insert = Array.binarySearchInsert(this.items, item, this._compare);
+            var insert = binarySearchInsert(this.items, item, this._compare);
             this.items.splice(insert, 0, item);
         });
         return this.items.length;

@@ -223,7 +223,7 @@ export class FPSController extends Behaviour
 
     /**
      * 停止xyz方向运动
-     * @param direction     停止运动的方向
+     * @param direction 停止运动的方向
      */
     private stopDirectionVelocity(direction: Vector3)
     {

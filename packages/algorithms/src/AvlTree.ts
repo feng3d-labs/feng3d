@@ -14,7 +14,7 @@ import { BinarySearchTreeNode } from "./BinarySearchTreeNode";
 export class AvlTree<T> extends BinarySearchTree<T>
 {
     /**
-     * @param {*} value
+     * @param value
      */
     insert(value: T)
     {
@@ -31,8 +31,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
     }
 
     /**
-     * @param {*} value
-     * @return {boolean}
+     * @param value
      */
     remove(value: T)
     {
@@ -46,7 +45,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
     }
 
     /**
-     * @param {BinarySearchTreeNode} node
+     * @param node
      */
     balance(node: BinarySearchTreeNode<T>)
     {
@@ -79,7 +78,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
     }
 
     /**
-     * @param {BinarySearchTreeNode} rootNode
+     * @param rootNode
      */
     rotateLeftLeft(rootNode: BinarySearchTreeNode<T>)
     {
@@ -109,7 +108,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
     }
 
     /**
-     * @param {BinarySearchTreeNode} rootNode
+     * @param rootNode
      */
     rotateLeftRight(rootNode: BinarySearchTreeNode<T>)
     {
@@ -139,7 +138,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
     }
 
     /**
-     * @param {BinarySearchTreeNode} rootNode
+     * @param rootNode
      */
     rotateRightLeft(rootNode: BinarySearchTreeNode<T>)
     {
@@ -168,7 +167,7 @@ export class AvlTree<T> extends BinarySearchTree<T>
     }
 
     /**
-     * @param {BinarySearchTreeNode} rootNode
+     * @param rootNode
      */
     rotateRightRight(rootNode: BinarySearchTreeNode<T>)
     {

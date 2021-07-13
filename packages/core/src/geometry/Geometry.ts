@@ -38,7 +38,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
     {
         this._name = v;
     }
-    protected _name: string;
+    protected _name: string = null;
 
     /**
      * 资源编号
@@ -251,8 +251,8 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
 
     /**
      * 添加几何体
-     * @param geometry          被添加的几何体
-     * @param matrix         变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
+     * @param geometry 被添加的几何体
+     * @param matrix 变换矩阵，把克隆被添加几何体的数据变换后再添加到该几何体中
      */
     addGeometry(geometry: Geometry, matrix?: Matrix4x4)
     {
@@ -337,7 +337,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     invalidateBounds()
     {
-        this._bounding = <any>null;
+        this._bounding = null;
         this.emit("boundsInvalid", this);
     }
 
@@ -356,9 +356,9 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
 
     /**
      * 射线投影几何体
-     * @param ray                           射线
-     * @param shortestCollisionDistance     当前最短碰撞距离
-     * @param cullFace                      裁剪面枚举
+     * @param ray 射线
+     * @param shortestCollisionDistance 当前最短碰撞距离
+     * @param cullFace 裁剪面枚举
      */
     raycast(ray: Ray3, shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE):
         {
@@ -504,7 +504,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
     {
         return this._defaultGeometry[name];
     }
-    private static _defaultGeometry: DefaultGeometry = <any>{};
+    private static _defaultGeometry: DefaultGeometry = {} as any;
 }
 
 /**

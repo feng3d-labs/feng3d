@@ -22,8 +22,8 @@ export class KeyState extends EventEmitter
 
 	/**
 	 * 按下键
-	 * @param key 	键名称
-	 * @param data	携带数据
+	 * @param key 键名称
+	 * @param data 携带数据
 	 */
 	pressKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void
 	{
@@ -41,8 +41,8 @@ export class KeyState extends EventEmitter
 
 	/**
 	 * 释放键
-	 * @param key	键名称
-	 * @param data	携带数据
+	 * @param key 键名称
+	 * @param data 携带数据
 	 */
 	releaseKey(key: string, data: KeyboardEvent | WheelEvent | MouseEvent): void
 	{

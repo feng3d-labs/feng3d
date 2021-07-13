@@ -238,7 +238,7 @@ export class Curve<T extends Vector>
 
 		// compute the tangent vectors for each segment on the curve
 
-		let curve3: Curve<Vector3> = <any>this;
+		let curve3: Curve<Vector3> = this as any;
 		for (let i = 0; i <= segments; i++)
 		{
 			const u = i / segments;

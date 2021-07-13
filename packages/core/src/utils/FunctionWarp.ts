@@ -1,5 +1,5 @@
 import { event } from '@feng3d/event';
-import { FunctionPropertyNames } from "@feng3d/polyfill";
+import { deleteItem, FunctionPropertyNames } from "@feng3d/polyfill";
 import { uuid } from "./Uuid";
 
 type Wraps<T, K extends keyof T> = {
@@ -54,14 +54,14 @@ export class FunctionWrap
     extendFunction<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
     {
         var oldFun = object[funcName];
-        object[funcName] = <any>(function (...args: Parameters<V>)
+        object[funcName] = (function (...args: Parameters<V>)
         {
-            var r = (<any>oldFun).apply(this, args);
+            var r = (oldFun as any).apply(this, args);
             var args1 = args.concat();
             args1.unshift(r);
             r = extendFunc.apply(this, args1);
             return r;
-        })
+        }) as any;
     }
 
     /**
@@ -91,27 +91,27 @@ export class FunctionWrap
         if (!info)
         {
             var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
-            var original = <any>object[funcName];
+            var original = object[funcName];
             functionwraps[funcName] = info = { space: object, funcName: funcName, oldPropertyDescriptor: oldPropertyDescriptor, original: original, funcs: [original] };
             //
-            object[funcName] = <any>function ()
+            object[funcName] = function ()
             {
                 var args = arguments;
                 info.funcs.forEach(f =>
                 {
                     f.apply(this, args);
                 });
-            }
+            } as any;
         }
         var funcs = info.funcs;
         if (beforeFunc)
         {
-            Array.delete(funcs, beforeFunc);
+            deleteItem(funcs, beforeFunc);
             funcs.unshift(beforeFunc);
         }
         if (afterFunc)
         {
-            Array.delete(funcs, afterFunc);
+            deleteItem(funcs, afterFunc);
             funcs.push(afterFunc);
         }
     }
@@ -124,7 +124,6 @@ export class FunctionWrap
      * @param object 函数所属对象或者原型
      * @param funcName 函数名称
      * @param wrapFunc 在函数执行前执行的函数
-     * @param before 运行在原函数之前
      */
     unwrap<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V)
     {
@@ -136,7 +135,7 @@ export class FunctionWrap
             info.funcs = [info.original];
         } else
         {
-            Array.delete(info.funcs, wrapFunc);
+            deleteItem(info.funcs, wrapFunc);
         }
         if (info.funcs.length == 1)
         {

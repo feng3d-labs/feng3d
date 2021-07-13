@@ -141,7 +141,7 @@ export class Matrix3x3
 
     /**
      * 矩阵乘法
-     * @param  m 要从左边乘的矩阵。
+     * @param m 要从左边乘的矩阵。
      */
     mmult(m: Matrix3x3, target = new Matrix3x3())
     {

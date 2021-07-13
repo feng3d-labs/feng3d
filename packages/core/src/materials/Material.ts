@@ -32,7 +32,7 @@ export class Material extends Feng3dObject
     {
         this.shaderName = shaderName;
         //
-        uniforms && serialization.setValue(this.uniforms, <any>uniforms);
+        uniforms && serialization.setValue(this.uniforms, uniforms);
         renderParams && serialization.setValue(this.renderParams, renderParams);
         return this;
     }
@@ -151,7 +151,7 @@ export class Material extends Feng3dObject
             }
         } else
         {
-            this.uniforms = <any>{};
+            this.uniforms = {} as any;
         }
 
         var renderParams = shaderlib.shaderConfig.shaders[this.shaderName].renderParams;
@@ -162,7 +162,7 @@ export class Material extends Feng3dObject
 
     private _onUniformsChanged()
     {
-        this.renderAtomic.uniforms = <any>this.uniforms;
+        this.renderAtomic.uniforms = this.uniforms as any;
     }
 
     private _onRenderParamsChanged()
@@ -180,7 +180,7 @@ export class Material extends Feng3dObject
      */
     static setDefault<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>)
     {
-        var newMaterial = this._defaultMaterials[<any>name] = new Material();
+        var newMaterial = this._defaultMaterials[name] = new Material();
         serialization.setValue(newMaterial, material);
         serialization.setValue(newMaterial, { name: name, hideFlags: HideFlags.NotEditable });
         AssetData.addAssetData(name, newMaterial);
@@ -195,7 +195,7 @@ export class Material extends Feng3dObject
     {
         return this._defaultMaterials[name];
     }
-    private static _defaultMaterials: DefaultMaterial = <any>{};
+    private static _defaultMaterials: DefaultMaterial = {} as any;
 }
 
 /**

@@ -72,7 +72,7 @@ export class Vector4
      * @param y 第二个元素
      * @param z 第三个元素
      * @param w 第四个元素
-     * @return 返回自身
+     * @returns 返回自身
      */
     init(x: number, y: number, z: number, w: number)
     {
@@ -87,7 +87,7 @@ export class Vector4
      * 从数组初始化
      * @param array 提供数据的数组
      * @param offset 数组中起始位置 
-     * @return 返回自身
+     * @returns 返回自身
      */
     fromArray(array: ArrayLike<number>, offset = 0)
     {
@@ -102,7 +102,7 @@ export class Vector4
      * 从三维向量初始化
      * @param vector3 三维向量
      * @param w 向量第四个值
-     * @return 返回自身
+     * @returns 返回自身
      */
     fromVector3(vector3: Vector3, w = 0)
     {
@@ -140,7 +140,7 @@ export class Vector4
     /**
      * 加上指定向量得到新向量
      * @param v 加向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     add(v: Vector4)
     {
@@ -154,7 +154,7 @@ export class Vector4
     /**
      * 加上指定向量得到新向量
      * @param v 加向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     addTo(v: Vector4, vout = new Vector4())
     {
@@ -163,7 +163,7 @@ export class Vector4
 
     /**
      * 克隆一个向量
-     * @return 返回一个拷贝向量
+     * @returns 返回一个拷贝向量
      */
     clone()
     {
@@ -173,7 +173,7 @@ export class Vector4
     /**
      * 从指定向量拷贝数据
      * @param v 被拷贝向量
-     * @return 返回自身
+     * @returns 返回自身
      */
     copy(v: Vector4)
     {
@@ -187,7 +187,7 @@ export class Vector4
     /**
      * 减去指定向量
      * @param v 减去的向量
-     * @return 返回自身
+     * @returns 返回自身
      */
     sub(v: Vector4)
     {
@@ -201,7 +201,7 @@ export class Vector4
     /**
      * 减去指定向量
      * @param v 减去的向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     subTo(v: Vector4, vout = new Vector4())
     {
@@ -211,7 +211,7 @@ export class Vector4
     /**
      * 乘以指定向量
      * @param v 乘以的向量
-     * @return 返回自身
+     * @returns 返回自身
      */
     multiply(v: Vector4)
     {
@@ -225,7 +225,7 @@ export class Vector4
     /**
      * 乘以指定向量
      * @param v 乘以的向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     multiplyTo(v: Vector4, vout = new Vector4())
     {
@@ -235,7 +235,7 @@ export class Vector4
     /**
      * 除以指定向量
      * @param v 除以的向量
-     * @return 返回自身
+     * @returns 返回自身
      */
     div(v: Vector4)
     {
@@ -249,7 +249,7 @@ export class Vector4
     /**
      * 除以指定向量
      * @param v 除以的向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     divTo(v: Vector4, vout = new Vector4())
     {
@@ -260,7 +260,7 @@ export class Vector4
      * 与指定向量比较是否相等
      * @param v 比较的向量
      * @param precision 允许误差
-     * @return 相等返回true，否则false
+     * @returns 相等返回true，否则false
      */
     equals(v: Vector4, precision = mathUtil.PRECISION)
     {
@@ -277,7 +277,7 @@ export class Vector4
 
     /**
      * 负向量
-     * @return 返回自身
+     * @returns 返回自身
      */
     negate()
     {
@@ -290,7 +290,7 @@ export class Vector4
 
     /**
      * 负向量
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     negateTo(vout = new Vector4())
     {
@@ -300,7 +300,7 @@ export class Vector4
     /**
      * 缩放指定系数
      * @param s 缩放系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     scale(s: number)
     {
@@ -314,7 +314,7 @@ export class Vector4
     /**
      * 缩放指定系数
      * @param s 缩放系数
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     scaleTo(s: number)
     {
@@ -333,7 +333,7 @@ export class Vector4
      * 获取到指定向量的插值
      * @param v 终点插值向量
      * @param alpha 插值系数
-     * @return 返回自身
+     * @returns 返回自身
      */
     lerp(v: Vector4, alpha: number)
     {
@@ -348,7 +348,7 @@ export class Vector4
      * 获取到指定向量的插值
      * @param v 终点插值向量
      * @param alpha 插值系数
-     * @return 返回新向量
+     * @returns 返回新向量
      */
     lerpTo(v: Vector4, alpha: number, vout = new Vector4())
     {

@@ -59,11 +59,11 @@ export class ShortCutCapture
 
 	/**
 	 * 构建快捷键捕获
-	 * @param shortCut				快捷键环境
-	 * @param key					快捷键；用“+”连接多个按键，“!”表示没按下某键；例如 “a+!b”表示按下“a”与没按下“b”时触发。
-	 * @param command				要执行的command的id；使用“,”连接触发多个命令；例如 “commandA,commandB”表示满足触发条件后依次执行commandA与commandB命令。
-	 * @param stateCommand			要执行的状态命令id；使用“,”连接触发多个状态命令，没带“!”表示激活该状态，否则表示使其处于非激活状态；例如 “stateA,!stateB”表示满足触发条件后激活状态“stateA，使“stateB处于非激活状态。
-	 * @param when					快捷键激活的条件；使用“+”连接多个状态，没带“!”表示需要处于激活状态，否则需要处于非激活状态； 例如 “stateA+!stateB”表示stateA处于激活状态且stateB处于非激活状态时会判断按键是否满足条件。
+	 * @param shortCut 快捷键环境
+	 * @param key 快捷键；用“+”连接多个按键，“!”表示没按下某键；例如 “a+!b”表示按下“a”与没按下“b”时触发。
+	 * @param command 要执行的command的id；使用“,”连接触发多个命令；例如 “commandA,commandB”表示满足触发条件后依次执行commandA与commandB命令。
+	 * @param stateCommand 要执行的状态命令id；使用“,”连接触发多个状态命令，没带“!”表示激活该状态，否则表示使其处于非激活状态；例如 “stateA,!stateB”表示满足触发条件后激活状态“stateA，使“stateB处于非激活状态。
+	 * @param when 快捷键激活的条件；使用“+”连接多个状态，没带“!”表示需要处于激活状态，否则需要处于非激活状态； 例如 “stateA+!stateB”表示stateA处于激活状态且stateB处于非激活状态时会判断按键是否满足条件。
 	 */
 	constructor(shortCut: ShortCut, key: string, command?: string, stateCommand?: string, when?: string)
 	{
@@ -195,7 +195,7 @@ export class ShortCutCapture
 
 	/**
 	 * 获取状态列表
-	 * @param when		状态字符串
+	 * @param when 状态字符串
 	 */
 	private getStates(when?: string): State[]
 	{
@@ -219,7 +219,7 @@ export class ShortCutCapture
 
 	/**
 	 * 获取键列表
-	 * @param key		快捷键
+	 * @param key 快捷键
 	 */
 	private getKeys(key: string): Key[]
 	{
@@ -234,7 +234,7 @@ export class ShortCutCapture
 
 	/**
 	 * 获取命令列表
-	 * @param command	命令
+	 * @param command 命令
 	 */
 	private getCommands(command?: string): string[]
 	{
@@ -258,7 +258,7 @@ export class ShortCutCapture
 
 	/**
 	 * 获取状态命令列表
-	 * @param stateCommand	状态命令
+	 * @param stateCommand 状态命令
 	 */
 	private getStateCommand(stateCommand?: string): StateCommand[]
 	{
@@ -289,9 +289,9 @@ export class ShortCutCapture
 		{
 			this._keyState.off(this._keys[i].key, this.onCapture, this);
 		}
-		this._shortCut = <any>null;
-		this._keys = <any>null;
-		this._states = <any>null;
+		this._shortCut = null;
+		this._keys = null;
+		this._states = null;
 	}
 }
 

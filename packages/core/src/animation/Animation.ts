@@ -67,8 +67,8 @@ export class Animation extends Behaviour
 
     dispose()
     {
-        this.animation = <any>null;
-        this.animations = <any>null;
+        this.animation = null;
+        this.animations = null;
         super.dispose();
     }
 
@@ -118,7 +118,7 @@ export class Animation extends Behaviour
                     propertyHost = propertyHost.find(element[1]);
                     break;
                 case PropertyClipPathItemType.Component:
-                    var componentCls = getComponentType(<any>element[1]);
+                    var componentCls = getComponentType(element[1] as any);
                     propertyHost = propertyHost.getComponent(componentCls);
                     break;
                 default:

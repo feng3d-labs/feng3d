@@ -59,7 +59,7 @@ export function RegisterComponent(component: {
     {
         var info = component as ComponentInfo;
         info.name = info.name || constructor.name;
-        info.type = <any>constructor;
+        info.type = constructor;
         info.dependencies = info.dependencies || [];
         constructor.prototype[__component__] = info;
 
@@ -214,8 +214,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 获取指定位置索引的子组件
-     * @param index			位置索引
-     * @return				子组件
+     * @param index 位置索引
+     * @returns 			子组件
      */
     getComponentAt(index: number): Component
     {
@@ -234,7 +234,7 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 添加脚本
-     * @param script   脚本路径
+     * @param script 脚本路径
      */
     addScript(scriptName: string): ScriptComponent
     {
@@ -244,8 +244,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
     /**
      * 获取实体上第一个指定类型的组件，不存在时返回null
      * 
-     * @param type				类定义
-     * @return                  返回指定类型组件
+     * @param type 类定义
+     * @returns                  返回指定类型组件
      */
     getComponent<T extends Components>(type: Constructor<T>): T
     {
@@ -255,8 +255,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
     /**
      * 获取实体上所有指定类型的组件数组
      * 
-     * @param type		类定义
-     * @return			返回与给出类定义一致的组件
+     * @param type 类定义
+     * @returns 		返回与给出类定义一致的组件
      */
     getComponents<T extends Components>(type: Constructor<T>): T[]
     {
@@ -265,8 +265,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 设置子组件的位置
-     * @param component				子组件
-     * @param index				位置索引
+     * @param component 子组件
+     * @param index 位置索引
      */
     setComponentIndex(component: Components, index: number): void
     {
@@ -275,8 +275,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 设置组件到指定位置
-     * @param component		被设置的组件
-     * @param index			索引
+     * @param component 被设置的组件
+     * @param index 索引
      */
     setComponentAt(component: Components, index: number)
     {
@@ -294,8 +294,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 获取组件在容器的索引位置
-     * @param component			查询的组件
-     * @return				    组件在容器的索引位置
+     * @param component 查询的组件
+     * @returns 			    组件在容器的索引位置
      */
     getComponentIndex(component: Components): number
     {
@@ -304,7 +304,7 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 移除组件
-     * @param index		要删除的 Component 的子索引。
+     * @param index 要删除的 Component 的子索引。
      */
     removeComponentAt(index: number): Component
     {
@@ -313,8 +313,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 交换子组件位置
-     * @param index1		第一个子组件的索引位置
-     * @param index2		第二个子组件的索引位置
+     * @param index1 第一个子组件的索引位置
+     * @param index2 第二个子组件的索引位置
      */
     swapComponentsAt(index1: number, index2: number): void
     {
@@ -323,8 +323,8 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
 
     /**
      * 交换子组件位置
-     * @param a		第一个子组件
-     * @param b		第二个子组件
+     * @param a 第一个子组件
+     * @param b 第二个子组件
      */
     swapComponents(a: Components, b: Components): void
     {
@@ -336,7 +336,7 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
      */
     dispose()
     {
-        this._entity = <any>null;
+        this._entity = null;
         this._disposed = true;
     }
 

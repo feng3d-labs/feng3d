@@ -278,7 +278,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     }
     private _sz = 1;
 
-    getPosition<T extends IVector3 = Vector3>(p: T = <any>new Vector3()): T
+    getPosition<T extends IVector3 = Vector3>(p: T = new Vector3() as any): T
     {
         p.x = this._x;
         p.y = this._y;
@@ -294,7 +294,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
         return this;
     }
 
-    getRotation<T extends IVector3 = Vector3>(p: T = <any>new Vector3()): T
+    getRotation<T extends IVector3 = Vector3>(p: T = new Vector3() as any): T
     {
         p.x = this._rx;
         p.y = this._ry;
@@ -310,7 +310,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
         return this;
     }
 
-    getScale<T extends IVector3 = Vector3>(p: T = <any>new Vector3()): T
+    getScale<T extends IVector3 = Vector3>(p: T = new Vector3() as any): T
     {
         p.x = this._sx;
         p.y = this._sy;
@@ -539,9 +539,9 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
 
     /**
      * 绕指定轴旋转，不受位移与缩放影响
-     * @param    axis               旋转轴
-     * @param    angle              旋转角度
-     * @param    pivotPoint         旋转中心点
+     * @param axis 旋转轴
+     * @param angle 旋转角度
+     * @param pivotPoint 旋转中心点
      * 
      */
     rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void
@@ -583,8 +583,8 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     /**
      * 看向目标位置
      * 
-     * @param target    目标位置
-     * @param upAxis    向上朝向
+     * @param target 目标位置
+     * @param upAxis 向上朝向
      */
     lookAt(target: Vector3, upAxis?: Vector3)
     {
@@ -967,8 +967,8 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     /**
      * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
      * 
-     * @param type		要检索的组件的类型。
-     * @return			返回与给出类定义一致的组件
+     * @param type 要检索的组件的类型。
+     * @returns 		返回与给出类定义一致的组件
      */
     getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
         /**
@@ -987,7 +987,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
         var components = this.entity.components;
         for (var i = 0, n = components.length; i < n; i++)
         {
-            var item = <T>components[i];
+            var item = components[i] as T;
             if (!cls)
             {
                 result.push(item);
@@ -1018,8 +1018,8 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     /**
      * 从父代（父亲，父亲的父亲，...）中获取组件
      * 
-     * @param type		类定义
-     * @return			返回与给出类定义一致的组件
+     * @param type 类定义
+     * @returns 		返回与给出类定义一致的组件
      */
     getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
     {

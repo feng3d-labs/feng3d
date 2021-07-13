@@ -467,7 +467,7 @@ export class GraphVertex<T>
      */
     getKey()
     {
-        return <string><any>this.value;
+        return this.value as any as string;
     }
 
     /**

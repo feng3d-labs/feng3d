@@ -84,7 +84,7 @@ export class Feng3dObject<T = any> extends EventEmitter<T> implements IDisposabl
         {
             filterResult = objects.filter(v => v instanceof type);
         }
-        return <T[]>filterResult;
+        return filterResult as T[];
     }
 
     /**

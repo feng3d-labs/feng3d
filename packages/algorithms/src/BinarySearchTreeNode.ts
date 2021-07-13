@@ -12,17 +12,17 @@ export class BinarySearchTreeNode<T> extends BinaryTreeNode<T>
     /**
      * 左结点
      */
-    left: BinarySearchTreeNode<T>;
+    left: BinarySearchTreeNode<T> = null;
 
     /**
      * 右结点
      */
-    right: BinarySearchTreeNode<T>;
+    right: BinarySearchTreeNode<T> = null;
 
     /**
      * 父结点
      */
-    parent: BinarySearchTreeNode<T>;
+    parent: BinarySearchTreeNode<T> = null;
 
     /**
      * 比较函数

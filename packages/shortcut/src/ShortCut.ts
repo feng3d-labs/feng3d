@@ -20,7 +20,7 @@ var shortcuts:Array = [ //
 //添加快捷键
 shortCut.addShortCuts(shortcuts);
 //监听命令
-Event.on(shortCut,<any>"run", function(e:Event):void
+Event.on(shortCut,"run" as any, function(e:Event):void
 {
 trace("接受到命令：" + e.type);
 });
@@ -68,7 +68,7 @@ export class ShortCut extends EventEmitter
 
 	/**
 	 * 添加快捷键
-	 * @param shortcuts		快捷键列表
+	 * @param shortcuts 快捷键列表
 	 */
 	addShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
 	{
@@ -82,7 +82,7 @@ export class ShortCut extends EventEmitter
 
 	/**
 	 * 删除快捷键
-	 * @param shortcuts		快捷键列表
+	 * @param shortcuts 快捷键列表
 	 */
 	removeShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
 	{

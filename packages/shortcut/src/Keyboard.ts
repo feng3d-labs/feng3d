@@ -14,7 +14,7 @@ export class KeyBoard
 {
     /**
      * 获取键盘按键名称
-     * @param code   按键值
+     * @param code 按键值
      */
     static getKey(code: number): string
     {

@@ -300,8 +300,8 @@ export class IndexedDBFS implements IReadWriteFS
 
     /**
      * 复制文件
-     * @param src    源路径
-     * @param dest    目标路径
+     * @param src 源路径
+     * @param dest 目标路径
      * @param callback 回调函数
      */
     copyFile(src: string, dest: string, callback?: (err: Error) => void)
