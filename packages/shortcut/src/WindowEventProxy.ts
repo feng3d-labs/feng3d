@@ -1,4 +1,4 @@
-import { EventProxy } from "./EventProxy";
+import { EventProxy } from './EventProxy';
 
 /**
  * 键盘鼠标输入

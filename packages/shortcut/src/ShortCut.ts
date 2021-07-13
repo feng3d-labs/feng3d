@@ -1,7 +1,7 @@
-import { EventEmitter } from "@feng3d/event";
-import { KeyCapture } from "./handle/KeyCapture";
-import { KeyState } from "./handle/KeyState";
-import { ShortCutCapture } from "./handle/ShortCutCapture";
+import { EventEmitter } from '@feng3d/event';
+import { KeyCapture } from './handle/KeyCapture';
+import { KeyState } from './handle/KeyState';
+import { ShortCutCapture } from './handle/ShortCutCapture';
 
 /**
  * 初始化快捷键模块
@@ -60,7 +60,7 @@ export class ShortCut extends EventEmitter
 	{
 		super();
 		this.keyState = new KeyState();
-		this.keyCapture = new KeyCapture(this)
+		this.keyCapture = new KeyCapture(this);
 
 		this.captureDic = {};
 		this.stateDic = {};
@@ -72,10 +72,11 @@ export class ShortCut extends EventEmitter
 	 */
 	addShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
 	{
-		for (var i = 0; i < shortcuts.length; i++)
+		for (let i = 0; i < shortcuts.length; i++)
 		{
-			var shortcut = shortcuts[i];
-			var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcut);
+			const shortcut = shortcuts[i];
+			const shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcut);
+
 			this.captureDic[shortcutUniqueKey] = this.captureDic[shortcutUniqueKey] || new ShortCutCapture(this, shortcut.key, shortcut.command, shortcut.stateCommand, shortcut.when);
 		}
 	}
@@ -86,10 +87,11 @@ export class ShortCut extends EventEmitter
 	 */
 	removeShortCuts(shortcuts: { key: string, command?: string, stateCommand?: string, when?: string }[]): void
 	{
-		for (var i = 0; i < shortcuts.length; i++)
+		for (let i = 0; i < shortcuts.length; i++)
 		{
-			var shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcuts[i]);
-			var shortCutCapture: ShortCutCapture = this.captureDic[shortcutUniqueKey];
+			const shortcutUniqueKey: string = this.getShortcutUniqueKey(shortcuts[i]);
+			const shortCutCapture: ShortCutCapture = this.captureDic[shortcutUniqueKey];
+
 			if (ShortCutCapture != null)
 			{
 				shortCutCapture.destroy();
@@ -103,16 +105,18 @@ export class ShortCut extends EventEmitter
 	 */
 	removeAllShortCuts(): void
 	{
-		var keys: string[] = [];
-		var key: string;
+		const keys: string[] = [];
+		let key: string;
+
 		for (key in this.captureDic)
 		{
 			keys.push(key);
 		}
 
-		keys.forEach(key =>
+		keys.forEach((key) =>
 		{
-			var shortCutCapture: ShortCutCapture = this.captureDic[key];
+			const shortCutCapture: ShortCutCapture = this.captureDic[key];
+
 			shortCutCapture.destroy();
 			delete this.captureDic[key];
 		});
@@ -150,7 +154,7 @@ export class ShortCut extends EventEmitter
 	 */
 	private getShortcutUniqueKey(shortcut: { key: string, command?: string, stateCommand?: string, when?: string }): string
 	{
-		return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
+		return `${shortcut.key},${shortcut.command},${shortcut.stateCommand},${shortcut.when}`;
 	}
 }
 

@@ -1,6 +1,6 @@
-import { ShortCut } from "../ShortCut";
-import { KeyState } from "./KeyState";
-import { Event } from "@feng3d/event";
+import { Event } from '@feng3d/event';
+import { ShortCut } from '../ShortCut';
+import { KeyState } from './KeyState';
 
 /**
  * 快捷键捕获
@@ -87,7 +87,7 @@ export class ShortCutCapture
 	 */
 	private init(): void
 	{
-		for (var i = 0; i < this._keys.length; i++)
+		for (let i = 0; i < this._keys.length; i++)
 		{
 			this._keyState.on(this._keys[i].key, this.onCapture, this);
 		}
@@ -98,8 +98,8 @@ export class ShortCutCapture
 	 */
 	private onCapture(event: Event<any>): void
 	{
-		var inWhen = this.checkActivityStates(this._states);
-		var pressKeys = this.checkActivityKeys(this._keys);
+		const inWhen = this.checkActivityStates(this._states);
+		const pressKeys = this.checkActivityKeys(this._keys);
 
 		if (pressKeys && inWhen)
 		{
@@ -113,7 +113,7 @@ export class ShortCutCapture
 	 */
 	private dispatchCommands(commands: string[], data: Event<any>): void
 	{
-		for (var i = 0; i < commands.length; i++)
+		for (let i = 0; i < commands.length; i++)
 		{
 			this._shortCut.emit(commands[i], data);
 		}
@@ -124,13 +124,18 @@ export class ShortCutCapture
 	 */
 	private executeStateCommands(stateCommands: StateCommand[]): void
 	{
-		for (var i = 0; i < stateCommands.length; i++)
+		for (let i = 0; i < stateCommands.length; i++)
 		{
-			var stateCommand: StateCommand = stateCommands[i];
+			const stateCommand: StateCommand = stateCommands[i];
+
 			if (stateCommand.not)
+			{
 				this._shortCut.deactivityState(stateCommand.state);
+			}
 			else
+			{
 				this._shortCut.activityState(stateCommand.state);
+			}
 		}
 	}
 
@@ -139,11 +144,14 @@ export class ShortCutCapture
 	 */
 	private checkActivityStates(states: State[]): boolean
 	{
-		for (var i = 0; i < states.length; i++)
+		for (let i = 0; i < states.length; i++)
 		{
 			if (!this.getState(states[i]))
+			{
 				return false;
+			}
 		}
+
 		return true;
 	}
 
@@ -153,12 +161,13 @@ export class ShortCutCapture
 	 */
 	private getState(state: State): boolean
 	{
+		let result = this._shortCut.getState(state.state);
 
-		var result = this._shortCut.getState(state.state);
 		if (state.not)
 		{
 			result = !result;
 		}
+
 		return result;
 	}
 
@@ -168,12 +177,14 @@ export class ShortCutCapture
 	 */
 	private checkActivityKeys(keys: Key[]): boolean
 	{
-
-		for (var i = 0; i < keys.length; i++)
+		for (let i = 0; i < keys.length; i++)
 		{
 			if (!this.getKeyValue(keys[i]))
+			{
 				return false;
+			}
 		}
+
 		return true;
 	}
 
@@ -182,8 +193,7 @@ export class ShortCutCapture
 	 */
 	private getKeyValue(key: Key): boolean
 	{
-
-		var value = this._keyState.getKeyState(key.key);
+		let value = this._keyState.getKeyState(key.key);
 
 		if (key.not)
 		{
@@ -199,17 +209,22 @@ export class ShortCutCapture
 	 */
 	private getStates(when?: string): State[]
 	{
-		var states: State[] = [];
+		const states: State[] = [];
+
 		if (!when)
+		{
 			return states;
-		var state: string = when.trim();
+		}
+		const state: string = when.trim();
+
 		if (state.length == 0)
 		{
 			return states;
 		}
 
-		var stateStrs = state.split("+");
-		for (var i = 0; i < stateStrs.length; i++)
+		const stateStrs = state.split('+');
+
+		for (let i = 0; i < stateStrs.length; i++)
 		{
 			states.push(new State(stateStrs[i]));
 		}
@@ -223,12 +238,14 @@ export class ShortCutCapture
 	 */
 	private getKeys(key: string): Key[]
 	{
-		var keyStrs = key.split("+");
-		var keys: Key[] = [];
-		for (var i = 0; i < keyStrs.length; i++)
+		const keyStrs = key.split('+');
+		const keys: Key[] = [];
+
+		for (let i = 0; i < keyStrs.length; i++)
 		{
 			keys.push(new Key(keyStrs[i]));
 		}
+
 		return keys;
 	}
 
@@ -238,15 +255,18 @@ export class ShortCutCapture
 	 */
 	private getCommands(command?: string): string[]
 	{
-		var commands: string[] = [];
+		const commands: string[] = [];
+
 		if (!command)
-			return commands;
+		{ return commands; }
 
 		command = command.trim();
-		var commandStrs = command.split(",");
-		for (var i = 0; i < commandStrs.length; i++)
+		const commandStrs = command.split(',');
+
+		for (let i = 0; i < commandStrs.length; i++)
 		{
-			var commandStr: string = commandStrs[i].trim();
+			const commandStr: string = commandStrs[i].trim();
+
 			if (commandStr.length > 0)
 			{
 				commands.push(commandStr);
@@ -262,15 +282,20 @@ export class ShortCutCapture
 	 */
 	private getStateCommand(stateCommand?: string): StateCommand[]
 	{
-		var stateCommands: StateCommand[] = [];
+		const stateCommands: StateCommand[] = [];
+
 		if (!stateCommand)
+		{
 			return stateCommands;
+		}
 
 		stateCommand = stateCommand.trim();
-		var stateCommandStrs = stateCommand.split(",");
-		for (var i = 0; i < stateCommandStrs.length; i++)
+		const stateCommandStrs = stateCommand.split(',');
+
+		for (let i = 0; i < stateCommandStrs.length; i++)
 		{
-			var commandStr: string = stateCommandStrs[i].trim();
+			const commandStr: string = stateCommandStrs[i].trim();
+
 			if (commandStr.length > 0)
 			{
 				stateCommands.push(new StateCommand(commandStr));
@@ -285,7 +310,7 @@ export class ShortCutCapture
 	 */
 	destroy(): void
 	{
-		for (var i = 0; i < this._keys.length; i++)
+		for (let i = 0; i < this._keys.length; i++)
 		{
 			this._keyState.off(this._keys[i].key, this.onCapture, this);
 		}
@@ -313,7 +338,7 @@ class Key
 	constructor(key: string)
 	{
 		key = key.trim();
-		if (key.charAt(0) == "!")
+		if (key.charAt(0) == '!')
 		{
 			this.not = true;
 			key = key.substr(1).trim();
@@ -340,7 +365,7 @@ class State
 	constructor(state: string)
 	{
 		state = state.trim();
-		if (state.charAt(0) == "!")
+		if (state.charAt(0) == '!')
 		{
 			this.not = true;
 			state = state.substr(1).trim();
@@ -367,7 +392,7 @@ class StateCommand
 	constructor(state: string)
 	{
 		state = state.trim();
-		if (state.charAt(0) == "!")
+		if (state.charAt(0) == '!')
 		{
 			this.not = true;
 			state = state.substr(1).trim();
@@ -375,5 +400,4 @@ class StateCommand
 		this.state = state;
 	}
 }
-
 

@@ -1,12 +1,11 @@
-import { Event } from "@feng3d/event";
-import { KeyBoard } from "../Keyboard";
-import type { ShortCut } from "../ShortCut";
-import { windowEventProxy } from "../WindowEventProxy";
-import { KeyState } from "./KeyState";
+import { Event } from '@feng3d/event';
+import { KeyBoard } from '../Keyboard';
+import type { ShortCut } from '../ShortCut';
+import { windowEventProxy } from '../WindowEventProxy';
+import { KeyState } from './KeyState';
 
 /**
  * 按键捕获
-
  */
 export class KeyCapture
 {
@@ -34,24 +33,25 @@ export class KeyCapture
 		{
 			return;
 		}
-		windowEventProxy.on("keydown", this.onKeydown, this);
-		windowEventProxy.on("keyup", this.onKeyup, this);
+		windowEventProxy.on('keydown', this.onKeydown, this);
+		windowEventProxy.on('keyup', this.onKeyup, this);
 
-		//监听鼠标事件
-		var mouseEvents = [ //
-			"dblclick", //
-			"click", //
-			"mousedown",
-			"mouseup",
-			"mousemove",
-			"mouseover",
-			"mouseout",
+		// 监听鼠标事件
+		const mouseEvents = [ //
+			'dblclick', //
+			'click', //
+			'mousedown',
+			'mouseup',
+			'mousemove',
+			'mouseover',
+			'mouseout',
 		];
-		for (var i = 0; i < mouseEvents.length; i++)
+
+		for (let i = 0; i < mouseEvents.length; i++)
 		{
 			windowEventProxy.on(mouseEvents[i] as any, this.onMouseOnce, this);
 		}
-		windowEventProxy.on("wheel", this.onMousewheel, this);
+		windowEventProxy.on('wheel', this.onMousewheel, this);
 	}
 
 	/**
@@ -60,8 +60,11 @@ export class KeyCapture
 	private onMouseOnce(event: Event<MouseEvent>): void
 	{
 		if (!this.shortcut.enable)
+		{
 			return;
-		var mouseKey: string = event.type;
+		}
+		const mouseKey: string = event.type;
+
 		this._keyState.pressKey(mouseKey, event.data);
 		this._keyState.releaseKey(mouseKey, event.data);
 	}
@@ -72,8 +75,11 @@ export class KeyCapture
 	private onMousewheel(event: Event<WheelEvent>): void
 	{
 		if (!this.shortcut.enable)
+		{
 			return;
-		var mouseKey: string = event.type;
+		}
+		const mouseKey: string = event.type;
+
 		this._keyState.pressKey(mouseKey, event.data);
 		this._keyState.releaseKey(mouseKey, event.data);
 	}
@@ -84,14 +90,18 @@ export class KeyCapture
 	private onKeydown(event: Event<KeyboardEvent>): void
 	{
 		if (!this.shortcut.enable)
+		{
 			return;
-		var boardKey: string = KeyBoard.getKey(event.data.keyCode);
+		}
+		let boardKey: string = KeyBoard.getKey(event.data.keyCode);
+
 		boardKey = boardKey || event.data.key;
 		if (boardKey)
 		{
 			boardKey = boardKey.toLocaleLowerCase();
 			this._keyState.pressKey(boardKey, event.data);
-		} else
+		}
+		else
 		{
 			console.error(`无法识别按钮 ${event.data.key}`);
 		}
@@ -103,14 +113,18 @@ export class KeyCapture
 	private onKeyup(event: Event<KeyboardEvent>): void
 	{
 		if (!this.shortcut.enable)
+		{
 			return;
-		var boardKey: string = KeyBoard.getKey(event.data.keyCode);
+		}
+		let boardKey: string = KeyBoard.getKey(event.data.keyCode);
+
 		boardKey = boardKey || event.data.key;
 		if (boardKey)
 		{
 			boardKey = boardKey.toLocaleLowerCase();
 			this._keyState.releaseKey(boardKey, event.data);
-		} else
+		}
+		else
 		{
 			console.error(`无法识别按钮 ${event.data.key}`);
 		}
