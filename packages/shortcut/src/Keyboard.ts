@@ -20,7 +20,7 @@ export class KeyBoard
     {
         let key = boardKeyDic[code];
 
-        if (key == null && code >= 65 && code <= 90)
+        if (key === null && code >= 65 && code <= 90)
         {
             key = String.fromCharCode(code).toLocaleLowerCase();
         }
@@ -37,18 +37,15 @@ export class KeyBoard
         key = key.toLocaleLowerCase();
         const code = key.charCodeAt(0);
 
-        if (key.length == 1 && code >= 65 && code <= 90)
+        if (key.length === 1 && code >= 65 && code <= 90)
         {
             return code;
         }
         for (const code in boardKeyDic)
         {
-            if (boardKeyDic.hasOwnProperty(code))
+            if (boardKeyDic[code] === key)
             {
-                if (boardKeyDic[code] == key)
-                {
-                    return Number(code);
-                }
+                return Number(code);
             }
         }
         console.error(`无法获取按键 ${key} 的值！`);

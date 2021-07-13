@@ -29,7 +29,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
     }
     set target(v)
     {
-        if (this._target == v) return;
+        if (this._target === v) return;
         if (this._target)
         {
             this.listentypes.forEach((element) =>
@@ -78,7 +78,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
     on<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority = 0, once = false): this
     {
         super.on(type, listener, thisObject, priority, once);
-        if (this.listentypes.indexOf(type) == -1)
+        if (this.listentypes.indexOf(type) === -1)
         {
             this.listentypes.push(type);
             this._target.addEventListener(type as any, this.onMouseKey);
@@ -125,7 +125,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
     {
         // this.clear();
 
-        if (event.clientX != undefined)
+        if (event.clientX !== undefined)
         {
             this.clientX = event.clientX;
             this.clientY = event.clientY;
@@ -135,27 +135,27 @@ export class EventProxy<T = any> extends EventEmitter<T>
 
         if (event instanceof MouseEvent)
         {
-            this.rightmouse = event.button == 2;
+            this.rightmouse = event.button === 2;
 
             // 处理鼠标按下时同时出发 "mousemove" 事件bug
             if (this.handleMouseMoveBug)
             {
-                if (event.type == 'mousedown')
+                if (event.type === 'mousedown')
                 {
                     this.mousedownposition = { x: event.clientX, y: event.clientY };
                 }
-                if (event.type == 'mousemove')
+                if (event.type === 'mousemove')
                 {
                     if (this.mousedownposition)
                     {
-                        if (this.mousedownposition.x == event.clientX && this.mousedownposition.y == event.clientY)
+                        if (this.mousedownposition.x === event.clientX && this.mousedownposition.y === event.clientY)
                         {
                             // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
                             return;
                         }
                     }
                 }
-                if (event.type == 'mouseup')
+                if (event.type === 'mouseup')
                 {
                     this.mousedownposition = null;
                 }
