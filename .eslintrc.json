@@ -227,10 +227,6 @@
             1,
             "unix"
         ],
-        "func-names": [
-            1,
-            "always"
-        ],
         "func-style": [
             1,
             "declaration",
@@ -514,7 +510,6 @@
                 "@typescript-eslint/semi": 1,
                 "@typescript-eslint/no-explicit-any": 0,
                 "@typescript-eslint/interface-name-prefix": 0,
-                "@typescript-eslint/no-unused-expressions": 1,
                 "@typescript-eslint/no-unused-vars": [
                     "error",
                     {

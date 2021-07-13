@@ -1,15 +1,14 @@
-import { getPropertyDescriptor, gPartial, PropertyNames } from "@feng3d/polyfill";
-
+import { getPropertyDescriptor, gPartial, PropertyNames } from '@feng3d/polyfill';
 
 /**
  * 观察装饰器，观察被装饰属性的变化
- * 
+ *
  * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
- * 
- * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a" 
- * 
+ *
+ * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
+ *
  * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
- * 
+ *
  * 性能比Watcher.watch更加高效，但还是建议使用 Watcher.watch 替代 @watch ，由于 @watch 没有对onChange更好的约束 使用 时容易出现运行时报错。
  */
 export function watch(onChange: string)
@@ -17,15 +16,19 @@ export function watch(onChange: string)
     return (target: any, property: string) =>
     {
         const key = `_${property}`;
+
         console.assert(target[onChange], `在对象 ${target} 上找不到方法 ${onChange}`);
 
         Object.defineProperty(target, property, {
-            get: function () { return this[key] },
-            set: function (value)
+            get() { return this[key]; },
+            set(value)
             {
                 if (this[key] === value)
+                {
                     return;
-                var oldValue = this[key];
+                }
+                const oldValue = this[key];
+
                 this[key] = value;
                 this[onChange](property, oldValue, value);
             },
@@ -39,13 +42,13 @@ export class Watcher
 {
     /**
      * 监听对象属性的变化
-     * 
+     *
      * 注意：使用watch后获取该属性值的性能将会是原来的1/60，避免在运算密集处使用该函数。
-     * 
+     *
      * @param object 被监听对象
      * @param property 被监听属性
      * @param handler 变化回调函数 (object: T, property: string, oldValue: V) => void
-     * @param thisObject 变化回调函数 this值 
+     * @param thisObject 变化回调函数 this值
      */
     watch<T, K extends PropertyNames<T>, V extends T[K]>(object: T, property: K, handler: (newValue: V, oldValue: V, object: T, property: string) => void, thisObject?: any)
     {
@@ -58,22 +61,27 @@ export class Watcher
                 writable: false,
             });
         }
-        var _property: string = property as any;
-        var watchs: Watchs = object[__watchs__];
+        const _property: string = property as any;
+        const watchs: Watchs = object[__watchs__];
+
         if (!watchs[_property])
         {
-            var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, _property);
-            watchs[_property] = { value: object[_property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+            const oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, _property);
+
+            watchs[_property] = { value: object[_property], oldPropertyDescriptor, handlers: [] };
             //
-            var data = getPropertyDescriptor(object, _property);
+            let data = getPropertyDescriptor(object, _property);
+
             if (data && data.set && data.get)
             {
                 data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
-                var orgSet = data.set;
+                const orgSet = data.set;
+
                 data.set = function (value)
                 {
-                    var oldValue = this[_property];
-                    if (oldValue != value)
+                    const oldValue = this[_property];
+
+                    if (oldValue !== value)
                     {
                         orgSet && orgSet.call(this, value);
                         notifyListener(value, oldValue, this, _property);
@@ -89,8 +97,9 @@ export class Watcher
                 };
                 data.set = function (value)
                 {
-                    var oldValue = this[__watchs__][_property].value;
-                    if (oldValue != value)
+                    const oldValue = this[__watchs__][_property].value;
+
+                    if (oldValue !== value)
                     {
                         this[__watchs__][_property].value = value;
                         notifyListener(value, oldValue, this, _property);
@@ -100,20 +109,24 @@ export class Watcher
             else
             {
                 console.warn(`watch ${object} . ${_property} 失败！`);
+
                 return;
             }
             Object.defineProperty(object, _property, data);
         }
 
-        var propertywatchs = watchs[_property];
-        var has = propertywatchs.handlers.reduce((v, item) => { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
+        const propertywatchs = watchs[_property];
+        const has = propertywatchs.handlers.reduce((v, item) => v || (item.handler === handler && item.thisObject === thisObject), false);
+
         if (!has)
-            propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
+        {
+            propertywatchs.handlers.push({ handler, thisObject });
+        }
     }
 
     /**
      * 取消监听对象属性的变化
-     * 
+     *
      * @param object 被监听对象
      * @param property 被监听属性
      * @param handler 变化回调函数 (object: T, property: string, oldValue: V) => void
@@ -121,29 +134,39 @@ export class Watcher
      */
     unwatch<T, K extends PropertyNames<T>, V extends T[K]>(object: T, property: K, handler?: (newValue: V, oldValue: V, object: T, property: string) => void, thisObject?: any)
     {
-        var watchs: Watchs = object[__watchs__];
+        const watchs: Watchs = object[__watchs__];
+
         if (!watchs) return;
-        var _property: string = property as any;
+        const _property: string = property as any;
+
         if (watchs[_property])
         {
-            var handlers = watchs[_property].handlers;
+            const handlers = watchs[_property].handlers;
+
             if (handler === undefined)
+            {
                 handlers.length = 0;
-            for (var i = handlers.length - 1; i >= 0; i--)
-            {
-                if (handlers[i].handler == handler && (handlers[i].thisObject == thisObject || thisObject === undefined))
-                    handlers.splice(i, 1);
             }
-            if (handlers.length == 0)
+            for (let i = handlers.length - 1; i >= 0; i--)
             {
-                var value = object[_property];
+                if (handlers[i].handler === handler && (handlers[i].thisObject === thisObject || thisObject === undefined))
+                {
+                    handlers.splice(i, 1);
+                }
+            }
+            if (handlers.length === 0)
+            {
+                const value = object[_property];
+
                 delete object[_property];
                 if (watchs[_property].oldPropertyDescriptor)
+                {
                     Object.defineProperty(object, _property, watchs[_property].oldPropertyDescriptor);
+                }
                 object[_property] = value;
                 delete watchs[_property];
             }
-            if (Object.keys(watchs).length == 0)
+            if (Object.keys(watchs).length === 0)
             {
                 delete object[__watchs__];
             }
@@ -154,7 +177,7 @@ export class Watcher
 
     /**
      * 绑定两个对象的指定属性，保存两个属性值同步。
-     * 
+     *
      * @param object0 第一个对象。
      * @param property0 第一个对象的属性名称。
      * @param object1 第二个对象。
@@ -162,14 +185,15 @@ export class Watcher
      */
     bind<T0, T1, K0 extends PropertyNames<T0>, K1 extends PropertyNames<T1>>(object0: T0, property0: K0, object1: T1, property1: K1)
     {
-        var fun0 = () =>
+        const fun0 = () =>
         {
             object1[property1] = object0[property0] as any;
-        }
-        var fun1 = () =>
+        };
+        const fun1 = () =>
         {
             object0[property0] = object1[property1] as any;
-        }
+        };
+
         this.watch(object0, property0, fun0);
         this.watch(object1, property1, fun1);
 
@@ -178,7 +202,7 @@ export class Watcher
 
     /**
      * 解除两个对象的指定属性的绑定。
-     * 
+     *
      * @param object0 第一个对象。
      * @param property0 第一个对象的属性名称。
      * @param object1 第二个对象。
@@ -186,13 +210,15 @@ export class Watcher
      */
     unbind<T0, T1, K0 extends PropertyNames<T0>, K1 extends PropertyNames<T1>>(object0: T0, property0: K0, object1: T1, property1: K1)
     {
-        var binds = this._binds;
-        for (let i = 0, n = binds.length - 1; i >= 0; i--)
+        const binds = this._binds;
+
+        for (let i = binds.length - 1; i >= 0; i--)
         {
             const v = binds[i];
-            if ((v[1] == property0 && v[4] == property1) || (v[1] == property1 && v[4] == property0))
+
+            if ((v[1] === property0 && v[4] === property1) || (v[1] === property1 && v[4] === property0))
             {
-                if ((v[0] == object0 && v[3] == object1) || (v[0] == object1 && v[3] == object0)) 
+                if ((v[0] === object0 && v[3] === object1) || (v[0] === object1 && v[3] === object0))
                 {
                     this.unwatch(v[0], v[1], v[2]);
                     this.unwatch(v[3], v[4], v[5]);
@@ -205,7 +231,7 @@ export class Watcher
 
     /**
      * 监听对象属性链值变化
-     * 
+     *
      * @param object 被监听对象
      * @param property 被监听属性 例如："a.b"
      * @param handler 变化回调函数 (newValue: any, oldValue: any, object: any, property: string) => void
@@ -213,55 +239,64 @@ export class Watcher
      */
     watchchain(object: any, property: string, handler: (newValue: any, oldValue: any, object: any, property: string) => void, thisObject?: any)
     {
-        var notIndex = property.indexOf(".");
-        if (notIndex == -1)
+        const notIndex = property.indexOf('.');
+
+        if (notIndex === -1)
         {
             this.watch(object, property, handler, thisObject);
+
             return;
         }
         if (!Object.getOwnPropertyDescriptor(object, __watchchains__))
+        {
             Object.defineProperty(object, __watchchains__, { value: {}, enumerable: false, writable: false, configurable: true });
-        var watchchains: WatchChains = object[__watchchains__];
+        }
+        const watchchains: WatchChains = object[__watchchains__];
+
         if (!watchchains[property])
         {
             watchchains[property] = [];
         }
 
-        var propertywatchs = watchchains[property];
-        var has = propertywatchs.reduce((v, item) => { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
+        const propertywatchs = watchchains[property];
+        const has = propertywatchs.reduce((v, item) => v || (item.handler === handler && item.thisObject === thisObject), false);
+
         if (!has)
         {
             // 添加下级监听链
-            var currentp = property.substr(0, notIndex);
-            var nextp = property.substr(notIndex + 1);
+            const currentp = property.substr(0, notIndex);
+            const nextp = property.substr(notIndex + 1);
+
             if (object[currentp])
             {
                 this.watchchain(object[currentp], nextp, handler, thisObject);
             }
 
             // 添加链监听
-            var watchchainFun = (newValue: any, oldValue: any) =>
+            const watchchainFun = (newValue: any, oldValue: any) =>
             {
                 if (oldValue) this.unwatchchain(oldValue, nextp, handler, thisObject);
                 if (newValue) this.watchchain(newValue, nextp, handler, thisObject);
                 // 当更换对象且监听值发生改变时触发处理函数
-                var ov = Object.getPropertyValue(oldValue, nextp);
-                var nv = Object.getPropertyValue(newValue, nextp);
-                if (ov != nv)
+                const ov = Object.getPropertyValue(oldValue, nextp);
+                const nv = Object.getPropertyValue(newValue, nextp);
+
+                if (ov !== nv)
                 {
                     handler.call(thisObject, nv, ov, newValue, nextp);
                 }
             };
+
             this.watch(object, currentp, watchchainFun);
 
             // 记录链监听函数
-            propertywatchs.push({ handler: handler, thisObject: thisObject, watchchainFun: watchchainFun });
+            propertywatchs.push({ handler, thisObject, watchchainFun });
         }
     }
 
     /**
      * 取消监听对象属性链值变化
-     * 
+     *
      * @param object 被监听对象
      * @param property 被监听属性 例如："a.b"
      * @param handler 变化回调函数 (object: T, property: string, oldValue: V) => void
@@ -269,26 +304,31 @@ export class Watcher
      */
     unwatchchain(object: any, property: string, handler?: (newValue: any, oldValue: any, object: any, property: string) => void, thisObject?: any)
     {
-        var notIndex = property.indexOf(".");
-        if (notIndex == -1)
+        const notIndex = property.indexOf('.');
+
+        if (notIndex === -1)
         {
             this.unwatch(object, property, handler, thisObject);
+
             return;
         }
 
-        var currentp = property.substr(0, notIndex);
-        var nextp = property.substr(notIndex + 1);
+        const currentp = property.substr(0, notIndex);
+        const nextp = property.substr(notIndex + 1);
 
         //
-        var watchchains: WatchChains = object[__watchchains__];
+        const watchchains: WatchChains = object[__watchchains__];
+
         if (!watchchains || !watchchains[property]) return;
 
-        // 
-        var propertywatchs = watchchains[property];
+        //
+        const propertywatchs = watchchains[property];
+
         for (let i = propertywatchs.length - 1; i >= 0; i--)
         {
             const element = propertywatchs[i];
-            if (handler == null || (handler == element.handler && thisObject == element.thisObject))
+
+            if (handler === null || (handler === element.handler && thisObject === element.thisObject))
             {
                 // 删除下级监听链
                 if (object[currentp])
@@ -302,8 +342,8 @@ export class Watcher
             }
         }
         // 清理空列表
-        if (propertywatchs.length == 0) delete watchchains[property];
-        if (Object.keys(watchchains).length == 0)
+        if (propertywatchs.length === 0) delete watchchains[property];
+        if (Object.keys(watchchains).length === 0)
         {
             delete object[__watchchains__];
         }
@@ -311,16 +351,17 @@ export class Watcher
 
     /**
      * 监听对象属性链值变化
-     * 
+     *
      * @param object 被监听对象
-     * @param property 被监听属性 例如：{a:{b:null,d:null}} 表示监听 object.a.b 与 object.a.d 值得变化，如果property == object时表示监听对象中所有叶子属性变化。
+     * @param property 被监听属性 例如：{a:{b:null,d:null}} 表示监听 object.a.b 与 object.a.d 值得变化，如果property===object时表示监听对象中所有叶子属性变化。
      * @param handler 变化回调函数 (object: T, property: string, oldValue: V) => void
      * @param thisObject 变化回调函数 this值
      */
     watchobject<T>(object: T, property: gPartial<T>, handler: (object: any, property: string, oldValue: any) => void, thisObject?: any)
     {
-        var chains = Object.getPropertyChains(object);
-        chains.forEach(v =>
+        const chains = Object.getPropertyChains(object);
+
+        chains.forEach((v) =>
         {
             this.watchchain(object, v, handler, thisObject);
         });
@@ -328,16 +369,17 @@ export class Watcher
 
     /**
      * 取消监听对象属性链值变化
-     * 
+     *
      * @param object 被监听对象
-     * @param property 被监听属性 例如：{a:{b:null,d:null}} 表示监听 object.a.b 与 object.a.d 值得变化，如果property == object时表示监听对象中所有叶子属性变化。
+     * @param property 被监听属性 例如：{a:{b:null,d:null}} 表示监听 object.a.b 与 object.a.d 值得变化，如果property===object时表示监听对象中所有叶子属性变化。
      * @param handler 变化回调函数 (object: T, property: string, oldValue: V) => void
      * @param thisObject 变化回调函数 this值
      */
     unwatchobject<T>(object: T, property: gPartial<T>, handler?: (object: any, property: string, oldValue: any) => void, thisObject?: any)
     {
-        var chains = Object.getPropertyChains(property);
-        chains.forEach(v =>
+        const chains = Object.getPropertyChains(property);
+
+        chains.forEach((v) =>
         {
             this.unwatchchain(object, v, handler, thisObject);
         });
@@ -356,14 +398,15 @@ interface WatchChains
     [property: string]: { handler: (newValue: any, oldValue: any, host: any, property: string) => void, thisObject: any, watchchainFun: (newValue: any, oldValue: any, host: any, property: string) => void }[];
 }
 
-export const __watchs__ = "__watchs__";
-export const __watchchains__ = "__watchchains__";
+export const __watchs__ = '__watchs__';
+export const __watchchains__ = '__watchchains__';
 
 function notifyListener(newValue: any, oldValue: any, host: any, property: string): void
 {
-    var watchs: Watchs = host[__watchs__];
-    var handlers = watchs[property].handlers;
-    handlers.forEach(element =>
+    const watchs: Watchs = host[__watchs__];
+    const handlers = watchs[property].handlers;
+
+    handlers.forEach((element) =>
     {
         element.handler.call(element.thisObject, newValue, oldValue, host, property);
     });
