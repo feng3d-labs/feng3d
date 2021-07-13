@@ -275,6 +275,7 @@ describe('@feng3d/event', () =>
                 {
                     c.entity = entity;
                 });
+
                 return node;
             }
 
@@ -367,6 +368,7 @@ describe('@feng3d/event', () =>
                 {
                     c.entity = entity;
                 });
+
                 return node;
             }
 

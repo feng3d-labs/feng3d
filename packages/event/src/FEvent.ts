@@ -35,10 +35,11 @@ export class FEvent
      * @param thisObject listener函数作用域
      * @param priority 事件监听器的优先级。数字越大，优先级越高。默认为0。
      */
-    once(obj: Object, type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
+    once(obj: any, type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         EventEmitter.getOrCreateEventEmitter(obj).once(type, listener, thisObject, priority);
+
         return this;
     }
 
@@ -50,7 +51,7 @@ export class FEvent
      * @param e 事件对象。
      * @returns                 返回事件是否被该对象处理。
      */
-    emitEvent(obj: Object, e: Event<any>)
+    emitEvent(obj: any, e: Event<any>)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         const result = EventEmitter.getOrCreateEventEmitter(obj).emitEvent(e) || false;
@@ -64,7 +65,7 @@ export class FEvent
      * @param data 事件携带的自定义数据。
      * @param bubbles 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
      */
-    emit(obj: Object, type: string, data?: any, bubbles = false)
+    emit(obj: any, type: string, data?: any, bubbles = false)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         const result = EventEmitter.getOrCreateEventEmitter(obj).emit(type, data, bubbles) || false;
@@ -79,7 +80,7 @@ export class FEvent
      * @param type 事件的类型。
      * @returns 			                如果指定类型的监听器已注册，则值为 true；否则，值为 false。
      */
-    has(obj: Object, type: string)
+    has(obj: any, type: string)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         const result = EventEmitter.getEventEmitter(obj)?.has(type) || false;
@@ -97,10 +98,11 @@ export class FEvent
      * @param priority 事件监听器的优先级。数字越大，优先级越高。默认为0。
      * @param once 值为true时在监听一次事件后该监听器将被移除。默认为false。
      */
-    on(obj: Object, type: string, listener: (event: Event<any>) => any, thisObject?: any, priority = 0, once = false)
+    on(obj: any, type: string, listener: (event: Event<any>) => any, thisObject?: any, priority = 0, once = false)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         EventEmitter.getOrCreateEventEmitter(obj).on(type, listener, thisObject, priority, once);
+
         return this;
     }
 
@@ -112,10 +114,11 @@ export class FEvent
      * @param listener 要删除的监听器对象。可选。该值为空时所有指定类型的监听均将被移除。
      * @param thisObject 监听器的上下文。可选。
      */
-    off(obj: Object, type?: string, listener?: (event: Event<any>) => any, thisObject?: any)
+    off(obj: any, type?: string, listener?: (event: Event<any>) => any, thisObject?: any)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         EventEmitter.getEventEmitter(obj)?.off(type, listener, thisObject);
+
         return this;
     }
 
@@ -126,6 +129,7 @@ export class FEvent
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         EventEmitter.getEventEmitter(obj)?.offAll(type);
+
         return this;
     }
 
@@ -138,10 +142,11 @@ export class FEvent
      * @param priority 事件监听器的优先级。数字越大，优先级越高。默认为0。
      * @param once 值为true时在监听一次事件后该监听器将被移除。默认为false。
      */
-    onAny(obj: Object, listener: (event: Event<any>) => void, thisObject?: any, priority = 0, once = false)
+    onAny(obj: any, listener: (event: Event<any>) => void, thisObject?: any, priority = 0, once = false)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         EventEmitter.getOrCreateEventEmitter(obj).onAny(listener, thisObject, priority, once);
+
         return this;
     }
 
@@ -152,10 +157,11 @@ export class FEvent
      * @param listener 处理事件的监听器函数。
      * @param thisObject 监听器的上下文。可选。
      */
-    offAny(obj: Object, listener?: (event: any) => void, thisObject?: any)
+    offAny(obj: any, listener?: (event: any) => void, thisObject?: any)
     {
         console.assert(obj !== undefined && obj !== null, `被监听对象无法为undefined或者null！`);
         EventEmitter.getEventEmitter(obj)?.offAny(listener, thisObject);
+
         return this;
     }
 

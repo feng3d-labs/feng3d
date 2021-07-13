@@ -26,15 +26,6 @@
             1,
             "except-parens"
         ],
-        "no-console": [
-            1,
-            {
-                "allow": [
-                    "warn",
-                    "error"
-                ]
-            }
-        ],
         "no-constant-condition": 1,
         "no-control-regex": 1,
         "no-debugger": 1,
@@ -75,7 +66,6 @@
         "array-callback-return": 1,
         "block-scoped-var": 1,
         "complexity": 0,
-        "consistent-return": 1,
         "curly": [
             1,
             "multi-line"
@@ -184,10 +174,6 @@
         "no-undef-init": 1,
         "no-undefined": 0,
         "no-unused-vars": "off",
-        "no-use-before-define": [
-            1,
-            "nofunc"
-        ],
         // Node.js and CommonJS
         "callback-return": 0,
         "global-require": 1,
@@ -239,7 +225,7 @@
         "consistent-this": 0,
         "eol-last": [
             1,
-            "linux"
+            "unix"
         ],
         "func-names": [
             1,
@@ -288,19 +274,12 @@
         ],
         "linebreak-style": [
             1,
-            "linux"
+            "unix"
         ],
         "lines-around-comment": 0,
         "max-depth": [
             1,
             6
-        ],
-        "max-len": [
-            1,
-            {
-                "code": 125,
-                "tabWidth": 4
-            }
         ],
         "max-lines": 0,
         "max-nested-callbacks": [
