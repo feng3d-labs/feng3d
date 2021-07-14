@@ -39,7 +39,7 @@ export class Mouse3DManager
      */
     pick(view: View, scene: Scene, camera: Camera)
     {
-        if (this._mouseEventTypes.length == 0) return;
+        if (this._mouseEventTypes.length === 0) return;
         //计算得到鼠标射线相交的物体
         var pickingCollisionVO = raycaster.pick(view.mouseRay3D, scene.mouseCheckObjects);
 
@@ -93,7 +93,7 @@ export class Mouse3DManager
                 return;
         }
 
-        if (this._mouseEventTypes.indexOf(type) == -1)
+        if (this._mouseEventTypes.indexOf(type) === -1)
             this._mouseEventTypes.push(type);
     }
 
@@ -110,7 +110,7 @@ export class Mouse3DManager
      */
     private setSelectedNode3D(value: Node3D)
     {
-        if (this._selectedTransform != value)
+        if (this._selectedTransform !== value)
         {
             if (this._selectedTransform)
                 this._selectedTransform.emit("mouseout", null, true);
@@ -123,7 +123,7 @@ export class Mouse3DManager
             switch (element)
             {
                 case "mousedown":
-                    if (this.preMouseDownNode3D != this._selectedTransform)
+                    if (this.preMouseDownNode3D !== this._selectedTransform)
                     {
                         this.node3DClickNum = 0;
                         this.preMouseDownNode3D = this._selectedTransform;
@@ -131,7 +131,7 @@ export class Mouse3DManager
                     this._selectedTransform && this._selectedTransform.emit(element, null, true);
                     break;
                 case "mouseup":
-                    if (this._selectedTransform == this.preMouseDownNode3D)
+                    if (this._selectedTransform === this.preMouseDownNode3D)
                     {
                         this.node3DClickNum++;
                     } else
@@ -186,7 +186,7 @@ export class MouseInput<T = MouseEventMap> extends EventEmitter<T>
     {
         if (!this.enable)
             return null;
-        if (!this.catchMouseMove && type == "mousemove")
+        if (!this.catchMouseMove && type === "mousemove")
             return null;
         return super.emit(type, data, bubbles);
     }
@@ -199,7 +199,7 @@ export class MouseInput<T = MouseEventMap> extends EventEmitter<T>
     {
         if (!this.enable)
             return false;
-        if (!this.catchMouseMove && event.type == "mousemove")
+        if (!this.catchMouseMove && event.type === "mousemove")
             return false;
         return super.emitEvent(event);
     }
@@ -249,7 +249,7 @@ export class WindowMouseInput extends MouseInput
         // 处理鼠标中键与右键
         if (event.data instanceof MouseEvent)
         {
-            if (["click", "mousedown", "mouseup"].indexOf(event.type) != -1)
+            if (["click", "mousedown", "mouseup"].indexOf(event.type) !== -1)
             {
                 type = ["", "middle", "right"][event.data.button] + event.type;
             }

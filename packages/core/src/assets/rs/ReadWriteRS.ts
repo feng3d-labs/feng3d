@@ -103,7 +103,7 @@ export class ReadWriteRS extends ReadRS
         var filename = asset.fileName + asset.extenson
 
         var cnames = folder.childrenAssets.map(v => v.fileName + v.extenson);
-        if (cnames.indexOf(filename) != -1)
+        if (cnames.indexOf(filename) !== -1)
         {
             callback && callback(new Error(`目标文件夹中存在同名文件（夹），无法移动`));
             return;
@@ -111,7 +111,7 @@ export class ReadWriteRS extends ReadRS
         var fp = folder;
         while (fp)
         {
-            if (fp == asset)
+            if (fp === asset)
             {
                 callback && callback(new Error(`无法移动达到子文件夹中`));
                 return;
@@ -138,7 +138,7 @@ export class ReadWriteRS extends ReadRS
         // 移动最后一个资源
         var moveLastAsset = () =>
         {
-            if (assets.length == 0)
+            if (assets.length === 0)
             {
                 callback && callback(null);
                 // 保存资源库
@@ -213,7 +213,7 @@ export class ReadWriteRS extends ReadRS
         // 删除最后一个资源
         var deleteLastAsset = () =>
         {
-            if (assets.length == 0)
+            if (assets.length === 0)
             {
                 callback && callback(null);
                 // 保存资源库

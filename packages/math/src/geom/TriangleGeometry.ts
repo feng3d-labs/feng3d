@@ -58,7 +58,7 @@ export class TriangleGeometry
         // 获取所有线段
         var ss = this.triangles.reduce((ss: Segment3[], t) => { return ss.concat(t.getSegments()); }, []);
         // 当每条线段（a,b）都存在与之相对于的线段（b，a）时几何体闭合
-        var r = ss.every((s) => { return ss.filter((s0) => { return s.p0.equals(s0.p1) && s.p1.equals(s0.p0); }).length == 1; });
+        var r = ss.every((s) => { return ss.filter((s0) => { return s.p0.equals(s0.p1) && s.p1.equals(s0.p0); }).length === 1; });
         return r;
     }
 
@@ -140,12 +140,12 @@ export class TriangleGeometry
         // 相交多条线段时 横跨
         if (r.segments.length > 1)
             return 2;
-        if (r.segments.length == 1)
+        if (r.segments.length === 1)
         {
             // 相交线段相对 几何体的位置
             var pc = [r.segments[0].p0, r.segments[0].p1].map((p) => this.classifyPoint(p));
             if (pc[0] * pc[1] < 0) return 2;
-            if (pc[0] + pc[1] == 0) return 0;
+            if (pc[0] + pc[1] === 0) return 0;
             if (pc[0] + pc[1] < 0) return -1;
             return 1;
         }
@@ -189,7 +189,7 @@ export class TriangleGeometry
         ps = ps.filter((p) => { return ss.every((s) => { return !s.onWithPoint(p); }); });
         // 清除相同点
         Array.unique(ps, (a, b) => a.equals(b));
-        if (ss.length + ps.length == 0)
+        if (ss.length + ps.length === 0)
             return null;
         return { segments: ss, points: ps };
     }
@@ -220,7 +220,7 @@ export class TriangleGeometry
             return v;
         }, []);
 
-        if (r.segments.length + r.points.length == 0)
+        if (r.segments.length + r.points.length === 0)
             return null;
         return r;
     }

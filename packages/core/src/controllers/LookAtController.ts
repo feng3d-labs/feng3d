@@ -48,7 +48,7 @@ export class LookAtController extends ControllerBase
 
     set lookAtObject(value)
     {
-        if (this._lookAtNode3D == value)
+        if (this._lookAtNode3D === value)
             return;
 
         this._lookAtNode3D = value;

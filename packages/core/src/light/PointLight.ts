@@ -43,7 +43,7 @@ export class PointLight extends Light
     }
     set range(v)
     {
-        if (this._range == v) return;
+        if (this._range === v) return;
         this._range = v;
         this.invalidRange();
     }

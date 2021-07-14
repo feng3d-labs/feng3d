@@ -181,7 +181,7 @@ export class BezierCurve
      * Bézier曲线可以定义为任意度n。
      * 
      * @param t 插值度
-     * @param ps 点列表 ps.length == n+1
+     * @param ps 点列表 ps.length === n+1
      * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
      */
     bn(t: number, ps: number[], processs: number[][] = null)
@@ -213,7 +213,7 @@ export class BezierCurve
      * Bézier曲线可以定义为任意度n。
      * 
      * @param t 插值度
-     * @param ps 点列表 ps.length == n+1
+     * @param ps 点列表 ps.length === n+1
      */
     bnDerivative(t: number, ps: number[])
     {
@@ -239,7 +239,7 @@ export class BezierCurve
      * Bézier曲线可以定义为任意度n。
      * 
      * @param t 插值度
-     * @param ps 点列表 ps.length == n+1
+     * @param ps 点列表 ps.length === n+1
      */
     bnSecondDerivative(t: number, ps: number[])
     {
@@ -264,7 +264,7 @@ export class BezierCurve
      * 
      * @param t 插值度
      * @param dn 求导次数
-     * @param ps 点列表     ps.length == n+1
+     * @param ps 点列表     ps.length === n+1
      */
     bnND(t: number, dn: number, ps: number[])
     {
@@ -294,15 +294,15 @@ export class BezierCurve
      */
     getValue(t: number, ps: number[]): number
     {
-        if (ps.length == 2)
+        if (ps.length === 2)
         {
             return this.linear(t, ps[0], ps[1]);
         }
-        if (ps.length == 3)
+        if (ps.length === 3)
         {
             return this.quadratic(t, ps[0], ps[1], ps[2]);
         }
-        if (ps.length == 4)
+        if (ps.length === 4)
         {
             return this.cubic(t, ps[0], ps[1], ps[2], ps[3]);
         }
@@ -318,15 +318,15 @@ export class BezierCurve
      */
     getDerivative(t: number, ps: number[]): number
     {
-        if (ps.length == 2)
+        if (ps.length === 2)
         {
             return this.linearDerivative(t, ps[0], ps[1]);
         }
-        if (ps.length == 3)
+        if (ps.length === 3)
         {
             return this.quadraticDerivative(t, ps[0], ps[1], ps[2]);
         }
-        if (ps.length == 4)
+        if (ps.length === 4)
         {
             return this.cubicDerivative(t, ps[0], ps[1], ps[2], ps[3]);
         }
@@ -341,15 +341,15 @@ export class BezierCurve
      */
     getSecondDerivative(t: number, ps: number[]): number
     {
-        if (ps.length == 2)
+        if (ps.length === 2)
         {
             return this.linearSecondDerivative(t, ps[0], ps[1]);
         }
-        if (ps.length == 3)
+        if (ps.length === 3)
         {
             return this.quadraticSecondDerivative(t, ps[0], ps[1], ps[2]);
         }
-        if (ps.length == 4)
+        if (ps.length === 4)
         {
             return this.cubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]);
         }
@@ -469,7 +469,7 @@ export class BezierCurve
         // 使用当前t值进行分割曲线
         for (let i = processs.length - 1; i >= 0; i--)
         {
-            if (i == processs.length - 1)
+            if (i === processs.length - 1)
             {
                 // 添加关键点
                 fps.push(processs[i][0]);
@@ -506,11 +506,11 @@ export class BezierCurve
         for (let i = 0, n = fps.length; i < n; i++)
         {
             ps = processs[i] = [];
-            if (i == 0)
+            if (i === 0)
             {
                 processs[i][0] = fps.pop();
                 sps.shift();
-            } else if (i == 1)
+            } else if (i === 1)
             {
                 // 计算t值
                 processs[i][0] = fps.pop();
@@ -538,13 +538,13 @@ export class BezierCurve
                     ps1[j] = ps1[j + 1] - (ps1[j + 1] - pps[j]) / (1 - t);
                 }
                 // 拟合合并,合并前后两个方向的计算
-                if (mergeType == 1)
+                if (mergeType === 1)
                 {
                     for (let j = 0, n = ps0.length - 1; j <= n; j++)
                     {
                         ps[j] = (ps0[j] * (n - j) + ps1[j] * j) / n;
                     }
-                } else if (mergeType == 0)
+                } else if (mergeType === 0)
                 {
                     // 还原合并，前半段使用从前往后计算，后半段使用从后往前计算
                     for (let j = 0, n = ps0.length - 1; j <= n; j++)

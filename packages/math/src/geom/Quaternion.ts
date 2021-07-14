@@ -323,7 +323,7 @@ export class Quaternion
      */
     slerpTo(qb: Quaternion, t: number, out = new Quaternion())
     {
-        if (qb == out) qb = qb.clone();
+        if (qb === out) qb = qb.clone();
         return out.copy(this).slerp(qb, t);
     }
 

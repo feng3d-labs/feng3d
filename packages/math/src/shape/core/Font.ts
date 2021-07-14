@@ -202,7 +202,7 @@ function createPath(char: string, scale: number, offsetX: number, offsetY: numbe
 					path.closePath();
 					break;
 				default:
-					console.assert(action.trim() == '');
+					console.assert(action.trim() === '');
 					break;
 			}
 		}

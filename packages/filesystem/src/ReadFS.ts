@@ -1,7 +1,7 @@
-import { task } from "@feng3d/task";
-import { FSType } from "./FSType";
-import { basefs } from "./HttpFS";
-import { IReadFS } from "./IReadFS";
+import { task } from '@feng3d/task';
+import { FSType } from './FSType';
+import { basefs } from './HttpFS';
+import { IReadFS } from './IReadFS';
 
 /**
  * 可读文件系统
@@ -53,7 +53,7 @@ export class ReadFS
      * @param path 路径
      * @param callback 读取完成回调 当err不为null时表示读取失败
      */
-    readObject(path: string, callback: (err: Error, object: Object) => void)
+    readObject(path: string, callback: (err: Error, object: any) => void)
     {
         this.fs.readObject(path, callback);
     }
@@ -81,7 +81,7 @@ export class ReadFS
 
     /**
      * 读取文件列表为字符串列表
-     * 
+     *
      * @param path 路径
      * @param callback 读取完成回调 当err不为null时表示读取失败
      */

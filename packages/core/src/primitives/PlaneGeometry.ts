@@ -186,7 +186,7 @@ export class PlaneGeometry extends Geometry
             for (var xi = 0; xi <= this.segmentsW; ++xi)
             {
                 //生成索引数据
-                if (xi != this.segmentsW && yi != this.segmentsH)
+                if (xi !== this.segmentsW && yi !== this.segmentsH)
                 {
                     base = xi + yi * tw;
                     if (this.yUp)

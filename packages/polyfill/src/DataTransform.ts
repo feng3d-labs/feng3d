@@ -45,7 +45,7 @@ export class DataTransform
 
     /**
      * ArrayBuffer to Uint8
-     * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+     * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 === 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
      */
     arrayBufferToUint8(arrayBuffer: ArrayBuffer)
     {
@@ -55,7 +55,7 @@ export class DataTransform
 
     /**
      * Uint8 to ArrayBuffer
-     * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+     * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 === 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
      */
     uint8ToArrayBuffer(uint8Array: Uint8Array)
     {
@@ -92,7 +92,7 @@ export class DataTransform
      */
     canvasToDataURL(canvas: HTMLCanvasElement, type: "png" | "jpeg" = "png", quality = 1)
     {
-        if (type == "png") return canvas.toDataURL("image/png");
+        if (type === "png") return canvas.toDataURL("image/png");
         return canvas.toDataURL("image/jpeg", quality);
     }
 

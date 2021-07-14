@@ -415,14 +415,14 @@ export class Matrix4x4
     {
         var rotationMat = Matrix4x4.fromAxisRotate(axis, degrees);
 
-        if (pivotPoint != null)
+        if (pivotPoint !== null)
         {
             this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z)
         }
 
         this.append(rotationMat);
 
-        if (pivotPoint != null)
+        if (pivotPoint !== null)
         {
             this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z)
         }
@@ -811,7 +811,7 @@ export class Matrix4x4
     {
         var d = this.determinant;
 
-        if (d == 0)
+        if (d === 0)
         {
             console.error("无法获取逆矩阵");
             return this;
@@ -1065,7 +1065,7 @@ export class Matrix4x4
         var newrotation = rotationMatrix.toTRS()[1];
         var rx = newrotation.x, ry = newrotation.y, rz = newrotation.z;
         var v = Math.round((rx - vin.x) / 180);
-        if (v % 2 != 0)
+        if (v % 2 !== 0)
         {
             rx += 180;
             ry = 180 - ry;

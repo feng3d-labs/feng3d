@@ -77,18 +77,18 @@ export class Gradient
     getAlpha(time: number)
     {
         var alphaKeys = this.alphaKeys;
-        if (alphaKeys.length == 1) return alphaKeys[0].alpha;
+        if (alphaKeys.length === 1) return alphaKeys[0].alpha;
         if (time <= alphaKeys[0].time) return alphaKeys[0].alpha;
         if (time >= alphaKeys[alphaKeys.length - 1].time) return alphaKeys[alphaKeys.length - 1].alpha;
 
         for (let i = 0, n = alphaKeys.length - 1; i < n; i++)
         {
             var t = alphaKeys[i].time, v = alphaKeys[i].alpha, nt = alphaKeys[i + 1].time, nv = alphaKeys[i + 1].alpha;
-            if (time == t) return v;
-            if (time == nt) return nv;
+            if (time === t) return v;
+            if (time === nt) return nv;
             if (t < time && time < nt)
             {
-                if (this.mode == GradientMode.Fixed) return nv;
+                if (this.mode === GradientMode.Fixed) return nv;
                 return mathUtil.mapLinear(time, t, nt, v, nv);
             }
         }
@@ -102,18 +102,18 @@ export class Gradient
     getColor(time: number)
     {
         var colorKeys = this.colorKeys;
-        if (colorKeys.length == 1) return colorKeys[0].color;
+        if (colorKeys.length === 1) return colorKeys[0].color;
         if (time <= colorKeys[0].time) return colorKeys[0].color;
         if (time >= colorKeys[colorKeys.length - 1].time) return colorKeys[colorKeys.length - 1].color;
 
         for (let i = 0, n = colorKeys.length - 1; i < n; i++)
         {
             var t = colorKeys[i].time, v = colorKeys[i].color, nt = colorKeys[i + 1].time, nv = colorKeys[i + 1].color;
-            if (time == t) return v;
-            if (time == nt) return nv;
+            if (time === t) return v;
+            if (time === nt) return nv;
             if (t < time && time < nt)
             {
-                if (this.mode == GradientMode.Fixed) return nv;
+                if (this.mode === GradientMode.Fixed) return nv;
                 return v.mixTo(nv, (time - t) / (nt - t));
             }
         }

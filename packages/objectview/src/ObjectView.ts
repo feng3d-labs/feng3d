@@ -153,7 +153,7 @@ export class ObjectView
 		Object.assign(p, param);
 
 		var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
-		classConfig.editable = classConfig.editable == undefined ? true : classConfig.editable;
+		classConfig.editable = classConfig.editable === undefined ? true : classConfig.editable;
 
 		Object.assign(classConfig, param);
 
@@ -166,7 +166,7 @@ export class ObjectView
 
 		classConfig.objectAttributeInfos.forEach(v => { v.editable = v.editable && classConfig.editable; });
 
-		if (classConfig.component == null || classConfig.component == "")
+		if (classConfig.component === null || classConfig.component === "")
 		{
 			//返回基础类型界面类定义
 			if (!(classConfig.owner instanceof Object))
@@ -180,7 +180,7 @@ export class ObjectView
 		}
 
 		var cls = this.OVComponent[classConfig.component];
-		console.assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
+		console.assert(cls !== null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
 		var view = new cls(classConfig)
 		return view;
 	}
@@ -195,25 +195,25 @@ export class ObjectView
 	 */
 	getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView
 	{
-		if (attributeViewInfo.component == null || attributeViewInfo.component == "")
+		if (attributeViewInfo.component === null || attributeViewInfo.component === "")
 		{
 			var defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
 			var tempComponent = defaultViewClass ? defaultViewClass.component : "";
-			if (tempComponent != null && tempComponent != "")
+			if (tempComponent !== null && tempComponent !== "")
 			{
 				attributeViewInfo.component = defaultViewClass.component;
 				attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
 			}
 		}
 
-		if (attributeViewInfo.component == null || attributeViewInfo.component == "")
+		if (attributeViewInfo.component === null || attributeViewInfo.component === "")
 		{
 			//使用默认对象属性界面类定义
 			attributeViewInfo.component = this.defaultObjectAttributeViewClass;
 		}
 
 		var cls = this.OAVComponent[attributeViewInfo.component];
-		console.assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
+		console.assert(cls !== null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
 		var view = new cls(attributeViewInfo);
 		return view;
 	}
@@ -228,14 +228,14 @@ export class ObjectView
 	 */
 	getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView
 	{
-		if (blockViewInfo.component == null || blockViewInfo.component == "")
+		if (blockViewInfo.component === null || blockViewInfo.component === "")
 		{
 			//返回默认对象属性界面类定义
 			blockViewInfo.component = this.defaultObjectAttributeBlockView;
 		}
 
 		var cls = this.OBVComponent[blockViewInfo.component];
-		console.assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
+		console.assert(cls !== null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
 		var view = new cls(blockViewInfo);
 		return view;
 	}
@@ -260,7 +260,7 @@ export class ObjectView
 	 */
 	getObjectInfo(object: Object, autocreate = true, excludeAttrs: string[] = []): ObjectViewInfo
 	{
-		if (typeof object == "string" || typeof object == "number" || typeof object == "boolean")
+		if (typeof object === "string" || typeof object === "number" || typeof object === "boolean")
 		{
 			return {
 				objectAttributeInfos: [],
@@ -283,9 +283,9 @@ export class ObjectView
 		var objectAttributeInfos: AttributeViewInfo[] = [];
 		classConfig.attributeDefinitionVec.forEach(attributeDefinition =>
 		{
-			if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
+			if (excludeAttrs.indexOf(attributeDefinition.name) === -1)
 			{
-				var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
+				var editable = attributeDefinition.editable === undefined ? true : attributeDefinition.editable;
 				editable = editable && propertyIsWritable(object, attributeDefinition.name);
 
 				var obj: AttributeViewInfo = { owner: object, type: getAttributeType(object[attributeDefinition.name]) } as any;
@@ -298,9 +298,9 @@ export class ObjectView
 
 		function getAttributeType(attribute): string
 		{
-			if (attribute == null)
+			if (attribute === null)
 				return "null";
-			if (typeof attribute == "number")
+			if (typeof attribute === "number")
 				return "number";
 			return attribute.constructor.name;
 		}
@@ -346,7 +346,7 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
 			var isfound = false;
 			oldClassDefinition.attributeDefinitionVec.forEach(oldAttributeDefinition =>
 			{
-				if (newAttributeDefinition && oldAttributeDefinition.name == newAttributeDefinition.name)
+				if (newAttributeDefinition && oldAttributeDefinition.name === newAttributeDefinition.name)
 				{
 					Object.assign(oldAttributeDefinition, newAttributeDefinition);
 					//
@@ -374,7 +374,7 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
 			var isfound = false;
 			oldClassDefinition.blockDefinitionVec.forEach(oldBlockDefinition =>
 			{
-				if (newBlockDefinition && newBlockDefinition.name == oldBlockDefinition.name)
+				if (newBlockDefinition && newBlockDefinition.name === oldBlockDefinition.name)
 				{
 					Object.assign(oldBlockDefinition, newBlockDefinition);
 					isfound = true;
@@ -423,7 +423,7 @@ function getDefaultClassConfig(object: Object, filterReg = /(([a-zA-Z0-9])+|(\d+
 	for (var key in object)
 	{
 		var result = filterReg.exec(key);
-		if (result && result[0] == key)
+		if (result && result[0] === key)
 		{
 			var value = object[key];
 			if (value === undefined || value instanceof Function)
@@ -469,7 +469,7 @@ function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeView
 	{
 		var blockName = objectAttributeInfos[i].block || "";
 		objectBlockInfo = dic[blockName];
-		if (objectBlockInfo == null)
+		if (objectBlockInfo === null)
 		{
 			objectBlockInfo = dic[blockName] = { name: blockName, owner: object, itemList: [] };
 			tempVec.push(objectBlockInfo);
@@ -487,7 +487,7 @@ function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeView
 		{
 			blockDefinition = blockDefinitionVec[i];
 			objectBlockInfo = dic[blockDefinition.name];
-			if (objectBlockInfo == null)
+			if (objectBlockInfo === null)
 			{
 				objectBlockInfo = {
 					name: blockDefinition.name,
@@ -504,7 +504,7 @@ function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeView
 	//添加剩余的块信息
 	for (i = 0; i < tempVec.length; i++)
 	{
-		if (Boolean(pushDic[tempVec[i].name]) == false)
+		if (Boolean(pushDic[tempVec[i].name]) === false)
 		{
 			objectBlockInfos.push(tempVec[i]);
 		}

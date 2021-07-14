@@ -111,8 +111,8 @@ export class ReadRS
 
         // 计算扩展名
         var extenson = path.extname(fileName);
-        if (extenson == "") extenson = cls["extenson"];
-        console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
+        if (extenson === "") extenson = cls["extenson"];
+        console.assert(extenson !== undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
 
         // 计算名称
         fileName = pathUtils.getName(fileName);
@@ -151,7 +151,7 @@ export class ReadRS
         var childrenNames = parent.childrenAssets.map(v => v.fileName);
         var newName = fileName;
         var index = 1;
-        while (childrenNames.indexOf(newName) != -1)
+        while (childrenNames.indexOf(newName) !== -1)
         {
             newName = fileName + index;
             index++;
@@ -220,7 +220,7 @@ export class ReadRS
         });
         task.parallel(fns)(() =>
         {
-            console.assert(assetids.length == result.filter(v => v != null).length);
+            console.assert(assetids.length === result.filter(v => v !== null).length);
             callback(null, result);
         });
     }
@@ -277,7 +277,7 @@ export class ReadRS
         var paths = this.getAllPaths();
         var childrenPaths = paths.filter(v =>
         {
-            return pathUtils.dirname(v) == path;
+            return pathUtils.dirname(v) === path;
         });
         return childrenPaths;
     }

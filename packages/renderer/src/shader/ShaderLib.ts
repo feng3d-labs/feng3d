@@ -77,7 +77,7 @@ export class ShaderLib
         var includeRegExp = /#include<(.+)>/g;
         //
         var match = includeRegExp.exec(shaderCode);
-        while (match != null)
+        while (match !== null)
         {
             var moduleshader = this.shaderConfig.modules[match[1]];
             if (!moduleshader)

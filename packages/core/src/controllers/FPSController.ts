@@ -55,7 +55,7 @@ export class FPSController extends Behaviour
     }
     set auto(value)
     {
-        if (this._auto == value)
+        if (this._auto === value)
             return;
         if (this._auto)
         {
@@ -156,7 +156,7 @@ export class FPSController extends Behaviour
         var accelerationVec = new Vector3();
         for (var key in this.keyDirectionDic)
         {
-            if (this.keyDownDic[key] == true)
+            if (this.keyDownDic[key] === true)
             {
                 var element = this.keyDirectionDic[key];
                 accelerationVec.add(element);
@@ -187,7 +187,7 @@ export class FPSController extends Behaviour
     {
         this.mousePoint = new Vector2(event.data.clientX, event.data.clientY);
 
-        if (this.preMousePoint == null)
+        if (this.preMousePoint === null)
         {
             this.preMousePoint = this.mousePoint;
             this.mousePoint = null;
@@ -200,7 +200,7 @@ export class FPSController extends Behaviour
     private onKeydown(event: Event<KeyboardEvent>): void
     {
         var boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
-        if (this.keyDirectionDic[boardKey] == null)
+        if (this.keyDirectionDic[boardKey] === null)
             return;
 
         if (!this.keyDownDic[boardKey])
@@ -214,7 +214,7 @@ export class FPSController extends Behaviour
     private onKeyup(event: Event<KeyboardEvent>): void
     {
         var boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
-        if (this.keyDirectionDic[boardKey] == null)
+        if (this.keyDirectionDic[boardKey] === null)
             return;
 
         this.keyDownDic[boardKey] = false;
@@ -227,17 +227,17 @@ export class FPSController extends Behaviour
      */
     private stopDirectionVelocity(direction: Vector3)
     {
-        if (direction == null)
+        if (direction === null)
             return;
-        if (direction.x != 0)
+        if (direction.x !== 0)
         {
             this.velocity.x = 0;
         }
-        if (direction.y != 0)
+        if (direction.y !== 0)
         {
             this.velocity.y = 0;
         }
-        if (direction.z != 0)
+        if (direction.z !== 0)
         {
             this.velocity.z = 0;
         }

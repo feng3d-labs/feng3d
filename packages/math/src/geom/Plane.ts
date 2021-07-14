@@ -249,17 +249,17 @@ export class Plane
 
         var x: number, y: number, z: number;
         // 解 方程组 a0*x+b0*y+c0*z+d0=0;a1*x+b1*y+c1*z+d1=0;
-        if (b1 * c0 - b0 * c1 != 0)
+        if (b1 * c0 - b0 * c1 !== 0)
         {
             x = 0;
             y = (-c0 * d1 + c1 * d0 + (a0 * c1 - a1 * c0) * x) / (b1 * c0 - b0 * c1);
             z = (-b1 * d0 + b0 * d1 + (a1 * b0 - a0 * b1) * x) / (b1 * c0 - b0 * c1);
-        } else if (a0 * c1 - a1 * c0 != 0)
+        } else if (a0 * c1 - a1 * c0 !== 0)
         {
             y = 0;
             x = (-c1 * d0 + c0 * d1 + (b1 * c0 - b0 * c1) * y) / (a0 * c1 - a1 * c0);
             z = (-a0 * d1 + a1 * d0 + (a1 * b0 - a0 * b1) * y) / (a0 * c1 - a1 * c0);
-        } else if (a1 * b0 - a0 * b1 != 0)
+        } else if (a1 * b0 - a0 * b1 !== 0)
         {
             z = 0;
             x = (-b0 * d1 + b1 * d0 + (b1 * c0 - b0 * c1) * z) / (a1 * b0 - a0 * b1);

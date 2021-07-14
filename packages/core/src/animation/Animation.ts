@@ -79,7 +79,7 @@ export class Animation extends Behaviour
     private _updateAni()
     {
         if (!this.animation) return;
-        if ((this.num++) % 2 != 0) return;
+        if ((this.num++) % 2 !== 0) return;
 
         var cycle = this.animation.length;
         var cliptime = (this.time % cycle + cycle) % cycle;
@@ -91,7 +91,7 @@ export class Animation extends Behaviour
             var propertyClip = propertyClips[i];
 
             var propertyValues = propertyClip.propertyValues;
-            if (propertyValues.length == 0) continue;
+            if (propertyValues.length === 0) continue;
             var propertyHost = this.getPropertyHost(propertyClip);
             if (!propertyHost) continue;
             propertyHost[propertyClip.propertyName] = propertyClip.getValue(cliptime, this._fps);
@@ -124,7 +124,7 @@ export class Animation extends Behaviour
                 default:
                     console.error(`无法获取 PropertyHost ${element}`);
             }
-            if (propertyHost == null)
+            if (propertyHost === null)
                 return null;
         }
         this._objectCache[propertyClip.cacheIndex] = propertyHost;

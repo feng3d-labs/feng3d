@@ -57,7 +57,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      */
     find(name: string): Container
     {
-        if (this.name == name)
+        if (this.name === name)
             return this;
         for (var i = 0; i < this._children.length; i++)
         {
@@ -78,7 +78,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
         var checkitem = child;
         do
         {
-            if (checkitem == this)
+            if (checkitem === this)
                 return true;
             checkitem = checkitem.parent;
         } while (checkitem);
@@ -92,13 +92,13 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      */
     addChild(child: Container)
     {
-        if (child == null)
+        if (child === null)
             return;
-        if (child.parent == this)
+        if (child.parent === this)
         {
             // 把子对象移动到最后
             var childIndex = this._children.indexOf(child);
-            if (childIndex != -1) this._children.splice(childIndex, 1);
+            if (childIndex !== -1) this._children.splice(childIndex, 1);
             this._children.push(child);
         } else
         {
@@ -155,9 +155,9 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      */
     removeChild(child: Container)
     {
-        if (child == null) return;
+        if (child === null) return;
         var childIndex = this._children.indexOf(child);
-        if (childIndex != -1) this.removeChildInternal(childIndex, child);
+        if (childIndex !== -1) this.removeChildInternal(childIndex, child);
     }
 
     /**

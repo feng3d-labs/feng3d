@@ -1,11 +1,11 @@
-import { dataTransform } from "@feng3d/polyfill";
-import { IReadWriteFS } from "./IReadWriteFS";
-import { pathUtils } from "./PathUtils";
-import { ReadFS } from "./ReadFS";
+import { dataTransform } from '@feng3d/polyfill';
+import { IReadWriteFS } from './IReadWriteFS';
+import { pathUtils } from './PathUtils';
+import { ReadFS } from './ReadFS';
 
 /**
  * 可读写文件系统
- * 
+ *
  * 扩展基础可读写文件系统
  */
 export class ReadWriteFS extends ReadFS
@@ -24,6 +24,7 @@ export class ReadWriteFS extends ReadFS
         this._fs = value;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-useless-constructor
     constructor(fs?: IReadWriteFS)
     {
         super(fs);
@@ -63,6 +64,7 @@ export class ReadWriteFS extends ReadFS
             if (exists)
             {
                 callback && callback(null);
+
                 return;
             }
             this.fs.mkdir(path, callback);
@@ -82,21 +84,23 @@ export class ReadWriteFS extends ReadFS
     /**
      * 写(新建)文件
      * 自动根据文件类型保存为对应结构
-     * 
+     *
      * @param path 文件路径
      * @param arraybuffer 文件数据
      * @param callback 回调函数
      */
     writeFile(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
     {
-        var ext = pathUtils.extname(path);
-        ext = ext.split(".").pop();
-        var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "mp3": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
-        var type = fileTypedic[ext];
-        if (path == "tsconfig.json" || path == ".vscode/settings.json")
-            type = "txt";
+        let ext = pathUtils.extname(path);
 
-        if (type == "txt")
+        ext = ext.split('.').pop();
+        const fileTypedic = { meta: 'txt', json: 'object', jpg: 'arraybuffer', png: 'arraybuffer', mp3: 'arraybuffer', js: 'txt', ts: 'txt', map: 'txt', html: 'txt' };
+        let type = fileTypedic[ext];
+
+        if (path === 'tsconfig.json' || path === '.vscode/settings.json')
+        { type = 'txt'; }
+
+        if (type === 'txt')
         {
             dataTransform.arrayBufferToString(arraybuffer, (str) =>
             {
@@ -105,7 +109,8 @@ export class ReadWriteFS extends ReadFS
                     callback(err);
                 });
             });
-        } else if (type == "object")
+        }
+        else if (type === 'object')
         {
             dataTransform.arrayBufferToObject(arraybuffer, (obj) =>
             {
@@ -114,15 +119,17 @@ export class ReadWriteFS extends ReadFS
                     callback(err);
                 });
             });
-        } else if (type == "arraybuffer")
+        }
+        else if (type === 'arraybuffer')
         {
             this.writeArrayBuffer(path, arraybuffer, (err) =>
             {
                 callback(err);
             });
-        } else
+        }
+        else
         {
-            console.error(`无法导入文件 ${path}`)
+            console.error(`无法导入文件 ${path}`);
         }
     }
 
@@ -135,12 +142,14 @@ export class ReadWriteFS extends ReadFS
     writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
     {
         // 如果所属文件夹不存在则新建
-        var dirpath = pathUtils.dirname(path);
+        const dirpath = pathUtils.dirname(path);
+
         this.mkdir(dirpath, (err) =>
         {
             if (err)
             {
                 callback && callback(err);
+
                 return;
             }
             this.fs.writeArrayBuffer(path, arraybuffer, callback);
@@ -156,12 +165,14 @@ export class ReadWriteFS extends ReadFS
     writeString(path: string, str: string, callback?: (err: Error) => void)
     {
         // 如果所属文件夹不存在则新建
-        var dirpath = pathUtils.dirname(path);
+        const dirpath = pathUtils.dirname(path);
+
         this.mkdir(dirpath, (err) =>
         {
             if (err)
             {
                 callback && callback(err);
+
                 return;
             }
             this.fs.writeString(path, str, callback);
@@ -174,15 +185,17 @@ export class ReadWriteFS extends ReadFS
      * @param object 文件数据
      * @param callback 回调函数
      */
-    writeObject(path: string, object: Object, callback?: (err: Error) => void)
+    writeObject(path: string, object: any, callback?: (err: Error) => void)
     {
         // 如果所属文件夹不存在则新建
-        var dirpath = pathUtils.dirname(path);
+        const dirpath = pathUtils.dirname(path);
+
         this.mkdir(dirpath, (err) =>
         {
             if (err)
             {
                 callback && callback(err);
+
                 return;
             }
             this.fs.writeObject(path, object, callback);
@@ -198,12 +211,14 @@ export class ReadWriteFS extends ReadFS
     writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void)
     {
         // 如果所属文件夹不存在则新建
-        var dirpath = pathUtils.dirname(path);
+        const dirpath = pathUtils.dirname(path);
+
         this.mkdir(dirpath, (err) =>
         {
             if (err)
             {
                 callback && callback(err);
+
                 return;
             }
             this.fs.writeImage(path, image, callback);
@@ -255,43 +270,48 @@ export class ReadWriteFS extends ReadFS
     /**
      * 获取指定文件下所有文件路径列表
      */
-    getAllPathsInFolder(dirpath = "", callback: (err: Error, filepaths: string[]) => void): void
+    getAllPathsInFolder(dirpath = '', callback: (err: Error, filepaths: string[]) => void): void
     {
-        var dirs = [dirpath];
-        var result = [];
-        var currentdir = "";
+        const dirs = [dirpath];
+        const result = [];
+        let currentdir = '';
 
         // 递归获取文件
-        var handle = () =>
+        const handle = () =>
         {
             if (dirs.length > 0)
             {
                 currentdir = dirs.shift();
-                this.readdir(currentdir, (err, files) =>
+                this.readdir(currentdir, (_err, files) =>
                 {
                     // 获取子文件路径
-                    var getChildPath = () =>
+                    const getChildPath = () =>
                     {
-                        if (files.length == 0)
+                        if (files.length === 0)
                         {
                             handle();
+
                             return;
                         }
-                        var childpath = currentdir + (currentdir == "" ? "" : "/") + files.shift();
+                        const childpath = currentdir + (currentdir === '' ? '' : '/') + files.shift();
+
                         result.push(childpath);
-                        this.isDirectory(childpath, result =>
+                        this.isDirectory(childpath, (result) =>
                         {
                             if (result) dirs.push(childpath);
                             getChildPath();
                         });
                     };
+
                     getChildPath();
                 });
-            } else
+            }
+            else
             {
                 callback(null, result);
             }
-        }
+        };
+
         handle();
     }
 
@@ -308,6 +328,7 @@ export class ReadWriteFS extends ReadFS
             if (err)
             {
                 callback && callback(err);
+
                 return;
             }
             this.deleteFile(src, callback);
@@ -337,9 +358,16 @@ export class ReadWriteFS extends ReadFS
             if (err)
             {
                 callback && callback(err);
+
                 return;
             }
-            var deletelists = movelists.reduce((value: string[], current) => { value.push(current[0]); return value; }, [])
+            const deletelists = movelists.reduce((value: string[], current) =>
+            {
+                value.push(current[0]);
+
+                return value;
+            }, []);
+
             this.deleteFiles(deletelists, callback);
         });
     }
@@ -353,16 +381,19 @@ export class ReadWriteFS extends ReadFS
     {
         if (copylists.length > 0)
         {
-            var copyitem: [string, string] = copylists.shift();
+            const copyitem: [string, string] = copylists.shift();
+
             this.copyFile(copyitem[0], copyitem[1], (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
                 this.copyFiles(copylists, callback);
             });
+
             return;
         }
         callback && callback(null);
@@ -382,10 +413,12 @@ export class ReadWriteFS extends ReadFS
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
                 this.deleteFiles(deletelists, callback);
             });
+
             return;
         }
         callback && callback(null);
@@ -399,7 +432,7 @@ export class ReadWriteFS extends ReadFS
      */
     rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void
     {
-        this.isDirectory(oldPath, result =>
+        this.isDirectory(oldPath, (result) =>
         {
             if (result)
             {
@@ -408,16 +441,19 @@ export class ReadWriteFS extends ReadFS
                     if (err)
                     {
                         callback && callback(err);
+
                         return;
                     }
-                    var renamelists: [string, string][] = [[oldPath, newPath]];
-                    filepaths.forEach(element =>
+                    const renamelists: [string, string][] = [[oldPath, newPath]];
+
+                    filepaths.forEach((element) =>
                     {
                         renamelists.push([element, element.replace(oldPath, newPath)]);
                     });
                     this.moveFiles(renamelists, callback);
                 });
-            } else
+            }
+            else
             {
                 this.renameFile(oldPath, newPath, callback);
             }
@@ -426,7 +462,7 @@ export class ReadWriteFS extends ReadFS
 
     /**
      * 移动文件(夹)
-     * 
+     *
      * @param src 源路径
      * @param dest 目标路径
      * @param callback 回调函数
@@ -443,7 +479,7 @@ export class ReadWriteFS extends ReadFS
      */
     delete(path: string, callback?: (err: Error) => void): void
     {
-        this.isDirectory(path, result =>
+        this.isDirectory(path, (result) =>
         {
             if (result)
             {
@@ -452,12 +488,15 @@ export class ReadWriteFS extends ReadFS
                     if (err)
                     {
                         callback && callback(err);
+
                         return;
                     }
-                    var removelists: string[] = filepaths.concat(path);
+                    const removelists: string[] = filepaths.concat(path);
+
                     this.deleteFiles(removelists, callback);
                 });
-            } else
+            }
+            else
             {
                 this.deleteFile(path, callback);
             }

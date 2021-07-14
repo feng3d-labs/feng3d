@@ -169,9 +169,9 @@ export abstract class TextureInfo<T = any> extends Feng3dObject<T> implements Te
     {
         if (this.isRenderTarget)
         {
-            if (this.OFFSCREEN_WIDTH == 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_WIDTH))
+            if (this.OFFSCREEN_WIDTH === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_WIDTH))
                 return false;
-            if (this.OFFSCREEN_HEIGHT == 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
+            if (this.OFFSCREEN_HEIGHT === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
                 return false;
             return true;
         }
@@ -182,9 +182,9 @@ export abstract class TextureInfo<T = any> extends Feng3dObject<T> implements Te
         for (let i = 0; i < pixels.length; i++)
         {
             const element = pixels[i];
-            if (element.width == 0 || !mathUtil.isPowerOfTwo(element.width))
+            if (element.width === 0 || !mathUtil.isPowerOfTwo(element.width))
                 return false;
-            if (element.height == 0 || !mathUtil.isPowerOfTwo(element.height))
+            if (element.height === 0 || !mathUtil.isPowerOfTwo(element.height))
                 return false;
         }
         return true;
@@ -203,7 +203,7 @@ export abstract class TextureInfo<T = any> extends Feng3dObject<T> implements Te
         if (!pixels) new Vector2(1, 1);
         if (!Array.isArray(pixels))
             pixels = [pixels];
-        if (pixels.length == 0)
+        if (pixels.length === 0)
             return new Vector2(1, 1);
         var pixel = pixels[0];
         return new Vector2(pixel.width, pixel.height);
@@ -218,14 +218,14 @@ export abstract class TextureInfo<T = any> extends Feng3dObject<T> implements Te
         if (!Array.isArray(pixels))
             pixels = [pixels];
 
-        if (pixels.length == 0) return false;
+        if (pixels.length === 0) return false;
         for (let i = 0; i < pixels.length; i++)
         {
             const element = pixels[i];
             if (!element) return false;
-            if (element.width == 0)
+            if (element.width === 0)
                 return false;
-            if (element.height == 0)
+            if (element.height === 0)
                 return false;
         }
         return true;
@@ -280,6 +280,6 @@ export abstract class TextureInfo<T = any> extends Feng3dObject<T> implements Te
                 this._activePixels = imageDatas[this.noPixels];
             }
         }
-        if (old != this._activePixels) this._dataURL = null;
+        if (old !== this._activePixels) this._dataURL = null;
     }
 }

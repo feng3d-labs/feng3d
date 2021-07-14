@@ -83,7 +83,7 @@ export class AnimationCurve
     deleteKey(key: AnimationCurveKeyframe)
     {
         var index = this.keys.indexOf(key);
-        if (index != -1)
+        if (index !== -1)
             this.keys.splice(index, 1);
     }
 
@@ -181,14 +181,14 @@ export class AnimationCurve
                     break;
                 }
             }
-            if (i == 0 && t <= key.time)
+            if (i === 0 && t <= key.time)
             {
                 isfind = true;
                 value = key.value;
                 tangent = 0;
                 break;
             }
-            if (i == n - 1 && t >= key.time)
+            if (i === n - 1 && t >= key.time)
             {
                 isfind = true;
                 value = key.value;
@@ -197,7 +197,7 @@ export class AnimationCurve
             }
         }
 
-        if (keys.length == 0) return { time: t, value: 0, inTangent: 0, outTangent: 0 };
+        if (keys.length === 0) return { time: t, value: 0, inTangent: 0, outTangent: 0 };
 
         console.assert(isfind);
         return { time: t, value: value, inTangent: tangent, outTangent: tangent };

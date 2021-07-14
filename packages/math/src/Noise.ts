@@ -164,9 +164,9 @@ export class Noise
      * 如果是1D，2D，3D噪音，最好选用对于函数，perlinN中存在for循环因此效率比perlin3等性能差3到5（8）倍！
      * 
      * 满足以下运算
-     * perlinN(x) == perlin1(x)
-     * perlinN(x,y) == perlin2(x,y)
-     * perlinN(x,y,z) == perlin3(x,y,z)
+     * perlinN(x) === perlin1(x)
+     * perlinN(x,y) === perlin2(x,y)
+     * perlinN(x,y,z) === perlin3(x,y,z)
      * 
      * @param ps 每个轴的数值
      */
@@ -208,7 +208,7 @@ export class Noise
         var numEdge = gradN.length;
         // if (n > 1)
         // {
-        //     console.assert(numEdge == Math.pow(2, n - 1) * n, `边的数量不对！`)
+        //     console.assert(numEdge === Math.pow(2, n - 1) * n, `边的数量不对！`)
         // }
         //
         var bits = getBits(n);
@@ -250,7 +250,7 @@ export class Noise
             // 每波插值后 长度减半
             dns.length = dns.length >> 1;
         }
-        // console.assert(dns.length == 1, `结果长度不对！`)
+        // console.assert(dns.length === 1, `结果长度不对！`)
 
         return dns[0];
     }

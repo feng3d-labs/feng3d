@@ -260,7 +260,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
         this.updateGrometry();
         geometry.updateGrometry();
         //变换被添加的几何体
-        if (matrix != null)
+        if (matrix !== null)
         {
             geometry = geometry.clone();
             geometry.applyTransformation(matrix);
@@ -347,7 +347,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
         if (!this._bounding)
         {
             var positions = this.positions;
-            if (!positions || positions.length == 0)
+            if (!positions || positions.length === 0)
                 return new Box3();
             this._bounding = Box3.formPositions(this.positions);
         }

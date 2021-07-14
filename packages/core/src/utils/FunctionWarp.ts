@@ -43,7 +43,7 @@ export class FunctionWrap
         return ["polyfill", this.a, r].join("-");
     });
     // 验证 被扩展的a.f方法是否等价于 a.extendF
-    assert.ok(a.f() == a.extendF()); //true
+    assert.ok(a.f() === a.extendF()); //true
     
      * ```
      * 
@@ -130,21 +130,21 @@ export class FunctionWrap
         var functionwraps: Wraps<T, K> = object[__functionwrap__];
         var info = functionwraps[funcName];
         if (!info) return;
-        if (wrapFunc == undefined)
+        if (wrapFunc === undefined)
         {
             info.funcs = [info.original];
         } else
         {
             deleteItem(info.funcs, wrapFunc);
         }
-        if (info.funcs.length == 1)
+        if (info.funcs.length === 1)
         {
             delete object[funcName];
             if (info.oldPropertyDescriptor)
                 Object.defineProperty(object, funcName, info.oldPropertyDescriptor);
             delete functionwraps[funcName];
 
-            if (Object.keys(functionwraps).length == 0)
+            if (Object.keys(functionwraps).length === 0)
             {
                 delete object[__functionwrap__];
             }

@@ -346,7 +346,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     }
     set visible(v)
     {
-        if (this._visible == v) return;
+        if (this._visible === v) return;
         this._visible = v;
         this._invalidateGlobalVisible();
     }
@@ -555,7 +555,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
         rotationMatrix.appendRotation(axis, angle, pivotPoint);
         var newrotation = rotationMatrix.toTRS()[1];
         var v = Math.round((newrotation.x - this.rx) / 180);
-        if (v % 2 != 0)
+        if (v % 2 !== 0)
         {
             newrotation.x += 180;
             newrotation.y = 180 - newrotation.y;
@@ -679,7 +679,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
      */
     find(name: string): Node3D
     {
-        if (this.name == name)
+        if (this.name === name)
             return this;
         for (var i = 0; i < this._children.length; i++)
         {
@@ -700,7 +700,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
         var checkitem = child;
         do
         {
-            if (checkitem == this)
+            if (checkitem === this)
                 return true;
             checkitem = checkitem.parent;
         } while (checkitem);
@@ -714,13 +714,13 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
      */
     addChild(child: Node3D)
     {
-        if (child == null)
+        if (child === null)
             return;
-        if (child.parent == this)
+        if (child.parent === this)
         {
             // 把子对象移动到最后
             var childIndex = this._children.indexOf(child);
-            if (childIndex != -1) this._children.splice(childIndex, 1);
+            if (childIndex !== -1) this._children.splice(childIndex, 1);
             this._children.push(child);
         } else
         {
@@ -777,9 +777,9 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
      */
     removeChild(child: Node3D)
     {
-        if (child == null) return;
+        if (child === null) return;
         var childIndex = this._children.indexOf(child);
-        if (childIndex != -1) this.removeChildInternal(childIndex, child);
+        if (childIndex !== -1) this.removeChildInternal(childIndex, child);
     }
 
     /**
@@ -1111,7 +1111,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
     private updateScene()
     {
         var newScene = this._parent?._scene;
-        if (this._scene == newScene)
+        if (this._scene === newScene)
             return;
         if (this._scene)
         {
@@ -1217,7 +1217,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
             this.onSelfLoadCompleted(() =>
             {
                 loadingNum--;
-                if (loadingNum == 0) callback();
+                if (loadingNum === 0) callback();
             });
         }
         for (let i = 0; i < this.children.length; i++)
@@ -1229,11 +1229,11 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
                 element.onLoadCompleted(() =>
                 {
                     loadingNum--;
-                    if (loadingNum == 0) callback();
+                    if (loadingNum === 0) callback();
                 });
             }
         }
-        if (loadingNum == 0) callback();
+        if (loadingNum === 0) callback();
     }
 
     protected _updateGlobalVisible()

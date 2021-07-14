@@ -229,9 +229,9 @@ export class Triangle3
         }, []);
         if (crossSegment)
             return crossSegment;
-        if (ps.length == 0)
+        if (ps.length === 0)
             return null;
-        if (ps.length == 1)
+        if (ps.length === 1)
             return ps[0];
         if (ps[0].equals(ps[1]))
         {
@@ -569,7 +569,7 @@ export class Triangle3
         var result: { xi: number, yi: number, zi: number, xv: number, yv: number, zv: number }[] = [];
         ps.forEach((v, i) =>
         {
-            if (i % 3 == 0)
+            if (i % 3 === 0)
             {
                 vec.set(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
                 result.push({ xi: ps[i], yi: ps[i + 1], zi: ps[i + 2], xv: vec.x, yv: vec.y, zv: vec.z });

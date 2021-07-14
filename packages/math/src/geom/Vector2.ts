@@ -241,7 +241,7 @@ export class Vector2 implements Vector
      */
     normalize(thickness = 1)
     {
-        if (this.x != 0 || this.y != 0)
+        if (this.x !== 0 || this.y !== 0)
         {
             let relativeThickness = thickness / this.length;
             this.x *= relativeThickness;
@@ -315,7 +315,7 @@ export class Vector2 implements Vector
      */
     scaleTo(s: Vector2, vout = new Vector2())
     {
-        if (s == vout) s = s.clone();
+        if (s === vout) s = s.clone();
         return vout.copy(this).scale(s);
     }
 

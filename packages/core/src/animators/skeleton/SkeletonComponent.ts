@@ -154,7 +154,7 @@ export class SkeletonComponent extends Component3D
 
             var skeletonJoint = joints[i];
             var parentNode3D: Node3D;
-            if (skeletonJoint.parentIndex != -1)
+            if (skeletonJoint.parentIndex !== -1)
             {
                 parentNode3D = createJoint(skeletonJoint.parentIndex);
                 joints[skeletonJoint.parentIndex].children.push(i);
@@ -176,7 +176,7 @@ export class SkeletonComponent extends Component3D
             var node3d = jointTransform;
 
             var matrix = skeletonJoint.matrix;
-            if (skeletonJoint.parentIndex != -1)
+            if (skeletonJoint.parentIndex !== -1)
             {
                 matrix = matrix.clone().append(joints[skeletonJoint.parentIndex].invertMatrix);
             }

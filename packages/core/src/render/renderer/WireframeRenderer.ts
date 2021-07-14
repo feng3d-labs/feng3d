@@ -30,7 +30,7 @@ export class WireframeRenderer
 
         var wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) => { var wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push({ wireframe: wireframe, renderable: cv }); return pv; }, [])
 
-        if (wireframes.length == 0)
+        if (wireframes.length === 0)
             return;
 
         wireframes.forEach(element =>
@@ -48,10 +48,10 @@ export class WireframeRenderer
         renderable.beforeRender(renderAtomic, scene, camera);
 
         var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
-        if (renderMode == RenderMode.POINTS
-            || renderMode == RenderMode.LINES
-            || renderMode == RenderMode.LINE_LOOP
-            || renderMode == RenderMode.LINE_STRIP
+        if (renderMode === RenderMode.POINTS
+            || renderMode === RenderMode.LINES
+            || renderMode === RenderMode.LINE_LOOP
+            || renderMode === RenderMode.LINE_STRIP
         )
             return;
 
@@ -73,7 +73,7 @@ export class WireframeRenderer
         //
         var oldIndexBuffer = renderAtomic.indexBuffer;
         if (oldIndexBuffer.count < 3) return;
-        if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count)
+        if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count !== 2 * oldIndexBuffer.count)
         {
             var wireframeindices: number[] = [];
             var indices = lazy.getvalue(oldIndexBuffer.indices);

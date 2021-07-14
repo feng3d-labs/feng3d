@@ -152,7 +152,7 @@ export class CylinderGeometry extends Geometry
                     comp2 = z;
                 }
 
-                if (i == this.segmentsW)
+                if (i === this.segmentsW)
                 {
                     addVertex(vertexPositionData[startIndex + 3], vertexPositionData[startIndex + 4], vertexPositionData[startIndex + 5],
                         0, t1, t2, 1, 0, 0);
@@ -206,7 +206,7 @@ export class CylinderGeometry extends Geometry
                     comp2 = z;
                 }
 
-                if (i == this.segmentsW)
+                if (i === this.segmentsW)
                 {
                     addVertex(x, vertexPositionData[startIndex + 1], vertexPositionData[startIndex + 2],
                         0, t1, t2, 1, 0, 0);
@@ -222,7 +222,7 @@ export class CylinderGeometry extends Geometry
         // 侧面
         dr = this.bottomRadius - this.topRadius;
         latNormElev = dr / this.height;
-        latNormBase = (latNormElev == 0) ? 1 : this.height / dr;
+        latNormBase = (latNormElev === 0) ? 1 : this.height / dr;
 
         if (this.surfaceClosed)
         {
@@ -262,7 +262,7 @@ export class CylinderGeometry extends Geometry
                         naComp2 = latNormElev;
                     }
 
-                    if (i == this.segmentsW)
+                    if (i === this.segmentsW)
                     {
                         addVertex(vertexPositionData[startIndex], vertexPositionData[startIndex + 1], vertexPositionData[startIndex + 2],
                             na0, latNormElev, na1,

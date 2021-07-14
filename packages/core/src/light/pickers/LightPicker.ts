@@ -39,7 +39,7 @@ export class LightPicker
         pointLights.forEach(element =>
         {
             if (!element.isVisibleAndEnabled) return;
-            if (element.shadowType != ShadowType.No_Shadows && this._model.receiveShadows)
+            if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
                 castShadowPointLights.push(element);
                 pointShadowMaps.push(element.shadowMap);
@@ -63,7 +63,7 @@ export class LightPicker
         spotLights.forEach(element =>
         {
             if (!element.isVisibleAndEnabled) return;
-            if (element.shadowType != ShadowType.No_Shadows && this._model.receiveShadows)
+            if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
                 castShadowSpotLights.push(element);
                 spotShadowMatrix.push(element.shadowCamera.viewProjection);
@@ -89,7 +89,7 @@ export class LightPicker
         directionalLights.forEach(element =>
         {
             if (!element.isVisibleAndEnabled) return;
-            if (element.shadowType != ShadowType.No_Shadows && this._model.receiveShadows)
+            if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
                 castShadowDirectionalLights.push(element);
                 directionalShadowMatrix.push(element.shadowCamera.viewProjection);

@@ -25,9 +25,9 @@ export class ScenePickCache
      * 获取需要渲染的对象
      * 
      * #### 渲染需求条件
-     * 1. visible == true
+     * 1. visible === true
      * 1. 在摄像机视锥内
-     * 1. model.enabled == true
+     * 1. model.enabled === true
      * 
      * @param gameObject 
      * @param camera 

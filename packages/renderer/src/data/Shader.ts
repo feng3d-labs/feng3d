@@ -86,7 +86,7 @@ export class Shader
     private compileShaderCode(gl: GL, type: number, code: string)
     {
         var shader = gl.createShader(type);
-        if (shader == null)
+        if (shader === null)
         {
             debugger;
             throw 'unable to create shader';
@@ -174,7 +174,7 @@ export class Shader
             var names = [name];
             if (activeInfo.size > 1)
             {
-                console.assert(name.substr(-3, 3) == "[0]");
+                console.assert(name.substr(-3, 3) === "[0]");
                 var baseName = name.substring(0, name.length - 3);
                 for (var j = 1; j < activeInfo.size; j++)
                 {
@@ -192,7 +192,7 @@ export class Shader
                     paths.push(result[1]);
                 }
                 uniforms[name] = { name: paths[0], paths: paths, size: activeInfo.size, type: activeInfo.type, location: gl.getUniformLocation(shaderProgram, name), textureID: textureID };
-                if (activeInfo.type == gl.SAMPLER_2D || activeInfo.type == gl.SAMPLER_CUBE)
+                if (activeInfo.type === gl.SAMPLER_2D || activeInfo.type === gl.SAMPLER_CUBE)
                 {
                     textureID++;
                 }
@@ -208,10 +208,10 @@ export class Shader
         variables.forEach(macroName =>
         {
             var value = valueObj[macroName];
-            if (typeof value == "boolean")
+            if (typeof value === "boolean")
             {
                 value && (macroHeader += `#define ${macroName}\n`);
-            } else if (typeof value == "number")
+            } else if (typeof value === "number")
             {
                 macroHeader += `#define ${macroName} ${value}\n`;
             }

@@ -156,7 +156,7 @@ export class TorusGeometry extends Geometry
 
 				x = this.radius * Math.cos(revolutionAngleR) + this.tubeRadius * nx;
 				y = this.radius * Math.sin(revolutionAngleR) + this.tubeRadius * ny;
-				z = (j == this.segmentsT) ? 0 : this.tubeRadius * nz;
+				z = (j === this.segmentsT) ? 0 : this.tubeRadius * nz;
 
 				if (this.yUp)
 				{
@@ -178,7 +178,7 @@ export class TorusGeometry extends Geometry
 					comp2 = z;
 				}
 
-				if (i == this.segmentsR)
+				if (i === this.segmentsR)
 				{
 					this.addVertex(this._vertexIndex, x, this._vertexPositionData[startPositionIndex + 1], this._vertexPositionData[startPositionIndex + 2], nx, n1, n2, -(length ? ny / length : y / this.radius), t1, t2);
 				}

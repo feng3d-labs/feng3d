@@ -35,7 +35,7 @@ export class GeometryUtils
         {
             target[idx++] = uvIdx * .5;
             target[idx++] = 1.0 - (uvIdx & 1);
-            if (++uvIdx == 3)
+            if (++uvIdx === 3)
                 uvIdx = 0;
         }
         return target;
@@ -316,8 +316,8 @@ export class GeometryUtils
         var i: number, i1: number, i2: number;
         var vector = new Vector3();
 
-        var bakeNormals = normals != null;
-        var bakeTangents = tangents != null;
+        var bakeNormals = normals !== null;
+        var bakeTangents = tangents !== null;
         var invTranspose = new Matrix4x4();
 
         if (bakeNormals || bakeTangents)
@@ -392,7 +392,7 @@ export class GeometryUtils
         for (let i = 0; i < geometrys.length; i++)
         {
             var geometry = geometrys[i];
-            if (i == 0)
+            if (i === 0)
             {
                 result.indices = geometry.indices.concat();
                 result.positions = geometry.positions.concat();
@@ -425,7 +425,7 @@ export class GeometryUtils
      */
     raycast(ray: Ray3, indices: number[], positions: number[], uvs: number[], shortestCollisionDistance = Number.MAX_VALUE, cullFace = CullFace.NONE)
     {
-        if (cullFace == CullFace.FRONT_AND_BACK) return null;
+        if (cullFace === CullFace.FRONT_AND_BACK) return null;
 
         var t = 0;
         var i0 = 0, i1 = 0, i2 = 0;
@@ -488,7 +488,7 @@ export class GeometryUtils
             //计算射线与法线的点积，不等于零表示射线所在直线与三角面相交
             nDotV = nx * rayDirection.x + ny * rayDirection.y + nz * rayDirection.z; // rayDirection . normal
             //判断射线是否与三角面相交
-            if ((cullFace == CullFace.FRONT && nDotV > 0.0) || (cullFace == CullFace.BACK && nDotV < 0.0) || (cullFace == CullFace.NONE && nDotV != 0.0))
+            if ((cullFace === CullFace.FRONT && nDotV > 0.0) || (cullFace === CullFace.BACK && nDotV < 0.0) || (cullFace === CullFace.NONE && nDotV !== 0.0))
             { // an intersection must exist
                 //计算平面方程D值，参考Plane3D
                 D = -(nx * p0x + ny * p0y + nz * p0z);

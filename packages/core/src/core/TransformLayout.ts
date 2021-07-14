@@ -94,7 +94,7 @@ export class TransformLayout extends Component3D
     /**
      * 位移
      */
-    @oav({ tooltip: "当anchorMin.x == anchorMax.x时对position.x赋值生效，当 anchorMin.y == anchorMax.y 时对position.y赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
+    @oav({ tooltip: "当anchorMin.x === anchorMax.x时对position.x赋值生效，当 anchorMin.y === anchorMax.y 时对position.y赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
     @serialize
     get position()
     {
@@ -107,7 +107,7 @@ export class TransformLayout extends Component3D
     /**
      * 尺寸，宽高。
      */
-    @oav({ tooltip: "宽度，不会影响到缩放值。当 anchorMin.x == anchorMax.x 时对 size.x 赋值生效，当anchorMin.y == anchorMax.y时对 size.y 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
+    @oav({ tooltip: "宽度，不会影响到缩放值。当 anchorMin.x === anchorMax.x 时对 size.x 赋值生效，当anchorMin.y === anchorMax.y时对 size.y 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
     @serialize
     get size()
     {
@@ -118,9 +118,9 @@ export class TransformLayout extends Component3D
     private _size = new Vector3(1, 1, 1);
 
     /**
-     * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+     * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x !== anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y !== anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
      */
-    @oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
+    @oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x !== anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y !== anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
     @serialize
     get leftTop()
     {
@@ -133,9 +133,9 @@ export class TransformLayout extends Component3D
     private _leftTop = new Vector3(0, 0, 0);
 
     /**
-     * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
+     * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x !== anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y !== anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
      */
-    @oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
+    @oav({ tooltip: "与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x !== anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y !== anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。", componentParam: { step: 1, stepScale: 1, stepDownup: 1 } })
     @serialize
     get rightBottom()
     {
@@ -208,7 +208,7 @@ export class TransformLayout extends Component3D
             anchorMax.z * parentSize.z - parentPivot.z * parentSize.z,
         );
 
-        if (anchorMin.x == anchorMax.x)
+        if (anchorMin.x === anchorMax.x)
         {
             leftTop.x = (-pivot.x * size.x + position.x) - anchorLeftTop.x;
             rightBottom.x = anchorRightBottom.x - (size.x - pivot.x * size.x + position.x);
@@ -218,7 +218,7 @@ export class TransformLayout extends Component3D
             position.x = leftTop.x + pivot.x * size.x;
         }
 
-        if (anchorMin.y == anchorMax.y)
+        if (anchorMin.y === anchorMax.y)
         {
             leftTop.y = (-pivot.y * size.y + position.y) - anchorLeftTop.y;
             rightBottom.y = anchorRightBottom.y - (size.y - pivot.y * size.y + position.y);
@@ -228,7 +228,7 @@ export class TransformLayout extends Component3D
             position.y = leftTop.y + pivot.y * size.y;
         }
 
-        if (anchorMin.z == anchorMax.z)
+        if (anchorMin.z === anchorMax.z)
         {
             leftTop.z = (-pivot.z * size.z + position.z) - anchorLeftTop.z;
             rightBottom.z = anchorRightBottom.z - (size.z - pivot.z * size.z + position.z);

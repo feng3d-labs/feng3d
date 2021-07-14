@@ -59,7 +59,7 @@ export class CurvePath<T extends Vector> extends Curve<T>
 			}
 			i++;
 		}
-		return null;			// loop where sum != 0, sum > d , sum+1 <d
+		return null;			// loop where sum !== 0, sum > d , sum+1 <d
 	}
 
 	// We cannot use the default THREE.Curve getPoint() with getLength() because in

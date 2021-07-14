@@ -96,7 +96,7 @@ export class Renderable extends RayCastable
 
         this.entity.components.forEach(element =>
         {
-            if (element != this)
+            if (element !== this)
                 element.beforeRender(renderAtomic, scene, camera);
         });
     }
@@ -137,7 +137,7 @@ export class Renderable extends RayCastable
             localNormal: localNormal,
             localRay: localRay,
             rayEntryDistance: rayEntryDistance,
-            rayOriginIsInsideBounds: rayEntryDistance == 0,
+            rayOriginIsInsideBounds: rayEntryDistance === 0,
             geometry: this.geometry,
             cullFace: this.material.renderParams.cullFace,
         };
