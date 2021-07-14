@@ -168,7 +168,7 @@ export class Plane
      */
     distanceWithPoint(p: Vector3)
     {
-        return this.a * p.x + this.b * p.y + this.c * p.z + this.d;
+        return (this.a * p.x) + (this.b * p.y) + (this.c * p.z) + this.d;
     }
 
     /**
@@ -256,31 +256,37 @@ export class Plane
         if (this.parallelWithPlane3D(plane3D))
         { return null; }
         const direction = this.getNormal().crossTo(plane3D.getNormal());
-        const a0 = this.a; const b0 = this.b; const c0 = this.c; const d0 = this.d;
-        const a1 = plane3D.a; const b1 = plane3D.b; const c1 = plane3D.c; const
-            d1 = plane3D.d;
+        const a0 = this.a;
+        const b0 = this.b;
+        const c0 = this.c;
+        const d0 = this.d;
+        const a1 = plane3D.a;
+        const b1 = plane3D.b;
+        const c1 = plane3D.c;
+        const d1 = plane3D.d;
 
-        let x: number; let y: number; let
-            z: number;
+        let x: number;
+        let y: number;
+        let z: number;
         // 解 方程组 a0*x+b0*y+c0*z+d0=0;a1*x+b1*y+c1*z+d1=0;
 
-        if (b1 * c0 - b0 * c1 !== 0)
+        if ((b1 * c0) - (b0 * c1) !== 0)
         {
             x = 0;
-            y = (-c0 * d1 + c1 * d0 + (a0 * c1 - a1 * c0) * x) / (b1 * c0 - b0 * c1);
-            z = (-b1 * d0 + b0 * d1 + (a1 * b0 - a0 * b1) * x) / (b1 * c0 - b0 * c1);
+            y = (-(c0 * d1) + (c1 * d0) + (((a0 * c1) - (a1 * c0)) * x)) / ((b1 * c0) - (b0 * c1));
+            z = (-(b1 * d0) + (b0 * d1) + (((a1 * b0) - (a0 * b1)) * x)) / ((b1 * c0) - (b0 * c1));
         }
-        else if (a0 * c1 - a1 * c0 !== 0)
+        else if ((a0 * c1) - (a1 * c0) !== 0)
         {
             y = 0;
-            x = (-c1 * d0 + c0 * d1 + (b1 * c0 - b0 * c1) * y) / (a0 * c1 - a1 * c0);
-            z = (-a0 * d1 + a1 * d0 + (a1 * b0 - a0 * b1) * y) / (a0 * c1 - a1 * c0);
+            x = (-(c1 * d0) + (c0 * d1) + (((b1 * c0) - (b0 * c1)) * y)) / ((a0 * c1) - (a1 * c0));
+            z = (-(a0 * d1) + (a1 * d0) + (((a1 * b0) - (a0 * b1)) * y)) / ((a0 * c1) - (a1 * c0));
         }
-        else if (a1 * b0 - a0 * b1 !== 0)
+        else if ((a1 * b0) - (a0 * b1) !== 0)
         {
             z = 0;
-            x = (-b0 * d1 + b1 * d0 + (b1 * c0 - b0 * c1) * z) / (a1 * b0 - a0 * b1);
-            y = (-a1 * d0 + a0 * d1 + (a0 * c1 - a1 * c0) * z) / (a1 * b0 - a0 * b1);
+            x = (-(b0 * d1) + (b1 * d0) + (((b1 * c0) - (b0 * c1)) * z)) / ((a1 * b0) - (a0 * b1));
+            y = (-(a1 * d0) + (a0 * d1) + (((a0 * c1) - (a1 * c0)) * z)) / ((a1 * b0) - (a0 * b1));
         }
         else
         {
@@ -295,10 +301,12 @@ export class Plane
      */
     normalize()
     {
-        const a = this.a; const b = this.b; const c = this.c; const
-            d = this.d;
+        const a = this.a;
+        const b = this.b;
+        const c = this.c;
+        const d = this.d;
 
-        const s = a * a + b * b + c * c;
+        const s = (a * a) + (b * b) + (c * c);
 
         if (s > 0)
         {

@@ -66,7 +66,7 @@ export class Quaternion
      */
     get magnitude(): number
     {
-        return Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
+        return Math.sqrt((this.w * this.w) + (this.x * this.x) + (this.y * this.y) + (this.z * this.z));
     }
 
     /**
@@ -122,14 +122,19 @@ export class Quaternion
      */
     mult(q: Quaternion)
     {
-        const ax = this.x; const ay = this.y; const az = this.z; const aw = this.w;
-        const bx = q.x; const by = q.y; const bz = q.z; const
-            bw = q.w;
+        const ax = this.x;
+        const ay = this.y;
+        const az = this.z;
+        const aw = this.w;
+        const bx = q.x;
+        const by = q.y;
+        const bz = q.z;
+        const bw = q.w;
 
-        this.x = ax * bw + aw * bx + ay * bz - az * by;
-        this.y = ay * bw + aw * by + az * bx - ax * bz;
-        this.z = az * bw + aw * bz + ax * by - ay * bx;
-        this.w = aw * bw - ax * bx - ay * by - az * bz;
+        this.x = (ax * bw) + (aw * bx) + (ay * bz) - (az * by);
+        this.y = (ay * bw) + (aw * by) + (az * bx) - (ax * bz);
+        this.z = (az * bw) + (aw * bz) + (ax * by) - (ay * bx);
+        this.w = (aw * bw) - (ax * bx) - (ay * by) - (az * bz);
 
         return this;
     }
@@ -173,10 +178,10 @@ export class Quaternion
         const y2 = vector.y;
         const z2 = vector.z;
 
-        target.w = -this.x * x2 - this.y * y2 - this.z * z2;
-        target.x = this.w * x2 + this.y * z2 - this.z * y2;
-        target.y = this.w * y2 - this.x * z2 + this.z * x2;
-        target.z = this.w * z2 + this.x * y2 - this.y * x2;
+        target.w = -(this.x * x2) - (this.y * y2) - (this.z * z2);
+        target.x = (this.w * x2) + (this.y * z2) - (this.z * y2);
+        target.y = (this.w * y2) - (this.x * z2) + (this.z * x2);
+        target.z = (this.w * z2) + (this.x * y2) - (this.y * x2);
 
         return target;
     }
@@ -189,13 +194,13 @@ export class Quaternion
      */
     fromAxisAngle(axis: Vector3, angle: number)
     {
-        const sin_a = Math.sin(angle / 2);
-        const cos_a = Math.cos(angle / 2);
+        const sinA = Math.sin(angle / 2);
+        const cosA = Math.cos(angle / 2);
 
-        this.x = axis.x * sin_a;
-        this.y = axis.y * sin_a;
-        this.z = axis.z * sin_a;
-        this.w = cos_a;
+        this.x = axis.x * sinA;
+        this.y = axis.y * sinA;
+        this.z = axis.z * sinA;
+        this.w = cosA;
         this.normalize();
 
         return this;
@@ -211,7 +216,7 @@ export class Quaternion
     {
         this.normalize(); // 如果w>1 acos和sqrt会产生错误，那么如果四元数被标准化，就不会发生这种情况
         const angle = 2 * Math.acos(this.w);
-        const s = Math.sqrt(1 - this.w * this.w); // 假设四元数归一化了，那么w小于1，所以项总是正的。
+        const s = Math.sqrt(1 - (this.w * this.w)); // 假设四元数归一化了，那么w小于1，所以项总是正的。
 
         if (s < 0.001)
         { // 为了避免除以零，s总是正的，因为是根号
@@ -270,12 +275,14 @@ export class Quaternion
         if (t === 0) return this;
         if (t === 1) return this.copy(qb);
 
-        const x = this.x; const y = this.y; const z = this.z; const
-            w = this.w;
+        const x = this.x;
+        const y = this.y;
+        const z = this.z;
+        const w = this.w;
 
         // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
 
-        let cosHalfTheta = w * qb.w + x * qb.x + y * qb.y + z * qb.z;
+        let cosHalfTheta = (w * qb.w) + (x * qb.x) + (y * qb.y) + (z * qb.z);
 
         if (cosHalfTheta < 0)
         {
@@ -301,16 +308,16 @@ export class Quaternion
             return this;
         }
 
-        const sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
+        const sqrSinHalfTheta = 1.0 - (cosHalfTheta * cosHalfTheta);
 
         if (sqrSinHalfTheta <= Number.EPSILON)
         {
             const s = 1 - t;
 
-            this.w = s * w + t * this.w;
-            this.x = s * x + t * this.x;
-            this.y = s * y + t * this.y;
-            this.z = s * z + t * this.z;
+            this.w = (s * w) + (t * this.w);
+            this.x = (s * x) + (t * this.x);
+            this.y = (s * y) + (t * this.y);
+            this.z = (s * z) + (t * this.z);
 
             this.normalize();
 
@@ -322,10 +329,10 @@ export class Quaternion
         const ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
         const ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
 
-        this.w = (w * ratioA + this.w * ratioB);
-        this.x = (x * ratioA + this.x * ratioB);
-        this.y = (y * ratioA + this.y * ratioB);
-        this.z = (z * ratioA + this.z * ratioB);
+        this.w = ((w * ratioA) + (this.w * ratioB));
+        this.x = ((x * ratioA) + (this.x * ratioB));
+        this.y = ((y * ratioA) + (this.y * ratioB));
+        this.z = ((z * ratioA) + (this.z * ratioB));
 
         return this;
     }
@@ -351,14 +358,17 @@ export class Quaternion
      */
     lerp(qa: Quaternion, qb: Quaternion, t: number)
     {
-        const w1 = qa.w; const x1 = qa.x; const y1 = qa.y; const
-            z1 = qa.z;
-        let w2 = qb.w; let x2 = qb.x; let y2 = qb.y; let
-            z2 = qb.z;
-        let len: number;
+        const w1 = qa.w;
+        const x1 = qa.x;
+        const y1 = qa.y;
+        const z1 = qa.z;
+        let w2 = qb.w;
+        let x2 = qb.x;
+        let y2 = qb.y;
+        let z2 = qb.z;
 
         // shortest direction
-        if (w1 * w2 + x1 * x2 + y1 * y2 + z1 * z2 < 0)
+        if ((w1 * w2) + (x1 * x2) + (y1 * y2) + (z1 * z2) < 0)
         {
             w2 = -w2;
             x2 = -x2;
@@ -366,12 +376,13 @@ export class Quaternion
             z2 = -z2;
         }
 
-        this.w = w1 + t * (w2 - w1);
-        this.x = x1 + t * (x2 - x1);
-        this.y = y1 + t * (y2 - y1);
-        this.z = z1 + t * (z2 - z1);
+        this.w = w1 + (t * (w2 - w1));
+        this.x = x1 + (t * (x2 - x1));
+        this.y = y1 + (t * (y2 - y1));
+        this.z = z1 + (t * (z2 - z1));
 
-        len = 1.0 / Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
+        const len = 1.0 / Math.sqrt((this.w * this.w) + (this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+
         this.w *= len;
         this.x *= len;
         this.y *= len;
@@ -387,19 +398,20 @@ export class Quaternion
      */
     fromEulerAngles(ax: number, ay: number, az: number)
     {
-        const halfX = ax * 0.5; const halfY = ay * 0.5; const
-            halfZ = az * 0.5;
-        const cosX = Math.cos(halfX); const
-            sinX = Math.sin(halfX);
-        const cosY = Math.cos(halfY); const
-            sinY = Math.sin(halfY);
-        const cosZ = Math.cos(halfZ); const
-            sinZ = Math.sin(halfZ);
+        const halfX = ax * 0.5;
+        const halfY = ay * 0.5;
+        const halfZ = az * 0.5;
+        const cosX = Math.cos(halfX);
+        const sinX = Math.sin(halfX);
+        const cosY = Math.cos(halfY);
+        const sinY = Math.sin(halfY);
+        const cosZ = Math.cos(halfZ);
+        const sinZ = Math.sin(halfZ);
 
-        this.w = cosX * cosY * cosZ + sinX * sinY * sinZ;
-        this.x = sinX * cosY * cosZ - cosX * sinY * sinZ;
-        this.y = cosX * sinY * cosZ + sinX * cosY * sinZ;
-        this.z = cosX * cosY * sinZ - sinX * sinY * cosZ;
+        this.w = (cosX * cosY * cosZ) + (sinX * sinY * sinZ);
+        this.x = (sinX * cosY * cosZ) - (cosX * sinY * sinZ);
+        this.y = (cosX * sinY * cosZ) + (sinX * cosY * sinZ);
+        this.z = (cosX * cosY * sinZ) - (sinX * sinY * cosZ);
 
         return this;
     }
@@ -412,13 +424,13 @@ export class Quaternion
     toEulerAngles(target?: Vector3): Vector3
     {
         target = target || new Vector3();
-        target.x = Math.atan2(2 * (this.w * this.x + this.y * this.z), 1 - 2 * (this.x * this.x + this.y * this.y));
-        let asinvalue = 2 * (this.w * this.y - this.z * this.x);
+        target.x = Math.atan2(2 * ((this.w * this.x) + (this.y * this.z)), 1 - (2 * ((this.x * this.x) + (this.y * this.y))));
+        let asinvalue = 2 * ((this.w * this.y) - (this.z * this.x));
         // 防止超出范围，获取NaN值
 
         asinvalue = Math.max(-1, Math.min(asinvalue, 1));
         target.y = Math.asin(asinvalue);
-        target.z = Math.atan2(2 * (this.w * this.z + this.x * this.y), 1 - 2 * (this.y * this.y + this.z * this.z));
+        target.z = Math.atan2(2 * ((this.w * this.z) + (this.x * this.y)), 1 - (2 * ((this.y * this.y) + (this.z * this.z))));
 
         return target;
     }
@@ -428,7 +440,7 @@ export class Quaternion
      */
     normalize(val = 1)
     {
-        let l = this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+        let l = (this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w);
 
         if (l === 0)
         {
@@ -440,7 +452,7 @@ export class Quaternion
         else
         {
             l = Math.sqrt(l);
-            l = 1 / l;
+            l = val / l;
             this.x *= l;
             this.y *= l;
             this.z *= l;
@@ -458,7 +470,7 @@ export class Quaternion
      */
     normalizeFast()
     {
-        const f = (3.0 - (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w)) / 2.0;
+        const f = (3.0 - ((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w))) / 2.0;
 
         if (f === 0)
         {
@@ -494,12 +506,16 @@ export class Quaternion
     toMatrix(target = new Matrix4x4())
     {
         const elements = target.elements;
-        const xy2 = 2.0 * this.x * this.y; const xz2 = 2.0 * this.x * this.z; const
-            xw2 = 2.0 * this.x * this.w;
-        const yz2 = 2.0 * this.y * this.z; const yw2 = 2.0 * this.y * this.w; const
-            zw2 = 2.0 * this.z * this.w;
-        const xx = this.x * this.x; const yy = this.y * this.y; const zz = this.z * this.z; const
-            ww = this.w * this.w;
+        const xy2 = 2.0 * this.x * this.y;
+        const xz2 = 2.0 * this.x * this.z;
+        const xw2 = 2.0 * this.x * this.w;
+        const yz2 = 2.0 * this.y * this.z;
+        const yw2 = 2.0 * this.y * this.w;
+        const zw2 = 2.0 * this.z * this.w;
+        const xx = this.x * this.x;
+        const yy = this.y * this.y;
+        const zz = this.z * this.z;
+        const ww = this.w * this.w;
 
         elements[0] = xx - yy - zz + ww;
         elements[4] = xy2 - zw2;
@@ -552,18 +568,19 @@ export class Quaternion
      */
     rotatePoint(point: Vector3, target = new Vector3())
     {
-        const x2 = point.x; const y2 = point.y; const
-            z2 = point.z;
+        const x2 = point.x;
+        const y2 = point.y;
+        const z2 = point.z;
 
         // p*q'
-        const w1 = -this.x * x2 - this.y * y2 - this.z * z2;
-        const x1 = this.w * x2 + this.y * z2 - this.z * y2;
-        const y1 = this.w * y2 - this.x * z2 + this.z * x2;
-        const z1 = this.w * z2 + this.x * y2 - this.y * x2;
+        const w1 = -(this.x * x2) - (this.y * y2) - (this.z * z2);
+        const x1 = (this.w * x2) + (this.y * z2) - (this.z * y2);
+        const y1 = (this.w * y2) - (this.x * z2) + (this.z * x2);
+        const z1 = (this.w * z2) + (this.x * y2) - (this.y * x2);
 
-        target.x = -w1 * this.x + x1 * this.w - y1 * this.z + z1 * this.y;
-        target.y = -w1 * this.y + x1 * this.z + y1 * this.w - z1 * this.x;
-        target.z = -w1 * this.z - x1 * this.y + y1 * this.x + z1 * this.w;
+        target.x = -(w1 * this.x) + (x1 * this.w) - (y1 * this.z) + (z1 * this.y);
+        target.y = -(w1 * this.y) + (x1 * this.z) + (y1 * this.w) - (z1 * this.x);
+        target.z = -(w1 * this.z) - (x1 * this.y) + (y1 * this.x) + (z1 * this.w);
 
         return target;
     }
@@ -585,12 +602,12 @@ export class Quaternion
         const bz = this.z;
         const bw = this.w;
 
-        const half_dt = dt * 0.5;
+        const halfDt = dt * 0.5;
 
-        this.x += half_dt * (ax * bw + ay * bz - az * by);
-        this.y += half_dt * (ay * bw + az * bx - ax * bz);
-        this.z += half_dt * (az * bw + ax * by - ay * bx);
-        this.w += half_dt * (-ax * bx - ay * by - az * bz);
+        this.x += halfDt * ((ax * bw) + (ay * bz) - (az * by));
+        this.y += halfDt * ((ay * bw) + (az * bx) - (ax * bz));
+        this.z += halfDt * ((az * bw) + (ax * by) - (ay * bx));
+        this.w += halfDt * (-(ax * bx) - (ay * by) - (az * bz));
 
         return this;
     }
@@ -640,14 +657,14 @@ export class Quaternion
         const qw = this.w;
 
         // q*v
-        const ix = qw * x + qy * z - qz * y;
-        const iy = qw * y + qz * x - qx * z;
-        const iz = qw * z + qx * y - qy * x;
-        const iw = -qx * x - qy * y - qz * z;
+        const ix = (qw * x) + (qy * z) - (qz * y);
+        const iy = (qw * y) + (qz * x) - (qx * z);
+        const iz = (qw * z) + (qx * y) - (qy * x);
+        const iw = -(qx * x) - (qy * y) - (qz * z);
 
-        target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-        target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-        target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+        target.x = (ix * qw) + (iw * -qx) + (iy * -qz) - (iz * -qy);
+        target.y = (iy * qw) + (iw * -qy) + (iz * -qx) - (ix * -qz);
+        target.z = (iz * qw) + (iw * -qz) + (ix * -qy) - (iy * -qx);
 
         return target;
     }
@@ -659,15 +676,19 @@ export class Quaternion
      */
     toEuler(target: Vector3, order = 'YZX')
     {
-        let heading; let attitude; let
-            bank;
-        const x = this.x; const y = this.y; const z = this.z; const
-            w = this.w;
+        let heading: number;
+        let attitude: number;
+        let bank: number;
+        let test: number;
+        const x = this.x;
+        const y = this.y;
+        const z = this.z;
+        const w = this.w;
 
         switch (order)
         {
             case 'YZX':
-                var test = x * y + z * w;
+                test = (x * y) + (z * w);
 
                 if (test > 0.499)
                 { // singularity at north pole
@@ -687,9 +708,9 @@ export class Quaternion
                     const sqy = y * y;
                     const sqz = z * z;
 
-                    heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz); // Heading
+                    heading = Math.atan2((2 * y * w) - (2 * x * z), 1 - (2 * sqy) - (2 * sqz)); // Heading
                     attitude = Math.asin(2 * test); // attitude
-                    bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz); // bank
+                    bank = Math.atan2((2 * x * w) - (2 * y * z), 1 - (2 * sqx) - (2 * sqz)); // bank
                 }
                 break;
             default:
@@ -719,45 +740,45 @@ export class Quaternion
 
         if (order === 'XYZ')
         {
-            this.x = s1 * c2 * c3 + c1 * s2 * s3;
-            this.y = c1 * s2 * c3 - s1 * c2 * s3;
-            this.z = c1 * c2 * s3 + s1 * s2 * c3;
-            this.w = c1 * c2 * c3 - s1 * s2 * s3;
+            this.x = (s1 * c2 * c3) + (c1 * s2 * s3);
+            this.y = (c1 * s2 * c3) - (s1 * c2 * s3);
+            this.z = (c1 * c2 * s3) + (s1 * s2 * c3);
+            this.w = (c1 * c2 * c3) - (s1 * s2 * s3);
         }
         else if (order === 'YXZ')
         {
-            this.x = s1 * c2 * c3 + c1 * s2 * s3;
-            this.y = c1 * s2 * c3 - s1 * c2 * s3;
-            this.z = c1 * c2 * s3 - s1 * s2 * c3;
-            this.w = c1 * c2 * c3 + s1 * s2 * s3;
+            this.x = (s1 * c2 * c3) + (c1 * s2 * s3);
+            this.y = (c1 * s2 * c3) - (s1 * c2 * s3);
+            this.z = (c1 * c2 * s3) - (s1 * s2 * c3);
+            this.w = (c1 * c2 * c3) + (s1 * s2 * s3);
         }
         else if (order === 'ZXY')
         {
-            this.x = s1 * c2 * c3 - c1 * s2 * s3;
-            this.y = c1 * s2 * c3 + s1 * c2 * s3;
-            this.z = c1 * c2 * s3 + s1 * s2 * c3;
-            this.w = c1 * c2 * c3 - s1 * s2 * s3;
+            this.x = (s1 * c2 * c3) - (c1 * s2 * s3);
+            this.y = (c1 * s2 * c3) + (s1 * c2 * s3);
+            this.z = (c1 * c2 * s3) + (s1 * s2 * c3);
+            this.w = (c1 * c2 * c3) - (s1 * s2 * s3);
         }
         else if (order === 'ZYX')
         {
-            this.x = s1 * c2 * c3 - c1 * s2 * s3;
-            this.y = c1 * s2 * c3 + s1 * c2 * s3;
-            this.z = c1 * c2 * s3 - s1 * s2 * c3;
-            this.w = c1 * c2 * c3 + s1 * s2 * s3;
+            this.x = (s1 * c2 * c3) - (c1 * s2 * s3);
+            this.y = (c1 * s2 * c3) + (s1 * c2 * s3);
+            this.z = (c1 * c2 * s3) - (s1 * s2 * c3);
+            this.w = (c1 * c2 * c3) + (s1 * s2 * s3);
         }
         else if (order === 'YZX')
         {
-            this.x = s1 * c2 * c3 + c1 * s2 * s3;
-            this.y = c1 * s2 * c3 + s1 * c2 * s3;
-            this.z = c1 * c2 * s3 - s1 * s2 * c3;
-            this.w = c1 * c2 * c3 - s1 * s2 * s3;
+            this.x = (s1 * c2 * c3) + (c1 * s2 * s3);
+            this.y = (c1 * s2 * c3) + (s1 * c2 * s3);
+            this.z = (c1 * c2 * s3) - (s1 * s2 * c3);
+            this.w = (c1 * c2 * c3) - (s1 * s2 * s3);
         }
         else if (order === 'XZY')
         {
-            this.x = s1 * c2 * c3 - c1 * s2 * s3;
-            this.y = c1 * s2 * c3 - s1 * c2 * s3;
-            this.z = c1 * c2 * s3 + s1 * s2 * c3;
-            this.w = c1 * c2 * c3 + s1 * s2 * s3;
+            this.x = (s1 * c2 * c3) - (c1 * s2 * s3);
+            this.y = (c1 * s2 * c3) - (s1 * c2 * s3);
+            this.z = (c1 * c2 * s3) + (s1 * s2 * c3);
+            this.w = (c1 * c2 * c3) + (s1 * s2 * s3);
         }
 
         return this;
@@ -778,23 +799,26 @@ declare module './Vector3'
  */
 Vector3.prototype.applyQuaternion = function applyQuaternion(this: Vector3, q: Quaternion)
 {
-    const x = this.x; const y = this.y; const
-        z = this.z;
-    const qx = q.x; const qy = q.y; const qz = q.z; const
-        qw = q.w;
+    const x = this.x;
+    const y = this.y;
+    const z = this.z;
+    const qx = q.x;
+    const qy = q.y;
+    const qz = q.z;
+    const qw = q.w;
 
     // calculate quat * vector
 
-    const ix = qw * x + qy * z - qz * y;
-    const iy = qw * y + qz * x - qx * z;
-    const iz = qw * z + qx * y - qy * x;
-    const iw = -qx * x - qy * y - qz * z;
+    const ix = (qw * x) + (qy * z) - (qz * y);
+    const iy = (qw * y) + (qz * x) - (qx * z);
+    const iz = (qw * z) + (qx * y) - (qy * x);
+    const iw = -(qx * x) - (qy * y) - (qz * z);
 
     // calculate result * inverse quat
 
-    this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-    this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-    this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+    this.x = (ix * qw) + (iw * -qx) + (iy * -qz) - (iz * -qy);
+    this.y = (iy * qw) + (iw * -qy) + (iz * -qx) - (ix * -qz);
+    this.z = (iz * qw) + (iw * -qz) + (ix * -qy) - (iy * -qx);
 
     return this;
 };

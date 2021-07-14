@@ -112,7 +112,7 @@ export class Vector3 implements Vector
     */
     get lengthSquared(): number
     {
-        return this.x * this.x + this.y * this.y + this.z * this.z;
+        return (this.x * this.x) + (this.y * this.y) + (this.z * this.z);
     }
 
     /**
@@ -320,10 +320,11 @@ export class Vector3 implements Vector
      */
     distance(p: Vector3)
     {
-        const dx = this.x - p.x; const dy = this.y - p.y; const
-            dz = this.z - p.z;
+        const dx = this.x - p.x;
+        const dy = this.y - p.y;
+        const dz = this.z - p.z;
 
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        return Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
     }
 
     /**
@@ -332,10 +333,11 @@ export class Vector3 implements Vector
      */
     distanceSquared(p: Vector3)
     {
-        const dx = this.x - p.x; const dy = this.y - p.y; const
-            dz = this.z - p.z;
+        const dx = this.x - p.x;
+        const dy = this.y - p.y;
+        const dz = this.z - p.z;
 
-        return dx * dx + dy * dy + dz * dz;
+        return (dx * dx) + (dy * dy) + (dz * dz);
     }
 
     /**
@@ -373,9 +375,9 @@ export class Vector3 implements Vector
      */
     addScaledVector(scalar: number, vector: Vector3)
     {
-        this.x = this.x + scalar * vector.x;
-        this.y = this.y + scalar * vector.y;
-        this.z = this.z + scalar * vector.z;
+        this.x = this.x + (scalar * vector.x);
+        this.y = this.y + (scalar * vector.y);
+        this.z = this.z + (scalar * vector.z);
 
         return this;
     }
@@ -388,9 +390,9 @@ export class Vector3 implements Vector
      */
     addScaledVectorTo(scalar: number, vector: Vector3, target = new Vector3())
     {
-        target.x = this.x + scalar * vector.x;
-        target.y = this.y + scalar * vector.y;
-        target.z = this.z + scalar * vector.z;
+        target.x = this.x + (scalar * vector.x);
+        target.y = this.y + (scalar * vector.y);
+        target.z = this.z + (scalar * vector.z);
 
         return target;
     }
@@ -401,7 +403,7 @@ export class Vector3 implements Vector
      */
     cross(a: Vector3): Vector3
     {
-        return this.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+        return this.set((this.y * a.z) - (this.z * a.y), (this.z * a.x) - (this.x * a.z), (this.x * a.y) - (this.y * a.x));
     }
 
     /**
@@ -411,7 +413,7 @@ export class Vector3 implements Vector
      */
     crossTo(a: Vector3, vout = new Vector3())
     {
-        vout.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+        vout.set((this.y * a.z) - (this.z * a.y), (this.z * a.x) - (this.x * a.z), (this.x * a.y) - (this.y * a.x));
 
         return vout;
     }
@@ -421,7 +423,7 @@ export class Vector3 implements Vector
      */
     dot(a: Vector3)
     {
-        return this.x * a.x + this.y * a.y + this.z * a.z;
+        return (this.x * a.x) + (this.y * a.y) + (this.z * a.z);
     }
 
     /**
@@ -668,13 +670,14 @@ export class Vector3 implements Vector
      */
     unit(target: Vector3 = new Vector3())
     {
-        const x = this.x; const y = this.y; const
-            z = this.z;
-        var ninv = x * x + y * y + z * z;
+        const x = this.x;
+        const y = this.y;
+        const z = this.z;
+        let ninv = (x * x) + (y * y) + (z * z);
 
         if (ninv > 0.0)
         {
-            var ninv = Math.sqrt(ninv);
+            ninv = Math.sqrt(ninv);
 
             ninv = 1.0 / ninv;
             target.x = x * ninv;
@@ -764,9 +767,9 @@ export class Vector3 implements Vector
      */
     lerpTo(v: Vector3, alpha: Vector3, vout = new Vector3())
     {
-        vout.x = this.x + (v.x - this.x) * alpha.x;
-        vout.y = this.y + (v.y - this.y) * alpha.y;
-        vout.z = this.z + (v.z - this.z) * alpha.z;
+        vout.x = this.x + ((v.x - this.x) * alpha.x);
+        vout.y = this.y + ((v.y - this.y) * alpha.y);
+        vout.z = this.z + ((v.z - this.z) * alpha.z);
 
         return vout;
     }
@@ -794,9 +797,9 @@ export class Vector3 implements Vector
      */
     lerpNumberTo(v: Vector3, alpha: number, vout = new Vector3())
     {
-        vout.x = this.x + (v.x - this.x) * alpha;
-        vout.y = this.y + (v.y - this.y) * alpha;
-        vout.z = this.z + (v.z - this.z) * alpha;
+        vout.x = this.x + ((v.x - this.x) * alpha);
+        vout.y = this.y + ((v.y - this.y) * alpha);
+        vout.z = this.z + ((v.z - this.z) * alpha);
 
         return vout;
     }

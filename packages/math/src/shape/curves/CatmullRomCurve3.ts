@@ -172,6 +172,6 @@ class CubicPoly
 
 //
 const tmp = new Vector3();
-const px = new CubicPoly(); 
-const py = new CubicPoly(); 
+const px = new CubicPoly();
+const py = new CubicPoly();
 const pz = new CubicPoly();

@@ -204,12 +204,12 @@ export class Matrix3x3
         const nc = 4; // num cols
         const eqns: number[] = [];
 
-        for (var i = 0; i < nr * nc; i++)
+        let i: number;
+        for (i = 0; i < nr * nc; i++)
         {
             eqns.push(0);
         }
-        var i: number; let
-            j: number;
+        let j: number;
 
         for (i = 0; i < 3; i++)
         {
@@ -341,12 +341,12 @@ export class Matrix3x3
         const nc = 6; // num cols
         const eqns = [];
 
-        for (var i = 0; i < nr * nc; i++)
+        let i: number;
+        let j: number;
+        for (let i = 0; i < nr * nc; i++)
         {
             eqns.push(0);
         }
-        var i: number; let
-            j: number;
 
         for (i = 0; i < 3; i++)
         {
@@ -395,7 +395,7 @@ export class Matrix3x3
             {
                 for (j = i + 1; j < k; j++)
                 {
-                    var multiplier = eqns[i + nc * j] / eqns[i + nc * i];
+                    const multiplier = eqns[i + nc * j] / eqns[i + nc * i];
 
                     np = kp;
                     do
@@ -414,7 +414,7 @@ export class Matrix3x3
             j = i - 1;
             do
             {
-                var multiplier = eqns[i + nc * j] / eqns[i + nc * i];
+                const multiplier = eqns[i + nc * j] / eqns[i + nc * i];
 
                 np = nc;
                 do
@@ -429,7 +429,7 @@ export class Matrix3x3
         i = 2;
         do
         {
-            var multiplier = 1 / eqns[i + nc * i];
+            const multiplier = 1 / eqns[i + nc * i];
 
             np = nc;
             do

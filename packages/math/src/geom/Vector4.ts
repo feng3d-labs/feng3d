@@ -339,7 +339,7 @@ export class Vector4
      */
     dot(a: Vector4)
     {
-        return this.x * a.x + this.y * a.y + this.z * a.z + this.w * a.w;
+        return (this.x * a.x) + (this.y * a.y) + (this.z * a.z) + (this.w * a.w);
     }
 
     /**

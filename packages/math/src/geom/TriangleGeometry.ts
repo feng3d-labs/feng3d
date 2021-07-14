@@ -167,7 +167,7 @@ export class TriangleGeometry
         // 相交于点
         if (r.points.length)
         {
-
+            throw `未实现`;
         }
     }
 
@@ -176,9 +176,9 @@ export class TriangleGeometry
      * @param triangle 三角形
      * @returns 三角形相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
      */
-    classifyTriangle(triangle: Triangle3)
+    classifyTriangle(_triangle: Triangle3)
     {
-
+        throw `未实现`;
     }
 
     /**
@@ -258,9 +258,9 @@ export class TriangleGeometry
      * 分解三角形
      * @param triangle 三角形
      */
-    decomposeTriangle(triangle: Triangle3)
+    decomposeTriangle(_triangle: Triangle3)
     {
-
+        throw `未实现`;
     }
 
     /**

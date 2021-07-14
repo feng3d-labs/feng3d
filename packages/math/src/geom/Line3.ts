@@ -187,10 +187,14 @@ export class Line3
      */
     equals(line: Line3, precision = mathUtil.PRECISION)
     {
-        if (!this.onWithPoint(line.origin))
-        { return false; }
-        if (!this.onWithPoint(line.origin.addTo(line.direction)))
-        { return false; }
+        if (!this.onWithPoint(line.origin, precision))
+        {
+            return false;
+        }
+        if (!this.onWithPoint(line.origin.addTo(line.direction), precision))
+        {
+            return false;
+        }
 
         return true;
     }

@@ -14,7 +14,7 @@ export class ShapeUtils
 
         for (let p = n - 1, q = 0; q < n; p = q++)
         {
-            a += contour[p].x * contour[q].y - contour[q].x * contour[p].y;
+            a += (contour[p].x * contour[q].y) - (contour[q].x * contour[p].y);
         }
 
         return a * 0.5;

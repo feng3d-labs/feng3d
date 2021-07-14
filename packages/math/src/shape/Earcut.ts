@@ -25,8 +25,13 @@ export class Earcut
         // 没有节点、只有一个或者两个节点不构成三角形时直接返回
         if (!outerNode || outerNode.next === outerNode.prev) return triangles;
 
-        let minX: number; let minY: number; let maxX: number; let maxY: number; let x: number; let y: number; let
-            invSize: number;
+        let minX: number;
+        let minY: number;
+        let maxX: number;
+        let maxY: number;
+        let x: number;
+        let y: number;
+        let invSize: number;
 
         // 消除孔洞
         if (hasHoles) outerNode = eliminateHoles(data, holeIndices, outerNode, dim);
@@ -363,8 +368,11 @@ function eliminateHoles(data: number[], holeIndices: number[], outerNode: Node, 
 {
     // 孔洞链表数组
     const queue: Node[] = [];
-    let i: number; let len: number; let start: number; let end: number; let
-        list: Node;
+    let i: number;
+    let len: number;
+    let start: number;
+    let end: number;
+    let list: Node;
 
     // 遍历构建孔洞链表数组
     for (i = 0, len = holeIndices.length; i < len; i++)
@@ -443,7 +451,7 @@ function findHoleBridge(hole: Node, outerNode: Node)
     {
         if (hy <= p.y && hy >= p.next.y && p.next.y !== p.y)
         {
-            const x = p.x + (hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y);
+            const x = p.x + ((hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y));
 
             if (x <= hx && x > qx)
             {
@@ -545,7 +553,14 @@ function indexCurve(start: Node, minX: number, minY: number, invSize: number)
  */
 function sortLinked(list: Node)
 {
-    let i: number; let p: Node; let q: Node; let e: Node; let tail: Node; let numMerges: number; let pSize: number; let qSize: number;
+    let i: number;
+    let p: Node;
+    let q: Node;
+    let e: Node;
+    let tail: Node;
+    let numMerges: number;
+    let pSize: number;
+    let qSize: number;
     let inSize = 1;
 
     do
@@ -676,9 +691,9 @@ function getLeftmost(start: Node)
  */
 function pointInTriangle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, px: number, py: number)
 {
-    return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0
-        && (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0
-        && (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
+    return ((cx - px) * (ay - py)) - ((ax - px) * (cy - py)) >= 0
+        && ((ax - px) * (by - py)) - ((bx - px) * (ay - py)) >= 0
+        && ((bx - px) * (cy - py)) - ((cx - px) * (by - py)) >= 0;
 }
 
 /**
@@ -693,7 +708,9 @@ function isValidDiagonal(a: Node, b: Node)
 {
     return a.next.i !== b.i && a.prev.i !== b.i && !intersectsPolygon(a, b) // dones't intersect other edges
         && (locallyInside(a, b) && locallyInside(b, a) && middleInside(a, b) // locally visible
+            // eslint-disable-next-line no-mixed-operators
             && (area(a.prev, a, b.prev) || area(a, b.prev, b)) // does not create opposite-facing sectors
+            // eslint-disable-next-line no-mixed-operators
             || equals(a, b) && area(a.prev, a, a.next) > 0 && area(b.prev, b, b.next) > 0); // special zero-length case
 }
 
@@ -708,7 +725,7 @@ function isValidDiagonal(a: Node, b: Node)
  */
 function area(p: { x: number, y: number }, q: { x: number, y: number }, r: { x: number, y: number })
 {
-    return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+    return ((q.y - p.y) * (r.x - q.x)) - ((q.x - p.x) * (r.y - q.y));
 }
 
 /**
@@ -838,7 +855,7 @@ function middleInside(a: Node, b: Node)
     {
         // 以该点为起点作一条朝向正X轴方向的射线，计算与多边形的边相交的次数，奇数次表示在多边形内部，否则在外部。
         if (((p.y > py) !== (p.next.y > py)) && p.next.y !== p.y
-            && (px < (p.next.x - p.x) * (py - p.y) / (p.next.y - p.y) + p.x))
+            && (px < ((p.next.x - p.x) * (py - p.y) / (p.next.y - p.y)) + p.x))
         { inside = !inside; }
         p = p.next;
     } while (p !== a);

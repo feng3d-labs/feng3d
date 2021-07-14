@@ -135,7 +135,6 @@
         "no-self-assign": 1,
         "no-self-compare": 1,
         "no-sequences": 1,
-        "no-throw-literal": 1,
         "no-unmodified-loop-condition": 1,
         "no-unused-expressions": "off",
         "no-unused-labels": 1,
@@ -290,12 +289,6 @@
             }
         ],
         "max-statements": 0,
-        "max-statements-per-line": [
-            1,
-            {
-                "max": 2
-            }
-        ],
         "new-cap": [
             1,
             {
@@ -305,10 +298,6 @@
             }
         ],
         "new-parens": 1,
-        "newline-after-var": [
-            1,
-            "always"
-        ],
         "newline-before-return": 1,
         "newline-per-chained-call": [
             1,
@@ -321,7 +310,6 @@
         "no-continue": 0,
         "no-inline-comments": 0,
         "no-lonely-if": 1,
-        "no-mixed-operators": 1,
         "no-mixed-spaces-and-tabs": 1,
         "no-multiple-empty-lines": [
             1,
@@ -332,7 +320,6 @@
             }
         ],
         "no-negated-condition": 0,
-        "no-nested-ternary": 1,
         "no-new-object": 1,
         "no-plusplus": 0,
         "no-restricted-syntax": [
