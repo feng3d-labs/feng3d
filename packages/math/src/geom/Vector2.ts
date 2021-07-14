@@ -1,18 +1,17 @@
-import { oav } from "@feng3d/objectview";
-import { mathUtil } from "@feng3d/polyfill";
-import { serialize } from "@feng3d/serialization";
-import { Vector } from "./Vector";
-import type { Vector3 } from "./Vector3";
+import { oav } from '@feng3d/objectview';
+import { mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { Vector } from './Vector';
+import type { Vector3 } from './Vector3';
 
-
-var DEG_TO_RAD = Math.PI / 180;
+const DEG_TO_RAD = Math.PI / 180;
 
 /**
  * Vector2 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
  */
 export class Vector2 implements Vector
 {
-    __class__: "feng3d.Vector2";
+    __class__: 'feng3d.Vector2';
 
     /**
      * 原点
@@ -31,7 +30,7 @@ export class Vector2 implements Vector
 
     /**
      * 创建一个 Vector2 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
-     * 
+     *
      * @param x 该对象的x属性值，默认为0
      * @param y 该对象的y属性值，默认为0
      */
@@ -74,6 +73,7 @@ export class Vector2 implements Vector
     {
         this.x = x;
         this.y = y;
+
         return this;
     }
 
@@ -104,6 +104,7 @@ export class Vector2 implements Vector
     {
         this.x += v.x;
         this.y += v.y;
+
         return this;
     }
 
@@ -116,6 +117,7 @@ export class Vector2 implements Vector
     {
         vout.x = this.x + v.x;
         vout.y = this.y + v.y;
+
         return vout;
     }
 
@@ -128,6 +130,7 @@ export class Vector2 implements Vector
     {
         this.x -= v.x;
         this.y -= v.y;
+
         return this;
     }
 
@@ -140,6 +143,7 @@ export class Vector2 implements Vector
     {
         vout.x = this.x - v.x;
         vout.y = this.y - v.y;
+
         return vout;
     }
 
@@ -151,6 +155,7 @@ export class Vector2 implements Vector
     {
         this.x *= v.x;
         this.y *= v.y;
+
         return this;
     }
 
@@ -163,6 +168,7 @@ export class Vector2 implements Vector
     {
         vout.x = this.x * v.x;
         vout.y = this.y * v.y;
+
         return vout;
     }
 
@@ -174,18 +180,20 @@ export class Vector2 implements Vector
     {
         this.x /= v.x;
         this.y /= v.y;
+
         return this;
     }
 
     /**
      * 除以向量
      * @param v 向量
-     * @param vout 输出向量 
+     * @param vout 输出向量
      */
     divideTo(v: Vector2, vout = new Vector2())
     {
         vout.x = this.x / v.x;
         vout.y = this.y / v.y;
+
         return vout;
     }
 
@@ -197,9 +205,10 @@ export class Vector2 implements Vector
     equals(v: Vector2, precision = mathUtil.PRECISION)
     {
         if (!mathUtil.equals(this.x - v.x, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.y - v.y, 0, precision))
-            return false;
+        { return false; }
+
         return true;
     }
 
@@ -211,6 +220,7 @@ export class Vector2 implements Vector
     {
         this.x = source.x;
         this.y = source.y;
+
         return this;
     }
 
@@ -221,7 +231,9 @@ export class Vector2 implements Vector
      */
     distance(p: Vector2)
     {
-        var dx = this.x - p.x, dy = this.y - p.y;
+        const dx = this.x - p.x; const
+            dy = this.y - p.y;
+
         return Math.sqrt(dx * dx + dy * dy);
     }
 
@@ -231,7 +243,9 @@ export class Vector2 implements Vector
      */
     distanceSquared(p: Vector3)
     {
-        var dx = this.x - p.x, dy = this.y - p.y;
+        const dx = this.x - p.x; const
+            dy = this.y - p.y;
+
         return dx * dx + dy * dy;
     }
 
@@ -243,10 +257,12 @@ export class Vector2 implements Vector
     {
         if (this.x !== 0 || this.y !== 0)
         {
-            let relativeThickness = thickness / this.length;
+            const relativeThickness = thickness / this.length;
+
             this.x *= relativeThickness;
             this.y *= relativeThickness;
         }
+
         return this;
     }
 
@@ -257,6 +273,7 @@ export class Vector2 implements Vector
     {
         this.x *= -1;
         this.y *= -1;
+
         return this;
     }
 
@@ -268,6 +285,7 @@ export class Vector2 implements Vector
     {
         this.x = 1 / this.x;
         this.y = 1 / this.y;
+
         return this;
     }
 
@@ -278,6 +296,7 @@ export class Vector2 implements Vector
     reciprocalTo(out = new Vector2())
     {
         out.copy(this).reciprocal();
+
         return out;
     }
 
@@ -288,6 +307,7 @@ export class Vector2 implements Vector
     {
         this.x *= s;
         this.y *= s;
+
         return this;
     }
     /**
@@ -306,6 +326,7 @@ export class Vector2 implements Vector
     {
         this.x *= s.x;
         this.y *= s.y;
+
         return this;
     }
 
@@ -316,6 +337,7 @@ export class Vector2 implements Vector
     scaleTo(s: Vector2, vout = new Vector2())
     {
         if (s === vout) s = s.clone();
+
         return vout.copy(this).scale(s);
     }
 
@@ -328,10 +350,9 @@ export class Vector2 implements Vector
     {
         this.x += dx;
         this.y += dy;
+
         return this;
     }
-
-
 
     /**
      * 插值到指定向量
@@ -343,6 +364,7 @@ export class Vector2 implements Vector
     {
         this.x += (p.x - this.x) * alpha.x;
         this.y += (p.y - this.y) * alpha.y;
+
         return this;
     }
 
@@ -367,6 +389,7 @@ export class Vector2 implements Vector
     {
         this.x += (v.x - this.x) * alpha;
         this.y += (v.y - this.y) * alpha;
+
         return this;
     }
 
@@ -381,7 +404,6 @@ export class Vector2 implements Vector
         return vout.copy(this).lerpNumber(v, alpha);
     }
 
-
     /**
      * 夹紧？
      * @param min 最小值
@@ -391,6 +413,7 @@ export class Vector2 implements Vector
     {
         this.x = mathUtil.clamp(this.x, min.x, max.x);
         this.y = mathUtil.clamp(this.y, min.y, max.y);
+
         return this;
     }
 
@@ -412,6 +435,7 @@ export class Vector2 implements Vector
     {
         this.x = Math.min(this.x, v.x);
         this.y = Math.min(this.y, v.y);
+
         return this;
     }
 
@@ -423,6 +447,7 @@ export class Vector2 implements Vector
     {
         this.x = Math.max(this.x, v.x);
         this.y = Math.max(this.y, v.y);
+
         return this;
     }
 
@@ -433,6 +458,7 @@ export class Vector2 implements Vector
     {
         this.x = Math.round(this.x);
         this.y = Math.round(this.y);
+
         return this;
     }
 
@@ -442,7 +468,7 @@ export class Vector2 implements Vector
      */
     toString(): string
     {
-        return "(x=" + this.x + ", y=" + this.y + ")";
+        return `(x=${this.x}, y=${this.y})`;
     }
 
     /**
@@ -455,6 +481,7 @@ export class Vector2 implements Vector
     {
         array[offset] = this.x;
         array[offset + 1] = this.y;
+
         return array;
     }
 }

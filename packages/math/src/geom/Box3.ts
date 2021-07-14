@@ -1,8 +1,8 @@
-import { Matrix4x4 } from "./Matrix4x4";
-import { Plane } from "./Plane";
-import { Sphere } from "./Sphere";
-import { Triangle3 } from "./Triangle3";
-import { Vector3 } from "./Vector3";
+import { Matrix4x4 } from './Matrix4x4';
+import { Plane } from './Plane';
+import { Sphere } from './Sphere';
+import { Triangle3 } from './Triangle3';
+import { Vector3 } from './Vector3';
 
 /**
  * 轴向对称包围盒
@@ -32,8 +32,9 @@ export class Box3
      */
     static random()
     {
-        var min = Vector3.random();
-        var max = Vector3.random().add(min);
+        const min = Vector3.random();
+        const max = Vector3.random().add(min);
+
         return new Box3(min, max);
     }
 
@@ -68,7 +69,7 @@ export class Box3
      * @param min 最小点
      * @param max 最大点
      */
-    constructor(min = new Vector3(+ Infinity, + Infinity, + Infinity), max = new Vector3(- Infinity, - Infinity, - Infinity))
+    constructor(min = new Vector3(Number(Infinity), Number(Infinity), Number(Infinity)), max = new Vector3(-Infinity, -Infinity, -Infinity))
     {
         this.min = min;
         this.max = max;
@@ -83,18 +84,20 @@ export class Box3
     {
         this.min = min;
         this.max = max;
+
         return this;
     }
 
     /**
      * 缩放包围盒
-     * 
+     *
      * @param s 缩放系数
      */
     scale(s: Vector3)
     {
         this.min.scale(s);
         this.max.scale(s);
+
         return this;
     }
 
@@ -117,8 +120,9 @@ export class Box3
             ];
         }
 
-        var min = this.min;
-        var max = this.max;
+        const min = this.min;
+        const max = this.max;
+
         points[0].set(min.x, min.y, min.z);
         points[1].set(max.x, min.y, min.z);
         points[2].set(min.x, max.y, min.z);
@@ -137,19 +141,19 @@ export class Box3
      */
     formPositions(positions: number[])
     {
-        var minX = + Infinity;
-        var minY = + Infinity;
-        var minZ = + Infinity;
+        let minX = Number(Infinity);
+        let minY = Number(Infinity);
+        let minZ = Number(Infinity);
 
-        var maxX = - Infinity;
-        var maxY = - Infinity;
-        var maxZ = - Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        let maxZ = -Infinity;
 
-        for (var i = 0, l = positions.length; i < l; i += 3)
+        for (let i = 0, l = positions.length; i < l; i += 3)
         {
-            var x = positions[i];
-            var y = positions[i + 1];
-            var z = positions[i + 2];
+            const x = positions[i];
+            const y = positions[i + 1];
+            const z = positions[i + 2];
 
             if (x < minX) minX = x;
             if (y < minY) minY = y;
@@ -162,6 +166,7 @@ export class Box3
 
         this.min.set(minX, minY, minZ);
         this.max.set(maxX, maxY, maxZ);
+
         return this;
     }
 
@@ -172,10 +177,11 @@ export class Box3
     fromPoints(ps: Vector3[])
     {
         this.empty();
-        ps.forEach(element =>
+        ps.forEach((element) =>
         {
             this.expandByPoint(element);
         });
+
         return this;
     }
 
@@ -195,13 +201,14 @@ export class Box3
     {
         this.min.min(point);
         this.max.max(point);
+
         return this;
     }
 
     /**
      * 应用矩阵
      * @param mat 矩阵
-     * 
+     *
      * @todo 优化
      * @see 3D数学基础：图形与游戏开发 P288 AABB::setToTransformedBox
      */
@@ -210,9 +217,8 @@ export class Box3
         if (this.isEmpty()) return this;
 
         this.fromPoints(this.toPoints().map((v) =>
-        {
-            return v.applyMatrix4x4(mat);
-        }));
+            v.applyMatrix4x4(mat)));
+
         return this;
     }
 
@@ -226,7 +232,7 @@ export class Box3
     }
 
     /**
-     * 
+     *
      */
     clone(): Box3
     {
@@ -259,6 +265,7 @@ export class Box3
     {
         this.min.copy(aabb.min);
         this.max.copy(aabb.max);
+
         return this;
     }
 
@@ -273,19 +280,20 @@ export class Box3
 
     /**
      * 平移
-     * 
+     *
      * @param offset 偏移量
      */
     translate(offset: Vector3)
     {
         this.min.add(offset);
         this.max.add(offset);
+
         return this;
     }
 
     /**
      * 膨胀包围盒
-     * @param dx x方向膨胀量 
+     * @param dx x方向膨胀量
      * @param dy y方向膨胀量
      * @param dz z方向膨胀量
      */
@@ -316,14 +324,17 @@ export class Box3
      */
     intersection(aabb: Box3)
     {
-        var min = this.min.clampTo(aabb.min, aabb.max);
-        var max = this.max.clampTo(aabb.min, aabb.max);
+        const min = this.min.clampTo(aabb.min, aabb.max);
+        const max = this.max.clampTo(aabb.min, aabb.max);
+
         if (this.containsPoint(min))
         {
             this.min.copy(min);
             this.max.copy(max);
+
             return this;
         }
+
         return null;
     }
 
@@ -342,8 +353,9 @@ export class Box3
      */
     intersects(aabb: Box3)
     {
-        var b = this.intersectionTo(aabb);
-        var c = b.getCenter();
+        const b = this.intersectionTo(aabb);
+        const c = b.getCenter();
+
         return this.containsPoint(c) && aabb.containsPoint(c);
     }
 
@@ -353,40 +365,41 @@ export class Box3
      * @param direction 射线方向
      * @param outTargetNormal 相交处法线
      * @returns 起点到包围盒距离
-     * 
+     *
      * @todo 可用以下方法优化？
      * @see 3D数学基础：图形与游戏开发 P290
      */
     rayIntersection(position: Vector3, direction: Vector3, outTargetNormal?: Vector3)
     {
         if (this.isEmpty())
-            return Number.MAX_VALUE;
+        { return Number.MAX_VALUE; }
         if (this.containsPoint(position))
-            return 0;
+        { return 0; }
 
-        var halfExtentsX = (this.max.x - this.min.x) / 2;
-        var halfExtentsY = (this.max.y - this.min.y) / 2;
-        var halfExtentsZ = (this.max.z - this.min.z) / 2;
+        const halfExtentsX = (this.max.x - this.min.x) / 2;
+        const halfExtentsY = (this.max.y - this.min.y) / 2;
+        const halfExtentsZ = (this.max.z - this.min.z) / 2;
 
-        var centerX = this.min.x + halfExtentsX;
-        var centerY = this.min.y + halfExtentsY;
-        var centerZ = this.min.z + halfExtentsZ;
+        const centerX = this.min.x + halfExtentsX;
+        const centerY = this.min.y + halfExtentsY;
+        const centerZ = this.min.z + halfExtentsZ;
 
-        var px = position.x - centerX;
-        var py = position.y - centerY;
-        var pz = position.z - centerZ;
+        const px = position.x - centerX;
+        const py = position.y - centerY;
+        const pz = position.z - centerZ;
 
-        var vx = direction.x;
-        var vy = direction.y;
-        var vz = direction.z;
+        const vx = direction.x;
+        const vy = direction.y;
+        const vz = direction.z;
 
-        var ix: number;
-        var iy: number;
-        var iz: number;
-        var rayEntryDistance = Number.MAX_VALUE;
+        let ix: number;
+        let iy: number;
+        let iz: number;
+        let rayEntryDistance = Number.MAX_VALUE;
 
         // 射线与平面相交测试
-        var intersects = false;
+        let intersects = false;
+
         if (vx < 0)
         {
             rayEntryDistance = (halfExtentsX - px) / vx;
@@ -522,8 +535,9 @@ export class Box3
      */
     empty()
     {
-        this.min.x = this.min.y = this.min.z = + Infinity;
-        this.max.x = this.max.y = this.max.z = - Infinity;
+        this.min.x = this.min.y = this.min.z = Number(Infinity);
+        this.max.x = this.max.y = this.max.z = -Infinity;
+
         return this;
     }
 
@@ -555,12 +569,13 @@ export class Box3
     {
         this.min.add(position);
         this.max.add(position);
+
         return this;
     }
 
     toString(): string
     {
-        return "[AABB] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
+        return `[AABB] (min=${this.min.toString()}, max=${this.max.toString()})`;
     }
 
     /**
@@ -571,6 +586,7 @@ export class Box3
     {
         this.min.min(aabb.min);
         this.max.max(aabb.max);
+
         return this;
     }
 
@@ -580,14 +596,16 @@ export class Box3
      */
     intersectsSphere(sphere: Sphere)
     {
-        var closestPoint = new Vector3();
+        const closestPoint = new Vector3();
+
         this.clampPoint(sphere.center, closestPoint);
+
         return closestPoint.distanceSquared(sphere.center) <= (sphere.radius * sphere.radius);
     }
 
     /**
      * 夹紧？
-     * 
+     *
      * @param point 点
      * @param out 输出点
      */
@@ -602,20 +620,23 @@ export class Box3
      */
     intersectsPlane(plane: Plane)
     {
-        var min = Infinity;
-        var max = -Infinity;
-        this.toPoints().forEach(p =>
+        let min = Infinity;
+        let max = -Infinity;
+
+        this.toPoints().forEach((p) =>
         {
-            var d = plane.distanceWithPoint(p);
+            const d = plane.distanceWithPoint(p);
+
             min = d < min ? d : min;
             max = d > min ? d : min;
         });
+
         return min < 0 && max > 0;
     }
 
     /**
      * 是否与三角形相交
-     * @param triangle 三角形 
+     * @param triangle 三角形
      */
     intersectsTriangle(triangle: Triangle3)
     {
@@ -624,25 +645,26 @@ export class Box3
             return false;
         }
         // 计算包围盒中心和区段
-        var center = this.getCenter();
-        var extents = this.max.subTo(center);
+        const center = this.getCenter();
+        const extents = this.max.subTo(center);
 
         // 把三角形顶点转换包围盒空间
-        var v0 = triangle.p0.subTo(center);
-        var v1 = triangle.p1.subTo(center);
-        var v2 = triangle.p2.subTo(center);
+        const v0 = triangle.p0.subTo(center);
+        const v1 = triangle.p1.subTo(center);
+        const v2 = triangle.p2.subTo(center);
 
         // 计算三边向量
-        var f0 = v1.subTo(v0);
-        var f1 = v2.subTo(v1);
-        var f2 = v0.subTo(v2);
+        const f0 = v1.subTo(v0);
+        const f1 = v2.subTo(v1);
+        const f2 = v0.subTo(v2);
 
         // 测试三边向量分别所在三个轴面上的法线
-        var axes = [
-            0, - f0.z, f0.y, 0, - f1.z, f1.y, 0, - f2.z, f2.y,
-            f0.z, 0, - f0.x, f1.z, 0, - f1.x, f2.z, 0, - f2.x,
-            - f0.y, f0.x, 0, - f1.y, f1.x, 0, - f2.y, f2.x, 0
+        let axes = [
+            0, -f0.z, f0.y, 0, -f1.z, f1.y, 0, -f2.z, f2.y,
+            f0.z, 0, -f0.x, f1.z, 0, -f1.x, f2.z, 0, -f2.x,
+            -f0.y, f0.x, 0, -f1.y, f1.x, 0, -f2.y, f2.x, 0
         ];
+
         if (!satForAxes(axes, v0, v1, v2, extents))
         {
             return false;
@@ -655,31 +677,33 @@ export class Box3
             return false;
         }
         // 检测三角形面法线
-        var triangleNormal = f0.crossTo(f1);
+        const triangleNormal = f0.crossTo(f1);
+
         axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
+
         return satForAxes(axes, v0, v1, v2, extents);
     }
 
     /**
     * 是否与指定长方体相交
-    * 
+    *
     * @param box3 长方体
     */
     overlaps(box3: Box3)
     {
-        var l1 = this.min,
-            u1 = this.max,
-            l2 = box3.min,
-            u2 = box3.max;
+        const l1 = this.min;
+        const u1 = this.max;
+        const l2 = box3.min;
+        const u2 = box3.max;
 
         //      l2        u2
         //      |---------|
         // |--------|
         // l1       u1
 
-        var overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
-        var overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
-        var overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
+        const overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
+        const overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
+        const overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
 
         return overlapsX && overlapsY && overlapsZ;
     }
@@ -689,8 +713,9 @@ export class Box3
      */
     toTriangles(triangles: Triangle3[] = [])
     {
-        var min = this.min;
-        var max = this.max;
+        const min = this.min;
+        const max = this.max;
+
         triangles.push(
             // 前
             Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, min.z)),
@@ -711,37 +736,39 @@ export class Box3
             Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z), new Vector3(min.x, min.y, max.z)),
             Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z)),
         );
+
         return triangles;
     }
 }
 
 /**
  * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
- * 
- * @param axes 
- * @param v0 
- * @param v1 
- * @param v2 
- * @param extents 
+ *
+ * @param axes
+ * @param v0
+ * @param v1
+ * @param v2
+ * @param extents
  */
 function satForAxes(axes: number[], v0: Vector3, v1: Vector3, v2: Vector3, extents: Vector3)
 {
-    for (var i = 0, j = axes.length - 3; i <= j; i += 3)
+    for (let i = 0, j = axes.length - 3; i <= j; i += 3)
     {
-        var testAxis = Vector3.fromArray(axes, i);
+        const testAxis = Vector3.fromArray(axes, i);
         // 投影包围盒到指定轴的长度
-        var r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
+        const r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
         // 投影三角形的三个点到指定轴
-        var p0 = v0.dot(testAxis);
-        var p1 = v1.dot(testAxis);
-        var p2 = v2.dot(testAxis);
+        const p0 = v0.dot(testAxis);
+        const p1 = v1.dot(testAxis);
+        const p2 = v2.dot(testAxis);
         // 三个点在包围盒投影外同侧
+
         if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r)
         {
             return false;
         }
     }
+
     return true;
 }
-
 

@@ -1,17 +1,17 @@
-import { mathUtil } from "@feng3d/polyfill";
-import { serialize } from "@feng3d/serialization";
-import { Color3 } from "../Color3";
-import { Color4 } from "../Color4";
-import { GradientAlphaKey } from "./GradientAlphaKey";
-import { GradientColorKey } from "./GradientColorKey";
-import { GradientMode } from "./GradientMode";
+import { mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { Color3 } from '../Color3';
+import { Color4 } from '../Color4';
+import { GradientAlphaKey } from './GradientAlphaKey';
+import { GradientColorKey } from './GradientColorKey';
+import { GradientMode } from './GradientMode';
 
 /**
  * 颜色渐变
  */
 export class Gradient
 {
-    __class__: "feng3d.Gradient";
+    __class__: 'feng3d.Gradient';
 
     /**
      * 渐变模式
@@ -21,7 +21,7 @@ export class Gradient
 
     /**
      * 在渐变中定义的所有alpha键。
-     * 
+     *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
     @serialize
@@ -29,7 +29,7 @@ export class Gradient
 
     /**
      * 在渐变中定义的所有color键。
-     * 
+     *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
     @serialize
@@ -38,7 +38,7 @@ export class Gradient
     /**
      * 从颜色列表初始化
      * @param colors 颜色列表
-     * @param times  
+     * @param times
      */
     fromColors(colors: number[], times?: number[])
     {
@@ -51,11 +51,13 @@ export class Gradient
             }
         }
 
-        var colors1 = colors.map(v => new Color3().fromUnit(v));
+        const colors1 = colors.map((v) => new Color3().fromUnit(v));
+
         for (let i = 0; i < colors1.length; i++)
         {
             this.colorKeys[i] = { color: colors1[i], time: times[i] };
         }
+
         return this;
     }
 
@@ -65,8 +67,9 @@ export class Gradient
      */
     getValue(time: number)
     {
-        var alpha = this.getAlpha(time);
-        var color = this.getColor(time);
+        const alpha = this.getAlpha(time);
+        const color = this.getColor(time);
+
         return new Color4(color.r, color.g, color.b, alpha);
     }
 
@@ -76,22 +79,27 @@ export class Gradient
      */
     getAlpha(time: number)
     {
-        var alphaKeys = this.alphaKeys;
+        const alphaKeys = this.alphaKeys;
+
         if (alphaKeys.length === 1) return alphaKeys[0].alpha;
         if (time <= alphaKeys[0].time) return alphaKeys[0].alpha;
         if (time >= alphaKeys[alphaKeys.length - 1].time) return alphaKeys[alphaKeys.length - 1].alpha;
 
         for (let i = 0, n = alphaKeys.length - 1; i < n; i++)
         {
-            var t = alphaKeys[i].time, v = alphaKeys[i].alpha, nt = alphaKeys[i + 1].time, nv = alphaKeys[i + 1].alpha;
+            const t = alphaKeys[i].time; const v = alphaKeys[i].alpha; const nt = alphaKeys[i + 1].time; const
+                nv = alphaKeys[i + 1].alpha;
+
             if (time === t) return v;
             if (time === nt) return nv;
             if (t < time && time < nt)
             {
                 if (this.mode === GradientMode.Fixed) return nv;
+
                 return mathUtil.mapLinear(time, t, nt, v, nv);
             }
         }
+
         return 1;
     }
 
@@ -101,22 +109,27 @@ export class Gradient
      */
     getColor(time: number)
     {
-        var colorKeys = this.colorKeys;
+        const colorKeys = this.colorKeys;
+
         if (colorKeys.length === 1) return colorKeys[0].color;
         if (time <= colorKeys[0].time) return colorKeys[0].color;
         if (time >= colorKeys[colorKeys.length - 1].time) return colorKeys[colorKeys.length - 1].color;
 
         for (let i = 0, n = colorKeys.length - 1; i < n; i++)
         {
-            var t = colorKeys[i].time, v = colorKeys[i].color, nt = colorKeys[i + 1].time, nv = colorKeys[i + 1].color;
+            const t = colorKeys[i].time; const v = colorKeys[i].color; const nt = colorKeys[i + 1].time; const
+                nv = colorKeys[i + 1].color;
+
             if (time === t) return v;
             if (time === nt) return nv;
             if (t < time && time < nt)
             {
                 if (this.mode === GradientMode.Fixed) return nv;
+
                 return v.mixTo(nv, (time - t) / (nt - t));
             }
         }
+
         return new Color3();
     }
 }

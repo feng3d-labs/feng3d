@@ -1,16 +1,15 @@
-import { oav } from "@feng3d/objectview";
-import { mathUtil } from "@feng3d/polyfill";
-import { serialize } from "@feng3d/serialization";
-import { Color3 } from "./Color3";
-import { Vector4 } from "./geom/Vector4";
+import { oav } from '@feng3d/objectview';
+import { mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { Color3 } from './Color3';
+import { Vector4 } from './geom/Vector4';
 
 /**
  * 颜色（包含透明度）
  */
 export class Color4
 {
-
-    __class__: "feng3d.Color4";
+    __class__: 'feng3d.Color4';
 
     static readonly WHITE = Object.freeze(new Color4(1, 1, 1, 1));
     static readonly BLACK = Object.freeze(new Color4(0, 0, 0, 1));
@@ -76,12 +75,13 @@ export class Color4
         this.g = g;
         this.b = b;
         this.a = a;
+
         return this;
     }
 
     /**
      * 通过
-     * @param color 
+     * @param color
      */
     fromUnit(color: number)
     {
@@ -89,12 +89,14 @@ export class Color4
         this.r = ((color >> 16) & 0xff) / 0xff;
         this.g = ((color >> 8) & 0xff) / 0xff;
         this.b = (color & 0xff) / 0xff;
+
         return this;
     }
 
     toInt()
     {
-        var value = ((this.a * 0xff) << 24) + ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
+        const value = ((this.a * 0xff) << 24) + ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
+
         return value;
     }
 
@@ -103,12 +105,12 @@ export class Color4
      */
     toHexString()
     {
-        var intR = (this.r * 0xff) | 0;
-        var intG = (this.g * 0xff) | 0;
-        var intB = (this.b * 0xff) | 0;
-        var intA = (this.a * 0xff) | 0;
+        const intR = (this.r * 0xff) | 0;
+        const intG = (this.g * 0xff) | 0;
+        const intB = (this.b * 0xff) | 0;
+        const intA = (this.a * 0xff) | 0;
 
-        return "#" + Color3.ToHex(intA) + Color3.ToHex(intR) + Color3.ToHex(intG) + Color3.ToHex(intB);
+        return `#${Color3.ToHex(intA)}${Color3.ToHex(intR)}${Color3.ToHex(intG)}${Color3.ToHex(intB)}`;
     }
 
     /**
@@ -130,6 +132,7 @@ export class Color4
         this.g = this.g * (1 - rate) + color.g * rate;
         this.b = this.b * (1 - rate) + color.b * rate;
         this.a = this.a * (1 - rate) + color.a * rate;
+
         return this;
     }
 
@@ -154,6 +157,7 @@ export class Color4
         this.g *= c.g;
         this.b *= c.b;
         this.a *= c.a;
+
         return this;
     }
 
@@ -169,7 +173,7 @@ export class Color4
 
     /**
      * 乘以指定常量
-     * 
+     *
      * @param scale 缩放常量
      * @returns 返回自身
      */
@@ -179,6 +183,7 @@ export class Color4
         this.g *= scale;
         this.b *= scale;
         this.a *= scale;
+
         return this;
     }
 
@@ -188,13 +193,14 @@ export class Color4
     equals(object: Color4, precision = mathUtil.PRECISION)
     {
         if (!mathUtil.equals(this.r - object.r, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.g - object.g, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.b - object.b, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.a - object.a, 0, precision))
-            return false;
+        { return false; }
+
         return true;
     }
 
@@ -207,6 +213,7 @@ export class Color4
         this.g = color.g;
         this.b = color.b;
         this.a = color.a;
+
         return this;
     }
 
@@ -215,7 +222,7 @@ export class Color4
      */
     toString(): string
     {
-        return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+        return `{R: ${this.r} G:${this.g} B:${this.b} A:${this.a}}`;
     }
 
     toColor3(color = new Color3())
@@ -223,6 +230,7 @@ export class Color4
         color.r = this.r;
         color.g = this.g;
         color.b = this.b;
+
         return color;
     }
 
@@ -232,6 +240,7 @@ export class Color4
         vector4.y = this.g;
         vector4.z = this.b;
         vector4.w = this.a;
+
         return vector4;
     }
 
@@ -246,6 +255,7 @@ export class Color4
         array[offset + 1] = this.g;
         array[offset + 2] = this.b;
         array[offset + 3] = this.a;
+
         return array;
     }
 
@@ -271,6 +281,6 @@ Color3.prototype.toColor4 = function toColor4(color4 = new Color4())
     color4.r = this.r;
     color4.g = this.g;
     color4.b = this.b;
-    
+
     return color4;
 };

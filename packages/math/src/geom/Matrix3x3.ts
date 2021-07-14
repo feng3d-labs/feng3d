@@ -1,5 +1,5 @@
-import { Quaternion } from "./Quaternion";
-import { Vector3 } from "./Vector3";
+import { Quaternion } from './Quaternion';
+import { Vector3 } from './Vector3';
 
 type NmberArray9 = [
     number, number, number,
@@ -16,7 +16,7 @@ type NmberArray9 = [
  *  |     0       scaleY      0    |   y轴
  *  |     tx        ty        1    |   平移
  *  ---                                   ---
- * 
+ *
  *  ---                                   ---
  *  |     0         1         2    |   x轴
  *  |     3         4         5    |   y轴
@@ -33,7 +33,7 @@ export class Matrix3x3
 
     /**
      * 构建3x3矩阵
-     * 
+     *
      * @param elements 九个元素的数组
      */
     constructor(elements: NmberArray9 = [
@@ -49,7 +49,8 @@ export class Matrix3x3
      */
     identity()
     {
-        var e = this.elements;
+        const e = this.elements;
+
         e[0] = 1;
         e[1] = 0;
         e[2] = 0;
@@ -61,6 +62,7 @@ export class Matrix3x3
         e[6] = 0;
         e[7] = 0;
         e[8] = 1;
+
         return this;
     }
 
@@ -69,7 +71,8 @@ export class Matrix3x3
      */
     setZero()
     {
-        var e = this.elements;
+        const e = this.elements;
+
         e[0] = 0;
         e[1] = 0;
         e[2] = 0;
@@ -79,20 +82,23 @@ export class Matrix3x3
         e[6] = 0;
         e[7] = 0;
         e[8] = 0;
+
         return this;
     }
 
     /**
      * 根据一个 Vector3 设置矩阵对角元素
-     * 
+     *
      * @param vec3
      */
     setTrace(vec3: Vector3)
     {
-        var e = this.elements;
+        const e = this.elements;
+
         e[0] = vec3.x;
         e[4] = vec3.y;
         e[8] = vec3.z;
+
         return this;
     }
 
@@ -101,25 +107,28 @@ export class Matrix3x3
      */
     getTrace(target = new Vector3())
     {
-        var e = this.elements;
+        const e = this.elements;
+
         target.x = e[0];
         target.y = e[4];
         target.z = e[8];
+
         return target;
     }
 
     /**
      * 矩阵向量乘法
-     * 
+     *
      * @param v 要乘以的向量
      * @param target 目标保存结果
      */
     vmult(v: Vector3, target = new Vector3())
     {
-        var e = this.elements,
-            x = v.x,
-            y = v.y,
-            z = v.z;
+        const e = this.elements;
+        const x = v.x;
+        const y = v.y;
+        const z = v.z;
+
         target.x = e[0] * x + e[1] * y + e[2] * z;
         target.y = e[3] * x + e[4] * y + e[5] * z;
         target.z = e[6] * x + e[7] * y + e[8] * z;
@@ -133,7 +142,7 @@ export class Matrix3x3
      */
     smult(s: number)
     {
-        for (var i = 0; i < this.elements.length; i++)
+        for (let i = 0; i < this.elements.length; i++)
         {
             this.elements[i] *= s;
         }
@@ -145,56 +154,63 @@ export class Matrix3x3
      */
     mmult(m: Matrix3x3, target = new Matrix3x3())
     {
-        for (var i = 0; i < 3; i++)
+        for (let i = 0; i < 3; i++)
         {
-            for (var j = 0; j < 3; j++)
+            for (let j = 0; j < 3; j++)
             {
-                var sum = 0.0;
-                for (var k = 0; k < 3; k++)
+                let sum = 0.0;
+
+                for (let k = 0; k < 3; k++)
                 {
                     sum += m.elements[i + k * 3] * this.elements[k + j * 3];
                 }
                 target.elements[i + j * 3] = sum;
             }
         }
+
         return target;
     }
 
     /**
      * 缩放矩阵的每一列
-     * 
+     *
      * @param v
      */
     scale(v: Vector3, target = new Matrix3x3())
     {
-        var e = this.elements,
-            t = target.elements;
-        for (var i = 0; i !== 3; i++)
+        const e = this.elements;
+        const t = target.elements;
+
+        for (let i = 0; i !== 3; i++)
         {
             t[3 * i + 0] = v.x * e[3 * i + 0];
             t[3 * i + 1] = v.y * e[3 * i + 1];
             t[3 * i + 2] = v.z * e[3 * i + 2];
         }
+
         return target;
     }
 
     /**
      * 解决Ax = b
-     * 
+     *
      * @param b 右手边
      * @param target 结果
      */
     solve(b: Vector3, target = new Vector3())
     {
         // Construct equations
-        var nr = 3; // num rows
-        var nc = 4; // num cols
-        var eqns: number[] = [];
+        const nr = 3; // num rows
+        const nc = 4; // num cols
+        const eqns: number[] = [];
+
         for (var i = 0; i < nr * nc; i++)
         {
             eqns.push(0);
         }
-        var i: number, j: number;
+        var i: number; let
+            j: number;
+
         for (i = 0; i < 3; i++)
         {
             for (j = 0; j < 3; j++)
@@ -207,9 +223,11 @@ export class Matrix3x3
         eqns[3 + 4 * 2] = b.z;
 
         // 计算矩阵的右上三角型——高斯消去法
-        var n = 3, k = n, np;
-        var kp = 4; // num rows
-        var p: number;
+        let n = 3; const k = n; let
+            np;
+        const kp = 4; // num rows
+        let p: number;
+
         do
         {
             i = k - n;
@@ -222,7 +240,7 @@ export class Matrix3x3
                     {
                         np = kp;
                         do
-                        {  // do ligne( i ) = ligne( i ) + ligne( k )
+                        { // do ligne( i ) = ligne( i ) + ligne( k )
                             p = kp - np;
                             eqns[p + nc * i] += eqns[p + nc * j];
                         } while (--np);
@@ -234,10 +252,11 @@ export class Matrix3x3
             {
                 for (j = i + 1; j < k; j++)
                 {
-                    var multiplier = eqns[i + nc * j] / eqns[i + nc * i];
+                    const multiplier = eqns[i + nc * j] / eqns[i + nc * i];
+
                     np = kp;
                     do
-                    {  // do ligne( k ) = ligne( k ) - multiplier * ligne( i )
+                    { // do ligne( k ) = ligne( k ) - multiplier * ligne( i )
                         p = kp - np;
                         eqns[p + nc * j] = p <= i ? 0 : eqns[p + nc * j] - eqns[p + nc * i] * multiplier;
                     } while (--np);
@@ -247,12 +266,12 @@ export class Matrix3x3
 
         // Get the solution
         target.z = eqns[2 * nc + 3] / eqns[2 * nc + 2];
-        target.y = (eqns[1 * nc + 3] - eqns[1 * nc + 2] * target.z) / eqns[1 * nc + 1];
+        target.y = (eqns[Number(nc) + 3] - eqns[Number(nc) + 2] * target.z) / eqns[Number(nc) + 1];
         target.x = (eqns[0 * nc + 3] - eqns[0 * nc + 2] * target.z - eqns[0 * nc + 1] * target.y) / eqns[0 * nc + 0];
 
         if (isNaN(target.x) || isNaN(target.y) || isNaN(target.z) || target.x === Infinity || target.y === Infinity || target.z === Infinity)
         {
-            throw "Could not solve equation! Got x=[" + target.toString() + "], b=[" + b.toString() + "], A=[" + this.toString() + "]";
+            throw `Could not solve equation! Got x=[${target.toString()}], b=[${b.toString()}], A=[${this.toString()}]`;
         }
 
         return target;
@@ -260,9 +279,9 @@ export class Matrix3x3
 
     /**
      * 获取指定行列元素值
-     * 
-     * @param row 
-     * @param column 
+     *
+     * @param row
+     * @param column
      */
     getElement(row: number, column: number)
     {
@@ -271,7 +290,7 @@ export class Matrix3x3
 
     /**
      * 设置指定行列元素值
-     * 
+     *
      * @param row
      * @param column
      * @param value
@@ -283,15 +302,16 @@ export class Matrix3x3
 
     /**
      * 将另一个矩阵复制到这个矩阵对象中
-     * 
+     *
      * @param source
      */
     copy(source: Matrix3x3)
     {
-        for (var i = 0; i < source.elements.length; i++)
+        for (let i = 0; i < source.elements.length; i++)
         {
             this.elements[i] = source.elements[i];
         }
+
         return this;
     }
 
@@ -300,12 +320,14 @@ export class Matrix3x3
      */
     toString()
     {
-        var r = "";
-        var sep = ",";
-        for (var i = 0; i < 9; i++)
+        let r = '';
+        const sep = ',';
+
+        for (let i = 0; i < 9; i++)
         {
             r += this.elements[i] + sep;
         }
+
         return r;
     }
 
@@ -315,14 +337,17 @@ export class Matrix3x3
     reverse()
     {
         // Construct equations
-        var nr = 3; // num rows
-        var nc = 6; // num cols
-        var eqns = [];
+        const nr = 3; // num rows
+        const nc = 6; // num cols
+        const eqns = [];
+
         for (var i = 0; i < nr * nc; i++)
         {
             eqns.push(0);
         }
-        var i: number, j: number;
+        var i: number; let
+            j: number;
+
         for (i = 0; i < 3; i++)
         {
             for (j = 0; j < 3; j++)
@@ -341,9 +366,11 @@ export class Matrix3x3
         eqns[5 + 6 * 2] = 1;
 
         // Compute right upper triangular version of the matrix - Gauss elimination
-        var n = 3, k = n, np: number;
-        var kp = nc; // num rows
-        var p: number;
+        let n = 3; const k = n; let
+            np: number;
+        const kp = nc; // num rows
+        let p: number;
+
         do
         {
             i = k - n;
@@ -369,6 +396,7 @@ export class Matrix3x3
                 for (j = i + 1; j < k; j++)
                 {
                     var multiplier = eqns[i + nc * j] / eqns[i + nc * i];
+
                     np = kp;
                     do
                     { // do line( k ) = line( k ) - multiplier * line( i )
@@ -387,6 +415,7 @@ export class Matrix3x3
             do
             {
                 var multiplier = eqns[i + nc * j] / eqns[i + nc * i];
+
                 np = nc;
                 do
                 {
@@ -401,6 +430,7 @@ export class Matrix3x3
         do
         {
             var multiplier = 1 / eqns[i + nc * i];
+
             np = nc;
             do
             {
@@ -418,7 +448,7 @@ export class Matrix3x3
                 p = eqns[nr + j + nc * i];
                 if (isNaN(p) || p === Infinity)
                 {
-                    throw "Could not reverse! A=[" + this.toString() + "]";
+                    throw `Could not reverse! A=[${this.toString()}]`;
                 }
                 this.setElement(i, j, p);
             } while (j--);
@@ -437,17 +467,17 @@ export class Matrix3x3
 
     /**
      * 从四元数设置矩阵
-     * 
+     *
      * @param q
      */
     setRotationFromQuaternion(q: Quaternion)
     {
-        var x = q.x, y = q.y, z = q.z, w = q.w,
-            x2 = x + x, y2 = y + y, z2 = z + z,
-            xx = x * x2, xy = x * y2, xz = x * z2,
-            yy = y * y2, yz = y * z2, zz = z * z2,
-            wx = w * x2, wy = w * y2, wz = w * z2,
-            e = this.elements;
+        const x = q.x; const y = q.y; const z = q.z; const w = q.w;
+        const x2 = x + x; const y2 = y + y; const z2 = z + z;
+        const xx = x * x2; const xy = x * y2; const xz = x * z2;
+        const yy = y * y2; const yz = y * z2; const zz = z * z2;
+        const wx = w * x2; const wy = w * y2; const wz = w * z2;
+        const e = this.elements;
 
         e[3 * 0 + 0] = 1 - (yy + zz);
         e[3 * 0 + 1] = xy - wz;
@@ -469,12 +499,12 @@ export class Matrix3x3
      */
     transpose()
     {
-        var Mt = this.elements,
-            M = this.elements.concat();
+        const Mt = this.elements;
+        const M = this.elements.concat();
 
-        for (var i = 0; i !== 3; i++)
+        for (let i = 0; i !== 3; i++)
         {
-            for (var j = 0; j !== 3; j++)
+            for (let j = 0; j !== 3; j++)
             {
                 Mt[3 * i + j] = M[3 * j + i];
             }
@@ -502,6 +532,7 @@ export class Matrix3x3
         {
             array[offset + i] = v;
         });
+
         return array;
     }
 }

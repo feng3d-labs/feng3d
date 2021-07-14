@@ -968,7 +968,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
      * 从自身与子代（孩子，孩子的孩子，...）Entity 中获取所有指定类型的组件
      * 
      * @param type 要检索的组件的类型。
-     * @returns 		返回与给出类定义一致的组件
+     * @returns         返回与给出类定义一致的组件
      */
     getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
         /**
@@ -1019,7 +1019,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
      * 从父代（父亲，父亲的父亲，...）中获取组件
      * 
      * @param type 类定义
-     * @returns 		返回与给出类定义一致的组件
+     * @returns         返回与给出类定义一致的组件
      */
     getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
     {

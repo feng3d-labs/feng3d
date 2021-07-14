@@ -1,325 +1,342 @@
-import { mathUtil } from "@feng3d/polyfill";
-import { Matrix4x4 } from "../../geom/Matrix4x4";
-import { Vector } from "../../geom/Vector";
-import { Vector3 } from "../../geom/Vector3";
+import { mathUtil } from '@feng3d/polyfill';
+import { Matrix4x4 } from '../../geom/Matrix4x4';
+import { Vector } from '../../geom/Vector';
+import { Vector3 } from '../../geom/Vector3';
 
 /**
  * An extensible curve object which contains methods for interpolation
  */
 export class Curve<T extends Vector>
 {
-	/**
-	 * This value determines the amount of divisions when calculating the cumulative segment lengths of a curve via .getLengths.
-	 * To ensure precision when using methods like .getSpacedPoints, it is recommended to increase .arcLengthDivisions if the curve is very large.
-	 */
-	arcLengthDivisions = 200;
+    /**
+     * This value determines the amount of divisions when calculating the cumulative segment lengths of a curve via .getLengths.
+     * To ensure precision when using methods like .getSpacedPoints, it is recommended to increase .arcLengthDivisions if the curve is very large.
+     */
+    arcLengthDivisions = 200;
 
-	needsUpdate = false;
+    needsUpdate = false;
 
-	cacheArcLengths: number[];
+    cacheArcLengths: number[];
 
-	getResolution(divisions: number): number
-	{
-		return divisions;
-	}
+    getResolution(divisions: number): number
+    {
+        return divisions;
+    }
 
-	/**
-	 * Virtual base class method to overwrite and implement in subclasses
-	 * 
-	 * - t [0 .. 1]
-	 * Returns a vector for point t of the curve where t is between 0 and 1
-	 */
-	getPoint(t?: number, optionalTarget?: T): T
-	{
-		console.warn('THREE.Curve: .getPoint() not implemented.');
-		return null;
-	}
+    /**
+     * Virtual base class method to overwrite and implement in subclasses
+     *
+     * - t [0 .. 1]
+     * Returns a vector for point t of the curve where t is between 0 and 1
+     */
+    getPoint(_t?: number, _optionalTarget?: T): T
+    {
+        console.warn('Curve: .getPoint() not implemented.');
 
-	/**
-	 * Get point at relative position in curve according to arc length
-	 * Returns a vector for point at relative position in curve according to arc length
-	 * 
-	 * @param u [0 .. 1]
-	 * @param optionalTarget 
-	 */
-	getPointAt(u: number, optionalTarget?: T)
-	{
-		const t = this.getUtoTmapping(u);
-		return this.getPoint(t, optionalTarget);
-	}
+        return null;
+    }
 
-	/**
-	 * Get sequence of points using getPoint( t )
-	 */
-	getPoints(divisions = 5)
-	{
-		const points: T[] = [];
+    /**
+     * Get point at relative position in curve according to arc length
+     * Returns a vector for point at relative position in curve according to arc length
+     *
+     * @param u [0 .. 1]
+     * @param optionalTarget
+     */
+    getPointAt(u: number, optionalTarget?: T)
+    {
+        const t = this.getUtoTmapping(u);
 
-		for (let d = 0; d <= divisions; d++)
-		{
-			points.push(this.getPoint(d / divisions));
-		}
-		return points;
-	}
+        return this.getPoint(t, optionalTarget);
+    }
 
-	/**
-	 * Get sequence of equi-spaced points using getPointAt( u )
-	 */
-	getSpacedPoints(divisions: number)
-	{
-		if (divisions === undefined) divisions = 5;
-		const points = [];
-		for (let d = 0; d <= divisions; d++)
-		{
-			points.push(this.getPointAt(d / divisions));
-		}
-		return points;
-	}
+    /**
+     * Get sequence of points using getPoint( t )
+     */
+    getPoints(divisions = 5)
+    {
+        const points: T[] = [];
 
-	/**
-	 * Get total curve arc length
-	 */
-	getLength()
-	{
-		const lengths = this.getLengths();
-		return lengths[lengths.length - 1];
-	}
+        for (let d = 0; d <= divisions; d++)
+        {
+            points.push(this.getPoint(d / divisions));
+        }
 
-	/**
-	 * Get list of cumulative segment lengths
-	 */
-	getLengths(divisions?: number)
-	{
-		if (divisions === undefined) divisions = this.arcLengthDivisions;
+        return points;
+    }
 
-		if (this.cacheArcLengths && (this.cacheArcLengths.length === divisions + 1) && !this.needsUpdate)
-		{
-			return this.cacheArcLengths;
-		}
+    /**
+     * Get sequence of equi-spaced points using getPointAt( u )
+     */
+    getSpacedPoints(divisions: number)
+    {
+        if (divisions === undefined) divisions = 5;
+        const points = [];
 
-		this.needsUpdate = false;
+        for (let d = 0; d <= divisions; d++)
+        {
+            points.push(this.getPointAt(d / divisions));
+        }
 
-		const cache: number[] = [];
-		let current: T, last = this.getPoint(0);
-		let sum = 0;
+        return points;
+    }
 
-		cache.push(0);
+    /**
+     * Get total curve arc length
+     */
+    getLength()
+    {
+        const lengths = this.getLengths();
 
-		for (let p = 1; p <= divisions; p++)
-		{
-			current = this.getPoint(p / divisions);
-			sum += current.distance(last);
-			cache.push(sum);
-			last = current;
-		}
+        return lengths[lengths.length - 1];
+    }
 
-		this.cacheArcLengths = cache;
+    /**
+     * Get list of cumulative segment lengths
+     */
+    getLengths(divisions?: number)
+    {
+        if (divisions === undefined) divisions = this.arcLengthDivisions;
 
-		return cache;
-	}
+        if (this.cacheArcLengths && (this.cacheArcLengths.length === divisions + 1) && !this.needsUpdate)
+        {
+            return this.cacheArcLengths;
+        }
 
-	/**
-	 * Update the cumlative segment distance cache
-	 */
-	updateArcLengths()
-	{
-		this.needsUpdate = true;
-		this.getLengths();
-	}
+        this.needsUpdate = false;
 
-	/**
-	 * Given u ( 0 .. 1 ), get a t to find p. This gives you points which are equi distance
-	 */
-	getUtoTmapping(u: number, distance?: number)
-	{
-		const arcLengths = this.getLengths();
+        const cache: number[] = [];
+        let current: T; let
+            last = this.getPoint(0);
+        let sum = 0;
 
-		let i = 0;
-		const il = arcLengths.length;
+        cache.push(0);
 
-		let targetArcLength: number; // The targeted u distance value to get
+        for (let p = 1; p <= divisions; p++)
+        {
+            current = this.getPoint(p / divisions);
+            sum += current.distance(last);
+            cache.push(sum);
+            last = current;
+        }
 
-		if (distance)
-		{
-			targetArcLength = distance;
-		} else
-		{
-			targetArcLength = u * arcLengths[il - 1];
-		}
+        this.cacheArcLengths = cache;
 
-		// binary search for the index with largest value smaller than target u distance
-		let low = 0, high = il - 1, comparison;
+        return cache;
+    }
 
-		while (low <= high)
-		{
-			i = Math.floor(low + (high - low) / 2); // less likely to overflow, though probably not issue here, JS doesn't really have integers, all numbers are floats
-			comparison = arcLengths[i] - targetArcLength;
-			if (comparison < 0)
-			{
-				low = i + 1;
-			} else if (comparison > 0)
-			{
-				high = i - 1;
-			} else
-			{
-				high = i;
-				break;
-			}
-		}
+    /**
+     * Update the cumlative segment distance cache
+     */
+    updateArcLengths()
+    {
+        this.needsUpdate = true;
+        this.getLengths();
+    }
 
-		i = high;
+    /**
+     * Given u ( 0 .. 1 ), get a t to find p. This gives you points which are equi distance
+     */
+    getUtoTmapping(u: number, distance?: number)
+    {
+        const arcLengths = this.getLengths();
 
-		if (arcLengths[i] === targetArcLength)
-		{
-			return i / (il - 1);
-		}
+        let i = 0;
+        const il = arcLengths.length;
 
-		// we could get finer grain at lengths, or use simple interpolation between two points
-		const lengthBefore = arcLengths[i];
-		const lengthAfter = arcLengths[i + 1];
+        let targetArcLength: number; // The targeted u distance value to get
 
-		const segmentLength = lengthAfter - lengthBefore;
+        if (distance)
+        {
+            targetArcLength = distance;
+        }
+        else
+        {
+            targetArcLength = u * arcLengths[il - 1];
+        }
 
-		// determine where we are between the 'before' and 'after' points
-		const segmentFraction = (targetArcLength - lengthBefore) / segmentLength;
+        // binary search for the index with largest value smaller than target u distance
+        let low = 0;
+        let high = il - 1;
+        let comparison: number;
 
-		// add that fractional amount to t
-		const t = (i + segmentFraction) / (il - 1);
-		return t;
-	}
+        while (low <= high)
+        {
+            i = Math.floor(low + ((high - low) / 2)); // less likely to overflow, though probably not issue here, JS doesn't really have integers, all numbers are floats
+            comparison = arcLengths[i] - targetArcLength;
+            if (comparison < 0)
+            {
+                low = i + 1;
+            }
+            else if (comparison > 0)
+            {
+                high = i - 1;
+            }
+            else
+            {
+                high = i;
+                break;
+            }
+        }
 
-	/**
-	 * Returns a unit vector tangent at t. If the subclassed curve do not implement its tangent derivation, 2 points a small delta apart will be used to find its gradient which seems to give a reasonable approximation
-	 * getTangent(t: number, optionalTarget?: T): T;
-	 */
-	getTangent(t: number, optionalTarget: T): T
-	{
-		const delta = 0.0001;
-		let t1 = t - delta;
-		let t2 = t + delta;
+        i = high;
 
-		// Capping in case of danger
+        if (arcLengths[i] === targetArcLength)
+        {
+            return i / (il - 1);
+        }
 
-		if (t1 < 0) t1 = 0;
-		if (t2 > 1) t2 = 1;
+        // we could get finer grain at lengths, or use simple interpolation between two points
+        const lengthBefore = arcLengths[i];
+        const lengthAfter = arcLengths[i + 1];
 
-		const pt1 = this.getPoint(t1);
-		const pt2 = this.getPoint(t2);
+        const segmentLength = lengthAfter - lengthBefore;
 
-		const tangent = optionalTarget;
+        // determine where we are between the 'before' and 'after' points
+        const segmentFraction = (targetArcLength - lengthBefore) / segmentLength;
 
-		tangent.copy(pt2).sub(pt1).normalize();
+        // add that fractional amount to t
+        const t = (i + segmentFraction) / (il - 1);
 
-		return tangent;
-	}
+        return t;
+    }
 
-	/**
-	 * Returns tangent at equidistance point u on the curve
-	 * getTangentAt(u: number, optionalTarget?: T): T;
-	 */
-	getTangentAt(u: number, optionalTarget: T)
-	{
-		const t = this.getUtoTmapping(u);
-		return this.getTangent(t, optionalTarget);
-	}
+    /**
+     * Returns a unit vector tangent at t. If the subclassed curve do not implement its tangent derivation, 2 points a small delta apart will be used to find its gradient which seems to give a reasonable approximation
+     * getTangent(t: number, optionalTarget?: T): T;
+     */
+    getTangent(t: number, optionalTarget: T): T
+    {
+        const delta = 0.0001;
+        let t1 = t - delta;
+        let t2 = t + delta;
 
-	computeFrenetFrames(segments: number, closed: boolean)
-	{
-		// see http://www.cs.indiana.edu/pub/techreports/TR425.pdf
+        // Capping in case of danger
 
-		const normal = new Vector3();
+        if (t1 < 0) t1 = 0;
+        if (t2 > 1) t2 = 1;
 
-		const tangents: Vector3[] = [];
-		const normals: Vector3[] = [];
-		const binormals: Vector3[] = [];
+        const pt1 = this.getPoint(t1);
+        const pt2 = this.getPoint(t2);
 
-		const vec = new Vector3();
-		const mat = new Matrix4x4();
+        const tangent = optionalTarget;
 
-		// compute the tangent vectors for each segment on the curve
+        tangent.copy(pt2).sub(pt1).normalize();
 
-		let curve3: Curve<Vector3> = this as any;
-		for (let i = 0; i <= segments; i++)
-		{
-			const u = i / segments;
+        return tangent;
+    }
 
-			tangents[i] = curve3.getTangentAt(u, new Vector3());
-			tangents[i].normalize();
-		}
+    /**
+     * Returns tangent at equidistance point u on the curve
+     * getTangentAt(u: number, optionalTarget?: T): T;
+     */
+    getTangentAt(u: number, optionalTarget: T)
+    {
+        const t = this.getUtoTmapping(u);
 
-		// select an initial normal vector perpendicular to the first tangent vector,
-		// and in the direction of the minimum tangent xyz component
-		normals[0] = new Vector3();
-		binormals[0] = new Vector3();
-		let min = Number.MAX_VALUE;
-		const tx = Math.abs(tangents[0].x);
-		const ty = Math.abs(tangents[0].y);
-		const tz = Math.abs(tangents[0].z);
+        return this.getTangent(t, optionalTarget);
+    }
 
-		if (tx <= min)
-		{
-			min = tx;
-			normal.set(1, 0, 0);
-		}
+    computeFrenetFrames(segments: number, closed: boolean)
+    {
+        // see http://www.cs.indiana.edu/pub/techreports/TR425.pdf
 
-		if (ty <= min)
-		{
-			min = ty;
-			normal.set(0, 1, 0);
-		}
+        const normal = new Vector3();
 
-		if (tz <= min)
-		{
-			normal.set(0, 0, 1);
-		}
+        const tangents: Vector3[] = [];
+        const normals: Vector3[] = [];
+        const binormals: Vector3[] = [];
 
-		tangents[0].crossTo(normal, vec).normalize();
-		tangents[0].crossTo(vec, normals[0]);
-		tangents[0].crossTo(normals[0], binormals[0]);
+        const vec = new Vector3();
+        const mat = new Matrix4x4();
 
-		// compute the slowly-varying normal and binormal vectors for each segment on the curve
-		for (let i = 1; i <= segments; i++)
-		{
-			normals[i] = normals[i - 1].clone();
-			binormals[i] = binormals[i - 1].clone();
-			tangents[i - 1].crossTo(tangents[i], vec);
+        // compute the tangent vectors for each segment on the curve
 
-			if (vec.length > Number.EPSILON)
-			{
-				vec.normalize();
+        const curve3: Curve<Vector3> = this as any;
 
-				const theta = Math.acos(mathUtil.clamp(tangents[i - 1].dot(tangents[i]), - 1, 1)); // clamp for floating pt errors
-				mat.fromAxisRotate(vec, theta * mathUtil.RAD2DEG);
-				mat.transformPoint3(normals[i], normals[i]);
-			}
+        for (let i = 0; i <= segments; i++)
+        {
+            const u = i / segments;
 
-			tangents[i].crossTo(normals[i], binormals[i]);
-		}
+            tangents[i] = curve3.getTangentAt(u, new Vector3());
+            tangents[i].normalize();
+        }
 
-		// if the curve is closed, postprocess the vectors so the first and last normal vectors are the same
+        // select an initial normal vector perpendicular to the first tangent vector,
+        // and in the direction of the minimum tangent xyz component
+        normals[0] = new Vector3();
+        binormals[0] = new Vector3();
+        let min = Number.MAX_VALUE;
+        const tx = Math.abs(tangents[0].x);
+        const ty = Math.abs(tangents[0].y);
+        const tz = Math.abs(tangents[0].z);
 
-		if (closed === true)
-		{
-			let theta = Math.acos(mathUtil.clamp(normals[0].dot(normals[segments]), - 1, 1));
-			theta /= segments;
+        if (tx <= min)
+        {
+            min = tx;
+            normal.set(1, 0, 0);
+        }
 
-			if (tangents[0].dot(normals[0].crossTo(normals[segments], vec)) > 0)
-			{
-				theta = - theta;
-			}
+        if (ty <= min)
+        {
+            min = ty;
+            normal.set(0, 1, 0);
+        }
 
-			for (let i = 1; i <= segments; i++)
-			{
-				// twist a little...
-				mat.fromAxisRotate(tangents[i], theta * i * mathUtil.RAD2DEG).transformPoint3(normals[i], normals[i]);
-				tangents[i].crossTo(normals[i], binormals[i]);
-			}
-		}
+        if (tz <= min)
+        {
+            normal.set(0, 0, 1);
+        }
 
-		return {
-			tangents: tangents,
-			normals: normals,
-			binormals: binormals
-		};
-	}
+        tangents[0].crossTo(normal, vec).normalize();
+        tangents[0].crossTo(vec, normals[0]);
+        tangents[0].crossTo(normals[0], binormals[0]);
+
+        // compute the slowly-varying normal and binormal vectors for each segment on the curve
+        for (let i = 1; i <= segments; i++)
+        {
+            normals[i] = normals[i - 1].clone();
+            binormals[i] = binormals[i - 1].clone();
+            tangents[i - 1].crossTo(tangents[i], vec);
+
+            if (vec.length > Number.EPSILON)
+            {
+                vec.normalize();
+
+                const theta = Math.acos(mathUtil.clamp(tangents[i - 1].dot(tangents[i]), -1, 1)); // clamp for floating pt errors
+
+                mat.fromAxisRotate(vec, theta * mathUtil.RAD2DEG);
+                mat.transformPoint3(normals[i], normals[i]);
+            }
+
+            tangents[i].crossTo(normals[i], binormals[i]);
+        }
+
+        // if the curve is closed, postprocess the vectors so the first and last normal vectors are the same
+
+        if (closed === true)
+        {
+            let theta = Math.acos(mathUtil.clamp(normals[0].dot(normals[segments]), -1, 1));
+
+            theta /= segments;
+
+            if (tangents[0].dot(normals[0].crossTo(normals[segments], vec)) > 0)
+            {
+                theta = -theta;
+            }
+
+            for (let i = 1; i <= segments; i++)
+            {
+                // twist a little...
+                mat.fromAxisRotate(tangents[i], theta * i * mathUtil.RAD2DEG).transformPoint3(normals[i], normals[i]);
+                tangents[i].crossTo(normals[i], binormals[i]);
+            }
+        }
+
+        return {
+            tangents,
+            normals,
+            binormals
+        };
+    }
 }

@@ -1,14 +1,14 @@
-import { mathUtil } from "@feng3d/polyfill";
-import { serialize } from "@feng3d/serialization";
-import { AnimationCurve } from "./AnimationCurve";
-import { MinMaxCurveMode } from "./MinMaxCurveMode";
+import { mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { AnimationCurve } from './AnimationCurve';
+import { MinMaxCurveMode } from './MinMaxCurveMode';
 
 /**
  * 最大最小曲线
  */
 export class MinMaxCurve
 {
-    __class__: "feng3d.MinMaxCurve";
+    __class__: 'feng3d.MinMaxCurve';
 
     /**
      * 模式
@@ -18,7 +18,7 @@ export class MinMaxCurve
 
     /**
      * Set the constant value.
-     * 
+     *
      * 设置常数值。
      */
     @serialize
@@ -26,7 +26,7 @@ export class MinMaxCurve
 
     /**
      * Set a constant for the lower bound.
-     * 
+     *
      * 为下界设置一个常数。
      */
     @serialize
@@ -34,7 +34,7 @@ export class MinMaxCurve
 
     /**
      * Set a constant for the upper bound.
-     * 
+     *
      * 为上界设置一个常数。
      */
     @serialize
@@ -42,7 +42,7 @@ export class MinMaxCurve
 
     /**
      * Set the curve.
-     * 
+     *
      * 设置曲线。
      */
     @serialize
@@ -50,7 +50,7 @@ export class MinMaxCurve
 
     /**
      * Set a curve for the lower bound.
-     * 
+     *
      * 为下界设置一条曲线。
      */
     @serialize
@@ -58,7 +58,7 @@ export class MinMaxCurve
 
     /**
      * Set a curve for the upper bound.
-     * 
+     *
      * 为上界设置一条曲线。
      */
     @serialize
@@ -66,7 +66,7 @@ export class MinMaxCurve
 
     /**
      * Set a multiplier to be applied to the curves.
-     * 
+     *
      * 设置一个乘数应用于曲线。
      */
     @serialize

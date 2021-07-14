@@ -1,15 +1,15 @@
-import { oav } from "@feng3d/objectview";
-import { mathUtil } from "@feng3d/polyfill";
-import { serialize } from "@feng3d/serialization";
-import { Matrix4x4 } from "./Matrix4x4";
-import { Vector3 } from "./Vector3";
+import { oav } from '@feng3d/objectview';
+import { mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { Matrix4x4 } from './Matrix4x4';
+import { Vector3 } from './Vector3';
 
 /**
  * 四维向量
  */
 export class Vector4
 {
-    __class__: "feng3d.Vector4";
+    __class__: 'feng3d.Vector4';
 
     static fromArray(array: ArrayLike<number>, offset = 0)
     {
@@ -23,7 +23,7 @@ export class Vector4
 
     static random()
     {
-        return new Vector4(Math.random(), Math.random(), Math.random(), Math.random())
+        return new Vector4(Math.random(), Math.random(), Math.random(), Math.random());
     }
 
     /**
@@ -80,13 +80,14 @@ export class Vector4
         this.y = y;
         this.z = z;
         this.w = w;
+
         return this;
     }
 
     /**
      * 从数组初始化
      * @param array 提供数据的数组
-     * @param offset 数组中起始位置 
+     * @param offset 数组中起始位置
      * @returns 返回自身
      */
     fromArray(array: ArrayLike<number>, offset = 0)
@@ -95,6 +96,7 @@ export class Vector4
         this.y = array[offset + 1];
         this.z = array[offset + 2];
         this.w = array[offset + 3];
+
         return this;
     }
 
@@ -110,6 +112,7 @@ export class Vector4
         this.y = vector3.y;
         this.z = vector3.z;
         this.w = w;
+
         return this;
     }
 
@@ -120,6 +123,7 @@ export class Vector4
     toVector3(v3 = new Vector3())
     {
         v3.set(this.x, this.y, this.z);
+
         return v3;
     }
 
@@ -134,6 +138,7 @@ export class Vector4
         array[offset + 1] = this.y;
         array[offset + 2] = this.z;
         array[offset + 3] = this.w;
+
         return array;
     }
 
@@ -148,6 +153,7 @@ export class Vector4
         this.y += v.y;
         this.z += v.z;
         this.w += v.w;
+
         return this;
     }
 
@@ -181,6 +187,7 @@ export class Vector4
         this.y = v.y;
         this.z = v.z;
         this.w = v.w;
+
         return this;
     }
 
@@ -195,6 +202,7 @@ export class Vector4
         this.y -= v.y;
         this.z -= v.z;
         this.w -= v.w;
+
         return this;
     }
 
@@ -219,6 +227,7 @@ export class Vector4
         this.y *= v.y;
         this.z *= v.z;
         this.w *= v.w;
+
         return this;
     }
 
@@ -243,6 +252,7 @@ export class Vector4
         this.y /= v.y;
         this.z /= v.z;
         this.w /= v.w;
+
         return this;
     }
 
@@ -265,13 +275,14 @@ export class Vector4
     equals(v: Vector4, precision = mathUtil.PRECISION)
     {
         if (!mathUtil.equals(this.x - v.x, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.y - v.y, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.z - v.z, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.w - v.w, 0, precision))
-            return false;
+        { return false; }
+
         return true;
     }
 
@@ -285,6 +296,7 @@ export class Vector4
         this.y = -this.y;
         this.z = -this.z;
         this.w = -this.w;
+
         return this;
     }
 
@@ -308,6 +320,7 @@ export class Vector4
         this.y *= s;
         this.z *= s;
         this.w *= s;
+
         return this;
     }
 
@@ -341,6 +354,7 @@ export class Vector4
         this.y += (v.y - this.y) * alpha;
         this.z += (v.z - this.z) * alpha;
         this.w += (v.w - this.w) * alpha;
+
         return this;
     }
 
@@ -362,6 +376,7 @@ export class Vector4
     applyMatrix4x4(mat: Matrix4x4)
     {
         mat.transformVector4(this, this);
+
         return this;
     }
 
@@ -370,7 +385,7 @@ export class Vector4
      */
     toString(): string
     {
-        return "<" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ">";
+        return `<${this.x}, ${this.y}, ${this.z}, ${this.w}>`;
     }
 }
 

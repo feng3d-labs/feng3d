@@ -78,7 +78,7 @@ export class FEvent
      *
      * @param obj 被监听对象。
      * @param type 事件的类型。
-     * @returns 			                如果指定类型的监听器已注册，则值为 true；否则，值为 false。
+     * @returns                             如果指定类型的监听器已注册，则值为 true；否则，值为 false。
      */
     has(obj: any, type: string)
     {
