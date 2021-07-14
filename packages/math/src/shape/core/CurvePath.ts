@@ -53,7 +53,7 @@ export class CurvePath<T extends Vector> extends Curve<T>
                 const curve = this.curves[i];
 
                 const segmentLength = curve.getLength();
-                const u = segmentLength === 0 ? 0 : 1 - diff / segmentLength;
+                const u = segmentLength === 0 ? 0 : 1 - (diff / segmentLength);
 
                 return curve.getPointAt(u);
             }

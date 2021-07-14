@@ -61,7 +61,7 @@ export class Vector2 implements Vector
      */
     get length(): number
     {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
+        return Math.sqrt((this.x * this.x) + (this.y * this.y));
     }
 
     /**
@@ -231,10 +231,10 @@ export class Vector2 implements Vector
      */
     distance(p: Vector2)
     {
-        const dx = this.x - p.x; const
-            dy = this.y - p.y;
+        const dx = this.x - p.x;
+        const dy = this.y - p.y;
 
-        return Math.sqrt(dx * dx + dy * dy);
+        return Math.sqrt((dx * dx) + (dy * dy));
     }
 
     /**
@@ -243,10 +243,10 @@ export class Vector2 implements Vector
      */
     distanceSquared(p: Vector3)
     {
-        const dx = this.x - p.x; const
-            dy = this.y - p.y;
+        const dx = this.x - p.x;
+        const dy = this.y - p.y;
 
-        return dx * dx + dy * dy;
+        return (dx * dx) + (dy * dy);
     }
 
     /**

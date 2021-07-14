@@ -124,7 +124,7 @@ export class ShapePath2
                     }
                     else
                     {
-                        const perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
+                        const perpEdge = (edgeDy * (inPt.x - edgeLowPt.x)) - (edgeDx * (inPt.y - edgeLowPt.y));
 
                         if (perpEdge === 0) return true; // inPt is on contour ?
                         if (perpEdge < 0) continue;
@@ -152,8 +152,9 @@ export class ShapePath2
         // 处理无孔形状
         if (noHoles === true) return toShapesNoHoles(subPaths);
 
-        let solid: boolean; let tmpPath: Path2; let
-            tmpShape: Shape2;
+        let solid: boolean;
+        let tmpPath: Path2;
+        let tmpShape: Shape2;
         const shapes: Shape2[] = [];
 
         if (subPaths.length === 1)
@@ -233,16 +234,16 @@ export class ShapePath2
                 for (let hIdx = 0; hIdx < sho.length; hIdx++)
                 {
                     const ho = sho[hIdx];
-                    let hole_unassigned = true;
+                    let holeUnassigned = true;
 
                     for (let s2Idx = 0; s2Idx < newShapes.length; s2Idx++)
                     {
                         if (isPointInsidePolygon(ho.p, newShapes[s2Idx].p))
                         {
                             if (sIdx !== s2Idx) toChange.push({ froms: sIdx, tos: s2Idx, hole: hIdx });
-                            if (hole_unassigned)
+                            if (holeUnassigned)
                             {
-                                hole_unassigned = false;
+                                holeUnassigned = false;
                                 betterShapeHoles[s2Idx].push(ho);
                             }
                             else
@@ -252,7 +253,7 @@ export class ShapePath2
                         }
                     }
 
-                    if (hole_unassigned)
+                    if (holeUnassigned)
                     {
                         betterShapeHoles[sIdx].push(ho);
                     }

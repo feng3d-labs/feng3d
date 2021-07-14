@@ -338,14 +338,18 @@ export class Triangle3
         const d2y = p2y - p1y;
         const d2z = p2z - p1z;
 
-        const nx = d1y * d2z - d1z * d2y;
-        const ny = d1z * d2x - d1x * d2z;
-        const nz = d1x * d2y - d1y * d2x;
+        const nx = (d1y * d2z) - (d1z * d2y);
+        const ny = (d1z * d2x) - (d1x * d2z);
+        const nz = (d1x * d2y) - (d1y * d2x);
 
-        let u1: number; let u2: number; let u3: number; let
-            u4: number;
-        let v1: number; let v2: number; let v3: number; let
-            v4: number;
+        let u1: number;
+        let u2: number;
+        let u3: number;
+        let u4: number;
+        let v1: number;
+        let v2: number;
+        let v3: number;
+        let v4: number;
 
         if ((Math.abs(nx) >= Math.abs(ny)) && (Math.abs(nx) >= Math.abs(nz)))
         {
@@ -380,15 +384,15 @@ export class Triangle3
             v3 = p.y - p0y;
             v4 = p.y - p2y;
         }
-        const denom = v1 * u2 - v2 * u1;
+        const denom = (v1 * u2) - (v2 * u1);
         // if (mathUtil.equals(denom, 0))
         // {
         //     return null;
         // }
         const oneOverDenom = 1 / denom;
 
-        bp.x = (v4 * u2 - v2 * u4) * oneOverDenom;
-        bp.y = (v1 * u3 - v3 * u1) * oneOverDenom;
+        bp.x = ((v4 * u2) - (v2 * u4)) * oneOverDenom;
+        bp.y = ((v1 * u3) - (v3 * u1)) * oneOverDenom;
         bp.z = 1 - bp.x - bp.y;
 
         return bp;

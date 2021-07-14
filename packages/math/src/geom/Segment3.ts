@@ -130,6 +130,8 @@ export class Segment3
     {
         const position = this.getPositionByPoint(point);
 
+        let lengthSquared: number;
+
         if (position <= 0)
         {
             lengthSquared = point.subTo(this.p0).lengthSquared;
@@ -142,7 +144,8 @@ export class Segment3
         {
             const s0 = point.subTo(this.p0).lengthSquared;
             const s1 = position * position * this.p1.subTo(this.p0).lengthSquared;
-            var lengthSquared = Math.abs(s0 - s1);
+
+            lengthSquared = Math.abs(s0 - s1);
         }
 
         return lengthSquared;

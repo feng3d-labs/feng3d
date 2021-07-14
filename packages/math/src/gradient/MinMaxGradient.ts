@@ -72,6 +72,10 @@ export class MinMaxGradient
      */
     getValue(time: number, randomBetween: number = Math.random())
     {
+        let min: Color4;
+        let max: Color4;
+        let v: Color4;
+
         switch (this.mode)
         {
             case MinMaxGradientMode.Color:
@@ -81,13 +85,13 @@ export class MinMaxGradient
             case MinMaxGradientMode.TwoColors:
                 return this.colorMin.mixTo(this.colorMax, randomBetween);
             case MinMaxGradientMode.TwoGradients:
-                var min = this.gradientMin.getValue(time);
-                var max = this.gradientMax.getValue(time);
-                var v = min.mixTo(max, randomBetween);
+                min = this.gradientMin.getValue(time);
+                max = this.gradientMax.getValue(time);
+                v = min.mixTo(max, randomBetween);
 
                 return v;
             case MinMaxGradientMode.RandomColor:
-                var v = this.gradient.getValue(randomBetween);
+                v = this.gradient.getValue(randomBetween);
 
                 return v;
         }

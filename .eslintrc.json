@@ -135,7 +135,6 @@
         "no-self-assign": 1,
         "no-self-compare": 1,
         "no-sequences": 1,
-        "no-throw-literal": 1,
         "no-unmodified-loop-condition": 1,
         "no-unused-expressions": "off",
         "no-unused-labels": 1,
@@ -332,7 +331,6 @@
             }
         ],
         "no-negated-condition": 0,
-        "no-nested-ternary": 1,
         "no-new-object": 1,
         "no-plusplus": 0,
         "no-restricted-syntax": [

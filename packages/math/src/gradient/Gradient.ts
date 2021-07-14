@@ -87,8 +87,10 @@ export class Gradient
 
         for (let i = 0, n = alphaKeys.length - 1; i < n; i++)
         {
-            const t = alphaKeys[i].time; const v = alphaKeys[i].alpha; const nt = alphaKeys[i + 1].time; const
-                nv = alphaKeys[i + 1].alpha;
+            const t = alphaKeys[i].time;
+            const v = alphaKeys[i].alpha;
+            const nt = alphaKeys[i + 1].time;
+            const nv = alphaKeys[i + 1].alpha;
 
             if (time === t) return v;
             if (time === nt) return nv;
@@ -117,8 +119,10 @@ export class Gradient
 
         for (let i = 0, n = colorKeys.length - 1; i < n; i++)
         {
-            const t = colorKeys[i].time; const v = colorKeys[i].color; const nt = colorKeys[i + 1].time; const
-                nv = colorKeys[i + 1].color;
+            const t = colorKeys[i].time;
+            const v = colorKeys[i].color;
+            const nt = colorKeys[i + 1].time;
+            const nv = colorKeys[i + 1].color;
 
             if (time === t) return v;
             if (time === nt) return nv;

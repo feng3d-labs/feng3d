@@ -57,16 +57,18 @@ export class Sphere
         if (this.containsPoint(position))
         { return 0; }
 
-        const px: number = position.x - this.center.x; const py: number = position.y - this.center.y; const
-            pz: number = position.z - this.center.z;
-        const vx: number = direction.x; const vy: number = direction.y; const
-            vz: number = direction.z;
+        const px: number = position.x - this.center.x;
+        const py: number = position.y - this.center.y;
+        const pz: number = position.z - this.center.z;
+        const vx: number = direction.x;
+        const vy: number = direction.y;
+        const vz: number = direction.z;
         let rayEntryDistance: number;
 
-        const a: number = vx * vx + vy * vy + vz * vz;
-        const b: number = 2 * (px * vx + py * vy + pz * vz);
-        const c: number = px * px + py * py + pz * pz - this.radius * this.radius;
-        const det: number = b * b - 4 * a * c;
+        const a: number = (vx * vx) + (vy * vy) + (vz * vz);
+        const b: number = 2 * ((px * vx) + (py * vy) + (pz * vz));
+        const c: number = (px * px) + (py * py) + (pz * pz) - (this.radius * this.radius);
+        const det: number = (b * b) - (4 * a * c);
 
         if (det >= 0)
         { // ray goes through sphere
@@ -75,9 +77,9 @@ export class Sphere
             rayEntryDistance = (-b - sqrtDet) / (2 * a);
             if (rayEntryDistance >= 0)
             {
-                targetNormal.x = px + rayEntryDistance * vx;
-                targetNormal.y = py + rayEntryDistance * vy;
-                targetNormal.z = pz + rayEntryDistance * vz;
+                targetNormal.x = px + (rayEntryDistance * vx);
+                targetNormal.y = py + (rayEntryDistance * vy);
+                targetNormal.z = pz + (rayEntryDistance * vz);
                 targetNormal.normalize();
 
                 return rayEntryDistance;
