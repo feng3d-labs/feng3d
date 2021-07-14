@@ -54,7 +54,7 @@ export class RenderAtomic
 
     getIndexBuffer(): Index
     {
-        if (this.indexBuffer != undefined) return this.indexBuffer;
+        if (this.indexBuffer !== undefined) return this.indexBuffer;
         return (this.next && this.next.getIndexBuffer());
     }
 
@@ -67,7 +67,7 @@ export class RenderAtomic
 
     getAttributeByKey(key: string): Attribute
     {
-        if (this.attributes[key] != undefined) return this.attributes[key];
+        if (this.attributes[key] !== undefined) return this.attributes[key];
         return (this.next && this.next.getAttributeByKey(key));
     }
 
@@ -80,19 +80,19 @@ export class RenderAtomic
 
     getUniformByKey(key: string): Uniforms
     {
-        if (this.uniforms[key] != undefined) return lazy.getvalue(this.uniforms[key]);
+        if (this.uniforms[key] !== undefined) return lazy.getvalue(this.uniforms[key]);
         return (this.next && this.next.getUniformByKey(key));
     }
 
     getInstanceCount(): number
     {
-        if (this.instanceCount != undefined) return lazy.getvalue(this.instanceCount);
+        if (this.instanceCount !== undefined) return lazy.getvalue(this.instanceCount);
         return this.next && this.next.getInstanceCount();
     }
 
     getShader(): Shader
     {
-        if (this.shader != undefined) return this.shader;
+        if (this.shader !== undefined) return this.shader;
         return this.next && this.next.getShader();
     }
 

@@ -1,18 +1,18 @@
-import { serialize } from "@feng3d/serialization";
-import { Color4 } from "../Color4";
-import { Gradient } from "./Gradient";
-import { MinMaxGradientMode } from "./MinMaxGradientMode";
+import { serialize } from '@feng3d/serialization';
+import { Color4 } from '../Color4';
+import { Gradient } from './Gradient';
+import { MinMaxGradientMode } from './MinMaxGradientMode';
 
 /**
  * 最大最小颜色渐变
  */
 export class MinMaxGradient
 {
-    __class__: "feng3d.MinMaxGradient";
+    __class__: 'feng3d.MinMaxGradient';
 
     /**
      * Set the mode that the min-max gradient will use to evaluate colors.
-     * 
+     *
      * 设置最小-最大梯度将用于评估颜色的模式。
      */
     @serialize
@@ -20,7 +20,7 @@ export class MinMaxGradient
 
     /**
      * Set a constant color.
-     * 
+     *
      * 常量颜色值
      */
     @serialize
@@ -28,7 +28,7 @@ export class MinMaxGradient
 
     /**
      * Set a constant color for the lower bound.
-     * 
+     *
      * 为下界设置一个常量颜色。
      */
     @serialize
@@ -36,7 +36,7 @@ export class MinMaxGradient
 
     /**
      * Set a constant color for the upper bound.
-     * 
+     *
      * 为上界设置一个常量颜色。
      */
     @serialize
@@ -44,7 +44,7 @@ export class MinMaxGradient
 
     /**
      * Set the gradient.
-     * 
+     *
      * 设置渐变。
      */
     @serialize
@@ -52,7 +52,7 @@ export class MinMaxGradient
 
     /**
      * Set a gradient for the lower bound.
-     * 
+     *
      * 为下界设置一个渐变。
      */
     @serialize
@@ -60,7 +60,7 @@ export class MinMaxGradient
 
     /**
      * Set a gradient for the upper bound.
-     * 
+     *
      * 为上界设置一个渐变。
      */
     @serialize
@@ -84,11 +84,14 @@ export class MinMaxGradient
                 var min = this.gradientMin.getValue(time);
                 var max = this.gradientMax.getValue(time);
                 var v = min.mixTo(max, randomBetween);
+
                 return v;
             case MinMaxGradientMode.RandomColor:
                 var v = this.gradient.getValue(randomBetween);
+
                 return v;
         }
+
         return this.color;
     }
 }

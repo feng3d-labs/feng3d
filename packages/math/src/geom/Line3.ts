@@ -1,6 +1,6 @@
-import { mathUtil } from "@feng3d/polyfill";
-import { Matrix4x4 } from "./Matrix4x4";
-import { Vector3 } from "./Vector3";
+import { mathUtil } from '@feng3d/polyfill';
+import { Matrix4x4 } from './Matrix4x4';
+import { Vector3 } from './Vector3';
 
 /**
  * 3d直线
@@ -65,6 +65,7 @@ export class Line3
     {
         this.origin = p0;
         this.direction = p1.subTo(p0).normalize();
+
         return this;
     }
 
@@ -77,6 +78,7 @@ export class Line3
     {
         this.origin = position;
         this.direction = direction.normalize();
+
         return this;
     }
 
@@ -125,7 +127,8 @@ export class Line3
      */
     closestPointWithPoint(point: Vector3, vout = new Vector3())
     {
-        var t = this.closestPointParameterWithPoint(point);
+        const t = this.closestPointParameterWithPoint(point);
+
         return this.getPoint(t, vout);
     }
 
@@ -137,7 +140,8 @@ export class Line3
     onWithPoint(point: Vector3, precision = mathUtil.PRECISION)
     {
         if (mathUtil.equals(this.distanceWithPoint(point), 0, precision))
-            return true;
+        { return true; }
+
         return false;
     }
 
@@ -149,15 +153,17 @@ export class Line3
     {
         // 处理相等
         if (this.equals(line3D))
-            return this.clone();
+        { return this.clone(); }
         // 处理平行
         if (this.direction.isParallel(line3D.direction))
-            return null;
+        { return null; }
 
-        var plane = this.getPlane();
-        var point = plane.intersectWithLine3(line3D) as Vector3;
+        const plane = this.getPlane();
+        const point = plane.intersectWithLine3(line3D) as Vector3;
+
         if (this.onWithPoint(point))
-            return point;
+        { return point; }
+
         return null;
     }
 
@@ -169,6 +175,7 @@ export class Line3
     {
         mat.transformPoint3(this.origin, this.origin);
         mat.transformVector3(this.direction, this.direction);
+
         return this;
     }
 
@@ -181,9 +188,10 @@ export class Line3
     equals(line: Line3, precision = mathUtil.PRECISION)
     {
         if (!this.onWithPoint(line.origin))
-            return false;
+        { return false; }
         if (!this.onWithPoint(line.origin.addTo(line.direction)))
-            return false;
+        { return false; }
+
         return true;
     }
 
@@ -195,6 +203,7 @@ export class Line3
     {
         this.origin.copy(line.origin);
         this.direction.copy(line.direction);
+
         return this;
     }
 

@@ -104,7 +104,7 @@ export class CapsuleGeometry extends Geometry
                     comp2 = z;
                 }
 
-                if (xi == this.segmentsW)
+                if (xi === this.segmentsW)
                 {
                     vertexPositionData[index] = vertexPositionData[startIndex];
                     vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
@@ -136,7 +136,7 @@ export class CapsuleGeometry extends Geometry
                 if (xi > 0 && yi > 0)
                 {
 
-                    if (yi == this.segmentsH)
+                    if (yi === this.segmentsH)
                     {
                         vertexPositionData[index] = vertexPositionData[startIndex];
                         vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
@@ -176,13 +176,13 @@ export class CapsuleGeometry extends Geometry
                     var c = (this.segmentsW + 1) * (yi - 1) + xi - 1;
                     var d = (this.segmentsW + 1) * (yi - 1) + xi;
 
-                    if (yi == this.segmentsH)
+                    if (yi === this.segmentsH)
                     {
                         indices[numIndices++] = a;
                         indices[numIndices++] = c;
                         indices[numIndices++] = d;
                     }
-                    else if (yi == 1)
+                    else if (yi === 1)
                     {
                         indices[numIndices++] = a;
                         indices[numIndices++] = b;

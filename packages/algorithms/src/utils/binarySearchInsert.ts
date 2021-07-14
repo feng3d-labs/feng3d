@@ -11,13 +11,14 @@ export function binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: 
 {
     if (start === undefined) start = 0;
     if (end === undefined) end = array.length;
-    if (start == end)
-        return start;
-    if (compare(array[start], target) == 0)
+    if (start === end)
+    { return start; }
+    if (compare(array[start], target) === 0)
     {
         return start;
     }
-    var middle = ~~((start + end) / 2);
+    const middle = ~~((start + end) / 2);
+
     if (compare(array[middle], target) < 0)
     {
         start = middle + 1;
@@ -26,5 +27,6 @@ export function binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: 
     {
         end = middle;
     }
+
     return binarySearchInsert(array, target, compare, start, end);
 }

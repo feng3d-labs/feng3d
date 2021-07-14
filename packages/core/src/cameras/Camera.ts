@@ -51,7 +51,7 @@ export class Camera extends Component3D
     set projection(v)
     {
         var projectionType = this.projection;
-        if (projectionType == v) return;
+        if (projectionType === v) return;
         //
         var aspect = 1;
         var near = 0.3;
@@ -65,7 +65,7 @@ export class Camera extends Component3D
         }
         var fov = this._backups ? this._backups.fov : 60;
         var size = this._backups ? this._backups.size : 1;
-        if (v == Projection.Perspective)
+        if (v === Projection.Perspective)
         {
             this.lens = new PerspectiveLens(fov, aspect, near, far);
         } else
@@ -85,7 +85,7 @@ export class Camera extends Component3D
     }
     set lens(v)
     {
-        if (this._lens == v) return;
+        if (this._lens === v) return;
 
         if (this._lens)
         {

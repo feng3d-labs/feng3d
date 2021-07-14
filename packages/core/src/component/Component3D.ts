@@ -32,7 +32,7 @@ export class Component3D<T extends Component3DEventMap = Component3DEventMap> ex
      * 返回 Entity 或其任何子项中类型为 type 的所有组件。
      * 
      * @param type 类定义
-     * @returns 		返回与给出类定义一致的组件
+     * @returns         返回与给出类定义一致的组件
      */
     getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => { findchildren: boolean, value: boolean }, result?: T[]): T[]
     {
@@ -42,7 +42,7 @@ export class Component3D<T extends Component3DEventMap = Component3DEventMap> ex
     /**
      * 从父类中获取组件
      * @param type 类定义
-     * @returns 		返回与给出类定义一致的组件
+     * @returns         返回与给出类定义一致的组件
      */
     getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
     {

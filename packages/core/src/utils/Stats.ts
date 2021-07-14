@@ -35,7 +35,7 @@ export class Stats
     constructor()
     {
         var mode = 0;
-        if (typeof document == "undefined") return;
+        if (typeof document === "undefined") return;
 
         var container = document.createElement('div');
         container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;';
@@ -136,7 +136,7 @@ export class StatsPanel
         canvas.style.cssText = 'width:80px;height:48px';
 
         var context0 = canvas.getContext('2d');
-        if (context0 == null)
+        if (context0 === null)
         {
             console.log(`无法创建 CanvasRenderingContext2D `);
             return;

@@ -30,7 +30,7 @@ export enum StencilFunc
     GREATER = "GREATER",
 
     /**
-     * Pass if (ref & mask) != (stencil & mask).
+     * Pass if (ref & mask) !== (stencil & mask).
      */
     NOTEQUAL = "NOTEQUAL",
 

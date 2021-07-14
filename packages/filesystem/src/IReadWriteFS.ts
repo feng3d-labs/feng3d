@@ -1,4 +1,4 @@
-import { IReadFS } from "./IReadFS";
+import { IReadFS } from './IReadFS';
 
 /**
  * 可读写文件系统
@@ -55,7 +55,7 @@ export interface IReadWriteFS extends IReadFS
      * @param object 文件数据
      * @param callback 回调函数
      */
-    writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
+    writeObject(path: string, object: any, callback?: (err: Error) => void): void;
     /**
      * 写图片
      * @param path 图片路径

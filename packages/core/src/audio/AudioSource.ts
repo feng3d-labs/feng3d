@@ -320,7 +320,7 @@ export class AudioSource extends Behaviour
                     console.warn(err);
                     return;
                 }
-                if (url != this.url)
+                if (url !== this.url)
                     return;
                 audioCtx.decodeAudioData(data, (buffer) =>
                 {

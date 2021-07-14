@@ -1,4 +1,4 @@
-import { Color3 } from "../Color3";
+import { Color3 } from '../Color3';
 
 /**
  * 渐变颜色键

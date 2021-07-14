@@ -1,10 +1,10 @@
-import { LinkedList } from "./LinkedList";
+import { LinkedList } from './LinkedList';
 
 /**
  * 栈
- * 
+ *
  * 后进先出
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/stack/Stack.js
  */
 export class Stack<T>
@@ -29,12 +29,13 @@ export class Stack<T>
 
     /**
      * 入栈
-     * 
+     *
      * @param value 元素值
      */
     push(value: T)
     {
         this.linkedList.addHead(value);
+
         return this;
     }
 
@@ -56,12 +57,11 @@ export class Stack<T>
 
     /**
      * 转换为字符串
-     * 
+     *
      * @param valueToString 值输出为字符串函数
      */
     toString(valueToString?: (value: T) => string)
     {
         return this.linkedList.toString(valueToString);
     }
-
 }

@@ -32,7 +32,7 @@ export class WebGLRenderer
         gl.render = (renderAtomic1: RenderAtomic) =>
         {
             var instanceCount = renderAtomic1.getInstanceCount();
-            if (instanceCount == 0) return;
+            if (instanceCount === 0) return;
             var shaderMacro = renderAtomic1.getShaderMacro();
             var shader = renderAtomic1.getShader();
             shader.shaderMacro = shaderMacro;
@@ -63,7 +63,7 @@ export class WebGLRenderer
             for (const key in shaderResult.attributes)
             {
                 var attribute = renderAtomic.getAttributeByKey(key);
-                if (attribute == undefined)
+                if (attribute === undefined)
                 {
                     console.warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
                     return null;
@@ -80,7 +80,7 @@ export class WebGLRenderer
                     key = activeInfo.name;
                 }
                 var uniform = renderAtomic.getUniformByKey(key);
-                if (uniform == undefined)
+                if (uniform === undefined)
                 {
                     console.warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
                     return null;
@@ -141,7 +141,7 @@ export class WebGLRenderer
                 viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
             }
 
-            if (cullfaceEnum != CullFace.NONE)
+            if (cullfaceEnum !== CullFace.NONE)
             {
                 gl.enable(gl.CULL_FACE);
                 gl.cullFace(cullFace);
@@ -309,7 +309,7 @@ export class WebGLRenderer
             {
                 Index.active(gl, indexBuffer);
                 var arrayType = gl[indexBuffer.type];
-                if (indexBuffer.count == 0)
+                if (indexBuffer.count === 0)
                 {
                     // console.warn(`顶点索引为0，不进行渲染！`);
                     return;
@@ -336,7 +336,7 @@ export class WebGLRenderer
                     }
                     return 0;
                 })(renderAtomic.attributes);
-                if (vertexNum == 0)
+                if (vertexNum === 0)
                 {
                     console.warn(`顶点数量为0，不进行渲染！`);
                     return;

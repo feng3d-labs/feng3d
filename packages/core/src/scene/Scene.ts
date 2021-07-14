@@ -248,7 +248,7 @@ export class Scene extends Component3D
             var model = item.getComponent(Renderable);
             if (model && (model.castShadows || model.receiveShadows)
                 && !model.material.renderParams.enableBlend
-                && model.material.renderParams.renderMode == RenderMode.TRIANGLES
+                && model.material.renderParams.renderMode === RenderMode.TRIANGLES
             )
             {
                 targets.push(model);

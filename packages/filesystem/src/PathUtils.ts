@@ -1,4 +1,3 @@
-
 /**
  * 路径工具
  */
@@ -6,23 +5,25 @@ export class PathUtils
 {
     /**
      * 标准化文件夹路径
-     * @param path 
+     * @param path
      */
     normalizeDir(path: string): string
     {
-        if (path[path.length - 1] == "/")
-            path = path.substr(0, path.length - 1);
+        if (path[path.length - 1] === '/')
+        { path = path.substr(0, path.length - 1); }
+
         return path;
     }
     /**
      * 是否为HTTP地址
-     * 
+     *
      * @param path 地址
      */
     isHttpURL(path: string): any
     {
-        if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
-            return true;
+        if (path.indexOf('http://') !== -1 || path.indexOf('https://') !== -1 || path.indexOf('file:///') !== -1)
+        { return true; }
+
         return false;
     }
 
@@ -32,11 +33,13 @@ export class PathUtils
      */
     getName(path: string)
     {
-        console.assert(path != undefined);
-        var name = this.basename(path);
+        console.assert(path !== undefined);
+        let name = this.basename(path);
+
         if (this.isDirectory(path))
-            return name;
-        name = name.split(".").shift();
+        { return name; }
+        name = name.split('.').shift();
+
         return name;
     }
 
@@ -46,11 +49,13 @@ export class PathUtils
      */
     basename(path: string)
     {
-        console.assert(path != undefined);
-        var paths = path.split("/");
-        var name = paths.pop();
-        if (name == "")
-            name = paths.pop();
+        console.assert(path !== undefined);
+        const paths = path.split('/');
+        let name = paths.pop();
+
+        if (name === '')
+        { name = paths.pop(); }
+
         return name;
     }
 
@@ -60,10 +65,12 @@ export class PathUtils
      */
     extname(path: string)
     {
-        console.assert(path != undefined);
-        var name = this.basename(path);
-        var index = name.indexOf(".");
-        if (index == -1) return "";
+        console.assert(path !== undefined);
+        const name = this.basename(path);
+        const index = name.indexOf('.');
+
+        if (index === -1) return '';
+
         return name.substr(index);
     }
 
@@ -73,39 +80,42 @@ export class PathUtils
      */
     dirname(path: string)
     {
-        console.assert(path != undefined);
-        var paths = path.split("/");
+        console.assert(path !== undefined);
+        const paths = path.split('/');
+
         if (this.isDirectory(path))
-            paths.pop();
+        { paths.pop(); }
         paths.pop();
-        return paths.join("/");
+
+        return paths.join('/');
     }
 
     /**
      * 获取子文件（非文件夹）路径
-     * 
+     *
      * @param parentPath 父文件夹路径
      * @param childName 子文件名称
      */
     getChildFilePath(parentPath: string, childName: string)
     {
-        console.assert(parentPath != undefined);
-        console.assert(childName != undefined);
+        console.assert(parentPath !== undefined);
+        console.assert(childName !== undefined);
 
-        if (parentPath.charAt(parentPath.length - 1) != "/") parentPath += "/";
+        if (parentPath.charAt(parentPath.length - 1) !== '/') parentPath += '/';
+
         return parentPath + childName;
     }
 
     /**
      * 获取子文件夹路径
-     * 
+     *
      * @param parentPath 父文件夹路径
      * @param childFolderName 子文件夹名称
      */
     getChildFolderPath(parentPath: string, childFolderName: string)
     {
-        if (parentPath.charAt(parentPath.length - 1) != "/") parentPath += "/";
-        if (childFolderName.charAt(childFolderName.length - 1) != "/") childFolderName += "/";
+        if (parentPath.charAt(parentPath.length - 1) !== '/') parentPath += '/';
+        if (childFolderName.charAt(childFolderName.length - 1) !== '/') childFolderName += '/';
 
         return parentPath + childFolderName;
     }
@@ -116,7 +126,7 @@ export class PathUtils
      */
     isDirectory(path: string)
     {
-        return path.split("/").pop() == "";
+        return path.split('/').pop() === '';
     }
 
     /**
@@ -125,9 +135,11 @@ export class PathUtils
      */
     getDirDepth(path: string)
     {
-        var length = path.split("/").length;
+        let length = path.split('/').length;
+
         if (this.isDirectory(path))
-            length--;
+        { length--; }
+
         return length - 1;
     }
 }

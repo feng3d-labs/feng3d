@@ -185,7 +185,7 @@ function addTickerFunc(item: TickerFuncItem)
         return;
     }
     // removeTickerFunc(item);
-    if (item.priority == undefined)
+    if (item.priority === undefined)
         item.priority = 0;
     item.runtime = Date.now() + lazy.getvalue(item.interval);
     tickerFuncs.push(item);
@@ -201,9 +201,9 @@ function removeTickerFunc(item: TickerFuncItem)
     for (let i = tickerFuncs.length - 1; i >= 0; i--)
     {
         var element = tickerFuncs[i];
-        if (lazy.getvalue(element.interval) == lazy.getvalue(item.interval)
-            && element.func == item.func
-            && element.thisObject == item.thisObject
+        if (lazy.getvalue(element.interval) === lazy.getvalue(item.interval)
+            && element.func === item.func
+            && element.thisObject === item.thisObject
         )
         {
             tickerFuncs.splice(i, 1);
@@ -240,7 +240,7 @@ function runTickerFuncs()
     }
     needTickerFuncItems.reverse();
     // 相同的函数只执行一个
-    Array.unique(needTickerFuncItems, (a, b) => { return (a.func == b.func && a.thisObject == b.thisObject) });
+    Array.unique(needTickerFuncItems, (a, b) => { return (a.func === b.func && a.thisObject === b.thisObject) });
     needTickerFuncItems.forEach(v =>
     {
         // try
@@ -250,7 +250,7 @@ function runTickerFuncs()
         // {
         //     console.warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
         //     var index = tickerFuncs.indexOf(v);
-        //     if (index != -1) tickerFuncs.splice(index, 1);
+        //     if (index !== -1) tickerFuncs.splice(index, 1);
         // }
     });
     running = false;
@@ -271,11 +271,11 @@ function runTickerFuncs()
 }
 
 var localrequestAnimationFrame: (callback: FrameRequestCallback) => number;
-if (typeof requestAnimationFrame == "undefined")
+if (typeof requestAnimationFrame === "undefined")
 {
     var _global: Window;
     var global: any;
-    if (typeof window != "undefined")
+    if (typeof window !== "undefined")
     {
         _global = window;
         localrequestAnimationFrame =
@@ -284,11 +284,11 @@ if (typeof requestAnimationFrame == "undefined")
             window["mozRequestAnimationFrame"] ||
             window["oRequestAnimationFrame"] ||
             window["msRequestAnimationFrame"];
-    } else if (typeof global != "undefined")
+    } else if (typeof global !== "undefined")
     {
         _global = global;
     }
-    if (localrequestAnimationFrame == undefined)
+    if (localrequestAnimationFrame === undefined)
     {
         localrequestAnimationFrame = function (callback)
         {

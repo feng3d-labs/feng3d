@@ -252,7 +252,7 @@ export abstract class FileAsset
      */
     writePreview(image: HTMLImageElement, callback?: (err: Error) => void)
     {
-        if (this._preview == image)
+        if (this._preview === image)
         {
             callback && callback(null);
             return;
@@ -297,7 +297,7 @@ export abstract class FileAsset
         // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
         ticker.once(1000, () =>
         {
-            if (this.rs.getAssetById(this.assetId) == null)
+            if (this.rs.getAssetById(this.assetId) === null)
             {
                 this.deletePreview();
             }

@@ -1,12 +1,12 @@
-import { MinHeap } from "./MinHeap";
-import { Comparator } from "./utils/Comparator";
+import { MinHeap } from './MinHeap';
+import { Comparator } from './utils/Comparator';
 
 /**
  * 优先队列
- * 
+ *
  * 与最小堆相同，只是与元素比较时不同
  * 我们考虑的不是元素的值，而是它的优先级。
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
  */
 export class PriorityQueue1<T> extends MinHeap<T>
@@ -22,7 +22,7 @@ export class PriorityQueue1<T> extends MinHeap<T>
 
     /**
      * 新增元素
-     * 
+     *
      * @param item 元素
      * @param priority 优先级
      */
@@ -36,7 +36,7 @@ export class PriorityQueue1<T> extends MinHeap<T>
 
     /**
      * 移除元素
-     * 
+     *
      * @param item 元素
      * @param customFindingComparator 自定义查找比较器
      */
@@ -50,7 +50,7 @@ export class PriorityQueue1<T> extends MinHeap<T>
 
     /**
      * 改变元素优先级
-     * 
+     *
      * @param item 元素
      * @param priority 优先级
      */
@@ -64,7 +64,7 @@ export class PriorityQueue1<T> extends MinHeap<T>
 
     /**
      * 查找元素所在索引
-     * 
+     *
      * @param item 元素
      */
     findByValue(item: T)
@@ -74,7 +74,7 @@ export class PriorityQueue1<T> extends MinHeap<T>
 
     /**
      * 是否拥有元素
-     * 
+     *
      * @param item 元素
      */
     hasValue(item: T)
@@ -84,7 +84,7 @@ export class PriorityQueue1<T> extends MinHeap<T>
 
     /**
      * 比较两个元素优先级
-     * 
+     *
      * @param a 元素a
      * @param b 元素b
      */
@@ -100,7 +100,7 @@ export class PriorityQueue1<T> extends MinHeap<T>
 
     /**
      * 比较两个元素大小
-     * 
+     *
      * @param a 元素a
      * @param b 元素b
      */

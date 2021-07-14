@@ -252,7 +252,7 @@ export class MathUtil
      */
     equals(a: number, b: number, precision?: number)
     {
-        if (precision == undefined)
+        if (precision === undefined)
             precision = this.PRECISION;
         return Math.abs(a - b) < precision;
     }

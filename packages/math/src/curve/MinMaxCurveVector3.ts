@@ -1,6 +1,6 @@
-import { serialize } from "@feng3d/serialization";
-import { Vector3 } from "../geom/Vector3";
-import { MinMaxCurve } from "./MinMaxCurve";
+import { serialize } from '@feng3d/serialization';
+import { Vector3 } from '../geom/Vector3';
+import { MinMaxCurve } from './MinMaxCurve';
 
 export class MinMaxCurveVector3
 {

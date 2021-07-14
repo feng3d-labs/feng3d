@@ -50,12 +50,12 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     /**
      * 是否加载完成
      */
-    get isLoaded() { return this._loading.length == 0; }
+    get isLoaded() { return this._loading.length === 0; }
     private _loading = [];
 
     setTexture2D(pos: TextureCubeImageName, texture: Texture2D)
     {
-        if (this.rawData == null || this.rawData.type != "texture")
+        if (this.rawData === null || this.rawData.type !== "texture")
         {
             this.rawData = { type: "texture", textures: [] };
         }
@@ -67,7 +67,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
 
     setTexture2DPath(pos: TextureCubeImageName, path: string)
     {
-        if (this.rawData == null || this.rawData.type != "path")
+        if (this.rawData === null || this.rawData.type !== "path")
         {
             this.rawData = { type: "path", paths: [] };
         }
@@ -81,7 +81,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     {
         if (!this.rawData) { callback(); return; }
         var index = TextureCube.ImageNames.indexOf(pos);
-        if (this.rawData.type == "texture")
+        if (this.rawData.type === "texture")
         {
             var texture = this.rawData.textures[index];
             if (!texture) { callback(); return; };
@@ -89,7 +89,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
             {
                 callback(texture.image);
             });
-        } else if (this.rawData.type == "path")
+        } else if (this.rawData.type === "path")
         {
             let path = this.rawData.paths[index];
             if (!path) { callback(); return; }
@@ -104,14 +104,14 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     {
         if (!this.rawData) return;
 
-        if (this.rawData.type == "texture")
+        if (this.rawData.type === "texture")
         {
             this.rawData.textures.forEach((v, index) =>
             {
                 this._loadItemTexture(v, index);
             });
             this.invalidate();
-        } else if (this.rawData.type == "path")
+        } else if (this.rawData.type === "path")
         {
             this.rawData.paths.forEach((v, index) =>
             {
@@ -128,12 +128,12 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
      */
     private _loadItemTexture(texture: Texture2D, index: number)
     {
-        if (texture == null) return;
+        if (texture === null) return;
 
         this._loading.push(texture);
         texture.onLoadCompleted(() =>
         {
-            if (this.rawData.type == "texture" && this.rawData.textures[index] == texture)
+            if (this.rawData.type === "texture" && this.rawData.textures[index] === texture)
             {
                 this._pixels[index] = texture.image;
                 this.invalidate();
@@ -151,12 +151,12 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
      */
     private _loadItemImagePath(imagepath: string, index: number)
     {
-        if (imagepath == null) return;
+        if (imagepath === null) return;
 
         this._loading.push(imagepath);
         fs.readImage(imagepath, (err, img) =>
         {
-            if (img != null && this.rawData.type == "path" && this.rawData.paths[index] == imagepath)
+            if (img !== null && this.rawData.type === "path" && this.rawData.paths[index] === imagepath)
             {
                 this._pixels[index] = img;
                 this.invalidate();
@@ -168,7 +168,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
 
     private _onItemLoadCompleted()
     {
-        if (this._loading.length == 0) this.emit("loadCompleted");
+        if (this._loading.length === 0) this.emit("loadCompleted");
     }
 
     /**

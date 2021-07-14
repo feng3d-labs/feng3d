@@ -1,6 +1,6 @@
-import { serialize } from "@feng3d/serialization";
-import { Vector3 } from "../geom/Vector3";
-import { AnimationCurve } from "./AnimationCurve";
+import { serialize } from '@feng3d/serialization';
+import { Vector3 } from '../geom/Vector3';
+import { AnimationCurve } from './AnimationCurve';
 
 /**
  * Vector3 曲线

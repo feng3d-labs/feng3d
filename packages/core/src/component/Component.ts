@@ -215,7 +215,7 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
     /**
      * 获取指定位置索引的子组件
      * @param index 位置索引
-     * @returns 			子组件
+     * @returns             子组件
      */
     getComponentAt(index: number): Component
     {
@@ -256,7 +256,7 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
      * 获取实体上所有指定类型的组件数组
      * 
      * @param type 类定义
-     * @returns 		返回与给出类定义一致的组件
+     * @returns         返回与给出类定义一致的组件
      */
     getComponents<T extends Components>(type: Constructor<T>): T[]
     {
@@ -295,7 +295,7 @@ export class Component<T extends ComponentEventMap = ComponentEventMap> extends 
     /**
      * 获取组件在容器的索引位置
      * @param component 查询的组件
-     * @returns 			    组件在容器的索引位置
+     * @returns                 组件在容器的索引位置
      */
     getComponentIndex(component: Components): number
     {

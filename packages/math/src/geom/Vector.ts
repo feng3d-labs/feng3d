@@ -1,4 +1,3 @@
-
 /**
  * 向量
  */
@@ -54,7 +53,7 @@ export interface Vector
     /**
      * 除以向量
      * @param v 向量
-     * @param vout 输出向量 
+     * @param vout 输出向量
      */
     divideTo(v: Vector, vout?: Vector): Vector;
 
@@ -85,7 +84,7 @@ export interface Vector
 
     /**
      * 将 (0,0) 和当前点之间的线段缩放为设定的长度。
-     * 
+     *
      * @param thickness 缩放值。例如，如果当前点为 (0,5) 并且您将它规范化为 1，则返回的点位于 (0,1) 处。
      */
     normalize(thickness?: number): Vector;

@@ -185,7 +185,7 @@ export class EventEmitter<T = any>
      * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
      *
      * @param type 事件的类型。
-     * @returns 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+     * @returns             如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
      */
     has<K extends keyof T & string>(type: K): boolean
     {

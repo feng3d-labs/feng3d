@@ -1,8 +1,8 @@
-import { Comparator, CompareFunction } from "./utils/Comparator";
+import { Comparator, CompareFunction } from './utils/Comparator';
 
 /**
  * 链表
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js
  */
 export class LinkedList<T>
@@ -23,7 +23,7 @@ export class LinkedList<T>
 
     /**
      * 构建双向链表
-     * 
+     *
      * @param comparatorFunction 比较函数
      */
     constructor(comparatorFunction?: CompareFunction<T>)
@@ -60,34 +60,38 @@ export class LinkedList<T>
 
     /**
      * 添加新结点到表头
-     * 
+     *
      * @param value 结点数据
      */
     addHead(value: T)
     {
-        var newNode: LinkedListNode<T> = { value: value, next: this.head };
+        const newNode: LinkedListNode<T> = { value, next: this.head };
+
         this.head = newNode;
         if (!this.tail) this.tail = newNode;
+
         return this;
     }
 
     /**
      * 添加新结点到表尾
-     * 
+     *
      * @param value 结点数据
      */
     addTail(value: T)
     {
-        var newNode: LinkedListNode<T> = { value: value, next: null };
+        const newNode: LinkedListNode<T> = { value, next: null };
+
         if (this.tail) this.tail.next = newNode;
         this.tail = newNode;
         if (!this.head) this.head = newNode;
+
         return this;
     }
 
     /**
      * 删除链表中第一个与指定值相等的结点
-     * 
+     *
      * @param value 结点值
      */
     delete(value: T)
@@ -114,7 +118,8 @@ export class LinkedList<T>
                 {
                     deletedNode = currentNode.next;
                     currentNode.next = currentNode.next.next;
-                } else
+                }
+                else
                 {
                     currentNode = currentNode.next;
                 }
@@ -122,7 +127,7 @@ export class LinkedList<T>
         }
 
         // currentNode 是否为表尾
-        if (currentNode == null || currentNode.next == null)
+        if (currentNode === null || currentNode.next === null)
         {
             this.tail = currentNode;
         }
@@ -132,7 +137,7 @@ export class LinkedList<T>
 
     /**
      * 删除链表中所有与指定值相等的结点
-     * 
+     *
      * @param value 结点值
      */
     deleteAll(value: T)
@@ -159,7 +164,8 @@ export class LinkedList<T>
                 {
                     deletedNode = currentNode.next;
                     currentNode.next = currentNode.next.next;
-                } else
+                }
+                else
                 {
                     currentNode = currentNode.next;
                 }
@@ -167,7 +173,7 @@ export class LinkedList<T>
         }
 
         // currentNode 是否为表尾
-        if (currentNode == null || currentNode.next == null)
+        if (currentNode === null || currentNode.next === null)
         {
             this.tail = currentNode;
         }
@@ -177,7 +183,7 @@ export class LinkedList<T>
 
     /**
      * 查找与结点值相等的结点
-     * 
+     *
      * @param value 结点值
      */
     find(value: T)
@@ -191,15 +197,16 @@ export class LinkedList<T>
             if (this.compare.equal(currentNode.value, value)) return currentNode;
             currentNode = currentNode.next;
         }
+
         return null;
     }
 
     /**
      * 查找与结点值相等的结点
-     * 
+     *
      * @param callback 判断是否为查找的元素
      */
-    findByFunc(callback: (value: T) => Boolean)
+    findByFunc(callback: (value: T) => boolean)
     {
         if (!this.head) return null;
 
@@ -210,12 +217,13 @@ export class LinkedList<T>
             if (callback(currentNode.value)) return currentNode;
             currentNode = currentNode.next;
         }
+
         return null;
     }
 
     /**
      * 删除表头
-     * 
+     *
      * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
      */
     deleteHead()
@@ -227,7 +235,8 @@ export class LinkedList<T>
         if (this.head.next)
         {
             this.head = this.head.next;
-        } else
+        }
+        else
         {
             this.head = null;
             this.tail = null;
@@ -255,12 +264,14 @@ export class LinkedList<T>
 
         // 遍历链表删除表尾
         let currentNode = this.head;
+
         while (currentNode.next)
         {
             if (!currentNode.next.next)
             {
                 currentNode.next = null;
-            } else
+            }
+            else
             {
                 currentNode = currentNode.next;
             }
@@ -273,13 +284,14 @@ export class LinkedList<T>
 
     /**
      * 从数组中初始化链表
-     * 
+     *
      * @param values 结点值列表
      */
     fromArray(values: T[])
     {
         this.empty();
-        values.forEach(value => this.addTail(value));
+        values.forEach((value) => this.addTail(value));
+
         return this;
     }
 
@@ -288,24 +300,26 @@ export class LinkedList<T>
      */
     toArray()
     {
-        var values: T[] = [];
-        var currentNode = this.head;
+        const values: T[] = [];
+        let currentNode = this.head;
+
         while (currentNode)
         {
             values.push(currentNode.value);
             currentNode = currentNode.next;
         }
+
         return values;
     }
 
     /**
      * 转换为字符串
-     * 
+     *
      * @param valueToString 值输出为字符串函数
      */
     toString(valueToString?: (value: T) => string)
     {
-        return this.toArray().map(value => valueToString ? valueToString(value) : `${value}`).toString();
+        return this.toArray().map((value) => (valueToString ? valueToString(value) : `${value}`)).toString();
     }
 
     /**
@@ -346,13 +360,16 @@ export class LinkedList<T>
     {
         if (this.head)
         {
-            var currNode = this.head;
+            let currNode = this.head;
+
             while (currNode.next)
             {
                 currNode = currNode.next;
             }
-            return this.tail == currNode;
+
+            return this.tail === currNode;
         }
+
         return !this.tail;
     }
 }

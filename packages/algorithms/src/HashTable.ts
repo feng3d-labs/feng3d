@@ -1,8 +1,8 @@
-import { LinkedList, LinkedListNode } from "./LinkedList";
+import { LinkedList, LinkedListNode } from './LinkedList';
 
 /**
  * 默认哈希表 （建议使用Object代替）
- * 
+ *
  * 哈希表的大小直接影响冲突的次数。
  * 哈希表的大小越大，冲突就越少。
  */
@@ -10,12 +10,12 @@ const defaultHashTableSize = 32;
 
 /**
  * 哈希表（散列表）
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/hash-table/HashTable.js
  */
 export class HashTable
 {
-    private keys: Object;
+    private keys: { [key: string]: number };
 
     buckets: LinkedList<{ key: string, value: any }>[];
 
@@ -35,12 +35,12 @@ export class HashTable
 
     /**
      * 将字符串键转换为哈希数。
-     * 
-     * @param key 字符串键 
+     *
+     * @param key 字符串键
      */
     hash(key: string)
     {
-        const hash = key.split("").reduce(
+        const hash = key.split('').reduce(
             (hashAccumulator, char) => (hashAccumulator + char.charCodeAt(0)),
             0,
         );
@@ -50,15 +50,16 @@ export class HashTable
 
     /**
      * 设置值
-     * 
+     *
      * @param key 键
      * @param value 值
      */
     set(key: string, value: any)
     {
-        var keyValue = { key: key, value: value };
+        const keyValue = { key, value };
 
         const keyHash = this.hash(key);
+
         this.keys[key] = keyHash;
         const bucketLinkedList = this.buckets[keyHash];
         const node = bucketLinkedList.findByFunc((v) => v.key === key);
@@ -66,7 +67,8 @@ export class HashTable
         if (!node)
         {
             bucketLinkedList.addTail(keyValue);
-        } else
+        }
+        else
         {
             node.value.value = value;
         }
@@ -74,7 +76,7 @@ export class HashTable
 
     /**
      * 删除指定键以及对于值
-     * 
+     *
      * @param key 键
      */
     delete(key: string): LinkedListNode<{
@@ -83,6 +85,7 @@ export class HashTable
     }>
     {
         const keyHash = this.hash(key);
+
         delete this.keys[key];
         const bucketLinkedList = this.buckets[keyHash];
         const node = bucketLinkedList.findByFunc((v) => v.key === key);
@@ -97,7 +100,7 @@ export class HashTable
 
     /**
      * 获取与键对应的值
-     * 
+     *
      * @param key 键
      */
     get(key: string)
@@ -110,7 +113,7 @@ export class HashTable
 
     /**
      * 是否拥有键
-     * 
+     *
      * @param key 键
      */
     has(key: string)
@@ -125,5 +128,4 @@ export class HashTable
     {
         return Object.keys(this.keys);
     }
-
 }

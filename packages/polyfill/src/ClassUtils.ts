@@ -16,7 +16,7 @@ export class ClassUtils
      */
     getQualifiedClassName(value: any): string
     {
-        if (value == null)
+        if (value === null)
             return "null";
 
         const classUtilsHandlers = classUtils.classUtilsHandlers;
@@ -33,13 +33,13 @@ export class ClassUtils
             return prototype[__class__];
 
         var className: string = prototype.constructor.name;
-        if (_global[className] == prototype.constructor)
+        if (_global[className] === prototype.constructor)
             return className;
         //在可能的命名空间内查找
         for (var i = 0; i < _classNameSpaces.length; i++)
         {
             var tryClassName = _classNameSpaces[i] + "." + className;
-            if (this.getDefinitionByName(tryClassName) == prototype.constructor)
+            if (this.getDefinitionByName(tryClassName) === prototype.constructor)
             {
                 className = tryClassName;
                 registerClass(prototype.constructor, className);
@@ -56,7 +56,7 @@ export class ClassUtils
      */
     getDefinitionByName(name: string, readCache = true): any
     {
-        if (name == "null")
+        if (name === "null")
             return null;
         if (!name)
             return null;
@@ -135,7 +135,7 @@ export class ClassUtils
      */
     addClassNameSpace(namespace: string)
     {
-        if (_classNameSpaces.indexOf(namespace) == -1)
+        if (_classNameSpaces.indexOf(namespace) === -1)
         {
             _classNameSpaces.push(namespace);
         }
@@ -150,10 +150,10 @@ export const classUtils = new ClassUtils();
 var _definitionCache = {};
 var _global: Window;
 var global: any;
-if (typeof window != "undefined")
+if (typeof window !== "undefined")
 {
     _global = window;
-} else if (typeof global != "undefined")
+} else if (typeof global !== "undefined")
 {
     _global = global;
 }

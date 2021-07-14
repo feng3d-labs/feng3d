@@ -73,7 +73,7 @@ export class HoldSizeComponent extends Component3D
     {
         var cameraTranform = camera.node3d.localToWorldMatrix;
         var distance = this.node3d.worldPosition.subTo(cameraTranform.getPosition());
-        if (distance.length == 0)
+        if (distance.length === 0)
             distance.x = 1;
         var depth = distance.dot(cameraTranform.getAxisZ());
         var scale = camera.getScaleByDepth(depth);

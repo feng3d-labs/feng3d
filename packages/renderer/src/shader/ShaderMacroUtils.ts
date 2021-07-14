@@ -15,7 +15,7 @@ export class ShaderMacroUtils
         for (let i = 0; i < variables1.length; i++)
         {
             const element = variables1[i];
-            if (variables0.indexOf(element) == -1)
+            if (variables0.indexOf(element) === -1)
                 variables0.push(element);
         }
         return variables0;
@@ -32,14 +32,14 @@ export class ShaderMacroUtils
         for (let i = 0; i < lines.length; i++)
         {
             const line = lines[i];
-            if (line.indexOf("#if") != -1)
+            if (line.indexOf("#if") !== -1)
             {
                 var reg = /(\w+)/g;
                 var result: RegExpExecArray;
                 while (result = reg.exec(line))
                 {
                     var key = result[1];
-                    if (key != null && isNaN(Number(key)) && shaderMacroKeys.indexOf(key) == -1 && variables.indexOf(key) == -1)
+                    if (key !== null && isNaN(Number(key)) && shaderMacroKeys.indexOf(key) === -1 && variables.indexOf(key) === -1)
                         variables.push(key);
                 }
             }

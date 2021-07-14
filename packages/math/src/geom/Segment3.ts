@@ -1,6 +1,6 @@
-import { mathUtil } from "@feng3d/polyfill";
-import { Line3 } from "./Line3";
-import { Vector3 } from "./Vector3";
+import { mathUtil } from '@feng3d/polyfill';
+import { Line3 } from './Line3';
+import { Vector3 } from './Vector3';
 
 /**
  * 3D线段
@@ -9,8 +9,8 @@ export class Segment3
 {
     /**
      * 初始化线段
-     * @param p0 
-     * @param p1 
+     * @param p0
+     * @param p1
      */
     static fromPoints(p0: Vector3, p1: Vector3)
     {
@@ -70,13 +70,14 @@ export class Segment3
      */
     getPoint(position: number, pout = new Vector3()): Vector3
     {
-        var newPoint: Vector3 = pout.copy(this.p0).add(this.p1.subTo(this.p0).scaleNumber(position));
+        const newPoint: Vector3 = pout.copy(this.p0).add(this.p1.subTo(this.p0).scaleNumber(position));
+
         return newPoint;
     }
 
     /**
      * 判定点是否在线段上
-     * @param point 
+     * @param point
      */
     onWithPoint(point: Vector3, precision = mathUtil.PRECISION)
     {
@@ -85,13 +86,15 @@ export class Segment3
 
     /**
      * 判定点是否投影在线段上
-     * @param point 
+     * @param point
      */
     projectOnWithPoint(point: Vector3)
     {
-        var position = this.getPositionByPoint(point);
+        let position = this.getPositionByPoint(point);
+
         position = Number(position.toFixed(6));
-        return 0 <= position && position <= 1;
+
+        return position >= 0 && position <= 1;
     }
 
     /**
@@ -100,8 +103,9 @@ export class Segment3
      */
     getPositionByPoint(point: Vector3)
     {
-        var vec = this.p1.subTo(this.p0);
-        var position = point.subTo(this.p0).dot(vec) / vec.lengthSquared;
+        const vec = this.p1.subTo(this.p0);
+        const position = point.subTo(this.p0).dot(vec) / vec.lengthSquared;
+
         return position;
     }
 
@@ -111,9 +115,10 @@ export class Segment3
      */
     getNormalWithPoint(point: Vector3)
     {
-        var direction = this.p1.subTo(this.p0);
-        var l1 = point.subTo(this.p0);
-        var n = direction.crossTo(l1).crossTo(direction).normalize();
+        const direction = this.p1.subTo(this.p0);
+        const l1 = point.subTo(this.p0);
+        const n = direction.crossTo(l1).crossTo(direction).normalize();
+
         return n;
     }
 
@@ -123,7 +128,8 @@ export class Segment3
      */
     getPointDistanceSquare(point: Vector3)
     {
-        var position = this.getPositionByPoint(point);
+        const position = this.getPositionByPoint(point);
+
         if (position <= 0)
         {
             lengthSquared = point.subTo(this.p0).lengthSquared;
@@ -134,10 +140,11 @@ export class Segment3
         }
         else
         {
-            var s0 = point.subTo(this.p0).lengthSquared;
-            var s1 = position * position * this.p1.subTo(this.p0).lengthSquared;
+            const s0 = point.subTo(this.p0).lengthSquared;
+            const s1 = position * position * this.p1.subTo(this.p0).lengthSquared;
             var lengthSquared = Math.abs(s0 - s1);
         }
+
         return lengthSquared;
     }
 
@@ -147,8 +154,10 @@ export class Segment3
      */
     getPointDistance(point: Vector3)
     {
-        var v = this.getPointDistanceSquare(point);
+        let v = this.getPointDistanceSquare(point);
+
         v = Math.sqrt(v);
+
         return v;
     }
 
@@ -158,13 +167,15 @@ export class Segment3
      */
     intersectionWithLine(line: Line3)
     {
-        var l = this.getLine();
-        var r = l.intersectWithLine3D(line);
+        const l = this.getLine();
+        const r = l.intersectWithLine3D(line);
+
         if (!r) return null;
         if (r instanceof Line3)
-            return this.clone();
+        { return this.clone(); }
         if (this.onWithPoint(r))
-            return r;
+        { return r; }
+
         return null;
     }
 
@@ -174,20 +185,22 @@ export class Segment3
      */
     intersectionWithSegment(segment: Segment3)
     {
-        var r = this.intersectionWithLine(segment.getLine());
+        const r = this.intersectionWithLine(segment.getLine());
+
         if (!r) return null;
         if (r instanceof Segment3)
         {
-            var ps = [this.p0, this.p1].map((p) =>
-            {
-                return segment.clampPoint(p);
-            });
+            const ps = [this.p0, this.p1].map((p) =>
+                segment.clampPoint(p));
+
             if (this.onWithPoint(ps[0]))
-                return Segment3.fromPoints(ps[0], ps[1]);
+            { return Segment3.fromPoints(ps[0], ps[1]); }
+
             return null;
         }
         if (this.onWithPoint(r))
-            return r;
+        { return r; }
+
         return null;
     }
 
@@ -200,9 +213,10 @@ export class Segment3
     {
         this.getLine().closestPointWithPoint(point, vout);
         if (this.onWithPoint(vout))
-            return vout;
+        { return vout; }
         if (point.distanceSquared(this.p0) < point.distanceSquared(this.p1))
-            return vout.copy(this.p0);
+        { return vout.copy(this.p0); }
+
         return vout.copy(this.p1);
     }
 
@@ -219,7 +233,7 @@ export class Segment3
      */
     equals(segment: Segment3)
     {
-        return (this.p0.equals(segment.p0) && this.p1.equals(segment.p1)) || (this.p0.equals(segment.p1) && this.p1.equals(segment.p0))
+        return (this.p0.equals(segment.p0) && this.p1.equals(segment.p1)) || (this.p0.equals(segment.p1) && this.p1.equals(segment.p0));
     }
 
     /**
@@ -229,6 +243,7 @@ export class Segment3
     {
         this.p0.copy(segment.p0);
         this.p1.copy(segment.p1);
+
         return this;
     }
 

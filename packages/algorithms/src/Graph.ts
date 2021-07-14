@@ -1,8 +1,8 @@
-import { LinkedList } from "./LinkedList";
+import { LinkedList } from './LinkedList';
 
 /**
  * 图
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/graph/Graph.js
  * @see https://en.wikipedia.org/wiki/Graph_(abstract_data_type)
  * @see https://www.youtube.com/watch?v=gXgEDyodOJU&index=9&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
@@ -27,7 +27,7 @@ export class Graph<T>
 
     /**
      * 构建图
-     * 
+     *
      * @param isDirected 是否有向
      */
     constructor(isDirected = false)
@@ -39,7 +39,7 @@ export class Graph<T>
 
     /**
      * 新增顶点
-     * 
+     *
      * @param newVertex 新顶点
      */
     addVertex(newVertex: GraphVertex<T>)
@@ -51,7 +51,7 @@ export class Graph<T>
 
     /**
      * 获取顶点
-     * 
+     *
      * @param vertexKey 顶点键值
      */
     getVertexByKey(vertexKey: string)
@@ -61,7 +61,7 @@ export class Graph<T>
 
     /**
      * 获取相邻点
-     * 
+     *
      * @param vertex 顶点
      */
     getNeighbors(vertex: GraphVertex<T>)
@@ -74,7 +74,8 @@ export class Graph<T>
      */
     getAllVertices()
     {
-        var values = Object.keys(this.vertices).map(key => this.vertices[key]);
+        const values = Object.keys(this.vertices).map((key) => this.vertices[key]);
+
         return values;
     }
 
@@ -83,13 +84,14 @@ export class Graph<T>
      */
     getAllEdges()
     {
-        var values = Object.keys(this.edges).map(key => this.edges[key]);
+        const values = Object.keys(this.edges).map((key) => this.edges[key]);
+
         return values;
     }
 
     /**
      * 新增边
-     * 
+     *
      * @param edge 边
      */
     addEdge(edge: GraphEdge<T>)
@@ -116,7 +118,8 @@ export class Graph<T>
         if (this.edges[edge.getKey()])
         {
             throw new Error('指定边已经存在，无法再次添加');
-        } else
+        }
+        else
         {
             this.edges[edge.getKey()] = edge;
         }
@@ -125,7 +128,8 @@ export class Graph<T>
         if (this.isDirected)
         {
             startVertex.addEdge(edge);
-        } else
+        }
+        else
         {
             startVertex.addEdge(edge);
             endVertex.addEdge(edge);
@@ -136,7 +140,7 @@ export class Graph<T>
 
     /**
      * 删除边
-     * 
+     *
      * @param edge 边
      */
     deleteEdge(edge: GraphEdge<T>)
@@ -145,7 +149,8 @@ export class Graph<T>
         if (this.edges[edge.getKey()])
         {
             delete this.edges[edge.getKey()];
-        } else
+        }
+        else
         {
             throw new Error('图中不存在指定边');
         }
@@ -160,7 +165,7 @@ export class Graph<T>
 
     /**
      * 查找边
-     * 
+     *
      * @param startVertex 起始顶点
      * @param endVertex 结束顶点
      */
@@ -182,9 +187,7 @@ export class Graph<T>
     getWeight()
     {
         return this.getAllEdges().reduce((weight, graphEdge) =>
-        {
-            return weight + graphEdge.weight;
-        }, 0);
+            weight + graphEdge.weight, 0);
     }
 
     /**
@@ -214,6 +217,7 @@ export class Graph<T>
     getVerticesIndices()
     {
         const verticesIndices = {};
+
         this.getAllVertices().forEach((vertex, index) =>
         {
             verticesIndices[vertex.getKey()] = index;
@@ -232,7 +236,8 @@ export class Graph<T>
 
         // 初始化邻接矩阵
         const adjacencyMatrix = [];
-        var n = vertices.length;
+        const n = vertices.length;
+
         for (let i = 0; i < n; i++)
         {
             adjacencyMatrix[i] = [];
@@ -248,6 +253,7 @@ export class Graph<T>
             vertex.getNeighbors().forEach((neighbor) =>
             {
                 const neighborIndex = verticesIndices[neighbor.getKey()];
+
                 adjacencyMatrix[vertexIndex][neighborIndex] = this.findEdge(vertex, neighbor).weight;
             });
         });
@@ -314,6 +320,7 @@ export class GraphEdge<T>
     reverse()
     {
         const tmp = this.startVertex;
+
         this.startVertex = this.endVertex;
         this.endVertex = tmp;
 
@@ -346,7 +353,7 @@ export class GraphVertex<T>
 
     /**
      * 构建图顶点
-     * 
+     *
      * @param value 值
      */
     constructor(value: T)
@@ -357,6 +364,7 @@ export class GraphVertex<T>
             {
                 return 0;
             }
+
             return edgeA.getKey() < edgeB.getKey() ? -1 : 1;
         };
 
@@ -366,7 +374,7 @@ export class GraphVertex<T>
 
     /**
      * 新增边
-     * 
+     *
      * @param edge 边
      */
     addEdge(edge: GraphEdge<T>)
@@ -378,7 +386,7 @@ export class GraphVertex<T>
 
     /**
      * 删除边
-     * 
+     *
      * @param edge 边
      */
     deleteEdge(edge: GraphEdge<T>)
@@ -394,9 +402,7 @@ export class GraphVertex<T>
         const edges = this.edges.toArray();
 
         const neighborsConverter = (edge: GraphEdge<T>) =>
-        {
-            return edge.startVertex === this ? edge.endVertex : edge.startVertex;
-        };
+            (edge.startVertex === this ? edge.endVertex : edge.startVertex);
 
         return edges.map(neighborsConverter);
     }
@@ -419,13 +425,13 @@ export class GraphVertex<T>
 
     /**
      * 是否存在指定边
-     * 
+     *
      * @param requiredEdge 边
      */
     hasEdge(requiredEdge: GraphEdge<T>)
     {
         const edgeNode = this.edges.findByFunc(
-            edge => edge === requiredEdge,
+            (edge) => edge === requiredEdge,
         );
 
         return !!edgeNode;
@@ -433,13 +439,13 @@ export class GraphVertex<T>
 
     /**
      * 是否有相邻顶点
-     * 
+     *
      * @param vertex 顶点
      */
     hasNeighbor(vertex: GraphVertex<T>)
     {
         const vertexNode = this.edges.findByFunc(
-            edge => edge.startVertex === vertex || edge.endVertex === vertex,
+            (edge) => edge.startVertex === vertex || edge.endVertex === vertex,
         );
 
         return !!vertexNode;
@@ -447,15 +453,13 @@ export class GraphVertex<T>
 
     /**
      * 查找边
-     * 
+     *
      * @param vertex 顶点
      */
     findEdge(vertex: GraphVertex<T>)
     {
         const edgeFinder = (edge: GraphEdge<T>) =>
-        {
-            return edge.startVertex === vertex || edge.endVertex === vertex;
-        };
+            edge.startVertex === vertex || edge.endVertex === vertex;
 
         const edge = this.edges.findByFunc(edgeFinder);
 
@@ -475,14 +479,14 @@ export class GraphVertex<T>
      */
     deleteAllEdges()
     {
-        this.getEdges().forEach(edge => this.deleteEdge(edge));
+        this.getEdges().forEach((edge) => this.deleteEdge(edge));
 
         return this;
     }
 
     /**
      * 转换为字符串
-     * 
+     *
      * @param callback 转换为字符串函数
      */
     toString(callback?: (value: T) => string)
@@ -490,5 +494,4 @@ export class GraphVertex<T>
         return callback ? callback(this.value) : `${this.value}`;
     }
 }
-
 

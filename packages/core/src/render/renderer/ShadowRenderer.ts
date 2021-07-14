@@ -18,21 +18,21 @@ export class ShadowRenderer
      */
     draw(gl: GL, scene: Scene, camera: Camera)
     {
-        var pointLights = scene.activePointLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
+        var pointLights = scene.activePointLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
         for (var i = 0; i < pointLights.length; i++)
         {
             pointLights[i].updateDebugShadowMap(scene, camera);
             this.drawForPointLight(gl, pointLights[i], scene, camera);
         }
 
-        var spotLights = scene.activeSpotLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
+        var spotLights = scene.activeSpotLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
         for (var i = 0; i < spotLights.length; i++)
         {
             spotLights[i].updateDebugShadowMap(scene, camera);
             this.drawForSpotLight(gl, spotLights[i], scene, camera);
         }
 
-        var directionalLights = scene.activeDirectionalLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
+        var directionalLights = scene.activeDirectionalLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
         for (var i = 0; i < directionalLights.length; i++)
         {
             directionalLights[i].updateDebugShadowMap(scene, camera);

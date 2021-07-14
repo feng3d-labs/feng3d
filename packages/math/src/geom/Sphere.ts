@@ -1,7 +1,7 @@
-import { Box3 } from "./Box3";
-import { Matrix4x4 } from "./Matrix4x4";
-import { Plane } from "./Plane";
-import { Vector3 } from "./Vector3";
+import { Box3 } from './Box3';
+import { Matrix4x4 } from './Matrix4x4';
+import { Plane } from './Plane';
+import { Vector3 } from './Vector3';
 
 /**
  * 球
@@ -43,7 +43,6 @@ export class Sphere
     {
         this.center = center;
         this.radius = radius;
-
     }
 
     /**
@@ -56,20 +55,23 @@ export class Sphere
     rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number
     {
         if (this.containsPoint(position))
-            return 0;
+        { return 0; }
 
-        var px: number = position.x - this.center.x, py: number = position.y - this.center.y, pz: number = position.z - this.center.z;
-        var vx: number = direction.x, vy: number = direction.y, vz: number = direction.z;
-        var rayEntryDistance: number;
+        const px: number = position.x - this.center.x; const py: number = position.y - this.center.y; const
+            pz: number = position.z - this.center.z;
+        const vx: number = direction.x; const vy: number = direction.y; const
+            vz: number = direction.z;
+        let rayEntryDistance: number;
 
-        var a: number = vx * vx + vy * vy + vz * vz;
-        var b: number = 2 * (px * vx + py * vy + pz * vz);
-        var c: number = px * px + py * py + pz * pz - this.radius * this.radius;
-        var det: number = b * b - 4 * a * c;
+        const a: number = vx * vx + vy * vy + vz * vz;
+        const b: number = 2 * (px * vx + py * vy + pz * vz);
+        const c: number = px * px + py * py + pz * pz - this.radius * this.radius;
+        const det: number = b * b - 4 * a * c;
 
         if (det >= 0)
         { // ray goes through sphere
-            var sqrtDet: number = Math.sqrt(det);
+            const sqrtDet: number = Math.sqrt(det);
+
             rayEntryDistance = (-b - sqrtDet) / (2 * a);
             if (rayEntryDistance >= 0)
             {
@@ -101,15 +103,18 @@ export class Sphere
      */
     fromPoints(points: Vector3[])
     {
-        var box = new Box3();
-        var center = this.center;
+        const box = new Box3();
+        const center = this.center;
+
         box.fromPoints(points).getCenter(center);
-        var maxRadiusSq = 0;
-        for (var i = 0, n = points.length; i < n; i++)
+        let maxRadiusSq = 0;
+
+        for (let i = 0, n = points.length; i < n; i++)
         {
             maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(points[i]));
         }
         this.radius = Math.sqrt(maxRadiusSq);
+
         return this;
     }
 
@@ -119,16 +124,19 @@ export class Sphere
      */
     fromPositions(positions: number[])
     {
-        var box = new Box3();
-        var v = new Vector3();
-        var center = this.center;
+        const box = new Box3();
+        const v = new Vector3();
+        const center = this.center;
+
         box.formPositions(positions).getCenter(center);
-        var maxRadiusSq = 0;
-        for (var i = 0, n = positions.length; i < n; i += 3)
+        let maxRadiusSq = 0;
+
+        for (let i = 0, n = positions.length; i < n; i += 3)
         {
             maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.set(positions[i], positions[i + 1], positions[i + 2])));
         }
         this.radius = Math.sqrt(maxRadiusSq);
+
         return this;
     }
 
@@ -139,6 +147,7 @@ export class Sphere
     {
         this.center.copy(sphere.center);
         this.radius = sphere.radius;
+
         return this;
     }
 
@@ -172,7 +181,8 @@ export class Sphere
      */
     intersectsSphere(sphere: Sphere)
     {
-        var radiusSum = this.radius + sphere.radius;
+        const radiusSum = this.radius + sphere.radius;
+
         return sphere.center.distanceSquared(this.center) <= radiusSum * radiusSum;
     }
 
@@ -195,19 +205,21 @@ export class Sphere
     }
 
     /**
-     * 
+     *
      * @param point 点
      * @param pout 输出点
      */
     clampPoint(point: Vector3, pout = new Vector3())
     {
-        var deltaLengthSq = this.center.distanceSquared(point);
+        const deltaLengthSq = this.center.distanceSquared(point);
+
         pout.copy(point);
         if (deltaLengthSq > (this.radius * this.radius))
         {
             pout.sub(this.center).normalize();
             pout.scaleNumber(this.radius).add(this.center);
         }
+
         return pout;
     }
 
@@ -217,6 +229,7 @@ export class Sphere
     getBoundingBox(box = new Box3())
     {
         box.init(this.center.subNumberTo(this.radius), this.center.addNumberTo(this.radius));
+
         return box;
     }
 
@@ -228,6 +241,7 @@ export class Sphere
     {
         this.center.applyMatrix4x4(matrix);
         this.radius = this.radius * matrix.getMaxScaleOnAxis();
+
         return this;
     }
 
@@ -238,6 +252,7 @@ export class Sphere
     translate(offset: Vector3)
     {
         this.center.add(offset);
+
         return this;
     }
 
@@ -252,6 +267,6 @@ export class Sphere
 
     toString(): string
     {
-        return "Sphere [center:" + this.center.toString() + ", radius:" + this.radius + "]";
+        return `Sphere [center:${this.center.toString()}, radius:${this.radius}]`;
     }
 }

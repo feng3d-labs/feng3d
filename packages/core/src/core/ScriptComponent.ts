@@ -66,7 +66,7 @@ export class ScriptComponent extends Behaviour
         if (oldInstance)
         {
             // 如果两个类定义名称相同，则保留上个对象数据
-            if (classUtils.getQualifiedClassName(oldInstance) == this.scriptName)
+            if (classUtils.getQualifiedClassName(oldInstance) === this.scriptName)
             {
                 serialization.setValue(this._scriptInstance, oldInstance);
             }

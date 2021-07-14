@@ -17,7 +17,7 @@ export class Raycaster
      */
     pick(ray3D: Ray3, transforms: Node3D[])
     {
-        if (transforms.length == 0) return null;
+        if (transforms.length === 0) return null;
 
         var pickingCollisionVOs = transforms.reduce((pv: PickingCollisionVO[], node3d) =>
         {
@@ -27,7 +27,7 @@ export class Raycaster
             return pv;
         }, []);
 
-        if (pickingCollisionVOs.length == 0) return null;
+        if (pickingCollisionVOs.length === 0) return null;
 
         // 根据与包围盒距离进行排序
         pickingCollisionVOs.sort((a, b) => a.rayEntryDistance - b.rayEntryDistance);
@@ -39,7 +39,7 @@ export class Raycaster
         for (var i = 0; i < pickingCollisionVOs.length; ++i)
         {
             var pickingCollisionVO = pickingCollisionVOs[i];
-            if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
+            if (bestCollisionVO === null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
             {
                 var result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
                 if (result)
@@ -68,7 +68,7 @@ export class Raycaster
      */
     pickAll(ray3D: Ray3, node3ds: Node3D[])
     {
-        if (node3ds.length == 0) return [];
+        if (node3ds.length === 0) return [];
 
         var pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3d) =>
         {
@@ -78,7 +78,7 @@ export class Raycaster
             return pv;
         }, []);
 
-        if (pickingCollisionVOs.length == 0) return [];
+        if (pickingCollisionVOs.length === 0) return [];
 
         var collisionVOs = pickingCollisionVOs.filter(v =>
         {

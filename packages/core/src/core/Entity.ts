@@ -107,7 +107,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
      * 获取指定位置索引的子组件
      * 
      * @param index 位置索引
-     * @returns 			子组件
+     * @returns             子组件
      */
     getComponentAt(index: number): Component
     {
@@ -170,7 +170,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
      * 获取实体上所有指定类型的组件数组
      * 
      * @param type 类定义
-     * @returns 		返回与给出类定义一致的组件
+     * @returns         返回与给出类定义一致的组件
      */
     getComponents<T extends Components>(type: Constructor<T>): T[]
     {
@@ -235,11 +235,11 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
      * 获取组件在容器的索引位置
      * 
      * @param component 查询的组件
-     * @returns 			    组件在容器的索引位置
+     * @returns                 组件在容器的索引位置
      */
     getComponentIndex(component: Components): number
     {
-        console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
+        console.assert(this._components.indexOf(component) !== -1, "组件不在容器中");
 
         var index = this._components.indexOf(component);
         return index;
@@ -317,7 +317,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
         var removeComponents: T[] = [];
         for (var i = this._components.length - 1; i >= 0; i--)
         {
-            if (this._components[i].constructor == type)
+            if (this._components[i].constructor === type)
                 removeComponents.push(this.removeComponentAt(i) as T);
         }
         return removeComponents;
@@ -357,7 +357,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
     static find(name: string)
     {
         var entitys = Feng3dObject.getObjects(Entity)
-        var result = entitys.filter(v => !v.disposed && (v.name == name));
+        var result = entitys.filter(v => !v.disposed && (v.name === name));
         return result[0];
     }
 
@@ -385,11 +385,11 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
      * 判断是否拥有组件
      * 
      * @param com 被检测的组件
-     * @returns 	true：拥有该组件；false：不拥有该组件。
+     * @returns     true：拥有该组件；false：不拥有该组件。
      */
     private hasComponent(com: Components): boolean
     {
-        return this._components.indexOf(com) != -1;
+        return this._components.indexOf(com) !== -1;
     }
 
     /**
@@ -400,7 +400,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
      */
     private addComponentAt(component: Components, index: number): void
     {
-        if (component == null)
+        if (component === null)
             return;
         console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
 
@@ -417,7 +417,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
             var oldComponents = this.getComponentsByType(type);
             if (oldComponents.length > 0)
             {
-                console.assert(oldComponents.length == 1);
+                console.assert(oldComponents.length === 1);
                 this.removeComponent(oldComponents[0]);
             }
         }
@@ -448,7 +448,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
                 component: Component;
             }>) =>
             {
-                if (e.data.entity == this && e.data.component instanceof Node3D)
+                if (e.data.entity === this && e.data.component instanceof Node3D)
                 {
                     e.data.component.children = node3ds;
                     this.off("addComponent", f);
@@ -473,7 +473,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends Feng3dObj
         g.name = type;
 
         var createHandler = this._registerPrimitives[type];
-        if (createHandler != null) createHandler(g);
+        if (createHandler !== null) createHandler(g);
 
         serialization.setValue(g, param);
         return g.getComponent(Node3D);

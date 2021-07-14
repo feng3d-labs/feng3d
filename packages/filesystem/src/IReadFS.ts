@@ -1,4 +1,4 @@
-import { FSType } from "./FSType";
+import { FSType } from './FSType';
 
 /**
  * 可读文件系统
@@ -27,7 +27,7 @@ export interface IReadFS
      * @param path 路径
      * @param callback 读取完成回调 当err不为null时表示读取失败
      */
-    readObject(path: string, callback: (err: Error, object: Object) => void): void;
+    readObject(path: string, callback: (err: Error, object: any) => void): void;
     /**
      * 加载图片
      * @param path 图片路径

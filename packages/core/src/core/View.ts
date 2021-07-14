@@ -46,7 +46,7 @@ export class View extends Feng3dObject
         if (!this._camera)
         {
             var cameras = this.scene.getComponentsInChildren(Camera);
-            if (cameras.length == 0)
+            if (cameras.length === 0)
             {
                 this._camera = serialization.setValue(new Entity(), { name: "defaultCamera" }).addComponent(Camera);
                 this.scene.node3d.addChild(this._camera.node3d);
@@ -215,7 +215,7 @@ export class View extends Feng3dObject
 
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
-        if (this.canvas.width * this.canvas.height == 0) return;
+        if (this.canvas.width * this.canvas.height === 0) return;
 
         this.camera.lens.aspect = this.viewRect.width / this.viewRect.height;
 
@@ -309,7 +309,7 @@ export class View extends Feng3dObject
         //
         var transforms = this.scene.getComponentsInChildren(Node3D).filter(t =>
         {
-            if (t == this.scene.node3d) return false;
+            if (t === this.scene.node3d) return false;
             var m = t.getComponent(Renderable);
             if (m)
             {

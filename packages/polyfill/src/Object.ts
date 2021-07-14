@@ -25,7 +25,7 @@ declare global
         isBaseType(object: any): boolean;
 
         /**
-         * 判断是否为Object对象，构造函数是否为Object， 检测 object.constructor == Object
+         * 判断是否为Object对象，构造函数是否为Object， 检测 object.constructor === Object
          * 
          * @param object 用于判断的对象
          */
@@ -98,11 +98,11 @@ Object.isBaseType = function (object: any)
 {
     //基础类型
     if (
-        object == undefined
-        || object == null
-        || typeof object == "boolean"
-        || typeof object == "string"
-        || typeof object == "number"
+        object === undefined
+        || object === null
+        || typeof object === "boolean"
+        || typeof object === "string"
+        || typeof object === "number"
     )
         return true;
     return false;
@@ -150,17 +150,17 @@ Object.runFunc = function (obj, func)
 
 Object.isObject = function (obj)
 {
-    return obj != null && (obj.constructor == Object || (obj.constructor.name == "Object"));// 兼容其他 HTMLIFrameElement 传入的Object
+    return obj !== null && (obj.constructor === Object || (obj.constructor.name === "Object"));// 兼容其他 HTMLIFrameElement 传入的Object
 }
 
 Object.getPropertyValue = function (object, property)
 {
-    if (typeof property == "string") property = property.split(".");
+    if (typeof property === "string") property = property.split(".");
     var value = object;
     var len = property.length;
     for (let i = 0; i < property.length; i++)
     {
-        if (value == null) return undefined;
+        if (value === null) return undefined;
         value = value[property[i]];
     }
     return value;
@@ -183,13 +183,13 @@ Object.getPropertyChains = function (object)
         var cp = propertys[index];
         var cv = host[cp];
         var vks: string[];
-        if (cv == null || Object.isBaseType(cv) || (vks = Object.keys(cv)).length == 0)
+        if (cv === null || Object.isBaseType(cv) || (vks = Object.keys(cv)).length === 0)
         {
             // 处理叶子属性
             var ps = [cp];
             var ci = index;
             // 查找并组合属性链
-            while ((ci = parentPropertyIndices[ci]) != -1)
+            while ((ci = parentPropertyIndices[ci]) !== -1)
             {
                 ps.push(propertys[ci]);
             }
@@ -213,14 +213,14 @@ Object.getPropertyChains = function (object)
 
 Object.equalDeep = function (a, b)
 {
-    if (a == b) return true;
-    if (Object.isBaseType(a) || Object.isBaseType(b)) return a == b;
-    if (typeof a == "function" || typeof b == "function") return a == b;
+    if (a === b) return true;
+    if (Object.isBaseType(a) || Object.isBaseType(b)) return a === b;
+    if (typeof a === "function" || typeof b === "function") return a === b;
     //
     var akeys = Object.keys(a);
     var bkeys = Object.keys(b);
     if (!Array.equal(akeys, bkeys)) return false;
-    if (Array.isArray(a) && Array.isArray(b)) return a.length == b.length;
+    if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length;
     // 检测所有属性
     for (let i = 0; i < akeys.length; i++)
     {
@@ -235,7 +235,7 @@ Object.equalDeep = function (a, b)
 
 Object.assignShallow = function (target, source)
 {
-    if (source == null) return target;
+    if (source === null) return target;
     var keys = Object.keys(source);
     keys.forEach(k =>
     {
@@ -246,7 +246,7 @@ Object.assignShallow = function (target, source)
 
 Object.assignDeep = function (target, source, replacers = [], deep = Number.MAX_SAFE_INTEGER)
 {
-    if (source == null) return target;
+    if (source === null) return target;
     if (deep < 1) return target;
     var keys = Object.keys(source);
     var handles = replacers.concat(Object.assignDeepDefaultHandlers);
@@ -269,7 +269,7 @@ Object.assignDeep = function (target, source, replacers = [], deep = Number.MAX_
 Object.assignDeepDefaultHandlers = [
     function (target, source, key)
     {
-        if (target[key] == source[key]) return true;
+        if (target[key] === source[key]) return true;
         return false;
     },
     function (target, source, key)

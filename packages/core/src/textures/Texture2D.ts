@@ -37,7 +37,7 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
     /**
      * 是否已加载
      */
-    get isLoaded() { return this._loadings.length == 0; }
+    get isLoaded() { return this._loadings.length === 0; }
     private _loadings = [];
 
     get image(): HTMLImageElement
@@ -88,7 +88,7 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
 
     private onItemLoadCompleted()
     {
-        if (this._loadings.length == 0) this.emit("loadCompleted");
+        if (this._loadings.length === 0) this.emit("loadCompleted");
     }
 
     /**

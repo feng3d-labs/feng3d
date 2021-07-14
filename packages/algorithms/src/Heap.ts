@@ -1,10 +1,10 @@
-import { Comparator, CompareFunction } from "./utils/Comparator";
+import { Comparator, CompareFunction } from './utils/Comparator';
 
 /**
  * 堆
- * 
+ *
  * 最小和最大堆的父类。
- * 
+ *
  * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/heap/Heap.js
  */
 export abstract class Heap<T>
@@ -21,7 +21,7 @@ export abstract class Heap<T>
 
     /**
      * 构建链表
-     * 
+     *
      * @param comparatorFunction 比较函数
      */
     constructor(comparatorFunction?: CompareFunction<T>)
@@ -37,7 +37,7 @@ export abstract class Heap<T>
 
     /**
      * 获取左边子结点索引
-     * 
+     *
      * @param parentIndex 父结点索引
      */
     getLeftChildIndex(parentIndex: number)
@@ -47,7 +47,7 @@ export abstract class Heap<T>
 
     /**
      * 获取右边子结点索引
-     * 
+     *
      * @param parentIndex 父结点索引
      */
     getRightChildIndex(parentIndex: number)
@@ -57,7 +57,7 @@ export abstract class Heap<T>
 
     /**
      * 获取父结点索引
-     * 
+     *
      * @param childIndex 子结点索引
      */
     getParentIndex(childIndex: number)
@@ -67,7 +67,7 @@ export abstract class Heap<T>
 
     /**
      * 是否有父结点
-     * 
+     *
      * @param childIndex 子结点索引
      */
     hasParent(childIndex: number)
@@ -77,7 +77,7 @@ export abstract class Heap<T>
 
     /**
      * 是否有左结点
-     * 
+     *
      * @param parentIndex 父结点索引
      */
     hasLeftChild(parentIndex: number)
@@ -87,7 +87,7 @@ export abstract class Heap<T>
 
     /**
      * 是否有右结点
-     * 
+     *
      * @param parentIndex 父结点索引
      */
     hasRightChild(parentIndex: number)
@@ -97,7 +97,7 @@ export abstract class Heap<T>
 
     /**
      * 获取左结点
-     * 
+     *
      * @param parentIndex 父结点索引
      */
     leftChild(parentIndex: number)
@@ -107,7 +107,7 @@ export abstract class Heap<T>
 
     /**
      * 获取右结点
-     * 
+     *
      * @param parentIndex 父结点索引
      */
     rightChild(parentIndex: number)
@@ -117,7 +117,7 @@ export abstract class Heap<T>
 
     /**
      * 获取父结点
-     * 
+     *
      * @param childIndex 子结点索引
      */
     parent(childIndex: number)
@@ -127,13 +127,14 @@ export abstract class Heap<T>
 
     /**
      * 交换两个结点数据
-     * 
+     *
      * @param index1 索引1
      * @param index2 索引2
      */
     swap(index1: number, index2: number)
     {
         const tmp = this.heapContainer[index2];
+
         this.heapContainer[index2] = this.heapContainer[index1];
         this.heapContainer[index1] = tmp;
     }
@@ -144,12 +145,13 @@ export abstract class Heap<T>
     peek()
     {
         if (this.heapContainer.length === 0) return null;
+
         return this.heapContainer[0];
     }
 
     /**
      * 出堆
-     * 
+     *
      * 取出堆顶元素
      */
     poll()
@@ -169,19 +171,20 @@ export abstract class Heap<T>
 
     /**
      * 新增元素
-     * 
+     *
      * @param item 元素
      */
     add(item: T)
     {
         this.heapContainer.push(item);
         this.heapifyUp();
+
         return this;
     }
 
     /**
      * 移除所有指定元素
-     * 
+     *
      * @param item 元素
      * @param comparator 比较器
      */
@@ -199,7 +202,8 @@ export abstract class Heap<T>
             if (indexToRemove === (this.heapContainer.length - 1))
             {
                 this.heapContainer.pop();
-            } else
+            }
+            else
             {
                 // 把数组最后元素移动到删除位置
                 this.heapContainer[indexToRemove] = this.heapContainer.pop();
@@ -215,7 +219,8 @@ export abstract class Heap<T>
                 )
                 {
                     this.heapifyDown(indexToRemove);
-                } else
+                }
+                else
                 {
                     this.heapifyUp(indexToRemove);
                 }
@@ -227,7 +232,7 @@ export abstract class Heap<T>
 
     /**
      * 查找元素所在所有索引
-     * 
+     *
      * @param item 查找的元素
      * @param comparator 比较器
      */
@@ -264,7 +269,7 @@ export abstract class Heap<T>
 
     /**
      * 堆冒泡
-     * 
+     *
      * @param startIndex 堆冒泡起始索引
      */
     heapifyUp(startIndex?: number)
@@ -283,7 +288,7 @@ export abstract class Heap<T>
 
     /**
      * 堆下沉
-     * 
+     *
      * @param startIndex 堆下沉起始索引
      */
     heapifyDown(startIndex = 0)
@@ -299,7 +304,8 @@ export abstract class Heap<T>
             )
             {
                 nextIndex = this.getRightChildIndex(currentIndex);
-            } else
+            }
+            else
             {
                 nextIndex = this.getLeftChildIndex(currentIndex);
             }
@@ -317,12 +323,11 @@ export abstract class Heap<T>
         }
     }
 
-
     /**
      * 检查堆元素对的顺序是否正确。
      * 对于MinHeap，第一个元素必须总是小于等于。
      * 对于MaxHeap，第一个元素必须总是大于或等于。
-     * 
+     *
      * @param firstElement 第一个元素
      * @param secondElement 第二个元素
      */

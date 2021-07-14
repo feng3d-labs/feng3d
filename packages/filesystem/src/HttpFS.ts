@@ -1,6 +1,6 @@
-import { loader } from "./base/Loader";
-import { FSType } from "./FSType";
-import { IReadFS } from "./IReadFS";
+import { loader } from './base/Loader';
+import { FSType } from './FSType';
+import { IReadFS } from './IReadFS';
 
 /**
  * Http可读文件系统
@@ -10,19 +10,20 @@ export class HttpFS implements IReadFS
     /**
      * 根路径
      */
-    rootPath = "";
+    rootPath = '';
 
     type = FSType.http;
 
-    constructor(rootPath = "")
+    constructor(rootPath = '')
     {
         this.rootPath = rootPath;
-        if (this.rootPath == "")
+        if (this.rootPath === '')
         {
-            if (typeof document != "undefined")
+            if (typeof document !== 'undefined')
             {
-                var url = document.URL.split("?").shift();
-                this.rootPath = url.substring(0, url.lastIndexOf("/") + 1);
+                const url = document.URL.split('?').shift();
+
+                this.rootPath = url.substring(0, url.lastIndexOf('/') + 1);
             }
         }
     }
@@ -71,12 +72,13 @@ export class HttpFS implements IReadFS
      * @param path 路径
      * @param callback 读取完成回调 当err不为null时表示读取失败
      */
-    readObject(path: string, callback: (err: Error, data: Object) => void)
+    readObject(path: string, callback: (err: Error, data: any) => void)
     {
         loader.loadText(this.getAbsolutePath(path),
             (content) =>
             {
-                var obj = JSON.parse(content);
+                const obj = JSON.parse(content);
+
                 callback(null, obj);
             },
             null,
@@ -93,15 +95,16 @@ export class HttpFS implements IReadFS
      */
     readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
     {
-        var img = new Image();
+        const img = new Image();
+
         img.onload = () =>
         {
             callback(null, img);
         };
-        img.onerror = (evt) =>
+        img.onerror = (_evt) =>
         {
             callback(new Error(`加载图片${path}失败`), null);
-        }
+        };
         img.src = this.getAbsolutePath(path);
     }
 
@@ -119,4 +122,4 @@ export class HttpFS implements IReadFS
 /**
  * 默认基础文件系统
  */
- export const basefs: IReadFS = new HttpFS();
+export const basefs: IReadFS = new HttpFS();

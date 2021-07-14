@@ -87,7 +87,7 @@ if (!Array.prototype.includes)
         {
             for (let i = fromIndex, n = this.length; i < n; i++)
             {
-                if (searchElement == this[i]) return true;
+                if (searchElement === this[i]) return true;
             }
             return false;
         },
@@ -97,12 +97,12 @@ if (!Array.prototype.includes)
 
 Array.equal = function (self, arr)
 {
-    if (self.length != arr.length) return false;
+    if (self.length !== arr.length) return false;
     var keys = Object.keys(arr);
     for (let i = 0, n = keys.length; i < n; i++)
     {
         var key = keys[i];
-        if (self[key] != arr[key]) return false;
+        if (self[key] !== arr[key]) return false;
     }
     return true;
 }
@@ -115,7 +115,7 @@ Array.concatToSelf = function <T>(self: T[], ...items: (T | ConcatArray<T>)[])
     return self;
 }
 
-Array.unique = function (arr, compare = (a, b) => a == b)
+Array.unique = function (arr, compare = (a, b) => a === b)
 {
     var keys = Object.keys(arr);
     var ids = keys.map(v => Number(v)).filter(v => !isNaN(v));
@@ -172,7 +172,7 @@ export function isUnique<T>(array: T[], compare?: (a: T, b: T) => boolean): bool
 export function deleteItem<T>(array: T[], item: T): number
 {
     var index = array.indexOf(item);
-    if (index != -1) array.splice(index, 1);
+    if (index !== -1) array.splice(index, 1);
     return index;
 }
 
@@ -181,7 +181,7 @@ Array.replace = function (arr, a, b, isAdd = true)
     var isreplace = false;
     for (let i = 0; i < arr.length; i++)
     {
-        if (arr[i] == a)
+        if (arr[i] === a)
         {
             arr[i] = b;
             isreplace = true;
@@ -205,7 +205,7 @@ Array.create = function <T>(length: number, itemFunc: (index: number) => T)
 Array.binarySearch = function (array, target, compare, start, end)
 {
     var insert = Array.binarySearchInsert(array, target, compare, start, end);
-    if (array[insert] == target)
+    if (array[insert] === target)
         return insert;
     return -1;
 }
@@ -214,9 +214,9 @@ Array.binarySearchInsert = function (array, target, compare, start, end): number
 {
     if (start === undefined) start = 0;
     if (end === undefined) end = array.length;
-    if (start == end)
+    if (start === end)
         return start;
-    if (compare(array[start], target) == 0)
+    if (compare(array[start], target) === 0)
     {
         return start;
     }

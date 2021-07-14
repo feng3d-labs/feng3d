@@ -1,8 +1,8 @@
-import { oav } from "@feng3d/objectview";
-import { mathUtil } from "@feng3d/polyfill";
-import { serialize } from "@feng3d/serialization";
-import { Vector } from "./Vector";
-import { Vector2 } from "./Vector2";
+import { oav } from '@feng3d/objectview';
+import { mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { Vector } from './Vector';
+import { Vector2 } from './Vector2';
 
 export interface IVector3
 {
@@ -16,7 +16,7 @@ export interface IVector3
  */
 export class Vector3 implements Vector
 {
-    __class__: "feng3d.Vector3";
+    __class__: 'feng3d.Vector3';
 
     /**
     * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
@@ -56,15 +56,17 @@ export class Vector3 implements Vector
 
     /**
      * 随机三维向量
-     * 
+     *
      * @param size 尺寸
      * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
      */
     static random(size = 1, double = false)
     {
-        var v = new Vector3(Math.random(), Math.random(), Math.random());
+        const v = new Vector3(Math.random(), Math.random(), Math.random());
+
         if (double) v.scaleNumber(2).subNumber(1);
         v.scaleNumber(size);
+
         return v;
     }
 
@@ -134,6 +136,7 @@ export class Vector3 implements Vector
         this.x = x;
         this.y = y;
         this.z = z;
+
         return this;
     }
 
@@ -153,6 +156,7 @@ export class Vector3 implements Vector
         this.x = vector.x;
         this.y = vector.y;
         this.z = z;
+
         return this;
     }
 
@@ -161,6 +165,7 @@ export class Vector3 implements Vector
         this.x = array[offset];
         this.y = array[offset + 1];
         this.z = array[offset + 2];
+
         return this;
     }
 
@@ -181,6 +186,7 @@ export class Vector3 implements Vector
         this.x += v.x;
         this.y += v.y;
         this.z += v.z;
+
         return this;
     }
 
@@ -194,6 +200,7 @@ export class Vector3 implements Vector
         vout.x = this.x + v.x;
         vout.y = this.y + v.y;
         vout.z = this.z + v.z;
+
         return vout;
     }
 
@@ -207,6 +214,7 @@ export class Vector3 implements Vector
         this.x -= a.x;
         this.y -= a.y;
         this.z -= a.z;
+
         return this;
     }
 
@@ -220,6 +228,7 @@ export class Vector3 implements Vector
         vout.x = this.x - v.x;
         vout.y = this.y - v.y;
         vout.z = this.z - v.z;
+
         return vout;
     }
 
@@ -232,6 +241,7 @@ export class Vector3 implements Vector
         this.x *= v.x;
         this.y *= v.y;
         this.z *= v.z;
+
         return this;
     }
 
@@ -245,6 +255,7 @@ export class Vector3 implements Vector
         vout.x = this.x * v.x;
         vout.y = this.y * v.y;
         vout.z = this.z * v.z;
+
         return vout;
     }
 
@@ -257,19 +268,21 @@ export class Vector3 implements Vector
         this.x /= a.x;
         this.y /= a.y;
         this.z /= a.z;
+
         return this;
     }
 
     /**
      * 除以向量
      * @param a 向量
-     * @param vout 输出向量 
+     * @param vout 输出向量
      */
     divideTo(a: Vector3, vout = new Vector3())
     {
         vout.x = this.x / a.x;
         vout.y = this.y / a.y;
         vout.z = this.z / a.z;
+
         return vout;
     }
 
@@ -279,11 +292,12 @@ export class Vector3 implements Vector
     equals(v: Vector3, precision = mathUtil.PRECISION)
     {
         if (!mathUtil.equals(this.x - v.x, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.y - v.y, 0, precision))
-            return false;
+        { return false; }
         if (!mathUtil.equals(this.z - v.z, 0, precision))
-            return false;
+        { return false; }
+
         return true;
     }
 
@@ -296,6 +310,7 @@ export class Vector3 implements Vector
         this.x = v.x;
         this.y = v.y;
         this.z = v.z;
+
         return this;
     }
 
@@ -305,7 +320,9 @@ export class Vector3 implements Vector
      */
     distance(p: Vector3)
     {
-        var dx = this.x - p.x, dy = this.y - p.y, dz = this.z - p.z;
+        const dx = this.x - p.x; const dy = this.y - p.y; const
+            dz = this.z - p.z;
+
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
@@ -315,7 +332,9 @@ export class Vector3 implements Vector
      */
     distanceSquared(p: Vector3)
     {
-        var dx = this.x - p.x, dy = this.y - p.y, dz = this.z - p.z;
+        const dx = this.x - p.x; const dy = this.y - p.y; const
+            dz = this.z - p.z;
+
         return dx * dx + dy * dy + dz * dz;
     }
 
@@ -324,21 +343,25 @@ export class Vector3 implements Vector
      */
     normalize(thickness = 1)
     {
-        var length = this.lengthSquared
+        let length = this.lengthSquared;
+
         if (length > 0)
         {
             length = Math.sqrt(length);
-            var invLength = thickness / length;
+            const invLength = thickness / length;
+
             this.x *= invLength;
             this.y *= invLength;
             this.z *= invLength;
-        } else
+        }
+        else
         {
             // Make something up
             this.x = 0;
             this.y = 0;
             this.z = 0;
         }
+
         return this;
     }
 
@@ -353,6 +376,7 @@ export class Vector3 implements Vector
         this.x = this.x + scalar * vector.x;
         this.y = this.y + scalar * vector.y;
         this.z = this.z + scalar * vector.z;
+
         return this;
     }
 
@@ -367,6 +391,7 @@ export class Vector3 implements Vector
         target.x = this.x + scalar * vector.x;
         target.y = this.y + scalar * vector.y;
         target.z = this.z + scalar * vector.z;
+
         return target;
     }
 
@@ -387,6 +412,7 @@ export class Vector3 implements Vector
     crossTo(a: Vector3, vout = new Vector3())
     {
         vout.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+
         return vout;
     }
 
@@ -408,24 +434,29 @@ export class Vector3 implements Vector
 
     tangents(t1: Vector3, t2: Vector3)
     {
-        var norm = this.length;
+        const norm = this.length;
+
         if (norm > 0.0)
         {
-            var n = new Vector3();
-            var inorm = 1 / norm;
+            const n = new Vector3();
+            const inorm = 1 / norm;
+
             n.set(this.x * inorm, this.y * inorm, this.z * inorm);
-            var randVec = new Vector3();
+            const randVec = new Vector3();
+
             if (Math.abs(n.x) < 0.9)
             {
                 randVec.set(1, 0, 0);
                 n.crossTo(randVec, t1);
-            } else
+            }
+            else
             {
                 randVec.set(0, 1, 0);
                 n.crossTo(randVec, t1);
             }
             n.crossTo(t1, t2);
-        } else
+        }
+        else
         {
             // The normal length is zero, make something up
             t1.set(1, 0, 0);
@@ -435,30 +466,33 @@ export class Vector3 implements Vector
 
     /**
      * 检查一个向量是否接近零
-     * 
+     *
      * @param precision
      */
     almostZero(precision = mathUtil.PRECISION)
     {
-        if (Math.abs(this.x) > precision ||
-            Math.abs(this.y) > precision ||
-            Math.abs(this.z) > precision)
+        if (Math.abs(this.x) > precision
+            || Math.abs(this.y) > precision
+            || Math.abs(this.z) > precision)
         {
             return false;
         }
+
         return true;
     }
 
     /**
      * 检查这个向量是否与另一个向量反平行。
-     * 
+     *
      * @param v
      * @param precision 设置为零以进行精确比较
      */
     isAntiparallelTo(v: Vector3, precision = mathUtil.PRECISION)
     {
-        var t = new Vector3();
+        const t = new Vector3();
+
         this.negateTo(t);
+
         return t.equals(v, precision);
     }
 
@@ -471,6 +505,7 @@ export class Vector3 implements Vector
         this.x += n;
         this.y += n;
         this.z += n;
+
         return this;
     }
 
@@ -483,6 +518,7 @@ export class Vector3 implements Vector
         vout.x = this.x + n;
         vout.y = this.y + n;
         vout.z = this.z + n;
+
         return vout;
     }
 
@@ -495,6 +531,7 @@ export class Vector3 implements Vector
         this.x -= n;
         this.y -= n;
         this.z -= n;
+
         return this;
     }
 
@@ -507,6 +544,7 @@ export class Vector3 implements Vector
         vout.x = this.x - n;
         vout.y = this.y - n;
         vout.z = this.z - n;
+
         return vout;
     }
 
@@ -519,6 +557,7 @@ export class Vector3 implements Vector
         this.x *= n;
         this.y *= n;
         this.z *= n;
+
         return this;
     }
 
@@ -532,6 +571,7 @@ export class Vector3 implements Vector
         vout.x = this.x * n;
         vout.y = this.y * n;
         vout.z = this.z * n;
+
         return vout;
     }
 
@@ -544,19 +584,21 @@ export class Vector3 implements Vector
         this.x /= n;
         this.y /= n;
         this.z /= n;
+
         return this;
     }
 
     /**
      * 除以标量
      * @param n 标量
-     * @param vout 输出向量 
+     * @param vout 输出向量
      */
     divideNumberTo(n: number, vout = new Vector3())
     {
         vout.x = this.x / n;
         vout.y = this.y / n;
         vout.z = this.z / n;
+
         return vout;
     }
 
@@ -578,6 +620,7 @@ export class Vector3 implements Vector
         this.x = -this.x;
         this.y = -this.y;
         this.z = -this.z;
+
         return this;
     }
 
@@ -590,6 +633,7 @@ export class Vector3 implements Vector
         vout.x = -this.x;
         vout.y = -this.y;
         vout.z = -this.z;
+
         return vout;
     }
 
@@ -602,6 +646,7 @@ export class Vector3 implements Vector
         this.x = 1 / this.x;
         this.y = 1 / this.y;
         this.z = 1 / this.z;
+
         return this;
     }
 
@@ -614,6 +659,7 @@ export class Vector3 implements Vector
         vout.x = 1 / this.x;
         vout.y = 1 / this.y;
         vout.z = 1 / this.z;
+
         return vout;
     }
 
@@ -622,21 +668,26 @@ export class Vector3 implements Vector
      */
     unit(target: Vector3 = new Vector3())
     {
-        var x = this.x, y = this.y, z = this.z;
+        const x = this.x; const y = this.y; const
+            z = this.z;
         var ninv = x * x + y * y + z * z;
+
         if (ninv > 0.0)
         {
             var ninv = Math.sqrt(ninv);
+
             ninv = 1.0 / ninv;
             target.x = x * ninv;
             target.y = y * ninv;
             target.z = z * ninv;
-        } else
+        }
+        else
         {
             target.x = 1;
             target.y = 0;
             target.z = 0;
         }
+
         return target;
     }
 
@@ -648,6 +699,7 @@ export class Vector3 implements Vector
         this.x *= s;
         this.y *= s;
         this.z *= s;
+
         return this;
     }
 
@@ -659,6 +711,7 @@ export class Vector3 implements Vector
         vout.x = this.x * s;
         vout.y = this.y * s;
         vout.z = this.z * s;
+
         return vout;
     }
 
@@ -671,6 +724,7 @@ export class Vector3 implements Vector
         this.x *= s.x;
         this.y *= s.y;
         this.z *= s.z;
+
         return this;
     }
 
@@ -683,6 +737,7 @@ export class Vector3 implements Vector
         vout.x = this.x * s.x;
         vout.y = this.y * s.y;
         vout.z = this.z * s.z;
+
         return vout;
     }
 
@@ -697,6 +752,7 @@ export class Vector3 implements Vector
         this.x += (v.x - this.x) * alpha.x;
         this.y += (v.y - this.y) * alpha.y;
         this.z += (v.z - this.z) * alpha.z;
+
         return this;
     }
 
@@ -711,6 +767,7 @@ export class Vector3 implements Vector
         vout.x = this.x + (v.x - this.x) * alpha.x;
         vout.y = this.y + (v.y - this.y) * alpha.y;
         vout.z = this.z + (v.z - this.z) * alpha.z;
+
         return vout;
     }
 
@@ -725,6 +782,7 @@ export class Vector3 implements Vector
         this.x += (v.x - this.x) * alpha;
         this.y += (v.y - this.y) * alpha;
         this.z += (v.z - this.z) * alpha;
+
         return this;
     }
 
@@ -739,6 +797,7 @@ export class Vector3 implements Vector
         vout.x = this.x + (v.x - this.x) * alpha;
         vout.y = this.y + (v.y - this.y) * alpha;
         vout.z = this.z + (v.z - this.z) * alpha;
+
         return vout;
     }
 
@@ -788,6 +847,7 @@ export class Vector3 implements Vector
         this.x = mathUtil.clamp(this.x, min.x, max.x);
         this.y = mathUtil.clamp(this.y, min.y, max.y);
         this.z = mathUtil.clamp(this.z, min.z, max.z);
+
         return this;
     }
 
@@ -810,6 +870,7 @@ export class Vector3 implements Vector
         this.x = Math.min(this.x, v.x);
         this.y = Math.min(this.y, v.y);
         this.z = Math.min(this.z, v.z);
+
         return this;
     }
 
@@ -822,12 +883,13 @@ export class Vector3 implements Vector
         this.x = Math.max(this.x, v.x);
         this.y = Math.max(this.y, v.y);
         this.z = Math.max(this.z, v.z);
+
         return this;
     }
 
     /**
      * 反射
-     * @param normal 
+     * @param normal
      */
     reflect(normal: Vector3)
     {
@@ -842,6 +904,7 @@ export class Vector3 implements Vector
         this.x = Math.floor(this.x);
         this.y = Math.floor(this.y);
         this.z = Math.floor(this.z);
+
         return this;
     }
 
@@ -853,6 +916,7 @@ export class Vector3 implements Vector
         this.x = Math.ceil(this.x);
         this.y = Math.ceil(this.y);
         this.z = Math.ceil(this.z);
+
         return this;
     }
 
@@ -864,6 +928,7 @@ export class Vector3 implements Vector
         this.x = Math.round(this.x);
         this.y = Math.round(this.y);
         this.z = Math.round(this.z);
+
         return this;
     }
 
@@ -875,6 +940,7 @@ export class Vector3 implements Vector
         this.x = (this.x < 0) ? Math.ceil(this.x) : Math.floor(this.x);
         this.y = (this.y < 0) ? Math.ceil(this.y) : Math.floor(this.y);
         this.z = (this.z < 0) ? Math.ceil(this.z) : Math.floor(this.z);
+
         return this;
     }
 
@@ -892,7 +958,7 @@ export class Vector3 implements Vector
      */
     toString(): string
     {
-        return "<" + this.x + ", " + this.y + ", " + this.z + ">";
+        return `<${this.x}, ${this.y}, ${this.z}>`;
     }
 
     /**
@@ -906,6 +972,7 @@ export class Vector3 implements Vector
         array[offset] = this.x;
         array[offset + 1] = this.y;
         array[offset + 2] = this.z;
+
         return array;
     }
 }

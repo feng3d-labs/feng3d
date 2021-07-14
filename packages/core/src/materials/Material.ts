@@ -92,7 +92,7 @@ export class Material extends Feng3dObject
 
         renderAtomic.shader = this.renderAtomic.shader;
         renderAtomic.renderParams = this.renderAtomic.renderParams;
-        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == RenderMode.POINTS;
+        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === RenderMode.POINTS;
     }
 
     /**
@@ -131,12 +131,12 @@ export class Material extends Feng3dObject
                     (texture as Texture2D).on("loadCompleted", () =>
                     {
                         loadingNum--;
-                        if (loadingNum == 0) callback();
+                        if (loadingNum === 0) callback();
                     });
                 }
             }
         }
-        if (loadingNum == 0) callback();
+        if (loadingNum === 0) callback();
     }
 
     private _onShaderChanged()
@@ -144,7 +144,7 @@ export class Material extends Feng3dObject
         var cls = shaderlib.shaderConfig.shaders[this.shaderName].cls;
         if (cls)
         {
-            if (this.uniforms == null || this.uniforms.constructor != cls)
+            if (this.uniforms === null || this.uniforms.constructor !== cls)
             {
                 var newuniforms = new cls();
                 this.uniforms = newuniforms;
