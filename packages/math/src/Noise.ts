@@ -182,7 +182,7 @@ export class Noise
         // 在格子内对应每个轴的混合权重
         const PF: number[] = [];
 
-        for (var i = 0; i < n; i++)
+        for (let i = 0; i < n; i++)
         {
             let p = ps[i];
             // 找到所属单元格
@@ -215,7 +215,7 @@ export class Noise
         const dns: number[] = [];
         //
 
-        for (var i = 0, len = bits.length; i < len; i++)
+        for (let i = 0, len = bits.length; i < len; i++)
         {
             const bit = bits[i];
             let bitn = bit.length;
@@ -244,10 +244,10 @@ export class Noise
             dns[i] = dn;
         }
         // 进行插值
-        for (var i = 0; i < n; i++)
+        for (let i = 0; i < n; i++)
         {
             // 每次前后两个插值
-            for (var j = 0, len = dns.length; j < len; j += 2)
+            for (let j = 0, len = dns.length; j < len; j += 2)
             {
                 dns[j / 2] = mix(dns[j], dns[j + 1], PF[i]);
             }
@@ -287,7 +287,7 @@ export class Noise
 
         for (let i = 0; i < 256; i++)
         {
-            var v0;
+            let v0: number;
 
             if (i & 1)
             {
@@ -340,7 +340,7 @@ export function createGrad(n: number): number[][]
     return grad;
 }
 
-var createGradCache: { [n: number]: number[][] } = {};
+const createGradCache: { [n: number]: number[][] } = {};
 
 function createGradBase(n: number): number[][]
 {
@@ -386,21 +386,21 @@ export function getBits(n: number): number[][]
 
     return grad;
 }
-var getBitsChace: { [n: number]: number[][] } = {};
+const getBitsChace: { [n: number]: number[][] } = {};
 
-var grad1 = [
+const grad1 = [
     [1], [-1],
 ];
-var grad2 = [
+const grad2 = [
     [1, 0], [-1, 0],
     [0, 1], [0, -1],
 ];
-var grad3 = [
+const grad3 = [
     [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0],
     [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
     [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]
 ];
-var permutation = [
+const permutation = [
     151, 160, 137, 91, 90, 15,
     131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
     190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,

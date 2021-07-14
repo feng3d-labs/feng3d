@@ -57,9 +57,9 @@ export class EquationSolving
 
     /**
      * 函数是否连续
-     * @param f 函数
+     * @param _f 函数
      */
-    isContinuous(f: (x: number) => number)
+    isContinuous(_f: (x: number) => number)
     {
         return true;
     }
@@ -125,10 +125,12 @@ export class EquationSolving
         {
             return b;
         }
+        let fr: number;
+        let x: number;
         do
         {
-            var x = (a + b) / 2;
-            var fr = f(x);
+            x = (a + b) / 2;
+            fr = f(x);
 
             if (fa * fr < 0)
             {
@@ -179,11 +181,13 @@ export class EquationSolving
         {
             return b;
         }
+        let x: number;
+        let fr: number;
         do
         {
             //
-            var x = a - fa * (b - a) / (fb - fa);
-            var fr = f(x);
+            x = a - fa * (b - a) / (fb - fa);
+            fr = f(x);
 
             if (fa * fr < 0)
             {
@@ -285,15 +289,19 @@ export class EquationSolving
             else
             { x = a; }
         }
+        else if (f2Sign > 0)
+        {
+            x = a;
+        }
         else
-        if (f2Sign > 0)
-        { x = a; }
-        else
-        { x = b; }
+        {
+            x = b;
+        }
 
+        let fx: number;
         do
         {
-            var fx = f(x);
+            fx = f(x);
             const f1x = f1(x);
             const f2x = f2(x);
             // f'(x)在[a, b]上保持定号
@@ -408,21 +416,24 @@ export class EquationSolving
             else
             { x = a; }
         }
+        else if (f2Sign > 0)
+        {
+            x = a;
+        }
         else
-        if (f2Sign > 0)
-        { x = a; }
-        else
-        { x = b; }
+        {
+            x = b;
+        }
 
         // Xn-1
-        let xn_1 = x;
-        let fxn_1 = f(xn_1);
+        let xn1 = x;
+        let fxn1 = f(xn1);
         // Xn
-        let xn = xn_1 - precision * f2Sign / Math.abs(f2Sign);
+        let xn = xn1 - precision * f2Sign / Math.abs(f2Sign);
         let fxn = f(xn);
         //
 
-        if (fxn * fxn_1 < 0)
+        if (fxn * fxn1 < 0)
         {
             return xn;
         }
@@ -450,10 +461,10 @@ export class EquationSolving
                 return undefined;
             }
             // 迭代 Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
-            xn$1 = xn - fxn * (xn - xn_1) / (fxn - fxn_1);
+            xn$1 = xn - fxn * (xn - xn1) / (fxn - fxn1);
             //
-            xn_1 = xn;
-            fxn_1 = fxn;
+            xn1 = xn;
+            fxn1 = fxn;
             xn = xn$1;
             fxn = f(xn);
         } while (!this.equalNumber(fxn, 0, precision));

@@ -38,11 +38,11 @@ export class BezierCurve
 
     /**
      * 线性Bézier曲线关于t的二阶导数
-     * @param t 插值度
-     * @param p0 点0
-     * @param p1 点1
+     * @param _t 插值度
+     * @param _p0 点0
+     * @param _p1 点1
      */
-    linearSecondDerivative(t: number, p0: number, p1: number)
+    linearSecondDerivative(_t: number, _p0: number, _p1: number)
     {
         return 0;
     }

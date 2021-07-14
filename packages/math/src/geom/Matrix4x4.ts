@@ -239,12 +239,12 @@ export class Matrix4x4
     get determinant()
     {
         return (//
-            (this.elements[0] * this.elements[5] - this.elements[4] * this.elements[1]) * (this.elements[10] * this.elements[15] - this.elements[14] * this.elements[11]) //
-            - (this.elements[0] * this.elements[9] - this.elements[8] * this.elements[1]) * (this.elements[6] * this.elements[15] - this.elements[14] * this.elements[7]) //
-            + (this.elements[0] * this.elements[13] - this.elements[12] * this.elements[1]) * (this.elements[6] * this.elements[11] - this.elements[10] * this.elements[7]) //
-            + (this.elements[4] * this.elements[9] - this.elements[8] * this.elements[5]) * (this.elements[2] * this.elements[15] - this.elements[14] * this.elements[3]) //
-            - (this.elements[4] * this.elements[13] - this.elements[12] * this.elements[5]) * (this.elements[2] * this.elements[11] - this.elements[10] * this.elements[3]) //
-            + (this.elements[8] * this.elements[13] - this.elements[12] * this.elements[9]) * (this.elements[2] * this.elements[7] - this.elements[6] * this.elements[3])//
+            (((this.elements[0] * this.elements[5]) - (this.elements[4] * this.elements[1])) * ((this.elements[10] * this.elements[15]) - (this.elements[14] * this.elements[11]))) //
+            - (((this.elements[0] * this.elements[9]) - (this.elements[8] * this.elements[1])) * ((this.elements[6] * this.elements[15]) - (this.elements[14] * this.elements[7]))) //
+            + (((this.elements[0] * this.elements[13]) - (this.elements[12] * this.elements[1])) * ((this.elements[6] * this.elements[11]) - (this.elements[10] * this.elements[7]))) //
+            + (((this.elements[4] * this.elements[9]) - (this.elements[8] * this.elements[5])) * ((this.elements[2] * this.elements[15]) - (this.elements[14] * this.elements[3]))) //
+            - (((this.elements[4] * this.elements[13]) - (this.elements[12] * this.elements[5])) * ((this.elements[2] * this.elements[11]) - (this.elements[10] * this.elements[3]))) //
+            + (((this.elements[8] * this.elements[13]) - (this.elements[12] * this.elements[9])) * ((this.elements[2] * this.elements[7]) - (this.elements[6] * this.elements[3])))//
         );
     }
 
@@ -365,9 +365,9 @@ export class Matrix4x4
         const lcosq = 1 - cosq;
 
         const arr = [//
-            n.x * n.x * lcosq + cosq, n.x * n.y * lcosq + n.z * sinq, n.x * n.z * lcosq - n.y * sinq, 0, //
-            n.x * n.y * lcosq - n.z * sinq, n.y * n.y * lcosq + cosq, n.y * n.z * lcosq + n.x * sinq, 0, //
-            n.x * n.z * lcosq + n.y * sinq, n.y * n.z * lcosq - n.x * sinq, n.z * n.z * lcosq + cosq, 0, //
+            (n.x * n.x * lcosq) + cosq, (n.x * n.y * lcosq) + (n.z * sinq), (n.x * n.z * lcosq) - (n.y * sinq), 0, //
+            (n.x * n.y * lcosq) - (n.z * sinq), (n.y * n.y * lcosq) + cosq, (n.y * n.z * lcosq) + (n.x * sinq), 0, //
+            (n.x * n.z * lcosq) + (n.y * sinq), (n.y * n.z * lcosq) - (n.x * sinq), (n.z * n.z * lcosq) + cosq, 0, //
             0, 0, 0, 1//
         ];
 
@@ -384,39 +384,62 @@ export class Matrix4x4
      */
     append(lhs: Matrix4x4)
     {
-        const //
-            m111 = this.elements[0]; const m121 = this.elements[4]; const m131 = this.elements[8]; const m141 = this.elements[12]; const //
-            m112 = this.elements[1]; const m122 = this.elements[5]; const m132 = this.elements[9]; const m142 = this.elements[13]; const //
-            m113 = this.elements[2]; const m123 = this.elements[6]; const m133 = this.elements[10]; const m143 = this.elements[14]; const //
-            m114 = this.elements[3]; const m124 = this.elements[7]; const m134 = this.elements[11]; const m144 = this.elements[15]; //
+        const m111 = this.elements[0];
+        const m121 = this.elements[4];
+        const m131 = this.elements[8];
+        const m141 = this.elements[12];
+        const m112 = this.elements[1];
+        const m122 = this.elements[5];
+        const m132 = this.elements[9];
+        const m142 = this.elements[13];
+        const m113 = this.elements[2];
+        const m123 = this.elements[6];
+        const m133 = this.elements[10];
+        const m143 = this.elements[14];
+        const m114 = this.elements[3];
+        const m124 = this.elements[7];
+        const m134 = this.elements[11];
+        const m144 = this.elements[15];
 
-        const m211 = lhs.elements[0]; const m221 = lhs.elements[4]; const m231 = lhs.elements[8]; const m241 = lhs.elements[12]; //
-        const m212 = lhs.elements[1]; const m222 = lhs.elements[5]; const m232 = lhs.elements[9]; const m242 = lhs.elements[13]; //
-        const m213 = lhs.elements[2]; const m223 = lhs.elements[6]; const m233 = lhs.elements[10]; const m243 = lhs.elements[14]; //
-        const m214 = lhs.elements[3]; const m224 = lhs.elements[7]; const m234 = lhs.elements[11]; const
-            m244 = lhs.elements[15];
+        const m211 = lhs.elements[0];
+        const m221 = lhs.elements[4];
+        const m231 = lhs.elements[8];
+        const m241 = lhs.elements[12];
+        const m212 = lhs.elements[1];
+        const m222 = lhs.elements[5];
+        const m232 = lhs.elements[9];
+        const m242 = lhs.elements[13];
+        const m213 = lhs.elements[2];
+        const m223 = lhs.elements[6];
+        const m233 = lhs.elements[10];
+        const m243 = lhs.elements[14];
+        const m214 = lhs.elements[3];
+        const m224 = lhs.elements[7];
+        const m234 = lhs.elements[11];
+        const m244 = lhs.elements[15];
 
-        this.elements[0] = m111 * m211 + m112 * m221 + m113 * m231 + m114 * m241;
-        this.elements[1] = m111 * m212 + m112 * m222 + m113 * m232 + m114 * m242;
-        this.elements[2] = m111 * m213 + m112 * m223 + m113 * m233 + m114 * m243;
-        this.elements[3] = m111 * m214 + m112 * m224 + m113 * m234 + m114 * m244;
+        this.elements[0] = (m111 * m211) + (m112 * m221) + (m113 * m231) + (m114 * m241);
+        this.elements[1] = (m111 * m212) + (m112 * m222) + (m113 * m232) + (m114 * m242);
+        this.elements[2] = (m111 * m213) + (m112 * m223) + (m113 * m233) + (m114 * m243);
+        this.elements[3] = (m111 * m214) + (m112 * m224) + (m113 * m234) + (m114 * m244);
 
-        this.elements[4] = m121 * m211 + m122 * m221 + m123 * m231 + m124 * m241;
-        this.elements[5] = m121 * m212 + m122 * m222 + m123 * m232 + m124 * m242;
-        this.elements[6] = m121 * m213 + m122 * m223 + m123 * m233 + m124 * m243;
-        this.elements[7] = m121 * m214 + m122 * m224 + m123 * m234 + m124 * m244;
+        this.elements[4] = (m121 * m211) + (m122 * m221) + (m123 * m231) + (m124 * m241);
+        this.elements[5] = (m121 * m212) + (m122 * m222) + (m123 * m232) + (m124 * m242);
+        this.elements[6] = (m121 * m213) + (m122 * m223) + (m123 * m233) + (m124 * m243);
+        this.elements[7] = (m121 * m214) + (m122 * m224) + (m123 * m234) + (m124 * m244);
 
-        this.elements[8] = m131 * m211 + m132 * m221 + m133 * m231 + m134 * m241;
-        this.elements[9] = m131 * m212 + m132 * m222 + m133 * m232 + m134 * m242;
-        this.elements[10] = m131 * m213 + m132 * m223 + m133 * m233 + m134 * m243;
-        this.elements[11] = m131 * m214 + m132 * m224 + m133 * m234 + m134 * m244;
+        this.elements[8] = (m131 * m211) + (m132 * m221) + (m133 * m231) + (m134 * m241);
+        this.elements[9] = (m131 * m212) + (m132 * m222) + (m133 * m232) + (m134 * m242);
+        this.elements[10] = (m131 * m213) + (m132 * m223) + (m133 * m233) + (m134 * m243);
+        this.elements[11] = (m131 * m214) + (m132 * m224) + (m133 * m234) + (m134 * m244);
 
-        this.elements[12] = m141 * m211 + m142 * m221 + m143 * m231 + m144 * m241;
-        this.elements[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
-        this.elements[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
-        this.elements[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
+        this.elements[12] = (m141 * m211) + (m142 * m221) + (m143 * m231) + (m144 * m241);
+        this.elements[13] = (m141 * m212) + (m142 * m222) + (m143 * m232) + (m144 * m242);
+        this.elements[14] = (m141 * m213) + (m142 * m223) + (m143 * m233) + (m144 * m243);
+        this.elements[15] = (m141 * m214) + (m142 * m224) + (m143 * m234) + (m144 * m244);
 
-        console.assert(this.elements[0] !== NaN && this.elements[4] !== NaN && this.elements[8] !== NaN && this.elements[12] !== NaN);
+        // eslint-disable-next-line use-isnan
+        console.assert((this.elements[0] !== NaN) && (this.elements[4] !== NaN) && (this.elements[8] !== NaN) && (this.elements[12] !== NaN));
 
         return this;
     }
@@ -471,9 +494,18 @@ export class Matrix4x4
     {
         const m = this.elements;
 
-        m[0] += x * m[3]; m[4] += x * m[7]; m[8] += x * m[11]; m[12] += x * m[15];
-        m[1] += y * m[3]; m[5] += y * m[7]; m[9] += y * m[11]; m[13] += y * m[15];
-        m[2] += z * m[3]; m[6] += z * m[7]; m[10] += z * m[11]; m[14] += z * m[15];
+        m[0] += x * m[3];
+        m[4] += x * m[7];
+        m[8] += x * m[11];
+        m[12] += x * m[15];
+        m[1] += y * m[3];
+        m[5] += y * m[7];
+        m[9] += y * m[11];
+        m[13] += y * m[15];
+        m[2] += z * m[3];
+        m[6] += z * m[7];
+        m[10] += z * m[11];
+        m[14] += z * m[15];
 
         return this;
     }
@@ -586,59 +618,65 @@ export class Matrix4x4
         m[13] = py;
         m[14] = pz;
         //
-        const cosX = Math.cos(rx); const
-            sinX = Math.sin(rx);
-        const cosY = Math.cos(ry); const
-            sinY = Math.sin(ry);
-        const cosZ = Math.cos(rz); const
-            sinZ = Math.sin(rz);
+        const cosX = Math.cos(rx);
+        const sinX = Math.sin(rx);
+        const cosY = Math.cos(ry);
+        const sinY = Math.sin(ry);
+        const cosZ = Math.cos(rz);
+        const sinZ = Math.sin(rz);
 
         if (order === RotationOrder.XYZ)
         {
-            var ae = cosX * cosZ; var af = cosX * sinZ; var be = sinX * cosZ; var
-                bf = sinX * sinZ;
+            const ae = cosX * cosZ;
+            const af = cosX * sinZ;
+            const be = sinX * cosZ;
+            const bf = sinX * sinZ;
 
             m[0] = cosY * cosZ;
             m[4] = -cosY * sinZ;
             m[8] = sinY;
 
-            m[1] = af + be * sinY;
-            m[5] = ae - bf * sinY;
+            m[1] = af + (be * sinY);
+            m[5] = ae - (bf * sinY);
             m[9] = -sinX * cosY;
 
-            m[2] = bf - ae * sinY;
-            m[6] = be + af * sinY;
+            m[2] = bf - (ae * sinY);
+            m[6] = be + (af * sinY);
             m[10] = cosX * cosY;
         }
         else if (order === RotationOrder.YXZ)
         {
-            var ce = cosY * cosZ; var cf = cosY * sinZ; var de = sinY * cosZ; var
-                df = sinY * sinZ;
+            const ce = cosY * cosZ;
+            const cf = cosY * sinZ;
+            const de = sinY * cosZ;
+            const df = sinY * sinZ;
 
-            m[0] = ce + df * sinX;
-            m[4] = de * sinX - cf;
+            m[0] = ce + (df * sinX);
+            m[4] = (de * sinX) - cf;
             m[8] = cosX * sinY;
 
             m[1] = cosX * sinZ;
             m[5] = cosX * cosZ;
             m[9] = -sinX;
 
-            m[2] = cf * sinX - de;
-            m[6] = df + ce * sinX;
+            m[2] = (cf * sinX) - de;
+            m[6] = df + (ce * sinX);
             m[10] = cosX * cosY;
         }
         else if (order === RotationOrder.ZXY)
         {
-            var ce = cosY * cosZ; var cf = cosY * sinZ; var de = sinY * cosZ; var
-                df = sinY * sinZ;
+            const ce = cosY * cosZ;
+            const cf = cosY * sinZ;
+            const de = sinY * cosZ;
+            const df = sinY * sinZ;
 
-            m[0] = ce - df * sinX;
+            m[0] = ce - (df * sinX);
             m[4] = -cosX * sinZ;
-            m[8] = de + cf * sinX;
+            m[8] = de + (cf * sinX);
 
-            m[1] = cf + de * sinX;
+            m[1] = cf + (de * sinX);
             m[5] = cosX * cosZ;
-            m[9] = df - ce * sinX;
+            m[9] = df - (ce * sinX);
 
             m[2] = -cosX * sinY;
             m[6] = sinX;
@@ -646,16 +684,18 @@ export class Matrix4x4
         }
         else if (order === RotationOrder.ZYX)
         {
-            var ae = cosX * cosZ; var af = cosX * sinZ; var be = sinX * cosZ; var
-                bf = sinX * sinZ;
+            const ae = cosX * cosZ;
+            const af = cosX * sinZ;
+            const be = sinX * cosZ;
+            const bf = sinX * sinZ;
 
             m[0] = cosY * cosZ;
-            m[4] = be * sinY - af;
-            m[8] = ae * sinY + bf;
+            m[4] = (be * sinY) - af;
+            m[8] = (ae * sinY) + bf;
 
             m[1] = cosY * sinZ;
-            m[5] = bf * sinY + ae;
-            m[9] = af * sinY - be;
+            m[5] = (bf * sinY) + ae;
+            m[9] = (af * sinY) - be;
 
             m[2] = -sinY;
             m[6] = sinX * cosY;
@@ -663,37 +703,41 @@ export class Matrix4x4
         }
         else if (order === RotationOrder.YZX)
         {
-            var ac = cosX * cosY; var ad = cosX * sinY; var bc = sinX * cosY; var
-                bd = sinX * sinY;
+            const ac = cosX * cosY;
+            const ad = cosX * sinY;
+            const bc = sinX * cosY;
+            const bd = sinX * sinY;
 
             m[0] = cosY * cosZ;
-            m[4] = bd - ac * sinZ;
-            m[8] = bc * sinZ + ad;
+            m[4] = bd - (ac * sinZ);
+            m[8] = (bc * sinZ) + ad;
 
             m[1] = sinZ;
             m[5] = cosX * cosZ;
             m[9] = -sinX * cosZ;
 
             m[2] = -sinY * cosZ;
-            m[6] = ad * sinZ + bc;
-            m[10] = ac - bd * sinZ;
+            m[6] = (ad * sinZ) + bc;
+            m[10] = ac - (bd * sinZ);
         }
         else if (order === RotationOrder.XZY)
         {
-            var ac = cosX * cosY; var ad = cosX * sinY; var bc = sinX * cosY; var
-                bd = sinX * sinY;
+            const ac = cosX * cosY;
+            const ad = cosX * sinY;
+            const bc = sinX * cosY;
+            const bd = sinX * sinY;
 
             m[0] = cosY * cosZ;
             m[4] = -sinZ;
             m[8] = sinY * cosZ;
 
-            m[1] = ac * sinZ + bd;
+            m[1] = (ac * sinZ) + bd;
             m[5] = cosX * cosZ;
-            m[9] = ad * sinZ - bc;
+            m[9] = (ad * sinZ) - bc;
 
-            m[2] = bc * sinZ - ad;
+            m[2] = (bc * sinZ) - ad;
             m[6] = sinX * cosZ;
-            m[10] = bd * sinZ + ac;
+            m[10] = (bd * sinZ) + ac;
         }
         else
         {
@@ -726,27 +770,30 @@ export class Matrix4x4
         const clamp = mathUtil.clamp;
         //
         const m = this.elements;
-        let m11 = m[0]; let m12 = m[4]; let
-            m13 = m[8];
-        let m21 = m[1]; let m22 = m[5]; let
-            m23 = m[9];
-        let m31 = m[2]; let m32 = m[6]; let
-            m33 = m[10];
+        let m11 = m[0];
+        let m12 = m[4];
+        let m13 = m[8];
+        let m21 = m[1];
+        let m22 = m[5];
+        let m23 = m[9];
+        let m31 = m[2];
+        let m32 = m[6];
+        let m33 = m[10];
         //
 
         position.x = m[12];
         position.y = m[13];
         position.z = m[14];
         //
-        scale.x = Math.sqrt(m11 * m11 + m21 * m21 + m31 * m31);
+        scale.x = Math.sqrt((m11 * m11) + (m21 * m21) + (m31 * m31));
         m11 /= scale.x;
         m21 /= scale.x;
         m31 /= scale.x;
-        scale.y = Math.sqrt(m12 * m12 + m22 * m22 + m32 * m32);
+        scale.y = Math.sqrt((m12 * m12) + (m22 * m22) + (m32 * m32));
         m12 /= scale.y;
         m22 /= scale.y;
         m32 /= scale.y;
-        scale.z = Math.sqrt(m13 * m13 + m23 * m23 + m33 * m33);
+        scale.z = Math.sqrt((m13 * m13) + (m23 * m23) + (m33 * m33));
         m13 /= scale.z;
         m23 /= scale.z;
         m33 /= scale.z;
@@ -851,10 +898,22 @@ export class Matrix4x4
     {
         const m = this.elements;
 
-        m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
-        m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
-        m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
-        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
+        m[0] = 1;
+        m[1] = 0;
+        m[2] = 0;
+        m[3] = 0;
+        m[4] = 0;
+        m[5] = 1;
+        m[6] = 0;
+        m[7] = 0;
+        m[8] = 0;
+        m[9] = 0;
+        m[10] = 1;
+        m[11] = 0;
+        m[12] = 0;
+        m[13] = 0;
+        m[14] = 0;
+        m[15] = 1;
 
         return this;
     }
@@ -877,9 +936,12 @@ export class Matrix4x4
 
         const m = this.elements;
 
-        const m11 = m[0]; const m21 = m[4]; const m31 = m[8]; const m41 = m[12];
-        const m12 = m[1]; const m22 = m[5]; const m32 = m[9]; const m42 = m[13];
-        const m13 = m[2]; const m23 = m[6]; const m33 = m[10]; const m43 = m[14];
+        const m11 = m[0]; const m21 = m[4];
+        const m31 = m[8]; const m41 = m[12];
+        const m12 = m[1]; const m22 = m[5];
+        const m32 = m[9]; const m42 = m[13];
+        const m13 = m[2]; const m23 = m[6];
+        const m33 = m[10]; const m43 = m[14];
         const m14 = m[3]; const m24 = m[7]; const m34 = m[11]; const m44 = m[15];
 
         m[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
@@ -922,7 +984,7 @@ export class Matrix4x4
      * @param degrees 旋转的角度。
      * @param pivotPoint 一个用于确定旋转中心的点。对象的默认轴点为该对象的注册点。
      */
-    prependRotation(axis: Vector3, degrees: number, pivotPoint: Vector3 = new Vector3())
+    prependRotation(axis: Vector3, degrees: number, _pivotPoint: Vector3 = new Vector3())
     {
         const rotationMat = Matrix4x4.fromAxisRotate(axis, degrees);
 
