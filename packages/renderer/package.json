@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/renderer",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "bundle": "dist/index.js",
@@ -13,9 +13,10 @@
     "dist/"
   ],
   "dependencies": {
-    "@feng3d/objectview": "0.3.3",
-    "@feng3d/polyfill": "0.3.3",
-    "@feng3d/serialization": "0.3.3",
-    "@feng3d/watcher": "0.3.3"
-  }
+    "@feng3d/objectview": "0.3.5",
+    "@feng3d/polyfill": "0.3.5",
+    "@feng3d/serialization": "0.3.5",
+    "@feng3d/watcher": "0.3.5"
+  },
+  "gitHead": "e322b56945f7ef0cd52f783409500fb69ae14646"
 }
