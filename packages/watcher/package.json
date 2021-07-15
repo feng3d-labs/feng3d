@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/watcher",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "bundle": "dist/index.js",
@@ -13,6 +13,6 @@
     "dist/"
   ],
   "dependencies": {
-    "@feng3d/polyfill": "0.3.3"
+    "@feng3d/polyfill": "0.3.4"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/task",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "bundle": "dist/index.js",
