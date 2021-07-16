@@ -1,3 +1,4 @@
+import { objectIsEmpty } from '@feng3d/polyfill';
 
 /**
  * 路径
@@ -1270,7 +1271,7 @@ class Win32Path implements Path
         ext: string;
     })
     {
-        if (pathObject === null || typeof pathObject !== 'object')
+        if (objectIsEmpty(pathObject) || typeof pathObject !== 'object')
         {
             throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
         }
@@ -1875,7 +1876,7 @@ class PosixPath implements Path
         ext: string;
     })
     {
-        if (pathObject === null || typeof pathObject !== 'object')
+        if (objectIsEmpty(pathObject) || typeof pathObject !== 'object')
         {
             throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
         }

@@ -1,3 +1,4 @@
+import { objectIsEmpty } from '@feng3d/polyfill';
 import { Comparator, CompareFunction } from './utils/Comparator';
 
 /**
@@ -127,7 +128,7 @@ export class LinkedList<T>
         }
 
         // currentNode 是否为表尾
-        if (currentNode === null || currentNode.next === null)
+        if (objectIsEmpty(currentNode) || objectIsEmpty(currentNode.next))
         {
             this.tail = currentNode;
         }
@@ -173,7 +174,7 @@ export class LinkedList<T>
         }
 
         // currentNode 是否为表尾
-        if (currentNode === null || currentNode.next === null)
+        if (objectIsEmpty(currentNode) || objectIsEmpty(currentNode.next))
         {
             this.tail = currentNode;
         }

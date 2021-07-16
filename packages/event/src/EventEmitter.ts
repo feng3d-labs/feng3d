@@ -1,3 +1,5 @@
+import { objectIsEmpty } from '@feng3d/polyfill';
+
 /**
  * 事件属性名称常量
  */
@@ -203,7 +205,7 @@ export class EventEmitter<T = any>
      */
     on<K extends keyof T & string>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority = 0, once = false): this
     {
-        if (listener === null) return this;
+        if (objectIsEmpty(listener)) return this;
 
         let objectListener: ObjectListener = this[EVENT_KEY];
 

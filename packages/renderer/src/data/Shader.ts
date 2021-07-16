@@ -1,3 +1,4 @@
+import { objectIsEmpty } from '@feng3d/polyfill';
 import { GL } from "../gl/GL";
 import { ShaderMacro } from "../shader/Macro";
 import { shaderlib } from "../shader/ShaderLib";
@@ -86,7 +87,7 @@ export class Shader
     private compileShaderCode(gl: GL, type: number, code: string)
     {
         var shader = gl.createShader(type);
-        if (shader === null)
+        if (objectIsEmpty(shader))
         {
             debugger;
             throw 'unable to create shader';

@@ -1,3 +1,4 @@
+import { objectIsEmpty } from './Object';
 
 export const __class__ = "__class__";
 
@@ -16,7 +17,7 @@ export class ClassUtils
      */
     getQualifiedClassName(value: any): string
     {
-        if (value === null)
+        if (objectIsEmpty(value))
             return "null";
 
         const classUtilsHandlers = classUtils.classUtilsHandlers;

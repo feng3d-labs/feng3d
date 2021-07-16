@@ -1,4 +1,4 @@
-import { getPropertyDescriptor, gPartial, PropertyNames } from '@feng3d/polyfill';
+import { getPropertyDescriptor, gPartial, objectIsEmpty, PropertyNames } from '@feng3d/polyfill';
 
 /**
  * 观察装饰器，观察被装饰属性的变化
@@ -328,7 +328,7 @@ export class Watcher
         {
             const element = propertywatchs[i];
 
-            if (handler === null || (handler === element.handler && thisObject === element.thisObject))
+            if (objectIsEmpty(handler) || (handler === element.handler && thisObject === element.thisObject))
             {
                 // 删除下级监听链
                 if (object[currentp])

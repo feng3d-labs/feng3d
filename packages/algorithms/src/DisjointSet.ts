@@ -1,3 +1,5 @@
+import { objectIsEmpty } from "@feng3d/polyfill";
+
 /**
  * 并查集
  *
@@ -73,7 +75,7 @@ export class DisjointSet<T>
         const rootKeyA = this.find(valueA);
         const rootKeyB = this.find(valueB);
 
-        if (rootKeyA === null || rootKeyB === null)
+        if (objectIsEmpty(rootKeyA) || objectIsEmpty(rootKeyB))
         {
             throw new Error('给出值不全在集合内');
         }
@@ -110,7 +112,7 @@ export class DisjointSet<T>
         const rootKeyA = this.find(valueA);
         const rootKeyB = this.find(valueB);
 
-        if (rootKeyA === null || rootKeyB === null)
+        if (objectIsEmpty(rootKeyA) || objectIsEmpty(rootKeyB))
         {
             throw new Error('给出的值不全在集合内');
         }
@@ -182,7 +184,7 @@ export class DisjointSetNode<T>
      */
     isRoot()
     {
-        return this.parent === null;
+        return objectIsEmpty(this.parent);
     }
 
     /**

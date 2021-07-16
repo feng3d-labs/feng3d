@@ -9,6 +9,7 @@ import { serialization, serialize } from "@feng3d/serialization";
 import { watch } from "@feng3d/watcher";
 import { Texture2D } from "./Texture2D";
 import { deleteItem } from "packages/polyfill/src/Array";
+import { objectIsEmpty } from '@feng3d/polyfill';
 
 export interface TextureCubeEventMap
 {
@@ -55,7 +56,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
 
     setTexture2D(pos: TextureCubeImageName, texture: Texture2D)
     {
-        if (this.rawData === null || this.rawData.type !== "texture")
+        if (objectIsEmpty(this.rawData) || this.rawData.type !== "texture")
         {
             this.rawData = { type: "texture", textures: [] };
         }
@@ -67,7 +68,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
 
     setTexture2DPath(pos: TextureCubeImageName, path: string)
     {
-        if (this.rawData === null || this.rawData.type !== "path")
+        if (objectIsEmpty(this.rawData) || this.rawData.type !== "path")
         {
             this.rawData = { type: "path", paths: [] };
         }
@@ -128,7 +129,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
      */
     private _loadItemTexture(texture: Texture2D, index: number)
     {
-        if (texture === null) return;
+        if (objectIsEmpty(texture)) return;
 
         this._loading.push(texture);
         texture.onLoadCompleted(() =>
@@ -151,7 +152,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
      */
     private _loadItemImagePath(imagepath: string, index: number)
     {
-        if (imagepath === null) return;
+        if (objectIsEmpty(imagepath)) return;
 
         this._loading.push(imagepath);
         fs.readImage(imagepath, (err, img) =>

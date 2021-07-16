@@ -98,8 +98,7 @@ Object.isBaseType = function (object: any)
 {
     //基础类型
     if (
-        object === undefined
-        || object === null
+        object === undefined || object === null
         || typeof object === "boolean"
         || typeof object === "string"
         || typeof object === "number"
@@ -160,7 +159,7 @@ Object.getPropertyValue = function (object, property)
     var len = property.length;
     for (let i = 0; i < property.length; i++)
     {
-        if (value === null) return undefined;
+        if (objectIsEmpty(value)) return undefined;
         value = value[property[i]];
     }
     return value;
@@ -183,7 +182,7 @@ Object.getPropertyChains = function (object)
         var cp = propertys[index];
         var cv = host[cp];
         var vks: string[];
-        if (cv === null || Object.isBaseType(cv) || (vks = Object.keys(cv)).length === 0)
+        if (objectIsEmpty(cv) || Object.isBaseType(cv) || (vks = Object.keys(cv)).length === 0)
         {
             // 处理叶子属性
             var ps = [cp];
@@ -235,7 +234,7 @@ Object.equalDeep = function (a, b)
 
 Object.assignShallow = function (target, source)
 {
-    if (source === null) return target;
+    if (objectIsEmpty(source)) return target;
     var keys = Object.keys(source);
     keys.forEach(k =>
     {
@@ -246,7 +245,7 @@ Object.assignShallow = function (target, source)
 
 Object.assignDeep = function (target, source, replacers = [], deep = Number.MAX_SAFE_INTEGER)
 {
-    if (source === null) return target;
+    if (objectIsEmpty(source)) return target;
     if (deep < 1) return target;
     var keys = Object.keys(source);
     var handles = replacers.concat(Object.assignDeepDefaultHandlers);
@@ -292,5 +291,18 @@ Object.assignDeepDefaultHandlers = [
     },
 
 ];
+
+/**
+ * 判断对象是否为null或者undefine
+ * 
+ * @param obj 
+ * @returns 
+ */
+export function objectIsEmpty(obj: any)
+{
+    if (obj === undefined || obj === null)
+        return true;
+    return false;
+}
 
 export { };

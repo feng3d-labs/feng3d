@@ -1,4 +1,4 @@
-import { classUtils, __class__ } from '@feng3d/polyfill';
+import { classUtils, objectIsEmpty, __class__ } from '@feng3d/polyfill';
 import { gPartial } from '@feng3d/polyfill';
 
 /**
@@ -547,7 +547,7 @@ serialization.serializeHandlers.push(
             }
 
             // 执行默认忽略默认值
-            if (tpv === null || tpv.constructor !== spv.constructor)
+            if (objectIsEmpty(tpv) || tpv.constructor !== spv.constructor)
             {
                 const className = classUtils.getQualifiedClassName(spv);
                 // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。
@@ -698,7 +698,7 @@ serialization.deserializeHandlers = [
             const tpv = target[property];
             const spv = source[property];
 
-            if (Object.isObject(spv) && spv[__class__] === null)
+            if (Object.isObject(spv) && objectIsEmpty(spv[__class__]))
             {
                 let obj = {};
 
@@ -796,7 +796,7 @@ serialization.differentHandlers = [
         priority: 0,
         handler(target, source, property, param)
         {
-            if (source[property] === null)
+            if (objectIsEmpty(source[property]))
             {
                 param.different[property] = param.serialization.serialize(target[property]);
 
@@ -928,7 +928,7 @@ serialization.setValueHandlers = [
             const tpv = target[property];
             const spv = source[property];
 
-            if (tpv === null)
+            if (objectIsEmpty(tpv))
             {
                 target[property] = param.serialization.deserialize(spv);
 
