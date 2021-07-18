@@ -2,6 +2,8 @@
  * Port from https://github.com/mapbox/earcut (v2.2.2)
  */
 
+import { objectIsEmpty } from '@feng3d/polyfill';
+
 export class Earcut
 {
     /**
@@ -529,7 +531,7 @@ function indexCurve(start: Node, minX: number, minY: number, invSize: number)
 
     do
     {
-        if (p.z === null) p.z = zOrder(p.x, p.y, minX, minY, invSize);
+        if (objectIsEmpty(p.z)) p.z = zOrder(p.x, p.y, minX, minY, invSize);
         p.prevZ = p.prev;
         p.nextZ = p.next;
         p = p.next;

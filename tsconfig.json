@@ -17,9 +17,6 @@
         "paths": {
             "@feng3d/*": [
                 "packages/*/src"
-            ],
-            "t": [
-                "bundles/feng3d/src"
             ]
         },
         "outDir": "./out"

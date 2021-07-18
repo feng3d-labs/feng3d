@@ -1,3 +1,4 @@
+import { objectIsEmpty } from '@feng3d/polyfill';
 import { ticker } from "./Ticker";
 
 declare global
@@ -136,7 +137,7 @@ export class StatsPanel
         canvas.style.cssText = 'width:80px;height:48px';
 
         var context0 = canvas.getContext('2d');
-        if (context0 === null)
+        if (objectIsEmpty(context0))
         {
             console.log(`无法创建 CanvasRenderingContext2D `);
             return;

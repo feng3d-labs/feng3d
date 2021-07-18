@@ -1,3 +1,4 @@
+import { objectIsEmpty } from '@feng3d/polyfill';
 
 /**
  * 标记objectview对象界面类
@@ -166,7 +167,7 @@ export class ObjectView
 
         classConfig.objectAttributeInfos.forEach(v => { v.editable = v.editable && classConfig.editable; });
 
-        if (classConfig.component === null || classConfig.component === "")
+        if (objectIsEmpty(classConfig.component) || classConfig.component === "")
         {
             //返回基础类型界面类定义
             if (!(classConfig.owner instanceof Object))
@@ -195,7 +196,7 @@ export class ObjectView
      */
     getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView
     {
-        if (attributeViewInfo.component === null || attributeViewInfo.component === "")
+        if (objectIsEmpty(attributeViewInfo.component) || attributeViewInfo.component === "")
         {
             var defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
             var tempComponent = defaultViewClass ? defaultViewClass.component : "";
@@ -206,7 +207,7 @@ export class ObjectView
             }
         }
 
-        if (attributeViewInfo.component === null || attributeViewInfo.component === "")
+        if (objectIsEmpty(attributeViewInfo.component) || attributeViewInfo.component === "")
         {
             //使用默认对象属性界面类定义
             attributeViewInfo.component = this.defaultObjectAttributeViewClass;
@@ -228,7 +229,7 @@ export class ObjectView
      */
     getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView
     {
-        if (blockViewInfo.component === null || blockViewInfo.component === "")
+        if (objectIsEmpty(blockViewInfo.component) || blockViewInfo.component === "")
         {
             //返回默认对象属性界面类定义
             blockViewInfo.component = this.defaultObjectAttributeBlockView;
@@ -298,7 +299,7 @@ export class ObjectView
 
         function getAttributeType(attribute): string
         {
-            if (attribute === null)
+            if (objectIsEmpty(attribute))
                 return "null";
             if (typeof attribute === "number")
                 return "number";
@@ -469,7 +470,7 @@ function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeView
     {
         var blockName = objectAttributeInfos[i].block || "";
         objectBlockInfo = dic[blockName];
-        if (objectBlockInfo === null)
+        if (objectIsEmpty(objectBlockInfo))
         {
             objectBlockInfo = dic[blockName] = { name: blockName, owner: object, itemList: [] };
             tempVec.push(objectBlockInfo);
@@ -487,7 +488,7 @@ function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeView
         {
             blockDefinition = blockDefinitionVec[i];
             objectBlockInfo = dic[blockDefinition.name];
-            if (objectBlockInfo === null)
+            if (objectIsEmpty(objectBlockInfo))
             {
                 objectBlockInfo = {
                     name: blockDefinition.name,

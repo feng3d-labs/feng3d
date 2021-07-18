@@ -1,5 +1,6 @@
 import { event } from "@feng3d/event";
 import { pathUtils } from "@feng3d/filesystem";
+import { objectIsEmpty } from '@feng3d/polyfill';
 import { serialize } from "@feng3d/serialization";
 import { ticker } from "../utils/Ticker";
 import { AssetMeta } from "./AssetMeta";
@@ -297,7 +298,7 @@ export abstract class FileAsset
         // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
         ticker.once(1000, () =>
         {
-            if (this.rs.getAssetById(this.assetId) === null)
+            if (objectIsEmpty(this.rs.getAssetById(this.assetId)))
             {
                 this.deletePreview();
             }

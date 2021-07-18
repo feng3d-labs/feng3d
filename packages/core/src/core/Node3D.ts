@@ -1,7 +1,7 @@
 import type { IVector3 } from "@feng3d/math";
 import { Box3, Matrix4x4, Quaternion, Ray3, Vector3 } from "@feng3d/math";
 import { oav } from "@feng3d/objectview";
-import { Constructor, mathUtil } from "@feng3d/polyfill";
+import { Constructor, mathUtil, objectIsEmpty } from "@feng3d/polyfill";
 import { RenderAtomic } from "@feng3d/renderer";
 import { serialize } from "@feng3d/serialization";
 import { AssetType } from "../assets/AssetType";
@@ -714,7 +714,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
      */
     addChild(child: Node3D)
     {
-        if (child === null)
+        if (objectIsEmpty(child))
             return;
         if (child.parent === this)
         {
@@ -777,7 +777,7 @@ export class Node3D<T extends Component3DEventMap = Component3DEventMap> extends
      */
     removeChild(child: Node3D)
     {
-        if (child === null) return;
+        if (objectIsEmpty(child)) return;
         var childIndex = this._children.indexOf(child);
         if (childIndex !== -1) this.removeChildInternal(childIndex, child);
     }

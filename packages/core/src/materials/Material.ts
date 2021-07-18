@@ -1,6 +1,6 @@
 import { globalEmitter } from "@feng3d/event";
 import { oav } from "@feng3d/objectview";
-import { gPartial } from "@feng3d/polyfill";
+import { gPartial, objectIsEmpty } from "@feng3d/polyfill";
 import { RenderAtomic, RenderMode, RenderParams, Shader, shaderlib } from "@feng3d/renderer";
 import { serialization, serialize } from "@feng3d/serialization";
 import { watch } from "@feng3d/watcher";
@@ -144,7 +144,7 @@ export class Material extends Feng3dObject
         var cls = shaderlib.shaderConfig.shaders[this.shaderName].cls;
         if (cls)
         {
-            if (this.uniforms === null || this.uniforms.constructor !== cls)
+            if (objectIsEmpty(this.uniforms) || this.uniforms.constructor !== cls)
             {
                 var newuniforms = new cls();
                 this.uniforms = newuniforms;

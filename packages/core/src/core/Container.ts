@@ -1,4 +1,5 @@
 import { EventEmitter } from "@feng3d/event";
+import { objectIsEmpty } from '@feng3d/polyfill';
 
 export interface ContainerEventMap
 {
@@ -92,7 +93,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      */
     addChild(child: Container)
     {
-        if (child === null)
+        if (objectIsEmpty(child))
             return;
         if (child.parent === this)
         {
@@ -155,7 +156,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      */
     removeChild(child: Container)
     {
-        if (child === null) return;
+        if (objectIsEmpty(child)) return;
         var childIndex = this._children.indexOf(child);
         if (childIndex !== -1) this.removeChildInternal(childIndex, child);
     }
