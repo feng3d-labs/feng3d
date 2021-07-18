@@ -1,6 +1,6 @@
 import { objectIsEmpty } from './Object';
 
-export const __class__ = "__class__";
+export const __class__ = '__class__';
 
 /**
  * 类工具
@@ -18,36 +18,38 @@ export class ClassUtils
     getQualifiedClassName(value: any): string
     {
         if (objectIsEmpty(value))
-            return "null";
+        { return 'null'; }
 
         const classUtilsHandlers = classUtils.classUtilsHandlers;
         if (classUtilsHandlers)
         {
-            classUtilsHandlers.forEach(element =>
+            classUtilsHandlers.forEach((element) =>
             {
                 element(value);
             });
         }
 
-        var prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+        const prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
         if (prototype.hasOwnProperty(__class__))
-            return prototype[__class__];
+        { return prototype[__class__]; }
 
-        var className: string = prototype.constructor.name;
+        let className: string = prototype.constructor.name;
         if (_global[className] === prototype.constructor)
-            return className;
-        //在可能的命名空间内查找
-        for (var i = 0; i < _classNameSpaces.length; i++)
+        { return className; }
+        // 在可能的命名空间内查找
+        for (let i = 0; i < _classNameSpaces.length; i++)
         {
-            var tryClassName = _classNameSpaces[i] + "." + className;
+            const tryClassName = `${_classNameSpaces[i]}.${className}`;
             if (this.getDefinitionByName(tryClassName) === prototype.constructor)
             {
                 className = tryClassName;
                 registerClass(prototype.constructor, className);
+
                 return className;
             }
         }
         console.warn(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value}-${className} 的定义`);
+
         return className;
     }
 
@@ -57,21 +59,21 @@ export class ClassUtils
      */
     getDefinitionByName(name: string, readCache = true): any
     {
-        if (name === "null")
-            return null;
+        if (name === 'null')
+        { return null; }
         if (!name)
-            return null;
+        { return null; }
         if (_global[name])
-            return _global[name];
+        { return _global[name]; }
         if (readCache && _definitionCache[name])
-            return _definitionCache[name];
+        { return _definitionCache[name]; }
 
-        var paths = name.split(".");
-        var length = paths.length;
-        var definition = _global;
-        for (var i = 0; i < length; i++)
+        const paths = name.split('.');
+        const length = paths.length;
+        let definition = _global;
+        for (let i = 0; i < length; i++)
         {
-            var path = paths[i];
+            const path = paths[i];
             definition = definition[path];
             if (!definition)
             {
@@ -79,6 +81,7 @@ export class ClassUtils
             }
         }
         _definitionCache[name] = definition;
+
         return definition;
     }
 
@@ -86,7 +89,7 @@ export class ClassUtils
 
     /**
      * 获取默认实例
-     * 
+     *
      * @param name 类名称
      */
     getDefaultInstanceByName(name: string)
@@ -96,7 +99,7 @@ export class ClassUtils
             return null;
         }
 
-        var defaultInst = this.defaultInstMap[name];
+        let defaultInst = this.defaultInstMap[name];
         if (defaultInst) return defaultInst;
         //
         defaultInst = this.defaultInstMap[name] = this.getInstanceByName(name);
@@ -109,14 +112,15 @@ export class ClassUtils
 
     /**
      * 获取实例
-     * 
+     *
      * @param name 类名称
      */
     getInstanceByName(name: string)
     {
-        var cls = this.getDefinitionByName(name);
+        const cls = this.getDefinitionByName(name);
         console.assert(cls, `无法获取名称为 ${name} 的实例!`);
-        var instance = this.getInstanceByDefinition(cls);
+        const instance = this.getInstanceByDefinition(cls);
+
         return instance;
     }
 
@@ -124,10 +128,11 @@ export class ClassUtils
     {
         console.assert(cls);
         if (!cls) return undefined;
-        if (cls["__create__"])
+        if (cls.__create__)
         {
-            return cls["__create__"]();
+            return cls.__create__();
         }
+
         return new cls();
     }
 
@@ -141,7 +146,7 @@ export class ClassUtils
             _classNameSpaces.push(namespace);
         }
     }
-};
+}
 
 /**
  * 类工具
@@ -149,18 +154,18 @@ export class ClassUtils
 export const classUtils = new ClassUtils();
 
 var _definitionCache = {};
-var _global: Window;
-var global: any;
-if (typeof window !== "undefined")
+let _global: Window;
+let global: any;
+if (typeof window !== 'undefined')
 {
     _global = window;
-} else if (typeof global !== "undefined")
+}
+else if (typeof global !== 'undefined')
 {
     _global = global;
 }
 
-var _classNameSpaces = ["feng3d"];
-
+var _classNameSpaces = ['feng3d'];
 
 /**
  * 为一个类定义注册完全限定类名
@@ -169,6 +174,6 @@ var _classNameSpaces = ["feng3d"];
  */
 export function registerClass(classDefinition: any, className: string): void
 {
-    var prototype = classDefinition.prototype;
+    const prototype = classDefinition.prototype;
     Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
 }
