@@ -1,15 +1,20 @@
 import { objectIsEmpty } from '@feng3d/polyfill';
 
 /**
+ * 构造函数
+ */
+type Constructor<T> = (new (...args: any[]) => T);
+
+/**
  * 标记objectview对象界面类
  */
 export function OVComponent(component?: string)
 {
-    return (constructor: Function) =>
+    return (constructor: Constructor<any>) =>
     {
-        component = component || constructor["name"];
+        component = component || constructor.name;
         objectview.OVComponent[component] = constructor;
-    }
+    };
 }
 
 /**
@@ -17,11 +22,11 @@ export function OVComponent(component?: string)
  */
 export function OBVComponent(component?: string)
 {
-    return (constructor: Function) =>
+    return (constructor: Constructor<any>) =>
     {
-        component = component || constructor["name"];
+        component = component || constructor.name;
         objectview.OBVComponent[component] = constructor;
-    }
+    };
 }
 
 /**
@@ -29,11 +34,11 @@ export function OBVComponent(component?: string)
  */
 export function OAVComponent(component?: string)
 {
-    return (constructor: Function) =>
+    return (constructor: Constructor<any>) =>
     {
-        component = component || constructor["name"];
+        component = component || constructor.name;
         objectview.OAVComponent[component] = constructor;
-    }
+    };
 }
 
 /**
@@ -41,14 +46,16 @@ export function OAVComponent(component?: string)
  */
 export function ov<K extends keyof OVComponentParamMap>(param: { component?: K; componentParam?: OVComponentParamMap[K]; })
 {
-    return (constructor: Function) =>
+    return (constructor: Constructor<any>) =>
     {
-        if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
-            constructor["prototype"][OBJECTVIEW_KEY] = {};
-        var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
+        if (!Object.getOwnPropertyDescriptor(constructor.prototype, objectviewKey))
+        {
+            constructor.prototype[objectviewKey] = {};
+        }
+        const objectview: ClassDefinition = constructor.prototype[objectviewKey];
         objectview.component = param.component as string;
         objectview.componentParam = param.componentParam;
-    }
+    };
 }
 
 // /**
@@ -107,7 +114,7 @@ export function oav(param?: OAVComponentParams)
     return (target: any, propertyKey: string) =>
     {
         objectview.addOAV(target, propertyKey, param);
-    }
+    };
 }
 
 /**
@@ -118,26 +125,26 @@ export class ObjectView
     /**
      * 默认基础类型对象界面类定义
      */
-    defaultBaseObjectViewClass = ""
+    defaultBaseObjectViewClass = '';
     /**
      * 默认对象界面类定义
      */
-    defaultObjectViewClass = ""
+    defaultObjectViewClass = '';
     /**
      * 默认对象属性界面类定义
      */
-    defaultObjectAttributeViewClass = ""
+    defaultObjectAttributeViewClass = '';
     /**
      * 属性块默认界面
      */
-    defaultObjectAttributeBlockView = ""
+    defaultObjectAttributeBlockView = '';
     /**
      * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
      */
-    defaultTypeAttributeView = {}
-    OAVComponent = {}
-    OBVComponent = {}
-    OVComponent = {}
+    defaultTypeAttributeView = {};
+    OAVComponent = {};
+    OBVComponent = {};
+    OVComponent = {};
     setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition)
     {
         this.defaultTypeAttributeView[type] = component;
@@ -148,107 +155,111 @@ export class ObjectView
      * @param object 用于生成界面的对象
      * @param param 参数
      */
-    getObjectView(object: Object, param?: GetObjectViewParam): IObjectView
+    getObjectView(object: any, param?: GetObjectViewParam): IObjectView
     {
-        var p: GetObjectViewParam = { autocreate: true, excludeAttrs: [] };
+        const p: GetObjectViewParam = { autocreate: true, excludeAttrs: [] };
         Object.assign(p, param);
 
-        var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
+        const classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
         classConfig.editable = classConfig.editable === undefined ? true : classConfig.editable;
 
         Object.assign(classConfig, param);
 
         // 处理 exclude
-        classConfig.objectAttributeInfos = classConfig.objectAttributeInfos.filter(v => !v.exclude);
-        classConfig.objectBlockInfos.forEach(v =>
+        classConfig.objectAttributeInfos = classConfig.objectAttributeInfos.filter((v) => !v.exclude);
+        classConfig.objectBlockInfos.forEach((v) =>
         {
-            v.itemList = v.itemList.filter(vv => !vv.exclude);
+            v.itemList = v.itemList.filter((vv) => !vv.exclude);
         });
 
-        classConfig.objectAttributeInfos.forEach(v => { v.editable = v.editable && classConfig.editable; });
+        classConfig.objectAttributeInfos.forEach((v) => { v.editable = v.editable && classConfig.editable; });
 
-        if (objectIsEmpty(classConfig.component) || classConfig.component === "")
+        if (objectIsEmpty(classConfig.component) || classConfig.component === '')
         {
-            //返回基础类型界面类定义
+            // 返回基础类型界面类定义
             if (!(classConfig.owner instanceof Object))
             {
                 classConfig.component = this.defaultBaseObjectViewClass;
-            } else
+            }
+            else
             {
-                //使用默认类型界面类定义
+                // 使用默认类型界面类定义
                 classConfig.component = this.defaultObjectViewClass;
             }
         }
 
-        var cls = this.OVComponent[classConfig.component];
-        console.assert(cls !== null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
-        var view = new cls(classConfig)
+        const Cls = this.OVComponent[classConfig.component];
+        console.assert(Cls !== null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
+        const view = new Cls(classConfig);
+
         return view;
     }
     /**
      * 获取属性界面
-     * 
+     *
      * @static
      * @param attributeViewInfo 属性界面信息
      * @returns                        属性界面
-     * 
+     *
      * @memberOf ObjectView
      */
     getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView
     {
-        if (objectIsEmpty(attributeViewInfo.component) || attributeViewInfo.component === "")
+        if (objectIsEmpty(attributeViewInfo.component) || attributeViewInfo.component === '')
         {
-            var defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
-            var tempComponent = defaultViewClass ? defaultViewClass.component : "";
-            if (tempComponent !== null && tempComponent !== "")
+            const defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
+            const tempComponent = defaultViewClass ? defaultViewClass.component : '';
+            if (tempComponent !== null && tempComponent !== '')
             {
                 attributeViewInfo.component = defaultViewClass.component;
                 attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
             }
         }
 
-        if (objectIsEmpty(attributeViewInfo.component) || attributeViewInfo.component === "")
+        if (objectIsEmpty(attributeViewInfo.component) || attributeViewInfo.component === '')
         {
-            //使用默认对象属性界面类定义
+            // 使用默认对象属性界面类定义
             attributeViewInfo.component = this.defaultObjectAttributeViewClass;
         }
 
-        var cls = this.OAVComponent[attributeViewInfo.component];
-        console.assert(cls !== null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
-        var view = new cls(attributeViewInfo);
+        const Cls = this.OAVComponent[attributeViewInfo.component];
+        console.assert(Cls !== null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
+        const view = new Cls(attributeViewInfo);
+
         return view;
     }
     /**
      * 获取块界面
-     * 
+     *
      * @static
      * @param blockViewInfo 块界面信息
      * @returns                块界面
-     * 
+     *
      * @memberOf ObjectView
      */
     getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView
     {
-        if (objectIsEmpty(blockViewInfo.component) || blockViewInfo.component === "")
+        if (objectIsEmpty(blockViewInfo.component) || blockViewInfo.component === '')
         {
-            //返回默认对象属性界面类定义
+            // 返回默认对象属性界面类定义
             blockViewInfo.component = this.defaultObjectAttributeBlockView;
         }
 
-        var cls = this.OBVComponent[blockViewInfo.component];
-        console.assert(cls !== null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
-        var view = new cls(blockViewInfo);
+        const Cls = this.OBVComponent[blockViewInfo.component];
+        console.assert(Cls !== null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
+        const view = new Cls(blockViewInfo);
+
         return view;
     }
 
     addOAV(target: any, propertyKey: string, param?: OAVComponentParams)
     {
-        if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
-            target[OBJECTVIEW_KEY] = {};
-        var objectview: ClassDefinition = target[OBJECTVIEW_KEY] || {};
-        var attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
+        if (!Object.getOwnPropertyDescriptor(target, objectviewKey))
+        { target[objectviewKey] = {}; }
+        const objectview: ClassDefinition = target[objectviewKey] || {};
+        const attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
 
-        var attributeDefinition = Object.assign({ name: propertyKey }, param);
+        const attributeDefinition = Object.assign({ name: propertyKey }, param);
         attributeDefinitionVec.push(attributeDefinition);
     }
 
@@ -259,67 +270,70 @@ export class ObjectView
      * @param excludeAttrs 排除属性列表
      * @return
      */
-    getObjectInfo(object: Object, autocreate = true, excludeAttrs: string[] = []): ObjectViewInfo
+    getObjectInfo(object: any, autocreate = true, excludeAttrs: string[] = []): ObjectViewInfo
     {
-        if (typeof object === "string" || typeof object === "number" || typeof object === "boolean")
+        if (typeof object === 'string' || typeof object === 'number' || typeof object === 'boolean')
         {
             return {
                 objectAttributeInfos: [],
                 objectBlockInfos: [],
                 owner: object,
-                component: "",
+                component: '',
                 componentParam: undefined
             };
         }
 
-        var classConfig = getInheritClassDefinition(object, autocreate);
+        let classConfig = getInheritClassDefinition(object, autocreate);
 
         classConfig = classConfig || {
-            component: "",
+            component: '',
             componentParam: null,
             attributeDefinitionVec: [],
             blockDefinitionVec: [],
         };
 
-        var objectAttributeInfos: AttributeViewInfo[] = [];
-        classConfig.attributeDefinitionVec.forEach(attributeDefinition =>
+        const objectAttributeInfos: AttributeViewInfo[] = [];
+        classConfig.attributeDefinitionVec.forEach((attributeDefinition) =>
         {
             if (excludeAttrs.indexOf(attributeDefinition.name) === -1)
             {
-                var editable = attributeDefinition.editable === undefined ? true : attributeDefinition.editable;
+                let editable = attributeDefinition.editable === undefined ? true : attributeDefinition.editable;
                 editable = editable && propertyIsWritable(object, attributeDefinition.name);
 
-                var obj: AttributeViewInfo = { owner: object, type: getAttributeType(object[attributeDefinition.name]) } as any;
+                const obj: AttributeViewInfo = { owner: object, type: getAttributeType(object[attributeDefinition.name]) } as any;
                 Object.assign(obj, attributeDefinition);
                 obj.editable = editable;
                 objectAttributeInfos.push(obj);
             }
-
         });
 
         function getAttributeType(attribute): string
         {
             if (objectIsEmpty(attribute))
-                return "null";
-            if (typeof attribute === "number")
-                return "number";
+            {
+                return 'null';
+            }
+            if (typeof attribute === 'number')
+            {
+                return 'number';
+            }
+
             return attribute.constructor.name;
         }
 
-        objectAttributeInfos.forEach((v, i) => { v["___tempI"] = i });
+        objectAttributeInfos.forEach((v, i) => { v[tempIKey] = i; });
         objectAttributeInfos.sort((a, b) =>
-        {
-            return ((a.priority || 0) - (b.priority || 0)) || (a["___tempI"] - b["___tempI"]);
-        });
-        objectAttributeInfos.forEach((v, i) => { delete v["___tempI"] });
+            ((a.priority || 0) - (b.priority || 0)) || (a[tempIKey] - b[tempIKey]));
+        objectAttributeInfos.forEach((v, _i) => { delete v[tempIKey]; });
 
-        var objectInfo: ObjectViewInfo = {
-            objectAttributeInfos: objectAttributeInfos,
+        const objectInfo: ObjectViewInfo = {
+            objectAttributeInfos,
             objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
             owner: object,
             component: classConfig.component,
             componentParam: classConfig.componentParam
         };
+
         return objectInfo;
     }
 }
@@ -329,8 +343,6 @@ export class ObjectView
  */
 export const objectview = new ObjectView();
 
-var OBJECTVIEW_KEY = "__objectview__";
-
 function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefinition: ClassDefinition)
 {
     if (newClassDefinition.component && newClassDefinition.component.length > 0)
@@ -338,20 +350,20 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
         oldClassDefinition.component = newClassDefinition.component;
         oldClassDefinition.componentParam = newClassDefinition.componentParam;
     }
-    //合并属性
+    // 合并属性
     oldClassDefinition.attributeDefinitionVec = oldClassDefinition.attributeDefinitionVec || [];
     if (newClassDefinition.attributeDefinitionVec && newClassDefinition.attributeDefinitionVec.length > 0)
     {
-        newClassDefinition.attributeDefinitionVec.forEach(newAttributeDefinition =>
+        newClassDefinition.attributeDefinitionVec.forEach((newAttributeDefinition) =>
         {
-            var isfound = false;
-            oldClassDefinition.attributeDefinitionVec.forEach(oldAttributeDefinition =>
+            let isfound = false;
+            oldClassDefinition.attributeDefinitionVec.forEach((oldAttributeDefinition) =>
             {
                 if (newAttributeDefinition && oldAttributeDefinition.name === newAttributeDefinition.name)
                 {
                     Object.assign(oldAttributeDefinition, newAttributeDefinition);
                     //
-                    var oldIndex = oldClassDefinition.attributeDefinitionVec.indexOf(oldAttributeDefinition);
+                    const oldIndex = oldClassDefinition.attributeDefinitionVec.indexOf(oldAttributeDefinition);
                     oldClassDefinition.attributeDefinitionVec.splice(oldIndex, 1);
                     //
                     oldClassDefinition.attributeDefinitionVec.push(oldAttributeDefinition);
@@ -360,20 +372,20 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
             });
             if (!isfound)
             {
-                var attributeDefinition: AttributeDefinition = {} as any;
+                const attributeDefinition: AttributeDefinition = {} as any;
                 Object.assign(attributeDefinition, newAttributeDefinition);
                 oldClassDefinition.attributeDefinitionVec.push(attributeDefinition);
             }
         });
     }
-    //合并块
+    // 合并块
     oldClassDefinition.blockDefinitionVec = oldClassDefinition.blockDefinitionVec || [];
     if (newClassDefinition.blockDefinitionVec && newClassDefinition.blockDefinitionVec.length > 0)
     {
-        newClassDefinition.blockDefinitionVec.forEach(newBlockDefinition =>
+        newClassDefinition.blockDefinitionVec.forEach((newBlockDefinition) =>
         {
-            var isfound = false;
-            oldClassDefinition.blockDefinitionVec.forEach(oldBlockDefinition =>
+            let isfound = false;
+            oldClassDefinition.blockDefinitionVec.forEach((oldBlockDefinition) =>
             {
                 if (newBlockDefinition && newBlockDefinition.name === oldBlockDefinition.name)
                 {
@@ -383,7 +395,7 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
             });
             if (!isfound)
             {
-                var blockDefinition: BlockDefinition = {} as any;
+                const blockDefinition: BlockDefinition = {} as any;
                 Object.assign(blockDefinition, newBlockDefinition);
                 oldClassDefinition.blockDefinitionVec.push(blockDefinition);
             }
@@ -391,63 +403,65 @@ function mergeClassDefinition(oldClassDefinition: ClassDefinition, newClassDefin
     }
 }
 
-function getInheritClassDefinition(object: Object, autocreate = true)
+function getInheritClassDefinition(object: any, autocreate = true)
 {
-    var classConfigVec: ClassDefinition[] = [];
-    var prototype = object;
+    const classConfigVec: ClassDefinition[] = [];
+    let prototype = object;
     while (prototype)
     {
-        var classConfig: ClassDefinition = prototype[OBJECTVIEW_KEY];
+        const classConfig: ClassDefinition = prototype[objectviewKey];
         if (classConfig)
-            classConfigVec.push(classConfig);
-        prototype = prototype["__proto__"];
+        { classConfigVec.push(classConfig); }
+        prototype = prototype[protoKey];
     }
-    var resultclassConfig: ClassDefinition;
+    let resultclassConfig: ClassDefinition;
     if (classConfigVec.length > 0)
     {
         resultclassConfig = {} as any;
-        for (var i = classConfigVec.length - 1; i >= 0; i--)
+        for (let i = classConfigVec.length - 1; i >= 0; i--)
         {
             mergeClassDefinition(resultclassConfig, classConfigVec[i]);
         }
-    } else if (autocreate)
+    }
+    else if (autocreate)
     {
         resultclassConfig = getDefaultClassConfig(object);
     }
+
     return resultclassConfig;
 }
 
-function getDefaultClassConfig(object: Object, filterReg = /(([a-zA-Z0-9])+|(\d+))/)
+function getDefaultClassConfig(object: any, filterReg = /(([a-zA-Z0-9])+|(\d+))/)
 {
     //
-    var attributeNames: string[] = [];
-    for (var key in object)
+    let attributeNames: string[] = [];
+    for (const key in object)
     {
-        var result = filterReg.exec(key);
+        const result = filterReg.exec(key);
         if (result && result[0] === key)
         {
-            var value = object[key];
+            const value = object[key];
             if (value === undefined || value instanceof Function)
-                continue;
+            { continue; }
             attributeNames.push(key);
         }
     }
     attributeNames = attributeNames.sort();
 
-    var attributeDefinitionVec: AttributeDefinition[] = [];
-    attributeNames.forEach(element =>
+    const attributeDefinitionVec: AttributeDefinition[] = [];
+    attributeNames.forEach((element) =>
     {
         attributeDefinitionVec.push({
             name: element,
-            block: "",
+            block: '',
         });
     });
 
-    var defaultClassConfig: ClassDefinition = {
-        component: "",
-        attributeDefinitionVec: attributeDefinitionVec,
+    const defaultClassConfig: ClassDefinition = {
+        component: '',
+        attributeDefinitionVec,
         blockDefinitionVec: []
-    }
+    };
 
     return defaultClassConfig;
 }
@@ -457,18 +471,18 @@ function getDefaultClassConfig(object: Object, filterReg = /(([a-zA-Z0-9])+|(\d+
  * @param object 对象
  * @returns        对象块信息列表
  */
-function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeViewInfo[], blockDefinitionVec?: BlockDefinition[]): BlockViewInfo[]
+function getObjectBlockInfos(object: any, objectAttributeInfos: AttributeViewInfo[], blockDefinitionVec?: BlockDefinition[]): BlockViewInfo[]
 {
-    var objectBlockInfos: BlockViewInfo[] = [];
-    var dic: { [blockName: string]: BlockViewInfo } = {};
-    var objectBlockInfo: BlockViewInfo
+    const objectBlockInfos: BlockViewInfo[] = [];
+    const dic: { [blockName: string]: BlockViewInfo } = {};
+    let objectBlockInfo: BlockViewInfo;
 
-    //收集块信息
-    var i: number = 0;
-    var tempVec: BlockViewInfo[] = [];
+    // 收集块信息
+    let i = 0;
+    const tempVec: BlockViewInfo[] = [];
     for (i = 0; i < objectAttributeInfos.length; i++)
     {
-        var blockName = objectAttributeInfos[i].block || "";
+        const blockName = objectAttributeInfos[i].block || '';
         objectBlockInfo = dic[blockName];
         if (objectIsEmpty(objectBlockInfo))
         {
@@ -478,9 +492,9 @@ function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeView
         objectBlockInfo.itemList.push(objectAttributeInfos[i]);
     }
 
-    //按快的默认顺序生成 块信息列表
-    var blockDefinition: BlockDefinition;
-    var pushDic = {};
+    // 按快的默认顺序生成 块信息列表
+    let blockDefinition: BlockDefinition;
+    const pushDic = {};
 
     if (blockDefinitionVec)
     {
@@ -502,7 +516,7 @@ function getObjectBlockInfos(object: Object, objectAttributeInfos: AttributeView
             pushDic[objectBlockInfo.name] = true;
         }
     }
-    //添加剩余的块信息
+    // 添加剩余的块信息
     for (i = 0; i < tempVec.length; i++)
     {
         if (Boolean(pushDic[tempVec[i].name]) === false)
@@ -526,9 +540,9 @@ export interface OAVComponentParamMap
 /**
  * OAVEnum 组件参数
  */
-export interface OAVEnumParam 
+export interface OAVEnumParam
 {
-    component: "OAVEnum";
+    component: 'OAVEnum';
 
     componentParam: {
         /**
@@ -540,13 +554,13 @@ export interface OAVEnumParam
 
 export interface OBVComponentParamMap
 {
-    块组件名称: "块组件参数";
+    块组件名称: '块组件参数';
     [component: string]: any;
 }
 
 export interface OVComponentParamMap
 {
-    类组件名称: "类组件参数";
+    类组件名称: '类组件参数';
     [component: string]: any;
 }
 
@@ -583,7 +597,7 @@ export interface AttributeDefinition
     /**
      * 组件参数
      */
-    componentParam?: Object;
+    componentParam?: any;
 
     /**
      * 优先级，数字越小，显示越靠前，默认为0
@@ -608,7 +622,7 @@ export interface AttributeTypeDefinition
     /**
      * 组件参数
      */
-    componentParam?: Object;
+    componentParam?: any;
 }
 
 /**
@@ -629,7 +643,7 @@ export interface BlockDefinition
     /**
      * 组件参数
      */
-    componentParam?: Object;
+    componentParam?: any;
 }
 
 /**
@@ -645,7 +659,7 @@ export interface ClassDefinition
     /**
      * 组件参数
      */
-    componentParam?: Object;
+    componentParam?: any;
 
     /**
      * 自定义对象属性定义字典（key:属性名,value:属性定义）
@@ -666,7 +680,7 @@ export interface IObjectAttributeView
     /**
      * 界面所属对象（空间）
      */
-    space: Object;
+    space: any;
 
     /**
      * 更新界面
@@ -681,7 +695,7 @@ export interface IObjectAttributeView
     /**
      * 属性值
      */
-    attributeValue: Object;
+    attributeValue: any;
 
     /**
      * 对象属性界面
@@ -702,7 +716,7 @@ export interface IObjectBlockView
     /**
      * 界面所属对象（空间）
      */
-    space: Object;
+    space: any;
 
     /**
      * 块名称
@@ -734,7 +748,7 @@ export interface IObjectView
     /**
      * 界面所属对象（空间）
      */
-    space: Object;
+    space: any;
 
     /**
      * 更新界面
@@ -792,12 +806,12 @@ export interface AttributeViewInfo
     /**
      * 组件参数
      */
-    componentParam?: Object;
+    componentParam?: any;
 
     /**
      * 属性所属对象
      */
-    owner: Object;
+    owner: any;
 
     /**
      * 优先级，数字越小，显示越靠前，默认为0
@@ -828,7 +842,7 @@ export interface BlockViewInfo
     /**
      * 组件参数
      */
-    componentParam?: Object;
+    componentParam?: any;
 
     /**
      * 属性信息列表
@@ -838,7 +852,7 @@ export interface BlockViewInfo
     /**
      * 属性拥有者
      */
-    owner: Object;
+    owner: any;
 }
 
 /**
@@ -854,7 +868,7 @@ export interface ObjectViewInfo
     /**
      * 组件参数
      */
-    componentParam?: Object;
+    componentParam?: any;
 
     /**
      * 对象属性列表
@@ -869,7 +883,7 @@ export interface ObjectViewInfo
     /**
      * 保存类的一个实例，为了能够获取动态属性信息
      */
-    owner: Object;
+    owner: any;
 
     /**
      * 是否可编辑
@@ -897,31 +911,37 @@ export type GetObjectViewParam = {
  * @param obj 对象
  * @param property 属性名称
  */
-function propertyIsWritable(obj: Object, property: string): boolean
+function propertyIsWritable(obj: any, property: string): boolean
 {
-    var data = getPropertyDescriptor(obj, property);
+    const data = getPropertyDescriptor(obj, property);
     if (!data) return false;
     if (data.get && !data.set) return false;
+
     return true;
 }
 
 /**
  * 从对象自身或者对象的原型中获取属性描述
- * 
+ *
  * @param object 对象
  * @param property 属性名称
  */
-function getPropertyDescriptor(object: Object, property: string): PropertyDescriptor | undefined
+function getPropertyDescriptor(object: any, property: string): PropertyDescriptor | undefined
 {
-    var data = Object.getOwnPropertyDescriptor(object, property);
+    const data = Object.getOwnPropertyDescriptor(object, property);
     if (data)
     {
         return data;
     }
-    var prototype = Object.getPrototypeOf(object);
+    const prototype = Object.getPrototypeOf(object);
     if (prototype)
     {
         return getPropertyDescriptor(prototype, property);
     }
+
     return undefined;
 }
+
+const tempIKey = '___tempI';
+const protoKey = '__proto__';
+const objectviewKey = '__objectview__';
