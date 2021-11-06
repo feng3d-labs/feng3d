@@ -91,7 +91,7 @@ export * from './scene/ScenePickCache';
 export * from './scene/SceneUtil';
 export * from './setting';
 export * from './skybox/SkyBox';
-export * from './skybox/SkyBoxRenderer';
+export * from './skybox/SkyboxRenderer';
 export * from './textures/CanvasTexture2D';
 export * from './textures/ImageDataTexture2D';
 export * from './textures/ImageTexture2D';
