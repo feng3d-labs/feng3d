@@ -1,2 +1,6 @@
-//把js文件识别为ts文件
-*.js linguist-language=TypeScript
+*.js    text eol=lf
+*.ts    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf

@@ -1,0 +1,16 @@
+{
+  "name": "@feng3d/objectview",
+  "version": "0.3.5",
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "bundle": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "feng",
+  "license": "MIT",
+  "description": "",
+  "files": [
+    "lib/",
+    "dist/"
+  ],
+  "gitHead": "e322b56945f7ef0cd52f783409500fb69ae14646"
+}

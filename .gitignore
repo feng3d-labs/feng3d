@@ -1,5 +1,7 @@
-/debug
 **/node_modules
-/package-lock.json
-/api
-*.tsbuildinfo
+**/yarn.lock
+**/package-lock.json
+**/lib
+**/dist
+**/yarn-error.log
+**/docs

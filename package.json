@@ -1,34 +1,45 @@
 {
-  "name": "feng3d",
-  "version": "0.1.3",
-  "description": "webgl 3d engine",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc && npm run shaderpack",
-    "build:w": "tsc -w",
-    "shaderpack": "node shaderpack.js",
-    "shaderpack:w": "node shaderpack.js -w"
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://gitee.com/feng3d/feng3d.git"
-  },
-  "keywords": [
-    "feng3d",
-    "webgl",
-    "3d engine"
-  ],
+  "name": "feng3d-monorepo",
+  "private": true,
   "author": "feng",
-  "bugs": {
-    "url": "https://gitee.com/feng3d/feng3d/issues"
+  "license": "ISC",
+  "scripts": {
+    "start": "npm run watch",
+    "clean": "rimraf \"{bundles,packages}/*/{lib,dist}\"",
+    "build": "rollup -c",
+    "build:prod": "cross-env NODE_ENV=production rollup -c",
+    "watch": "rollup -cw",
+    "test": "mocha",
+    "lint": "eslint --ext .js --ext .ts bundles packages/math --ignore-path .gitignore --max-warnings 0",
+    "lintfix": "npm run lint -- --fix",
+    "docs": "typedoc"
   },
-  "homepage": "https://gitee.com/feng3d/feng3d#readme",
   "devDependencies": {
-    "typescript": "^3.9.7"
+    "@lerna/batch-packages": "^3.13.0",
+    "@lerna/filter-packages": "^3.13.0",
+    "@lerna/project": "^3.13.1",
+    "@types/mocha": "^8.2.3",
+    "@typescript-eslint/eslint-plugin": "^4.28.2",
+    "@typescript-eslint/parser": "^4.28.2",
+    "cross-env": "^5.2.0",
+    "eslint": "^7.30.0",
+    "lerna": "^3.13.3",
+    "mocha": "^9.0.2",
+    "rimraf": "^2.6.3",
+    "rollup": "^1.10.1",
+    "rollup-plugin-buble": "^0.19.6",
+    "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-dts": "^3.0.2",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^4.2.3",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-string": "^3.0.0",
+    "rollup-plugin-terser": "^4.0.4",
+    "rollup-plugin-typescript": "^1.0.1",
+    "ts-node": "^10.1.0",
+    "typedoc": "^0.21.4",
+    "typedoc-plugin-sourcefile-url": "^1.0.6",
+    "typescript": "^4.3.5"
   }
 }
