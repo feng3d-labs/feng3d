@@ -4,7 +4,7 @@ declare global
     {
         /**
          * 使数组变得唯一，不存在两个相等的元素
-         * 
+         *
          * @param array 被操作数组
          * @param compare 比较函数
          */
@@ -12,7 +12,7 @@ declare global
 
         /**
          * 连接一个或多个数组到自身
-         * 
+         *
          * @param array 被操作数组
          * @param items 要添加到数组末尾的其他项。
          * @returns 返回自身
@@ -21,7 +21,7 @@ declare global
 
         /**
          * 比较两个数组中元素是否相同
-         * 
+         *
          * @param array 被操作数组
          * @param arr 用于比较的数组
          */
@@ -29,7 +29,7 @@ declare global
 
         /**
          * 使用b元素替换数组中第一个a元素。
-         * 
+         *
          * @param array 被操作数组
          * @param a 被替换的元素
          * @param b 用于替换的元素
@@ -80,70 +80,74 @@ declare global
 
 if (!Array.prototype.includes)
 {
-    Object.defineProperty(Array.prototype, "includes", {
+    // eslint-disable-next-line no-extend-native
+    Object.defineProperty(Array.prototype, 'includes', {
         configurable: true,
         enumerable: false,
-        value: function (searchElement: any, fromIndex: number)
+        value(searchElement: any, fromIndex: number)
         {
             for (let i = fromIndex, n = this.length; i < n; i++)
             {
                 if (searchElement === this[i]) return true;
             }
+
             return false;
         },
         writable: true,
-    })
+    });
 }
 
 Array.equal = function (self, arr)
 {
     if (self.length !== arr.length) return false;
-    var keys = Object.keys(arr);
+    const keys = Object.keys(arr);
     for (let i = 0, n = keys.length; i < n; i++)
     {
-        var key = keys[i];
+        const key = keys[i];
         if (self[key] !== arr[key]) return false;
     }
-    return true;
-}
 
-Array.concatToSelf = function <T>(self: T[], ...items: (T | ConcatArray<T>)[])
+    return true;
+};
+
+Array.concatToSelf = function <T> (self: T[], ...items: (T | ConcatArray<T>)[])
 {
-    var arr: T[] = [];
-    items.forEach(v => arr = arr.concat(v));
-    arr.forEach(v => self.push(v));
+    let arr: T[] = [];
+    items.forEach((v) => { arr = arr.concat(v); });
+    arr.forEach((v) => self.push(v));
+
     return self;
-}
+};
 
 Array.unique = function (arr, compare = (a, b) => a === b)
 {
-    var keys = Object.keys(arr);
-    var ids = keys.map(v => Number(v)).filter(v => !isNaN(v));
-    var deleteMap: { [id: number]: true } = {};
+    const keys = Object.keys(arr);
+    const ids = keys.map((v) => Number(v)).filter((v) => !isNaN(v));
+    const deleteMap: { [id: number]: true } = {};
     //
     for (let i = 0, n = ids.length; i < n; i++)
     {
-        var ki = ids[i];
+        const ki = ids[i];
         if (deleteMap[ki]) continue;
         for (let j = i + 1; j < n; j++)
         {
-            var kj = ids[j];
+            const kj = ids[j];
             if (compare(arr[ki], arr[kj])) deleteMap[kj] = true;
         }
     }
     //
     for (let i = ids.length - 1; i >= 0; i--)
     {
-        var id = ids[i];
+        const id = ids[i];
         if (deleteMap[id]) arr.splice(id, 1);
     }
 
     return arr;
-}
+};
 
 /**
  * 判断数组是否唯一
- * 
+ *
  * @param array 被检查数组
  * @param compare 比较函数
  */
@@ -159,26 +163,28 @@ export function isUnique<T>(array: T[], compare?: (a: T, b: T) => boolean): bool
             }
         }
     }
+
     return true;
 }
 
 /**
  * 删除元素
- * 
+ *
  * @param array 被操作数组
  * @param item 被删除元素
  * @returns 被删除元素在数组中的位置
  */
 export function deleteItem<T>(array: T[], item: T): number
 {
-    var index = array.indexOf(item);
+    const index = array.indexOf(item);
     if (index !== -1) array.splice(index, 1);
+
     return index;
 }
 
 Array.replace = function (arr, a, b, isAdd = true)
 {
-    var isreplace = false;
+    let isreplace = false;
     for (let i = 0; i < arr.length; i++)
     {
         if (arr[i] === a)
@@ -189,38 +195,41 @@ Array.replace = function (arr, a, b, isAdd = true)
         }
     }
     if (!isreplace && isAdd) arr.push(b);
-    return arr;
-}
 
-Array.create = function <T>(length: number, itemFunc: (index: number) => T)
+    return arr;
+};
+
+Array.create = function <T> (length: number, itemFunc: (index: number) => T)
 {
-    var arr: T[] = [];
+    const arr: T[] = [];
     for (let i = 0; i < length; i++)
     {
         arr[i] = itemFunc(i);
     }
+
     return arr;
-}
+};
 
 Array.binarySearch = function (array, target, compare, start, end)
 {
-    var insert = Array.binarySearchInsert(array, target, compare, start, end);
+    const insert = Array.binarySearchInsert(array, target, compare, start, end);
     if (array[insert] === target)
-        return insert;
+    { return insert; }
+
     return -1;
-}
+};
 
 Array.binarySearchInsert = function (array, target, compare, start, end): number
 {
     if (start === undefined) start = 0;
     if (end === undefined) end = array.length;
     if (start === end)
-        return start;
+    { return start; }
     if (compare(array[start], target) === 0)
     {
         return start;
     }
-    var middle = ~~((start + end) / 2);
+    const middle = ~~((start + end) / 2);
     if (compare(array[middle], target) < 0)
     {
         start = middle + 1;
@@ -229,7 +238,8 @@ Array.binarySearchInsert = function (array, target, compare, start, end): number
     {
         end = middle;
     }
+
     return Array.binarySearchInsert(array, target, compare, start, end);
-}
+};
 
 export { };
