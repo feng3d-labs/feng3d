@@ -1,21 +1,21 @@
-import { Color3, Vector2, Vector3 } from "@feng3d/math";
-import { oav } from "@feng3d/objectview";
-import { BlendFactor } from "@feng3d/renderer";
-import { serialization, serialize } from "@feng3d/serialization";
-import { Camera } from "../cameras/Camera";
-import { Behaviour } from "../component/Behaviour";
-import { BillboardComponent } from "../component/BillboardComponent";
-import { Entity } from "../core/Entity";
-import { HideFlags } from "../core/HideFlags";
-import { MeshRenderer } from "../core/MeshRenderer";
-import { Geometry } from "../geometry/Geometry";
-import { Material } from "../materials/Material";
-import { PlaneGeometry } from "../primitives/PlaneGeometry";
-import { FrameBufferObject } from "../render/FrameBufferObject";
-import { Scene } from "../scene/Scene";
-import { RenderTargetTexture2D } from "../textures/RenderTargetTexture2D";
-import { LightType } from "./LightType";
-import { ShadowType } from "./shadow/ShadowType";
+import { Color3, Vector2, Vector3 } from '@feng3d/math';
+import { oav } from '@feng3d/objectview';
+import { BlendFactor } from '@feng3d/renderer';
+import { serialization, serialize } from '@feng3d/serialization';
+import { Camera } from '../cameras/Camera';
+import { Behaviour } from '../component/Behaviour';
+import { BillboardComponent } from '../component/BillboardComponent';
+import { Entity } from '../core/Entity';
+import { HideFlags } from '../core/HideFlags';
+import { MeshRenderer } from '../core/MeshRenderer';
+import { Geometry } from '../geometry/Geometry';
+import { Material } from '../materials/Material';
+import { PlaneGeometry } from '../primitives/PlaneGeometry';
+import { FrameBufferObject } from '../render/FrameBufferObject';
+import { Scene } from '../scene/Scene';
+import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
+import { LightType } from './LightType';
+import { ShadowType } from './shadow/ShadowType';
 
 /**
  * 灯光
@@ -45,7 +45,7 @@ export class Light extends Behaviour
     /**
      * 阴影类型
      */
-    @oav({ component: "OAVEnum", componentParam: { enumClass: ShadowType } })
+    @oav({ component: 'OAVEnum', componentParam: { enumClass: ShadowType } })
     @serialize
     shadowType = ShadowType.No_Shadows;
 
@@ -114,7 +114,7 @@ export class Light extends Behaviour
      */
     frameBufferObject = new FrameBufferObject();
 
-    @oav({ tooltip: "是否调试阴影图" })
+    @oav({ tooltip: '是否调试阴影图' })
     debugShadowMap = false;
 
     private debugShadowMapModel: MeshRenderer;
@@ -122,25 +122,28 @@ export class Light extends Behaviour
     constructor()
     {
         super();
-        this.shadowCamera = serialization.setValue(new Entity(), { name: "LightShadowCamera" }).addComponent(Camera);
+        this.shadowCamera = serialization.setValue(new Entity(), { name: 'LightShadowCamera' }).addComponent(Camera);
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
     {
-        var model = this.debugShadowMapModel;
+        let model = this.debugShadowMapModel;
         if (!model)
         {
-            var entity = new Entity();
-            entity.name = "debugShadowMapObject";
+            const entity = new Entity();
+            entity.name = 'debugShadowMapObject';
             model = entity.addComponent(MeshRenderer);
-            model.geometry = Geometry.getDefault("Plane");
+            model.geometry = Geometry.getDefault('Plane');
             model.hideFlags = HideFlags.Hide | HideFlags.DontSave;
             model.node3d.mouseEnabled = false;
             model.addComponent(BillboardComponent);
 
-            //材质
+            // 材质
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-            var textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line camelcase
+            const textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: 'texture', uniforms: { s_texture: this.frameBufferObject.texture } });
             //
             // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
             // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
@@ -149,18 +152,19 @@ export class Light extends Behaviour
             textureMaterial.renderParams.dfactor = BlendFactor.ZERO;
         }
 
-        var depth = viewCamera.lens.near * 2;
+        const depth = viewCamera.lens.near * 2;
         const position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
         model.node3d.x = position.x;
         model.node3d.y = position.y;
         model.node3d.z = position.z;
-        var billboardComponent = model.getComponent(BillboardComponent);
+        const billboardComponent = model.getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)
         {
             scene.node3d.addChild(model.node3d);
-        } else
+        }
+        else
         {
             model.node3d.remove();
         }

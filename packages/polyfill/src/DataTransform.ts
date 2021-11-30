@@ -209,7 +209,7 @@ export class DataTransform
         this.dataURLToArrayBuffer(dataUrl, (arraybuffer) =>
         {
             img.arraybuffer = arraybuffer;
-            arraybuffer.img = img;
+            arraybuffer.image = img;
             callback(arraybuffer);
         });
     }
@@ -286,7 +286,7 @@ export class DataTransform
      * @param arrayBuffer
      * @param callback
      */
-    arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void)
+    arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: any) => void)
     {
         this.arrayBufferToString(arrayBuffer, (str) =>
         {

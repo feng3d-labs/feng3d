@@ -80,6 +80,7 @@ declare global
 
 if (!Array.prototype.includes)
 {
+    // eslint-disable-next-line no-extend-native
     Object.defineProperty(Array.prototype, 'includes', {
         configurable: true,
         enumerable: false,
@@ -112,7 +113,7 @@ Array.equal = function (self, arr)
 Array.concatToSelf = function <T> (self: T[], ...items: (T | ConcatArray<T>)[])
 {
     let arr: T[] = [];
-    items.forEach((v) => arr = arr.concat(v));
+    items.forEach((v) => { arr = arr.concat(v); });
     arr.forEach((v) => self.push(v));
 
     return self;
