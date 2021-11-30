@@ -9,7 +9,7 @@ declare global
 Map.getKeys = function (map)
 {
     const keys: any[] = [];
-    map.forEach((v, k) =>
+    map.forEach((_v, k) =>
     {
         keys.push(k);
     });
@@ -20,7 +20,7 @@ Map.getKeys = function (map)
 Map.getValues = function (map)
 {
     const values: any[] = [];
-    map.forEach((v, k) =>
+    map.forEach((v, _k) =>
     {
         values.push(v);
     });

@@ -1,3 +1,4 @@
+import { Constructor } from 'bundles/feng3d/src';
 import { objectIsEmpty } from './Object';
 
 export const __class__ = '__class__';
@@ -7,7 +8,7 @@ export const __class__ = '__class__';
  */
 export class ClassUtils
 {
-    classUtilsHandlers: Function[] = [];
+    classUtilsHandlers: ((instance: any) => void)[] = [];
 
     /**
      * 返回对象的完全限定类名。
@@ -30,6 +31,7 @@ export class ClassUtils
         }
 
         const prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+        // eslint-disable-next-line no-prototype-builtins
         if (prototype.hasOwnProperty(__class__))
         { return prototype[__class__]; }
 
@@ -124,15 +126,20 @@ export class ClassUtils
         return instance;
     }
 
-    getInstanceByDefinition(cls: any)
+    getInstanceByDefinition<T extends any>(cls: Constructor<T>): T
     {
         console.assert(cls);
         if (!cls) return undefined;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         if (cls.__create__)
         {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             return cls.__create__();
         }
 
+        // eslint-disable-next-line new-cap
         return new cls();
     }
 
@@ -153,7 +160,7 @@ export class ClassUtils
  */
 export const classUtils = new ClassUtils();
 
-var _definitionCache = {};
+const _definitionCache = {};
 let _global: Window;
 let global: any;
 if (typeof window !== 'undefined')
@@ -165,7 +172,7 @@ else if (typeof global !== 'undefined')
     _global = global;
 }
 
-var _classNameSpaces = ['feng3d'];
+const _classNameSpaces = ['feng3d'];
 
 /**
  * 为一个类定义注册完全限定类名

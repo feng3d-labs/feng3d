@@ -1,4 +1,3 @@
-
 interface ArrayBuffer
 {
     image: HTMLImageElement
