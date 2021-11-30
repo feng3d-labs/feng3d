@@ -8,23 +8,24 @@ declare global
 }
 Map.getKeys = function (map)
 {
-    var keys: any[] = [];
+    const keys: any[] = [];
     map.forEach((v, k) =>
     {
         keys.push(k);
     });
-    return keys;
 
-}
+    return keys;
+};
 
 Map.getValues = function (map)
 {
-    var values: any[] = [];
+    const values: any[] = [];
     map.forEach((v, k) =>
     {
         values.push(v);
     });
+
     return values;
-}
+};
 export { };
 

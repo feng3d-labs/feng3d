@@ -19,22 +19,26 @@ export class MathUtil
      * 获取唯一标识符
      * @see http://www.broofa.com/Tools/Math.uuid.htm
      */
-    uuid = function uuid(length = 36)
+    uuid = (function uuid(length = 36)
     {
-        var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
-        var id = new Array(length);
-        var rnd = 0, r = 0;
+        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+        const id = new Array(length);
+        let rnd = 0; let
+            r = 0;
+
         return function generateUUID()
         {
-            for (var i = 0; i < length; i++)
+            for (let i = 0; i < length; i++)
             {
                 if (i === 8 || i === 13 || i === 18 || i === 23)
                 {
                     id[i] = '-';
-                } else if (i === 14)
+                }
+                else if (i === 14)
                 {
                     id[i] = '4';
-                } else
+                }
+                else
                 {
                     if (rnd <= 0x02) rnd = 0x2000000 + (Math.random() * 0x1000000) | 0;
                     r = rnd & 0xf;
@@ -42,9 +46,10 @@ export class MathUtil
                     id[i] = chars[(i === 19) ? (r & 0x3) | 0x8 : r];
                 }
             }
+
             return id.join('');
         };
-    }();
+    })();
 
     /**
      * （夹紧）计算指定值到区间[edge0 ,edge1]最近的值
@@ -57,6 +62,7 @@ export class MathUtil
     {
         if ((value - lowerlimit) * (value - upperlimit) <= 0) return value;
         if (value < lowerlimit) return lowerlimit < upperlimit ? lowerlimit : upperlimit;
+
         return lowerlimit > upperlimit ? lowerlimit : upperlimit;
     }
 
@@ -222,6 +228,7 @@ export class MathUtil
         value |= value >> 8;
         value |= value >> 16;
         value++;
+
         return value;
     }
 
@@ -253,7 +260,8 @@ export class MathUtil
     equals(a: number, b: number, precision?: number)
     {
         if (precision === undefined)
-            precision = this.PRECISION;
+        { precision = this.PRECISION; }
+
         return Math.abs(a - b) < precision;
     }
 
@@ -267,7 +275,9 @@ export class MathUtil
      */
     gcd(a: number, b: number)
     {
-        if (b) while ((a %= b) && (b %= a));
+        // eslint-disable-next-line no-empty
+        if (b) while ((a %= b) && (b %= a)) { }
+
         return a + b;
     }
 

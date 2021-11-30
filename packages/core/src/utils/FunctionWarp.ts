@@ -51,7 +51,7 @@ export class FunctionWrap
      * @param funcName 被扩展函数名称
      * @param extendFunc 在函数执行后执行的扩展函数
      */
-    extendFunction<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
+    extendFunction<T, K extends FunctionPropertyNames<T>, V extends(T[K] & ((...arg: any) => any))>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
     {
         const oldFun = object[funcName];
         object[funcName] = (function (...args: Parameters<V>)
@@ -78,7 +78,7 @@ export class FunctionWrap
      * @param beforeFunc 在函数执行前执行的函数
      * @param afterFunc 在函数执行后执行的函数
      */
-    wrap<T, K extends FunctionPropertyNames<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F)
+    wrap<T, K extends FunctionPropertyNames<T>, F extends(T[K] & ((...arg: any) => any))>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F)
     {
         if (!beforeFunc && !afterFunc) return;
 
@@ -92,7 +92,7 @@ export class FunctionWrap
         if (!info)
         {
             const oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
-            const original = object[funcName];
+            const original: any = object[funcName];
             functionwraps[funcName] = info = { space: object, funcName, oldPropertyDescriptor, original, funcs: [original] };
             //
             object[funcName] = function ()
@@ -108,13 +108,13 @@ export class FunctionWrap
         const funcs = info.funcs;
         if (beforeFunc)
         {
-            deleteItem(funcs, beforeFunc as any);
-            funcs.unshift(beforeFunc as any);
+            deleteItem(funcs, beforeFunc);
+            funcs.unshift(beforeFunc);
         }
         if (afterFunc)
         {
-            deleteItem(funcs, afterFunc as any);
-            funcs.push(afterFunc as any);
+            deleteItem(funcs, afterFunc);
+            funcs.push(afterFunc);
         }
     }
 
@@ -138,7 +138,7 @@ export class FunctionWrap
         }
         else
         {
-            deleteItem(info.funcs, wrapFunc);
+            deleteItem(info.funcs, wrapFunc as any);
         }
         if (info.funcs.length === 1)
         {

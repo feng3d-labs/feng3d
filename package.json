@@ -10,7 +10,7 @@
     "build:prod": "cross-env NODE_ENV=production rollup -c",
     "watch": "rollup -cw",
     "test": "mocha",
-    "lint": "eslint --ext .js --ext .ts bundles packages/math --ignore-path .gitignore --max-warnings 0",
+    "lint": "eslint --ext .js --ext .ts bundles packages/polyfill --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc"
   },
