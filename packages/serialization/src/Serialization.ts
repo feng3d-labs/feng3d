@@ -728,12 +728,16 @@ serialization.deserializeHandlers = [
             let inst = classUtils.getInstanceByName(spv[__class__]);
             // 处理自定义反序列化对象
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             if (inst && inst.deserialize)
             {
                 if (tpv && tpv.constructor === inst.constructor)
                 {
                     inst = tpv;
                 }
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 inst.deserialize(spv);
                 target[property] = inst;
 
