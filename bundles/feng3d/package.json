@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "@feng3d/core": "0.3.5",
-    "@feng3d/event": "0.3.7",
+    "@feng3d/event": "0.3.8",
     "@feng3d/filesystem": "0.3.5",
     "@feng3d/math": "0.3.5",
     "@feng3d/objectview": "0.3.5",

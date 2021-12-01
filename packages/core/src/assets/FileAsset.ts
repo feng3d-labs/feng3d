@@ -1,4 +1,4 @@
-import { event } from "@feng3d/event";
+import { anyEmitter as event } from "@feng3d/event";
 import { pathUtils } from "@feng3d/filesystem";
 import { objectIsEmpty } from '@feng3d/polyfill';
 import { serialize } from "@feng3d/serialization";

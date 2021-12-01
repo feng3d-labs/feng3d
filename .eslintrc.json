@@ -266,10 +266,6 @@
                 "after": true
             }
         ],
-        "linebreak-style": [
-            1,
-            "unix"
-        ],
         "lines-around-comment": 0,
         "max-depth": [
             1,
@@ -502,6 +498,7 @@
                         "argsIgnorePattern": "^_"
                     }
                 ],
+                "@typescript-eslint/no-empty-interface": 0,
                 "@typescript-eslint/explicit-module-boundary-types": 0
             }
         }

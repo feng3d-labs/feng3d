@@ -1,7 +1,7 @@
 import { Camera } from "../cameras/Camera";
 import { RegisterComponent } from "../component/Component";
 import { Component3D } from "../component/Component3D";
-import { Event } from "@feng3d/event";
+import { IEvent as Event } from "@feng3d/event";
 import { Vector3 } from "@feng3d/math";
 import { AddComponentMenu } from "../Menu";
 import { RenderAtomic } from "@feng3d/renderer";

@@ -1,4 +1,4 @@
-import { Event } from "@feng3d/event";
+import { IEvent as Event } from "@feng3d/event";
 import { Vector2, Vector3 } from "@feng3d/math";
 import { oav } from "@feng3d/objectview";
 import { objectIsEmpty } from '@feng3d/polyfill';

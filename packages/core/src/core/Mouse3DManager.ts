@@ -1,6 +1,6 @@
 import { Camera } from "../cameras/Camera";
 import { Component3DEventMap } from "../component/Component3D";
-import { Event, EventEmitter } from "@feng3d/event";
+import { IEvent as Event, EventEmitter } from "@feng3d/event";
 import { Rectangle } from "@feng3d/math";
 import { raycaster } from "../pick/Raycaster";
 import { Lazy, lazy } from "@feng3d/polyfill";

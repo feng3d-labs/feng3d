@@ -2,7 +2,7 @@ import { Camera } from "../cameras/Camera";
 import { Entity, EntityEventMap } from "../core/Entity";
 import { Feng3dObject } from "../core/Feng3dObject";
 import { ScriptComponent } from "../core/ScriptComponent";
-import { Event } from "@feng3d/event";
+import { IEvent as Event } from "@feng3d/event";
 import { Constructor, IDisposable } from "@feng3d/polyfill";
 import { RenderAtomic } from "@feng3d/renderer";
 import { Scene } from "../scene/Scene";
@@ -58,7 +58,7 @@ export function RegisterComponent(component: {
     return (constructor: Constructor<Component>) =>
     {
         var info = component as ComponentInfo;
-        console.assert(!!info.name,`组件名称不能空！`)
+        console.assert(!!info.name, `组件名称不能空！`)
         info.type = constructor;
         info.dependencies = info.dependencies || [];
         constructor.prototype[__component__] = info;

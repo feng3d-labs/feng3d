@@ -1,4 +1,4 @@
-import { event } from '@feng3d/event';
+import { anyEmitter as event } from '@feng3d/event';
 import { deleteItem, FunctionPropertyNames } from '@feng3d/polyfill';
 import { uuid } from './Uuid';
 
@@ -51,7 +51,7 @@ export class FunctionWrap
      * @param funcName 被扩展函数名称
      * @param extendFunc 在函数执行后执行的扩展函数
      */
-    extendFunction<T, K extends FunctionPropertyNames<T>, V extends(T[K] & ((...arg: any) => any))>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
+    extendFunction<T, K extends FunctionPropertyNames<T>, V extends (T[K] & ((...arg: any) => any))>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
     {
         const oldFun = object[funcName];
         object[funcName] = (function (...args: Parameters<V>)
@@ -78,7 +78,7 @@ export class FunctionWrap
      * @param beforeFunc 在函数执行前执行的函数
      * @param afterFunc 在函数执行后执行的函数
      */
-    wrap<T, K extends FunctionPropertyNames<T>, F extends(T[K] & ((...arg: any) => any))>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F)
+    wrap<T, K extends FunctionPropertyNames<T>, F extends (T[K] & ((...arg: any) => any))>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F)
     {
         if (!beforeFunc && !afterFunc) return;
 

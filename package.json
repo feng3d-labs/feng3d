@@ -1,6 +1,10 @@
 {
   "name": "feng3d-monorepo",
   "private": true,
+  "workspaces": [
+    "bundles/*",
+    "packages/*"
+  ],
   "author": "feng",
   "license": "ISC",
   "scripts": {
