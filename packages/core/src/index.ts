@@ -22,6 +22,7 @@ export * from './cameras/lenses/LensBase';
 export * from './cameras/lenses/OrthographicLens';
 export * from './cameras/lenses/PerspectiveLens';
 export * from './cameras/Projection';
+export * from './component/Component3D';
 export * from './component/Behaviour';
 export * from './component/BillboardComponent';
 export * from './component/CartoonComponent';
@@ -110,4 +111,3 @@ export * from './utils/Ticker';
 export * from './utils/Uuid';
 export * from './water/Water';
 export * from './water/WaterMaterial';
-

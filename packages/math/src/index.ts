@@ -22,6 +22,7 @@ export * from './geom/Ray3';
 export * from './geom/Rectangle';
 export * from './geom/Segment3';
 export * from './geom/Sphere';
+export * from './geom/Triangle3';
 export * from './geom/TriangleGeometry';
 export * from './geom/Vector';
 export * from './geom/Vector2';
