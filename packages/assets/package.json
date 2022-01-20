@@ -12,8 +12,12 @@
     "lib/",
     "dist/"
   ],
-  "devDependencies": {
-    "feng3d": "0.1.3",
-    "typescript": "^3.9.7"
+  "dependencies": {
+    "@feng3d/event": "0.3.5",
+    "@feng3d/core": "0.3.5",
+    "@feng3d/serialization": "0.3.5",
+    "@feng3d/watcher": "0.3.5",
+    "@feng3d/polyfill": "0.3.5",
+    "@feng3d/objectview": "0.3.5"
   }
 }

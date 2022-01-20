@@ -1,4 +1,4 @@
-import { Geometry, AssetType, CubeGeometry, setAssetTypeClass } from "@feng3d/core";
+import { AssetType, CubeGeometry, Geometry, setAssetTypeClass } from "@feng3d/core";
 import { oav } from "@feng3d/objectview";
 import { ObjectAsset } from "../ObjectAsset";
 
