@@ -1,37 +1,36 @@
-namespace feng3d
+import { FileAsset } from "@feng3d/core";
+
+/**
+ * 二进制 资源
+ */
+export class ArrayBufferAsset extends FileAsset
 {
     /**
-     * 二进制 资源
+     * 文件数据
      */
-    export class ArrayBufferAsset extends FileAsset
+    arraybuffer: ArrayBuffer;
+
+    /**
+     * 保存文件
+     * 
+     * @param callback 完成回调
+     */
+    saveFile(callback?: (err: Error) => void)
     {
-        /**
-         * 文件数据
-         */
-        arraybuffer: ArrayBuffer;
+        this.rs.fs.writeArrayBuffer(this.assetPath, this.arraybuffer, callback);
+    }
 
-        /**
-         * 保存文件
-         * 
-         * @param callback 完成回调
-         */
-        saveFile(callback?: (err: Error) => void)
+    /**
+     * 读取文件
+     * 
+     * @param callback 完成回调
+     */
+    readFile(callback?: (err: Error) => void)
+    {
+        this.rs.fs.readArrayBuffer(this.assetPath, (err, data) =>
         {
-            this.rs.fs.writeArrayBuffer(this.assetPath, this.arraybuffer, callback);
-        }
-
-        /**
-         * 读取文件
-         * 
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void)
-        {
-            this.rs.fs.readArrayBuffer(this.assetPath, (err, data) =>
-            {
-                this.arraybuffer = data;
-                callback && callback(err);
-            })
-        }
+            this.arraybuffer = data;
+            callback && callback(err);
+        })
     }
 }

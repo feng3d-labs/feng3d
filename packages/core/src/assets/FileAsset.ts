@@ -18,9 +18,21 @@ export function setAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K, cl
     assetTypeClassMap[type] = cls;
 }
 
-export interface AssetTypeClassMap
+declare global
+{
+    namespace GlobalMixins
+    {
+        interface AssetTypeClassMap
+        {
+    
+        }
+    }
+}
+
+export interface AssetTypeClassMap extends GlobalMixins.AssetTypeClassMap
 {
 }
+
 export const assetTypeClassMap: AssetTypeClassMap = {} as any;
 
 /**

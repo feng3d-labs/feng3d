@@ -1,29 +1,26 @@
-namespace feng3d
+import { AssetType, setAssetTypeClass, TextureCube } from "@feng3d/core";
+import { oav } from "@feng3d/objectview";
+import { ObjectAsset } from "../ObjectAsset";
+
+/**
+ * 立方体纹理资源
+ */
+export class TextureCubeAsset extends ObjectAsset
 {
+    static extenson = ".json";
+
     /**
-     * 立方体纹理资源
+     * 材质
      */
-    export class TextureCubeAsset extends ObjectAsset
+    @oav({ component: "OAVObjectView" })
+    data: TextureCube;
+
+    assetType = AssetType.texturecube;
+
+    initAsset()
     {
-        static extenson = ".json";
-
-        /**
-         * 材质
-         */
-        @oav({ component: "OAVObjectView" })
-        data: TextureCube;
-
-        assetType = AssetType.texturecube;
-
-        initAsset()
-        {
-            this.data = this.data || new TextureCube();
-        }
+        this.data = this.data || new TextureCube();
     }
-
-    export interface AssetTypeClassMap
-    {
-        "texturecube": new () => TextureCubeAsset;
-    }
-    setAssetTypeClass("texturecube", TextureCubeAsset);
 }
+
+setAssetTypeClass("texturecube", TextureCubeAsset);
