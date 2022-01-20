@@ -24,7 +24,7 @@ declare global
     {
         interface AssetTypeClassMap
         {
-    
+            "folder": new () => FolderAsset;
         }
     }
 }

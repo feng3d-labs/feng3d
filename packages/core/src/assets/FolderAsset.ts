@@ -53,11 +53,4 @@ export class FolderAsset extends FileAsset
         callback && callback(null);
     }
 }
-declare module "./FileAsset"
-{
-    export interface AssetTypeClassMap
-    {
-        "folder": new () => FolderAsset;
-    }
-}
 setAssetTypeClass("folder", FolderAsset);
