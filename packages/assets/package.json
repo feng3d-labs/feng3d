@@ -1,17 +1,17 @@
 {
   "name": "@feng3d/assets",
-  "version": "0.0.1",
-  "description": "",
-  "main": "dist/index.js",
+  "version": "0.3.5",
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "bundle": "dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "feng3d"
-  ],
   "author": "feng",
-  "license": "ISC",
+  "license": "MIT",
+  "description": "",
+  "files": [
+    "lib/",
+    "dist/"
+  ],
   "devDependencies": {
     "feng3d": "0.1.3",
     "typescript": "^3.9.7"

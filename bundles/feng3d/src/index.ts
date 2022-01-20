@@ -10,4 +10,5 @@ export * from '@feng3d/serialization';
 export * from '@feng3d/shortcut';
 export * from '@feng3d/task';
 export * from '@feng3d/watcher';
+export * from '@feng3d/assets';
 
