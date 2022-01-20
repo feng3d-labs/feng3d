@@ -10,5 +10,4 @@ export * from './assets/TextAsset';
 export * from './assets/TextureAsset';
 export * from './assets/TextureCubeAsset';
 export * from './ArrayBufferAsset';
-export * from './index';
 export * from './ObjectAsset';
