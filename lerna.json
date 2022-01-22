@@ -1,0 +1,6 @@
+{
+  "packages": [
+    "packages/event"
+  ],
+  "version": "0.0.0"
+}
