@@ -1,8 +1,0 @@
-{
-    "name": "feng3d",
-    "entryPoints": [
-        "bundles/feng3d/src/index.ts"
-    ],
-    "sourcefile-url-prefix":"https://gitee.com/feng3d/feng3d/tree/develop/",
-    "out": "docs"
-}
