@@ -1,0 +1,18 @@
+{
+  "name": "feng3d-monorepo",
+  "private": true,
+  "description": "feng3d工作空间",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://jihulab.com/feng3d/feng3d.git"
+  },
+  "keywords": [],
+  "author": "feng",
+  "license": "ISC",
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
+}
