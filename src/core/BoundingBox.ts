@@ -94,6 +94,10 @@ namespace feng3d
             {
                 bounds.union(b);
             });
+            if (bounds.isEmpty())
+            {
+                bounds.fromPoints([new Vector3()]);
+            }
         }
 
         /**

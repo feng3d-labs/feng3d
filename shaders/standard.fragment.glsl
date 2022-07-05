@@ -28,6 +28,8 @@ void main()
     #include<diffuse_frag>
     #include<alphatest_frag>
 
+    finalColor = diffuseColor;
+
     #include<ambient_frag>
     #include<specular_frag>
     #include<lights_frag>

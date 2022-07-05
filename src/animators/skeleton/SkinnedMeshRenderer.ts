@@ -40,7 +40,7 @@ namespace feng3d
             renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
             //
             var skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId];
-            if (!skeletonGlobalMatriices)
+            // if (!skeletonGlobalMatriices)
             {
                 skeletonGlobalMatriices = this.u_skeletonGlobalMatriices;
                 if (frameId) this.cacheU_skeletonGlobalMatriices[frameId] = skeletonGlobalMatriices;

@@ -27,6 +27,8 @@ void main()
 
     #include<terrain_frag>
 
+    finalColor = diffuseColor;
+
     #include<ambient_frag>
     #include<specular_frag>
     #include<lights_frag>
