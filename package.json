@@ -6,10 +6,11 @@
   "types": "out/feng3d.d.ts",
   "scripts": {
     "build": "tsc && npm run shaderpack",
-    "build:w": "tsc -w",
+    "watch": "tsc -w",
+    "build:test": "tsc -p test",
+    "watch:test": "tsc -w -p test",
     "shaderpack": "node shaderpack.js",
-    "shaderpack:w": "node shaderpack.js -w",
-    "typedoc": "typedoc --mode file --tsconfig tsconfig.json --out api"
+    "shaderpack:w": "node shaderpack.js -w"
   },
   "files": [
     "out",
@@ -17,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://gitee.com/feng3d/feng3d.git"
+    "url": "git+https://gitlab.com/feng3d/feng3d.git"
   },
   "keywords": [
     "feng3d",
@@ -27,7 +28,7 @@
   "author": "feng",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitee.com/feng3d/feng3d/issues"
+    "url": "https://gitlab.com/feng3d/feng3d/issues"
   },
-  "homepage": "https://gitee.com/feng3d/feng3d#readme"
+  "homepage": "https://gitlab.com/feng3d/feng3d#readme"
 }
