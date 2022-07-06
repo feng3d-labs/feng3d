@@ -324,6 +324,13 @@
         "src/animation/Animation.ts",
         //
         "src/core/Mouse3DManager.ts",
+        //地形
+        "src/terrain/TerrainGeometry.ts",
+        "src/terrain/TerrainMaterial.ts",
+        "src/terrain/TerrainMergeMethod.ts",
+        "src/terrain/TerrainData.ts",
+        "src/terrain/Terrain.ts",
+        //
         "src/Feng3d.ts",
     ]
 }
