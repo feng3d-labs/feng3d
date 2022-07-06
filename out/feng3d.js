@@ -5409,7 +5409,7 @@ var feng3d;
          * @param n 数字
          */
         EquationSolving.prototype.getSign = function (n) {
-            return n > 0 ? "+" : "-";
+            return n > 0 ? '+' : '-';
         };
         /**
          * 比较 a 与 b 是否相等
@@ -5445,7 +5445,7 @@ var feng3d;
          * 函数是否连续
          * @param f 函数
          */
-        EquationSolving.prototype.isContinuous = function (f) {
+        EquationSolving.prototype.isContinuous = function (_f) {
             return true;
         };
         /**
@@ -5498,9 +5498,11 @@ var feng3d;
             if (this.equalNumber(fb, 0, precision)) {
                 return b;
             }
+            var x;
+            var fr;
             do {
-                var x = (a + b) / 2;
-                var fr = f(x);
+                x = (a + b) / 2;
+                fr = f(x);
                 if (fa * fr < 0) {
                     b = x;
                     fb = fr;
@@ -5543,10 +5545,12 @@ var feng3d;
             if (this.equalNumber(fb, 0, precision)) {
                 return b;
             }
+            var x;
+            var fr;
             do {
-                // 
-                var x = a - fa * (b - a) / (fb - fa);
-                var fr = f(x);
+                //
+                x = a - fa * (b - a) / (fb - fa);
+                fr = f(x);
                 if (fa * fr < 0) {
                     b = x;
                     fb = fr;
@@ -5620,19 +5624,22 @@ var feng3d;
             }
             var x;
             if (f1Sign > 0) {
-                if (f2Sign > 0)
+                if (f2Sign > 0) {
                     x = b;
-                else
+                }
+                else {
                     x = a;
+                }
+            }
+            else if (f2Sign > 0) {
+                x = a;
             }
             else {
-                if (f2Sign > 0)
-                    x = a;
-                else
-                    x = b;
+                x = b;
             }
+            var fx;
             do {
-                var fx = f(x);
+                fx = f(x);
                 var f1x = f1(x);
                 var f2x = f2(x);
                 // f'(x)在[a, b]上保持定号
@@ -5690,7 +5697,7 @@ var feng3d;
             var f1 = this.getDerivative(f, precision);
             var f2 = this.getDerivative(f1, precision);
             var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
-            // 
+            //
             var f1a = f1(a);
             var f1b = f1(b);
             // f'(x)在[a, b]上保持定号
@@ -5716,25 +5723,27 @@ var feng3d;
             }
             var x;
             if (f1Sign > 0) {
-                if (f2Sign > 0)
+                if (f2Sign > 0) {
                     x = b;
-                else
+                }
+                else {
                     x = a;
+                }
+            }
+            else if (f2Sign > 0) {
+                x = a;
             }
             else {
-                if (f2Sign > 0)
-                    x = a;
-                else
-                    x = b;
+                x = b;
             }
             // Xn-1
-            var xn_1 = x;
-            var fxn_1 = f(xn_1);
+            var xn1 = x;
+            var fxn1 = f(xn1);
             // Xn
-            var xn = xn_1 - precision * f2Sign / Math.abs(f2Sign);
+            var xn = xn1 - precision * f2Sign / Math.abs(f2Sign);
             var fxn = f(xn);
-            // 
-            if (fxn * fxn_1 < 0) {
+            //
+            if (fxn * fxn1 < 0) {
                 return xn;
             }
             // Xn+1
@@ -5753,10 +5762,10 @@ var feng3d;
                     return undefined;
                 }
                 // 迭代 Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
-                xn$1 = xn - fxn * (xn - xn_1) / (fxn - fxn_1);
+                xn$1 = xn - fxn * (xn - xn1) / (fxn - fxn1);
                 //
-                xn_1 = xn;
-                fxn_1 = fxn;
+                xn1 = xn;
+                fxn1 = fxn;
                 xn = xn$1;
                 fxn = f(xn);
             } while (!this.equalNumber(fxn, 0, precision));
@@ -5765,6 +5774,9 @@ var feng3d;
         return EquationSolving;
     }());
     feng3d.EquationSolving = EquationSolving;
+    /**
+     * 方程求解
+     */
     feng3d.equationSolving = new EquationSolving();
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -5782,6 +5794,7 @@ var feng3d;
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
      *
+     * @author feng / http://feng3d.com 05/06/2018
      */
     var HighFunction = /** @class */ (function () {
         /**
@@ -13210,6 +13223,7 @@ var feng3d;
     /**
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+     *
      * @author feng / http://feng3d.com 03/06/2018
      */
     var BezierCurve = /** @class */ (function () {
@@ -13242,11 +13256,11 @@ var feng3d;
         };
         /**
          * 线性Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
+         * @param _t 插值度
+         * @param _p0 点0
+         * @param _p1 点1
          */
-        BezierCurve.prototype.linearSecondDerivative = function (t, p0, p1) {
+        BezierCurve.prototype.linearSecondDerivative = function (_t, _p0, _p1) {
             return 0;
         };
         /**
@@ -13377,8 +13391,9 @@ var feng3d;
         BezierCurve.prototype.bn = function (t, ps, processs) {
             if (processs === void 0) { processs = null; }
             ps = ps.concat();
-            if (processs)
+            if (processs) {
                 processs.push(ps.concat());
+            }
             // n次Bézier递推
             for (var i = ps.length - 1; i > 0; i--) {
                 for (var j = 0; j < i; j++) {
@@ -13402,8 +13417,9 @@ var feng3d;
          * @param ps 点列表 ps.length == n+1
          */
         BezierCurve.prototype.bnDerivative = function (t, ps) {
-            if (ps.length < 2)
+            if (ps.length < 2) {
                 return 0;
+            }
             ps = ps.concat();
             // 进行
             for (var i = 0, n = ps.length - 1; i < n; i++) {
@@ -13425,8 +13441,9 @@ var feng3d;
          * @param ps 点列表 ps.length == n+1
          */
         BezierCurve.prototype.bnSecondDerivative = function (t, ps) {
-            if (ps.length < 3)
+            if (ps.length < 3) {
                 return 0;
+            }
             ps = ps.concat();
             // 进行
             for (var i = 0, n = ps.length - 1; i < n; i++) {
@@ -13447,8 +13464,9 @@ var feng3d;
          * @param ps 点列表     ps.length == n+1
          */
         BezierCurve.prototype.bnND = function (t, dn, ps) {
-            if (ps.length < dn + 1)
+            if (ps.length < dn + 1) {
                 return 0;
+            }
             var factorial = 1;
             ps = ps.concat();
             for (var j = 0; j < dn; j++) {
@@ -13469,13 +13487,13 @@ var feng3d;
          * @param ps 点列表
          */
         BezierCurve.prototype.getValue = function (t, ps) {
-            if (ps.length == 2) {
+            if (ps.length === 2) {
                 return this.linear(t, ps[0], ps[1]);
             }
-            if (ps.length == 3) {
+            if (ps.length === 3) {
                 return this.quadratic(t, ps[0], ps[1], ps[2]);
             }
-            if (ps.length == 4) {
+            if (ps.length === 4) {
                 return this.cubic(t, ps[0], ps[1], ps[2], ps[3]);
             }
             return this.bn(t, ps);
@@ -13488,13 +13506,13 @@ var feng3d;
          * @param ps 点列表
          */
         BezierCurve.prototype.getDerivative = function (t, ps) {
-            if (ps.length == 2) {
+            if (ps.length === 2) {
                 return this.linearDerivative(t, ps[0], ps[1]);
             }
-            if (ps.length == 3) {
+            if (ps.length === 3) {
                 return this.quadraticDerivative(t, ps[0], ps[1], ps[2]);
             }
-            if (ps.length == 4) {
+            if (ps.length === 4) {
                 return this.cubicDerivative(t, ps[0], ps[1], ps[2], ps[3]);
             }
             return this.bnDerivative(t, ps);
@@ -13506,13 +13524,13 @@ var feng3d;
          * @param ps 点列表
          */
         BezierCurve.prototype.getSecondDerivative = function (t, ps) {
-            if (ps.length == 2) {
+            if (ps.length === 2) {
                 return this.linearSecondDerivative(t, ps[0], ps[1]);
             }
-            if (ps.length == 3) {
+            if (ps.length === 3) {
                 return this.quadraticSecondDerivative(t, ps[0], ps[1], ps[2]);
             }
-            if (ps.length == 4) {
+            if (ps.length === 4) {
                 return this.cubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]);
             }
             return this.bnSecondDerivative(t, ps);
@@ -13550,11 +13568,7 @@ var feng3d;
         };
         /**
          * 获取单调区间列表
-         *
-         * @param ps
-         * @param numSamples
-         * @param precision
-         * @returns ts: 区间结点插值度列表,vs: 区间结点值列表
+         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
          */
         BezierCurve.prototype.getMonotoneIntervals = function (ps, numSamples, precision) {
             if (numSamples === void 0) { numSamples = 10; }
@@ -13614,14 +13628,14 @@ var feng3d;
         BezierCurve.prototype.split = function (t, ps) {
             // 获取曲线的动画过程
             var processs = [];
-            feng3d.bezierCurve.bn(t, ps, processs);
+            this.bn(t, ps, processs);
             // 第一条曲线
             var fps = [];
             // 第二条曲线
             var sps = [];
             // 使用当前t值进行分割曲线
             for (var i = processs.length - 1; i >= 0; i--) {
-                if (i == processs.length - 1) {
+                if (i === processs.length - 1) {
                     // 添加关键点
                     fps.push(processs[i][0]);
                     fps.push(processs[i][0]);
@@ -13655,11 +13669,11 @@ var feng3d;
             var ps;
             for (var i = 0, n = fps.length; i < n; i++) {
                 ps = processs[i] = [];
-                if (i == 0) {
+                if (i === 0) {
                     processs[i][0] = fps.pop();
                     sps.shift();
                 }
-                else if (i == 1) {
+                else if (i === 1) {
                     // 计算t值
                     processs[i][0] = fps.pop();
                     processs[i][1] = sps.shift();
@@ -13684,12 +13698,12 @@ var feng3d;
                         ps1[j] = ps1[j + 1] - (ps1[j + 1] - pps[j]) / (1 - t);
                     }
                     // 拟合合并,合并前后两个方向的计算
-                    if (mergeType == 1) {
+                    if (mergeType === 1) {
                         for (var j = 0, n_2 = ps0.length - 1; j <= n_2; j++) {
                             ps[j] = (ps0[j] * (n_2 - j) + ps1[j] * j) / n_2;
                         }
                     }
-                    else if (mergeType == 0) {
+                    else if (mergeType === 0) {
                         // 还原合并，前半段使用从前往后计算，后半段使用从后往前计算
                         for (var j = 0, n_3 = ps0.length - 1; j <= n_3; j++) {
                             if (j < n_3 / 2) {
@@ -13704,7 +13718,7 @@ var feng3d;
                         }
                     }
                     else {
-                        console.error("\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!");
+                        throw "\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!";
                     }
                 }
             }
@@ -13722,15 +13736,17 @@ var feng3d;
             if (num === void 0) { num = 100; }
             var results = [];
             for (var i = 0; i <= num; i++) {
-                var t = i / num;
-                var p = this.getValue(t, ps);
-                results.push({ t: t, v: p });
+                var p = this.getValue(i / num, ps);
+                results.push(p);
             }
             return results;
         };
         return BezierCurve;
     }());
     feng3d.BezierCurve = BezierCurve;
+    /**
+     * Bézier曲线
+     */
     feng3d.bezierCurve = new BezierCurve();
 })(feng3d || (feng3d = {}));
 var feng3d;

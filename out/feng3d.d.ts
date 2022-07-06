@@ -2989,10 +2989,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 方程求解
-     */
-    var equationSolving: EquationSolving;
-    /**
-     * 方程求解
      *
      * 求解方程 f(x) == 0 在[a, b]上的解
      *
@@ -3029,12 +3025,12 @@ declare namespace feng3d {
          * @param f 函数
          * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
          */
-        getDerivative(f: (x: number) => number, delta?: number): (x: number) => number;
+        getDerivative(f: (x: any) => number, delta?: number): (x: any) => number;
         /**
          * 函数是否连续
          * @param f 函数
          */
-        isContinuous(f: (x: number) => number): boolean;
+        isContinuous(_f: (x: number) => number): boolean;
         /**
          * 方程 f(x) == 0 在 [a, b] 区间内是否有解
          *
@@ -3047,7 +3043,7 @@ declare namespace feng3d {
          *
          * @returns 是否有解
          */
-        hasSolution(f: (x: number) => number, a: number, b: number, errorcallback?: (err: Error) => void): boolean;
+        hasSolution(f: (x: any) => number, a: number, b: number, errorcallback?: (err: Error) => void): boolean;
         /**
          * 二分法 求解 f(x) == 0
          *
@@ -3106,7 +3102,7 @@ declare namespace feng3d {
          *
          * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        tangent(f: (x: number) => number, f1: (x: number) => number, f2: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        tangent(f: (x: any) => number, f1: (x: any) => number, f2: (x: any) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
         /**
          * 割线法（弦截法） 求解 f(x) == 0
          *
@@ -3131,8 +3127,12 @@ declare namespace feng3d {
          *
          * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
          */
-        secant(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        secant(f: (x: any) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
     }
+    /**
+     * 方程求解
+     */
+    const equationSolving: EquationSolving;
 }
 declare namespace feng3d {
     /**
@@ -3148,6 +3148,7 @@ declare namespace feng3d {
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
      *
+     * @author feng / http://feng3d.com 05/06/2018
      */
     class HighFunction {
         private as;
@@ -6759,11 +6760,8 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Bézier曲线
-     */
-    var bezierCurve: BezierCurve;
-    /**
-     * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+     *
      * @author feng / http://feng3d.com 03/06/2018
      */
     class BezierCurve {
@@ -6789,11 +6787,11 @@ declare namespace feng3d {
         linearDerivative(t: number, p0: number, p1: number): number;
         /**
          * 线性Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
+         * @param _t 插值度
+         * @param _p0 点0
+         * @param _p1 点1
          */
-        linearSecondDerivative(t: number, p0: number, p1: number): number;
+        linearSecondDerivative(_t: number, _p0: number, _p1: number): number;
         /**
          * 二次Bézier曲线
          *
@@ -6965,11 +6963,7 @@ declare namespace feng3d {
         };
         /**
          * 获取单调区间列表
-         *
-         * @param ps
-         * @param numSamples
-         * @param precision
-         * @returns ts: 区间结点插值度列表,vs: 区间结点值列表
+         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
          */
         getMonotoneIntervals(ps: number[], numSamples?: number, precision?: number): {
             ts: number[];
@@ -7014,11 +7008,12 @@ declare namespace feng3d {
          * @param ps 点列表
          * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
          */
-        getSamples(ps: number[], num?: number): {
-            t: number;
-            v: number;
-        }[];
+        getSamples(ps: number[], num?: number): number[];
     }
+    /**
+     * Bézier曲线
+     */
+    const bezierCurve: BezierCurve;
 }
 declare namespace feng3d {
     /**

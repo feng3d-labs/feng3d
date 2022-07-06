@@ -2,17 +2,18 @@ namespace feng3d
 {
     /**
      * 高次函数
-     * 
+     *
      * 处理N次函数定义，求值，方程求解问题
-     * 
+     *
      * n次函数定义
      * f(x) = a0 * pow(x, n) + a1 * pow(x, n - 1) +.....+ an_1 * pow(x, 1) + an
-     * 
+     *
      * 0次 f(x) = a0;
      * 1次 f(x) = a0 * x + a1;
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
-     * 
+     *
+     * @author feng / http://feng3d.com 05/06/2018
      */
     export class HighFunction
     {
@@ -33,12 +34,13 @@ namespace feng3d
          */
         getValue(x: number)
         {
-            var v = 0;
-            var as = this.as;
+            let v = 0;
+            const as = this.as;
             for (let i = 0, n = as.length; i < n; i++)
             {
                 v = v * x + as[i];
             }
+
             return v;
         }
     }
