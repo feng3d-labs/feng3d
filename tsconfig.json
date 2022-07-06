@@ -402,6 +402,20 @@
         "src/assets/loader/OBJLoader.ts",
         "src/assets/loader/MD5Loader.ts",
         "src/assets/loader/MDLLoader.ts",
+        // assets
+        "src/assets/ArrayBufferAsset.ts",
+        "src/assets/assets/TextAsset.ts",
+        "src/assets/ObjectAsset.ts",
+        "src/assets/assets/ScriptAsset.ts",
+        "src/assets/assets/ShaderAsset.ts",
+        "src/assets/assets/JSAsset.ts",
+        "src/assets/assets/JsonAsset.ts",
+        "src/assets/assets/AudioAsset.ts",
+        "src/assets/assets/TextureAsset.ts",
+        "src/assets/assets/TextureCubeAsset.ts",
+        "src/assets/assets/GeometryAsset.ts",
+        "src/assets/assets/MaterialAsset.ts",
+        "src/assets/assets/GameObjectAsset.ts",
         //
         "src/Feng3d.ts",
     ]
