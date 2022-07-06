@@ -21574,29 +21574,29 @@ var feng3d;
             if (!shaderResult)
                 return;
             //
-            var result = this.checkRenderData(renderAtomic);
-            if (!result)
+            var checkedRenderAtomic = this.checkRenderData(renderAtomic);
+            if (!checkedRenderAtomic)
                 return;
             //
             this.gl.useProgram(shaderResult.program);
-            renderAtomic.renderParams.updateRenderParams(this.gl);
-            this.activeAttributes(renderAtomic, shaderResult.attributes);
-            this.activeUniforms(renderAtomic, shaderResult.uniforms);
-            this.draw(renderAtomic, this.gl[renderAtomic.renderParams.renderMode]);
+            checkedRenderAtomic.renderParams.updateRenderParams(this.gl);
+            this.activeAttributes(checkedRenderAtomic, shaderResult.attributes);
+            this.activeUniforms(checkedRenderAtomic, shaderResult.uniforms);
+            this.draw(checkedRenderAtomic, this.gl[checkedRenderAtomic.renderParams.renderMode]);
         };
         WebGLRenderer.prototype.checkRenderData = function (renderAtomic) {
             var shader = renderAtomic.getShader();
             var shaderResult = shader.activeShaderProgram(this.gl);
             if (!shaderResult) {
                 console.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
-                return false;
+                return null;
             }
             var attributes = {};
             for (var key_1 in shaderResult.attributes) {
                 var attribute = renderAtomic.getAttributeByKey(key_1);
                 if (attribute == undefined) {
                     console.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
-                    return false;
+                    return null;
                 }
                 attributes[key_1] = attribute;
             }
@@ -21609,11 +21609,24 @@ var feng3d;
                 var uniform = renderAtomic.getUniformByKey(key);
                 if (uniform == undefined) {
                     console.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
-                    return false;
+                    return null;
                 }
                 uniforms[key] = uniform;
             }
-            return true;
+            var indexBuffer = renderAtomic.getIndexBuffer();
+            if (!indexBuffer) {
+                console.warn("\u7F3A\u5C11\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
+                return null;
+            }
+            var checkedRenderAtomic = {
+                shader: shader,
+                attributes: attributes,
+                uniforms: uniforms,
+                renderParams: renderAtomic.getRenderParams(),
+                index: indexBuffer,
+                instanceCount: renderAtomic.getInstanceCount(),
+            };
+            return checkedRenderAtomic;
         };
         /**
          * 激活属性
@@ -21699,7 +21712,7 @@ var feng3d;
          */
         WebGLRenderer.prototype.draw = function (renderAtomic, renderMode) {
             var gl = this.gl;
-            var instanceCount = ~~renderAtomic.instanceCount;
+            var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
             var indexBuffer = renderAtomic.index;
             var vertexNum = 0;
             if (indexBuffer) {

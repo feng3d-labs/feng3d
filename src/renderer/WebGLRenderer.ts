@@ -55,14 +55,14 @@ namespace feng3d
             var shaderResult = shader.activeShaderProgram(this.gl);
             if (!shaderResult) return;
             //
-            var result = this.checkRenderData(renderAtomic);
-            if (!result) return;
+            var checkedRenderAtomic: RenderAtomicData = this.checkRenderData(renderAtomic);
+            if (!checkedRenderAtomic) return;
             //
             this.gl.useProgram(shaderResult.program);
-            renderAtomic.renderParams.updateRenderParams(this.gl);
-            this.activeAttributes(renderAtomic, shaderResult.attributes);
-            this.activeUniforms(renderAtomic, shaderResult.uniforms);
-            this.draw(renderAtomic, this.gl[renderAtomic.renderParams.renderMode]);
+            checkedRenderAtomic.renderParams.updateRenderParams(this.gl);
+            this.activeAttributes(checkedRenderAtomic, shaderResult.attributes);
+            this.activeUniforms(checkedRenderAtomic, shaderResult.uniforms);
+            this.draw(checkedRenderAtomic, this.gl[checkedRenderAtomic.renderParams.renderMode]);
         }
 
         private checkRenderData(renderAtomic: RenderAtomic)
@@ -72,7 +72,7 @@ namespace feng3d
             if (!shaderResult)
             {
                 console.warn(`缺少着色器，无法渲染!`)
-                return false;
+                return null;
             }
 
             var attributes: { [name: string]: Attribute; } = {};
@@ -82,7 +82,7 @@ namespace feng3d
                 if (attribute == undefined)
                 {
                     console.warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
-                    return false;
+                    return null;
                 }
                 attributes[key] = attribute;
             }
@@ -99,17 +99,34 @@ namespace feng3d
                 if (uniform == undefined)
                 {
                     console.warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
-                    return false;
+                    return null;
                 }
                 uniforms[key] = uniform;
             }
-            return true;
+
+            var indexBuffer = renderAtomic.getIndexBuffer();
+            if (!indexBuffer) 
+            {
+                console.warn(`缺少顶点索引数据，无法渲染！`);
+                return null;
+            }
+
+            const checkedRenderAtomic: RenderAtomicData =
+            {
+                shader: shader,
+                attributes: attributes,
+                uniforms: uniforms,
+                renderParams: renderAtomic.getRenderParams(),
+                index: indexBuffer,
+                instanceCount: renderAtomic.getInstanceCount(),
+            };
+            return checkedRenderAtomic
         }
 
         /**
          * 激活属性
          */
-        private activeAttributes(renderAtomic: RenderAtomic, attributeInfos: { [name: string]: AttributeInfo })
+        private activeAttributes(renderAtomic: RenderAtomicData, attributeInfos: { [name: string]: AttributeInfo })
         {
             const gl = this.gl;
 
@@ -137,7 +154,7 @@ namespace feng3d
         /**
          * 激活常量
          */
-        private activeUniforms(renderAtomic: RenderAtomic, uniformInfos: { [name: string]: UniformInfo })
+        private activeUniforms(renderAtomic: RenderAtomicData, uniformInfos: { [name: string]: UniformInfo })
         {
             var uniforms = renderAtomic.uniforms;
             for (var name in uniformInfos)
@@ -202,11 +219,11 @@ namespace feng3d
 
         /**
          */
-        private draw(renderAtomic: RenderAtomic, renderMode: number)
+        private draw(renderAtomic: RenderAtomicData, renderMode: number)
         {
             const gl = this.gl;
 
-            var instanceCount = ~~renderAtomic.instanceCount;
+            var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
 
             var indexBuffer = renderAtomic.index;
             var vertexNum = 0;

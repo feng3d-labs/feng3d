@@ -26,7 +26,7 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVEnum", tooltip: "剔除面", componentParam: { enumClass: CullFace } })
-        cullFace = CullFace.BACK;
+        cullFace: "NONE" | "FRONT" | "BACK" | "FRONT_AND_BACK" = CullFace.BACK;
 
         /**
          * 正向方向，默认 CW。三角形顺时针方向为正面。

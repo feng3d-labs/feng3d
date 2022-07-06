@@ -171,4 +171,14 @@ namespace feng3d
             return shaderMacro;
         }
     }
+
+    export interface RenderAtomicData
+    {
+        shader: Shader;
+        attributes: { [name: string]: Attribute; };
+        uniforms: { [name: string]: Uniforms; };
+        renderParams: RenderParams;
+        index: Index;
+        instanceCount: number;
+    }
 }

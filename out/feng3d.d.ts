@@ -9868,7 +9868,7 @@ declare namespace feng3d {
          * @see http://www.jianshu.com/p/ee04165f2a02
          * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
          */
-        cullFace: CullFace;
+        cullFace: "NONE" | "FRONT" | "BACK" | "FRONT_AND_BACK";
         /**
          * 正向方向，默认 CW。三角形顺时针方向为正面。
          *
@@ -10127,6 +10127,18 @@ declare namespace feng3d {
         getRenderParams(renderParams?: RenderParams): RenderParams;
         getShaderMacro(shaderMacro?: ShaderMacro): ShaderMacro;
     }
+    interface RenderAtomicData {
+        shader: Shader;
+        attributes: {
+            [name: string]: Attribute;
+        };
+        uniforms: {
+            [name: string]: Uniforms;
+        };
+        renderParams: RenderParams;
+        index: Index;
+        instanceCount: number;
+    }
 }
 declare namespace feng3d {
     /**
@@ -10259,7 +10271,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface Attributes {
-        [attributeName: string]: Attribute;
         /**
          * 坐标
          */
@@ -10296,6 +10307,7 @@ declare namespace feng3d {
          * 关节权重
          */
         a_skinWeights1: Attribute;
+        [attributeName: string]: Attribute;
     }
 }
 declare namespace feng3d {
