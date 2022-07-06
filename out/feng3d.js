@@ -19877,49 +19877,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var GL = /** @class */ (function () {
-        function GL() {
-        }
-        /**
-         * 获取 GL 实例
-         * @param canvas 画布
-         * @param contextAttributes
-         */
-        GL.getGL = function (canvas, contextAttributes) {
-            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-            // var contextIds = ["webgl"];
-            var gl = null;
-            for (var i = 0; i < contextIds.length; ++i) {
-                try {
-                    gl = canvas.getContext(contextIds[i], contextAttributes);
-                    gl.contextId = contextIds[i];
-                    gl.contextAttributes = contextAttributes;
-                    break;
-                }
-                catch (e) { }
-            }
-            if (!gl)
-                throw "无法初始化WEBGL";
-            //
-            new feng3d.GLCache(gl);
-            new feng3d.GLExtension(gl);
-            new feng3d.GLCapabilities(gl);
-            new feng3d.WebGLRenderer(gl);
-            //
-            gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
-            gl.clearDepth(1.0); // Clear everything
-            gl.enable(gl.DEPTH_TEST); // Enable depth testing
-            gl.depthFunc(gl.LEQUAL); // Near things obscure far things
-            this.glList.push(gl);
-            return gl;
-        };
-        GL.glList = [];
-        return GL;
-    }());
-    feng3d.GL = GL;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * GL 缓存
      */
@@ -20656,7 +20613,7 @@ var feng3d;
          * 清理缓冲
          */
         Index.clear = function (index) {
-            feng3d.GL.glList.forEach(function (gl) {
+            feng3d.WebGLRenderer.glList.forEach(function (gl) {
                 var buffer = gl.cache.indices.get(index);
                 if (buffer) {
                     gl.deleteBuffer(buffer);
@@ -20781,7 +20738,7 @@ var feng3d;
          * 清理缓冲
          */
         Attribute.clear = function (attribute) {
-            feng3d.GL.glList.forEach(function (gl) {
+            feng3d.WebGLRenderer.glList.forEach(function (gl) {
                 var buffer = gl.cache.attributes.get(attribute);
                 if (buffer) {
                     gl.deleteBuffer(buffer);
@@ -20892,7 +20849,7 @@ var feng3d;
          * @param data
          */
         Texture.clear = function (data) {
-            feng3d.GL.glList.forEach(function (gl) {
+            feng3d.WebGLRenderer.glList.forEach(function (gl) {
                 var tex = gl.cache.textures.get(data);
                 if (tex) {
                     gl.deleteTexture(tex);
@@ -20934,7 +20891,7 @@ var feng3d;
          * 清理缓存
          */
         FrameBuffer.clear = function (frameBuffer) {
-            feng3d.GL.glList.forEach(function (gl) {
+            feng3d.WebGLRenderer.glList.forEach(function (gl) {
                 var buffer = gl.cache.frameBuffers.get(frameBuffer);
                 if (buffer) {
                     gl.deleteFramebuffer(buffer);
@@ -20990,7 +20947,7 @@ var feng3d;
          * 清理纹理
          */
         RenderBuffer.clear = function (renderBuffer) {
-            feng3d.GL.glList.forEach(function (gl) {
+            feng3d.WebGLRenderer.glList.forEach(function (gl) {
                 var buffer = gl.cache.renderBuffers.get(renderBuffer);
                 if (buffer) {
                     gl.deleteRenderbuffer(buffer);
@@ -21139,276 +21096,322 @@ var feng3d;
      * 所有渲染都由该渲染器执行
      */
     var WebGLRenderer = /** @class */ (function () {
-        function WebGLRenderer(gl) {
-            console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
-            var preActiveAttributes = [];
-            gl.render = function (renderAtomic1) {
-                var instanceCount = renderAtomic1.getInstanceCount();
-                if (instanceCount == 0)
-                    return;
-                var shaderMacro = renderAtomic1.getShaderMacro();
-                var shader = renderAtomic1.getShader();
-                shader.shaderMacro = shaderMacro;
-                var shaderResult = shader.activeShaderProgram(gl);
-                if (!shaderResult)
-                    return;
-                //
-                var renderAtomic = checkRenderData(renderAtomic1);
-                if (!renderAtomic)
-                    return;
-                //
-                gl.useProgram(shaderResult.program);
-                activeShaderParams(renderAtomic.renderParams);
-                activeAttributes(renderAtomic, shaderResult.attributes);
-                activeUniforms(renderAtomic, shaderResult.uniforms);
-                draw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
-            };
-            function checkRenderData(renderAtomic) {
-                var shader = renderAtomic.getShader();
-                var shaderResult = shader.activeShaderProgram(gl);
-                if (!shaderResult) {
-                    console.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
-                    return null;
+        /**
+         * 获取 GL 实例
+         * @param canvas 画布
+         * @param contextAttributes
+         */
+        function WebGLRenderer(canvas, contextAttributes) {
+            this.preActiveAttributes = [];
+            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+            // var contextIds = ["webgl"];
+            var gl = null;
+            for (var i = 0; i < contextIds.length; ++i) {
+                try {
+                    gl = canvas.getContext(contextIds[i], contextAttributes);
+                    gl.contextId = contextIds[i];
+                    gl.contextAttributes = contextAttributes;
+                    break;
                 }
-                var attributes = {};
-                for (var key_1 in shaderResult.attributes) {
-                    var attribute = renderAtomic.getAttributeByKey(key_1);
-                    if (attribute == undefined) {
-                        console.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
-                        return null;
-                    }
-                    attributes[key_1] = attribute;
-                }
-                var uniforms = {};
-                for (var key in shaderResult.uniforms) {
-                    var activeInfo = shaderResult.uniforms[key];
-                    if (activeInfo.name) {
-                        key = activeInfo.name;
-                    }
-                    var uniform = renderAtomic.getUniformByKey(key);
-                    if (uniform == undefined) {
-                        console.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
-                        return null;
-                    }
-                    uniforms[key] = uniform;
-                }
-                var indexBuffer = renderAtomic.getIndexBuffer();
-                if (!indexBuffer) {
-                    console.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
-                    return null;
-                }
-                return {
-                    shader: shader,
-                    attributes: attributes,
-                    uniforms: uniforms,
-                    renderParams: renderAtomic.getRenderParams(),
-                    indexBuffer: indexBuffer,
-                    instanceCount: renderAtomic.getInstanceCount(),
-                };
+                catch (e) { }
             }
-            function activeShaderParams(shaderParams) {
-                var cullfaceEnum = shaderParams.cullFace;
-                var blendEquation = gl[shaderParams.blendEquation];
-                var sfactor = gl[shaderParams.sfactor];
-                var dfactor = gl[shaderParams.dfactor];
-                var cullFace = gl[shaderParams.cullFace];
-                var frontFace = gl[shaderParams.frontFace];
-                var enableBlend = shaderParams.enableBlend;
-                var depthtest = shaderParams.depthtest;
-                var depthMask = shaderParams.depthMask;
-                var depthFunc = gl[shaderParams.depthFunc];
-                var viewPort = shaderParams.viewPort;
-                var useViewPort = shaderParams.useViewPort;
-                var useScissor = shaderParams.useScissor;
-                var scissor = shaderParams.scissor;
-                var colorMask = shaderParams.colorMask;
-                var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
-                var usePolygonOffset = shaderParams.usePolygonOffset;
-                var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
-                var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
-                var useStencil = shaderParams.useStencil;
-                var stencilFunc = gl[shaderParams.stencilFunc];
-                var stencilFuncRef = shaderParams.stencilFuncRef;
-                var stencilFuncMask = shaderParams.stencilFuncMask;
-                var stencilOpFail = gl[shaderParams.stencilOpFail];
-                var stencilOpZFail = gl[shaderParams.stencilOpZFail];
-                var stencilOpZPass = gl[shaderParams.stencilOpZPass];
-                var stencilMask = shaderParams.stencilMask;
-                if (!useViewPort) {
-                    viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
-                }
-                if (cullfaceEnum != feng3d.CullFace.NONE) {
-                    gl.enable(gl.CULL_FACE);
-                    gl.cullFace(cullFace);
-                    gl.frontFace(frontFace);
-                }
-                else {
-                    gl.disable(gl.CULL_FACE);
-                }
-                if (enableBlend) {
-                    //
-                    gl.enable(gl.BLEND);
-                    gl.blendEquation(blendEquation);
-                    gl.blendFunc(sfactor, dfactor);
-                }
-                else {
-                    gl.disable(gl.BLEND);
-                }
-                if (depthtest) {
-                    gl.enable(gl.DEPTH_TEST);
-                    gl.depthFunc(depthFunc);
-                }
-                else {
-                    gl.disable(gl.DEPTH_TEST);
-                }
-                gl.depthMask(depthMask);
-                gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
-                gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
-                if (usePolygonOffset) {
-                    gl.enable(gl.POLYGON_OFFSET_FILL);
-                    gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
-                }
-                else {
-                    gl.disable(gl.POLYGON_OFFSET_FILL);
-                }
-                if (useScissor) {
-                    gl.enable(gl.SCISSOR_TEST);
-                    gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
-                }
-                else {
-                    gl.disable(gl.SCISSOR_TEST);
-                }
-                if (useStencil) {
-                    if (gl.capabilities.stencilBits === 0) {
-                        console.warn(gl + " \u4E0D\u652F\u6301 stencil\uFF0C\u53C2\u8003 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil");
-                    }
-                    gl.enable(gl.STENCIL_TEST);
-                    gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
-                    gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
-                    gl.stencilMask(stencilMask);
-                }
-                else {
-                    gl.disable(gl.STENCIL_TEST);
-                }
-            }
-            /**
-             * 激活属性
-             */
-            function activeAttributes(renderAtomic, attributeInfos) {
-                var activeAttributes = [];
-                for (var name in attributeInfos) {
-                    var activeInfo = attributeInfos[name];
-                    var buffer = renderAtomic.attributes[name];
-                    feng3d.Attribute.active(gl, activeInfo.location, buffer);
-                    activeAttributes.push(activeInfo.location);
-                    Array.delete(preActiveAttributes, activeInfo.location);
-                }
-                preActiveAttributes.forEach(function (location) {
-                    gl.disableVertexAttribArray(location);
-                });
-                preActiveAttributes = activeAttributes;
-            }
-            /**
-             * 激活常量
-             */
-            function activeUniforms(renderAtomic, uniformInfos) {
-                var uniforms = renderAtomic.uniforms;
-                for (var name in uniformInfos) {
-                    var activeInfo = uniformInfos[name];
-                    var paths = activeInfo.paths;
-                    var uniformData = uniforms[paths[0]];
-                    for (var i = 1; i < paths.length; i++) {
-                        uniformData = uniformData[paths[i]];
-                    }
-                    setContext3DUniform(activeInfo, uniformData);
-                }
-            }
-            /**
-             * 设置环境Uniform数据
-             */
-            function setContext3DUniform(activeInfo, data) {
-                var vec = data;
-                if (data.toArray)
-                    vec = data.toArray();
-                var location = activeInfo.location;
-                switch (activeInfo.type) {
-                    case gl.INT:
-                        gl.uniform1i(location, data);
-                        break;
-                    case gl.FLOAT_MAT3:
-                        gl.uniformMatrix3fv(location, false, vec);
-                        break;
-                    case gl.FLOAT_MAT4:
-                        gl.uniformMatrix4fv(location, false, vec);
-                        break;
-                    case gl.FLOAT:
-                        gl.uniform1f(location, data);
-                        break;
-                    case gl.FLOAT_VEC2:
-                        gl.uniform2f(location, vec[0], vec[1]);
-                        break;
-                    case gl.FLOAT_VEC3:
-                        gl.uniform3f(location, vec[0], vec[1], vec[2]);
-                        break;
-                    case gl.FLOAT_VEC4:
-                        gl.uniform4f(location, vec[0], vec[1], vec[2], vec[3]);
-                        break;
-                    case gl.SAMPLER_2D:
-                    case gl.SAMPLER_CUBE:
-                        var textureInfo = data;
-                        //激活纹理编号
-                        gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
-                        feng3d.Texture.active(gl, textureInfo);
-                        //设置纹理所在采样编号
-                        gl.uniform1i(location, activeInfo.textureID);
-                        break;
-                    default:
-                        console.error("\u65E0\u6CD5\u8BC6\u522B\u7684uniform\u7C7B\u578B " + activeInfo.name + " " + data);
-                }
-            }
-            /**
-             */
-            function draw(renderAtomic, renderMode) {
-                var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
-                var indexBuffer = renderAtomic.indexBuffer;
-                var vertexNum = 0;
-                if (indexBuffer) {
-                    feng3d.Index.active(gl, indexBuffer);
-                    var arrayType = gl[indexBuffer.type];
-                    if (indexBuffer.count == 0) {
-                        // console.warn(`顶点索引为0，不进行渲染！`);
-                        return;
-                    }
-                    if (instanceCount > 1) {
-                        gl.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
-                    }
-                    else {
-                        gl.drawElements(renderMode, indexBuffer.count, arrayType, indexBuffer.offset);
-                    }
-                }
-                else {
-                    var vertexNum = (function (attributes) {
-                        for (var attr in attributes) {
-                            if (attributes.hasOwnProperty(attr)) {
-                                var attribute = attributes[attr];
-                                return attribute.data.length / attribute.size;
-                            }
-                        }
-                        return 0;
-                    })(renderAtomic.attributes);
-                    if (vertexNum == 0) {
-                        console.warn("\u9876\u70B9\u6570\u91CF\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
-                        return;
-                    }
-                    if (instanceCount > 1) {
-                        gl.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
-                    }
-                    else {
-                        gl.drawArrays(renderMode, 0, vertexNum);
-                    }
-                }
-            }
+            if (!gl)
+                throw "无法初始化WEBGL";
+            this._gl = gl;
+            //
+            new feng3d.GLCache(gl);
+            new feng3d.GLExtension(gl);
+            new feng3d.GLCapabilities(gl);
+            //
+            gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
+            gl.clearDepth(1.0); // Clear everything
+            gl.enable(gl.DEPTH_TEST); // Enable depth testing
+            gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+            WebGLRenderer.glList.push(gl);
         }
+        Object.defineProperty(WebGLRenderer.prototype, "gl", {
+            get: function () {
+                return this._gl;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        WebGLRenderer.prototype.render = function (renderAtomic1) {
+            var gl = this.gl;
+            var instanceCount = renderAtomic1.getInstanceCount();
+            if (instanceCount == 0)
+                return;
+            var shaderMacro = renderAtomic1.getShaderMacro();
+            var shader = renderAtomic1.getShader();
+            shader.shaderMacro = shaderMacro;
+            var shaderResult = shader.activeShaderProgram(gl);
+            if (!shaderResult)
+                return;
+            //
+            var renderAtomic = this.checkRenderData(renderAtomic1);
+            if (!renderAtomic)
+                return;
+            //
+            gl.useProgram(shaderResult.program);
+            this.activeShaderParams(renderAtomic.renderParams);
+            this.activeAttributes(renderAtomic, shaderResult.attributes);
+            this.activeUniforms(renderAtomic, shaderResult.uniforms);
+            this.draw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
+        };
+        WebGLRenderer.prototype.checkRenderData = function (renderAtomic) {
+            var gl = this.gl;
+            var shader = renderAtomic.getShader();
+            var shaderResult = shader.activeShaderProgram(gl);
+            if (!shaderResult) {
+                console.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
+                return null;
+            }
+            var attributes = {};
+            for (var key_1 in shaderResult.attributes) {
+                var attribute = renderAtomic.getAttributeByKey(key_1);
+                if (attribute == undefined) {
+                    console.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
+                    return null;
+                }
+                attributes[key_1] = attribute;
+            }
+            var uniforms = {};
+            for (var key in shaderResult.uniforms) {
+                var activeInfo = shaderResult.uniforms[key];
+                if (activeInfo.name) {
+                    key = activeInfo.name;
+                }
+                var uniform = renderAtomic.getUniformByKey(key);
+                if (uniform == undefined) {
+                    console.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
+                    return null;
+                }
+                uniforms[key] = uniform;
+            }
+            var indexBuffer = renderAtomic.getIndexBuffer();
+            if (!indexBuffer) {
+                console.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
+                return null;
+            }
+            return {
+                shader: shader,
+                attributes: attributes,
+                uniforms: uniforms,
+                renderParams: renderAtomic.getRenderParams(),
+                indexBuffer: indexBuffer,
+                instanceCount: renderAtomic.getInstanceCount(),
+            };
+        };
+        WebGLRenderer.prototype.activeShaderParams = function (shaderParams) {
+            var gl = this.gl;
+            var cullfaceEnum = shaderParams.cullFace;
+            var blendEquation = gl[shaderParams.blendEquation];
+            var sfactor = gl[shaderParams.sfactor];
+            var dfactor = gl[shaderParams.dfactor];
+            var cullFace = gl[shaderParams.cullFace];
+            var frontFace = gl[shaderParams.frontFace];
+            var enableBlend = shaderParams.enableBlend;
+            var depthtest = shaderParams.depthtest;
+            var depthMask = shaderParams.depthMask;
+            var depthFunc = gl[shaderParams.depthFunc];
+            var viewPort = shaderParams.viewPort;
+            var useViewPort = shaderParams.useViewPort;
+            var useScissor = shaderParams.useScissor;
+            var scissor = shaderParams.scissor;
+            var colorMask = shaderParams.colorMask;
+            var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
+            var usePolygonOffset = shaderParams.usePolygonOffset;
+            var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
+            var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
+            var useStencil = shaderParams.useStencil;
+            var stencilFunc = gl[shaderParams.stencilFunc];
+            var stencilFuncRef = shaderParams.stencilFuncRef;
+            var stencilFuncMask = shaderParams.stencilFuncMask;
+            var stencilOpFail = gl[shaderParams.stencilOpFail];
+            var stencilOpZFail = gl[shaderParams.stencilOpZFail];
+            var stencilOpZPass = gl[shaderParams.stencilOpZPass];
+            var stencilMask = shaderParams.stencilMask;
+            if (!useViewPort) {
+                viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
+            }
+            if (cullfaceEnum != feng3d.CullFace.NONE) {
+                gl.enable(gl.CULL_FACE);
+                gl.cullFace(cullFace);
+                gl.frontFace(frontFace);
+            }
+            else {
+                gl.disable(gl.CULL_FACE);
+            }
+            if (enableBlend) {
+                //
+                gl.enable(gl.BLEND);
+                gl.blendEquation(blendEquation);
+                gl.blendFunc(sfactor, dfactor);
+            }
+            else {
+                gl.disable(gl.BLEND);
+            }
+            if (depthtest) {
+                gl.enable(gl.DEPTH_TEST);
+                gl.depthFunc(depthFunc);
+            }
+            else {
+                gl.disable(gl.DEPTH_TEST);
+            }
+            gl.depthMask(depthMask);
+            gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
+            gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
+            if (usePolygonOffset) {
+                gl.enable(gl.POLYGON_OFFSET_FILL);
+                gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
+            }
+            else {
+                gl.disable(gl.POLYGON_OFFSET_FILL);
+            }
+            if (useScissor) {
+                gl.enable(gl.SCISSOR_TEST);
+                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
+            }
+            else {
+                gl.disable(gl.SCISSOR_TEST);
+            }
+            if (useStencil) {
+                if (gl.capabilities.stencilBits === 0) {
+                    console.warn(gl + " \u4E0D\u652F\u6301 stencil\uFF0C\u53C2\u8003 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil");
+                }
+                gl.enable(gl.STENCIL_TEST);
+                gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
+                gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
+                gl.stencilMask(stencilMask);
+            }
+            else {
+                gl.disable(gl.STENCIL_TEST);
+            }
+        };
+        /**
+         * 激活属性
+         */
+        WebGLRenderer.prototype.activeAttributes = function (renderAtomic, attributeInfos) {
+            var gl = this.gl;
+            var preActiveAttributes = this.preActiveAttributes;
+            var activeAttributes = [];
+            for (var name in attributeInfos) {
+                var activeInfo = attributeInfos[name];
+                var buffer = renderAtomic.attributes[name];
+                feng3d.Attribute.active(gl, activeInfo.location, buffer);
+                activeAttributes.push(activeInfo.location);
+                Array.delete(preActiveAttributes, activeInfo.location);
+            }
+            preActiveAttributes.forEach(function (location) {
+                gl.disableVertexAttribArray(location);
+            });
+            this.preActiveAttributes = activeAttributes;
+        };
+        /**
+         * 激活常量
+         */
+        WebGLRenderer.prototype.activeUniforms = function (renderAtomic, uniformInfos) {
+            var uniforms = renderAtomic.uniforms;
+            for (var name in uniformInfos) {
+                var activeInfo = uniformInfos[name];
+                var paths = activeInfo.paths;
+                var uniformData = uniforms[paths[0]];
+                for (var i = 1; i < paths.length; i++) {
+                    uniformData = uniformData[paths[i]];
+                }
+                this.setContext3DUniform(activeInfo, uniformData);
+            }
+        };
+        /**
+         * 设置环境Uniform数据
+         */
+        WebGLRenderer.prototype.setContext3DUniform = function (activeInfo, data) {
+            var gl = this.gl;
+            var vec = data;
+            if (data.toArray)
+                vec = data.toArray();
+            var location = activeInfo.location;
+            switch (activeInfo.type) {
+                case gl.INT:
+                    gl.uniform1i(location, data);
+                    break;
+                case gl.FLOAT_MAT3:
+                    gl.uniformMatrix3fv(location, false, vec);
+                    break;
+                case gl.FLOAT_MAT4:
+                    gl.uniformMatrix4fv(location, false, vec);
+                    break;
+                case gl.FLOAT:
+                    gl.uniform1f(location, data);
+                    break;
+                case gl.FLOAT_VEC2:
+                    gl.uniform2f(location, vec[0], vec[1]);
+                    break;
+                case gl.FLOAT_VEC3:
+                    gl.uniform3f(location, vec[0], vec[1], vec[2]);
+                    break;
+                case gl.FLOAT_VEC4:
+                    gl.uniform4f(location, vec[0], vec[1], vec[2], vec[3]);
+                    break;
+                case gl.SAMPLER_2D:
+                case gl.SAMPLER_CUBE:
+                    var textureInfo = data;
+                    //激活纹理编号
+                    gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
+                    feng3d.Texture.active(gl, textureInfo);
+                    //设置纹理所在采样编号
+                    gl.uniform1i(location, activeInfo.textureID);
+                    break;
+                default:
+                    console.error("\u65E0\u6CD5\u8BC6\u522B\u7684uniform\u7C7B\u578B " + activeInfo.name + " " + data);
+            }
+        };
+        /**
+         * 绘制
+         * @param renderAtomic  渲染原子
+         */
+        WebGLRenderer.prototype.draw = function (renderAtomic, renderMode) {
+            var gl = this.gl;
+            var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
+            var indexBuffer = renderAtomic.indexBuffer;
+            var vertexNum = 0;
+            if (indexBuffer) {
+                feng3d.Index.active(gl, indexBuffer);
+                var arrayType = gl[indexBuffer.type];
+                if (indexBuffer.count == 0) {
+                    // console.warn(`顶点索引为0，不进行渲染！`);
+                    return;
+                }
+                if (instanceCount > 1) {
+                    gl.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                }
+                else {
+                    gl.drawElements(renderMode, indexBuffer.count, arrayType, indexBuffer.offset);
+                }
+            }
+            else {
+                var vertexNum = (function (attributes) {
+                    for (var attr in attributes) {
+                        if (attributes.hasOwnProperty(attr)) {
+                            var attribute = attributes[attr];
+                            return attribute.data.length / attribute.size;
+                        }
+                    }
+                    return 0;
+                })(renderAtomic.attributes);
+                if (vertexNum == 0) {
+                    console.warn("\u9876\u70B9\u6570\u91CF\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
+                    return;
+                }
+                if (instanceCount > 1) {
+                    gl.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
+                }
+                else {
+                    gl.drawArrays(renderMode, 0, vertexNum);
+                }
+            }
+        };
+        WebGLRenderer.glList = [];
         return WebGLRenderer;
     }());
     feng3d.WebGLRenderer = WebGLRenderer;
@@ -25791,7 +25794,7 @@ var feng3d;
             this._invalid = true;
         };
         FrameBufferObject.clear = function (frameBufferObject) {
-            feng3d.GL.glList.forEach(function (gl) {
+            feng3d.WebGLRenderer.glList.forEach(function (gl) {
                 gl.cache.frameBufferObjects = gl.cache.frameBufferObjects || new Map();
                 var buffer = gl.cache.frameBufferObjects.get(frameBufferObject);
                 if (buffer) {
@@ -25956,8 +25959,9 @@ var feng3d;
                 this.drawForDirectionalLight(gl, directionalLights[i], scene, camera);
             }
         };
-        ShadowRenderer.prototype.drawForSpotLight = function (gl, light, scene, camera) {
+        ShadowRenderer.prototype.drawForSpotLight = function (renderer, light, scene, camera) {
             var _this = this;
+            var gl = renderer.gl;
             feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -25985,12 +25989,13 @@ var feng3d;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             castShadowsModels.forEach(function (renderable) {
-                _this.drawGameObject(gl, renderable, scene, camera);
+                _this.drawGameObject(renderer, renderable, scene, camera);
             });
             light.frameBufferObject.deactive(gl);
         };
-        ShadowRenderer.prototype.drawForPointLight = function (gl, light, scene, camera) {
+        ShadowRenderer.prototype.drawForPointLight = function (renderer, light, scene, camera) {
             var _this = this;
+            var gl = renderer.gl;
             feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -26046,19 +26051,20 @@ var feng3d;
                 renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
                 renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
                 castShadowsModels.forEach(function (renderable) {
-                    _this.drawGameObject(gl, renderable, scene, camera);
+                    _this.drawGameObject(renderer, renderable, scene, camera);
                 });
             }
             light.frameBufferObject.deactive(gl);
         };
-        ShadowRenderer.prototype.drawForDirectionalLight = function (gl, light, scene, camera) {
+        ShadowRenderer.prototype.drawForDirectionalLight = function (renderer, light, scene, camera) {
             var _this = this;
             // 获取影响阴影图的渲染对象
             var models = scene.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
             var castShadowsModels = models.filter(function (i) { return i.castShadows; });
             light.updateShadowByCamera(scene, camera, models);
-            feng3d.FrameBufferObject.active(gl, light.frameBufferObject);
+            feng3d.FrameBufferObject.active(renderer.gl, light.frameBufferObject);
+            var gl = renderer.gl;
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -26081,7 +26087,7 @@ var feng3d;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
             castShadowsModels.forEach(function (renderable) {
-                _this.drawGameObject(gl, renderable, scene, camera);
+                _this.drawGameObject(renderer, renderable, scene, camera);
             });
             light.frameBufferObject.deactive(gl);
         };
@@ -26168,7 +26174,7 @@ var feng3d;
         /**
          * 渲染
          */
-        WireframeRenderer.prototype.draw = function (gl, scene, camera) {
+        WireframeRenderer.prototype.draw = function (renderer, scene, camera) {
             var _this = this;
             var unblenditems = scene.getPickCache(camera).unblenditems;
             var wireframes = unblenditems.reduce(function (pv, cv) { var wireframe = cv.getComponent("WireframeComponent"); if (wireframe)
@@ -26176,13 +26182,13 @@ var feng3d;
             if (wireframes.length == 0)
                 return;
             wireframes.forEach(function (element) {
-                _this.drawGameObject(gl, element.renderable, scene, camera, element.wireframe.color); //
+                _this.drawGameObject(renderer, element.renderable, scene, camera, element.wireframe.color); //
             });
         };
         /**
          * 绘制3D对象
          */
-        WireframeRenderer.prototype.drawGameObject = function (gl, renderable, scene, camera, wireframeColor) {
+        WireframeRenderer.prototype.drawGameObject = function (renderer, renderable, scene, camera, wireframeColor) {
             if (wireframeColor === void 0) { wireframeColor = new feng3d.Color4(); }
             var renderAtomic = renderable.renderAtomic;
             renderable.beforeRender(renderAtomic, scene, camera);
@@ -26222,7 +26228,7 @@ var feng3d;
             this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
             //
             this.renderAtomic.shader = renderAtomic.wireframeShader;
-            gl.render(this.renderAtomic);
+            renderer.render(this.renderAtomic);
             this.renderAtomic.shader = null;
             //
         };
@@ -26567,21 +26573,21 @@ var feng3d;
         };
         /**
          * 绘制场景中天空盒
-         * @param gl
+         * @param renderer
          * @param scene 场景
          * @param camera 摄像机
          */
-        SkyBoxRenderer.prototype.draw = function (gl, scene, camera) {
+        SkyBoxRenderer.prototype.draw = function (renderer, scene, camera) {
             var skybox = scene.activeSkyBoxs[0];
-            this.drawSkyBox(gl, skybox, scene, camera);
+            this.drawSkyBox(renderer, skybox, scene, camera);
         };
         /**
          * 绘制天空盒
-         * @param gl
+         * @param renderer
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        SkyBoxRenderer.prototype.drawSkyBox = function (gl, skybox, scene, camera) {
+        SkyBoxRenderer.prototype.drawSkyBox = function (renderer, skybox, scene, camera) {
             if (!skybox)
                 return;
             this.init();
@@ -26593,7 +26599,7 @@ var feng3d;
             this.renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
             this.renderAtomic.uniforms.u_cameraPos = camera.transform.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            gl.render(this.renderAtomic);
+            renderer.render(this.renderAtomic);
         };
         return SkyBoxRenderer;
     }());
@@ -28483,7 +28489,7 @@ var feng3d;
         Object.defineProperty(View.prototype, "gl", {
             get: function () {
                 if (!this.canvas.gl)
-                    this.canvas.gl = feng3d.GL.getGL(this.canvas, this._contextAttributes);
+                    this.canvas.gl = new feng3d.WebGLRenderer(this.canvas, this._contextAttributes);
                 return this.canvas.gl;
             },
             enumerable: false,
@@ -28535,13 +28541,14 @@ var feng3d;
             this.calcMouseRay3D();
             this.scene.mouseRay3D = this.mouseRay3D;
             this.scene.camera = this.camera;
+            var gl = this.gl.gl;
             // 默认渲染
-            this.gl.colorMask(true, true, true, true);
-            this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
-            this.gl.clearStencil(0);
-            this.gl.clearDepth(1);
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
-            this.gl.enable(this.gl.DEPTH_TEST);
+            gl.colorMask(true, true, true, true);
+            gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
+            gl.clearStencil(0);
+            gl.clearDepth(1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST);
             // 鼠标拾取渲染
             this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
             //绘制阴影图
@@ -46619,7 +46626,7 @@ var feng2d;
          * 渲染
          */
         CanvasRenderer.draw = function (view) {
-            var gl = view.gl;
+            var gl = view.gl.gl;
             var scene = view.scene;
             var canvasList = scene.getComponentsInChildren("Canvas").filter(function (v) { return v.isVisibleAndEnabled; });
             canvasList.forEach(function (canvas) {
@@ -46632,7 +46639,7 @@ var feng2d;
                     var renderAtomic = renderable.renderAtomic;
                     renderAtomic.uniforms.u_viewProjection = canvas.projection;
                     renderable.beforeRender(renderAtomic, null, null);
-                    gl.render(renderAtomic);
+                    view.gl.render(renderAtomic);
                 });
             });
         };

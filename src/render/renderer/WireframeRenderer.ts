@@ -23,7 +23,7 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene: Scene, camera: Camera)
+        draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
         {
             var unblenditems = scene.getPickCache(camera).unblenditems;
 
@@ -34,14 +34,14 @@ namespace feng3d
 
             wireframes.forEach(element =>
             {
-                this.drawGameObject(gl, element.renderable, scene, camera, element.wireframe.color);            //
+                this.drawGameObject(renderer, element.renderable, scene, camera, element.wireframe.color);            //
             });
         }
 
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
+        drawGameObject(renderer: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
         {
             var renderAtomic = renderable.renderAtomic;
             renderable.beforeRender(renderAtomic, scene, camera);
@@ -94,7 +94,7 @@ namespace feng3d
 
             //
             this.renderAtomic.shader = renderAtomic.wireframeShader;
-            gl.render(this.renderAtomic);
+            renderer.render(this.renderAtomic);
             this.renderAtomic.shader = null;
             //
         }

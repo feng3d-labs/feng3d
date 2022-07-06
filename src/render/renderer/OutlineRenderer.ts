@@ -25,7 +25,7 @@ namespace feng3d
             }
         }
 
-        draw(gl: GL, scene: Scene, camera: Camera)
+        draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
         {
             var unblenditems = scene.getPickCache(camera).unblenditems;
 

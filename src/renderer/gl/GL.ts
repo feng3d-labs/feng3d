@@ -74,13 +74,6 @@ namespace feng3d
         extensions: GLExtension;
 
         /**
-         * 渲染
-         * 
-         * @param renderAtomic 渲染数据
-         */
-        render(renderAtomic: RenderAtomic): void;
-
-        /**
          * WEBGL 支持能力
          */
         capabilities: GLCapabilities;
@@ -89,46 +82,5 @@ namespace feng3d
          * 缓存
          */
         cache: GLCache;
-    }
-
-    export class GL
-    {
-        static glList: GL[] = [];
-
-        /**
-         * 获取 GL 实例
-         * @param canvas 画布
-         * @param contextAttributes 
-         */
-        static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
-        {
-            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-            // var contextIds = ["webgl"];
-            var gl: GL = <any>null;
-            for (var i = 0; i < contextIds.length; ++i)
-            {
-                try
-                {
-                    gl = <any>canvas.getContext(contextIds[i], contextAttributes);
-                    gl.contextId = contextIds[i];
-                    gl.contextAttributes = contextAttributes;
-                    break;
-                } catch (e) { }
-            }
-            if (!gl)
-                throw "无法初始化WEBGL";
-            //
-            new GLCache(gl);
-            new GLExtension(gl);
-            new GLCapabilities(gl);
-            new WebGLRenderer(gl);
-            //
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            gl.clearDepth(1.0);                 // Clear everything
-            gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-            gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-            this.glList.push(gl);
-            return gl;
-        }
     }
 }

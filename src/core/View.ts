@@ -1,6 +1,6 @@
 interface HTMLCanvasElement
 {
-    gl: feng3d.GL;
+    gl: feng3d.WebGLRenderer;
 }
 
 namespace feng3d
@@ -55,7 +55,7 @@ namespace feng3d
         get gl()
         {
             if (!this.canvas.gl)
-                this.canvas.gl = GL.getGL(this.canvas, this._contextAttributes);
+                this.canvas.gl = new WebGLRenderer(this.canvas, this._contextAttributes);
             return this.canvas.gl;
         }
 
@@ -187,13 +187,15 @@ namespace feng3d
             this.scene.mouseRay3D = this.mouseRay3D;
             this.scene.camera = this.camera;
 
+            const gl = this.gl.gl;
+
             // 默认渲染
-            this.gl.colorMask(true, true, true, true);
-            this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
-            this.gl.clearStencil(0);
-            this.gl.clearDepth(1);
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
-            this.gl.enable(this.gl.DEPTH_TEST);
+            gl.colorMask(true, true, true, true);
+            gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
+            gl.clearStencil(0);
+            gl.clearDepth(1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST);
 
             // 鼠标拾取渲染
             this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);

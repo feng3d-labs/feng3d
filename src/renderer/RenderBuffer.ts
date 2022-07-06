@@ -56,7 +56,7 @@ namespace feng3d
          */
         static clear(renderBuffer: RenderBuffer)
         {
-            GL.glList.forEach(gl =>
+            WebGLRenderer.glList.forEach(gl =>
             {
                 var buffer = gl.cache.renderBuffers.get(renderBuffer);
                 if (buffer)

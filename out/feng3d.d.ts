@@ -9392,12 +9392,6 @@ declare namespace feng3d {
          */
         extensions: GLExtension;
         /**
-         * 渲染
-         *
-         * @param renderAtomic 渲染数据
-         */
-        render(renderAtomic: RenderAtomic): void;
-        /**
          * WEBGL 支持能力
          */
         capabilities: GLCapabilities;
@@ -9405,15 +9399,6 @@ declare namespace feng3d {
          * 缓存
          */
         cache: GLCache;
-    }
-    class GL {
-        static glList: GL[];
-        /**
-         * 获取 GL 实例
-         * @param canvas 画布
-         * @param contextAttributes
-         */
-        static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): GL;
     }
 }
 declare namespace feng3d {
@@ -10315,12 +10300,51 @@ declare namespace feng3d {
      * 所有渲染都由该渲染器执行
      */
     class WebGLRenderer {
+        static glList: GL[];
+        get gl(): GL;
+        private _gl;
+        private preActiveAttributes;
+        /**
+         * 获取 GL 实例
+         * @param canvas 画布
+         * @param contextAttributes
+         */
+        constructor(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes);
+        render(renderAtomic1: RenderAtomic): void;
+        checkRenderData(renderAtomic: RenderAtomic): {
+            shader: Shader;
+            attributes: {
+                [name: string]: Attribute;
+            };
+            uniforms: {
+                [name: string]: Uniforms;
+            };
+            renderParams: RenderParams;
+            indexBuffer: Index;
+            instanceCount: number;
+        };
+        activeShaderParams(shaderParams: RenderParams): void;
+        /**
+         * 激活属性
+         */
+        activeAttributes(renderAtomic: RenderAtomicData, attributeInfos: {
+            [name: string]: AttributeInfo;
+        }): void;
+        /**
+         * 激活常量
+         */
+        activeUniforms(renderAtomic: RenderAtomicData, uniformInfos: {
+            [name: string]: UniformInfo;
+        }): void;
+        /**
+         * 设置环境Uniform数据
+         */
+        setContext3DUniform(activeInfo: UniformInfo, data: any): void;
         /**
          * 绘制
          * @param renderAtomic  渲染原子
          */
-        readonly draw: (renderAtomic: RenderAtomic) => void;
-        constructor(gl: GL);
+        draw(renderAtomic: RenderAtomicData, renderMode: number): void;
     }
 }
 declare namespace feng3d {
@@ -12231,7 +12255,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene: Scene, camera: Camera): void;
+        draw(gl: WebGLRenderer, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -12262,7 +12286,7 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene: Scene, camera: Camera): void;
+        draw(gl: WebGLRenderer, scene: Scene, camera: Camera): void;
         private drawForSpotLight;
         private drawForPointLight;
         private drawForDirectionalLight;
@@ -12286,7 +12310,7 @@ declare namespace feng3d {
     class OutlineRenderer {
         renderAtomic: RenderAtomic;
         init(): void;
-        draw(gl: GL, scene: Scene, camera: Camera): void;
+        draw(gl: WebGLRenderer, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -12300,11 +12324,11 @@ declare namespace feng3d {
         /**
          * 渲染
          */
-        draw(gl: GL, scene: Scene, camera: Camera): void;
+        draw(renderer: WebGLRenderer, scene: Scene, camera: Camera): void;
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor?: Color4): void;
+        drawGameObject(renderer: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor?: Color4): void;
     }
     interface RenderAtomic {
         /**
@@ -12499,18 +12523,18 @@ declare namespace feng3d {
         init(): void;
         /**
          * 绘制场景中天空盒
-         * @param gl
+         * @param renderer
          * @param scene 场景
          * @param camera 摄像机
          */
-        draw(gl: GL, scene: Scene, camera: Camera): void;
+        draw(renderer: WebGLRenderer, scene: Scene, camera: Camera): void;
         /**
          * 绘制天空盒
-         * @param gl
+         * @param renderer
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera): void;
+        drawSkyBox(renderer: WebGLRenderer, skybox: SkyBox, scene: Scene, camera: Camera): void;
     }
 }
 declare namespace feng3d {
@@ -13339,7 +13363,7 @@ declare namespace feng3d {
     }
 }
 interface HTMLCanvasElement {
-    gl: feng3d.GL;
+    gl: feng3d.WebGLRenderer;
 }
 declare namespace feng3d {
     /**
@@ -13362,7 +13386,7 @@ declare namespace feng3d {
          * 根结点
          */
         get root(): GameObject;
-        get gl(): GL;
+        get gl(): WebGLRenderer;
         /**
          * 鼠标在3D视图中的位置
          */

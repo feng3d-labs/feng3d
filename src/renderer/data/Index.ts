@@ -90,7 +90,7 @@ namespace feng3d
          */
         static clear(index: Index)
         {
-            GL.glList.forEach(gl =>
+            WebGLRenderer.glList.forEach(gl =>
             {
                 var buffer = gl.cache.indices.get(index);
                 if (buffer)

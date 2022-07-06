@@ -172,7 +172,7 @@ namespace feng3d
          */
         static clear(data: Texture)
         {
-            GL.glList.forEach(gl =>
+            WebGLRenderer.glList.forEach(gl =>
             {
                 var tex = gl.cache.textures.get(data);
                 if (tex)

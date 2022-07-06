@@ -139,7 +139,7 @@ namespace feng3d
          */
         static clear(attribute: Attribute)
         {
-            GL.glList.forEach(gl =>
+            WebGLRenderer.glList.forEach(gl =>
             {
                 var buffer = gl.cache.attributes.get(attribute);
                 if (buffer)
