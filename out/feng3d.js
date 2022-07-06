@@ -14209,7 +14209,13 @@ var feng3d;
             // 没有节点、只有一个或者两个节点不构成三角形时直接返回
             if (!outerNode || outerNode.next === outerNode.prev)
                 return triangles;
-            var minX, minY, maxX, maxY, x, y, invSize;
+            var minX;
+            var minY;
+            var maxX;
+            var maxY;
+            var x;
+            var y;
+            var invSize;
             // 消除孔洞
             if (hasHoles)
                 outerNode = eliminateHoles(data, holeIndices, outerNode, dim);
@@ -14231,7 +14237,7 @@ var feng3d;
                     if (y > maxY)
                         maxY = y;
                 }
-                // minX, minY and invSize are later used to transform coords into integers for z-order calculation
+                // minX, minY and invSize are later used to node3d coords into integers for z-order calculation
                 // 计算尺寸的倒数，用于后面运算
                 invSize = Math.max(maxX - minX, maxY - minY);
                 invSize = invSize !== 0 ? 1 / invSize : 0;
@@ -14254,7 +14260,8 @@ var feng3d;
      * @param clockwise 是否顺时针方向
      */
     function linkedList(data, start, end, dim, clockwise) {
-        var i, last;
+        var i;
+        var last;
         // 按照指定时钟方向建立链表
         if (clockwise === (signedArea(data, start, end, dim) > 0)) {
             for (i = start; i < end; i += dim)
@@ -14282,7 +14289,8 @@ var feng3d;
             return start;
         if (!end)
             end = start;
-        var p = start, again;
+        var p = start;
+        var again;
         do {
             again = false;
             // 判断重复节点与共线节点
@@ -14319,7 +14327,9 @@ var feng3d;
         // 使用z-order连接多边形结点
         if (!pass && invSize)
             indexCurve(ear, minX, minY, invSize);
-        var stop = ear, prev, next;
+        var stop = ear;
+        var prev;
+        var next;
         // iterate through ears, slicing them one by one
         while (ear.prev !== ear.next) {
             prev = ear.prev;
@@ -14357,54 +14367,63 @@ var feng3d;
     }
     // check whether a polygon node forms a valid ear with adjacent nodes
     function isEar(ear) {
-        var a = ear.prev, b = ear, c = ear.next;
+        var a = ear.prev;
+        var b = ear;
+        var c = ear.next;
         if (area(a, b, c) >= 0)
             return false; // reflex, can't be an ear
         // now make sure we don't have other points inside the potential ear
         var p = ear.next.next;
         while (p !== ear.prev) {
-            if (pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                area(p.prev, p, p.next) >= 0)
+            if (pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y)
+                && area(p.prev, p, p.next) >= 0)
                 return false;
             p = p.next;
         }
         return true;
     }
     function isEarHashed(ear, minX, minY, invSize) {
-        var a = ear.prev, b = ear, c = ear.next;
+        var a = ear.prev;
+        var b = ear;
+        var c = ear.next;
         if (area(a, b, c) >= 0)
             return false; // reflex, can't be an ear
         // triangle bbox; min & max are calculated like this for speed
-        var minTX = a.x < b.x ? (a.x < c.x ? a.x : c.x) : (b.x < c.x ? b.x : c.x), minTY = a.y < b.y ? (a.y < c.y ? a.y : c.y) : (b.y < c.y ? b.y : c.y), maxTX = a.x > b.x ? (a.x > c.x ? a.x : c.x) : (b.x > c.x ? b.x : c.x), maxTY = a.y > b.y ? (a.y > c.y ? a.y : c.y) : (b.y > c.y ? b.y : c.y);
+        var minTX = a.x < b.x ? (a.x < c.x ? a.x : c.x) : (b.x < c.x ? b.x : c.x);
+        var minTY = a.y < b.y ? (a.y < c.y ? a.y : c.y) : (b.y < c.y ? b.y : c.y);
+        var maxTX = a.x > b.x ? (a.x > c.x ? a.x : c.x) : (b.x > c.x ? b.x : c.x);
+        var maxTY = a.y > b.y ? (a.y > c.y ? a.y : c.y) : (b.y > c.y ? b.y : c.y);
         // z-order range for the current triangle bbox;
-        var minZ = zOrder(minTX, minTY, minX, minY, invSize), maxZ = zOrder(maxTX, maxTY, minX, minY, invSize);
-        var p = ear.prevZ, n = ear.nextZ;
+        var minZ = zOrder(minTX, minTY, minX, minY, invSize);
+        var maxZ = zOrder(maxTX, maxTY, minX, minY, invSize);
+        var p = ear.prevZ;
+        var n = ear.nextZ;
         // look for points inside the triangle in both directions
         while (p && p.z >= minZ && n && n.z <= maxZ) {
-            if (p !== ear.prev && p !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                area(p.prev, p, p.next) >= 0)
+            if (p !== ear.prev && p !== ear.next
+                && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y)
+                && area(p.prev, p, p.next) >= 0)
                 return false;
             p = p.prevZ;
-            if (n !== ear.prev && n !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-                area(n.prev, n, n.next) >= 0)
+            if (n !== ear.prev && n !== ear.next
+                && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y)
+                && area(n.prev, n, n.next) >= 0)
                 return false;
             n = n.nextZ;
         }
         // look for remaining points in decreasing z-order
         while (p && p.z >= minZ) {
-            if (p !== ear.prev && p !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                area(p.prev, p, p.next) >= 0)
+            if (p !== ear.prev && p !== ear.next
+                && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y)
+                && area(p.prev, p, p.next) >= 0)
                 return false;
             p = p.prevZ;
         }
         // look for remaining points in increasing z-order
         while (n && n.z <= maxZ) {
-            if (n !== ear.prev && n !== ear.next &&
-                pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-                area(n.prev, n, n.next) >= 0)
+            if (n !== ear.prev && n !== ear.next
+                && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y)
+                && area(n.prev, n, n.next) >= 0)
                 return false;
             n = n.nextZ;
         }
@@ -14414,7 +14433,8 @@ var feng3d;
     function cureLocalIntersections(start, triangles, dim) {
         var p = start;
         do {
-            var a = p.prev, b = p.next.next;
+            var a = p.prev;
+            var b = p.next.next;
             if (!equals(a, b) && intersects(a, p, p.next, b) && locallyInside(a, b) && locallyInside(b, a)) {
                 triangles.push(a.i / dim);
                 triangles.push(p.i / dim);
@@ -14465,7 +14485,11 @@ var feng3d;
     function eliminateHoles(data, holeIndices, outerNode, dim) {
         // 孔洞链表数组
         var queue = [];
-        var i, len, start, end, list;
+        var i;
+        var len;
+        var start;
+        var end;
+        var list;
         // 遍历构建孔洞链表数组
         for (i = 0, len = holeIndices.length; i < len; i++) {
             // 获取当前孔洞起始与结束索引
@@ -14523,12 +14547,13 @@ var feng3d;
         var p = outerNode;
         var hx = hole.x;
         var hy = hole.y;
-        var qx = -Infinity, m;
+        var qx = -Infinity;
+        var m;
         // find a segment intersected by a ray from the hole's leftmost point to the left;
         // segment's endpoint with lesser x will be potential connection point
         do {
             if (hy <= p.y && hy >= p.next.y && p.next.y !== p.y) {
-                var x = p.x + (hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y);
+                var x = p.x + ((hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y));
                 if (x <= hx && x > qx) {
                     qx = x;
                     if (x === hx) {
@@ -14549,12 +14574,15 @@ var feng3d;
         // look for points inside the triangle of hole point, segment intersection and endpoint;
         // if there are no points found, we have a valid connection;
         // otherwise choose the point of the minimum angle with the ray as connection point
-        var stop = m, mx = m.x, my = m.y;
-        var tanMin = Infinity, tan;
+        var stop = m;
+        var mx = m.x;
+        var my = m.y;
+        var tanMin = Infinity;
+        var tan;
         p = m;
         do {
-            if (hx >= p.x && p.x >= mx && hx !== p.x &&
-                pointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y)) {
+            if (hx >= p.x && p.x >= mx && hx !== p.x
+                && pointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y)) {
                 tan = Math.abs(hy - p.y) / (hx - p.x); // tangential
                 if (locallyInside(p, hole) && (tan < tanMin || (tan === tanMin && (p.x > m.x || (p.x === m.x && sectorContainsSector(m, p)))))) {
                     m = p;
@@ -14591,7 +14619,7 @@ var feng3d;
     function indexCurve(start, minX, minY, invSize) {
         var p = start;
         do {
-            if (p.z === null)
+            if (p.z === null || p.z === undefined)
                 p.z = zOrder(p.x, p.y, minX, minY, invSize);
             p.prevZ = p.prev;
             p.nextZ = p.next;
@@ -14612,7 +14640,15 @@ var feng3d;
      * @param list 链表
      */
     function sortLinked(list) {
-        var i, p, q, e, tail, numMerges, pSize, qSize, inSize = 1;
+        var i;
+        var p;
+        var q;
+        var e;
+        var tail;
+        var numMerges;
+        var pSize;
+        var qSize;
+        var inSize = 1;
         do {
             p = list;
             list = null;
@@ -14684,7 +14720,7 @@ var feng3d;
         y = (y | (y << 4)) & 0x0F0F0F0F;
         y = (y | (y << 2)) & 0x33333333;
         y = (y | (y << 1)) & 0x55555555;
-        // 
+        //
         return x | (y << 1);
     }
     /**
@@ -14695,7 +14731,8 @@ var feng3d;
      * @param start 查找起始节点
      */
     function getLeftmost(start) {
-        var p = start, leftmost = start;
+        var p = start;
+        var leftmost = start;
         do {
             if (p.x < leftmost.x || (p.x === leftmost.x && p.y < leftmost.y))
                 leftmost = p;
@@ -14718,9 +14755,9 @@ var feng3d;
      * @param py 被检查点的Y轴坐标
      */
     function pointInTriangle(ax, ay, bx, by, cx, cy, px, py) {
-        return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
-            (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
-            (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
+        return ((cx - px) * (ay - py)) - ((ax - px) * (cy - py)) >= 0
+            && ((ax - px) * (by - py)) - ((bx - px) * (ay - py)) >= 0
+            && ((bx - px) * (cy - py)) - ((cx - px) * (by - py)) >= 0;
     }
     /**
      * check if a diagonal between two polygon nodes is valid (lies in polygon interior)
@@ -14731,10 +14768,12 @@ var feng3d;
      * @param b 多边形顶点b
      */
     function isValidDiagonal(a, b) {
-        return a.next.i !== b.i && a.prev.i !== b.i && !intersectsPolygon(a, b) && // dones't intersect other edges
-            (locallyInside(a, b) && locallyInside(b, a) && middleInside(a, b) && // locally visible
-                (area(a.prev, a, b.prev) || area(a, b.prev, b)) || // does not create opposite-facing sectors
-                equals(a, b) && area(a.prev, a, a.next) > 0 && area(b.prev, b, b.next) > 0); // special zero-length case
+        return a.next.i !== b.i && a.prev.i !== b.i && !intersectsPolygon(a, b) // dones't intersect other edges
+            && (locallyInside(a, b) && locallyInside(b, a) && middleInside(a, b) // locally visible
+                // eslint-disable-next-line no-mixed-operators
+                && (area(a.prev, a, b.prev) || area(a, b.prev, b)) // does not create opposite-facing sectors
+                // eslint-disable-next-line no-mixed-operators
+                || equals(a, b) && area(a.prev, a, a.next) > 0 && area(b.prev, b, b.next) > 0); // special zero-length case
     }
     /**
      * signed area of a triangle
@@ -14746,7 +14785,7 @@ var feng3d;
      * @param r 三角形第三个点
      */
     function area(p, q, r) {
-        return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+        return ((q.y - p.y) * (r.x - q.x)) - ((q.x - p.x) * (r.y - q.y));
     }
     /**
      * check if two points are equal
@@ -14820,8 +14859,8 @@ var feng3d;
         var p = a;
         do {
             // 排除与对角线ab连接的边进行相交测试
-            if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i &&
-                intersects(p, p.next, a, b))
+            if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i
+                && intersects(p, p.next, a, b))
                 return true;
             p = p.next;
         } while (p !== a);
@@ -14840,9 +14879,9 @@ var feng3d;
      * @todo locallyOutside?
      */
     function locallyInside(a, b) {
-        return area(a.prev, a, a.next) < 0 ? // 判断a为多边形凸点或者凹点
-            area(a, b, a.next) >= 0 && area(a, a.prev, b) >= 0 : // 判断a为凸点情况
-            area(a, b, a.prev) < 0 || area(a, a.next, b) < 0; // 判断a为凹点情况
+        return area(a.prev, a, a.next) < 0 // 判断a为多边形凸点或者凹点
+            ? area(a, b, a.next) >= 0 && area(a, a.prev, b) >= 0 // 判断a为凸点情况
+            : area(a, b, a.prev) < 0 || area(a, a.next, b) < 0; // 判断a为凹点情况
     }
     /**
      * check if the middle point of a polygon diagonal is inside the polygon
@@ -14853,13 +14892,16 @@ var feng3d;
      * @param b 第二个节点
      */
     function middleInside(a, b) {
-        var p = a, inside = false;
-        var px = (a.x + b.x) / 2, py = (a.y + b.y) / 2;
+        var p = a;
+        var inside = false;
+        var px = (a.x + b.x) / 2;
+        var py = (a.y + b.y) / 2;
         do {
             // 以该点为起点作一条朝向正X轴方向的射线，计算与多边形的边相交的次数，奇数次表示在多边形内部，否则在外部。
-            if (((p.y > py) !== (p.next.y > py)) && p.next.y !== p.y &&
-                (px < (p.next.x - p.x) * (py - p.y) / (p.next.y - p.y) + p.x))
+            if (((p.y > py) !== (p.next.y > py)) && p.next.y !== p.y
+                && (px < ((p.next.x - p.x) * (py - p.y) / (p.next.y - p.y)) + p.x)) {
                 inside = !inside;
+            }
             p = p.next;
         } while (p !== a);
         return inside;
@@ -14875,7 +14917,10 @@ var feng3d;
      * @param b 内环节点
      */
     function splitPolygon(a, b) {
-        var a2 = new Node(a.i, a.x, a.y), b2 = new Node(b.i, b.x, b.y), an = a.next, bp = b.prev;
+        var a2 = new Node(a.i, a.x, a.y);
+        var b2 = new Node(b.i, b.x, b.y);
+        var an = a.next;
+        var bp = b.prev;
         a.next = b;
         b.prev = a;
         a2.next = an;
@@ -14988,7 +15033,7 @@ var feng3d;
             var n = contour.length;
             var a = 0.0;
             for (var p = n - 1, q = 0; q < n; p = q++) {
-                a += contour[p].x * contour[q].y - contour[q].x * contour[p].y;
+                a += (contour[p].x * contour[q].y) - (contour[q].x * contour[p].y);
             }
             return a * 0.5;
         };
@@ -15031,7 +15076,6 @@ var feng3d;
         return ShapeUtils;
     }());
     feng3d.ShapeUtils = ShapeUtils;
-    ;
     function removeDupEndPts(points) {
         var l = points.length;
         if (l > 2 && points[l - 1].equals(points[0])) {
@@ -15059,44 +15103,44 @@ var feng3d;
             var v1 = (p3 - p1) * 0.5;
             var t2 = t * t;
             var t3 = t * t2;
-            return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
+            return (((2 * p1) - (2 * p2) + v0 + v1) * t3) + (((-3 * p1) + (3 * p2) - (2 * v0) - v1) * t2) + (v0 * t) + p1;
         };
         Interpolations.QuadraticBezier = function (t, p0, p1, p2) {
-            return QuadraticBezierP0(t, p0) + QuadraticBezierP1(t, p1) +
-                QuadraticBezierP2(t, p2);
+            return QuadraticBezierP0(t, p0) + QuadraticBezierP1(t, p1)
+                + QuadraticBezierP2(t, p2);
         };
         Interpolations.CubicBezier = function (t, p0, p1, p2, p3) {
-            return CubicBezierP0(t, p0) + CubicBezierP1(t, p1) + CubicBezierP2(t, p2) +
-                CubicBezierP3(t, p3);
+            return CubicBezierP0(t, p0) + CubicBezierP1(t, p1) + CubicBezierP2(t, p2)
+                + CubicBezierP3(t, p3);
         };
         return Interpolations;
     }());
     feng3d.Interpolations = Interpolations;
+    function QuadraticBezierP0(t, p) {
+        var k = 1 - t;
+        return k * k * p;
+    }
+    function QuadraticBezierP1(t, p) {
+        return 2 * (1 - t) * t * p;
+    }
+    function QuadraticBezierP2(t, p) {
+        return t * t * p;
+    }
+    function CubicBezierP0(t, p) {
+        var k = 1 - t;
+        return k * k * k * p;
+    }
+    function CubicBezierP1(t, p) {
+        var k = 1 - t;
+        return 3 * k * k * t * p;
+    }
+    function CubicBezierP2(t, p) {
+        return 3 * (1 - t) * t * t * p;
+    }
+    function CubicBezierP3(t, p) {
+        return t * t * t * p;
+    }
 })(feng3d || (feng3d = {}));
-function QuadraticBezierP0(t, p) {
-    var k = 1 - t;
-    return k * k * p;
-}
-function QuadraticBezierP1(t, p) {
-    return 2 * (1 - t) * t * p;
-}
-function QuadraticBezierP2(t, p) {
-    return t * t * p;
-}
-function CubicBezierP0(t, p) {
-    var k = 1 - t;
-    return k * k * k * p;
-}
-function CubicBezierP1(t, p) {
-    var k = 1 - t;
-    return 3 * k * k * t * p;
-}
-function CubicBezierP2(t, p) {
-    return 3 * (1 - t) * t * t * p;
-}
-function CubicBezierP3(t, p) {
-    return t * t * t * p;
-}
 var feng3d;
 (function (feng3d) {
     /**
@@ -15120,8 +15164,8 @@ var feng3d;
          * - t [0 .. 1]
          * Returns a vector for point t of the curve where t is between 0 and 1
          */
-        Curve.prototype.getPoint = function (t, optionalTarget) {
-            console.warn('THREE.Curve: .getPoint() not implemented.');
+        Curve.prototype.getPoint = function (_t, _optionalTarget) {
+            console.warn('Curve: .getPoint() not implemented.');
             return null;
         };
         /**
@@ -15176,7 +15220,8 @@ var feng3d;
             }
             this.needsUpdate = false;
             var cache = [];
-            var current, last = this.getPoint(0);
+            var current;
+            var last = this.getPoint(0);
             var sum = 0;
             cache.push(0);
             for (var p = 1; p <= divisions; p++) {
@@ -15210,9 +15255,11 @@ var feng3d;
                 targetArcLength = u * arcLengths[il - 1];
             }
             // binary search for the index with largest value smaller than target u distance
-            var low = 0, high = il - 1, comparison;
+            var low = 0;
+            var high = il - 1;
+            var comparison;
             while (low <= high) {
-                i = Math.floor(low + (high - low) / 2); // less likely to overflow, though probably not issue here, JS doesn't really have integers, all numbers are floats
+                i = Math.floor(low + ((high - low) / 2)); // less likely to overflow, though probably not issue here, JS doesn't really have integers, all numbers are floats
                 comparison = arcLengths[i] - targetArcLength;
                 if (comparison < 0) {
                     low = i + 1;
@@ -15381,15 +15428,15 @@ var feng3d;
                     var diff = curveLengths[i] - d;
                     var curve = this.curves[i];
                     var segmentLength = curve.getLength();
-                    var u = segmentLength === 0 ? 0 : 1 - diff / segmentLength;
+                    var u = segmentLength === 0 ? 0 : 1 - (diff / segmentLength);
                     return curve.getPointAt(u);
                 }
                 i++;
             }
-            return null; // loop where sum != 0, sum > d , sum+1 <d
+            return null; // loop where sum !== 0, sum > d , sum+1 <d
         };
-        // We cannot use the default THREE.Curve getPoint() with getLength() because in
-        // THREE.Curve, getLength() depends on getPoint() but in THREE.CurvePath
+        // We cannot use the default Curve getPoint() with getLength() because in
+        // Curve, getLength() depends on getPoint() but in CurvePath
         // getPoint() depends on getLength
         CurvePath.prototype.getLength = function () {
             var lens = this.getCurveLengths();
@@ -15463,11 +15510,11 @@ var feng3d;
             var _this = _super.call(this) || this;
             _this.currentPoint = new feng3d.Vector2();
             if (points) {
-                _this.setFromPoints(points);
+                _this.fromPoints(points);
             }
             return _this;
         }
-        Path2.prototype.setFromPoints = function (points) {
+        Path2.prototype.fromPoints = function (points) {
             this.moveTo(points[0].x, points[0].y);
             for (var i = 1, l = points.length; i < l; i++) {
                 this.lineTo(points[i].x, points[i].y);
@@ -15588,6 +15635,60 @@ var feng3d;
                 holes: this.getPointsHoles(divisions)
             };
         };
+        Shape2.prototype.extractArray = function (divisions) {
+            var result = this.extractPoints(divisions);
+            //
+            var points = result.shape.reduce(function (pv, cv) {
+                pv.push(cv.x, cv.y);
+                return pv;
+            }, []);
+            var holes = result.holes.reduce(function (pv, cv) {
+                var arr = cv.reduce(function (pv1, cv1) {
+                    pv1.push(cv1.x, cv1.y);
+                    return pv1;
+                }, []);
+                pv.push(arr);
+                return pv;
+            }, []);
+            return { points: points, holes: holes };
+        };
+        Shape2.prototype.triangulate = function (geometry) {
+            if (geometry === void 0) { geometry = { points: [], indices: [] }; }
+            var result = this.extractArray();
+            //
+            Shape2.triangulate(result.points, result.holes, geometry);
+            return geometry;
+        };
+        Shape2.triangulate = function (points, holes, geometry) {
+            if (holes === void 0) { holes = []; }
+            if (geometry === void 0) { geometry = { points: [], indices: [] }; }
+            var verts = geometry.points;
+            var indices = geometry.indices;
+            if (points.length >= 6) {
+                var holeArray = [];
+                // Process holes..
+                for (var i = 0; i < holes.length; i++) {
+                    var hole = holes[i];
+                    holeArray.push(points.length / 2);
+                    points = points.concat(hole);
+                }
+                // sort color
+                var triangles = feng3d.Earcut.triangulate(points, holeArray, 2);
+                if (!triangles) {
+                    return;
+                }
+                var vertPos = verts.length / 2;
+                for (var i = 0; i < triangles.length; i += 3) {
+                    indices.push(triangles[i] + vertPos);
+                    indices.push(triangles[i + 1] + vertPos);
+                    indices.push(triangles[i + 2] + vertPos);
+                }
+                for (var i = 0; i < points.length; i++) {
+                    verts.push(points[i]);
+                }
+            }
+            return geometry;
+        };
         return Shape2;
     }(feng3d.Path2));
     feng3d.Shape2 = Shape2;
@@ -15623,9 +15724,17 @@ var feng3d;
             this.currentPath.splineThru(pts);
             return this;
         };
+        ShapePath2.prototype.closePath = function () {
+            this.currentPath.closePath();
+        };
         ShapePath2.prototype.toShapes = function (isCCW, noHoles) {
             if (isCCW === void 0) { isCCW = false; }
             if (noHoles === void 0) { noHoles = false; }
+            /**
+             * 转换没有孔的路径为形状
+             *
+             * @param inSubpaths
+             */
             function toShapesNoHoles(inSubpaths) {
                 var shapes = [];
                 for (var i = 0, l = inSubpaths.length; i < l; i++) {
@@ -15636,6 +15745,11 @@ var feng3d;
                 }
                 return shapes;
             }
+            /**
+             * 判断点是否在多边形内
+             * @param inPt
+             * @param inPolygon
+             */
             function isPointInsidePolygon(inPt, inPolygon) {
                 var polyLen = inPolygon.length;
                 // inPt on polygon contour => immediate success    or
@@ -15661,10 +15775,10 @@ var feng3d;
                         if (inPt.y === edgeLowPt.y) {
                             if (inPt.x === edgeLowPt.x)
                                 return true; // inPt is on contour ?
-                            // continue;				// no intersection or edgeLowPt => doesn't count !!!
+                            // continue;                // no intersection or edgeLowPt => doesn't count !!!
                         }
                         else {
-                            var perpEdge = edgeDy * (inPt.x - edgeLowPt.x) - edgeDx * (inPt.y - edgeLowPt.y);
+                            var perpEdge = (edgeDy * (inPt.x - edgeLowPt.x)) - (edgeDx * (inPt.y - edgeLowPt.y));
                             if (perpEdge === 0)
                                 return true; // inPt is on contour ?
                             if (perpEdge < 0)
@@ -15677,8 +15791,8 @@ var feng3d;
                         if (inPt.y !== edgeLowPt.y)
                             continue; // parallel
                         // edge lies on the same horizontal line as inPt
-                        if (((edgeHighPt.x <= inPt.x) && (inPt.x <= edgeLowPt.x)) ||
-                            ((edgeLowPt.x <= inPt.x) && (inPt.x <= edgeHighPt.x)))
+                        if (((edgeHighPt.x <= inPt.x) && (inPt.x <= edgeLowPt.x))
+                            || ((edgeLowPt.x <= inPt.x) && (inPt.x <= edgeHighPt.x)))
                             return true; // inPt: Point on contour !
                         // continue;
                     }
@@ -15688,9 +15802,12 @@ var feng3d;
             var subPaths = this.subPaths;
             if (subPaths.length === 0)
                 return [];
+            // 处理无孔形状
             if (noHoles === true)
                 return toShapesNoHoles(subPaths);
-            var solid, tmpPath, tmpShape;
+            var solid;
+            var tmpPath;
+            var tmpShape;
             var shapes = [];
             if (subPaths.length === 1) {
                 tmpPath = subPaths[0];
@@ -15699,8 +15816,12 @@ var feng3d;
                 shapes.push(tmpShape);
                 return shapes;
             }
+            // 第一个是否为空
             var holesFirst = !feng3d.ShapeUtils.isClockWise(subPaths[0].getPoints());
-            holesFirst = isCCW ? !holesFirst : holesFirst;
+            if (isCCW) // 判断是否为孔
+             {
+                holesFirst = !holesFirst;
+            }
             // console.log("Holes first", holesFirst);
             var betterShapeHoles = [];
             var newShapes = [];
@@ -15713,7 +15834,10 @@ var feng3d;
                 tmpPath = subPaths[i];
                 tmpPoints = tmpPath.getPoints();
                 solid = feng3d.ShapeUtils.isClockWise(tmpPoints);
-                solid = isCCW ? !solid : solid;
+                if (isCCW) // 判断是否为实线
+                 {
+                    solid = !solid;
+                }
                 if (solid) {
                     if ((!holesFirst) && (newShapes[mainIdx]))
                         mainIdx++;
@@ -15722,11 +15846,11 @@ var feng3d;
                     if (holesFirst)
                         mainIdx++;
                     newShapeHoles[mainIdx] = [];
-                    //console.log('cw', i);
+                    // console.log('cw', i);
                 }
                 else {
                     newShapeHoles[mainIdx].push({ h: tmpPath, p: tmpPoints[0] });
-                    //console.log('ccw', i);
+                    // console.log('ccw', i);
                 }
             }
             // only Holes? -> probably all Shapes with wrong orientation
@@ -15742,13 +15866,13 @@ var feng3d;
                     var sho = newShapeHoles[sIdx];
                     for (var hIdx = 0; hIdx < sho.length; hIdx++) {
                         var ho = sho[hIdx];
-                        var hole_unassigned = true;
+                        var holeUnassigned = true;
                         for (var s2Idx = 0; s2Idx < newShapes.length; s2Idx++) {
                             if (isPointInsidePolygon(ho.p, newShapes[s2Idx].p)) {
                                 if (sIdx !== s2Idx)
                                     toChange.push({ froms: sIdx, tos: s2Idx, hole: hIdx });
-                                if (hole_unassigned) {
-                                    hole_unassigned = false;
+                                if (holeUnassigned) {
+                                    holeUnassigned = false;
                                     betterShapeHoles[s2Idx].push(ho);
                                 }
                                 else {
@@ -15756,7 +15880,7 @@ var feng3d;
                                 }
                             }
                         }
-                        if (hole_unassigned) {
+                        if (holeUnassigned) {
                             betterShapeHoles[sIdx].push(ho);
                         }
                     }
@@ -15777,7 +15901,7 @@ var feng3d;
                     tmpShape.holes.push(tmpHoles[j].h);
                 }
             }
-            //console.log("shape", shapes);
+            // console.log("shape", shapes);
             return shapes;
         };
         return ShapePath2;
@@ -15788,37 +15912,108 @@ var feng3d;
 (function (feng3d) {
     var Font = /** @class */ (function () {
         function Font(data) {
+            this.isCCW = false;
+            this.charGeometryCache = {};
             this.data = data;
         }
-        Font.prototype.generateShapes = function (text, size) {
-            if (size === undefined)
+        Font.prototype.generateShapes = function (text, size, lineHeight, align) {
+            if (align === void 0) { align = 'left'; }
+            if (size === undefined) {
                 size = 100;
+            }
+            if (lineHeight === undefined) {
+                lineHeight = size * 1.25;
+            }
             var shapes = [];
-            var paths = createPaths(text, size, this.data);
+            var paths = createPaths(text, size, lineHeight, this.data, align);
             for (var p = 0, pl = paths.length; p < pl; p++) {
-                Array.prototype.push.apply(shapes, paths[p].toShapes());
+                var pathShapes = paths[p].toShapes(this.isCCW);
+                for (var i = 0, il = pathShapes.length; i < il; i++) {
+                    shapes.push(pathShapes[i]);
+                }
             }
             return shapes;
+        };
+        Font.prototype.generateCharGeometry = function (char, geometry) {
+            if (geometry === void 0) { geometry = { points: [], indices: [] }; }
+            if (this.charGeometryCache[char]) {
+                return this.charGeometryCache[char];
+            }
+            var _a = createPath(char, 1, 0, 0, this.data), path = _a.path, offsetX = _a.offsetX;
+            var shapes = path.toShapes(this.isCCW);
+            for (var i = 0, n = shapes.length; i < n; i++) {
+                shapes[i].triangulate(geometry);
+            }
+            this.charGeometryCache[char] = { geometry: geometry, width: offsetX };
+            return this.charGeometryCache[char];
+        };
+        Font.prototype.calculateGeometry = function (text, fontSize, lineHeight, align, textBaseline, tabCharWidth) {
+            if (align === void 0) { align = 'left'; }
+            if (textBaseline === void 0) { textBaseline = 'alphabetic'; }
+            if (tabCharWidth === void 0) { tabCharWidth = 128; }
+            if (lineHeight === undefined) {
+                lineHeight = fontSize * 1.25;
+            }
+            lineHeight = lineHeight / fontSize * this.data.unitsPerEm;
+            var textInfo = calculateTextInfo(this, text, tabCharWidth);
+            var _a = calculateTextStyle(textInfo, fontSize, lineHeight, align, textBaseline), vertices = _a.vertices, indices = _a.indices;
+            var _b = calculateNormalUV(vertices), normals = _b.normals, uvs = _b.uvs;
+            return { vertices: vertices, normals: normals, uvs: uvs, indices: indices };
         };
         return Font;
     }());
     feng3d.Font = Font;
-    function createPaths(text, size, data) {
-        var chars = Array.from ? Array.from(text) : String(text).split(''); // workaround for IE11, see #13988
-        var scale = size / data.resolution;
-        var line_height = (data.boundingBox.yMax - data.boundingBox.yMin + data.underlineThickness) * scale;
+    function createPaths(text, size, lineHeight, data, align) {
+        if (align === void 0) { align = 'left'; }
+        var scale = size / data.unitsPerEm;
         var paths = [];
-        var offsetX = 0, offsetY = 0;
-        for (var i = 0; i < chars.length; i++) {
-            var char = chars[i];
-            if (char === '\n') {
+        var offsetX = 0;
+        var offsetY = 0;
+        var lines = text.split('\n');
+        var lineWidths = [];
+        var maxLineWidth = 0;
+        for (var i = 0, ni = lines.length; i < ni; i++) {
+            var lineStr = lines[i];
+            if (i > 0) {
                 offsetX = 0;
-                offsetY -= line_height;
             }
-            else {
-                var ret = createPath(char, scale, offsetX, offsetY, data);
-                offsetX += ret.offsetX;
-                paths.push(ret.path);
+            var chars = Array.from ? Array.from(lineStr) : String(lineStr).split(''); // see #13988
+            for (var j = 0, nj = chars.length; j < nj; j++) {
+                var char = chars[j];
+                if (char.charCodeAt(0) === 9) {
+                    offsetX += 20;
+                }
+                else {
+                    var glyph = data.glyphs[char] || data.glyphs['?'];
+                    if (glyph) {
+                        offsetX += glyph.ha * scale;
+                    }
+                }
+            }
+            lineWidths[i] = offsetX;
+            maxLineWidth = Math.max(maxLineWidth, offsetX);
+        }
+        for (var i = 0, ni = lines.length; i < ni; i++) {
+            var lineStr = lines[i];
+            offsetX = 0;
+            offsetY = -lineHeight * i;
+            if (align === 'center') {
+                offsetX = (maxLineWidth - lineWidths[i]) / 2;
+            }
+            else if (align === 'right') {
+                offsetX = maxLineWidth - lineWidths[i];
+            }
+            var chars = Array.from ? Array.from(lineStr) : String(lineStr).split(''); // see #13988
+            for (var j = 0, nj = chars.length; j < nj; j++) {
+                var char = chars[j];
+                if (char.charCodeAt(0) === 9) {
+                    offsetX += 20;
+                }
+                else {
+                    var ret = createPath(char, scale, offsetX, offsetY, data);
+                    offsetX += ret.offsetX;
+                    paths.push(ret.path);
+                }
             }
         }
         return paths;
@@ -15826,46 +16021,176 @@ var feng3d;
     function createPath(char, scale, offsetX, offsetY, data) {
         var glyph = data.glyphs[char] || data.glyphs['?'];
         if (!glyph) {
-            console.error('THREE.Font: character "' + char + '" does not exists in font family ' + data.familyName + '.');
+            console.error("    Font: character \"" + char + "\" does not exists in font family " + data.familyName + ".");
             return;
         }
         var path = new feng3d.ShapePath2();
-        var x, y, cpx, cpy, cpx1, cpy1, cpx2, cpy2;
+        var x;
+        var y;
+        var cpx;
+        var cpy;
+        var cpx1;
+        var cpy1;
+        var cpx2;
+        var cpy2;
         if (glyph.o) {
             var outline = glyph._cachedOutline || (glyph._cachedOutline = glyph.o.split(' '));
             for (var i = 0, l = outline.length; i < l;) {
                 var action = outline[i++];
                 switch (action) {
                     case 'm': // moveTo
-                        x = outline[i++] * scale + offsetX;
-                        y = outline[i++] * scale + offsetY;
+                        x = (outline[i++] * scale) + offsetX;
+                        y = (outline[i++] * scale) + offsetY;
                         path.moveTo(x, y);
                         break;
                     case 'l': // lineTo
-                        x = outline[i++] * scale + offsetX;
-                        y = outline[i++] * scale + offsetY;
+                        x = (outline[i++] * scale) + offsetX;
+                        y = (outline[i++] * scale) + offsetY;
                         path.lineTo(x, y);
                         break;
                     case 'q': // quadraticCurveTo
-                        cpx = outline[i++] * scale + offsetX;
-                        cpy = outline[i++] * scale + offsetY;
-                        cpx1 = outline[i++] * scale + offsetX;
-                        cpy1 = outline[i++] * scale + offsetY;
+                        cpx = (outline[i++] * scale) + offsetX;
+                        cpy = (outline[i++] * scale) + offsetY;
+                        cpx1 = (outline[i++] * scale) + offsetX;
+                        cpy1 = (outline[i++] * scale) + offsetY;
                         path.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
                         break;
                     case 'b': // bezierCurveTo
-                        cpx = outline[i++] * scale + offsetX;
-                        cpy = outline[i++] * scale + offsetY;
-                        cpx1 = outline[i++] * scale + offsetX;
-                        cpy1 = outline[i++] * scale + offsetY;
-                        cpx2 = outline[i++] * scale + offsetX;
-                        cpy2 = outline[i++] * scale + offsetY;
+                        cpx = (outline[i++] * scale) + offsetX;
+                        cpy = (outline[i++] * scale) + offsetY;
+                        cpx1 = (outline[i++] * scale) + offsetX;
+                        cpy1 = (outline[i++] * scale) + offsetY;
+                        cpx2 = (outline[i++] * scale) + offsetX;
+                        cpy2 = (outline[i++] * scale) + offsetY;
                         path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
+                        break;
+                    case 'z':
+                        path.closePath();
+                        break;
+                    default:
+                        console.assert(action.trim() === '');
                         break;
                 }
             }
         }
         return { offsetX: glyph.ha * scale, path: path };
+    }
+    function calculateTextInfo(font, text, tabCharWidth) {
+        var textInfo = { text: text, font: font, width: 0, numVertices: 0, numIndices: 0, lines: [] };
+        //
+        var lines = text.split('\n');
+        for (var i = 0, ni = lines.length; i < ni; i++) {
+            textInfo.lines[i] = { text: lines[i], width: 0, numVertices: 0, numIndices: 0, chars: [] };
+            var lineItem = textInfo.lines[i];
+            if (i > 0) {
+                lineItem.width = 0;
+            }
+            var chars = Array.from ? Array.from(lineItem.text) : String(lineItem.text).split(''); // see #13988
+            for (var j = 0, nj = chars.length; j < nj; j++) {
+                var char = chars[j];
+                if (char === '\t') {
+                    lineItem.width += tabCharWidth;
+                }
+                else {
+                    var charVertices = font.generateCharGeometry(char);
+                    var charItem = lineItem.chars[j] = {
+                        text: char,
+                        width: charVertices.width,
+                        offsetX: lineItem.width,
+                        offsetVertices: textInfo.numVertices,
+                        offsetIndices: textInfo.numIndices,
+                        numVertices: charVertices.geometry.points.length,
+                        numIndices: charVertices.geometry.indices.length,
+                        geometry: charVertices.geometry,
+                    };
+                    lineItem.width += charItem.width;
+                    lineItem.numVertices += charItem.numVertices;
+                    lineItem.numIndices += charItem.numIndices;
+                    textInfo.numVertices += charItem.numVertices;
+                    textInfo.numIndices += charItem.numIndices;
+                }
+            }
+            textInfo.width = Math.max(textInfo.width, lineItem.width);
+        }
+        return textInfo;
+    }
+    function calculateTextStyle(textInfo, fontSize, lineHeight, align, textBaseline) {
+        var _a = textInfo.font.data, unitsPerEm = _a.unitsPerEm, ascender = _a.ascender, descender = _a.descender;
+        var scale = fontSize / unitsPerEm;
+        var vertices = new Float32Array(textInfo.numVertices / 2 * 3);
+        var indices = new Uint32Array(textInfo.numIndices);
+        var baselineOffsetY = 0;
+        if (textBaseline === 'top') {
+            baselineOffsetY = ascender;
+        }
+        else if (textBaseline === 'bottom') {
+            baselineOffsetY = descender;
+        }
+        else if (textBaseline === 'middle') {
+            baselineOffsetY = (ascender + descender) / 2;
+        }
+        else if (textBaseline === 'alphabetic') {
+            baselineOffsetY = 0;
+        }
+        //
+        var lines = textInfo.lines, maxLineWidth = textInfo.width;
+        for (var i = 0, ni = lines.length; i < ni; i++) {
+            var _b = lines[i], lineWidth = _b.width, chars = _b.chars;
+            var alignOffsetX = 0;
+            var offsetY = -lineHeight * i;
+            if (align === 'center') {
+                alignOffsetX = (maxLineWidth - lineWidth) / 2;
+            }
+            else if (align === 'right') {
+                alignOffsetX = maxLineWidth - lineWidth;
+            }
+            for (var j = 0, nj = chars.length; j < nj; j++) {
+                var charItem = chars[j];
+                if (!charItem) {
+                    continue;
+                }
+                var charOffsetX = charItem.offsetX, offsetVertices = charItem.offsetVertices, offsetIndices = charItem.offsetIndices, geometry = charItem.geometry;
+                updateCharGeometry({
+                    offsetX: alignOffsetX + charOffsetX, offsetY: offsetY - baselineOffsetY,
+                    scale: scale,
+                    targetVertices: vertices, targetIndices: indices,
+                    offsetVertices: offsetVertices, offsetIndices: offsetIndices,
+                    sourceVertices: geometry.points, sourceIndices: geometry.indices
+                });
+            }
+        }
+        return { vertices: vertices, indices: indices };
+        function updateCharGeometry(_a) {
+            var offsetX = _a.offsetX, offsetY = _a.offsetY, scale = _a.scale, targetVertices = _a.targetVertices, targetIndices = _a.targetIndices, offsetVertices = _a.offsetVertices, offsetIndices = _a.offsetIndices, sourceVertices = _a.sourceVertices, sourceIndices = _a.sourceIndices;
+            var offsetVertices3 = offsetVertices / 2 * 3;
+            var offsetVertices2 = 0;
+            for (var i = 0, n = sourceVertices.length / 2; i < n; i++) {
+                targetVertices[offsetVertices3++] = (sourceVertices[offsetVertices2++] + offsetX) * scale;
+                targetVertices[offsetVertices3++] = -(sourceVertices[offsetVertices2++] + offsetY) * scale;
+                targetVertices[offsetVertices3++] = 0;
+            }
+            var offsetVerticesIndex = offsetVertices / 2;
+            for (var i = 0, n = sourceIndices.length; i < n; i++) {
+                targetIndices[offsetIndices + i] = sourceIndices[i] + offsetVerticesIndex;
+            }
+        }
+    }
+    function calculateNormalUV(vertices) {
+        var normals = new Float32Array(vertices.length);
+        var uvs = new Float32Array(vertices.length / 3 * 2);
+        var verticesIndex = 0;
+        var normalsIndex = 0;
+        var uvsIndex = 0;
+        for (var i = 0, n = vertices.length / 3; i < n; i++) {
+            uvs[uvsIndex++] = vertices[verticesIndex++];
+            uvs[uvsIndex++] = vertices[verticesIndex++];
+            verticesIndex++;
+            //
+            normals[normalsIndex++] = 0;
+            normals[normalsIndex++] = 0;
+            normals[normalsIndex++] = 1;
+        }
+        return { normals: normals, uvs: uvs };
     }
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -15880,7 +16205,7 @@ var feng3d;
             _this.v2 = v2;
             return _this;
         }
-        LineCurve2.prototype.getResolution = function (divisions) {
+        LineCurve2.prototype.getResolution = function (_divisions) {
             return 1;
         };
         LineCurve2.prototype.getPoint = function (t, optionalTarget) {
@@ -15920,7 +16245,7 @@ var feng3d;
             _this.v2 = v2;
             return _this;
         }
-        LineCurve3.prototype.getResolution = function (divisions) {
+        LineCurve3.prototype.getResolution = function (_divisions) {
             return 1;
         };
         LineCurve3.prototype.getPoint = function (t, optionalTarget) {
@@ -16028,19 +16353,20 @@ var feng3d;
                     deltaAngle = deltaAngle - twoPi;
                 }
             }
-            var angle = this.aStartAngle + t * deltaAngle;
-            var x = this.aX + this.xRadius * Math.cos(angle);
-            var y = this.aY + this.yRadius * Math.sin(angle);
+            var angle = this.aStartAngle + (t * deltaAngle);
+            var x = this.aX + (this.xRadius * Math.cos(angle));
+            var y = this.aY + (this.yRadius * Math.sin(angle));
             if (this.aRotation !== 0) {
                 var cos = Math.cos(this.aRotation);
                 var sin = Math.sin(this.aRotation);
                 var tx = x - this.aX;
                 var ty = y - this.aY;
                 // Rotate the point about the center of the ellipse.
-                x = tx * cos - ty * sin + this.aX;
-                y = tx * sin + ty * cos + this.aY;
+                x = (tx * cos) - (ty * sin) + this.aX;
+                y = (tx * sin) + (ty * cos) + this.aY;
             }
-            return point.set(x, y);
+            point.set(x, y);
+            return point;
         };
         return EllipseCurve2;
     }(feng3d.Curve));
@@ -16103,7 +16429,8 @@ var feng3d;
                 intPoint = l - 2;
                 weight = 1;
             }
-            var p0, p3; // 4 points (p1 & p2 defined below)
+            var p0;
+            var p3; // 4 points (p1 & p2 defined below)
             if (this.closed || intPoint > 0) {
                 p0 = points[(intPoint - 1) % l];
             }
@@ -16177,16 +16504,16 @@ var feng3d;
         CubicPoly.prototype.init = function (x0, x1, t0, t1) {
             this.c0 = x0;
             this.c1 = t0;
-            this.c2 = -3 * x0 + 3 * x1 - 2 * t0 - t1;
-            this.c3 = 2 * x0 - 2 * x1 + t0 + t1;
+            this.c2 = (-3 * x0) + (3 * x1) - (2 * t0) - t1;
+            this.c3 = (2 * x0) - (2 * x1) + t0 + t1;
         };
         CubicPoly.prototype.initCatmullRom = function (x0, x1, x2, x3, tension) {
             this.init(x1, x2, tension * (x2 - x0), tension * (x3 - x1));
         };
         CubicPoly.prototype.initNonuniformCatmullRom = function (x0, x1, x2, x3, dt0, dt1, dt2) {
             // compute tangents when parameterized in [t1,t2]
-            var t1 = (x1 - x0) / dt0 - (x2 - x0) / (dt0 + dt1) + (x2 - x1) / dt1;
-            var t2 = (x2 - x1) / dt1 - (x3 - x1) / (dt1 + dt2) + (x3 - x2) / dt2;
+            var t1 = ((x1 - x0) / dt0) - ((x2 - x0) / (dt0 + dt1)) + ((x2 - x1) / dt1);
+            var t2 = ((x2 - x1) / dt1) - ((x3 - x1) / (dt1 + dt2)) + ((x3 - x2) / dt2);
             // rescale tangents for parametrization in [0,1]
             t1 *= dt1;
             t2 *= dt1;
@@ -16195,13 +16522,15 @@ var feng3d;
         CubicPoly.prototype.calc = function (t) {
             var t2 = t * t;
             var t3 = t2 * t;
-            return this.c0 + this.c1 * t + this.c2 * t2 + this.c3 * t3;
+            return this.c0 + (this.c1 * t) + (this.c2 * t2) + (this.c3 * t3);
         };
         return CubicPoly;
     }());
     //
     var tmp = new feng3d.Vector3();
-    var px = new CubicPoly(), py = new CubicPoly(), pz = new CubicPoly();
+    var px = new CubicPoly();
+    var py = new CubicPoly();
+    var pz = new CubicPoly();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16222,7 +16551,10 @@ var feng3d;
         CubicBezierCurve2.prototype.getPoint = function (t, optionalTarget) {
             if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector2(); }
             var point = optionalTarget;
-            var v0 = this.v0, v1 = this.v1, v2 = this.v2, v3 = this.v3;
+            var v0 = this.v0;
+            var v1 = this.v1;
+            var v2 = this.v2;
+            var v3 = this.v3;
             point.set(feng3d.Interpolations.CubicBezier(t, v0.x, v1.x, v2.x, v3.x), feng3d.Interpolations.CubicBezier(t, v0.y, v1.y, v2.y, v3.y));
             return point;
         };
@@ -16249,7 +16581,10 @@ var feng3d;
         CubicBezierCurve3.prototype.getPoint = function (t, optionalTarget) {
             if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector3(); }
             var point = optionalTarget;
-            var v0 = this.v0, v1 = this.v1, v2 = this.v2, v3 = this.v3;
+            var v0 = this.v0;
+            var v1 = this.v1;
+            var v2 = this.v2;
+            var v3 = this.v3;
             point.set(feng3d.Interpolations.CubicBezier(t, v0.x, v1.x, v2.x, v3.x), feng3d.Interpolations.CubicBezier(t, v0.y, v1.y, v2.y, v3.y), feng3d.Interpolations.CubicBezier(t, v0.z, v1.z, v2.z, v3.z));
             return point;
         };
@@ -16274,7 +16609,9 @@ var feng3d;
         QuadraticBezierCurve2.prototype.getPoint = function (t, optionalTarget) {
             if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector2(); }
             var point = optionalTarget;
-            var v0 = this.v0, v1 = this.v1, v2 = this.v2;
+            var v0 = this.v0;
+            var v1 = this.v1;
+            var v2 = this.v2;
             point.set(feng3d.Interpolations.QuadraticBezier(t, v0.x, v1.x, v2.x), feng3d.Interpolations.QuadraticBezier(t, v0.y, v1.y, v2.y));
             return point;
         };
@@ -16299,7 +16636,9 @@ var feng3d;
         QuadraticBezierCurve3.prototype.getPoint = function (t, optionalTarget) {
             if (optionalTarget === void 0) { optionalTarget = new feng3d.Vector3(); }
             var point = optionalTarget;
-            var v0 = this.v0, v1 = this.v1, v2 = this.v2;
+            var v0 = this.v0;
+            var v1 = this.v1;
+            var v2 = this.v2;
             point.set(feng3d.Interpolations.QuadraticBezier(t, v0.x, v1.x, v2.x), feng3d.Interpolations.QuadraticBezier(t, v0.y, v1.y, v2.y), feng3d.Interpolations.QuadraticBezier(t, v0.z, v1.z, v2.z));
             return point;
         };

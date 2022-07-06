@@ -1,5 +1,7 @@
 namespace feng3d
 {
+
+
     export class Path2 extends CurvePath<Vector2>
     {
         currentPoint: Vector2;
@@ -10,29 +12,32 @@ namespace feng3d
             this.currentPoint = new Vector2();
             if (points)
             {
-                this.setFromPoints(points);
+                this.fromPoints(points);
             }
         }
 
-        setFromPoints(points: Vector2[])
+        fromPoints(points: Vector2[])
         {
             this.moveTo(points[0].x, points[0].y);
             for (let i = 1, l = points.length; i < l; i++)
             {
                 this.lineTo(points[i].x, points[i].y);
             }
+
             return this;
         }
 
         moveTo(x: number, y: number)
         {
             this.currentPoint.set(x, y); // TODO consider referencing vectors instead of copying?
+
             return this;
         }
 
         lineTo(x: number, y: number)
         {
             const curve = new LineCurve2(this.currentPoint.clone(), new Vector2(x, y));
+
             this.curves.push(curve);
 
             this.currentPoint.set(x, y);
@@ -76,6 +81,7 @@ namespace feng3d
             const npts = [this.currentPoint.clone()].concat(pts);
 
             const curve = new SplineCurve2(npts);
+
             this.curves.push(curve);
 
             this.currentPoint.copy(pts[pts.length - 1]);
@@ -97,6 +103,7 @@ namespace feng3d
         absarc(aX = 0, aY = 0, aRadius = 1, aStartAngle = 0, aEndAngle = 2 * Math.PI, aClockwise = false)
         {
             this.absellipse(aX, aY, aRadius, aRadius, aStartAngle, aEndAngle, aClockwise);
+
             return this;
         }
 
@@ -128,6 +135,7 @@ namespace feng3d
             this.curves.push(curve);
 
             const lastPoint = curve.getPoint(1);
+
             this.currentPoint.copy(lastPoint);
 
             return this;

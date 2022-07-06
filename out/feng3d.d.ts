@@ -7341,13 +7341,6 @@ declare namespace feng3d {
         static CubicBezier(t: number, p0: number, p1: number, p2: number, p3: number): number;
     }
 }
-declare function QuadraticBezierP0(t: number, p: number): number;
-declare function QuadraticBezierP1(t: number, p: number): number;
-declare function QuadraticBezierP2(t: number, p: number): number;
-declare function CubicBezierP0(t: number, p: number): number;
-declare function CubicBezierP1(t: number, p: number): number;
-declare function CubicBezierP2(t: number, p: number): number;
-declare function CubicBezierP3(t: number, p: number): number;
 declare namespace feng3d {
     /**
      * An extensible curve object which contains methods for interpolation
@@ -7367,7 +7360,7 @@ declare namespace feng3d {
          * - t [0 .. 1]
          * Returns a vector for point t of the curve where t is between 0 and 1
          */
-        getPoint(t?: number, optionalTarget?: T): T;
+        getPoint(_t?: number, _optionalTarget?: T): T;
         /**
          * Get point at relative position in curve according to arc length
          * Returns a vector for point at relative position in curve according to arc length
@@ -7440,7 +7433,7 @@ declare namespace feng3d {
     class Path2 extends CurvePath<Vector2> {
         currentPoint: Vector2;
         constructor(points?: Vector2[]);
-        setFromPoints(points: Vector2[]): this;
+        fromPoints(points: Vector2[]): this;
         moveTo(x: number, y: number): this;
         lineTo(x: number, y: number): this;
         quadraticCurveTo(aCPx: number, aCPy: number, aX: number, aY: number): this;
@@ -7461,6 +7454,24 @@ declare namespace feng3d {
             shape: Vector2[];
             holes: Vector2[][];
         };
+        extractArray(divisions?: number): {
+            points: number[];
+            holes: number[][];
+        };
+        triangulate(geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            points: number[];
+            indices: number[];
+        };
+        static triangulate(points: number[], holes?: number[][], geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            points: number[];
+            indices: number[];
+        };
     }
 }
 declare namespace feng3d {
@@ -7474,29 +7485,56 @@ declare namespace feng3d {
         quadraticCurveTo(aCPx: number, aCPy: number, aX: number, aY: number): this;
         bezierCurveTo(aCP1x: number, aCP1y: number, aCP2x: number, aCP2y: number, aX: number, aY: number): this;
         splineThru(pts: Vector2[]): this;
-        toShapes(isCCW?: boolean, noHoles?: boolean): any[];
+        closePath(): void;
+        toShapes(isCCW?: boolean, noHoles?: boolean): Shape2[];
     }
 }
 declare namespace feng3d {
     export class Font {
         data: FontData;
+        isCCW: boolean;
+        private charGeometryCache;
         constructor(data: FontData);
-        generateShapes(text: string, size: number): ShapePath2[];
+        generateShapes(text: string, size: number, lineHeight?: number, align?: 'left' | 'center' | 'right'): Shape2[];
+        generateCharGeometry(char: string, geometry?: {
+            points: number[];
+            indices: number[];
+        }): {
+            geometry: {
+                points: number[];
+                indices: number[];
+            };
+            width: number;
+        };
+        calculateGeometry(text: string, fontSize: number, lineHeight?: number, align?: 'left' | 'center' | 'right', textBaseline?: 'alphabetic' | 'top' | 'middle' | 'bottom', tabCharWidth?: number): {
+            vertices: Float32Array;
+            normals: Float32Array;
+            uvs: Float32Array;
+            indices: Uint32Array;
+        };
+    }
+    export interface Glyph {
+        ha: number;
+        x_min: number;
+        x_max: number;
+        o: string;
+        _cachedOutline?: any[];
     }
     interface FontData {
-        underlineThickness: number;
-        resolution: number;
-        boundingBox: {
-            yMax: number;
-            yMin: number;
-        };
-        familyName: string;
         glyphs: {
-            [k: string]: {
-                o: string;
-                _cachedOutline: any;
-                ha: number;
-            };
+            [index: string]: Glyph;
+        };
+        unitsPerEm: number;
+        ascender: number;
+        descender: number;
+        underlinePosition: number;
+        underlineThickness: number;
+        familyName: string;
+        boundingBox: {
+            yMin: number;
+            xMin: number;
+            yMax: number;
+            xMax: number;
         };
     }
     export {};
@@ -7506,7 +7544,7 @@ declare namespace feng3d {
         v1: Vector2;
         v2: Vector2;
         constructor(v1?: Vector2, v2?: Vector2);
-        getResolution(divisions: number): number;
+        getResolution(_divisions: number): number;
         getPoint(t: number, optionalTarget: Vector2): Vector2;
         getPointAt(u: number, optionalTarget: Vector2): Vector2;
         getTangent(t: number, optionalTarget?: Vector2): Vector2;
@@ -7517,7 +7555,7 @@ declare namespace feng3d {
         v1: Vector3;
         v2: Vector3;
         constructor(v1?: Vector3, v2?: Vector3);
-        getResolution(divisions: number): number;
+        getResolution(_divisions: number): number;
         getPoint(t: number, optionalTarget?: Vector3): Vector3;
         getPointAt(u: number, optionalTarget?: Vector3): Vector3;
     }
