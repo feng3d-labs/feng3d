@@ -416,6 +416,26 @@
         "src/assets/assets/GeometryAsset.ts",
         "src/assets/assets/MaterialAsset.ts",
         "src/assets/assets/GameObjectAsset.ts",
+        // 2d
+        "src/2d/enums/UIRenderMode.ts",
+        //
+        "src/2d/core/Transform2D.ts",
+        "src/2d/core/UIGeometry.ts",
+        "src/2d/core/CanvasRenderer.ts",
+        "src/2d/core/Canvas.ts",
+        "src/2d/core/UIMaterial.ts",
+        //
+        "src/2d/polyfill/ClassUtils.ts",
+        "src/2d/polyfill/View.ts",
+        //
+        "src/2d/Rect.ts",
+        "src/2d/Image.ts",
+        "src/2d/Button.ts",
+        //
+        "src/2d/text/drawText.ts",
+        "src/2d/text/TextStyle.ts",
+        "src/2d/text/TextMetrics.ts",
+        "src/2d/Text.ts",
         //
         "src/Feng3d.ts",
     ]
