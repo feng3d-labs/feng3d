@@ -383,6 +383,26 @@
         "src/animators/particle/modules/ParticleTextureSheetAnimationModule.ts",
         "src/animators/particle/modules/ParticleSystemRenderer.ts",
         //
+        // 模型解析
+        "src/assets/parsers/OBJParser.ts",
+        "src/assets/parsers/MTLParser.ts",
+        "src/assets/parsers/MD5MeshParser.ts",
+        "src/assets/parsers/MD5AnimParser.ts",
+        //war3模型
+        "src/assets/parsers/mdl/MdlModel.ts",
+        "src/assets/parsers/mdl/War3Model.ts",
+        "src/assets/parsers/MDLParser.ts",
+        //
+        "src/assets/converters/MTLConverter.ts",
+        "src/assets/converters/OBJConverter.ts",
+        "src/assets/converters/MD5MeshConverter.ts",
+        "src/assets/converters/MD5AnimConverter.ts",
+        //
+        "src/assets/loader/MTLLoader.ts",
+        "src/assets/loader/OBJLoader.ts",
+        "src/assets/loader/MD5Loader.ts",
+        "src/assets/loader/MDLLoader.ts",
+        //
         "src/Feng3d.ts",
     ]
 }
