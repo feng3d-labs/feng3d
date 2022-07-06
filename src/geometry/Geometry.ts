@@ -6,9 +6,9 @@ namespace feng3d
 
     export interface GeometryEventMap
     {
-		/**
-		 * 包围盒失效
-		 */
+        /**
+         * 包围盒失效
+         */
         boundsInvalid: Geometry;
     }
 
@@ -64,9 +64,9 @@ namespace feng3d
             return this._indexBuffer.indices;
         }
 
-		/**
-		 * 更新顶点索引数据
-		 */
+        /**
+         * 更新顶点索引数据
+         */
         set indices(value: number[])
         {
             this._indexBuffer.indices = value;
@@ -190,8 +190,8 @@ namespace feng3d
         }
 
         /**
-		 * 创建一个几何体
-		 */
+         * 创建一个几何体
+         */
         constructor()
         {
             super();
@@ -293,9 +293,9 @@ namespace feng3d
         }
 
         /**
-		 * 应用变换矩阵
-		 * @param transform 变换矩阵
-		 */
+         * 应用变换矩阵
+         * @param transform 变换矩阵
+         */
         applyTransformation(transform: Matrix4x4)
         {
             this.updateGrometry();
@@ -416,7 +416,7 @@ namespace feng3d
         {
             this.updateGrometry();
 
-            renderAtomic.indexBuffer = this._indexBuffer;
+            renderAtomic.index = this._indexBuffer;
 
             for (const key in this._attributes)
             {
@@ -439,15 +439,15 @@ namespace feng3d
          * 属性数据列表
          */
         protected _attributes: Attributes = {
-            a_position: new Attribute("a_position", [], 3),
-            a_color: new Attribute("a_color", [], 4),
-            a_uv: new Attribute("a_uv", [], 2),
-            a_normal: new Attribute("a_normal", [], 3),
-            a_tangent: new Attribute("a_tangent", [], 3),
-            a_skinIndices: new Attribute("a_skinIndices", [], 4),
-            a_skinWeights: new Attribute("a_skinWeights", [], 4),
-            a_skinIndices1: new Attribute("a_skinIndices1", [], 4),
-            a_skinWeights1: new Attribute("a_skinWeights1", [], 4),
+            a_position: new Attribute({ name: "a_position", data: [], size: 3 }),
+            a_color: new Attribute({ name: "a_color", data: [], size: 4 }),
+            a_uv: new Attribute({ name: "a_uv", data: [], size: 2 }),
+            a_normal: new Attribute({ name: "a_normal", data: [], size: 3 }),
+            a_tangent: new Attribute({ name: "a_tangent", data: [], size: 3 }),
+            a_skinIndices: new Attribute({ name: "a_skinIndices", data: [], size: 4 }),
+            a_skinWeights: new Attribute({ name: "a_skinWeights", data: [], size: 4 }),
+            a_skinIndices1: new Attribute({ name: "a_skinIndices1", data: [], size: 4 }),
+            a_skinWeights1: new Attribute({ name: "a_skinWeights1", data: [], size: 4 }),
         };
 
         /**

@@ -13,12 +13,47 @@ namespace feng3d
         /**
          * 顶点索引缓冲
          */
-        indexBuffer: Index;
+        get index()
+        {
+            return this._index;
+        }
+        set index(v)
+        {
+            if (v instanceof Index)
+            {
+                this._index = v;
+            } else
+            {
+                this._index = new Index(v);
+            }
+        }
+        private _index: Index;
 
         /**
          * 属性数据列表
          */
-        attributes: Attributes = <any>{};
+        get attributes()
+        {
+            return this._attributes;
+        }
+
+        set attributes(v)
+        {
+            this._attributes = <any>{};
+            for (const key in v)
+            {
+                if (v[key] instanceof Attribute)
+                {
+                    this._attributes[key] = v[key];
+                }
+                else
+                {
+                    this._attributes[key] = new Attribute(v[key]);
+                }
+            }
+        }
+
+        private _attributes: Attributes = <any>{};
 
         /**
          * Uniform渲染数据
@@ -33,7 +68,21 @@ namespace feng3d
         /**
          * 渲染程序
          */
-        shader: Shader;
+        get shader()
+        {
+            return this._shader;
+        }
+        set shader(v)
+        {
+            if (v instanceof Shader)
+            {
+                this._shader = v;
+            } else
+            {
+                this._shader = new Shader(v);
+            }
+        }
+        private _shader: Shader;
 
         /**
          * shader 中的 宏
@@ -43,11 +92,30 @@ namespace feng3d
         /**
          * 渲染参数
          */
-        renderParams: Partial<RenderParams> = {};
+        get renderParams()
+        {
+            return this._renderParams;
+        }
+        set renderParams(v)
+        {
+            if (v instanceof RenderParams)
+            {
+                this._renderParams = v;
+            } else
+            {
+                this._renderParams = new RenderParams(v);
+            }
+        }
+        private _renderParams = new RenderParams();
+
+        constructor(source?: gPartial<RenderAtomic>)
+        {
+            Object.assign(this, source);
+        }
 
         getIndexBuffer(): Index
         {
-            if (this.indexBuffer != undefined) return this.indexBuffer;
+            if (this.index != undefined) return this.index;
             return (this.next && this.next.getIndexBuffer());
         }
 
@@ -102,15 +170,5 @@ namespace feng3d
             Object.assign(shaderMacro, this.shaderMacro);
             return shaderMacro;
         }
-    }
-
-    export interface RenderAtomicData
-    {
-        shader: Shader;
-        attributes: { [name: string]: Attribute; };
-        uniforms: { [name: string]: Uniforms; };
-        renderParams: RenderParams;
-        indexBuffer: Index;
-        instanceCount: number;
     }
 }

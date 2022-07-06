@@ -2,12 +2,27 @@ namespace feng3d
 {
     export class RenderBuffer
     {
+        get OFFSCREEN_WIDTH()
+        {
+            return this._OFFSCREEN_WIDTH;
+        }
+        set OFFSCREEN_WIDTH(v)
+        {
+            this._OFFSCREEN_WIDTH = v;
+            this.invalidate();
+        }
+        private _OFFSCREEN_WIDTH = 1024;
 
-        @watch("invalidate")
-        OFFSCREEN_WIDTH = 1024;
-
-        @watch("invalidate")
-        OFFSCREEN_HEIGHT = 1024;
+        get OFFSCREEN_HEIGHT()
+        {
+            return this._OFFSCREEN_HEIGHT;
+        }
+        set OFFSCREEN_HEIGHT(v)
+        {
+            this._OFFSCREEN_HEIGHT = v;
+            this.invalidate();
+        }
+        private _OFFSCREEN_HEIGHT = 1024;
 
         /**
          * 是否失效

@@ -1,5 +1,6 @@
 namespace feng3d
 {
+
     /**
      * WEBGL 渲染器
      * 
@@ -9,19 +10,9 @@ namespace feng3d
     {
         static glList: GL[] = [];
 
-        get gl()
-        {
-            return this._gl;
-        }
-
-        private _gl: GL;
+        gl: GL;
         private preActiveAttributes: number[] = [];
 
-        /**
-         * 获取 GL 实例
-         * @param canvas 画布
-         * @param contextAttributes 
-         */
         constructor(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
         {
             var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
@@ -39,7 +30,7 @@ namespace feng3d
             }
             if (!gl)
                 throw "无法初始化WEBGL";
-            this._gl = gl;
+            this.gl = gl;
             //
             new GLCache(gl);
             new GLExtension(gl);
@@ -50,40 +41,38 @@ namespace feng3d
             gl.enable(gl.DEPTH_TEST);           // Enable depth testing
             gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
             WebGLRenderer.glList.push(gl);
+
+            console.assert(!gl.render, `${gl} ${gl.render} 存在！`);
         }
 
-        render(renderAtomic1: RenderAtomic)
+        render(renderAtomic: RenderAtomic) 
         {
-            const gl = this.gl;
-
-            var instanceCount = renderAtomic1.getInstanceCount();
+            var instanceCount = renderAtomic.getInstanceCount();
             if (instanceCount == 0) return;
-            var shaderMacro = renderAtomic1.getShaderMacro();
-            var shader = renderAtomic1.getShader();
+            var shaderMacro = renderAtomic.getShaderMacro();
+            var shader = renderAtomic.getShader();
             shader.shaderMacro = shaderMacro;
-            var shaderResult = shader.activeShaderProgram(gl);
+            var shaderResult = shader.activeShaderProgram(this.gl);
             if (!shaderResult) return;
             //
-            var renderAtomic: RenderAtomicData = this.checkRenderData(renderAtomic1);
-            if (!renderAtomic) return;
+            var result = this.checkRenderData(renderAtomic);
+            if (!result) return;
             //
-            gl.useProgram(shaderResult.program);
-            this.activeShaderParams(renderAtomic.renderParams);
+            this.gl.useProgram(shaderResult.program);
+            renderAtomic.renderParams.updateRenderParams(this.gl);
             this.activeAttributes(renderAtomic, shaderResult.attributes);
             this.activeUniforms(renderAtomic, shaderResult.uniforms);
-            this.draw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
+            this.draw(renderAtomic, this.gl[renderAtomic.renderParams.renderMode]);
         }
 
-        checkRenderData(renderAtomic: RenderAtomic)
+        private checkRenderData(renderAtomic: RenderAtomic)
         {
-            const gl = this.gl;
-
             var shader = renderAtomic.getShader();
-            var shaderResult = shader.activeShaderProgram(gl);
+            var shaderResult = shader.activeShaderProgram(this.gl);
             if (!shaderResult)
             {
                 console.warn(`缺少着色器，无法渲染!`)
-                return null;
+                return false;
             }
 
             var attributes: { [name: string]: Attribute; } = {};
@@ -93,7 +82,7 @@ namespace feng3d
                 if (attribute == undefined)
                 {
                     console.warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
-                    return null;
+                    return false;
                 }
                 attributes[key] = attribute;
             }
@@ -110,154 +99,35 @@ namespace feng3d
                 if (uniform == undefined)
                 {
                     console.warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
-                    return null;
+                    return false;
                 }
                 uniforms[key] = uniform;
             }
-
-            var indexBuffer = renderAtomic.getIndexBuffer();
-            if (!indexBuffer) 
-            {
-                console.warn(`确实顶点索引数据，无法渲染！`);
-                return null;
-            }
-            return {
-                shader: shader,
-                attributes: attributes,
-                uniforms: uniforms,
-                renderParams: renderAtomic.getRenderParams(),
-                indexBuffer: indexBuffer,
-                instanceCount: renderAtomic.getInstanceCount(),
-            };
-        }
-
-        activeShaderParams(shaderParams: RenderParams)
-        {
-            const gl = this.gl;
-
-            var cullfaceEnum = shaderParams.cullFace;
-            var blendEquation = gl[shaderParams.blendEquation];
-            var sfactor = gl[shaderParams.sfactor];
-            var dfactor = gl[shaderParams.dfactor];
-            var cullFace = gl[shaderParams.cullFace];
-            var frontFace = gl[shaderParams.frontFace];
-            var enableBlend = shaderParams.enableBlend;
-            var depthtest = shaderParams.depthtest;
-            var depthMask = shaderParams.depthMask;
-            var depthFunc = gl[shaderParams.depthFunc];
-            var viewPort = shaderParams.viewPort;
-            var useViewPort = shaderParams.useViewPort;
-            var useScissor = shaderParams.useScissor;
-            var scissor = shaderParams.scissor;
-            var colorMask = shaderParams.colorMask;
-            var colorMaskB = [ColorMask.R, ColorMask.G, ColorMask.B, ColorMask.A].map(v => !!(colorMask & v));
-
-            var usePolygonOffset = shaderParams.usePolygonOffset;
-            var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
-            var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
-
-            const useStencil = shaderParams.useStencil;
-            const stencilFunc = gl[shaderParams.stencilFunc];
-            const stencilFuncRef = shaderParams.stencilFuncRef;
-            const stencilFuncMask = shaderParams.stencilFuncMask;
-            const stencilOpFail = gl[shaderParams.stencilOpFail];
-            const stencilOpZFail = gl[shaderParams.stencilOpZFail];
-            const stencilOpZPass = gl[shaderParams.stencilOpZPass];
-            const stencilMask = shaderParams.stencilMask;
-
-            if (!useViewPort)
-            {
-                viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
-            }
-
-            if (cullfaceEnum != CullFace.NONE)
-            {
-                gl.enable(gl.CULL_FACE);
-                gl.cullFace(cullFace);
-                gl.frontFace(frontFace);
-            } else
-            {
-                gl.disable(gl.CULL_FACE);
-            }
-
-            if (enableBlend)
-            {
-                //
-                gl.enable(gl.BLEND);
-                gl.blendEquation(blendEquation);
-                gl.blendFunc(sfactor, dfactor);
-            } else
-            {
-                gl.disable(gl.BLEND);
-            }
-
-            if (depthtest)
-            {
-                gl.enable(gl.DEPTH_TEST);
-                gl.depthFunc(depthFunc);
-            }
-            else
-            {
-                gl.disable(gl.DEPTH_TEST);
-            }
-            gl.depthMask(depthMask);
-
-            gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
-
-            gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
-
-            if (usePolygonOffset)
-            {
-                gl.enable(gl.POLYGON_OFFSET_FILL);
-                gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
-            }
-            else
-            {
-                gl.disable(gl.POLYGON_OFFSET_FILL);
-            }
-
-            if (useScissor)
-            {
-                gl.enable(gl.SCISSOR_TEST);
-                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
-            } else
-            {
-                gl.disable(gl.SCISSOR_TEST);
-            }
-
-            if (useStencil)
-            {
-                if (gl.capabilities.stencilBits === 0)
-                {
-                    console.warn(`${gl} 不支持 stencil，参考 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil`);
-                }
-                gl.enable(gl.STENCIL_TEST);
-                gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
-                gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
-                gl.stencilMask(stencilMask);
-            } else
-            {
-                gl.disable(gl.STENCIL_TEST);
-            }
+            return true;
         }
 
         /**
          * 激活属性
          */
-        activeAttributes(renderAtomic: RenderAtomicData, attributeInfos: { [name: string]: AttributeInfo })
+        private activeAttributes(renderAtomic: RenderAtomic, attributeInfos: { [name: string]: AttributeInfo })
         {
             const gl = this.gl;
-            const preActiveAttributes = this.preActiveAttributes;
+
             var activeAttributes: number[] = [];
             for (var name in attributeInfos)
             {
                 var activeInfo = attributeInfos[name];
                 var buffer: Attribute = renderAtomic.attributes[name];
-                Attribute.active(gl, activeInfo.location, buffer);
+                buffer.active(gl, activeInfo.location);
                 activeAttributes.push(activeInfo.location);
-                Array.delete(preActiveAttributes, activeInfo.location);
+
+                var index = this.preActiveAttributes.indexOf(activeInfo.location);
+                if (index !== -1)
+                {
+                    this.preActiveAttributes.splice(index, 1);
+                }
             }
-            preActiveAttributes.forEach(location =>
+            this.preActiveAttributes.forEach(location =>
             {
                 gl.disableVertexAttribArray(location);
             });
@@ -267,7 +137,7 @@ namespace feng3d
         /**
          * 激活常量
          */
-        activeUniforms(renderAtomic: RenderAtomicData, uniformInfos: { [name: string]: UniformInfo })
+        private activeUniforms(renderAtomic: RenderAtomic, uniformInfos: { [name: string]: UniformInfo })
         {
             var uniforms = renderAtomic.uniforms;
             for (var name in uniformInfos)
@@ -286,9 +156,10 @@ namespace feng3d
         /**
          * 设置环境Uniform数据
          */
-        setContext3DUniform(activeInfo: UniformInfo, data)
+        private setContext3DUniform(activeInfo: UniformInfo, data)
         {
             const gl = this.gl;
+
             var vec: number[] = data;
             if (data.toArray) vec = data.toArray();
             var location = activeInfo.location;
@@ -330,15 +201,14 @@ namespace feng3d
         }
 
         /**
-         * 绘制
-         * @param renderAtomic  渲染原子
          */
-        draw(renderAtomic: RenderAtomicData, renderMode: number)
+        private draw(renderAtomic: RenderAtomic, renderMode: number)
         {
             const gl = this.gl;
-            var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
 
-            var indexBuffer = renderAtomic.indexBuffer;
+            var instanceCount = ~~renderAtomic.instanceCount;
+
+            var indexBuffer = renderAtomic.index;
             var vertexNum = 0;
             if (indexBuffer)
             {
@@ -386,5 +256,6 @@ namespace feng3d
                 }
             }
         }
+
     }
 }

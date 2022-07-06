@@ -212,7 +212,7 @@ namespace feng3d
         {
             var renderAtomic = renderable.renderAtomic;
             renderable.beforeRender(renderAtomic, scene, camera);
-            renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader("shadow");
+            renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader({ shaderName: "shadow" });
 
             //
             this.renderAtomic.next = renderAtomic;

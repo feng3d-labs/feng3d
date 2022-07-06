@@ -70,7 +70,7 @@ namespace feng3d
             this.renderAtomic.next = renderAtomic;
 
             //
-            var oldIndexBuffer = renderAtomic.indexBuffer;
+            var oldIndexBuffer = renderAtomic.index;
             if (oldIndexBuffer.count < 3) return;
             if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count)
             {
@@ -87,8 +87,8 @@ namespace feng3d
                 renderAtomic.wireframeindexBuffer = new Index();
                 renderAtomic.wireframeindexBuffer.indices = wireframeindices;
             }
-            renderAtomic.wireframeShader = renderAtomic.wireframeShader || new Shader("wireframe");
-            this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
+            renderAtomic.wireframeShader = renderAtomic.wireframeShader || new Shader({ shaderName: "wireframe" });
+            this.renderAtomic.index = renderAtomic.wireframeindexBuffer;
 
             this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
 

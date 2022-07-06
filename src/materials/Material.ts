@@ -141,7 +141,7 @@ namespace feng3d
             var renderParams = shaderConfig.shaders[this.shaderName].renderParams;
             renderParams && serialization.setValue(this.renderParams, renderParams);
 
-            this.renderAtomic.shader = new Shader(this.shaderName);
+            this.renderAtomic.shader = new Shader({ shaderName: this.shaderName });
         }
 
         private _onUniformsChanged()

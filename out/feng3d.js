@@ -19156,39 +19156,54 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 var feng3d;
 (function (feng3d) {
     /**
-     * 渲染模式
-     * A GLenum specifying the type primitive to render. Possible values are:
+     * 渲染模式，描述绘制图元的类型。
+     *
+     * A GLenum specifying the type primitive to render.
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
      */
     var RenderMode;
     (function (RenderMode) {
         /**
-         * 点渲染
+         * 绘制单个点。
+         *
          * gl.POINTS: Draws a single dot.
          */
         RenderMode["POINTS"] = "POINTS";
         /**
+         * 绘制循环连线。
+         *
          * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
          */
         RenderMode["LINE_LOOP"] = "LINE_LOOP";
         /**
+         * 绘制连线
+         *
          * gl.LINE_STRIP: Draws a straight line to the next vertex.
          */
         RenderMode["LINE_STRIP"] = "LINE_STRIP";
         /**
+         * 每两个顶点绘制一条线段。
+         *
          * gl.LINES: Draws a line between a pair of vertices.
          */
         RenderMode["LINES"] = "LINES";
         /**
+         * 每三个顶点绘制一个三角形。
+         *
          * gl.TRIANGLES: Draws a triangle for a group of three vertices.
          */
         RenderMode["TRIANGLES"] = "TRIANGLES";
         /**
+         * 绘制三角形条带。
+         *
          * gl.TRIANGLE_STRIP
          * @see https://en.wikipedia.org/wiki/Triangle_strip
          */
         RenderMode["TRIANGLE_STRIP"] = "TRIANGLE_STRIP";
         /**
+         * 绘制三角扇形。
+         *
          * gl.TRIANGLE_FAN
          * @see https://en.wikipedia.org/wiki/Triangle_fan
          */
@@ -19228,93 +19243,190 @@ var feng3d;
 (function (feng3d) {
     /**
      * 混合方法
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
      */
     var BlendEquation;
     (function (BlendEquation) {
         /**
+         * 源 + 目标
+         *
          *  source + destination
          */
         BlendEquation["FUNC_ADD"] = "FUNC_ADD";
         /**
+         * 源 - 目标
+         *
          * source - destination
          */
         BlendEquation["FUNC_SUBTRACT"] = "FUNC_SUBTRACT";
         /**
+         * 目标 - 源
+         *
          * destination - source
          */
         BlendEquation["FUNC_REVERSE_SUBTRACT"] = "FUNC_REVERSE_SUBTRACT";
-        // /**
-        //  * When using the EXT_blend_minmax extension:
-        //  * Minimum of source and destination
-        //  */
-        // MIN_EXT = "MIN_EXT",
-        // /**
-        //  * When using the EXT_blend_minmax extension:
-        //  * Maximum of source and destination.
-        //  */
-        // MAX_EXT = "MAX_EXT",
-        // /**
-        //  * using a WebGL 2 context
-        //  * Minimum of source and destination
-        //  */
-        // MIN = "MIN",
-        // /**
-        //  * using a WebGL 2 context
-        //  * Maximum of source and destination.
-        //  */
-        // MAX = "MAX",
+        /**
+         * 源与目标的最小值，当开启 EXT_blend_minmax 扩展时生效。
+         *
+         * When using the EXT_blend_minmax extension:
+         * Minimum of source and destination
+         */
+        BlendEquation["MIN_EXT"] = "MIN_EXT";
+        /**
+         * 源与目标的最大值，当开启 EXT_blend_minmax 扩展时生效。
+         *
+         * When using the EXT_blend_minmax extension:
+         * Maximum of source and destination.
+         */
+        BlendEquation["MAX_EXT"] = "MAX_EXT";
+        /**
+         * 源与目标的最小值，在 WebGL 2 中可使用。
+         *
+         * using a WebGL 2 context
+         * Minimum of source and destination
+         */
+        BlendEquation["MIN"] = "MIN";
+        /**
+         * 源与目标的最大值，在 WebGL 2 中可使用。
+         *
+         * using a WebGL 2 context
+         * Maximum of source and destination.
+         */
+        BlendEquation["MAX"] = "MAX";
     })(BlendEquation = feng3d.BlendEquation || (feng3d.BlendEquation = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
      * 混合因子（R分量系数，G分量系数，B分量系数）
+     *
+     * 混合颜色的公式可以这样描述：color(RGBA) = (sourceColor * sfactor) + (destinationColor * dfactor)。这里的 RGBA 值均在0与1之间。
+     *
+     * The formula for the blending color can be described like this: color(RGBA) = (sourceColor * sfactor) + (destinationColor * dfactor). The RBGA values are between 0 and 1.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
      */
     var BlendFactor;
     (function (BlendFactor) {
         /**
-         * 0.0  0.0 0.0
+         * Factor: 0,0,0,0
+         *
+         * 把所有颜色都乘以0。
+         *
+         * Multiplies all colors by 0.
          */
         BlendFactor["ZERO"] = "ZERO";
         /**
-         * 1.0  1.0 1.0
+         * Factor: 1,1,1,1
+         *
+         * 把所有颜色都乘以1。
+         *
+         * Multiplies all colors by 1.
          */
         BlendFactor["ONE"] = "ONE";
         /**
-         * Rs   Gs  Bs
+         * Factor: Rs, Gs, Bs, As
+         *
+         * 将所有颜色乘以源颜色。
+         *
+         * Multiplies all colors by the source colors.
          */
         BlendFactor["SRC_COLOR"] = "SRC_COLOR";
         /**
-         * 1-Rs   1-Gs  1-Bs
+         * Factor: 1-Rs, 1-Gs, 1-Bs, 1-As
+         *
+         * 将所有颜色乘以1减去每个源颜色。
+         *
+         * Multiplies all colors by 1 minus each source color.
          */
         BlendFactor["ONE_MINUS_SRC_COLOR"] = "ONE_MINUS_SRC_COLOR";
         /**
-         * Rd   Gd  Bd
+         * Factor: Rd, Gd, Bd, Ad
+         *
+         * 将所有颜色乘以目标颜色。
+         *
+         * Multiplies all colors by the destination color.
          */
         BlendFactor["DST_COLOR"] = "DST_COLOR";
         /**
-         * 1-Rd   1-Gd  1-Bd
+         * Factor: 1-Rd, 1-Gd, 1-Bd, 1-Ad
+         *
+         * 将所有颜色乘以1减去每个目标颜色。
+         *
+         * Multiplies all colors by 1 minus each destination color.
          */
         BlendFactor["ONE_MINUS_DST_COLOR"] = "ONE_MINUS_DST_COLOR";
         /**
-         * As   As  As
+         * Factor: As, As, As, As
+         *
+         * 将所有颜色乘以源alpha值。
+         *
+         * Multiplies all colors by the source alpha value.
          */
         BlendFactor["SRC_ALPHA"] = "SRC_ALPHA";
         /**
-         * 1-As   1-As  1-As
+         * Factor: 1-As, 1-As, 1-As, 1-As
+         *
+         * 将所有颜色乘以1减去源alpha值。
+         *
+         * Multiplies all colors by 1 minus the source alpha value.
          */
         BlendFactor["ONE_MINUS_SRC_ALPHA"] = "ONE_MINUS_SRC_ALPHA";
         /**
-         * Ad   Ad  Ad
+         * Factor: Ad, Ad, Ad, Ad
+         *
+         * 将所有颜色乘以目标alpha值。
+         *
+         * Multiplies all colors by the destination alpha value.
          */
         BlendFactor["DST_ALPHA"] = "DST_ALPHA";
         /**
-         * 1-Ad   1-Ad  1-Ad
+         * Factor: 1-Ad, 1-Ad, 1-Ad, 1-Ad
+         *
+         * 将所有颜色乘以1减去目标alpha值。
+         *
+         * Multiplies all colors by 1 minus the destination alpha value.
          */
         BlendFactor["ONE_MINUS_DST_ALPHA"] = "ONE_MINUS_DST_ALPHA";
         /**
-         * min(As-Ad)   min(As-Ad)  min(As-Ad)
+         * Factor: Rc, Gc, Bc, Ac
+         *
+         * 将所有颜色乘以一个常数颜色。
+         *
+         * Multiplies all colors by a constant color.
+         */
+        BlendFactor["CONSTANT_COLOR"] = "CONSTANT_COLOR";
+        /**
+         * Factor: 1-Rc, 1-Gc, 1-Bc, 1-Ac
+         *
+         * 所有颜色乘以1减去一个常数颜色。
+         *
+         * Multiplies all colors by 1 minus a constant color.
+         */
+        BlendFactor["ONE_MINUS_CONSTANT_COLOR"] = "ONE_MINUS_CONSTANT_COLOR";
+        /**
+         * Factor: Ac, Ac, Ac, Ac
+         *
+         * 将所有颜色乘以一个常量alpha值。
+         *
+         * Multiplies all colors by a constant alpha value.
+         */
+        BlendFactor["CONSTANT_ALPHA"] = "CONSTANT_ALPHA";
+        /**
+         * Factor: 1-Ac, 1-Ac, 1-Ac, 1-Ac
+         *
+         * 将所有颜色乘以1减去一个常数alpha值。
+         *
+         * Multiplies all colors by 1 minus a constant alpha value.
+         */
+        BlendFactor["ONE_MINUS_CONSTANT_ALPHA"] = "ONE_MINUS_CONSTANT_ALPHA";
+        /**
+         * Factor: min(As, 1 - Ad), min(As, 1 - Ad), min(As, 1 - Ad), 1
+         *
+         * 将RGB颜色乘以源alpha值与1减去目标alpha值的较小值。alpha值乘以1。
+         *
+         * Multiplies the RGB colors by the smaller of either the source alpha value or the value of 1 minus the destination alpha value. The alpha value is multiplied by 1.
          */
         BlendFactor["SRC_ALPHA_SATURATE"] = "SRC_ALPHA_SATURATE";
     })(BlendFactor = feng3d.BlendFactor || (feng3d.BlendFactor = {}));
@@ -19368,15 +19480,20 @@ var feng3d;
 (function (feng3d) {
     /**
      * 正面方向枚举
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
      */
     var FrontFace;
     (function (FrontFace) {
         /**
+         * 顺时钟方向
+         *
          * Clock-wise winding.
          */
         FrontFace["CW"] = "CW";
         /**
+         * 逆时钟方向
+         *
          *  Counter-clock-wise winding.
          */
         FrontFace["CCW"] = "CCW";
@@ -19706,11 +19823,12 @@ var feng3d;
          * 32-bit floating point number
          */
         GLArrayType["FLOAT"] = "FLOAT";
-        // /**
-        //  * using a WebGL 2 context
-        //  * 16-bit floating point number
-        //  */
-        // HALF_FLOAT = "HALF_FLOAT",
+        GLArrayType["UNSIGNED_INT"] = "UNSIGNED_INT";
+        /**
+         * using a WebGL 2 context
+         * 16-bit floating point number
+         */
+        GLArrayType["HALF_FLOAT"] = "HALF_FLOAT";
     })(GLArrayType = feng3d.GLArrayType || (feng3d.GLArrayType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -19749,42 +19867,60 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 深度检测方法枚举
+     * 指定深度比较函数的枚举，该函数设置绘制像素的条件，默认 LESS，如果传入值小于深度缓冲区值则通过。
+     *
      * A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS.
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
      */
     var DepthFunc;
     (function (DepthFunc) {
         /**
-         * (never pass)
+         * 总是不通过。
+         *
+         * never pass.
          */
         DepthFunc["NEVER"] = "NEVER";
         /**
-         *  (pass if the incoming value is less than the depth buffer value)
+         * 如果传入值小于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is less than the depth buffer value.
          */
         DepthFunc["LESS"] = "LESS";
         /**
-         *  (pass if the incoming value equals the the depth buffer value)
+         * 如果传入值等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value equals the the depth buffer value.
          */
         DepthFunc["EQUAL"] = "EQUAL";
         /**
-         *  (pass if the incoming value is less than or equal to the depth buffer value)
+         * 如果传入值小于或等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is less than or equal to the depth buffer value.
          */
         DepthFunc["LEQUAL"] = "LEQUAL";
         /**
-         * (pass if the incoming value is greater than the depth buffer value)
+         * 如果传入值大于深度缓冲区值则通过。。
+         *
+         * pass if the incoming value is greater than the depth buffer value.
          */
         DepthFunc["GREATER"] = "GREATER";
         /**
-         * (pass if the incoming value is not equal to the depth buffer value)
+         * 如果传入值不等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is not equal to the depth buffer value.
          */
         DepthFunc["NOTEQUAL"] = "NOTEQUAL";
         /**
-         * (pass if the incoming value is greater than or equal to the depth buffer value)
+         * 如果传入值大于或等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is greater than or equal to the depth buffer value.
          */
         DepthFunc["GEQUAL"] = "GEQUAL";
         /**
-         *  (always pass)
+         * 总是通过。
+         *
+         * always pass.
          */
         DepthFunc["ALWAYS"] = "ALWAYS";
     })(DepthFunc = feng3d.DepthFunc || (feng3d.DepthFunc = {}));
@@ -19799,34 +19935,50 @@ var feng3d;
     var StencilFunc;
     (function (StencilFunc) {
         /**
+         * 总是不通过。
+         *
          * Never pass.
          */
         StencilFunc["NEVER"] = "NEVER";
         /**
+         * 如果 (ref & mask) <  (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) <  (stencil & mask).
          */
         StencilFunc["LESS"] = "LESS";
         /**
+         * 如果 (ref & mask) = (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) = (stencil & mask).
          */
         StencilFunc["EQUAL"] = "EQUAL";
         /**
+         * 如果 (ref & mask) <= (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) <= (stencil & mask).
          */
         StencilFunc["LEQUAL"] = "LEQUAL";
         /**
+         * 如果 (ref & mask) > (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) > (stencil & mask).
          */
         StencilFunc["GREATER"] = "GREATER";
         /**
+         * 如果 (ref & mask) != (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) != (stencil & mask).
          */
         StencilFunc["NOTEQUAL"] = "NOTEQUAL";
         /**
+         * 如果 (ref & mask) >= (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) >= (stencil & mask).
          */
         StencilFunc["GEQUAL"] = "GEQUAL";
         /**
+         * 总是通过。
+         *
          * Always pass.
          */
         StencilFunc["ALWAYS"] = "ALWAYS";
@@ -19842,34 +19994,50 @@ var feng3d;
     var StencilOp;
     (function (StencilOp) {
         /**
+         * 保持当前值。
+         *
          * Keeps the current value.
          */
         StencilOp["KEEP"] = "KEEP";
         /**
+         * 设置模板缓冲值为0.
+         *
          * Sets the stencil buffer value to 0.
          */
         StencilOp["ZERO"] = "ZERO";
         /**
+         * 将模板缓冲区的值设置为WebGLRenderingContext.stencilFunc()指定的参考值。
+         *
          * Sets the stencil buffer value to the reference value as specified by WebGLRenderingContext.stencilFunc().
          */
         StencilOp["REPLACE"] = "REPLACE";
         /**
+         * 增加当前模板缓冲区的值。最大到可表示的无符号值的最大值。
+         *
          * Increments the current stencil buffer value. Clamps to the maximum representable unsigned value.
          */
         StencilOp["INCR"] = "INCR";
         /**
+         * 增加当前模板缓冲区的值。当增加最大的可表示无符号值时，将模板缓冲区值包装为零。
+         *
          * Increments the current stencil buffer value. Wraps stencil buffer value to zero when incrementing the maximum representable unsigned value.
          */
         StencilOp["INCR_WRAP"] = "INCR_WRAP";
         /**
+         * 递减当前模板缓冲区的值。最小为0。
+         *
          * Decrements the current stencil buffer value. Clamps to 0.
          */
         StencilOp["DECR"] = "DECR";
         /**
+         * 递减当前模板缓冲区的值。当模板缓冲区值减为0时，将模板缓冲区值包装为可表示的最大无符号值。
+         *
          * Decrements the current stencil buffer value. Wraps stencil buffer value to the maximum representable unsigned value when decrementing a stencil buffer value of 0.
          */
         StencilOp["DECR_WRAP"] = "DECR_WRAP";
         /**
+         * 按位反转当前模板缓冲区值。
+         *
          * Inverts the current stencil buffer value bitwise.
          */
         StencilOp["INVERT"] = "INVERT";
@@ -19926,6 +20094,10 @@ var feng3d;
         GLExtension.prototype.initExtensions = function (gl) {
             this.ANGLE_instanced_arrays = gl.getExtension("ANGLE_instanced_arrays");
             this.EXT_blend_minmax = gl.getExtension("EXT_blend_minmax");
+            if (this.EXT_blend_minmax) {
+                gl["MIN_EXT"] = this.EXT_blend_minmax.MIN_EXT;
+                gl["MAX_EXT"] = this.EXT_blend_minmax.MAX_EXT;
+            }
             this.EXT_color_buffer_half_float = gl.getExtension("EXT_color_buffer_half_float");
             this.EXT_frag_depth = gl.getExtension("EXT_frag_depth");
             this.EXT_sRGB = gl.getExtension("EXT_sRGB");
@@ -20077,13 +20249,12 @@ var feng3d;
      * shader
      */
     var Shader = /** @class */ (function () {
-        function Shader(shaderName) {
-            if (shaderName === void 0) { shaderName = ""; }
+        function Shader(source) {
             /**
              * shader 中的 宏
              */
             this.shaderMacro = {};
-            this.shaderName = shaderName;
+            Object.assign(this, source);
         }
         Shader.prototype.setShader = function (vertex, fragment) {
             this.vertex = vertex;
@@ -20243,121 +20414,297 @@ var feng3d;
     var RenderParams = /** @class */ (function () {
         function RenderParams(raw) {
             /**
-            * 渲染模式，默认RenderMode.TRIANGLES
-            */
+             * 渲染模式，默认 TRIANGLES，每三个顶点绘制一个三角形。
+             *
+             * A GLenum specifying the type primitive to render. Possible values are:
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+             */
             this.renderMode = feng3d.RenderMode.TRIANGLES;
             /**
-             * 剔除面
-             * 参考：http://www.jianshu.com/p/ee04165f2a02
+             * 剔除面，默认 BACK，剔除背面。
+             *
              * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
              * 使用gl.frontFace(gl.CW);调整顺时针为正面
+             *
+             * @see http://www.jianshu.com/p/ee04165f2a02
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
              */
             this.cullFace = feng3d.CullFace.BACK;
+            /**
+             * 正向方向，默认 CW。三角形顺时针方向为正面。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
+             */
             this.frontFace = feng3d.FrontFace.CW;
             /**
-             * 是否开启混合
+             * 是否开启混合，默认 false，不开启混合。
+             *
              * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
              */
             this.enableBlend = false;
             /**
-             * 混合方式，默认BlendEquation.FUNC_ADD
+             * 混合方式，默认 FUNC_ADD，源 + 目标。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
              */
             this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
             /**
-             * 源混合因子，默认BlendFactor.SRC_ALPHA
+             * 源混合因子，默认 SRC_ALPHA，将所有颜色乘以源alpha值。
+             *
+             * @see BlendFactor
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
              */
             this.sfactor = feng3d.BlendFactor.SRC_ALPHA;
             /**
-             * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
+             * 目标混合因子，默认 ONE_MINUS_SRC_ALPHA，将所有颜色乘以1减去源alpha值。
+             *
+             * @see BlendFactor
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
              */
             this.dfactor = feng3d.BlendFactor.ONE_MINUS_SRC_ALPHA;
             /**
-             * 是否开启深度检查
+             * 是否开启深度检查，默认 true，开启深度检测。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
              */
             this.depthtest = true;
+            /**
+             * 指定深度比较函数的枚举，该函数设置绘制像素的条件，默认 LESS，如果传入值小于深度缓冲区值则通过。
+             *
+             * A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS.
+             *
+             * @see DepthFunc
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
+             */
             this.depthFunc = feng3d.DepthFunc.LESS;
             /**
              * 是否开启深度标记
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
              */
             this.depthMask = true;
             /**
              * 控制那些颜色分量是否可以被写入到帧缓冲器。
              *
+             * [red, green, blue, alpha]
+             *
              * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
              */
             this.colorMask = feng3d.ColorMask.RGBA;
             /**
-             * 是否使用 viewRect
+             * 是否使用 viewport，默认不使用，不使用时viewport为画布区域。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
              */
             this.useViewPort = false;
             /**
-             * 绘制在画布上的区域
+             * 通过WebGL API的WebGLRenderingContext.viewport()方法设置了viewport，指定了x和y从标准化设备坐标到窗口坐标的仿射变换。
+             *
+             * The WebGLRenderingContext.viewport() method of the WebGL API sets the viewport, which specifies the affine transformation of x and y from normalized device coordinates to window coordinates.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
              */
             this.viewPort = { x: 0, y: 0, width: 100, height: 100 };
             /**
-             * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+             * 是否开启剪刀裁剪，默认不开启。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
              */
             this.useScissor = false;
             /**
-             * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+             * WebGL API的WebGLRenderingContext.scissor()方法设置了一个剪刀盒，它将绘图限制为一个指定的矩形。
+             *
+             * The WebGLRenderingContext.scissor() method of the WebGL API sets a scissor box, which limits the drawing to a specified rectangle.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
              */
             this.scissor = { x: 0, y: 0, width: 100, height: 100 };
             /**
-             * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
+             * 是否开启 gl.POLYGON_OFFSET_FILL，默认不开启。
+             *
+             * WebGL API的WebGLRenderingContext.polygonOffset()方法指定了计算深度值的比例因子和单位。
+             * 在执行深度测试和将值写入深度缓冲区之前添加偏移量。
              *
              * The WebGLRenderingContext.polygonOffset() method of the WebGL API specifies the scale factors and units to calculate depth values.
-             *
              * The offset is added before the depth test is performed and before the value is written into the depth buffer.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
              */
             this.usePolygonOffset = false;
             /**
+             * 为每个多边形设置可变深度偏移的比例因子。缺省值为0。
+             *
              * A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
              */
             this.polygonOffsetFactor = 0;
             /**
+             * 它设置特定于实现的值乘以的乘数，以创建恒定的深度偏移量。缺省值为0。
+             *
              * A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
              */
             this.polygonOffsetUnits = 0;
             /**
-             * Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc().
+             * 是否开启模板测试与更新模板缓冲。
+             *
+             * Activates stencil testing and updates to the stencil buffer.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
              */
             this.useStencil = false;
             /**
+             * 描述模板测试的方法。默认ALWAYS，总是通过。
+             *
              * A GLenum specifying the test function. The default function is gl.ALWAYS.
              *
              * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
              */
             this.stencilFunc = feng3d.StencilFunc.ALWAYS;
             /**
+             * 一个为模板测试指定参考值。这个值被限制在0到2^n -1的范围内，其中n是模板缓冲区中的位数。默认0。
+             *
              * A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n -1 where n is the number of bitplanes in the stencil buffer. The default value is 0.
              *
              * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
              */
             this.stencilFuncRef = 0;
             /**
+             * 模板测试时使用的mask值，默认1。
+             *
              * A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1.
              *
              * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
              */
             this.stencilFuncMask = 1;
             /**
+             * 指定模板测试失败时使用的函数的枚举。默认KEEP，保持当前值。
+             *
              * A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
              */
             this.stencilOpFail = feng3d.StencilOp.KEEP;
             /**
+             * 指定在模板测试通过但深度测试失败时使用的函数枚举。默认KEEP，保持当前值。
+             *
              * A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
              */
             this.stencilOpZFail = feng3d.StencilOp.KEEP;
             /**
+             * 指定在模板测试和深度测试通过时使用的函数枚举，或在模板测试通过且没有深度缓冲或禁用深度测试时使用的函数枚举。默认KEEP，保持当前值。
+             *
              * A GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
              */
             this.stencilOpZPass = feng3d.StencilOp.KEEP;
             /**
+             * 指定位掩码以启用或禁用在模板平面中写入单个位的正整数。默认1。
+             *
              * A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1.
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
              */
             this.stencilMask = 1;
             Object.assign(this, raw);
         }
+        /**
+         * 更新渲染参数
+         *
+         * @param gl WebGL渲染上下文
+         */
+        RenderParams.prototype.updateRenderParams = function (gl) {
+            var cullfaceEnum = this.cullFace;
+            var blendEquation = gl[this.blendEquation];
+            var sfactor = gl[this.sfactor];
+            var dfactor = gl[this.dfactor];
+            var cullFace = gl[this.cullFace];
+            var frontFace = gl[this.frontFace];
+            var enableBlend = this.enableBlend;
+            var depthtest = this.depthtest;
+            var depthMask = this.depthMask;
+            var depthFunc = gl[this.depthFunc];
+            var viewPort = this.viewPort;
+            var useViewPort = this.useViewPort;
+            var useScissor = this.useScissor;
+            var scissor = this.scissor;
+            var colorMask = this.colorMask;
+            var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
+            var usePolygonOffset = this.usePolygonOffset;
+            var polygonOffsetFactor = this.polygonOffsetFactor;
+            var polygonOffsetUnits = this.polygonOffsetUnits;
+            var useStencil = this.useStencil;
+            var stencilFunc = gl[this.stencilFunc];
+            var stencilFuncRef = this.stencilFuncRef;
+            var stencilFuncMask = this.stencilFuncMask;
+            var stencilOpFail = gl[this.stencilOpFail];
+            var stencilOpZFail = gl[this.stencilOpZFail];
+            var stencilOpZPass = gl[this.stencilOpZPass];
+            var stencilMask = this.stencilMask;
+            if (!useViewPort) {
+                viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
+            }
+            if (cullfaceEnum != feng3d.CullFace.NONE) {
+                gl.enable(gl.CULL_FACE);
+                gl.cullFace(cullFace);
+                gl.frontFace(frontFace);
+            }
+            else {
+                gl.disable(gl.CULL_FACE);
+            }
+            if (enableBlend) {
+                //
+                gl.enable(gl.BLEND);
+                gl.blendEquation(blendEquation);
+                gl.blendFunc(sfactor, dfactor);
+            }
+            else {
+                gl.disable(gl.BLEND);
+            }
+            if (depthtest) {
+                gl.enable(gl.DEPTH_TEST);
+                gl.depthFunc(depthFunc);
+            }
+            else {
+                gl.disable(gl.DEPTH_TEST);
+            }
+            gl.depthMask(depthMask);
+            gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
+            gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
+            if (usePolygonOffset) {
+                gl.enable(gl.POLYGON_OFFSET_FILL);
+                gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
+            }
+            else {
+                gl.disable(gl.POLYGON_OFFSET_FILL);
+            }
+            if (useScissor) {
+                gl.enable(gl.SCISSOR_TEST);
+                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
+            }
+            else {
+                gl.disable(gl.SCISSOR_TEST);
+            }
+            if (useStencil) {
+                if (gl.capabilities.stencilBits === 0) {
+                    console.warn(gl + " \u4E0D\u652F\u6301 stencil\uFF0C\u53C2\u8003 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil");
+                }
+                gl.enable(gl.STENCIL_TEST);
+                gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
+                gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
+                gl.stencilMask(stencilMask);
+            }
+            else {
+                gl.disable(gl.STENCIL_TEST);
+            }
+        };
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVEnum", tooltip: "渲染模式，默认RenderMode.TRIANGLES", componentParam: { enumClass: feng3d.RenderMode } })
@@ -20472,11 +20819,8 @@ var feng3d;
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      */
     var RenderAtomic = /** @class */ (function () {
-        function RenderAtomic() {
-            /**
-             * 属性数据列表
-             */
-            this.attributes = {};
+        function RenderAtomic(source) {
+            this._attributes = {};
             /**
              * Uniform渲染数据
              */
@@ -20485,14 +20829,87 @@ var feng3d;
              * shader 中的 宏
              */
             this.shaderMacro = {};
+            this._renderParams = new feng3d.RenderParams();
+            Object.assign(this, source);
+        }
+        Object.defineProperty(RenderAtomic.prototype, "index", {
+            /**
+             * 顶点索引缓冲
+             */
+            get: function () {
+                return this._index;
+            },
+            set: function (v) {
+                if (v instanceof feng3d.Index) {
+                    this._index = v;
+                }
+                else {
+                    this._index = new feng3d.Index(v);
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(RenderAtomic.prototype, "attributes", {
+            /**
+             * 属性数据列表
+             */
+            get: function () {
+                return this._attributes;
+            },
+            set: function (v) {
+                this._attributes = {};
+                for (var key in v) {
+                    if (v[key] instanceof feng3d.Attribute) {
+                        this._attributes[key] = v[key];
+                    }
+                    else {
+                        this._attributes[key] = new feng3d.Attribute(v[key]);
+                    }
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(RenderAtomic.prototype, "shader", {
+            /**
+             * 渲染程序
+             */
+            get: function () {
+                return this._shader;
+            },
+            set: function (v) {
+                if (v instanceof feng3d.Shader) {
+                    this._shader = v;
+                }
+                else {
+                    this._shader = new feng3d.Shader(v);
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(RenderAtomic.prototype, "renderParams", {
             /**
              * 渲染参数
              */
-            this.renderParams = {};
-        }
+            get: function () {
+                return this._renderParams;
+            },
+            set: function (v) {
+                if (v instanceof feng3d.RenderParams) {
+                    this._renderParams = v;
+                }
+                else {
+                    this._renderParams = new feng3d.RenderParams(v);
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
         RenderAtomic.prototype.getIndexBuffer = function () {
-            if (this.indexBuffer != undefined)
-                return this.indexBuffer;
+            if (this.index != undefined)
+                return this.index;
             return (this.next && this.next.getIndexBuffer());
         };
         RenderAtomic.prototype.getAttributes = function (attributes) {
@@ -20547,14 +20964,13 @@ var feng3d;
 (function (feng3d) {
     /**
      * 索引渲染数据
-
      */
     var Index = /** @class */ (function () {
-        function Index(indices) {
+        function Index(source) {
             /**
              * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
              */
-            this.type = feng3d.GLArrayType.UNSIGNED_SHORT;
+            this.type = feng3d.GLArrayType.UNSIGNED_INT;
             /**
              * 索引偏移
              */
@@ -20563,8 +20979,22 @@ var feng3d;
              * 是否失效
              */
             this._invalid = true;
-            this.indices = indices;
+            Object.assign(this, source);
         }
+        Object.defineProperty(Index.prototype, "indices", {
+            /**
+             * 索引数据
+             */
+            get: function () {
+                return this._indices;
+            },
+            set: function (v) {
+                this._indices = v;
+                this.invalidate();
+            },
+            enumerable: false,
+            configurable: true
+        });
         Index.prototype.invalidate = function () {
             this._invalid = true;
         };
@@ -20605,7 +21035,7 @@ var feng3d;
                 }
                 gl.cache.indices.set(index, buffer);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(index.indices), gl.STATIC_DRAW);
             }
             return buffer;
         };
@@ -20621,9 +21051,6 @@ var feng3d;
                 }
             });
         };
-        __decorate([
-            feng3d.watch("invalidate")
-        ], Index.prototype, "indices", void 0);
         return Index;
     }());
     feng3d.Index = Index;
@@ -20635,9 +21062,7 @@ var feng3d;
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
      */
     var Attribute = /** @class */ (function () {
-        function Attribute(name, data, size, divisor) {
-            if (size === void 0) { size = 3; }
-            if (divisor === void 0) { divisor = 0; }
+        function Attribute(source) {
             /**
              * 数据尺寸
              *
@@ -20677,24 +21102,34 @@ var feng3d;
              * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
              */
             this.divisor = 0;
-            // /**
-            //  * A GLenum specifying the intended usage pattern of the data store for optimization purposes. 
-            //  * 
-            //  * 为优化目的指定数据存储的预期使用模式的GLenum。
-            //  * 
-            //  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
-            //  */
-            // @serialize
-            // usage = AttributeUsage.STATIC_DRAW;
+            /**
+             * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
+             *
+             * 为优化目的指定数据存储的预期使用模式的GLenum。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+             */
+            this.usage = feng3d.AttributeUsage.STATIC_DRAW;
             /**
              * 是否失效
              */
             this.invalid = true;
-            this.name = name;
-            this.data = data;
-            this.size = size;
-            this.divisor = divisor;
+            Object.assign(this, source);
         }
+        Object.defineProperty(Attribute.prototype, "data", {
+            /**
+             * 属性数据
+             */
+            get: function () {
+                return this._data;
+            },
+            set: function (v) {
+                this._data = v;
+                this.invalidate();
+            },
+            enumerable: false,
+            configurable: true
+        });
         /**
          * 使数据失效
          */
@@ -20706,38 +21141,38 @@ var feng3d;
          * @param gl
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
-        Attribute.active = function (gl, location, attribute) {
+        Attribute.prototype.active = function (gl, location) {
             gl.enableVertexAttribArray(location);
-            var buffer = Attribute.getBuffer(gl, attribute);
+            var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.vertexAttribPointer(location, attribute.size, gl[attribute.type], attribute.normalized, attribute.stride, attribute.offset);
-            gl.vertexAttribDivisor(location, attribute.divisor);
+            gl.vertexAttribPointer(location, this.size, gl[this.type], this.normalized, this.stride, this.offset);
+            gl.vertexAttribDivisor(location, this.divisor);
         };
         /**
          * 获取缓冲
          */
-        Attribute.getBuffer = function (gl, attribute) {
-            if (attribute.invalid) {
-                this.clear(attribute);
-                attribute.invalid = false;
+        Attribute.prototype.getBuffer = function (gl) {
+            if (this.invalid) {
+                this.clear(this);
+                this.invalid = false;
             }
-            var buffer = gl.cache.attributes.get(attribute);
+            var buffer = gl.cache.attributes.get(this);
             if (!buffer) {
                 var buffer = gl.createBuffer();
                 if (!buffer) {
                     console.error("createBuffer 失败！");
                     throw "";
                 }
-                gl.cache.attributes.set(attribute, buffer);
+                gl.cache.attributes.set(this, buffer);
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attribute.data), gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl[this.usage]);
             }
             return buffer;
         };
         /**
          * 清理缓冲
          */
-        Attribute.clear = function (attribute) {
+        Attribute.prototype.clear = function (attribute) {
             feng3d.WebGLRenderer.glList.forEach(function (gl) {
                 var buffer = gl.cache.attributes.get(attribute);
                 if (buffer) {
@@ -20746,19 +21181,6 @@ var feng3d;
                 }
             });
         };
-        __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "name", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("invalidate")
-        ], Attribute.prototype, "data", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "size", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "divisor", void 0);
         return Attribute;
     }());
     feng3d.Attribute = Attribute;
@@ -20907,13 +21329,35 @@ var feng3d;
 (function (feng3d) {
     var RenderBuffer = /** @class */ (function () {
         function RenderBuffer() {
-            this.OFFSCREEN_WIDTH = 1024;
-            this.OFFSCREEN_HEIGHT = 1024;
+            this._OFFSCREEN_WIDTH = 1024;
+            this._OFFSCREEN_HEIGHT = 1024;
             /**
              * 是否失效
              */
             this._invalid = true;
         }
+        Object.defineProperty(RenderBuffer.prototype, "OFFSCREEN_WIDTH", {
+            get: function () {
+                return this._OFFSCREEN_WIDTH;
+            },
+            set: function (v) {
+                this._OFFSCREEN_WIDTH = v;
+                this.invalidate();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(RenderBuffer.prototype, "OFFSCREEN_HEIGHT", {
+            get: function () {
+                return this._OFFSCREEN_HEIGHT;
+            },
+            set: function (v) {
+                this._OFFSCREEN_HEIGHT = v;
+                this.invalidate();
+            },
+            enumerable: false,
+            configurable: true
+        });
         /**
          * 使失效
          */
@@ -20955,12 +21399,6 @@ var feng3d;
                 }
             });
         };
-        __decorate([
-            feng3d.watch("invalidate")
-        ], RenderBuffer.prototype, "OFFSCREEN_WIDTH", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], RenderBuffer.prototype, "OFFSCREEN_HEIGHT", void 0);
         return RenderBuffer;
     }());
     feng3d.RenderBuffer = RenderBuffer;
@@ -21096,11 +21534,6 @@ var feng3d;
      * 所有渲染都由该渲染器执行
      */
     var WebGLRenderer = /** @class */ (function () {
-        /**
-         * 获取 GL 实例
-         * @param canvas 画布
-         * @param contextAttributes
-         */
         function WebGLRenderer(canvas, contextAttributes) {
             this.preActiveAttributes = [];
             var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
@@ -21117,7 +21550,7 @@ var feng3d;
             }
             if (!gl)
                 throw "无法初始化WEBGL";
-            this._gl = gl;
+            this.gl = gl;
             //
             new feng3d.GLCache(gl);
             new feng3d.GLExtension(gl);
@@ -21128,50 +21561,42 @@ var feng3d;
             gl.enable(gl.DEPTH_TEST); // Enable depth testing
             gl.depthFunc(gl.LEQUAL); // Near things obscure far things
             WebGLRenderer.glList.push(gl);
+            console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
         }
-        Object.defineProperty(WebGLRenderer.prototype, "gl", {
-            get: function () {
-                return this._gl;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        WebGLRenderer.prototype.render = function (renderAtomic1) {
-            var gl = this.gl;
-            var instanceCount = renderAtomic1.getInstanceCount();
+        WebGLRenderer.prototype.render = function (renderAtomic) {
+            var instanceCount = renderAtomic.getInstanceCount();
             if (instanceCount == 0)
                 return;
-            var shaderMacro = renderAtomic1.getShaderMacro();
-            var shader = renderAtomic1.getShader();
+            var shaderMacro = renderAtomic.getShaderMacro();
+            var shader = renderAtomic.getShader();
             shader.shaderMacro = shaderMacro;
-            var shaderResult = shader.activeShaderProgram(gl);
+            var shaderResult = shader.activeShaderProgram(this.gl);
             if (!shaderResult)
                 return;
             //
-            var renderAtomic = this.checkRenderData(renderAtomic1);
-            if (!renderAtomic)
+            var result = this.checkRenderData(renderAtomic);
+            if (!result)
                 return;
             //
-            gl.useProgram(shaderResult.program);
-            this.activeShaderParams(renderAtomic.renderParams);
+            this.gl.useProgram(shaderResult.program);
+            renderAtomic.renderParams.updateRenderParams(this.gl);
             this.activeAttributes(renderAtomic, shaderResult.attributes);
             this.activeUniforms(renderAtomic, shaderResult.uniforms);
-            this.draw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
+            this.draw(renderAtomic, this.gl[renderAtomic.renderParams.renderMode]);
         };
         WebGLRenderer.prototype.checkRenderData = function (renderAtomic) {
-            var gl = this.gl;
             var shader = renderAtomic.getShader();
-            var shaderResult = shader.activeShaderProgram(gl);
+            var shaderResult = shader.activeShaderProgram(this.gl);
             if (!shaderResult) {
                 console.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
-                return null;
+                return false;
             }
             var attributes = {};
             for (var key_1 in shaderResult.attributes) {
                 var attribute = renderAtomic.getAttributeByKey(key_1);
                 if (attribute == undefined) {
                     console.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
-                    return null;
+                    return false;
                 }
                 attributes[key_1] = attribute;
             }
@@ -21184,125 +21609,29 @@ var feng3d;
                 var uniform = renderAtomic.getUniformByKey(key);
                 if (uniform == undefined) {
                     console.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
-                    return null;
+                    return false;
                 }
                 uniforms[key] = uniform;
             }
-            var indexBuffer = renderAtomic.getIndexBuffer();
-            if (!indexBuffer) {
-                console.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
-                return null;
-            }
-            return {
-                shader: shader,
-                attributes: attributes,
-                uniforms: uniforms,
-                renderParams: renderAtomic.getRenderParams(),
-                indexBuffer: indexBuffer,
-                instanceCount: renderAtomic.getInstanceCount(),
-            };
-        };
-        WebGLRenderer.prototype.activeShaderParams = function (shaderParams) {
-            var gl = this.gl;
-            var cullfaceEnum = shaderParams.cullFace;
-            var blendEquation = gl[shaderParams.blendEquation];
-            var sfactor = gl[shaderParams.sfactor];
-            var dfactor = gl[shaderParams.dfactor];
-            var cullFace = gl[shaderParams.cullFace];
-            var frontFace = gl[shaderParams.frontFace];
-            var enableBlend = shaderParams.enableBlend;
-            var depthtest = shaderParams.depthtest;
-            var depthMask = shaderParams.depthMask;
-            var depthFunc = gl[shaderParams.depthFunc];
-            var viewPort = shaderParams.viewPort;
-            var useViewPort = shaderParams.useViewPort;
-            var useScissor = shaderParams.useScissor;
-            var scissor = shaderParams.scissor;
-            var colorMask = shaderParams.colorMask;
-            var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
-            var usePolygonOffset = shaderParams.usePolygonOffset;
-            var polygonOffsetFactor = shaderParams.polygonOffsetFactor;
-            var polygonOffsetUnits = shaderParams.polygonOffsetUnits;
-            var useStencil = shaderParams.useStencil;
-            var stencilFunc = gl[shaderParams.stencilFunc];
-            var stencilFuncRef = shaderParams.stencilFuncRef;
-            var stencilFuncMask = shaderParams.stencilFuncMask;
-            var stencilOpFail = gl[shaderParams.stencilOpFail];
-            var stencilOpZFail = gl[shaderParams.stencilOpZFail];
-            var stencilOpZPass = gl[shaderParams.stencilOpZPass];
-            var stencilMask = shaderParams.stencilMask;
-            if (!useViewPort) {
-                viewPort = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
-            }
-            if (cullfaceEnum != feng3d.CullFace.NONE) {
-                gl.enable(gl.CULL_FACE);
-                gl.cullFace(cullFace);
-                gl.frontFace(frontFace);
-            }
-            else {
-                gl.disable(gl.CULL_FACE);
-            }
-            if (enableBlend) {
-                //
-                gl.enable(gl.BLEND);
-                gl.blendEquation(blendEquation);
-                gl.blendFunc(sfactor, dfactor);
-            }
-            else {
-                gl.disable(gl.BLEND);
-            }
-            if (depthtest) {
-                gl.enable(gl.DEPTH_TEST);
-                gl.depthFunc(depthFunc);
-            }
-            else {
-                gl.disable(gl.DEPTH_TEST);
-            }
-            gl.depthMask(depthMask);
-            gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
-            gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
-            if (usePolygonOffset) {
-                gl.enable(gl.POLYGON_OFFSET_FILL);
-                gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
-            }
-            else {
-                gl.disable(gl.POLYGON_OFFSET_FILL);
-            }
-            if (useScissor) {
-                gl.enable(gl.SCISSOR_TEST);
-                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
-            }
-            else {
-                gl.disable(gl.SCISSOR_TEST);
-            }
-            if (useStencil) {
-                if (gl.capabilities.stencilBits === 0) {
-                    console.warn(gl + " \u4E0D\u652F\u6301 stencil\uFF0C\u53C2\u8003 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil");
-                }
-                gl.enable(gl.STENCIL_TEST);
-                gl.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
-                gl.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
-                gl.stencilMask(stencilMask);
-            }
-            else {
-                gl.disable(gl.STENCIL_TEST);
-            }
+            return true;
         };
         /**
          * 激活属性
          */
         WebGLRenderer.prototype.activeAttributes = function (renderAtomic, attributeInfos) {
             var gl = this.gl;
-            var preActiveAttributes = this.preActiveAttributes;
             var activeAttributes = [];
             for (var name in attributeInfos) {
                 var activeInfo = attributeInfos[name];
                 var buffer = renderAtomic.attributes[name];
-                feng3d.Attribute.active(gl, activeInfo.location, buffer);
+                buffer.active(gl, activeInfo.location);
                 activeAttributes.push(activeInfo.location);
-                Array.delete(preActiveAttributes, activeInfo.location);
+                var index = this.preActiveAttributes.indexOf(activeInfo.location);
+                if (index !== -1) {
+                    this.preActiveAttributes.splice(index, 1);
+                }
             }
-            preActiveAttributes.forEach(function (location) {
+            this.preActiveAttributes.forEach(function (location) {
                 gl.disableVertexAttribArray(location);
             });
             this.preActiveAttributes = activeAttributes;
@@ -21367,13 +21696,11 @@ var feng3d;
             }
         };
         /**
-         * 绘制
-         * @param renderAtomic  渲染原子
          */
         WebGLRenderer.prototype.draw = function (renderAtomic, renderMode) {
             var gl = this.gl;
-            var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
-            var indexBuffer = renderAtomic.indexBuffer;
+            var instanceCount = ~~renderAtomic.instanceCount;
+            var indexBuffer = renderAtomic.index;
             var vertexNum = 0;
             if (indexBuffer) {
                 feng3d.Index.active(gl, indexBuffer);
@@ -26097,7 +26424,7 @@ var feng3d;
         ShadowRenderer.prototype.drawGameObject = function (gl, renderable, scene, camera) {
             var renderAtomic = renderable.renderAtomic;
             renderable.beforeRender(renderAtomic, scene, camera);
-            renderAtomic.shadowShader = renderAtomic.shadowShader || new feng3d.Shader("shadow");
+            renderAtomic.shadowShader = renderAtomic.shadowShader || new feng3d.Shader({ shaderName: "shadow" });
             //
             this.renderAtomic.next = renderAtomic;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
@@ -26137,7 +26464,7 @@ var feng3d;
                 var renderParams = this.renderAtomic.renderParams;
                 renderParams.enableBlend = false;
                 renderParams.cullFace = feng3d.CullFace.FRONT;
-                this.renderAtomic.shader = new feng3d.Shader("outline");
+                this.renderAtomic.shader = new feng3d.Shader({ shaderName: "outline" });
             }
         };
         OutlineRenderer.prototype.draw = function (gl, scene, camera) {
@@ -26211,7 +26538,7 @@ var feng3d;
             //
             this.renderAtomic.next = renderAtomic;
             //
-            var oldIndexBuffer = renderAtomic.indexBuffer;
+            var oldIndexBuffer = renderAtomic.index;
             if (oldIndexBuffer.count < 3)
                 return;
             if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count != 2 * oldIndexBuffer.count) {
@@ -26223,8 +26550,8 @@ var feng3d;
                 renderAtomic.wireframeindexBuffer = new feng3d.Index();
                 renderAtomic.wireframeindexBuffer.indices = wireframeindices;
             }
-            renderAtomic.wireframeShader = renderAtomic.wireframeShader || new feng3d.Shader("wireframe");
-            this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
+            renderAtomic.wireframeShader = renderAtomic.wireframeShader || new feng3d.Shader({ shaderName: "wireframe" });
+            this.renderAtomic.index = renderAtomic.wireframeindexBuffer;
             this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
             //
             this.renderAtomic.shader = renderAtomic.wireframeShader;
@@ -26552,7 +26879,7 @@ var feng3d;
                     1, -1, 1,
                     -1, -1, 1 //
                 ];
-                renderAtomic.attributes.a_position = new feng3d.Attribute("a_position", vertexPositionData, 3);
+                renderAtomic.attributes.a_position = new feng3d.Attribute({ name: "a_position", data: vertexPositionData, size: 3 });
                 //6个面，12个三角形，36个顶点索引
                 var indices = [
                     0, 1, 2, 2, 3, 0,
@@ -26562,13 +26889,13 @@ var feng3d;
                     4, 0, 3, 3, 7, 4,
                     2, 1, 5, 5, 6, 2 //
                 ];
-                renderAtomic.indexBuffer = new feng3d.Index();
-                renderAtomic.indexBuffer.indices = indices;
+                renderAtomic.index = new feng3d.Index();
+                renderAtomic.index.indices = indices;
                 //
                 var renderParams = renderAtomic.renderParams;
                 renderParams.cullFace = feng3d.CullFace.NONE;
                 //
-                renderAtomic.shader = new feng3d.Shader("skybox");
+                renderAtomic.shader = new feng3d.Shader({ shaderName: "skybox" });
             }
         };
         /**
@@ -29748,15 +30075,15 @@ var feng3d;
              * 属性数据列表
              */
             _this._attributes = {
-                a_position: new feng3d.Attribute("a_position", [], 3),
-                a_color: new feng3d.Attribute("a_color", [], 4),
-                a_uv: new feng3d.Attribute("a_uv", [], 2),
-                a_normal: new feng3d.Attribute("a_normal", [], 3),
-                a_tangent: new feng3d.Attribute("a_tangent", [], 3),
-                a_skinIndices: new feng3d.Attribute("a_skinIndices", [], 4),
-                a_skinWeights: new feng3d.Attribute("a_skinWeights", [], 4),
-                a_skinIndices1: new feng3d.Attribute("a_skinIndices1", [], 4),
-                a_skinWeights1: new feng3d.Attribute("a_skinWeights1", [], 4),
+                a_position: new feng3d.Attribute({ name: "a_position", data: [], size: 3 }),
+                a_color: new feng3d.Attribute({ name: "a_color", data: [], size: 4 }),
+                a_uv: new feng3d.Attribute({ name: "a_uv", data: [], size: 2 }),
+                a_normal: new feng3d.Attribute({ name: "a_normal", data: [], size: 3 }),
+                a_tangent: new feng3d.Attribute({ name: "a_tangent", data: [], size: 3 }),
+                a_skinIndices: new feng3d.Attribute({ name: "a_skinIndices", data: [], size: 4 }),
+                a_skinWeights: new feng3d.Attribute({ name: "a_skinWeights", data: [], size: 4 }),
+                a_skinIndices1: new feng3d.Attribute({ name: "a_skinIndices1", data: [], size: 4 }),
+                a_skinWeights1: new feng3d.Attribute({ name: "a_skinWeights1", data: [], size: 4 }),
             };
             _this._geometryInvalid = true;
             _this._useFaceWeights = false;
@@ -30086,7 +30413,7 @@ var feng3d;
         };
         Geometry.prototype.beforeRender = function (renderAtomic) {
             this.updateGrometry();
-            renderAtomic.indexBuffer = this._indexBuffer;
+            renderAtomic.index = this._indexBuffer;
             for (var key in this._attributes) {
                 if (this._attributes.hasOwnProperty(key)) {
                     renderAtomic.attributes[key] = this._attributes[key];
@@ -33548,7 +33875,7 @@ var feng3d;
             }
             var renderParams = feng3d.shaderConfig.shaders[this.shaderName].renderParams;
             renderParams && feng3d.serialization.setValue(this.renderParams, renderParams);
-            this.renderAtomic.shader = new feng3d.Shader(this.shaderName);
+            this.renderAtomic.shader = new feng3d.Shader({ shaderName: this.shaderName });
         };
         Material.prototype._onUniformsChanged = function () {
             this.renderAtomic.uniforms = this.uniforms;
@@ -37051,12 +37378,12 @@ var feng3d;
              * 属性数据列表
              */
             _this._attributes = {
-                a_particle_position: new feng3d.Attribute("a_particle_position", [], 3, 1),
-                a_particle_scale: new feng3d.Attribute("a_particle_scale", [], 3, 1),
-                a_particle_rotation: new feng3d.Attribute("a_particle_rotation", [], 3, 1),
-                a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
-                a_particle_tilingOffset: new feng3d.Attribute("a_particle_tilingOffset", [], 4, 1),
-                a_particle_flipUV: new feng3d.Attribute("a_particle_flipUV", [], 2, 1),
+                a_particle_position: new feng3d.Attribute({ name: "a_particle_position", data: [], size: 3, divisor: 1 }),
+                a_particle_scale: new feng3d.Attribute({ name: "a_particle_scale", data: [], size: 3, divisor: 1 }),
+                a_particle_rotation: new feng3d.Attribute({ name: "a_particle_rotation", data: [], size: 3, divisor: 1 }),
+                a_particle_color: new feng3d.Attribute({ name: "a_particle_color", data: [], size: 4, divisor: 1 }),
+                a_particle_tilingOffset: new feng3d.Attribute({ name: "a_particle_tilingOffset", data: [], size: 4, divisor: 1 }),
+                a_particle_flipUV: new feng3d.Attribute({ name: "a_particle_flipUV", data: [], size: 2, divisor: 1 }),
             };
             _this._modules = [];
             /**

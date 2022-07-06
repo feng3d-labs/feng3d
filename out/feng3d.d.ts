@@ -8859,38 +8859,53 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 }
 declare namespace feng3d {
     /**
-     * 渲染模式
-     * A GLenum specifying the type primitive to render. Possible values are:
+     * 渲染模式，描述绘制图元的类型。
+     *
+     * A GLenum specifying the type primitive to render.
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
      */
     enum RenderMode {
         /**
-         * 点渲染
+         * 绘制单个点。
+         *
          * gl.POINTS: Draws a single dot.
          */
         POINTS = "POINTS",
         /**
+         * 绘制循环连线。
+         *
          * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
          */
         LINE_LOOP = "LINE_LOOP",
         /**
+         * 绘制连线
+         *
          * gl.LINE_STRIP: Draws a straight line to the next vertex.
          */
         LINE_STRIP = "LINE_STRIP",
         /**
+         * 每两个顶点绘制一条线段。
+         *
          * gl.LINES: Draws a line between a pair of vertices.
          */
         LINES = "LINES",
         /**
+         * 每三个顶点绘制一个三角形。
+         *
          * gl.TRIANGLES: Draws a triangle for a group of three vertices.
          */
         TRIANGLES = "TRIANGLES",
         /**
+         * 绘制三角形条带。
+         *
          * gl.TRIANGLE_STRIP
          * @see https://en.wikipedia.org/wiki/Triangle_strip
          */
         TRIANGLE_STRIP = "TRIANGLE_STRIP",
         /**
+         * 绘制三角扇形。
+         *
          * gl.TRIANGLE_FAN
          * @see https://en.wikipedia.org/wiki/Triangle_fan
          */
@@ -8917,70 +8932,187 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 混合方法
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
      */
     enum BlendEquation {
         /**
+         * 源 + 目标
+         *
          *  source + destination
          */
         FUNC_ADD = "FUNC_ADD",
         /**
+         * 源 - 目标
+         *
          * source - destination
          */
         FUNC_SUBTRACT = "FUNC_SUBTRACT",
         /**
+         * 目标 - 源
+         *
          * destination - source
          */
-        FUNC_REVERSE_SUBTRACT = "FUNC_REVERSE_SUBTRACT"
+        FUNC_REVERSE_SUBTRACT = "FUNC_REVERSE_SUBTRACT",
+        /**
+         * 源与目标的最小值，当开启 EXT_blend_minmax 扩展时生效。
+         *
+         * When using the EXT_blend_minmax extension:
+         * Minimum of source and destination
+         */
+        MIN_EXT = "MIN_EXT",
+        /**
+         * 源与目标的最大值，当开启 EXT_blend_minmax 扩展时生效。
+         *
+         * When using the EXT_blend_minmax extension:
+         * Maximum of source and destination.
+         */
+        MAX_EXT = "MAX_EXT",
+        /**
+         * 源与目标的最小值，在 WebGL 2 中可使用。
+         *
+         * using a WebGL 2 context
+         * Minimum of source and destination
+         */
+        MIN = "MIN",
+        /**
+         * 源与目标的最大值，在 WebGL 2 中可使用。
+         *
+         * using a WebGL 2 context
+         * Maximum of source and destination.
+         */
+        MAX = "MAX"
     }
 }
 declare namespace feng3d {
     /**
      * 混合因子（R分量系数，G分量系数，B分量系数）
+     *
+     * 混合颜色的公式可以这样描述：color(RGBA) = (sourceColor * sfactor) + (destinationColor * dfactor)。这里的 RGBA 值均在0与1之间。
+     *
+     * The formula for the blending color can be described like this: color(RGBA) = (sourceColor * sfactor) + (destinationColor * dfactor). The RBGA values are between 0 and 1.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
      */
     enum BlendFactor {
         /**
-         * 0.0  0.0 0.0
+         * Factor: 0,0,0,0
+         *
+         * 把所有颜色都乘以0。
+         *
+         * Multiplies all colors by 0.
          */
         ZERO = "ZERO",
         /**
-         * 1.0  1.0 1.0
+         * Factor: 1,1,1,1
+         *
+         * 把所有颜色都乘以1。
+         *
+         * Multiplies all colors by 1.
          */
         ONE = "ONE",
         /**
-         * Rs   Gs  Bs
+         * Factor: Rs, Gs, Bs, As
+         *
+         * 将所有颜色乘以源颜色。
+         *
+         * Multiplies all colors by the source colors.
          */
         SRC_COLOR = "SRC_COLOR",
         /**
-         * 1-Rs   1-Gs  1-Bs
+         * Factor: 1-Rs, 1-Gs, 1-Bs, 1-As
+         *
+         * 将所有颜色乘以1减去每个源颜色。
+         *
+         * Multiplies all colors by 1 minus each source color.
          */
         ONE_MINUS_SRC_COLOR = "ONE_MINUS_SRC_COLOR",
         /**
-         * Rd   Gd  Bd
+         * Factor: Rd, Gd, Bd, Ad
+         *
+         * 将所有颜色乘以目标颜色。
+         *
+         * Multiplies all colors by the destination color.
          */
         DST_COLOR = "DST_COLOR",
         /**
-         * 1-Rd   1-Gd  1-Bd
+         * Factor: 1-Rd, 1-Gd, 1-Bd, 1-Ad
+         *
+         * 将所有颜色乘以1减去每个目标颜色。
+         *
+         * Multiplies all colors by 1 minus each destination color.
          */
         ONE_MINUS_DST_COLOR = "ONE_MINUS_DST_COLOR",
         /**
-         * As   As  As
+         * Factor: As, As, As, As
+         *
+         * 将所有颜色乘以源alpha值。
+         *
+         * Multiplies all colors by the source alpha value.
          */
         SRC_ALPHA = "SRC_ALPHA",
         /**
-         * 1-As   1-As  1-As
+         * Factor: 1-As, 1-As, 1-As, 1-As
+         *
+         * 将所有颜色乘以1减去源alpha值。
+         *
+         * Multiplies all colors by 1 minus the source alpha value.
          */
         ONE_MINUS_SRC_ALPHA = "ONE_MINUS_SRC_ALPHA",
         /**
-         * Ad   Ad  Ad
+         * Factor: Ad, Ad, Ad, Ad
+         *
+         * 将所有颜色乘以目标alpha值。
+         *
+         * Multiplies all colors by the destination alpha value.
          */
         DST_ALPHA = "DST_ALPHA",
         /**
-         * 1-Ad   1-Ad  1-Ad
+         * Factor: 1-Ad, 1-Ad, 1-Ad, 1-Ad
+         *
+         * 将所有颜色乘以1减去目标alpha值。
+         *
+         * Multiplies all colors by 1 minus the destination alpha value.
          */
         ONE_MINUS_DST_ALPHA = "ONE_MINUS_DST_ALPHA",
         /**
-         * min(As-Ad)   min(As-Ad)  min(As-Ad)
+         * Factor: Rc, Gc, Bc, Ac
+         *
+         * 将所有颜色乘以一个常数颜色。
+         *
+         * Multiplies all colors by a constant color.
+         */
+        CONSTANT_COLOR = "CONSTANT_COLOR",
+        /**
+         * Factor: 1-Rc, 1-Gc, 1-Bc, 1-Ac
+         *
+         * 所有颜色乘以1减去一个常数颜色。
+         *
+         * Multiplies all colors by 1 minus a constant color.
+         */
+        ONE_MINUS_CONSTANT_COLOR = "ONE_MINUS_CONSTANT_COLOR",
+        /**
+         * Factor: Ac, Ac, Ac, Ac
+         *
+         * 将所有颜色乘以一个常量alpha值。
+         *
+         * Multiplies all colors by a constant alpha value.
+         */
+        CONSTANT_ALPHA = "CONSTANT_ALPHA",
+        /**
+         * Factor: 1-Ac, 1-Ac, 1-Ac, 1-Ac
+         *
+         * 将所有颜色乘以1减去一个常数alpha值。
+         *
+         * Multiplies all colors by 1 minus a constant alpha value.
+         */
+        ONE_MINUS_CONSTANT_ALPHA = "ONE_MINUS_CONSTANT_ALPHA",
+        /**
+         * Factor: min(As, 1 - Ad), min(As, 1 - Ad), min(As, 1 - Ad), 1
+         *
+         * 将RGB颜色乘以源alpha值与1减去目标alpha值的较小值。alpha值乘以1。
+         *
+         * Multiplies the RGB colors by the smaller of either the source alpha value or the value of 1 minus the destination alpha value. The alpha value is multiplied by 1.
          */
         SRC_ALPHA_SATURATE = "SRC_ALPHA_SATURATE"
     }
@@ -9029,14 +9161,19 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 正面方向枚举
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
      */
     enum FrontFace {
         /**
+         * 顺时钟方向
+         *
          * Clock-wise winding.
          */
         CW = "CW",
         /**
+         * 逆时钟方向
+         *
          *  Counter-clock-wise winding.
          */
         CCW = "CCW"
@@ -9169,7 +9306,13 @@ declare namespace feng3d {
         /**
          * 32-bit floating point number
          */
-        FLOAT = "FLOAT"
+        FLOAT = "FLOAT",
+        UNSIGNED_INT = "UNSIGNED_INT",
+        /**
+         * using a WebGL 2 context
+         * 16-bit floating point number
+         */
+        HALF_FLOAT = "HALF_FLOAT"
     }
 }
 declare namespace feng3d {
@@ -9205,41 +9348,59 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 深度检测方法枚举
+     * 指定深度比较函数的枚举，该函数设置绘制像素的条件，默认 LESS，如果传入值小于深度缓冲区值则通过。
+     *
      * A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS.
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
      */
     enum DepthFunc {
         /**
-         * (never pass)
+         * 总是不通过。
+         *
+         * never pass.
          */
         NEVER = "NEVER",
         /**
-         *  (pass if the incoming value is less than the depth buffer value)
+         * 如果传入值小于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is less than the depth buffer value.
          */
         LESS = "LESS",
         /**
-         *  (pass if the incoming value equals the the depth buffer value)
+         * 如果传入值等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value equals the the depth buffer value.
          */
         EQUAL = "EQUAL",
         /**
-         *  (pass if the incoming value is less than or equal to the depth buffer value)
+         * 如果传入值小于或等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is less than or equal to the depth buffer value.
          */
         LEQUAL = "LEQUAL",
         /**
-         * (pass if the incoming value is greater than the depth buffer value)
+         * 如果传入值大于深度缓冲区值则通过。。
+         *
+         * pass if the incoming value is greater than the depth buffer value.
          */
         GREATER = "GREATER",
         /**
-         * (pass if the incoming value is not equal to the depth buffer value)
+         * 如果传入值不等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is not equal to the depth buffer value.
          */
         NOTEQUAL = "NOTEQUAL",
         /**
-         * (pass if the incoming value is greater than or equal to the depth buffer value)
+         * 如果传入值大于或等于深度缓冲区值则通过。
+         *
+         * pass if the incoming value is greater than or equal to the depth buffer value.
          */
         GEQUAL = "GEQUAL",
         /**
-         *  (always pass)
+         * 总是通过。
+         *
+         * always pass.
          */
         ALWAYS = "ALWAYS"
     }
@@ -9252,34 +9413,50 @@ declare namespace feng3d {
      */
     enum StencilFunc {
         /**
+         * 总是不通过。
+         *
          * Never pass.
          */
         NEVER = "NEVER",
         /**
+         * 如果 (ref & mask) <  (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) <  (stencil & mask).
          */
         LESS = "LESS",
         /**
+         * 如果 (ref & mask) = (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) = (stencil & mask).
          */
         EQUAL = "EQUAL",
         /**
+         * 如果 (ref & mask) <= (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) <= (stencil & mask).
          */
         LEQUAL = "LEQUAL",
         /**
+         * 如果 (ref & mask) > (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) > (stencil & mask).
          */
         GREATER = "GREATER",
         /**
+         * 如果 (ref & mask) != (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) != (stencil & mask).
          */
         NOTEQUAL = "NOTEQUAL",
         /**
+         * 如果 (ref & mask) >= (stencil & mask) 则通过。
+         *
          * Pass if (ref & mask) >= (stencil & mask).
          */
         GEQUAL = "GEQUAL",
         /**
+         * 总是通过。
+         *
          * Always pass.
          */
         ALWAYS = "ALWAYS"
@@ -9293,34 +9470,50 @@ declare namespace feng3d {
      */
     enum StencilOp {
         /**
+         * 保持当前值。
+         *
          * Keeps the current value.
          */
         KEEP = "KEEP",
         /**
+         * 设置模板缓冲值为0.
+         *
          * Sets the stencil buffer value to 0.
          */
         ZERO = "ZERO",
         /**
+         * 将模板缓冲区的值设置为WebGLRenderingContext.stencilFunc()指定的参考值。
+         *
          * Sets the stencil buffer value to the reference value as specified by WebGLRenderingContext.stencilFunc().
          */
         REPLACE = "REPLACE",
         /**
+         * 增加当前模板缓冲区的值。最大到可表示的无符号值的最大值。
+         *
          * Increments the current stencil buffer value. Clamps to the maximum representable unsigned value.
          */
         INCR = "INCR",
         /**
+         * 增加当前模板缓冲区的值。当增加最大的可表示无符号值时，将模板缓冲区值包装为零。
+         *
          * Increments the current stencil buffer value. Wraps stencil buffer value to zero when incrementing the maximum representable unsigned value.
          */
         INCR_WRAP = "INCR_WRAP",
         /**
+         * 递减当前模板缓冲区的值。最小为0。
+         *
          * Decrements the current stencil buffer value. Clamps to 0.
          */
         DECR = "DECR",
         /**
+         * 递减当前模板缓冲区的值。当模板缓冲区值减为0时，将模板缓冲区值包装为可表示的最大无符号值。
+         *
          * Decrements the current stencil buffer value. Wraps stencil buffer value to the maximum representable unsigned value when decrementing a stencil buffer value of 0.
          */
         DECR_WRAP = "DECR_WRAP",
         /**
+         * 按位反转当前模板缓冲区值。
+         *
          * Inverts the current stencil buffer value bitwise.
          */
         INVERT = "INVERT"
@@ -9391,6 +9584,12 @@ declare namespace feng3d {
          * GL 扩展
          */
         extensions: GLExtension;
+        /**
+         * 渲染
+         *
+         * @param renderAtomic 渲染数据
+         */
+        render(renderAtomic: RenderAtomic): void;
         /**
          * WEBGL 支持能力
          */
@@ -9561,7 +9760,7 @@ declare namespace feng3d {
          * shader 中的 宏
          */
         shaderMacro: ShaderMacro;
-        constructor(shaderName?: string);
+        constructor(source?: gPartial<Shader>);
         setShader(vertex: string, fragment: string): void;
         /**
          * 激活渲染程序
@@ -9570,15 +9769,15 @@ declare namespace feng3d {
         /**
          * 着色器名称
          */
-        private shaderName;
+        shaderName: string;
         /**
          * 顶点着色器代码
          */
-        private vertex;
+        vertex: string;
         /**
          * 片段着色器代码
          */
-        private fragment;
+        fragment: string;
         /**
          * 更新渲染代码
          */
@@ -9654,55 +9853,97 @@ declare namespace feng3d {
      */
     class RenderParams {
         /**
-        * 渲染模式，默认RenderMode.TRIANGLES
-        */
-        renderMode: RenderMode;
+         * 渲染模式，默认 TRIANGLES，每三个顶点绘制一个三角形。
+         *
+         * A GLenum specifying the type primitive to render. Possible values are:
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+         */
+        renderMode: "POINTS" | "LINE_LOOP" | "LINE_STRIP" | "LINES" | "TRIANGLES" | "TRIANGLE_STRIP" | "TRIANGLE_FAN";
         /**
-         * 剔除面
-         * 参考：http://www.jianshu.com/p/ee04165f2a02
+         * 剔除面，默认 BACK，剔除背面。
+         *
          * 默认情况下，逆时针的顶点连接顺序被定义为三角形的正面。
          * 使用gl.frontFace(gl.CW);调整顺时针为正面
+         *
+         * @see http://www.jianshu.com/p/ee04165f2a02
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
          */
         cullFace: CullFace;
-        frontFace: FrontFace;
         /**
-         * 是否开启混合
+         * 正向方向，默认 CW。三角形顺时针方向为正面。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
+         */
+        frontFace: "CW" | "CCW";
+        /**
+         * 是否开启混合，默认 false，不开启混合。
+         *
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
          */
         enableBlend: boolean;
         /**
-         * 混合方式，默认BlendEquation.FUNC_ADD
+         * 混合方式，默认 FUNC_ADD，源 + 目标。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
          */
-        blendEquation: BlendEquation;
+        blendEquation: "FUNC_ADD" | "FUNC_SUBTRACT" | "FUNC_REVERSE_SUBTRACT";
         /**
-         * 源混合因子，默认BlendFactor.SRC_ALPHA
+         * 源混合因子，默认 SRC_ALPHA，将所有颜色乘以源alpha值。
+         *
+         * @see BlendFactor
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
          */
-        sfactor: BlendFactor;
+        sfactor: "ZERO" | "ONE" | "SRC_COLOR" | "ONE_MINUS_SRC_COLOR" | "DST_COLOR" | "ONE_MINUS_DST_COLOR" | "SRC_ALPHA" | "ONE_MINUS_SRC_ALPHA" | "DST_ALPHA" | "ONE_MINUS_DST_ALPHA" | "SRC_ALPHA_SATURATE";
         /**
-         * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
+         * 目标混合因子，默认 ONE_MINUS_SRC_ALPHA，将所有颜色乘以1减去源alpha值。
+         *
+         * @see BlendFactor
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
          */
-        dfactor: BlendFactor;
+        dfactor: "ZERO" | "ONE" | "SRC_COLOR" | "ONE_MINUS_SRC_COLOR" | "DST_COLOR" | "ONE_MINUS_DST_COLOR" | "SRC_ALPHA" | "ONE_MINUS_SRC_ALPHA" | "DST_ALPHA" | "ONE_MINUS_DST_ALPHA" | "SRC_ALPHA_SATURATE";
         /**
-         * 是否开启深度检查
+         * 是否开启深度检查，默认 true，开启深度检测。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
          */
         depthtest: boolean;
-        depthFunc: DepthFunc;
+        /**
+         * 指定深度比较函数的枚举，该函数设置绘制像素的条件，默认 LESS，如果传入值小于深度缓冲区值则通过。
+         *
+         * A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS.
+         *
+         * @see DepthFunc
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
+         */
+        depthFunc: "NEVER" | "LESS" | "EQUAL" | "LEQUAL" | "GREATER" | "NOTEQUAL" | "GEQUAL" | "ALWAYS";
         /**
          * 是否开启深度标记
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
          */
         depthMask: boolean;
         /**
          * 控制那些颜色分量是否可以被写入到帧缓冲器。
          *
+         * [red, green, blue, alpha]
+         *
          * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
          */
         colorMask: ColorMask;
         /**
-         * 是否使用 viewRect
+         * 是否使用 viewport，默认不使用，不使用时viewport为画布区域。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
          */
         useViewPort: boolean;
         /**
-         * 绘制在画布上的区域
+         * 通过WebGL API的WebGLRenderingContext.viewport()方法设置了viewport，指定了x和y从标准化设备坐标到窗口坐标的仿射变换。
+         *
+         * The WebGLRenderingContext.viewport() method of the WebGL API sets the viewport, which specifies the affine transformation of x and y from normalized device coordinates to window coordinates.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
          */
         viewPort: {
             x: number;
@@ -9711,11 +9952,17 @@ declare namespace feng3d {
             height: number;
         };
         /**
-         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+         * 是否开启剪刀裁剪，默认不开启。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
          */
         useScissor: boolean;
         /**
-         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+         * WebGL API的WebGLRenderingContext.scissor()方法设置了一个剪刀盒，它将绘图限制为一个指定的矩形。
+         *
+         * The WebGLRenderingContext.scissor() method of the WebGL API sets a scissor box, which limits the drawing to a specified rectangle.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
          */
         scissor: {
             x: number;
@@ -9724,60 +9971,104 @@ declare namespace feng3d {
             height: number;
         };
         /**
-         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
+         * 是否开启 gl.POLYGON_OFFSET_FILL，默认不开启。
+         *
+         * WebGL API的WebGLRenderingContext.polygonOffset()方法指定了计算深度值的比例因子和单位。
+         * 在执行深度测试和将值写入深度缓冲区之前添加偏移量。
          *
          * The WebGLRenderingContext.polygonOffset() method of the WebGL API specifies the scale factors and units to calculate depth values.
-         *
          * The offset is added before the depth test is performed and before the value is written into the depth buffer.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
          */
         usePolygonOffset: boolean;
         /**
+         * 为每个多边形设置可变深度偏移的比例因子。缺省值为0。
+         *
          * A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
          */
         polygonOffsetFactor: number;
         /**
+         * 它设置特定于实现的值乘以的乘数，以创建恒定的深度偏移量。缺省值为0。
+         *
          * A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
          */
         polygonOffsetUnits: number;
         /**
-         * Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc().
+         * 是否开启模板测试与更新模板缓冲。
+         *
+         * Activates stencil testing and updates to the stencil buffer.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
          */
         useStencil: boolean;
         /**
+         * 描述模板测试的方法。默认ALWAYS，总是通过。
+         *
          * A GLenum specifying the test function. The default function is gl.ALWAYS.
          *
          * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
          */
-        stencilFunc: StencilFunc;
+        stencilFunc: "NEVER" | "LESS" | "EQUAL" | "LEQUAL" | "GREATER" | "NOTEQUAL" | "GEQUAL" | "ALWAYS";
         /**
+         * 一个为模板测试指定参考值。这个值被限制在0到2^n -1的范围内，其中n是模板缓冲区中的位数。默认0。
+         *
          * A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n -1 where n is the number of bitplanes in the stencil buffer. The default value is 0.
          *
          * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
          */
         stencilFuncRef: number;
         /**
+         * 模板测试时使用的mask值，默认1。
+         *
          * A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1.
          *
          * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
          */
         stencilFuncMask: number;
         /**
+         * 指定模板测试失败时使用的函数的枚举。默认KEEP，保持当前值。
+         *
          * A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
          */
-        stencilOpFail: StencilOp;
+        stencilOpFail: "KEEP" | "ZERO" | "REPLACE" | "INCR" | "INCR_WRAP" | "DECR" | "DECR_WRAP" | "INVERT";
         /**
+         * 指定在模板测试通过但深度测试失败时使用的函数枚举。默认KEEP，保持当前值。
+         *
          * A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
          */
-        stencilOpZFail: StencilOp;
+        stencilOpZFail: "KEEP" | "ZERO" | "REPLACE" | "INCR" | "INCR_WRAP" | "DECR" | "DECR_WRAP" | "INVERT";
         /**
+         * 指定在模板测试和深度测试通过时使用的函数枚举，或在模板测试通过且没有深度缓冲或禁用深度测试时使用的函数枚举。默认KEEP，保持当前值。
+         *
          * A GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
          */
-        stencilOpZPass: StencilOp;
+        stencilOpZPass: "KEEP" | "ZERO" | "REPLACE" | "INCR" | "INCR_WRAP" | "DECR" | "DECR_WRAP" | "INVERT";
         /**
+         * 指定位掩码以启用或禁用在模板平面中写入单个位的正整数。默认1。
+         *
          * A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1.
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
          */
         stencilMask: number;
         constructor(raw?: Partial<RenderParams>);
+        /**
+         * 更新渲染参数
+         *
+         * @param gl WebGL渲染上下文
+         */
+        updateRenderParams(gl: GL): void;
     }
 }
 declare namespace feng3d {
@@ -9792,11 +10083,15 @@ declare namespace feng3d {
         /**
          * 顶点索引缓冲
          */
-        indexBuffer: Index;
+        get index(): Index;
+        set index(v: Index);
+        private _index;
         /**
          * 属性数据列表
          */
-        attributes: Attributes;
+        get attributes(): Attributes;
+        set attributes(v: Attributes);
+        private _attributes;
         /**
          * Uniform渲染数据
          */
@@ -9808,7 +10103,9 @@ declare namespace feng3d {
         /**
          * 渲染程序
          */
-        shader: Shader;
+        get shader(): Shader;
+        set shader(v: Shader);
+        private _shader;
         /**
          * shader 中的 宏
          */
@@ -9816,7 +10113,10 @@ declare namespace feng3d {
         /**
          * 渲染参数
          */
-        renderParams: Partial<RenderParams>;
+        get renderParams(): RenderParams;
+        set renderParams(v: RenderParams);
+        private _renderParams;
+        constructor(source?: gPartial<RenderAtomic>);
         getIndexBuffer(): Index;
         getAttributes(attributes?: Attributes): Attributes;
         getAttributeByKey(key: string): Attribute;
@@ -9827,30 +10127,19 @@ declare namespace feng3d {
         getRenderParams(renderParams?: RenderParams): RenderParams;
         getShaderMacro(shaderMacro?: ShaderMacro): ShaderMacro;
     }
-    interface RenderAtomicData {
-        shader: Shader;
-        attributes: {
-            [name: string]: Attribute;
-        };
-        uniforms: {
-            [name: string]: Uniforms;
-        };
-        renderParams: RenderParams;
-        indexBuffer: Index;
-        instanceCount: number;
-    }
 }
 declare namespace feng3d {
     /**
      * 索引渲染数据
-
      */
     class Index {
         /**
          * 索引数据
          */
-        indices: number[];
-        constructor(indices?: number[]);
+        get indices(): number[];
+        set indices(v: number[]);
+        private _indices;
+        constructor(source?: gPartial<Index>);
         invalidate(): void;
         /**
          * 渲染数量
@@ -9893,7 +10182,9 @@ declare namespace feng3d {
         /**
          * 属性数据
          */
-        data: number[];
+        get data(): number[];
+        set data(v: number[]);
+        private _data;
         /**
          * 数据尺寸
          *
@@ -9910,7 +10201,7 @@ declare namespace feng3d {
             When using a WebGL 2 context, the following values are available additionally:
                - gl.HALF_FLOAT: 16-bit floating point number
          */
-        type: GLArrayType;
+        type: "BYTE" | "SHORT" | "UNSIGNED_BYTE" | "UNSIGNED_SHORT" | "FLOAT" | "UNSIGNED_INT" | "UNSIGNED_INT" | "HALF_FLOAT";
         /**
          * A GLboolean specifying whether integer data values should be normalized when being casted to a float.
               -  If true, signed integers are normalized to [-1, 1].
@@ -9934,10 +10225,18 @@ declare namespace feng3d {
          */
         divisor: number;
         /**
+         * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
+         *
+         * 为优化目的指定数据存储的预期使用模式的GLenum。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+         */
+        usage: AttributeUsage;
+        /**
          * 是否失效
          */
         invalid: boolean;
-        constructor(name: string, data: number[], size?: number, divisor?: number);
+        constructor(source?: gPartial<Attribute>);
         /**
          * 使数据失效
          */
@@ -9947,19 +10246,20 @@ declare namespace feng3d {
          * @param gl
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
-        static active(gl: GL, location: number, attribute: Attribute): void;
+        active(gl: GL, location: number): void;
         /**
          * 获取缓冲
          */
-        static getBuffer(gl: GL, attribute: Attribute): WebGLBuffer;
+        getBuffer(gl: GL): WebGLBuffer;
         /**
          * 清理缓冲
          */
-        static clear(attribute: Attribute): void;
+        clear(attribute: Attribute): void;
     }
 }
 declare namespace feng3d {
     interface Attributes {
+        [attributeName: string]: Attribute;
         /**
          * 坐标
          */
@@ -10083,8 +10383,12 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class RenderBuffer {
-        OFFSCREEN_WIDTH: number;
-        OFFSCREEN_HEIGHT: number;
+        get OFFSCREEN_WIDTH(): number;
+        set OFFSCREEN_WIDTH(v: number);
+        private _OFFSCREEN_WIDTH;
+        get OFFSCREEN_HEIGHT(): number;
+        set OFFSCREEN_HEIGHT(v: number);
+        private _OFFSCREEN_HEIGHT;
         /**
          * 是否失效
          */
@@ -10301,50 +10605,26 @@ declare namespace feng3d {
      */
     class WebGLRenderer {
         static glList: GL[];
-        get gl(): GL;
-        private _gl;
+        gl: GL;
         private preActiveAttributes;
-        /**
-         * 获取 GL 实例
-         * @param canvas 画布
-         * @param contextAttributes
-         */
         constructor(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes);
-        render(renderAtomic1: RenderAtomic): void;
-        checkRenderData(renderAtomic: RenderAtomic): {
-            shader: Shader;
-            attributes: {
-                [name: string]: Attribute;
-            };
-            uniforms: {
-                [name: string]: Uniforms;
-            };
-            renderParams: RenderParams;
-            indexBuffer: Index;
-            instanceCount: number;
-        };
-        activeShaderParams(shaderParams: RenderParams): void;
+        render(renderAtomic: RenderAtomic): void;
+        private checkRenderData;
         /**
          * 激活属性
          */
-        activeAttributes(renderAtomic: RenderAtomicData, attributeInfos: {
-            [name: string]: AttributeInfo;
-        }): void;
+        private activeAttributes;
         /**
          * 激活常量
          */
-        activeUniforms(renderAtomic: RenderAtomicData, uniformInfos: {
-            [name: string]: UniformInfo;
-        }): void;
+        private activeUniforms;
         /**
          * 设置环境Uniform数据
          */
-        setContext3DUniform(activeInfo: UniformInfo, data: any): void;
+        private setContext3DUniform;
         /**
-         * 绘制
-         * @param renderAtomic  渲染原子
          */
-        draw(renderAtomic: RenderAtomicData, renderMode: number): void;
+        private draw;
     }
 }
 declare namespace feng3d {

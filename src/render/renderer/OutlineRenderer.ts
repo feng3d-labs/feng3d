@@ -21,7 +21,7 @@ namespace feng3d
                 renderParams.enableBlend = false;
                 renderParams.cullFace = CullFace.FRONT;
 
-                this.renderAtomic.shader = new Shader("outline");
+                this.renderAtomic.shader = new Shader({ shaderName: "outline" });
             }
         }
 

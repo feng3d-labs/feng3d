@@ -11,9 +11,9 @@ namespace feng3d
          */
         shaderMacro: ShaderMacro = <any>{};
 
-        constructor(shaderName = "")
+        constructor(source?: gPartial<Shader>)
         {
-            this.shaderName = shaderName;
+            Object.assign(this, source);
         }
 
         setShader(vertex: string, fragment: string)
@@ -48,15 +48,15 @@ namespace feng3d
         /**
          * 着色器名称
          */
-        private shaderName: string;
+        shaderName: string;
         /**
          * 顶点着色器代码
          */
-        private vertex: string;
+        vertex: string;
         /**
          * 片段着色器代码
          */
-        private fragment: string
+        fragment: string
 
         /**
          * 更新渲染代码

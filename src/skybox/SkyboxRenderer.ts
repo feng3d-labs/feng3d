@@ -28,7 +28,7 @@ namespace feng3d
                     1, -1, 1,//
                     -1, -1, 1 //
                 ];
-                renderAtomic.attributes.a_position = new Attribute("a_position", vertexPositionData, 3);
+                renderAtomic.attributes.a_position = new Attribute({ name: "a_position", data: vertexPositionData, size: 3 });
                 //6个面，12个三角形，36个顶点索引
                 var indices = [ //
                     0, 1, 2, 2, 3, 0, //
@@ -38,14 +38,14 @@ namespace feng3d
                     4, 0, 3, 3, 7, 4, //
                     2, 1, 5, 5, 6, 2 //
                 ];
-                renderAtomic.indexBuffer = new Index();
-                renderAtomic.indexBuffer.indices = indices;
+                renderAtomic.index = new Index();
+                renderAtomic.index.indices = indices;
                 //
                 var renderParams = renderAtomic.renderParams;
                 renderParams.cullFace = CullFace.NONE;
                 //
 
-                renderAtomic.shader = new Shader("skybox");
+                renderAtomic.shader = new Shader({ shaderName: "skybox" });
             }
         }
 

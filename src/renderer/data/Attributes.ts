@@ -2,6 +2,8 @@ namespace feng3d
 {
     export interface Attributes
     {
+        [attributeName: string]: Attribute;
+
         /**
          * 坐标
          */
@@ -47,5 +49,4 @@ namespace feng3d
          */
         a_skinWeights1: Attribute;
     }
-
 }
