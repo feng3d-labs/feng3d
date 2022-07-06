@@ -24573,6 +24573,120 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 构建线条几何数据
+     *
+     * @param lineData - The graphics object containing all the necessary properties
+     * @param geometry - Geometry where to append output
+     *
+     * @see pixi.js https://github.com/pixijs/pixijs/blob/dev/packages/graphics/src/utils/buildLine.ts
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash
+     */
+    export function buildLineGeometry(lineData: {
+        /**
+         * Minimal distance between points that are considered different.
+         * Affects line tesselation.
+         *
+         * @default 1e-4
+         */
+        epsilon?: number;
+        /**
+         * 是否首尾相连。
+         *
+         * @default false
+         */
+        close?: boolean;
+        /**
+         * The style of the line.
+         */
+        lineStyle?: LineStyle;
+        /**
+         * The collection of points.
+         */
+        points: number[];
+    }, geometry?: {
+        /**
+         * An array of points to draw, 2 numbers per point
+         */
+        points: number[];
+        /**
+         * The indices of the vertices
+         */
+        indices: number[];
+    }): {
+        /**
+         * An array of points to draw, 2 numbers per point
+         */
+        points: number[];
+        /**
+         * The indices of the vertices
+         */
+        indices: number[];
+    };
+    /**
+     * Represents the line style for Graphics.
+     */
+    interface LineStyle {
+        /**
+         * The width (thickness) of any lines drawn.
+         *
+         * @default 1
+         */
+        width?: number;
+        /**
+         * The alignment of any lines drawn (0.5 = middle, 1 = outer, 0 = inner). WebGL only.
+         *
+         * @default 0.5
+         */
+        alignment?: number;
+        /**
+         * Line cap style.
+         *
+         * 'butt': don't add any cap at line ends (leaves orthogonal edges)
+         *
+         * 'round': add semicircle at ends
+         *
+         * 'square': add square at end (like `BUTT` except more length at end)
+         *
+         * @default  'butt'
+         */
+        cap?: 'butt' | 'round' | 'square';
+        /**
+         * Line join style.
+         *
+         * 'miter': make a sharp corner where outer part of lines meet
+         *
+         * 'bevel': add a square butt at each end of line segment and fill the triangle at turn
+         *
+         * 'round': add an arc at the joint
+         *
+         * @default 'miter'
+         *
+         * @see https://graphicdesign.stackexchange.com/questions/59018/what-is-a-bevel-join-of-two-lines-exactly-illustrator
+         */
+        join?: 'miter' | 'bevel' | 'round';
+        /**
+         * Miter limit.
+         *
+         * @default 10
+         */
+        miterLimit?: number;
+        /**
+         * 虚线模式中单位长度，通常被设置为线条宽度
+         *
+         * @default 1
+         */
+        dashedLinePatternUnit?: number;
+        /**
+         * 虚线模式
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash
+         */
+        dashedLinePattern?: number[];
+    }
+    export {};
+}
+declare namespace feng3d {
+    /**
      * 版本号
      */
     var version: string;

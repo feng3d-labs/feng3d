@@ -57339,6 +57339,480 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 构建线条几何数据
+     *
+     * @param lineData - The graphics object containing all the necessary properties
+     * @param geometry - Geometry where to append output
+     *
+     * @see pixi.js https://github.com/pixijs/pixijs/blob/dev/packages/graphics/src/utils/buildLine.ts
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash
+     */
+    function buildLineGeometry(lineData, geometry) {
+        if (geometry === void 0) { geometry = { points: [], indices: [] }; }
+        lineData = Object.assign({}, { epsilon: 1e-4, closeStroke: false }, lineData);
+        lineData.lineStyle = Object.assign({}, { width: 1, alignment: 0.5, cap: 'butt', join: 'miter', miterLimit: 10, dashedLinePatternUnit: 1 }, lineData.lineStyle);
+        //
+        var dashedLineData = transformDashedLine(lineData.points, lineData.lineStyle.dashedLinePatternUnit, lineData.lineStyle.dashedLinePattern);
+        dashedLineData.forEach(function (v) {
+            lineData.points = v;
+            buildSingleLineGeometry(lineData, geometry);
+        });
+        return geometry;
+    }
+    feng3d.buildLineGeometry = buildLineGeometry;
+    /**
+     * Builds a line to draw using the polygon method.
+     *
+     * @param lineData - The graphics object containing all the necessary properties
+     * @param geometry - Geometry where to append output
+     *
+     * @see pixi.js https://github.com/pixijs/pixijs/blob/dev/packages/graphics/src/utils/buildLine.ts
+     */
+    function buildSingleLineGeometry(lineData, geometry) {
+        if (geometry === void 0) { geometry = { points: [], indices: [] }; }
+        var points = lineData.points;
+        var eps = lineData.epsilon;
+        if (points.length === 0) {
+            return geometry;
+        }
+        var style = lineData.lineStyle;
+        // get first and last point.. figure out the middle!
+        var firstPoint = { x: points[0], y: points[1] };
+        var lastPoint = { x: points[points.length - 2], y: points[points.length - 1] };
+        var closedShape = lineData.close;
+        var closedPath = Math.abs(firstPoint.x - lastPoint.x) < eps
+            && Math.abs(firstPoint.y - lastPoint.y) < eps;
+        // if the first point is the last point - gonna have issues :)
+        if (closedShape) {
+            // need to clone as we are going to slightly modify the shape..
+            points = points.slice();
+            if (closedPath) {
+                points.pop();
+                points.pop();
+                lastPoint.x = points[points.length - 2];
+                lastPoint.y = points[points.length - 1];
+            }
+            var midPointX = (firstPoint.x + lastPoint.x) * 0.5;
+            var midPointY = (lastPoint.y + firstPoint.y) * 0.5;
+            points.unshift(midPointX, midPointY);
+            points.push(midPointX, midPointY);
+        }
+        var verts = geometry.points;
+        var length = points.length / 2;
+        var indexCount = points.length;
+        var indexStart = verts.length / 2;
+        // Max. inner and outer width
+        var width = style.width / 2;
+        var widthSquared = width * width;
+        var miterLimitSquared = style.miterLimit * style.miterLimit;
+        /* Line segments of interest where (x1,y1) forms the corner. */
+        var x0 = points[0];
+        var y0 = points[1];
+        var x1 = points[2];
+        var y1 = points[3];
+        var x2 = 0;
+        var y2 = 0;
+        /* perp[?](x|y) = the line normal with magnitude lineWidth. */
+        var perpx = -(y0 - y1);
+        var perpy = x0 - x1;
+        var perp1x = 0;
+        var perp1y = 0;
+        var dist = Math.sqrt((perpx * perpx) + (perpy * perpy));
+        perpx /= dist;
+        perpy /= dist;
+        perpx *= width;
+        perpy *= width;
+        var ratio = style.alignment;
+        var innerWeight = (1 - ratio) * 2;
+        var outerWeight = ratio * 2;
+        if (!closedShape) {
+            if (style.cap === 'round') {
+                indexCount += round(x0 - (perpx * (innerWeight - outerWeight) * 0.5), y0 - (perpy * (innerWeight - outerWeight) * 0.5), x0 - (perpx * innerWeight), y0 - (perpy * innerWeight), x0 + (perpx * outerWeight), y0 + (perpy * outerWeight), verts, true) + 2;
+            }
+            else if (style.cap === 'square') {
+                indexCount += square(x0, y0, perpx, perpy, innerWeight, outerWeight, true, verts);
+            }
+        }
+        // Push first point (below & above vertices)
+        verts.push(x0 - (perpx * innerWeight), y0 - (perpy * innerWeight));
+        verts.push(x0 + (perpx * outerWeight), y0 + (perpy * outerWeight));
+        for (var i = 1; i < length - 1; ++i) {
+            x0 = points[(i - 1) * 2];
+            y0 = points[((i - 1) * 2) + 1];
+            x1 = points[i * 2];
+            y1 = points[(i * 2) + 1];
+            x2 = points[(i + 1) * 2];
+            y2 = points[((i + 1) * 2) + 1];
+            perpx = -(y0 - y1);
+            perpy = x0 - x1;
+            dist = Math.sqrt((perpx * perpx) + (perpy * perpy));
+            perpx /= dist;
+            perpy /= dist;
+            perpx *= width;
+            perpy *= width;
+            perp1x = -(y1 - y2);
+            perp1y = x1 - x2;
+            dist = Math.sqrt((perp1x * perp1x) + (perp1y * perp1y));
+            perp1x /= dist;
+            perp1y /= dist;
+            perp1x *= width;
+            perp1y *= width;
+            /* d[x|y](0|1) = the component displacement between points p(0,1|1,2) */
+            var dx0 = x1 - x0;
+            var dy0 = y0 - y1;
+            var dx1 = x1 - x2;
+            var dy1 = y2 - y1;
+            /* +ve if internal angle counterclockwise, -ve if internal angle clockwise. */
+            var cross = (dy0 * dx1) - (dy1 * dx0);
+            var clockwise = (cross < 0);
+            /* Going nearly straight? */
+            if (Math.abs(cross) < 0.1) {
+                verts.push(x1 - (perpx * innerWeight), y1 - (perpy * innerWeight));
+                verts.push(x1 + (perpx * outerWeight), y1 + (perpy * outerWeight));
+                continue;
+            }
+            /* p[x|y] is the miter point. pdist is the distance between miter point and p1. */
+            var c1 = ((-perpx + x0) * (-perpy + y1)) - ((-perpx + x1) * (-perpy + y0));
+            var c2 = ((-perp1x + x2) * (-perp1y + y1)) - ((-perp1x + x1) * (-perp1y + y2));
+            var px = ((dx0 * c2) - (dx1 * c1)) / cross;
+            var py = ((dy1 * c1) - (dy0 * c2)) / cross;
+            var pdist = ((px - x1) * (px - x1)) + ((py - y1) * (py - y1));
+            /* Inner miter point */
+            var imx = x1 + ((px - x1) * innerWeight);
+            var imy = y1 + ((py - y1) * innerWeight);
+            /* Outer miter point */
+            var omx = x1 - ((px - x1) * outerWeight);
+            var omy = y1 - ((py - y1) * outerWeight);
+            /* Is the inside miter point too far away, creating a spike? */
+            var smallerInsideSegmentSq = Math.min((dx0 * dx0) + (dy0 * dy0), (dx1 * dx1) + (dy1 * dy1));
+            var insideWeight = clockwise ? innerWeight : outerWeight;
+            var smallerInsideDiagonalSq = smallerInsideSegmentSq + (insideWeight * insideWeight * widthSquared);
+            var insideMiterOk = pdist <= smallerInsideDiagonalSq;
+            if (insideMiterOk) {
+                if (style.join === 'bevel' || pdist / widthSquared > miterLimitSquared) {
+                    if (clockwise) /* rotating at inner angle */ {
+                        verts.push(imx, imy); // inner miter point
+                        verts.push(x1 + (perpx * outerWeight), y1 + (perpy * outerWeight)); // first segment's outer vertex
+                        verts.push(imx, imy); // inner miter point
+                        verts.push(x1 + (perp1x * outerWeight), y1 + (perp1y * outerWeight)); // second segment's outer vertex
+                    }
+                    else /* rotating at outer angle */ {
+                        verts.push(x1 - (perpx * innerWeight), y1 - (perpy * innerWeight)); // first segment's inner vertex
+                        verts.push(omx, omy); // outer miter point
+                        verts.push(x1 - (perp1x * innerWeight), y1 - (perp1y * innerWeight)); // second segment's outer vertex
+                        verts.push(omx, omy); // outer miter point
+                    }
+                    indexCount += 2;
+                }
+                else if (style.join === 'round') {
+                    if (clockwise) /* arc is outside */ {
+                        verts.push(imx, imy);
+                        verts.push(x1 + (perpx * outerWeight), y1 + (perpy * outerWeight));
+                        indexCount += round(x1, y1, x1 + (perpx * outerWeight), y1 + (perpy * outerWeight), x1 + (perp1x * outerWeight), y1 + (perp1y * outerWeight), verts, true) + 4;
+                        verts.push(imx, imy);
+                        verts.push(x1 + (perp1x * outerWeight), y1 + (perp1y * outerWeight));
+                    }
+                    else /* arc is inside */ {
+                        verts.push(x1 - (perpx * innerWeight), y1 - (perpy * innerWeight));
+                        verts.push(omx, omy);
+                        indexCount += round(x1, y1, x1 - (perpx * innerWeight), y1 - (perpy * innerWeight), x1 - (perp1x * innerWeight), y1 - (perp1y * innerWeight), verts, false) + 4;
+                        verts.push(x1 - (perp1x * innerWeight), y1 - (perp1y * innerWeight));
+                        verts.push(omx, omy);
+                    }
+                }
+                else {
+                    verts.push(imx, imy);
+                    verts.push(omx, omy);
+                }
+            }
+            else // inside miter is NOT ok
+             {
+                verts.push(x1 - (perpx * innerWeight), y1 - (perpy * innerWeight)); // first segment's inner vertex
+                verts.push(x1 + (perpx * outerWeight), y1 + (perpy * outerWeight)); // first segment's outer vertex
+                if (style.join === 'bevel' || pdist / widthSquared > miterLimitSquared) {
+                    // Nothing needed
+                }
+                else if (style.join === 'round') {
+                    if (clockwise) /* arc is outside */ {
+                        indexCount += round(x1, y1, x1 + (perpx * outerWeight), y1 + (perpy * outerWeight), x1 + (perp1x * outerWeight), y1 + (perp1y * outerWeight), verts, true) + 2;
+                    }
+                    else /* arc is inside */ {
+                        indexCount += round(x1, y1, x1 - (perpx * innerWeight), y1 - (perpy * innerWeight), x1 - (perp1x * innerWeight), y1 - (perp1y * innerWeight), verts, false) + 2;
+                    }
+                }
+                else {
+                    if (clockwise) {
+                        verts.push(omx, omy); // inner miter point
+                        verts.push(omx, omy); // inner miter point
+                    }
+                    else {
+                        verts.push(imx, imy); // outer miter point
+                        verts.push(imx, imy); // outer miter point
+                    }
+                    indexCount += 2;
+                }
+                verts.push(x1 - (perp1x * innerWeight), y1 - (perp1y * innerWeight)); // second segment's inner vertex
+                verts.push(x1 + (perp1x * outerWeight), y1 + (perp1y * outerWeight)); // second segment's outer vertex
+                indexCount += 2;
+            }
+        }
+        x0 = points[(length - 2) * 2];
+        y0 = points[((length - 2) * 2) + 1];
+        x1 = points[(length - 1) * 2];
+        y1 = points[((length - 1) * 2) + 1];
+        perpx = -(y0 - y1);
+        perpy = x0 - x1;
+        dist = Math.sqrt((perpx * perpx) + (perpy * perpy));
+        perpx /= dist;
+        perpy /= dist;
+        perpx *= width;
+        perpy *= width;
+        verts.push(x1 - (perpx * innerWeight), y1 - (perpy * innerWeight));
+        verts.push(x1 + (perpx * outerWeight), y1 + (perpy * outerWeight));
+        if (!closedShape) {
+            if (style.cap === 'round') {
+                indexCount += round(x1 - (perpx * (innerWeight - outerWeight) * 0.5), y1 - (perpy * (innerWeight - outerWeight) * 0.5), x1 - (perpx * innerWeight), y1 - (perpy * innerWeight), x1 + (perpx * outerWeight), y1 + (perpy * outerWeight), verts, false) + 2;
+            }
+            else if (style.cap === 'square') {
+                indexCount += square(x1, y1, perpx, perpy, innerWeight, outerWeight, false, verts);
+            }
+        }
+        var indices = geometry.indices;
+        var eps2 = lineData.epsilon * lineData.epsilon;
+        // indices.push(indexStart);
+        for (var i = indexStart; i < indexCount + indexStart - 2; ++i) {
+            x0 = verts[(i * 2)];
+            y0 = verts[(i * 2) + 1];
+            x1 = verts[(i + 1) * 2];
+            y1 = verts[((i + 1) * 2) + 1];
+            x2 = verts[(i + 2) * 2];
+            y2 = verts[((i + 2) * 2) + 1];
+            /* Skip zero area triangles */
+            if (Math.abs((x0 * (y1 - y2)) + (x1 * (y2 - y0)) + (x2 * (y0 - y1))) < eps2) {
+                continue;
+            }
+            indices.push(i, i + 1, i + 2);
+        }
+        return geometry;
+    }
+    /**
+     * 转换一条线条为一组线条构成的虚线条
+     *
+     * @param linePoints 线条顶点坐标列表
+     * @param unit 虚线模式中单位长度，通常被设置为线条宽度
+     * @param pattern 虚线模式
+     * @returns 由一组线条构成的虚线条
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash
+     */
+    function transformDashedLine(linePoints, unit, pattern) {
+        if (pattern === void 0) { pattern = []; }
+        if (!pattern || pattern.length === 0) {
+            return [linePoints];
+        }
+        /**
+         * 当前虚线条中线条数据
+         */
+        var currentStepDashedLinePoints = [linePoints[0], linePoints[1]];
+        /**
+         * 虚线条数据
+         */
+        var dashedLinePoints = [currentStepDashedLinePoints];
+        /**
+         * 模式索引
+         */
+        var patternIndex = 0;
+        /**
+         * 是否为填充的部分
+         */
+        var isFill = true;
+        /**
+         * 当前模式宽度
+         */
+        var currentPartternWidth = pattern[0] * unit;
+        /**
+         * 当前节点
+         */
+        var currentPoint = [linePoints[0], linePoints[1]];
+        for (var i = 2; i < linePoints.length; i += 2) {
+            /**
+             * 线段下个节点
+             */
+            var nextPoint = [linePoints[i], linePoints[i + 1]];
+            /**
+             * 当前线条宽度
+             */
+            var currentSegmentWidth = Math.sqrt(((nextPoint[0] - currentPoint[0]) * (nextPoint[0] - currentPoint[0])) +
+                ((nextPoint[1] - currentPoint[1]) * (nextPoint[1] - currentPoint[1])));
+            /**
+             * 剩余线条宽度
+             */
+            var leftSegmentWidth = currentSegmentWidth;
+            while (leftSegmentWidth > 0 && currentPartternWidth > 0) {
+                if (currentPartternWidth > leftSegmentWidth) {
+                    if (isFill) {
+                        currentStepDashedLinePoints.push(nextPoint[0], nextPoint[1]);
+                    }
+                    currentPartternWidth = currentPartternWidth - leftSegmentWidth;
+                    // 跳转到下个线段
+                    leftSegmentWidth = 0;
+                }
+                else if (currentPartternWidth === leftSegmentWidth) {
+                    if (isFill) {
+                        currentStepDashedLinePoints.push(nextPoint[0], nextPoint[1]);
+                    }
+                    // 跳转到下个线段
+                    leftSegmentWidth = 0;
+                    // 跳转到下个模式
+                    isFill = !isFill;
+                    if (isFill) {
+                        currentStepDashedLinePoints = [nextPoint[0], nextPoint[1]];
+                        dashedLinePoints.push(currentStepDashedLinePoints);
+                    }
+                    currentPartternWidth = pattern[++patternIndex % pattern.length] * unit;
+                }
+                else {
+                    leftSegmentWidth = leftSegmentWidth - currentPartternWidth;
+                    /**
+                     * 模式切割当前线段的位置
+                     */
+                    var alpha = 1 - leftSegmentWidth / currentSegmentWidth;
+                    var alphaX = currentPoint[0] + (alpha * (nextPoint[0] - currentPoint[0]));
+                    var alphaY = currentPoint[1] + (alpha * (nextPoint[1] - currentPoint[1]));
+                    if (isFill) {
+                        currentStepDashedLinePoints.push(alphaX, alphaY);
+                    }
+                    // 跳转到下个模式
+                    isFill = !isFill;
+                    if (isFill) {
+                        currentStepDashedLinePoints = [alphaX, alphaY];
+                        dashedLinePoints.push(currentStepDashedLinePoints);
+                    }
+                    currentPartternWidth = pattern[++patternIndex % pattern.length] * unit;
+                }
+            }
+            currentPoint = nextPoint;
+        }
+        return dashedLinePoints;
+    }
+    /**
+     * Buffers vertices to draw a square cap.
+     *
+     * Ignored from docs since it is not directly exposed.
+     *
+     * @ignore
+     * @private
+     * @param {number} x - X-coord of end point
+     * @param {number} y - Y-coord of end point
+     * @param {number} nx - X-coord of line normal pointing inside
+     * @param {number} ny - Y-coord of line normal pointing inside
+     * @param {Array<number>} verts - vertex buffer
+     * @returns {}
+     */
+    function square(x, y, nx, ny, innerWeight, outerWeight, clockwise, /* rotation for square (true at left end, false at right end) */ verts) {
+        var ix = x - (nx * innerWeight);
+        var iy = y - (ny * innerWeight);
+        var ox = x + (nx * outerWeight);
+        var oy = y + (ny * outerWeight);
+        /* Rotate nx,ny for extension vector */
+        var exx;
+        var eyy;
+        if (clockwise) {
+            exx = ny;
+            eyy = -nx;
+        }
+        else {
+            exx = -ny;
+            eyy = nx;
+        }
+        /* [i|0]x,y extended at cap */
+        var eix = ix + exx;
+        var eiy = iy + eyy;
+        var eox = ox + exx;
+        var eoy = oy + eyy;
+        /* Square itself must be inserted clockwise*/
+        verts.push(eix, eiy);
+        verts.push(eox, eoy);
+        return 2;
+    }
+    /**
+     * Buffers vertices to draw an arc at the line joint or cap.
+     *
+     * Ignored from docs since it is not directly exposed.
+     *
+     * @ignore
+     * @private
+     * @param {number} cx - X-coord of center
+     * @param {number} cy - Y-coord of center
+     * @param {number} sx - X-coord of arc start
+     * @param {number} sy - Y-coord of arc start
+     * @param {number} ex - X-coord of arc end
+     * @param {number} ey - Y-coord of arc end
+     * @param {Array<number>} verts - buffer of vertices
+     * @param {boolean} clockwise - orientation of vertices
+     * @returns {number} - no. of vertices pushed
+     */
+    function round(cx, cy, sx, sy, ex, ey, verts, clockwise) {
+        var cx2p0x = sx - cx;
+        var cy2p0y = sy - cy;
+        var angle0 = Math.atan2(cx2p0x, cy2p0y);
+        var angle1 = Math.atan2(ex - cx, ey - cy);
+        if (clockwise && angle0 < angle1) {
+            angle0 += Math.PI * 2;
+        }
+        else if (!clockwise && angle0 > angle1) {
+            angle1 += Math.PI * 2;
+        }
+        var startAngle = angle0;
+        var angleDiff = angle1 - angle0;
+        var absAngleDiff = Math.abs(angleDiff);
+        /* if (absAngleDiff >= PI_LBOUND && absAngleDiff <= PI_UBOUND)
+        {
+            const r1x = cx - nxtPx;
+            const r1y = cy - nxtPy;
+    
+            if (r1x === 0)
+            {
+                if (r1y > 0)
+                {
+                    angleDiff = -angleDiff;
+                }
+            }
+            else if (r1x >= -GRAPHICS_CURVES.epsilon)
+            {
+                angleDiff = -angleDiff;
+            }
+        }*/
+        var radius = Math.sqrt((cx2p0x * cx2p0x) + (cy2p0y * cy2p0y));
+        var segCount = ((15 * absAngleDiff * Math.sqrt(radius) / Math.PI) >> 0) + 1;
+        var angleInc = angleDiff / segCount;
+        startAngle += angleInc;
+        if (clockwise) {
+            verts.push(cx, cy);
+            verts.push(sx, sy);
+            for (var i = 1, angle = startAngle; i < segCount; i++, angle += angleInc) {
+                verts.push(cx, cy);
+                verts.push(cx + ((Math.sin(angle) * radius)), cy + ((Math.cos(angle) * radius)));
+            }
+            verts.push(cx, cy);
+            verts.push(ex, ey);
+        }
+        else {
+            verts.push(sx, sy);
+            verts.push(cx, cy);
+            for (var i = 1, angle = startAngle; i < segCount; i++, angle += angleInc) {
+                verts.push(cx + ((Math.sin(angle) * radius)), cy + ((Math.cos(angle) * radius)));
+                verts.push(cx, cy);
+            }
+            verts.push(ex, ey);
+            verts.push(cx, cy);
+        }
+        return segCount * 2;
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 版本号
      */
     feng3d.version = "0.1.3";

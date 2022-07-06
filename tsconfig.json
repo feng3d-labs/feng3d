@@ -501,6 +501,8 @@
         "src/physics/polyfill/GameObject.ts",
         "src/physics/polyfill/View.ts",
         //
+        "src/math/buildLineGeometry.ts",
+        //
         "src/Feng3d.ts",
     ]
 }
