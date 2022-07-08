@@ -5283,6 +5283,13 @@ var feng3d;
             var str1 = JSON.stringify(feng3d.serialization.serialize(curve1));
             assert.ok(str == str1);
         });
+        QUnit.test("Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray", function (assert) {
+            [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(function (item) {
+                var float32Array = new item([1, 2, 3, 4, 5]);
+                var newFloat32Array = feng3d.serialization.clone(float32Array);
+                assert.deepEqual(float32Array, newFloat32Array);
+            });
+        });
     });
 })(feng3d || (feng3d = {}));
 QUnit.module("Task", function () {
