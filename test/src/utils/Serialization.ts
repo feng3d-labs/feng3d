@@ -370,5 +370,17 @@ namespace feng3d
 
             assert.ok(str == str1);
         });
+
+        QUnit.test("Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray", (assert) =>
+        {
+            [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach((item) =>
+            {
+                const float32Array = new item([1, 2, 3, 4, 5]);
+                const newFloat32Array = serialization.clone(float32Array);
+
+                assert.deepEqual(float32Array, newFloat32Array);
+            })
+
+        });
     });
 }

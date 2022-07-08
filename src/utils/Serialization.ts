@@ -665,7 +665,12 @@ namespace feng3d
                     {
                         inst = tpv;
                     }
-                    inst["deserialize"](spv);
+
+                    const result = inst["deserialize"](spv);
+                    if (result)
+                    {
+                        inst = result;
+                    }
                     target[property] = inst;
                     return true;
                 }
@@ -939,21 +944,17 @@ namespace feng3d
         },
     ];
 
+    [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
+    {
+        element.prototype["serialize"] = function (object: { value: number[] })
+        {
+            object.value = Array.from(this);
+            return object;
+        }
 
+        element.prototype["deserialize"] = function (object: { value: number[] })
+        {
+            return new (<any>(this.constructor))(object.value);
+        }
+    });
 }
-
-
-
-// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
-// {
-//     element.prototype["serialize"] = function (object: { value: number[] })
-//     {
-//         object.value = Array.from(this);
-//         return object;
-//     }
-
-//     element.prototype["deserialize"] = function (object: { value: number[] })
-//     {
-//         return new (<any>(this.constructor))(object.value);
-//     }
-// });

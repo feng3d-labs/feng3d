@@ -2209,7 +2209,10 @@ var feng3d;
                     if (tpv && tpv.constructor == inst.constructor) {
                         inst = tpv;
                     }
-                    inst["deserialize"](spv);
+                    var result = inst["deserialize"](spv);
+                    if (result) {
+                        inst = result;
+                    }
                     target[property] = inst;
                     return true;
                 }
@@ -2442,19 +2445,16 @@ var feng3d;
             }
         },
     ];
+    [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(function (element) {
+        element.prototype["serialize"] = function (object) {
+            object.value = Array.from(this);
+            return object;
+        };
+        element.prototype["deserialize"] = function (object) {
+            return new (this.constructor)(object.value);
+        };
+    });
 })(feng3d || (feng3d = {}));
-// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
-// {
-//     element.prototype["serialize"] = function (object: { value: number[] })
-//     {
-//         object.value = Array.from(this);
-//         return object;
-//     }
-//     element.prototype["deserialize"] = function (object: { value: number[] })
-//     {
-//         return new (<any>(this.constructor))(object.value);
-//     }
-// });
 var feng3d;
 (function (feng3d) {
     /**
