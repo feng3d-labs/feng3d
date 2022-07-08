@@ -46,6 +46,7 @@ namespace feng3d
          * 关节权重
          */
         a_skinWeights1: Attribute;
-    }
 
+        [attributeName: string]: Attribute;
+    }
 }

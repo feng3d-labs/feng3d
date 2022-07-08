@@ -28,7 +28,7 @@ namespace feng3d
                     1, -1, 1,//
                     -1, -1, 1 //
                 ];
-                renderAtomic.attributes.a_position = new Attribute("a_position", vertexPositionData, 3);
+                renderAtomic.attributes.a_position = new Attribute({ name: "a_position", data: vertexPositionData, size: 3 });
                 //6个面，12个三角形，36个顶点索引
                 var indices = [ //
                     0, 1, 2, 2, 3, 0, //
@@ -38,36 +38,36 @@ namespace feng3d
                     4, 0, 3, 3, 7, 4, //
                     2, 1, 5, 5, 6, 2 //
                 ];
-                renderAtomic.indexBuffer = new Index();
-                renderAtomic.indexBuffer.indices = indices;
+                renderAtomic.index = new Index();
+                renderAtomic.index.indices = indices;
                 //
                 var renderParams = renderAtomic.renderParams;
                 renderParams.cullFace = CullFace.NONE;
                 //
 
-                renderAtomic.shader = new Shader("skybox");
+                renderAtomic.shader = new Shader({ shaderName: "skybox" });
             }
         }
 
         /**
          * 绘制场景中天空盒
-         * @param gl 
+         * @param renderer 
          * @param scene 场景
          * @param camera 摄像机
          */
-        draw(gl: GL, scene: Scene, camera: Camera)
+        draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
         {
             var skybox = scene.activeSkyBoxs[0];
-            this.drawSkyBox(gl, skybox, scene, camera);
+            this.drawSkyBox(renderer, skybox, scene, camera);
         }
 
         /**
          * 绘制天空盒
-         * @param gl 
+         * @param renderer 
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        drawSkyBox(gl: GL, skybox: SkyBox, scene: Scene, camera: Camera)
+        drawSkyBox(renderer: WebGLRenderer, skybox: SkyBox, scene: Scene, camera: Camera)
         {
             if (!skybox) return;
 
@@ -83,7 +83,7 @@ namespace feng3d
             this.renderAtomic.uniforms.u_cameraPos = camera.transform.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
-            gl.render(this.renderAtomic);
+            renderer.render(this.renderAtomic);
         }
     }
 

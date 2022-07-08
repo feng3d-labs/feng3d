@@ -108,7 +108,7 @@ namespace feng3d
 
         static clear(frameBufferObject: FrameBufferObject)
         {
-            GL.glList.forEach(gl =>
+            WebGLRenderer.glList.forEach(gl =>
             {
                 gl.cache.frameBufferObjects = gl.cache.frameBufferObjects || new Map();
 

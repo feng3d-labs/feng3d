@@ -13,7 +13,7 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene: Scene, camera: Camera)
+        draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
         {
             var pointLights = scene.activePointLights.filter((i) => i.shadowType != ShadowType.No_Shadows);
             for (var i = 0; i < pointLights.length; i++)
@@ -37,8 +37,9 @@ namespace feng3d
             }
         }
 
-        private drawForSpotLight(gl: GL, light: SpotLight, scene: Scene, camera: Camera): any
+        private drawForSpotLight(renderer: WebGLRenderer, light: SpotLight, scene: Scene, camera: Camera): any
         {
+            const gl = renderer.gl;
             FrameBufferObject.active(gl, light.frameBufferObject);
 
             //
@@ -74,14 +75,16 @@ namespace feng3d
 
             castShadowsModels.forEach(renderable =>
             {
-                this.drawGameObject(gl, renderable, scene, camera);
+                this.drawGameObject(renderer, renderable, scene, camera);
             });
 
             light.frameBufferObject.deactive(gl);
         }
 
-        private drawForPointLight(gl: GL, light: PointLight, scene: Scene, camera: Camera): any
+        private drawForPointLight(renderer: WebGLRenderer, light: PointLight, scene: Scene, camera: Camera): any
         {
+            const gl = renderer.gl;
+
             FrameBufferObject.active(gl, light.frameBufferObject);
 
             //
@@ -151,14 +154,14 @@ namespace feng3d
 
                 castShadowsModels.forEach(renderable =>
                 {
-                    this.drawGameObject(gl, renderable, scene, camera);
+                    this.drawGameObject(renderer, renderable, scene, camera);
                 });
             }
             light.frameBufferObject.deactive(gl);
         }
 
 
-        private drawForDirectionalLight(gl: GL, light: DirectionalLight, scene: Scene, camera: Camera): any
+        private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight, scene: Scene, camera: Camera): any
         {
             // 获取影响阴影图的渲染对象
             var models = scene.getPickByDirectionalLight(light);
@@ -167,7 +170,9 @@ namespace feng3d
 
             light.updateShadowByCamera(scene, camera, models);
 
-            FrameBufferObject.active(gl, light.frameBufferObject);
+            FrameBufferObject.active(renderer.gl, light.frameBufferObject);
+
+            const gl = renderer.gl;
 
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -194,7 +199,7 @@ namespace feng3d
             //
             castShadowsModels.forEach(renderable =>
             {
-                this.drawGameObject(gl, renderable, scene, camera);
+                this.drawGameObject(renderer, renderable, scene, camera);
             });
 
             light.frameBufferObject.deactive(gl);
@@ -203,11 +208,11 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        private drawGameObject(gl: GL, renderable: Renderable, scene: Scene, camera: Camera)
+        private drawGameObject(gl: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera)
         {
             var renderAtomic = renderable.renderAtomic;
             renderable.beforeRender(renderAtomic, scene, camera);
-            renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader("shadow");
+            renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader({ shaderName: "shadow" });
 
             //
             this.renderAtomic.next = renderAtomic;

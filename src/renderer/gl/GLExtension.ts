@@ -44,6 +44,11 @@ namespace feng3d
         {
             this.ANGLE_instanced_arrays = gl.getExtension("ANGLE_instanced_arrays");
             this.EXT_blend_minmax = gl.getExtension("EXT_blend_minmax");
+            if (this.EXT_blend_minmax)
+            {
+                gl["MIN_EXT"] = this.EXT_blend_minmax.MIN_EXT;
+                gl["MAX_EXT"] = this.EXT_blend_minmax.MAX_EXT;
+            }
             this.EXT_color_buffer_half_float = gl.getExtension("EXT_color_buffer_half_float");
             this.EXT_frag_depth = gl.getExtension("EXT_frag_depth");
             this.EXT_sRGB = gl.getExtension("EXT_sRGB");

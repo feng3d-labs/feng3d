@@ -1,21 +1,27 @@
 namespace feng3d
 {
-
-	/**
-	 * 索引渲染数据
-
-	 */
+    /**
+     * 索引渲染数据
+     */
     export class Index
     {
         /**
          * 索引数据
          */
-        @watch("invalidate")
-        indices: number[];
-
-        constructor(indices?: number[])
+        get indices()
         {
-            this.indices = indices;
+            return this._indices;
+        }
+        set indices(v)
+        {
+            this._indices = v;
+            this.invalidate();
+        }
+        private _indices: number[];
+
+        constructor(source?: gPartial<Index>)
+        {
+            Object.assign(this, source);
         }
 
         invalidate()
@@ -36,7 +42,7 @@ namespace feng3d
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
-        type = GLArrayType.UNSIGNED_SHORT;
+        type = GLArrayType.UNSIGNED_INT;
 
         /**
          * 索引偏移
@@ -80,7 +86,7 @@ namespace feng3d
                 gl.cache.indices.set(index, buffer);
 
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index.indices), gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(index.indices), gl.STATIC_DRAW);
             }
             return buffer;
         }
@@ -90,7 +96,7 @@ namespace feng3d
          */
         static clear(index: Index)
         {
-            GL.glList.forEach(gl =>
+            WebGLRenderer.glList.forEach(gl =>
             {
                 var buffer = gl.cache.indices.get(index);
                 if (buffer)

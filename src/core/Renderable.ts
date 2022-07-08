@@ -125,7 +125,7 @@ namespace feng3d
                 rayEntryDistance: rayEntryDistance,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
                 geometry: this.geometry,
-                cullFace: this.material.renderParams.cullFace,
+                cullFace: this.material.renderParams.cullFace as CullFace,
             };
 
             return pickingCollisionVO;

@@ -549,12 +549,12 @@ namespace feng3d
          * 属性数据列表
          */
         private _attributes = {
-            a_particle_position: new Attribute("a_particle_position", [], 3, 1),
-            a_particle_scale: new Attribute("a_particle_scale", [], 3, 1),
-            a_particle_rotation: new Attribute("a_particle_rotation", [], 3, 1),
-            a_particle_color: new Attribute("a_particle_color", [], 4, 1),
-            a_particle_tilingOffset: new Attribute("a_particle_tilingOffset", [], 4, 1),
-            a_particle_flipUV: new Attribute("a_particle_flipUV", [], 2, 1),
+            a_particle_position: new Attribute({ name: "a_particle_position", data: [], size: 3, divisor: 1 }),
+            a_particle_scale: new Attribute({ name: "a_particle_scale", data: [], size: 3, divisor: 1 }),
+            a_particle_rotation: new Attribute({ name: "a_particle_rotation", data: [], size: 3, divisor: 1 }),
+            a_particle_color: new Attribute({ name: "a_particle_color", data: [], size: 4, divisor: 1 }),
+            a_particle_tilingOffset: new Attribute({ name: "a_particle_tilingOffset", data: [], size: 4, divisor: 1 }),
+            a_particle_flipUV: new Attribute({ name: "a_particle_flipUV", data: [], size: 2, divisor: 1 }),
         };
 
         private readonly _modules: ParticleModule[] = [];

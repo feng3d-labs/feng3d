@@ -16,7 +16,7 @@ namespace feng3d
         /**
          * 渲染
          */
-        draw(gl: GL, scene: Scene, camera: Camera)
+        draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
         {
             
             

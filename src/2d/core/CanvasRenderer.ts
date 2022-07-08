@@ -64,7 +64,7 @@ namespace feng2d
          */
         static draw(view: feng3d.View)
         {
-            var gl = view.gl;
+            var gl = view.gl.gl;
             var scene = view.scene;
 
             var canvasList = scene.getComponentsInChildren("Canvas").filter(v => v.isVisibleAndEnabled);
@@ -85,7 +85,7 @@ namespace feng2d
 
                     renderable.beforeRender(renderAtomic, null, null);
 
-                    gl.render(renderAtomic);
+                    view.gl.render(renderAtomic);
                 });
 
             });
