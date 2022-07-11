@@ -2,16 +2,9 @@ namespace feng3d
 {
     export type Constructor<T> = (new (...args) => T);
 
-    export interface GameObjectEventMap extends MouseEventMap
+    export interface GameObjectEventMap extends EntityEventMap, MouseEventMap
     {
-        /**
-         * 添加子组件事件
-         */
-        addComponent: { gameobject: GameObject, component: Component };
-        /**
-         * 移除子组件事件
-         */
-        removeComponent: { gameobject: GameObject, component: Component };
+
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
