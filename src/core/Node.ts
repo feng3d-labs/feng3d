@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface ContainerEventMap<T = Container> extends EntityEventMap
+    export interface NodeEventMap<T = Node> extends EntityEventMap
     {
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
@@ -22,19 +22,19 @@ namespace feng3d
         removed: { parent: T };
     }
 
-    export interface Container
+    export interface Node
     {
-        once<K extends keyof ContainerEventMap>(type: K, listener: (event: Event<ContainerEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof ContainerEventMap>(type: K, data?: ContainerEventMap[K], bubbles?: boolean): Event<ContainerEventMap[K]>;
-        has<K extends keyof ContainerEventMap>(type: K): boolean;
-        on<K extends keyof ContainerEventMap>(type: K, listener: (event: Event<ContainerEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof ContainerEventMap>(type?: K, listener?: (event: Event<ContainerEventMap[K]>) => any, thisObject?: any): void;
+        once<K extends keyof NodeEventMap>(type: K, listener: (event: Event<NodeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof NodeEventMap>(type: K, data?: NodeEventMap[K], bubbles?: boolean): Event<NodeEventMap[K]>;
+        has<K extends keyof NodeEventMap>(type: K): boolean;
+        on<K extends keyof NodeEventMap>(type: K, listener: (event: Event<NodeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof NodeEventMap>(type?: K, listener?: (event: Event<NodeEventMap[K]>) => any, thisObject?: any): void;
     }
 
-    export class Container extends Entity
+    export class Node extends Entity
     {
-        protected _parent: Container;
-        protected _children: Container[] = [];
+        protected _parent: Node;
+        protected _children: Node[] = [];
 
         get parent()
         {
@@ -73,7 +73,7 @@ namespace feng3d
          * 
          * @param child 可能的子孙对象
          */
-        contains(child: Container)
+        contains(child: Node)
         {
             var checkitem = child;
             do
@@ -90,7 +90,7 @@ namespace feng3d
          * 
          * @param child 子对象
          */
-        addChild(child: Container)
+        addChild(child: Node)
         {
             if (child == null)
                 return;
@@ -154,7 +154,7 @@ namespace feng3d
          * 
          * @param child 子对象
          */
-        removeChild(child: Container)
+        removeChild(child: Node)
         {
             if (child == null) return;
             var childIndex = this._children.indexOf(child);
@@ -191,12 +191,12 @@ namespace feng3d
             return this._children.concat();
         }
 
-        protected _setParent(value: Container | null)
+        protected _setParent(value: Node | null)
         {
             this._parent = value;
         }
 
-        private removeChildInternal(childIndex: number, child: Container)
+        private removeChildInternal(childIndex: number, child: Node)
         {
             childIndex = childIndex;
             this._children.splice(childIndex, 1);

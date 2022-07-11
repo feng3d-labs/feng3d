@@ -43,7 +43,7 @@ namespace feng3d
         /**
          * 几何体信息
          */
-        @oav({ component: "OAVMultiText", priority: 10 })
+        @oav({ component: "OAVMultiText", priority: -10 })
         get geometryInfo()
         {
             var str = [

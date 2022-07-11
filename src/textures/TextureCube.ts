@@ -32,7 +32,7 @@ namespace feng3d
 
         static ImageNames: TextureCubeImageName[] = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"];
 
-        @oav({ component: "OAVCubeMap", priority: -1 })
+        @oav({ component: "OAVCubeMap", priority: 1 })
         OAVCubeMap: string = "";
 
         /**

@@ -2,7 +2,7 @@ namespace feng3d
 {
     export type Constructor<T> = (new (...args) => T);
 
-    export interface GameObjectEventMap extends ContainerEventMap<GameObject>, MouseEventMap
+    export interface GameObjectEventMap extends NodeEventMap<GameObject>, MouseEventMap
     {
         /**
          * 当GameObject的scene属性被设置是由Scene派发
@@ -45,7 +45,7 @@ namespace feng3d
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends Container implements IDisposable
+    export class GameObject extends Node implements IDisposable
     {
         protected _parent: GameObject;
         protected _children: GameObject[];
@@ -70,7 +70,7 @@ namespace feng3d
          * 名称
          */
         @serialize
-        @oav({ component: "OAVGameObjectName" })
+        @oav({ component: "OAVGameObjectName", priority: 10000 })
         name: string;
 
         /**
