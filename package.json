@@ -30,5 +30,8 @@
   "bugs": {
     "url": "https://gitlab.com/feng3d/feng3d/issues"
   },
-  "homepage": "https://gitlab.com/feng3d/feng3d#readme"
+  "homepage": "https://gitlab.com/feng3d/feng3d#readme",
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  }
 }
