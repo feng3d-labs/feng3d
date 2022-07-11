@@ -38,13 +38,13 @@ namespace feng3d
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
     }
 
-	/**
+    /**
      * 组件
      * 
      * 所有附加到GameObjects的基类。
      * 
      * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
-	 */
+     */
     export class Component extends Feng3dObject implements IDisposable
     {
         //------------------------------------------
@@ -80,18 +80,12 @@ namespace feng3d
             return false;
         }
 
-        /**
-         * 是否已销毁
-         */
-        get disposed() { return this._disposed; }
-        private _disposed = false;
-
         //------------------------------------------
         // Functions
         //------------------------------------------
-		/**
-		 * 创建一个组件
-		 */
+        /**
+         * 创建一个组件
+         */
         constructor()
         {
             super();

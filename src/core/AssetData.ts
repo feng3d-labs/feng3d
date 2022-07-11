@@ -11,15 +11,15 @@ namespace feng3d
          * 资源名称
          */
         @serialize
-        get name()
+        get assetName(): string
         {
             var asset = rs.getAssetById(this.assetId);
             if (asset)
-                this._name = asset.fileName;
-            return this._name;
+            {
+                return asset.fileName;
+            }
+            return null;
         }
-        set name(v) { this._name = v; }
-        private _name: string;
 
         /**
          * 资源编号

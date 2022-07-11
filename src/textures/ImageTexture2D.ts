@@ -8,11 +8,11 @@ namespace feng3d
         // __class__: "feng3d.ImageTexture2D" = "feng3d.ImageTexture2D";
 
         @watch("_imageChanged")
-        image: HTMLImageElement;
+        imageSource: HTMLImageElement;
 
         private _imageChanged()
         {
-            this._pixels = this.image;
+            this._pixels = this.imageSource;
             this.invalidate();
         }
     }

@@ -36,8 +36,8 @@ namespace feng3d
     export interface Texture2DEventMap
     {
         /**
-		 * 加载完成
-		 */
+         * 加载完成
+         */
         loadCompleted: any;
     }
 

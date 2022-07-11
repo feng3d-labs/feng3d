@@ -24,7 +24,8 @@ namespace feng3d
         /**
          * 是否已销毁
          */
-        readonly disposed: boolean;
+        get disposed() { return this._disposed; }
+        protected _disposed = false;
 
         /**
          * 构建

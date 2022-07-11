@@ -49,7 +49,7 @@ namespace feng3d
          * @param funcName 被扩展函数名称
          * @param extendFunc 在函数执行后执行的扩展函数
          */
-        extendFunction<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
+        extendFunction<T, K extends FunctionPropertyNames<T>, V extends (T[K] & ((...args: any) => any))>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
         {
             var oldFun = object[funcName];
             object[funcName] = <any>(function (...args: Parameters<V>)
@@ -75,7 +75,7 @@ namespace feng3d
          * @param beforeFunc 在函数执行前执行的函数
          * @param afterFunc 在函数执行后执行的函数
          */
-        wrap<T, K extends FunctionPropertyNames<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F)
+        wrap<T, K extends FunctionPropertyNames<T>, F extends T[K] & Function>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F)
         {
             if (!beforeFunc && !afterFunc) return;
 
@@ -124,7 +124,7 @@ namespace feng3d
          * @param wrapFunc 在函数执行前执行的函数
          * @param before 运行在原函数之前
          */
-        unwrap<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V)
+        unwrap<T, K extends FunctionPropertyNames<T>, V extends T[K] & Function>(object: T, funcName: K, wrapFunc?: V)
         {
             var functionwraps: Wraps<T, K> = object[__functionwrap__];
             var info = functionwraps[funcName];
