@@ -1,5 +1,27 @@
 namespace feng3d
 {
+    export interface EntityEventMap
+    {
+        /**
+         * 添加子组件事件
+         */
+        addComponent: { gameobject: GameObject, component: Component };
+
+        /**
+         * 移除子组件事件
+         */
+        removeComponent: { gameobject: GameObject, component: Component };
+    }
+
+    export interface Entity
+    {
+        once<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof EntityEventMap>(type: K, data?: EntityEventMap[K], bubbles?: boolean): Event<EntityEventMap[K]>;
+        has<K extends keyof EntityEventMap>(type: K): boolean;
+        on<K extends keyof EntityEventMap>(type: K, listener: (event: Event<EntityEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof EntityEventMap>(type?: K, listener?: (event: Event<EntityEventMap[K]>) => any, thisObject?: any): void;
+    }
+
     export class Entity extends Feng3dObject
     {
         protected _components: Components[] = [];
@@ -166,7 +188,7 @@ namespace feng3d
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.dispatch("removeComponent", { component: component, gameobject: this }, true);
+            this.dispatch("removeComponent", { component: component, gameobject: this as any }, true);
             component.dispose();
             return component;
         }
@@ -260,7 +282,7 @@ namespace feng3d
             component.setGameObject(this as any);
             component.init();
             //派发添加组件事件
-            this.dispatch("addComponent", { component: component, gameobject: this }, true);
+            this.dispatch("addComponent", { component: component, gameobject: this as any }, true);
         }
 
     }
