@@ -24,6 +24,9 @@ namespace feng3d
 
     export class Entity extends Feng3dObject
     {
+        /**
+         * 组件列表
+         */
         protected _components: Components[] = [];
 
         /**
