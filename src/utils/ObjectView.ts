@@ -88,7 +88,7 @@ namespace feng3d
 		tooltip?: string;
 
 		/**
-		 * 优先级，数字越小，显示越靠前，默认为0
+		 * 优先级，数字越大，显示越靠前，默认为0
 		 */
 		priority?: number;
 
@@ -314,7 +314,7 @@ namespace feng3d
 			objectAttributeInfos.forEach((v, i) => { v["___tempI"] = i });
 			objectAttributeInfos.sort((a, b) =>
 			{
-				return ((a.priority || 0) - (b.priority || 0)) || (a["___tempI"] - b["___tempI"]);
+				return ((b.priority || 0) - (a.priority || 0)) || (a["___tempI"] - b["___tempI"]);
 			});
 			objectAttributeInfos.forEach((v, i) => { delete v["___tempI"] });
 

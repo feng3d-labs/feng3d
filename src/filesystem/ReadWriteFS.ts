@@ -1,5 +1,10 @@
 namespace feng3d
 {
+    export interface ReadWriteFS
+    {
+        get fs(): IReadWriteFS;
+    }
+
     /**
      * 可读写文件系统
      * 
@@ -11,8 +16,6 @@ namespace feng3d
          * 项目名称（表单名称）
          */
         projectname: string;
-
-        fs: IReadWriteFS;
 
         constructor(fs?: IReadWriteFS)
         {

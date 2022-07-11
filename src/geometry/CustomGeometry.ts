@@ -10,7 +10,15 @@ namespace feng3d
          * 顶点索引缓冲
          */
         @serialize
-        indices: number[];
+        private get indicesData()
+        {
+            return this.indices;
+        }
+
+        private set indicesData(v)
+        {
+            this.indices = v;
+        }
 
         /**
          * 属性数据列表

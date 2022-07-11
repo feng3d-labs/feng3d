@@ -57,7 +57,7 @@ namespace feng3d
                 // 如果两个类定义名称相同，则保留上个对象数据
                 if (classUtils.getQualifiedClassName(oldInstance) == this.scriptName)
                 {
-                    serialization.setValue(this._scriptInstance, oldInstance);
+                    serialization.setValue(this._scriptInstance, <any>oldInstance);
                 }
                 oldInstance.component = null;
                 oldInstance.dispose();

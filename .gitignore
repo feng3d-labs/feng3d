@@ -4,3 +4,4 @@
 /api
 *.tsbuildinfo
 /out
+/test/out

@@ -19,7 +19,11 @@ namespace feng3d
 
         geometry = Geometry.getDefault("Terrain-Geometry");
 
-        material = Material.getDefault("Terrain-Material");
+        constructor()
+        {
+            super();
+            this.material = Material.getDefault("Terrain-Material");
+        }
     }
 
     GameObject.registerPrimitive("Terrain", (g) =>

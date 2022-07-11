@@ -1,15 +1,15 @@
 namespace feng3d
 {
+    export interface ReadWriteRS
+    {
+        get fs(): ReadWriteFS;
+    }
+
     /**
      * 可读写资源系统
      */
     export class ReadWriteRS extends ReadRS
     {
-        /**
-         * 文件系统
-         */
-        fs: ReadWriteFS;
-
         /**
          * 延迟保存执行函数
          */
