@@ -39,6 +39,7 @@ namespace feng3d
         set children(v: GameObject[]);
         addChild(child: GameObject): GameObject;
         getChildAt(index: number): GameObject;
+        getChildren(): GameObject[];
     }
 
     /**

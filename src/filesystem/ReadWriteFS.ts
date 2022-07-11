@@ -1,5 +1,10 @@
 namespace feng3d
 {
+    export interface ReadWriteFS
+    {
+        get fs(): IReadWriteFS;
+    }
+
     /**
      * 可读写文件系统
      * 
@@ -11,11 +16,6 @@ namespace feng3d
          * 项目名称（表单名称）
          */
         projectname: string;
-
-        get readWriteFS()
-        {
-            return this.fs as IReadWriteFS;
-        }
 
         constructor(fs?: IReadWriteFS)
         {
@@ -29,7 +29,7 @@ namespace feng3d
          */
         exists(path: string, callback: (exists: boolean) => void)
         {
-            this.readWriteFS.exists(path, callback);
+            this.fs.exists(path, callback);
         }
 
         /**
@@ -39,7 +39,7 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void)
         {
-            this.readWriteFS.readdir(path, callback);
+            this.fs.readdir(path, callback);
         }
 
         /**
@@ -51,14 +51,14 @@ namespace feng3d
         {
             path = pathUtils.normalizeDir(path);
 
-            this.readWriteFS.exists(path, (exists) =>
+            this.fs.exists(path, (exists) =>
             {
                 if (exists)
                 {
                     callback && callback(null);
                     return;
                 }
-                this.readWriteFS.mkdir(path, callback);
+                this.fs.mkdir(path, callback);
             });
         }
 
@@ -69,7 +69,7 @@ namespace feng3d
          */
         deleteFile(path: string, callback?: (err: Error) => void)
         {
-            this.readWriteFS.deleteFile(path, callback);
+            this.fs.deleteFile(path, callback);
         }
 
         /**
@@ -93,7 +93,7 @@ namespace feng3d
             {
                 dataTransform.arrayBufferToString(arraybuffer, (str) =>
                 {
-                    this.readWriteFS.writeString(path, str, (err) =>
+                    this.fs.writeString(path, str, (err) =>
                     {
                         callback(err);
                     });
@@ -102,7 +102,7 @@ namespace feng3d
             {
                 dataTransform.arrayBufferToObject(arraybuffer, (obj) =>
                 {
-                    this.readWriteFS.writeObject(path, obj, (err) =>
+                    this.fs.writeObject(path, obj, (err) =>
                     {
                         callback(err);
                     });
@@ -136,7 +136,7 @@ namespace feng3d
                     callback && callback(err);
                     return;
                 }
-                this.readWriteFS.writeArrayBuffer(path, arraybuffer, callback);
+                this.fs.writeArrayBuffer(path, arraybuffer, callback);
             });
         }
 
@@ -157,7 +157,7 @@ namespace feng3d
                     callback && callback(err);
                     return;
                 }
-                this.readWriteFS.writeString(path, str, callback);
+                this.fs.writeString(path, str, callback);
             });
         }
 
@@ -178,7 +178,7 @@ namespace feng3d
                     callback && callback(err);
                     return;
                 }
-                this.readWriteFS.writeObject(path, object, callback);
+                this.fs.writeObject(path, object, callback);
             });
         }
 
@@ -199,7 +199,7 @@ namespace feng3d
                     callback && callback(err);
                     return;
                 }
-                this.readWriteFS.writeImage(path, image, callback);
+                this.fs.writeImage(path, image, callback);
             });
         }
 
@@ -211,7 +211,7 @@ namespace feng3d
          */
         copyFile(src: string, dest: string, callback?: (err: Error) => void)
         {
-            this.readWriteFS.copyFile(src, dest, callback);
+            this.fs.copyFile(src, dest, callback);
         }
 
         /**
@@ -222,7 +222,7 @@ namespace feng3d
          */
         isDirectory(path: string, callback: (result: boolean) => void)
         {
-            this.readWriteFS.isDirectory(path, callback);
+            this.fs.isDirectory(path, callback);
         }
 
         /**
@@ -232,7 +232,7 @@ namespace feng3d
          */
         initproject(projectname: string, callback: (err: Error) => void)
         {
-            this.readWriteFS.initproject(projectname, callback);
+            this.fs.initproject(projectname, callback);
         }
 
         /**
@@ -242,7 +242,7 @@ namespace feng3d
          */
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            this.readWriteFS.hasProject(projectname, callback);
+            this.fs.hasProject(projectname, callback);
         }
 
         /**

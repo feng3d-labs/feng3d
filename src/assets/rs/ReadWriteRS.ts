@@ -1,18 +1,15 @@
 namespace feng3d
 {
+    export interface ReadWriteRS
+    {
+        get fs(): ReadWriteFS;
+    }
+
     /**
      * 可读写资源系统
      */
     export class ReadWriteRS extends ReadRS
     {
-        /**
-         * 文件系统
-         */
-        get readWriteFS()
-        {
-            return this.fs as ReadWriteFS;
-        }
-
         /**
          * 延迟保存执行函数
          */
@@ -41,7 +38,7 @@ namespace feng3d
         {
             var allAssets = this.getAllAssets();
             var object = serialization.serialize(allAssets);
-            this.readWriteFS.writeObject(this.resources, object, callback)
+            this.fs.writeObject(this.resources, object, callback)
         }
 
         /**

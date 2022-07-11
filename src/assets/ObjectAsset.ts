@@ -16,7 +16,7 @@ namespace feng3d
         {
             this.data.assetId = this.assetId;
             var d = serialization.serialize(this.data);
-            this.rs.readWriteFS.writeObject(this.assetPath, d, (err) =>
+            this.rs.fs.writeObject(this.assetPath, d, (err) =>
             {
                 callback && callback(err);
             });

@@ -34,7 +34,7 @@ namespace feng3d
 
         saveFile(callback?: (err: Error) => void)
         {
-            this.rs.readWriteFS.writeImage(this.assetPath, this.image, (err) =>
+            this.rs.fs.writeImage(this.assetPath, this.image, (err) =>
             {
                 callback && callback(err);
             });
