@@ -14,7 +14,7 @@ namespace feng3d
 
         get readWriteFS()
         {
-            return this.readWriteFS as IReadWriteFS;
+            return this.fs as IReadWriteFS;
         }
 
         constructor(fs?: IReadWriteFS)
