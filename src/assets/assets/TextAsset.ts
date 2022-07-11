@@ -19,7 +19,7 @@ namespace feng3d
 
         saveFile(callback?: (err: Error) => void)
         {
-            this.rs.fs.writeString(this.assetPath, this.textContent, callback);
+            this.rs.readWriteFS.writeString(this.assetPath, this.textContent, callback);
         }
 
         /**

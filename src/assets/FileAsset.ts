@@ -251,7 +251,7 @@ namespace feng3d
                 return;
             }
             this._preview = image;
-            this.rs.fs.writeImage(this.previewPath, image, callback);
+            this.rs.readWriteFS.writeImage(this.previewPath, image, callback);
         }
 
         /**
@@ -261,7 +261,7 @@ namespace feng3d
          */
         deletePreview(callback?: (err: Error) => void)
         {
-            this.rs.fs.deleteFile(this.previewPath, callback);
+            this.rs.readWriteFS.deleteFile(this.previewPath, callback);
         }
 
         /**
@@ -285,7 +285,7 @@ namespace feng3d
          */
         protected deleteFile(callback?: (err: Error) => void)
         {
-            this.rs.fs.deleteFile(this.assetPath, callback);
+            this.rs.readWriteFS.deleteFile(this.assetPath, callback);
 
             // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
             ticker.once(1000, () =>
@@ -326,7 +326,7 @@ namespace feng3d
          */
         protected writeMeta(callback?: (err: Error) => void)
         {
-            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
+            this.rs.readWriteFS.writeObject(this.metaPath, this.meta, callback);
         }
 
         /**
@@ -336,7 +336,7 @@ namespace feng3d
          */
         protected deleteMeta(callback?: (err: Error) => void)
         {
-            this.rs.fs.deleteFile(this.metaPath, callback);
+            this.rs.readWriteFS.deleteFile(this.metaPath, callback);
         }
 
         /**

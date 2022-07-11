@@ -39,7 +39,7 @@ namespace feng3d
          */
         saveFile(callback?: (err: Error) => void)
         {
-            this.rs.fs.mkdir(this.assetPath, callback);
+            this.rs.readWriteFS.mkdir(this.assetPath, callback);
         }
 
         /**

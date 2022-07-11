@@ -17,7 +17,7 @@ namespace feng3d
          */
         saveFile(callback?: (err: Error) => void)
         {
-            this.rs.fs.writeArrayBuffer(this.assetPath, this.arraybuffer, callback);
+            this.rs.readWriteFS.writeArrayBuffer(this.assetPath, this.arraybuffer, callback);
         }
 
         /**
