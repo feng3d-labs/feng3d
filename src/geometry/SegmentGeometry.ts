@@ -12,10 +12,10 @@ namespace feng3d
 
         name = "Segment";
 
-		/**
-		 * 线段列表
+        /**
+         * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
-		 */
+         */
         @serialize
         @oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: () => { return new Segment(); } } })
         @watch("invalidateGeometry")
@@ -114,4 +114,17 @@ namespace feng3d
     {
         Segment: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/线段",
+            priority: -9,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Segment");
+            }
+        }
+    );
+
 }

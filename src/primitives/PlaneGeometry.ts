@@ -265,4 +265,17 @@ namespace feng3d
     {
         Plane: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/平面",
+            priority: -1,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Plane");
+            }
+        }
+    );
+
 }

@@ -38,4 +38,17 @@ namespace feng3d
     {
         Quad: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/四边形",
+            priority: -2,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Quad");
+            }
+        }
+    );
+
 }

@@ -314,7 +314,7 @@ namespace feng3d
 			objectAttributeInfos.forEach((v, i) => { v["___tempI"] = i });
 			objectAttributeInfos.sort((a, b) =>
 			{
-				return ((b.priority || 0) - (a.priority || 0)) || (a["___tempI"] - b["___tempI"]);
+				return ((a.priority || 0) - (b.priority || 0)) || (a["___tempI"] - b["___tempI"]);
 			});
 			objectAttributeInfos.forEach((v, i) => { delete v["___tempI"] });
 

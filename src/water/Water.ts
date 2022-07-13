@@ -132,4 +132,17 @@ namespace feng3d
     {
         Water: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/水",
+            priority: -10,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Water");
+            }
+        }
+    );
+
 }

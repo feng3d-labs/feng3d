@@ -535,4 +535,17 @@ namespace feng3d
     {
         Cube: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/立方体",
+            priority: -3,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Cube");
+            }
+        }
+    );
+
 }

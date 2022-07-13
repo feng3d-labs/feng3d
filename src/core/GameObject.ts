@@ -467,4 +467,15 @@ namespace feng3d
     export interface PrimitiveGameObject
     {
     }
+
+    // 在 Hierarchy 界面右键创建游戏
+    createNodeMenu.push(
+        {
+            path: "3D空对象",
+            click: () =>
+            {
+                return new feng3d.GameObject();
+            }
+        },
+    );
 }

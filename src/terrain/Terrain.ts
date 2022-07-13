@@ -35,4 +35,17 @@ namespace feng3d
     {
         Terrain: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "地形",
+            priority: -1,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Terrain");
+            }
+        }
+    );
+
 }
