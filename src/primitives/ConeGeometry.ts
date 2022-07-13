@@ -1,9 +1,9 @@
 namespace feng3d
 {
-	/**
-	 * 圆锥体
+    /**
+     * 圆锥体
 
-	 */
+     */
     export class ConeGeometry extends CylinderGeometry
     {
         __class__: "feng3d.ConeGeometry" = "feng3d.ConeGeometry";
@@ -41,4 +41,17 @@ namespace feng3d
     {
         Cone: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/圆锥体",
+            priority: -7,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Cone");
+            }
+        }
+    );
+
 }

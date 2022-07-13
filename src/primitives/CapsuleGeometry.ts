@@ -242,4 +242,17 @@ namespace feng3d
     {
         Capsule: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/胶囊体",
+            priority: -5,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Capsule");
+            }
+        }
+    );
+
 }

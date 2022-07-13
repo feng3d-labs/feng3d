@@ -235,4 +235,17 @@ namespace feng3d
     {
         Sphere: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/球体",
+            priority: -4,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Sphere");
+            }
+        }
+    );
+
 }

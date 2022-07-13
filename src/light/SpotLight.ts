@@ -77,4 +77,17 @@ namespace feng3d
     {
         "Spot light": GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "光源/聚光灯",
+            priority: -2,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Spot light");
+            }
+        }
+    );
+
 }

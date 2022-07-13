@@ -449,4 +449,17 @@ namespace feng3d
     {
         Cylinder: GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "3D对象/圆柱体",
+            priority: -6,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Cylinder");
+            }
+        }
+    );
+
 }

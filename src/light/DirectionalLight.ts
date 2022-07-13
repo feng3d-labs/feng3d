@@ -70,4 +70,17 @@ namespace feng3d
     {
         "Directional light": GameObject;
     }
+
+    // 在 Hierarchy 界面新增右键菜单项
+    createNodeMenu.push(
+        {
+            path: "光源/方向光源",
+            priority: -2,
+            click: () =>
+            {
+                return GameObject.createPrimitive("Directional light");
+            }
+        }
+    );
+
 }

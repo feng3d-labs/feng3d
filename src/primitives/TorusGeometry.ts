@@ -239,13 +239,26 @@ namespace feng3d
 	}
 	Geometry.setDefault("Torus", new TorusGeometry());
 
-    GameObject.registerPrimitive("Torus", (g) =>
-    {
-        g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Torus");
-    });
+	GameObject.registerPrimitive("Torus", (g) =>
+	{
+		g.addComponent("MeshRenderer").geometry = Geometry.getDefault("Torus");
+	});
 
-    export interface PrimitiveGameObject
-    {
-        Torus: GameObject;
-    }
+	export interface PrimitiveGameObject
+	{
+		Torus: GameObject;
+	}
+
+	// 在 Hierarchy 界面新增右键菜单项
+	createNodeMenu.push(
+		{
+			path: "3D对象/圆环",
+			priority: -8,
+			click: () =>
+			{
+				return GameObject.createPrimitive("Torus");
+			}
+		}
+	);
+
 }

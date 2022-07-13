@@ -14,6 +14,8 @@
         "outFile": "out/feng3d.js",
     },
     "files": [
+        //
+        "src/menu/CreateNodeMenu.ts",
         // 事件模块
         "src/event/FEvent.ts",
         "src/event/EventDispatcher.ts",
