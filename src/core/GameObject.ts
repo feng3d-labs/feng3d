@@ -67,13 +67,6 @@ namespace feng3d
         assetId: string;
 
         /**
-         * 名称
-         */
-        @serialize
-        @oav({ component: "OAVGameObjectName", priority: 10000 })
-        name: string;
-
-        /**
          * 是否显示
          */
         @serialize

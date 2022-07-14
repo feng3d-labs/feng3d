@@ -24,6 +24,14 @@ namespace feng3d
 
     export class Entity extends Feng3dObject
     {
+
+        /**
+         * 名称
+         */
+        @serialize
+        @oav({ component: "OAVGameObjectName" })
+        name: string;
+
         /**
          * 组件列表
          */
