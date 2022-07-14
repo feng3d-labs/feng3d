@@ -28,7 +28,7 @@ namespace feng3d
 
     GameObject.registerPrimitive("Terrain", (g) =>
     {
-        g.addComponent("Terrain");
+        g.addComponent(Terrain);
     });
 
     export interface PrimitiveGameObject

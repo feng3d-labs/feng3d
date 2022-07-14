@@ -229,7 +229,7 @@ namespace feng3d
             });
 
             assert.equal(gameobject.numComponents, 2);
-            var model = gameobject.getComponent("MeshRenderer");
+            var model = gameobject.getComponent(MeshRenderer);
             assert.notEqual(model, null);
 
         });

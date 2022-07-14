@@ -64,7 +64,7 @@ namespace feng3d
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
 
-            var mirrorCamera = serialization.setValue(new GameObject(), { name: "waterMirrorCamera" }).addComponent("Camera");
+            var mirrorCamera = serialization.setValue(new GameObject(), { name: "waterMirrorCamera" }).addComponent(Camera);
             mirrorCamera.transform.position = view;
             mirrorCamera.transform.lookAt(target, rotationMatrix.getAxisY());
 
@@ -125,7 +125,7 @@ namespace feng3d
 
     GameObject.registerPrimitive("Water", (g) =>
     {
-        g.addComponent("Water");
+        g.addComponent(Water);
     });
 
     export interface PrimitiveGameObject

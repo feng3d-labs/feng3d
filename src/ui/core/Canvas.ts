@@ -20,8 +20,8 @@ namespace feng2d
         renderMode = UIRenderMode.ScreenSpaceOverlay;
 
         /**
-		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
-		 */
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
         mouseRay = new feng3d.Ray3(new feng3d.Vector3(), new feng3d.Vector3(0, 0, 1));
 
         /**
@@ -31,16 +31,16 @@ namespace feng2d
          */
         projection = new feng3d.Matrix4x4();
 
-		/**
-		 * 最近距离
-		 */
+        /**
+         * 最近距离
+         */
         @feng3d.serialize
         @feng3d.oav()
         near = -1000;
 
-		/**
-		 * 最远距离
-		 */
+        /**
+         * 最远距离
+         */
         @feng3d.serialize
         @feng3d.oav()
         far = 10000;
@@ -97,8 +97,8 @@ namespace feng3d
 {
     GameObject.registerPrimitive("Canvas", (g) =>
     {
-        g.addComponent("Transform2D");
-        g.addComponent("Canvas")
+        g.addComponent(feng2d.Transform2D);
+        g.addComponent(feng2d.Canvas);
     });
 
     export interface PrimitiveGameObject

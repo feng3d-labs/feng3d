@@ -105,7 +105,7 @@ namespace feng3d
 
     GameObject.registerPrimitive("Segment", (g) =>
     {
-        var model = g.addComponent("MeshRenderer");
+        var model = g.addComponent(MeshRenderer);
         model.geometry = new SegmentGeometry();
         model.material = Material.getDefault("Segment-Material");
     });

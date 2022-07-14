@@ -125,11 +125,11 @@ namespace feng3d
 {
     GameObject.registerPrimitive("Button", (g) =>
     {
-        var transform2D = g.addComponent("Transform2D");
+        var transform2D = g.addComponent(feng2d.Transform2D);
 
         transform2D.size.x = 160;
         transform2D.size.y = 30;
-        g.addComponent("Button")
+        g.addComponent(feng2d.Button)
     });
 
     export interface PrimitiveGameObject

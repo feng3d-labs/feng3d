@@ -83,16 +83,6 @@ namespace feng3d
         /**
          * 组件列表
          */
-        protected _components: Components[] = [];
-
-        /**
-         * 子组件个数
-         */
-        get numComponents()
-        {
-            return this._components.length;
-        }
-
         @serialize
         @oav({ component: "OAVComponentList" })
         get components()
@@ -110,6 +100,15 @@ namespace feng3d
                 if (component.single) this.removeComponentsByType(<any>component.constructor);
                 this.addComponentAt(value[i], this.numComponents);
             }
+        }
+        protected _components: Components[] = [];
+
+        /**
+         * 子组件个数
+         */
+        get numComponents()
+        {
+            return this._components.length;
         }
 
         /**
@@ -155,7 +154,7 @@ namespace feng3d
          */
         get transform()
         {
-            const transform = this.getComponent("Transform");
+            const transform = this.getComponent(Transform);
             return transform;
         }
 
@@ -235,9 +234,243 @@ namespace feng3d
         {
             super();
             this.name = "GameObject";
-            this.addComponent("Transform");
+            this.addComponent(Transform);
 
             this.onAny(this._onAnyListener, this);
+        }
+
+        /**
+         * Adds a component class of type componentType to the game object.
+         *
+         * @param ComponentType A component class of type.
+         * @returns The component that is added.
+         */
+        /**
+         * Adds a component class of type componentType to the game object.
+         *
+         * @param ComponentType 组件类定义。
+         * @returns 被添加的组件。
+         */
+        addComponent<T extends Component>(ComponentType: Constructor<T>, callback?: (component: T) => void): T
+        {
+            let component = this.getComponent(ComponentType);
+            if (component && Component.isSingleComponent(ComponentType))
+            {
+                // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
+                return component;
+            }
+            const dependencies = Component.getDependencies(ComponentType);
+            // 先添加依赖
+            dependencies.forEach((dependency) =>
+            {
+                this.addComponent(dependency);
+            });
+            //
+            component = new ComponentType();
+            this.addComponentAt(component, this._components.length);
+            callback && callback(component);
+
+            return component;
+        }
+
+        /**
+         * Returns the component of Type type if the game object has one attached, null if it doesn't.
+         *
+         * Using gameObject.GetComponent will return the first component that is found. If you expect there to be more than one component of the
+         * same type, use gameObject.GetComponents instead, and cycle through the returned components testing for some unique property.
+         *
+         * @param type The type of Component to retrieve.
+         * @returns The component to retrieve.
+         */
+        /**
+         * 返回游戏对象附加的一个指定类型的组件，如果没有，则返回 null。
+         *
+         * 使用 gameObject.GetComponent 将返回找到的第一个组件。如果您希望有多个相同类型的组件，请改用 gameObject.GetComponents，并循环通过返回的组件测试某些唯一属性。
+         *
+         * @param type 要检索的组件类型。
+         * @returns 要检索的组件。
+         */
+        getComponent<T extends Component>(type: Constructor<T>): T
+        {
+            for (let i = 0; i < this._components.length; i++)
+            {
+                if (this._components[i] instanceof type)
+                {
+                    return this._components[i] as T;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Returns the component of Type type in the GameObject or any of its children using depth first search.
+         *
+         * @param type The type of Component to retrieve.
+         * @param includeInactive Should Components on inactive GameObjects be included in the found set?
+         * @returns A component of the matching type, if found.
+         */
+        /**
+         * 使用深度优先搜索返回 GameObject 或其任何子项中的 Type 组件。
+         *
+         * @param type 要检索的组件类型。
+         * @param includeInactive 是否包含不活跃组件。
+         * @returns 匹配类型的组件（如果找到）。
+         */
+        getComponentInChildren<T extends Component>(type: Constructor<T>, includeInactive = false): T
+        {
+            const component = this.getComponent(type);
+            if (component)
+            {
+                return component;
+            }
+
+            for (let i = 0; i < this.numChildren; i++)
+            {
+                const gameObject = this.children[i];
+                if (!includeInactive && !gameObject.mouseEnabled) continue;
+                const compnent = gameObject.getComponentInChildren(type, includeInactive);
+                if (compnent)
+                {
+                    return compnent;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Retrieves the component of Type type in the GameObject or any of its parents.
+         *
+         * This method recurses upwards until it finds a GameObject with a matching component. Only components on active GameObjects are matched.
+         *
+         * @param type Type of component to find.
+         * @param includeInactive Should Components on inactive GameObjects be included in the found set?
+         * @returns Returns a component if a component matching the type is found. Returns null otherwise.
+         */
+        /**
+         * 检索GameObject或其任何父项type中的 Type 组件。
+         *
+         * 此方法向上递归，直到找到具有匹配组件的 GameObject。仅匹配活动游戏对象上的组件。
+         *
+         * @param type 要查找的组件类型。
+         * @param includeInactive 是否包含不活跃组件。
+         * @returns 如果找到与类型匹配的组件，则返回一个组件。否则返回 null。
+         */
+        getComponentInParent<T extends Component>(type: Constructor<T>, includeInactive = false): T
+        {
+            if (includeInactive || this.mouseEnabled)
+            {
+                const component = this.getComponent(type);
+                if (component)
+                {
+                    return component;
+                }
+            }
+
+            if (this.parent)
+            {
+                const component = this.parent.getComponentInParent(type, includeInactive);
+                if (component)
+                {
+                    return component;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Returns all components of Type `type` in the GameObject.
+         *
+         * @param type The type of component to retrieve.
+         * @param results List to receive the results.
+         * @returns all components of Type type in the GameObject.
+         */
+        /**
+         * 返回GameObject中指定类型的所有组件。
+         *
+         * @param type 要检索的组件类型。
+         * @param results 列出接收找到的组件。
+         * @returns GameObject中指定类型的所有组件。
+         */
+        getComponents<T extends Component = Component>(type?: Constructor<T>, results: T[] = []): T[]
+        {
+            for (let i = 0; i < this._components.length; i++)
+            {
+                const component = this._components[i];
+                if (!type || component instanceof type)
+                {
+                    results.push(component as any);
+                }
+            }
+
+            return results;
+        }
+
+        /**
+         * Returns all components of Type type in the GameObject or any of its children children using depth first search. Works recursively.
+         *
+         * Unity searches for components recursively on child GameObjects. This means that it also includes all the child GameObjects of the target GameObject, and all subsequent child GameObjects.
+         *
+         * @param type The type of Component to retrieve.
+         * @param includeInactive Should Components on inactive GameObjects be included in the found set?
+         * @param results List to receive found Components.
+         * @returns All found Components.
+         */
+        /**
+         * 使用深度优先搜索返回 GameObject 或其任何子子项中 Type 的所有组件。递归工作。
+         *
+         * Unity 在子游戏对象上递归搜索组件。这意味着它还包括目标 GameObject 的所有子 GameObject，以及所有后续子 GameObject。
+         *
+         * @param type 要检索的组件类型。
+         * @param includeInactive 非活动游戏对象上的组件是否应该包含在搜索结果中？
+         * @param results 列出接收找到的组件。
+         * @returns 所有找到的组件。
+         */
+        getComponentsInChildren<T extends Component>(type?: Constructor<T>, includeInactive = false, results: T[] = []): T[]
+        {
+            this.getComponents(type, results);
+
+            for (let i = 0; i < this.children.length; i++)
+            {
+                const gameObject = this.children[i];
+                if (!includeInactive && !gameObject.mouseEnabled) continue;
+                gameObject.getComponentsInChildren(type, includeInactive, results);
+            }
+
+            return results;
+        }
+
+        /**
+         * Returns all components of Type type in the GameObject or any of its parents.
+         *
+         * @param type The type of Component to retrieve.
+         * @param includeInactive Should inactive Components be included in the found set?
+         * @param results List holding the found Components.
+         * @returns All components of Type type in the GameObject or any of its parents.
+         */
+        /**
+         * 返回GameObject或其任何父级中指定的所有组件。
+         *
+         * @param type 要检索的组件类型。
+         * @param includeInactive 非活动组件是否应该包含在搜索结果中？
+         * @param results 列出找到的组件。
+         * @returns GameObject或其任何父级中指定的所有组件。
+         */
+        getComponentsInParent<T extends Component>(type?: Constructor<T>, includeInactive = false, results: T[] = []): T[]
+        {
+            if (includeInactive || this.mouseEnabled)
+            {
+                this.getComponents(type, results);
+            }
+
+            if (this.parent)
+            {
+                this.parent.getComponentsInParent(type, includeInactive, results);
+            }
+
+            return results;
         }
 
         /**
@@ -249,58 +482,6 @@ namespace feng3d
         {
             console.assert(index < this.numComponents, "给出索引超出范围");
             return this._components[index];
-        }
-
-        /**
-         * 添加指定组件类型到游戏对象
-         * 
-         * @type type 被添加组件
-         */
-        addComponent<T extends ComponentNames>(type: T, callback: (component: ComponentMap[T]) => void = null): ComponentMap[T]
-        {
-            var component = this.getComponent(type);
-            if (component && component.single)
-            {
-                // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
-                return component;
-            }
-            var cls: any = componentMap[type];
-            component = new cls();
-            this.addComponentAt(component, this._components.length);
-            callback && callback(component);
-            return component;
-        }
-
-        /**
-         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
-         * 
-         * @param type				类定义
-         * @return                  返回指定类型组件
-         */
-        getComponent<T extends ComponentNames>(type: T): ComponentMap[T]
-        {
-            var component = this.getComponents(type)[0];
-            return component;
-        }
-
-        /**
-         * 获取游戏对象上所有指定类型的组件数组
-         * 
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponents<T extends ComponentNames>(type: T): ComponentMap[T][]
-        {
-            console.assert(!!type, `类型不能为空！`);
-
-            var cls: any = componentMap[type];
-            if (!cls)
-            {
-                console.warn(`无法找到 ${type} 组件类定义，请使用 @feng3d.RegisterComponent() 在组件类上标记。`);
-                return [];
-            }
-            var filterResult: any = this._components.filter(v => v instanceof cls);
-            return filterResult;
         }
 
         /**
@@ -496,65 +677,6 @@ namespace feng3d
         }
 
         /**
-         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
-         * 
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends ComponentNames>(type?: T, filter?: (compnent: ComponentMap[T]) => { findchildren: boolean, value: boolean }, result?: ComponentMap[T][]): ComponentMap[T][]
-        {
-            result = result || [];
-            var findchildren = true;
-            var cls: any = componentMap[type];
-            for (var i = 0, n = this._components.length; i < n; i++)
-            {
-                var item = <ComponentMap[T]>this._components[i];
-                if (!cls)
-                {
-                    result.push(item);
-                } else if (item instanceof cls)
-                {
-                    if (filter)
-                    {
-                        var filterresult = filter(item);
-                        filterresult && filterresult.value && result.push(item);
-                        findchildren = filterresult ? (filterresult && filterresult.findchildren) : false;
-                    }
-                    else
-                    {
-                        result.push(item);
-                    }
-                }
-            }
-            if (findchildren)
-            {
-                for (var i = 0, n = this.numChildren; i < n; i++)
-                {
-                    this.getChildAt(i).getComponentsInChildren(type, filter, result);
-                }
-            }
-            return result;
-        }
-
-        /**
-         * 从父代（父亲，父亲的父亲，...）中获取组件
-         * 
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends ComponentNames>(type?: T, result?: ComponentMap[T][]): ComponentMap[T][]
-        {
-            result = result || [];
-            var parent = this.parent;
-            while (parent)
-            {
-                var compnent = parent.getComponent(type);
-                compnent && result.push(compnent);
-                parent = parent.parent;
-            }
-            return result;
-        }
-        /**
          * 是否包含指定对象
          * 
          * @param child 可能的子孙对象
@@ -717,7 +839,7 @@ namespace feng3d
          */
         get isSelfLoaded()
         {
-            var model = this.getComponent("Renderable");
+            var model = this.getComponent(Renderable);
             if (model) return model.isLoaded
             return true;
         }
@@ -733,7 +855,7 @@ namespace feng3d
                 callback();
                 return;
             }
-            var model = this.getComponent("Renderable");
+            var model = this.getComponent(Renderable);
             if (model)
             {
                 model.onLoadCompleted(callback);

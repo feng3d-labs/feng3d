@@ -29,7 +29,7 @@ namespace feng2d
          */
         worldRayIntersection(worldRay: feng3d.Ray3)
         {
-            var canvas = this.getComponentsInParents("Canvas")[0];
+            var canvas = this.getComponentsInParent(Canvas)[0];
             if (canvas)
                 worldRay = canvas.mouseRay;
 
@@ -51,7 +51,7 @@ namespace feng2d
         protected _updateBounds()
         {
             var bounding = this.geometry.bounding.clone();
-            var transformLayout = this.getComponent("TransformLayout");
+            var transformLayout = this.getComponent(feng3d.TransformLayout);
             if (transformLayout != null)
             {
                 bounding.scale(transformLayout.size);
@@ -67,7 +67,7 @@ namespace feng2d
             var gl = view.gl.gl;
             var scene = view.scene;
 
-            var canvasList = scene.getComponentsInChildren("Canvas").filter(v => v.isVisibleAndEnabled);
+            var canvasList = scene.getComponentsInChildren(Canvas).filter(v => v.isVisibleAndEnabled);
             canvasList.forEach(canvas =>
             {
                 canvas.layout(gl.canvas.width, gl.canvas.height);
@@ -75,7 +75,7 @@ namespace feng2d
                 // 更新鼠标射线
                 canvas.calcMouseRay3D(view);
 
-                var renderables = canvas.getComponentsInChildren("CanvasRenderer").filter(v => v.isVisibleAndEnabled);
+                var renderables = canvas.getComponentsInChildren(CanvasRenderer).filter(v => v.isVisibleAndEnabled);
                 renderables.forEach(renderable =>
                 {
                     //绘制

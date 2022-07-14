@@ -45,7 +45,7 @@ namespace feng3d
 
                 if (!gameObject.visible)
                     continue;
-                var model = gameObject.getComponent("Renderable");
+                var model = gameObject.getComponent(Renderable);
                 if (model && model.enabled)
                 {
                     if (model.selfWorldBounds)

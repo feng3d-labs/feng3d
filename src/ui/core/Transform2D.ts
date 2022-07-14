@@ -101,9 +101,9 @@ namespace feng2d
         set scale(v) { this._scale.copy(v); }
         private readonly _scale = new feng3d.Vector2(1, 1);
 
-		/**
-		 * 创建一个实体，该类为虚类
-		 */
+        /**
+         * 创建一个实体，该类为虚类
+         */
         constructor()
         {
             super();
@@ -116,10 +116,10 @@ namespace feng2d
             super.init();
 
             // 处理依赖组件
-            var transformLayout = this.getComponent("TransformLayout");
+            var transformLayout = this.getComponent(feng3d.TransformLayout);
             if (!transformLayout)
             {
-                transformLayout = this.gameObject.addComponent("TransformLayout");
+                transformLayout = this.gameObject.addComponent(feng3d.TransformLayout);
             }
             this.transformLayout = transformLayout;
 
@@ -216,7 +216,7 @@ namespace feng3d
 
     Object.defineProperty(GameObject.prototype, "transform2D",
         {
-            get: function () { return this.getComponent("Transform2D"); },
+            get: function (this: GameObject) { return this.getComponent(feng2d.Transform2D); },
         });
 
     export interface Component

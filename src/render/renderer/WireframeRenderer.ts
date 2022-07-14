@@ -27,7 +27,7 @@ namespace feng3d
         {
             var unblenditems = scene.getPickCache(camera).unblenditems;
 
-            var wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) => { var wireframe = cv.getComponent("WireframeComponent"); if (wireframe) pv.push({ wireframe: wireframe, renderable: cv }); return pv; }, [])
+            var wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) => { var wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push({ wireframe: wireframe, renderable: cv }); return pv; }, [])
 
             if (wireframes.length == 0)
                 return;

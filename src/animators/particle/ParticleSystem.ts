@@ -1153,8 +1153,8 @@ namespace feng3d
 
     GameObject.registerPrimitive("Particle System", (g) =>
     {
-        g.addComponent("ParticleSystem");
-        g.getComponent("Transform").rx = -90;
+        g.addComponent(ParticleSystem);
+        g.getComponent(Transform).rx = -90;
     });
 
     export interface PrimitiveGameObject

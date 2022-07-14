@@ -105,11 +105,6 @@ namespace feng3d
             }
 
             var indexBuffer = renderAtomic.getIndexBuffer();
-            if (!indexBuffer) 
-            {
-                console.warn(`缺少顶点索引数据，无法渲染！`);
-                return null;
-            }
 
             const checkedRenderAtomic: RenderAtomicData =
             {

@@ -100,7 +100,7 @@ namespace feng3d
          */
         get models()
         {
-            this._models = this._models || this.getComponentsInChildren("Renderable");
+            this._models = this._models || this.getComponentsInChildren(Renderable);
             return this._models
         }
 
@@ -117,7 +117,7 @@ namespace feng3d
          */
         get skyBoxs()
         {
-            this._skyBoxs = this._skyBoxs || this.getComponentsInChildren("SkyBox");
+            this._skyBoxs = this._skyBoxs || this.getComponentsInChildren(SkyBox);
             return this._skyBoxs;
         }
 
@@ -128,7 +128,7 @@ namespace feng3d
 
         get directionalLights()
         {
-            return this._directionalLights = this._directionalLights || this.getComponentsInChildren("DirectionalLight");
+            return this._directionalLights = this._directionalLights || this.getComponentsInChildren(DirectionalLight);
         }
 
         get activeDirectionalLights()
@@ -138,7 +138,7 @@ namespace feng3d
 
         get pointLights()
         {
-            return this._pointLights = this._pointLights || this.getComponentsInChildren("PointLight");
+            return this._pointLights = this._pointLights || this.getComponentsInChildren(PointLight);
         }
 
         get activePointLights()
@@ -148,7 +148,7 @@ namespace feng3d
 
         get spotLights()
         {
-            return this._spotLights = this._spotLights || this.getComponentsInChildren("SpotLight");
+            return this._spotLights = this._spotLights || this.getComponentsInChildren(SpotLight);
         }
 
         get activeSpotLights()
@@ -158,7 +158,7 @@ namespace feng3d
 
         get animations()
         {
-            return this._animations = this._animations || this.getComponentsInChildren("Animation");
+            return this._animations = this._animations || this.getComponentsInChildren(Animation);
         }
 
         get activeAnimations()
@@ -168,7 +168,7 @@ namespace feng3d
 
         get behaviours()
         {
-            this._behaviours = this._behaviours || this.getComponentsInChildren("Behaviour");
+            this._behaviours = this._behaviours || this.getComponentsInChildren(Behaviour);
             return this._behaviours;
         }
 
@@ -191,7 +191,7 @@ namespace feng3d
                 var checkObject = checkList[i++];
                 if (checkObject.mouseEnabled)
                 {
-                    if (checkObject.getComponents("Renderable"))
+                    if (checkObject.getComponents(Renderable))
                     {
                         this._mouseCheckObjects.push(checkObject);
                     }
@@ -226,7 +226,7 @@ namespace feng3d
             {
                 var item = openlist.shift();
                 if (!item.visible) continue;
-                var model = item.getComponent("Renderable");
+                var model = item.getComponent(Renderable);
                 if (model && (model.castShadows || model.receiveShadows)
                     && !model.material.renderParams.enableBlend
                     && model.material.renderParams.renderMode == RenderMode.TRIANGLES
@@ -252,7 +252,7 @@ namespace feng3d
 
             var results = this.visibleAndEnabledModels.filter(i =>
             {
-                var model = i.getComponent("Renderable");
+                var model = i.getComponent(Renderable);
                 if (model.selfWorldBounds)
                 {
                     if (frustum.intersectsBox(model.selfWorldBounds))

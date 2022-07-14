@@ -70,7 +70,7 @@ namespace feng3d
 
     GameObject.registerPrimitive("Spot Light", (g) =>
     {
-        g.addComponent("SpotLight");
+        g.addComponent(SpotLight);
     });
 
     export interface PrimitiveGameObject

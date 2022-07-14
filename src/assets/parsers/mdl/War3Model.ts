@@ -44,7 +44,7 @@ namespace feng3d.war3
 			var container = serialization.setValue(new GameObject(), { name: this.model.name });
 
 			var skeletonjoints = createSkeleton(this);
-			this.skeletonComponent = container.addComponent("SkeletonComponent");
+			this.skeletonComponent = container.addComponent(SkeletonComponent);
 			this.skeletonComponent.joints = skeletonjoints;
 
 			for (var i: number = 0; i < this.geosets.length; i++)
@@ -53,7 +53,7 @@ namespace feng3d.war3
 
 				var mesh: GameObject = this.meshs[i] = new GameObject();
 				// var model = mesh.addComponent("Model");
-				var model = mesh.addComponent("SkinnedMeshRenderer");
+				var model = mesh.addComponent(SkinnedMeshRenderer);
 
 				var geometry: CustomGeometry = new CustomGeometry();
 				geometry.positions = geoset.Vertices;
@@ -95,7 +95,7 @@ namespace feng3d.war3
 			}
 
 			var animationclips = createAnimationClips(this);
-			var animation = container.addComponent("Animation");
+			var animation = container.addComponent(Animation);
 			animation.animation = animationclips[0]
 			animation.animations = animationclips;
 

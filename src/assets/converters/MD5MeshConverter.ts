@@ -20,7 +20,7 @@ namespace feng3d
         {
             var gameObject = new GameObject();
             gameObject.name = md5MeshData.name;
-            gameObject.addComponent("Animation");
+            gameObject.addComponent(Animation);
             gameObject.transform.rx = -90;
 
             //顶点最大关节关联数
@@ -29,7 +29,7 @@ namespace feng3d
 
             var skeletonjoints = this.createSkeleton(md5MeshData.joints);
 
-            var skeletonComponent = gameObject.addComponent("SkeletonComponent");
+            var skeletonComponent = gameObject.addComponent(SkeletonComponent);
             skeletonComponent.joints = skeletonjoints;
 
             for (var i = 0; i < md5MeshData.meshs.length; i++)
@@ -39,7 +39,7 @@ namespace feng3d
 
                 var skeletonGameObject = new GameObject();
 
-                var skinnedModel = skeletonGameObject.addComponent("SkinnedMeshRenderer");
+                var skinnedModel = skeletonGameObject.addComponent(SkinnedMeshRenderer);
                 skinnedModel.geometry = geometry;
                 skinnedModel.skinSkeleton = skinSkeleton;
 

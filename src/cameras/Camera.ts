@@ -191,7 +191,7 @@ namespace feng3d
 
     GameObject.registerPrimitive("Camera", (g) =>
     {
-        g.addComponent("Camera");
+        g.addComponent(Camera);
     });
 
     export interface PrimitiveGameObject

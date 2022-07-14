@@ -162,7 +162,7 @@ namespace feng3d
         {
             if (!this._layoutInvalid) return;
 
-            var transformLayout = this.gameObject && this.gameObject.parent && this.gameObject.parent.getComponent("TransformLayout");
+            var transformLayout = this.gameObject && this.gameObject.parent && this.gameObject.parent.getComponent(TransformLayout);
             if (!transformLayout) return;
 
             // 中心点基于anchorMin的坐标

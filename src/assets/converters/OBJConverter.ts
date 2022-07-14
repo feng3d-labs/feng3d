@@ -55,7 +55,7 @@ namespace feng3d
     {
         var gameObject = new GameObject();
         gameObject.name = subObj.g || gameObject.name;
-        var model = gameObject.addComponent("Renderable");
+        var model = gameObject.addComponent(Renderable);
         if (materials && materials[subObj.material])
             model.material = materials[subObj.material];
 

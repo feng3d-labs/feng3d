@@ -105,7 +105,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.shadowCamera = serialization.setValue(new GameObject(), { name: "LightShadowCamera" }).addComponent("Camera");
+            this.shadowCamera = serialization.setValue(new GameObject(), { name: "LightShadowCamera" }).addComponent(Camera);
         }
 
         updateDebugShadowMap(scene: Scene, viewCamera: Camera)
@@ -116,10 +116,10 @@ namespace feng3d
                 gameObject = this.debugShadowMapObject = GameObject.createPrimitive("Plane", { name: "debugShadowMapObject" });
                 gameObject.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
                 gameObject.mouseEnabled = false;
-                gameObject.addComponent("BillboardComponent");
+                gameObject.addComponent(BillboardComponent);
 
                 //材质
-                var model = gameObject.getComponent("Renderable");
+                var model = gameObject.getComponent(Renderable);
                 model.geometry = serialization.setValue(new feng3d.PlaneGeometry(), { width: this.lightType == LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
                 var textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: "texture", uniforms: { s_texture: <any>this.frameBufferObject.texture } });
                 //
@@ -132,7 +132,7 @@ namespace feng3d
 
             var depth = viewCamera.lens.near * 2;
             gameObject.transform.position = viewCamera.transform.worldPosition.addTo(viewCamera.transform.localToWorldMatrix.getAxisZ().scaleNumberTo(depth));
-            var billboardComponent = gameObject.getComponent("BillboardComponent");
+            var billboardComponent = gameObject.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
 
             if (this.debugShadowMap)
