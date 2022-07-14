@@ -264,6 +264,7 @@
         "src/geometry/PointGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
         // 摄像机
+        "src/cameras/enums/CameraClearFlags.ts",
         "src/cameras/lenses/LensBase.ts",
         "src/cameras/lenses/OrthographicLens.ts",
         "src/cameras/lenses/PerspectiveLens.ts",
