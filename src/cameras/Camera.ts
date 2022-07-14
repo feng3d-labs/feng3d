@@ -202,7 +202,7 @@ namespace feng3d
     // 在 Hierarchy 界面新增右键菜单项
     createNodeMenu.push(
         {
-            path: "摄像机",
+            path: "Camera",
             priority: -2,
             click: () =>
             {

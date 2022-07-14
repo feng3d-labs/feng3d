@@ -106,7 +106,7 @@ namespace feng3d
     // 在 Hierarchy 界面新增右键菜单项
     createNodeMenu.push(
         {
-            path: "UI/文本",
+            path: "UI/Text",
             priority: -2,
             click: () =>
             {

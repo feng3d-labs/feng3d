@@ -252,8 +252,8 @@ namespace feng3d
 	// 在 Hierarchy 界面新增右键菜单项
 	createNodeMenu.push(
 		{
-			path: "3D对象/圆环",
-			priority: -8,
+			path: "3D Object/Torus",
+			priority: -10000,
 			click: () =>
 			{
 				return GameObject.createPrimitive("Torus");

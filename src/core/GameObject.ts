@@ -471,7 +471,7 @@ namespace feng3d
     // 在 Hierarchy 界面右键创建游戏
     createNodeMenu.push(
         {
-            path: "3D空对象",
+            path: "Create Empty",
             click: () =>
             {
                 return new feng3d.GameObject();

@@ -74,7 +74,7 @@ namespace feng3d
     // 在 Hierarchy 界面新增右键菜单项
     createNodeMenu.push(
         {
-            path: "光源/方向光源",
+            path: "Light/Directional light",
             priority: -2,
             click: () =>
             {

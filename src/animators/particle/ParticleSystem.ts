@@ -1165,7 +1165,7 @@ namespace feng3d
     // 在 Hierarchy 界面新增右键菜单项
     createNodeMenu.push(
         {
-            path: "粒子系统",
+            path: "Effects/Particle System",
             priority: -1,
             click: () =>
             {

@@ -68,24 +68,24 @@ namespace feng3d
         }
     }
 
-    GameObject.registerPrimitive("Spot light", (g) =>
+    GameObject.registerPrimitive("Spot Light", (g) =>
     {
         g.addComponent("SpotLight");
     });
 
     export interface PrimitiveGameObject
     {
-        "Spot light": GameObject;
+        "Spot Light": GameObject;
     }
 
     // 在 Hierarchy 界面新增右键菜单项
     createNodeMenu.push(
         {
-            path: "光源/聚光灯",
+            path: "Light/Spot Light",
             priority: -2,
             click: () =>
             {
-                return GameObject.createPrimitive("Spot light");
+                return GameObject.createPrimitive("Spot Light");
             }
         }
     );
