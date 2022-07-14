@@ -81,9 +81,9 @@ namespace feng3d
         name: string;
 
         /**
-         * The local active state of this GameObject. (Read Only)
+         * The local active state of this GameObject.
          * 
-         * This returns the local active state of this GameObject, which is set using GameObject.SetActive. Note that a GameObject may be inactive because a parent is not active, even if this returns true. This state will then be used once all parents are active. Use GameObject.activeInHierarchy if you want to check if the GameObject is actually treated as active in the Scene.
+         * This returns the local active state of this GameObject. Note that a GameObject may be inactive because a parent is not active, even if this returns true. This state will then be used once all parents are active. Use GameObject.activeInHierarchy if you want to check if the GameObject is actually treated as active in the Scene.
          */
         @serialize
         get activeSelf()
@@ -94,7 +94,7 @@ namespace feng3d
         {
             if (this._activeSelf == v) return;
             this._activeSelf = v;
-            this._invalidateGlobalVisible();
+            this._invalidateActiveInHierarchy();
         }
         private _activeSelf = true;
 
@@ -105,12 +105,12 @@ namespace feng3d
          */
         get activeInHierarchy()
         {
-            if (this._globalVisibleInvalid)
+            if (this._activeInHierarchyInvalid)
             {
-                this._updateGlobalVisible();
-                this._globalVisibleInvalid = false;
+                this._updateActiveInHierarchy();
+                this._activeInHierarchyInvalid = false;
             }
-            return this._globalVisible;
+            return this._activeInHierarchy;
         }
 
         /**
@@ -247,6 +247,18 @@ namespace feng3d
             this.addComponent(Transform);
 
             this.onAny(this._onAnyListener, this);
+        }
+
+        /**
+         * Activates/Deactivates the GameObject, depending on the given true or false value.
+         * 
+         * A GameObject may be inactive because a parent is not active. In that case, calling SetActive will not activate it, but only set the local state of the GameObject, which you can check using GameObject.activeSelf. Unity can then use this state when all parents become active.
+         * 
+         * @param value Activate or deactivate the object, where true activates the GameObject and false deactivates the GameObject.
+         */
+        setActive(value: boolean)
+        {
+            this.activeSelf = value;
         }
 
         /**
@@ -931,28 +943,28 @@ namespace feng3d
         }
 
         protected _scene: Scene;
-        protected _globalVisible = false;
-        protected _globalVisibleInvalid = true;
+        protected _activeInHierarchy = false;
+        protected _activeInHierarchyInvalid = true;
 
-        protected _updateGlobalVisible()
+        protected _updateActiveInHierarchy()
         {
-            var visible = this.activeSelf;
+            var activeSelf = this.activeSelf;
             if (this.parent)
             {
-                visible = visible && this.parent.activeInHierarchy;
+                activeSelf = activeSelf && this.parent.activeInHierarchy;
             }
-            this._globalVisible = visible;
+            this._activeInHierarchy = activeSelf;
         }
 
-        protected _invalidateGlobalVisible()
+        protected _invalidateActiveInHierarchy()
         {
-            if (this._globalVisibleInvalid) return;
+            if (this._activeInHierarchyInvalid) return;
 
-            this._globalVisibleInvalid = true;
+            this._activeInHierarchyInvalid = true;
 
             this._children.forEach(c =>
             {
-                c._invalidateGlobalVisible();
+                c._invalidateActiveInHierarchy();
             });
         }
 
