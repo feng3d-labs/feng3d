@@ -423,6 +423,26 @@
         //
         "src/math/buildLineGeometry.ts",
         //
+        "src/ui/enums/UIRenderMode.ts",
+        //
+        "src/ui/core/Transform2D.ts",
+        "src/ui/core/UIGeometry.ts",
+        "src/ui/core/CanvasRenderer.ts",
+        "src/ui/core/Canvas.ts",
+        "src/ui/core/UIMaterial.ts",
+        //
+        "src/ui/polyfill/ClassUtils.ts",
+        "src/ui/polyfill/View.ts",
+        //
+        "src/ui/Rect.ts",
+        "src/ui/Image.ts",
+        "src/ui/Button.ts",
+        //
+        "src/ui/text/drawText.ts",
+        "src/ui/text/TextStyle.ts",
+        "src/ui/text/TextMetrics.ts",
+        "src/ui/Text.ts",
+        //
         "src/Feng3d.ts",
     ]
 }
