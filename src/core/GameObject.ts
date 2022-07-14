@@ -242,33 +242,32 @@ namespace feng3d
         /**
          * Adds a component class of type componentType to the game object.
          *
-         * @param ComponentType A component class of type.
+         * @param type A component class of type.
          * @returns The component that is added.
          */
         /**
-         * Adds a component class of type componentType to the game object.
+         * 添加一个类型为`type`的组件到游戏对象。
          *
-         * @param ComponentType 组件类定义。
+         * @param type 组件类定义。
          * @returns 被添加的组件。
          */
-        addComponent<T extends Component>(ComponentType: Constructor<T>, callback?: (component: T) => void): T
+        addComponent<T extends Component>(type: Constructor<T>): T
         {
-            let component = this.getComponent(ComponentType);
-            if (component && Component.isSingleComponent(ComponentType))
+            let component = this.getComponent(type);
+            if (component && Component.isSingleComponent(type))
             {
                 // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
                 return component;
             }
-            const dependencies = Component.getDependencies(ComponentType);
+            const dependencies = Component.getDependencies(type);
             // 先添加依赖
             dependencies.forEach((dependency) =>
             {
                 this.addComponent(dependency);
             });
             //
-            component = new ComponentType();
+            component = new type();
             this.addComponentAt(component, this._components.length);
-            callback && callback(component);
 
             return component;
         }

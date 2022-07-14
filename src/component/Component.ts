@@ -169,9 +169,9 @@ namespace feng3d
          * @param type 组件类定义。
          * @returns 被添加的组件。
          */
-        addComponent<T extends Component>(type: Constructor<T>, callback?: (component: T) => void): T
+        addComponent<T extends Component>(type: Constructor<T>): T
         {
-            return this._gameObject.addComponent(type, callback);
+            return this._gameObject.addComponent(type);
         }
 
         /**
