@@ -43,7 +43,7 @@ namespace feng3d
             {
                 var gameObject = gameObjects.pop();
 
-                if (!gameObject.visible)
+                if (!gameObject.activeSelf)
                     continue;
                 var renderer = gameObject.getComponent(Renderable);
                 if (renderer && renderer.enabled)

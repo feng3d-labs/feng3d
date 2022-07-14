@@ -117,8 +117,10 @@ namespace feng3d
         /**
          * 标签
          */
-        @serialize
-        tag: string;
+        get tag()
+        {
+            return this._gameObject.tag;
+        }
 
         /**
          * The Transform attached to this GameObject (null if there is none attached).

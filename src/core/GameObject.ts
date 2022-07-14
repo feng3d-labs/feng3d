@@ -81,6 +81,51 @@ namespace feng3d
         name: string;
 
         /**
+         * The local active state of this GameObject. (Read Only)
+         * 
+         * This returns the local active state of this GameObject, which is set using GameObject.SetActive. Note that a GameObject may be inactive because a parent is not active, even if this returns true. This state will then be used once all parents are active. Use GameObject.activeInHierarchy if you want to check if the GameObject is actually treated as active in the Scene.
+         */
+        @serialize
+        get activeSelf()
+        {
+            return this._activeSelf;
+        }
+        set activeSelf(v)
+        {
+            if (this._activeSelf == v) return;
+            this._activeSelf = v;
+            this._invalidateGlobalVisible();
+        }
+        private _activeSelf = true;
+
+        /**
+         * Defines whether the GameObject is active in the Scene.
+         * 
+         * This lets you know whether a GameObject is active in the game. That is the case if its GameObject.activeSelf property is enabled, as well as that of all its parents.
+         */
+        get activeInHierarchy()
+        {
+            if (this._globalVisibleInvalid)
+            {
+                this._updateGlobalVisible();
+                this._globalVisibleInvalid = false;
+            }
+            return this._globalVisible;
+        }
+
+        /**
+         * The tag of this game object.
+         */
+        @serialize
+        tag: string;
+
+        /**
+         * 自身以及子对象是否支持鼠标拾取
+         */
+        @serialize
+        mouseEnabled = true;
+
+        /**
          * 组件列表
          */
         @serialize
@@ -123,28 +168,6 @@ namespace feng3d
         @serialize
         assetId: string;
 
-        /**
-         * 是否显示
-         */
-        @serialize
-        get visible()
-        {
-            return this._visible;
-        }
-        set visible(v)
-        {
-            if (this._visible == v) return;
-            this._visible = v;
-            this._invalidateGlobalVisible();
-        }
-        private _visible = true;
-
-        /**
-         * 自身以及子对象是否支持鼠标拾取
-         */
-        @serialize
-        mouseEnabled = true;
-
         //------------------------------------------
         // Variables
         //------------------------------------------
@@ -170,19 +193,6 @@ namespace feng3d
             return this._boundingBox;
         }
         private _boundingBox: BoundingBox;
-
-        /**
-         * 全局是否可见
-         */
-        get globalVisible()
-        {
-            if (this._globalVisibleInvalid)
-            {
-                this._updateGlobalVisible();
-                this._globalVisibleInvalid = false;
-            }
-            return this._globalVisible;
-        }
 
         get scene()
         {
@@ -327,7 +337,7 @@ namespace feng3d
             for (let i = 0; i < this.numChildren; i++)
             {
                 const gameObject = this.children[i];
-                if (!includeInactive && !gameObject.mouseEnabled) continue;
+                if (!includeInactive && !gameObject.activeSelf) continue;
                 const compnent = gameObject.getComponentInChildren(type, includeInactive);
                 if (compnent)
                 {
@@ -358,7 +368,7 @@ namespace feng3d
          */
         getComponentInParent<T extends Component>(type: Constructor<T>, includeInactive = false): T
         {
-            if (includeInactive || this.mouseEnabled)
+            if (includeInactive || this.activeSelf)
             {
                 const component = this.getComponent(type);
                 if (component)
@@ -434,7 +444,7 @@ namespace feng3d
             for (let i = 0; i < this.children.length; i++)
             {
                 const gameObject = this.children[i];
-                if (!includeInactive && !gameObject.mouseEnabled) continue;
+                if (!includeInactive && !gameObject.activeSelf) continue;
                 gameObject.getComponentsInChildren(type, includeInactive, results);
             }
 
@@ -459,7 +469,7 @@ namespace feng3d
          */
         getComponentsInParent<T extends Component>(type?: Constructor<T>, includeInactive = false, results: T[] = []): T[]
         {
-            if (includeInactive || this.mouseEnabled)
+            if (includeInactive || this.activeSelf)
             {
                 this.getComponents(type, results);
             }
@@ -926,10 +936,10 @@ namespace feng3d
 
         protected _updateGlobalVisible()
         {
-            var visible = this.visible;
+            var visible = this.activeSelf;
             if (this.parent)
             {
-                visible = visible && this.parent.globalVisible;
+                visible = visible && this.parent.activeInHierarchy;
             }
             this._globalVisible = visible;
         }

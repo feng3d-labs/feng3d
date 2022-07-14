@@ -29,7 +29,7 @@ namespace feng3d
          */
         get isVisibleAndEnabled()
         {
-            var v = this.enabled && this.gameObject && this.gameObject.visible;
+            var v = this.enabled && this.gameObject && this.gameObject.activeSelf;
             return v;
         }
 

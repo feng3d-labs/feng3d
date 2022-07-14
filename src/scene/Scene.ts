@@ -123,7 +123,7 @@ namespace feng3d
 
         get activeSkyBoxs()
         {
-            return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(i => i.gameObject.globalVisible);
+            return this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter(i => i.gameObject.activeInHierarchy);
         }
 
         get directionalLights()
@@ -225,7 +225,7 @@ namespace feng3d
             while (openlist.length > 0)
             {
                 var item = openlist.shift();
-                if (!item.visible) continue;
+                if (!item.activeSelf) continue;
                 var model = item.getComponent(Renderable);
                 if (model && (model.castShadows || model.receiveShadows)
                     && !model.material.renderParams.enableBlend
