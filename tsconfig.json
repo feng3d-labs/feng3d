@@ -239,8 +239,6 @@
         "src/core/Transform.ts",
         "src/core/TransformLayout.ts",
         "src/core/BoundingBox.ts",
-        "src/core/Entity.ts",
-        "src/core/Node.ts",
         "src/core/GameObject.ts",
         "src/core/View.ts",
         // 组件
