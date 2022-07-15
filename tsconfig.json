@@ -290,6 +290,7 @@
         "src/textures/TextureCube.ts",
         // 材质
         "src/materials/Material.ts",
+        "src/materials/SkyBoxMaterial.ts",
         "src/materials/StandardMaterial.ts",
         "src/materials/PointMaterial.ts",
         "src/materials/ColorMaterial.ts",
