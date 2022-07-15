@@ -11,6 +11,49 @@ namespace feng3d
     {
         __class__: "feng3d.Material";
 
+        // /**
+        //  * The main color of the Material.
+        //  * 
+        //  * By default, Unity considers a color with the property name name "_Color" to be the main color. Use the [MainColor] ShaderLab Properties attribute to make Unity consider a color with a different property name to be the main color.
+        //  * 
+        //  * This is the same as calling GetColor or SetColor with the property name of the main color as a parameter.
+        //  */
+        // @serialize
+        // @oav()
+        // color = new Color4();
+
+        // /**
+        //  * The main texture.
+        //  * 
+        //  * By default, Unity considers a texture with the property name "_MainTex" to be the main texture. Use the [MainTexture] ShaderLab Properties attribute to make Unity consider a texture with a different property name to be the main texture.
+        //  */
+        // @serialize
+        // @oav()
+        // mainTexture: Texture;
+
+        // /**
+        //  * The offset of the main texture.
+        //  * 
+        //  * By default, Unity considers a texture with the property name name "_MainTex" to be the main texture. Use the [MainTexture] ShaderLab Properties attribute to make Unity consider a texture with a different property name to be the main texture.
+        //  */
+        // @serialize
+        // @oav()
+        // mainTextureOffset = new Vector2();
+
+        // /**
+        //  * The scale of the main texture.
+        //  * 
+        //  * By default, Unity considers a texture with the property name name "_MainTex" to be the main texture. Use the [MainTexture] ShaderLab Properties attribute to make Unity consider a texture with a different property name to be the main texture.
+        //  */
+        // @serialize
+        // @oav()
+        // mainTextureScale = new Vector2(1, 1);
+
+        // /**
+        //  * The shader used by the material.
+        //  */
+        // shader: Shader;
+
         static create<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
         {
             var material = new Material();
