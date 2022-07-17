@@ -172,7 +172,7 @@ namespace feng3d
                 return;
             }
             // 监听执行完成事件
-            event.once(this, cuuid, () =>
+            anyEmitter.once(this, cuuid, () =>
             {
                 // 完成时重新执行函数
                 this.wrapAsyncFunc(funcHost, func, params, callback);
@@ -190,7 +190,7 @@ namespace feng3d
                 // 保存执行结果
                 this._wrapFResult[cuuid] = args;
                 // 通知执行完成
-                event.dispatch(this, cuuid);
+                anyEmitter.emit(this, cuuid);
             }));
         }
 

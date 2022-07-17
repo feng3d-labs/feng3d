@@ -115,14 +115,6 @@ namespace feng2d
         changed
     }
 
-    export interface TextStyle
-    {
-        once<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.Event<TextStyleEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TextStyleEventMap>(type: K, data?: TextStyleEventMap[K], bubbles?: boolean): feng3d.Event<TextStyleEventMap[K]>;
-        has<K extends keyof TextStyleEventMap>(type: K): boolean;
-        on<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.Event<TextStyleEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof TextStyleEventMap>(type?: K, listener?: (event: feng3d.Event<TextStyleEventMap[K]>) => any, thisObject?: any): void;
-    }
     /**
      * 文本样式
      * 
@@ -130,7 +122,7 @@ namespace feng2d
      * 
      * @see https://github.com/pixijs/pixi.js/blob/dev/packages/text/src/TextStyle.js
      */
-    export class TextStyle extends feng3d.EventDispatcher
+    export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends feng3d.EventEmitter<T>
     {
         /**
          * @param style 样式参数
@@ -379,7 +371,7 @@ namespace feng2d
          */
         invalidate()
         {
-            this.dispatch("changed");
+            this.emit("changed");
         }
 
         /**

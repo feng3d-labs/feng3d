@@ -85,15 +85,6 @@ namespace feng3d
     export type ComponentNames = keyof ComponentMap;
     export type Components = ComponentMap[ComponentNames];
 
-    export interface Component
-    {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
-    }
-
     /**
      * 组件
      * 
@@ -101,7 +92,7 @@ namespace feng3d
      * 
      * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
      */
-    export class Component extends Feng3dObject implements IDisposable
+    export class Component extends Feng3dObject<GameObjectEventMap> implements IDisposable
     {
         //------------------------------------------
         // Variables
@@ -306,6 +297,14 @@ namespace feng3d
         }
 
         /**
+         * 把事件分享到实体上。
+         */
+        getShareTargets()
+        {
+            return [this._gameObject];
+        }
+
+        /**
          * 销毁
          */
         dispose()
@@ -322,10 +321,10 @@ namespace feng3d
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
-        private _onAnyListener(e: Event<any>)
+        private _onAnyListener(e: IEvent<any>)
         {
             if (this._gameObject)
-                this._gameObject.dispatchEvent(e);
+                this._gameObject.emitEvent(e);
         }
 
         /**

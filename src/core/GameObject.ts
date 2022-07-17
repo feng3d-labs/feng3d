@@ -2,7 +2,7 @@ namespace feng3d
 {
     export type Constructor<T> = (new (...args) => T);
 
-    export interface GameObjectEventMap extends MouseEventMap
+    export interface GameObjectEventMap extends MouseEventMap, Feng3dObjectEventMap
     {
         /**
          * 添加子组件事件
@@ -54,20 +54,10 @@ namespace feng3d
         refreshView: any;
     }
 
-    export interface GameObject
-    {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
-
-    }
-
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends Feng3dObject implements IDisposable
+    export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDisposable
     {
         __class__: "feng3d.GameObject";
 
@@ -245,8 +235,6 @@ namespace feng3d
             super();
             this.name = "GameObject";
             this.addComponent(Transform);
-
-            this.onAny(this._onAnyListener, this);
         }
 
         /**
@@ -570,7 +558,7 @@ namespace feng3d
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.dispatch("removeComponent", { component: component, gameobject: this as any }, true);
+            this.emit("removeComponent", { component: component, gameobject: this as any }, true);
             component.dispose();
             return component;
         }
@@ -619,17 +607,6 @@ namespace feng3d
         }
 
         /**
-         * 监听对象的所有事件并且传播到所有组件中
-         */
-        private _onAnyListener(e: Event<any>)
-        {
-            this.components.forEach(element =>
-            {
-                element.dispatchEvent(e);
-            });
-        }
-
-        /**
          * 判断是否拥有组件
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
@@ -664,7 +641,7 @@ namespace feng3d
             component.setGameObject(this as any);
             component.init();
             //派发添加组件事件
-            this.dispatch("addComponent", { component: component, gameobject: this as any }, true);
+            this.emit("addComponent", { component: component, gameobject: this as any }, true);
         }
 
         /**
@@ -739,8 +716,8 @@ namespace feng3d
                 if (child._parent) child._parent.removeChild(child);
                 child._setParent(this);
                 this._children.push(child);
-                child.dispatch("added", { parent: this });
-                this.dispatch("addChild", { child: child, parent: this }, true);
+                child.emit("added", { parent: this });
+                this.emit("addChild", { child: child, parent: this }, true);
             }
             return child;
         }
@@ -826,8 +803,8 @@ namespace feng3d
             this._children.splice(childIndex, 1);
             child._setParent(null);
 
-            child.dispatch("removed", { parent: this as any });
-            this.dispatch("removeChild", { child: child, parent: this as any }, true);
+            child.emit("removed", { parent: this as any });
+            this.emit("removeChild", { child: child, parent: this as any }, true);
         }
 
         /**
@@ -982,12 +959,12 @@ namespace feng3d
                 return;
             if (this._scene)
             {
-                this.dispatch("removedFromScene", this);
+                this.emit("removedFromScene", this);
             }
             this._scene = newScene;
             if (this._scene)
             {
-                this.dispatch("addedToScene", this);
+                this.emit("addedToScene", this);
             }
             this.updateChildrenScene();
         }
@@ -998,6 +975,32 @@ namespace feng3d
             {
                 this._children[i].updateScene();
             }
+        }
+
+        /**
+         * 把事件分享到每个组件上。
+         */
+        getShareTargets()
+        {
+            return this.components;
+        }
+
+        /**
+         * 把事件汇报给父结点。
+         */
+        getBubbleTargets()
+        {
+            const targets = [this.parent];
+
+            return targets;
+        }
+
+        /**
+         * 把事件广播给每个子结点。
+         */
+        getBroadcastTargets()
+        {
+            return this.children;
         }
 
         /**

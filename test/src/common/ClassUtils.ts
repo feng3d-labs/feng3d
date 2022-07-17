@@ -4,7 +4,7 @@ namespace feng3d
     {
         QUnit.test("getQualifiedClassName", (assert) =>
         {
-            var className = classUtils.getQualifiedClassName(EventDispatcher);
+            var className = classUtils.getQualifiedClassName(EventEmitter);
             assert.ok(className == "feng3d.EventDispatcher");
 
             var className = classUtils.getQualifiedClassName(true);

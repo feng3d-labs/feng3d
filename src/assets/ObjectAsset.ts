@@ -44,11 +44,11 @@ namespace feng3d
         {
             if (oldValue)
             {
-                objectevent.off(oldValue, "propertyValueChanged", this._onDataChanged, this);
+                objectEmitter.off(oldValue, "propertyValueChanged", this._onDataChanged, this);
             }
             if (newValue)
             {
-                objectevent.on(newValue, "propertyValueChanged", this._onDataChanged, this);
+                objectEmitter.on(newValue, "propertyValueChanged", this._onDataChanged, this);
             }
         }
 

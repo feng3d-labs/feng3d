@@ -597,7 +597,7 @@ namespace feng3d
             if (this._matrixInvalid) return;
             this._matrixInvalid = true;
 
-            this.dispatch("transformChanged", this);
+            this.emit("transformChanged", this);
             this._invalidateSceneTransform();
         }
 
@@ -610,7 +610,7 @@ namespace feng3d
             this._ITlocalToWorldMatrixInvalid = true;
             this._localToWorldRotationMatrixInvalid = true;
 
-            this.dispatch("scenetransformChanged", this);
+            this.emit("scenetransformChanged", this);
             //
             if (this.gameObject)
             {
@@ -631,7 +631,7 @@ namespace feng3d
             this._localToWorldMatrix.copy(this.matrix);
             if (this.parent)
                 this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
-            this.dispatch("updateLocalToWorldMatrix", this);
+            this.emit("updateLocalToWorldMatrix", this);
             console.assert(!isNaN(this._localToWorldMatrix.elements[0]));
         }
     }

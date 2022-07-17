@@ -150,7 +150,7 @@ namespace feng3d
                 return;
             }
             var eventtype = "loaded";
-            event.once(this, eventtype, () =>
+            anyEmitter.once(this, eventtype, () =>
             {
                 this.isLoaded = true;
                 this.isLoading = false;
@@ -162,12 +162,12 @@ namespace feng3d
             {
                 if (err)
                 {
-                    event.dispatch(this, eventtype);
+                    anyEmitter.emit(this, eventtype);
                     return;
                 }
                 this.readFile((err) =>
                 {
-                    event.dispatch(this, eventtype);
+                    anyEmitter.emit(this, eventtype);
                 });
             });
         }

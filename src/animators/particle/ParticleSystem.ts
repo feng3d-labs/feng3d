@@ -355,7 +355,7 @@ namespace feng3d
                 {
                     element.calculateProbability();
                 });
-                this.dispatch("particleCycled", this);
+                this.emit("particleCycled", this);
             }
 
             // 发射粒子
@@ -374,7 +374,7 @@ namespace feng3d
             if (!this.main.loop && this._activeParticles.length == 0 && emitInfo.currentTime > this.main.duration)
             {
                 this.stop();
-                this.dispatch("particleCompleted", this);
+                this.emit("particleCompleted", this);
             }
         }
 

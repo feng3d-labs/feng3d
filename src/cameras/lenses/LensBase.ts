@@ -1,5 +1,10 @@
 namespace feng3d
 {
+	export interface LensEventMap
+	{
+		lensChanged: LensBase;
+	}
+
 	/**
 	 * 摄像机镜头
 	 * 
@@ -10,7 +15,7 @@ namespace feng3d
 	 * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
 	 * 
 	 */
-	export abstract class LensBase extends Feng3dObject
+	export abstract class LensBase<T extends LensEventMap = LensEventMap> extends Feng3dObject<T>
 	{
 		/**
 		 * 摄像机投影类型
@@ -158,7 +163,7 @@ namespace feng3d
 
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
-			this.dispatch("lensChanged", this);
+			this.emit("lensChanged", this);
 		}
 
 		private _updateInverseMatrix()

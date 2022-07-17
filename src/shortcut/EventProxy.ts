@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
      */
-    export class EventProxy extends EventDispatcher
+    export class EventProxy<T = any> extends feng3d.EventEmitter<T>
     {
         pageX = 0;
         pageY = 0;
@@ -57,23 +57,25 @@ namespace feng3d
 
         /**
          * 监听一次事件后将会被移除
-		 * @param type						事件的类型。
-		 * @param listener					处理事件的侦听器函数。
-		 * @param thisObject                listener函数作用域
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void
+        once<K extends keyof T>(type: K, listener: (event: feng3d.IEvent<T[K]>) => void, thisObject?: any, priority?: number)
         {
-            this.on(type, listener, thisObject, priority, true)
+            this.on(type as any, listener, thisObject, priority, true)
+
+            return this;
         }
 
         /**
          * 添加监听
-		 * @param type						事件的类型。
-		 * @param listener					处理事件的侦听器函数。
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on(type: string, listener: (event: any) => any, thisObject?: any, priority = 0, once = false)
+        on<K extends keyof T & string>(type: K, listener: (event: feng3d.IEvent<T[K]>) => void, thisObject?: any, priority = 0, once = false): this
         {
             super.on(type, listener, thisObject, priority, once);
             if (this.listentypes.indexOf(type) == -1)
@@ -81,15 +83,16 @@ namespace feng3d
                 this.listentypes.push(type);
                 this._target.addEventListener(type, this.onMouseKey);
             }
+            return this;
         }
 
         /**
          * 移除监听
          * @param dispatcher 派发器
-		 * @param type						事件的类型。
-		 * @param listener					要删除的侦听器对象。
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
          */
-        off(type?: string, listener?: (event: any) => any, thisObject?: any)
+        off<K extends keyof T & string>(type?: K, listener?: (event: feng3d.IEvent<T[K]>) => void, thisObject?: any): this
         {
             super.off(type, listener, thisObject);
             if (!type)
@@ -104,6 +107,7 @@ namespace feng3d
                 this._target.removeEventListener(type, this.onMouseKey);
                 this.listentypes.splice(this.listentypes.indexOf(type), 1);
             }
+            return this;
         }
 
         /**
@@ -112,8 +116,8 @@ namespace feng3d
         private handleMouseMoveBug = true;
         private mousedownposition: { x: number, y: number };
         /**
-		 * 键盘按下事件
-		 */
+         * 键盘按下事件
+         */
         private onMouseKey = (event) =>
         {
             // this.clear();
@@ -173,7 +177,7 @@ namespace feng3d
             // event.pageX = this.pageX;
             // event.pageY = this.pageY;
 
-            this.dispatchEvent(<any>event);
+            this.emit(event.type, event);
         }
 
         /**

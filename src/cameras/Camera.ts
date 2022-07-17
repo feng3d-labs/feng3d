@@ -83,8 +83,8 @@ namespace feng3d
 
             this.invalidateViewProjection();
 
-            this.dispatch("refreshView");
-            this.dispatch("lensChanged");
+            this.emit("refreshView");
+            this.emit("lensChanged");
         }
         private _lens: LensBase;
 

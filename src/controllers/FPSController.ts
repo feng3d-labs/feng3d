@@ -175,9 +175,9 @@ namespace feng3d
         /**
          * 处理鼠标移动事件
          */
-        private onMouseMove(event: MouseEvent)
+        private onMouseMove(event: IEvent<MouseEvent>)
         {
-            this.mousePoint = new Vector2(event.clientX, event.clientY);
+            this.mousePoint = new Vector2(event.data.clientX, event.data.clientY);
 
             if (this.preMousePoint == null)
             {
@@ -187,11 +187,11 @@ namespace feng3d
         }
 
         /**
-		 * 键盘按下事件
-		 */
-        private onKeydown(event: KeyboardEvent): void
+         * 键盘按下事件
+         */
+        private onKeydown(event: IEvent<KeyboardEvent>): void
         {
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 
@@ -200,12 +200,12 @@ namespace feng3d
             this.keyDownDic[boardKey] = true;
         }
 
-		/**
-		 * 键盘弹起事件
-		 */
-        private onKeyup(event: KeyboardEvent): void
+        /**
+         * 键盘弹起事件
+         */
+        private onKeyup(event: IEvent<KeyboardEvent>): void
         {
-            var boardKey = String.fromCharCode(event.keyCode).toLocaleLowerCase();
+            var boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
             if (this.keyDirectionDic[boardKey] == null)
                 return;
 

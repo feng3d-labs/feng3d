@@ -25,7 +25,7 @@ namespace feng3d
 
                     var gameObject = serialization.setValue(new GameObject(), { name: pathUtils.getName(mdlurl), children: <any>[showMesh] })
 
-                    globalDispatcher.dispatch("asset.parsed", gameObject);
+                    globalEmitter.emit("asset.parsed", gameObject);
                     callback && callback(gameObject);
                 });
             });

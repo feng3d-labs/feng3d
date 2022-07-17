@@ -88,7 +88,7 @@ namespace feng3d
 
             // 获取对象上的包围盒
             var data: { bounds: Box3[]; } = { bounds: [] };
-            this._gameObject.dispatch("getSelfBounds", data);
+            this._gameObject.emit("getSelfBounds", data);
 
             data.bounds.forEach(b =>
             {
