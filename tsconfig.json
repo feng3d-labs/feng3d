@@ -6,6 +6,7 @@
         "declarationMap": true,
         "declaration": true,
         "composite": true,
+        "skipLibCheck": true,
         "experimentalDecorators": true,
         "lib": [
             "ES2015",
@@ -14,6 +15,8 @@
         "outFile": "out/feng3d.js",
     },
     "files": [
+        //
+        // "../packages/event/dist/index.d.ts",
         //
         "src/menu/CreateNodeMenu.ts",
         // 事件模块
@@ -442,6 +445,8 @@
         "src/ui/text/TextStyle.ts",
         "src/ui/text/TextMetrics.ts",
         "src/ui/Text.ts",
+        //
+        "src/MixinsGlobalEvents.ts",
         //
         "src/Feng3d.ts",
     ]
