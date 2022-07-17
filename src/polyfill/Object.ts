@@ -220,7 +220,7 @@ Object.equalDeep = function (a, b)
     //
     var akeys = Object.keys(a);
     var bkeys = Object.keys(b);
-    if (!Array.equal(akeys, bkeys)) return false;
+    if (!feng3d.ArrayUtils.equal(akeys, bkeys)) return false;
     if (Array.isArray(a) && Array.isArray(b)) return a.length == b.length;
     // 检测所有属性
     for (let i = 0; i < akeys.length; i++)

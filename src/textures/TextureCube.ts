@@ -128,7 +128,7 @@ namespace feng3d
                     this._pixels[index] = texture.image;
                     this.invalidate();
                 }
-                Array.delete(this._loading, texture);
+                ArrayUtils.deleteItem(this._loading, texture);
                 this._onItemLoadCompleted();
             });
         }
@@ -151,7 +151,7 @@ namespace feng3d
                     this._pixels[index] = img;
                     this.invalidate();
                 }
-                Array.delete(this._loading, imagepath);
+                ArrayUtils.deleteItem(this._loading, imagepath);
                 this._onItemLoadCompleted();
             });
         }

@@ -391,7 +391,7 @@ namespace feng3d
             // 获取所包含的资源列表
             var assetids = this.getAssetsWithObject(object);
             // 不需要加载本资源，移除自身资源
-            Array.delete(assetids, object.assetId);
+            ArrayUtils.deleteItem(assetids, object.assetId);
             // 加载包含的资源数据
             this.readAssetDatas(assetids, (err, result) =>
             {

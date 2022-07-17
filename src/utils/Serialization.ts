@@ -337,8 +337,8 @@ namespace feng3d
             getSerializableMembers(object["__proto__"], serializableMembers);
         }
         var serializePropertys = object[SERIALIZE_KEY];
-        if (serializePropertys) Array.concatToSelf(serializableMembers, serializePropertys)
-        Array.unique(serializableMembers);
+        if (serializePropertys) ArrayUtils.concatToSelf(serializableMembers, serializePropertys)
+        ArrayUtils.unique(serializableMembers);
         return serializableMembers;
     }
 
