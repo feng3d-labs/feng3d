@@ -173,7 +173,7 @@ namespace feng3d
             // event.pageX = this.pageX;
             // event.pageY = this.pageY;
 
-            this.dispatchEvent(<any>event);
+            this.emitEvent(<any>event);
         }
 
         /**

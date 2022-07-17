@@ -57,7 +57,7 @@ namespace feng3d
     export interface GameObject
     {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
+        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
         on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
@@ -570,7 +570,7 @@ namespace feng3d
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.dispatch("removeComponent", { component: component, gameobject: this as any }, true);
+            this.emit("removeComponent", { component: component, gameobject: this as any }, true);
             component.dispose();
             return component;
         }
@@ -625,7 +625,7 @@ namespace feng3d
         {
             this.components.forEach(element =>
             {
-                element.dispatchEvent(e);
+                element.emitEvent(e);
             });
         }
 
@@ -664,7 +664,7 @@ namespace feng3d
             component.setGameObject(this as any);
             component.init();
             //派发添加组件事件
-            this.dispatch("addComponent", { component: component, gameobject: this as any }, true);
+            this.emit("addComponent", { component: component, gameobject: this as any }, true);
         }
 
         /**
@@ -739,8 +739,8 @@ namespace feng3d
                 if (child._parent) child._parent.removeChild(child);
                 child._setParent(this);
                 this._children.push(child);
-                child.dispatch("added", { parent: this });
-                this.dispatch("addChild", { child: child, parent: this }, true);
+                child.emit("added", { parent: this });
+                this.emit("addChild", { child: child, parent: this }, true);
             }
             return child;
         }
@@ -826,8 +826,8 @@ namespace feng3d
             this._children.splice(childIndex, 1);
             child._setParent(null);
 
-            child.dispatch("removed", { parent: this as any });
-            this.dispatch("removeChild", { child: child, parent: this as any }, true);
+            child.emit("removed", { parent: this as any });
+            this.emit("removeChild", { child: child, parent: this as any }, true);
         }
 
         /**
@@ -982,12 +982,12 @@ namespace feng3d
                 return;
             if (this._scene)
             {
-                this.dispatch("removedFromScene", this);
+                this.emit("removedFromScene", this);
             }
             this._scene = newScene;
             if (this._scene)
             {
-                this.dispatch("addedToScene", this);
+                this.emit("addedToScene", this);
             }
             this.updateChildrenScene();
         }

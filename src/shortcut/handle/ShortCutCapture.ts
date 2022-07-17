@@ -114,7 +114,7 @@ namespace feng3d
 		{
 			for (var i = 0; i < commands.length; i++)
 			{
-				this._shortCut.dispatch(commands[i], data);
+				this._shortCut.emit(commands[i], data);
 			}
 		}
 

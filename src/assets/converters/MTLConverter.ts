@@ -27,7 +27,7 @@ namespace feng3d
                         u_specular: { r: materialInfo.ks[0], g: materialInfo.ks[1], b: materialInfo.ks[2], },
                     },
                 });
-                globalDispatcher.dispatch("asset.parsed", material);
+                globalDispatcher.emit("asset.parsed", material);
             }
             completed && completed(null, materials);
         }

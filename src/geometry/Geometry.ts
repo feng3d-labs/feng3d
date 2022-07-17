@@ -15,7 +15,7 @@ namespace feng3d
     export interface Geometry
     {
         once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
+        emit<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
         has<K extends keyof GeometryEventMap>(type: K): boolean;
         on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): void;
@@ -331,7 +331,7 @@ namespace feng3d
         invalidateBounds()
         {
             this._bounding = <any>null;
-            this.dispatch("boundsInvalid", this);
+            this.emit("boundsInvalid", this);
         }
 
         get bounding()

@@ -44,7 +44,7 @@ namespace feng3d
     export interface Texture2D
     {
         once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
+        emit<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
         has<K extends keyof Texture2DEventMap>(type: K): boolean;
         on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): void;
@@ -123,7 +123,7 @@ namespace feng3d
 
         private onItemLoadCompleted()
         {
-            if (this._loadings.length == 0) this.dispatch("loadCompleted");
+            if (this._loadings.length == 0) this.emit("loadCompleted");
         }
 
         /**

@@ -118,7 +118,7 @@ namespace feng2d
     export interface TextStyle
     {
         once<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.Event<TextStyleEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TextStyleEventMap>(type: K, data?: TextStyleEventMap[K], bubbles?: boolean): feng3d.Event<TextStyleEventMap[K]>;
+        emit<K extends keyof TextStyleEventMap>(type: K, data?: TextStyleEventMap[K], bubbles?: boolean): feng3d.Event<TextStyleEventMap[K]>;
         has<K extends keyof TextStyleEventMap>(type: K): boolean;
         on<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.Event<TextStyleEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof TextStyleEventMap>(type?: K, listener?: (event: feng3d.Event<TextStyleEventMap[K]>) => any, thisObject?: any): void;
@@ -379,7 +379,7 @@ namespace feng2d
          */
         invalidate()
         {
-            this.dispatch("changed");
+            this.emit("changed");
         }
 
         /**

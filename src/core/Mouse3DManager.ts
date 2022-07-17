@@ -103,9 +103,9 @@ namespace feng3d
             if (this._selectedGameObject != value)
             {
                 if (this._selectedGameObject)
-                    this._selectedGameObject.dispatch("mouseout", null, true);
+                    this._selectedGameObject.emit("mouseout", null, true);
                 if (value)
-                    value.dispatch("mouseover", null, true);
+                    value.emit("mouseover", null, true);
             }
             this._selectedGameObject = value;
             this._mouseEventTypes.forEach(element =>
@@ -118,7 +118,7 @@ namespace feng3d
                             this.gameObjectClickNum = 0;
                             this.preMouseDownGameObject = this._selectedGameObject;
                         }
-                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
                         break;
                     case "mouseup":
                         if (this._selectedGameObject == this.preMouseDownGameObject)
@@ -129,19 +129,19 @@ namespace feng3d
                             this.gameObjectClickNum = 0;
                             this.preMouseDownGameObject = null;
                         }
-                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
                         break;
                     case "mousemove":
-                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
                         break;
                     case "click":
                         if (this.gameObjectClickNum > 0)
-                            this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                            this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
                         break;
                     case "dblclick":
                         if (this.gameObjectClickNum > 1)
                         {
-                            this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                            this._selectedGameObject && this._selectedGameObject.emit(element, null, true);
                             this.gameObjectClickNum = 0;
                         }
                         break;
@@ -181,26 +181,26 @@ namespace feng3d
          * @param data                      事件携带的自定义数据。
          * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(type: string, data?: any, bubbles = false)
+        emit(type: string, data?: any, bubbles = false)
         {
             if (!this.enable)
                 return null;
             if (!this.catchMouseMove && type == "mousemove")
                 return null;
-            return super.dispatch(type, data, bubbles);
+            return super.emit(type, data, bubbles);
         }
 
         /**
          * 派发事件
          * @param event   事件对象
          */
-        dispatchEvent(event: Event<any>)
+        emitEvent(event: Event<any>)
         {
             if (!this.enable)
                 return false;
             if (!this.catchMouseMove && event.type == "mousemove")
                 return false;
-            return super.dispatchEvent(event);
+            return super.emitEvent(event);
         }
     }
 
@@ -254,7 +254,7 @@ namespace feng3d
                 }
             }
 
-            this.dispatch(<any>type, { mouseX: event.clientX, mouseY: event.clientY });
+            this.emit(<any>type, { mouseX: event.clientX, mouseY: event.clientY });
         }
     }
 

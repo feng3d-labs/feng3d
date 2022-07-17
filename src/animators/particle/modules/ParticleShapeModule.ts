@@ -420,7 +420,7 @@ namespace feng3d
                     break;
             }
             serialization.setValue(this.activeShape, preValue);
-            this.dispatch("refreshView");
+            this.emit("refreshView");
         }
 
         private _onShapeChanged()

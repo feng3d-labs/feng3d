@@ -8,8 +8,8 @@ namespace feng3d
         {
             var g = serialization.setValue(new GameObject(), { name: "t" });
 
-            var e = g.dispatch("click");
-            g.dispatchEvent(e);
+            var e = g.emit("click");
+            g.emitEvent(e);
 
             assert.ok(e.targets[0] == g);
 

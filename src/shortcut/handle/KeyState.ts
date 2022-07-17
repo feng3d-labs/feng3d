@@ -37,7 +37,7 @@ namespace feng3d
 				}
 			}
 			this._keyStateDic[key] = true;
-			this.dispatch(key, data);
+			this.emit(key, data);
 		}
 
 		/**
@@ -56,7 +56,7 @@ namespace feng3d
 				}
 			}
 			this._keyStateDic[key] = false;
-			this.dispatch(key, data);
+			this.emit(key, data);
 		}
 
 		/**

@@ -14,16 +14,16 @@ namespace feng3d
             event.on(s, "s", () => { out += "s" });
             event.on(o, "o", () => { out += "o" });
             // 派发事件
-            event.dispatch(n, "n");
-            event.dispatch(s, "s");
-            event.dispatch(o, "o");
+            event.emit(n, "n");
+            event.emit(s, "s");
+            event.emit(o, "o");
             // 监听回调被正常调用
             assert.ok(out == "nso");
 
             // 再次派发事件
-            event.dispatch(o, "o");
-            event.dispatch(s, "s");
-            event.dispatch(n, "n");
+            event.emit(o, "o");
+            event.emit(s, "s");
+            event.emit(n, "n");
             // 监听回调被正常调用
             assert.ok(out == "nsoosn");
 
@@ -33,7 +33,7 @@ namespace feng3d
             event.on(obj, "click", obj.fn, obj);
             // 重复监听一次派发事件仅会被调用一次
             event.on(obj, "click", obj.fn, obj);
-            event.dispatch(obj, "click");
+            event.emit(obj, "click");
             assert.ok(out == "click1");
 
             var out = "";
@@ -41,7 +41,7 @@ namespace feng3d
             event.on(1, "pevent", () => { out += "p1" }, null, 1);
             event.on(1, "pevent", () => { out += "p0" }, null, 0);
             event.on(1, "pevent", () => { out += "p2" }, null, 2);
-            event.dispatch(1, "pevent");
+            event.emit(1, "pevent");
             assert.ok(out == "p2p1p0");
         });
 
@@ -51,12 +51,12 @@ namespace feng3d
             var fn = () => { out += "1" };
             // 监听后派发事件触发回调。
             event.on(1, "a", fn);
-            event.dispatch(1, "a");
+            event.emit(1, "a");
             assert.ok(out == "1");
 
             // 移除监听后再次派发事件后并未触发监听回调。
             event.off(1, "a", fn);
-            event.dispatch(1, "a");
+            event.emit(1, "a");
             assert.ok(out == "1");
 
             var out = "";
@@ -66,7 +66,7 @@ namespace feng3d
             event.on(1, "b", fn2);
             // off缺省监听回调时移除指定事件类型所有监听。
             event.off(1, "b");
-            event.dispatch(1, "b");
+            event.emit(1, "b");
             assert.ok(!event.has(1, "b"));
             assert.ok(out == "");
 
@@ -78,8 +78,8 @@ namespace feng3d
             event.onAny(1, fn2);
             // off 缺省 事件类型时将会移除指定对象上所有事件监听。
             event.off(1);
-            event.dispatch(1, "c");
-            event.dispatch(1, "d");
+            event.emit(1, "c");
+            event.emit(1, "d");
             assert.ok(!event.has(1, "c"));
             assert.ok(!event.has(1, "d"));
             assert.ok(out == "");
@@ -90,11 +90,11 @@ namespace feng3d
             // 只监听一次，被触发后自动移除监听。
             var out = "";
             event.once(1, "a", () => { out += "1" });
-            event.dispatch(1, "a");
+            event.emit(1, "a");
             assert.ok(out == "1");
 
             // 已经被移除，再次派发事件并不会被触发监听回调。
-            event.dispatch(1, "a");
+            event.emit(1, "a");
             assert.ok(out == "1");
         });
 
@@ -114,7 +114,7 @@ namespace feng3d
             assert.ok(event.has(2, "2"));
 
             // once被触发后自动被移除，未检测到该监听。
-            event.dispatch(2, "2");
+            event.emit(2, "2");
             assert.ok(!event.has(2, "2"));
         });
 
@@ -126,16 +126,16 @@ namespace feng3d
             event.onAny(1, fn);
 
             // 配发多个不同事件后均被触发监听器。
-            event.dispatch(1, "a");
-            event.dispatch(1, "b");
-            event.dispatch(1, "c");
+            event.emit(1, "a");
+            event.emit(1, "b");
+            event.emit(1, "c");
             assert.ok(out == "abc");
 
             // 移除后并不会再次被触发。
             event.offAny(1, fn);
-            event.dispatch(1, "a");
-            event.dispatch(1, "b");
-            event.dispatch(1, "c");
+            event.emit(1, "a");
+            event.emit(1, "b");
+            event.emit(1, "c");
             assert.ok(out == "abc");
         });
 
@@ -147,7 +147,7 @@ namespace feng3d
             var parent = { v: 0 };
             var child = { v: 1, parent: parent };
             event.on(parent, "b", (e) => { out = e; })
-            event.dispatch(child, "b", data, true);
+            event.emit(child, "b", data, true);
             assert.ok(out.data == data);
             // 派发事件的对象
             assert.ok(out.target == child);
@@ -165,7 +165,7 @@ namespace feng3d
             event.on(child, "b1", (e) => { outstr += "child0"; }, null, 0); // 该监听器将会被触发。
             event.on(child, "b1", (e) => { outstr += "child-1"; }, null, -2); // 该监听器将会被触发。
             event.on(parent, "b1", (e) => { outstr += "parent"; }); // 冒泡被终止，该监听器不会被触发。
-            event.dispatch(child, "b1", null, true);
+            event.emit(child, "b1", null, true);
             assert.equal(outstr, "child0child-1");
 
             // 处理停止事件
@@ -176,7 +176,7 @@ namespace feng3d
             event.on(child, "b2", (e) => { outstr += "child0"; }, null, 0); // 该监听器将会被触发。
             event.on(child, "b2", (e) => { outstr += "child-1"; }, null, -2); // 事件被终止，该监听器优先级较低将不会被触发。
             event.on(parent, "b2", (e) => { outstr += "parent"; }); // 事件被终止，该监听器不会被触发。
-            event.dispatch(child, "b2", null, true);
+            event.emit(child, "b2", null, true);
             assert.equal(outstr, "child0");
         });
 
@@ -193,12 +193,12 @@ namespace feng3d
             var out = "";
             var n = 1;
             nevent.on(n, "a", () => { out += "1" });
-            nevent.dispatch(n, "1");
-            nevent.dispatch(n, "a");
+            nevent.emit(n, "1");
+            nevent.emit(n, "a");
             assert.ok(out == "1");
 
             nevent.off(1, "a");
-            nevent.dispatch(1, "a");
+            nevent.emit(1, "a");
             assert.ok(out == "1");
 
             // 针对Object扩展分配事件类型，在使用 on 等接口是会有自动提示。

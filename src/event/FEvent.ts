@@ -12,7 +12,7 @@ namespace feng3d
     export interface ObjectEventDispatcher<O, T>
     {
         once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(target: O, type: K): boolean;
         on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
@@ -50,7 +50,7 @@ namespace feng3d
          * @param e                 事件对象。
          * @returns                 返回事件是否被该对象处理。
          */
-        dispatchEvent(obj: Object, e: Event<any>)
+        emitEvent(obj: Object, e: Event<any>)
         {
             var targets = e.targets = e.targets || [];
             if (targets.indexOf(obj) != -1)
@@ -72,10 +72,10 @@ namespace feng3d
 		 * @param data                      事件携带的自定义数据。
 		 * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        dispatch(obj: Object, type: string, data?: any, bubbles = false)
+        emit(obj: Object, type: string, data?: any, bubbles = false)
         {
             var e: Event<any> = this.makeEvent(type, data, bubbles);
-            this.dispatchEvent(obj, e);
+            this.emitEvent(obj, e);
             return e;
         }
 
@@ -328,7 +328,7 @@ namespace feng3d
                             bubbleTarget.dispatchEvent(e);
                         } else
                         {
-                            this.dispatchEvent(bubbleTarget, e);
+                            this.emitEvent(bubbleTarget, e);
                         }
                     }
                 }

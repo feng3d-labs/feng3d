@@ -158,7 +158,7 @@ namespace feng3d
 
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
-			this.dispatch("lensChanged", this);
+			this.emit("lensChanged", this);
 		}
 
 		private _updateInverseMatrix()

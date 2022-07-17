@@ -11,7 +11,7 @@ namespace feng3d
     export interface TextureCube
     {
         once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
+        emit<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
         has<K extends keyof TextureCubeEventMap>(type: K): boolean;
         on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): void;
@@ -167,7 +167,7 @@ namespace feng3d
 
         private _onItemLoadCompleted()
         {
-            if (this._loading.length == 0) this.dispatch("loadCompleted");
+            if (this._loading.length == 0) this.emit("loadCompleted");
         }
 
         /**

@@ -8,8 +8,8 @@ namespace feng3d
         {
             var c = serialization.setValue(new GameObject(), { name: "t" }).addComponent(Camera);
 
-            var e = c.dispatch("lensChanged");
-            c.dispatchEvent(e);
+            var e = c.emit("lensChanged");
+            c.emitEvent(e);
 
             assert.ok(e.targets[0] == c);
 
