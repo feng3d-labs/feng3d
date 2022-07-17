@@ -173,7 +173,7 @@ namespace feng3d
             this._selfLocalBounds = this.geometry.bounding;
         }
 
-        protected _onGetSelfBounds(event: IEvent<{ bounds: Box3[]; }>)
+        protected _onGetSelfBounds(event: feng3d.IEvent<{ bounds: Box3[]; }>)
         {
             event.data.bounds.push(this.geometry.bounding);
         }

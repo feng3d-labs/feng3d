@@ -1,9 +1,17 @@
 namespace feng3d
 {
+    export interface Feng3dObjectEventMap
+    {
+        /**
+         * 销毁事件。当对象将被销毁是发射销毁事件。
+         */
+        // destroy: Feng3dObject;
+    }
+
     /**
      * 所有feng3d对象的基类
      */
-    export class Feng3dObject extends EventEmitter implements IDisposable
+    export class Feng3dObject<T extends Feng3dObjectEventMap = Feng3dObjectEventMap> extends feng3d.EventEmitter<T> implements IDisposable
     {
         /**
          * 名称

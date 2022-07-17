@@ -52,62 +52,62 @@ namespace feng3d
 		/**
 		 * 鼠标事件
 		 */
-		private onMouseOnce(event: MouseEvent): void
+		private onMouseOnce(event: IEvent<MouseEvent>): void
 		{
 			if (!shortcut.enable)
 				return;
 			var mouseKey: string = event.type;
-			this._keyState.pressKey(mouseKey, event);
-			this._keyState.releaseKey(mouseKey, event);
+			this._keyState.pressKey(mouseKey, event.data);
+			this._keyState.releaseKey(mouseKey, event.data);
 		}
 
 		/**
 		 * 鼠标事件
 		 */
-		private onMousewheel(event: WheelEvent): void
+		private onMousewheel(event: IEvent<WheelEvent>): void
 		{
 			if (!shortcut.enable)
 				return;
 			var mouseKey: string = event.type;
-			this._keyState.pressKey(mouseKey, event);
-			this._keyState.releaseKey(mouseKey, event);
+			this._keyState.pressKey(mouseKey, event.data);
+			this._keyState.releaseKey(mouseKey, event.data);
 		}
 
 		/**
 		 * 键盘按下事件
 		 */
-		private onKeydown(event: KeyboardEvent): void
+		private onKeydown(event: IEvent<KeyboardEvent>): void
 		{
 			if (!shortcut.enable)
 				return;
-			var boardKey: string = KeyBoard.getKey(event.keyCode);
-			boardKey = boardKey || event.key;
+			var boardKey: string = KeyBoard.getKey(event.data.keyCode);
+			boardKey = boardKey || event.data.key;
 			if (boardKey)
 			{
 				boardKey = boardKey.toLocaleLowerCase();
-				this._keyState.pressKey(boardKey, event);
+				this._keyState.pressKey(boardKey, event.data);
 			} else
 			{
-				console.error(`无法识别按钮 ${event.key}`);
+				console.error(`无法识别按钮 ${event.data.key}`);
 			}
 		}
 
 		/**
 		 * 键盘弹起事件
 		 */
-		private onKeyup(event: KeyboardEvent): void
+		private onKeyup(event: IEvent<KeyboardEvent>): void
 		{
 			if (!shortcut.enable)
 				return;
-			var boardKey: string = KeyBoard.getKey(event.keyCode);
-			boardKey = boardKey || event.key;
+			var boardKey: string = KeyBoard.getKey(event.data.keyCode);
+			boardKey = boardKey || event.data.key;
 			if (boardKey)
 			{
 				boardKey = boardKey.toLocaleLowerCase();
-				this._keyState.releaseKey(boardKey, event);
+				this._keyState.releaseKey(boardKey, event.data);
 			} else
 			{
-				console.error(`无法识别按钮 ${event.key}`);
+				console.error(`无法识别按钮 ${event.data.key}`);
 			}
 		}
 	}

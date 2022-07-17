@@ -12,19 +12,10 @@ namespace feng3d
         boundsInvalid: Geometry;
     }
 
-    export interface Geometry
-    {
-        once<K extends keyof GeometryEventMap>(type: K, listener: (event: IEvent<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): IEvent<GeometryEventMap[K]>;
-        has<K extends keyof GeometryEventMap>(type: K): boolean;
-        on<K extends keyof GeometryEventMap>(type: K, listener: (event: IEvent<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: IEvent<GeometryEventMap[K]>) => any, thisObject?: any): void;
-    }
-
     /**
      * 几何体
      */
-    export class Geometry extends Feng3dObject
+    export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Feng3dObject<T>
     {
 
         @oav({ component: "OAVFeng3dPreView" })

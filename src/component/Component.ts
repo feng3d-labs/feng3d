@@ -85,15 +85,6 @@ namespace feng3d
     export type ComponentNames = keyof ComponentMap;
     export type Components = ComponentMap[ComponentNames];
 
-    export interface Component
-    {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: IEvent<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): IEvent<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: IEvent<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: IEvent<GameObjectEventMap[K]>) => any, thisObject?: any): void;
-    }
-
     /**
      * 组件
      * 
@@ -101,7 +92,7 @@ namespace feng3d
      * 
      * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
      */
-    export class Component extends Feng3dObject implements IDisposable
+    export class Component extends Feng3dObject<GameObjectEventMap> implements IDisposable
     {
         //------------------------------------------
         // Variables
@@ -303,6 +294,14 @@ namespace feng3d
         getComponentsInParent<T extends Component>(type: Constructor<T>, includeInactive = false, results: T[] = []): T[]
         {
             return this._gameObject.getComponentsInParent(type, includeInactive, results);
+        }
+
+        /**
+         * 把事件分享到实体上。
+         */
+        getShareTargets()
+        {
+            return [this._gameObject];
         }
 
         /**

@@ -31,7 +31,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
 	 * </pre>
 	 */
-	export class ShortCut extends EventEmitter
+	export class ShortCut extends feng3d.EventEmitter
 	{
 		/**
 		 * 按键状态

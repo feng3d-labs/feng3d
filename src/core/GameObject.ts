@@ -2,7 +2,7 @@ namespace feng3d
 {
     export type Constructor<T> = (new (...args) => T);
 
-    export interface GameObjectEventMap extends MouseEventMap
+    export interface GameObjectEventMap extends MouseEventMap, Feng3dObjectEventMap
     {
         /**
          * 添加子组件事件
@@ -54,20 +54,10 @@ namespace feng3d
         refreshView: any;
     }
 
-    export interface GameObject
-    {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: IEvent<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): IEvent<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: IEvent<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: IEvent<GameObjectEventMap[K]>) => any, thisObject?: any): void;
-
-    }
-
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends Feng3dObject implements IDisposable
+    export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDisposable
     {
         __class__: "feng3d.GameObject";
 
@@ -245,8 +235,6 @@ namespace feng3d
             super();
             this.name = "GameObject";
             this.addComponent(Transform);
-
-            this.onAny(this._onAnyListener, this);
         }
 
         /**
@@ -619,17 +607,6 @@ namespace feng3d
         }
 
         /**
-         * 监听对象的所有事件并且传播到所有组件中
-         */
-        private _onAnyListener(e: IEvent<any>)
-        {
-            this.components.forEach(element =>
-            {
-                element.emitEvent(e);
-            });
-        }
-
-        /**
          * 判断是否拥有组件
          * @param com	被检测的组件
          * @return		true：拥有该组件；false：不拥有该组件。
@@ -998,6 +975,32 @@ namespace feng3d
             {
                 this._children[i].updateScene();
             }
+        }
+
+        /**
+         * 把事件分享到每个组件上。
+         */
+        getShareTargets()
+        {
+            return this.components;
+        }
+
+        /**
+         * 把事件汇报给父结点。
+         */
+        getBubbleTargets()
+        {
+            const targets = [this.parent];
+
+            return targets;
+        }
+
+        /**
+         * 把事件广播给每个子结点。
+         */
+        getBroadcastTargets()
+        {
+            return this.children;
         }
 
         /**

@@ -5,7 +5,7 @@ namespace feng3d
     /**
      * 鼠标拾取渲染器
      */
-    export class MouseRenderer extends EventEmitter
+    export class MouseRenderer extends feng3d.EventEmitter
     {
 
         private objects: GameObject[] = [];

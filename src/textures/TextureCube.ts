@@ -8,21 +8,12 @@ namespace feng3d
         loadCompleted: any;
     }
 
-    export interface TextureCube
-    {
-        once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: IEvent<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): IEvent<TextureCubeEventMap[K]>;
-        has<K extends keyof TextureCubeEventMap>(type: K): boolean;
-        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: IEvent<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: IEvent<TextureCubeEventMap[K]>) => any, thisObject?: any): void;
-    }
-
     export type TextureCubeImageName = "positive_x_url" | "positive_y_url" | "positive_z_url" | "negative_x_url" | "negative_y_url" | "negative_z_url";
 
     /**
      * 立方体纹理
      */
-    export class TextureCube extends TextureInfo
+    export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> extends TextureInfo<T>
     {
         __class__: "feng3d.TextureCube";
 

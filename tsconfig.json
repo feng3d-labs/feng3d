@@ -16,13 +16,15 @@
     },
     "files": [
         //
-        // "../packages/event/dist/index.d.ts",
-        //
         "src/menu/CreateNodeMenu.ts",
         // 事件模块
-        "src/event/FEvent.ts",
-        "src/event/EventDispatcher.ts",
-        "src/event/ObjectEvent.ts",
+        "src/event/AnyEmitter.ts",
+        "src/event/EventEmitter.ts",
+        "src/event/GlobalEmitter.ts",
+        "src/event/IEvent.ts",
+        "src/event/IEventListener.ts",
+        "src/event/IEventTarget.ts",
+        "src/event/ObjectEmitter.ts",
         //
         "src/utils/Task.ts",
         //
@@ -192,8 +194,6 @@
         "src/renderer/WebGLRenderer.ts",
         //
         "src/Menu.ts",
-        //
-        "src/event/GlobalDispatcher.ts",
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
         //基础工具
