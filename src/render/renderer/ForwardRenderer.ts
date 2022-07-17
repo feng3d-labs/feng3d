@@ -56,7 +56,7 @@ namespace feng3d
                     return lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose()
                 };
 
-                renderAtomic.shaderMacro.RotationOrder = defaultRotationOrder;
+                renderAtomic.shaderMacro.RotationOrder = mathUtil.DefaultRotationOrder;
 
                 renderable.beforeRender(renderAtomic, scene, camera);
 

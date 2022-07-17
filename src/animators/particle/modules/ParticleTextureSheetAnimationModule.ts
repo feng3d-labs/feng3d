@@ -210,7 +210,7 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
-            particle.tilingOffset.init(1, 1, 0, 0);
+            particle.tilingOffset.set(1, 1, 0, 0);
             particle.flipUV.set(0, 0);
             if (!this.enabled) return;
 
@@ -238,7 +238,7 @@ namespace feng3d
                 uvPos.set(frameIndex % segmentsX, rowIndex).scale(step);
             }
 
-            particle.tilingOffset.init(step.x, step.y, uvPos.x, uvPos.y);
+            particle.tilingOffset.set(step.x, step.y, uvPos.x, uvPos.y);
             particle.flipUV = this.flipUV;
         }
 

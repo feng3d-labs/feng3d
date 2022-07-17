@@ -1,15 +1,11 @@
 namespace feng3d
 {
-    /**
-     * 噪音
-     */
-    export var noise: Noise;
 
     /**
      * 柏林噪音
-     * 
+     *
      * 用于生产随机的噪音贴图
-     * 
+     *
      * @see http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
      * @see https://mrl.nyu.edu/~perlin/noise/
      * @see https://gitee.com/feng3d_admin/noise
@@ -18,7 +14,7 @@ namespace feng3d
     {
         /**
          * 构建柏林噪音
-         * 
+         *
          * @param seed 随机种子
          */
         constructor(seed = 0)
@@ -28,7 +24,7 @@ namespace feng3d
 
         /**
          * 1D 经典噪音
-         * 
+         *
          * @param x X轴数值
          */
         perlin1(x: number)
@@ -36,7 +32,7 @@ namespace feng3d
             const perm = this._p;
 
             // Find unit grid cell containing point
-            var X = Math.floor(x);
+            let X = Math.floor(x);
 
             // Get relative xyz coordinates of point within that cell
             x = x - X;
@@ -44,23 +40,23 @@ namespace feng3d
             // Wrap the integer cells at 255 (smaller integer period can be introduced here)
             X = X & 255;
             // Calculate a set of eight hashed gradient indices
-            var gi00 = perm[X] % 2;
-            var gi10 = perm[X + 1] % 2;
+            const gi00 = perm[X] % 2;
+            const gi10 = perm[X + 1] % 2;
 
             // Calculate noise contributions from each of the eight corners
-            var n00 = dot1(grad1[gi00], x);
-            var n10 = dot1(grad1[gi10], x - 1);
+            const n00 = dot1(grad1[gi00], x);
+            const n10 = dot1(grad1[gi10], x - 1);
             // Compute the fade curve value for each of x, y
-            var u = fade(x);
+            const u = fade(x);
             // Interpolate along x the contributions from each of the corners
-            var nx0 = mix(n00, n10, u);
+            const nx0 = mix(n00, n10, u);
 
             return nx0;
         }
 
         /**
          * 2D 经典噪音
-         * 
+         *
          * @param x X轴数值
          * @param y Y轴数值
          */
@@ -69,8 +65,8 @@ namespace feng3d
             const perm = this._p;
 
             // Find unit grid cell containing point
-            var X = Math.floor(x);
-            var Y = Math.floor(y);
+            let X = Math.floor(x);
+            let Y = Math.floor(y);
 
             // Get relative xyz coordinates of point within that cell
             x = x - X;
@@ -80,31 +76,31 @@ namespace feng3d
             X = X & 255;
             Y = Y & 255;
             // Calculate a set of eight hashed gradient indices
-            var gi00 = perm[X + perm[Y]] % 4;
-            var gi10 = perm[X + 1 + perm[Y]] % 4;
-            var gi01 = perm[X + perm[Y + 1]] % 4;
-            var gi11 = perm[X + 1 + perm[Y + 1]] % 4;
+            const gi00 = perm[X + perm[Y]] % 4;
+            const gi10 = perm[X + 1 + perm[Y]] % 4;
+            const gi01 = perm[X + perm[Y + 1]] % 4;
+            const gi11 = perm[X + 1 + perm[Y + 1]] % 4;
 
             // Calculate noise contributions from each of the eight corners
-            var n00 = dot2(grad2[gi00], x, y);
-            var n10 = dot2(grad2[gi10], x - 1, y);
-            var n01 = dot2(grad2[gi01], x, y - 1);
-            var n11 = dot2(grad2[gi11], x - 1, y - 1);
+            const n00 = dot2(grad2[gi00], x, y);
+            const n10 = dot2(grad2[gi10], x - 1, y);
+            const n01 = dot2(grad2[gi01], x, y - 1);
+            const n11 = dot2(grad2[gi11], x - 1, y - 1);
             // Compute the fade curve value for each of x, y
-            var u = fade(x);
-            var v = fade(y);
+            const u = fade(x);
+            const v = fade(y);
             // Interpolate along x the contributions from each of the corners
-            var nx0 = mix(n00, n10, u);
-            var nx1 = mix(n01, n11, u);
+            const nx0 = mix(n00, n10, u);
+            const nx1 = mix(n01, n11, u);
             // Interpolate the four results along y
-            var nxy = mix(nx0, nx1, v);
+            const nxy = mix(nx0, nx1, v);
 
             return nxy;
         }
 
         /**
          * 3D 经典噪音
-         * 
+         *
          * @param x X轴数值
          * @param y Y轴数值
          * @param z Z轴数值
@@ -114,9 +110,9 @@ namespace feng3d
             const perm = this._p;
 
             // Find unit grid cell containing point
-            var X = Math.floor(x);
-            var Y = Math.floor(y);
-            var Z = Math.floor(z);
+            let X = Math.floor(x);
+            let Y = Math.floor(y);
+            let Z = Math.floor(z);
 
             // Get relative xyz coordinates of point within that cell
             x = x - X;
@@ -128,71 +124,72 @@ namespace feng3d
             Y = Y & 255;
             Z = Z & 255;
             // Calculate a set of eight hashed gradient indices
-            var gi000 = perm[X + perm[Y + perm[Z]]] % 12;
-            var gi100 = perm[X + 1 + perm[Y + perm[Z]]] % 12;
-            var gi010 = perm[X + perm[Y + 1 + perm[Z]]] % 12;
-            var gi110 = perm[X + 1 + perm[Y + 1 + perm[Z]]] % 12;
-            var gi001 = perm[X + perm[Y + perm[Z + 1]]] % 12;
-            var gi101 = perm[X + 1 + perm[Y + perm[Z + 1]]] % 12;
-            var gi011 = perm[X + perm[Y + 1 + perm[Z + 1]]] % 12;
-            var gi111 = perm[X + 1 + perm[Y + 1 + perm[Z + 1]]] % 12;
+            const gi000 = perm[X + perm[Y + perm[Z]]] % 12;
+            const gi100 = perm[X + 1 + perm[Y + perm[Z]]] % 12;
+            const gi010 = perm[X + perm[Y + 1 + perm[Z]]] % 12;
+            const gi110 = perm[X + 1 + perm[Y + 1 + perm[Z]]] % 12;
+            const gi001 = perm[X + perm[Y + perm[Z + 1]]] % 12;
+            const gi101 = perm[X + 1 + perm[Y + perm[Z + 1]]] % 12;
+            const gi011 = perm[X + perm[Y + 1 + perm[Z + 1]]] % 12;
+            const gi111 = perm[X + 1 + perm[Y + 1 + perm[Z + 1]]] % 12;
 
             // Calculate noise contributions from each of the eight corners
-            var n000 = dot(grad3[gi000], x, y, z);
-            var n100 = dot(grad3[gi100], x - 1, y, z);
-            var n010 = dot(grad3[gi010], x, y - 1, z);
-            var n110 = dot(grad3[gi110], x - 1, y - 1, z);
-            var n001 = dot(grad3[gi001], x, y, z - 1);
-            var n101 = dot(grad3[gi101], x - 1, y, z - 1);
-            var n011 = dot(grad3[gi011], x, y - 1, z - 1);
-            var n111 = dot(grad3[gi111], x - 1, y - 1, z - 1);
+            const n000 = dot(grad3[gi000], x, y, z);
+            const n100 = dot(grad3[gi100], x - 1, y, z);
+            const n010 = dot(grad3[gi010], x, y - 1, z);
+            const n110 = dot(grad3[gi110], x - 1, y - 1, z);
+            const n001 = dot(grad3[gi001], x, y, z - 1);
+            const n101 = dot(grad3[gi101], x - 1, y, z - 1);
+            const n011 = dot(grad3[gi011], x, y - 1, z - 1);
+            const n111 = dot(grad3[gi111], x - 1, y - 1, z - 1);
             // Compute the fade curve value for each of x, y, z
-            var u = fade(x);
-            var v = fade(y);
-            var w = fade(z);
+            const u = fade(x);
+            const v = fade(y);
+            const w = fade(z);
             // Interpolate along x the contributions from each of the corners
-            var nx00 = mix(n000, n100, u);
-            var nx01 = mix(n001, n101, u);
-            var nx10 = mix(n010, n110, u);
-            var nx11 = mix(n011, n111, u);
+            const nx00 = mix(n000, n100, u);
+            const nx01 = mix(n001, n101, u);
+            const nx10 = mix(n010, n110, u);
+            const nx11 = mix(n011, n111, u);
             // Interpolate the four results along y
-            var nxy0 = mix(nx00, nx10, v);
-            var nxy1 = mix(nx01, nx11, v);
+            const nxy0 = mix(nx00, nx10, v);
+            const nxy1 = mix(nx01, nx11, v);
             // Interpolate the two last results along z
-            var nxyz = mix(nxy0, nxy1, w);
+            const nxyz = mix(nxy0, nxy1, w);
 
             return nxyz;
         }
 
         /**
          * N阶经典噪音
-         * 
+         *
          * 如果是1D，2D，3D噪音，最好选用对于函数，perlinN中存在for循环因此效率比perlin3等性能差3到5（8）倍！
-         * 
+         *
          * 满足以下运算
-         * perlinN(x) == perlin1(x)
-         * perlinN(x,y) == perlin2(x,y)
-         * perlinN(x,y,z) == perlin3(x,y,z)
-         * 
+         * perlinN(x) === perlin1(x)
+         * perlinN(x,y) === perlin2(x,y)
+         * perlinN(x,y,z) === perlin3(x,y,z)
+         *
          * @param ps 每个轴的数值
          */
         perlinN(...ps: number[])
         {
             const perm = this._p;
 
-            var n = ps.length;
+            const n = ps.length;
 
             // 在格子内对应每个轴的位置
-            var pp: number[] = [];
+            const pp: number[] = [];
             // 所属格子对应每个轴的索引
-            var PS: number[] = [];
+            const PS: number[] = [];
             // 在格子内对应每个轴的混合权重
-            var PF: number[] = [];
-            for (var i = 0; i < n; i++)
+            const PF: number[] = [];
+
+            for (let i = 0; i < n; i++)
             {
-                var p = ps[i];
+                let p = ps[i];
                 // 找到所属单元格
-                var P = Math.floor(p);
+                let P = Math.floor(p);
 
                 // 获取所在单元格内的位置
                 p = p - P;
@@ -209,23 +206,25 @@ namespace feng3d
             }
 
             //
-            var gradN = createGrad(n);
+            const gradN = createGrad(n);
             // 边的数量
-            var numEdge = gradN.length;
+            const numEdge = gradN.length;
             // if (n > 1)
             // {
-            //     console.assert(numEdge == Math.pow(2, n - 1) * n, `边的数量不对！`)
+            //     console.assert(numEdge === Math.pow(2, n - 1) * n, `边的数量不对！`)
             // }
             //
-            var bits = getBits(n);
-            var dns: number[] = [];
+            const bits = getBits(n);
+            const dns: number[] = [];
             //
-            for (var i = 0, len = bits.length; i < len; i++)
+
+            for (let i = 0, len = bits.length; i < len; i++)
             {
-                var bit = bits[i];
-                var bitn = bit.length;
+                const bit = bits[i];
+                let bitn = bit.length;
                 // 计算索引
-                var gi = 0;
+                let gi = 0;
+
                 while (bitn > 0)
                 {
                     bitn--;
@@ -234,10 +233,12 @@ namespace feng3d
                     //     debugger;
                 }
                 // 获取 grad
-                var grad = gradN[gi % numEdge];
+                const grad = gradN[gi % numEdge];
+
                 bitn = bit.length;
                 // 计算点乘 dot运算
-                var dn = 0;
+                let dn = 0;
+
                 while (bitn > 0)
                 {
                     bitn--;
@@ -246,17 +247,17 @@ namespace feng3d
                 dns[i] = dn;
             }
             // 进行插值
-            for (var i = 0; i < n; i++)
+            for (let i = 0; i < n; i++)
             {
                 // 每次前后两个插值
-                for (var j = 0, len = dns.length; j < len; j += 2)
+                for (let j = 0, len = dns.length; j < len; j += 2)
                 {
-                    dns[j / 2] = mix(dns[j], dns[j + 1], PF[i])
+                    dns[j / 2] = mix(dns[j], dns[j + 1], PF[i]);
                 }
                 // 每波插值后 长度减半
                 dns.length = dns.length >> 1;
             }
-            // console.assert(dns.length == 1, `结果长度不对！`)
+            // console.assert(dns.length === 1, `结果长度不对！`)
 
             return dns[0];
         }
@@ -273,7 +274,8 @@ namespace feng3d
         {
             this._seed = v;
 
-            var p = this._p;
+            const p = this._p;
+
             if (v > 0 && v < 1)
             {
                 // Scale the seed out
@@ -286,13 +288,15 @@ namespace feng3d
                 v |= v << 8;
             }
 
-            for (var i = 0; i < 256; i++)
+            for (let i = 0; i < 256; i++)
             {
-                var v0;
+                let v0: number;
+
                 if (i & 1)
                 {
                     v0 = permutation[i] ^ (v & 255);
-                } else
+                }
+                else
                 {
                     v0 = permutation[i] ^ ((v >> 8) & 255);
                 }
@@ -300,56 +304,65 @@ namespace feng3d
                 p[i] = p[i + 256] = v0;
             }
         }
-        private _seed: number = 0;
+        private _seed = 0;
         private _p: number[] = [];
     }
 
     /**
-     * 
-     * @param n 
-     * 
+     *
+     * @param n
+     *
      * len = 2^(n-1) * n
      */
     export function createGrad(n: number): number[][]
     {
         if (createGradCache[n]) return createGradCache[n];
 
-        var gradBase = createGradBase(n - 1);
-        var grad: number[][] = [];
+        const gradBase = createGradBase(n - 1);
+        let grad: number[][] = [];
+
         if (n > 1)
         {
             for (let i = n - 1; i >= 0; i--)
             {
                 for (let j = 0; j < gradBase.length; j++)
                 {
-                    var item = gradBase[j].concat();
+                    const item = gradBase[j].concat();
+
                     item.splice(i, 0, 0);
                     grad.push(item);
                 }
             }
-        } else 
+        }
+        else
         {
-            grad = gradBase
+            grad = gradBase;
         }
         createGradCache[n] = grad;
+
         return grad;
     }
 
-    var createGradCache: { [n: number]: number[][] } = {};
+    const createGradCache: { [n: number]: number[][] } = {};
 
     function createGradBase(n: number): number[][]
     {
-        if (n < 2) return [
-            [1], [- 1],
-        ];
-        var grad = createGradBase(n - 1);
-
-        for (var i = 0, len = grad.length; i < len; i++)
+        if (n < 2)
         {
-            var item = grad[i];
+            return [
+                [1], [-1],
+            ];
+        }
+        const grad = createGradBase(n - 1);
+
+        for (let i = 0, len = grad.length; i < len; i++)
+        {
+            const item = grad[i];
+
             grad[i] = item.concat(1);
             grad[i + len] = item.concat(-1);
         }
+
         return grad;
     }
 
@@ -357,35 +370,40 @@ namespace feng3d
     {
         if (getBitsChace[n]) return getBitsChace[n];
 
-        if (n < 2) return [
-            [0], [1],
-        ];
-        var grad = getBits(n - 1);
-
-        for (var i = 0, len = grad.length; i < len; i++)
+        if (n < 2)
         {
-            var item = grad[i];
+            return [
+                [0], [1],
+            ];
+        }
+        const grad = getBits(n - 1);
+
+        for (let i = 0, len = grad.length; i < len; i++)
+        {
+            const item = grad[i];
+
             grad[i] = item.concat(0);
             grad[i + len] = item.concat(1);
         }
         getBitsChace[n] = grad;
+
         return grad;
     }
-    var getBitsChace: { [n: number]: number[][] } = {};
+    const getBitsChace: { [n: number]: number[][] } = {};
 
-    var grad1 = [
-        [1], [- 1],
+    const grad1 = [
+        [1], [-1],
     ];
-    var grad2 = [
-        [1, 0], [- 1, 0],
+    const grad2 = [
+        [1, 0], [-1, 0],
         [0, 1], [0, -1],
     ];
-    var grad3 = [
-        [1, 1, 0], [- 1, 1, 0], [1, -1, 0], [-1, -1, 0],
+    const grad3 = [
+        [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0],
         [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
         [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]
     ];
-    var permutation = [
+    const permutation = [
         151, 160, 137, 91, 90, 15,
         131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
         190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
@@ -422,5 +440,8 @@ namespace feng3d
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
 
-    noise = new Noise();
+    /**
+     * 噪音
+     */
+    export const noise = new Noise();
 }

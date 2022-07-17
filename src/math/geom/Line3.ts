@@ -1,25 +1,28 @@
 namespace feng3d
 {
-	/**
-	 * 3d直线
-	 */
+
+    export interface Line3 extends MixinsLine3 { }
+
+    /**
+     * 3d直线
+     */
     export class Line3
     {
         /**
-		 * 根据直线上两点初始化直线
-		 * @param p0 Vector3
-		 * @param p1 Vector3
-		 */
+         * 根据直线上两点初始化直线
+         * @param p0 Vector3
+         * @param p1 Vector3
+         */
         static fromPoints(p0: Vector3, p1: Vector3)
         {
             return new Line3().fromPoints(p0, p1);
         }
 
-		/**
-		 * 根据直线某点与方向初始化直线
-		 * @param position 直线上某点
-		 * @param direction 直线的方向
-		 */
+        /**
+         * 根据直线某点与方向初始化直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
+         */
         static fromPosAndDir(position: Vector3, direction: Vector3)
         {
             return new Line3().fromPosAndDir(position, direction);
@@ -43,53 +46,47 @@ namespace feng3d
          */
         direction: Vector3;
 
-		/**
-		 * 根据直线某点与方向创建直线
-		 * @param origin 直线上某点
-		 * @param direction 直线的方向
-		 */
+        /**
+         * 根据直线某点与方向创建直线
+         * @param origin 直线上某点
+         * @param direction 直线的方向
+         */
         constructor(origin?: Vector3, direction?: Vector3)
         {
             this.origin = origin ? origin : new Vector3();
             this.direction = (direction ? direction : new Vector3(0, 0, 1)).normalize();
         }
 
-		/**
-		 * 根据直线上两点初始化直线
-		 * @param p0 Vector3
-		 * @param p1 Vector3
-		 */
+        /**
+         * 根据直线上两点初始化直线
+         * @param p0 Vector3
+         * @param p1 Vector3
+         */
         fromPoints(p0: Vector3, p1: Vector3)
         {
             this.origin = p0;
             this.direction = p1.subTo(p0).normalize();
-            return this;
-        }
 
-		/**
-		 * 根据直线某点与方向初始化直线
-		 * @param position 直线上某点
-		 * @param direction 直线的方向
-		 */
-        fromPosAndDir(position: Vector3, direction: Vector3)
-        {
-            this.origin = position;
-            this.direction = direction.normalize();
             return this;
         }
 
         /**
-         * 获取经过该直线的平面
+         * 根据直线某点与方向初始化直线
+         * @param position 直线上某点
+         * @param direction 直线的方向
          */
-        getPlane(plane = new Plane())
+        fromPosAndDir(position: Vector3, direction: Vector3)
         {
-            return plane.fromNormalAndPoint(Vector3.random().cross(this.direction), this.origin);
+            this.origin = position;
+            this.direction = direction.normalize();
+
+            return this;
         }
 
-		/**
-		 * 获取直线上的一个点
-		 * @param length 与原点距离
-		 */
+        /**
+         * 获取直线上的一个点
+         * @param length 与原点距离
+         */
         getPoint(length = 0, vout = new Vector3())
         {
             return vout.copy(this.direction).scaleNumber(length).add(this.origin);
@@ -131,7 +128,8 @@ namespace feng3d
          */
         closestPointWithPoint(point: Vector3, vout = new Vector3())
         {
-            var t = this.closestPointParameterWithPoint(point);
+            const t = this.closestPointParameterWithPoint(point);
+
             return this.getPoint(t, vout);
         }
 
@@ -143,7 +141,8 @@ namespace feng3d
         onWithPoint(point: Vector3, precision = mathUtil.PRECISION)
         {
             if (mathUtil.equals(this.distanceWithPoint(point), 0, precision))
-                return true;
+            { return true; }
+
             return false;
         }
 
@@ -155,15 +154,17 @@ namespace feng3d
         {
             // 处理相等
             if (this.equals(line3D))
-                return this.clone();
+            { return this.clone(); }
             // 处理平行
             if (this.direction.isParallel(line3D.direction))
-                return null;
+            { return null; }
 
-            var plane = this.getPlane();
-            var point = <Vector3>plane.intersectWithLine3(line3D);
+            const plane = this.getPlane();
+            const point = plane.intersectWithLine3(line3D) as Vector3;
+
             if (this.onWithPoint(point))
-                return point;
+            { return point; }
+
             return null;
         }
 
@@ -175,6 +176,7 @@ namespace feng3d
         {
             mat.transformPoint3(this.origin, this.origin);
             mat.transformVector3(this.direction, this.direction);
+
             return this;
         }
 
@@ -182,14 +184,19 @@ namespace feng3d
          * 与指定向量比较是否相等
          * @param v 比较的向量
          * @param precision 允许误差
-         * @return 相等返回true，否则false
+         * @returns 相等返回true，否则false
          */
         equals(line: Line3, precision = mathUtil.PRECISION)
         {
-            if (!this.onWithPoint(line.origin))
+            if (!this.onWithPoint(line.origin, precision))
+            {
                 return false;
-            if (!this.onWithPoint(line.origin.addTo(line.direction)))
+            }
+            if (!this.onWithPoint(line.origin.addTo(line.direction), precision))
+            {
                 return false;
+            }
+
             return true;
         }
 
@@ -201,6 +208,7 @@ namespace feng3d
         {
             this.origin.copy(line.origin);
             this.direction.copy(line.direction);
+
             return this;
         }
 
@@ -212,4 +220,5 @@ namespace feng3d
             return new Line3().copy(this);
         }
     }
+
 }

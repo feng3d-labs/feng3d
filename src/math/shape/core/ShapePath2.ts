@@ -1,7 +1,6 @@
 namespace feng3d
 {
 
-
     export class ShapePath2
     {
         color = new Color4();

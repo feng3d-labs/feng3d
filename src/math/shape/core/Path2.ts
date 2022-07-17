@@ -1,7 +1,6 @@
 namespace feng3d
 {
 
-
     export class Path2 extends CurvePath<Vector2>
     {
         currentPoint: Vector2;

@@ -1,35 +1,117 @@
 namespace feng3d
 {
 
-    var DEG_TO_RAD = Math.PI / 180;
-
     /**
-     * Vector2 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
+     * Representation of 2D vectors and points.
+     */
+    /**
+     * 二维向量和点的表示。
      */
     export class Vector2 implements Vector
     {
-        __class__: "feng3d.Vector2";
+        __class__: 'Vector2';
 
         /**
-         * 原点
+         * X component of the vector.
          */
-        static ZERO = Object.freeze(new Vector2());
+        /**
+         * 向量的X分量。
+         */
+        @oav()
+        @serialize
+        x: number;
 
         /**
-         * 将一对极坐标转换为笛卡尔点坐标。
-         * @param len 极坐标对的长度。
-         * @param angle 极坐标对的角度（以弧度表示）。
+         * Y component of the vector.
          */
-        static polar(len: number, angle: number): Vector2
+        /**
+         * 向量的Y分量。
+         */
+        @oav()
+        @serialize
+        y: number;
+
+        /**
+         * The length of this vector.
+         */
+        /**
+         * 向量的长度。
+         */
+        get length(): number
         {
-            return new Vector2(len * Math.cos(angle / DEG_TO_RAD), len * Math.sin(angle / DEG_TO_RAD));
+            return Math.sqrt((this.x * this.x) + (this.y * this.y));
         }
 
         /**
-         * 创建一个 Vector2 对象.若不传入任何参数，将会创建一个位于（0，0）位置的点。
-         * 
-         * @param x 该对象的x属性值，默认为0
-         * @param y 该对象的y属性值，默认为0
+         * The squared length of this vector.
+         */
+        /**
+         * 向量长度的平方。
+         */
+        get lengthSquared(): number
+        {
+            return (this.x * this.x) + (this.y * this.y);
+        }
+
+        /**
+         * The length of this vector.
+         */
+        /**
+         * 向量的长度。
+         */
+        get magnitude()
+        {
+            return this.length;
+        }
+
+        /**
+         * The squared length of this vector.
+         */
+        /**
+         * 向量长度的平方。
+         */
+        get sqrMagnitude(): number
+        {
+            return (this.x * this.x) + (this.y * this.y);
+        }
+
+        /**
+         * 返回大小为 1 的此向量（只读）。
+         *
+         * 归一化后，向量保持相同的方向，但其长度为 1.0。
+         *
+         * 请注意，当前向量不变，并返回一个新的归一化向量。如果要对当前向量进行归一化，请使用Normalize函数。
+         *
+         * 如果向量太小而无法归一化，则将返回零向量。
+         */
+        /**
+         * Returns this vector with a magnitude of 1 (Read Only).
+         *
+         * When normalized, a vector keeps the same direction but its length is 1.0.
+         *
+         * Note that the current vector is unchanged and a new normalized vector is returned. If you want to normalize the current vector, use Normalize function.
+         *
+         * If the vector is too small to be normalized a zero vector will be returned.
+         */
+        get normalized()
+        {
+            const v = new Vector2(this.x, this.y);
+            v.normalize();
+
+            return v;
+        }
+
+        /**
+         * Constructs a new vector with given x, y components.
+         *
+         * @param x X component of the vector.
+         * @param y Y component of the vector.
+         */
+        /**
+         * 用给定的 x, y 分量构造一个新向量。
+         *
+         * @param x 向量的X分量。
+         * @param y 向量的Y分量。
          */
         constructor(x = 0, y = 0)
         {
@@ -38,39 +120,85 @@ namespace feng3d
         }
 
         /**
-         * 该点的水平坐标。
-         * @default 0
+         * Set x and y components of an existing Vector2.
+         *
+         * @param x The new X component of the vector
+         * @param y The new Y component of the vector
          */
-        @oav()
-        @serialize
-        x: number;
-
         /**
-         * 该点的垂直坐标。
-         * @default 0
+         * 设置现有Vector2的x和y分量。
+         *
+         * @param x 向量的新的X分量
+         * @param y 向量的新的Y分量
          */
-        @oav()
-        @serialize
-        y: number;
-
-        /**
-         * 从 (0,0) 到此点的线段长度。
-         */
-        get length(): number
-        {
-            return Math.sqrt(this.x * this.x + this.y * this.y);
-        }
-
-        /**
-         * 将 Vector2 的成员设置为指定值
-         * @param x 该对象的x属性值
-         * @param y 该对象的y属性值
-         */
-        set(x: number, y: number): Vector2
+        set(x: number, y: number)
         {
             this.x = x;
             this.y = y;
+
             return this;
+        }
+
+        /**
+         * Determine if it is equal to the given vector.
+         *
+         * @param other the given vector.
+         * @param precision comparative precision.
+         * @returns Returns true if the given vector is exactly equal to this vector.
+         */
+        /**
+         * 判断与给定向量是否相等。
+         *
+         * @param other 给定的向量。
+         * @param precision 比较精度。
+         * @returns 如果给定向量完全等于该向量，则返回 true。
+         */
+        equals(other: Vector2, precision = mathUtil.PRECISION)
+        {
+            if (!mathUtil.equals(this.x - other.x, 0, precision))
+            {
+                return false;
+            }
+            if (!mathUtil.equals(this.y - other.y, 0, precision))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /**
+         * Makes this vector have a magnitude of 1.
+         *
+         * When normalized, a vector keeps the same direction but its length is 1.0.
+         *
+         * Note that this function will change the current vector. If you want to keep the current vector unchanged, use normalized variable.
+         *
+         * If this vector is too small to be normalized it will be set to zero.
+         *
+         */
+        /**
+         * 使该向量的大小为 1。
+         *
+         * 归一化后，向量保持相同的方向，但其长度为 1.0。
+         *
+         * 请注意，此函数将更改当前向量。如果要保持当前向量不变，请使用归一化变量。
+         *
+         * 如果这个向量太小而无法归一化，它将被设置为零。
+         */
+        normalize()
+        {
+            const length = this.length;
+            if (this.length > Vector2.kEpsilon)
+            {
+                this.x /= length;
+                this.y /= length;
+            }
+            else
+            {
+                this.x = 0;
+                this.y = 0;
+            }
         }
 
         /**
@@ -82,14 +210,383 @@ namespace feng3d
         }
 
         /**
-         * 返回 pt1 和 pt2 之间的距离。
-         * @param p1 第一个点
-         * @param p2 第二个点
-         * @returns 第一个点和第二个点之间的距离。
+         * 返回此向量的格式化字符串。
          */
-        static distance(p1: Vector2, p2: Vector2)
+        /**
+         * Returns a formatted string for this vector.
+         */
+        toString(): string
         {
-            return p1.distance(p2);
+            return `(${this.x}, ${this.y})`;
+        }
+
+        /**
+         * Shorthand for writing Vector2(0, 0).
+         */
+        /**
+         * 零向量`Vector2(0, 0)`。
+         */
+        static readonly zero = Object.freeze(new Vector2());
+
+        /**
+         * Shorthand for writing Vector2(1, 1).
+         */
+        /**
+         * 单元向量`Vector2(1, 1)`。
+         */
+        static readonly one = Object.freeze(new Vector2(1, 1));
+
+        /**
+         * Shorthand for writing Vector2(0, 1).
+         */
+        static readonly up = Object.freeze(new Vector2(0, 1));
+
+        /**
+         * Shorthand for writing Vector2(0, -1).
+         */
+        static readonly down = Object.freeze(new Vector2(0, -1));
+
+        /**
+         * Shorthand for writing Vector2(-1, 0).
+         */
+        static readonly left = Object.freeze(new Vector2(-1, 0));
+
+        /**
+         * Shorthand for writing Vector2(1, 0).
+         */
+        static readonly right = Object.freeze(new Vector2(1, 0));
+
+        /**
+         * Shorthand for writing Vector2(Infinity, Infinity).
+         */
+        static readonly positiveInfinity = Object.freeze(new Vector2(Infinity, Infinity));
+
+        /**
+         * Shorthand for writing Vector2(-Infinity, -Infinity).
+         */
+        static readonly negativeInfinity = Object.freeze(new Vector2(-Infinity, -Infinity));
+
+        /**
+         * 可允许误差。
+         */
+        static readonly kEpsilon = 0.00001;
+
+        /**
+         * 可允许误差平方。
+         */
+        static readonly kEpsilonNormalSqrt = 1e-15;
+
+        /**
+         * Linearly interpolates between vectors a and b by t.
+         *
+         * The parameter t is clamped to the range [0, 1].
+         *
+         * When t = 0 returns a.
+         * When t = 1 return b.
+         * When t = 0.5 returns the midpoint of a and b.
+         *
+         * @param a Start point.
+         * @param b End point.
+         * @param t Interpolated coefficient.
+         */
+        /**
+         * 返回起始向量`a`与终止向量`b`在`t`位置的线性插值。
+         *
+         * 参数`t`将被裁减到[0, 1]的范围内。
+         *
+         * 当 t = 0 时返回`a`.
+         * 当 t = 1 时返回`b`.
+         * 当 t = 0.5 时返回`a`与`b`的中间值.
+         *
+         * @param a 起始点。
+         * @param b 终止点。
+         * @param t 插值系数。
+         */
+        static Lerp(a: Vector2, b: Vector2, t: number)
+        {
+            t = mathUtil.clamp(t, 0, 1);
+
+            return new Vector2(
+                a.x + (b.x - a.x) * t,
+                a.y + (b.y - a.y) * t
+            );
+        }
+
+        /**
+         * Linearly interpolates between vectors a and b by t.
+         *
+         * When t = 0 returns a.
+         * When t = 1 return b.
+         * When t = 0.5 returns the midpoint of a and b.
+         *
+         * @param a Start point.
+         * @param b End point.
+         * @param t Interpolated coefficient.
+         */
+        /**
+         * 返回起始向量`a`与终止向量`b`在`t`位置的线性插值。
+         *
+         * 当 t = 0 时返回`a`.
+         * 当 t = 1 时返回`b`.
+         * 当 t = 0.5 时返回`a`与`b`的中间值.
+         *
+         * @param a 起始点。
+         * @param b 终止点。
+         * @param t 插值系数。
+         */
+        static LerpUnclamped(a: Vector2, b: Vector2, t: number)
+        {
+            return new Vector2(
+                a.x + (b.x - a.x) * t,
+                a.y + (b.y - a.y) * t
+            );
+        }
+
+        // Moves a point /current/ towards /target/.
+        static MoveTowards(current: Vector2, target: Vector2, maxDistanceDelta: number)
+        {
+            // avoid vector ops because current scripting backends are terrible at inlining
+            const toVectorX = target.x - current.x;
+            const toVectorY = target.y - current.y;
+
+            const sqDist = toVectorX * toVectorX + toVectorY * toVectorY;
+
+            if (sqDist === 0 || (maxDistanceDelta >= 0 && sqDist <= maxDistanceDelta * maxDistanceDelta))
+            {
+                return target;
+            }
+
+            const dist = Math.sqrt(sqDist);
+
+            return new Vector2(current.x + toVectorX / dist * maxDistanceDelta,
+                current.y + toVectorY / dist * maxDistanceDelta);
+        }
+
+        // Multiplies two vectors component-wise.
+        static Scale(a: Vector2, b: Vector2)
+        {
+            return new Vector2(a.x * b.x, a.y * b.y);
+        }
+
+        static Reflect(inDirection: Vector2, inNormal: Vector2)
+        {
+            const factor = -2 * Vector2.Dot(inNormal, inDirection);
+
+            return new Vector2(factor * inNormal.x + inDirection.x, factor * inNormal.y + inDirection.y);
+        }
+
+        static Perpendicular(inDirection: Vector2)
+        {
+            return new Vector2(-inDirection.y, inDirection.x);
+        }
+
+        /**
+         * Dot Product of two vectors.
+         *
+         * For normalized vectors Dot returns 1 if they point in exactly the same direction; -1 if they point in completely opposite directions; and a number in between for other cases (e.g. Dot returns zero if vectors are perpendicular).
+         *
+         * @param lhs The left-hand vector.
+         * @param rhs The right-hand vector.
+         * @returns Dot Product of two vectors.
+         */
+        /**
+         * 两个向量的点乘值。
+         *
+         * 对于归一化向量，如果它们指向完全相同的方向，则 Dot 返回 1；如果它们指向完全相反的方向则返回 -1；其他情况返回-1与1之间的数字（例如，如果向量垂直，则 Dot 返回零）。
+         *
+         * @param lhs 左侧向量。
+         * @param rhs 右侧向量。
+         * @returns 两个向量的点乘值。
+         */
+        static Dot(lhs: Vector2, rhs: Vector2)
+        {
+            return lhs.x * rhs.x + lhs.y * rhs.y;
+        }
+
+        /**
+         * Gets the unsigned angle in degrees between from and to.
+         *
+         * The angle returned is the unsigned angle between the two vectors.
+         * Note: The angle returned will always be between 0 and 180 degrees, because the method returns the smallest angle between the vectors. That is, it will never return a reflex angle. Angles are calculated from world origin point (0,0,0) as the vertex.
+         *
+         * @param from 	The vector from which the angular difference is measured.
+         * @param to The vector to which the angular difference is measured.
+         * @returns The unsigned angle in degrees between the two vectors.
+         */
+        /**
+         * 获取从起始向量和终止向量之间的无符号角度。
+         *
+         * 返回的角度是两个向量之间的无符号角度。
+         * 注意：返回的角度总是在 0 到 180 度之间，因为该方法返回向量之间的最小角度。也就是说，它永远不会返回反射角。角度是从世界原点 (0,0,0) 作为顶点计算的。
+         *
+         * @param from 测量角度差的起始向量。
+         * @param to 测量角度差的终止向量。
+         * @returns 两个向量之间的无符号角度，以度为单位。
+         */
+        static Angle(from: Vector2, to: Vector2)
+        {
+            // sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers
+            const denominator = Math.sqrt(from.sqrMagnitude * to.sqrMagnitude);
+            if (denominator < Vector2.kEpsilonNormalSqrt)
+            {
+                return 0;
+            }
+
+            const dot = mathUtil.clamp(Vector2.Dot(from, to) / denominator, -1, 1);
+
+            return Math.acos(dot) * mathUtil.RAD2DEG;
+        }
+
+        static SignedAngle(from: Vector2, to: Vector2)
+        {
+            const unsignedAngle = Vector2.Angle(from, to);
+            const sign = Mathf.Sign(from.x * to.y - from.y * to.x);
+
+            return unsignedAngle * sign;
+        }
+
+        /**
+         * Returns the distance between a and b.
+         *
+         * @param a Start point.
+         * @param b End point.
+         * @returns The distance between a and b.
+         */
+        /**
+         * 返回两点的距离。
+         *
+         * @param a 起始点。
+         * @param b 终止点。
+         * @returns 两点的距离。
+         */
+        static Distance(a: Vector2, b: Vector2)
+        {
+            return a.distance(b);
+        }
+
+        /**
+         * Returns a copy of vector with its magnitude clamped to maxLength.
+         *
+         * @param vector Restricted vector.
+         * @param maxLength The maximum length to be restricted.
+         * @returns A copy of vector with its magnitude clamped to maxLength.
+         */
+        /**
+         * 返回其长度被限制最大值为`maxLength`的向量副本。
+         *
+         * @param vector 被限制的向量。
+         * @param maxLength 被限制的最大长度。
+         * @returns 限制后的向量副本。
+         */
+        static ClampMagnitude(vector: Vector2, maxLength: number)
+        {
+            const sqrMagnitude = vector.sqrMagnitude;
+            if (sqrMagnitude > maxLength * maxLength)
+            {
+                const mag = Math.sqrt(sqrMagnitude);
+
+                // these intermediate variables force the intermediate result to be
+                // of float precision. without this, the intermediate result can be of higher
+                // precision, which changes behavior.
+                const normalizedX = vector.x / mag;
+                const normalizedY = vector.y / mag;
+
+                return new Vector2(normalizedX * maxLength, normalizedY * maxLength);
+            }
+
+            return vector.clone();
+        }
+
+        // Returns a vector that is made from the smallest components of two vectors.
+        static Min(lhs: Vector2, rhs: Vector2)
+        {
+            return new Vector2(Mathf.Min(lhs.x, rhs.x), Mathf.Min(lhs.y, rhs.y));
+        }
+
+        // Returns a vector that is made from the largest components of two vectors.
+        static Max(lhs: Vector2, rhs: Vector2)
+        {
+            return new Vector2(Mathf.Max(lhs.x, rhs.x), Mathf.Max(lhs.y, rhs.y));
+        }
+
+        static SmoothDamp(current: Vector2, target: Vector2, currentVelocity: Vector2, smoothTime: number, maxSpeed: number)
+        {
+            const deltaTime = Time.deltaTime;
+
+            return Vector2.SmoothDamp2(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+        }
+
+        static SmoothDamp1(current: Vector2, target: Vector2, currentVelocity: Vector2, smoothTime: number)
+        {
+            const deltaTime = Time.deltaTime;
+            const maxSpeed = Mathf.Infinity;
+
+            return Vector2.SmoothDamp2(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+        }
+
+        static SmoothDamp2(current: Vector2, target: Vector2, currentVelocity: Vector2, smoothTime: number, maxSpeed = Mathf.Infinity, deltaTime = Time.deltaTime)
+        {
+            // Based on Game Programming Gems 4 Chapter 1.10
+            smoothTime = Mathf.Max(0.0001, smoothTime);
+            const omega = 2 / smoothTime;
+
+            const x = omega * deltaTime;
+            const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+
+            let changeX = current.x - target.x;
+            let changeY = current.y - target.y;
+            const originalTo = target;
+
+            // Clamp maximum speed
+            const maxChange = maxSpeed * smoothTime;
+
+            const maxChangeSq = maxChange * maxChange;
+            const sqDist = changeX * changeX + changeY * changeY;
+            if (sqDist > maxChangeSq)
+            {
+                const mag = Mathf.Sqrt(sqDist);
+                changeX = changeX / mag * maxChange;
+                changeY = changeY / mag * maxChange;
+            }
+
+            target.x = current.x - changeX;
+            target.y = current.y - changeY;
+
+            const tempX = (currentVelocity.x + omega * changeX) * deltaTime;
+            const tempY = (currentVelocity.y + omega * changeY) * deltaTime;
+
+            currentVelocity.x = (currentVelocity.x - omega * tempX) * exp;
+            currentVelocity.y = (currentVelocity.y - omega * tempY) * exp;
+
+            let outputX = target.x + (changeX + tempX) * exp;
+            let outputY = target.y + (changeY + tempY) * exp;
+
+            // Prevent overshooting
+            const origMinusCurrentX = originalTo.x - current.x;
+            const origMinusCurrentY = originalTo.y - current.y;
+            const outMinusOrigX = outputX - originalTo.x;
+            const outMinusOrigY = outputY - originalTo.y;
+
+            if (origMinusCurrentX * outMinusOrigX + origMinusCurrentY * outMinusOrigY > 0)
+            {
+                outputX = originalTo.x;
+                outputY = originalTo.y;
+
+                currentVelocity.x = (outputX - originalTo.x) / deltaTime;
+                currentVelocity.y = (outputY - originalTo.y) / deltaTime;
+            }
+
+            return new Vector2(outputX, outputY);
+        }
+
+        /**
+         * 将一对极坐标转换为笛卡尔点坐标。
+         * @param len 极坐标对的长度。
+         * @param angle 极坐标对的角度（以弧度表示）。
+         */
+        static polar(len: number, angle: number): Vector2
+        {
+            return new Vector2(len * Math.cos(angle * mathUtil.RAD2DEG), len * Math.sin(angle * mathUtil.RAD2DEG));
         }
 
         /**
@@ -100,6 +597,7 @@ namespace feng3d
         {
             this.x += v.x;
             this.y += v.y;
+
             return this;
         }
 
@@ -112,6 +610,7 @@ namespace feng3d
         {
             vout.x = this.x + v.x;
             vout.y = this.y + v.y;
+
             return vout;
         }
 
@@ -124,18 +623,20 @@ namespace feng3d
         {
             this.x -= v.x;
             this.y -= v.y;
+
             return this;
         }
 
         /**
          * 减去向量返回新向量
          * @param v 减去的向量
-         * @return 返回的新向量
+         * @returns 返回的新向量
          */
         subTo(v: Vector2, vout = new Vector2())
         {
             vout.x = this.x - v.x;
             vout.y = this.y - v.y;
+
             return vout;
         }
 
@@ -147,6 +648,7 @@ namespace feng3d
         {
             this.x *= v.x;
             this.y *= v.y;
+
             return this;
         }
 
@@ -159,6 +661,7 @@ namespace feng3d
         {
             vout.x = this.x * v.x;
             vout.y = this.y * v.y;
+
             return vout;
         }
 
@@ -170,33 +673,21 @@ namespace feng3d
         {
             this.x /= v.x;
             this.y /= v.y;
+
             return this;
         }
 
         /**
          * 除以向量
          * @param v 向量
-         * @param vout 输出向量 
+         * @param vout 输出向量
          */
         divideTo(v: Vector2, vout = new Vector2())
         {
             vout.x = this.x / v.x;
             vout.y = this.y / v.y;
-            return vout;
-        }
 
-        /**
-         * 确定两个点是否相同。如果两个点具有相同的 x 和 y 值，则它们是相同的点。
-         * @param toCompare 要比较的向量。
-         * @returns 如果该对象与此 向量 对象相同，则为 true 值，如果不相同，则为 false。
-         */
-        equals(v: Vector2, precision = mathUtil.PRECISION)
-        {
-            if (!mathUtil.equals(this.x - v.x, 0, precision))
-                return false;
-            if (!mathUtil.equals(this.y - v.y, 0, precision))
-                return false;
-            return true;
+            return vout;
         }
 
         /**
@@ -207,6 +698,7 @@ namespace feng3d
         {
             this.x = source.x;
             this.y = source.y;
+
             return this;
         }
 
@@ -217,8 +709,10 @@ namespace feng3d
          */
         distance(p: Vector2)
         {
-            var dx = this.x - p.x, dy = this.y - p.y;
-            return Math.sqrt(dx * dx + dy * dy);
+            const dx = this.x - p.x;
+            const dy = this.y - p.y;
+
+            return Math.sqrt((dx * dx) + (dy * dy));
         }
 
         /**
@@ -227,23 +721,10 @@ namespace feng3d
          */
         distanceSquared(p: Vector3)
         {
-            var dx = this.x - p.x, dy = this.y - p.y;
-            return dx * dx + dy * dy;
-        }
+            const dx = this.x - p.x;
+            const dy = this.y - p.y;
 
-        /**
-         * 将 (0,0) 和当前点之间的线段缩放为设定的长度。
-         * @param thickness 缩放值。例如，如果当前点为 (0,5) 并且您将它规范化为 1，则返回的点位于 (0,1) 处。
-         */
-        normalize(thickness = 1)
-        {
-            if (this.x != 0 || this.y != 0)
-            {
-                let relativeThickness = thickness / this.length;
-                this.x *= relativeThickness;
-                this.y *= relativeThickness;
-            }
-            return this;
+            return (dx * dx) + (dy * dy);
         }
 
         /**
@@ -253,6 +734,7 @@ namespace feng3d
         {
             this.x *= -1;
             this.y *= -1;
+
             return this;
         }
 
@@ -264,6 +746,7 @@ namespace feng3d
         {
             this.x = 1 / this.x;
             this.y = 1 / this.y;
+
             return this;
         }
 
@@ -274,6 +757,7 @@ namespace feng3d
         reciprocalTo(out = new Vector2())
         {
             out.copy(this).reciprocal();
+
             return out;
         }
 
@@ -284,6 +768,7 @@ namespace feng3d
         {
             this.x *= s;
             this.y *= s;
+
             return this;
         }
         /**
@@ -302,6 +787,7 @@ namespace feng3d
         {
             this.x *= s.x;
             this.y *= s.y;
+
             return this;
         }
 
@@ -311,7 +797,8 @@ namespace feng3d
          */
         scaleTo(s: Vector2, vout = new Vector2())
         {
-            if (s == vout) s = s.clone();
+            if (s === vout) s = s.clone();
+
             return vout.copy(this).scale(s);
         }
 
@@ -324,21 +811,21 @@ namespace feng3d
         {
             this.x += dx;
             this.y += dy;
+
             return this;
         }
-
-
 
         /**
          * 插值到指定向量
          * @param v 目标向量
          * @param alpha 插值系数
-         * @return 返回自身
+         * @returns 返回自身
          */
         lerp(p: Vector2, alpha: Vector2): Vector2
         {
             this.x += (p.x - this.x) * alpha.x;
             this.y += (p.y - this.y) * alpha.y;
+
             return this;
         }
 
@@ -346,7 +833,7 @@ namespace feng3d
          * 插值到指定向量
          * @param v 目标向量
          * @param alpha 插值系数
-         * @return 返回新向量
+         * @returns 返回新向量
          */
         lerpTo(v: Vector2, alpha: Vector2, vout = new Vector2())
         {
@@ -357,12 +844,13 @@ namespace feng3d
          * 插值到指定向量
          * @param v 目标向量
          * @param alpha 插值系数
-         * @return 返回自身
+         * @returns 返回自身
          */
         lerpNumber(v: Vector2, alpha: number)
         {
             this.x += (v.x - this.x) * alpha;
             this.y += (v.y - this.y) * alpha;
+
             return this;
         }
 
@@ -370,13 +858,12 @@ namespace feng3d
          * 插值到指定向量
          * @param v 目标向量
          * @param alpha 插值系数
-         * @return 返回自身
+         * @returns 返回自身
          */
         lerpNumberTo(v: Vector2, alpha: number, vout = new Vector2())
         {
             return vout.copy(this).lerpNumber(v, alpha);
         }
-
 
         /**
          * 夹紧？
@@ -387,6 +874,7 @@ namespace feng3d
         {
             this.x = mathUtil.clamp(this.x, min.x, max.x);
             this.y = mathUtil.clamp(this.y, min.y, max.y);
+
             return this;
         }
 
@@ -408,6 +896,7 @@ namespace feng3d
         {
             this.x = Math.min(this.x, v.x);
             this.y = Math.min(this.y, v.y);
+
             return this;
         }
 
@@ -419,6 +908,7 @@ namespace feng3d
         {
             this.x = Math.max(this.x, v.x);
             this.y = Math.max(this.y, v.y);
+
             return this;
         }
 
@@ -429,28 +919,21 @@ namespace feng3d
         {
             this.x = Math.round(this.x);
             this.y = Math.round(this.y);
-            return this;
-        }
 
-        /**
-         * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
-         * @returns 坐标的字符串表示形式。
-         */
-        toString(): string
-        {
-            return "(x=" + this.x + ", y=" + this.y + ")";
+            return this;
         }
 
         /**
          * 转换为数组
          * @param array 数组
          * @param offset 偏移
-         * @return 返回数组
+         * @returns 返回数组
          */
         toArray(array: number[] = [], offset = 0)
         {
             array[offset] = this.x;
             array[offset + 1] = this.y;
+
             return array;
         }
     }

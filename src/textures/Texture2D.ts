@@ -23,12 +23,12 @@ namespace feng3d
     if (typeof document != "undefined")
     {
         imageDatas = {
-            black: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.black)).imageData,
-            white: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.white)).imageData,
-            red: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.red)).imageData,
-            green: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.green)).imageData,
-            blue: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.blue)).imageData,
-            defaultNormal: new ImageUtil(1, 1, Color4.fromUnit24(0x8080ff)).imageData,
+            black: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.black)).imageData,
+            white: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.white)).imageData,
+            red: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.red)).imageData,
+            green: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.green)).imageData,
+            blue: new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords.blue)).imageData,
+            defaultNormal: new ImageUtil(1, 1, new Color4().fromUnit24(0x8080ff)).imageData,
             defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
         }
     }

@@ -232,7 +232,7 @@ namespace feng3d
             test.ok(v.equals(original));
 
             // Test rotation along x axis
-            q.fromEulerAngles(0.222, 0.123, 1.234);
+            q.fromEuler(0.222, 0.123, 1.234);
             M.setRotationFromQuaternion(q);
             var Mv = M.vmult(original);
             var qv = q.rotatePoint(original);

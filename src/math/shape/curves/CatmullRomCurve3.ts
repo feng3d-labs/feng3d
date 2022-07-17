@@ -1,7 +1,6 @@
 namespace feng3d
 {
 
-
     /**
      * Centripetal CatmullRom Curve - which is useful for avoiding
      * cusps and self-intersections in non-uniform catmull rom curves.

@@ -1,8 +1,9 @@
 namespace feng3d
 {
+
     /**
-     * 用于表示欧拉角的旋转顺序
-     * 
+     * 欧拉角的旋转顺序。
+     *
      * 如果顺序为XYZ，则依次按 ZYZ 轴旋转。为什么循序与定义相反？因为three.js中都这么定义，他们为什么这么定义就不清楚了。
      */
     export enum RotationOrder
@@ -25,7 +26,7 @@ namespace feng3d
         ZYX = 2,
         /**
          * 依次按 ZXY 轴旋转。
-         * 
+         *
          * unity默认旋转顺序。
          */
         YXZ = 3,
@@ -38,13 +39,17 @@ namespace feng3d
          */
         XZY = 5,
     }
-    
+
+    mathUtil.DefaultRotationOrder = RotationOrder.YXZ;
+}
+interface MixinsMathUtil
+{
     /**
      * 引擎中使用的旋转顺序。
-     * 
+     *
      * unity YXZ
      * playcanvas ZYX
      * three.js XYZ
      */
-    export var defaultRotationOrder = RotationOrder.YXZ;
+    DefaultRotationOrder: feng3d.RotationOrder;
 }

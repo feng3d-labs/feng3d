@@ -87,4 +87,5 @@ namespace feng3d
             vertices.push(contour[i].y);
         }
     }
+
 }

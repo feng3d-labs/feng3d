@@ -1,5 +1,6 @@
 namespace feng3d
 {
+
     /**
      * 动画曲线Wrap模式，处理超出范围情况
      */

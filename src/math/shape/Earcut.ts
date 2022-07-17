@@ -1,9 +1,9 @@
-/**
- * Port from https://github.com/mapbox/earcut (v2.2.2)
- */
 namespace feng3d
 {
 
+    /**
+     * Port from https://github.com/mapbox/earcut (v2.2.2)
+     */
     export class Earcut
     {
         /**
@@ -531,7 +531,7 @@ namespace feng3d
 
         do
         {
-            if (p.z === null || p.z === undefined) p.z = zOrder(p.x, p.y, minX, minY, invSize);
+            if (ObjectUtils.objectIsEmpty(p.z)) p.z = zOrder(p.x, p.y, minX, minY, invSize);
             p.prevZ = p.prev;
             p.nextZ = p.next;
             p = p.next;

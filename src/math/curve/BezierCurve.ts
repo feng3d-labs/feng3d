@@ -1,9 +1,9 @@
 namespace feng3d
 {
+
     /**
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     *
      * @author feng / http://feng3d.com 03/06/2018
      */
     export class BezierCurve
@@ -182,16 +182,14 @@ namespace feng3d
          * Bézier曲线可以定义为任意度n。
          *
          * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
+         * @param ps 点列表 ps.length === n+1
          * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
          */
         bn(t: number, ps: number[], processs: number[][] = null)
         {
             ps = ps.concat();
             if (processs)
-            {
-                processs.push(ps.concat());
-            }
+            { processs.push(ps.concat()); }
             // n次Bézier递推
             for (let i = ps.length - 1; i > 0; i--)
             {
@@ -217,14 +215,12 @@ namespace feng3d
          * Bézier曲线可以定义为任意度n。
          *
          * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
+         * @param ps 点列表 ps.length === n+1
          */
         bnDerivative(t: number, ps: number[])
         {
             if (ps.length < 2)
-            {
-                return 0;
-            }
+            { return 0; }
             ps = ps.concat();
             // 进行
             for (let i = 0, n = ps.length - 1; i < n; i++)
@@ -246,14 +242,12 @@ namespace feng3d
          * Bézier曲线可以定义为任意度n。
          *
          * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
+         * @param ps 点列表 ps.length === n+1
          */
         bnSecondDerivative(t: number, ps: number[])
         {
             if (ps.length < 3)
-            {
-                return 0;
-            }
+            { return 0; }
             ps = ps.concat();
             // 进行
             for (let i = 0, n = ps.length - 1; i < n; i++)
@@ -274,15 +268,14 @@ namespace feng3d
          *
          * @param t 插值度
          * @param dn 求导次数
-         * @param ps 点列表     ps.length == n+1
+         * @param ps 点列表     ps.length === n+1
          */
         bnND(t: number, dn: number, ps: number[])
         {
             if (ps.length < dn + 1)
-            {
-                return 0;
-            }
+            { return 0; }
             let factorial = 1;
+
             ps = ps.concat();
             for (let j = 0; j < dn; j++)
             {
@@ -378,13 +371,14 @@ namespace feng3d
          *
          * @param ps 点列表
          * @param numSamples 采样次数，用于分段查找极值
-         * @param precision  查找精度
+         * @param precision 查找精度
          *
          * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
          */
         getExtremums(ps: number[], numSamples = 10, precision = 0.0000001)
         {
             const samples: number[] = [];
+
             for (let i = 0; i <= numSamples; i++)
             {
                 samples.push(this.getDerivative(i / numSamples, ps));
@@ -393,11 +387,13 @@ namespace feng3d
             //
             const resultTs: number[] = [];
             const resultVs: number[] = [];
+
             for (let i = 0, n = numSamples; i < n; i++)
             {
                 if (samples[i] * samples[i + 1] < 0)
                 {
                     const guessT = equationSolving.line((x) => this.getDerivative(x, ps), i / numSamples, (i + 1) / numSamples, precision);
+
                     resultTs.push(guessT);
                     resultVs.push(this.getValue(guessT, ps));
                 }
@@ -408,7 +404,11 @@ namespace feng3d
 
         /**
          * 获取单调区间列表
-         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
+         *
+         * @param ps
+         * @param numSamples
+         * @param precision
+         * @returns ts: 区间结点插值度列表,vs: 区间结点值列表
          */
         getMonotoneIntervals(ps: number[], numSamples = 10, precision = 0.0000001)
         {
@@ -417,6 +417,7 @@ namespace feng3d
             const monotoneIntervalVs = [ps[0], ps[ps.length - 1]];
             // 预先计算好极值
             const extremums = this.getExtremums(ps, numSamples, precision);
+
             for (let i = 0; i < extremums.ts.length; i++)
             {
                 // 增加单调区间
@@ -433,7 +434,7 @@ namespace feng3d
          * @param targetV 目标值
          * @param ps 点列表
          * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
-         * @param precision  查找精度
+         * @param precision 查找精度
          *
          * @returns 返回解数组
          */
@@ -447,6 +448,7 @@ namespace feng3d
             // 存在解的单调区间
             const results: number[] = [];
             // 遍历单调区间
+
             for (let i = 0, n = monotoneIntervalVs.length - 1; i < n; i++)
             {
                 if ((monotoneIntervalVs[i] - targetV) * (monotoneIntervalVs[i + 1] - targetV) <= 0)
@@ -455,6 +457,7 @@ namespace feng3d
 
                     // 连线法
                     const result = equationSolving.line(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
+
                     results.push(result);
                 }
             }
@@ -475,13 +478,15 @@ namespace feng3d
         {
             // 获取曲线的动画过程
             const processs: number[][] = [];
-            this.bn(t, ps, processs);
+
+            bezierCurve.bn(t, ps, processs);
 
             // 第一条曲线
             const fps: number[] = [];
             // 第二条曲线
             const sps: number[] = [];
             // 使用当前t值进行分割曲线
+
             for (let i = processs.length - 1; i >= 0; i--)
             {
                 if (i === processs.length - 1)
@@ -520,6 +525,7 @@ namespace feng3d
             let pps: number[];
             // 当前曲线
             let ps: number[];
+
             for (let i = 0, n = fps.length; i < n; i++)
             {
                 ps = processs[i] = [];
@@ -544,6 +550,7 @@ namespace feng3d
                     const nsp = sps.shift();
                     // 从前往后计算
                     const ps0: number[] = [];
+
                     ps0[0] = nfp;
                     for (let j = 0, n = pps.length; j < n; j++)
                     {
@@ -551,6 +558,7 @@ namespace feng3d
                     }
                     // 从后往前计算
                     const ps1: number[] = [];
+
                     ps1[pps.length] = nsp;
                     for (let j = pps.length - 1; j >= 0; j--)
                     {
@@ -585,7 +593,7 @@ namespace feng3d
                     }
                     else
                     {
-                        throw `合并类型 mergeType ${mergeType} 错误!`;
+                        console.error(`合并类型 mergeType ${mergeType} 错误!`);
                     }
                 }
             }
@@ -603,11 +611,14 @@ namespace feng3d
          */
         getSamples(ps: number[], num = 100)
         {
-            const results: number[] = [];
+            const results: { t: number, v: number }[] = [];
+
             for (let i = 0; i <= num; i++)
             {
-                const p = this.getValue(i / num, ps);
-                results.push(p);
+                const t = i / num;
+                const p = this.getValue(t, ps);
+
+                results.push({ t, v: p });
             }
 
             return results;

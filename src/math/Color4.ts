@@ -1,12 +1,12 @@
 namespace feng3d
 {
+
     /**
      * 颜色（包含透明度）
      */
     export class Color4
     {
-
-        __class__: "feng3d.Color4";
+        __class__: 'feng3d.Color4';
 
         static readonly WHITE = Object.freeze(new Color4(1, 1, 1, 1));
         static readonly BLACK = Object.freeze(new Color4(0, 0, 0, 1));
@@ -53,10 +53,10 @@ namespace feng3d
 
         /**
          * 构建颜色
-         * @param r     红[0,1]
-         * @param g     绿[0,1]
-         * @param b     蓝[0,1]
-         * @param a     透明度[0,1]
+         * @param r 红[0,1]
+         * @param g 绿[0,1]
+         * @param b 蓝[0,1]
+         * @param a 透明度[0,1]
          */
         constructor(r = 1, g = 1, b = 1, a = 1)
         {
@@ -72,12 +72,13 @@ namespace feng3d
             this.g = g;
             this.b = b;
             this.a = a;
+
             return this;
         }
 
         /**
          * 通过
-         * @param color 
+         * @param color
          */
         fromUnit(color: number)
         {
@@ -85,12 +86,32 @@ namespace feng3d
             this.r = ((color >> 16) & 0xff) / 0xff;
             this.g = ((color >> 8) & 0xff) / 0xff;
             this.b = (color & 0xff) / 0xff;
+
+            return this;
+        }
+
+        fromUnit24(color: number, a = 1)
+        {
+            this.fromUnit(color);
+            this.a = a;
+
+            return this;
+        }
+
+        fromColor3(color3: Color3, a = 1)
+        {
+            this.r = color3.r;
+            this.g = color3.g;
+            this.b = color3.b;
+            this.a = a;
+
             return this;
         }
 
         toInt()
         {
-            var value = ((this.a * 0xff) << 24) + ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
+            const value = ((this.a * 0xff) << 24) + ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
+
             return value;
         }
 
@@ -99,12 +120,12 @@ namespace feng3d
          */
         toHexString()
         {
-            var intR = (this.r * 0xff) | 0;
-            var intG = (this.g * 0xff) | 0;
-            var intB = (this.b * 0xff) | 0;
-            var intA = (this.a * 0xff) | 0;
+            const intR = (this.r * 0xff) | 0;
+            const intG = (this.g * 0xff) | 0;
+            const intB = (this.b * 0xff) | 0;
+            const intA = (this.a * 0xff) | 0;
 
-            return "#" + Color3.ToHex(intA) + Color3.ToHex(intR) + Color3.ToHex(intG) + Color3.ToHex(intB);
+            return `#${Color3.ToHex(intA)}${Color3.ToHex(intR)}${Color3.ToHex(intG)}${Color3.ToHex(intB)}`;
         }
 
         /**
@@ -118,7 +139,7 @@ namespace feng3d
         /**
          * 混合颜色
          * @param color 混入的颜色
-         * @param rate  混入比例
+         * @param rate 混入比例
          */
         mix(color: Color4, rate = 0.5)
         {
@@ -126,13 +147,14 @@ namespace feng3d
             this.g = this.g * (1 - rate) + color.g * rate;
             this.b = this.b * (1 - rate) + color.b * rate;
             this.a = this.a * (1 - rate) + color.a * rate;
+
             return this;
         }
 
         /**
          * 混合颜色
          * @param color 混入的颜色
-         * @param rate  混入比例
+         * @param rate 混入比例
          */
         mixTo(color: Color4, rate: number, vout = new Color4())
         {
@@ -142,7 +164,7 @@ namespace feng3d
         /**
          * 乘以指定颜色
          * @param c 乘以的颜色
-         * @return 返回自身
+         * @returns 返回自身
          */
         multiply(c: Color4)
         {
@@ -150,13 +172,14 @@ namespace feng3d
             this.g *= c.g;
             this.b *= c.b;
             this.a *= c.a;
+
             return this;
         }
 
         /**
          * 乘以指定颜色
          * @param v 乘以的颜色
-         * @return 返回新颜色
+         * @returns 返回新颜色
          */
         multiplyTo(v: Color4, vout = new Color4())
         {
@@ -165,9 +188,9 @@ namespace feng3d
 
         /**
          * 乘以指定常量
-         * 
+         *
          * @param scale 缩放常量
-         * @return 返回自身
+         * @returns 返回自身
          */
         multiplyNumber(scale: number)
         {
@@ -175,6 +198,7 @@ namespace feng3d
             this.g *= scale;
             this.b *= scale;
             this.a *= scale;
+
             return this;
         }
 
@@ -184,13 +208,14 @@ namespace feng3d
         equals(object: Color4, precision = mathUtil.PRECISION)
         {
             if (!mathUtil.equals(this.r - object.r, 0, precision))
-                return false;
+            { return false; }
             if (!mathUtil.equals(this.g - object.g, 0, precision))
-                return false;
+            { return false; }
             if (!mathUtil.equals(this.b - object.b, 0, precision))
-                return false;
+            { return false; }
             if (!mathUtil.equals(this.a - object.a, 0, precision))
-                return false;
+            { return false; }
+
             return true;
         }
 
@@ -203,6 +228,7 @@ namespace feng3d
             this.g = color.g;
             this.b = color.b;
             this.a = color.a;
+
             return this;
         }
 
@@ -211,7 +237,7 @@ namespace feng3d
          */
         toString(): string
         {
-            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+            return `{R: ${this.r} G:${this.g} B:${this.b} A:${this.a}}`;
         }
 
         toColor3(color = new Color3())
@@ -219,6 +245,7 @@ namespace feng3d
             color.r = this.r;
             color.g = this.g;
             color.b = this.b;
+
             return color;
         }
 
@@ -228,6 +255,7 @@ namespace feng3d
             vector4.y = this.g;
             vector4.z = this.b;
             vector4.w = this.a;
+
             return vector4;
         }
 
@@ -242,6 +270,7 @@ namespace feng3d
             array[offset + 1] = this.g;
             array[offset + 2] = this.b;
             array[offset + 3] = this.a;
+
             return array;
         }
 
@@ -251,6 +280,24 @@ namespace feng3d
         clone()
         {
             return new Color4(this.r, this.g, this.b, this.a);
+        }
+
+        /**
+         * 随机`Color4`
+         *
+         * @param randomAlpha 透明值是否随机
+         */
+        random(randomAlpha = false)
+        {
+            this.r = Math.random();
+            this.g = Math.random();
+            this.b = Math.random();
+            if (randomAlpha)
+            {
+                this.a = Math.random();
+            }
+
+            return this;
         }
     }
 }

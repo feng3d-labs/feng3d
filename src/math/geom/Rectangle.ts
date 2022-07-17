@@ -1,9 +1,36 @@
 namespace feng3d
 {
 
+    export interface IRectangle
+    {
+        /**
+         * 矩形左上角的 x 坐标。
+         * @default 0
+         */
+        x: number;
+
+        /**
+         * 矩形左上角的 y 坐标。
+         * @default 0
+         */
+        y: number;
+
+        /**
+         * 矩形的宽度。
+         * @default 0
+         */
+        width: number;
+
+        /**
+         * 矩形的高度。
+         * @default 0
+         */
+        height: number;
+    }
+
     /**
      * 矩形
-     * 
+     *
      * Rectangle 对象是按其位置（由它左上角的点 (x, y) 确定）以及宽度和高度定义的区域。<br/>
      * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
      * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
@@ -11,7 +38,6 @@ namespace feng3d
      */
     export class Rectangle
     {
-
         /**
          * 创建一个新 Rectangle 对象，其左上角由 x 和 y 参数指定，并具有指定的 width 和 height 参数。
          * @param x 矩形左上角的 x 坐标。
@@ -139,19 +165,20 @@ namespace feng3d
          */
         get center()
         {
-            return new Vector2(this.x + this.width / 2, this.y + this.height / 2);
+            return new Vector2(this.x + (this.width / 2), this.y + (this.height / 2));
         }
 
         /**
          * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
          * @param sourceRect 要从中复制数据的 Rectangle 对象。
          */
-        copyFrom(sourceRect: Rectangle): Rectangle
+        copyFrom(sourceRect: IRectangle): Rectangle
         {
             this.x = sourceRect.x;
             this.y = sourceRect.y;
             this.width = sourceRect.width;
             this.height = sourceRect.height;
+
             return this;
         }
 
@@ -168,6 +195,7 @@ namespace feng3d
             this.y = y;
             this.width = width;
             this.height = height;
+
             return this;
         }
 
@@ -179,10 +207,10 @@ namespace feng3d
          */
         contains(x: number, y: number): boolean
         {
-            return this.x <= x &&
-                this.x + this.width >= x &&
-                this.y <= y &&
-                this.y + this.height >= y;
+            return this.x <= x
+                && this.x + this.width >= x
+                && this.y <= y
+                && this.y + this.height >= y;
         }
 
         /**
@@ -195,9 +223,9 @@ namespace feng3d
         intersection(toIntersect: Rectangle): Rectangle
         {
             if (!this.intersects(toIntersect))
-                return new Rectangle();
+            { return new Rectangle(); }
 
-            var i: Rectangle = new Rectangle();
+            const i: Rectangle = new Rectangle();
 
             if (this.x > toIntersect.x)
             {
@@ -205,14 +233,15 @@ namespace feng3d
                 i.width = toIntersect.x - this.x + toIntersect.width;
 
                 if (i.width > this.width)
-                    i.width = this.width;
-            } else
+                { i.width = this.width; }
+            }
+            else
             {
                 i.x = toIntersect.x;
                 i.width = this.x - toIntersect.x + this.width;
 
                 if (i.width > toIntersect.width)
-                    i.width = toIntersect.width;
+                { i.width = toIntersect.width; }
             }
 
             if (this.y > toIntersect.y)
@@ -221,14 +250,15 @@ namespace feng3d
                 i.height = toIntersect.y - this.y + toIntersect.height;
 
                 if (i.height > this.height)
-                    i.height = this.height;
-            } else
+                { i.height = this.height; }
+            }
+            else
             {
                 i.y = toIntersect.y;
                 i.height = this.y - toIntersect.y + this.height;
 
                 if (i.height > toIntersect.height)
-                    i.height = toIntersect.height;
+                { i.height = toIntersect.height; }
             }
 
             return i;
@@ -304,6 +334,7 @@ namespace feng3d
             {
                 return true;
             }
+
             return false;
         }
 
@@ -315,10 +346,11 @@ namespace feng3d
          */
         containsRect(rect: Rectangle): boolean
         {
-            let r1 = rect.x + rect.width;
-            let b1 = rect.y + rect.height;
-            let r2 = this.x + this.width;
-            let b2 = this.y + this.height;
+            const r1 = rect.x + rect.width;
+            const b1 = rect.y + rect.height;
+            const r2 = this.x + this.width;
+            const b2 = this.y + this.height;
+
             return (rect.x >= this.x) && (rect.x < r2) && (rect.y >= this.y) && (rect.y < b2) && (r1 > this.x) && (r1 <= r2) && (b1 > this.y) && (b1 <= b2);
         }
 
@@ -334,6 +366,7 @@ namespace feng3d
             {
                 return true;
             }
+
             return this.x === toCompare.x && this.y === toCompare.y
                 && this.width === toCompare.width && this.height === toCompare.height;
         }
@@ -372,7 +405,7 @@ namespace feng3d
          */
         toString(): string
         {
-            return "(x=" + this.x + ", y=" + this.y + ", width=" + this.width + ", height=" + this.height + ")";
+            return `(x=${this.x}, y=${this.y}, width=${this.width}, height=${this.height})`;
         }
 
         /**
@@ -382,7 +415,8 @@ namespace feng3d
          */
         union(toUnion: Rectangle): Rectangle
         {
-            let result = this.clone();
+            const result = this.clone();
+
             if (toUnion.isEmpty())
             {
                 return result;
@@ -390,18 +424,21 @@ namespace feng3d
             if (result.isEmpty())
             {
                 result.copyFrom(toUnion);
+
                 return result;
             }
-            let l = Math.min(result.x, toUnion.x);
-            let t = Math.min(result.y, toUnion.y);
+            const l = Math.min(result.x, toUnion.x);
+            const t = Math.min(result.y, toUnion.y);
+
             result.init(l, t,
                 Math.max(result.right, toUnion.right) - l,
                 Math.max(result.bottom, toUnion.bottom) - t);
+
             return result;
         }
 
         /**
-         * 
+         *
          * @param point 点
          * @param pout 输出点
          */

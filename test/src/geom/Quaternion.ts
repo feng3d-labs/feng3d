@@ -62,16 +62,16 @@ namespace feng3d
 
         });
 
-        QUnit.test("setFromVectors", (test) =>
+        QUnit.test("fromUnitVectors", (test) =>
         {
             var q = new Quaternion();
-            q.setFromVectors(new Vector3(1, 0, 0), new Vector3(-1, 0, 0));
+            q.fromUnitVectors(new Vector3(1, 0, 0), new Vector3(-1, 0, 0));
             test.ok(q.vmult(new Vector3(1, 0, 0)).equals(new Vector3(-1, 0, 0)));
 
-            q.setFromVectors(new Vector3(0, 1, 0), new Vector3(0, -1, 0));
+            q.fromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, -1, 0));
             test.ok(q.vmult(new Vector3(0, 1, 0)).equals(new Vector3(0, -1, 0)));
 
-            q.setFromVectors(new Vector3(0, 0, 1), new Vector3(0, 0, -1));
+            q.fromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 0, -1));
             test.ok(q.vmult(new Vector3(0, 0, 1)).equals(new Vector3(0, 0, -1)));
 
         });

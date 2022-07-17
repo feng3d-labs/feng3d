@@ -640,8 +640,8 @@ namespace feng3d
 
                 if (spv && spv[__class__] === 'function')
                 {
-                    console.warn(`不支持序列化 function ${spv.data}`);
-                    // target[property] = eval(`(${spv.data})`);
+                    // console.warn(`不支持序列化 function ${spv.data}`);
+                    target[property] = eval(`(${spv.data})`);
 
                     return true;
                 }

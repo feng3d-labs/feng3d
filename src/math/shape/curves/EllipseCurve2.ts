@@ -1,7 +1,6 @@
 namespace feng3d
 {
 
-
     export class EllipseCurve2 extends Curve<Vector2>
     {
         aX: number;

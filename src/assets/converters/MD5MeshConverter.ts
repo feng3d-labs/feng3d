@@ -123,7 +123,7 @@ namespace feng3d
             var t = 1 - quat.x * quat.x - quat.y * quat.y - quat.z * quat.z;
             quat.w = t < 0 ? 0 : -Math.sqrt(t);
             //
-            var matrix = quat.toMatrix();
+            var matrix = quat.toMatrix(new Matrix4x4());
             matrix.appendTranslation(-position[0], position[1], position[2]);
             //
             skeletonJoint.matrix = matrix;

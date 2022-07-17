@@ -1,7 +1,6 @@
 namespace feng3d
 {
 
-
     export class LineCurve3 extends Curve<Vector3>
     {
         v1: Vector3;

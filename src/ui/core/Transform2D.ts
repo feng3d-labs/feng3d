@@ -26,7 +26,7 @@ namespace feng2d
         get rect()
         {
             var transformLayout = this.transformLayout;
-            this._rect.init(-transformLayout.pivot.x * transformLayout.size.x, -transformLayout.pivot.y * transformLayout.size.y, transformLayout.size.x, transformLayout.size.y);
+            this._rect.set(-transformLayout.pivot.x * transformLayout.size.x, -transformLayout.pivot.y * transformLayout.size.y, transformLayout.size.x, transformLayout.size.y);
             return this._rect;
         }
         private _rect = new feng3d.Vector4(0, 0, 100, 100);

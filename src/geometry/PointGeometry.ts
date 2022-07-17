@@ -40,7 +40,7 @@ namespace feng3d
                 var position = (element && element.position) || Vector3.ZERO;
                 var color = (element && element.color) || Color4.WHITE;
                 var normal = (element && element.normal) || Vector3.ZERO;
-                var uv = (element && element.uv) || Vector2.ZERO;
+                var uv = (element && element.uv) || Vector2.zero;
                 indices[i] = i;
                 positionData.push(position.x, position.y, position.z);
                 normalData.push(normal.x, normal.y, normal.z);

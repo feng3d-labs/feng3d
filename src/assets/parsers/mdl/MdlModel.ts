@@ -63,7 +63,7 @@ namespace feng3d.war3
 			var quaternion = new Quaternion();
 			if (this.type == "DontInterp")
 			{
-				quaternion.fromEulerAngles(rotation.value.x, rotation.value.y, rotation.value.z);
+				quaternion.fromEuler(rotation.value.x, rotation.value.y, rotation.value.z);
 			} else
 			{
 				quaternion.copy(rotation.value);
@@ -114,7 +114,7 @@ namespace feng3d.war3
 			switch (this.type)
 			{
 				case "DontInterp":
-					rotationQuaternion.fromEulerAngles(key1.value.x, key1.value.y, key1.value.z);
+					rotationQuaternion.fromEuler(key1.value.x, key1.value.y, key1.value.z);
 					break;
 				case "Linear":
 					q1 = key1.value.clone();
@@ -177,7 +177,7 @@ namespace feng3d.war3
 			var pTranslation = this.Translation.getTranslation(keyFrameTime);
 
 			var matrix = this.c_transformation;
-			matrix.appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix());
+			matrix.appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix(new Matrix4x4()));
 			//设置旋转缩放中心
 			matrix.prependTranslation(-this.pivotPoint.x, - this.pivotPoint.y, - this.pivotPoint.z);
 			matrix.appendTranslation(this.pivotPoint.x, this.pivotPoint.y, this.pivotPoint.z);
@@ -263,7 +263,7 @@ namespace feng3d.war3
 			var pRotation = this.Rotation.getRotation(time);
 			var pTranslation = this.Translation.getTranslation(time);
 
-			var matrix = new Matrix4x4().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix());
+			var matrix = new Matrix4x4().appendScale(pScaling.x, pScaling.y, pScaling.z).append(pRotation.toMatrix(new Matrix4x4()));
 			//平移
 			matrix.appendTranslation(pTranslation.x + this.pivotPoint.x, pTranslation.y + this.pivotPoint.y, pTranslation.z + this.pivotPoint.z)
 			//

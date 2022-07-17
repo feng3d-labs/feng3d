@@ -261,7 +261,7 @@ namespace feng3d
                     var bottom = leftBottom.mixTo(rightBottom, i / this.imageData.width);
                     var v = top.mixTo(bottom, j / this.imageData.height);
 
-                    this.setPixel(i, j, v.toColor4())
+                    this.setPixel(i, j, new Color4().fromColor3(v));
                 }
             }
             return this;

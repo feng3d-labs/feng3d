@@ -1,5 +1,6 @@
 namespace feng3d
 {
+
     export class Font
     {
         data: FontData;

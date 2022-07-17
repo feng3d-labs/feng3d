@@ -1,11 +1,12 @@
 namespace feng3d
 {
+
     /**
      * 最大最小曲线
      */
     export class MinMaxCurve
     {
-        __class__: "feng3d.MinMaxCurve";
+        __class__: 'feng3d.MinMaxCurve';
 
         /**
          * 模式
@@ -15,7 +16,7 @@ namespace feng3d
 
         /**
          * Set the constant value.
-         * 
+         *
          * 设置常数值。
          */
         @serialize
@@ -23,7 +24,7 @@ namespace feng3d
 
         /**
          * Set a constant for the lower bound.
-         * 
+         *
          * 为下界设置一个常数。
          */
         @serialize
@@ -31,7 +32,7 @@ namespace feng3d
 
         /**
          * Set a constant for the upper bound.
-         * 
+         *
          * 为上界设置一个常数。
          */
         @serialize
@@ -39,7 +40,7 @@ namespace feng3d
 
         /**
          * Set the curve.
-         * 
+         *
          * 设置曲线。
          */
         @serialize
@@ -47,7 +48,7 @@ namespace feng3d
 
         /**
          * Set a curve for the lower bound.
-         * 
+         *
          * 为下界设置一条曲线。
          */
         @serialize
@@ -55,7 +56,7 @@ namespace feng3d
 
         /**
          * Set a curve for the upper bound.
-         * 
+         *
          * 为上界设置一条曲线。
          */
         @serialize
@@ -63,7 +64,7 @@ namespace feng3d
 
         /**
          * Set a multiplier to be applied to the curves.
-         * 
+         *
          * 设置一个乘数应用于曲线。
          */
         @serialize

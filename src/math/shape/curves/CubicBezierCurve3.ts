@@ -1,7 +1,6 @@
 namespace feng3d
 {
 
-
     export class CubicBezierCurve3 extends Curve<Vector3>
     {
         v0: Vector3;
