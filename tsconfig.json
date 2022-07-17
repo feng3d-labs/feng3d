@@ -32,7 +32,7 @@
         //
         "src/objectview/ObjectView.ts",
         //
-        "src/utils/Task.ts",
+        "src/task/Task.ts",
         //
         "src/utils/Watcher.ts",
         // Polyfill
