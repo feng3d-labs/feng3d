@@ -264,6 +264,7 @@
         "src/geometry/PointGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
         // 摄像机
+        "src/cameras/enums/CameraClearFlags.ts",
         "src/cameras/lenses/LensBase.ts",
         "src/cameras/lenses/OrthographicLens.ts",
         "src/cameras/lenses/PerspectiveLens.ts",
@@ -289,6 +290,7 @@
         "src/textures/TextureCube.ts",
         // 材质
         "src/materials/Material.ts",
+        "src/materials/SkyBoxMaterial.ts",
         "src/materials/StandardMaterial.ts",
         "src/materials/PointMaterial.ts",
         "src/materials/ColorMaterial.ts",
