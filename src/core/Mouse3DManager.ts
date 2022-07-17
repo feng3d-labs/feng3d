@@ -90,7 +90,7 @@ namespace feng3d
         /**
          * 监听鼠标事件收集事件类型
          */
-        private onMouseEvent(event: Event<any>)
+        private onMouseEvent(event: IEvent<any>)
         {
             this.dispatch(event.type);
         }
@@ -153,11 +153,11 @@ namespace feng3d
 
     export interface MouseInput
     {
-        once<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        once<K extends keyof MouseEventMap>(type: K, listener: (event: IEvent<MouseEventMap[K]>) => void, thisObject?: any, priority?: number): void;
 
         has<K extends keyof MouseEventMap>(type: K): boolean;
-        on<K extends keyof MouseEventMap>(type: K, listener: (event: Event<MouseEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof MouseEventMap>(type?: K, listener?: (event: Event<MouseEventMap[K]>) => any, thisObject?: any): void;
+        on<K extends keyof MouseEventMap>(type: K, listener: (event: IEvent<MouseEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof MouseEventMap>(type?: K, listener?: (event: IEvent<MouseEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**
@@ -194,7 +194,7 @@ namespace feng3d
          * 派发事件
          * @param event   事件对象
          */
-        emitEvent(event: Event<any>)
+        emitEvent(event: IEvent<any>)
         {
             if (!this.enable)
                 return false;

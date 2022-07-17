@@ -87,11 +87,11 @@ namespace feng3d
 
     export interface Component
     {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: IEvent<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        emit<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): IEvent<GameObjectEventMap[K]>;
         has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: IEvent<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: IEvent<GameObjectEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**
@@ -322,7 +322,7 @@ namespace feng3d
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
-        private _onAnyListener(e: Event<any>)
+        private _onAnyListener(e: IEvent<any>)
         {
             if (this._gameObject)
                 this._gameObject.emitEvent(e);

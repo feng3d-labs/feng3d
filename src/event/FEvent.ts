@@ -4,18 +4,18 @@ namespace feng3d
     /**
      * 事件
      */
-    export var event: FEvent;
+    export var anyEmitter: FEvent;
 
     /**
      * 用于适配不同对象对于的事件
      */
     export interface ObjectEventDispatcher<O, T>
     {
-        once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        once<K extends keyof T>(target: O, type: K, listener: (event: IEvent<T[K]>) => void, thisObject?: any, priority?: number): void;
+        emit<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): IEvent<T[K]>;
         has<K extends keyof T>(target: O, type: K): boolean;
-        on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
+        on<K extends keyof T>(target: O, type: K, listener: (event: IEvent<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(target: O, type?: K, listener?: (event: IEvent<T[K]>) => void, thisObject?: any): void;
     }
 
     /**
@@ -37,7 +37,7 @@ namespace feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件监听器的优先级。数字越大，优先级越高。默认为0。
          */
-        once(obj: Object, type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
+        once(obj: Object, type: string, listener: (event: IEvent<any>) => void, thisObject = null, priority = 0)
         {
             this.on(obj, type, listener, thisObject, priority, true);
         }
@@ -50,7 +50,7 @@ namespace feng3d
          * @param e                 事件对象。
          * @returns                 返回事件是否被该对象处理。
          */
-        emitEvent(obj: Object, e: Event<any>)
+        emitEvent(obj: Object, e: IEvent<any>)
         {
             var targets = e.targets = e.targets || [];
             if (targets.indexOf(obj) != -1)
@@ -74,7 +74,7 @@ namespace feng3d
          */
         emit(obj: Object, type: string, data?: any, bubbles = false)
         {
-            var e: Event<any> = this.makeEvent(type, data, bubbles);
+            var e: IEvent<any> = this.makeEvent(type, data, bubbles);
             this.emitEvent(obj, e);
             return e;
         }
@@ -103,7 +103,7 @@ namespace feng3d
          * @param priority					事件监听器的优先级。数字越大，优先级越高。默认为0。
          * @param once                      值为true时在监听一次事件后该监听器将被移除。默认为false。
          */
-        on(obj: Object, type: string, listener: (event: Event<any>) => any, thisObject?: any, priority = 0, once = false)
+        on(obj: Object, type: string, listener: (event: IEvent<any>) => any, thisObject?: any, priority = 0, once = false)
         {
             if (listener == null) return;
 
@@ -143,7 +143,7 @@ namespace feng3d
 		 * @param listener					要删除的监听器对象。可选。该值为空时所有指定类型的监听均将被移除。
          * @param thisObject                监听器的上下文。可选。
          */
-        off(obj: Object, type?: string, listener?: (event: Event<any>) => any, thisObject?: any)
+        off(obj: Object, type?: string, listener?: (event: IEvent<any>) => any, thisObject?: any)
         {
             if (!type)
             {
@@ -184,7 +184,7 @@ namespace feng3d
          * @param thisObject                监听器的上下文。可选。
          * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
          */
-        onAny(obj: Object, listener: (event: Event<any>) => void, thisObject?: any, priority = 0)
+        onAny(obj: Object, listener: (event: IEvent<any>) => void, thisObject?: any, priority = 0)
         {
             var objectListener = this.feventMap.get(obj);
             if (!objectListener)
@@ -251,7 +251,7 @@ namespace feng3d
 		 * @param data                      事件携带的自定义数据。
 		 * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
          */
-        makeEvent<T>(type: string, data: T, bubbles = false): Event<T>
+        makeEvent<T>(type: string, data: T, bubbles = false): IEvent<T>
         {
             return { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [], handles: [] };
         }
@@ -260,7 +260,7 @@ namespace feng3d
          * 处理事件
          * @param e 事件
          */
-        protected handleEvent(obj: Object, e: Event<any>)
+        protected handleEvent(obj: Object, e: IEvent<any>)
         {
             //设置目标
             e.target || (e.target = obj);
@@ -313,7 +313,7 @@ namespace feng3d
          * 处理事件冒泡
          * @param e 事件
          */
-        protected handelEventBubbles(obj: Object, e: Event<any>)
+        protected handelEventBubbles(obj: Object, e: IEvent<any>)
         {
             if (e.bubbles && !e.isStopBubbles)
             {
@@ -337,7 +337,7 @@ namespace feng3d
 
     }
 
-    event = new FEvent();
+    anyEmitter = new FEvent();
 
     interface ObjectListener
     {
@@ -348,7 +348,7 @@ namespace feng3d
 	/**
 	 * 事件
 	 */
-    export interface Event<T>
+    export interface IEvent<T>
     {
 		/**
 		 * 事件的类型。类型区分大小写。
@@ -404,7 +404,7 @@ namespace feng3d
         /**
          * 监听函数
          */
-        listener: (event: Event<any>) => void;
+        listener: (event: IEvent<any>) => void;
         /**
          * 监听函数作用域
          */

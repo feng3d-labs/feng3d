@@ -14,11 +14,11 @@ namespace feng3d
 
     export interface Geometry
     {
-        once<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): Event<GeometryEventMap[K]>;
+        once<K extends keyof GeometryEventMap>(type: K, listener: (event: IEvent<GeometryEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        emit<K extends keyof GeometryEventMap>(type: K, data?: GeometryEventMap[K], bubbles?: boolean): IEvent<GeometryEventMap[K]>;
         has<K extends keyof GeometryEventMap>(type: K): boolean;
-        on<K extends keyof GeometryEventMap>(type: K, listener: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: Event<GeometryEventMap[K]>) => any, thisObject?: any): void;
+        on<K extends keyof GeometryEventMap>(type: K, listener: (event: IEvent<GeometryEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof GeometryEventMap>(type?: K, listener?: (event: IEvent<GeometryEventMap[K]>) => any, thisObject?: any): void;
     }
 
     /**

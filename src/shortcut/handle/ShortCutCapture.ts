@@ -95,7 +95,7 @@ namespace feng3d
 		/**
 		 * 处理捕获事件
 		 */
-		private onCapture(event: Event<any>): void
+		private onCapture(event: IEvent<any>): void
 		{
 			var inWhen = this.checkActivityStates(this._states);
 			var pressKeys = this.checkActivityKeys(this._keys);
@@ -110,7 +110,7 @@ namespace feng3d
 		/**
 		 * 派发命令
 		 */
-		private dispatchCommands(commands: string[], data: Event<any>): void
+		private dispatchCommands(commands: string[], data: IEvent<any>): void
 		{
 			for (var i = 0; i < commands.length; i++)
 			{

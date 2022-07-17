@@ -117,11 +117,11 @@ namespace feng2d
 
     export interface TextStyle
     {
-        once<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.Event<TextStyleEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof TextStyleEventMap>(type: K, data?: TextStyleEventMap[K], bubbles?: boolean): feng3d.Event<TextStyleEventMap[K]>;
+        once<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.IEvent<TextStyleEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        emit<K extends keyof TextStyleEventMap>(type: K, data?: TextStyleEventMap[K], bubbles?: boolean): feng3d.IEvent<TextStyleEventMap[K]>;
         has<K extends keyof TextStyleEventMap>(type: K): boolean;
-        on<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.Event<TextStyleEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof TextStyleEventMap>(type?: K, listener?: (event: feng3d.Event<TextStyleEventMap[K]>) => any, thisObject?: any): void;
+        on<K extends keyof TextStyleEventMap>(type: K, listener: (event: feng3d.IEvent<TextStyleEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof TextStyleEventMap>(type?: K, listener?: (event: feng3d.IEvent<TextStyleEventMap[K]>) => any, thisObject?: any): void;
     }
     /**
      * 文本样式

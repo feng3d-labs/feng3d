@@ -4,7 +4,7 @@ namespace feng3d
     /**
      * 只针对Object的事件
      */
-    export var objectevent: ObjectEventDispatcher<Object, ObjectEventType> = event;
+    export var objectevent: ObjectEventDispatcher<Object, ObjectEventType> = anyEmitter;
 
     /**
      * Object 事件类型

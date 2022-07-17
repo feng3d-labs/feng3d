@@ -10,11 +10,11 @@ namespace feng3d
 
     export interface TextureCube
     {
-        once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
+        once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: IEvent<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        emit<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): IEvent<TextureCubeEventMap[K]>;
         has<K extends keyof TextureCubeEventMap>(type: K): boolean;
-        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): void;
+        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: IEvent<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: IEvent<TextureCubeEventMap[K]>) => any, thisObject?: any): void;
     }
 
     export type TextureCubeImageName = "positive_x_url" | "positive_y_url" | "positive_z_url" | "negative_x_url" | "negative_y_url" | "negative_z_url";

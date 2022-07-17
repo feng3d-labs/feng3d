@@ -3,11 +3,11 @@ namespace feng3d
 
     export interface IEventDispatcher<T>
     {
-        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        once<K extends keyof T>(type: K, listener: (event: IEvent<T[K]>) => void, thisObject?: any, priority?: number): void;
+        emit<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): IEvent<T[K]>;
         has<K extends keyof T>(type: K): boolean;
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
+        on<K extends keyof T>(type: K, listener: (event: IEvent<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(type?: K, listener?: (event: IEvent<T[K]>) => void, thisObject?: any): void;
     }
 
 	/**
@@ -22,9 +22,9 @@ namespace feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once(type: string, listener: (event: Event<any>) => void, thisObject = null, priority = 0)
+        once(type: string, listener: (event: IEvent<any>) => void, thisObject = null, priority = 0)
         {
-            event.on(this, type, listener, thisObject, priority, true);
+            anyEmitter.on(this, type, listener, thisObject, priority, true);
         }
 
         /**
@@ -35,9 +35,9 @@ namespace feng3d
          * @param e   事件对象
          * @returns 返回事件是否被该对象处理
          */
-        emitEvent(e: Event<any>)
+        emitEvent(e: IEvent<any>)
         {
-            return event.emitEvent(this, e);
+            return anyEmitter.emitEvent(this, e);
         }
 
         /**
@@ -48,7 +48,7 @@ namespace feng3d
          */
         emit(type: string, data?: any, bubbles = false)
         {
-            return event.emit(this, type, data, bubbles);
+            return anyEmitter.emit(this, type, data, bubbles);
         }
 
         /**
@@ -59,7 +59,7 @@ namespace feng3d
          */
         has(type: string): boolean
         {
-            return event.has(this, type);
+            return anyEmitter.has(this, type);
         }
 
         /**
@@ -68,9 +68,9 @@ namespace feng3d
 		 * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on(type: string, listener: (event: Event<any>) => void, thisObject?: any, priority = 0, once = false)
+        on(type: string, listener: (event: IEvent<any>) => void, thisObject?: any, priority = 0, once = false)
         {
-            event.on(this, type, listener, thisObject, priority, once);
+            anyEmitter.on(this, type, listener, thisObject, priority, once);
         }
 
         /**
@@ -79,9 +79,9 @@ namespace feng3d
 		 * @param type						事件的类型。
 		 * @param listener					要删除的侦听器对象。
          */
-        off(type?: string, listener?: (event: Event<any>) => void, thisObject?: any)
+        off(type?: string, listener?: (event: IEvent<any>) => void, thisObject?: any)
         {
-            event.off(this, type, listener, thisObject);
+            anyEmitter.off(this, type, listener, thisObject);
         }
 
         /**
@@ -91,9 +91,9 @@ namespace feng3d
          * @param thisObject                监听器的上下文。可选。
          * @param priority                  事件监听器的优先级。数字越大，优先级越高。默认为0。
          */
-        onAny(listener: (event: Event<any>) => void, thisObject?: any, priority = 0)
+        onAny(listener: (event: IEvent<any>) => void, thisObject?: any, priority = 0)
         {
-            event.onAny(this, listener, thisObject, priority);
+            anyEmitter.onAny(this, listener, thisObject, priority);
         }
 
         /**
@@ -102,27 +102,27 @@ namespace feng3d
          * @param listener                  处理事件的监听器函数。
          * @param thisObject                监听器的上下文。可选。
          */
-        offAny(listener?: (event: Event<any>) => void, thisObject?: any)
+        offAny(listener?: (event: IEvent<any>) => void, thisObject?: any)
         {
-            event.offAny(this, listener, thisObject);
+            anyEmitter.offAny(this, listener, thisObject);
         }
 
         /**
          * 处理事件
          * @param e 事件
          */
-        protected handleEvent(e: Event<any>)
+        protected handleEvent(e: IEvent<any>)
         {
-            event["handleEvent"](this, e);
+            anyEmitter["handleEvent"](this, e);
         }
 
         /**
          * 处理事件冒泡
          * @param e 事件
          */
-        protected handelEventBubbles(e: Event<any>)
+        protected handelEventBubbles(e: IEvent<any>)
         {
-            event["handelEventBubbles"](this, e);
+            anyEmitter["handelEventBubbles"](this, e);
         }
     }
 }

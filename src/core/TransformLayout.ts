@@ -63,14 +63,14 @@ namespace feng3d
             this.on("removed", this._onRemoved, this);
         }
 
-        private _onAdded(event: Event<{ parent: GameObject; }>)
+        private _onAdded(event: IEvent<{ parent: GameObject; }>)
         {
             event.data.parent.on("sizeChanged", this._invalidateLayout, this);
             event.data.parent.on("pivotChanged", this._invalidateLayout, this);
             this._invalidateLayout();
         }
 
-        private _onRemoved(event: Event<{ parent: GameObject; }>)
+        private _onRemoved(event: IEvent<{ parent: GameObject; }>)
         {
             event.data.parent.off("sizeChanged", this._invalidateLayout, this);
             event.data.parent.off("pivotChanged", this._invalidateLayout, this);

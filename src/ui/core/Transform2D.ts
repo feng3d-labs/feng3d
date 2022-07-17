@@ -131,7 +131,7 @@ namespace feng2d
             this.on("removeComponent", this._onRemovedComponent, this);
         }
 
-        private _onAddComponent(event: feng3d.Event<{ gameobject: feng3d.GameObject; component: feng3d.Component; }>)
+        private _onAddComponent(event: feng3d.IEvent<{ gameobject: feng3d.GameObject; component: feng3d.Component; }>)
         {
             if (event.data.gameobject != this.gameObject) return;
             var component = event.data.component;
@@ -142,7 +142,7 @@ namespace feng2d
             }
         }
 
-        private _onRemovedComponent(event: feng3d.Event<{ gameobject: feng3d.GameObject; component: feng3d.Component; }>)
+        private _onRemovedComponent(event: feng3d.IEvent<{ gameobject: feng3d.GameObject; component: feng3d.Component; }>)
         {
             if (event.data.gameobject != this.gameObject) return;
             var component = event.data.component;
