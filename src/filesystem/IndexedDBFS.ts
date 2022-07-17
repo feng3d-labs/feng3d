@@ -1,14 +1,10 @@
 namespace feng3d
 {
-    /**
-     * 索引数据文件系统
-     */
-    export var indexedDBFS: IndexedDBFS;
 
     /**
      * 用于是否为文件夹
      */
-    const directorytoken = "!!!___directory___!!!";
+    const directorytoken = '!!!___directory___!!!';
 
     /**
      * 索引数据文件系统
@@ -30,7 +26,7 @@ namespace feng3d
          */
         projectname: string;
 
-        constructor(DBname = "feng3d-editor", projectname = "testproject")
+        constructor(DBname = 'feng3d-editor', projectname = 'testproject')
         {
             this.DBname = DBname;
             this.projectname = projectname;
@@ -48,19 +44,24 @@ namespace feng3d
                 if (err)
                 {
                     callback(err, data);
+
                     return;
                 }
                 if (data instanceof ArrayBuffer)
                 {
                     callback(null, data);
-                } else if (data instanceof Object)
+                }
+                else if (data instanceof Object)
                 {
-                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1')
-                    var arraybuffer = dataTransform.stringToArrayBuffer(str);
+                    const str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+                    const arraybuffer = dataTransform.stringToArrayBuffer(str);
+
                     callback(null, arraybuffer);
-                } else
+                }
+                else
                 {
-                    var arraybuffer = dataTransform.stringToArrayBuffer(data);
+                    const arraybuffer = dataTransform.stringToArrayBuffer(data);
+
                     callback(null, arraybuffer);
                 }
             });
@@ -78,6 +79,7 @@ namespace feng3d
                 if (err)
                 {
                     callback(err, data);
+
                     return;
                 }
                 if (data instanceof ArrayBuffer)
@@ -86,11 +88,14 @@ namespace feng3d
                     {
                         callback(null, str);
                     });
-                } else if (data instanceof Object)
+                }
+                else if (data instanceof Object)
                 {
-                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1')
+                    const str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+
                     callback(null, str);
-                } else
+                }
+                else
                 {
                     callback(null, data);
                 }
@@ -102,29 +107,34 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readObject(path: string, callback: (err: Error, data: object) => void)
+        readObject(path: string, callback: (err: Error, data: any) => void)
         {
             _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (err, data) =>
             {
                 if (err)
                 {
                     callback(err, data);
+
                     return;
                 }
                 if (data instanceof ArrayBuffer)
                 {
                     dataTransform.arrayBufferToString(data, (str) =>
                     {
-                        var obj = JSON.parse(str);
+                        const obj = JSON.parse(str);
+
                         callback(null, obj);
                     });
-                } else if (data instanceof Object)
+                }
+                else if (data instanceof Object)
                 {
                     callback(null, data);
-                } else
+                }
+                else
                 {
-                    console.assert(typeof data == "string");
-                    var obj = JSON.parse(data);
+                    console.assert(typeof data === 'string');
+                    const obj = JSON.parse(data);
+
                     callback(null, obj);
                 }
             });
@@ -142,6 +152,7 @@ namespace feng3d
                 if (err)
                 {
                     callback(err, null);
+
                     return;
                 }
                 dataTransform.arrayBufferToImage(data, (img) =>
@@ -169,9 +180,9 @@ namespace feng3d
          */
         isDirectory(path: string, callback: (result: boolean) => void)
         {
-            this.readString(path, (err, data) =>
+            this.readString(path, (_err, data) =>
             {
-                callback(data == directorytoken);
+                callback(data === directorytoken);
             });
         }
 
@@ -182,7 +193,7 @@ namespace feng3d
          */
         exists(path: string, callback: (exists: boolean) => void): void
         {
-            _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (err, data) =>
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (_err, data) =>
             {
                 callback(!!data);
             });
@@ -200,20 +211,25 @@ namespace feng3d
                 if (!allfilepaths)
                 {
                     callback(err, null);
+
                     return;
                 }
-                var subfilemap = {};
-                allfilepaths.forEach(element =>
+                const subfilemap = {};
+
+                allfilepaths.forEach((element) =>
                 {
-                    var dirp = path == "" ? path : (path + "/");
-                    if (element.substr(0, dirp.length) == dirp && element != path)
+                    const dirp = path === '' ? path : (`${path}/`);
+
+                    if (element.substr(0, dirp.length) === dirp && element !== path)
                     {
-                        var result = element.substr(dirp.length);
-                        var subfile = result.split("/").shift();
+                        const result = element.substr(dirp.length);
+                        const subfile = result.split('/').shift();
+
                         subfilemap[subfile] = 1;
                     }
                 });
-                var files = Object.keys(subfilemap);
+                const files = Object.keys(subfilemap);
+
                 callback(null, files);
             });
         }
@@ -230,6 +246,7 @@ namespace feng3d
                 if (exists)
                 {
                     callback(new Error(`文件夹${path}已存在无法新建`));
+
                     return;
                 }
                 _indexedDB.objectStorePut(this.DBname, this.projectname, path, directorytoken, callback);
@@ -245,7 +262,7 @@ namespace feng3d
         {
             // 删除文件
             _indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
-            globalEmitter.emit("fs.delete", path);
+            globalEmitter.emit('fs.delete', path);
         }
 
         /**
@@ -257,7 +274,7 @@ namespace feng3d
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            globalEmitter.emit("fs.write", path);
+            globalEmitter.emit('fs.write', path);
         }
 
         /**
@@ -269,7 +286,7 @@ namespace feng3d
         writeString(path: string, data: string, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            globalEmitter.emit("fs.write", path);
+            globalEmitter.emit('fs.write', path);
         }
 
         /**
@@ -278,10 +295,10 @@ namespace feng3d
          * @param object 文件数据
          * @param callback 回调函数
          */
-        writeObject(path: string, object: Object, callback?: (err: Error) => void)
+        writeObject(path: string, object: any, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
-            globalEmitter.emit("fs.write", path);
+            globalEmitter.emit('fs.write', path);
         }
 
         /**
@@ -295,14 +312,14 @@ namespace feng3d
             dataTransform.imageToArrayBuffer(image, (arraybuffer) =>
             {
                 this.writeArrayBuffer(path, arraybuffer, callback);
-                globalEmitter.emit("fs.write", path);
+                globalEmitter.emit('fs.write', path);
             });
         }
 
         /**
          * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
+         * @param src 源路径
+         * @param dest 目标路径
          * @param callback 回调函数
          */
         copyFile(src: string, dest: string, callback?: (err: Error) => void)
@@ -312,6 +329,7 @@ namespace feng3d
                 if (err)
                 {
                     callback(err);
+
                     return;
                 }
                 _indexedDB.objectStorePut(this.DBname, this.projectname, dest, data, callback);
@@ -325,10 +343,15 @@ namespace feng3d
          */
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            feng3d._indexedDB.getObjectStoreNames(this.DBname, (err, objectStoreNames) =>
+            _indexedDB.getObjectStoreNames(this.DBname, (err, objectStoreNames) =>
             {
-                if (err) { callback(false); return; }
-                callback(objectStoreNames.indexOf(projectname) != -1);
+                if (err)
+                {
+                    callback(false);
+
+                    return;
+                }
+                callback(objectStoreNames.indexOf(projectname) !== -1);
             });
         }
         /**
@@ -339,9 +362,12 @@ namespace feng3d
         initproject(projectname: string, callback: (err: Error) => void)
         {
             this.projectname = projectname;
-            feng3d._indexedDB.createObjectStore(this.DBname, projectname, callback);
+            _indexedDB.createObjectStore(this.DBname, projectname, callback);
         }
     }
 
-    indexedDBFS = new IndexedDBFS();
+    /**
+     * 索引数据文件系统
+     */
+    export const indexedDBFS = new IndexedDBFS();
 }

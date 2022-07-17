@@ -3,8 +3,8 @@ namespace feng3d
     export interface TextureCubeEventMap
     {
         /**
-		 * 加载完成
-		 */
+         * 加载完成
+         */
         loadCompleted: any;
     }
 
@@ -83,7 +83,7 @@ namespace feng3d
             {
                 let path = this.rawData.paths[index];
                 if (!path) { callback(); return; }
-                fs.readImage(path, (err: Error, img: HTMLImageElement) =>
+                FS.fs.readImage(path, (err: Error, img: HTMLImageElement) =>
                 {
                     callback(img);
                 });
@@ -144,7 +144,7 @@ namespace feng3d
             if (imagepath == null) return;
 
             this._loading.push(imagepath);
-            fs.readImage(imagepath, (err, img) =>
+            FS.fs.readImage(imagepath, (err, img) =>
             {
                 if (img != null && this.rawData.type == "path" && this.rawData.paths[index] == imagepath)
                 {

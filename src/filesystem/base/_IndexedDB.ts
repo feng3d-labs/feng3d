@@ -1,14 +1,10 @@
 namespace feng3d
 {
-    var databases: { [name: string]: IDBDatabase } = {};
+
+    const databases: { [name: string]: IDBDatabase } = {};
 
     /**
-     * 
-     */
-    export var _indexedDB: _IndexedDB;
-
-    /**
-     * 
+     *
      */
     export class _IndexedDB
     {
@@ -33,25 +29,21 @@ namespace feng3d
         } = {};
 
         /**
-         * 是否支持 indexedDB 
+         * 是否支持 indexedDB
          */
         support()
         {
-            if (typeof indexedDB == "undefined")
+            if (typeof indexedDB === 'undefined')
             {
-                indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
-
-                if (indexedDB == undefined)
-                {
-                    return false;
-                }
+                return false;
             }
+
             return true;
         }
 
         /**
          * 获取数据库，如果不存在则新建数据库
-         * 
+         *
          * @param dbname 数据库名称
          * @param callback 完成回调
          */
@@ -60,6 +52,7 @@ namespace feng3d
             if (databases[dbname])
             {
                 callback(null, databases[dbname]);
+
                 return;
             }
 
@@ -68,7 +61,7 @@ namespace feng3d
 
         /**
          * 打开或者升级数据库
-         * 
+         *
          * @param dbname 数据库名称
          * @param callback 完成回调
          * @param upgrade 是否升级数据库
@@ -84,16 +77,19 @@ namespace feng3d
                 console.assert(!!onupgrade);
                 this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
             }
-            if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading) return;
+            if (this._dbStatus[dbname].status === DBStatus.opening || this._dbStatus[dbname].status === DBStatus.upgrading) return;
 
-            var request: IDBOpenDBRequest;
+            let request: IDBOpenDBRequest;
+
             if (!upgrade)
             {
                 request = indexedDB.open(dbname);
                 this._dbStatus[dbname].status = DBStatus.opening;
-            } else
+            }
+            else
             {
-                var oldDatabase = databases[dbname];
+                const oldDatabase = databases[dbname];
+
                 oldDatabase.close();
                 delete databases[dbname];
 
@@ -103,26 +99,29 @@ namespace feng3d
 
             request.onupgradeneeded = (event) =>
             {
-                var newdatabase: IDBDatabase = event.target["result"];
+                const newdatabase: IDBDatabase = (event.target as any).result;
+
                 request.onupgradeneeded = null;
 
-                var callbacks = this._dbStatus[dbname].onupgradeneededCallbacks.concat();
+                const callbacks = this._dbStatus[dbname].onupgradeneededCallbacks.concat();
+
                 this._dbStatus[dbname].onupgradeneededCallbacks.length = 0;
-                callbacks.forEach(element =>
+                callbacks.forEach((element) =>
                 {
                     element(newdatabase);
                 });
-            }
+            };
             request.onsuccess = (event) =>
             {
-                databases[dbname] = event.target["result"];
+                databases[dbname] = (event.target as any).result;
                 request.onsuccess = null;
 
                 this._dbStatus[dbname].status = DBStatus.opened;
 
-                var callbacks = this._dbStatus[dbname].onsuccessCallbacks.concat();
+                const callbacks = this._dbStatus[dbname].onsuccessCallbacks.concat();
+
                 this._dbStatus[dbname].onsuccessCallbacks.length = 0;
-                callbacks.forEach(element =>
+                callbacks.forEach((element) =>
                 {
                     element(null, databases[dbname]);
                 });
@@ -133,25 +132,27 @@ namespace feng3d
 
                 this._dbStatus[dbname].status = DBStatus.error;
 
-                var callbacks = this._dbStatus[dbname].onsuccessCallbacks.concat();
+                const callbacks = this._dbStatus[dbname].onsuccessCallbacks.concat();
+
                 this._dbStatus[dbname].onsuccessCallbacks.length = 0;
-                callbacks.forEach(element =>
+                callbacks.forEach((element) =>
                 {
-                    element(<any>event, <any>null);
+                    element(event as any, null);
                 });
             };
         }
 
         /**
          * 删除数据库
-         * 
+         *
          * @param dbname 数据库名称
          * @param callback 完成回调
          */
         deleteDatabase(dbname: string, callback?: (err: any) => void)
         {
-            var request = indexedDB.deleteDatabase(dbname);
-            request.onsuccess = function (event)
+            const request = indexedDB.deleteDatabase(dbname);
+
+            request.onsuccess = function (_event)
             {
                 delete databases[dbname];
                 callback && callback(null);
@@ -166,14 +167,14 @@ namespace feng3d
 
         /**
          * 是否存在指定的对象存储
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
                 callback(database.objectStoreNames.contains(objectStroreName));
             });
@@ -181,37 +182,39 @@ namespace feng3d
 
         /**
          * 获取对象存储名称列表
-         * 
+         *
          * @param dbname 数据库
          * @param callback 完成回调
          */
         getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
-                var objectStoreNames: string[] = [];
+                const objectStoreNames: string[] = [];
+
                 for (let i = 0; i < database.objectStoreNames.length; i++)
                 {
-                    objectStoreNames.push(<string>database.objectStoreNames.item(i));
+                    objectStoreNames.push(database.objectStoreNames.item(i));
                 }
-                callback(null, objectStoreNames)
+                callback(null, objectStoreNames);
             });
         }
 
         /**
          * 创建对象存储
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
         createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
                 if (database.objectStoreNames.contains(objectStroreName))
                 {
                     callback && callback(null);
+
                     return;
                 }
 
@@ -224,18 +227,19 @@ namespace feng3d
 
         /**
          * 删除对象存储
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
         deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
                 if (!database.objectStoreNames.contains(objectStroreName))
                 {
                     callback && callback(null);
+
                     return;
                 }
                 this._open(dbname, callback, true, (newdatabase: IDBDatabase) =>
@@ -247,26 +251,28 @@ namespace feng3d
 
         /**
          * 获取对象存储中所有键列表
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
         getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
                 try
                 {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.getAllKeys();
+                    const transaction = database.transaction([objectStroreName], 'readwrite');
+                    const objectStore = transaction.objectStore(objectStroreName);
+                    const request = objectStore.getAllKeys();
+
                     request.onsuccess = function (event)
                     {
-                        callback && callback(null, event.target["result"]);
+                        callback && callback(null, (event.target as any).result);
                         request.onsuccess = null;
                     };
-                } catch (error)
+                }
+                catch (error)
                 {
                     callback && callback(error, null);
                 }
@@ -275,7 +281,7 @@ namespace feng3d
 
         /**
          * 获取对象存储中指定键对应的数据
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param key 键
@@ -283,15 +289,17 @@ namespace feng3d
          */
         objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: any) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
-                var transaction = database.transaction([objectStroreName], 'readwrite');
-                var objectStore = transaction.objectStore(objectStroreName);
-                var request = objectStore.get(key);
+                const transaction = database.transaction([objectStroreName], 'readwrite');
+                const objectStore = transaction.objectStore(objectStroreName);
+                const request = objectStore.get(key);
+
                 request.onsuccess = function (event)
                 {
-                    var result = event.target["result"];
-                    callback && callback(result != null ? null : new Error(`没有找到资源 ${key}`), result);
+                    const result = (event.target as any).result;
+
+                    callback && callback(result !== null ? null : new Error(`没有找到资源 ${key}`), result);
                     request.onsuccess = null;
                 };
             });
@@ -299,7 +307,7 @@ namespace feng3d
 
         /**
          * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param key 键
@@ -308,19 +316,21 @@ namespace feng3d
          */
         objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
                 try
                 {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.put(data, key);
-                    request.onsuccess = function (event)
+                    const transaction = database.transaction([objectStroreName], 'readwrite');
+                    const objectStore = transaction.objectStore(objectStroreName);
+                    const request = objectStore.put(data, key);
+
+                    request.onsuccess = function (_event)
                     {
                         callback && callback(null);
                         request.onsuccess = null;
                     };
-                } catch (error)
+                }
+                catch (error)
                 {
                     callback && callback(error);
                 }
@@ -329,7 +339,7 @@ namespace feng3d
 
         /**
          * 删除对象存储中指定键以及对于数据
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param key 键
@@ -337,19 +347,21 @@ namespace feng3d
          */
         objectStoreDelete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
                 try
                 {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.delete(key);
-                    request.onsuccess = function (event)
+                    const transaction = database.transaction([objectStroreName], 'readwrite');
+                    const objectStore = transaction.objectStore(objectStroreName);
+                    const request = objectStore.delete(key);
+
+                    request.onsuccess = function (_event)
                     {
                         callback && callback();
                         request.onsuccess = null;
                     };
-                } catch (error)
+                }
+                catch (error)
                 {
                     callback && callback(error);
                 }
@@ -358,26 +370,28 @@ namespace feng3d
 
         /**
          * 清空对象存储中数据
-         * 
+         *
          * @param dbname 数据库名称
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
         objectStoreClear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void)
         {
-            this.getDatabase(dbname, (err, database) =>
+            this.getDatabase(dbname, (_err, database) =>
             {
                 try
                 {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.clear();
-                    request.onsuccess = function (event)
+                    const transaction = database.transaction([objectStroreName], 'readwrite');
+                    const objectStore = transaction.objectStore(objectStroreName);
+                    const request = objectStore.clear();
+
+                    request.onsuccess = function (_event)
                     {
                         callback && callback();
                         request.onsuccess = null;
                     };
-                } catch (error)
+                }
+                catch (error)
                 {
                     callback && callback(error);
                 }
@@ -385,7 +399,10 @@ namespace feng3d
         }
     }
 
-    _indexedDB = new _IndexedDB();
+    /**
+     *
+     */
+    export const _indexedDB = new _IndexedDB();
 
     /**
      * 数据库状态

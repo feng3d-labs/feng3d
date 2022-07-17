@@ -1,5 +1,6 @@
 namespace feng3d
 {
+
     /**
      * 可读写文件系统
      *
@@ -55,7 +56,7 @@ namespace feng3d
          * @param object 文件数据
          * @param callback 回调函数
          */
-        writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
+        writeObject(path: string, object: any, callback?: (err: Error) => void): void;
         /**
          * 写图片
          * @param path 图片路径
@@ -65,8 +66,8 @@ namespace feng3d
         writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void): void;
         /**
          * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
+         * @param src 源路径
+         * @param dest 目标路径
          * @param callback 回调函数
          */
         copyFile(src: string, dest: string, callback?: (err: Error) => void): void;

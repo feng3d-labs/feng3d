@@ -302,7 +302,7 @@ namespace feng3d
             if (this.url)
             {
                 var url = this.url;
-                fs.readArrayBuffer(this.url, (err, data) =>
+                FS.fs.readArrayBuffer(this.url, (err, data) =>
                 {
                     if (err)
                     {

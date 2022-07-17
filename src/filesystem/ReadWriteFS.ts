@@ -7,7 +7,7 @@ namespace feng3d
 
     /**
      * 可读写文件系统
-     * 
+     *
      * 扩展基础可读写文件系统
      */
     export class ReadWriteFS extends ReadFS
@@ -17,6 +17,7 @@ namespace feng3d
          */
         projectname: string;
 
+        // eslint-disable-next-line @typescript-eslint/no-useless-constructor
         constructor(fs?: IReadWriteFS)
         {
             super(fs);
@@ -56,6 +57,7 @@ namespace feng3d
                 if (exists)
                 {
                     callback && callback(null);
+
                     return;
                 }
                 this.fs.mkdir(path, callback);
@@ -75,21 +77,25 @@ namespace feng3d
         /**
          * 写(新建)文件
          * 自动根据文件类型保存为对应结构
-         * 
+         *
          * @param path 文件路径
          * @param arraybuffer 文件数据
          * @param callback 回调函数
          */
         writeFile(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
         {
-            var ext = feng3d.pathUtils.extname(path);
-            ext = ext.split(".").pop();
-            var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "mp3": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
-            var type = fileTypedic[ext];
-            if (path == "tsconfig.json" || path == ".vscode/settings.json")
-                type = "txt";
+            let ext = pathUtils.extname(path);
 
-            if (type == "txt")
+            ext = ext.split('.').pop();
+            const fileTypedic = { meta: 'txt', json: 'object', jpg: 'arraybuffer', png: 'arraybuffer', mp3: 'arraybuffer', js: 'txt', ts: 'txt', map: 'txt', html: 'txt' };
+            let type = fileTypedic[ext];
+
+            if (path === 'tsconfig.json' || path === '.vscode/settings.json')
+            {
+                type = 'txt';
+            }
+
+            if (type === 'txt')
             {
                 dataTransform.arrayBufferToString(arraybuffer, (str) =>
                 {
@@ -98,7 +104,8 @@ namespace feng3d
                         callback(err);
                     });
                 });
-            } else if (type == "object")
+            }
+            else if (type === 'object')
             {
                 dataTransform.arrayBufferToObject(arraybuffer, (obj) =>
                 {
@@ -107,15 +114,17 @@ namespace feng3d
                         callback(err);
                     });
                 });
-            } else if (type == "arraybuffer")
+            }
+            else if (type === 'arraybuffer')
             {
                 this.writeArrayBuffer(path, arraybuffer, (err) =>
                 {
                     callback(err);
                 });
-            } else
+            }
+            else
             {
-                console.error(`无法导入文件 ${path}`)
+                console.error(`无法导入文件 ${path}`);
             }
         }
 
@@ -128,12 +137,14 @@ namespace feng3d
         writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.dirname(path);
+            const dirpath = pathUtils.dirname(path);
+
             this.mkdir(dirpath, (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
                 this.fs.writeArrayBuffer(path, arraybuffer, callback);
@@ -149,12 +160,14 @@ namespace feng3d
         writeString(path: string, str: string, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.dirname(path);
+            const dirpath = pathUtils.dirname(path);
+
             this.mkdir(dirpath, (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
                 this.fs.writeString(path, str, callback);
@@ -167,15 +180,17 @@ namespace feng3d
          * @param object 文件数据
          * @param callback 回调函数
          */
-        writeObject(path: string, object: Object, callback?: (err: Error) => void)
+        writeObject(path: string, object: any, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.dirname(path);
+            const dirpath = pathUtils.dirname(path);
+
             this.mkdir(dirpath, (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
                 this.fs.writeObject(path, object, callback);
@@ -191,12 +206,14 @@ namespace feng3d
         writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.dirname(path);
+            const dirpath = pathUtils.dirname(path);
+
             this.mkdir(dirpath, (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
                 this.fs.writeImage(path, image, callback);
@@ -205,8 +222,8 @@ namespace feng3d
 
         /**
          * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
+         * @param src 源路径
+         * @param dest 目标路径
          * @param callback 回调函数
          */
         copyFile(src: string, dest: string, callback?: (err: Error) => void)
@@ -248,43 +265,48 @@ namespace feng3d
         /**
          * 获取指定文件下所有文件路径列表
          */
-        getAllPathsInFolder(dirpath = "", callback: (err: Error, filepaths: string[]) => void): void
+        getAllPathsInFolder(dirpath = '', callback: (err: Error, filepaths: string[]) => void): void
         {
-            var dirs = [dirpath];
-            var result = [];
-            var currentdir = "";
+            const dirs = [dirpath];
+            const result = [];
+            let currentdir = '';
 
             // 递归获取文件
-            var handle = () =>
+            const handle = () =>
             {
                 if (dirs.length > 0)
                 {
                     currentdir = dirs.shift();
-                    this.readdir(currentdir, (err, files) =>
+                    this.readdir(currentdir, (_err, files) =>
                     {
                         // 获取子文件路径
-                        var getChildPath = () =>
+                        const getChildPath = () =>
                         {
-                            if (files.length == 0)
+                            if (files.length === 0)
                             {
                                 handle();
+
                                 return;
                             }
-                            var childpath = currentdir + (currentdir == "" ? "" : "/") + files.shift();
+                            const childpath = currentdir + (currentdir === '' ? '' : '/') + files.shift();
+
                             result.push(childpath);
-                            this.isDirectory(childpath, result =>
+                            this.isDirectory(childpath, (result) =>
                             {
                                 if (result) dirs.push(childpath);
                                 getChildPath();
                             });
                         };
+
                         getChildPath();
                     });
-                } else
+                }
+                else
                 {
                     callback(null, result);
                 }
-            }
+            };
+
             handle();
         }
 
@@ -301,6 +323,7 @@ namespace feng3d
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
                 this.deleteFile(src, callback);
@@ -330,9 +353,16 @@ namespace feng3d
                 if (err)
                 {
                     callback && callback(err);
+
                     return;
                 }
-                var deletelists = movelists.reduce((value: string[], current) => { value.push(current[0]); return value; }, [])
+                const deletelists = movelists.reduce((value: string[], current) =>
+                {
+                    value.push(current[0]);
+
+                    return value;
+                }, []);
+
                 this.deleteFiles(deletelists, callback);
             });
         }
@@ -346,16 +376,19 @@ namespace feng3d
         {
             if (copylists.length > 0)
             {
-                var copyitem: [string, string] = <any>copylists.shift();
+                const copyitem: [string, string] = copylists.shift();
+
                 this.copyFile(copyitem[0], copyitem[1], (err) =>
                 {
                     if (err)
                     {
                         callback && callback(err);
+
                         return;
                     }
                     this.copyFiles(copylists, callback);
                 });
+
                 return;
             }
             callback && callback(null);
@@ -370,15 +403,17 @@ namespace feng3d
         {
             if (deletelists.length > 0)
             {
-                this.deleteFile(<string>deletelists.shift(), (err) =>
+                this.deleteFile(deletelists.shift(), (err) =>
                 {
                     if (err)
                     {
                         callback && callback(err);
+
                         return;
                     }
                     this.deleteFiles(deletelists, callback);
                 });
+
                 return;
             }
             callback && callback(null);
@@ -392,7 +427,7 @@ namespace feng3d
          */
         rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void
         {
-            this.isDirectory(oldPath, result =>
+            this.isDirectory(oldPath, (result) =>
             {
                 if (result)
                 {
@@ -401,16 +436,19 @@ namespace feng3d
                         if (err)
                         {
                             callback && callback(err);
+
                             return;
                         }
-                        var renamelists: [string, string][] = [[oldPath, newPath]];
-                        filepaths.forEach(element =>
+                        const renamelists: [string, string][] = [[oldPath, newPath]];
+
+                        filepaths.forEach((element) =>
                         {
                             renamelists.push([element, element.replace(oldPath, newPath)]);
                         });
                         this.moveFiles(renamelists, callback);
                     });
-                } else
+                }
+                else
                 {
                     this.renameFile(oldPath, newPath, callback);
                 }
@@ -419,7 +457,7 @@ namespace feng3d
 
         /**
          * 移动文件(夹)
-         * 
+         *
          * @param src 源路径
          * @param dest 目标路径
          * @param callback 回调函数
@@ -436,7 +474,7 @@ namespace feng3d
          */
         delete(path: string, callback?: (err: Error) => void): void
         {
-            this.isDirectory(path, result =>
+            this.isDirectory(path, (result) =>
             {
                 if (result)
                 {
@@ -445,12 +483,15 @@ namespace feng3d
                         if (err)
                         {
                             callback && callback(err);
+
                             return;
                         }
-                        var removelists: string[] = filepaths.concat(path);
+                        const removelists: string[] = filepaths.concat(path);
+
                         this.deleteFiles(removelists, callback);
                     });
-                } else
+                }
+                else
                 {
                     this.deleteFile(path, callback);
                 }

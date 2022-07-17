@@ -117,6 +117,8 @@
         "src/math/MathF.ts",
         "src/math/Time.ts",
         //
+        "src/filesystem/global.ts",
+        "src/filesystem/FS.ts",
         "src/filesystem/PathUtils.ts",
         //
         "src/filesystem/base/Loader.ts",

@@ -1,9 +1,6 @@
 namespace feng3d
 {
-    /**
-     * 默认文件系统
-     */
-    export var fs: ReadFS;
+
     /**
      * 可读文件系统
      */
@@ -12,14 +9,17 @@ namespace feng3d
         /**
          * 基础文件系统
          */
-        get fs() { return this._fs || basefs; }
+        get fs() { return this._fs || FS.basefs; }
         set fs(v) { this._fs = v; }
-        private _fs: IReadFS;
+        protected _fs: IReadFS;
 
         /**
          * 文件系统类型
          */
-        get type() { return this.fs.type; }
+        get type(): FSType
+        {
+            return this.fs.type;
+        }
 
         constructor(fs?: IReadFS)
         {
@@ -51,7 +51,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readObject(path: string, callback: (err: Error, object: Object) => void)
+        readObject(path: string, callback: (err: Error, object: any) => void)
         {
             this.fs.readObject(path, callback);
         }
@@ -79,7 +79,7 @@ namespace feng3d
 
         /**
          * 读取文件列表为字符串列表
-         * 
+         *
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
@@ -98,5 +98,7 @@ namespace feng3d
 
         private _state: { [eventtype: string]: true } = {};
     }
-    fs = new ReadFS();
+
+    FS.fs = new ReadFS();
+
 }

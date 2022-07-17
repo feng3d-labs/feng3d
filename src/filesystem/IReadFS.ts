@@ -1,5 +1,6 @@
 namespace feng3d
 {
+
     /**
      * 可读文件系统
      */
@@ -27,7 +28,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readObject(path: string, callback: (err: Error, object: Object) => void): void;
+        readObject(path: string, callback: (err: Error, object: any) => void): void;
         /**
          * 加载图片
          * @param path 图片路径
@@ -40,9 +41,4 @@ namespace feng3d
          */
         getAbsolutePath(path: string): string;
     }
-
-    /**
-     * 默认基础文件系统
-     */
-    export var basefs: IReadFS;
 }

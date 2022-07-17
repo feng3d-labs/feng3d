@@ -13,7 +13,7 @@ namespace feng3d
         /**
          * 文件系统
          */
-        get fs() { return this._fs || fs; }
+        get fs() { return this._fs || FS.fs; }
         private _fs: ReadFS;
 
         /**

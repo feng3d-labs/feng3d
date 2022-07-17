@@ -1,5 +1,6 @@
 namespace feng3d
 {
+
     /**
      * Http可读文件系统
      */
@@ -8,19 +9,20 @@ namespace feng3d
         /**
          * 根路径
          */
-        rootPath = "";
+        rootPath = '';
 
         type = FSType.http;
 
-        constructor(rootPath = "")
+        constructor(rootPath = '')
         {
             this.rootPath = rootPath;
-            if (this.rootPath == "")
+            if (this.rootPath === '')
             {
-                if (typeof document != "undefined")
+                if (typeof document !== 'undefined')
                 {
-                    var url = document.URL.split("?").shift();
-                    this.rootPath = url.substring(0, url.lastIndexOf("/") + 1);
+                    const url = document.URL.split('?').shift();
+
+                    this.rootPath = url.substring(0, url.lastIndexOf('/') + 1);
                 }
             }
         }
@@ -69,12 +71,13 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readObject(path: string, callback: (err: Error, data: Object) => void)
+        readObject(path: string, callback: (err: Error, data: any) => void)
         {
             loader.loadText(this.getAbsolutePath(path),
                 (content) =>
                 {
-                    var obj = JSON.parse(content);
+                    const obj = JSON.parse(content);
+
                     callback(null, obj);
                 },
                 null,
@@ -91,15 +94,16 @@ namespace feng3d
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
-            var img = new Image();
+            const img = new Image();
+
             img.onload = () =>
             {
                 callback(null, img);
             };
-            img.onerror = (evt) =>
+            img.onerror = (_evt) =>
             {
                 callback(new Error(`加载图片${path}失败`), null);
-            }
+            };
             img.src = this.getAbsolutePath(path);
         }
 
@@ -114,5 +118,6 @@ namespace feng3d
         }
     }
 
-    basefs = new HttpFS();
+    FS.basefs = new HttpFS();
+
 }
