@@ -45,25 +45,6 @@
         "src/utils/Serialization.ts",
         //
         "src/utils/ObjectView.ts",
-        // 数据结构
-        "src/algorithms/utils/Comparator.ts",
-        "src/algorithms/LinkedList.ts",
-        "src/algorithms/DoublyLinkedList.ts",
-        "src/algorithms/Queue.ts",
-        "src/algorithms/Stack.ts",
-        "src/algorithms/Heap.ts",
-        "src/algorithms/MaxHeap.ts",
-        "src/algorithms/MinHeap.ts",
-        "src/algorithms/HashTable.ts",
-        "src/algorithms/PriorityQueue.ts",
-        "src/algorithms/PriorityQueue1.ts",
-        "src/algorithms/BloomFilter.ts",
-        "src/algorithms/DisjointSet.ts",
-        "src/algorithms/Graph.ts",
-        "src/algorithms/BinaryTreeNode.ts",
-        "src/algorithms/BinarySearchTreeNode.ts",
-        "src/algorithms/BinarySearchTree.ts",
-        "src/algorithms/AvlTree.ts",
         // 数学相关程序
         // 函数方程
         //
