@@ -31,7 +31,7 @@ QUnit.module("Object", () =>
         var o2 = { a: 1, v2: v20, v3: v3 };
         ObjectUtils.assignDeep(o2, { v2: { x: 1, y: 2 }, v3: { __class__: "feng3d.Vector3", x: 1 } }, [(target, source, key, replacers, deep) =>
         {
-            if (ObjectUtils.isObject(source[key]) && source[key][feng3d.CLASS_KEY] == "feng3d.Vector3")
+            if (ObjectUtils.isObject(source[key]) && source[key][feng3d.__class__] == "feng3d.Vector3")
             {
                 target[key] = new feng3d.Vector3();
             }

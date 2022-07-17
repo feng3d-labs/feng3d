@@ -1,11 +1,6 @@
 namespace feng3d
 {
-    export var CLASS_KEY = "__class__";
-
-    /**
-     * 类工具
-     */
-    export var classUtils: ClassUtils;
+    export const __class__ = "__class__";
 
     /**
      * 类工具
@@ -35,11 +30,11 @@ namespace feng3d
             }
 
             var prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-            if (prototype.hasOwnProperty(CLASS_KEY))
-                return prototype[CLASS_KEY];
+            if (prototype.hasOwnProperty(__class__))
+                return prototype[__class__];
 
             var className: string = prototype.constructor.name;
-            if (_global[className] == prototype.constructor)
+            if (globalThis[className] == prototype.constructor)
                 return className;
             //在可能的命名空间内查找
             for (var i = 0; i < _classNameSpaces.length; i++)
@@ -66,14 +61,14 @@ namespace feng3d
                 return null;
             if (!name)
                 return null;
-            if (_global[name])
-                return _global[name];
+            if (globalThis[name])
+                return globalThis[name];
             if (readCache && _definitionCache[name])
                 return _definitionCache[name];
 
             var paths = name.split(".");
             var length = paths.length;
-            var definition = _global;
+            var definition = globalThis;
             for (var i = 0; i < length; i++)
             {
                 var path = paths[i];
@@ -147,19 +142,12 @@ namespace feng3d
         }
     };
 
-    classUtils = new ClassUtils();
+    /**
+     * 类工具
+     */
+    export const classUtils = new ClassUtils();
 
     var _definitionCache = {};
-    var _global: Window;
-    var global: any;
-    if (typeof window != "undefined")
-    {
-        _global = window;
-    } else if (typeof global != "undefined")
-    {
-        _global = <any>global;
-    }
-
     var _classNameSpaces = ["feng3d"];
 
 
@@ -171,6 +159,6 @@ namespace feng3d
     export function registerClass(classDefinition: any, className: string): void
     {
         var prototype = classDefinition.prototype;
-        Object.defineProperty(prototype, CLASS_KEY, { value: className, writable: true, enumerable: false });
+        Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
     }
 }

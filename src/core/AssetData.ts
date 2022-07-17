@@ -114,7 +114,7 @@ namespace feng3d
         static serialize(asset: AssetData)
         {
             var obj = <any>{};
-            obj[CLASS_KEY] = classUtils.getQualifiedClassName(asset);
+            obj[__class__] = classUtils.getQualifiedClassName(asset);
             obj.assetId = asset.assetId;
             return obj;
         }

@@ -76,7 +76,7 @@ namespace feng2d
             for (const childname in childMap)
             {
                 var jsonObj = feng3d.serialization.serialize(childMap[childname]);
-                feng3d.serialization.deleteCLASS_KEY(jsonObj);
+                feng3d.serialization.deleteClassKey(jsonObj);
                 stateData[childname] = jsonObj;
             }
             this.allStateData[this.state] = stateData;
