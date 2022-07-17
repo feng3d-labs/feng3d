@@ -34,7 +34,7 @@
         //
         "src/task/Task.ts",
         //
-        "src/utils/Watcher.ts",
+        "src/watcher/Watcher.ts",
         // Polyfill
         "src/polyfill/global.ts",
         "src/polyfill/Types.ts",
