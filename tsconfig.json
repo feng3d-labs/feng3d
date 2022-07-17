@@ -46,8 +46,7 @@
         "src/polyfill/MapUtils.ts",
         "src/polyfill/MathUtil.ts",
         //
-        // "src/serialization/Serialization.ts",
-        "src/utils/Serialization.ts",
+        "src/serialization/Serialization.ts",
         // 数学相关程序
         // 函数方程
         //
