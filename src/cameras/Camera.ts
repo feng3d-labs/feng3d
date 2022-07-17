@@ -16,14 +16,14 @@ namespace feng3d
     {
         __class__: "feng3d.Camera";
 
-        /**
-         * How the camera clears the background.
-         * 
-         * @todo
-         */
-        @oav({ component: "OAVEnum", componentParam: { enumClass: CameraClearFlags }, tooltip: `What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas.` })
-        @serialize
-        clearFlags = CameraClearFlags.Skybox;
+        // /**
+        //  * How the camera clears the background.
+        //  * 
+        //  * @todo
+        //  */
+        // @oav({ component: "OAVEnum", componentParam: { enumClass: CameraClearFlags }, tooltip: `What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas.` })
+        // @serialize
+        // clearFlags = CameraClearFlags.Skybox;
 
         get single() { return true; }
 
