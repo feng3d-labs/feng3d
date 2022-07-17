@@ -130,7 +130,7 @@ namespace feng2d
      * 
      * @see https://github.com/pixijs/pixi.js/blob/dev/packages/text/src/TextStyle.js
      */
-    export class TextStyle extends feng3d.EventDispatcher
+    export class TextStyle extends feng3d.EventEmitter
     {
         /**
          * @param style 样式参数

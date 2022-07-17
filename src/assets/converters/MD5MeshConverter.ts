@@ -46,7 +46,7 @@ namespace feng3d
                 gameObject.addChild(skeletonGameObject);
             }
 
-            globalDispatcher.emit("asset.parsed", gameObject);
+            globalEmitter.emit("asset.parsed", gameObject);
             completed && completed(gameObject);
         }
 

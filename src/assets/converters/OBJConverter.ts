@@ -28,7 +28,7 @@ namespace feng3d
                 object.addChild(gameObject);
             }
 
-            globalDispatcher.emit("asset.parsed", object);
+            globalEmitter.emit("asset.parsed", object);
 
             completed && completed(object);
         }
@@ -88,7 +88,7 @@ namespace feng3d
         if (uvs.length > 0)
             geometry.uvs = uvs;
 
-        globalDispatcher.emit("asset.parsed", geometry);
+        globalEmitter.emit("asset.parsed", geometry);
 
         return gameObject;
 

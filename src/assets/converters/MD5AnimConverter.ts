@@ -30,7 +30,7 @@ namespace feng3d
                 translatePose(md5AnimData, md5AnimData.frame[i], animationClip);
             }
 
-            globalDispatcher.emit("asset.parsed", animationClip);
+            globalEmitter.emit("asset.parsed", animationClip);
 
             completed && completed(animationClip);
 

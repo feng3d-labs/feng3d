@@ -13,7 +13,7 @@ namespace feng3d
 	/**
 	 * 事件适配器
 	 */
-    export class EventDispatcher
+    export class EventEmitter
     {
         /**
          * 监听一次事件后将会被移除

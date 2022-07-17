@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
      */
-    export class EventProxy extends EventDispatcher
+    export class EventProxy extends EventEmitter
     {
         pageX = 0;
         pageY = 0;

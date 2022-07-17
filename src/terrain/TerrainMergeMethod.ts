@@ -4,7 +4,7 @@ namespace feng3d
     /**
      * 地形材质
      */
-    export class TerrainMergeMethod extends EventDispatcher
+    export class TerrainMergeMethod extends EventEmitter
     {
         splatMergeTexture = Texture2D.default;
 

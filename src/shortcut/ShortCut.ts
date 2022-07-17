@@ -31,7 +31,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 });
 	 * </pre>
 	 */
-	export class ShortCut extends EventDispatcher
+	export class ShortCut extends EventEmitter
 	{
 		/**
 		 * 按键状态

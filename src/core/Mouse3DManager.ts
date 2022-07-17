@@ -163,7 +163,7 @@ namespace feng3d
     /**
      * 鼠标事件输入
      */
-    export class MouseInput extends EventDispatcher
+    export class MouseInput extends EventEmitter
     {
         /**
          * 是否启动
