@@ -26,6 +26,10 @@
         "src/event/IEventTarget.ts",
         "src/event/ObjectEmitter.ts",
         //
+        "src/bezier/EquationSolving.ts",
+        "src/bezier/HighFunction.ts",
+        "src/bezier/Bezier.ts",
+        //
         "src/utils/Task.ts",
         //
         "src/utils/Watcher.ts",
@@ -62,8 +66,6 @@
         "src/algorithms/AvlTree.ts",
         // 数学相关程序
         // 函数方程
-        "src/math/EquationSolving.ts",
-        "src/math/HighFunction.ts",
         //
         "src/math/enums/CoordinateSystem.ts",
         "src/math/enums/RotationOrder.ts",
