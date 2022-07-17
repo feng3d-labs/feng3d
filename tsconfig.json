@@ -30,6 +30,8 @@
         "src/bezier/HighFunction.ts",
         "src/bezier/Bezier.ts",
         //
+        "src/objectview/ObjectView.ts",
+        //
         "src/utils/Task.ts",
         //
         "src/utils/Watcher.ts",
@@ -45,8 +47,6 @@
         "src/polyfill/MathUtil.ts",
         //
         "src/utils/Serialization.ts",
-        //
-        "src/utils/ObjectView.ts",
         // 数学相关程序
         // 函数方程
         //
