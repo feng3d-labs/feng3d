@@ -235,7 +235,7 @@ namespace feng3d
          */
         deleteCLASS_KEY(obj: Object)
         {
-            if (Object.isBaseType(obj)) return;
+            if (ObjectUtils.isBaseType(obj)) return;
 
             delete obj[CLASS_KEY];
 
@@ -305,7 +305,7 @@ namespace feng3d
          */
         setValue<T>(target: T, source: gPartial<T>)
         {
-            if (Object.isBaseType(source) || target == source) return target;
+            if (ObjectUtils.isBaseType(source) || target == source) return target;
             var handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
 
             var param: HandlerParam = { handlers: handlers, serialization: this };
@@ -357,7 +357,7 @@ namespace feng3d
             handler: function (target, source, property)
             {
                 var spv = source[property];
-                if (Object.isBaseType(spv))
+                if (ObjectUtils.isBaseType(spv))
                 {
                     target[property] = spv;
                     return true;
@@ -378,7 +378,7 @@ namespace feng3d
                     // 处理已经被序列化的对象
                     var value = param.serializedMap.get(spv);
                     var tpv = value.target[value.property];
-                    if (!Object.isBaseType(tpv))
+                    if (!ObjectUtils.isBaseType(tpv))
                     {
                         if (!tpv["__serialize__Ref__"])
                         {
@@ -473,7 +473,7 @@ namespace feng3d
             handler: function (target, source, property, param)
             {
                 var spv = source[property];
-                if (Object.isObject(spv))
+                if (ObjectUtils.isObject(spv))
                 {
                     let object = <any>{};
                     target[property] = object;
@@ -544,7 +544,7 @@ namespace feng3d
             handler: function (target, source, property)
             {
                 var spv = source[property];
-                if (Object.isBaseType(spv))
+                if (ObjectUtils.isBaseType(spv))
                 {
                     target[property] = spv;
                     return true;
@@ -599,7 +599,7 @@ namespace feng3d
             handler: function (target, source, property)
             {
                 var spv = source[property];
-                if (!Object.isObject(spv) && !Array.isArray(spv))
+                if (!ObjectUtils.isObject(spv) && !Array.isArray(spv))
                 {
                     target[property] = spv;
                     return true;
@@ -634,7 +634,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isObject(spv) && spv[CLASS_KEY] == null)
+                if (ObjectUtils.isObject(spv) && spv[CLASS_KEY] == null)
                 {
                     var obj = {};
                     if (tpv) obj = tpv;
@@ -739,7 +739,7 @@ namespace feng3d
             handler: function (target, source, property, param)
             {
                 let tpv = target[property];
-                if (Object.isBaseType(tpv))
+                if (ObjectUtils.isBaseType(tpv))
                 {
                     param.different[property] = tpv;
                     return true;
@@ -851,7 +851,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isBaseType(spv))
+                if (ObjectUtils.isBaseType(spv))
                 {
                     target[property] = spv;
                     return true;
@@ -887,7 +887,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                if (!Object.isObject(spv))
+                if (!ObjectUtils.isObject(spv))
                 {
                     target[property] = param.serialization.deserialize(spv);
                     return true;
@@ -902,7 +902,7 @@ namespace feng3d
             {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isObject(spv) && spv[CLASS_KEY] == undefined)
+                if (ObjectUtils.isObject(spv) && spv[CLASS_KEY] == undefined)
                 {
                     console.assert(!!tpv);
                     var keys = Object.keys(spv);

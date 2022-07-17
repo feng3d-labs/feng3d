@@ -30,7 +30,7 @@ namespace feng3d
          */
         getObjectUuid(object: Object)
         {
-            if (Object.isBaseType(object))
+            if (ObjectUtils.isBaseType(object))
             {
                 return String(object);
             }
