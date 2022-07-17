@@ -34,13 +34,15 @@
         //
         "src/utils/Watcher.ts",
         // Polyfill
+        "src/polyfill/global.ts",
         "src/polyfill/Types.ts",
-        "src/polyfill/Object.ts",
+        "src/polyfill/Array.ts",
+        "src/polyfill/ObjectUtils.ts",
+        "src/polyfill/ArrayUtils.ts",
         "src/polyfill/ClassUtils.ts",
         "src/polyfill/DataTransform.ts",
-        "src/polyfill/Map.ts",
-        "src/polyfill/Array.ts",
-        "src/polyfill/Math.ts",
+        "src/polyfill/MapUtils.ts",
+        "src/polyfill/MathUtil.ts",
         //
         "src/utils/Serialization.ts",
         //

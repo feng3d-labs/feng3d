@@ -100,7 +100,7 @@ QUnit.module("FunctionWrap", () =>
             {
                 executions++;
                 callback(a * a);
-            }, Math.randInt(10, 50));
+            }, feng3d.mathUtil.randInt(10, 50));
         }
 
         // 包装后的函数

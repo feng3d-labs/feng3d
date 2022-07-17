@@ -301,9 +301,9 @@ namespace feng3d
                 {
                     vec.normalize();
 
-                    const theta = Math.acos(Math.clamp(tangents[i - 1].dot(tangents[i]), -1, 1)); // clamp for floating pt errors
+                    const theta = Math.acos(mathUtil.clamp(tangents[i - 1].dot(tangents[i]), -1, 1)); // clamp for floating pt errors
 
-                    mat.fromAxisRotate(vec, theta * Math.RAD2DEG);
+                    mat.fromAxisRotate(vec, theta * mathUtil.RAD2DEG);
                     mat.transformPoint3(normals[i], normals[i]);
                 }
 
@@ -314,7 +314,7 @@ namespace feng3d
 
             if (closed === true)
             {
-                let theta = Math.acos(Math.clamp(normals[0].dot(normals[segments]), -1, 1));
+                let theta = Math.acos(mathUtil.clamp(normals[0].dot(normals[segments]), -1, 1));
 
                 theta /= segments;
 
@@ -326,7 +326,7 @@ namespace feng3d
                 for (let i = 1; i <= segments; i++)
                 {
                     // twist a little...
-                    mat.fromAxisRotate(tangents[i], theta * i * Math.RAD2DEG).transformPoint3(normals[i], normals[i]);
+                    mat.fromAxisRotate(tangents[i], theta * i * mathUtil.RAD2DEG).transformPoint3(normals[i], normals[i]);
                     tangents[i].crossTo(normals[i], binormals[i]);
                 }
             }

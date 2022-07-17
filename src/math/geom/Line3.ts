@@ -140,9 +140,9 @@ namespace feng3d
          * @param point 点
          * @param precision 精度
          */
-        onWithPoint(point: Vector3, precision = Math.PRECISION)
+        onWithPoint(point: Vector3, precision = mathUtil.PRECISION)
         {
-            if (Math.equals(this.distanceWithPoint(point), 0, precision))
+            if (mathUtil.equals(this.distanceWithPoint(point), 0, precision))
                 return true;
             return false;
         }
@@ -184,7 +184,7 @@ namespace feng3d
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        equals(line: Line3, precision = Math.PRECISION)
+        equals(line: Line3, precision = mathUtil.PRECISION)
         {
             if (!this.onWithPoint(line.origin))
                 return false;

@@ -492,7 +492,7 @@ namespace feng3d
         fromMatrix(matrix: Matrix4x4)
         {
             var v: Vector3 = matrix.toTRS()[1];
-            v.scaleNumber(Math.RAD2DEG);
+            v.scaleNumber(mathUtil.RAD2DEG);
             this.fromEulerAngles(v.x, v.y, v.z);
             return this;
         }

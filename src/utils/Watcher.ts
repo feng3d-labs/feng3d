@@ -69,7 +69,7 @@ namespace feng3d
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, _property);
                 watchs[_property] = { value: object[_property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data = Object.getPropertyDescriptor(object, _property);
+                var data = ObjectUtils.getPropertyDescriptor(object, _property);
                 if (data && data.set && data.get)
                 {
                     data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
@@ -249,8 +249,8 @@ namespace feng3d
                     if (oldValue) this.unwatchchain(oldValue, nextp, handler, thisObject);
                     if (newValue) this.watchchain(newValue, nextp, handler, thisObject);
                     // 当更换对象且监听值发生改变时触发处理函数
-                    var ov = Object.getPropertyValue(oldValue, nextp);
-                    var nv = Object.getPropertyValue(newValue, nextp);
+                    var ov = ObjectUtils.getPropertyValue(oldValue, nextp);
+                    var nv = ObjectUtils.getPropertyValue(newValue, nextp);
                     if (ov != nv)
                     {
                         handler.call(thisObject, nv, ov, newValue, nextp);
@@ -323,7 +323,7 @@ namespace feng3d
          */
         watchobject<T>(object: T, property: gPartial<T>, handler: (object: any, property: string, oldValue: any) => void, thisObject?: any)
         {
-            var chains = Object.getPropertyChains(object);
+            var chains = ObjectUtils.getPropertyChains(object);
             chains.forEach(v =>
             {
                 this.watchchain(object, v, handler, thisObject);
@@ -340,7 +340,7 @@ namespace feng3d
          */
         unwatchobject<T>(object: T, property: gPartial<T>, handler?: (object: any, property: string, oldValue: any) => void, thisObject?: any)
         {
-            var chains = Object.getPropertyChains(property);
+            var chains = ObjectUtils.getPropertyChains(property);
             chains.forEach(v =>
             {
                 this.unwatchchain(object, v, handler, thisObject);

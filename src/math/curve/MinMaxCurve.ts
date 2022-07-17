@@ -88,9 +88,9 @@ namespace feng3d
                 case MinMaxCurveMode.Curve:
                     return this.curve.getValue(time) * this.curveMultiplier;
                 case MinMaxCurveMode.TwoConstants:
-                    return Math.lerp(this.constantMin, this.constantMax, randomBetween);
+                    return mathUtil.lerp(this.constantMin, this.constantMax, randomBetween);
                 case MinMaxCurveMode.TwoCurves:
-                    return Math.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
+                    return mathUtil.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
             }
 
             return this.constant;

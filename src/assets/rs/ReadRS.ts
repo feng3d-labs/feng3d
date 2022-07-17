@@ -97,7 +97,7 @@ namespace feng3d
             parent = parent || this.root;
             //
             var asset: FileAsset = new cls();
-            var assetId = Math.uuid()
+            var assetId = mathUtil.uuid()
 
             // 初始化
             asset.rs = <any>this;
@@ -365,11 +365,11 @@ namespace feng3d
          */
         getAssetsWithObject(object: any, assetids: string[] = [])
         {
-            if (Object.isBaseType(object)) return [];
+            if (ObjectUtils.isBaseType(object)) return [];
             //
             if (AssetData.isAssetData(object)) assetids.push(object.assetId);
             //
-            if (Object.isObject(object) || Array.isArray(object))
+            if (ObjectUtils.isObject(object) || Array.isArray(object))
             {
                 var keys = Object.keys(object);
                 keys.forEach(k =>
@@ -391,7 +391,7 @@ namespace feng3d
             // 获取所包含的资源列表
             var assetids = this.getAssetsWithObject(object);
             // 不需要加载本资源，移除自身资源
-            Array.delete(assetids, object.assetId);
+            ArrayUtils.deleteItem(assetids, object.assetId);
             // 加载包含的资源数据
             this.readAssetDatas(assetids, (err, result) =>
             {

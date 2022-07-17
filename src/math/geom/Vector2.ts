@@ -190,11 +190,11 @@ namespace feng3d
          * @param toCompare 要比较的向量。
          * @returns 如果该对象与此 向量 对象相同，则为 true 值，如果不相同，则为 false。
          */
-        equals(v: Vector2, precision = Math.PRECISION)
+        equals(v: Vector2, precision = mathUtil.PRECISION)
         {
-            if (!Math.equals(this.x - v.x, 0, precision))
+            if (!mathUtil.equals(this.x - v.x, 0, precision))
                 return false;
-            if (!Math.equals(this.y - v.y, 0, precision))
+            if (!mathUtil.equals(this.y - v.y, 0, precision))
                 return false;
             return true;
         }
@@ -385,8 +385,8 @@ namespace feng3d
          */
         clamp(min: Vector2, max: Vector2)
         {
-            this.x = Math.clamp(this.x, min.x, max.x);
-            this.y = Math.clamp(this.y, min.y, max.y);
+            this.x = mathUtil.clamp(this.x, min.x, max.x);
+            this.y = mathUtil.clamp(this.y, min.y, max.y);
             return this;
         }
 

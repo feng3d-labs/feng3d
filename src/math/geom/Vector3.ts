@@ -276,13 +276,13 @@ namespace feng3d
         /**
          * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(v: Vector3, precision = Math.PRECISION)
+        equals(v: Vector3, precision = mathUtil.PRECISION)
         {
-            if (!Math.equals(this.x - v.x, 0, precision))
+            if (!mathUtil.equals(this.x - v.x, 0, precision))
                 return false;
-            if (!Math.equals(this.y - v.y, 0, precision))
+            if (!mathUtil.equals(this.y - v.y, 0, precision))
                 return false;
-            if (!Math.equals(this.z - v.z, 0, precision))
+            if (!mathUtil.equals(this.z - v.z, 0, precision))
                 return false;
             return true;
         }
@@ -438,7 +438,7 @@ namespace feng3d
          * 
          * @param precision
          */
-        almostZero(precision = Math.PRECISION)
+        almostZero(precision = mathUtil.PRECISION)
         {
             if (Math.abs(this.x) > precision ||
                 Math.abs(this.y) > precision ||
@@ -455,7 +455,7 @@ namespace feng3d
          * @param  v
          * @param  precision 设置为零以进行精确比较
          */
-        isAntiparallelTo(v: Vector3, precision = Math.PRECISION)
+        isAntiparallelTo(v: Vector3, precision = mathUtil.PRECISION)
         {
             var t = new Vector3();
             this.negateTo(t);
@@ -785,9 +785,9 @@ namespace feng3d
          */
         clamp(min: Vector3, max: Vector3)
         {
-            this.x = Math.clamp(this.x, min.x, max.x);
-            this.y = Math.clamp(this.y, min.y, max.y);
-            this.z = Math.clamp(this.z, min.z, max.z);
+            this.x = mathUtil.clamp(this.x, min.x, max.x);
+            this.y = mathUtil.clamp(this.y, min.y, max.y);
+            this.z = mathUtil.clamp(this.z, min.z, max.z);
             return this;
         }
 
@@ -917,9 +917,9 @@ namespace feng3d
          * 与指定向量是否平行
          * @param v 向量
          */
-        isParallel(v: Vector3, precision = Math.PRECISION)
+        isParallel(v: Vector3, precision = mathUtil.PRECISION)
         {
-            return Math.equals(this.crossTo(v).lengthSquared, 0, precision);
+            return mathUtil.equals(this.crossTo(v).lengthSquared, 0, precision);
         }
 
         /**

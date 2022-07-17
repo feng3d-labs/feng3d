@@ -146,7 +146,7 @@ namespace feng3d
          */
         static getAllLoadedAssetDatas()
         {
-            return Map.getKeys(this.assetMap);
+            return MapUtils.getKeys(this.assetMap);
         }
 
         /**

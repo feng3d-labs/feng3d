@@ -81,7 +81,7 @@ namespace feng3d
             {
                 watcher.unwatch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
             }
-            Array.replace(this._modules, this._main, v);
+            ArrayUtils.replace(this._modules, this._main, v);
             v.particleSystem = this;
             this._main = v;
             watcher.watch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
@@ -93,7 +93,7 @@ namespace feng3d
         get emission() { return this._emission; }
         set emission(v)
         {
-            Array.replace(this._modules, this._emission, v);
+            ArrayUtils.replace(this._modules, this._emission, v);
             v.particleSystem = this;
             this._emission = v;
         }
@@ -104,7 +104,7 @@ namespace feng3d
         get shape() { return this._shape; }
         set shape(v)
         {
-            Array.replace(this._modules, this._shape, v);
+            ArrayUtils.replace(this._modules, this._shape, v);
             v.particleSystem = this;
             this._shape = v;
         }
@@ -115,7 +115,7 @@ namespace feng3d
         get velocityOverLifetime() { return this._velocityOverLifetime; }
         set velocityOverLifetime(v)
         {
-            Array.replace(this._modules, this._velocityOverLifetime, v);
+            ArrayUtils.replace(this._modules, this._velocityOverLifetime, v);
             v.particleSystem = this;
             this._velocityOverLifetime = v;
         }
@@ -127,7 +127,7 @@ namespace feng3d
         get limitVelocityOverLifetime() { return this._limitVelocityOverLifetime; }
         set limitVelocityOverLifetime(v)
         {
-            Array.replace(this._modules, this._limitVelocityOverLifetime, v);
+            ArrayUtils.replace(this._modules, this._limitVelocityOverLifetime, v);
             v.particleSystem = this;
             this._limitVelocityOverLifetime = v;
         }
@@ -143,7 +143,7 @@ namespace feng3d
         get inheritVelocity() { return this._inheritVelocity; }
         set inheritVelocity(v)
         {
-            Array.replace(this._modules, this._inheritVelocity, v);
+            ArrayUtils.replace(this._modules, this._inheritVelocity, v);
             v.particleSystem = this;
             this._inheritVelocity = v;
         }
@@ -154,7 +154,7 @@ namespace feng3d
         get forceOverLifetime() { return this._forceOverLifetime; }
         set forceOverLifetime(v)
         {
-            Array.replace(this._modules, this._forceOverLifetime, v);
+            ArrayUtils.replace(this._modules, this._forceOverLifetime, v);
             v.particleSystem = this;
             this._forceOverLifetime = v;
         }
@@ -165,7 +165,7 @@ namespace feng3d
         get colorOverLifetime() { return this._colorOverLifetime; }
         set colorOverLifetime(v)
         {
-            Array.replace(this._modules, this._colorOverLifetime, v);
+            ArrayUtils.replace(this._modules, this._colorOverLifetime, v);
             v.particleSystem = this;
             this._colorOverLifetime = v;
         }
@@ -179,7 +179,7 @@ namespace feng3d
         get colorBySpeed() { return this._colorBySpeed; }
         set colorBySpeed(v)
         {
-            Array.replace(this._modules, this._colorBySpeed, v);
+            ArrayUtils.replace(this._modules, this._colorBySpeed, v);
             v.particleSystem = this;
             this._colorBySpeed = v;
         }
@@ -190,7 +190,7 @@ namespace feng3d
         get sizeOverLifetime() { return this._sizeOverLifetime; }
         set sizeOverLifetime(v)
         {
-            Array.replace(this._modules, this._sizeOverLifetime, v);
+            ArrayUtils.replace(this._modules, this._sizeOverLifetime, v);
             v.particleSystem = this;
             this._sizeOverLifetime = v;
         }
@@ -204,7 +204,7 @@ namespace feng3d
         get sizeBySpeed() { return this._sizeBySpeed; }
         set sizeBySpeed(v)
         {
-            Array.replace(this._modules, this._sizeBySpeed, v);
+            ArrayUtils.replace(this._modules, this._sizeBySpeed, v);
             v.particleSystem = this;
             this._sizeBySpeed = v;
         }
@@ -215,7 +215,7 @@ namespace feng3d
         get rotationOverLifetime() { return this._rotationOverLifetime; }
         set rotationOverLifetime(v)
         {
-            Array.replace(this._modules, this._rotationOverLifetime, v);
+            ArrayUtils.replace(this._modules, this._rotationOverLifetime, v);
             v.particleSystem = this;
             this._rotationOverLifetime = v;
         }
@@ -229,7 +229,7 @@ namespace feng3d
         get rotationBySpeed() { return this._rotationBySpeed; }
         set rotationBySpeed(v)
         {
-            Array.replace(this._modules, this._rotationBySpeed, v);
+            ArrayUtils.replace(this._modules, this._rotationBySpeed, v);
             v.particleSystem = this;
             this._rotationBySpeed = v;
         }
@@ -243,7 +243,7 @@ namespace feng3d
         get noise() { return this._noise; }
         set noise(v)
         {
-            Array.replace(this._modules, this._noise, v);
+            ArrayUtils.replace(this._modules, this._noise, v);
             v.particleSystem = this;
             this._noise = v;
         }
@@ -257,7 +257,7 @@ namespace feng3d
         get subEmitters() { return this._subEmitters; }
         set subEmitters(v)
         {
-            Array.replace(this._modules, this._subEmitters, v);
+            ArrayUtils.replace(this._modules, this._subEmitters, v);
             v.particleSystem = this;
             this._subEmitters = v;
         }
@@ -271,7 +271,7 @@ namespace feng3d
         get textureSheetAnimation() { return this._textureSheetAnimation; }
         set textureSheetAnimation(v)
         {
-            Array.replace(this._modules, this._textureSheetAnimation, v);
+            ArrayUtils.replace(this._modules, this._textureSheetAnimation, v);
             v.particleSystem = this;
             this._textureSheetAnimation = v;
         }

@@ -156,7 +156,7 @@ namespace feng3d
         set orientation(value)
         {
             var angles = value.toEulerAngles();
-            angles.scaleNumber(Math.RAD2DEG);
+            angles.scaleNumber(mathUtil.RAD2DEG);
             this.rotation = angles;
         }
 
@@ -573,13 +573,13 @@ namespace feng3d
 
         private _positionChanged(newValue: number, oldValue: number, object: Vector3, property: string)
         {
-            if (!Math.equals(newValue, oldValue))
+            if (!mathUtil.equals(newValue, oldValue))
                 this._invalidateTransform();
         }
 
         private _rotationChanged(newValue: number, oldValue: number, object: Vector3, property: string)
         {
-            if (!Math.equals(newValue, oldValue))
+            if (!mathUtil.equals(newValue, oldValue))
             {
                 this._invalidateTransform();
                 this._rotationMatrixInvalid = true;
@@ -588,7 +588,7 @@ namespace feng3d
 
         private _scaleChanged(newValue: number, oldValue: number, object: Vector3, property: string)
         {
-            if (!Math.equals(newValue, oldValue))
+            if (!mathUtil.equals(newValue, oldValue))
                 this._invalidateTransform();
         }
 

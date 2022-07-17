@@ -104,12 +104,12 @@ namespace feng3d
             var funcs = info.funcs;
             if (beforeFunc)
             {
-                Array.delete(funcs, beforeFunc);
+                ArrayUtils.deleteItem(funcs, beforeFunc);
                 funcs.unshift(beforeFunc);
             }
             if (afterFunc)
             {
-                Array.delete(funcs, afterFunc);
+                ArrayUtils.deleteItem(funcs, afterFunc);
                 funcs.push(afterFunc);
             }
         }
@@ -134,7 +134,7 @@ namespace feng3d
                 info.funcs = [info.original];
             } else
             {
-                Array.delete(info.funcs, wrapFunc);
+                ArrayUtils.deleteItem(info.funcs, wrapFunc);
             }
             if (info.funcs.length == 1)
             {

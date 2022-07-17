@@ -43,7 +43,7 @@ namespace feng3d
         constructor()
         {
             super();
-            Object.defineProperty(this, "uuid", { value: Math.uuid() });
+            Object.defineProperty(this, "uuid", { value: mathUtil.uuid() });
             Object.defineProperty(this, "disposed", { value: false, configurable: true });
             console.assert(!Feng3dObject.objectLib[this.uuid], `唯一标识符存在重复！？`);
             Feng3dObject.objectLib[this.uuid] = this;
