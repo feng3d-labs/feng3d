@@ -243,9 +243,9 @@ namespace feng3d
                 this._pos.y = this._origin.y;
                 this._pos.z = this._origin.z;
             }
-            this._targetObject.transform.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.transform.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * Math.DEG2RAD) * Math.cos(this._currentTiltAngle * Math.DEG2RAD);
-            this._targetObject.transform.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * Math.DEG2RAD) * this._yFactor;
+            this._targetObject.transform.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
+            this._targetObject.transform.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
+            this._targetObject.transform.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * mathUtil.DEG2RAD) * this._yFactor;
             super.update();
         }
 

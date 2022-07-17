@@ -43,7 +43,7 @@ namespace feng3d
             if (!this.enabled) return;
 
             var velocity = particle.velocity.length;
-            var rate = Math.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
+            var rate = mathUtil.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
             var color = this.color.getValue(rate, particle[_ColorBySpeed_rate]);
             particle.color.multiply(color);
         }

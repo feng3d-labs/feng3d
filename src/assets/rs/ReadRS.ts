@@ -97,7 +97,7 @@ namespace feng3d
             parent = parent || this.root;
             //
             var asset: FileAsset = new cls();
-            var assetId = Math.uuid()
+            var assetId = mathUtil.uuid()
 
             // 初始化
             asset.rs = <any>this;

@@ -114,7 +114,7 @@ namespace feng3d
             {
                 radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
             }
-            radiusAngle = Math.degToRad(radiusAngle);
+            radiusAngle = mathUtil.degToRad(radiusAngle);
             // 计算位置
             dir.set(Math.cos(radiusAngle), Math.sin(radiusAngle), 0);
             dir.scaleNumberTo(radius, position);

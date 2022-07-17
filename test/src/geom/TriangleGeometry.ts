@@ -71,7 +71,7 @@ namespace feng3d
                 assert.ok(Segment3.fromPoints(r.points[0], r.points[1]).equals(Segment3.fromPoints(box.min, box.max)));
             }
 
-            var p0 = new Vector3(box.min.x, box.min.y, Math.lerp(box.min.z, box.max.z, Math.random()));
+            var p0 = new Vector3(box.min.x, box.min.y, mathUtil.lerp(box.min.z, box.max.z, Math.random()));
             var p1 = new Vector3(box.min.x, box.min.y, box.max.z + 1);
             var s = Segment3.fromPoints(p0, p1);
 

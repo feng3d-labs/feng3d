@@ -105,10 +105,10 @@ namespace feng3d
             for (let i = 0; i < NUM; i++)
             {
                 var ray = perspectiveLens.unprojectRay(x, y);
-                var p = ray.getPointWithZ(Math.lerp(near, far, Math.random()));
+                var p = ray.getPointWithZ(mathUtil.lerp(near, far, Math.random()));
                 var pp = perspectiveLens.project(p);
-                assert.ok(Math.equals(x, pp.x));
-                assert.ok(Math.equals(y, pp.y));
+                assert.ok(mathUtil.equals(x, pp.x));
+                assert.ok(mathUtil.equals(y, pp.y));
             }
         });
 
@@ -125,13 +125,13 @@ namespace feng3d
 
             for (let i = 0; i < NUM; i++)
             {
-                var sZ = Math.lerp(near, far, Math.random());
+                var sZ = mathUtil.lerp(near, far, Math.random());
                 var p = perspectiveLens.unprojectWithDepth(x, y, sZ);
-                assert.ok(Math.equals(sZ, p.z));
+                assert.ok(mathUtil.equals(sZ, p.z));
 
                 var pp = perspectiveLens.project(p);
-                assert.ok(Math.equals(x, pp.x));
-                assert.ok(Math.equals(y, pp.y));
+                assert.ok(mathUtil.equals(x, pp.x));
+                assert.ok(mathUtil.equals(y, pp.y));
             }
         });
     });

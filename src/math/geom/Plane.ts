@@ -167,9 +167,9 @@ namespace feng3d
          * 点是否在平面上
          * @param p 点
          */
-        onWithPoint(p: Vector3, precision = Math.PRECISION)
+        onWithPoint(p: Vector3, precision = mathUtil.PRECISION)
         {
-            return Math.equals(this.distanceWithPoint(p), 0, precision);
+            return mathUtil.equals(this.distanceWithPoint(p), 0, precision);
         }
 
 		/**
@@ -178,10 +178,10 @@ namespace feng3d
 		 * @param p			顶点
 		 * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
 		 */
-        classifyPoint(p: Vector3, precision = Math.PRECISION)
+        classifyPoint(p: Vector3, precision = mathUtil.PRECISION)
         {
             var len = this.distanceWithPoint(p);
-            if (Math.equals(len, 0, precision))
+            if (mathUtil.equals(len, 0, precision))
                 return PlaneClassification.INTERSECT;
             if (len < 0)
                 return PlaneClassification.BACK;
@@ -192,9 +192,9 @@ namespace feng3d
          * 判定与直线是否平行
          * @param line3D 
          */
-        parallelWithLine3D(line3D: Line3, precision = Math.PRECISION)
+        parallelWithLine3D(line3D: Line3, precision = mathUtil.PRECISION)
         {
-            if (Math.equals(line3D.direction.dot(this.getNormal()), 0, precision))
+            if (mathUtil.equals(line3D.direction.dot(this.getNormal()), 0, precision))
                 return true;
             return false;
         }
@@ -203,7 +203,7 @@ namespace feng3d
          * 判定与平面是否平行
          * @param plane3D
          */
-        parallelWithPlane3D(plane3D: Plane, precision = Math.PRECISION)
+        parallelWithPlane3D(plane3D: Plane, precision = mathUtil.PRECISION)
         {
             if (plane3D.getNormal().isParallel(this.getNormal(), precision))
                 return true;
@@ -220,7 +220,7 @@ namespace feng3d
             var n = this.getNormal();
             var d = line.direction;
             var dn = d.dot(n);
-            if (Math.equals(dn, 0))
+            if (mathUtil.equals(dn, 0))
             {
                 // 处理直线在平面内
                 if (this.onWithPoint(line.origin))
@@ -346,7 +346,7 @@ namespace feng3d
 
             var m = n1xn2.dot(n3);
 
-            if (Math.equals(m, 0))
+            if (mathUtil.equals(m, 0))
             {
                 // 不存在交点或者不存在唯一的交点
                 return null;
@@ -362,15 +362,15 @@ namespace feng3d
          * @param plane 
          * @param precision 
          */
-        equals(plane: Plane, precision = Math.PRECISION)
+        equals(plane: Plane, precision = mathUtil.PRECISION)
         {
-            if (!Math.equals(this.a - plane.a, 0, precision))
+            if (!mathUtil.equals(this.a - plane.a, 0, precision))
                 return false;
-            if (!Math.equals(this.b - plane.b, 0, precision))
+            if (!mathUtil.equals(this.b - plane.b, 0, precision))
                 return false;
-            if (!Math.equals(this.c - plane.c, 0, precision))
+            if (!mathUtil.equals(this.c - plane.c, 0, precision))
                 return false;
-            if (!Math.equals(this.d - plane.d, 0, precision))
+            if (!mathUtil.equals(this.d - plane.d, 0, precision))
                 return false;
             return true;
         }

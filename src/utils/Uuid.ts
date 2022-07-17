@@ -36,7 +36,7 @@ namespace feng3d
             }
             if (!object[__uuid__])
             {
-                Object.defineProperty(object, __uuid__, { value: Math.uuid() });
+                Object.defineProperty(object, __uuid__, { value: mathUtil.uuid() });
             }
             return object[__uuid__];
         }

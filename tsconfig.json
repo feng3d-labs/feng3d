@@ -42,7 +42,7 @@
         "src/polyfill/ClassUtils.ts",
         "src/polyfill/DataTransform.ts",
         "src/polyfill/MapUtils.ts",
-        "src/polyfill/Math.ts",
+        "src/polyfill/MathUtil.ts",
         //
         "src/utils/Serialization.ts",
         //

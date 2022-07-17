@@ -9,7 +9,7 @@ namespace feng3d
                 p.onWithPoint(p.getOrigin())
             );
             assert.ok(
-                Math.equals(p.getOrigin().distance(Vector3.ZERO), p.distanceWithPoint(Vector3.ZERO))
+                mathUtil.equals(p.getOrigin().distance(Vector3.ZERO), p.distanceWithPoint(Vector3.ZERO))
             );
         });
 

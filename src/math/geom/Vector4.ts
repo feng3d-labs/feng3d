@@ -258,15 +258,15 @@ namespace feng3d
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        equals(v: Vector4, precision = Math.PRECISION)
+        equals(v: Vector4, precision = mathUtil.PRECISION)
         {
-            if (!Math.equals(this.x - v.x, 0, precision))
+            if (!mathUtil.equals(this.x - v.x, 0, precision))
                 return false;
-            if (!Math.equals(this.y - v.y, 0, precision))
+            if (!mathUtil.equals(this.y - v.y, 0, precision))
                 return false;
-            if (!Math.equals(this.z - v.z, 0, precision))
+            if (!mathUtil.equals(this.z - v.z, 0, precision))
                 return false;
-            if (!Math.equals(this.w - v.w, 0, precision))
+            if (!mathUtil.equals(this.w - v.w, 0, precision))
                 return false;
             return true;
         }

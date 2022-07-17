@@ -36,11 +36,11 @@ namespace feng3d
             var circumcenter = t.getCircumcenter();
 
             assert.ok(
-                Math.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p1).length)
+                mathUtil.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p1).length)
             );
 
             assert.ok(
-                Math.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p2).length)
+                mathUtil.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p2).length)
             );
         });
 
@@ -57,11 +57,11 @@ namespace feng3d
             );
 
             assert.ok(
-                Math.equals(d0, d1)
+                mathUtil.equals(d0, d1)
             );
 
             assert.ok(
-                Math.equals(d0, d2)
+                mathUtil.equals(d0, d2)
             );
 
         });
@@ -72,17 +72,17 @@ namespace feng3d
             var p = t.getOrthocenter();
 
             assert.ok(
-                Math.equals(0,
+                mathUtil.equals(0,
                     t.p0.subTo(t.p1).dot(p.subTo(t.p2))
                 )
             )
             assert.ok(
-                Math.equals(0,
+                mathUtil.equals(0,
                     t.p2.subTo(t.p1).dot(p.subTo(t.p0))
                 )
             )
             assert.ok(
-                Math.equals(0,
+                mathUtil.equals(0,
                     t.p2.subTo(t.p0).dot(p.subTo(t.p1))
                 )
             )
@@ -97,7 +97,7 @@ namespace feng3d
 
             assert.ok(ts.length <= 3);
             assert.ok(
-                Math.equals(t.area(), ts.reduce((area, t) => { return area + t.area(); }, 0), 0.001)
+                mathUtil.equals(t.area(), ts.reduce((area, t) => { return area + t.area(); }, 0), 0.001)
             )
 
             p = t.getSegments()[0].getPoint(Math.random());
@@ -105,7 +105,7 @@ namespace feng3d
 
             assert.ok(ts.length <= 2);
             assert.ok(
-                Math.equals(t.area(), ts.reduce((area, t) => { return area + t.area(); }, 0), 0.001)
+                mathUtil.equals(t.area(), ts.reduce((area, t) => { return area + t.area(); }, 0), 0.001)
             )
         });
 
@@ -155,7 +155,7 @@ namespace feng3d
 
             assert.ok(ts.length <= 3);
             assert.ok(
-                Math.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.001)
+                mathUtil.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.001)
             );
 
             s = Segment3.fromPoints(t.randomPoint(), t.randomPoint());
@@ -163,7 +163,7 @@ namespace feng3d
 
             assert.ok(ts.length <= 5);
             assert.ok(
-                Math.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.001)
+                mathUtil.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.001)
             );
 
         });
@@ -176,7 +176,7 @@ namespace feng3d
 
             assert.ok(ts.length <= 3);
             assert.ok(
-                Math.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.001)
+                mathUtil.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.001)
             );
 
             l = Line3.fromPoints(t.randomPoint(), t.randomPoint());
@@ -184,7 +184,7 @@ namespace feng3d
 
             assert.ok(ts.length <= 3);
             assert.ok(
-                Math.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.0001)
+                mathUtil.equals(ts.reduce((v, t) => { return v + t.area(); }, 0), t.area(), 0.0001)
             );
 
         });

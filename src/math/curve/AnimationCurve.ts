@@ -130,7 +130,7 @@ namespace feng3d
             switch (wrapMode)
             {
                 case WrapMode.Clamp:
-                    t = Math.clamp(t, min, max);
+                    t = mathUtil.clamp(t, min, max);
                     break;
                 case WrapMode.Loop:
                     t = ((t - min) % cycle + cycle) % cycle + min;

@@ -61,8 +61,8 @@ namespace feng2d
 
                 context.shadowColor = style.dropShadowColor.toRGBA();
                 context.shadowBlur = style.dropShadowBlur;
-                context.shadowOffsetX = Math.cos(style.dropShadowAngle * Math.DEG2RAD) * style.dropShadowDistance;
-                context.shadowOffsetY = (Math.sin(style.dropShadowAngle * Math.DEG2RAD) * style.dropShadowDistance) + dsOffsetShadow;
+                context.shadowOffsetX = Math.cos(style.dropShadowAngle * feng3d.mathUtil.DEG2RAD) * style.dropShadowDistance;
+                context.shadowOffsetY = (Math.sin(style.dropShadowAngle * feng3d.mathUtil.DEG2RAD) * style.dropShadowDistance) + dsOffsetShadow;
             }
             else
             {

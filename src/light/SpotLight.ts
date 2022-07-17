@@ -39,12 +39,12 @@ namespace feng3d
          */
         get coneCos()
         {
-            return Math.cos(this.angle * 0.5 * Math.DEG2RAD);
+            return Math.cos(this.angle * 0.5 * mathUtil.DEG2RAD);
         }
 
         get penumbraCos()
         {
-            return Math.cos(this.angle * 0.5 * Math.DEG2RAD * (1 - this.penumbra));
+            return Math.cos(this.angle * 0.5 * mathUtil.DEG2RAD * (1 - this.penumbra));
         }
 
         private perspectiveLens: PerspectiveLens;
