@@ -37,3 +37,6 @@
 [submodule "packages/terrain"]
 	path = packages/terrain
 	url = https://gitlab.com/feng3d/terrain.git
+[submodule "packages/particlesystem"]
+	path = packages/particlesystem
+	url = https://gitlab.com/feng3d/particlesystem.git
