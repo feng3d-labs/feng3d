@@ -22,3 +22,6 @@
 [submodule "packages/math"]
 	path = packages/math
 	url = https://gitlab.com/feng3d/math.git
+[submodule "packages/filesystem"]
+	path = packages/filesystem
+	url = https://gitlab.com/feng3d/filesystem.git

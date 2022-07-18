@@ -47,27 +47,14 @@
             "path": "packages/math/tsconfig.json",
             "prepend": true
         },
+        {
+            "path": "packages/filesystem/tsconfig.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        //
-        "src/filesystem/global.ts",
-        "src/filesystem/FS.ts",
-        "src/filesystem/PathUtils.ts",
-        //
-        "src/filesystem/base/Loader.ts",
-        "src/filesystem/base/LoaderDataFormat.ts",
-        "src/filesystem/base/_IndexedDB.ts",
-        //
-        "src/filesystem/FSType.ts",
-        "src/filesystem/IReadFS.ts",
-        "src/filesystem/ReadFS.ts",
-        "src/filesystem/IReadWriteFS.ts",
-        "src/filesystem/ReadWriteFS.ts",
-        //
-        "src/filesystem/IndexedDBFS.ts",
-        "src/filesystem/HttpFS.ts",
         // 快捷键
         "src/shortcut/EventProxy.ts",
         "src/shortcut/WindowEventProxy.ts",
