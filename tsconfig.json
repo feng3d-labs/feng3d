@@ -39,12 +39,14 @@
             "path": "packages/watcher/tsconfig.namespace.json",
             "prepend": true
         },
+        {
+            "path": "packages/serialization/tsconfig.namespace.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        //
-        "src/serialization/Serialization.ts",
         // 数学相关程序
         // 函数方程
         //

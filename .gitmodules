@@ -16,3 +16,6 @@
 [submodule "packages/watcher"]
 	path = packages/watcher
 	url = https://gitlab.com/feng3d/watcher.git
+[submodule "packages/serialization"]
+	path = packages/serialization
+	url = https://gitlab.com/feng3d/serialization.git
