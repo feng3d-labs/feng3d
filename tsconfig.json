@@ -23,12 +23,14 @@
             "path": "packages/bezier/tsconfig.namespace.json",
             "prepend": true
         },
+        {
+            "path": "packages/objectview/tsconfig.namespace.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        //
-        "src/objectview/ObjectView.ts",
         //
         "src/task/Task.ts",
         //

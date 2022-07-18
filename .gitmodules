@@ -4,3 +4,6 @@
 [submodule "packages/bezier"]
 	path = packages/bezier
 	url = https://gitlab.com/feng3d/bezier.git
+[submodule "packages/objectview"]
+	path = packages/objectview
+	url = https://gitlab.com/feng3d/objectview.git
