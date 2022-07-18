@@ -19,3 +19,6 @@
 [submodule "packages/serialization"]
 	path = packages/serialization
 	url = https://gitlab.com/feng3d/serialization.git
+[submodule "packages/math"]
+	path = packages/math
+	url = https://gitlab.com/feng3d/math.git

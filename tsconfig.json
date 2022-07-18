@@ -16,31 +16,31 @@
     },
     "references": [
         {
-            "path": "packages/event/tsconfig.namespace.json",
+            "path": "packages/event/tsconfig.json",
             "prepend": true
         },
         {
-            "path": "packages/bezier/tsconfig.namespace.json",
+            "path": "packages/bezier/tsconfig.json",
             "prepend": true
         },
         {
-            "path": "packages/objectview/tsconfig.namespace.json",
+            "path": "packages/objectview/tsconfig.json",
             "prepend": true
         },
         {
-            "path": "packages/polyfill/tsconfig.namespace.json",
+            "path": "packages/polyfill/tsconfig.json",
             "prepend": true
         },
         {
-            "path": "packages/task/tsconfig.namespace.json",
+            "path": "packages/task/tsconfig.json",
             "prepend": true
         },
         {
-            "path": "packages/watcher/tsconfig.namespace.json",
+            "path": "packages/watcher/tsconfig.json",
             "prepend": true
         },
         {
-            "path": "packages/serialization/tsconfig.namespace.json",
+            "path": "packages/serialization/tsconfig.json",
             "prepend": true
         },
     ],
