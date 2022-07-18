@@ -28,7 +28,7 @@ namespace feng3d
     /**
      * 注册组件
      *
-     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 Entity.getComponent 等方法。
+     * 使用 @RegisterComponent 在组件类定义上注册组件，配合扩展 ComponentMap 接口后可使用 GameObject.getComponent 等方法。
      *
      * @param component 组件名称，默认使用类名称
      */
