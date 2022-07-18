@@ -1,0 +1,3 @@
+[submodule "packages/event"]
+	path = packages/event
+	url = https://gitlab.com/feng3d/event.git

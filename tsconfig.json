@@ -14,17 +14,15 @@
         ],
         "outFile": "out/feng3d.js",
     },
+    "references": [
+        {
+            "path": "packages/event/tsconfig.namespace.json",
+            "prepend": true
+        }
+    ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        // 事件模块
-        "src/event/AnyEmitter.ts",
-        "src/event/EventEmitter.ts",
-        "src/event/GlobalEmitter.ts",
-        "src/event/IEvent.ts",
-        "src/event/IEventListener.ts",
-        "src/event/IEventTarget.ts",
-        "src/event/ObjectEmitter.ts",
         //
         "src/bezier/EquationSolving.ts",
         "src/bezier/HighFunction.ts",
