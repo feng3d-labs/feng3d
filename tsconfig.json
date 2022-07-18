@@ -43,79 +43,14 @@
             "path": "packages/serialization/tsconfig.json",
             "prepend": true
         },
+        {
+            "path": "packages/math/tsconfig.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        // 数学相关程序
-        // 函数方程
-        //
-        "src/math/enums/CoordinateSystem.ts",
-        "src/math/enums/RotationOrder.ts",
-        "src/math/enums/PlaneClassification.ts",
-        // 颜色
-        "src/math/Color3.ts",
-        "src/math/Color4.ts",
-        // 几何运算
-        "src/math/geom/Vector.ts",
-        "src/math/geom/Vector2.ts",
-        "src/math/geom/Vector3.ts",
-        "src/math/geom/Vector4.ts",
-        "src/math/geom/Euler.ts",
-        "src/math/geom/Rectangle.ts",
-        "src/math/geom/Matrix3x3.ts",
-        "src/math/geom/Matrix4x4.ts",
-        "src/math/geom/Quaternion.ts",
-        "src/math/geom/Line3.ts",
-        "src/math/geom/Segment3.ts",
-        "src/math/geom/Ray3.ts",
-        "src/math/geom/Triangle3.ts",
-        "src/math/geom/Box3.ts",
-        "src/math/geom/Sphere.ts",
-        "src/math/geom/Plane.ts",
-        "src/math/geom/Frustum.ts",
-        "src/math/geom/TriangleGeometry.ts",
-        // 颜色渐变
-        "src/math/gradient/GradientMode.ts",
-        "src/math/gradient/GradientAlphaKey.ts",
-        "src/math/gradient/GradientColorKey.ts",
-        "src/math/gradient/Gradient.ts",
-        "src/math/gradient/MinMaxGradientMode.ts",
-        "src/math/gradient/MinMaxGradient.ts",
-        // 曲线
-        "src/math/curve/BezierCurve.ts",
-        "src/math/curve/AnimationCurveKeyframe.ts",
-        "src/math/curve/WrapMode.ts",
-        "src/math/curve/AnimationCurve.ts",
-        "src/math/curve/MinMaxCurveMode.ts",
-        "src/math/curve/MinMaxCurve.ts",
-        "src/math/curve/MinMaxCurveVector3.ts",
-        // 形状
-        "src/math/shape/Earcut.ts",
-        "src/math/shape/ShapeUtils.ts",
-        //
-        "src/math/shape/core/Interpolations.ts",
-        "src/math/shape/core/Curve.ts",
-        "src/math/shape/core/CurvePath.ts",
-        "src/math/shape/core/Path2.ts",
-        "src/math/shape/core/Shape2.ts",
-        "src/math/shape/core/ShapePath2.ts",
-        "src/math/shape/core/Font.ts",
-        //
-        "src/math/shape/curves/LineCurve2.ts",
-        "src/math/shape/curves/LineCurve3.ts",
-        "src/math/shape/curves/SplineCurve2.ts",
-        "src/math/shape/curves/EllipseCurve2.ts",
-        "src/math/shape/curves/ArcCurve2.ts",
-        "src/math/shape/curves/CatmullRomCurve3.ts",
-        "src/math/shape/curves/CubicBezierCurve2.ts",
-        "src/math/shape/curves/CubicBezierCurve3.ts",
-        "src/math/shape/curves/QuadraticBezierCurve2.ts",
-        "src/math/shape/curves/QuadraticBezierCurve3.ts",
-        //
-        "src/math/Noise.ts",
-        "src/math/MathF.ts",
-        "src/math/Time.ts",
         //
         "src/filesystem/global.ts",
         "src/filesystem/FS.ts",
@@ -412,8 +347,6 @@
         "src/assets/assets/GeometryAsset.ts",
         "src/assets/assets/MaterialAsset.ts",
         "src/assets/assets/GameObjectAsset.ts",
-        //
-        "src/math/buildLineGeometry.ts",
         //
         "src/ui/enums/UIRenderMode.ts",
         //
