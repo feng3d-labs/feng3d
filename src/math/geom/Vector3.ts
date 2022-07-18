@@ -350,7 +350,7 @@ namespace feng3d
         {
             let length = this.lengthSquared;
 
-            if (length > mathUtil.PRECISION)
+            if (length > 0)
             {
                 length = Math.sqrt(length);
                 const invLength = thickness / length;
