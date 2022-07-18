@@ -31,12 +31,14 @@
             "path": "packages/polyfill/tsconfig.namespace.json",
             "prepend": true
         },
+        {
+            "path": "packages/task/tsconfig.namespace.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        //
-        "src/task/Task.ts",
         //
         "src/watcher/Watcher.ts",
         //
