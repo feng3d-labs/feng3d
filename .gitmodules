@@ -13,3 +13,6 @@
 [submodule "packages/task"]
 	path = packages/task
 	url = https://gitlab.com/feng3d/task.git
+[submodule "packages/watcher"]
+	path = packages/watcher
+	url = https://gitlab.com/feng3d/watcher.git

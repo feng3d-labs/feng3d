@@ -35,12 +35,14 @@
             "path": "packages/task/tsconfig.namespace.json",
             "prepend": true
         },
+        {
+            "path": "packages/watcher/tsconfig.namespace.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        //
-        "src/watcher/Watcher.ts",
         //
         "src/serialization/Serialization.ts",
         // 数学相关程序
