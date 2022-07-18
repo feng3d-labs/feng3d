@@ -55,50 +55,14 @@
             "path": "packages/shortcut/tsconfig.json",
             "prepend": true
         },
+        {
+            "path": "packages/renderer/tsconfig.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        //
-        "src/renderer/gl/enums/RenderMode.ts",
-        "src/renderer/gl/enums/TextureType.ts",
-        "src/renderer/gl/enums/BlendEquation.ts",
-        "src/renderer/gl/enums/BlendFactor.ts",
-        "src/renderer/gl/enums/CullFace.ts",
-        "src/renderer/gl/enums/ColorMask.ts",
-        "src/renderer/gl/enums/FrontFace.ts",
-        "src/renderer/gl/enums/TextureFormat.ts",
-        "src/renderer/gl/enums/TextureDataType.ts",
-        "src/renderer/gl/enums/TextureMinFilter.ts",
-        "src/renderer/gl/enums/TextureMagFilter.ts",
-        "src/renderer/gl/enums/TextureWrap.ts",
-        "src/renderer/gl/enums/GLArrayType.ts",
-        "src/renderer/gl/enums/AttributeUsage.ts",
-        "src/renderer/gl/enums/DepthFunc.ts",
-        "src/renderer/gl/enums/StencilFunc.ts",
-        "src/renderer/gl/enums/StencilOp.ts",
-        "src/renderer/gl/GL.ts",
-        "src/renderer/gl/GLCache.ts",
-        "src/renderer/gl/GLExtension.ts",
-        "src/renderer/gl/GLCapabilities.ts",
-        //
-        "src/renderer/data/Uniform.ts",
-        "src/renderer/data/Shader.ts",
-        "src/renderer/data/RenderParams.ts",
-        "src/renderer/data/RenderAtomic.ts",
-        "src/renderer/data/Index.ts",
-        "src/renderer/data/Attribute.ts",
-        "src/renderer/data/Attributes.ts",
-        "src/renderer/data/Texture.ts",
-        "src/renderer/data/FrameBuffer.ts",
-        //
-        "src/renderer/RenderBuffer.ts",
-        //
-        "src/renderer/shader/ShaderMacroUtils.ts",
-        "src/renderer/shader/Macro.ts",
-        "src/renderer/shader/ShaderLib.ts",
-        //
-        "src/renderer/WebGLRenderer.ts",
         //
         "src/Menu.ts",
         // 自动生成文件
