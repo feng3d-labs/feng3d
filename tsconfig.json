@@ -12,7 +12,7 @@
             "ES2015",
             "DOM",
         ],
-        "outFile": "out/feng3d.js",
+        "outFile": "dist/index.js",
     },
     "references": [
         {
@@ -71,41 +71,16 @@
             "path": "packages/particlesystem",
             "prepend": true
         },
+        {
+            "path": "packages/assets",
+            "prepend": true
+        },
+        {
+            "path": "packages/parsers",
+            "prepend": true
+        },
     ],
     "files": [
-        // 模型解析
-        "src/assets/parsers/OBJParser.ts",
-        "src/assets/parsers/MTLParser.ts",
-        "src/assets/parsers/MD5MeshParser.ts",
-        "src/assets/parsers/MD5AnimParser.ts",
-        //war3模型
-        "src/assets/parsers/mdl/MdlModel.ts",
-        "src/assets/parsers/mdl/War3Model.ts",
-        "src/assets/parsers/MDLParser.ts",
-        //
-        "src/assets/converters/MTLConverter.ts",
-        "src/assets/converters/OBJConverter.ts",
-        "src/assets/converters/MD5MeshConverter.ts",
-        "src/assets/converters/MD5AnimConverter.ts",
-        //
-        "src/assets/loader/MTLLoader.ts",
-        "src/assets/loader/OBJLoader.ts",
-        "src/assets/loader/MD5Loader.ts",
-        "src/assets/loader/MDLLoader.ts",
-        // assets
-        "src/assets/ArrayBufferAsset.ts",
-        "src/assets/assets/TextAsset.ts",
-        "src/assets/ObjectAsset.ts",
-        "src/assets/assets/ScriptAsset.ts",
-        "src/assets/assets/ShaderAsset.ts",
-        "src/assets/assets/JSAsset.ts",
-        "src/assets/assets/JsonAsset.ts",
-        "src/assets/assets/AudioAsset.ts",
-        "src/assets/assets/TextureAsset.ts",
-        "src/assets/assets/TextureCubeAsset.ts",
-        "src/assets/assets/GeometryAsset.ts",
-        "src/assets/assets/MaterialAsset.ts",
-        "src/assets/assets/GameObjectAsset.ts",
         //
         "src/ui/enums/UIRenderMode.ts",
         //
@@ -126,8 +101,6 @@
         "src/ui/text/TextStyle.ts",
         "src/ui/text/TextMetrics.ts",
         "src/ui/Text.ts",
-        //
-        "src/MixinsGlobalEvents.ts",
         //
         "src/Feng3d.ts",
     ]

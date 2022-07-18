@@ -40,3 +40,9 @@
 [submodule "packages/particlesystem"]
 	path = packages/particlesystem
 	url = https://gitlab.com/feng3d/particlesystem.git
+[submodule "packages/assets"]
+	path = packages/assets
+	url = https://gitlab.com/feng3d/assets.git
+[submodule "packages/parsers"]
+	path = packages/parsers
+	url = https://gitlab.com/feng3d/parsers.git
