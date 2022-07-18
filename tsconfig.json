@@ -18,15 +18,15 @@
         {
             "path": "packages/event/tsconfig.namespace.json",
             "prepend": true
-        }
+        },
+        {
+            "path": "packages/bezier/tsconfig.namespace.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        //
-        "src/bezier/EquationSolving.ts",
-        "src/bezier/HighFunction.ts",
-        "src/bezier/Bezier.ts",
         //
         "src/objectview/ObjectView.ts",
         //
