@@ -51,18 +51,14 @@
             "path": "packages/filesystem/tsconfig.json",
             "prepend": true
         },
+        {
+            "path": "packages/shortcut/tsconfig.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
         "src/menu/CreateNodeMenu.ts",
-        // 快捷键
-        "src/shortcut/EventProxy.ts",
-        "src/shortcut/WindowEventProxy.ts",
-        "src/shortcut/Keyboard.ts",
-        "src/shortcut/handle/KeyCapture.ts",
-        "src/shortcut/handle/KeyState.ts",
-        "src/shortcut/handle/ShortCutCapture.ts",
-        "src/shortcut/ShortCut.ts",
         //
         "src/renderer/gl/enums/RenderMode.ts",
         "src/renderer/gl/enums/TextureType.ts",

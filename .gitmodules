@@ -25,3 +25,6 @@
 [submodule "packages/filesystem"]
 	path = packages/filesystem
 	url = https://gitlab.com/feng3d/filesystem.git
+[submodule "packages/shortcut"]
+	path = packages/shortcut
+	url = https://gitlab.com/feng3d/shortcut.git
