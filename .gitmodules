@@ -46,3 +46,6 @@
 [submodule "packages/parsers"]
 	path = packages/parsers
 	url = https://gitlab.com/feng3d/parsers.git
+[submodule "packages/ui"]
+	path = packages/ui
+	url = https://gitlab.com/feng3d/ui.git
