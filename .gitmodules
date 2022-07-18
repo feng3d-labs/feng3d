@@ -31,3 +31,6 @@
 [submodule "packages/renderer"]
 	path = packages/renderer
 	url = https://gitlab.com/feng3d/renderer.git
+[submodule "packages/core"]
+	path = packages/core
+	url = https://gitlab.com/feng3d/core.git
