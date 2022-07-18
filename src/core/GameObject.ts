@@ -1,6 +1,5 @@
 namespace feng3d
 {
-    export type Constructor<T> = (new (...args) => T);
 
     export interface GameObjectEventMap extends MouseEventMap, Feng3dObjectEventMap
     {

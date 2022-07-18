@@ -7,3 +7,6 @@
 [submodule "packages/objectview"]
 	path = packages/objectview
 	url = https://gitlab.com/feng3d/objectview.git
+[submodule "packages/polyfill"]
+	path = packages/polyfill
+	url = https://gitlab.com/feng3d/polyfill.git

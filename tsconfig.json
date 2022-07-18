@@ -27,6 +27,10 @@
             "path": "packages/objectview/tsconfig.namespace.json",
             "prepend": true
         },
+        {
+            "path": "packages/polyfill/tsconfig.namespace.json",
+            "prepend": true
+        },
     ],
     "files": [
         //
@@ -35,16 +39,6 @@
         "src/task/Task.ts",
         //
         "src/watcher/Watcher.ts",
-        // Polyfill
-        "src/polyfill/global.ts",
-        "src/polyfill/Types.ts",
-        "src/polyfill/Array.ts",
-        "src/polyfill/ObjectUtils.ts",
-        "src/polyfill/ArrayUtils.ts",
-        "src/polyfill/ClassUtils.ts",
-        "src/polyfill/DataTransform.ts",
-        "src/polyfill/MapUtils.ts",
-        "src/polyfill/MathUtil.ts",
         //
         "src/serialization/Serialization.ts",
         // 数学相关程序
