@@ -16,61 +16,59 @@
     },
     "references": [
         {
-            "path": "packages/event/tsconfig.json",
+            "path": "packages/event",
             "prepend": true
         },
         {
-            "path": "packages/bezier/tsconfig.json",
+            "path": "packages/bezier",
             "prepend": true
         },
         {
-            "path": "packages/objectview/tsconfig.json",
+            "path": "packages/objectview",
             "prepend": true
         },
         {
-            "path": "packages/polyfill/tsconfig.json",
+            "path": "packages/polyfill",
             "prepend": true
         },
         {
-            "path": "packages/task/tsconfig.json",
+            "path": "packages/task",
             "prepend": true
         },
         {
-            "path": "packages/watcher/tsconfig.json",
+            "path": "packages/watcher",
             "prepend": true
         },
         {
-            "path": "packages/serialization/tsconfig.json",
+            "path": "packages/serialization",
             "prepend": true
         },
         {
-            "path": "packages/math/tsconfig.json",
+            "path": "packages/math",
             "prepend": true
         },
         {
-            "path": "packages/filesystem/tsconfig.json",
+            "path": "packages/filesystem",
             "prepend": true
         },
         {
-            "path": "packages/shortcut/tsconfig.json",
+            "path": "packages/shortcut",
             "prepend": true
         },
         {
-            "path": "packages/renderer/tsconfig.json",
+            "path": "packages/renderer",
             "prepend": true
         },
         {
-            "path": "packages/core/tsconfig.json",
+            "path": "packages/core",
+            "prepend": true
+        },
+        {
+            "path": "packages/terrain",
             "prepend": true
         },
     ],
     "files": [
-        //地形
-        "src/terrain/TerrainGeometry.ts",
-        "src/terrain/TerrainMaterial.ts",
-        "src/terrain/TerrainMergeMethod.ts",
-        "src/terrain/TerrainData.ts",
-        "src/terrain/Terrain.ts",
         //粒子系统
         "src/animators/particle/Particle.ts",
         "src/animators/particle/ParticlesAdditive.shader.ts",
