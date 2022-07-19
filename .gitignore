@@ -5,3 +5,4 @@
 *.tsbuildinfo
 /out
 /test/out
+/dist
