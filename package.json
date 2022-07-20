@@ -12,6 +12,9 @@
     "shaderpack": "node shaderpack.js",
     "shaderpack:w": "node shaderpack.js -w"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "files": [
     "out",
     "src"

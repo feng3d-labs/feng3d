@@ -16,10 +16,6 @@
     },
     "references": [
         {
-            "path": "packages/math",
-            "prepend": true
-        },
-        {
             "path": "packages/filesystem",
             "prepend": true
         },
@@ -65,6 +61,7 @@
         "packages/task/index.d.ts",
         "packages/watcher/index.d.ts",
         "packages/serialization/index.d.ts",
+        "packages/math/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
