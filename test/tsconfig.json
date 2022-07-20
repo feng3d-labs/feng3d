@@ -20,6 +20,9 @@
     ],
     "include": [
         //
+        "../packages/event/index.d.ts",
+        "../packages/bezier/index.d.ts",
+        //
         "libs/qunit/qunit.d.ts",
         //
         "src/**/*.ts"

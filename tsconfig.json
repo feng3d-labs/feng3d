@@ -16,14 +16,6 @@
     },
     "references": [
         {
-            "path": "packages/event",
-            "prepend": true
-        },
-        {
-            "path": "packages/bezier",
-            "prepend": true
-        },
-        {
             "path": "packages/objectview",
             "prepend": true
         },
@@ -85,6 +77,9 @@
         },
     ],
     "files": [
+        //
+        "packages/event/index.d.ts",
+        "packages/bezier/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
