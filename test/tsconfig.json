@@ -22,6 +22,7 @@
         //
         "../packages/event/index.d.ts",
         "../packages/bezier/index.d.ts",
+        "../packages/polyfill/index.d.ts",
         //
         "libs/qunit/qunit.d.ts",
         //

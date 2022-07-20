@@ -20,10 +20,6 @@
             "prepend": true
         },
         {
-            "path": "packages/polyfill",
-            "prepend": true
-        },
-        {
             "path": "packages/task",
             "prepend": true
         },
@@ -80,6 +76,7 @@
         //
         "packages/event/index.d.ts",
         "packages/bezier/index.d.ts",
+        "packages/polyfill/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
