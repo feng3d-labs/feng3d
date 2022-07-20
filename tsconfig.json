@@ -16,10 +16,6 @@
     },
     "references": [
         {
-            "path": "packages/watcher",
-            "prepend": true
-        },
-        {
             "path": "packages/serialization",
             "prepend": true
         },
@@ -71,6 +67,7 @@
         "packages/polyfill/index.d.ts",
         "packages/objectview/index.d.ts",
         "packages/task/index.d.ts",
+        "packages/watcher/index.d.ts",
         //
         "src/Feng3d.ts",
     ]

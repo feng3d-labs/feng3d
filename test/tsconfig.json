@@ -24,6 +24,7 @@
         "../packages/bezier/index.d.ts",
         "../packages/polyfill/index.d.ts",
         "../packages/task/index.d.ts",
+        "../packages/watcher/index.d.ts",
         //
         "libs/qunit/qunit.d.ts",
         //
