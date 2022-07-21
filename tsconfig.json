@@ -14,12 +14,6 @@
         ],
         "outFile": "dist/index.js",
     },
-    "references": [
-        {
-            "path": "packages/ui",
-            "prepend": true
-        },
-    ],
     "files": [
         //
         "packages/event/index.d.ts",
@@ -38,6 +32,7 @@
         "packages/particlesystem/index.d.ts",
         "packages/assets/index.d.ts",
         "packages/parsers/index.d.ts",
+        // "packages/ui/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
