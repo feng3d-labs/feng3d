@@ -8,6 +8,7 @@
   "types": "dist/index.d.ts",
   "author": "feng",
   "license": "MIT",
+  "standalone": true,
   "scripts": {
     "start": "npm run watch",
     "clean": "rimraf \"{lib,dist}\"",
