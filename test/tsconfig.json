@@ -27,6 +27,7 @@
         "../packages/watcher/index.d.ts",
         "../packages/serialization/index.d.ts",
         "../packages/math/index.d.ts",
+        "../packages/filesystem/index.d.ts",
         //
         "libs/qunit/qunit.d.ts",
         //

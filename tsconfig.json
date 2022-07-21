@@ -16,10 +16,6 @@
     },
     "references": [
         {
-            "path": "packages/filesystem",
-            "prepend": true
-        },
-        {
             "path": "packages/renderer",
             "prepend": true
         },
@@ -59,6 +55,7 @@
         "packages/serialization/index.d.ts",
         "packages/math/index.d.ts",
         "packages/shortcut/index.d.ts",
+        "packages/filesystem/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
