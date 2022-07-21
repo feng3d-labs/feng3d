@@ -16,10 +16,6 @@
     },
     "references": [
         {
-            "path": "packages/terrain",
-            "prepend": true
-        },
-        {
             "path": "packages/particlesystem",
             "prepend": true
         },
@@ -50,6 +46,7 @@
         "packages/filesystem/index.d.ts",
         "packages/renderer/index.d.ts",
         "packages/core/index.d.ts",
+        "packages/terrain/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
