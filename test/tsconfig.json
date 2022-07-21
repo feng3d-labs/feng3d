@@ -28,6 +28,7 @@
         "../packages/serialization/index.d.ts",
         "../packages/math/index.d.ts",
         "../packages/filesystem/index.d.ts",
+        "../packages/core/index.d.ts",
         //
         "libs/qunit/qunit.d.ts",
         //

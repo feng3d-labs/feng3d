@@ -16,10 +16,6 @@
     },
     "references": [
         {
-            "path": "packages/core",
-            "prepend": true
-        },
-        {
             "path": "packages/terrain",
             "prepend": true
         },
@@ -53,6 +49,7 @@
         "packages/shortcut/index.d.ts",
         "packages/filesystem/index.d.ts",
         "packages/renderer/index.d.ts",
+        "packages/core/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
