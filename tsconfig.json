@@ -20,10 +20,6 @@
             "prepend": true
         },
         {
-            "path": "packages/shortcut",
-            "prepend": true
-        },
-        {
             "path": "packages/renderer",
             "prepend": true
         },
@@ -62,6 +58,7 @@
         "packages/watcher/index.d.ts",
         "packages/serialization/index.d.ts",
         "packages/math/index.d.ts",
+        "packages/shortcut/index.d.ts",
         //
         "src/Feng3d.ts",
     ]
