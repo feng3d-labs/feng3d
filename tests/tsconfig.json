@@ -13,23 +13,8 @@
         // "outDir": "./debug"
         "outFile": "./out/tests.js"
     },
-    "references": [
-        {
-            "path": "..",
-        },
-    ],
     "include": [
-        //
-        "../packages/event/index.d.ts",
-        "../packages/bezier/index.d.ts",
-        "../packages/polyfill/index.d.ts",
-        "../packages/task/index.d.ts",
-        "../packages/watcher/index.d.ts",
-        "../packages/serialization/index.d.ts",
-        "../packages/math/index.d.ts",
-        "../packages/filesystem/index.d.ts",
-        "../packages/renderer/index.d.ts",
-        "../packages/core/index.d.ts",
+        "../index.d.ts",
         //
         "libs/qunit/qunit.d.ts",
         //
