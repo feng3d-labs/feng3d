@@ -58,10 +58,10 @@
   },
   "dependencies": {
     "@feng3d/event": "^0.4.2",
-    "@feng3d/bezier": "^0.4.3",
+    "@feng3d/bezier": "^0.4.1",
     "@feng3d/polyfill": "^0.4.3",
     "@feng3d/objectview": "^0.4.2",
-    "@feng3d/task": "^0.4.2",
+    "@feng3d/task": "^0.4.1",
     "@feng3d/watcher": "^0.4.11",
     "@feng3d/serialization": "^0.4.1",
     "@feng3d/math": "^0.4.1",
