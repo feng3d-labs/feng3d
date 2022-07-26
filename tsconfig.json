@@ -1,91 +1,25 @@
 {
     "compilerOptions": {
         "target": "ES5",
+        "module": "CommonJS",
         "noImplicitAny": false,
         "sourceMap": true,
         "declarationMap": true,
         "declaration": true,
-        "composite": true,
-        "skipLibCheck": true,
         "experimentalDecorators": true,
         "lib": [
             "ES2015",
             "DOM",
         ],
-        "outFile": "dist/index.js",
+        "outDir": "lib"
     },
-    "references": [
-        {
-            "path": "packages/event",
-            "prepend": true
-        },
-        {
-            "path": "packages/bezier",
-            "prepend": true
-        },
-        {
-            "path": "packages/objectview",
-            "prepend": true
-        },
-        {
-            "path": "packages/polyfill",
-            "prepend": true
-        },
-        {
-            "path": "packages/task",
-            "prepend": true
-        },
-        {
-            "path": "packages/watcher",
-            "prepend": true
-        },
-        {
-            "path": "packages/serialization",
-            "prepend": true
-        },
-        {
-            "path": "packages/math",
-            "prepend": true
-        },
-        {
-            "path": "packages/filesystem",
-            "prepend": true
-        },
-        {
-            "path": "packages/shortcut",
-            "prepend": true
-        },
-        {
-            "path": "packages/renderer",
-            "prepend": true
-        },
-        {
-            "path": "packages/core",
-            "prepend": true
-        },
-        {
-            "path": "packages/terrain",
-            "prepend": true
-        },
-        {
-            "path": "packages/particlesystem",
-            "prepend": true
-        },
-        {
-            "path": "packages/assets",
-            "prepend": true
-        },
-        {
-            "path": "packages/parsers",
-            "prepend": true
-        },
-        {
-            "path": "packages/ui",
-            "prepend": true
-        },
+    "include": [
+        "src/**/*.ts"
     ],
-    "files": [
-        //
-        "src/Feng3d.ts",
-    ]
+    "ts-node": {
+        "files": true,
+        "compilerOptions": {
+            "esModuleInterop": true
+        }
+    }
 }

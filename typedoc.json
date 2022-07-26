@@ -1,0 +1,10 @@
+{
+    "name": "feng3d",
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "disableSources": true,
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/feng3d/tree/master/src/",
+    "out": "public"
+}
