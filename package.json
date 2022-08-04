@@ -74,7 +74,6 @@
     "@feng3d/renderer": "^0.5.0",
     "@feng3d/serialization": "^0.5.0",
     "@feng3d/shortcut": "^0.5.0",
-    "@feng3d/task": "^0.5.0",
     "@feng3d/terrain": "^0.5.0",
     "@feng3d/ui": "^0.5.0",
     "@feng3d/watcher": "^0.5.0"
