@@ -12,14 +12,14 @@
   "scripts": {
     "start": "npm run watch",
     "clean": "rimraf \"{lib,dist}\"",
-    "build": "npm run clean && rollup -c",
-    "build:prod": "npm run clean && cross-env NODE_ENV=production rollup -c",
+    "build": "rollup -c",
+    "build:prod": "cross-env NODE_ENV=production rollup -c",
     "watch": "rollup -cw",
     "test": "mocha",
     "lint": "eslint --ext .js --ext .ts src test rollup.config.js --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc",
-    "release": "npm run build:prod && npm publish"
+    "release": "npm run clean && npm run build:prod && npm publish"
   },
   "repository": {
     "type": "git",
