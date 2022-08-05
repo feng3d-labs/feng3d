@@ -12,7 +12,6 @@ export * from '@feng3d/polyfill';
 export * from '@feng3d/renderer';
 export * from '@feng3d/serialization';
 export * from '@feng3d/shortcut';
-export * from '@feng3d/task';
 export * from '@feng3d/terrain';
 export * from '@feng3d/ui';
 export * from '@feng3d/watcher';
