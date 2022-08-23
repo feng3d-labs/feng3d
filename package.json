@@ -67,7 +67,6 @@
     "@feng3d/filesystem": "^0.5.0",
     "@feng3d/math": "^0.5.0",
     "@feng3d/objectview": "^0.5.0",
-    "@feng3d/parsers": "^0.5.0",
     "@feng3d/particlesystem": "^0.5.0",
     "@feng3d/path": "^0.0.3",
     "@feng3d/polyfill": "^0.5.0",

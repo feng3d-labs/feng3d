@@ -5,7 +5,6 @@ export * from '@feng3d/event';
 export * from '@feng3d/filesystem';
 export * from '@feng3d/math';
 export * from '@feng3d/objectview';
-export * from '@feng3d/parsers';
 export * from '@feng3d/particlesystem';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
