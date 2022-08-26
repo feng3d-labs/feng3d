@@ -3,8 +3,8 @@
   "version": "0.6.0",
   "description": "webgl 3d engine",
   "standalone": true,
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "module": "lib/index.es.js",
   "bundle": "dist/index.js",
   "bundle:types": "dist/index.d.ts",
@@ -22,7 +22,9 @@
     "lint": "eslint --ext .js --ext .ts src test rollup.config.js --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc",
-    "release": "npm run clean && npm run build:prod && npm publish"
+    "release": "npm run clean && npm run build:prod && npm publish",
+    "prepublishOnly": "node scripts/prepublish.js",
+    "postpublish": "node scripts/postpublish.js"
   },
   "repository": {
     "type": "git",
