@@ -68,7 +68,7 @@
     "@feng3d/assets": "^0.6.0",
     "@feng3d/bezier": "^0.6.0",
     "@feng3d/core": "^0.6.0",
-    "@feng3d/event": "^0.6.0",
+    "@feng3d/event": "^0.6.4",
     "@feng3d/filesystem": "^0.6.0",
     "@feng3d/math": "^0.6.0",
     "@feng3d/objectview": "^0.6.0",
