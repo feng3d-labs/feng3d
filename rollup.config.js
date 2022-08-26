@@ -73,8 +73,8 @@ async function main()
         bundleOutput,
         bundleNoExports,
         standalone,
-        types,
     } = pkg;
+    const types = pkg['bundle:types'];
     const freeze = false;
 
     results.push({
