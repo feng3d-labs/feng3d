@@ -5,7 +5,7 @@
   "standalone": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "module": "lib/index.es.js",
+  "module": "src/index.ts",
   "bundle": "dist/index.js",
   "bundle:types": "dist/index.d.ts",
   "author": "feng",
