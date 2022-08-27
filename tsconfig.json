@@ -8,7 +8,6 @@
         "declaration": true,
         "experimentalDecorators": true,
         "emitDeclarationOnly": true,
-        "composite": true,
         "lib": [
             "ES2015",
             "DOM",
