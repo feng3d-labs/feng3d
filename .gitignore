@@ -5,3 +5,4 @@ lib
 public
 out
 package-lock.json
+.lib
