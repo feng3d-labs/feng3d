@@ -1,0 +1,8 @@
+{
+    "name": "@feng3d/ui",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/ui/tree/master/src/",
+    "out": "public"
+}

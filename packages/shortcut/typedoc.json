@@ -1,0 +1,8 @@
+{
+    "name": "@feng3d/shortcut",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/shortcut/tree/master/src/",
+    "out": "public"
+}

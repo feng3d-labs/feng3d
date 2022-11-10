@@ -1,0 +1,13 @@
+{
+  "name": "@feng3d/renderer",
+  "private": true,
+  "author": "feng",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "typescript": "4.8.4",
+    "vite": "^3.0.7"
+  }
+}

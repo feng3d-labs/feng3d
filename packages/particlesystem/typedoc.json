@@ -1,0 +1,8 @@
+{
+    "name": "@feng3d/particlesystem",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/particlesystem/tree/master/src/",
+    "out": "public"
+}
