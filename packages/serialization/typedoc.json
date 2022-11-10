@@ -1,0 +1,8 @@
+{
+    "name": "@feng3d/serialization",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/serialization/tree/master/src/",
+    "out": "public"
+}

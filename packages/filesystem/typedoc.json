@@ -1,0 +1,8 @@
+{
+    "name": "@feng3d/filesystem",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/filesystem/tree/master/src/",
+    "out": "public"
+}

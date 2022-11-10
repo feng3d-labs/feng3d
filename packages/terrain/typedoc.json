@@ -1,0 +1,8 @@
+{
+    "name": "@feng3d/terrain",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/terrain/tree/master/src/",
+    "out": "public"
+}
