@@ -1,0 +1,33 @@
+{
+  "name": "feng3d-monorepo",
+  "private": true,
+  "author": "feng",
+  "license": "ISC",
+  "scripts": {
+    "init": "npm run submodule && pnpm i && npm run build",
+    "clean": "pnpm run -r clean --parallel --stream",
+    "build": "pnpm run -r build --stream",
+    "watch": "pnpm run -r watch --parallel --stream",
+    "build:tsc": "tsc -b -w",
+    "test": "pnpm run -r test --parallel --stream",
+    "build:prod": "pnpm run -r build:prod --stream",
+    "lint": "pnpm run -r lint --parallel --stream",
+    "lintfix": "pnpm run -r lintfix --parallel --stream",
+    "submodule": "git submodule update --progress --init --recursive",
+    "updateGit": "git.exe fetch --progress -v \"origin\" && npm run submodule",
+    "version": "lerna version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/feng3d/feng3d.git"
+  },
+  "devDependencies": {
+    "typescript": "4.8.4",
+    "lerna": "^5.4.3"
+  },
+  "workspaces": [
+    "packages/*",
+    "packages/@feng3d/*",
+    "packages/@feng3d-plugins/*"
+  ]
+}

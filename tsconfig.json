@@ -1,0 +1,71 @@
+{
+  "references": [
+    {
+      "path": "./packages/feng3d"
+    },
+    {
+      "path": "./packages/examples"
+    },
+    {
+      "path": "./packages/editor"
+    },
+    {
+      "path": "./packages/@feng3d/assets"
+    },
+    {
+      "path": "./packages/@feng3d/bezier"
+    },
+    {
+      "path": "./packages/@feng3d/core"
+    },
+    {
+      "path": "./packages/@feng3d/ecs"
+    },
+    {
+      "path": "./packages/@feng3d/event"
+    },
+    {
+      "path": "./packages/@feng3d/filesystem"
+    },
+    {
+      "path": "./packages/@feng3d/math"
+    },
+    {
+      "path": "./packages/@feng3d/objectview"
+    },
+    {
+      "path": "./packages/@feng3d/particlesystem"
+    },
+    {
+      "path": "./packages/@feng3d/polyfill"
+    },
+    {
+      "path": "./packages/@feng3d/renderer"
+    },
+    {
+      "path": "./packages/@feng3d/serialization"
+    },
+    {
+      "path": "./packages/@feng3d/shortcut"
+    },
+    {
+      "path": "./packages/@feng3d/terrain"
+    },
+    {
+      "path": "./packages/@feng3d/ui"
+    },
+    {
+      "path": "./packages/@feng3d/watcher"
+    },
+    {
+      "path": "./packages/@feng3d-plugins/cannon"
+    },
+    {
+      "path": "./packages/@feng3d-plugins/cannon-plugin"
+    },
+    {
+      "path": "./packages/@feng3d-plugins/threejsloader"
+    },
+  ],
+  "include": []
+}
