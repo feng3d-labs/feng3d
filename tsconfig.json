@@ -1,13 +1,7 @@
 {
   "references": [
     {
-      "path": "./packages/feng3d"
-    },
-    {
-      "path": "./packages/examples"
-    },
-    {
-      "path": "./packages/editor"
+      "path": "./bundles/feng3d"
     },
     {
       "path": "./packages/@feng3d/assets"
@@ -56,15 +50,6 @@
     },
     {
       "path": "./packages/@feng3d/watcher"
-    },
-    {
-      "path": "./packages/@feng3d-plugins/cannon"
-    },
-    {
-      "path": "./packages/@feng3d-plugins/cannon-plugin"
-    },
-    {
-      "path": "./packages/@feng3d-plugins/threejsloader"
     },
   ],
   "include": []

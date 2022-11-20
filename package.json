@@ -27,7 +27,6 @@
   },
   "workspaces": [
     "packages/*",
-    "packages/@feng3d/*",
-    "packages/@feng3d-plugins/*"
+    "bundles/*"
   ]
 }
