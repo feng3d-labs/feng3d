@@ -74,7 +74,7 @@ async function main()
     } = pkg;
     const types = pkg['bundle:types'];
     const main = './lib/index.js';
-    const module = '.lib/index.es.js';
+    const module = './lib/index.es.js';
     const freeze = false;
 
     results.push({
