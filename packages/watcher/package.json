@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/watcher",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "对象属性监听器",
   "main": "src/index.ts",
   "types": "src/index.ts",

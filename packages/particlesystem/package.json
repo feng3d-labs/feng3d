@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/particlesystem",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "粒子系统",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -64,14 +64,14 @@
     "typescript": "4.8.4"
   },
   "dependencies": {
-    "@feng3d/core": "^0.7.1",
-    "@feng3d/event": "^0.7.1",
-    "@feng3d/filesystem": "^0.7.1",
-    "@feng3d/math": "^0.7.1",
-    "@feng3d/objectview": "^0.7.1",
-    "@feng3d/polyfill": "^0.7.1",
-    "@feng3d/renderer": "^0.7.1",
-    "@feng3d/serialization": "^0.7.1",
-    "@feng3d/watcher": "^0.7.1"
+    "@feng3d/core": "^0.7.2",
+    "@feng3d/event": "^0.7.2",
+    "@feng3d/filesystem": "^0.7.2",
+    "@feng3d/math": "^0.7.2",
+    "@feng3d/objectview": "^0.7.2",
+    "@feng3d/polyfill": "^0.7.2",
+    "@feng3d/renderer": "^0.7.2",
+    "@feng3d/serialization": "^0.7.2",
+    "@feng3d/watcher": "^0.7.2"
   }
 }

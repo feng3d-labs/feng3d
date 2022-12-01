@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/ecs",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "实体组件系统",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -40,10 +40,10 @@
     "readme"
   ],
   "dependencies": {
-    "@feng3d/event": "^0.7.1",
-    "@feng3d/objectview": "^0.7.1",
-    "@feng3d/polyfill": "^0.7.1",
-    "@feng3d/serialization": "^0.7.1"
+    "@feng3d/event": "^0.7.2",
+    "@feng3d/objectview": "^0.7.2",
+    "@feng3d/polyfill": "^0.7.2",
+    "@feng3d/serialization": "^0.7.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "5.17.0",
