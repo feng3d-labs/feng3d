@@ -7,7 +7,7 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@feng3d/renderer": "0.7.1"
+    "@feng3d/renderer": "0.7.2"
   },
   "devDependencies": {
     "typescript": "4.8.4",
