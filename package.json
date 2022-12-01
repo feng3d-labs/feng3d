@@ -15,7 +15,8 @@
     "lintfix": "pnpm run -r lintfix --parallel --stream",
     "submodule": "git submodule update --progress --init --recursive",
     "updateGit": "git.exe fetch --progress -v \"origin\" && npm run submodule",
-    "version": "lerna version"
+    "version": "lerna version",
+    "release": "pnpm run -r release --stream"
   },
   "repository": {
     "type": "git",
