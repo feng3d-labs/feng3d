@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/objectview",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "ObjectView是feng3d中实现由数据对象自动生成界面的一套框架。",
   "main": "src/index.ts",
   "types": "src/index.ts",
