@@ -1,4 +1,4 @@
-import { RenderAtomic, WebGLRenderer } from '../../../src';
+import { RenderAtomic, WebGLRenderer } from '@feng3d/renderer';
 
 const webglcanvas = document.createElement('canvas');
 webglcanvas.id = 'glcanvas';

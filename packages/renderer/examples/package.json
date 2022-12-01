@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite"
   },
+  "dependencies": {
+    "@feng3d/renderer": "0.7.1"
+  },
   "devDependencies": {
     "typescript": "4.8.4",
     "vite": "^3.0.7"
