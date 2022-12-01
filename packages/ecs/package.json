@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/ecs.git"
+    "url": "https://gitee.com/feng3d/ecs.git"
   },
   "publishConfig": {
     "access": "public"

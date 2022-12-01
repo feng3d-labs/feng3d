@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/ui.git"
+    "url": "https://gitee.com/feng3d/ui.git"
   },
   "publishConfig": {
     "access": "public"

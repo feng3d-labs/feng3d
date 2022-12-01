@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/polyfill.git"
+    "url": "https://gitee.com/feng3d/polyfill.git"
   },
   "publishConfig": {
     "access": "public"

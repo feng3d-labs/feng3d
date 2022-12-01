@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/renderer.git"
+    "url": "https://gitee.com/feng3d/renderer.git"
   },
   "publishConfig": {
     "access": "public"

@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/watcher.git"
+    "url": "https://gitee.com/feng3d/watcher.git"
   },
   "publishConfig": {
     "access": "public"

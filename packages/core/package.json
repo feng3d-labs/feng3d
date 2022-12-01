@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/core.git"
+    "url": "https://gitee.com/feng3d/core.git"
   },
   "publishConfig": {
     "access": "public"

@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/serialization.git"
+    "url": "https://gitee.com/feng3d/serialization.git"
   },
   "publishConfig": {
     "access": "public"

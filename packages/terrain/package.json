@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/terrain.git"
+    "url": "https://gitee.com/feng3d/terrain.git"
   },
   "publishConfig": {
     "access": "public"

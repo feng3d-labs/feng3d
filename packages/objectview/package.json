@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/objectview.git"
+    "url": "https://gitee.com/feng3d/objectview.git"
   },
   "publishConfig": {
     "access": "public"

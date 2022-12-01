@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/feng3d.git"
+    "url": "https://gitee.com/feng3d/feng3d.git"
   },
   "devDependencies": {
     "typescript": "4.8.4",
