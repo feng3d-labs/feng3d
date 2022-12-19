@@ -194,7 +194,7 @@ export class ObjectView
 		}
 
 		const Cls = this.OVComponent[classConfig.component];
-		console.assert(Cls !== null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
+		console.assert(!!Cls, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
 		const view = new Cls(classConfig);
 
 		return view;
