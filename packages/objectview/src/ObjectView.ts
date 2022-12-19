@@ -177,7 +177,7 @@ export class ObjectView
 			v.itemList = v.itemList.filter((vv) => !vv.exclude);
 		});
 
-		classConfig.objectAttributeInfos.forEach((v) => { v.editable = v.editable && classConfig.editable; });
+		classConfig.objectAttributeInfos.forEach((v) => { v.editable = (v.editable && classConfig.editable); });
 
 		if (objectIsEmpty(classConfig.component) || classConfig.component === '')
 		{
