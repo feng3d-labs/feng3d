@@ -1,9 +1,8 @@
 import { FogMode, Material, Texture2D, TextureCube } from '@feng3d/core';
 import { Color3, Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderConfig } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
 
 declare global
 {
@@ -15,6 +14,18 @@ declare global
     export interface MixinsDefaultMaterial
     {
         'Terrain-Material': Material;
+    }
+}
+
+@decoratorRegisterClass()
+export class TerrainMaterial extends Material
+{
+    uniforms = new TerrainUniforms();
+
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'terrain';
     }
 }
 
@@ -165,4 +176,4 @@ export class TerrainUniforms
 
 shaderConfig.shaders['terrain'].cls = TerrainUniforms;
 
-Material.setDefault('Terrain-Material', { shaderName: 'terrain' as any });
+Material.setDefault('Terrain-Material', new TerrainMaterial());

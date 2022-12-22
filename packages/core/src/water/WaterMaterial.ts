@@ -1,8 +1,7 @@
 import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
 import { Material } from '../materials/Material';
 import { Texture2D } from '../textures/Texture2D';
 import waterFragment from './water_fragment_glsl';
@@ -10,11 +9,24 @@ import waterVertex from './water_vertex_glsl';
 
 declare global
 {
-    export interface MixinsUniformsTypes { water: WaterUniforms }
+    export interface MixinsMaterialMap
+    {
+        water: WaterMaterial
+    }
 
     export interface MixinsDefaultMaterial
     {
         'Water-Material': Material;
+    }
+}
+
+@decoratorRegisterClass()
+export class WaterMaterial extends Material
+{
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'water';
     }
 }
 
@@ -69,4 +81,4 @@ shaderlib.shaderConfig.shaders.water = {
     cls: WaterUniforms
 };
 
-Material.setDefault('Water-Material', { shaderName: 'water' as any });
+Material.setDefault('Water-Material', new WaterMaterial());

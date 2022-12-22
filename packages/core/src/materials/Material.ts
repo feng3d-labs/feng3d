@@ -1,8 +1,8 @@
 import { EventEmitter, globalEmitter } from '@feng3d/event';
 import { oav } from '@feng3d/objectview';
 import { gPartial } from '@feng3d/polyfill';
-import { RenderAtomic, RenderParams, Shader, shaderlib } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialization, serialize } from '@feng3d/serialization';
+import { RenderAtomic, RenderParams, Shader, Uniforms } from '@feng3d/renderer';
+import { serialization, serialize } from '@feng3d/serialization';
 import { AssetData } from '../core/AssetData';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
@@ -13,39 +13,24 @@ declare global
     {
 
     }
-    interface MixinsUniformsTypes
+    interface MixinsMaterialMap
     {
 
     }
 }
 
-export interface UniformsTypes extends MixinsUniformsTypes { }
-export type ShaderNames = keyof UniformsTypes;
-export type UniformsLike = UniformsTypes[keyof UniformsTypes];
+export interface MaterialMap extends MixinsMaterialMap { }
+export type MaterialNames = keyof MaterialMap;
+export type Materials = MaterialMap[keyof MaterialMap];
 
 /**
  * 材质
  */
-@decoratorRegisterClass()
-export class Material extends EventEmitter
+export abstract class Material extends EventEmitter
 {
-    __class__: 'Material';
-
-    static create<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
+    init(param: gPartial<this>)
     {
-        const material = new Material();
-        material.init(shaderName, uniforms, renderParams);
-
-        return material;
-    }
-
-    init<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
-    {
-        this.shaderName = shaderName;
-        //
-        uniforms && serialization.setValue(this.uniforms, <any>uniforms);
-        renderParams && serialization.setValue(this.renderParams, renderParams);
-
+        serialization.setValue(this, param);
         return this;
     }
 
@@ -56,21 +41,10 @@ export class Material extends EventEmitter
      * shader名称
      */
     @oav({ component: 'OAVMaterialName' })
-    @serialize
     get shaderName()
     {
-        if (!this._shaderName)
-        {
-            this._shaderName = 'standard' as any;
-        }
-
-        return this._shaderName;
+        return this.shader.shaderName;
     }
-    set shaderName(v)
-    {
-        this._shaderName = v;
-    }
-    private _shaderName: ShaderNames;
 
     @oav()
     @serialize
@@ -81,67 +55,23 @@ export class Material extends EventEmitter
      */
     @serialize
     @oav({ component: 'OAVObjectView' })
-    get uniforms()
-    {
-        const Cls = shaderlib.shaderConfig.shaders[this.shaderName].cls;
-        if (Cls)
-        {
-            if (!this._uniforms || this._uniforms.constructor !== Cls)
-            {
-                this._uniforms = new Cls();
-            }
-        }
-
-        if (!this._uniforms)
-        {
-            this._uniforms = <any>{};
-        }
-
-        return this._uniforms;
-    }
-    set uniforms(v)
-    {
-        this._uniforms = v;
-    }
-    private _uniforms: UniformsLike;
+    uniforms = {};
 
     /**
      * 渲染参数
      */
     @serialize
     @oav({ block: '渲染参数', component: 'OAVObjectView' })
-    get renderParams()
-    {
-        if (!this._renderParams)
-        {
-            const renderParams = shaderlib.shaderConfig.shaders[this.shaderName]?.renderParams;
-            this._renderParams = new RenderParams(renderParams);
-        }
+    renderParams = new RenderParams();
 
-        return this._renderParams;
-    }
-    set renderParams(v)
-    {
-        this._renderParams = v;
-    }
-    private _renderParams: RenderParams;
-
-    protected get shader()
-    {
-        if (!this._shader || this._shader.shaderName !== this.shaderName)
-        {
-            this._shader = new Shader({ shaderName: this.shaderName });
-        }
-
-        return this._shader;
-    }
-    private _shader: Shader;
+    @serialize
+    shader = new Shader();
 
     constructor(param?: gPartial<Material>)
     {
         super();
         serialization.setValue(this, param);
-        globalEmitter.on('asset.shaderChanged', this._onShaderChanged, this);
+        console.assert(this.constructor.name !== 'Material', `无法之间构建 Material`)
     }
 
     beforeRender(renderAtomic: RenderAtomic)
@@ -199,11 +129,6 @@ export class Material extends EventEmitter
         if (loadingNum === 0) callback();
     }
 
-    private _onShaderChanged()
-    {
-        this._shader = null;
-    }
-
     /**
      * 设置默认材质
      *
@@ -212,12 +137,11 @@ export class Material extends EventEmitter
      * @param name 材质名称
      * @param material 材质数据
      */
-    static setDefault<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>)
+    static setDefault<K extends keyof DefaultMaterial>(name: K, material: Material)
     {
-        const newMaterial = this._defaultMaterials[<any>name] = new Material();
-        serialization.setValue(newMaterial, material);
-        serialization.setValue(newMaterial, { name });
-        AssetData.addAssetData(name, newMaterial);
+        this._defaultMaterials[<any>name] = material;
+        material.name = name;
+        AssetData.addAssetData(name, material);
     }
 
     /**
@@ -239,4 +163,3 @@ export interface DefaultMaterial extends MixinsDefaultMaterial
 {
 }
 
-Material.setDefault('Default-Material', { shaderName: 'standard' as any });

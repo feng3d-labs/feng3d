@@ -1,16 +1,38 @@
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { Material } from '../Material';
 import colorFragment from './color_fragment_glsl';
 import colorVertex from './color_vertex_glsl';
 
 declare global
 {
-    interface MixinsUniformsTypes
+    interface MixinsMaterialMap
     {
-        color: ColorUniforms
+        color: ColorMaterial
+    }
+
+    export interface MixinsDefaultMaterial
+    {
+        'Color-Material': ColorMaterial;
+    }
+}
+
+/**
+ * 纯颜色材质
+ */
+@decoratorRegisterClass()
+export class ColorMaterial extends Material
+{
+    __class__: 'ColorMaterial';
+
+    uniforms = new ColorUniforms();
+
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'color';
     }
 }
 

@@ -9,7 +9,7 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 
 declare global
 {
-    export interface MixinsGeometryTypes { CubeGeometry: CubeGeometry }
+    export interface MixinsGeometryMap { CubeGeometry: CubeGeometry }
 
     export interface MixinsDefaultGeometry
     {

@@ -9,7 +9,7 @@ import { PolyhedronGeometry } from './PolyhedronGeometry';
 
 declare global
 {
-    export interface MixinsGeometryTypes
+    export interface MixinsGeometryMap
     {
         OctahedronGeometry: OctahedronGeometry
     }

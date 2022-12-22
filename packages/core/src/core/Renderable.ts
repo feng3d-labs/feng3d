@@ -7,9 +7,9 @@ import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
-import { Geometry, GeometryLike } from '../geometry/Geometry';
+import { Geometry, Geometrys } from '../geometry/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
-import { Material } from '../materials/Material';
+import { Material, Materials } from '../materials/Material';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
 import { TransformUtils } from '../utils/TransformUtils';
@@ -41,14 +41,14 @@ export class Renderable extends RayCastable
      */
     @oav({ component: 'OAVPick', tooltip: '几何体，提供模型以形状', componentParam: { accepttype: 'geometry', datatype: 'geometry' } })
     @serialize
-    geometry: GeometryLike = Geometry.getDefault('Cube');
+    geometry: Geometrys = Geometry.getDefault('Cube');
 
     /**
      * 材质
      */
     @oav({ component: 'OAVPick', tooltip: '材质，提供模型以皮肤', componentParam: { accepttype: 'material', datatype: 'material' } })
     @serialize
-    material: Material = Material.getDefault('Default-Material');
+    material: Materials = Material.getDefault('Default-Material');
 
     /**
      * 是否投射阴影
@@ -184,7 +184,7 @@ export class Renderable extends RayCastable
     //
     private _lightPicker: LightPicker;
 
-    private _onGeometryChanged(value: GeometryLike, oldValue: GeometryLike)
+    private _onGeometryChanged(value: Geometrys, oldValue: Geometrys)
     {
         if (oldValue)
         {

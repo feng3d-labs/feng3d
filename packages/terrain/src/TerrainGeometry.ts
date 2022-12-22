@@ -7,7 +7,7 @@ import { watcher } from '@feng3d/watcher';
 
 declare global
 {
-    export interface MixinsGeometryTypes
+    export interface MixinsGeometryMap
     {
         TerrainGeometry: TerrainGeometry
     }

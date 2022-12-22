@@ -6,7 +6,7 @@ import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
-import { Geometry, GeometryLike } from '../geometry/Geometry';
+import { Geometry, Geometrys } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -36,7 +36,7 @@ export class Water extends Renderable
 {
     __class__: 'Water';
 
-    geometry: GeometryLike = Geometry.getDefault('Plane');
+    geometry: Geometrys = Geometry.getDefault('Plane');
 
     material = Material.getDefault('Water-Material');
 

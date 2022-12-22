@@ -6,7 +6,7 @@ import { Geometry } from './Geometry';
 
 declare global
 {
-    export interface MixinsGeometryTypes
+    export interface MixinsGeometryMap
     {
         PointGeometry: PointGeometry
     }

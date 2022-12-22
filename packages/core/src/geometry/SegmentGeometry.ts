@@ -14,7 +14,7 @@ declare global
     {
         Segment: Object3D;
     }
-    export interface MixinsGeometryTypes
+    export interface MixinsGeometryMap
     {
         SegmentGeometry: SegmentGeometry
     }

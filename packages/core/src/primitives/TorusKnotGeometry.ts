@@ -8,7 +8,7 @@ import { geometryUtils } from '../geometry/GeometryUtils';
 
 declare global
 {
-    export interface MixinsGeometryTypes
+    export interface MixinsGeometryMap
     {
         TorusKnotGeometry: TorusKnotGeometry
     }

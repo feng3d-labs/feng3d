@@ -1,14 +1,27 @@
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderlib } from '@feng3d/renderer';
+import { decoratorRegisterClass } from '@feng3d/serialization';
 import { Texture2D } from '../../textures/Texture2D';
+import { Material } from '../Material';
 import meshPhongFragment from './meshPhong_fragment_glsl';
 import meshPhongVertex from './meshPhong_vertex_glsl';
 
 declare global
 {
-    export interface MixinsUniformsTypes
+    export interface MixinsMaterialMap
     {
-        meshPhong: MeshPhongUniforms
+        meshPhong: MeshPhongMaterial
+    }
+}
+
+@decoratorRegisterClass()
+export class MeshPhongMaterial extends Material
+{
+    uniforms = new MeshPhongUniforms();
+
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'meshPhong';
     }
 }
 

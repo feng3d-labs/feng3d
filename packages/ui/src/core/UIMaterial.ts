@@ -1,9 +1,8 @@
 import { Material, Texture2D } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderConfig } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
 
 declare global
 {
@@ -19,6 +18,18 @@ declare global
     export interface MixinsDefaultMaterial
     {
         'Default-UIMaterial': Material;
+    }
+}
+
+@decoratorRegisterClass()
+export class UIMaterial extends Material
+{
+    uniforms = new UIUniforms();
+
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'ui';
     }
 }
 
@@ -93,4 +104,4 @@ shaderConfig.shaders['ui'] = {
     renderParams: { enableBlend: true, depthtest: false },
 };
 
-Material.setDefault('Default-UIMaterial', { shaderName: 'ui' });
+Material.setDefault('Default-UIMaterial', new UIMaterial());

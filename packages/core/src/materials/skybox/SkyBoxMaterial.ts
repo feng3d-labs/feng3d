@@ -1,14 +1,27 @@
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
 import { TextureCube } from '../../textures/TextureCube';
+import { Material } from '../Material';
 import skyboxFragment from './skybox_fragment_glsl';
 import skyboxVertex from './skybox_vertex_glsl';
 
 declare global
 {
-    export interface MixinsUniformsTypes { skybox: SkyBoxUniforms }
+    export interface MixinsMaterialMap
+    {
+        skybox: SkyBoxMaterial
+    }
+}
+
+@decoratorRegisterClass()
+export class SkyBoxMaterial extends Material
+{
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'skybox';
+    }
 }
 
 @decoratorRegisterClass()

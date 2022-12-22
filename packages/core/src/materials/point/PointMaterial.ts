@@ -1,16 +1,29 @@
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { Material } from '../Material';
 import pointFragment from './point_fragment_glsl';
 import pointVertex from './point_vertex_glsl';
 
 declare global
 {
-    interface MixinsUniformsTypes
+    interface MixinsMaterialMap
     {
-        point: PointUniforms
+        point: PointMaterial
+    }
+}
+
+@decoratorRegisterClass()
+export class PointMaterial extends Material
+{
+    uniforms = new PointUniforms();
+
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'point';
+        this.renderParams.renderMode = 'POINTS';
     }
 }
 

@@ -11,12 +11,13 @@ import { geometryUtils } from './GeometryUtils';
 declare global
 {
     interface MixinsDefaultGeometry { }
-    interface MixinsGeometryTypes { }
+    interface MixinsGeometryMap { }
 }
 
-export interface GeometryTypes extends MixinsGeometryTypes { }
+export interface GeometryMap extends MixinsGeometryMap { }
 
-export type GeometryLike = GeometryTypes[keyof GeometryTypes];
+export type GeometryNames = keyof GeometryMap;
+export type Geometrys = GeometryMap[GeometryNames];
 
 export interface GeometryEventMap
 {

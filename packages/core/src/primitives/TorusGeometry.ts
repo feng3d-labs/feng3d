@@ -9,7 +9,7 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 
 declare global
 {
-	export interface MixinsGeometryTypes
+	export interface MixinsGeometryMap
 	{
 		TorusGeometry: TorusGeometry
 	}

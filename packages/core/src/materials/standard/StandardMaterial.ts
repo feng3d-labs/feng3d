@@ -17,9 +17,21 @@ declare global
         'Default-Material': Material;
     }
 
-    export interface MixinsUniformsTypes
+    export interface MixinsMaterialMap
     {
-        standard: StandardUniforms
+        standard: StandardMaterial
+    }
+}
+
+@decoratorRegisterClass()
+export class StandardMaterial extends Material
+{
+    uniforms = new StandardUniforms();
+
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'standard';
     }
 }
 
@@ -165,3 +177,5 @@ shaderlib.shaderConfig.shaders.standard = {
     cls: StandardUniforms
 };
 
+
+Material.setDefault('Default-Material', new StandardMaterial());

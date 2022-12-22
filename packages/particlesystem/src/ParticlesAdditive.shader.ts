@@ -1,9 +1,8 @@
 import { Material, Texture2D } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 import { shaderConfig } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
 
 declare global
 {
@@ -15,6 +14,18 @@ declare global
     export interface MixinsDefaultMaterial
     {
         'Particle-Material': Material;
+    }
+}
+
+@decoratorRegisterClass()
+export class ParticleMaterial extends Material
+{
+    uniforms = new ParticlesAdditiveUniforms();
+
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'Particles_Additive';
     }
 }
 
@@ -62,4 +73,4 @@ shaderConfig.shaders['Particles_Additive'].renderParams = {
     depthMask: false,
 };
 
-Material.setDefault('Particle-Material', { shaderName: 'Particles_Additive' });
+Material.setDefault('Particle-Material', new ParticleMaterial());

@@ -10,7 +10,7 @@ import { CylinderGeometry } from './CylinderGeometry';
 
 declare global
 {
-    export interface MixinsGeometryTypes
+    export interface MixinsGeometryMap
     {
         ConeGeometry: ConeGeometry
     }
