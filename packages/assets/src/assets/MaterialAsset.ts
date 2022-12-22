@@ -1,4 +1,4 @@
-import { AssetType, Material, setAssetTypeClass } from '@feng3d/core';
+import { AssetType, Material, setAssetTypeClass, StandardMaterial } from '@feng3d/core';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/serialization';
 import { ObjectAsset } from '../ObjectAsset';
@@ -29,7 +29,7 @@ export class MaterialAsset extends ObjectAsset
 
     initAsset()
     {
-        this.data = this.data || new Material();
+        this.data = this.data || new StandardMaterial();
     }
 }
 

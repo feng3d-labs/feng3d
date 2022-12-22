@@ -17,6 +17,8 @@ declare global
 @decoratorRegisterClass()
 export class PointMaterial extends Material
 {
+    __class__: 'PointMaterial';
+
     uniforms = new PointUniforms();
 
     constructor()

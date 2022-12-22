@@ -7,7 +7,7 @@ import { BillboardComponent } from '../component/BillboardComponent';
 import { HideFlags } from '../core/HideFlags';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
-import { Material } from '../materials/Material';
+import { TextureMaterial } from '../materials/texture/TextureMaterial';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../render/FrameBufferObject';
 import { Scene } from '../scene/Scene';
@@ -136,7 +136,7 @@ export class Light extends Behaviour
             // 材质
             const model = object3D.getComponent(Renderable);
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-            const textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: 'texture', uniforms: { s_texture: this.frameBufferObject.texture as any } });
+            const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
             //
             // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
             // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
