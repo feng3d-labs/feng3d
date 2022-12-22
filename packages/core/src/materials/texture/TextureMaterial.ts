@@ -18,6 +18,8 @@ declare global
 @decoratorRegisterClass()
 export class TextureMaterial extends Material
 {
+    uniforms = new TextureUniforms();
+
     constructor()
     {
         super();
