@@ -2,7 +2,7 @@ import { Color3 } from '../../../math/Color3';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { Texture2D } from '../../textures/Texture2D';
 import { TextureCube } from '../../textures/TextureCube';
@@ -23,7 +23,7 @@ declare global
     }
 }
 
-@serializable()
+@Serializable()
 export class StandardMaterial extends Material
 {
     uniforms = new StandardUniforms();
@@ -46,7 +46,7 @@ export enum FogMode
     LINEAR = 3
 }
 
-@serializable()
+@Serializable()
 export class StandardUniforms
 {
     __class__: 'StandardUniforms';

@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -25,7 +25,7 @@ declare global
 /**
  * 立（长）方体几何体
  */
-@serializable()
+@Serializable()
 export class CubeGeometry extends Geometry
 {
     __class__: 'CubeGeometry';

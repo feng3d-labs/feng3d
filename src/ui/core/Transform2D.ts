@@ -10,7 +10,7 @@ import { Vector2 } from "../../math/geom/Vector2";
 import { Vector4 } from "../../math/geom/Vector4";
 import { oav } from "../../objectview/ObjectView";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
-import { serializable } from "../../serialization/serializable";
+import { Serializable } from "../../serialization/Serializable";
 import { serialize } from "../../serialization/serialize";
 import { watcher } from "../../watcher/watcher";
 
@@ -47,7 +47,7 @@ declare global
  */
 @AddComponentMenu('Layout/Transform2D')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class Transform2D extends Component
 {
     get single() { return true; }

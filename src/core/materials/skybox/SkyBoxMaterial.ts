@@ -1,6 +1,6 @@
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { TextureCube } from '../../textures/TextureCube';
 import { Material } from '../Material';
@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@serializable()
+@Serializable()
 export class SkyBoxMaterial extends Material
 {
     constructor()
@@ -25,7 +25,7 @@ export class SkyBoxMaterial extends Material
     }
 }
 
-@serializable()
+@Serializable()
 export class SkyBoxUniforms
 {
     __class__: 'SkyBoxUniforms';

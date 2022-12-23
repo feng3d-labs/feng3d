@@ -3,7 +3,7 @@ import { setAssetTypeClass } from '../../core/assets/FileAsset';
 import { Material } from '../../core/materials/Material';
 import { StandardMaterial } from '../../core/materials/standard/StandardMaterial';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare global
@@ -17,7 +17,7 @@ declare global
 /**
  * 材质资源
  */
-@serializable()
+@Serializable()
 export class MaterialAsset extends ObjectAsset
 {
     static extenson = '.json';

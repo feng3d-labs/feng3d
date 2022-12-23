@@ -287,7 +287,7 @@ export * from './renderer/shader/ShaderMacroUtils';
 export * from './renderer/WebGLRenderer';
 export * from './serialization/getClassName';
 export * from './serialization/getInstance';
-export * from './serialization/serializable';
+export * from './serialization/Serializable';
 export * from './serialization/Serialization';
 export * from './serialization/serialize';
 export * from './shortcut/EventProxy';

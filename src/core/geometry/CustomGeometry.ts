@@ -1,6 +1,6 @@
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { Geometry } from './Geometry';
 
@@ -12,7 +12,7 @@ declare global
     }
 }
 
-@serializable()
+@Serializable()
 export class CustomGeometry extends Geometry
 {
     __class__: 'CustomGeometry';

@@ -1,7 +1,7 @@
 import { Vector3 } from '../../../math/geom/Vector3';
 import { Vector4 } from '../../../math/geom/Vector4';
 import { oav } from '../../../objectview/ObjectView';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
@@ -10,7 +10,7 @@ import { LensBase } from './LensBase';
 /**
  * 透视摄像机镜头
  */
-@serializable()
+@Serializable()
 export class PerspectiveLens extends LensBase
 {
     /**

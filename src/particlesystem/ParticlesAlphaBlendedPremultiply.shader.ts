@@ -2,13 +2,13 @@ import { Texture2D } from "../core/textures/Texture2D";
 import { Vector4 } from "../math/geom/Vector4";
 import { oav } from "../objectview/ObjectView";
 import { shaderConfig } from "../renderer/shader/ShaderLib";
-import { serializable } from "../serialization/serializable";
+import { Serializable } from "../serialization/Serializable";
 import { serialize } from "../serialization/serialize";
 
 /**
  * UnityShader "Particles/Alpha Blended Premultiply"
  */
-@serializable()
+@Serializable()
 export class ParticlesAlphaBlendedPremultiplyUniforms
 {
     __class__: 'ParticlesAlphaBlendedPremultiplyUniforms';

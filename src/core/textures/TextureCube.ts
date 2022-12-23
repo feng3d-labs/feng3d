@@ -2,7 +2,7 @@ import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
@@ -25,7 +25,7 @@ export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positi
 /**
  * 立方体纹理
  */
-@serializable()
+@Serializable()
 export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> extends TextureInfo<T>
 {
     __class__: 'TextureCube';

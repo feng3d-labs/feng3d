@@ -1,6 +1,6 @@
 import { Geometry } from "../../core/geometry/Geometry";
 import { geometryUtils } from "../../core/geometry/GeometryUtils";
-import { serializable } from "../../serialization/serializable";
+import { Serializable } from "../../serialization/Serializable";
 
 declare global
 {
@@ -18,7 +18,7 @@ declare global
 /**
  * UI几何体
  */
-@serializable()
+@Serializable()
 export class UIGeometry extends Geometry
 {
     __class__: 'UIGeometry';

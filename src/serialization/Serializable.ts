@@ -14,14 +14,18 @@ export interface ClassMap extends MixinsClassMap
     Object: Object;
 }
 
-serializable('Object')(Object);
+Serializable('Object')(Object);
 
 export const _definitionCache: ConstructorOf<ClassMap> = {} as any;
 
 /**
- * 标记objectview对象界面类
+ * 标记可序列化类
+ * 
+ * 使用 @Serializable($className) 标记可序列化类
+ * 
+ * @see https://docs.unity3d.com/cn/current/ScriptReference/Serializable.html
  */
-export function serializable<K extends keyof ClassMap>(className?: K)
+export function Serializable<K extends keyof ClassMap>(className?: K)
 {
     return (constructor: ConstructorOf<ClassMap>[K]) =>
     {

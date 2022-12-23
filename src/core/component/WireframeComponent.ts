@@ -1,6 +1,6 @@
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { RegisterComponent, Component } from './Component';
 
 declare global
@@ -15,7 +15,7 @@ declare global
  * 线框组件，将会对拥有该组件的对象绘制线框
  */
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class WireframeComponent extends Component
 {
     __class__: 'WireframeComponent';

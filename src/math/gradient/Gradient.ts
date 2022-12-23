@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { Color3 } from '../Color3';
 import { Color4 } from '../Color4';
@@ -10,7 +10,7 @@ import { GradientMode } from './GradientMode';
 /**
  * 颜色渐变
  */
-@serializable()
+@Serializable()
 export class Gradient
 {
     __class__: 'Gradient';

@@ -3,7 +3,7 @@ import { Vector2 } from '../../src/math/geom/Vector2';
 import { Vector3 } from '../../src/math/geom/Vector3';
 import { getClassName } from '../../src/serialization/getClassName';
 import { getInstance } from '../../src/serialization/getInstance';
-import { serializable } from '../../src/serialization/serializable';
+import { Serializable } from '../../src/serialization/Serializable';
 
 declare global
 {
@@ -15,7 +15,7 @@ declare global
 }
 
 /**
- * 未使用 @serializable() 进行注册的类
+ * 未使用 @Serializable() 进行注册的类
  */
 class UnregisteredClass
 {
@@ -23,15 +23,15 @@ class UnregisteredClass
 }
 
 /**
- * 使用 @serializable() 进行注册的类
+ * 使用 @Serializable() 进行注册的类
  */
-@serializable()
+@Serializable()
 class RegisteredClass
 {
 
 }
 
-@serializable('别名')
+@Serializable('别名')
 class RegisteredClass别名
 {
 

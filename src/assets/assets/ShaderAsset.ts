@@ -1,6 +1,6 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { setAssetTypeClass } from '../../core/assets/FileAsset';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { ScriptAsset } from './ScriptAsset';
 
 declare global
@@ -14,7 +14,7 @@ declare global
 /**
  * 着色器 资源
  */
-@serializable()
+@Serializable()
 export class ShaderAsset extends ScriptAsset
 {
     static extenson = '.ts';

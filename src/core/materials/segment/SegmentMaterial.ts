@@ -1,7 +1,7 @@
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { Material } from '../Material';
 import segmentFragment from './segment_fragment_glsl';
@@ -20,7 +20,7 @@ declare global
     }
 }
 
-@serializable()
+@Serializable()
 export class SegmentMaterial extends Material
 {
     uniforms = new SegmentUniforms();
@@ -38,7 +38,7 @@ export class SegmentMaterial extends Material
  * 线段材质
  * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
  */
-@serializable()
+@Serializable()
 export class SegmentUniforms
 {
     __class__: 'SegmentUniforms';

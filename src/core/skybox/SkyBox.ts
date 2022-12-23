@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent, Component } from '../component/Component';
@@ -21,7 +21,7 @@ declare global
  */
 @AddComponentMenu('SkyBox/SkyBox')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class SkyBox extends Component
 {
     __class__: 'SkyBox';

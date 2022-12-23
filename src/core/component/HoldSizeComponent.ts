@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
@@ -15,7 +15,7 @@ declare global
 
 @AddComponentMenu('Layout/HoldSizeComponent')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class HoldSizeComponent extends Component
 {
     __class__: 'HoldSizeComponent';

@@ -1,6 +1,6 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemInheritVelocityMode } from '../enums/ParticleSystemInheritVelocityMode';
@@ -13,7 +13,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
  */
-@serializable()
+@Serializable()
 export class ParticleInheritVelocityModule extends ParticleModule
 {
     '__class__': 'ParticleInheritVelocityModule' = 'ParticleInheritVelocityModule';

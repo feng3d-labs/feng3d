@@ -1,4 +1,4 @@
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';
@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * This module triggers child particle emission on events such as the birth, death, and collision of particles in the parent system.
  */
-@serializable()
+@Serializable()
 export class ParticleSubEmittersModule extends ParticleModule
 {
     /**

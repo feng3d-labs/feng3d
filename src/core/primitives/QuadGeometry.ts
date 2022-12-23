@@ -1,4 +1,4 @@
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
@@ -26,7 +26,7 @@ declare global
 /**
  * 四边形面皮几何体
  */
-@serializable()
+@Serializable()
 export class QuadGeometry extends Geometry
 {
     __class__: 'QuadGeometry';

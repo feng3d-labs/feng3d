@@ -3,7 +3,7 @@ import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
@@ -14,7 +14,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子主模块
  */
-@serializable()
+@Serializable()
 export class ParticleMainModule extends ParticleModule
 {
     __class__: 'ParticleMainModule';

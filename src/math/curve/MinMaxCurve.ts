@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
@@ -7,7 +7,7 @@ import { MinMaxCurveMode } from './MinMaxCurveMode';
 /**
  * 最大最小曲线
  */
-@serializable()
+@Serializable()
 export class MinMaxCurve
 {
     __class__: 'MinMaxCurve';

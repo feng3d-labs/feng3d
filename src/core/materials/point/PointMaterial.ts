@@ -1,7 +1,7 @@
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { Material } from '../Material';
 import pointFragment from './point_fragment_glsl';
@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@serializable()
+@Serializable()
 export class PointMaterial extends Material
 {
     __class__: 'PointMaterial';
@@ -30,7 +30,7 @@ export class PointMaterial extends Material
     }
 }
 
-@serializable()
+@Serializable()
 export class PointUniforms
 {
     __class__: 'PointUniforms';

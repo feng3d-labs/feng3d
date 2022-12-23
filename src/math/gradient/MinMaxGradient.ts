@@ -1,4 +1,4 @@
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { Color4 } from '../Color4';
 import { Gradient } from './Gradient';
@@ -7,7 +7,7 @@ import { MinMaxGradientMode } from './MinMaxGradientMode';
 /**
  * 最大最小颜色渐变
  */
-@serializable()
+@Serializable()
 export class MinMaxGradient
 {
     __class__: 'MinMaxGradient';

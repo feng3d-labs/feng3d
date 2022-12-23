@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
 import { bezierCurve } from './BezierCurve';
@@ -10,7 +10,7 @@ import { WrapMode } from './WrapMode';
  *
  * 基于时间轴的连续三阶Bézier曲线
  */
-@serializable()
+@Serializable()
 export class AnimationCurve
 {
     __class__: 'AnimationCurve';

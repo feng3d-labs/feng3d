@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
@@ -15,7 +15,7 @@ declare global
 
 @AddComponentMenu('Layout/BillboardComponent')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class BillboardComponent extends Component
 {
     __class__: 'BillboardComponent';

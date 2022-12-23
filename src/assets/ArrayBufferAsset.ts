@@ -1,10 +1,10 @@
 import { FileAsset } from "../core/assets/FileAsset";
-import { serializable } from "../serialization/serializable";
+import { Serializable } from "../serialization/Serializable";
 
 /**
  * 二进制 资源
  */
-@serializable()
+@Serializable()
 export class ArrayBufferAsset extends FileAsset
 {
     /**

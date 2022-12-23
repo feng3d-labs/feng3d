@@ -1,4 +1,4 @@
-import { ClassMap, _definitionCache } from "./serializable";
+import { ClassMap, _definitionCache } from "./Serializable";
 
 declare global
 {
@@ -19,7 +19,7 @@ declare global
 export function getInstance<K extends keyof ClassMap>(classname: K)
 {
     const Cls = _definitionCache[classname];
-    console.assert(Cls, `${classname} 未注册，请使用 @serializable 进行注册反序列化的类。`);
+    console.assert(Cls, `${classname} 未注册，请使用 @Serializable 进行注册反序列化的类。`);
 
     if (Cls.__create__)
     {

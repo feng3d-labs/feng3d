@@ -10,7 +10,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { Canvas } from './Canvas';
 import { UIGeometry } from './UIGeometry';
 
@@ -27,7 +27,7 @@ declare global
  */
 @AddComponentMenu('Rendering/CanvasRenderer')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class CanvasRenderer extends Renderable
 {
     readonly renderAtomic = new RenderAtomic();

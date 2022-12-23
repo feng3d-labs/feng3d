@@ -3,7 +3,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';
@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统 旋转角度随速度变化模块
  */
-@serializable()
+@Serializable()
 export class ParticleRotationBySpeedModule extends ParticleModule
 {
     /**

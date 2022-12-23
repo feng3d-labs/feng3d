@@ -2,7 +2,7 @@ import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
@@ -14,7 +14,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * 基于时间轴限制速度模块。
  */
-@serializable()
+@Serializable()
 export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 {
     __class__: 'ParticleLimitVelocityOverLifetimeModule';

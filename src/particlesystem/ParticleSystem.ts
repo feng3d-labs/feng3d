@@ -16,7 +16,7 @@ import { oav } from '../objectview/ObjectView';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { serializable } from '../serialization/serializable';
+import { Serializable } from '../serialization/Serializable';
 import { serialize } from '../serialization/serialize';
 import { watcher } from '../watcher/watcher';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
@@ -73,7 +73,7 @@ declare global
  */
 @AddComponentMenu('Effects/ParticleSystem')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class ParticleSystem extends Renderable
 {
     __class__: 'ParticleSystem';

@@ -1,5 +1,5 @@
 import { oav } from '../../../objectview/ObjectView';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
@@ -8,7 +8,7 @@ import { LensBase } from './LensBase';
 /**
  * 正射投影镜头
  */
-@serializable()
+@Serializable()
 export class OrthographicLens extends LensBase
 {
     /**

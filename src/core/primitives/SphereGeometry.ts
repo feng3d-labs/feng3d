@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -27,7 +27,7 @@ declare global
  * 球体几何体
  * @author DawnKing 2016-09-12
  */
-@serializable()
+@Serializable()
 export class SphereGeometry extends Geometry
 {
     __class__: 'SphereGeometry';

@@ -3,7 +3,7 @@ import { ColorKeywords } from '../../math/Color3';
 import { Color4 } from '../../math/Color4';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { AssetType } from '../assets/AssetType';
@@ -56,7 +56,7 @@ export interface Texture2DEventMap
 /**
  * 2D纹理
  */
-@serializable()
+@Serializable()
 export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends TextureInfo<T>
 {
     __class__: 'Texture2D';

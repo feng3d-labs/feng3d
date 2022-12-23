@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -28,7 +28,7 @@ declare global
 /**
  * 平面几何体
  */
-@serializable()
+@Serializable()
 export class PlaneGeometry extends Geometry
 {
     __class__: 'PlaneGeometry';

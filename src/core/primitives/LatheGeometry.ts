@@ -2,7 +2,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
@@ -31,7 +31,7 @@ declare global
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/LatheGeometry.js
  */
-@serializable()
+@Serializable()
 export class LatheGeometry extends Geometry
 {
     __class__: 'LatheGeometry' = 'LatheGeometry';

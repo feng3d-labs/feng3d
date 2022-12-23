@@ -3,7 +3,7 @@ import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
@@ -27,7 +27,7 @@ import { ParticleModule } from './ParticleModule';
  * Shape of the emitter volume, which controls where particles are emitted and their initial direction.
  * 发射体体积的形状，它控制粒子发射的位置和初始方向。
  */
-@serializable()
+@Serializable()
 export class ParticleShapeModule extends ParticleModule
 {
     __class__: 'ParticleShapeModule';

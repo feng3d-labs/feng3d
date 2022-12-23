@@ -1,6 +1,6 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  * 控制每个粒子在其生命周期内的力。
  * Script interface for the Force Over Lifetime module.
  */
-@serializable()
+@Serializable()
 export class ParticleForceOverLifetimeModule extends ParticleModule
 {
     /**

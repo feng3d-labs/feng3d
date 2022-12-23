@@ -355,14 +355,14 @@ serialization.serializeHandlers.push(
             return false;
         }
     },
-    // 排除不支持序列化对象 serializable === false 时不进行序列化
+    // 排除不支持序列化对象 Serializable === false 时不进行序列化
     {
         priority: 0,
         handler(target, source, property)
         {
             const spv = source[property];
 
-            if (spv && spv.serializable === false)
+            if (spv && spv.Serializable === false)
             {
                 return true;
             }

@@ -1,5 +1,5 @@
 import { deepEqual, ok } from 'assert';
-import { serializable } from '../../src/serialization/serializable';
+import { Serializable } from '../../src/serialization/Serializable';
 import { serialization } from '../../src/serialization/Serialization';
 import { serialize } from '../../src/serialization/serialize';
 
@@ -9,7 +9,7 @@ class ObjectBase
     id = 1;
 }
 
-@serializable()
+@Serializable()
 class C extends ObjectBase
 {
     // @serialize
@@ -31,7 +31,7 @@ class C extends ObjectBase
     }
 }
 
-@serializable()
+@Serializable()
 class LoopA
 {
     a: LoopA;
@@ -119,18 +119,18 @@ describe('Serialization', () =>
 
     it('serialize&deserialize 带serializable属性对象', () =>
     {
-        const obj = { serializable: false, a: 1 };
+        const obj = { Serializable: false, a: 1 };
         const r = serialization.serialize(obj);
         ok(r === undefined);
 
         {
-            obj.serializable = true;
+            obj.Serializable = true;
             const r = serialization.serialize(obj);
             ok(r.a === obj.a);
         }
 
         {
-            delete obj.serializable;
+            delete obj.Serializable;
             const r = serialization.serialize(obj);
             ok(r.a === obj.a);
         }

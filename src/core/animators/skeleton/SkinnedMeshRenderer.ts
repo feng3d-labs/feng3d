@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { Camera } from '../../cameras/Camera';
 import { RegisterComponent } from '../../component/Component';
 import { HideFlags } from '../../core/HideFlags';
@@ -17,7 +17,7 @@ declare global
 }
 
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class SkinnedMeshRenderer extends Renderable
 {
     __class__: 'SkinnedMeshRenderer';

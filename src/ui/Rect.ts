@@ -7,7 +7,7 @@ import { Scene } from '../core/scene/Scene';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { serializable } from '../serialization/serializable';
+import { Serializable } from '../serialization/Serializable';
 import { serialize } from '../serialization/serialize';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';
@@ -32,7 +32,7 @@ declare global
  */
 @AddComponentMenu('UI/Rect')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class Rect extends Component
 {
     /**

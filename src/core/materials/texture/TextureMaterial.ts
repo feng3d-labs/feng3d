@@ -1,7 +1,7 @@
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { Texture2D } from '../../textures/Texture2D';
 import { Material } from '../Material';
@@ -16,7 +16,7 @@ declare global
     }
 }
 
-@serializable()
+@Serializable()
 export class TextureMaterial extends Material
 {
     uniforms = new TextureUniforms();
@@ -28,7 +28,7 @@ export class TextureMaterial extends Material
     }
 }
 
-@serializable()
+@Serializable()
 export class TextureUniforms
 {
     __class__: 'TextureUniforms';

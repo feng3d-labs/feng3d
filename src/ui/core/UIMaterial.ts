@@ -4,7 +4,7 @@ import { Color4 } from "../../math/Color4";
 import { Vector4 } from "../../math/geom/Vector4";
 import { oav } from "../../objectview/ObjectView";
 import { shaderConfig } from "../../renderer/shader/ShaderLib";
-import { serializable } from "../../serialization/serializable";
+import { Serializable } from "../../serialization/Serializable";
 import { serialize } from "../../serialization/serialize";
 
 declare global
@@ -24,7 +24,7 @@ declare global
     }
 }
 
-@serializable()
+@Serializable()
 export class UIMaterial extends Material
 {
     uniforms = new UIUniforms();
@@ -36,7 +36,7 @@ export class UIMaterial extends Material
     }
 }
 
-@serializable()
+@Serializable()
 export class UIUniforms
 {
     __class__: 'UIUniforms';

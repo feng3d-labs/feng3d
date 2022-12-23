@@ -3,7 +3,7 @@ import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
@@ -34,7 +34,7 @@ declare global
  */
 @AddComponentMenu('Graphics/Water')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class Water extends Renderable
 {
     __class__: 'Water';

@@ -2,7 +2,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * 颜色随速度变化模块。
  */
-@serializable()
+@Serializable()
 export class ParticleColorBySpeedModule extends ParticleModule
 {
     /**

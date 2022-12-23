@@ -1,7 +1,7 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { setAssetTypeClass } from '../../core/assets/FileAsset';
 import { regExps } from '../../core/utils/RegExps';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { TextAsset } from './TextAsset';
 
@@ -16,7 +16,7 @@ declare global
 /**
  * 脚本资源
  */
-@serializable()
+@Serializable()
 export class ScriptAsset extends TextAsset
 {
     static extenson = '.ts';

@@ -13,7 +13,7 @@ export function getClassName(instance: Object): string
         return prototype[__class__];
     }
 
-    console.warn(`名称为 ${prototype.constructor.name} 的 ${instance} 未注册，请使用 @serializable 进行注册反序列化的类。`);
+    console.warn(`名称为 ${prototype.constructor.name} 的 ${instance} 未注册，请使用 @Serializable 进行注册反序列化的类。`);
 
     return null;
 }

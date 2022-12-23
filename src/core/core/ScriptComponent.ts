@@ -2,7 +2,7 @@ import { globalEmitter } from '../../event/GlobalEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { getClassName } from '../../serialization/getClassName';
 import { getInstance } from '../../serialization/getInstance';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
@@ -25,7 +25,7 @@ declare global
  */
 @AddComponentMenu('Script/Script')
 @RegisterComponent()
-@serializable()
+@Serializable()
 export class ScriptComponent extends Behaviour
 {
     runEnvironment = RunEnvironment.feng3d;

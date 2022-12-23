@@ -1,11 +1,11 @@
 import { dataTransform } from '../../polyfill/DataTransform';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { Component } from './Component';
 
 /**
  * Graphics 类包含一组可用来创建矢量形状的方法。
  */
-@serializable()
+@Serializable()
 export class Graphics extends Component
 {
     __class__: 'Graphics';

@@ -1,7 +1,7 @@
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/serializable';
+import { Serializable } from '../../../serialization/Serializable';
 import { serialize } from '../../../serialization/serialize';
 import { Material } from '../Material';
 import colorFragment from './color_fragment_glsl';
@@ -23,7 +23,7 @@ declare global
 /**
  * 纯颜色材质
  */
-@serializable()
+@Serializable()
 export class ColorMaterial extends Material
 {
     __class__: 'ColorMaterial';
@@ -37,7 +37,7 @@ export class ColorMaterial extends Material
     }
 }
 
-@serializable()
+@Serializable()
 export class ColorUniforms
 {
     __class__: 'ColorUniforms';

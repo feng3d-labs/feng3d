@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
@@ -31,7 +31,7 @@ declare global
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/OctahedronGeometry.js
  */
-@serializable()
+@Serializable()
 export class OctahedronGeometry extends Geometry
 {
     __class__: 'IcosahedronGeometry' = 'IcosahedronGeometry';

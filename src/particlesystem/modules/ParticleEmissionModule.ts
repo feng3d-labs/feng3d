@@ -1,6 +1,6 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/serializable';
+import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
@@ -9,7 +9,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统发射模块。
  */
-@serializable()
+@Serializable()
 export class ParticleEmissionModule extends ParticleModule
 {
     __class__: 'ParticleEmissionModule';
