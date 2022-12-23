@@ -3,7 +3,7 @@ import { decoratorRegisterClass } from '@feng3d/serialization';
 
 declare global
 {
-    export interface MixinsGeometryTypes
+    export interface MixinsGeometryMap
     {
         UIGeometry: UIGeometry
     }

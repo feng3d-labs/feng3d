@@ -1,4 +1,4 @@
-import { GeometryLike, Material } from '@feng3d/core';
+import { Geometrys, Material } from '@feng3d/core';
 import { Vector3 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/serialization';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
@@ -66,7 +66,7 @@ export class ParticleSystemRenderer extends ParticleModule
     /**
      * The Mesh that the particle uses instead of a billboarded Texture.
      */
-    mesh: GeometryLike;
+    mesh: Geometrys;
 
     /**
      * The number of Meshes the system uses for particle rendering.

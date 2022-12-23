@@ -4,7 +4,6 @@
     "entryPoints": [
         "src/index.ts"
     ],
-    "disableSources": true,
-    "sourcefile-url-prefix": "https://gitlab.com/feng3d/feng3d/tree/master/src/",
+    "sourcefile-url-prefix": "https://gitlab.com/feng3d/feng3d/tree/master/",
     "out": "public"
 }

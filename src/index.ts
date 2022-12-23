@@ -1,19 +1,19 @@
-export * from '@feng3d/assets';
-export * from '@feng3d/bezier';
-export * from '@feng3d/core';
-export * from '@feng3d/event';
-export * from '@feng3d/filesystem';
-export * from '@feng3d/math';
-export * from '@feng3d/objectview';
-export * from '@feng3d/particlesystem';
 export * from '@feng3d/path';
-export * from '@feng3d/polyfill';
-export * from '@feng3d/renderer';
-export * from '@feng3d/serialization';
-export * from '@feng3d/shortcut';
-export * from '@feng3d/terrain';
-export * from '@feng3d/ui';
-export * from '@feng3d/watcher';
+export * from '../packages/assets';
+export * from '../packages/bezier';
+export * from '../packages/core';
+export * from '../packages/event';
+export * from '../packages/filesystem';
+export * from '../packages/math';
+export * from '../packages/objectview';
+export * from '../packages/particlesystem';
+export * from '../packages/polyfill';
+export * from '../packages/renderer';
+export * from '../packages/serialization';
+export * from '../packages/shortcut';
+export * from '../packages/terrain';
+export * from '../packages/ui';
+export * from '../packages/watcher';
 
 /**
  * 版本号
