@@ -12,6 +12,7 @@ cache:
 test:
   stage: test
   script:
+    - npm i -g pnpm
     - pnpm i
     - npm run test
 
