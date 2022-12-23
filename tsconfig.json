@@ -1,56 +1,26 @@
 {
-  "references": [
-    {
-      "path": "./bundles/feng3d"
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "CommonJS",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+        "experimentalDecorators": true,
+        "emitDeclarationOnly": true,
+        "lib": [
+            "ES2015",
+            "DOM",
+        ],
+        "outDir": "lib"
     },
-    {
-      "path": "./packages/@feng3d/assets"
-    },
-    {
-      "path": "./packages/@feng3d/bezier"
-    },
-    {
-      "path": "./packages/@feng3d/core"
-    },
-    {
-      "path": "./packages/@feng3d/ecs"
-    },
-    {
-      "path": "./packages/@feng3d/event"
-    },
-    {
-      "path": "./packages/@feng3d/filesystem"
-    },
-    {
-      "path": "./packages/@feng3d/math"
-    },
-    {
-      "path": "./packages/@feng3d/objectview"
-    },
-    {
-      "path": "./packages/@feng3d/particlesystem"
-    },
-    {
-      "path": "./packages/@feng3d/polyfill"
-    },
-    {
-      "path": "./packages/@feng3d/renderer"
-    },
-    {
-      "path": "./packages/@feng3d/serialization"
-    },
-    {
-      "path": "./packages/@feng3d/shortcut"
-    },
-    {
-      "path": "./packages/@feng3d/terrain"
-    },
-    {
-      "path": "./packages/@feng3d/ui"
-    },
-    {
-      "path": "./packages/@feng3d/watcher"
-    },
-  ],
-  "include": []
+    "include": [
+        "src/**/*.ts"
+    ],
+    "ts-node": {
+        "files": true,
+        "compilerOptions": {
+            "esModuleInterop": true
+        }
+    }
 }
