@@ -3,7 +3,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Geometry } from './Geometry';
 

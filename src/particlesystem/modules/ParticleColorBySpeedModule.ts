@@ -3,7 +3,7 @@ import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
 

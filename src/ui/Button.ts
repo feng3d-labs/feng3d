@@ -5,7 +5,8 @@ import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { oav } from '../objectview/ObjectView';
 import { decoratorRegisterClass } from '../serialization/ClassUtils';
-import { serialize, serialization } from '../serialization/Serialization';
+import { serialization } from '../serialization/Serialization';
+import { serialize } from '../serialization/serialize';
 import { watcher } from '../watcher/watcher';
 import { Transform2D } from './core/Transform2D';
 

@@ -5,7 +5,7 @@ import { Scene } from '../scene/Scene';
 import { EventEmitter } from '../../event/EventEmitter';
 import { Constructor } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 
 declare global
 {

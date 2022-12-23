@@ -1,7 +1,7 @@
 import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';

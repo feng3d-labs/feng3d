@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { Constructor } from '../../polyfill/Types';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Component, Components } from '../component/Component';
 
 export interface EntityEventMap

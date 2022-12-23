@@ -1,5 +1,5 @@
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Color4 } from '../Color4';
 import { Gradient } from './Gradient';
 import { MinMaxGradientMode } from './MinMaxGradientMode';

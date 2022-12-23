@@ -1,7 +1,7 @@
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Geometry } from './Geometry';
 
 declare global

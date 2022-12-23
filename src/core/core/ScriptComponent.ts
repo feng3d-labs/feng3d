@@ -1,7 +1,8 @@
 import { globalEmitter } from '../../event/GlobalEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { decoratorRegisterClass, classUtils } from '../../serialization/ClassUtils';
-import { serialize, serialization } from '../../serialization/Serialization';
+import { serialization } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';

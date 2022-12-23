@@ -4,7 +4,7 @@ import { Ray3 } from '../../../math/geom/Ray3';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { Vector4 } from '../../../math/geom/Vector4';
 import { oav } from '../../../objectview/ObjectView';
-import { serialize } from '../../../serialization/Serialization';
+import { serialize } from '../../../serialization/serialize';
 import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 

@@ -9,7 +9,7 @@ import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { decoratorRegisterClass } from '../serialization/ClassUtils';
-import { serialize } from '../serialization/Serialization';
+import { serialize } from '../serialization/serialize';
 import { watcher } from '../watcher/watcher';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';

@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { getComponentType, RegisterComponent } from '../component/Component';

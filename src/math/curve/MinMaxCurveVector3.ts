@@ -1,4 +1,4 @@
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Vector3 } from '../geom/Vector3';
 import { MinMaxCurve } from './MinMaxCurve';
 

@@ -1,6 +1,6 @@
 import { Quaternion } from "../../math/geom/Quaternion";
 import { Vector3 } from "../../math/geom/Vector3";
-import { serialize } from "../../serialization/Serialization";
+import { serialize } from "../../serialization/serialize";
 
 export class PropertyClip
 {

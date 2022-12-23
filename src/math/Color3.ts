@@ -1,7 +1,7 @@
 import { oav } from '../objectview/ObjectView';
 import { mathUtil } from '../polyfill/MathUtil';
 import { decoratorRegisterClass } from '../serialization/ClassUtils';
-import { serialize } from '../serialization/Serialization';
+import { serialize } from '../serialization/serialize';
 import type { Color4 } from './Color4';
 import { Vector3 } from './geom/Vector3';
 

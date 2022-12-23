@@ -1,6 +1,6 @@
 import { dataTransform } from '../../../polyfill/DataTransform';
 import { Texture } from '../../../renderer/data/Texture';
-import { serialize } from '../../../serialization/Serialization';
+import { serialize } from '../../../serialization/serialize';
 import { HideFlags } from '../../core/HideFlags';
 import { imageDatas } from '../../textures/Texture2D';
 

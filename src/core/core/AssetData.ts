@@ -1,7 +1,8 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { MapUtils } from '../../polyfill/MapUtils';
 import { __class__, classUtils } from '../../serialization/ClassUtils';
-import { serialize, serialization } from '../../serialization/Serialization';
+import { serialization } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { AssetType } from '../assets/AssetType';
 import { ReadRS } from '../assets/rs/ReadRS';
 

@@ -1,7 +1,7 @@
 // import { EventEmitter } from '../event/EventEmitter';
 // import { IEvent } from '../event/IEvent';
 // import { Constructor } from '../polyfill/Types';
-// import { serialize } from '../serialization/Serialization';
+// import { serialize } from '../serialization/serialize';
 // import { Entity, EntityEventMap } from './Entity';
 
 // interface ComponentInfo

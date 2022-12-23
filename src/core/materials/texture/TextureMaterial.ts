@@ -2,7 +2,7 @@ import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
-import { serialize } from '../../../serialization/Serialization';
+import { serialize } from '../../../serialization/serialize';
 import { Texture2D } from '../../textures/Texture2D';
 import { Material } from '../Material';
 import textureFragment from './texture_fragment_glsl';

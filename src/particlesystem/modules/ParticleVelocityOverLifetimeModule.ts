@@ -1,7 +1,7 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { oav } from '../../objectview/ObjectView';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';

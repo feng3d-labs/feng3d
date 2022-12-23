@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Matrix3x3 } from './Matrix3x3';
 import { Matrix4x4 } from './Matrix4x4';
 import { Quaternion } from './Quaternion';

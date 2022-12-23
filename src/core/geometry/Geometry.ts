@@ -9,7 +9,8 @@ import { AttributeBuffer, AttributeBufferSourceTypes } from '../../renderer/data
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { CullFace } from '../../renderer/data/RenderParams';
-import { serialize, serialization } from '../../serialization/Serialization';
+import { serialization } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { geometryUtils } from './GeometryUtils';

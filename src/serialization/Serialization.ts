@@ -4,25 +4,6 @@ import { gPartial } from '../polyfill/Types';
 import { classUtils, __class__ } from './ClassUtils';
 
 /**
- * 序列化装饰器
- *
- * 在属性定义前使用 @serialize 进行标记需要序列化
- *
- * @param target 序列化原型
- * @param propertyKey 序列化属性
- */
-export function serialize(target: any, propertyKey: string)
-{
-    if (!Object.getOwnPropertyDescriptor(target, serializeKey))
-    {
-        Object.defineProperty(target, serializeKey, { value: [] });
-    }
-    const serializePropertys: string[] = target[serializeKey];
-
-    serializePropertys.push(propertyKey);
-}
-
-/**
  * 序列化属性函数
  *
  * 序列化对象时建议使用 serialization.serialize
@@ -46,52 +27,6 @@ function propertyHandler<T extends HandlerParam>(target: any, source: any, prope
     return true;
 }
 
-// /**
-//  * 序列化属性函数
-//  *
-//  * 序列化对象时建议使用 serialization.serialize
-//  *
-//  * @param target 序列化后的对象，存放序列化后属性值的对象。
-//  * @param source 被序列化的对象，提供序列化前属性值的对象。
-//  * @param property 序列化属性名称
-//  * @param handlers 序列化属性函数列表
-//  * @param beforeHandler 在处理列表前执行
-//  * @param affterHandler 在处理列表后执行
-//  */
-// function propertyHandler(target: Object, source: Object, property: string, handlers: PropertyHandler[], serialization: Serialization)
-// {
-//     for (let i = 0; i < handlers.length; i++)
-//     {
-//         if (handlers[i](target, source, property, handlers, serialization))
-//         {
-//             return true;
-//         }
-//     }
-//     return true;
-// }
-
-// /**
-//  * 序列化属性函数
-//  *
-//  * 序列化对象时建议使用 serialization.serialize
-//  *
-//  * @param target 序列化后的对象，存放序列化后属性值的对象。
-//  * @param source 被序列化的对象，提供序列化前属性值的对象。
-//  * @param property 序列化属性名称
-//  * @param handlers 序列化属性函数列表
-//  */
-// function differentPropertyHandler(target: Object, source: Object, property: string, different: Object, handlers: DifferentPropertyHandler[], serialization: Serialization)
-// {
-//     for (let i = 0; i < handlers.length; i++)
-//     {
-//         if (handlers[i](target, source, property, different, handlers, serialization))
-//         {
-//             return true;
-//         }
-//     }
-//     return true;
-// }
-
 /**
  * 序列化属性函数项
  */
@@ -109,25 +44,6 @@ interface PropertyHandler<T extends HandlerParam>
      */
     (target: any, source: any, property: string, param: T): boolean;
 }
-
-// /**
-//  * 序列化属性函数项
-//  */
-// interface DifferentPropertyHandler
-// {
-//     /**
-//      * 序列化属性函数项
-//      *
-//      * @param target 序列化后的对象，存放序列化后属性值的对象。
-//      * @param source 被序列化的对象，提供序列化前属性值的对象。
-//      * @param property 序列化属性名称
-//      * @param handlers 序列化属性函数列表
-//      * @param serialization 序列化工具自身
-//      *
-//      * @returns 返回true时结束该属性后续处理。
-//      */
-//     (target: any, source: any, property: string, different: Object, handlers: DifferentPropertyHandler[], serialization: Serialization): boolean;
-// }
 
 interface HandlerParam
 {
@@ -339,7 +255,7 @@ function getSerializableMembers(object: any, serializableMembers?: string[])
     {
         getSerializableMembers(object[protoKey], serializableMembers);
     }
-    const serializePropertys = object[serializeKey];
+    const serializePropertys = object[_serialize__];
 
     if (serializePropertys) ArrayUtils.concatToSelf(serializableMembers, serializePropertys);
     ArrayUtils.unique(serializableMembers);
@@ -1084,4 +1000,4 @@ const serializeIsRefKey = '__serialize__IsRef__';
 const serializeIsRawKey = '__serialize__IsRaw__';
 const rootKey = '__root__';
 const protoKey = '__proto__';
-const serializeKey = '_serialize__';
+export const _serialize__ = '_serialize__';

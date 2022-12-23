@@ -1,7 +1,7 @@
 import { path } from '@feng3d/path';
 import { anyEmitter } from '../../event/AnyEmitter';
 import { pathUtils } from '../../filesystem/PathUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { ticker } from '../utils/Ticker';
 import { AssetMeta } from './AssetMeta';
 import { AssetType } from './AssetType';

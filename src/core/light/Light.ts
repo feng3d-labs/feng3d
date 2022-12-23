@@ -1,6 +1,7 @@
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
-import { serialize, serialization } from '../../serialization/Serialization';
+import { serialization } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';

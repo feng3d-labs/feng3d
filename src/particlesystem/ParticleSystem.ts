@@ -17,7 +17,7 @@ import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { decoratorRegisterClass } from '../serialization/ClassUtils';
-import { serialize } from '../serialization/Serialization';
+import { serialize } from '../serialization/serialize';
 import { watcher } from '../watcher/watcher';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';

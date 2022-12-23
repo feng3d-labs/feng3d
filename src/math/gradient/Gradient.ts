@@ -1,6 +1,6 @@
 import { mathUtil } from '../../polyfill/MathUtil';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Color3 } from '../Color3';
 import { Color4 } from '../Color4';
 import { GradientAlphaKey } from './GradientAlphaKey';

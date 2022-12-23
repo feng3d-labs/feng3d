@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { AssetType } from '../assets/AssetType';
 import { PropertyClip } from './PropertyClip';
 

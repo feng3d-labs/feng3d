@@ -1,7 +1,7 @@
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
-import { serialize } from '../../../serialization/Serialization';
+import { serialize } from '../../../serialization/serialize';
 import { TextureCube } from '../../textures/TextureCube';
 import { Material } from '../Material';
 import skyboxFragment from './skybox_fragment_glsl';

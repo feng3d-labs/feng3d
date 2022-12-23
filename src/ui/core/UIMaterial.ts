@@ -5,7 +5,7 @@ import { Vector4 } from "../../math/geom/Vector4";
 import { oav } from "../../objectview/ObjectView";
 import { shaderConfig } from "../../renderer/shader/ShaderLib";
 import { decoratorRegisterClass } from "../../serialization/ClassUtils";
-import { serialize } from "../../serialization/Serialization";
+import { serialize } from "../../serialization/serialize";
 
 declare global
 {

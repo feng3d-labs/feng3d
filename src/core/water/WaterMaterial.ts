@@ -4,7 +4,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { Material } from '../materials/Material';
 import { Texture2D } from '../textures/Texture2D';
 import waterFragment from './water_fragment_glsl';

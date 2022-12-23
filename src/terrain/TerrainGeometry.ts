@@ -6,7 +6,8 @@ import { Color4 } from "../math/Color4";
 import { oav } from "../objectview/ObjectView";
 import { gPartial } from "../polyfill/Types";
 import { decoratorRegisterClass } from "../serialization/ClassUtils";
-import { serialize, serialization } from "../serialization/Serialization";
+import { serialization } from "../serialization/Serialization";
+import { serialize } from "../serialization/serialize";
 import { watcher } from "../watcher/watcher";
 
 declare global

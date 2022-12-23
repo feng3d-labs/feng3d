@@ -1,7 +1,8 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize, serialization } from '../../serialization/Serialization';
+import { serialization } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { ParticleSystemInheritVelocityMode } from '../enums/ParticleSystemInheritVelocityMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';

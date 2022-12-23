@@ -1,6 +1,6 @@
 import { mathUtil } from '../../polyfill/MathUtil';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
-import { serialize } from '../../serialization/Serialization';
+import { serialize } from '../../serialization/serialize';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
 

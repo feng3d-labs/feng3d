@@ -2,7 +2,7 @@ import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
-import { serialize } from '../../../serialization/Serialization';
+import { serialize } from '../../../serialization/serialize';
 import { Material } from '../Material';
 import segmentFragment from './segment_fragment_glsl';
 import segmentVertex from './segment_vertex_glsl';
