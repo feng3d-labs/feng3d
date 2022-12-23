@@ -23,8 +23,17 @@ export class Color3
 {
     __class__: 'Color3';
 
-    static WHITE = new Color3();
-    static BLACK = new Color3(0, 0, 0);
+    static get WHITE()
+    {
+        return this._WHITE = this._WHITE || Object.freeze(new Color3(1, 1, 1));
+    }
+    private static _WHITE: Readonly<Color3>;
+
+    static get BLACK()
+    {
+        return this._BLACK = this._BLACK || Object.freeze(new Color3(0, 0, 0));
+    }
+    private static _BLACK: Readonly<Color3>;
 
     static fromUnit(color: number)
     {

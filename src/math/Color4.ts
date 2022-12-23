@@ -30,8 +30,17 @@ export class Color4
 {
     __class__: 'Color4';
 
-    static readonly WHITE = Object.freeze(new Color4(1, 1, 1, 1));
-    static readonly BLACK = Object.freeze(new Color4(0, 0, 0, 1));
+    static get WHITE()
+    {
+        return this._WHITE ||= Object.freeze(new Color4(1, 1, 1, 1));
+    }
+    private static _WHITE: Readonly<Color4>;
+
+    static get BLACK()
+    {
+        return this._BLACK ||= Object.freeze(new Color4(0, 0, 0, 1));
+    }
+    private static _BLACK: Readonly<Color4>;
 
     static fromUnit(color: number)
     {

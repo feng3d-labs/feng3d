@@ -3,7 +3,6 @@ import { mathUtil } from '../../polyfill/MathUtil';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/Serialization';
 import { Vector } from './Vector';
-import { Vector3 } from './Vector3';
 
 /**
  * 二维向量和点的表示。
@@ -16,7 +15,12 @@ export class Vector2 implements Vector
     /**
      * 原点 Vector2(0,0)
      */
-    static ZERO = Object.freeze(new Vector2());
+    static get ZERO()
+    {
+        this._ZERO ||= Object.freeze(new Vector2());
+        return this._ZERO;
+    }
+    private static _ZERO: Vector2;
 
     /**
      * 向量的X分量。
@@ -333,7 +337,7 @@ export class Vector2 implements Vector
      * 与目标点之间的距离平方
      * @param p 目标点
      */
-    distanceSquared(p: Vector3)
+    distanceSquared(p: Vector2)
     {
         const dx = this.x - p.x;
         const dy = this.y - p.y;

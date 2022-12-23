@@ -27,27 +27,47 @@ export class Vector3 implements Vector, Vector3Like
     /**
     * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
     */
-    static X_AXIS = Object.freeze(new Vector3(1, 0, 0));
+    static get X_AXIS()
+    {
+        return this._X_AXIS ||= Object.freeze(new Vector3(1, 0, 0));
+    }
+    private static _X_AXIS: Readonly<Vector3>;
 
     /**
-    * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
+     * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
     */
-    static Y_AXIS = Object.freeze(new Vector3(0, 1, 0));
+    static get Y_AXIS()
+    {
+        return this._Y_AXIS ||= Object.freeze(new Vector3(0, 1, 0));
+    }
+    private static _Y_AXIS: Readonly<Vector3>;
 
     /**
-    * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
+     * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
     */
-    static Z_AXIS = Object.freeze(new Vector3(0, 0, 1));
+    static get Z_AXIS()
+    {
+        return this._Z_AXIS ||= Object.freeze(new Vector3(0, 0, 1));
+    }
+    private static _Z_AXIS: Readonly<Vector3>;
 
     /**
      * 原点 Vector3(0,0,0)
-     */
-    static ZERO = Object.freeze(new Vector3());
+    */
+    static get ZERO()
+    {
+        return this._ZERO ||= Object.freeze(new Vector3(0, 0, 0));
+    }
+    private static _ZERO: Readonly<Vector3>;
 
     /**
      * Vector3(1, 1, 1)
-     */
-    static ONE = Object.freeze(new Vector3(1, 1, 1));
+    */
+    static get ONE()
+    {
+        return this._ONE ||= Object.freeze(new Vector3(1, 1, 1));
+    }
+    private static _ONE: Readonly<Vector3>;
 
     /**
     * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
