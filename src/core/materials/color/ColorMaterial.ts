@@ -2,7 +2,7 @@ import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
-import { serialize } from '../../../serialization/serialize';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { Material } from '../Material';
 import colorFragment from './color_fragment_glsl';
 import colorVertex from './color_vertex_glsl';
@@ -44,7 +44,7 @@ export class ColorUniforms
     /**
      * 颜色
      */
-    @serialize
+    @SerializeProperty
     @oav()
     u_diffuseInput = new Color4();
 }

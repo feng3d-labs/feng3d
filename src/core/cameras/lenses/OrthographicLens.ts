@@ -1,6 +1,6 @@
 import { oav } from '../../../objectview/ObjectView';
 import { Serializable } from '../../../serialization/Serializable';
-import { serialize } from '../../../serialization/serialize';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
@@ -14,7 +14,7 @@ export class OrthographicLens extends LensBase
     /**
      * 尺寸
      */
-    @serialize
+    @SerializeProperty
     @oav()
     size: number;
 

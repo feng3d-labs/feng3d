@@ -1,6 +1,6 @@
 import { dataTransform } from '../../../polyfill/DataTransform';
 import { Texture } from '../../../renderer/data/Texture';
-import { serialize } from '../../../serialization/serialize';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { HideFlags } from '../../core/HideFlags';
 import { imageDatas } from '../../textures/Texture2D';
 
@@ -14,7 +14,7 @@ export abstract class TextureInfo<T> extends Texture<T>
     /**
      * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
      */
-    @serialize
+    @SerializeProperty
     hideFlags = HideFlags.None;
 
     /**

@@ -6,7 +6,7 @@ import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { oav } from '../objectview/ObjectView';
 import { Serializable } from '../serialization/Serializable';
 import { serialization } from '../serialization/Serialization';
-import { serialize } from '../serialization/serialize';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { Transform2D } from './core/Transform2D';
 
@@ -75,7 +75,7 @@ export class Button extends Behaviour
     /**
      * 所有状态数据，每一个状态数据中记录了子对象的当前数据。
      */
-    @serialize
+    @SerializeProperty
     allStateData = {};
 
     private _stateInvalid = true;

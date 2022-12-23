@@ -9,7 +9,7 @@ import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Serializable } from '../serialization/Serializable';
-import { serialize } from '../serialization/serialize';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';
@@ -43,18 +43,18 @@ export class Text extends Component
      * 文本内容。
      */
     @oav()
-    @serialize
+    @SerializeProperty
     text = 'Hello 🌷 world\nHello 🌷 world';
 
     /**
      * 是否根据文本自动调整宽高。
      */
     @oav({ tooltip: '是否根据文本自动调整宽高。' })
-    @serialize
+    @SerializeProperty
     autoSize = true;
 
     @oav()
-    @serialize
+    @SerializeProperty
     style = new TextStyle();
 
     /**

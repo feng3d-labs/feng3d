@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
 
@@ -16,28 +16,28 @@ export class Vector4
     /**
      * Vector4 对象中的第一个元素。默认值为 0
      */
-    @serialize
+    @SerializeProperty
     @oav()
     x = 0;
 
     /**
      * Vector4 对象中的第二个元素。默认值为 0
      */
-    @serialize
+    @SerializeProperty
     @oav()
     y = 0;
 
     /**
      * Vector4 对象中的第三个元素。默认值为 0
      */
-    @serialize
+    @SerializeProperty
     @oav()
     z = 0;
 
     /**
      * Vector4 对象的第四个元素。默认值为 0
      */
-    @serialize
+    @SerializeProperty
     @oav()
     w = 0;
 

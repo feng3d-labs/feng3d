@@ -289,7 +289,7 @@ export * from './serialization/getClassName';
 export * from './serialization/getInstance';
 export * from './serialization/Serializable';
 export * from './serialization/Serialization';
-export * from './serialization/serialize';
+export * from './serialization/SerializeProperty';
 export * from './shortcut/EventProxy';
 export * from './shortcut/handle/KeyState';
 export * from './shortcut/handle/ShortCutCapture';

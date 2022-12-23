@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { PropertyClip } from './PropertyClip';
 
@@ -8,18 +8,18 @@ export class AnimationClip
     readonly assetType = AssetType.anim;
 
     @oav()
-    @serialize
+    @SerializeProperty
     declare name: string;
     /**
      * 动画时长，单位ms
      */
-    @serialize
+    @SerializeProperty
     length: number;
 
     @oav()
-    @serialize
+    @SerializeProperty
     loop = true;
 
-    @serialize
+    @SerializeProperty
     propertyClips: PropertyClip[];
 }

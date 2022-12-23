@@ -1,7 +1,7 @@
 import { oav } from '../objectview/ObjectView';
 import { mathUtil } from '../polyfill/MathUtil';
 import { Serializable } from '../serialization/Serializable';
-import { serialize } from '../serialization/serialize';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Color3 } from './Color3';
 import { Vector4 } from './geom/Vector4';
 
@@ -61,25 +61,25 @@ export class Color4
      * 红[0,1]
      */
     @oav()
-    @serialize
+    @SerializeProperty
     r = 1;
     /**
      * 绿[0,1]
      */
     @oav()
-    @serialize
+    @SerializeProperty
     g = 1;
     /**
      * 蓝[0,1]
      */
     @oav()
-    @serialize
+    @SerializeProperty
     b = 1;
     /**
      * 透明度[0,1]
      */
     @oav()
-    @serialize
+    @SerializeProperty
     a = 1;
 
     /**

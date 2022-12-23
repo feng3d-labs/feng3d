@@ -4,7 +4,7 @@ import { getClassName } from '../../serialization/getClassName';
 import { getInstance } from '../../serialization/getInstance';
 import { serialization } from '../../serialization/Serialization';
 import { __class__ } from '../../serialization/SerializationConst';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { ReadRS } from '../assets/rs/ReadRS';
 
@@ -18,7 +18,7 @@ export class AssetData extends EventEmitter
     /**
      * 资源名称
      */
-    @serialize
+    @SerializeProperty
     get assetName(): string
     {
         const asset = ReadRS.rs.getAssetById(this.assetId);
@@ -33,7 +33,7 @@ export class AssetData extends EventEmitter
     /**
      * 资源编号
      */
-    @serialize
+    @SerializeProperty
     get assetId()
     {
         return this._assetId;

@@ -3,7 +3,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Geometry } from './Geometry';
 
@@ -27,7 +27,7 @@ export class PointGeometry extends Geometry
      * 点数据列表
      * 修改数组内数据时需要手动调用 invalidateGeometry();
      */
-    @serialize
+    @SerializeProperty
     @oav()
     points: PointInfo[] = [];
 

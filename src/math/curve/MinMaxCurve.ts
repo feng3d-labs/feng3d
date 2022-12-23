@@ -1,6 +1,6 @@
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
 
@@ -15,7 +15,7 @@ export class MinMaxCurve
     /**
      * 模式
      */
-    @serialize
+    @SerializeProperty
     mode = MinMaxCurveMode.Constant;
 
     /**
@@ -23,7 +23,7 @@ export class MinMaxCurve
      *
      * 设置常数值。
      */
-    @serialize
+    @SerializeProperty
     constant = 0;
 
     /**
@@ -31,7 +31,7 @@ export class MinMaxCurve
      *
      * 为下界设置一个常数。
      */
-    @serialize
+    @SerializeProperty
     constantMin = 0;
 
     /**
@@ -39,7 +39,7 @@ export class MinMaxCurve
      *
      * 为上界设置一个常数。
      */
-    @serialize
+    @SerializeProperty
     constantMax = 0;
 
     /**
@@ -47,7 +47,7 @@ export class MinMaxCurve
      *
      * 设置曲线。
      */
-    @serialize
+    @SerializeProperty
     curve = new AnimationCurve();
 
     /**
@@ -55,7 +55,7 @@ export class MinMaxCurve
      *
      * 为下界设置一条曲线。
      */
-    @serialize
+    @SerializeProperty
     curveMin = new AnimationCurve();
 
     /**
@@ -63,7 +63,7 @@ export class MinMaxCurve
      *
      * 为上界设置一条曲线。
      */
-    @serialize
+    @SerializeProperty
     curveMax = new AnimationCurve();
 
     /**
@@ -71,13 +71,13 @@ export class MinMaxCurve
      *
      * 设置一个乘数应用于曲线。
      */
-    @serialize
+    @SerializeProperty
     curveMultiplier = 1;
 
     /**
      * 是否在编辑器中只显示Y轴 0-1 区域，例如 lifetime 为非负，需要设置为true
      */
-    @serialize
+    @SerializeProperty
     between0And1 = false;
 
     /**

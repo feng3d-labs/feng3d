@@ -1,6 +1,6 @@
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Color3 } from '../Color3';
 import { Color4 } from '../Color4';
 import { GradientAlphaKey } from './GradientAlphaKey';
@@ -18,7 +18,7 @@ export class Gradient
     /**
      * 渐变模式
      */
-    @serialize
+    @SerializeProperty
     mode = GradientMode.Blend;
 
     /**
@@ -26,7 +26,7 @@ export class Gradient
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    @serialize
+    @SerializeProperty
     alphaKeys: GradientAlphaKey[] = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
 
     /**
@@ -34,7 +34,7 @@ export class Gradient
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    @serialize
+    @SerializeProperty
     colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
 
     /**

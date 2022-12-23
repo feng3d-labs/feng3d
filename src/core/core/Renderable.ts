@@ -6,7 +6,7 @@ import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
@@ -43,28 +43,28 @@ export class Renderable extends RayCastable
      * 几何体
      */
     @oav({ component: 'OAVPick', tooltip: '几何体，提供模型以形状', componentParam: { accepttype: 'geometry', datatype: 'geometry' } })
-    @serialize
+    @SerializeProperty
     geometry: Geometrys = Geometry.getDefault('Cube');
 
     /**
      * 材质
      */
     @oav({ component: 'OAVPick', tooltip: '材质，提供模型以皮肤', componentParam: { accepttype: 'material', datatype: 'material' } })
-    @serialize
+    @SerializeProperty
     material: Materials = Material.getDefault('Default-Material');
 
     /**
      * 是否投射阴影
      */
     @oav({ tooltip: '是否投射阴影' })
-    @serialize
+    @SerializeProperty
     castShadows = true;
 
     /**
      * 是否接受阴影
      */
     @oav({ tooltip: '是否接受阴影' })
-    @serialize
+    @SerializeProperty
     receiveShadows = true;
 
     constructor(param?: gPartial<Renderable>)

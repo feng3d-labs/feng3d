@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
@@ -35,28 +35,28 @@ export class SphereGeometry extends Geometry
     /**
      * 球体半径
      */
-    @serialize
+    @SerializeProperty
     @oav()
     radius = 0.5;
 
     /**
      * 横向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsW = 16;
 
     /**
      * 纵向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsH = 12;
 
     /**
      * 是否朝上
      */
-    @serialize
+    @SerializeProperty
     @oav()
     yUp = true;
 

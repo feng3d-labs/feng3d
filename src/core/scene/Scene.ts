@@ -2,7 +2,7 @@ import { Color4 } from '../../math/Color4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
@@ -45,14 +45,14 @@ export class Scene extends Component
     /**
      * 背景颜色
      */
-    @serialize
+    @SerializeProperty
     @oav()
     background = new Color4(0, 0, 0, 1);
 
     /**
      * 环境光强度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     ambientColor = new Color4();
 

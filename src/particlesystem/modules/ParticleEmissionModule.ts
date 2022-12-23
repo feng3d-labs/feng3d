@@ -2,7 +2,7 @@ import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
 import { ParticleModule } from './ParticleModule';
 
@@ -17,7 +17,7 @@ export class ParticleEmissionModule extends ParticleModule
     /**
      * 随着时间的推移，新粒子产生的速度。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
     @oav({ tooltip: '随着时间的推移，新粒子产生的速度。' })
     rateOverTime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 });
@@ -47,7 +47,7 @@ export class ParticleEmissionModule extends ParticleModule
      * 产生新粒子的速度，通过距离。
      * 新粒子只有世界空间模拟且发射器移动时才会被发射出来。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
     @oav({ tooltip: '产生新粒子的速度，通过距离。新粒子只有世界空间模拟且发射器移动时才会被发射出来。' })
     rateOverDistance = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
@@ -72,7 +72,7 @@ export class ParticleEmissionModule extends ParticleModule
     /**
      * 爆发数组
      */
-    @serialize
+    @SerializeProperty
     @oav({ component: 'OAVArray', tooltip: '在指定时间进行额外发射指定数量的粒子', componentParam: { defaultItem: () => new ParticleEmissionBurst() } })
     bursts: ParticleEmissionBurst[] = [];
 

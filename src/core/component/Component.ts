@@ -5,7 +5,7 @@ import { Scene } from '../scene/Scene';
 import { EventEmitter } from '../../event/EventEmitter';
 import { Constructor } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 declare global
 {
@@ -112,7 +112,7 @@ export class Component extends EventEmitter<Object3DEventMap>
     /**
      * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
      */
-    @serialize
+    @SerializeProperty
     hideFlags = HideFlags.None;
 
     // ------------------------------------------

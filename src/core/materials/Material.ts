@@ -5,7 +5,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { RenderParams } from '../../renderer/data/RenderParams';
 import { Shader } from '../../renderer/data/Shader';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetData } from '../core/AssetData';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
@@ -50,24 +50,24 @@ export abstract class Material extends EventEmitter
     }
 
     @oav()
-    @serialize
+    @SerializeProperty
     name = '';
 
     /**
      * Uniform数据
      */
-    @serialize
+    @SerializeProperty
     @oav({ component: 'OAVObjectView' })
     uniforms = {};
 
     /**
      * 渲染参数
      */
-    @serialize
+    @SerializeProperty
     @oav({ block: '渲染参数', component: 'OAVObjectView' })
     renderParams = new RenderParams();
 
-    @serialize
+    @SerializeProperty
     shader = new Shader();
 
     constructor(param?: gPartial<Material>)

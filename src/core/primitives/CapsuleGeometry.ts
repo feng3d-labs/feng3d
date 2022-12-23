@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
@@ -36,35 +36,35 @@ export class CapsuleGeometry extends Geometry
     /**
      * 胶囊体半径
      */
-    @serialize
+    @SerializeProperty
     @oav()
     radius = 0.5;
 
     /**
      * 胶囊体高度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     height = 1;
 
     /**
      * 横向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsW = 16;
 
     /**
      * 纵向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsH = 15;
 
     /**
      * 正面朝向 true:Y+ false:Z+
      */
-    @serialize
+    @SerializeProperty
     @oav()
     yUp = true;
 

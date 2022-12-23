@@ -5,7 +5,7 @@ import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
@@ -25,7 +25,7 @@ export class ParticleMainModule extends ParticleModule
     /**
      * 粒子系统的持续时间(秒)。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The duration of the particle system in seconds." })
     @oav({ tooltip: '粒子系统的持续时间(秒)。' })
     duration = 5;
@@ -33,7 +33,7 @@ export class ParticleMainModule extends ParticleModule
     /**
      * 粒子系统在循环吗?
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Is the particle system looping?" })
     @oav({ tooltip: '粒子系统在循环吗?' })
     loop = true;
@@ -43,7 +43,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible." })
     @oav({ tooltip: '当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。' })
     prewarm = false;
@@ -53,7 +53,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 启动延迟(以秒为单位)。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Start delay in seconds." })
     @oav({ tooltip: '启动延迟(以秒为单位)。' })
     startDelay = new MinMaxCurve();
@@ -73,7 +73,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 每个新粒子的总寿命(以秒计)。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
     @oav({ tooltip: '每个新粒子的总寿命(以秒计)。' })
     startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constantMin: 5, constantMax: 5 });
@@ -100,7 +100,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 粒子发射时的初始速度。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The initial speed of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始速度。' })
     startSpeed = serialization.setValue(new MinMaxCurve(), { constant: 5, constantMin: 5, constantMax: 5 });
@@ -127,7 +127,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 允许为每个轴分别指定粒度大小的标志。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "A flag to enable specifying particle size individually for each axis." })
     @oav({ tooltip: '允许为每个轴分别指定粒度大小的标志。' })
     useStartSize3D = false;
@@ -137,7 +137,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 粒子发射时的初始大小。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The initial size of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始大小。' })
     get startSize()
@@ -172,7 +172,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 发射时粒子的初始大小。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The initial size of particles when emitted." })
     @oav({ tooltip: '发射时粒子的初始大小。' })
     startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
@@ -277,7 +277,7 @@ export class ParticleMainModule extends ParticleModule
      * A flag to enable 3D particle rotation.
      * 一个启用粒子3D旋转的标记。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "A flag to enable 3D particle rotation." })
     @oav({ tooltip: '一个启用粒子3D旋转的标记。' })
     useStartRotation3D = false;
@@ -320,7 +320,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 粒子发射时的初始旋转。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The initial rotation of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始旋转。' })
     startRotation3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
@@ -426,7 +426,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction." })
     @oav({ tooltip: '导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。' })
     randomizeRotationDirection = 0;
@@ -436,7 +436,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 粒子发射时的初始颜色。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The initial color of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始颜色。' })
     startColor = new MinMaxGradient();
@@ -446,7 +446,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 应用于重力加速度的缩放。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Scale applied to the gravity." })
     @oav({ tooltip: '应用于重力加速度的缩放。' })
     gravityModifier = new MinMaxCurve();
@@ -458,7 +458,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * @todo
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "This selects the space in which to simulate particles. It can be either world or local space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
     @oav({ tooltip: '模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
     simulationSpace = ParticleSystemSimulationSpace.Local;
@@ -468,7 +468,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 重写粒子系统的默认播放速度。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Override the default playback speed of the Particle System." })
     @oav({ tooltip: '重写粒子系统的默认播放速度。' })
     simulationSpeed = 1;
@@ -478,7 +478,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 控制粒子系统的变换组件如何应用于粒子系统。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Control how the particle system's Transform Component is applied to the particle system.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemScalingMode } })
     @oav({ tooltip: '控制粒子系统的变换组件如何应用于粒子系统。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemScalingMode } })
     scalingMode = ParticleSystemScalingMode.Local;
@@ -488,7 +488,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 如果设置为真，粒子系统将自动开始播放启动。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "If set to true, the particle system will automatically start playing on startup." })
     @oav({ tooltip: '如果设置为真，粒子系统将自动开始播放启动。' })
     playOnAwake = true;
@@ -498,7 +498,7 @@ export class ParticleMainModule extends ParticleModule
      *
      * 发射粒子的最大数量。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The maximum number of particles to emit." })
     @oav({ tooltip: '发射粒子的最大数量。' })
     maxParticles = 1000;

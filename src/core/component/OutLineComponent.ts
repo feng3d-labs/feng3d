@@ -2,7 +2,7 @@ import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
@@ -41,15 +41,15 @@ export class OutLineComponent extends Component
     __class__: 'OutLineComponent';
 
     @oav()
-    @serialize
+    @SerializeProperty
     size = 1;
 
     @oav()
-    @serialize
+    @SerializeProperty
     color = new Color4(0.2, 0.2, 0.2, 1.0);
 
     @oav()
-    @serialize
+    @SerializeProperty
     outlineMorphFactor = 0.0;
 
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)

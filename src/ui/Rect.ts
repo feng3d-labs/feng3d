@@ -8,7 +8,7 @@ import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Serializable } from '../serialization/Serializable';
-import { serialize } from '../serialization/serialize';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';
 
@@ -39,7 +39,7 @@ export class Rect extends Component
      * 填充颜色。
      */
     @oav()
-    @serialize
+    @SerializeProperty
     color = new Color4();
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)

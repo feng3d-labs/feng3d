@@ -2,7 +2,7 @@ import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
-import { serialize } from '../../../serialization/serialize';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { Material } from '../Material';
 import segmentFragment from './segment_fragment_glsl';
 import segmentVertex from './segment_vertex_glsl';
@@ -46,7 +46,7 @@ export class SegmentUniforms
     /**
      * 颜色
      */
-    @serialize
+    @SerializeProperty
     @oav()
     u_segmentColor = new Color4();
 }

@@ -2,7 +2,7 @@ import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemInheritVelocityMode } from '../enums/ParticleSystemInheritVelocityMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
@@ -23,7 +23,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
      *
      * 如何将发射体速度应用于粒子。
      */
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '如何将发射体速度应用于粒子。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemInheritVelocityMode } })
     mode = ParticleSystemInheritVelocityMode.Initial;
 
@@ -32,7 +32,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
      *
      * 曲线，用来定义在粒子的生命周期内应用了多少发射速度。
      */
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '曲线，用来定义在粒子的生命周期内应用了多少发射速度。' })
     multiplier = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 

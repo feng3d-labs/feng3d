@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
@@ -38,28 +38,28 @@ export class ConeGeometry extends Geometry
     /**
      * 底部半径
      */
-    @serialize
+    @SerializeProperty
     @oav()
     bottomRadius = 0.5;
 
     /**
      * 高度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     height = 2;
 
     /**
      * 横向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsW = 16;
 
     /**
      * 纵向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsH = 1;
 
@@ -67,13 +67,13 @@ export class ConeGeometry extends Geometry
      * 底部是否封口
      */
     @oav()
-    @serialize
+    @SerializeProperty
     bottomClosed = true;
 
     /**
      * 是否朝上
      */
-    @serialize
+    @SerializeProperty
     @oav()
     yUp = true;
 

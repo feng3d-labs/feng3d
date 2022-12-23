@@ -1,7 +1,7 @@
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
 
@@ -15,7 +15,7 @@ export class ParticleColorOverLifetimeModule extends ParticleModule
      * The gradient controlling the particle colors.
      * 控制粒子颜色的梯度。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "The gradient controlling the particle colors." })
     @oav({ tooltip: '控制粒子颜色的梯度。' })
     color = new MinMaxGradient();

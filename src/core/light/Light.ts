@@ -1,7 +1,7 @@
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';
@@ -24,28 +24,28 @@ export class Light extends Behaviour
     /**
      * 灯光类型
      */
-    @serialize
+    @SerializeProperty
     lightType: LightType;
 
     /**
      * 颜色
      */
     @oav()
-    @serialize
+    @SerializeProperty
     color = new Color3();
 
     /**
      * 光照强度
      */
     @oav()
-    @serialize
+    @SerializeProperty
     intensity = 1;
 
     /**
      * 阴影类型
      */
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ShadowType } })
-    @serialize
+    @SerializeProperty
     shadowType = ShadowType.No_Shadows;
 
     /**

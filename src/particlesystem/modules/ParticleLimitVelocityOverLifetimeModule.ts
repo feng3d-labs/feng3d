@@ -4,7 +4,7 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
@@ -24,7 +24,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
      *
      * 在每个轴上分别设置生命周期内的大小。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Set the size over lifetime on each axis separately." })
     @oav({ tooltip: '在每个轴上分别设置生命周期内的大小。' })
     separateAxes = false;
@@ -34,7 +34,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
      *
      * 最大速度曲线，当不使用每轴一个曲线时。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Maximum velocity curve, when not using one curve per axis." })
     @oav({ tooltip: '最大速度曲线，当不使用每轴一个曲线时。' })
     limit = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 });
@@ -44,7 +44,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
      *
      * 最高速度。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Maximum velocity." })
     @oav({ tooltip: '最高速度。' })
     limit3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
@@ -55,7 +55,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
      * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
      */
     // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '指定速度是在局部空间(与变换一起旋转)还是在世界空间。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
     space = ParticleSystemSimulationSpace.Local;
 
@@ -64,7 +64,7 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
      *
      * 控制多少速度，超过速度限制应该被抑制。
      */
-    @serialize
+    @SerializeProperty
     // @oav({ tooltip: "Controls how much the velocity that exceeds the velocity limit should be dampened.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
     @oav({ tooltip: '控制多少速度，超过速度限制应该被抑制。' })
     dampen = 1;

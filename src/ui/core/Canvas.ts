@@ -7,7 +7,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Transform2D } from './Transform2D';
 
@@ -38,7 +38,7 @@ export class Canvas extends Behaviour
      *
      * 画布是在世界或覆盖模式?
      */
-    @serialize
+    @SerializeProperty
     @oav({ component: 'OAVEnum', tooltip: '画布是在世界或覆盖模式', componentParam: { enumClass: UIRenderMode } })
     renderMode = UIRenderMode.ScreenSpaceOverlay;
 
@@ -57,14 +57,14 @@ export class Canvas extends Behaviour
     /**
      * 最近距离
      */
-    @serialize
+    @SerializeProperty
     @oav()
     near = -1000;
 
     /**
      * 最远距离
      */
-    @serialize
+    @SerializeProperty
     @oav()
     far = 10000;
 

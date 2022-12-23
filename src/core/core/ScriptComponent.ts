@@ -4,7 +4,7 @@ import { getClassName } from '../../serialization/getClassName';
 import { getInstance } from '../../serialization/getInstance';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
@@ -30,14 +30,14 @@ export class ScriptComponent extends Behaviour
 {
     runEnvironment = RunEnvironment.feng3d;
 
-    @serialize
+    @SerializeProperty
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'file_script' } })
     scriptName: string;
 
     /**
      * 脚本对象
      */
-    @serialize
+    @SerializeProperty
     get scriptInstance()
     {
         if (this._invalid) this._updateScriptInstance();

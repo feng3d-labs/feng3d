@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { RegisterComponent, Component } from './Component';
 
@@ -23,7 +23,7 @@ export class Behaviour extends Component
      * 是否启用update方法
      */
     @oav()
-    @serialize
+    @SerializeProperty
     enabled = true;
 
     /**

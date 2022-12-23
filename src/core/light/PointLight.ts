@@ -1,6 +1,6 @@
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
@@ -37,7 +37,7 @@ export class PointLight extends Light
      * 光照范围
      */
     @oav()
-    @serialize
+    @SerializeProperty
     get range()
     {
         return this._range;

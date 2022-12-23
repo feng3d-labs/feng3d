@@ -1,25 +1,25 @@
 import { Quaternion } from "../../math/geom/Quaternion";
 import { Vector3 } from "../../math/geom/Vector3";
-import { serialize } from "../../serialization/serialize";
+import { SerializeProperty } from "../../serialization/SerializeProperty";
 
 export class PropertyClip
 {
     /**
      * 属性路径
      */
-    @serialize
+    @SerializeProperty
     path: PropertyClipPath;
 
-    @serialize
+    @SerializeProperty
     propertyName: string;
 
-    @serialize
+    @SerializeProperty
     type: 'Number' | 'Vector3' | 'Quaternion';
 
-    @serialize
+    @SerializeProperty
     times: number[];
 
-    @serialize
+    @SerializeProperty
     values: number[];
 
     getValue(cliptime: number)

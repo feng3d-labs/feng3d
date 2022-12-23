@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { getComponentType, RegisterComponent } from '../component/Component';
@@ -17,11 +17,11 @@ declare global
 export class Animation extends Behaviour
 {
     @oav({ component: 'OAVDefault', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' } } })
-    @serialize
+    @SerializeProperty
     animation: AnimationClip;
 
     @oav({ component: 'OAVArray', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' }, defaultItem: () => new AnimationClip() } })
-    @serialize
+    @SerializeProperty
     animations: AnimationClip[] = [];
 
     /**
@@ -31,14 +31,14 @@ export class Animation extends Behaviour
     time = 0;
 
     @oav()
-    @serialize
+    @SerializeProperty
     isplaying = false;
 
     /**
      * 播放速度
      */
     @oav()
-    @serialize
+    @SerializeProperty
     playspeed = 1;
 
     /**

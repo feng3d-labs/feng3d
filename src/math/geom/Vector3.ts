@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Matrix3x3 } from './Matrix3x3';
 import { Matrix4x4 } from './Matrix4x4';
 import { Quaternion } from './Quaternion';
@@ -72,21 +72,21 @@ export class Vector3 implements Vector, Vector3Like
     /**
     * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
     */
-    @serialize
+    @SerializeProperty
     @oav()
     x = 0;
 
     /**
      * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
      */
-    @serialize
+    @SerializeProperty
     @oav()
     y = 0;
 
     /**
      * Vector3 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
      */
-    @serialize
+    @SerializeProperty
     @oav()
     z = 0;
 

@@ -1,7 +1,7 @@
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Geometry } from './Geometry';
 
 declare global
@@ -20,12 +20,12 @@ export class CustomGeometry extends Geometry
     /**
      * 顶点索引缓冲
      */
-    @serialize
+    @SerializeProperty
     declare indexBuffer: ElementBuffer;
 
     /**
      * 属性数据列表
      */
-    @serialize
+    @SerializeProperty
     declare attributes: { [key: string]: AttributeBuffer; };
 }

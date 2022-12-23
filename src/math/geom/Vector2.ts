@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Vector } from './Vector';
 
 /**
@@ -26,14 +26,14 @@ export class Vector2 implements Vector
      * 向量的X分量。
      */
     @oav()
-    @serialize
+    @SerializeProperty
     x: number;
 
     /**
      * 向量的Y分量。
      */
     @oav()
-    @serialize
+    @SerializeProperty
     y: number;
 
     /**

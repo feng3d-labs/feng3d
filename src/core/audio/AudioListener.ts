@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
@@ -31,7 +31,7 @@ export class AudioListener extends Behaviour
     /**
      * 音量
      */
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '音量' })
     get volume()
     {

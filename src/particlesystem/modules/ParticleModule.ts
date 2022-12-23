@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
 import { ParticleSystem } from '../ParticleSystem';
 
@@ -15,7 +15,7 @@ export class ParticleModule extends EventEmitter
      * 是否开启
      */
     @oav({ tooltip: '是否开启' })
-    @serialize
+    @SerializeProperty
     enabled = false;
 
     /**

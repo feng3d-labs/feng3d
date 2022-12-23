@@ -5,7 +5,7 @@ import { Vector4 } from "../../math/geom/Vector4";
 import { oav } from "../../objectview/ObjectView";
 import { shaderConfig } from "../../renderer/shader/ShaderLib";
 import { Serializable } from "../../serialization/Serializable";
-import { serialize } from "../../serialization/serialize";
+import { SerializeProperty } from "../../serialization/SerializeProperty";
 
 declare global
 {
@@ -49,7 +49,7 @@ export class UIUniforms
     /**
      * 颜色
      */
-    @serialize
+    @SerializeProperty
     @oav()
     u_color = new Color4();
 
@@ -57,7 +57,7 @@ export class UIUniforms
      * 纹理数据
      */
     @oav()
-    @serialize
+    @SerializeProperty
     s_texture = Texture2D.default;
 
     /**

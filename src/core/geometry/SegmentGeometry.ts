@@ -3,7 +3,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
@@ -37,7 +37,7 @@ export class SegmentGeometry extends Geometry
      * 线段列表
      * 修改数组内数据时需要手动调用 invalidateGeometry();
      */
-    @serialize
+    @SerializeProperty
     @oav({ component: 'OAVArray', tooltip: '在指定时间进行额外发射指定数量的粒子', componentParam: { defaultItem: () => new Segment() } })
     segments: Segment[] = [];
 
@@ -98,28 +98,28 @@ export class Segment
     /**
      * 起点坐标
      */
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '起点坐标' })
     start = new Vector3();
 
     /**
      * 终点坐标
      */
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '终点坐标' })
     end = new Vector3();
 
     /**
      * 起点颜色
      */
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '起点颜色' })
     startColor = new Color4();
 
     /**
      * 终点颜色
      */
-    @serialize
+    @SerializeProperty
     @oav({ tooltip: '终点颜色' })
     endColor = new Color4();
 }

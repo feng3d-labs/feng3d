@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent, Component } from '../component/Component';
 import { AddComponentMenu } from '../Menu';
@@ -29,10 +29,10 @@ export class SkyBox extends Component
     // /**
     //  * The material used by the skybox.
     //  */
-    // @serialize
+    // @SerializeProperty
     // material: Material;
 
-    @serialize
+    @SerializeProperty
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
     s_skyBoxTexture = TextureCube.default;
 

@@ -3,7 +3,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
@@ -60,28 +60,28 @@ export class CircleGeometry extends Geometry
     /**
      * 半径
      */
-    @serialize
+    @SerializeProperty
     @oav()
     radius = 1;
 
     /**
      * 分段数量
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segments = 8;
 
     /**
      * 起始弧度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     thetaStart = 0;
 
     /**
      * 弧长
      */
-    @serialize
+    @SerializeProperty
     @oav()
     thetaLength = Math.PI * 2;
 

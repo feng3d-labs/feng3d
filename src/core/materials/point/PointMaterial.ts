@@ -2,7 +2,7 @@ import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
-import { serialize } from '../../../serialization/serialize';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { Material } from '../Material';
 import pointFragment from './point_fragment_glsl';
 import pointVertex from './point_vertex_glsl';
@@ -37,14 +37,14 @@ export class PointUniforms
     /**
      * 颜色
      */
-    @serialize
+    @SerializeProperty
     @oav()
     u_color = new Color4();
 
     /**
      * 点绘制时点的尺寸
      */
-    @serialize
+    @SerializeProperty
     @oav()
     u_PointSize = 1;
 }

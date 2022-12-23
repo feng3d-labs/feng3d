@@ -4,7 +4,7 @@ import { Ray3 } from '../../../math/geom/Ray3';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { Vector4 } from '../../../math/geom/Vector4';
 import { oav } from '../../../objectview/ObjectView';
-import { serialize } from '../../../serialization/serialize';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 
@@ -37,14 +37,14 @@ export abstract class LensBase<T extends LensEventMap = LensEventMap> extends Ev
 	/**
 	 * 最近距离
 	 */
-	@serialize
+	@SerializeProperty
 	@oav()
 	near: number;
 
 	/**
 	 * 最远距离
 	 */
-	@serialize
+	@SerializeProperty
 	@oav()
 	far: number;
 

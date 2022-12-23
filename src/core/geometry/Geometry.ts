@@ -10,7 +10,7 @@ import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { CullFace } from '../../renderer/data/RenderParams';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { geometryUtils } from './GeometryUtils';
@@ -214,14 +214,14 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
     /**
      * 纹理U缩放，默认为1。
      */
-    @serialize
+    @SerializeProperty
     @oav()
     scaleU = 1;
 
     /**
      * 纹理V缩放，默认为1。
      */
-    @serialize
+    @SerializeProperty
     @oav()
     scaleV = 1;
 

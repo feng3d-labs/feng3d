@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
@@ -22,25 +22,25 @@ export class Quaternion
     /**
      * 虚基向量i的乘子
      */
-    @serialize
+    @SerializeProperty
     x = 0;
 
     /**
      * 虚基向量j的乘子
      */
-    @serialize
+    @SerializeProperty
     y = 0;
 
     /**
      * 虚基向量k的乘子
      */
-    @serialize
+    @SerializeProperty
     z = 0;
 
     /**
      * 实部的乘数
      */
-    @serialize
+    @SerializeProperty
     w = 1;
 
     /**

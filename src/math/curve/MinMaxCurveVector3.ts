@@ -1,4 +1,4 @@
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Vector3 } from '../geom/Vector3';
 import { MinMaxCurve } from './MinMaxCurve';
 
@@ -7,19 +7,19 @@ export class MinMaxCurveVector3
     /**
      * x 曲线
      */
-    @serialize
+    @SerializeProperty
     xCurve = new MinMaxCurve();
 
     /**
      * y 曲线
      */
-    @serialize
+    @SerializeProperty
     yCurve = new MinMaxCurve();
 
     /**
      * z 曲线
      */
-    @serialize
+    @SerializeProperty
     zCurve = new MinMaxCurve();
 
     /**

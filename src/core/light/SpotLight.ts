@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
@@ -34,21 +34,21 @@ export class SpotLight extends Light
      * 光照范围
      */
     @oav()
-    @serialize
+    @SerializeProperty
     range = 10;
 
     /**
      *
      */
     @oav()
-    @serialize
+    @SerializeProperty
     angle = 60;
 
     /**
      * 半影.
      */
     @oav()
-    @serialize
+    @SerializeProperty
     penumbra = 0;
 
     /**

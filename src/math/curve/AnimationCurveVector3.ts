@@ -1,4 +1,4 @@
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Vector3 } from '../geom/Vector3';
 import { AnimationCurve } from './AnimationCurve';
 
@@ -10,19 +10,19 @@ export class AnimationCurveVector3
     /**
      * X 轴曲线
      */
-    @serialize
+    @SerializeProperty
     xCurve = new AnimationCurve();
 
     /**
      * Y 轴曲线
      */
-    @serialize
+    @SerializeProperty
     yCurve = new AnimationCurve();
 
     /**
      * Z 轴曲线
      */
-    @serialize
+    @SerializeProperty
     zCurve = new AnimationCurve();
 
     /**

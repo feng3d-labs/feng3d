@@ -3,7 +3,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
@@ -52,27 +52,27 @@ export class RingGeometry extends Geometry
 {
     __class__: 'RingGeometry' = 'RingGeometry';
 
-    @serialize
+    @SerializeProperty
     @oav()
     innerRadius = 0.5;
 
-    @serialize
+    @SerializeProperty
     @oav()
     outerRadius = 1;
 
-    @serialize
+    @SerializeProperty
     @oav()
     thetaSegments = 8;
 
-    @serialize
+    @SerializeProperty
     @oav()
     phiSegments = 1;
 
-    @serialize
+    @SerializeProperty
     @oav()
     thetaStart = 0;
 
-    @serialize
+    @SerializeProperty
     @oav()
     thetaLength = Math.PI * 2;
 

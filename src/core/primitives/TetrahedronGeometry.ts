@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
@@ -39,14 +39,14 @@ export class TetrahedronGeometry extends Geometry
     /**
      * 半径
      */
-    @serialize
+    @SerializeProperty
     @oav()
     radius = 1;
 
     /**
      * 细节程度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     detail = 0;
 

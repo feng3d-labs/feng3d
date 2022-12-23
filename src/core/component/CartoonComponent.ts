@@ -3,7 +3,7 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
@@ -37,36 +37,36 @@ export class CartoonComponent extends Component
     __class__: 'CartoonComponent';
 
     @oav()
-    @serialize
+    @SerializeProperty
     outlineSize = 1;
 
     @oav()
-    @serialize
+    @SerializeProperty
     outlineColor = new Color4(0.2, 0.2, 0.2, 1.0);
 
     @oav()
-    @serialize
+    @SerializeProperty
     outlineMorphFactor = 0.0;
 
     /**
      * 半兰伯特值diff，分段值 4个(0.0,1.0)
      */
     @oav()
-    @serialize
+    @SerializeProperty
     diffuseSegment = new Vector4(0.1, 0.3, 0.6, 1.0);
     /**
      * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
      */
     @oav()
-    @serialize
+    @SerializeProperty
     diffuseSegmentValue = new Vector4(0.1, 0.3, 0.6, 1.0);
 
     @oav()
-    @serialize
+    @SerializeProperty
     specularSegment = 0.5;
 
     @oav()
-    @serialize
+    @SerializeProperty
     get cartoon_Anti_aliasing()
     {
         return this._cartoon_Anti_aliasing;

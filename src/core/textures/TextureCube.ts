@@ -4,7 +4,7 @@ import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
@@ -42,7 +42,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     /**
      * 原始数据
      */
-    @serialize
+    @SerializeProperty
     rawData: { type: 'texture', textures: Texture2D[] } | { type: 'path', paths: string[] };
 
     noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];

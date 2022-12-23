@@ -5,7 +5,7 @@ import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
@@ -87,7 +87,7 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
     /**
      * 用于表示初始化纹理的数据来源
      */
-    @serialize
+    @SerializeProperty
     get source()
     {
         return this._source;

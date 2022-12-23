@@ -1,7 +1,7 @@
 import { path } from '@feng3d/path';
 import { anyEmitter } from '../../event/AnyEmitter';
 import { pathUtils } from '../../filesystem/PathUtils';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ticker } from '../utils/Ticker';
 import { AssetMeta } from './AssetMeta';
 import { AssetType } from './AssetType';
@@ -40,13 +40,13 @@ export abstract class FileAsset
     /**
      * 资源路径
      */
-    @serialize
+    @SerializeProperty
     assetPath: string;
 
     /**
      * 资源编号
      */
-    @serialize
+    @SerializeProperty
     assetId: string;
 
     /**

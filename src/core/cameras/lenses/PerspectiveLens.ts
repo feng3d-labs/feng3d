@@ -2,7 +2,7 @@ import { Vector3 } from '../../../math/geom/Vector3';
 import { Vector4 } from '../../../math/geom/Vector4';
 import { oav } from '../../../objectview/ObjectView';
 import { Serializable } from '../../../serialization/Serializable';
-import { serialize } from '../../../serialization/serialize';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
@@ -16,7 +16,7 @@ export class PerspectiveLens extends LensBase
     /**
      * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
      */
-    @serialize
+    @SerializeProperty
     @oav()
     fov: number;
 

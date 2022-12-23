@@ -143,7 +143,7 @@
 //     /**
 //      * 此组件附加到的实体。组件总是附加到实体上。
 //      */
-//     @serialize
+//     @SerializeProperty
 //     get entity()
 //     {
 //         return this._entity;

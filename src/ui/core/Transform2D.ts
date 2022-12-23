@@ -11,7 +11,7 @@ import { Vector4 } from "../../math/geom/Vector4";
 import { oav } from "../../objectview/ObjectView";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { Serializable } from "../../serialization/Serializable";
-import { serialize } from "../../serialization/serialize";
+import { SerializeProperty } from "../../serialization/SerializeProperty";
 import { watcher } from "../../watcher/watcher";
 
 declare global
@@ -70,7 +70,7 @@ export class Transform2D extends Component
      * 位移
      */
     @oav({ tooltip: '当anchorMin.x == anchorMax.x时对position.x赋值生效，当 anchorMin.y == anchorMax.y 时对position.y赋值生效，否则赋值无效，自动被覆盖。', componentParam: { step: 1, stepScale: 1, stepDownUp: 1 } })
-    @serialize
+    @SerializeProperty
     get position() { return this._position; }
     set position(v) { this._position.copy(v); }
     private readonly _position = new Vector2();
@@ -79,7 +79,7 @@ export class Transform2D extends Component
      * 尺寸，宽高。
      */
     @oav({ tooltip: '宽度，不会影响到缩放值。当 anchorMin.x == anchorMax.x 时对 size.x 赋值生效，当anchorMin.y == anchorMax.y时对 size.y 赋值生效，否则赋值无效，自动被覆盖。', componentParam: { step: 1, stepScale: 1, stepDownUp: 1 } })
-    @serialize
+    @SerializeProperty
     get size() { return this._size; }
     set size(v) { this._size.copy(v); }
     private _size = new Vector2(1, 1);
@@ -88,7 +88,7 @@ export class Transform2D extends Component
      * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
      */
     @oav({ tooltip: '与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。', componentParam: { step: 1, stepScale: 1, stepDownUp: 1 } })
-    @serialize
+    @SerializeProperty
     get layout() { return this._layout; }
     set layout(v) { this._layout.copy(v); }
     private _layout = new Vector4();
@@ -97,7 +97,7 @@ export class Transform2D extends Component
      * 最小锚点，父Transform2D中左上角锚定的规范化位置。
      */
     @oav({ tooltip: '父Transform2D中左上角锚定的规范化位置。', componentParam: { step: 0.01, stepScale: 0.01, stepDownUp: 0.01 } })
-    @serialize
+    @SerializeProperty
     get anchorMin() { return this._anchorMin; }
     set anchorMin(v) { this._anchorMin.copy(v); }
     private _anchorMin = new Vector2(0.5, 0.5);
@@ -106,7 +106,7 @@ export class Transform2D extends Component
      * 最大锚点，父Transform2D中左上角锚定的规范化位置。
      */
     @oav({ tooltip: '最大锚点，父Transform2D中左上角锚定的规范化位置。', componentParam: { step: 0.01, stepScale: 0.01, stepDownUp: 0.01 } })
-    @serialize
+    @SerializeProperty
     get anchorMax() { return this._anchorMax; }
     set anchorMax(v) { this._anchorMax.copy(v); }
     private _anchorMax = new Vector2(0.5, 0.5);
@@ -115,7 +115,7 @@ export class Transform2D extends Component
      * The normalized position in this RectTransform that it rotates around.
      */
     @oav({ tooltip: '中心点' })
-    @serialize
+    @SerializeProperty
     get pivot() { return this._pivot; }
     set pivot(v) { this._pivot.copy(v); }
     private _pivot = new Vector2(0.5, 0.5);

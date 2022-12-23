@@ -1,27 +1,27 @@
 import { deepEqual, ok } from 'assert';
 import { Serializable } from '../../src/serialization/Serializable';
 import { serialization } from '../../src/serialization/Serialization';
-import { serialize } from '../../src/serialization/serialize';
+import { SerializeProperty } from '../../src/serialization/SerializeProperty';
 
 class ObjectBase
 {
-    @serialize
+    @SerializeProperty
     id = 1;
 }
 
 @Serializable()
 class C extends ObjectBase
 {
-    // @serialize
+    // @SerializeProperty
     // id = 2;
 
-    @serialize
+    @SerializeProperty
     a = 1;
 
-    @serialize
+    @SerializeProperty
     c = 1;
 
-    @serialize
+    @SerializeProperty
     o = { a: 1, b: true, c: { d: 'string' } };
 
     change()

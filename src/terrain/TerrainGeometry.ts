@@ -7,7 +7,7 @@ import { oav } from "../objectview/ObjectView";
 import { gPartial } from "../polyfill/Types";
 import { Serializable } from "../serialization/Serializable";
 import { serialization } from "../serialization/Serialization";
-import { serialize } from "../serialization/serialize";
+import { SerializeProperty } from "../serialization/SerializeProperty";
 import { watcher } from "../watcher/watcher";
 
 declare global
@@ -32,56 +32,56 @@ export class TerrainGeometry extends Geometry
     /**
      * 高度图路径
      */
-    @serialize
+    @SerializeProperty
     @oav()
     heightMap = Texture2D.default;
 
     /**
      * 地形宽度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     width = 10;
 
     /**
      * 地形高度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     height = 1;
 
     /**
      * 地形深度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     depth = 10;
 
     /**
      * 横向网格段数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsW = 30;
 
     /**
      * 纵向网格段数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsH = 30;
 
     /**
      * 最大地形高度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     maxElevation = 255;
 
     /**
      * 最小地形高度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     minElevation = 0;
 

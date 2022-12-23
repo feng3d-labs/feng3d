@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
@@ -35,49 +35,49 @@ export class CubeGeometry extends Geometry
     /**
      * 宽度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     width = 1;
 
     /**
      * 高度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     height = 1;
 
     /**
      * 深度
      */
-    @serialize
+    @SerializeProperty
     @oav()
     depth = 1;
 
     /**
      * 宽度方向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsW = 1;
 
     /**
      * 高度方向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsH = 1;
 
     /**
      * 深度方向分割数
      */
-    @serialize
+    @SerializeProperty
     @oav()
     segmentsD = 1;
 
     /**
      * 是否为6块贴图，默认true。
      */
-    @serialize
+    @SerializeProperty
     @oav()
     tile6 = false;
 

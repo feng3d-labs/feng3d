@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { Constructor } from '../../polyfill/Types';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component, Components } from '../component/Component';
 
 export interface EntityEventMap
@@ -27,14 +27,14 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
     /**
      * 名称
      */
-    @serialize
+    @SerializeProperty
     @oav({ priority: -2, component: 'OAVGameObjectName' })
     declare name: string;
 
     /**
      * 组件列表
      */
-    @serialize
+    @SerializeProperty
     @oav({ component: 'OAVComponentList' })
     get components()
     {

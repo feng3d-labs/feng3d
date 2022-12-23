@@ -3,7 +3,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
@@ -99,7 +99,7 @@ export class TransformLayout extends Component
      * 位移
      */
     @oav({ tooltip: '当anchorMin.x == anchorMax.x时对position.x赋值生效，当 anchorMin.y == anchorMax.y 时对position.y赋值生效，否则赋值无效，自动被覆盖。', componentParam: { step: 1, stepScale: 1, stepDownUp: 1 } })
-    @serialize
+    @SerializeProperty
     get position()
     {
         this._updateLayout();
@@ -113,7 +113,7 @@ export class TransformLayout extends Component
      * 尺寸，宽高。
      */
     @oav({ tooltip: '宽度，不会影响到缩放值。当 anchorMin.x == anchorMax.x 时对 size.x 赋值生效，当anchorMin.y == anchorMax.y时对 size.y 赋值生效，否则赋值无效，自动被覆盖。', componentParam: { step: 1, stepScale: 1, stepDownUp: 1 } })
-    @serialize
+    @SerializeProperty
     get size()
     {
         this._updateLayout();
@@ -127,7 +127,7 @@ export class TransformLayout extends Component
      * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
      */
     @oav({ tooltip: '与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。', componentParam: { step: 1, stepScale: 1, stepDownUp: 1 } })
-    @serialize
+    @SerializeProperty
     get leftTop()
     {
         return this._leftTop;
@@ -142,7 +142,7 @@ export class TransformLayout extends Component
      * 与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。
      */
     @oav({ tooltip: '与最小最大锚点形成的边框的left、right、top、bottom距离。当 anchorMin.x != anchorMax.x 时对 layout.x layout.y 赋值生效，当 anchorMin.y != anchorMax.y 时对 layout.z layout.w 赋值生效，否则赋值无效，自动被覆盖。', componentParam: { step: 1, stepScale: 1, stepDownUp: 1 } })
-    @serialize
+    @SerializeProperty
     get rightBottom()
     {
         return this._rightBottom;
@@ -157,21 +157,21 @@ export class TransformLayout extends Component
      * 最小锚点，父Transform2D中左上角锚定的规范化位置。
      */
     @oav({ tooltip: '父Transform2D中左上角锚定的规范化位置。', componentParam: { step: 0.01, stepScale: 0.01, stepDownUp: 0.01 } })
-    @serialize
+    @SerializeProperty
     anchorMin = new Vector3(0.5, 0.5, 0.5);
 
     /**
      * 最大锚点，父Transform2D中左上角锚定的规范化位置。
      */
     @oav({ tooltip: '最大锚点，父Transform2D中左上角锚定的规范化位置。', componentParam: { step: 0.01, stepScale: 0.01, stepDownUp: 0.01 } })
-    @serialize
+    @SerializeProperty
     anchorMax = new Vector3(0.5, 0.5, 0.5);
 
     /**
      * The normalized position in this RectTransform that it rotates around.
      */
     @oav({ tooltip: '中心点' })
-    @serialize
+    @SerializeProperty
     pivot = new Vector3(0.5, 0.5, 0.5);
 
     beforeRender(_renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)

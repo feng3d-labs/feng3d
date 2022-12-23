@@ -8,7 +8,7 @@ import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
 import { Camera } from '../cameras/Camera';
@@ -110,7 +110,7 @@ export class Object3D extends Container<Object3DEventMap>
     /**
      * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
      */
-    @serialize
+    @SerializeProperty
     hideFlags = HideFlags.None;
 
     assetType = AssetType.object3D;
@@ -118,19 +118,19 @@ export class Object3D extends Container<Object3DEventMap>
     /**
      * The tag of this game object.
      */
-    @serialize
+    @SerializeProperty
     tag: string;
 
     /**
      * 预设资源编号
      */
-    @serialize
+    @SerializeProperty
     prefabId: string;
 
     /**
      * 资源编号
      */
-    @serialize
+    @SerializeProperty
     assetId: string;
 
     /**
@@ -144,63 +144,63 @@ export class Object3D extends Container<Object3DEventMap>
     /**
      * X轴坐标。
      */
-    @serialize
+    @SerializeProperty
     get x() { return this._position.x; }
     set x(v) { this._position.x = v; }
 
     /**
      * Y轴坐标。
      */
-    @serialize
+    @SerializeProperty
     get y() { return this._position.y; }
     set y(v) { this._position.y = v; }
 
     /**
      * Z轴坐标。
      */
-    @serialize
+    @SerializeProperty
     get z() { return this._position.z; }
     set z(v) { this._position.z = v; }
 
     /**
      * X轴旋转角度。
      */
-    @serialize
+    @SerializeProperty
     get rx() { return this._rotation.x; }
     set rx(v) { this._rotation.x = v; }
 
     /**
      * Y轴旋转角度。
      */
-    @serialize
+    @SerializeProperty
     get ry() { return this._rotation.y; }
     set ry(v) { this._rotation.y = v; }
 
     /**
      * Z轴旋转角度。
      */
-    @serialize
+    @SerializeProperty
     get rz() { return this._rotation.z; }
     set rz(v) { this._rotation.z = v; }
 
     /**
      * X轴缩放。
      */
-    @serialize
+    @SerializeProperty
     get sx() { return this._scale.x; }
     set sx(v) { this._scale.x = v; }
 
     /**
      * Y轴缩放。
      */
-    @serialize
+    @SerializeProperty
     get sy() { return this._scale.y; }
     set sy(v) { this._scale.y = v; }
 
     /**
      * Z轴缩放。
      */
-    @serialize
+    @SerializeProperty
     get sz() { return this._scale.z; }
     set sz(v) { this._scale.z = v; }
 

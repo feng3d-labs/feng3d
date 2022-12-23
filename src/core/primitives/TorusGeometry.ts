@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
@@ -35,35 +35,35 @@ export class TorusGeometry extends Geometry
 	/**
 	 * 半径
 	 */
-	@serialize
+	@SerializeProperty
 	@oav()
 	radius = 0.5;
 
 	/**
 	 * 管道半径
 	 */
-	@serialize
+	@SerializeProperty
 	@oav()
 	tubeRadius = 0.1;
 
 	/**
 	 * 半径方向分割数
 	 */
-	@serialize
+	@SerializeProperty
 	@oav()
 	segmentsR = 16;
 
 	/**
 	 * 管道方向分割数
 	 */
-	@serialize
+	@SerializeProperty
 	@oav()
 	segmentsT = 8;
 
 	/**
 	 * 是否朝上
 	 */
-	@serialize
+	@SerializeProperty
 	@oav()
 	yUp = true;
 

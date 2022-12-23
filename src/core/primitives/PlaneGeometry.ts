@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialize } from '../../serialization/serialize';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
@@ -37,35 +37,35 @@ export class PlaneGeometry extends Geometry
      * 宽度
      */
     @oav()
-    @serialize
+    @SerializeProperty
     width = 1;
 
     /**
      * 高度
      */
     @oav()
-    @serialize
+    @SerializeProperty
     height = 1;
 
     /**
      * 横向分割数
      */
     @oav()
-    @serialize
+    @SerializeProperty
     segmentsW = 1;
 
     /**
      * 纵向分割数
      */
     @oav()
-    @serialize
+    @SerializeProperty
     segmentsH = 1;
 
     /**
      * 是否朝上
      */
     @oav()
-    @serialize
+    @SerializeProperty
     yUp = true;
 
     name = 'Plane';
