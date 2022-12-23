@@ -1,8 +1,0 @@
-{
-    "name": "@feng3d/polyfill",
-    "entryPoints": [
-        "src/index.ts"
-    ],
-    "sourcefile-url-prefix": "https://gitlab.com/feng3d/polyfill/tree/master/src/",
-    "out": "public"
-}

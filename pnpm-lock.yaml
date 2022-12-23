@@ -59,7 +59,7 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/assets:
+  src/packages/assets:
     specifiers:
       '@feng3d/core': ^0.7.2
       '@feng3d/event': ^0.7.2
@@ -124,7 +124,7 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/bezier:
+  src/packages/bezier:
     specifiers:
       '@types/mocha': 9.1.0
       '@types/node': ^18.6.1
@@ -176,7 +176,7 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/core:
+  src/packages/core:
     specifiers:
       '@feng3d/event': ^0.7.2
       '@feng3d/filesystem': ^0.7.2
@@ -251,7 +251,7 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/ecs:
+  src/packages/ecs:
     specifiers:
       '@feng3d/event': ^0.7.2
       '@feng3d/objectview': ^0.7.2
@@ -312,7 +312,7 @@ importers:
       vite: 3.2.5
       vitest: 0.21.1_@vitest+ui@0.21.1
 
-  packages/event:
+  src/packages/event:
     specifiers:
       '@types/node': ^18.6.1
       '@typescript-eslint/eslint-plugin': 5.17.0
@@ -364,7 +364,7 @@ importers:
       vite: 3.2.5_@types+node@18.6.1
       vitest: 0.21.1_@vitest+ui@0.21.1
 
-  packages/filesystem:
+  src/packages/filesystem:
     specifiers:
       '@feng3d/event': ^0.7.2
       '@feng3d/path': ^0.0.3
@@ -423,7 +423,7 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/math:
+  src/packages/math:
     specifiers:
       '@feng3d/bezier': ^0.7.2
       '@feng3d/earcut': ^0.0.1
@@ -486,7 +486,7 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/objectview:
+  src/packages/objectview:
     specifiers:
       '@types/mocha': 9.1.0
       '@types/node': ^18.6.1
@@ -538,372 +538,7 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/particlesystem:
-    specifiers:
-      '@feng3d/core': ^0.7.2
-      '@feng3d/event': ^0.7.2
-      '@feng3d/filesystem': ^0.7.2
-      '@feng3d/math': ^0.7.2
-      '@feng3d/objectview': ^0.7.2
-      '@feng3d/polyfill': ^0.7.2
-      '@feng3d/renderer': ^0.7.2
-      '@feng3d/serialization': ^0.7.2
-      '@feng3d/watcher': ^0.7.2
-      '@types/mocha': 9.1.0
-      '@types/node': ^18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0
-      '@typescript-eslint/parser': 5.17.0
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0
-      rollup-plugin-dts: 4.2.0
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2
-      rollup-plugin-typescript: 1.0.1
-      ts-node: 10.7.0
-      tslib: ^2.4.0
-      typedoc: 0.21.4
-      typedoc-plugin-sourcefile-url: 1.0.6
-      typescript: 4.8.4
-    dependencies:
-      '@feng3d/core': link:../core
-      '@feng3d/event': link:../event
-      '@feng3d/filesystem': link:../filesystem
-      '@feng3d/math': link:../math
-      '@feng3d/objectview': link:../objectview
-      '@feng3d/polyfill': link:../polyfill
-      '@feng3d/renderer': link:../renderer
-      '@feng3d/serialization': link:../serialization
-      '@feng3d/watcher': link:../watcher
-    devDependencies:
-      '@types/mocha': 9.1.0
-      '@types/node': 18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
-      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
-      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2_rollup@2.70.1
-      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
-      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
-      tslib: 2.4.0
-      typedoc: 0.21.4_typescript@4.8.4
-      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
-      typescript: 4.8.4
-
-  packages/polyfill:
-    specifiers:
-      '@types/mocha': 9.1.0
-      '@types/node': ^18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0
-      '@typescript-eslint/parser': 5.17.0
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0
-      rollup-plugin-dts: 4.2.0
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2
-      rollup-plugin-typescript: 1.0.1
-      ts-node: 10.7.0
-      tslib: ^2.4.0
-      typedoc: 0.21.4
-      typedoc-plugin-sourcefile-url: 1.0.6
-      typescript: 4.8.4
-    devDependencies:
-      '@types/mocha': 9.1.0
-      '@types/node': 18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
-      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
-      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2_rollup@2.70.1
-      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
-      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
-      tslib: 2.4.0
-      typedoc: 0.21.4_typescript@4.8.4
-      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
-      typescript: 4.8.4
-
-  packages/renderer:
-    specifiers:
-      '@feng3d/event': ^0.7.2
-      '@feng3d/objectview': ^0.7.2
-      '@feng3d/polyfill': ^0.7.2
-      '@feng3d/serialization': ^0.7.2
-      '@feng3d/watcher': ^0.7.2
-      '@types/mocha': 9.1.0
-      '@types/node': ^18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0
-      '@typescript-eslint/parser': 5.17.0
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0
-      rollup-plugin-dts: 4.2.0
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2
-      rollup-plugin-typescript: 1.0.1
-      ts-node: 10.7.0
-      tslib: ^2.4.0
-      typedoc: 0.21.4
-      typedoc-plugin-sourcefile-url: 1.0.6
-      typescript: 4.8.4
-    dependencies:
-      '@feng3d/event': link:../event
-      '@feng3d/objectview': link:../objectview
-      '@feng3d/polyfill': link:../polyfill
-      '@feng3d/serialization': link:../serialization
-      '@feng3d/watcher': link:../watcher
-    devDependencies:
-      '@types/mocha': 9.1.0
-      '@types/node': 18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
-      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
-      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2_rollup@2.70.1
-      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
-      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
-      tslib: 2.4.0
-      typedoc: 0.21.4_typescript@4.8.4
-      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
-      typescript: 4.8.4
-
-  packages/serialization:
-    specifiers:
-      '@feng3d/polyfill': ^0.7.2
-      '@types/mocha': 9.1.0
-      '@types/node': ^18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0
-      '@typescript-eslint/parser': 5.17.0
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0
-      rollup-plugin-dts: 4.2.0
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2
-      rollup-plugin-typescript: 1.0.1
-      ts-node: 10.7.0
-      tslib: ^2.4.0
-      typedoc: 0.21.4
-      typedoc-plugin-sourcefile-url: 1.0.6
-      typescript: 4.8.4
-    dependencies:
-      '@feng3d/polyfill': link:../polyfill
-    devDependencies:
-      '@types/mocha': 9.1.0
-      '@types/node': 18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
-      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
-      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2_rollup@2.70.1
-      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
-      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
-      tslib: 2.4.0
-      typedoc: 0.21.4_typescript@4.8.4
-      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
-      typescript: 4.8.4
-
-  packages/shortcut:
-    specifiers:
-      '@feng3d/event': ^0.7.2
-      '@types/mocha': 9.1.0
-      '@types/node': ^18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0
-      '@typescript-eslint/parser': 5.17.0
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0
-      rollup-plugin-dts: 4.2.0
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2
-      rollup-plugin-typescript: 1.0.1
-      ts-node: 10.7.0
-      tslib: ^2.4.0
-      typedoc: 0.21.4
-      typedoc-plugin-sourcefile-url: 1.0.6
-      typescript: 4.8.4
-    dependencies:
-      '@feng3d/event': link:../event
-    devDependencies:
-      '@types/mocha': 9.1.0
-      '@types/node': 18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
-      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
-      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2_rollup@2.70.1
-      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
-      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
-      tslib: 2.4.0
-      typedoc: 0.21.4_typescript@4.8.4
-      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
-      typescript: 4.8.4
-
-  packages/terrain:
-    specifiers:
-      '@feng3d/core': ^0.7.2
-      '@feng3d/event': ^0.7.2
-      '@feng3d/math': ^0.7.2
-      '@feng3d/objectview': ^0.7.2
-      '@feng3d/polyfill': ^0.7.2
-      '@feng3d/renderer': ^0.7.2
-      '@feng3d/serialization': ^0.7.2
-      '@feng3d/watcher': ^0.7.2
-      '@types/mocha': 9.1.0
-      '@types/node': ^18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0
-      '@typescript-eslint/parser': 5.17.0
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0
-      rollup-plugin-dts: 4.2.0
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2
-      rollup-plugin-typescript: 1.0.1
-      ts-node: 10.7.0
-      tslib: ^2.4.0
-      typedoc: 0.21.4
-      typedoc-plugin-sourcefile-url: 1.0.6
-      typescript: 4.8.4
-    dependencies:
-      '@feng3d/core': link:../core
-      '@feng3d/event': link:../event
-      '@feng3d/math': link:../math
-      '@feng3d/objectview': link:../objectview
-      '@feng3d/polyfill': link:../polyfill
-      '@feng3d/renderer': link:../renderer
-      '@feng3d/serialization': link:../serialization
-      '@feng3d/watcher': link:../watcher
-    devDependencies:
-      '@types/mocha': 9.1.0
-      '@types/node': 18.6.1
-      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
-      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
-      cross-env: 7.0.3
-      eslint: 8.12.0
-      mocha: 9.2.2
-      rimraf: 3.0.2
-      rollup: 2.70.1
-      rollup-plugin-buble: 0.19.8
-      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
-      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
-      rollup-plugin-json: 4.0.0
-      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
-      rollup-plugin-replace: 2.2.0
-      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
-      rollup-plugin-string: 3.0.0
-      rollup-plugin-terser: 7.0.2_rollup@2.70.1
-      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
-      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
-      tslib: 2.4.0
-      typedoc: 0.21.4_typescript@4.8.4
-      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
-      typescript: 4.8.4
-
-  packages/ui:
+  src/packages/particlesystem:
     specifiers:
       '@feng3d/core': ^0.7.2
       '@feng3d/event': ^0.7.2
@@ -974,7 +609,383 @@ importers:
       typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
       typescript: 4.8.4
 
-  packages/watcher:
+  src/packages/polyfill:
+    specifiers:
+      '@types/mocha': 9.1.0
+      '@types/node': ^18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0
+      '@typescript-eslint/parser': 5.17.0
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0
+      rollup-plugin-dts: 4.2.0
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2
+      rollup-plugin-typescript: 1.0.1
+      ts-node: 10.7.0
+      tslib: ^2.4.0
+      typedoc: 0.21.4
+      typedoc-plugin-sourcefile-url: 1.0.6
+      typescript: 4.8.4
+    devDependencies:
+      '@types/mocha': 9.1.0
+      '@types/node': 18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
+      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
+      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2_rollup@2.70.1
+      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
+      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
+      tslib: 2.4.0
+      typedoc: 0.21.4_typescript@4.8.4
+      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
+      typescript: 4.8.4
+
+  src/packages/renderer:
+    specifiers:
+      '@feng3d/event': ^0.7.2
+      '@feng3d/objectview': ^0.7.2
+      '@feng3d/polyfill': ^0.7.2
+      '@feng3d/serialization': ^0.7.2
+      '@feng3d/watcher': ^0.7.2
+      '@types/mocha': 9.1.0
+      '@types/node': ^18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0
+      '@typescript-eslint/parser': 5.17.0
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0
+      rollup-plugin-dts: 4.2.0
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2
+      rollup-plugin-typescript: 1.0.1
+      ts-node: 10.7.0
+      tslib: ^2.4.0
+      typedoc: 0.21.4
+      typedoc-plugin-sourcefile-url: 1.0.6
+      typescript: 4.8.4
+    dependencies:
+      '@feng3d/event': link:../event
+      '@feng3d/objectview': link:../objectview
+      '@feng3d/polyfill': link:../polyfill
+      '@feng3d/serialization': link:../serialization
+      '@feng3d/watcher': link:../watcher
+    devDependencies:
+      '@types/mocha': 9.1.0
+      '@types/node': 18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
+      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
+      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2_rollup@2.70.1
+      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
+      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
+      tslib: 2.4.0
+      typedoc: 0.21.4_typescript@4.8.4
+      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
+      typescript: 4.8.4
+
+  src/packages/renderer/examples:
+    specifiers:
+      '@feng3d/renderer': 0.7.2
+      typescript: 4.8.4
+      vite: ^3.0.7
+    dependencies:
+      '@feng3d/renderer': link:..
+    devDependencies:
+      typescript: 4.8.4
+      vite: 3.2.5
+
+  src/packages/serialization:
+    specifiers:
+      '@feng3d/polyfill': ^0.7.2
+      '@types/mocha': 9.1.0
+      '@types/node': ^18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0
+      '@typescript-eslint/parser': 5.17.0
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0
+      rollup-plugin-dts: 4.2.0
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2
+      rollup-plugin-typescript: 1.0.1
+      ts-node: 10.7.0
+      tslib: ^2.4.0
+      typedoc: 0.21.4
+      typedoc-plugin-sourcefile-url: 1.0.6
+      typescript: 4.8.4
+    dependencies:
+      '@feng3d/polyfill': link:../polyfill
+    devDependencies:
+      '@types/mocha': 9.1.0
+      '@types/node': 18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
+      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
+      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2_rollup@2.70.1
+      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
+      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
+      tslib: 2.4.0
+      typedoc: 0.21.4_typescript@4.8.4
+      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
+      typescript: 4.8.4
+
+  src/packages/shortcut:
+    specifiers:
+      '@feng3d/event': ^0.7.2
+      '@types/mocha': 9.1.0
+      '@types/node': ^18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0
+      '@typescript-eslint/parser': 5.17.0
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0
+      rollup-plugin-dts: 4.2.0
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2
+      rollup-plugin-typescript: 1.0.1
+      ts-node: 10.7.0
+      tslib: ^2.4.0
+      typedoc: 0.21.4
+      typedoc-plugin-sourcefile-url: 1.0.6
+      typescript: 4.8.4
+    dependencies:
+      '@feng3d/event': link:../event
+    devDependencies:
+      '@types/mocha': 9.1.0
+      '@types/node': 18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
+      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
+      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2_rollup@2.70.1
+      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
+      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
+      tslib: 2.4.0
+      typedoc: 0.21.4_typescript@4.8.4
+      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
+      typescript: 4.8.4
+
+  src/packages/terrain:
+    specifiers:
+      '@feng3d/core': ^0.7.2
+      '@feng3d/event': ^0.7.2
+      '@feng3d/math': ^0.7.2
+      '@feng3d/objectview': ^0.7.2
+      '@feng3d/polyfill': ^0.7.2
+      '@feng3d/renderer': ^0.7.2
+      '@feng3d/serialization': ^0.7.2
+      '@feng3d/watcher': ^0.7.2
+      '@types/mocha': 9.1.0
+      '@types/node': ^18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0
+      '@typescript-eslint/parser': 5.17.0
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0
+      rollup-plugin-dts: 4.2.0
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2
+      rollup-plugin-typescript: 1.0.1
+      ts-node: 10.7.0
+      tslib: ^2.4.0
+      typedoc: 0.21.4
+      typedoc-plugin-sourcefile-url: 1.0.6
+      typescript: 4.8.4
+    dependencies:
+      '@feng3d/core': link:../core
+      '@feng3d/event': link:../event
+      '@feng3d/math': link:../math
+      '@feng3d/objectview': link:../objectview
+      '@feng3d/polyfill': link:../polyfill
+      '@feng3d/renderer': link:../renderer
+      '@feng3d/serialization': link:../serialization
+      '@feng3d/watcher': link:../watcher
+    devDependencies:
+      '@types/mocha': 9.1.0
+      '@types/node': 18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
+      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
+      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2_rollup@2.70.1
+      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
+      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
+      tslib: 2.4.0
+      typedoc: 0.21.4_typescript@4.8.4
+      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
+      typescript: 4.8.4
+
+  src/packages/ui:
+    specifiers:
+      '@feng3d/core': ^0.7.2
+      '@feng3d/event': ^0.7.2
+      '@feng3d/filesystem': ^0.7.2
+      '@feng3d/math': ^0.7.2
+      '@feng3d/objectview': ^0.7.2
+      '@feng3d/polyfill': ^0.7.2
+      '@feng3d/renderer': ^0.7.2
+      '@feng3d/serialization': ^0.7.2
+      '@feng3d/watcher': ^0.7.2
+      '@types/mocha': 9.1.0
+      '@types/node': ^18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0
+      '@typescript-eslint/parser': 5.17.0
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0
+      rollup-plugin-dts: 4.2.0
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2
+      rollup-plugin-typescript: 1.0.1
+      ts-node: 10.7.0
+      tslib: ^2.4.0
+      typedoc: 0.21.4
+      typedoc-plugin-sourcefile-url: 1.0.6
+      typescript: 4.8.4
+    dependencies:
+      '@feng3d/core': link:../core
+      '@feng3d/event': link:../event
+      '@feng3d/filesystem': link:../filesystem
+      '@feng3d/math': link:../math
+      '@feng3d/objectview': link:../objectview
+      '@feng3d/polyfill': link:../polyfill
+      '@feng3d/renderer': link:../renderer
+      '@feng3d/serialization': link:../serialization
+      '@feng3d/watcher': link:../watcher
+    devDependencies:
+      '@types/mocha': 9.1.0
+      '@types/node': 18.6.1
+      '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
+      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
+      cross-env: 7.0.3
+      eslint: 8.12.0
+      mocha: 9.2.2
+      rimraf: 3.0.2
+      rollup: 2.70.1
+      rollup-plugin-buble: 0.19.8
+      rollup-plugin-commonjs: 10.1.0_rollup@2.70.1
+      rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
+      rollup-plugin-json: 4.0.0
+      rollup-plugin-node-resolve: 5.2.0_rollup@2.70.1
+      rollup-plugin-replace: 2.2.0
+      rollup-plugin-sourcemaps: 0.6.3_mtjay263nkrky6jn5fahggzr2i
+      rollup-plugin-string: 3.0.0
+      rollup-plugin-terser: 7.0.2_rollup@2.70.1
+      rollup-plugin-typescript: 1.0.1_hjjpfygmunulepk75ead4kovya
+      ts-node: 10.7.0_t6iukbiom2jlsbp4uv3roalcz4
+      tslib: 2.4.0
+      typedoc: 0.21.4_typescript@4.8.4
+      typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.21.4
+      typescript: 4.8.4
+
+  src/packages/watcher:
     specifiers:
       '@types/mocha': 9.1.0
       '@types/node': ^18.6.1
@@ -4595,10 +4606,6 @@ packages:
       minimist: 1.2.6
     dev: true
 
-  /jsonc-parser/3.1.0:
-    resolution: {integrity: sha512-DRf0QjnNeCUds3xTjKlQQ3DpJD51GvDjJfnxUVWg6PZTo2otSm+slzNAxU/35hF8/oJIKoG9slq30JYOsF2azg==}
-    dev: true
-
   /jsonc-parser/3.2.0:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
     dev: true
@@ -6238,7 +6245,7 @@ packages:
   /shiki/0.9.15:
     resolution: {integrity: sha512-/Y0z9IzhJ8nD9nbceORCqu6NgT9X6I8Fk8c3SICHI5NbZRLdZYFaB233gwct9sU0vvSypyaL/qaKvzyQGJBZSw==}
     dependencies:
-      jsonc-parser: 3.1.0
+      jsonc-parser: 3.2.0
       vscode-oniguruma: 1.6.2
       vscode-textmate: 5.2.0
     dev: true
