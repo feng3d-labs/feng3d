@@ -4,8 +4,7 @@ import { resl } from './mikolalysenko/resl';
 import * as mat4 from './stackgl/gl-mat4';
 import * as vec3 from './stackgl/gl-vec3';
 
-import { gPartial } from '@feng3d/polyfill';
-import { RenderAtomic, Texture, WebGLRenderer } from '../../../src';
+import { gPartial, RenderAtomic, Texture, WebGLRenderer } from '../../../src';
 
 const canvas = document.createElement('canvas');
 canvas.id = 'glcanvas';

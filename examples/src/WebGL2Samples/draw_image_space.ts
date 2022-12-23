@@ -1,5 +1,4 @@
-import { gPartial } from '@feng3d/polyfill';
-import { RenderAtomic, Texture, WebGLRenderer } from '../../../src';
+import { gPartial, RenderAtomic, Texture, WebGLRenderer } from '../../../src';
 
 (function ()
 {
