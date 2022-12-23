@@ -7,20 +7,13 @@
         "declarationMap": true,
         "declaration": true,
         "experimentalDecorators": true,
-        "emitDeclarationOnly": true,
+        "noEmit": true,
         "lib": [
             "ES2015",
             "DOM",
         ],
-        "outDir": "lib"
     },
     "include": [
-        "**/*.ts",
+        "**/*.ts"
     ],
-    "ts-node": {
-        "files": true,
-        "compilerOptions": {
-            "esModuleInterop": true
-        }
-    }
 }

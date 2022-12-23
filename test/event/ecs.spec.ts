@@ -1,10 +1,11 @@
 import { deepEqual } from 'assert';
-import { anyEmitter, EventEmitter, IEventTarget } from '../src';
-import { test } from 'vitest';
+import { anyEmitter } from '../../src/event/AnyEmitter';
+import { EventEmitter } from '../../src/event/EventEmitter';
+import { IEventTarget } from '../../src/event/IEventTarget';
 
 // `Entity`与`Component`均继承`IEventTarget`或者实现EventEmitter，相互之间进行传递事件
 
-test('emit bubbles Entity-Component-System', () =>
+it('emit bubbles Entity-Component-System', () =>
 {
     class Component implements IEventTarget
     {
@@ -78,7 +79,7 @@ test('emit bubbles Entity-Component-System', () =>
     deepEqual(result, ['node-b', 'entity-b', 'component0-b', 'component1-b', 'node-a', 'entity-a', 'component0-a', 'component1-a']);
 });
 
-test('emit bubbles Entity-Component-System extends EventEmitter', () =>
+it('emit bubbles Entity-Component-System extends EventEmitter', () =>
 {
     interface ComponentEventMap
     {

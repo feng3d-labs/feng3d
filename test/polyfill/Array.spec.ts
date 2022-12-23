@@ -1,5 +1,5 @@
 import { deepEqual, equal, ok } from 'assert';
-import { ArrayUtils } from '../../src/packages/polyfill/src';
+import { ArrayUtils } from '../../src/polyfill/ArrayUtils';
 
 describe('Array', () =>
 {

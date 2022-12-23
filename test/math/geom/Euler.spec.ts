@@ -1,6 +1,10 @@
-import { mathUtil } from '@feng3d/polyfill';
 import { deepEqual } from 'assert';
-import { Euler, Matrix4x4, Quaternion, RotationOrder, Vector3 } from '../../src';
+import { RotationOrder } from '../../../src/math/enums/RotationOrder';
+import { Euler } from '../../../src/math/geom/Euler';
+import { Matrix4x4 } from '../../../src/math/geom/Matrix4x4';
+import { Quaternion } from '../../../src/math/geom/Quaternion';
+import { Vector3 } from '../../../src/math/geom/Vector3';
+import { mathUtil } from '../../../src/polyfill/MathUtil';
 
 describe('Euler', () =>
 {
@@ -137,14 +141,14 @@ describe('Euler', () =>
         deepEqual(array[3], euler.order);
     });
 
-    it('toVector3', () =>
-    {
-        const euler = new Euler().random();
-        const vector3 = new Vector3();
-        euler.toVector3(vector3);
+    // it('toVector3', () =>
+    // {
+    //     const euler = new Euler().random();
+    //     const vector3 = new Vector3();
+    //     euler.toVector3(vector3);
 
-        deepEqual(vector3.x, euler.x);
-        deepEqual(vector3.y, euler.y);
-        deepEqual(vector3.z, euler.z);
-    });
+    //     deepEqual(vector3.x, euler.x);
+    //     deepEqual(vector3.y, euler.y);
+    //     deepEqual(vector3.z, euler.z);
+    // });
 });

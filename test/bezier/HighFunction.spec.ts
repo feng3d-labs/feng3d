@@ -1,5 +1,5 @@
 import { ok } from 'assert';
-import { HighFunction } from '../src';
+import { HighFunction } from '../../src/bezier/HighFunction';
 
 describe('HighFunction', () =>
 {

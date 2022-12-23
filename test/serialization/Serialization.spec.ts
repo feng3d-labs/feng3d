@@ -1,5 +1,6 @@
 import { deepEqual, ok } from 'assert';
-import { decoratorRegisterClass, serialization, serialize } from '../../src/serialization/src';
+import { decoratorRegisterClass } from '../../src/serialization/ClassUtils';
+import { serialization, serialize } from '../../src/serialization/Serialization';
 
 class ObjectBase
 {

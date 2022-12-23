@@ -1,9 +1,8 @@
-import { assert, test } from 'vitest';
-import { EventEmitter, IEventTarget } from '../../src/packages/event/src';
+import { deepEqual } from 'assert';
+import { EventEmitter } from '../../src/event/EventEmitter';
+import { IEventTarget } from '../../src/event/IEventTarget';
 
-const { deepEqual } = assert;
-
-test('broadcast & bubbles', () =>
+it('broadcast & bubbles', () =>
 {
     class Node extends EventEmitter implements IEventTarget
     {

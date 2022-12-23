@@ -1,5 +1,7 @@
 import { ok } from 'assert';
-import { Line3, Segment3, Vector3 } from '../../src';
+import { Line3 } from '../../../src/math/geom/Line3';
+import { Segment3 } from '../../../src/math/geom/Segment3';
+import { Vector3 } from '../../../src/math/geom/Vector3';
 
 describe('Segment3D', () =>
 {

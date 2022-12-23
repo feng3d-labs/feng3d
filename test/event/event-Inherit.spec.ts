@@ -1,6 +1,5 @@
 import { ok } from 'assert';
-import { test } from 'vitest';
-import { EventEmitter } from '../src';
+import { EventEmitter } from '../../src/event/EventEmitter';
 
 interface DisplayObjectEventMap
 {
@@ -22,7 +21,7 @@ class Container<T extends ContainerEventMap = ContainerEventMap> extends Display
 {
 }
 
-test('事件被继承，代码提示无误', () =>
+it('事件被继承，代码提示无误', () =>
 {
     const eventEmitter = new EventEmitter();
     eventEmitter.on('abc', () => { });

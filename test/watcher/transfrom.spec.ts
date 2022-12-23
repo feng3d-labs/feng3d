@@ -1,5 +1,5 @@
 import { equal } from 'assert';
-import { watcher } from '../../src/packages/watcher/src';
+import { watcher } from '../../src/watcher/watcher';
 
 describe('watcher.watchobject transform', () =>
 {

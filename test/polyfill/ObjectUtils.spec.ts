@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ok, equal } from 'assert';
-import { ObjectUtils } from '../../src/packages/polyfill/src';
+import { equal, ok } from 'assert';
+import { ObjectUtils } from '../../src/polyfill/ObjectUtils';
 
 class Vector2
 {

@@ -1,5 +1,5 @@
 import { equal, ok } from 'assert';
-import { watcher, __watchchains__ } from '../../src/watcher';
+import { watcher, __watchchains__ } from '../../src/watcher/watcher';
 
 describe('watcher', () =>
 {

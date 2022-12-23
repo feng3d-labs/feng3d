@@ -1,6 +1,6 @@
-import { EventEmitter } from '@feng3d/event';
 import { ok } from 'assert';
-import { shortcut } from '../../src/shortcut/src';
+import { EventEmitter } from '../../src/event/EventEmitter';
+import { shortcut } from '../../src/shortcut/ShortCut';
 
 describe('test', () =>
 {

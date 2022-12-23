@@ -24,8 +24,7 @@
     "docs": "typedoc",
     "release": "npm run clean && npm run build:prod && npm publish",
     "prepublishOnly": "node scripts/prepublish.js",
-    "postpublish": "node scripts/postpublish.js",
-    "version": "lerna version"
+    "postpublish": "node scripts/postpublish.js"
   },
   "repository": {
     "type": "git",
@@ -64,10 +63,10 @@
     "typedoc": "0.21.4",
     "typedoc-plugin-sourcefile-url": "1.0.6",
     "typescript": "4.8.4",
-    "lerna": "^5.4.3"
+    "vitest": "^0.26.2"
   },
   "dependencies": {
-    "@feng3d/path": "^0.0.3",
-    "@feng3d/earcut": "^0.0.1"
+    "@feng3d/earcut": "^0.0.1",
+    "@feng3d/path": "^0.0.3"
   }
 }

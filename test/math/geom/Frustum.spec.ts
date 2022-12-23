@@ -3,7 +3,12 @@
  * @author TristanVALCKE / https://github.com/Itee
  */
 import { ok } from 'assert';
-import { Box3, Frustum, Matrix4x4, Plane, Sphere, Vector3 } from '../../src';
+import { Box3 } from '../../../src/math/geom/Box3';
+import { Frustum } from '../../../src/math/geom/Frustum';
+import { Matrix4x4 } from '../../../src/math/geom/Matrix4x4';
+import { Plane } from '../../../src/math/geom/Plane';
+import { Sphere } from '../../../src/math/geom/Sphere';
+import { Vector3 } from '../../../src/math/geom/Vector3';
 
 describe('Frustum', () =>
 {

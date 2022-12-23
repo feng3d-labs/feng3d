@@ -1,4 +1,4 @@
-import { Component, RegisterComponent } from '../src';
+import { Component, RegisterComponent } from '../../src/core/component/Component'
 
 declare global
 {

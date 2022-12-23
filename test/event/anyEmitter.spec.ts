@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 /* eslint-disable func-style */
 import { ok, strictEqual } from 'assert';
-import { anyEmitter, IEvent } from '../src';
-import { test } from 'vitest';
+import { anyEmitter } from '../../src/event/AnyEmitter';
+import { IEvent } from '../../src/event/IEvent';
 
-test('可针对任意对象派发事件', () =>
+it('可针对任意对象派发事件', () =>
 {
     const result0 = ['0', '1', 'true', 'false', 'string', '{}'];
     const obj = {};
@@ -28,7 +28,7 @@ test('可针对任意对象派发事件', () =>
     strictEqual(result0.join('-'), result.join('-'));
 });
 
-test('on', () =>
+it('on', () =>
 {
     let out = '';
     //
@@ -74,7 +74,7 @@ test('on', () =>
     ok(out === 'p2p1p0');
 });
 
-test('off', () =>
+it('off', () =>
 {
     let out = '';
     let fn = () => { out += '1'; };
@@ -117,7 +117,7 @@ test('off', () =>
     ok(out === '');
 });
 
-test('once', () =>
+it('once', () =>
 {
     // 只监听一次，被触发后自动移除监听。
     let out = '';
@@ -131,7 +131,7 @@ test('once', () =>
     ok(out === '1');
 });
 
-test('has', () =>
+it('has', () =>
 {
     // 新增监听，has检测到拥有该监听。
     let out = '';
@@ -153,7 +153,7 @@ test('has', () =>
     console.log(out);
 });
 
-test('onAny offAny', () =>
+it('onAny offAny', () =>
 {
     let out = '';
     const fn = (e: IEvent<any>) => { out += e.type; };
@@ -175,7 +175,7 @@ test('onAny offAny', () =>
     strictEqual(out, 'abc');
 });
 
-test('emit bubbles', () =>
+it('emit bubbles', () =>
 {
     // dispatch 携带数据 冒泡
     const data = { d: 0 };

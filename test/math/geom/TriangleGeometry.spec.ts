@@ -1,6 +1,9 @@
-import { mathUtil } from '@feng3d/polyfill';
 import { ok } from 'assert';
-import { Box3, Segment3, TriangleGeometry, Vector3 } from '../../src';
+import { Box3 } from '../../../src/math/geom/Box3';
+import { Segment3 } from '../../../src/math/geom/Segment3';
+import { TriangleGeometry } from '../../../src/math/geom/TriangleGeometry';
+import { Vector3 } from '../../../src/math/geom/Vector3';
+import { mathUtil } from '../../../src/polyfill/MathUtil';
 
 describe('TriangleGeometry', () =>
 {

@@ -1,6 +1,10 @@
-import { mathUtil } from '@feng3d/polyfill';
 import { equal, ok } from 'assert';
-import { Matrix4x4, Quaternion, RotationOrder, Vector3, Vector4 } from '../../src';
+import { RotationOrder } from '../../../src/math/enums/RotationOrder';
+import { Matrix4x4 } from '../../../src/math/geom/Matrix4x4';
+import { Quaternion } from '../../../src/math/geom/Quaternion';
+import { Vector3 } from '../../../src/math/geom/Vector3';
+import { Vector4 } from '../../../src/math/geom/Vector4';
+import { mathUtil } from '../../../src/polyfill/MathUtil';
 
 describe('Matrix4x4', () =>
 {

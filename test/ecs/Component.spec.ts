@@ -1,5 +1,5 @@
-import { assert, describe, it } from 'vitest';
-import { Component, getComponentType } from '../src';
+import { ok } from 'assert';
+import { Component, getComponentType } from '../../src/core/component/Component';
 import { ComponentA, CustomComponent } from './common';
 
 describe('Component', () =>
@@ -7,20 +7,20 @@ describe('Component', () =>
     it('constructor', () =>
     {
         const compnent = new Component();
-        assert.ok(!!compnent);
+        ok(!!compnent);
     });
 
     it('RegisterComponent', () =>
     {
         const compnentCls = getComponentType('CustomComponent');
-        assert.ok(compnentCls === CustomComponent);
+        ok(compnentCls === CustomComponent);
 
         // ComponentA 使用@RegisterComponent进行注册，但是
         const compnentACls = getComponentType('ComponentA' as any);
-        assert.ok(compnentACls === ComponentA);
+        ok(compnentACls === ComponentA);
 
         // ComponentB 没有使用@RegisterComponent进行注册
         const compnentBCls = getComponentType('ComponentB' as any);
-        assert.ok(compnentBCls === undefined);
+        ok(compnentBCls === undefined);
     });
 });

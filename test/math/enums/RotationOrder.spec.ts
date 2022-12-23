@@ -1,6 +1,6 @@
-import { mathUtil } from '@feng3d/polyfill';
 import { deepEqual } from 'assert';
-import { RotationOrder } from '../../src';
+import { RotationOrder } from '../../../src/math/enums/RotationOrder';
+import { mathUtil } from '../../../src/polyfill/MathUtil';
 
 describe('RotationOrder', () =>
 {

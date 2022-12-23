@@ -1,5 +1,8 @@
 import { deepEqual, equal, ok } from 'assert';
-import { Euler, Matrix4x4, Quaternion, Vector3 } from '../../src';
+import { Euler } from '../../../src/math/geom/Euler';
+import { Matrix4x4 } from '../../../src/math/geom/Matrix4x4';
+import { Quaternion } from '../../../src/math/geom/Quaternion';
+import { Vector3 } from '../../../src/math/geom/Vector3';
 
 describe('Quaternion', () =>
 {

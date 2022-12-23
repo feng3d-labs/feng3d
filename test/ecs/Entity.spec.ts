@@ -1,5 +1,5 @@
-import { assert, describe, it } from 'vitest';
-import { Entity } from '../src';
+import { ok } from 'assert';
+import { Entity } from '../../src/core/core/Entity';
 import { ComponentA, CustomComponent } from './common';
 
 describe('Entity', () =>
@@ -7,7 +7,7 @@ describe('Entity', () =>
     it('constructor', () =>
     {
         const entity = new Entity();
-        assert.ok(!!entity);
+        ok(!!entity);
     });
 
     it('addComponent', () =>
@@ -15,11 +15,11 @@ describe('Entity', () =>
         const entity = new Entity();
         const compnentA = entity.addComponent(ComponentA);
 
-        assert.ok(compnentA instanceof ComponentA);
-        assert.ok(compnentA === entity.getComponentAt(0));
-        assert.ok(compnentA === entity.components[0]);
+        ok(compnentA instanceof ComponentA);
+        ok(compnentA === entity.getComponentAt(0));
+        ok(compnentA === entity.components[0]);
 
         const customComponent = entity.addComponent(CustomComponent);
-        assert.ok(customComponent === entity.getComponentAt(1));
+        ok(customComponent === entity.getComponentAt(1));
     });
 });

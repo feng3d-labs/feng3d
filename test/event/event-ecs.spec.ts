@@ -1,6 +1,7 @@
-import { EventEmitter, IEvent, IEventTarget } from '../src';
 import { deepEqual } from 'assert';
-import { test } from 'vitest';
+import { EventEmitter } from '../../src/event/EventEmitter';
+import { IEvent } from '../../src/event/IEvent';
+import { IEventTarget } from '../../src/event/IEventTarget';
 // 要求
 // 1. Entity可以发射事件，Component无法发射事件。
 // 2. Entity发射的事件将会在Node组件之间传递，包括冒泡（向父结点传递）与广播（向子结点传递）。
@@ -151,7 +152,7 @@ function stopBroadcast(event: IEvent<any>)
     event.isStopBroadcast = true;
 }
 
-test('emit bubbles 冒泡', () =>
+it('emit bubbles 冒泡', () =>
 {
     // 冒泡
     result.length = 0;
@@ -166,7 +167,7 @@ test('emit bubbles 冒泡', () =>
     deepEqual(resultEvent.target, self.entity);
 });
 
-test('emit broadcast 广播', () =>
+it('emit broadcast 广播', () =>
 {
     // 广播
     result.length = 0;
@@ -178,7 +179,7 @@ test('emit broadcast 广播', () =>
     ], result);
 });
 
-test('emit 同时冒泡与广播', () =>
+it('emit 同时冒泡与广播', () =>
 {
     result.length = 0;
     resultEvent = self.entity.emit('print', null, true, true);
@@ -191,7 +192,7 @@ test('emit 同时冒泡与广播', () =>
     ], result);
 });
 
-test('bubbles 冒泡事件', () =>
+it('bubbles 冒泡事件', () =>
 {
     result.length = 0;
     resultEvent = self.entity.bubbles('print', null);
@@ -202,7 +203,7 @@ test('bubbles 冒泡事件', () =>
     ], result);
 });
 
-test('broadcast 广播事件', () =>
+it('broadcast 广播事件', () =>
 {
     result.length = 0;
     resultEvent = self.entity.broadcast('print', null);
@@ -214,7 +215,7 @@ test('broadcast 广播事件', () =>
     deepEqual(resultEvent.handles.length, 12);
 });
 
-test('IEvent.isStop 测试停止事件', () =>
+it('IEvent.isStop 测试停止事件', () =>
 {
     // 停止事件
     self.entity.on('print', stop);
@@ -240,7 +241,7 @@ test('IEvent.isStop 测试停止事件', () =>
     deepEqual(resultEvent.handles.length, 20);
 });
 
-test('IEvent.isStopTransmit 测试停止传播事件', () =>
+it('IEvent.isStopTransmit 测试停止传播事件', () =>
 {
     // 停止传播事件
     self.entity.on('print', stopTransmit);
@@ -266,7 +267,7 @@ test('IEvent.isStopTransmit 测试停止传播事件', () =>
     deepEqual(resultEvent.handles.length, 20);
 });
 
-test('IEvent.isStopBubbles 测试停止冒泡', () =>
+it('IEvent.isStopBubbles 测试停止冒泡', () =>
 {
     // 停止冒泡
     self.entity.on('print', stopBubbles);
@@ -294,7 +295,7 @@ test('IEvent.isStopBubbles 测试停止冒泡', () =>
     deepEqual(resultEvent.handles.length, 20);
 });
 
-test('IEvent.isStopBroadcast 测试停止广播', () =>
+it('IEvent.isStopBroadcast 测试停止广播', () =>
 {
     //
     self.entity.on('print', stopBroadcast);

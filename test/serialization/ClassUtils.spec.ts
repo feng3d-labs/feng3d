@@ -1,5 +1,5 @@
 import { equal } from 'assert';
-import { classUtils, decoratorRegisterClass } from '../../src/serialization/src';
+import { classUtils, decoratorRegisterClass } from '../../src/serialization/ClassUtils';
 
 describe('ClassUtils', () =>
 {
