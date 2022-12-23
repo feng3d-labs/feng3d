@@ -1,4 +1,4 @@
-import { equationSolving } from '../../../../../test/bezier/src';
+import { equationSolving } from "../../bezier/EquationSolving";
 
 /**
  * Bézier曲线

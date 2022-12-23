@@ -1,8 +1,9 @@
-import { Color4, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { Color4 } from '../../math/Color4';
+import { Vector4 } from '../../math/geom/Vector4';
+import { oav } from '../../objectview/ObjectView';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';

@@ -1,5 +1,5 @@
-import { ov } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { ov } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { AssetType } from './AssetType';
 import { FileAsset, setAssetTypeClass } from './FileAsset';
 

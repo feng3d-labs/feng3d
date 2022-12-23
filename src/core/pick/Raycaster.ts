@@ -1,5 +1,7 @@
-import { Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { CullFace } from '@feng3d/renderer';
+import { Ray3 } from '../../math/geom/Ray3';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { CullFace } from '../../renderer/data/RenderParams';
 import { Object3D } from '../core/Object3D';
 import { RayCastable } from '../core/RayCastable';
 import { Geometry } from '../geometry/Geometry';

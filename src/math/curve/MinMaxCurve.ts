@@ -1,5 +1,6 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
 

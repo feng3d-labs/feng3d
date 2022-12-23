@@ -1,5 +1,6 @@
-import { Geometry, geometryUtils } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { Geometry } from "../../core/geometry/Geometry";
+import { geometryUtils } from "../../core/geometry/GeometryUtils";
+import { decoratorRegisterClass } from "../../serialization/ClassUtils";
 
 declare global
 {

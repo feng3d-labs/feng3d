@@ -1,9 +1,15 @@
-import { AddComponentMenu, Camera, Component, createNodeMenu, Object3D, RegisterComponent, Scene, Texture2D } from '@feng3d/core';
-import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { Camera } from '../core/cameras/Camera';
+import { Object3D } from '../core/core/Object3D';
+import { AddComponentMenu } from '../core/Menu';
+import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { Scene } from '../core/scene/Scene';
+import { Texture2D } from '../core/textures/Texture2D';
+import { RegisterComponent, Component } from '../ecs/Component';
+import { Color4 } from '../math/Color4';
+import { oav } from '../objectview/ObjectView';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { decoratorRegisterClass } from '../serialization/ClassUtils';
+import { serialize } from '../serialization/Serialization';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';
 

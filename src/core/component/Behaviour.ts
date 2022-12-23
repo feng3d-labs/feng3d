@@ -1,5 +1,5 @@
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { serialize } from '../../serialization/Serialization';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { RegisterComponent, Component } from './Component';
 

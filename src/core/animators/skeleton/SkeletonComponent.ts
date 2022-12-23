@@ -1,5 +1,5 @@
-import { Matrix4x4 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
 import { Component, RegisterComponent } from '../../component/Component';
 import { Object3D } from '../../core/Object3D';
 

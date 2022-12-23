@@ -1,4 +1,5 @@
-import { functionwrap, View } from '@feng3d/core';
+import { View } from '../../core/core/View';
+import { functionwrap } from '../../core/utils/FunctionWarp';
 import { CanvasRenderer } from '../core/CanvasRenderer';
 
 export { };

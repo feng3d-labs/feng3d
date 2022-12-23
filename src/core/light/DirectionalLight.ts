@@ -1,6 +1,7 @@
-import { Box3, Vector3 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialization } from '@feng3d/serialization';
+import { Box3 } from '../../math/geom/Box3';
+import { Vector3 } from '../../math/geom/Vector3';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../component/Component';

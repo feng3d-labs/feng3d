@@ -1,9 +1,10 @@
-import { FS } from '@feng3d/filesystem';
-import { oav } from '@feng3d/objectview';
-import { ArrayUtils } from '@feng3d/polyfill';
-import { TextureType } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { FS } from '../../filesystem/FS';
+import { oav } from '../../objectview/ObjectView';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { TextureType } from '../../renderer/gl/WebGLEnums';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';

@@ -1,6 +1,6 @@
-import { Matrix4x4 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { RenderAtomic } from '@feng3d/renderer';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
 import { Camera } from '../../cameras/Camera';
 import { RegisterComponent } from '../../component/Component';
 import { HideFlags } from '../../core/HideFlags';

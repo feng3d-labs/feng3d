@@ -1,4 +1,6 @@
-import { RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Shader } from '../../renderer/data/Shader';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';

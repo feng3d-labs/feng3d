@@ -1,7 +1,10 @@
-import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { Color3 } from '../../math/Color3';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { shaderlib } from '../../renderer/shader/ShaderLib';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Material } from '../materials/Material';
 import { Texture2D } from '../textures/Texture2D';
 import waterFragment from './water_fragment_glsl';

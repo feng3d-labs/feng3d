@@ -1,8 +1,9 @@
-import { Vector3, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector4 } from '../../../math/geom/Vector4';
+import { oav } from '../../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serialize } from '../../../serialization/Serialization';
+import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
 

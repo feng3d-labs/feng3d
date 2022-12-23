@@ -1,7 +1,13 @@
-import { FS, pathUtils, ReadFS } from '@feng3d/filesystem';
 import { path as fengpath } from '@feng3d/path';
-import { ArrayUtils, Constructor, gPartial, mathUtil, ObjectUtils } from '@feng3d/polyfill';
-import { classUtils, serialization, __class__ } from '@feng3d/serialization';
+import { FS } from '../../../filesystem/FS';
+import { pathUtils } from '../../../filesystem/PathUtils';
+import { ReadFS } from '../../../filesystem/ReadFS';
+import { ArrayUtils } from '../../../polyfill/ArrayUtils';
+import { mathUtil } from '../../../polyfill/MathUtil';
+import { ObjectUtils } from '../../../polyfill/ObjectUtils';
+import { gPartial, Constructor } from '../../../polyfill/Types';
+import { classUtils, __class__ } from '../../../serialization/ClassUtils';
+import { serialization } from '../../../serialization/Serialization';
 import { AssetData } from '../../core/AssetData';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';

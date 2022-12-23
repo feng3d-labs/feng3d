@@ -1,4 +1,4 @@
-import { EventEmitter } from '@feng3d/event';
+import { EventEmitter } from "../../event/EventEmitter";
 
 /**
  * 按键状态

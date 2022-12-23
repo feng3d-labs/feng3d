@@ -1,8 +1,10 @@
-import { EventEmitter, globalEmitter } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
-import { gPartial } from '@feng3d/polyfill';
-import { RenderAtomic, RenderParams, Shader, Uniforms } from '@feng3d/renderer';
-import { serialization, serialize } from '@feng3d/serialization';
+import { EventEmitter } from '../../event/EventEmitter';
+import { oav } from '../../objectview/ObjectView';
+import { gPartial } from '../../polyfill/Types';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { RenderParams } from '../../renderer/data/RenderParams';
+import { Shader } from '../../renderer/data/Shader';
+import { serialization, serialize } from '../../serialization/Serialization';
 import { AssetData } from '../core/AssetData';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';

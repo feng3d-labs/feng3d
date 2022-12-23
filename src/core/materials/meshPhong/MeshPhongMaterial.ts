@@ -1,5 +1,5 @@
-import { shaderlib } from '@feng3d/renderer';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { shaderlib } from '../../../renderer/shader/ShaderLib';
+import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
 import { Texture2D } from '../../textures/Texture2D';
 import { Material } from '../Material';
 import meshPhongFragment from './meshPhong_fragment_glsl';

@@ -1,7 +1,7 @@
-import { MinMaxCurve } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialization, serialize } from '@feng3d/serialization';
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
 import { ParticleModule } from './ParticleModule';
 

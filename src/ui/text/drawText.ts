@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../../polyfill/MathUtil';
 import { TextMetrics } from './TextMetrics';
 import { TextStyle, TEXT_GRADIENT } from './TextStyle';
 

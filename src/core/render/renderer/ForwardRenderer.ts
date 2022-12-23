@@ -1,6 +1,8 @@
-import { Vector4 } from '@feng3d/math';
-import { LazyObject, lazy, mathUtil } from '@feng3d/polyfill';
-import { WebGLRenderer, Uniforms } from '@feng3d/renderer';
+import { Vector4 } from '../../../math/geom/Vector4';
+import { mathUtil } from '../../../polyfill/MathUtil';
+import { LazyObject, lazy } from '../../../polyfill/Types';
+import { Uniforms } from '../../../renderer/data/Uniform';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { Scene } from '../../scene/Scene';
 

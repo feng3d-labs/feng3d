@@ -1,7 +1,7 @@
-import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { oav } from '../../objectview/ObjectView';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';

@@ -1,8 +1,8 @@
-import { EventEmitter } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { EventEmitter } from '../../event/EventEmitter';
+import { oav } from '../../objectview/ObjectView';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from '../gl/WebGLEnums';
 
 export class Texture<T = any> extends EventEmitter<T>

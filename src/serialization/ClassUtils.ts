@@ -1,4 +1,5 @@
-import { Constructor, ObjectUtils } from '@feng3d/polyfill';
+import { ObjectUtils } from "../polyfill/ObjectUtils";
+import { Constructor } from "../polyfill/Types";
 
 export const __class__ = '__class__';
 

@@ -1,14 +1,14 @@
-import { Color3, Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { Color3 } from '../../../math/Color3';
+import { Color4 } from '../../../math/Color4';
+import { oav } from '../../../objectview/ObjectView';
+import { shaderlib } from '../../../renderer/shader/ShaderLib';
+import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serialize } from '../../../serialization/Serialization';
 import { Texture2D } from '../../textures/Texture2D';
 import { TextureCube } from '../../textures/TextureCube';
 import { Material } from '../Material';
 import standardFragment from './standard_fragment_glsl';
 import standardVertex from './standard_vertex_glsl';
-
-import { decoratorRegisterClass } from '@feng3d/serialization';
 
 declare global
 {

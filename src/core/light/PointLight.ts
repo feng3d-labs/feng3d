@@ -1,6 +1,6 @@
-import { Vector2 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
+import { Vector2 } from '../../math/geom/Vector2';
+import { oav } from '../../objectview/ObjectView';
+import { serialize } from '../../serialization/Serialization';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';

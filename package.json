@@ -67,6 +67,7 @@
     "lerna": "^5.4.3"
   },
   "dependencies": {
-    "@feng3d/path": "^0.0.3"
+    "@feng3d/path": "^0.0.3",
+    "@feng3d/earcut": "^0.0.1"
   }
 }

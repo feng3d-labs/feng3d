@@ -1,8 +1,10 @@
-import { loader } from '@feng3d/filesystem';
-import { Color4, ColorKeywords } from '@feng3d/math';
-import { ArrayUtils } from '@feng3d/polyfill';
-import { TextureType } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialization, serialize } from '@feng3d/serialization';
+import { loader } from '../../filesystem/base/Loader';
+import { ColorKeywords } from '../../math/Color3';
+import { Color4 } from '../../math/Color4';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { TextureType } from '../../renderer/gl/WebGLEnums';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';

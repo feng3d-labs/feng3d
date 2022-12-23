@@ -1,6 +1,6 @@
-import { Color3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { serialization, serialize } from '@feng3d/serialization';
+import { Color3 } from '../../math/Color3';
+import { oav } from '../../objectview/ObjectView';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';

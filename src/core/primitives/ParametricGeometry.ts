@@ -1,5 +1,5 @@
-import { Vector3 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { Vector3 } from '../../math/geom/Vector3';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 

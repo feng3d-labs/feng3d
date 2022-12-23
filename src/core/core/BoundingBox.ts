@@ -1,4 +1,5 @@
-import { Box3, Vector3 } from '@feng3d/math';
+import { Box3 } from '../../math/geom/Box3';
+import { Vector3 } from '../../math/geom/Vector3';
 import { Component } from '../component/Component';
 import { Object3D } from './Object3D';
 

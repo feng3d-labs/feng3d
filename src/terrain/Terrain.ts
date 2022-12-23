@@ -1,5 +1,10 @@
-import { RegisterComponent, Renderable, Geometry, Material, Object3D, createNodeMenu } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { Object3D } from '../core/core/Object3D';
+import { Renderable } from '../core/core/Renderable';
+import { Geometry } from '../core/geometry/Geometry';
+import { Material } from '../core/materials/Material';
+import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { RegisterComponent } from '../ecs/Component';
+import { decoratorRegisterClass } from '../serialization/ClassUtils';
 import { TerrainData } from './TerrainData';
 import { TerrainGeometry } from './TerrainGeometry';
 

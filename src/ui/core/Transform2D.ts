@@ -1,11 +1,18 @@
-import { AddComponentMenu, Camera, Component, Object3D, HideFlags, RegisterComponent, Scene, TransformLayout } from '@feng3d/core';
-import { IEvent } from '@feng3d/event';
-import { Vector2, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Camera } from "../../core/cameras/Camera";
+import { HideFlags } from "../../core/core/HideFlags";
+import { Object3D } from "../../core/core/Object3D";
+import { TransformLayout } from "../../core/core/TransformLayout";
+import { AddComponentMenu } from "../../core/Menu";
+import { Scene } from "../../core/scene/Scene";
+import { RegisterComponent, Component } from "../../ecs/Component";
+import { IEvent } from "../../event/IEvent";
+import { Vector2 } from "../../math/geom/Vector2";
+import { Vector4 } from "../../math/geom/Vector4";
+import { oav } from "../../objectview/ObjectView";
+import { RenderAtomic } from "../../renderer/data/RenderAtomic";
+import { decoratorRegisterClass } from "../../serialization/ClassUtils";
+import { serialize } from "../../serialization/Serialization";
+import { watcher } from "../../watcher/watcher";
 
 declare global
 {

@@ -1,5 +1,6 @@
-import { anyEmitter } from '@feng3d/event';
-import { ArrayUtils, FunctionPropertyNames } from '@feng3d/polyfill';
+import { anyEmitter } from '../../event/AnyEmitter';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { FunctionPropertyNames } from '../../polyfill/Types';
 import { uuid } from './Uuid';
 
 type Wraps<T, K extends keyof T> = {

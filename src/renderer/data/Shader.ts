@@ -1,4 +1,4 @@
-import { gPartial } from '@feng3d/polyfill';
+import { gPartial } from '../../polyfill/Types';
 import { ShaderMacro } from '../shader/Macro';
 
 /**

@@ -1,6 +1,7 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';

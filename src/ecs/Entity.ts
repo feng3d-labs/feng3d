@@ -1,7 +1,8 @@
-import { EventEmitter, IEvent } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
-import { Constructor } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { EventEmitter } from '../event/EventEmitter';
+import { IEvent } from '../event/IEvent';
+import { oav } from '../objectview/ObjectView';
+import { Constructor } from '../polyfill/Types';
+import { serialize } from '../serialization/Serialization';
 import { Component, ComponentMap, ComponentNames } from './Component';
 
 type Components = ComponentMap[ComponentNames];

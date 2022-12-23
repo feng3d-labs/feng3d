@@ -1,7 +1,9 @@
-import { Color4, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Color4 } from '../../math/Color4';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
 import { Material } from '../materials/Material';

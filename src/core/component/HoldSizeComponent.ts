@@ -1,6 +1,6 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Component, RegisterComponent } from './Component';

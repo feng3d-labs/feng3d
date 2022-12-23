@@ -1,7 +1,7 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent, Component } from '../component/Component';
 import { AddComponentMenu } from '../Menu';

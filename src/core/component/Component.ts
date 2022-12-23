@@ -1,11 +1,11 @@
-import { EventEmitter } from '@feng3d/event';
-import { Constructor } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { Object3D, Object3DEventMap } from '../core/Object3D';
 import { HideFlags } from '../core/HideFlags';
 import { Scene } from '../scene/Scene';
+import { EventEmitter } from '../../event/EventEmitter';
+import { Constructor } from '../../polyfill/Types';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { serialize } from '../../serialization/Serialization';
 
 declare global
 {

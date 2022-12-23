@@ -1,5 +1,5 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize } from '../../serialization/Serialization';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';

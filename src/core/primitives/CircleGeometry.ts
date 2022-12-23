@@ -1,8 +1,10 @@
-import { Vector2, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { gPartial } from '@feng3d/polyfill';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { gPartial } from '../../polyfill/Types';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';

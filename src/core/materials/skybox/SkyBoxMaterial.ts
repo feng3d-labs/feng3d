@@ -1,6 +1,7 @@
-import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { oav } from '../../../objectview/ObjectView';
+import { shaderlib } from '../../../renderer/shader/ShaderLib';
+import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serialize } from '../../../serialization/Serialization';
 import { TextureCube } from '../../textures/TextureCube';
 import { Material } from '../Material';
 import skyboxFragment from './skybox_fragment_glsl';

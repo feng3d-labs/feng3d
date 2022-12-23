@@ -1,4 +1,6 @@
-import { RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Shader } from '../../../renderer/data/Shader';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';

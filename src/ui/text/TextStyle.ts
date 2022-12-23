@@ -1,9 +1,9 @@
-import { EventEmitter } from '@feng3d/event';
-import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { EventEmitter } from "../../event/EventEmitter";
+import { Color4 } from "../../math/Color4";
+import { oav } from "../../objectview/ObjectView";
+import { decoratorRegisterClass } from "../../serialization/ClassUtils";
+import { serialization, serialize } from "../../serialization/Serialization";
+import { watcher } from "../../watcher/watcher";
 
 /**
  * 文本上渐变方向。

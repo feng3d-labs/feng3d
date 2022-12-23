@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import mouseFragment from './shaders/mouse_fragment_glsl';
 import mouseVertex from './shaders/mouse_vertex_glsl';
 import outlineFragment from './shaders/outline_fragment_glsl';
@@ -14,6 +13,8 @@ import terrainVertex from './shaders/terrain_vertex_glsl';
 import wireframeFragment from './shaders/wireframe_fragment_glsl';
 import wireframeVertex from './shaders/wireframe_vertex_glsl';
 //
+import { shaderlib } from '../renderer/shader/ShaderLib';
+import { serialization } from '../serialization/Serialization';
 import alphatest_frag from './shaders/modules/alphatest_frag_glsl';
 import alphatest_pars_frag from './shaders/modules/alphatest_pars_frag_glsl';
 import ambient_frag from './shaders/modules/ambient_frag_glsl';
@@ -64,9 +65,6 @@ import uv_pars_vert from './shaders/modules/uv_pars_vert_glsl';
 import uv_vert from './shaders/modules/uv_vert_glsl';
 import worldposition_pars_vert from './shaders/modules/worldposition_pars_vert_glsl';
 import worldposition_vert from './shaders/modules/worldposition_vert_glsl';
-
-import { shaderlib } from '@feng3d/renderer';
-import { serialization } from '@feng3d/serialization';
 
 export { };
 

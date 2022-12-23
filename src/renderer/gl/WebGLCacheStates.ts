@@ -1,4 +1,4 @@
-import { FunctionPropertyNames } from '@feng3d/polyfill';
+import { FunctionPropertyNames } from "../../polyfill/Types";
 
 /**
  * 缓存WebGL状态

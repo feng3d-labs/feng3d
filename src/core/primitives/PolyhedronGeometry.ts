@@ -1,4 +1,5 @@
-import { Vector2, Vector3 } from '@feng3d/math';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 

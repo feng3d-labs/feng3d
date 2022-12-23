@@ -1,4 +1,5 @@
-import { Box3, Ray3 } from '@feng3d/math';
+import { Box3 } from '../../math/geom/Box3';
+import { Ray3 } from '../../math/geom/Ray3';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
 import { PickingCollisionVO } from '../pick/Raycaster';

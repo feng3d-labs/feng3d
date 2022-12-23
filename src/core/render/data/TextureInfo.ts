@@ -1,6 +1,6 @@
-import { dataTransform } from '@feng3d/polyfill';
-import { Texture } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { dataTransform } from '../../../polyfill/DataTransform';
+import { Texture } from '../../../renderer/data/Texture';
+import { serialize } from '../../../serialization/Serialization';
 import { HideFlags } from '../../core/HideFlags';
 import { imageDatas } from '../../textures/Texture2D';
 

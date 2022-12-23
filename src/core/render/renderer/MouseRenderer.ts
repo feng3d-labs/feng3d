@@ -1,7 +1,7 @@
-import { EventEmitter } from '@feng3d/event';
-import { Rectangle } from '@feng3d/math';
-import { RenderAtomic } from '@feng3d/renderer';
-import { windowEventProxy } from '@feng3d/shortcut';
+import { EventEmitter } from '../../../event/EventEmitter';
+import { Rectangle } from '../../../math/geom/Rectangle';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
 import { Object3D } from '../../core/Object3D';
 import { Renderable } from '../../core/Renderable';
 

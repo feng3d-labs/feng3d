@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { RegisterComponent } from '../component/Component';
 import { Renderable } from './Renderable';
 

@@ -1,9 +1,9 @@
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
-import { EventEmitter } from '@feng3d/event';
+import { EventEmitter } from '../../event/EventEmitter';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Particle } from '../Particle';
 import { ParticleSystem } from '../ParticleSystem';
-import { decoratorRegisterClass } from '@feng3d/serialization';
 
 /**
  * 粒子模块

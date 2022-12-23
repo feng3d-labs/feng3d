@@ -1,7 +1,9 @@
-import { Matrix4x4, MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialization, serialize } from '@feng3d/serialization';
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';

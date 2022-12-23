@@ -1,7 +1,11 @@
-import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialization, serialize } from '@feng3d/serialization';
+import { Frustum } from '../../math/geom/Frustum';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Ray3 } from '../../math/geom/Ray3';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialization, serialize } from '../../serialization/Serialization';
 import { Component, RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
 import { AddComponentMenu } from '../Menu';

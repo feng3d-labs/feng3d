@@ -1,9 +1,9 @@
-import { Texture2D } from '@feng3d/core';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { shaderConfig } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { Texture2D } from "../core/textures/Texture2D";
+import { Vector4 } from "../math/geom/Vector4";
+import { oav } from "../objectview/ObjectView";
+import { shaderConfig } from "../renderer/shader/ShaderLib";
+import { decoratorRegisterClass } from "../serialization/ClassUtils";
+import { serialize } from "../serialization/Serialization";
 
 /**
  * UnityShader "Particles/Alpha Blended Premultiply"

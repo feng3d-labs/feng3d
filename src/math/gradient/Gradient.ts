@@ -1,5 +1,6 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Color3 } from '../Color3';
 import { Color4 } from '../Color4';
 import { GradientAlphaKey } from './GradientAlphaKey';

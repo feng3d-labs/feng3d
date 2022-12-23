@@ -1,6 +1,7 @@
-import { EventEmitter, IEvent } from '@feng3d/event';
-import { Constructor } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { EventEmitter } from '../event/EventEmitter';
+import { IEvent } from '../event/IEvent';
+import { Constructor } from '../polyfill/Types';
+import { serialize } from '../serialization/Serialization';
 import { Entity, EntityEventMap } from './Entity';
 
 interface ComponentInfo

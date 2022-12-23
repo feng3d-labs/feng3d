@@ -1,7 +1,9 @@
-import { MinMaxGradient, Vector2 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { Vector2 } from '../../math/geom/Vector2';
+import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
+import { oav } from '../../objectview/ObjectView';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
 

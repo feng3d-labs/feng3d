@@ -1,7 +1,7 @@
-import { Vector3 } from '@feng3d/math';
-import { gPartial } from '@feng3d/polyfill';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Vector3 } from '../../math/geom/Vector3';
+import { gPartial } from '../../polyfill/Types';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';

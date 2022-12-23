@@ -1,9 +1,13 @@
-import { Geometry, geometryUtils, ImageUtil, Texture2D } from '@feng3d/core';
-import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { gPartial } from '@feng3d/polyfill';
-import { decoratorRegisterClass, serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Geometry } from "../core/geometry/Geometry";
+import { geometryUtils } from "../core/geometry/GeometryUtils";
+import { Texture2D } from "../core/textures/Texture2D";
+import { ImageUtil } from "../core/utils/ImageUtil";
+import { Color4 } from "../math/Color4";
+import { oav } from "../objectview/ObjectView";
+import { gPartial } from "../polyfill/Types";
+import { decoratorRegisterClass } from "../serialization/ClassUtils";
+import { serialize, serialization } from "../serialization/Serialization";
+import { watcher } from "../watcher/watcher";
 
 declare global
 {

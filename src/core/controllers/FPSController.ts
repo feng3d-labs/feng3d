@@ -1,8 +1,9 @@
-import { IEvent } from '@feng3d/event';
-import { Vector2, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { windowEventProxy } from '@feng3d/shortcut';
+import { IEvent } from '../../event/IEvent';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
 import { RunEnvironment } from '../core/RunEnvironment';

@@ -1,6 +1,7 @@
-import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Matrix3x3 } from './Matrix3x3';
 import { Matrix4x4 } from './Matrix4x4';
 import { Quaternion } from './Quaternion';

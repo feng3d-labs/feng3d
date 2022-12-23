@@ -1,4 +1,4 @@
-import { serialize } from '@feng3d/serialization';
+import { serialize } from '../../serialization/Serialization';
 import { Vector3 } from '../geom/Vector3';
 import { MinMaxCurve } from './MinMaxCurve';
 

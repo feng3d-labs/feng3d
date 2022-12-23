@@ -1,7 +1,10 @@
-import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialization } from '@feng3d/serialization';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Plane } from '../../math/geom/Plane';
+import { Vector3 } from '../../math/geom/Vector3';
+import { Vector4 } from '../../math/geom/Vector4';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';

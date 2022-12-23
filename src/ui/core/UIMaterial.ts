@@ -1,8 +1,11 @@
-import { Material, Texture2D } from '@feng3d/core';
-import { Color4, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { shaderConfig } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { Material } from "../../core/materials/Material";
+import { Texture2D } from "../../core/textures/Texture2D";
+import { Color4 } from "../../math/Color4";
+import { Vector4 } from "../../math/geom/Vector4";
+import { oav } from "../../objectview/ObjectView";
+import { shaderConfig } from "../../renderer/shader/ShaderLib";
+import { decoratorRegisterClass } from "../../serialization/ClassUtils";
+import { serialize } from "../../serialization/Serialization";
 
 declare global
 {

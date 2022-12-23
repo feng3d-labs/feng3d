@@ -1,5 +1,7 @@
-import { AttributeBuffer, ElementBuffer } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
+import { ElementBuffer } from '../../renderer/data/ElementBuffer';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Geometry } from './Geometry';
 
 declare global

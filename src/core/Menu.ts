@@ -1,4 +1,4 @@
-import { Constructor } from '@feng3d/polyfill';
+import { Constructor } from '../polyfill/Types';
 import { Components, ComponentNames } from './component/Component';
 
 /**

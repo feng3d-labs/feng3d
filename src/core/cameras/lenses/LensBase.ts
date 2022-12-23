@@ -1,8 +1,11 @@
-import { EventEmitter } from '@feng3d/event';
-import { Matrix4x4, Ray3, Vector3, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { EventEmitter } from '../../../event/EventEmitter';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Ray3 } from '../../../math/geom/Ray3';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector4 } from '../../../math/geom/Vector4';
+import { oav } from '../../../objectview/ObjectView';
+import { serialize } from '../../../serialization/Serialization';
+import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 
 export interface LensEventMap

@@ -1,7 +1,8 @@
-import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { Color4 } from '../../../math/Color4';
+import { oav } from '../../../objectview/ObjectView';
+import { shaderlib } from '../../../renderer/shader/ShaderLib';
+import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serialize } from '../../../serialization/Serialization';
 import { Material } from '../Material';
 import colorFragment from './color_fragment_glsl';
 import colorVertex from './color_vertex_glsl';

@@ -1,7 +1,8 @@
-import { Color4, Ray3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialize } from '@feng3d/serialization';
+import { Color4 } from '../../math/Color4';
+import { Ray3 } from '../../math/geom/Ray3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';

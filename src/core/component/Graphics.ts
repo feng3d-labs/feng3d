@@ -1,5 +1,4 @@
-import { dataTransform } from '@feng3d/polyfill';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { Component } from './Component';
 
 /**

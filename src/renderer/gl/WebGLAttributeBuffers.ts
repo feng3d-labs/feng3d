@@ -1,4 +1,4 @@
-import { watcher } from '@feng3d/watcher';
+import { watcher } from '../../watcher/watcher';
 import { AttributeBuffer, AttributeBufferSourceTypes, AttributeTypes } from '../data/AttributeBuffer';
 import { WebGLCapabilities } from './WebGLCapabilities';
 

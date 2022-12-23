@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';

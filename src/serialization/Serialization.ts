@@ -1,4 +1,6 @@
-import { ArrayUtils, gPartial, ObjectUtils } from '@feng3d/polyfill';
+import { ArrayUtils } from '../polyfill/ArrayUtils';
+import { ObjectUtils } from '../polyfill/ObjectUtils';
+import { gPartial } from '../polyfill/Types';
 import { classUtils, __class__ } from './ClassUtils';
 
 /**

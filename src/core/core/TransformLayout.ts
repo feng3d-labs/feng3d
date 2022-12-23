@@ -1,10 +1,10 @@
-import { IEvent } from '@feng3d/event';
-import { Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { IEvent } from '../../event/IEvent';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';

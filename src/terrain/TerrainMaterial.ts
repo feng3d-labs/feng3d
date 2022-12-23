@@ -1,8 +1,14 @@
-import { FogMode, Material, Texture2D, TextureCube } from '@feng3d/core';
-import { Color3, Color4, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { shaderConfig } from '@feng3d/renderer';
-import { decoratorRegisterClass, serialize } from '@feng3d/serialization';
+import { Material } from "../core/materials/Material";
+import { FogMode } from "../core/materials/standard/StandardMaterial";
+import { Texture2D } from "../core/textures/Texture2D";
+import { TextureCube } from "../core/textures/TextureCube";
+import { Color3 } from "../math/Color3";
+import { Color4 } from "../math/Color4";
+import { Vector4 } from "../math/geom/Vector4";
+import { oav } from "../objectview/ObjectView";
+import { shaderConfig } from "../renderer/shader/ShaderLib";
+import { decoratorRegisterClass } from "../serialization/ClassUtils";
+import { serialize } from "../serialization/Serialization";
 
 declare global
 {

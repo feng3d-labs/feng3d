@@ -1,5 +1,7 @@
-import { FrameBuffer, RenderBuffer, WebGLRenderer } from '@feng3d/renderer';
-import { watcher } from '@feng3d/watcher';
+import { FrameBuffer } from '../../renderer/data/FrameBuffer';
+import { RenderBuffer } from '../../renderer/RenderBuffer';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { watcher } from '../../watcher/watcher';
 import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
 
 /**

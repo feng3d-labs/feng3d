@@ -1,4 +1,4 @@
-import { gPartial, Lazy, lazy, LazyObject } from '@feng3d/polyfill';
+import { LazyObject, Lazy, gPartial, lazy } from '../../polyfill/Types';
 import { WebGLAttributeBuffers } from '../gl/WebGLAttributeBuffers';
 import { ShaderMacro } from '../shader/Macro';
 import { AttributeBuffer } from './AttributeBuffer';

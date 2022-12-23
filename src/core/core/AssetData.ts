@@ -1,6 +1,7 @@
-import { EventEmitter } from '@feng3d/event';
-import { MapUtils } from '@feng3d/polyfill';
-import { classUtils, serialization, serialize, __class__ } from '@feng3d/serialization';
+import { EventEmitter } from '../../event/EventEmitter';
+import { MapUtils } from '../../polyfill/MapUtils';
+import { __class__, classUtils } from '../../serialization/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
 import { ReadRS } from '../assets/rs/ReadRS';
 

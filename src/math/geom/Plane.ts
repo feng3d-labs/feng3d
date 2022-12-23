@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../../polyfill/MathUtil';
 import { PlaneClassification } from '../enums/PlaneClassification';
 import { Line3 } from './Line3';
 import { Vector3 } from './Vector3';

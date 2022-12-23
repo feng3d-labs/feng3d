@@ -1,6 +1,6 @@
-import { Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { mathUtil } from '../../polyfill/MathUtil';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';

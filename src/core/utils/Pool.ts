@@ -1,4 +1,4 @@
-import { Constructor } from '@feng3d/polyfill';
+import { Constructor } from "../../polyfill/Types";
 
 /**
  * 对象池

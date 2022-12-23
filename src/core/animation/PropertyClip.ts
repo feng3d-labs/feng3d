@@ -1,5 +1,6 @@
-import { Quaternion, Vector3 } from '@feng3d/math';
-import { serialize } from '@feng3d/serialization';
+import { Quaternion } from "../../math/geom/Quaternion";
+import { Vector3 } from "../../math/geom/Vector3";
+import { serialize } from "../../serialization/Serialization";
 
 export class PropertyClip
 {

@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';

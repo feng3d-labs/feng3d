@@ -1,7 +1,8 @@
-import { Texture2D } from '@feng3d/core';
-import { EventEmitter } from '@feng3d/event';
-import { Vector2, Vector4 } from '@feng3d/math';
-import { RenderAtomic } from '@feng3d/renderer';
+import { Texture2D } from "../core/textures/Texture2D";
+import { EventEmitter } from "../event/EventEmitter";
+import { Vector2 } from "../math/geom/Vector2";
+import { Vector4 } from "../math/geom/Vector4";
+import { RenderAtomic } from "../renderer/data/RenderAtomic";
 
 /**
  * 地形材质
