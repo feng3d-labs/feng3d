@@ -380,7 +380,7 @@ serialization.serializeHandlers.push(
                 const object = {};
 
                 target[property] = object;
-                object[__class__] = classUtils.getQualifiedClassName(spv);
+                object[__class__] = classUtils.getClassName(spv);
                 spv.serialize(object);
 
                 return true;
@@ -452,7 +452,7 @@ serialization.serializeHandlers.push(
                 const object = {};
 
                 target[property] = object;
-                const className = classUtils.getQualifiedClassName(spv);
+                const className = classUtils.getClassName(spv);
                 const keys = getSerializableMembers(spv);
 
                 keys.forEach((key) =>
@@ -467,7 +467,7 @@ serialization.serializeHandlers.push(
             // 执行默认忽略默认值
             if (ObjectUtils.objectIsEmpty(tpv) || tpv.constructor !== spv.constructor)
             {
-                const className = classUtils.getQualifiedClassName(spv);
+                const className = classUtils.getClassName(spv);
                 // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。
                 let inst = spv.constructor.inst;
 
@@ -643,7 +643,7 @@ serialization.deserializeHandlers = [
         {
             const tpv = target[property];
             const spv = source[property];
-            let inst = classUtils.getInstanceByName(spv[__class__]);
+            let inst = classUtils.getInstance(spv[__class__]);
             // 处理自定义反序列化对象
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -676,7 +676,7 @@ serialization.deserializeHandlers = [
         {
             const tpv = target[property];
             const spv = source[property];
-            let inst = classUtils.getInstanceByName(spv[__class__]);
+            let inst = classUtils.getInstance(spv[__class__]);
 
             if (inst)
             {
@@ -956,7 +956,7 @@ serialization.setValueHandlers = [
             const tpv = target[property];
             const spv = source[property];
 
-            const targetClassName = classUtils.getQualifiedClassName(target[property]);
+            const targetClassName = classUtils.getClassName(target[property]);
             // 相同对象类型
 
             if (targetClassName === spv[__class__])

@@ -393,7 +393,7 @@ export class ReadRS
         // 加载包含的资源数据
         await this.readAssetDatas(assetids);
         // 创建资源数据实例
-        const assetData = classUtils.getInstanceByName(object[__class__]);
+        const assetData = classUtils.getInstance(object[__class__]);
         // 默认反序列
         serialization.setValue(assetData, object);
 

@@ -128,7 +128,7 @@ export class AssetData extends EventEmitter
     static serialize(asset: AssetData)
     {
         const obj = <any>{};
-        obj[__class__] = classUtils.getQualifiedClassName(asset);
+        obj[__class__] = classUtils.getClassName(asset);
         obj.assetId = asset.assetId;
 
         return obj;
@@ -203,8 +203,8 @@ serialization.setValueHandlers.push(
             {
                 if (spv.__class__ === null)
                 {
-                    const className = classUtils.getQualifiedClassName(tpv);
-                    const inst = classUtils.getInstanceByName(className);
+                    const className = classUtils.getClassName(tpv);
+                    const inst = classUtils.getInstance(className);
                     param.serialization.setValue(inst, spv);
                     target[property] = inst;
                 }

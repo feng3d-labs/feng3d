@@ -21,12 +21,20 @@ declare global
     }
 }
 
+declare global
+{
+    interface MixinsClassMap
+    {
+        Terrain: Terrain
+    }
+}
+
 /**
  * The Terrain component renders the terrain.
  */
 // @ov({ component: "OVTerrain" })
 @RegisterComponent()
-@serializable()
+@serializable('Terrain')
 export class Terrain extends Renderable
 {
     __class__: 'Terrain';

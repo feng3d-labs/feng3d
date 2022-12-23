@@ -70,7 +70,7 @@ export class ScriptComponent extends Behaviour
         this._scriptInstance = null;
         if (!this.scriptName) return;
 
-        this._scriptInstance = classUtils.getInstanceByName(this.scriptName);
+        this._scriptInstance = classUtils.getInstance(this.scriptName);
 
         this.scriptInit = false;
 
@@ -78,7 +78,7 @@ export class ScriptComponent extends Behaviour
         if (oldInstance)
         {
             // 如果两个类定义名称相同，则保留上个对象数据
-            if (classUtils.getQualifiedClassName(oldInstance) === this.scriptName)
+            if (classUtils.getClassName(oldInstance) === this.scriptName)
             {
                 serialization.setValue(this._scriptInstance, <any>oldInstance);
             }

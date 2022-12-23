@@ -8,7 +8,7 @@ class ObjectBase
     id = 1;
 }
 
-@decoratorRegisterClass()
+@serializable()
 class C extends ObjectBase
 {
     // @serialize
@@ -30,7 +30,7 @@ class C extends ObjectBase
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 class LoopA
 {
     a: LoopA;
