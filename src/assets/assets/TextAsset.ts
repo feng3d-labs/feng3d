@@ -1,6 +1,7 @@
-import { AssetType, FileAsset, setAssetTypeClass } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { AssetType } from "../../core/assets/AssetType";
+import { FileAsset, setAssetTypeClass } from "../../core/assets/FileAsset";
+import { oav } from "../../objectview/ObjectView";
+import { decoratorRegisterClass } from "../../serialization/ClassUtils";
 
 declare global
 {

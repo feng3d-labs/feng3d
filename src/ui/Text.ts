@@ -1,10 +1,10 @@
 import { Camera } from '../core/cameras/Camera';
+import { Component, RegisterComponent } from '../core/component/Component';
 import { Object3D } from '../core/core/Object3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
 import { Texture2D } from '../core/textures/Texture2D';
-import { RegisterComponent, Component } from '../ecs/Component';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';

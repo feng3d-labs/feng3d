@@ -1,6 +1,8 @@
-import { AssetType, setAssetTypeClass, TextureCube } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { AssetType } from '../../core/assets/AssetType';
+import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { TextureCube } from '../../core/textures/TextureCube';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare global

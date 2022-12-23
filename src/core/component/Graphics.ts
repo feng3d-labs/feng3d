@@ -1,3 +1,4 @@
+import { dataTransform } from '../../polyfill/DataTransform';
 import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { Component } from './Component';
 

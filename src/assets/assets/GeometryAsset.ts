@@ -1,6 +1,9 @@
-import { AssetType, CubeGeometry, Geometry, setAssetTypeClass } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { AssetType } from '../../core/assets/AssetType';
+import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { Geometry } from '../../core/geometry/Geometry';
+import { CubeGeometry } from '../../core/primitives/CubeGeometry';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare global

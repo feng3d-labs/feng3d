@@ -1,8 +1,8 @@
-import { FileAsset } from '@feng3d/core';
-import { objectEmitter } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
-import { serialization } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { FileAsset } from "../core/assets/FileAsset";
+import { objectEmitter } from "../event/ObjectEmitter";
+import { oav } from "../objectview/ObjectView";
+import { serialization } from "../serialization/Serialization";
+import { watcher } from "../watcher/watcher";
 
 /**
  * 对象资源

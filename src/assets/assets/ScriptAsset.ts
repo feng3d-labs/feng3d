@@ -1,6 +1,8 @@
-import { AssetType, regExps, setAssetTypeClass } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { AssetType } from '../../core/assets/AssetType';
+import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { regExps } from '../../core/utils/RegExps';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { watcher } from '../../watcher/watcher';
 import { TextAsset } from './TextAsset';
 
 declare global

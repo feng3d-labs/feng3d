@@ -1,4 +1,5 @@
 import { Camera } from '../core/cameras/Camera';
+import { RegisterComponent } from '../core/component/Component';
 import { Object3D } from '../core/core/Object3D';
 import { Renderable } from '../core/core/Renderable';
 import { RunEnvironment } from '../core/core/RunEnvironment';
@@ -8,7 +9,6 @@ import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { QuadGeometry } from '../core/primitives/QuadGeometry';
 import { Scene } from '../core/scene/Scene';
-import { RegisterComponent } from '../ecs/Component';
 import { Matrix3x3 } from '../math/geom/Matrix3x3';
 import { Matrix4x4 } from '../math/geom/Matrix4x4';
 import { Vector3 } from '../math/geom/Vector3';

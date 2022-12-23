@@ -1,9 +1,9 @@
 import { Camera } from '../core/cameras/Camera';
+import { RegisterComponent, Component } from '../core/component/Component';
 import { Object3D } from '../core/core/Object3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
-import { RegisterComponent, Component } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';

@@ -1,8 +1,8 @@
 import { Behaviour } from '../core/component/Behaviour';
+import { RegisterComponent } from '../core/component/Component';
 import { Object3D } from '../core/core/Object3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
-import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
 import { decoratorRegisterClass } from '../serialization/ClassUtils';
 import { serialize, serialization } from '../serialization/Serialization';

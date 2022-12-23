@@ -1,7 +1,8 @@
-import { AssetType, Object3D } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/serialization';
-import { serialization } from '@feng3d/serialization';
+import { AssetType } from '../../core/assets/AssetType';
+import { Object3D } from '../../core/core/Object3D';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serialization } from '../../serialization/Serialization';
 import { ObjectAsset } from '../ObjectAsset';
 
 export interface Object3DAsset

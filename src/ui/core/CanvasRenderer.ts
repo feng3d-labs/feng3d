@@ -1,3 +1,4 @@
+import { RegisterComponent } from '../../core/component/Component';
 import { Renderable } from '../../core/core/Renderable';
 import { TransformLayout } from '../../core/core/TransformLayout';
 import { View } from '../../core/core/View';
@@ -5,7 +6,6 @@ import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { AddComponentMenu } from '../../core/Menu';
 import { TransformUtils } from '../../core/utils/TransformUtils';
-import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';

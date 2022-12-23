@@ -1,10 +1,10 @@
 import { Camera } from "../../core/cameras/Camera";
+import { Component, RegisterComponent } from "../../core/component/Component";
 import { HideFlags } from "../../core/core/HideFlags";
 import { Object3D } from "../../core/core/Object3D";
 import { TransformLayout } from "../../core/core/TransformLayout";
 import { AddComponentMenu } from "../../core/Menu";
 import { Scene } from "../../core/scene/Scene";
-import { RegisterComponent, Component } from "../../ecs/Component";
 import { IEvent } from "../../event/IEvent";
 import { Vector2 } from "../../math/geom/Vector2";
 import { Vector4 } from "../../math/geom/Vector4";

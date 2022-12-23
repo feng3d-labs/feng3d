@@ -1,5 +1,5 @@
-import { AssetType } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { AssetType } from '../../core/assets/AssetType';
+import { decoratorRegisterClass } from '../../serialization/ClassUtils';
 import { ArrayBufferAsset } from '../ArrayBufferAsset';
 
 /**

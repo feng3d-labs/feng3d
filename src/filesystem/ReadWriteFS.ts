@@ -1,5 +1,5 @@
 import { path as fengpath } from '@feng3d/path';
-import { dataTransform } from '@feng3d/polyfill';
+import { dataTransform } from '../polyfill/DataTransform';
 import { IReadWriteFS } from './IReadWriteFS';
 import { ReadFS } from './ReadFS';
 

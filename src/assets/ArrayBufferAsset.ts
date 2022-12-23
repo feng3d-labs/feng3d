@@ -1,5 +1,5 @@
-import { FileAsset } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/serialization';
+import { FileAsset } from "../core/assets/FileAsset";
+import { decoratorRegisterClass } from "../serialization/ClassUtils";
 
 /**
  * 二进制 资源
