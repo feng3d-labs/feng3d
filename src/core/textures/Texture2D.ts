@@ -87,7 +87,7 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
     /**
      * 用于表示初始化纹理的数据来源
      */
-    @SerializeProperty
+    @SerializeProperty()
     get source()
     {
         return this._source;

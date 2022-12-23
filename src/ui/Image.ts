@@ -42,7 +42,7 @@ export class Image extends Component
      * 图像元素的源纹理。
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     image = Texture2D.default;
 
     /**
@@ -51,7 +51,7 @@ export class Image extends Component
      * 为该图像着色。
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     color = new Color4();
 
     /**

@@ -29,10 +29,10 @@ export class SkyBox extends Component
     // /**
     //  * The material used by the skybox.
     //  */
-    // @SerializeProperty
+    // @SerializeProperty()
     // material: Material;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
     s_skyBoxTexture = TextureCube.default;
 

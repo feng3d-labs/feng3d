@@ -38,31 +38,31 @@ export class WaterUniforms
 {
     __class__: 'WaterUniforms';
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '透明度' })
     u_alpha = 1.0;
 
     /**
      * 水体运动时间，默认自动递增
      */
-    // @SerializeProperty
+    // @SerializeProperty()
     // @oav({ tooltip: "水体运动时间，默认自动递增" })
     u_time = 0.0;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '水体展现的尺寸' })
     u_size = 10.0;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     u_distortionScale = 20.0;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '水体颜色' })
     u_waterColor = new Color3().fromUnit(0x555555);
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '水体法线图' })
     s_normalSampler = Texture2D.default;
 

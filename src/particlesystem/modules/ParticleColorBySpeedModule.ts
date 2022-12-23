@@ -20,7 +20,7 @@ export class ParticleColorBySpeedModule extends ParticleModule
      *
      * 控制粒子颜色的梯度。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '控制粒子颜色的梯度。' })
     color = new MinMaxGradient();
 
@@ -29,7 +29,7 @@ export class ParticleColorBySpeedModule extends ParticleModule
      *
      * 在这些最小和最大速度之间应用颜色渐变。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '在这些最小和最大速度之间应用颜色渐变。' })
     range = new Vector2(0, 1);
 

@@ -22,7 +22,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 定义纹理的平铺。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Defines the tiling of the texture." })
     @oav({ tooltip: '定义纹理的平铺。' })
     tiles = new Vector2(1, 1);
@@ -32,7 +32,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 指定动画类型。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Specifies the animation type." })
     @oav({ tooltip: '指定动画类型。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemAnimationType } })
     animation = ParticleSystemAnimationType.WholeSheet;
@@ -42,7 +42,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 曲线控制哪个帧的纹理表动画播放。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Curve to control which frame of the texture sheet animation to play." })
     @oav({ tooltip: '曲线控制哪个帧的纹理表动画播放。' })
     frameOverTime = serialization.setValue(new MinMaxCurve(), { mode: MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] } });
@@ -52,7 +52,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 对每个发射的粒子使用纹理表的随机行。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Use a random row of the texture sheet for each particle emitted." })
     @oav({ tooltip: '对每个发射的粒子使用纹理表的随机行。' })
     useRandomRow = true;
@@ -62,7 +62,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Explicitly select which row of the texture sheet is used, when useRandomRow is set to false." })
     @oav({ tooltip: '当useRandomRow设置为false时，显式选择使用纹理表的哪一行。' })
     get rowIndex() { return this._rowIndex; }
@@ -77,7 +77,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 为纹理表动画定义一个随机的起始帧。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Define a random starting frame for the texture sheet animation." })
     @oav({ tooltip: '为纹理表动画定义一个随机的起始帧。' })
     startFrame = new MinMaxCurve();
@@ -87,7 +87,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 指定在粒子的生命周期内动画将循环多少次。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Specifies how many times the animation will loop during the lifetime of the particle." })
     @oav({ tooltip: '指定在粒子的生命周期内动画将循环多少次。' })
     cycleCount = 1;
@@ -97,7 +97,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * 在粒子上翻转UV坐标，使它们呈现镜像翻转。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Flip the UV coordinate on particles, causing them to appear mirrored." })
     @oav({ tooltip: '在粒子上翻转UV坐标，使它们呈现镜像翻转。' })
     flipUV = new Vector2();
@@ -109,7 +109,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
      *
      * todo 目前引擎中只有一套UV
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Choose which UV channels will receive texture animation.", component: "OAVEnum", componentParam: { enumClass: UVChannelFlags } })
     @oav({ tooltip: '选择哪个UV通道将接收纹理动画。', component: 'OAVEnum', componentParam: { enumClass: UVChannelFlags } })
     uvChannelMask = UVChannelFlags.Everything;

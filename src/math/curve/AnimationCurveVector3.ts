@@ -10,19 +10,19 @@ export class AnimationCurveVector3
     /**
      * X 轴曲线
      */
-    @SerializeProperty
+    @SerializeProperty()
     xCurve = new AnimationCurve();
 
     /**
      * Y 轴曲线
      */
-    @SerializeProperty
+    @SerializeProperty()
     yCurve = new AnimationCurve();
 
     /**
      * Z 轴曲线
      */
-    @SerializeProperty
+    @SerializeProperty()
     zCurve = new AnimationCurve();
 
     /**

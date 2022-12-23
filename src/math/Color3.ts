@@ -49,21 +49,21 @@ export class Color3
      * 红[0,1]
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     r = 1;
 
     /**
      * 绿[0,1]
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     g = 1;
 
     /**
      * 蓝[0,1]
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     b = 1;
 
     /**

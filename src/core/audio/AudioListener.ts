@@ -31,7 +31,7 @@ export class AudioListener extends Behaviour
     /**
      * 音量
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '音量' })
     get volume()
     {

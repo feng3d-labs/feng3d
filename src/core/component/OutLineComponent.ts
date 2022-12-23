@@ -41,15 +41,15 @@ export class OutLineComponent extends Component
     __class__: 'OutLineComponent';
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     size = 1;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     color = new Color4(0.2, 0.2, 0.2, 1.0);
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     outlineMorphFactor = 0.0;
 
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)

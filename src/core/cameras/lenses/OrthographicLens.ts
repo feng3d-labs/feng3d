@@ -14,7 +14,7 @@ export class OrthographicLens extends LensBase
     /**
      * 尺寸
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     size: number;
 

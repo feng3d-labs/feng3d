@@ -126,7 +126,7 @@ export class ParticleSystem extends Renderable
      */
     time = 0;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Main', component: 'OAVObjectView' })
     get main() { return this._main; }
     set main(v)
@@ -142,7 +142,7 @@ export class ParticleSystem extends Renderable
     }
     private _main: ParticleMainModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Emission', component: 'OAVObjectView' })
     get emission() { return this._emission; }
     set emission(v)
@@ -153,7 +153,7 @@ export class ParticleSystem extends Renderable
     }
     private _emission: ParticleEmissionModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Shape', component: 'OAVObjectView' })
     get shape() { return this._shape; }
     set shape(v)
@@ -164,7 +164,7 @@ export class ParticleSystem extends Renderable
     }
     private _shape: ParticleShapeModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Velocity Over Lifetime', component: 'OAVObjectView' })
     get velocityOverLifetime() { return this._velocityOverLifetime; }
     set velocityOverLifetime(v)
@@ -175,7 +175,7 @@ export class ParticleSystem extends Renderable
     }
     private _velocityOverLifetime: ParticleVelocityOverLifetimeModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "limit velocity over lifetime module.", block: "limitVelocityOverLifetime", component: "OAVObjectView" })
     @oav({ tooltip: '基于时间轴限制速度模块。', block: 'Limit Velocity Over Lifetime', component: 'OAVObjectView' })
     get limitVelocityOverLifetime() { return this._limitVelocityOverLifetime; }
@@ -192,7 +192,7 @@ export class ParticleSystem extends Renderable
      *
      * 粒子系统速度继承模块。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '粒子系统速度继承模块。', block: 'Inherit Velocity', component: 'OAVObjectView' })
     get inheritVelocity() { return this._inheritVelocity; }
     set inheritVelocity(v)
@@ -203,7 +203,7 @@ export class ParticleSystem extends Renderable
     }
     private _inheritVelocity: ParticleInheritVelocityModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Force Over Lifetime', component: 'OAVObjectView' })
     get forceOverLifetime() { return this._forceOverLifetime; }
     set forceOverLifetime(v)
@@ -214,7 +214,7 @@ export class ParticleSystem extends Renderable
     }
     private _forceOverLifetime: ParticleForceOverLifetimeModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Color Over Lifetime', component: 'OAVObjectView' })
     get colorOverLifetime() { return this._colorOverLifetime; }
     set colorOverLifetime(v)
@@ -228,7 +228,7 @@ export class ParticleSystem extends Renderable
     /**
      * 颜色随速度变化模块。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Color By Speed', component: 'OAVObjectView' })
     get colorBySpeed() { return this._colorBySpeed; }
     set colorBySpeed(v)
@@ -239,7 +239,7 @@ export class ParticleSystem extends Renderable
     }
     private _colorBySpeed: ParticleColorBySpeedModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'sizeOverLifetime', component: 'OAVObjectView' })
     get sizeOverLifetime() { return this._sizeOverLifetime; }
     set sizeOverLifetime(v)
@@ -253,7 +253,7 @@ export class ParticleSystem extends Renderable
     /**
      * 缩放随速度变化模块
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Size By Speed', component: 'OAVObjectView' })
     get sizeBySpeed() { return this._sizeBySpeed; }
     set sizeBySpeed(v)
@@ -264,7 +264,7 @@ export class ParticleSystem extends Renderable
     }
     private _sizeBySpeed: ParticleSizeBySpeedModule;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Rotation Over Lifetime', component: 'OAVObjectView' })
     get rotationOverLifetime() { return this._rotationOverLifetime; }
     set rotationOverLifetime(v)
@@ -278,7 +278,7 @@ export class ParticleSystem extends Renderable
     /**
      * 旋转角度随速度变化模块
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Rotation By Speed', component: 'OAVObjectView' })
     get rotationBySpeed() { return this._rotationBySpeed; }
     set rotationBySpeed(v)
@@ -292,7 +292,7 @@ export class ParticleSystem extends Renderable
     /**
      * 旋转角度随速度变化模块
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Noise', component: 'OAVObjectView' })
     get noise() { return this._noise; }
     set noise(v)
@@ -306,7 +306,7 @@ export class ParticleSystem extends Renderable
     /**
      * 旋转角度随速度变化模块
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: 'Sub Emitters', component: 'OAVObjectView' })
     get subEmitters() { return this._subEmitters; }
     set subEmitters(v)
@@ -320,7 +320,7 @@ export class ParticleSystem extends Renderable
     /**
      * 粒子系统纹理表动画模块。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '粒子系统纹理表动画模块。', block: 'Texture Sheet Animation', component: 'OAVObjectView' })
     get textureSheetAnimation() { return this._textureSheetAnimation; }
     set textureSheetAnimation(v)
@@ -338,11 +338,11 @@ export class ParticleSystem extends Renderable
     material = Material.getDefault('Particle-Material');
 
     @oav({ block: 'Renderer' })
-    @SerializeProperty
+    @SerializeProperty()
     castShadows = true;
 
     @oav({ block: 'Renderer' })
-    @SerializeProperty
+    @SerializeProperty()
     receiveShadows = true;
 
     get single() { return true; }

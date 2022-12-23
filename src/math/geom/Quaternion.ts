@@ -22,25 +22,25 @@ export class Quaternion
     /**
      * 虚基向量i的乘子
      */
-    @SerializeProperty
+    @SerializeProperty()
     x = 0;
 
     /**
      * 虚基向量j的乘子
      */
-    @SerializeProperty
+    @SerializeProperty()
     y = 0;
 
     /**
      * 虚基向量k的乘子
      */
-    @SerializeProperty
+    @SerializeProperty()
     z = 0;
 
     /**
      * 实部的乘数
      */
-    @SerializeProperty
+    @SerializeProperty()
     w = 1;
 
     /**

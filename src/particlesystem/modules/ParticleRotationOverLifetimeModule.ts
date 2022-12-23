@@ -17,7 +17,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
      * Set the rotation over lifetime on each axis separately.
      * 在每个轴上分别设置基于生命周期的旋转。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Set the rotation over lifetime on each axis separately." })
     @oav({ tooltip: '在每个轴上分别设置基于生命周期的旋转。' })
     separateAxes = false;
@@ -25,7 +25,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
     /**
      * 角速度，基于生命周期的旋转。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '角速度，基于生命周期的旋转。' })
     angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
 

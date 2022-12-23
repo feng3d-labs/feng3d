@@ -92,7 +92,7 @@ export class Matrix4x4
     /**
      * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
-    @SerializeProperty
+    @SerializeProperty()
     elements: NumberArray16;
 
     /**

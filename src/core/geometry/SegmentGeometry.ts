@@ -37,7 +37,7 @@ export class SegmentGeometry extends Geometry
      * 线段列表
      * 修改数组内数据时需要手动调用 invalidateGeometry();
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVArray', tooltip: '在指定时间进行额外发射指定数量的粒子', componentParam: { defaultItem: () => new Segment() } })
     segments: Segment[] = [];
 
@@ -98,28 +98,28 @@ export class Segment
     /**
      * 起点坐标
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '起点坐标' })
     start = new Vector3();
 
     /**
      * 终点坐标
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '终点坐标' })
     end = new Vector3();
 
     /**
      * 起点颜色
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '起点颜色' })
     startColor = new Color4();
 
     /**
      * 终点颜色
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '终点颜色' })
     endColor = new Color4();
 }

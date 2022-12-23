@@ -75,7 +75,7 @@ export class Button extends Behaviour
     /**
      * 所有状态数据，每一个状态数据中记录了子对象的当前数据。
      */
-    @SerializeProperty
+    @SerializeProperty()
     allStateData = {};
 
     private _stateInvalid = true;

@@ -15,7 +15,7 @@ export class Texture<T = any> extends EventEmitter<T>
     /**
      * 格式
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({
         component: 'OAVEnum', componentParam: {
             enumClass: ['ALPHA', 'RGB', `RGBA`, `LUMINANCE`, `LUMINANCE_ALPHA`, `DEPTH_COMPONENT`,
@@ -30,7 +30,7 @@ export class Texture<T = any> extends EventEmitter<T>
     /**
      * 数据类型
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({
         component: 'OAVEnum', componentParam: {
             enumClass: ['UNSIGNED_BYTE', 'UNSIGNED_SHORT_5_6_5', 'UNSIGNED_SHORT_4_4_4_4', 'UNSIGNED_SHORT_5_5_5_1', 'UNSIGNED_SHORT',
@@ -43,36 +43,36 @@ export class Texture<T = any> extends EventEmitter<T>
     /**
      * 是否生成mipmap
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     generateMipmap = true;
 
     /**
      * 对图像进行Y轴反转。默认值为false
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     flipY = false;
 
     /**
      * 将图像RGB颜色值得每一个分量乘以A。默认为false
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     premulAlpha = false;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ['LINEAR', 'NEAREST', 'NEAREST_MIPMAP_NEAREST', 'LINEAR_MIPMAP_NEAREST', 'NEAREST_MIPMAP_LINEAR', 'LINEAR_MIPMAP_LINEAR'] } })
     minFilter: TextureMinFilter = 'LINEAR_MIPMAP_LINEAR';
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ['LINEAR', 'NEAREST'] } })
     magFilter: TextureMagFilter = 'LINEAR';
 
     /**
      * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ['REPEAT', 'CLAMP_TO_EDGE', 'MIRRORED_REPEAT'] } })
     get wrapS()
     {
@@ -92,7 +92,7 @@ export class Texture<T = any> extends EventEmitter<T>
     /**
      * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ['REPEAT', 'CLAMP_TO_EDGE', 'MIRRORED_REPEAT'] } })
     get wrapT()
     {
@@ -112,7 +112,7 @@ export class Texture<T = any> extends EventEmitter<T>
     /**
      * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为1。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     anisotropy = 1;
 

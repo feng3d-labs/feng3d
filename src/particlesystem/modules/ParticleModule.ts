@@ -15,7 +15,7 @@ export class ParticleModule extends EventEmitter
      * 是否开启
      */
     @oav({ tooltip: '是否开启' })
-    @SerializeProperty
+    @SerializeProperty()
     enabled = false;
 
     /**

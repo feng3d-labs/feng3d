@@ -34,21 +34,21 @@ export class SpotLight extends Light
      * 光照范围
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     range = 10;
 
     /**
      *
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     angle = 60;
 
     /**
      * 半影.
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     penumbra = 0;
 
     /**

@@ -30,14 +30,14 @@ export class ScriptComponent extends Behaviour
 {
     runEnvironment = RunEnvironment.feng3d;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'file_script' } })
     scriptName: string;
 
     /**
      * 脚本对象
      */
-    @SerializeProperty
+    @SerializeProperty()
     get scriptInstance()
     {
         if (this._invalid) this._updateScriptInstance();

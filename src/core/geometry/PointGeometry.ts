@@ -27,7 +27,7 @@ export class PointGeometry extends Geometry
      * 点数据列表
      * 修改数组内数据时需要手动调用 invalidateGeometry();
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     points: PointInfo[] = [];
 

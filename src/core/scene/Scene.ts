@@ -45,14 +45,14 @@ export class Scene extends Component
     /**
      * 背景颜色
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     background = new Color4(0, 0, 0, 1);
 
     /**
      * 环境光强度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     ambientColor = new Color4();
 

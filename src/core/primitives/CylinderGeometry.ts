@@ -88,35 +88,35 @@ export class CylinderGeometry extends Geometry implements ICylinderGeometry
     /**
      * 顶部半径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     topRadius = 0.5;
 
     /**
      * 底部半径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     bottomRadius = 0.5;
 
     /**
      * 高度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     height = 2;
 
     /**
      * 横向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsW = 16;
 
     /**
      * 纵向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsH = 1;
 
@@ -124,27 +124,27 @@ export class CylinderGeometry extends Geometry implements ICylinderGeometry
      * 顶部是否封口
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     topClosed = true;
 
     /**
      * 底部是否封口
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     bottomClosed = true;
 
     /**
      * 侧面是否封口
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     surfaceClosed = true;
 
     /**
      * 是否朝上
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     yUp = true;
 

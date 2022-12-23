@@ -19,7 +19,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
      * Set the rotation by speed on each axis separately.
      * 在每个轴上分别设置随速度变化的旋转。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Set the rotation by speed on each axis separately." })
     @oav({ tooltip: '在每个轴上分别设置随速度变化的旋转。' })
     separateAxes = false;
@@ -27,7 +27,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
     /**
      * 角速度，随速度变化的旋转。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '角速度，随速度变化的旋转。' })
     angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
 
@@ -36,7 +36,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
      *
      * 在这些最小和最大速度之间应用旋转曲线。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '在这些最小和最大速度之间应用旋转曲线。' })
     range = new Vector2(0, 1);
 

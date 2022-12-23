@@ -36,35 +36,35 @@ export class CapsuleGeometry extends Geometry
     /**
      * 胶囊体半径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     radius = 0.5;
 
     /**
      * 胶囊体高度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     height = 1;
 
     /**
      * 横向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsW = 16;
 
     /**
      * 纵向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsH = 15;
 
     /**
      * 正面朝向 true:Y+ false:Z+
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     yUp = true;
 

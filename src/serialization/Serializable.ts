@@ -1,20 +1,12 @@
 import { ConstructorOf } from "../polyfill/Types";
 import { __class__ } from "./SerializationConst";
 
-declare global
-{
-    interface MixinsClassMap { }
-}
-
 /**
  * 类名称与定义映射
  */
 export interface ClassMap extends MixinsClassMap
 {
-    Object: Object;
 }
-
-Serializable('Object')(Object);
 
 export const _definitionCache: ConstructorOf<ClassMap> = {} as any;
 
@@ -38,3 +30,21 @@ export function Serializable<K extends keyof ClassMap>(className?: K)
         Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
     };
 }
+
+
+declare global
+{
+    interface MixinsClassMap
+    {
+        Number: Number;
+        Boolean: Boolean;
+        String: String;
+        Object: Object;
+    }
+}
+
+// 标记 JS 内置类型
+Serializable('Object')(Object);
+Serializable('Number')(Number);
+Serializable('String')(String);
+Serializable('Boolean')(Boolean);

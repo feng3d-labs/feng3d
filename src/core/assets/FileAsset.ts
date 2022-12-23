@@ -40,13 +40,13 @@ export abstract class FileAsset
     /**
      * 资源路径
      */
-    @SerializeProperty
+    @SerializeProperty()
     assetPath: string;
 
     /**
      * 资源编号
      */
-    @SerializeProperty
+    @SerializeProperty()
     assetId: string;
 
     /**

@@ -35,28 +35,28 @@ export class SphereGeometry extends Geometry
     /**
      * 球体半径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     radius = 0.5;
 
     /**
      * 横向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsW = 16;
 
     /**
      * 纵向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsH = 12;
 
     /**
      * 是否朝上
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     yUp = true;
 

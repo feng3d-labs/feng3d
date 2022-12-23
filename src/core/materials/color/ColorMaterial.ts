@@ -44,7 +44,7 @@ export class ColorUniforms
     /**
      * 颜色
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     u_diffuseInput = new Color4();
 }

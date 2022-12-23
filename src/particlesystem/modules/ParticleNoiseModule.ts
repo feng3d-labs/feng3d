@@ -28,7 +28,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 分别控制每个轴的噪声。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '分别控制每个轴的噪声。' })
     separateAxes = false;
 
@@ -53,7 +53,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 整体噪音效应有多强。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '整体噪音效应有多强。' })
     strength3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
 
@@ -107,7 +107,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 低值产生柔和、平滑的噪声，高值产生快速变化的噪声。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '低值产生柔和、平滑的噪声，高值产生快速变化的噪声。' })
     frequency = 0.5;
 
@@ -116,7 +116,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 在粒子系统上滚动噪声图。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '在粒子系统上滚动噪声图。' })
     scrollSpeed = new MinMaxCurve();
 
@@ -125,7 +125,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 如果启用高频率噪音，将按比例减少强度。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '如果启用高频率噪音，将按比例减少强度。' })
     damping = true;
 
@@ -134,7 +134,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 一层一层的噪声组合在一起产生最终的噪声。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '一层一层的噪声组合在一起产生最终的噪声。' })
     octaveCount = 1;
 
@@ -143,7 +143,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 当组合每个八度时，按这个比例调整强度。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '当组合每个八度时，按这个比例调整强度。' })
     octaveMultiplier = 0.5;
 
@@ -152,7 +152,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 当组合每个八度时，放大这个数字。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '当组合每个八度时，放大这个数字。' })
     octaveScale = 2;
 
@@ -161,7 +161,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 生成一维、二维或三维噪声。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '生成一维、二维或三维噪声。', componentParam: { enumClass: ParticleSystemNoiseQuality } })
     quality = ParticleSystemNoiseQuality.High;
 
@@ -170,7 +170,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 允许重新映射最终的噪声值，允许将噪声值转换为不同的值。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '允许重新映射最终的噪声值，允许将噪声值转换为不同的值。' })
     remapEnabled = false;
 
@@ -195,7 +195,7 @@ export class ParticleNoiseModule extends ParticleModule
      *
      * 定义如何重新映射噪声值。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '生成一维、二维或三维噪声。' })
     remap3D = serialization.setValue(new MinMaxCurveVector3(), {
         xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },

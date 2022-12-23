@@ -42,7 +42,7 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     /**
      * 原始数据
      */
-    @SerializeProperty
+    @SerializeProperty()
     rawData: { type: 'texture', textures: Texture2D[] } | { type: 'path', paths: string[] };
 
     noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];

@@ -50,7 +50,7 @@ export class Camera extends Component
     //  * @todo
     //  */
     // @oav({ component: "OAVEnum", componentParam: { enumClass: CameraClearFlags }, tooltip: `What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas.` })
-    // @SerializeProperty
+    // @SerializeProperty()
     // clearFlags = CameraClearFlags.Skybox;
 
     get single() { return true; }
@@ -90,7 +90,7 @@ export class Camera extends Component
     /**
      * 镜头
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVObjectView' })
     get lens()
     {

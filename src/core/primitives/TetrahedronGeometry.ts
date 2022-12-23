@@ -39,14 +39,14 @@ export class TetrahedronGeometry extends Geometry
     /**
      * 半径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     radius = 1;
 
     /**
      * 细节程度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     detail = 0;
 

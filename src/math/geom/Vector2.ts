@@ -26,14 +26,14 @@ export class Vector2 implements Vector
      * 向量的X分量。
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     x: number;
 
     /**
      * 向量的Y分量。
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     y: number;
 
     /**

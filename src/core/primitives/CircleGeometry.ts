@@ -60,28 +60,28 @@ export class CircleGeometry extends Geometry
     /**
      * 半径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     radius = 1;
 
     /**
      * 分段数量
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segments = 8;
 
     /**
      * 起始弧度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     thetaStart = 0;
 
     /**
      * 弧长
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     thetaLength = Math.PI * 2;
 

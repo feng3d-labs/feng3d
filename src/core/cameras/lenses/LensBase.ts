@@ -37,14 +37,14 @@ export abstract class LensBase<T extends LensEventMap = LensEventMap> extends Ev
 	/**
 	 * 最近距离
 	 */
-	@SerializeProperty
+	@SerializeProperty()
 	@oav()
 	near: number;
 
 	/**
 	 * 最远距离
 	 */
-	@SerializeProperty
+	@SerializeProperty()
 	@oav()
 	far: number;
 

@@ -52,27 +52,27 @@ export class RingGeometry extends Geometry
 {
     __class__: 'RingGeometry' = 'RingGeometry';
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     innerRadius = 0.5;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     outerRadius = 1;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     thetaSegments = 8;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     phiSegments = 1;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     thetaStart = 0;
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     thetaLength = Math.PI * 2;
 

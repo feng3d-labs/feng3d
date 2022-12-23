@@ -49,7 +49,7 @@ export class UIUniforms
     /**
      * 颜色
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     u_color = new Color4();
 
@@ -57,7 +57,7 @@ export class UIUniforms
      * 纹理数据
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     s_texture = Texture2D.default;
 
     /**

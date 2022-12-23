@@ -25,7 +25,7 @@ export class AnimationCurve
      *
      * 在第一个关键帧之前的动画行为。
      */
-    @SerializeProperty
+    @SerializeProperty()
     preWrapMode = WrapMode.Clamp;
 
     /**
@@ -33,7 +33,7 @@ export class AnimationCurve
      *
      * 动画在最后一个关键帧之后的行为。
      */
-    @SerializeProperty
+    @SerializeProperty()
     postWrapMode = WrapMode.Clamp;
 
     /**
@@ -43,7 +43,7 @@ export class AnimationCurve
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    @SerializeProperty
+    @SerializeProperty()
     keys: AnimationCurveKeyframe[] = [{ time: 0, value: 1, inTangent: 0, outTangent: 0 }];
 
     /**

@@ -37,35 +37,35 @@ export class PlaneGeometry extends Geometry
      * 宽度
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     width = 1;
 
     /**
      * 高度
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     height = 1;
 
     /**
      * 横向分割数
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     segmentsW = 1;
 
     /**
      * 纵向分割数
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     segmentsH = 1;
 
     /**
      * 是否朝上
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     yUp = true;
 
     name = 'Plane';

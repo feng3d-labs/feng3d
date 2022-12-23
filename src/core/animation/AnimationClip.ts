@@ -8,18 +8,18 @@ export class AnimationClip
     readonly assetType = AssetType.anim;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     declare name: string;
     /**
      * 动画时长，单位ms
      */
-    @SerializeProperty
+    @SerializeProperty()
     length: number;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     loop = true;
 
-    @SerializeProperty
+    @SerializeProperty()
     propertyClips: PropertyClip[];
 }

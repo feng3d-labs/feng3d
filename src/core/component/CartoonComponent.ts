@@ -37,36 +37,36 @@ export class CartoonComponent extends Component
     __class__: 'CartoonComponent';
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     outlineSize = 1;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     outlineColor = new Color4(0.2, 0.2, 0.2, 1.0);
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     outlineMorphFactor = 0.0;
 
     /**
      * 半兰伯特值diff，分段值 4个(0.0,1.0)
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     diffuseSegment = new Vector4(0.1, 0.3, 0.6, 1.0);
     /**
      * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     diffuseSegmentValue = new Vector4(0.1, 0.3, 0.6, 1.0);
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     specularSegment = 0.5;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     get cartoon_Anti_aliasing()
     {
         return this._cartoon_Anti_aliasing;

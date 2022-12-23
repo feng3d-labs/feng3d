@@ -38,28 +38,28 @@ export class ConeGeometry extends Geometry
     /**
      * 底部半径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     bottomRadius = 0.5;
 
     /**
      * 高度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     height = 2;
 
     /**
      * 横向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsW = 16;
 
     /**
      * 纵向分割数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsH = 1;
 
@@ -67,13 +67,13 @@ export class ConeGeometry extends Geometry
      * 底部是否封口
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     bottomClosed = true;
 
     /**
      * 是否朝上
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     yUp = true;
 

@@ -46,7 +46,7 @@ export class SegmentUniforms
     /**
      * 颜色
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     u_segmentColor = new Color4();
 }

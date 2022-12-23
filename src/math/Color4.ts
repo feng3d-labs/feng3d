@@ -61,25 +61,25 @@ export class Color4
      * 红[0,1]
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     r = 1;
     /**
      * 绿[0,1]
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     g = 1;
     /**
      * 蓝[0,1]
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     b = 1;
     /**
      * 透明度[0,1]
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     a = 1;
 
     /**

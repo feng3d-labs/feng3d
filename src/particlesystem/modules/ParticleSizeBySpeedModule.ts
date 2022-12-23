@@ -21,7 +21,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
      *
      * 在每个轴上分别设置生命周期内的大小。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Set the size over speed on each axis separately." })
     @oav({ tooltip: '在每个轴上分别设置生命周期内的大小。' })
     separateAxes = false;
@@ -48,7 +48,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
      *
      * 基于寿命的粒度控制曲线。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Curve to control particle size based on speed." })
     @oav({ tooltip: '基于寿命的粒度控制曲线。' })
     size3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
@@ -58,7 +58,7 @@ export class ParticleSizeBySpeedModule extends ParticleModule
      *
      * 在这些最小和最大速度之间应用尺寸变化。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '在这些最小和最大速度之间应用颜色渐变。' })
     range = new Vector2(0, 1);
 

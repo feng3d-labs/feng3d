@@ -20,12 +20,12 @@ export class CustomGeometry extends Geometry
     /**
      * 顶点索引缓冲
      */
-    @SerializeProperty
+    @SerializeProperty()
     declare indexBuffer: ElementBuffer;
 
     /**
      * 属性数据列表
      */
-    @SerializeProperty
+    @SerializeProperty()
     declare attributes: { [key: string]: AttributeBuffer; };
 }

@@ -37,14 +37,14 @@ export class PointUniforms
     /**
      * 颜色
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     u_color = new Color4();
 
     /**
      * 点绘制时点的尺寸
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     u_PointSize = 1;
 }

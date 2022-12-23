@@ -30,7 +30,7 @@
 //     /**
 //      * 名称
 //      */
-//     @SerializeProperty
+//     @SerializeProperty()
 //     @oav({ component: 'OAVEntityName' })
 //     get name()
 //     {
@@ -45,7 +45,7 @@
 //     /**
 //      * 标签
 //      */
-//     @SerializeProperty
+//     @SerializeProperty()
 //     tag: string;
 
 //     /**
@@ -56,7 +56,7 @@
 //         return this._components.length;
 //     }
 
-//     @SerializeProperty
+//     @SerializeProperty()
 //     @oav({ component: 'OAVComponentList' })
 //     get components()
 //     {

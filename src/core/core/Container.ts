@@ -47,7 +47,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
     /**
      * 子对象列表
      */
-    @SerializeProperty
+    @SerializeProperty()
     get children()
     {
         return this._children.concat();
@@ -74,13 +74,13 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
     /**
      * 自身以及子对象是否支持鼠标拾取
      */
-    @SerializeProperty
+    @SerializeProperty()
     mouseEnabled = true;
 
     /**
      * 是否可见。
      */
-    @SerializeProperty
+    @SerializeProperty()
     get visible()
     {
         return this._activeSelf;

@@ -35,35 +35,35 @@ export class TorusGeometry extends Geometry
 	/**
 	 * 半径
 	 */
-	@SerializeProperty
+	@SerializeProperty()
 	@oav()
 	radius = 0.5;
 
 	/**
 	 * 管道半径
 	 */
-	@SerializeProperty
+	@SerializeProperty()
 	@oav()
 	tubeRadius = 0.1;
 
 	/**
 	 * 半径方向分割数
 	 */
-	@SerializeProperty
+	@SerializeProperty()
 	@oav()
 	segmentsR = 16;
 
 	/**
 	 * 管道方向分割数
 	 */
-	@SerializeProperty
+	@SerializeProperty()
 	@oav()
 	segmentsT = 8;
 
 	/**
 	 * 是否朝上
 	 */
-	@SerializeProperty
+	@SerializeProperty()
 	@oav()
 	yUp = true;
 

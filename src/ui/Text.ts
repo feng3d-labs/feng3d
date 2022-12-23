@@ -43,18 +43,18 @@ export class Text extends Component
      * 文本内容。
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     text = 'Hello 🌷 world\nHello 🌷 world';
 
     /**
      * 是否根据文本自动调整宽高。
      */
     @oav({ tooltip: '是否根据文本自动调整宽高。' })
-    @SerializeProperty
+    @SerializeProperty()
     autoSize = true;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     style = new TextStyle();
 
     /**

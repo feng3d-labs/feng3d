@@ -24,28 +24,28 @@ export class Light extends Behaviour
     /**
      * 灯光类型
      */
-    @SerializeProperty
+    @SerializeProperty()
     lightType: LightType;
 
     /**
      * 颜色
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     color = new Color3();
 
     /**
      * 光照强度
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     intensity = 1;
 
     /**
      * 阴影类型
      */
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ShadowType } })
-    @SerializeProperty
+    @SerializeProperty()
     shadowType = ShadowType.No_Shadows;
 
     /**

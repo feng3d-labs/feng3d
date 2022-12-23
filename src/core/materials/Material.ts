@@ -50,24 +50,24 @@ export abstract class Material extends EventEmitter
     }
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     name = '';
 
     /**
      * Uniform数据
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVObjectView' })
     uniforms = {};
 
     /**
      * 渲染参数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ block: '渲染参数', component: 'OAVObjectView' })
     renderParams = new RenderParams();
 
-    @SerializeProperty
+    @SerializeProperty()
     shader = new Shader();
 
     constructor(param?: gPartial<Material>)

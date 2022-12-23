@@ -3,20 +3,24 @@ import { _serialize__ } from "./Serialization";
 /**
  * 序列化装饰器
  *
- * 在属性定义前使用 @SerializeProperty 进行标记需要序列化
+ * 在属性定义前使用 @SerializeProperty() 进行标记需要序列化
  *
- * @param target 序列化原型
- * @param propertyKey 序列化属性
- * 
  * @see https://docs.unity3d.com/cn/current/ScriptReference/SerializeField.html
  */
-export function SerializeProperty(target: any, propertyKey: string)
+export function SerializeProperty()
 {
-    if (!Object.getOwnPropertyDescriptor(target, _serialize__))
+    /**
+     * @param target 序列化原型
+     * @param propertyKey 序列化属性
+     */
+    return (target: any, propertyKey: string) =>
     {
-        Object.defineProperty(target, _serialize__, { value: [] });
-    }
-    const serializePropertys: string[] = target[_serialize__];
+        if (!Object.getOwnPropertyDescriptor(target, _serialize__))
+        {
+            Object.defineProperty(target, _serialize__, { value: [] });
+        }
+        const serializePropertys: string[] = target[_serialize__];
 
-    serializePropertys.push(propertyKey);
+        serializePropertys.push(propertyKey);
+    }
 }

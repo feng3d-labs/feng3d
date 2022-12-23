@@ -5,23 +5,23 @@ import { SerializeProperty } from '../../src/serialization/SerializeProperty';
 
 class ObjectBase
 {
-    @SerializeProperty
+    @SerializeProperty()
     id = 1;
 }
 
 @Serializable()
 class C extends ObjectBase
 {
-    // @SerializeProperty
+    // @SerializeProperty()
     // id = 2;
 
-    @SerializeProperty
+    @SerializeProperty()
     a = 1;
 
-    @SerializeProperty
+    @SerializeProperty()
     c = 1;
 
-    @SerializeProperty
+    @SerializeProperty()
     o = { a: 1, b: true, c: { d: 'string' } };
 
     change()

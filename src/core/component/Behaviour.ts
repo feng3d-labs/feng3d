@@ -23,7 +23,7 @@ export class Behaviour extends Component
      * 是否启用update方法
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     enabled = true;
 
     /**

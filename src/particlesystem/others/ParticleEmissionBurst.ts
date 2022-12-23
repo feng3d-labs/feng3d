@@ -13,7 +13,7 @@ export class ParticleEmissionBurst
      * The time that each burst occurs.
      * 每次爆炸发生的时间。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "The time that each burst occurs." })
     @oav({ tooltip: '每次爆炸发生的时间。' })
     time = 0;
@@ -21,7 +21,7 @@ export class ParticleEmissionBurst
     /**
      * 要发射的粒子数。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Number of particles to be emitted." })
     @oav({ tooltip: '要发射的粒子数。' })
     count = serialization.setValue(new MinMaxCurve(), { constant: 30, constantMin: 30, constantMax: 30 });
@@ -58,7 +58,7 @@ export class ParticleEmissionBurst
     /**
      * 喷发被触发的几率。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "The chance that the burst will trigger." })
     @oav({ tooltip: '喷发被触发的几率。取值在0与1之间，默认1。' })
     probability = 1.0;

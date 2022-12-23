@@ -17,7 +17,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
      *
      * 在每个轴上分别设置生命周期内的大小。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Set the size over lifetime on each axis separately." })
     @oav({ tooltip: '在每个轴上分别设置生命周期内的大小。' })
     separateAxes = false;
@@ -59,7 +59,7 @@ export class ParticleSizeOverLifetimeModule extends ParticleModule
      *
      * 基于寿命的粒度控制曲线。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Curve to control particle size based on lifetime." })
     @oav({ tooltip: '基于寿命的粒度控制曲线。' })
     size3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });

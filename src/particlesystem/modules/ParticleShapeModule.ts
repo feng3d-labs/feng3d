@@ -35,7 +35,7 @@ export class ParticleShapeModule extends ParticleModule
      * Type of shape to emit particles from.
      * 发射粒子的形状类型。
      */
-    @SerializeProperty
+    @SerializeProperty()
     shapeType: ParticleSystemShapeType;
 
     /**
@@ -59,7 +59,7 @@ export class ParticleShapeModule extends ParticleModule
      * Using align to Direction in the Shape module forces the system to be rendered using Local Billboard Alignment.
      * 在形状模块中使用align to Direction迫使系统使用本地看板对齐方式呈现。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Align particles based on their initial direction of travel." })
     @oav({ tooltip: '根据粒子的初始运动方向排列粒子。' })
     alignToDirection = false;
@@ -68,7 +68,7 @@ export class ParticleShapeModule extends ParticleModule
      * Randomizes the starting direction of particles.
      * 随机化粒子的起始方向。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Randomizes the starting direction of particles." })
     @oav({ tooltip: '随机化粒子的起始方向。' })
     randomDirectionAmount = 0;
@@ -77,7 +77,7 @@ export class ParticleShapeModule extends ParticleModule
      * Spherizes the starting direction of particles.
      * 使粒子的起始方向球面化。
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Spherizes the starting direction of particles." })
     @oav({ tooltip: 'Spherizes the starting direction of particles.' })
     sphericalDirectionAmount = 0;
@@ -87,7 +87,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 圆锥的角度。
      */
-    @SerializeProperty
+    @SerializeProperty()
     angle = 25;
 
     /**
@@ -95,7 +95,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 圆弧角。
      */
-    @SerializeProperty
+    @SerializeProperty()
     arc = 360;
 
     /**
@@ -103,7 +103,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 在弧线周围产生粒子的模式。
      */
-    @SerializeProperty
+    @SerializeProperty()
     arcMode = ParticleSystemShapeMultiModeValue.Random;
 
     /**
@@ -111,7 +111,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
      */
-    @SerializeProperty
+    @SerializeProperty()
     arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
@@ -134,7 +134,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 控制弧线周围发射点之间的间隙。
      */
-    @SerializeProperty
+    @SerializeProperty()
     arcSpread = 0;
 
     /**
@@ -142,7 +142,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 盒子的缩放。
      */
-    @SerializeProperty
+    @SerializeProperty()
     box = new Vector3(1, 1, 1);
 
     /**
@@ -150,7 +150,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 圆锥的长度（高度）。
      */
-    @SerializeProperty
+    @SerializeProperty()
     length = 5;
 
     /**
@@ -238,7 +238,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 形状的半径。
      */
-    @SerializeProperty
+    @SerializeProperty()
     radius = 1;
 
     /**
@@ -246,7 +246,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 在弧线周围产生粒子的模式。
      */
-    @SerializeProperty
+    @SerializeProperty()
     radiusMode = ParticleSystemShapeMultiModeValue.Random;
 
     /**
@@ -254,7 +254,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
      */
-    @SerializeProperty
+    @SerializeProperty()
     radiusSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
@@ -277,7 +277,7 @@ export class ParticleShapeModule extends ParticleModule
      *
      * 控制弧线周围发射点之间的间隙。
      */
-    @SerializeProperty
+    @SerializeProperty()
     radiusSpread = 0;
 
     private _shapeSphere = new ParticleSystemShapeSphere(this);

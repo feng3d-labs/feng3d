@@ -37,7 +37,7 @@ export class PointLight extends Light
      * 光照范围
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     get range()
     {
         return this._range;

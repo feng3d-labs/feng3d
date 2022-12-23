@@ -16,7 +16,7 @@ export class PerspectiveLens extends LensBase
     /**
      * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     fov: number;
 

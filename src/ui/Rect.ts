@@ -39,7 +39,7 @@ export class Rect extends Component
      * 填充颜色。
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     color = new Color4();
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)

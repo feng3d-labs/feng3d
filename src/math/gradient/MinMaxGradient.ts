@@ -17,7 +17,7 @@ export class MinMaxGradient
      *
      * 设置最小-最大梯度将用于评估颜色的模式。
      */
-    @SerializeProperty
+    @SerializeProperty()
     mode = MinMaxGradientMode.Color;
 
     /**
@@ -25,7 +25,7 @@ export class MinMaxGradient
      *
      * 常量颜色值
      */
-    @SerializeProperty
+    @SerializeProperty()
     color = new Color4();
 
     /**
@@ -33,7 +33,7 @@ export class MinMaxGradient
      *
      * 为下界设置一个常量颜色。
      */
-    @SerializeProperty
+    @SerializeProperty()
     colorMin = new Color4();
 
     /**
@@ -41,7 +41,7 @@ export class MinMaxGradient
      *
      * 为上界设置一个常量颜色。
      */
-    @SerializeProperty
+    @SerializeProperty()
     colorMax = new Color4();
 
     /**
@@ -49,7 +49,7 @@ export class MinMaxGradient
      *
      * 设置渐变。
      */
-    @SerializeProperty
+    @SerializeProperty()
     gradient = new Gradient();
 
     /**
@@ -57,7 +57,7 @@ export class MinMaxGradient
      *
      * 为下界设置一个渐变。
      */
-    @SerializeProperty
+    @SerializeProperty()
     gradientMin = new Gradient();
 
     /**
@@ -65,7 +65,7 @@ export class MinMaxGradient
      *
      * 为上界设置一个渐变。
      */
-    @SerializeProperty
+    @SerializeProperty()
     gradientMax = new Gradient();
 
     /**

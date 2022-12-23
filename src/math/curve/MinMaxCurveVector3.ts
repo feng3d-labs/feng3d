@@ -7,19 +7,19 @@ export class MinMaxCurveVector3
     /**
      * x 曲线
      */
-    @SerializeProperty
+    @SerializeProperty()
     xCurve = new MinMaxCurve();
 
     /**
      * y 曲线
      */
-    @SerializeProperty
+    @SerializeProperty()
     yCurve = new MinMaxCurve();
 
     /**
      * z 曲线
      */
-    @SerializeProperty
+    @SerializeProperty()
     zCurve = new MinMaxCurve();
 
     /**

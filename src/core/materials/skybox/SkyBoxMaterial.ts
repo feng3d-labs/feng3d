@@ -30,7 +30,7 @@ export class SkyBoxUniforms
 {
     __class__: 'SkyBoxUniforms';
 
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
     s_skyBoxTexture = TextureCube.default;
 }

@@ -32,56 +32,56 @@ export class TerrainGeometry extends Geometry
     /**
      * 高度图路径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     heightMap = Texture2D.default;
 
     /**
      * 地形宽度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     width = 10;
 
     /**
      * 地形高度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     height = 1;
 
     /**
      * 地形深度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     depth = 10;
 
     /**
      * 横向网格段数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsW = 30;
 
     /**
      * 纵向网格段数
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     segmentsH = 30;
 
     /**
      * 最大地形高度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     maxElevation = 255;
 
     /**
      * 最小地形高度
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     minElevation = 0;
 

@@ -38,7 +38,7 @@ export class Canvas extends Behaviour
      *
      * 画布是在世界或覆盖模式?
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVEnum', tooltip: '画布是在世界或覆盖模式', componentParam: { enumClass: UIRenderMode } })
     renderMode = UIRenderMode.ScreenSpaceOverlay;
 
@@ -57,14 +57,14 @@ export class Canvas extends Behaviour
     /**
      * 最近距离
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     near = -1000;
 
     /**
      * 最远距离
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     far = 10000;
 

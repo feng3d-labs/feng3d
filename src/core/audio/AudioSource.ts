@@ -57,14 +57,14 @@ export class AudioSource extends Behaviour
     /**
      * 声音文件路径
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVPick', tooltip: '声音文件路径', componentParam: { accepttype: 'audio' } })
     url = '';
 
     /**
      * 是否循环播放
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '是否循环播放' })
     get loop()
     {
@@ -80,7 +80,7 @@ export class AudioSource extends Behaviour
     /**
      * 音量
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '音量' })
     get volume()
     {
@@ -96,7 +96,7 @@ export class AudioSource extends Behaviour
     /**
      * 是否启用位置影响声音
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '是否启用位置影响声音' })
     get enablePosition()
     {
@@ -110,7 +110,7 @@ export class AudioSource extends Behaviour
     }
     private _enablePosition = true;
 
-    // @SerializeProperty
+    // @SerializeProperty()
     // @oav()
     get coneInnerAngle()
     {
@@ -123,7 +123,7 @@ export class AudioSource extends Behaviour
     }
     private _coneInnerAngle: number;
 
-    // @SerializeProperty
+    // @SerializeProperty()
     // @oav()
     get coneOuterAngle()
     {
@@ -136,7 +136,7 @@ export class AudioSource extends Behaviour
     }
     private _coneOuterAngle: number;
 
-    // @SerializeProperty
+    // @SerializeProperty()
     // @oav()
     get coneOuterGain()
     {
@@ -162,7 +162,7 @@ export class AudioSource extends Behaviour
      *
      * inverse是的默认值distanceModel。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVEnum', tooltip: '距离模式，距离影响声音的方式', componentParam: { enumClass: DistanceModelType } })
     get distanceModel()
     {
@@ -178,7 +178,7 @@ export class AudioSource extends Behaviour
     /**
      * 表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。' })
     get maxDistance()
     {
@@ -191,7 +191,7 @@ export class AudioSource extends Behaviour
     }
     private _maxDistance: number;
 
-    // @SerializeProperty
+    // @SerializeProperty()
     // @oav()
     get panningModel()
     {
@@ -207,7 +207,7 @@ export class AudioSource extends Behaviour
     /**
      * 表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。' })
     get refDistance()
     {
@@ -223,7 +223,7 @@ export class AudioSource extends Behaviour
     /**
      * 描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。' })
     get rolloffFactor()
     {

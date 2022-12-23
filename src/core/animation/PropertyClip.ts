@@ -7,19 +7,19 @@ export class PropertyClip
     /**
      * 属性路径
      */
-    @SerializeProperty
+    @SerializeProperty()
     path: PropertyClipPath;
 
-    @SerializeProperty
+    @SerializeProperty()
     propertyName: string;
 
-    @SerializeProperty
+    @SerializeProperty()
     type: 'Number' | 'Vector3' | 'Quaternion';
 
-    @SerializeProperty
+    @SerializeProperty()
     times: number[];
 
-    @SerializeProperty
+    @SerializeProperty()
     values: number[];
 
     getValue(cliptime: number)

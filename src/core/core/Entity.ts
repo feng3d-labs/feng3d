@@ -27,14 +27,14 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
     /**
      * 名称
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ priority: -2, component: 'OAVGameObjectName' })
     declare name: string;
 
     /**
      * 组件列表
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ component: 'OAVComponentList' })
     get components()
     {

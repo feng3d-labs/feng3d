@@ -16,28 +16,28 @@ export class Vector4
     /**
      * Vector4 对象中的第一个元素。默认值为 0
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     x = 0;
 
     /**
      * Vector4 对象中的第二个元素。默认值为 0
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     y = 0;
 
     /**
      * Vector4 对象中的第三个元素。默认值为 0
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     z = 0;
 
     /**
      * Vector4 对象的第四个元素。默认值为 0
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     w = 0;
 

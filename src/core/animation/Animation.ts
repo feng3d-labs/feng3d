@@ -17,11 +17,11 @@ declare global
 export class Animation extends Behaviour
 {
     @oav({ component: 'OAVDefault', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' } } })
-    @SerializeProperty
+    @SerializeProperty()
     animation: AnimationClip;
 
     @oav({ component: 'OAVArray', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' }, defaultItem: () => new AnimationClip() } })
-    @SerializeProperty
+    @SerializeProperty()
     animations: AnimationClip[] = [];
 
     /**
@@ -31,14 +31,14 @@ export class Animation extends Behaviour
     time = 0;
 
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     isplaying = false;
 
     /**
      * 播放速度
      */
     @oav()
-    @SerializeProperty
+    @SerializeProperty()
     playspeed = 1;
 
     /**

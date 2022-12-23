@@ -18,7 +18,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
     /**
      * 作用在粒子上的力
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav({ tooltip: '作用在粒子上的力' })
     force = new MinMaxCurveVector3();
 
@@ -27,7 +27,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
      *
      * 这些力是作用于局部空间还是世界空间
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
     @oav({ tooltip: '这些力是作用于局部空间还是世界空间?', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
     space = ParticleSystemSimulationSpace.Local;
@@ -39,7 +39,7 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
      *
      * @todo
      */
-    @SerializeProperty
+    @SerializeProperty()
     // @oav({ tooltip: "When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame." })
     @oav({ tooltip: '当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。' })
     randomized = false;

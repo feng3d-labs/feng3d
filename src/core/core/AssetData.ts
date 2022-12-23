@@ -18,7 +18,7 @@ export class AssetData extends EventEmitter
     /**
      * 资源名称
      */
-    @SerializeProperty
+    @SerializeProperty()
     get assetName(): string
     {
         const asset = ReadRS.rs.getAssetById(this.assetId);
@@ -33,7 +33,7 @@ export class AssetData extends EventEmitter
     /**
      * 资源编号
      */
-    @SerializeProperty
+    @SerializeProperty()
     get assetId()
     {
         return this._assetId;

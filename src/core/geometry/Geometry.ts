@@ -214,14 +214,14 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
     /**
      * 纹理U缩放，默认为1。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     scaleU = 1;
 
     /**
      * 纹理V缩放，默认为1。
      */
-    @SerializeProperty
+    @SerializeProperty()
     @oav()
     scaleV = 1;
 
