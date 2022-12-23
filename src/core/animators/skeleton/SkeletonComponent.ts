@@ -1,5 +1,5 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/ClassUtils';
 import { Component, RegisterComponent } from '../../component/Component';
 import { Object3D } from '../../core/Object3D';
 
@@ -12,7 +12,7 @@ declare global
 }
 
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class SkeletonComponent extends Component
 {
     __class__: 'SkeletonComponent';

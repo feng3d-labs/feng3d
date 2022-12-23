@@ -1,7 +1,7 @@
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
@@ -35,7 +35,7 @@ declare global
 
 @AddComponentMenu('Rendering/OutLineComponent')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class OutLineComponent extends Component
 {
     __class__: 'OutLineComponent';

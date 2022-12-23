@@ -1,5 +1,5 @@
 import { Vector3 } from '../../math/geom/Vector3';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
@@ -11,7 +11,7 @@ declare global
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class ParametricGeometry extends Geometry
 {
     func: (u: number, v: number) => Vector3;

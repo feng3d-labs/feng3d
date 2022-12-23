@@ -1,6 +1,6 @@
 import { oav } from '../objectview/ObjectView';
 import { mathUtil } from '../polyfill/MathUtil';
-import { decoratorRegisterClass } from '../serialization/ClassUtils';
+import { serializable } from '../serialization/ClassUtils';
 import { serialize } from '../serialization/serialize';
 import { Color3 } from './Color3';
 import { Vector4 } from './geom/Vector4';
@@ -25,7 +25,7 @@ Color3.prototype.toColor4 = function toColor4(color4 = new Color4())
 /**
  * 颜色（包含透明度）
  */
-@decoratorRegisterClass()
+@serializable()
 export class Color4
 {
     __class__: 'Color4';

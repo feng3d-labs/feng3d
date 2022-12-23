@@ -1,13 +1,13 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { Vector } from './Vector';
 
 /**
  * 二维向量和点的表示。
  */
-@decoratorRegisterClass()
+@serializable()
 export class Vector2 implements Vector
 {
     __class__: 'Vector2';

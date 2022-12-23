@@ -4,7 +4,7 @@ import { Renderable } from '../core/core/Renderable';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
-import { decoratorRegisterClass } from '../serialization/ClassUtils';
+import { serializable } from '../serialization/ClassUtils';
 import { TerrainData } from './TerrainData';
 import { TerrainGeometry } from './TerrainGeometry';
 
@@ -26,7 +26,7 @@ declare global
  */
 // @ov({ component: "OVTerrain" })
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class Terrain extends Renderable
 {
     __class__: 'Terrain';

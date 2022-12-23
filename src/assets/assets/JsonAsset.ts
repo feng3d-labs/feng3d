@@ -1,6 +1,6 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { setAssetTypeClass } from '../../core/assets/FileAsset';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { TextAsset } from './TextAsset';
 
 declare global
@@ -14,7 +14,7 @@ declare global
 /**
  * JSON 资源
  */
-@decoratorRegisterClass()
+@serializable()
 export class JsonAsset extends TextAsset
 {
     static extenson = '.json';

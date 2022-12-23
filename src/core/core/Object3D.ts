@@ -6,7 +6,7 @@ import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
@@ -99,7 +99,7 @@ export interface Object3D extends MixinsObject3D
 /**
  * 游戏对象，场景唯一存在的对象类型
  */
-@decoratorRegisterClass()
+@serializable()
 export class Object3D extends Container<Object3DEventMap>
 {
     __class__: 'Object3D';

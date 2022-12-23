@@ -4,13 +4,13 @@ import { FileAsset } from "../../core/assets/FileAsset";
 import { Texture2D } from "../../core/textures/Texture2D";
 import { oav } from "../../objectview/ObjectView";
 import { gPartial } from "../../polyfill/Types";
-import { decoratorRegisterClass } from "../../serialization/ClassUtils";
+import { serializable } from "../../serialization/ClassUtils";
 import { serialization } from "../../serialization/Serialization";
 
 /**
  * 纹理文件
  */
-@decoratorRegisterClass()
+@serializable()
 export class TextureAsset extends FileAsset
 {
     static extenson: '.jpg' | '.png' | '.jpeg' | '.gif' = '.png';

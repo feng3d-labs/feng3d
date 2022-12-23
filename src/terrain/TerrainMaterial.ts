@@ -7,7 +7,7 @@ import { Color4 } from "../math/Color4";
 import { Vector4 } from "../math/geom/Vector4";
 import { oav } from "../objectview/ObjectView";
 import { shaderConfig } from "../renderer/shader/ShaderLib";
-import { decoratorRegisterClass } from "../serialization/ClassUtils";
+import { serializable } from "../serialization/ClassUtils";
 import { serialize } from "../serialization/serialize";
 
 declare global
@@ -23,7 +23,7 @@ declare global
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class TerrainMaterial extends Material
 {
     uniforms = new TerrainUniforms();
@@ -35,7 +35,7 @@ export class TerrainMaterial extends Material
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class TerrainUniforms
 {
     declare __class__: 'TerrainUniforms';

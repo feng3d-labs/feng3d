@@ -3,7 +3,7 @@ import { setAssetTypeClass } from '../../core/assets/FileAsset';
 import { Geometry } from '../../core/geometry/Geometry';
 import { CubeGeometry } from '../../core/primitives/CubeGeometry';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare global
@@ -17,7 +17,7 @@ declare global
 /**
  * 几何体资源
  */
-@decoratorRegisterClass()
+@serializable()
 export class GeometryAsset extends ObjectAsset
 {
     static extenson = '.json';

@@ -1,6 +1,6 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';
 import { ParticleSystem } from '../ParticleSystem';
@@ -8,7 +8,7 @@ import { ParticleSystem } from '../ParticleSystem';
 /**
  * 粒子模块
  */
-@decoratorRegisterClass()
+@serializable()
 export class ParticleModule extends EventEmitter
 {
     /**

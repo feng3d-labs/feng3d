@@ -1,7 +1,7 @@
 import { Geometrys } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { Vector3 } from '../../math/geom/Vector3';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
 import { ParticleSystemRenderSpace } from '../enums/ParticleSystemRenderSpace';
 import { ParticleSystemSortMode } from '../enums/ParticleSystemSortMode';
@@ -11,7 +11,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * Use this class to render particles on to the screen.
  */
-@decoratorRegisterClass()
+@serializable()
 export class ParticleSystemRenderer extends ParticleModule
 {
     /**

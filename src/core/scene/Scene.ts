@@ -1,7 +1,7 @@
 import { Color4 } from '../../math/Color4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
@@ -37,7 +37,7 @@ declare global
  * 3D场景
  */
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class Scene extends Component
 {
     __class__: 'Scene';

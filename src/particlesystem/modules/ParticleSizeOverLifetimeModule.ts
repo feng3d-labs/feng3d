@@ -1,6 +1,6 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';
@@ -9,7 +9,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统 缩放随时间变化模块
  */
-@decoratorRegisterClass()
+@serializable()
 export class ParticleSizeOverLifetimeModule extends ParticleModule
 {
     /**

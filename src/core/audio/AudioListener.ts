@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
@@ -21,7 +21,7 @@ declare global
  */
 @AddComponentMenu('Audio/AudioListener')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class AudioListener extends Behaviour
 {
     gain: GainNode;

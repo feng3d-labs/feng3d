@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -27,7 +27,7 @@ declare global
 /**
  * 圆环几何体
  */
-@decoratorRegisterClass()
+@serializable()
 export class TorusGeometry extends Geometry
 {
 	__class__: 'TorusGeometry' = 'TorusGeometry';

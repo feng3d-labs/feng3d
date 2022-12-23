@@ -1,10 +1,10 @@
 import { MinMaxCurve } from "../../math/curve/MinMaxCurve";
 import { oav } from "../../objectview/ObjectView";
-import { decoratorRegisterClass } from "../../serialization/ClassUtils";
+import { serializable } from "../../serialization/ClassUtils";
 import { serialization } from "../../serialization/Serialization";
 import { serialize } from "../../serialization/serialize";
 
-@decoratorRegisterClass()
+@serializable()
 export class ParticleEmissionBurst
 {
     __class__: 'ParticleEmissionBurst';

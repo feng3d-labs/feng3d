@@ -4,7 +4,7 @@ import { Object3D } from '../core/core/Object3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { oav } from '../objectview/ObjectView';
-import { decoratorRegisterClass } from '../serialization/ClassUtils';
+import { serializable } from '../serialization/ClassUtils';
 import { serialization } from '../serialization/Serialization';
 import { serialize } from '../serialization/serialize';
 import { watcher } from '../watcher/watcher';
@@ -63,7 +63,7 @@ export enum ButtonState
  */
 @AddComponentMenu('UI/Button')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class Button extends Behaviour
 {
     /**

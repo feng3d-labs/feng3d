@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
@@ -26,7 +26,7 @@ declare global
 /**
  * 四边形面皮几何体
  */
-@decoratorRegisterClass()
+@serializable()
 export class QuadGeometry extends Geometry
 {
     __class__: 'QuadGeometry';

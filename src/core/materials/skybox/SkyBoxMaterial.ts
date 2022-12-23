@@ -1,6 +1,6 @@
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/ClassUtils';
 import { serialize } from '../../../serialization/serialize';
 import { TextureCube } from '../../textures/TextureCube';
 import { Material } from '../Material';
@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class SkyBoxMaterial extends Material
 {
     constructor()
@@ -25,7 +25,7 @@ export class SkyBoxMaterial extends Material
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class SkyBoxUniforms
 {
     __class__: 'SkyBoxUniforms';

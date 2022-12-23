@@ -8,7 +8,7 @@ import { Texture2D } from '../core/textures/Texture2D';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { decoratorRegisterClass } from '../serialization/ClassUtils';
+import { serializable } from '../serialization/ClassUtils';
 import { serialize } from '../serialization/serialize';
 import { watcher } from '../watcher/watcher';
 import { CanvasRenderer } from './core/CanvasRenderer';
@@ -36,7 +36,7 @@ declare global
  */
 @AddComponentMenu('UI/Text')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class Text extends Component
 {
     /**

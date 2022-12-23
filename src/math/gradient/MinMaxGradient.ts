@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { Color4 } from '../Color4';
 import { Gradient } from './Gradient';
@@ -7,7 +7,7 @@ import { MinMaxGradientMode } from './MinMaxGradientMode';
 /**
  * 最大最小颜色渐变
  */
-@decoratorRegisterClass()
+@serializable()
 export class MinMaxGradient
 {
     __class__: 'MinMaxGradient';

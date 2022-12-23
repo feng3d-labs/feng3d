@@ -1,6 +1,6 @@
 import { globalEmitter } from '../../event/GlobalEmitter';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass, classUtils } from '../../serialization/ClassUtils';
+import { serializable, classUtils } from '../../serialization/ClassUtils';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
@@ -23,7 +23,7 @@ declare global
  */
 @AddComponentMenu('Script/Script')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class ScriptComponent extends Behaviour
 {
     runEnvironment = RunEnvironment.feng3d;
@@ -70,10 +70,7 @@ export class ScriptComponent extends Behaviour
         this._scriptInstance = null;
         if (!this.scriptName) return;
 
-        const Cls = classUtils.getDefinitionByName(this.scriptName);
-
-        if (Cls) this._scriptInstance = new Cls();
-        else console.warn(`无法初始化脚本 ${this.scriptName}`);
+        this._scriptInstance = classUtils.getInstanceByName(this.scriptName);
 
         this.scriptInit = false;
 

@@ -1,6 +1,6 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  * Controls the velocity of each particle during its lifetime.
  * 控制每个粒子在其生命周期内的速度。
  */
-@decoratorRegisterClass()
+@serializable()
 export class ParticleVelocityOverLifetimeModule extends ParticleModule
 {
     __class__: 'ParticleVelocityOverLifetimeModule';

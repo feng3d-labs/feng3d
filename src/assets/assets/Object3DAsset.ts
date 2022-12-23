@@ -1,7 +1,7 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { Object3D } from '../../core/core/Object3D';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialization } from '../../serialization/Serialization';
 import { ObjectAsset } from '../ObjectAsset';
 
@@ -13,7 +13,7 @@ export interface Object3DAsset
 /**
  * 游戏对象资源
  */
-@decoratorRegisterClass()
+@serializable()
 export class Object3DAsset extends ObjectAsset
 {
     /**

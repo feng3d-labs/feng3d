@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { RegisterComponent } from '../component/Component';
 import { Renderable } from './Renderable';
 
@@ -11,7 +11,7 @@ declare global
  * 网格渲染器
  */
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class MeshRenderer extends Renderable
 {
     __class__: 'MeshRenderer';

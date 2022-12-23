@@ -1,7 +1,7 @@
 import { AssetType } from "../../core/assets/AssetType";
 import { FileAsset, setAssetTypeClass } from "../../core/assets/FileAsset";
 import { oav } from "../../objectview/ObjectView";
-import { decoratorRegisterClass } from "../../serialization/ClassUtils";
+import { serializable } from "../../serialization/ClassUtils";
 
 declare global
 {
@@ -14,7 +14,7 @@ declare global
 /**
  * 文本 资源
  */
-@decoratorRegisterClass()
+@serializable()
 export class TextAsset extends FileAsset
 {
     static extenson = '.txt';

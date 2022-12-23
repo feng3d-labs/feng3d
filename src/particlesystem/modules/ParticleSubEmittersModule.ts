@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';
@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * This module triggers child particle emission on events such as the birth, death, and collision of particles in the parent system.
  */
-@decoratorRegisterClass()
+@serializable()
 export class ParticleSubEmittersModule extends ParticleModule
 {
     /**

@@ -1,10 +1,10 @@
 import { FileAsset } from "../core/assets/FileAsset";
-import { decoratorRegisterClass } from "../serialization/ClassUtils";
+import { serializable } from "../serialization/ClassUtils";
 
 /**
  * 二进制 资源
  */
-@decoratorRegisterClass()
+@serializable()
 export class ArrayBufferAsset extends FileAsset
 {
     /**

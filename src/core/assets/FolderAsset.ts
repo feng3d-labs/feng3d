@@ -1,5 +1,5 @@
 import { ov } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { AssetType } from './AssetType';
 import { FileAsset, setAssetTypeClass } from './FileAsset';
 
@@ -15,7 +15,7 @@ declare global
  * 文件夹资源
  */
 @ov({ component: 'OVFolderAsset' })
-@decoratorRegisterClass()
+@serializable()
 export class FolderAsset extends FileAsset
 {
     static extenson = '';

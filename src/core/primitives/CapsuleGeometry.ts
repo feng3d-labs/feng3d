@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -28,7 +28,7 @@ declare global
 /**
  * 胶囊体几何体
  */
-@decoratorRegisterClass()
+@serializable()
 export class CapsuleGeometry extends Geometry
 {
     __class__: 'CapsuleGeometry';

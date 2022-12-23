@@ -1,6 +1,6 @@
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { Geometry } from './Geometry';
 
@@ -12,7 +12,7 @@ declare global
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class CustomGeometry extends Geometry
 {
     __class__: 'CustomGeometry';

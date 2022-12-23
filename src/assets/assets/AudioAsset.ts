@@ -1,11 +1,11 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { ArrayBufferAsset } from '../ArrayBufferAsset';
 
 /**
  * 音效资源
  */
-@decoratorRegisterClass()
+@serializable()
 export class AudioAsset extends ArrayBufferAsset
 {
     readonly assetType = AssetType.audio;

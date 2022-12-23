@@ -1,7 +1,7 @@
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/ClassUtils';
 import { serialize } from '../../../serialization/serialize';
 import { Material } from '../Material';
 import pointFragment from './point_fragment_glsl';
@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class PointMaterial extends Material
 {
     __class__: 'PointMaterial';
@@ -30,7 +30,7 @@ export class PointMaterial extends Material
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class PointUniforms
 {
     __class__: 'PointUniforms';

@@ -5,7 +5,7 @@ import { ImageUtil } from "../core/utils/ImageUtil";
 import { Color4 } from "../math/Color4";
 import { oav } from "../objectview/ObjectView";
 import { gPartial } from "../polyfill/Types";
-import { decoratorRegisterClass } from "../serialization/ClassUtils";
+import { serializable } from "../serialization/ClassUtils";
 import { serialization } from "../serialization/Serialization";
 import { serialize } from "../serialization/serialize";
 import { watcher } from "../watcher/watcher";
@@ -26,7 +26,7 @@ declare global
 /**
  * 地形几何体
  */
-@decoratorRegisterClass()
+@serializable()
 export class TerrainGeometry extends Geometry
 {
     /**

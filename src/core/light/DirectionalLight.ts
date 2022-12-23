@@ -1,6 +1,6 @@
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
@@ -31,7 +31,7 @@ declare global
  */
 @AddComponentMenu('Rendering/DirectionalLight')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class DirectionalLight extends Light
 {
     __class__: 'DirectionalLight';

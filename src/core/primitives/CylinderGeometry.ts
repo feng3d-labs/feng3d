@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -80,7 +80,7 @@ export interface CylinderGeometry extends ICylinderGeometry { }
  * 圆柱体几何体
  * @author DawnKing 2016-09-12
  */
-@decoratorRegisterClass()
+@serializable()
 export class CylinderGeometry extends Geometry implements ICylinderGeometry
 {
     __class__: 'CylinderGeometry';

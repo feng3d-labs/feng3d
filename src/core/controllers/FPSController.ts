@@ -2,7 +2,7 @@ import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
@@ -22,7 +22,7 @@ declare global
  */
 @AddComponentMenu('Controller/FPSController')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class FPSController extends Behaviour
 {
     /**

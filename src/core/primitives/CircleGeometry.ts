@@ -2,7 +2,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
@@ -53,7 +53,7 @@ export interface ICircleGeometry
 /**
  * 圆片
  */
-@decoratorRegisterClass()
+@serializable()
 export class CircleGeometry extends Geometry
 {
     __class__: 'CircleGeometry' = 'CircleGeometry';

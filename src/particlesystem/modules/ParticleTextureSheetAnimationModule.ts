@@ -3,7 +3,7 @@ import { MinMaxCurveMode } from '../../math/curve/MinMaxCurveMode';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
@@ -14,7 +14,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统纹理表动画模块。
  */
-@decoratorRegisterClass()
+@serializable()
 export class ParticleTextureSheetAnimationModule extends ParticleModule
 {
     /**

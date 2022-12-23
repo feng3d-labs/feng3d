@@ -287,6 +287,7 @@ export * from './renderer/shader/ShaderMacroUtils';
 export * from './renderer/WebGLRenderer';
 export * from './serialization/ClassUtils';
 export * from './serialization/Serialization';
+export * from './serialization/serialize';
 export * from './shortcut/EventProxy';
 export * from './shortcut/handle/KeyState';
 export * from './shortcut/handle/ShortCutCapture';
@@ -313,4 +314,3 @@ export * from './ui/text/drawText';
 export * from './ui/text/TextMetrics';
 export * from './ui/text/TextStyle';
 export * from './watcher/watcher';
-

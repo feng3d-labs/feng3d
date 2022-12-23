@@ -1,5 +1,5 @@
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/ClassUtils';
 import { Texture2D } from '../../textures/Texture2D';
 import { Material } from '../Material';
 import meshPhongFragment from './meshPhong_fragment_glsl';
@@ -13,7 +13,7 @@ declare global
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class MeshPhongMaterial extends Material
 {
     uniforms = new MeshPhongUniforms();
@@ -25,7 +25,7 @@ export class MeshPhongMaterial extends Material
     }
 }
 
-@decoratorRegisterClass()
+@serializable()
 export class MeshPhongUniforms
 {
     __class__: 'MeshPhongUniforms';

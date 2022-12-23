@@ -1,6 +1,6 @@
 import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
@@ -44,7 +44,7 @@ export enum DistanceModelType
  */
 @AddComponentMenu('Audio/AudioSource')
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class AudioSource extends Behaviour
 {
     private panner: PannerNode;

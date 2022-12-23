@@ -6,7 +6,7 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Transform2D } from './Transform2D';
@@ -30,7 +30,7 @@ declare global
  * 能够被用于屏幕渲染的元素
  */
 @RegisterComponent()
-@decoratorRegisterClass()
+@serializable()
 export class Canvas extends Behaviour
 {
     /**

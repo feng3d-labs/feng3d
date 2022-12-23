@@ -1,7 +1,7 @@
 import { EventEmitter } from "../../event/EventEmitter";
 import { Color4 } from "../../math/Color4";
 import { oav } from "../../objectview/ObjectView";
-import { decoratorRegisterClass } from "../../serialization/ClassUtils";
+import { serializable } from "../../serialization/ClassUtils";
 import { serialization } from "../../serialization/Serialization";
 import { serialize } from "../../serialization/serialize";
 import { watcher } from "../../watcher/watcher";
@@ -127,7 +127,7 @@ export interface TextStyleEventMap
  *
  * @see https://github.com/pixijs/pixi.js/blob/dev/packages/text/src/TextStyle.js
  */
-@decoratorRegisterClass()
+@serializable()
 export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends EventEmitter<T>
 {
     /**

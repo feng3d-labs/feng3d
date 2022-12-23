@@ -1,5 +1,5 @@
 import { oav } from '../../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/ClassUtils';
 import { serialize } from '../../../serialization/serialize';
 import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
@@ -8,7 +8,7 @@ import { LensBase } from './LensBase';
 /**
  * 正射投影镜头
  */
-@decoratorRegisterClass()
+@serializable()
 export class OrthographicLens extends LensBase
 {
     /**

@@ -2,7 +2,7 @@ import { AssetType } from '../../core/assets/AssetType';
 import { setAssetTypeClass } from '../../core/assets/FileAsset';
 import { TextureCube } from '../../core/textures/TextureCube';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare global
@@ -16,7 +16,7 @@ declare global
 /**
  * 立方体纹理资源
  */
-@decoratorRegisterClass()
+@serializable()
 export class TextureCubeAsset extends ObjectAsset
 {
     static extenson = '.json';

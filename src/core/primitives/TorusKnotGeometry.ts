@@ -1,6 +1,6 @@
 import { Vector3 } from '../../math/geom/Vector3';
 import { gPartial } from '../../polyfill/Types';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';
@@ -29,7 +29,7 @@ declare global
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/TorusKnotGeometry.js
  */
-@decoratorRegisterClass()
+@serializable()
 export class TorusKnotGeometry extends Geometry
 {
     __class__: 'TorusKnotGeometry' = 'TorusKnotGeometry';

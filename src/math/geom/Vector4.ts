@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialize } from '../../serialization/serialize';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
@@ -8,7 +8,7 @@ import { Vector3 } from './Vector3';
 /**
  * 四维向量
  */
-@decoratorRegisterClass()
+@serializable()
 export class Vector4
 {
     __class__: 'Vector4';

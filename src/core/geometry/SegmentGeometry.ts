@@ -1,7 +1,7 @@
 import { Color4 } from '../../math/Color4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { decoratorRegisterClass } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/ClassUtils';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
@@ -26,7 +26,7 @@ declare global
 /**
  * 线段组件
  */
-@decoratorRegisterClass()
+@serializable()
 export class SegmentGeometry extends Geometry
 {
     __class__: 'SegmentGeometry';
