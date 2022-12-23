@@ -10,7 +10,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { Canvas } from './Canvas';
 import { UIGeometry } from './UIGeometry';
 

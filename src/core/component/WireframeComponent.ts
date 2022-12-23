@@ -1,6 +1,6 @@
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { RegisterComponent, Component } from './Component';
 
 declare global

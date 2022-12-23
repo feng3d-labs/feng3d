@@ -6,7 +6,7 @@ import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';

@@ -1,6 +1,6 @@
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';

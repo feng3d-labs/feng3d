@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { Color3 } from '../Color3';
 import { Color4 } from '../Color4';

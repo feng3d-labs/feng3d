@@ -1,6 +1,6 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemInheritVelocityMode } from '../enums/ParticleSystemInheritVelocityMode';

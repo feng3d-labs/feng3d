@@ -1,6 +1,6 @@
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/serializable';
 import { serialize } from '../../../serialization/serialize';
 import { TextureCube } from '../../textures/TextureCube';
 import { Material } from '../Material';

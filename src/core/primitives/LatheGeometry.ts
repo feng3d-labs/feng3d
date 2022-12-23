@@ -2,7 +2,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { watcher } from '../../watcher/watcher';
 import { Object3D } from '../core/Object3D';
 import { Geometry } from '../geometry/Geometry';

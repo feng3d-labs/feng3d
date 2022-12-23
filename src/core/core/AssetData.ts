@@ -1,7 +1,9 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { MapUtils } from '../../polyfill/MapUtils';
-import { __class__, classUtils } from '../../serialization/ClassUtils';
+import { getClassName } from '../../serialization/getClassName';
+import { getInstance } from '../../serialization/getInstance';
 import { serialization } from '../../serialization/Serialization';
+import { __class__ } from '../../serialization/SerializationConst';
 import { serialize } from '../../serialization/serialize';
 import { AssetType } from '../assets/AssetType';
 import { ReadRS } from '../assets/rs/ReadRS';
@@ -128,7 +130,7 @@ export class AssetData extends EventEmitter
     static serialize(asset: AssetData)
     {
         const obj = <any>{};
-        obj[__class__] = classUtils.getClassName(asset);
+        obj[__class__] = getClassName(asset);
         obj.assetId = asset.assetId;
 
         return obj;
@@ -203,8 +205,8 @@ serialization.setValueHandlers.push(
             {
                 if (spv.__class__ === null)
                 {
-                    const className = classUtils.getClassName(tpv);
-                    const inst = classUtils.getInstance(className);
+                    const className = getClassName(tpv);
+                    const inst = getInstance(className as any);
                     param.serialization.setValue(inst, spv);
                     target[property] = inst;
                 }

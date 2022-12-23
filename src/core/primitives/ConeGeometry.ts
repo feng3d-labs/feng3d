@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';

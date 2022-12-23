@@ -1,6 +1,6 @@
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { Matrix3x3 } from './Matrix3x3';
 import { Matrix4x4 } from './Matrix4x4';

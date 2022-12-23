@@ -1,5 +1,5 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { ArrayBufferAsset } from '../ArrayBufferAsset';
 
 /**

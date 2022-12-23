@@ -1,5 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';

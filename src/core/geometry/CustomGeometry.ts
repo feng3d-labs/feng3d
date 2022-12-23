@@ -1,6 +1,6 @@
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { Geometry } from './Geometry';
 

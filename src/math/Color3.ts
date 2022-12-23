@@ -1,6 +1,6 @@
 import { oav } from '../objectview/ObjectView';
 import { mathUtil } from '../polyfill/MathUtil';
-import { serializable } from '../serialization/ClassUtils';
+import { serializable } from '../serialization/serializable';
 import { serialize } from '../serialization/serialize';
 import type { Color4 } from './Color4';
 import { Vector3 } from './geom/Vector3';

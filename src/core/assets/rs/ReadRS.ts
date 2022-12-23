@@ -5,9 +5,10 @@ import { ReadFS } from '../../../filesystem/ReadFS';
 import { ArrayUtils } from '../../../polyfill/ArrayUtils';
 import { mathUtil } from '../../../polyfill/MathUtil';
 import { ObjectUtils } from '../../../polyfill/ObjectUtils';
-import { gPartial, Constructor } from '../../../polyfill/Types';
-import { classUtils, __class__ } from '../../../serialization/ClassUtils';
+import { Constructor, gPartial } from '../../../polyfill/Types';
+import { getInstance } from '../../../serialization/getInstance';
 import { serialization } from '../../../serialization/Serialization';
+import { __class__ } from '../../../serialization/SerializationConst';
 import { AssetData } from '../../core/AssetData';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';
@@ -393,7 +394,7 @@ export class ReadRS
         // 加载包含的资源数据
         await this.readAssetDatas(assetids);
         // 创建资源数据实例
-        const assetData = classUtils.getInstance(object[__class__]);
+        const assetData = getInstance(object[__class__]);
         // 默认反序列
         serialization.setValue(assetData, object);
 

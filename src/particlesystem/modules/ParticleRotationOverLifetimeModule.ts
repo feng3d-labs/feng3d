@@ -1,7 +1,7 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';

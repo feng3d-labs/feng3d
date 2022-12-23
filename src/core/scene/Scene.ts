@@ -1,7 +1,7 @@
 import { Color4 } from '../../math/Color4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';

@@ -8,7 +8,7 @@ import { Texture2D } from '../core/textures/Texture2D';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { serializable } from '../serialization/ClassUtils';
+import { serializable } from '../serialization/serializable';
 import { serialize } from '../serialization/serialize';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';

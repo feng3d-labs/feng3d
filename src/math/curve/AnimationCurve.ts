@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
 import { bezierCurve } from './BezierCurve';

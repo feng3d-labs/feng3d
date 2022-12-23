@@ -7,7 +7,7 @@ import { Color4 } from "../math/Color4";
 import { Vector4 } from "../math/geom/Vector4";
 import { oav } from "../objectview/ObjectView";
 import { shaderConfig } from "../renderer/shader/ShaderLib";
-import { serializable } from "../serialization/ClassUtils";
+import { serializable } from "../serialization/serializable";
 import { serialize } from "../serialization/serialize";
 
 declare global

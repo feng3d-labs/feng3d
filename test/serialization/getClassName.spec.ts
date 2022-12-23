@@ -1,7 +1,9 @@
 import { equal } from 'assert';
 import { Vector2 } from '../../src/math/geom/Vector2';
 import { Vector3 } from '../../src/math/geom/Vector3';
-import { classUtils, serializable } from '../../src/serialization/ClassUtils';
+import { getClassName } from '../../src/serialization/getClassName';
+import { getInstance } from '../../src/serialization/getInstance';
+import { serializable } from '../../src/serialization/serializable';
 
 declare global
 {
@@ -35,30 +37,30 @@ class RegisteredClass别名
 
 }
 
-describe('ClassUtils', () =>
+describe('getClassName', () =>
 {
     it('getClassName 内置类型', () =>
     {
-        const name = classUtils.getClassName(new Vector3())
-        // const name = classUtils.getClassName({})
-        // const name = classUtils.getClassName(new Vector2())
+        const name = getClassName(new Vector3())
+        // const name = getClassName({})
+        // const name = getClassName(new Vector2())
         name;
 
-        classUtils.getInstance('Vector2')
-        classUtils.getInstance('Vector2')
+        getInstance('Vector2')
+        // getInstance('Vector3')
     });
 
     it('getClassName 自定义类', () =>
     {
         let className: string;
 
-        className = classUtils.getClassName(UnregisteredClass);
+        className = getClassName(UnregisteredClass);
         equal(className, null); // UnregisteredClass 未注册返回 null
 
-        className = classUtils.getClassName(RegisteredClass);
+        className = getClassName(RegisteredClass);
         equal(className, 'RegisteredClass');
 
-        className = classUtils.getClassName(RegisteredClass别名);
+        className = getClassName(RegisteredClass别名);
         equal(className, '别名');
     });
 });

@@ -1,5 +1,5 @@
 import { dataTransform } from '../../polyfill/DataTransform';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { Component } from './Component';
 
 /**

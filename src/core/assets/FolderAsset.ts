@@ -1,5 +1,5 @@
 import { ov } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { AssetType } from './AssetType';
 import { FileAsset, setAssetTypeClass } from './FileAsset';
 

@@ -1,6 +1,8 @@
 import { globalEmitter } from '../../event/GlobalEmitter';
 import { oav } from '../../objectview/ObjectView';
-import { serializable, classUtils } from '../../serialization/ClassUtils';
+import { getClassName } from '../../serialization/getClassName';
+import { getInstance } from '../../serialization/getInstance';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';
@@ -70,7 +72,7 @@ export class ScriptComponent extends Behaviour
         this._scriptInstance = null;
         if (!this.scriptName) return;
 
-        this._scriptInstance = classUtils.getInstance(this.scriptName);
+        this._scriptInstance = getInstance(this.scriptName as any);
 
         this.scriptInit = false;
 
@@ -78,7 +80,7 @@ export class ScriptComponent extends Behaviour
         if (oldInstance)
         {
             // 如果两个类定义名称相同，则保留上个对象数据
-            if (classUtils.getClassName(oldInstance) === this.scriptName)
+            if (getClassName(oldInstance) === this.scriptName)
             {
                 serialization.setValue(this._scriptInstance, <any>oldInstance);
             }

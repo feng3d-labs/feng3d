@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { serializable } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/serializable';
 import { Camera } from '../../cameras/Camera';
 import { RegisterComponent } from '../../component/Component';
 import { HideFlags } from '../../core/HideFlags';

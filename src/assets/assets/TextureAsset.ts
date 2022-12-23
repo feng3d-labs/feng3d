@@ -4,7 +4,7 @@ import { FileAsset } from "../../core/assets/FileAsset";
 import { Texture2D } from "../../core/textures/Texture2D";
 import { oav } from "../../objectview/ObjectView";
 import { gPartial } from "../../polyfill/Types";
-import { serializable } from "../../serialization/ClassUtils";
+import { serializable } from "../../serialization/serializable";
 import { serialization } from "../../serialization/Serialization";
 
 /**

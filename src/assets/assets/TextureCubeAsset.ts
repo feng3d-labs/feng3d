@@ -2,7 +2,7 @@ import { AssetType } from '../../core/assets/AssetType';
 import { setAssetTypeClass } from '../../core/assets/FileAsset';
 import { TextureCube } from '../../core/textures/TextureCube';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare global

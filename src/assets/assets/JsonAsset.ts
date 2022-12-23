@@ -1,6 +1,6 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { setAssetTypeClass } from '../../core/assets/FileAsset';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { TextAsset } from './TextAsset';
 
 declare global

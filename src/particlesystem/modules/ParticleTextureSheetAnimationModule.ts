@@ -3,7 +3,7 @@ import { MinMaxCurveMode } from '../../math/curve/MinMaxCurveMode';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';

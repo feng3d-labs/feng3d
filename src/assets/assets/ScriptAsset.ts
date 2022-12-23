@@ -1,7 +1,7 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { setAssetTypeClass } from '../../core/assets/FileAsset';
 import { regExps } from '../../core/utils/RegExps';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { watcher } from '../../watcher/watcher';
 import { TextAsset } from './TextAsset';
 

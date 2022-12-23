@@ -1,4 +1,4 @@
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';

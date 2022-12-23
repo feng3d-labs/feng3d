@@ -1,5 +1,5 @@
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { serializable } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/serializable';
 import { Texture2D } from '../../textures/Texture2D';
 import { Material } from '../Material';
 import meshPhongFragment from './meshPhong_fragment_glsl';

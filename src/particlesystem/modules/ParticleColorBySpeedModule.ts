@@ -2,7 +2,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';

@@ -4,7 +4,7 @@ import { Renderable } from '../core/core/Renderable';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
-import { serializable } from '../serialization/ClassUtils';
+import { serializable } from '../serialization/serializable';
 import { TerrainData } from './TerrainData';
 import { TerrainGeometry } from './TerrainGeometry';
 

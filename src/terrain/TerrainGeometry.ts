@@ -5,7 +5,7 @@ import { ImageUtil } from "../core/utils/ImageUtil";
 import { Color4 } from "../math/Color4";
 import { oav } from "../objectview/ObjectView";
 import { gPartial } from "../polyfill/Types";
-import { serializable } from "../serialization/ClassUtils";
+import { serializable } from "../serialization/serializable";
 import { serialization } from "../serialization/Serialization";
 import { serialize } from "../serialization/serialize";
 import { watcher } from "../watcher/watcher";

@@ -1,5 +1,5 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { serializable } from '../../../serialization/ClassUtils';
+import { serializable } from '../../../serialization/serializable';
 import { Component, RegisterComponent } from '../../component/Component';
 import { Object3D } from '../../core/Object3D';
 

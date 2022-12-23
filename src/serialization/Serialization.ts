@@ -1,7 +1,9 @@
 import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { ObjectUtils } from '../polyfill/ObjectUtils';
 import { gPartial } from '../polyfill/Types';
-import { classUtils, __class__ } from './ClassUtils';
+import { getClassName } from './getClassName';
+import { getInstance } from './getInstance';
+import { __class__ } from './SerializationConst';
 
 /**
  * 序列化属性函数
@@ -380,7 +382,7 @@ serialization.serializeHandlers.push(
                 const object = {};
 
                 target[property] = object;
-                object[__class__] = classUtils.getClassName(spv);
+                object[__class__] = getClassName(spv);
                 spv.serialize(object);
 
                 return true;
@@ -452,7 +454,7 @@ serialization.serializeHandlers.push(
                 const object = {};
 
                 target[property] = object;
-                const className = classUtils.getClassName(spv);
+                const className = getClassName(spv);
                 const keys = getSerializableMembers(spv);
 
                 keys.forEach((key) =>
@@ -467,7 +469,7 @@ serialization.serializeHandlers.push(
             // 执行默认忽略默认值
             if (ObjectUtils.objectIsEmpty(tpv) || tpv.constructor !== spv.constructor)
             {
-                const className = classUtils.getClassName(spv);
+                const className = getClassName(spv);
                 // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。
                 let inst = spv.constructor.inst;
 
@@ -643,7 +645,7 @@ serialization.deserializeHandlers = [
         {
             const tpv = target[property];
             const spv = source[property];
-            let inst = classUtils.getInstance(spv[__class__]);
+            let inst = getInstance(spv[__class__]);
             // 处理自定义反序列化对象
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -676,7 +678,7 @@ serialization.deserializeHandlers = [
         {
             const tpv = target[property];
             const spv = source[property];
-            let inst = classUtils.getInstance(spv[__class__]);
+            let inst = getInstance(spv[__class__]);
 
             if (inst)
             {
@@ -956,7 +958,7 @@ serialization.setValueHandlers = [
             const tpv = target[property];
             const spv = source[property];
 
-            const targetClassName = classUtils.getClassName(target[property]);
+            const targetClassName = getClassName(target[property]);
             // 相同对象类型
 
             if (targetClassName === spv[__class__])

@@ -3,7 +3,7 @@ import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';

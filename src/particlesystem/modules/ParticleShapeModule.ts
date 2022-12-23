@@ -3,7 +3,7 @@ import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { serialize } from '../../serialization/serialize';
 import { watcher } from '../../watcher/watcher';

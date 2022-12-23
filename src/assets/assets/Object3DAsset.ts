@@ -1,7 +1,7 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { Object3D } from '../../core/core/Object3D';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialization } from '../../serialization/Serialization';
 import { ObjectAsset } from '../ObjectAsset';
 

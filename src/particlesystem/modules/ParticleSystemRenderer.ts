@@ -1,7 +1,7 @@
 import { Geometrys } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { Vector3 } from '../../math/geom/Vector3';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
 import { ParticleSystemRenderSpace } from '../enums/ParticleSystemRenderSpace';
 import { ParticleSystemSortMode } from '../enums/ParticleSystemSortMode';

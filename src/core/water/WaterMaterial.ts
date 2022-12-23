@@ -3,7 +3,7 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { Material } from '../materials/Material';
 import { Texture2D } from '../textures/Texture2D';

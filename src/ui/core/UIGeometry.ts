@@ -1,6 +1,6 @@
 import { Geometry } from "../../core/geometry/Geometry";
 import { geometryUtils } from "../../core/geometry/GeometryUtils";
-import { serializable } from "../../serialization/ClassUtils";
+import { serializable } from "../../serialization/serializable";
 
 declare global
 {

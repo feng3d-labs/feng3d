@@ -1,6 +1,6 @@
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { serialize } from '../../serialization/serialize';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';

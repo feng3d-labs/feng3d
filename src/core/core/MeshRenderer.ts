@@ -1,4 +1,4 @@
-import { serializable } from '../../serialization/ClassUtils';
+import { serializable } from '../../serialization/serializable';
 import { RegisterComponent } from '../component/Component';
 import { Renderable } from './Renderable';
 
