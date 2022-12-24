@@ -106,6 +106,6 @@ export type PropertyClipPath = [PropertyClipPathItemType, string][];
 
 export enum PropertyClipPathItemType
 {
-    Object3D,
+    Node3D,
     Component,
 }

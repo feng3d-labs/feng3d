@@ -92,6 +92,15 @@ export interface Node3D
      * @param name 对象名称
      */
     find(name: string): Node3D;
+
+    /**
+     * 添加子对象
+     *
+     * @param child 子对象
+     * 
+     * @returns 返回自身。
+     */
+    addChild(child: Node3D): this;
 }
 
 /**

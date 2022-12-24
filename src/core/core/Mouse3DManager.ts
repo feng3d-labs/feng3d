@@ -42,7 +42,7 @@ export class Mouse3DManager
         // 计算得到鼠标射线相交的物体
         const pickingCollisionVO = rayCast(view.mouseRay3D, scene.mouseCheckObjects);
 
-        const object3D = pickingCollisionVO && pickingCollisionVO.node3D;
+        const object3D = pickingCollisionVO && pickingCollisionVO.node3d;
 
         return object3D;
     }

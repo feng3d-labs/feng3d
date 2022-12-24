@@ -185,7 +185,7 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
             this.emit('addChild', { child, parent: this }, true);
         }
 
-        return child;
+        return this;
     }
 
     /**

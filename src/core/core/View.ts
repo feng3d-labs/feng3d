@@ -1,3 +1,10 @@
+import { Ray3 } from '../../math/geom/Ray3';
+import { Rectangle } from '../../math/geom/Rectangle';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { WebGLRenderer, WebGLRendererParameters } from '../../renderer/WebGLRenderer';
+import { serialization } from '../../serialization/Serialization';
+import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { AudioListener } from '../audio/AudioListener';
 import { Camera } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';
@@ -9,16 +16,9 @@ import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
-import { Node3D } from './Node3D';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
+import { Node3D } from './Node3D';
 import { Renderer } from './Renderer';
-import { Ray3 } from '../../math/geom/Ray3';
-import { Rectangle } from '../../math/geom/Rectangle';
-import { Vector2 } from '../../math/geom/Vector2';
-import { Vector3 } from '../../math/geom/Vector3';
-import { WebGLRenderer, WebGLRendererParameters } from '../../renderer/WebGLRenderer';
-import { serialization } from '../../serialization/Serialization';
-import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 
 declare global
 {
@@ -73,7 +73,7 @@ export class View
      */
     get root()
     {
-        return this.scene.entity;
+        return this.scene.node3d;
     }
 
     get gl()

@@ -9,7 +9,7 @@ export class Script
     /**
      * The game object this component is attached to. A component is always attached to a game object.
      */
-    get object3D(): Node3D
+    get node3d(): Node3D
     {
         return this.component.node3d;
     }

@@ -45,6 +45,7 @@ export * from './core/controllers/HoverController';
 export * from './core/controllers/LookAtController';
 export * from './core/core/AssetData';
 export * from './core/core/BoundingBox';
+export * from './core/core/Component3D';
 export * from './core/core/HideFlags';
 export * from './core/core/MeshRenderer';
 export * from './core/core/Mouse3DManager';

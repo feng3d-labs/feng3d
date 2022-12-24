@@ -98,7 +98,7 @@ export class Animation extends NodeComponent
             const element = path[i];
             switch (element[0])
             {
-                case PropertyClipPathItemType.Object3D:
+                case PropertyClipPathItemType.Node3D:
                     propertyHost = propertyHost.find(element[1]);
                     break;
                 case PropertyClipPathItemType.Component:

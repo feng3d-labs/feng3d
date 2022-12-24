@@ -138,7 +138,7 @@ export class MeshRenderer extends Renderer
 
         // 保存碰撞数据
         const pickingCollisionVO: PickingCollisionVO = {
-            node3D: this.node3d,
+            node3d: this.node3d,
             localNormal,
             localRay,
             rayEntryDistance,

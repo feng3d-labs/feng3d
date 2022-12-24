@@ -5,6 +5,7 @@ import { Serializable } from '../../../serialization/Serializable';
 import { Camera } from '../../cameras/Camera';
 import { Component3D } from '../../core/Component3D';
 import { HideFlags } from '../../core/HideFlags';
+import { MeshRenderer } from '../../core/MeshRenderer';
 import { Scene } from '../../scene/Scene';
 import { SkeletonComponent } from './SkeletonComponent';
 
@@ -16,7 +17,7 @@ declare global
     }
 }
 
-@RegisterComponent()
+@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: [MeshRenderer] })
 @Serializable()
 export class SkinnedMeshRenderer extends Component3D
 {
