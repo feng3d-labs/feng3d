@@ -3,7 +3,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { CullFace } from '../../renderer/data/RenderParams';
 import { Object3D } from '../core/Object3D';
-import { RayCastable } from '../core/RayCastable';
+import { Renderer } from '../core/Renderer';
 import { Geometry } from '../geometry/Geometry';
 
 /**
@@ -23,7 +23,7 @@ export class Raycaster
 
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = object3D.getComponent(RayCastable);
+            const model = object3D.getComponent(Renderer);
             const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
@@ -75,7 +75,7 @@ export class Raycaster
 
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
-            const model = object3D.getComponent(RayCastable);
+            const model = object3D.getComponent(Renderer);
             const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
