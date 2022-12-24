@@ -1,10 +1,10 @@
 import { Camera } from "../../core/cameras/Camera";
-import { Component, RegisterComponent } from "../../ecs/Component";
 import { HideFlags } from "../../core/core/HideFlags";
+import { Node } from "../../core/core/Node";
 import { Node3D } from "../../core/core/Node3D";
 import { TransformLayout } from "../../core/core/TransformLayout";
-import { AddComponentMenu } from "../../core/Menu";
 import { Scene } from "../../core/scene/Scene";
+import { Component } from "../../ecs/Component";
 import { IEvent } from "../../event/IEvent";
 import { Vector2 } from "../../math/geom/Vector2";
 import { Vector4 } from "../../math/geom/Vector4";
@@ -16,34 +16,15 @@ import { watcher } from "../../watcher/watcher";
 
 declare global
 {
-    export interface MixinsNode3D
-    {
-        /**
-         * 游戏对象上的2D变换。
-         */
-        transform2D: Transform2D;
-    }
-
-    export interface MixinsComponentMap
-    {
-        /**
-         * 游戏对象上的2D变换。
-         */
-        transform2D: Transform2D;
-    }
 }
 
 /**
- * 2D变换
- *
- * 提供了比Transform更加适用于2D元素的API
- *
- * 通过修改Transform的数值实现
+ * 2D结点
+ * 
+ * 用于构建2D场景树结构，处理2D对象的位移旋转缩放等空间数据。
  */
-@AddComponentMenu('Layout/Transform2D')
-@RegisterComponent()
 @Serializable()
-export class Transform2D extends Component
+export class Node2D extends Node
 {
     get single() { return true; }
 
@@ -138,24 +119,18 @@ export class Transform2D extends Component
     {
         super();
 
-        watcher.watch(this as Transform2D, 'transformLayout', this._onTransformLayoutChanged, this);
-    }
-
-    init()
-    {
-        super.init();
+        watcher.watch(this as Node2D, 'transformLayout', this._onTransformLayoutChanged, this);
 
         // 处理依赖组件
         let transformLayout = this.getComponent(TransformLayout);
         if (!transformLayout)
         {
-            transformLayout = this.object3D.addComponent(TransformLayout);
+            transformLayout = this.addComponent(TransformLayout);
         }
         this.transformLayout = transformLayout;
 
-        watcher.bind(this.object3D.rotation, 'z', this as Transform2D, 'rotation');
-        watcher.bind(this.object3D.scale, 'x', this.scale, 'x');
-        watcher.bind(this.object3D.scale, 'y', this.scale, 'y');
+        watcher.bind(this.scale, 'x', this.scale, 'x');
+        watcher.bind(this.scale, 'y', this.scale, 'y');
 
         this.on('addComponent', this._onAddComponent, this);
         this.on('removeComponent', this._onRemovedComponent, this);
@@ -163,7 +138,6 @@ export class Transform2D extends Component
 
     private _onAddComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
     {
-        if (event.data.entity !== this.object3D) return;
         const component = event.data.component;
         if (component instanceof TransformLayout)
         {
@@ -174,7 +148,6 @@ export class Transform2D extends Component
 
     private _onRemovedComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
     {
-        if (event.data.entity !== this.object3D) return;
         const component = event.data.component;
         if (component instanceof TransformLayout)
         {
@@ -182,7 +155,7 @@ export class Transform2D extends Component
         }
     }
 
-    private _onTransformLayoutChanged(newValue: TransformLayout, oldValue: TransformLayout, _object: Transform2D, _property: string)
+    private _onTransformLayoutChanged(newValue: TransformLayout, oldValue: TransformLayout, _object: Node2D, _property: string)
     {
         if (oldValue)
         {
@@ -229,11 +202,3 @@ export class Transform2D extends Component
         renderAtomic.uniforms.u_rect = this.rect;
     }
 }
-
-Object.defineProperty(Node3D.prototype, 'transform2D', {
-    get(this: Node3D) { return this.getComponent(Transform2D); },
-});
-
-Object.defineProperty(Component.prototype, 'transform2D', {
-    get(this: Component) { return this._object3D && this._object3D.transform2D; },
-});

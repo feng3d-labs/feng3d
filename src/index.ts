@@ -303,7 +303,7 @@ export * from './terrain/TerrainMergeMethod';
 export * from './ui/Button';
 export * from './ui/core/Canvas';
 export * from './ui/core/CanvasRenderer';
-export * from './ui/core/Transform2D';
+export * from './ui/core/Node2D';
 export * from './ui/core/UIGeometry';
 export * from './ui/core/UIMaterial';
 export * from './ui/enums/UIRenderMode';

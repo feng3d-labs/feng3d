@@ -8,7 +8,7 @@ import { Serializable } from '../serialization/Serializable';
 import { serialization } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
-import { Transform2D } from './core/Transform2D';
+import { Node2D } from './core/Node2D';
 
 declare global
 {
@@ -148,7 +148,7 @@ export class Button extends Behaviour
 
 Node3D.registerPrimitive('Button', (g) =>
 {
-    const transform2D = g.addComponent(Transform2D);
+    const transform2D = g.addComponent(Node2D);
 
     transform2D.size.x = 160;
     transform2D.size.y = 30;

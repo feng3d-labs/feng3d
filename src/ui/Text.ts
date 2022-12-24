@@ -12,7 +12,7 @@ import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { CanvasRenderer } from './core/CanvasRenderer';
-import { Transform2D } from './core/Transform2D';
+import { Node2D } from './core/Node2D';
 import { drawText } from './text/drawText';
 import { TextStyle } from './text/TextStyle';
 
@@ -116,7 +116,7 @@ export class Text extends Component
 
 Node3D.registerPrimitive('Text', (g) =>
 {
-    const transform2D = g.addComponent(Transform2D);
+    const transform2D = g.addComponent(Node2D);
     g.addComponent(CanvasRenderer);
 
     transform2D.size.x = 160;

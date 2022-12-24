@@ -11,7 +11,7 @@ import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { CanvasRenderer } from './core/CanvasRenderer';
-import { Transform2D } from './core/Transform2D';
+import { Node2D } from './core/Node2D';
 
 declare global
 {
@@ -76,7 +76,7 @@ export class Image extends Component
 
 Node3D.registerPrimitive('Image', (g) =>
 {
-    const transform2D = g.addComponent(Transform2D);
+    const transform2D = g.addComponent(Node2D);
     g.addComponent(CanvasRenderer);
 
     transform2D.size.x = 100;

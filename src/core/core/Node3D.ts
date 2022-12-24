@@ -26,7 +26,6 @@ declare global
 {
     interface MixinsNode3DEventMap { }
     interface MixinsPrimitiveNode3D { }
-    interface MixinsNode3D { }
 }
 
 export interface Node3DEventMap extends NodeEventMap, MixinsNode3DEventMap, MouseEventMap
@@ -67,9 +66,8 @@ export interface Node3DEventMap extends NodeEventMap, MixinsNode3DEventMap, Mous
     refreshView: any;
 }
 
-export interface Node3D extends MixinsNode3D
+export interface Node3D
 {
-
     /**
      * 父对象
      */
@@ -97,7 +95,9 @@ export interface Node3D extends MixinsNode3D
 }
 
 /**
- * 游戏对象，场景唯一存在的对象类型
+ * 3D结点
+ * 
+ * 用于构建3D场景树结构，处理3D对象的位移旋转缩放等空间数据。
  */
 @Serializable()
 export class Node3D extends Node<Node3DEventMap>
