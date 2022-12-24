@@ -2,7 +2,7 @@ import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
-import { getComponentType, RegisterComponent } from '../component/Component';
+import { getComponentType, RegisterComponent } from '../../ecs/Component';
 import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';

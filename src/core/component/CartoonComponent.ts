@@ -7,7 +7,7 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
-import { Component, RegisterComponent } from './Component';
+import { Component, RegisterComponent } from '../../ecs/Component';
 
 declare global
 {

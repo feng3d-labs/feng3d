@@ -1,7 +1,7 @@
 import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { PickingCollisionVO } from '../pick/Raycaster';
 
 declare global

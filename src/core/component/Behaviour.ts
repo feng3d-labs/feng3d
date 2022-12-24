@@ -1,7 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { RegisterComponent, Component } from './Component';
+import { RegisterComponent, Component } from '../../ecs/Component';
 
 declare global
 {

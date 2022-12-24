@@ -3,7 +3,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { AddComponentMenu } from '../Menu';
 
 export let audioCtx: AudioContext;

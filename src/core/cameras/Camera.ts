@@ -7,7 +7,7 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Component, RegisterComponent } from '../component/Component';
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { Object3D } from '../core/Object3D';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';

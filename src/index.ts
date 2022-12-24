@@ -36,7 +36,7 @@ export * from './core/cameras/Projection';
 export * from './core/component/Behaviour';
 export * from './core/component/BillboardComponent';
 export * from './core/component/CartoonComponent';
-export * from './core/component/Component';
+export * from './ecs/Component';
 export * from './core/component/Graphics';
 export * from './core/component/HoldSizeComponent';
 export * from './core/component/OutLineComponent';

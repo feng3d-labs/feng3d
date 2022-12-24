@@ -1,5 +1,5 @@
 import { Behaviour } from '../../core/component/Behaviour';
-import { RegisterComponent } from '../../core/component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Object3D } from '../../core/core/Object3D';
 import { View } from '../../core/core/View';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';

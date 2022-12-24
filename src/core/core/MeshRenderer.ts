@@ -1,5 +1,5 @@
 import { Serializable } from '../../serialization/Serializable';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Renderable } from './Renderable';
 
 declare global

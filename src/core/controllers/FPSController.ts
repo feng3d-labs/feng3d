@@ -5,7 +5,7 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { AddComponentMenu } from '../Menu';
 

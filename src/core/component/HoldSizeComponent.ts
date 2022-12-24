@@ -3,7 +3,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
-import { Component, RegisterComponent } from './Component';
+import { Component, RegisterComponent } from '../../ecs/Component';
 
 declare global
 {

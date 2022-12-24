@@ -1,7 +1,7 @@
 import { Constructor } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Component } from '../component/Component';
-import { Entity, EntityEventMap } from './Entity';
+import { Component } from '../../ecs/Component';
+import { Entity, EntityEventMap } from '../../ecs/Entity';
 
 export interface ContainerEventMap extends EntityEventMap
 {

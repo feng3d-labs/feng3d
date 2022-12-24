@@ -9,7 +9,7 @@ import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Geometry, Geometrys } from '../geometry/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
 import { Material, Materials } from '../materials/Material';

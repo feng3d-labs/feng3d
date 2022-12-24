@@ -6,7 +6,7 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
-import { Component, RegisterComponent } from '../component/Component';
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { HideFlags } from '../core/HideFlags';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';

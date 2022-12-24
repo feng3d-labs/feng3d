@@ -1,5 +1,5 @@
 import { Camera } from '../core/cameras/Camera';
-import { RegisterComponent } from '../core/component/Component';
+import { RegisterComponent } from '../ecs/Component';
 import { Object3D } from '../core/core/Object3D';
 import { Renderable } from '../core/core/Renderable';
 import { RunEnvironment } from '../core/core/RunEnvironment';

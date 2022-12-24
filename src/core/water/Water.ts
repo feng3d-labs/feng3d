@@ -6,7 +6,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
 import { Geometry, Geometrys } from '../geometry/Geometry';

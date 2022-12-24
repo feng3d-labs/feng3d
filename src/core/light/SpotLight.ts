@@ -3,7 +3,7 @@ import { mathUtil } from '../../polyfill/MathUtil';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Object3D } from '../core/Object3D';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';

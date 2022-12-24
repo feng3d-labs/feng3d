@@ -1,4 +1,4 @@
-import { RegisterComponent } from '../../core/component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Renderable } from '../../core/core/Renderable';
 import { TransformLayout } from '../../core/core/TransformLayout';
 import { View } from '../../core/core/View';

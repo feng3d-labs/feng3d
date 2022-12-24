@@ -6,7 +6,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { Component, RegisterComponent } from '../component/Component';
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';

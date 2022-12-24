@@ -1,4 +1,4 @@
-import { RegisterComponent } from '../core/component/Component';
+import { RegisterComponent } from '../ecs/Component';
 import { Object3D } from '../core/core/Object3D';
 import { Renderable } from '../core/core/Renderable';
 import { Geometry } from '../core/geometry/Geometry';

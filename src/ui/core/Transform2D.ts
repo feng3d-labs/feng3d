@@ -1,5 +1,5 @@
 import { Camera } from "../../core/cameras/Camera";
-import { Component, RegisterComponent } from "../../core/component/Component";
+import { Component, RegisterComponent } from "../../ecs/Component";
 import { HideFlags } from "../../core/core/HideFlags";
 import { Object3D } from "../../core/core/Object3D";
 import { TransformLayout } from "../../core/core/TransformLayout";
@@ -16,11 +16,6 @@ import { watcher } from "../../watcher/watcher";
 
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Transform2D: Transform2D;
-    }
-
     export interface MixinsObject3D
     {
         /**
@@ -29,7 +24,7 @@ declare global
         transform2D: Transform2D;
     }
 
-    export interface MixinsComponent
+    export interface MixinsComponentMap
     {
         /**
          * 游戏对象上的2D变换。

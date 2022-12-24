@@ -1,6 +1,6 @@
 import { dataTransform } from '../../polyfill/DataTransform';
 import { Serializable } from '../../serialization/Serializable';
-import { Component } from './Component';
+import { Component } from '../../ecs/Component';
 
 /**
  * Graphics 类包含一组可用来创建矢量形状的方法。

@@ -7,7 +7,7 @@ import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { AddComponentMenu } from '../Menu';
 import { RunEnvironment } from './RunEnvironment';
 import { Script } from './Script';

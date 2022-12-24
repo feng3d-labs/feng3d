@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Serializable } from '../../../serialization/Serializable';
-import { Component, RegisterComponent } from '../../component/Component';
+import { Component, RegisterComponent } from '../../../ecs/Component';
 import { Object3D } from '../../core/Object3D';
 
 declare global

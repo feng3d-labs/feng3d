@@ -4,7 +4,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
-import { RegisterComponent } from '../component/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Object3D } from '../core/Object3D';
 import { Renderable } from '../core/Renderable';
 import { AddComponentMenu } from '../Menu';

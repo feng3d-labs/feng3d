@@ -1,5 +1,5 @@
 import { Constructor } from '../polyfill/Types';
-import { Components, ComponentNames } from './component/Component';
+import { Components, ComponentNames } from '../ecs/Component';
 
 /**
  * 添加组件菜单
