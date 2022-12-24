@@ -5,7 +5,7 @@ import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { AddComponentMenu } from '../../core/Menu';
 import { TransformUtils } from '../../core/utils/TransformUtils';
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
@@ -28,10 +28,8 @@ declare global
 @AddComponentMenu('Rendering/CanvasRenderer')
 @RegisterComponent({ name: 'CanvasRenderer', dependencies: [MeshRenderer] })
 @Serializable()
-export class CanvasRenderer extends Component
+export class CanvasRenderer extends MeshRenderer
 {
-    readonly renderAtomic = new RenderAtomic();
-
     geometry: UIGeometry = Geometry.getDefault('Default-UIGeometry');
 
     @oav()
@@ -52,14 +50,14 @@ export class CanvasRenderer extends Component
             worldRay = canvas.mouseRay;
         }
 
-        const localRay = TransformUtils.rayWorldToLocal(this.entity, worldRay);
-        if (this.transform2D)
-        {
-            const size = new Vector3(this.transform2D.size.x, this.transform2D.size.y, 1);
-            const pivot = new Vector3(this.transform2D.pivot.x, this.transform2D.pivot.y, 0);
-            localRay.origin.divide(size).add(pivot);
-            localRay.direction.divide(size).normalize();
-        }
+        const localRay = TransformUtils.rayWorldToLocal(this.node3d, worldRay);
+        // if (this.transform2D)
+        // {
+        //     const size = new Vector3(this.transform2D.size.x, this.transform2D.size.y, 1);
+        //     const pivot = new Vector3(this.transform2D.pivot.x, this.transform2D.pivot.y, 0);
+        //     localRay.origin.divide(size).add(pivot);
+        //     localRay.direction.divide(size).normalize();
+        // }
 
         const pickingCollisionVO = this.localRayIntersection(localRay);
         if (pickingCollisionVO)

@@ -12,17 +12,14 @@ import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Node2D } from './core/Node2D';
+import { Component3D } from '../core/core/Component3D';
+import { Component2D } from './core/Component2D';
 
 declare global
 {
     export interface MixinsComponentMap
     {
         Image: Image
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Image: Node3D;
     }
 }
 
@@ -34,7 +31,7 @@ declare global
 @AddComponentMenu('UI/Image')
 @RegisterComponent()
 @Serializable()
-export class Image extends Component
+export class Image extends Component2D
 {
     /**
      * The source texture of the Image element.
@@ -61,8 +58,8 @@ export class Image extends Component
     setNativeSize()
     {
         const imagesize = this.image.getSize();
-        this.transform2D.size.x = imagesize.x;
-        this.transform2D.size.y = imagesize.y;
+        this.node2d.size.x = imagesize.x;
+        this.node2d.size.y = imagesize.y;
     }
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
@@ -74,13 +71,20 @@ export class Image extends Component
     }
 }
 
-Node3D.registerPrimitive('Image', (g) =>
+declare global
 {
-    const transform2D = g.addComponent(Node2D);
+    export interface MixinsPrimitiveNode2D
+    {
+        Image: Node2D;
+    }
+}
+
+Node2D.registerPrimitive('Image', (g) =>
+{
     g.addComponent(CanvasRenderer);
 
-    transform2D.size.x = 100;
-    transform2D.size.y = 100;
+    g.size.x = 100;
+    g.size.y = 100;
     g.addComponent(Image);
 });
 
@@ -90,7 +94,7 @@ createNodeMenu.push(
         path: 'UI/Image',
         priority: -2,
         click: () =>
-            Node3D.createPrimitive('Image')
+            Node2D.createPrimitive('Image')
     }
 );
 

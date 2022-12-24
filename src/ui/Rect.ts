@@ -19,9 +19,9 @@ declare global
         Rect: Rect;
     }
 
-    export interface MixinsPrimitiveNode3D
+    export interface MixinsPrimitiveNode2D
     {
-        Rect: Node3D;
+        Rect: Node2D;
     }
 }
 
@@ -50,13 +50,12 @@ export class Rect extends Component
     }
 }
 
-Node3D.registerPrimitive('Rect', (g) =>
+Node2D.registerPrimitive('Rect', (g) =>
 {
-    const transform2D = g.addComponent(Node2D);
     g.addComponent(CanvasRenderer);
 
-    transform2D.size.x = 100;
-    transform2D.size.y = 100;
+    g.size.x = 100;
+    g.size.y = 100;
     g.addComponent(Rect);
 });
 
@@ -66,6 +65,6 @@ createNodeMenu.push(
         path: 'UI/Rect',
         priority: -2,
         click: () =>
-            Node3D.createPrimitive('Rect')
+            Node2D.createPrimitive('Rect')
     }
 );

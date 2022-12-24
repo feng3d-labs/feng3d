@@ -8,7 +8,7 @@ import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AddComponentMenu } from '../Menu';
-import { NodeComponent } from './NodeComponent';
+import { Component3D } from './Component3D';
 import { RunEnvironment } from './RunEnvironment';
 import { Script } from './Script';
 
@@ -26,7 +26,7 @@ declare global
 @AddComponentMenu('Script/Script')
 @RegisterComponent()
 @Serializable()
-export class ScriptComponent extends NodeComponent
+export class ScriptComponent extends Component3D
 {
     runEnvironment = RunEnvironment.feng3d;
 

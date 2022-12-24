@@ -106,7 +106,6 @@ export * from './core/render/renderer/WireframeRenderer';
 export * from './core/render/shader/ShaderLib';
 export * from './core/scene/Scene';
 export * from './core/scene/ScenePickCache';
-export * from './core/scene/SceneUtil';
 export * from './core/ShaderConfig';
 export * from './core/skybox/SkyBox';
 export * from './core/skybox/SkyBoxRenderer';
@@ -310,3 +309,4 @@ export * from './ui/text/drawText';
 export * from './ui/text/TextMetrics';
 export * from './ui/text/TextStyle';
 export * from './watcher/watcher';
+

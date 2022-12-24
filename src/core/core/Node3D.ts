@@ -654,7 +654,7 @@ export class Node3D extends Node<Node3DEventMap>
     }
 
     /**
-     * 注册原始游戏对象，被注册后可以使用 Object3D.createPrimitive 进行创建。
+     * 注册原始游戏对象，被注册后可以使用 Node3D.registerPrimitive 进行创建。
      *
      * @param type 原始游戏对象类型。
      * @param handler 构建原始游戏对象的函数。

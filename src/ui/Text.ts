@@ -1,10 +1,9 @@
 import { Camera } from '../core/cameras/Camera';
-import { Component, RegisterComponent } from '../ecs/Component';
-import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
 import { Texture2D } from '../core/textures/Texture2D';
+import { RegisterComponent } from '../ecs/Component';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
@@ -12,6 +11,7 @@ import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { CanvasRenderer } from './core/CanvasRenderer';
+import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 import { drawText } from './text/drawText';
 import { TextStyle } from './text/TextStyle';
@@ -23,9 +23,9 @@ declare global
         Text: Text;
     }
 
-    export interface MixinsPrimitiveNode3D
+    export interface MixinsPrimitiveNode2D
     {
-        Text: Node3D;
+        Text: Node2D;
     }
 }
 
@@ -37,7 +37,7 @@ declare global
 @AddComponentMenu('UI/Text')
 @RegisterComponent()
 @Serializable()
-export class Text extends Component
+export class Text extends Component2D
 {
     /**
      * 文本内容。
@@ -89,13 +89,13 @@ export class Text extends Component
 
         if (this.autoSize)
         {
-            this.transform2D.size.x = canvas.width;
-            this.transform2D.size.y = canvas.height;
+            this.node2d.size.x = canvas.width;
+            this.node2d.size.y = canvas.height;
         }
 
         // 调整缩放使得更改尺寸时文字不被缩放。
-        this._uvRect.z = this.transform2D.size.x / canvas.width;
-        this._uvRect.w = this.transform2D.size.y / canvas.height;
+        this._uvRect.z = this.node2d.size.x / canvas.width;
+        this._uvRect.w = this.node2d.size.y / canvas.height;
 
         //
         renderAtomic.uniforms.s_texture = this._image;
@@ -114,13 +114,12 @@ export class Text extends Component
     }
 }
 
-Node3D.registerPrimitive('Text', (g) =>
+Node2D.registerPrimitive('Text', (g) =>
 {
-    const transform2D = g.addComponent(Node2D);
     g.addComponent(CanvasRenderer);
 
-    transform2D.size.x = 160;
-    transform2D.size.y = 30;
+    g.size.x = 160;
+    g.size.y = 30;
     g.addComponent(Text);
 });
 
@@ -130,7 +129,7 @@ createNodeMenu.push(
         path: 'UI/Text',
         priority: -2,
         click: () =>
-            Node3D.createPrimitive('Text')
+            Node2D.createPrimitive('Text')
     }
 );
 
