@@ -42,11 +42,11 @@ export class ScenePickCache
         let node3Ds = [this.scene.node3d];
         while (node3Ds.length > 0)
         {
-            const object3D = node3Ds.pop();
+            const node3d = node3Ds.pop();
 
-            if (!object3D.visible)
+            if (!node3d.visible)
             { continue; }
-            const model = object3D.getComponent(MeshRenderer);
+            const model = node3d.getComponent(MeshRenderer);
             if (model && model.enabled)
             {
                 if (model.selfWorldBounds)
@@ -55,7 +55,7 @@ export class ScenePickCache
                     { models.push(model); }
                 }
             }
-            node3Ds = node3Ds.concat(object3D.children as Node3D[]);
+            node3Ds = node3Ds.concat(node3d.children as Node3D[]);
         }
 
         return models;

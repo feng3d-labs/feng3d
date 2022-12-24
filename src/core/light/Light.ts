@@ -126,16 +126,16 @@ export class Light extends Component3D
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
     {
-        let object3D = this.debugShadowMapObject;
-        if (!object3D)
+        let node3d = this.debugShadowMapObject;
+        if (!node3d)
         {
-            object3D = this.debugShadowMapObject = Node3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
-            object3D.hideFlags = HideFlags.Hide | HideFlags.DontSave;
-            object3D.mouseEnabled = false;
-            object3D.addComponent(BillboardComponent);
+            node3d = this.debugShadowMapObject = Node3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
+            node3d.hideFlags = HideFlags.Hide | HideFlags.DontSave;
+            node3d.mouseEnabled = false;
+            node3d.addComponent(BillboardComponent);
 
             // 材质
-            const model = object3D.getComponent(MeshRenderer);
+            const model = node3d.getComponent(MeshRenderer);
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
             //
@@ -147,17 +147,17 @@ export class Light extends Component3D
         }
 
         const depth = viewCamera.lens.near * 2;
-        object3D.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
-        const billboardComponent = object3D.getComponent(BillboardComponent);
+        node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
+        const billboardComponent = node3d.getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)
         {
-            scene.node3d.addChild(object3D);
+            scene.node3d.addChild(node3d);
         }
         else
         {
-            object3D.remove();
+            node3d.remove();
         }
     }
 }

@@ -34,10 +34,10 @@ export class Object3DAsset extends ObjectAsset
 
     protected _getAssetData()
     {
-        const object3D = serialization.clone(this.data);
-        delete object3D.assetId;
-        object3D.prefabId = this.assetId;
+        const node3d = serialization.clone(this.data);
+        delete node3d.assetId;
+        node3d.prefabId = this.assetId;
 
-        return object3D;
+        return node3d;
     }
 }

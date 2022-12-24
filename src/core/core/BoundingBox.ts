@@ -36,11 +36,11 @@ export class BoundingBox
     protected _selfWorldBoundsInvalid = true;
     protected _worldBoundsInvalid = true;
 
-    constructor(object3D: Node3D)
+    constructor(node3d: Node3D)
     {
-        this._object3D = object3D;
-        object3D.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
-        object3D.on('globalMatrixChanged', this._invalidateSelfWorldBounds, this);
+        this._object3D = node3d;
+        node3d.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
+        node3d.on('globalMatrixChanged', this._invalidateSelfWorldBounds, this);
     }
 
     /**

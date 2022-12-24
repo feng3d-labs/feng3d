@@ -15,6 +15,11 @@ export interface EntityEventMap
      * 移除子组件事件
      */
     removeComponent: { entity: Entity, component: Component };
+
+    /**
+     * 刷新界面
+     */
+    refreshView: any;
 }
 
 /**

@@ -10,16 +10,16 @@ import { Geometry } from '../geometry/Geometry';
  * 投射射线获取穿过的最近的对象
  * 
  * @param ray 射线
- * @param object3Ds 实体列表
+ * @param node3ds 实体列表
  * @return
  */
-export function rayCast(ray: Ray3, object3Ds: Node3D[])
+export function rayCast(ray: Ray3, node3ds: Node3D[])
 {
-    if (object3Ds.length === 0) return null;
+    if (node3ds.length === 0) return null;
 
-    const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
+    const pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3d) =>
     {
-        const model = object3D.getComponent(Renderer);
+        const model = node3d.getComponent(Renderer);
         const pickingCollisionVO = model && model.worldRayIntersection(ray);
         if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
@@ -63,16 +63,16 @@ export function rayCast(ray: Ray3, object3Ds: Node3D[])
  * 投射射线获取穿过的所有对象
  * 
  * @param ray3D 射线
- * @param object3Ds 实体列表
+ * @param node3ds 实体列表
  * @return
  */
-export function rayCastAll(ray3D: Ray3, object3Ds: Node3D[])
+export function rayCastAll(ray3D: Ray3, node3ds: Node3D[])
 {
-    if (object3Ds.length === 0) return [];
+    if (node3ds.length === 0) return [];
 
-    const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
+    const pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3ds) =>
     {
-        const model = object3D.getComponent(Renderer);
+        const model = node3ds.getComponent(Renderer);
         const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
         if (pickingCollisionVO) pv.push(pickingCollisionVO);
 

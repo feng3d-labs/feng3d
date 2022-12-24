@@ -300,18 +300,18 @@ export class View
         const max = s.clone().max(e);
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
-        let object3Ds = this.scene.node3d.traverse((object3D: Node3D) =>
+        let node3ds = this.scene.node3d.traverse((node3d: Node3D) =>
         {
-            if (object3D === this.scene.entity) return;
+            if (node3d === this.scene.entity) return;
 
-            return object3D;
+            return node3d;
         });
 
-        object3Ds = object3Ds.filter((object3D) =>
+        node3ds = node3ds.filter((node3d) =>
         {
-            if (!object3D) return false;
+            if (!node3d) return false;
 
-            const m = object3D.getComponent(Renderer);
+            const m = node3d.getComponent(Renderer);
             if (m)
             {
                 const include = m.selfWorldBounds.toPoints().every((pos) =>
@@ -323,12 +323,12 @@ export class View
 
                 return include;
             }
-            const p = this.project(object3D.worldPosition);
+            const p = this.project(node3d.worldPosition);
 
             return rect.contains(p.x, p.y);
         });
 
-        return object3Ds;
+        return node3ds;
     }
 
     protected selectedObject: Node3D;

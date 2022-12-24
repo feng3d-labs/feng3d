@@ -59,11 +59,6 @@ export interface Node3DEventMap extends NodeEventMap, MixinsNode3DEventMap, Mous
      * 包围盒失效
      */
     boundsInvalid: Geometry;
-
-    /**
-     * 刷新界面
-     */
-    refreshView: any;
 }
 
 export interface Node3D
@@ -668,7 +663,7 @@ export class Node3D extends Node<Node3DEventMap>
      * @param type 原始游戏对象类型。
      * @param handler 构建原始游戏对象的函数。
      */
-    static registerPrimitive<K extends keyof PrimitiveObject3D>(type: K, handler: (object3D: Node3D) => void)
+    static registerPrimitive<K extends keyof PrimitiveObject3D>(type: K, handler: (node3d: Node3D) => void)
     {
         if (this._registerPrimitives[type])
         {
@@ -676,7 +671,7 @@ export class Node3D extends Node<Node3DEventMap>
         }
         this._registerPrimitives[type] = handler;
     }
-    static _registerPrimitives: { [type: string]: (object3D: Node3D) => void } = {};
+    static _registerPrimitives: { [type: string]: (node3d: Node3D) => void } = {};
 }
 
 /**
