@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Renderable } from '../../core/Renderable';
+import { Renderer } from '../../core/Renderer';
 import { Texture2D } from '../../textures/Texture2D';
 import { DirectionalLight } from '../DirectionalLight';
 import { PointLight } from '../PointLight';
@@ -9,9 +9,9 @@ import { SpotLight } from '../SpotLight';
 
 export class LightPicker
 {
-    private _model: Renderable;
+    private _model: Renderer;
 
-    constructor(model: Renderable)
+    constructor(model: Renderer)
     {
         this._model = model;
     }

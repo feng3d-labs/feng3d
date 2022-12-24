@@ -52,7 +52,7 @@ export * from './core/core/MeshRenderer';
 export * from './core/core/Mouse3DManager';
 export * from './core/core/Object3D';
 export * from './core/core/RayCastable';
-export * from './core/core/Renderable';
+export * from './core/core/Renderer';
 export * from './core/core/RunEnvironment';
 export * from './core/core/Script';
 export * from './core/core/ScriptComponent';

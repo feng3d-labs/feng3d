@@ -3,7 +3,7 @@ import { Rectangle } from '../../../math/geom/Rectangle';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
 import { Object3D } from '../../core/Object3D';
-import { Renderable } from '../../core/Renderable';
+import { Renderer } from '../../core/Renderer';
 
 /**
  * 鼠标拾取渲染器
@@ -47,7 +47,7 @@ export class MouseRenderer extends EventEmitter
         return this.objects[id];
     }
 
-    protected drawRenderables(_gl: WebGLRenderingContext, renderable: Renderable)
+    protected drawRenderables(_gl: WebGLRenderingContext, renderable: Renderer)
     {
         if (renderable.object3D.mouseEnabled)
         {

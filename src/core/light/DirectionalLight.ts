@@ -6,7 +6,7 @@ import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../../ecs/Component';
 import { Object3D } from '../core/Object3D';
-import { Renderable } from '../core/Renderable';
+import { Renderer } from '../core/Renderer';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
@@ -57,7 +57,7 @@ export class DirectionalLight extends Light
      * 通过视窗摄像机进行更新
      * @param viewCamera 视窗摄像机
      */
-    updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[])
+    updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderer[])
     {
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {

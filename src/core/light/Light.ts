@@ -7,7 +7,7 @@ import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';
 import { HideFlags } from '../core/HideFlags';
 import { Object3D } from '../core/Object3D';
-import { Renderable } from '../core/Renderable';
+import { Renderer } from '../core/Renderer';
 import { TextureMaterial } from '../materials/texture/TextureMaterial';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../render/FrameBufferObject';
@@ -135,7 +135,7 @@ export class Light extends Behaviour
             object3D.addComponent(BillboardComponent);
 
             // 材质
-            const model = object3D.getComponent(Renderable);
+            const model = object3D.getComponent(Renderer);
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
             //

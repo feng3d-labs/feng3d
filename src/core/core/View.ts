@@ -11,7 +11,7 @@ import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
-import { Renderable } from './Renderable';
+import { Renderer } from './Renderer';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector2 } from '../../math/geom/Vector2';
@@ -311,7 +311,7 @@ export class View
         {
             if (!object3D) return false;
 
-            const m = object3D.getComponent(Renderable);
+            const m = object3D.getComponent(Renderer);
             if (m)
             {
                 const include = m.selfWorldBounds.toPoints().every((pos) =>

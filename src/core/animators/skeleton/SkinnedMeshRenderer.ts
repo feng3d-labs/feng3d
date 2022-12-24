@@ -1,10 +1,9 @@
+import { Component, RegisterComponent } from '../../../ecs/Component';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Serializable } from '../../../serialization/Serializable';
 import { Camera } from '../../cameras/Camera';
-import { RegisterComponent } from '../../../ecs/Component';
 import { HideFlags } from '../../core/HideFlags';
-import { Renderable } from '../../core/Renderable';
 import { Scene } from '../../scene/Scene';
 import { SkeletonComponent } from './SkeletonComponent';
 
@@ -18,7 +17,7 @@ declare global
 
 @RegisterComponent()
 @Serializable()
-export class SkinnedMeshRenderer extends Renderable
+export class SkinnedMeshRenderer extends Component
 {
     __class__: 'SkinnedMeshRenderer';
 

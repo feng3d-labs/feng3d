@@ -9,7 +9,7 @@ import { Behaviour } from '../component/Behaviour';
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { HideFlags } from '../core/HideFlags';
 import { Object3D } from '../core/Object3D';
-import { Renderable } from '../core/Renderable';
+import { Renderer } from '../core/Renderer';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { DirectionalLight } from '../light/DirectionalLight';
 import { PointLight } from '../light/PointLight';
@@ -120,7 +120,7 @@ export class Scene extends Component
      */
     get models()
     {
-        this._models = this._models || this.getComponentsInChildren(Renderable);
+        this._models = this._models || this.getComponentsInChildren(Renderer);
 
         return this._models;
     }
@@ -236,7 +236,7 @@ export class Scene extends Component
             const checkObject = checkList[i++];
             if (checkObject.mouseEnabled)
             {
-                if (checkObject.getComponents(Renderable))
+                if (checkObject.getComponents(Renderer))
                 {
                     this._mouseCheckObjects.push(checkObject);
                 }
@@ -268,12 +268,12 @@ export class Scene extends Component
     getPickByDirectionalLight(_light: DirectionalLight)
     {
         const openList = [this.object3D];
-        const targets: Renderable[] = [];
+        const targets: Renderer[] = [];
         while (openList.length > 0)
         {
             const item = openList.shift();
             if (!item.visible) continue;
-            const model = item.getComponent(Renderable);
+            const model = item.getComponent(Renderer);
             if (model && (model.castShadows || model.receiveShadows)
                 && !model.material.renderParams.enableBlend
                 && model.material.renderParams.renderMode === 'TRIANGLES'
@@ -300,7 +300,7 @@ export class Scene extends Component
 
         const results = this.visibleAndEnabledModels.filter((i) =>
         {
-            const model = i.getComponent(Renderable);
+            const model = i.getComponent(Renderer);
             if (model.selfWorldBounds)
             {
                 if (frustum.intersectsBox(model.selfWorldBounds))
@@ -317,8 +317,8 @@ export class Scene extends Component
 
     //
     private _mouseCheckObjects: Object3D[];
-    private _models: Renderable[];
-    private _visibleAndEnabledModels: Renderable[];
+    private _models: Renderer[];
+    private _visibleAndEnabledModels: Renderer[];
     private _skyBoxs: SkyBox[];
     private _activeSkyBoxs: SkyBox[];
     private _directionalLights: DirectionalLight[];

@@ -1,6 +1,6 @@
 import { Camera } from '../cameras/Camera';
 import { Object3D } from '../core/Object3D';
-import { Renderable } from '../core/Renderable';
+import { Renderer } from '../core/Renderer';
 import { Scene } from './Scene';
 
 /**
@@ -12,9 +12,9 @@ export class ScenePickCache
     private camera: Camera;
 
     //
-    private _activeModels: Renderable[];
-    private _blendItems: Renderable[];
-    private _unBlendItems: Renderable[];
+    private _activeModels: Renderer[];
+    private _blendItems: Renderer[];
+    private _unBlendItems: Renderer[];
 
     constructor(scene: Scene, camera: Camera)
     {
@@ -36,7 +36,7 @@ export class ScenePickCache
         if (this._activeModels)
         { return this._activeModels; }
 
-        const models: Renderable[] = this._activeModels = [];
+        const models: Renderer[] = this._activeModels = [];
         const frustum = this.camera.frustum;
 
         let object3Ds = [this.scene.object3D];
@@ -46,7 +46,7 @@ export class ScenePickCache
 
             if (!object3D.visible)
             { continue; }
-            const model = object3D.getComponent(Renderable);
+            const model = object3D.getComponent(Renderer);
             if (model && model.enabled)
             {
                 if (model.selfWorldBounds)

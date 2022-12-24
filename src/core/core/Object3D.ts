@@ -19,7 +19,7 @@ import { BoundingBox } from './BoundingBox';
 import { Container, ContainerEventMap } from './Container';
 import { HideFlags } from './HideFlags';
 import { MouseEventMap } from './Mouse3DManager';
-import { Renderable } from './Renderable';
+import { Renderer } from './Renderer';
 import { ScriptComponent } from './ScriptComponent';
 
 declare global
@@ -524,7 +524,7 @@ export class Object3D extends Container<Object3DEventMap>
      */
     get isSelfLoaded()
     {
-        const model = this.getComponent(Renderable);
+        const model = this.getComponent(Renderer);
         if (model) return model.isLoaded;
 
         return true;
@@ -542,7 +542,7 @@ export class Object3D extends Container<Object3DEventMap>
 
             return;
         }
-        const model = this.getComponent(Renderable);
+        const model = this.getComponent(Renderer);
         if (model)
         {
             model.onLoadCompleted(callback);

@@ -1,5 +1,5 @@
 import { Camera } from '../cameras/Camera';
-import { Renderable } from '../core/Renderable';
+import { Renderer } from '../core/Renderer';
 import { Scene } from './Scene';
 
 /**
@@ -33,7 +33,7 @@ export class SceneUtil
      */
     getActiveRenderers(scene: Scene, camera: Camera)
     {
-        const renderers: Renderable[] = [];
+        const renderers: Renderer[] = [];
         const frustum = camera.frustum;
 
         let object3Ds = [scene.object3D];
@@ -43,7 +43,7 @@ export class SceneUtil
 
             if (!object3D.visible)
             { continue; }
-            const renderer = object3D.getComponent(Renderable);
+            const renderer = object3D.getComponent(Renderer);
             if (renderer && renderer.enabled)
             {
                 if (renderer.selfWorldBounds)

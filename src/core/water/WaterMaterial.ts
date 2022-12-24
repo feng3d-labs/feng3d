@@ -19,7 +19,7 @@ declare global
 
     export interface MixinsDefaultMaterial
     {
-        'Water-Material': Material;
+        'Water-Material': WaterMaterial;
     }
 }
 

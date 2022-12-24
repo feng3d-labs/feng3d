@@ -1,12 +1,11 @@
-import { RegisterComponent } from '../ecs/Component';
+import { MeshRenderer } from '../core/core/MeshRenderer';
 import { Object3D } from '../core/core/Object3D';
-import { Renderable } from '../core/core/Renderable';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { Component, RegisterComponent } from '../ecs/Component';
 import { Serializable } from '../serialization/Serializable';
 import { TerrainData } from './TerrainData';
-import { TerrainGeometry } from './TerrainGeometry';
 
 declare global
 {
@@ -33,9 +32,9 @@ declare global
  * The Terrain component renders the terrain.
  */
 // @ov({ component: "OVTerrain" })
-@RegisterComponent()
+@RegisterComponent({ name: 'Terrain', dependencies: [MeshRenderer] })
 @Serializable('Terrain')
-export class Terrain extends Renderable
+export class Terrain extends Component
 {
     __class__: 'Terrain';
 
@@ -44,12 +43,24 @@ export class Terrain extends Renderable
      */
     assign: TerrainData;
 
-    geometry: TerrainGeometry = Geometry.getDefault('Terrain-Geometry');
+    private meshRenderer: MeshRenderer;
 
     constructor()
     {
         super();
-        this.material = Material.getDefault('Terrain-Material');
+    }
+
+    init(): void
+    {
+        this.meshRenderer = this.getComponent(MeshRenderer);
+        this.meshRenderer.material = Material.getDefault('Terrain-Material');
+        this.meshRenderer.geometry = Geometry.getDefault('Terrain-Geometry');
+    }
+
+    dispose(): void
+    {
+        this.meshRenderer = null;
+        super.dispose();
     }
 }
 

@@ -1,11 +1,11 @@
-import { RegisterComponent } from '../../ecs/Component';
-import { Renderable } from '../../core/core/Renderable';
+import { MeshRenderer } from '../../core/core/MeshRenderer';
 import { TransformLayout } from '../../core/core/TransformLayout';
 import { View } from '../../core/core/View';
 import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { AddComponentMenu } from '../../core/Menu';
 import { TransformUtils } from '../../core/utils/TransformUtils';
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
@@ -26,9 +26,9 @@ declare global
  * 可在画布上渲染组件，使得拥有该组件的Object3D可以在画布上渲染。
  */
 @AddComponentMenu('Rendering/CanvasRenderer')
-@RegisterComponent()
+@RegisterComponent({ name: 'CanvasRenderer', dependencies: [MeshRenderer] })
 @Serializable()
-export class CanvasRenderer extends Renderable
+export class CanvasRenderer extends Component
 {
     readonly renderAtomic = new RenderAtomic();
 

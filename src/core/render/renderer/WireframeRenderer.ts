@@ -6,7 +6,7 @@ import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
-import { Renderable } from '../../core/Renderable';
+import { Renderer } from '../../core/Renderer';
 import { Scene } from '../../scene/Scene';
 
 declare global
@@ -44,7 +44,7 @@ export class WireframeRenderer
     {
         const unblenditems = scene.getPickCache(camera).unBlendItems;
 
-        const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable }[], cv) =>
+        const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderer }[], cv) =>
         {
             const wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push({ wireframe, renderable: cv });
 
@@ -65,7 +65,7 @@ export class WireframeRenderer
     /**
      * 绘制3D对象
      */
-    drawObject3D(renderer: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
+    drawObject3D(renderer: WebGLRenderer, renderable: Renderer, scene: Scene, camera: Camera, wireframeColor = new Color4())
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);

@@ -4,7 +4,7 @@ import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
-import { Renderable } from '../../core/Renderable';
+import { Renderer } from '../../core/Renderer';
 import { DirectionalLight } from '../../light/DirectionalLight';
 import { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
@@ -221,7 +221,7 @@ export class ShadowRenderer
     /**
      * 绘制3D对象
      */
-    private drawObject3D(gl: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera)
+    private drawObject3D(gl: WebGLRenderer, renderable: Renderer, scene: Scene, camera: Camera)
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);

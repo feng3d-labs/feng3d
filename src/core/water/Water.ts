@@ -1,3 +1,4 @@
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -6,10 +7,9 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
-import { RegisterComponent } from '../../ecs/Component';
+import { MeshRenderer } from '../core/MeshRenderer';
 import { Object3D } from '../core/Object3D';
-import { Renderable } from '../core/Renderable';
-import { Geometry, Geometrys } from '../geometry/Geometry';
+import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -33,15 +33,28 @@ declare global
  * The Water component renders the terrain.
  */
 @AddComponentMenu('Graphics/Water')
-@RegisterComponent()
+@RegisterComponent({ name: 'Water', dependencies: [MeshRenderer] })
 @Serializable()
-export class Water extends Renderable
+export class Water extends Component
 {
     __class__: 'Water';
 
-    geometry: Geometrys = Geometry.getDefault('Plane');
+    private meshRenderer: MeshRenderer;
 
-    material = Material.getDefault('Water-Material');
+    init()
+    {
+        this.meshRenderer = this.getComponent(MeshRenderer);
+
+        this.meshRenderer.geometry = Geometry.getDefault('Plane');
+        this.meshRenderer.material = Material.getDefault('Water-Material');
+    }
+
+    dispose(): void
+    {
+        this.meshRenderer = null;
+
+        super.dispose();
+    }
 
     /**
      * 帧缓冲对象，用于处理水面反射
@@ -50,7 +63,7 @@ export class Water extends Renderable
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
-        const uniforms = this.material.uniforms as WaterUniforms;
+        const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
         const sun = this.object3D.scene.activeDirectionalLights[0];
         if (sun)
         {
