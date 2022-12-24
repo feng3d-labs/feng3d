@@ -7,108 +7,99 @@ import { Renderer } from '../core/Renderer';
 import { Geometry } from '../geometry/Geometry';
 
 /**
- * 射线投射拾取器
+ * 投射射线获取穿过的最近的对象
+ * 
+ * @param ray 射线
+ * @param object3Ds 实体列表
+ * @return
  */
-export class Raycaster
+export function rayCast(ray: Ray3, object3Ds: Object3D[])
 {
-    /**
-     * 获取射线穿过的实体
-     * @param ray3D 射线
-     * @param object3Ds 实体列表
-     * @return
-     */
-    pick(ray3D: Ray3, object3Ds: Object3D[])
+    if (object3Ds.length === 0) return null;
+
+    const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
     {
-        if (object3Ds.length === 0) return null;
+        const model = object3D.getComponent(Renderer);
+        const pickingCollisionVO = model && model.worldRayIntersection(ray);
+        if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
-        const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
-        {
-            const model = object3D.getComponent(Renderer);
-            const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
-            if (pickingCollisionVO) pv.push(pickingCollisionVO);
+        return pv;
+    }, []);
 
-            return pv;
-        }, []);
+    if (pickingCollisionVOs.length === 0) return null;
 
-        if (pickingCollisionVOs.length === 0) return null;
+    // 根据与包围盒距离进行排序
+    pickingCollisionVOs.sort((a, b) => a.rayEntryDistance - b.rayEntryDistance);
 
-        // 根据与包围盒距离进行排序
-        pickingCollisionVOs.sort((a, b) => a.rayEntryDistance - b.rayEntryDistance);
+    let shortestCollisionDistance = Number.MAX_VALUE;
+    let bestCollisionVO: PickingCollisionVO = null;
+    const collisionVOs: PickingCollisionVO[] = [];
 
-        let shortestCollisionDistance = Number.MAX_VALUE;
-        let bestCollisionVO: PickingCollisionVO = null;
-        const collisionVOs: PickingCollisionVO[] = [];
-
-        for (let i = 0; i < pickingCollisionVOs.length; ++i)
-        {
-            const pickingCollisionVO = pickingCollisionVOs[i];
-            if (!bestCollisionVO || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
-            {
-                const result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
-                if (result)
-                {
-                    pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
-                    pickingCollisionVO.index = result.index;
-                    pickingCollisionVO.localNormal = result.localNormal;
-                    pickingCollisionVO.localPosition = result.localPosition;
-                    pickingCollisionVO.uv = result.uv;
-                    //
-                    shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
-                    collisionVOs.push(pickingCollisionVO);
-                    bestCollisionVO = pickingCollisionVO;
-                }
-            }
-        }
-
-        return bestCollisionVO;
-    }
-
-    /**
-     * 获取射线穿过的实体
-     * @param ray3D 射线
-     * @param object3Ds 实体列表
-     * @return
-     */
-    pickAll(ray3D: Ray3, object3Ds: Object3D[])
+    for (let i = 0; i < pickingCollisionVOs.length; ++i)
     {
-        if (object3Ds.length === 0) return [];
-
-        const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
+        const pickingCollisionVO = pickingCollisionVOs[i];
+        if (!bestCollisionVO || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
         {
-            const model = object3D.getComponent(Renderer);
-            const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
-            if (pickingCollisionVO) pv.push(pickingCollisionVO);
-
-            return pv;
-        }, []);
-
-        if (pickingCollisionVOs.length === 0) return [];
-
-        const collisionVOs = pickingCollisionVOs.filter((v) =>
-        {
-            const result = v.geometry.raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
+            const result = pickingCollisionVO.geometry.raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
             if (result)
             {
-                v.rayEntryDistance = result.rayEntryDistance;
-                v.index = result.index;
-                v.localNormal = result.localNormal;
-                v.localPosition = result.localPosition;
-                v.uv = result.uv;
-
-                return true;
+                pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
+                pickingCollisionVO.index = result.index;
+                pickingCollisionVO.localNormal = result.localNormal;
+                pickingCollisionVO.localPosition = result.localPosition;
+                pickingCollisionVO.uv = result.uv;
+                //
+                shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+                collisionVOs.push(pickingCollisionVO);
+                bestCollisionVO = pickingCollisionVO;
             }
-
-            return false;
-        });
-
-        return collisionVOs;
+        }
     }
+
+    return bestCollisionVO;
 }
 
 /**
- * 射线投射拾取器
+ * 投射射线获取穿过的所有对象
+ * 
+ * @param ray3D 射线
+ * @param object3Ds 实体列表
+ * @return
  */
-export const raycaster = new Raycaster();
+export function rayCastAll(ray3D: Ray3, object3Ds: Object3D[])
+{
+    if (object3Ds.length === 0) return [];
+
+    const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
+    {
+        const model = object3D.getComponent(Renderer);
+        const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
+        if (pickingCollisionVO) pv.push(pickingCollisionVO);
+
+        return pv;
+    }, []);
+
+    if (pickingCollisionVOs.length === 0) return [];
+
+    const collisionVOs = pickingCollisionVOs.filter((v) =>
+    {
+        const result = v.geometry.raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
+        if (result)
+        {
+            v.rayEntryDistance = result.rayEntryDistance;
+            v.index = result.index;
+            v.localNormal = result.localNormal;
+            v.localPosition = result.localPosition;
+            v.uv = result.uv;
+
+            return true;
+        }
+
+        return false;
+    });
+
+    return collisionVOs;
+}
 
 /**
  * 拾取的碰撞数据
