@@ -271,11 +271,11 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
     }
 
     /**
-     * Activates/Deactivates the Object3D, depending on the given true or false value.
+     * Activates/Deactivates the Node, depending on the given true or false value.
      *
-     * A Object3D may be inactive because a parent is not active. In that case, calling SetActive will not activate it, but only set the local state of the Object3D, which you can check using Object3D.activeSelf. Unity can then use this state when all parents become active.
+     * A Node may be inactive because a parent is not active. In that case, calling SetActive will not activate it, but only set the local state of the Node, which you can check using Node.activeSelf. Unity can then use this state when all parents become active.
      *
-     * @param value Activate or deactivate the object, where true activates the Object3D and false deactivates the Object3D.
+     * @param value Activate or deactivate the object, where true activates the Node and false deactivates the Node.
      */
     setActive(value: boolean)
     {
@@ -370,7 +370,7 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
     }
 
     /**
-     * 使用深度优先搜索返回 Object3D 或其任何子项中的 Type 组件。
+     * 使用深度优先搜索返回 Node 或其任何子项中的 Type 组件。
      *
      * @param type 要检索的组件类型。
      * @param includeInactive 是否包含不活跃组件。
@@ -431,9 +431,9 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
     }
 
     /**
-     * 使用深度优先搜索返回 Object3D 或其任何子子项中 Type 的所有组件。递归工作。
+     * 使用深度优先搜索返回 Node 或其任何子子项中 Type 的所有组件。递归工作。
      *
-     * Unity 在子游戏对象上递归搜索组件。这意味着它还包括目标 Object3D 的所有子 Container，以及所有后续子 Container。
+     * Unity 在子游戏对象上递归搜索组件。这意味着它还包括目标 Node 的所有子 Container，以及所有后续子 Container。
      *
      * @param type 要检索的组件类型。
      * @param includeInactive 非活动游戏对象上的组件是否应该包含在搜索结果中？

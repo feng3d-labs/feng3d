@@ -502,7 +502,7 @@ export class Node3D extends Node<Node3DEventMap>
     constructor()
     {
         super();
-        this.name = 'Object3D';
+        this.name = 'Node3D';
 
         watcher.watch(this._position, 'x', this._positionChanged, this);
         watcher.watch(this._position, 'y', this._positionChanged, this);

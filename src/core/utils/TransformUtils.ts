@@ -238,7 +238,7 @@ export class TransformUtils
     }
 
     /**
-     * Transforms a direction from world space to local space. The opposite of Object3D.TransformDirection.
+     * Transforms a direction from world space to local space. The opposite of Node3D.TransformDirection.
      *
      * 将一个方向从世界空间转换到局部空间。
      */
