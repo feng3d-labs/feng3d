@@ -1,5 +1,5 @@
 import { Camera } from '../core/cameras/Camera';
-import { Behaviour } from '../core/component/Behaviour';
+import { Component3D } from '../core/core/Component3D';
 import { MeshRenderer } from '../core/core/MeshRenderer';
 import { Node3D } from '../core/core/Node3D';
 import { RunEnvironment } from '../core/core/RunEnvironment';
@@ -75,7 +75,7 @@ declare global
 @AddComponentMenu('Effects/ParticleSystem')
 @RegisterComponent({ name: 'ParticleSystem', dependencies: [MeshRenderer] })
 @Serializable()
-export class ParticleSystem extends Behaviour
+export class ParticleSystem extends Component3D
 {
     __class__: 'ParticleSystem';
 
@@ -388,7 +388,7 @@ export class ParticleSystem extends Behaviour
         emitInfo.preWorldPos.copy(emitInfo.currentWorldPos);
 
         // 粒子系统位置
-        emitInfo.currentWorldPos.copy(this.entity.worldPosition);
+        emitInfo.currentWorldPos.copy(this.node3d.worldPosition);
 
         // 粒子系统位移
         emitInfo.moveVec.copy(emitInfo.currentWorldPos).sub(emitInfo.preWorldPos);
@@ -528,13 +528,13 @@ export class ParticleSystem extends Behaviour
         const billboardMatrix = new Matrix3x3();
         if (isBillboard)
         {
-            const cameraMatrix = camera.entity.globalMatrix.clone();
+            const cameraMatrix = camera.node3d.globalMatrix.clone();
             let localCameraForward = cameraMatrix.getAxisZ();
             let localCameraUp = cameraMatrix.getAxisY();
             if (this.main.simulationSpace === ParticleSystemSimulationSpace.Local)
             {
-                localCameraForward = this.entity.globalRotationInvertMatrix.transformPoint3(localCameraForward);
-                localCameraUp = this.entity.globalRotationInvertMatrix.transformPoint3(localCameraUp);
+                localCameraForward = this.node3d.globalRotationInvertMatrix.transformPoint3(localCameraForward);
+                localCameraUp = this.node3d.globalRotationInvertMatrix.transformPoint3(localCameraUp);
             }
             const matrix4x4 = new Matrix4x4();
             matrix4x4.lookAt(localCameraForward, localCameraUp);
@@ -881,7 +881,7 @@ export class ParticleSystem extends Behaviour
 
         if (this._main.simulationSpace === ParticleSystemSimulationSpace.Local)
         {
-            const globalInvertMatrix = this.entity.globalInvertMatrix;
+            const globalInvertMatrix = this.node3d.globalInvertMatrix;
             this._activeParticles.forEach((p) =>
             {
                 globalInvertMatrix.transformPoint3(p.position, p.position);
@@ -891,7 +891,7 @@ export class ParticleSystem extends Behaviour
         }
         else
         {
-            const globalMatrix = this.entity.globalMatrix;
+            const globalMatrix = this.node3d.globalMatrix;
             this._activeParticles.forEach((p) =>
             {
                 globalMatrix.transformPoint3(p.position, p.position);
@@ -921,11 +921,11 @@ export class ParticleSystem extends Behaviour
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                this.entity.globalInvertMatrix.transformPoint3(position, position);
+                this.node3d.globalInvertMatrix.transformPoint3(position, position);
             }
             else
             {
-                this.entity.globalMatrix.transformPoint3(position, position);
+                this.node3d.globalMatrix.transformPoint3(position, position);
             }
         }
         //
@@ -951,11 +951,11 @@ export class ParticleSystem extends Behaviour
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    this.entity.globalInvertMatrix.transformPoint3(value, value);
+                    this.node3d.globalInvertMatrix.transformPoint3(value, value);
                 }
                 else
                 {
-                    this.entity.globalMatrix.transformPoint3(value, value);
+                    this.node3d.globalMatrix.transformPoint3(value, value);
                 }
             }
             //
@@ -983,11 +983,11 @@ export class ParticleSystem extends Behaviour
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                this.entity.globalInvertMatrix.transformVector3(velocity, velocity);
+                this.node3d.globalInvertMatrix.transformVector3(velocity, velocity);
             }
             else
             {
-                this.entity.globalMatrix.transformVector3(velocity, velocity);
+                this.node3d.globalMatrix.transformVector3(velocity, velocity);
             }
         }
         //
@@ -1013,11 +1013,11 @@ export class ParticleSystem extends Behaviour
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    this.entity.globalInvertMatrix.transformVector3(value, value);
+                    this.node3d.globalInvertMatrix.transformVector3(value, value);
                 }
                 else
                 {
-                    this.entity.globalMatrix.transformVector3(value, value);
+                    this.node3d.globalMatrix.transformVector3(value, value);
                 }
             }
             //
@@ -1045,11 +1045,11 @@ export class ParticleSystem extends Behaviour
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                this.entity.globalInvertMatrix.transformVector3(acceleration, acceleration);
+                this.node3d.globalInvertMatrix.transformVector3(acceleration, acceleration);
             }
             else
             {
-                this.entity.globalMatrix.transformVector3(acceleration, acceleration);
+                this.node3d.globalMatrix.transformVector3(acceleration, acceleration);
             }
         }
         //
@@ -1075,11 +1075,11 @@ export class ParticleSystem extends Behaviour
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    this.entity.globalInvertMatrix.transformVector3(value, value);
+                    this.node3d.globalInvertMatrix.transformVector3(value, value);
                 }
                 else
                 {
-                    this.entity.globalMatrix.transformVector3(value, value);
+                    this.node3d.globalMatrix.transformVector3(value, value);
                 }
             }
             //
@@ -1119,9 +1119,9 @@ export class ParticleSystem extends Behaviour
             if (Math.random() > probability) return;
 
             // 粒子所在世界坐标
-            const particleWoldPos = this.entity.globalMatrix.transformPoint3(particle.position);
+            const particleWoldPos = this.node3d.globalMatrix.transformPoint3(particle.position);
             // 粒子在子粒子系统的坐标
-            const subEmitPos = subEmitter.entity.globalInvertMatrix.transformPoint3(particleWoldPos);
+            const subEmitPos = subEmitter.node3d.globalInvertMatrix.transformPoint3(particleWoldPos);
             if (!particle.subEmitInfo)
             {
                 const startDelay = this.main.startDelay.getValue(Math.random());

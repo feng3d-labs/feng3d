@@ -1,3 +1,4 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { Frustum } from '../../math/geom/Frustum';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
@@ -7,7 +8,7 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -40,7 +41,7 @@ declare global
 @AddComponentMenu('Rendering/Camera')
 @RegisterComponent()
 @Serializable()
-export class Camera extends Component
+export class Camera extends Component3D
 {
     __class__: 'Camera';
 
@@ -125,7 +126,7 @@ export class Camera extends Component
         if (this._viewProjectionInvalid)
         {
             // 场景空间转摄像机空间
-            this._viewProjection.copy(this.entity.globalInvertMatrix);
+            this._viewProjection.copy(this.node3d.globalInvertMatrix);
             // +摄像机空间转投影空间 = 场景空间转投影空间
             this._viewProjection.append(this.lens.matrix);
             this._viewProjectionInvalid = false;
@@ -168,7 +169,7 @@ export class Camera extends Component
      */
     getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
     {
-        return this.lens.unprojectRay(x, y, ray3D).applyMatrix4x4(this.entity.globalMatrix);
+        return this.lens.unprojectRay(x, y, ray3D).applyMatrix4x4(this.node3d.globalMatrix);
     }
 
     /**
@@ -178,7 +179,7 @@ export class Camera extends Component
      */
     project(point3d: Vector3): Vector3
     {
-        const v: Vector3 = this.lens.project(this.entity.globalInvertMatrix.transformPoint3(point3d));
+        const v: Vector3 = this.lens.project(this.node3d.globalInvertMatrix.transformPoint3(point3d));
 
         return v;
     }
@@ -193,7 +194,7 @@ export class Camera extends Component
      */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        return this.entity.globalMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
+        return this.node3d.globalMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
     }
 
     /**

@@ -1,8 +1,9 @@
-import { Component, RegisterComponent } from '../../../ecs/Component';
+import { RegisterComponent } from '../../../ecs/Component';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Serializable } from '../../../serialization/Serializable';
 import { Camera } from '../../cameras/Camera';
+import { Component3D } from '../../core/Component3D';
 import { HideFlags } from '../../core/HideFlags';
 import { Scene } from '../../scene/Scene';
 import { SkeletonComponent } from './SkeletonComponent';
@@ -17,7 +18,7 @@ declare global
 
 @RegisterComponent()
 @Serializable()
-export class SkinnedMeshRenderer extends Component
+export class SkinnedMeshRenderer extends Component3D
 {
     __class__: 'SkinnedMeshRenderer';
 
@@ -55,12 +56,12 @@ export class SkinnedMeshRenderer extends Component
 
     private get u_modelMatrix()
     {
-        return this.entity.globalMatrix;
+        return this.node3d.globalMatrix;
     }
 
     private get u_ITModelMatrix()
     {
-        return this.entity.globalNormalMatrix;
+        return this.node3d.globalNormalMatrix;
     }
 
     private get u_skeletonGlobalMatrices()

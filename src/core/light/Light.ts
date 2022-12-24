@@ -3,11 +3,11 @@ import { oav } from '../../objectview/ObjectView';
 import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';
+import { Component3D } from '../core/Component3D';
 import { HideFlags } from '../core/HideFlags';
+import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
-import { Renderer } from '../core/Renderer';
 import { TextureMaterial } from '../materials/texture/TextureMaterial';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../render/FrameBufferObject';
@@ -19,7 +19,7 @@ import { ShadowType } from './shadow/ShadowType';
 /**
  * 灯光
  */
-export class Light extends Behaviour
+export class Light extends Component3D
 {
     /**
      * 灯光类型
@@ -53,7 +53,7 @@ export class Light extends Behaviour
      */
     get position()
     {
-        return this.entity.worldPosition;
+        return this.node3d.worldPosition;
     }
 
     /**
@@ -61,7 +61,7 @@ export class Light extends Behaviour
      */
     get direction()
     {
-        return this.entity.globalMatrix.getAxisZ();
+        return this.node3d.globalMatrix.getAxisZ();
     }
 
     /**
@@ -135,7 +135,7 @@ export class Light extends Behaviour
             object3D.addComponent(BillboardComponent);
 
             // 材质
-            const model = object3D.getComponent(Renderer);
+            const model = object3D.getComponent(MeshRenderer);
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
             //
@@ -147,13 +147,13 @@ export class Light extends Behaviour
         }
 
         const depth = viewCamera.lens.near * 2;
-        object3D.position = viewCamera.entity.worldPosition.addTo(viewCamera.entity.globalMatrix.getAxisZ().scaleNumberTo(depth));
+        object3D.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
         const billboardComponent = object3D.getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)
         {
-            scene.entity.addChild(object3D);
+            scene.node3d.addChild(object3D);
         }
         else
         {

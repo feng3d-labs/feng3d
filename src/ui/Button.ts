@@ -1,13 +1,13 @@
-import { Behaviour } from '../core/component/Behaviour';
-import { RegisterComponent } from '../ecs/Component';
 import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
 import { Serializable } from '../serialization/Serializable';
 import { serialization } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
+import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 
 declare global
@@ -17,9 +17,9 @@ declare global
         Button: Button;
     }
 
-    export interface MixinsPrimitiveNode3D
+    export interface MixinsPrimitiveNode2D
     {
-        Button: Node3D;
+        Button: Node2D;
     }
 }
 
@@ -64,7 +64,7 @@ export enum ButtonState
 @AddComponentMenu('UI/Button')
 @RegisterComponent()
 @Serializable()
-export class Button extends Behaviour
+export class Button extends Component2D
 {
     /**
      * 按钮所处状态。
@@ -94,8 +94,8 @@ export class Button extends Behaviour
     {
         const stateData = {};
         // 出现相同名称时，只保存第一个数据
-        const childMap: { [name: string]: Node3D } = {};
-        this.entity.children.forEach((child) =>
+        const childMap: { [name: string]: Node2D } = {};
+        this.node2d.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
             childMap[child.name] = child;
@@ -133,8 +133,8 @@ export class Button extends Behaviour
     {
         const statedata = this.allStateData[this.state];
         if (!statedata) return;
-        const childMap: { [name: string]: Node3D } = {};
-        this.entity.children.forEach((child) =>
+        const childMap: { [name: string]: Node2D } = {};
+        this.node2d.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
             childMap[child.name] = child;
@@ -146,12 +146,10 @@ export class Button extends Behaviour
     }
 }
 
-Node3D.registerPrimitive('Button', (g) =>
+Node2D.registerPrimitive('Button', (g) =>
 {
-    const transform2D = g.addComponent(Node2D);
-
-    transform2D.size.x = 160;
-    transform2D.size.y = 30;
+    g.size.x = 160;
+    g.size.y = 30;
     g.addComponent(Button);
 });
 
@@ -161,7 +159,7 @@ createNodeMenu.push(
         path: 'UI/Button',
         priority: -2,
         click: () =>
-            Node3D.createPrimitive('Button')
+            Node2D.createPrimitive('Button')
     }
 );
 

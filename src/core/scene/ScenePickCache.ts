@@ -1,6 +1,6 @@
 import { Camera } from '../cameras/Camera';
+import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
-import { Renderer } from '../core/Renderer';
 import { Scene } from './Scene';
 
 /**
@@ -12,9 +12,9 @@ export class ScenePickCache
     private camera: Camera;
 
     //
-    private _activeModels: Renderer[];
-    private _blendItems: Renderer[];
-    private _unBlendItems: Renderer[];
+    private _activeModels: MeshRenderer[];
+    private _blendItems: MeshRenderer[];
+    private _unBlendItems: MeshRenderer[];
 
     constructor(scene: Scene, camera: Camera)
     {
@@ -36,17 +36,17 @@ export class ScenePickCache
         if (this._activeModels)
         { return this._activeModels; }
 
-        const models: Renderer[] = this._activeModels = [];
+        const models: MeshRenderer[] = this._activeModels = [];
         const frustum = this.camera.frustum;
 
-        let object3Ds = [this.scene.entity];
-        while (object3Ds.length > 0)
+        let node3Ds = [this.scene.node3d];
+        while (node3Ds.length > 0)
         {
-            const object3D = object3Ds.pop();
+            const object3D = node3Ds.pop();
 
             if (!object3D.visible)
             { continue; }
-            const model = object3D.getComponent(Renderer);
+            const model = object3D.getComponent(MeshRenderer);
             if (model && model.enabled)
             {
                 if (model.selfWorldBounds)
@@ -55,7 +55,7 @@ export class ScenePickCache
                     { models.push(model); }
                 }
             }
-            object3Ds = object3Ds.concat(object3D.children as Node3D[]);
+            node3Ds = node3Ds.concat(object3D.children as Node3D[]);
         }
 
         return models;
@@ -70,10 +70,10 @@ export class ScenePickCache
         { return this._blendItems; }
 
         const models = this.activeModels;
-        const cameraPos = this.camera.entity.worldPosition;
+        const cameraPos = this.camera.node3d.worldPosition;
 
         const blendItems = this._blendItems = models.filter((item) =>
-            item.material.renderParams.enableBlend).sort((b, a) => a.entity.worldPosition.subTo(cameraPos).lengthSquared - b.entity.worldPosition.subTo(cameraPos).lengthSquared);
+            item.material.renderParams.enableBlend).sort((b, a) => a.node3d.worldPosition.subTo(cameraPos).lengthSquared - b.node3d.worldPosition.subTo(cameraPos).lengthSquared);
 
         return blendItems;
     }
@@ -87,10 +87,10 @@ export class ScenePickCache
         { return this._unBlendItems; }
 
         const models = this.activeModels;
-        const cameraPos = this.camera.entity.worldPosition;
+        const cameraPos = this.camera.node3d.worldPosition;
 
         const unBlendItems = this._unBlendItems = models.filter((item) =>
-            !item.material.renderParams.enableBlend).sort((a, b) => a.entity.worldPosition.subTo(cameraPos).lengthSquared - b.entity.worldPosition.subTo(cameraPos).lengthSquared);
+            !item.material.renderParams.enableBlend).sort((a, b) => a.node3d.worldPosition.subTo(cameraPos).lengthSquared - b.node3d.worldPosition.subTo(cameraPos).lengthSquared);
 
         return unBlendItems;
     }

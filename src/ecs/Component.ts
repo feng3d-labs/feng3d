@@ -1,8 +1,10 @@
 import { Camera } from '../core/cameras/Camera';
 import { HideFlags } from '../core/core/HideFlags';
 import { Node3D } from '../core/core/Node3D';
+import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Scene } from '../core/scene/Scene';
 import { EventEmitter } from '../event/EventEmitter';
+import { oav } from '../objectview/ObjectView';
 import { Constructor } from '../polyfill/Types';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../serialization/SerializeProperty';
@@ -113,6 +115,18 @@ export class Component<T extends EntityEventMap = EntityEventMap> extends EventE
     @SerializeProperty()
     hideFlags = HideFlags.None;
 
+    /**
+     * 是否启用update方法
+     */
+    @oav()
+    @SerializeProperty()
+    enabled = true;
+
+    /**
+     * 可运行环境
+     */
+    runEnvironment = RunEnvironment.all;
+
     // ------------------------------------------
     // Variables
     // ------------------------------------------
@@ -207,7 +221,15 @@ export class Component<T extends EntityEventMap = EntityEventMap> extends EventE
      */
     dispose()
     {
+        this.enabled = false;
         this._entity = <any>null;
+    }
+
+    /**
+     * 每帧执行
+     */
+    update(_interval?: number)
+    {
     }
 
     beforeRender(_renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)

@@ -1,3 +1,4 @@
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
@@ -5,10 +6,11 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
-import { Behaviour } from '../component/Behaviour';
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../core/Component3D';
 import { HideFlags } from '../core/HideFlags';
+import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
+import { NodeComponent } from '../core/NodeComponent';
 import { Renderer } from '../core/Renderer';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { DirectionalLight } from '../light/DirectionalLight';
@@ -38,7 +40,7 @@ declare global
  */
 @RegisterComponent()
 @Serializable()
-export class Scene extends Component
+export class Scene extends Component3D
 {
     __class__: 'Scene';
 
@@ -78,7 +80,7 @@ export class Scene extends Component
     init()
     {
         super.init();
-        this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
+        this.node3d.hideFlags = this.node3d.hideFlags | HideFlags.DontTransform;
 
         //
         this._entity['_scene'] = this;
@@ -120,7 +122,7 @@ export class Scene extends Component
      */
     get models()
     {
-        this._models = this._models || this.getComponentsInChildren(Renderer);
+        this._models = this._models || this.getComponentsInChildren(MeshRenderer);
 
         return this._models;
     }
@@ -147,7 +149,7 @@ export class Scene extends Component
 
     get activeSkyBoxs()
     {
-        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => i.entity.globalVisible);
+        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => i.node3d.globalVisible);
 
         return this._activeSkyBoxs;
     }
@@ -210,7 +212,7 @@ export class Scene extends Component
 
     get behaviours()
     {
-        this._behaviours = this._behaviours || this.getComponentsInChildren(Behaviour);
+        this._behaviours = this._behaviours || this.getComponentsInChildren(NodeComponent);
 
         return this._behaviours;
     }
@@ -225,9 +227,11 @@ export class Scene extends Component
     get mouseCheckObjects()
     {
         if (this._mouseCheckObjects)
-        { return this._mouseCheckObjects; }
+        {
+            return this._mouseCheckObjects;
+        }
 
-        let checkList = this.entity.children;
+        let checkList = this.node3d.children;
         this._mouseCheckObjects = [];
         let i = 0;
         // 获取所有需要拾取的对象并分层存储
@@ -267,13 +271,13 @@ export class Scene extends Component
      */
     getPickByDirectionalLight(_light: DirectionalLight)
     {
-        const openList = [this.entity];
-        const targets: Renderer[] = [];
+        const openList = [this.node3d];
+        const targets: MeshRenderer[] = [];
         while (openList.length > 0)
         {
             const item = openList.shift();
             if (!item.visible) continue;
-            const model = item.getComponent(Renderer);
+            const model = item.getComponent(MeshRenderer);
             if (model && (model.castShadows || model.receiveShadows)
                 && !model.material.renderParams.enableBlend
                 && model.material.renderParams.renderMode === 'TRIANGLES'
@@ -300,7 +304,7 @@ export class Scene extends Component
 
         const results = this.visibleAndEnabledModels.filter((i) =>
         {
-            const model = i.getComponent(Renderer);
+            const model = i.getComponent(MeshRenderer);
             if (model.selfWorldBounds)
             {
                 if (frustum.intersectsBox(model.selfWorldBounds))
@@ -317,8 +321,8 @@ export class Scene extends Component
 
     //
     private _mouseCheckObjects: Node3D[];
-    private _models: Renderer[];
-    private _visibleAndEnabledModels: Renderer[];
+    private _models: MeshRenderer[];
+    private _visibleAndEnabledModels: MeshRenderer[];
     private _skyBoxs: SkyBox[];
     private _activeSkyBoxs: SkyBox[];
     private _directionalLights: DirectionalLight[];
@@ -329,7 +333,7 @@ export class Scene extends Component
     private _activeSpotLights: SpotLight[];
     private _animations: Animation[];
     private _activeAnimations: Animation[];
-    private _behaviours: Behaviour[];
-    private _activeBehaviours: Behaviour[];
+    private _behaviours: NodeComponent[];
+    private _activeBehaviours: NodeComponent[];
     private _pickMap = new Map<Camera, ScenePickCache>();
 }

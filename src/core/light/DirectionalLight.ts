@@ -45,7 +45,7 @@ export class DirectionalLight extends Light
      */
     get position()
     {
-        return this.shadowCamera.entity.worldPosition;
+        return this.shadowCamera.node3d.worldPosition;
     }
 
     constructor()
@@ -61,7 +61,7 @@ export class DirectionalLight extends Light
     {
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {
-            const box = i.entity.boundingBox.worldBounds;
+            const box = i.node3d.boundingBox.worldBounds;
             if (!pre)
             { return box.clone(); }
             pre.union(box);
@@ -73,8 +73,8 @@ export class DirectionalLight extends Light
         const center = worldBounds.getCenter();
         const radius = worldBounds.getSize().length / 2;
         //
-        this.shadowCamera.entity.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
-        this.shadowCamera.entity.lookAt(center, this.shadowCamera.entity.matrix.getAxisY());
+        this.shadowCamera.node3d.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+        this.shadowCamera.node3d.lookAt(center, this.shadowCamera.node3d.matrix.getAxisY());
         //
         if (!this.orthographicLens)
         {

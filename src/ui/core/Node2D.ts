@@ -9,8 +9,10 @@ import { IEvent } from "../../event/IEvent";
 import { Vector2 } from "../../math/geom/Vector2";
 import { Vector4 } from "../../math/geom/Vector4";
 import { oav } from "../../objectview/ObjectView";
+import { gPartial } from "../../polyfill/Types";
 import { RenderAtomic } from "../../renderer/data/RenderAtomic";
 import { Serializable } from "../../serialization/Serializable";
+import { serialization } from "../../serialization/Serialization";
 import { SerializeProperty } from "../../serialization/SerializeProperty";
 import { watcher } from "../../watcher/watcher";
 
@@ -23,6 +25,34 @@ declare global
  */
 export interface Node2DEventMap extends NodeEventMap
 {
+}
+
+export interface Node2D
+{
+    /**
+     * 父对象
+     */
+    get parent(): Node2D;
+
+    /**
+     * 子对象列表
+     */
+    get children(): Node2D[];
+    set children(v: Node2D[]);
+
+    /**
+     * 获取指定位置的子对象
+     *
+     * @param index 子对象位置。
+     */
+    getChildAt(index: number): Node2D;
+
+    /**
+     * 根据名称查找对象
+     *
+     * @param name 对象名称
+     */
+    find(name: string): Node2D;
 }
 
 /**
@@ -208,4 +238,52 @@ export class Node2D extends Node<Node2DEventMap>
     {
         renderAtomic.uniforms.u_rect = this.rect;
     }
+
+    /**
+     * 创建指定类型的游戏对象。
+     *
+     * @param type 游戏对象类型。
+     * @param param 游戏对象参数。
+     */
+    static createPrimitive<K extends keyof PrimitiveObject2D>(type: K, param?: gPartial<Node2D>)
+    {
+        const g = new Node2D();
+        g.name = type;
+
+        const createHandler = this._registerPrimitives[type];
+        if (createHandler) createHandler(g);
+
+        serialization.setValue(g, param);
+
+        return g;
+    }
+
+    /**
+     * 注册原始游戏对象，被注册后可以使用 Object3D.createPrimitive 进行创建。
+     *
+     * @param type 原始游戏对象类型。
+     * @param handler 构建原始游戏对象的函数。
+     */
+    static registerPrimitive<K extends keyof PrimitiveObject2D>(type: K, handler: (object2D: Node2D) => void)
+    {
+        if (this._registerPrimitives[type])
+        {
+            console.warn(`重复注册原始游戏对象 ${type} ！`);
+        }
+        this._registerPrimitives[type] = handler;
+    }
+    static _registerPrimitives: { [type: string]: (node2d: Node2D) => void } = {};
+}
+
+declare global
+{
+    interface MixinsNode3DEventMap { }
+    interface MixinsPrimitiveNode2D { }
+}
+
+/**
+ * 原始游戏对象，可以通过Object3D.createPrimitive进行创建。
+ */
+export interface PrimitiveObject2D extends MixinsPrimitiveNode2D
+{
 }

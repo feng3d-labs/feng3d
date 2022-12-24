@@ -1,8 +1,8 @@
+import { getComponentType, RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Behaviour } from '../component/Behaviour';
-import { getComponentType, RegisterComponent } from '../../ecs/Component';
+import { NodeComponent } from '../core/NodeComponent';
 import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
@@ -14,7 +14,7 @@ declare global
 
 @AddComponentMenu('Animator/Animation')
 @RegisterComponent()
-export class Animation extends Behaviour
+export class Animation extends NodeComponent
 {
     @oav({ component: 'OAVDefault', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' } } })
     @SerializeProperty()
@@ -90,7 +90,7 @@ export class Animation extends Behaviour
 
     private getPropertyHost(propertyClip: PropertyClip)
     {
-        let propertyHost = this.entity;
+        let propertyHost = this.node;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)

@@ -18,6 +18,17 @@ export class NodeComponent<T extends NodeEventMap = NodeEventMap> extends Compon
     }
 
     /**
+     * Has the Behaviour had enabled called.
+     * 是否所在Object3D显示且该行为已启动。
+     */
+    get isVisibleAndEnabled()
+    {
+        const v = this.enabled && this.node.visible;
+
+        return v;
+    }
+
+    /**
      * 使用深度优先搜索返回 Entity 或其任何子项中的 Type 组件。
      *
      * @param type 要检索的组件类型。

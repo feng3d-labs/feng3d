@@ -1,10 +1,10 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../core/Component3D';
 import { AddComponentMenu } from '../Menu';
 import { audioCtx, globalGain } from './AudioListener';
 
@@ -45,7 +45,7 @@ export enum DistanceModelType
 @AddComponentMenu('Audio/AudioSource')
 @RegisterComponent()
 @Serializable()
-export class AudioSource extends Behaviour
+export class AudioSource extends Component3D
 {
     private panner: PannerNode;
     private source: AudioBufferSourceNode;
@@ -292,7 +292,7 @@ export class AudioSource extends Behaviour
 
     private _onScenetransformChanged()
     {
-        const globalMatrix = this.entity.globalMatrix;
+        const globalMatrix = this.node3d.globalMatrix;
         const scenePosition = globalMatrix.getPosition();
 
         //
@@ -388,7 +388,7 @@ export class AudioSource extends Behaviour
 
 function createPanner()
 {
-    const panner = this.panner = audioCtx.createPanner();
+    const panner = audioCtx.createPanner();
 
     if (panner.orientationX)
     {

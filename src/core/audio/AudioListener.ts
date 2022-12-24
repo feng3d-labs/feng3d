@@ -1,9 +1,9 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../core/Component3D';
 import { AddComponentMenu } from '../Menu';
 
 export let audioCtx: AudioContext;
@@ -22,7 +22,7 @@ declare global
 @AddComponentMenu('Audio/AudioListener')
 @RegisterComponent()
 @Serializable()
-export class AudioListener extends Behaviour
+export class AudioListener extends Component3D
 {
     gain: GainNode;
 
@@ -62,7 +62,7 @@ export class AudioListener extends Behaviour
 
     private _onGlobalMatrixChanged()
     {
-        const globalMatrix = this.entity.globalMatrix;
+        const globalMatrix = this.node3d.globalMatrix;
         const position = globalMatrix.getPosition();
         const forward = globalMatrix.getAxisZ();
         const up = globalMatrix.getAxisY();

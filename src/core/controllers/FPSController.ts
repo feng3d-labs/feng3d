@@ -1,11 +1,11 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../core/Component3D';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { AddComponentMenu } from '../Menu';
 
@@ -23,7 +23,7 @@ declare global
 @AddComponentMenu('Controller/FPSController')
 @RegisterComponent()
 @Serializable()
-export class FPSController extends Behaviour
+export class FPSController extends Component3D
 {
     /**
      * 加速度
@@ -145,7 +145,7 @@ export class FPSController extends Behaviour
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
 
-            const matrix = this.entity.globalMatrix;
+            const matrix = this.node3d.globalMatrix;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -153,7 +153,7 @@ export class FPSController extends Behaviour
                 up.scaleNumber(-1);
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-            this.entity.globalMatrix = matrix;
+            this.node3d.globalMatrix = matrix;
             //
             this.preMousePoint = this.mousePoint;
             this.mousePoint = null;
@@ -172,9 +172,9 @@ export class FPSController extends Behaviour
         accelerationVec.scaleNumber(this.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = this.entity.matrix.getAxisX();
-        const up = this.entity.matrix.getAxisY();
-        const forward = this.entity.matrix.getAxisZ();
+        const right = this.node3d.matrix.getAxisX();
+        const up = this.node3d.matrix.getAxisY();
+        const forward = this.node3d.matrix.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);
@@ -182,9 +182,9 @@ export class FPSController extends Behaviour
         const displacement = right.clone();
         displacement.add(up);
         displacement.add(forward);
-        this.entity.x += displacement.x;
-        this.entity.y += displacement.y;
-        this.entity.z += displacement.z;
+        this.node3d.x += displacement.x;
+        this.node3d.y += displacement.y;
+        this.node3d.z += displacement.z;
     }
     private mousePoint: Vector2 | null;
     /**

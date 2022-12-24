@@ -1,7 +1,6 @@
-import { Behaviour } from '../../core/component/Behaviour';
-import { RegisterComponent } from '../../ecs/Component';
 import { Node3D } from '../../core/core/Node3D';
 import { View } from '../../core/core/View';
+import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -9,7 +8,7 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { UIRenderMode } from '../enums/UIRenderMode';
-import { Node2D } from './Node2D';
+import { Component2D } from './Component2D';
 
 declare global
 {
@@ -31,7 +30,7 @@ declare global
  */
 @RegisterComponent()
 @Serializable()
-export class Canvas extends Behaviour
+export class Canvas extends Component2D
 {
     /**
      * Is the Canvas in World or Overlay mode?
@@ -83,22 +82,10 @@ export class Canvas extends Behaviour
         if (width === 0) width = 100;
         if (height === 0) height = 100;
 
-        this.transform2D.size.x = width;
-        this.transform2D.size.y = height;
+        this.node2d.size.x = width;
+        this.node2d.size.y = height;
 
-        this.transform2D.pivot.set(0, 0);
-
-        this.entity.x = 0;
-        this.entity.y = 0;
-        this.entity.z = 0;
-
-        this.entity.rx = 0;
-        this.entity.ry = 0;
-        this.entity.rz = 0;
-
-        this.entity.sx = 1;
-        this.entity.sy = 1;
-        this.entity.sz = 1;
+        this.node2d.pivot.set(0, 0);
 
         const near = this.near;
         const far = this.far;
@@ -115,9 +102,3 @@ export class Canvas extends Behaviour
         this.mouseRay.origin.set(view.mousePos.x, view.mousePos.y, 0);
     }
 }
-
-Node3D.registerPrimitive('Canvas', (g) =>
-{
-    g.addComponent(Node2D);
-    g.addComponent(Canvas);
-});

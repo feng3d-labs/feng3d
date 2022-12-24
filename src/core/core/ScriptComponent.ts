@@ -1,3 +1,4 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { globalEmitter } from '../../event/GlobalEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { getClassName } from '../../serialization/getClassName';
@@ -6,9 +7,8 @@ import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Behaviour } from '../component/Behaviour';
-import { RegisterComponent } from '../../ecs/Component';
 import { AddComponentMenu } from '../Menu';
+import { NodeComponent } from './NodeComponent';
 import { RunEnvironment } from './RunEnvironment';
 import { Script } from './Script';
 
@@ -26,7 +26,7 @@ declare global
 @AddComponentMenu('Script/Script')
 @RegisterComponent()
 @Serializable()
-export class ScriptComponent extends Behaviour
+export class ScriptComponent extends NodeComponent
 {
     runEnvironment = RunEnvironment.feng3d;
 

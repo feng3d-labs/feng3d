@@ -3,8 +3,8 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { serialization } from '../../serialization/Serialization';
-import { Behaviour } from '../component/Behaviour';
 import { PickingCollisionVO } from '../pick/Raycaster';
+import { Component3D } from './Component3D';
 
 declare global
 {
@@ -20,7 +20,7 @@ declare global
  *
  * @see https://docs.unity3d.com/cn/current/ScriptReference/Renderer.html
  */
-export class Renderer extends Behaviour
+export class Renderer extends Component3D
 {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
@@ -84,7 +84,7 @@ export class Renderer extends Behaviour
      */
     protected _updateWorldBounds()
     {
-        this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.entity.globalMatrix);
+        this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.node3d.globalMatrix);
     }
 
     /**

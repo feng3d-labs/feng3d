@@ -1,6 +1,7 @@
+import { RegisterComponent } from '../../../ecs/Component';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Serializable } from '../../../serialization/Serializable';
-import { Component, RegisterComponent } from '../../../ecs/Component';
+import { Component3D } from '../../core/Component3D';
 import { Node3D } from '../../core/Node3D';
 
 declare global
@@ -13,7 +14,7 @@ declare global
 
 @RegisterComponent()
 @Serializable()
-export class SkeletonComponent extends Component
+export class SkeletonComponent extends Component3D
 {
     __class__: 'SkeletonComponent';
 
@@ -35,7 +36,7 @@ export class SkeletonComponent extends Component
     {
         for (let i = 0; i < this.boneNames.length; i++)
         {
-            const jointObject = this.entity.find(this.boneNames[i]) as Node3D;
+            const jointObject = this.node3d.find(this.boneNames[i]) as Node3D;
 
             this._globalMatrices[i] = this._globalMatrices[i] || new Matrix4x4();
             this._globalMatrices[i].copy(jointObject.globalMatrix).prepend(this.boneInverses[i]);

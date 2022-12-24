@@ -49,7 +49,7 @@ export class View
             if (cameras.length === 0)
             {
                 this._camera = serialization.setValue(new Node3D(), { name: 'defaultCamera' }).addComponent(Camera);
-                this.scene.entity.addChild(this._camera.entity);
+                this.scene.node3d.addChild(this._camera.node3d);
             }
             else
             {
@@ -300,7 +300,7 @@ export class View
         const max = s.clone().max(e);
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
-        let object3Ds = this.scene.entity.traverse((object3D: Node3D) =>
+        let object3Ds = this.scene.node3d.traverse((object3D: Node3D) =>
         {
             if (object3D === this.scene.entity) return;
 
@@ -342,14 +342,14 @@ export class View
         const camera = Node3D.createPrimitive('Camera', { name: 'Main Camera' });
         camera.addComponent(AudioListener);
         camera.position = new Vector3(0, 1, -10);
-        scene.entity.addChild(camera);
+        scene.node3d.addChild(camera);
 
         const directionalLight = serialization.setValue(new Node3D(), { name: 'DirectionalLight' });
         directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
         directionalLight.rx = 50;
         directionalLight.ry = -30;
         directionalLight.y = 3;
-        scene.entity.addChild(directionalLight);
+        scene.node3d.addChild(directionalLight);
 
         return scene;
     }

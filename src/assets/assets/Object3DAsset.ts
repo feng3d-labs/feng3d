@@ -22,7 +22,7 @@ export class Object3DAsset extends ObjectAsset
     @oav({ component: 'OAVObjectView' })
     declare data: Node3D;
 
-    assetType = AssetType.object3D;
+    assetType = AssetType.node3d;
 
     static extenson = '.json';
 

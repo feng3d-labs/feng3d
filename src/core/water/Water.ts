@@ -1,4 +1,4 @@
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -7,6 +7,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
+import { Component3D } from '../core/Component3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
@@ -35,7 +36,7 @@ declare global
 @AddComponentMenu('Graphics/Water')
 @RegisterComponent({ name: 'Water', dependencies: [MeshRenderer] })
 @Serializable()
-export class Water extends Component
+export class Water extends Component3D
 {
     __class__: 'Water';
 
@@ -64,11 +65,11 @@ export class Water extends Component
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
         const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
-        const sun = this.entity.scene.activeDirectionalLights[0];
+        const sun = this.node3d.scene.activeDirectionalLights[0];
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
-            uniforms.u_sunDirection = sun.entity.globalMatrix.getAxisZ().negate();
+            uniforms.u_sunDirection = sun.node3d.globalMatrix.getAxisZ().negate();
         }
 
         const clipBias = 0;
@@ -82,10 +83,10 @@ export class Water extends Component
         // eslint-disable-next-line no-constant-condition
         if (1) return;
         //
-        const mirrorWorldPosition = this.entity.worldPosition;
-        const cameraWorldPosition = camera.entity.worldPosition;
+        const mirrorWorldPosition = this.node3d.worldPosition;
+        const cameraWorldPosition = camera.node3d.worldPosition;
 
-        let rotationMatrix = this.entity.rotationMatrix;
+        let rotationMatrix = this.node3d.rotationMatrix;
 
         const normal = rotationMatrix.getAxisZ();
 
@@ -95,7 +96,7 @@ export class Water extends Component
         view.reflect(normal).negate();
         view.add(mirrorWorldPosition);
 
-        rotationMatrix = camera.entity.rotationMatrix;
+        rotationMatrix = camera.node3d.rotationMatrix;
 
         const lookAtPosition = new Vector3(0, 0, -1);
         lookAtPosition.applyMatrix4x4(rotationMatrix);
@@ -106,8 +107,8 @@ export class Water extends Component
         target.add(mirrorWorldPosition);
 
         const mirrorCamera = serialization.setValue(new Node3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
-        mirrorCamera.entity.position = view;
-        mirrorCamera.entity.lookAt(target, rotationMatrix.getAxisY());
+        mirrorCamera.node3d.position = view;
+        mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
 
         mirrorCamera.lens = camera.lens.clone();
 
@@ -121,7 +122,7 @@ export class Water extends Component
         );
         textureMatrix.append(mirrorCamera.viewProjection);
 
-        const mirrorPlane = new Plane().fromNormalAndPoint(mirrorCamera.entity.globalInvertMatrix.transformVector3(normal), mirrorCamera.entity.globalInvertMatrix.transformPoint3(mirrorWorldPosition));
+        const mirrorPlane = new Plane().fromNormalAndPoint(mirrorCamera.node3d.globalInvertMatrix.transformVector3(normal), mirrorCamera.node3d.globalInvertMatrix.transformPoint3(mirrorWorldPosition));
         const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
         const projectionMatrix = mirrorCamera.lens.matrix;
@@ -140,7 +141,7 @@ export class Water extends Component
         projectionMatrix.elements[14] = clipPlane.w;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const eye = camera.entity.worldPosition;
+        const eye = camera.node3d.worldPosition;
 
         // 不支持直接操作gl，下面代码暂时注释掉！
         // //

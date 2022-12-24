@@ -95,8 +95,8 @@ export class MeshRenderer extends Renderer
         this._lightPicker.beforeRender(renderAtomic);
 
         //
-        this.entity.beforeRender(renderAtomic, scene, camera);
-        this.entity.components.forEach((element) =>
+        this.node3d.beforeRender(renderAtomic, scene, camera);
+        this.node3d.components.forEach((element) =>
         {
             if (element !== this)
             {
@@ -114,7 +114,7 @@ export class MeshRenderer extends Renderer
      */
     worldRayIntersection(worldRay: Ray3)
     {
-        const localRay = TransformUtils.rayWorldToLocal(this.entity, worldRay);
+        const localRay = TransformUtils.rayWorldToLocal(this.node3d, worldRay);
         const pickingCollisionVO = this.localRayIntersection(localRay);
 
         return pickingCollisionVO;
@@ -138,7 +138,7 @@ export class MeshRenderer extends Renderer
 
         // 保存碰撞数据
         const pickingCollisionVO: PickingCollisionVO = {
-            object3D: this.entity,
+            node3D: this.node3d,
             localNormal,
             localRay,
             rayEntryDistance,

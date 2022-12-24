@@ -1,9 +1,10 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { RegisterComponent, Component } from '../../ecs/Component';
+import { Component3D } from '../core/Component3D';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { TextureCube } from '../textures/TextureCube';
@@ -22,7 +23,7 @@ declare global
 @AddComponentMenu('SkyBox/SkyBox')
 @RegisterComponent()
 @Serializable()
-export class SkyBox extends Component
+export class SkyBox extends Component3D
 {
     __class__: 'SkyBox';
 

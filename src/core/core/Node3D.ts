@@ -113,7 +113,7 @@ export class Node3D extends Node<Node3DEventMap>
     @SerializeProperty()
     hideFlags = HideFlags.None;
 
-    assetType = AssetType.object3D;
+    assetType = AssetType.node3d;
 
     /**
      * The tag of this game object.
@@ -662,7 +662,9 @@ export class Node3D extends Node<Node3DEventMap>
     static registerPrimitive<K extends keyof PrimitiveObject3D>(type: K, handler: (object3D: Node3D) => void)
     {
         if (this._registerPrimitives[type])
-        { console.warn(`重复注册原始游戏对象 ${type} ！`); }
+        {
+            console.warn(`重复注册原始游戏对象 ${type} ！`);
+        }
         this._registerPrimitives[type] = handler;
     }
     static _registerPrimitives: { [type: string]: (object3D: Node3D) => void } = {};

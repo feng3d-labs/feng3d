@@ -4,6 +4,7 @@ import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../core/Component3D';
 
 declare global
 {
@@ -16,7 +17,7 @@ declare global
 @AddComponentMenu('Layout/HoldSizeComponent')
 @RegisterComponent()
 @Serializable()
-export class HoldSizeComponent extends Component
+export class HoldSizeComponent extends Component3D
 {
     __class__: 'HoldSizeComponent';
 
@@ -41,13 +42,13 @@ export class HoldSizeComponent extends Component
 
     init()
     {
-        this.entity.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.node3d.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
     }
 
     dispose()
     {
         this.camera = null;
-        this.entity.off('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.node3d.off('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
         super.dispose();
     }
 
@@ -79,8 +80,8 @@ export class HoldSizeComponent extends Component
 
     private _getDepthScale(camera: Camera)
     {
-        const cameraGlobalMatrix = camera.entity.globalMatrix;
-        const distance = this.entity.worldPosition.subTo(cameraGlobalMatrix.getPosition());
+        const cameraGlobalMatrix = camera.node3d.globalMatrix;
+        const distance = this.node3d.worldPosition.subTo(cameraGlobalMatrix.getPosition());
         if (distance.length === 0)
         {
             distance.x = 1;
