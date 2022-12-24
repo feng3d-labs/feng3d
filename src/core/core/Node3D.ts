@@ -24,37 +24,37 @@ import { ScriptComponent } from './ScriptComponent';
 
 declare global
 {
-    interface MixinsObject3DEventMap { }
-    interface MixinsPrimitiveObject3D { }
-    interface MixinsObject3D { }
+    interface MixinsNode3DEventMap { }
+    interface MixinsPrimitiveNode3D { }
+    interface MixinsNode3D { }
 }
 
-export interface Object3DEventMap extends NodeEventMap, MixinsObject3DEventMap, MouseEventMap
+export interface Node3DEventMap extends NodeEventMap, MixinsNode3DEventMap, MouseEventMap
 {
     /**
      * 本地矩阵发生变化
      */
-    matrixChanged: Object3D;
+    matrixChanged: Node3D;
 
     /**
      *
      */
-    updateGlobalMatrix: Object3D;
+    updateGlobalMatrix: Node3D;
 
     /**
      * 全局矩阵发生变化
      */
-    globalMatrixChanged: Object3D;
+    globalMatrixChanged: Node3D;
 
     /**
      * 当Object3D的scene属性被设置是由Scene派发
      */
-    addedToScene: Object3D;
+    addedToScene: Node3D;
 
     /**
      * 当Object3D的scene属性被清空时由Scene派发
      */
-    removedFromScene: Object3D;
+    removedFromScene: Node3D;
 
     /**
      * 包围盒失效
@@ -67,45 +67,45 @@ export interface Object3DEventMap extends NodeEventMap, MixinsObject3DEventMap, 
     refreshView: any;
 }
 
-export interface Object3D extends MixinsObject3D
+export interface Node3D extends MixinsNode3D
 {
 
     /**
      * 父对象
      */
-    get parent(): Object3D;
+    get parent(): Node3D;
 
     /**
      * 子对象列表
      */
-    get children(): Object3D[];
-    set children(v: Object3D[]);
+    get children(): Node3D[];
+    set children(v: Node3D[]);
 
     /**
      * 获取指定位置的子对象
      *
      * @param index 子对象位置。
      */
-    getChildAt(index: number): Object3D;
+    getChildAt(index: number): Node3D;
 
     /**
      * 根据名称查找对象
      *
      * @param name 对象名称
      */
-    find(name: string): Object3D;
+    find(name: string): Node3D;
 }
 
 /**
  * 游戏对象，场景唯一存在的对象类型
  */
 @Serializable()
-export class Object3D extends Node<Object3DEventMap>
+export class Node3D extends Node<Node3DEventMap>
 {
-    __class__: 'Object3D';
+    __class__: 'Node3D';
 
-    declare protected _parent: Object3D;
-    declare protected _children: Object3D[];
+    declare protected _parent: Node3D;
+    declare protected _children: Node3D[];
 
     /**
      * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
@@ -558,7 +558,7 @@ export class Object3D extends Node<Object3DEventMap>
         if (!this.isSelfLoaded) return false;
         for (let i = 0; i < this.children.length; i++)
         {
-            const element = this.children[i] as Object3D;
+            const element = this.children[i] as Node3D;
             if (!element.isLoaded) return false;
         }
 
@@ -600,7 +600,7 @@ export class Object3D extends Node<Object3DEventMap>
 
     protected _scene: Scene;
 
-    protected _setParent(value: Object3D | null)
+    protected _setParent(value: Node3D | null)
     {
         super._setParent(value);
         this.updateScene();
@@ -640,9 +640,9 @@ export class Object3D extends Node<Object3DEventMap>
      * @param type 游戏对象类型。
      * @param param 游戏对象参数。
      */
-    static createPrimitive<K extends keyof PrimitiveObject3D>(type: K, param?: gPartial<Object3D>)
+    static createPrimitive<K extends keyof PrimitiveObject3D>(type: K, param?: gPartial<Node3D>)
     {
-        const g = new Object3D();
+        const g = new Node3D();
         g.name = type;
 
         const createHandler = this._registerPrimitives[type];
@@ -659,19 +659,19 @@ export class Object3D extends Node<Object3DEventMap>
      * @param type 原始游戏对象类型。
      * @param handler 构建原始游戏对象的函数。
      */
-    static registerPrimitive<K extends keyof PrimitiveObject3D>(type: K, handler: (object3D: Object3D) => void)
+    static registerPrimitive<K extends keyof PrimitiveObject3D>(type: K, handler: (object3D: Node3D) => void)
     {
         if (this._registerPrimitives[type])
         { console.warn(`重复注册原始游戏对象 ${type} ！`); }
         this._registerPrimitives[type] = handler;
     }
-    static _registerPrimitives: { [type: string]: (object3D: Object3D) => void } = {};
+    static _registerPrimitives: { [type: string]: (object3D: Node3D) => void } = {};
 }
 
 /**
  * 原始游戏对象，可以通过Object3D.createPrimitive进行创建。
  */
-export interface PrimitiveObject3D extends MixinsPrimitiveObject3D
+export interface PrimitiveObject3D extends MixinsPrimitiveNode3D
 {
 }
 
@@ -680,6 +680,6 @@ createNodeMenu.push(
     {
         path: 'Create Empty',
         click: () =>
-            new Object3D()
+            new Node3D()
     },
 );

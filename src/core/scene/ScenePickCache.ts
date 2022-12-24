@@ -1,5 +1,5 @@
 import { Camera } from '../cameras/Camera';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
 import { Scene } from './Scene';
 
@@ -55,7 +55,7 @@ export class ScenePickCache
                     { models.push(model); }
                 }
             }
-            object3Ds = object3Ds.concat(object3D.children as Object3D[]);
+            object3Ds = object3Ds.concat(object3D.children as Node3D[]);
         }
 
         return models;

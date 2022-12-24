@@ -2,7 +2,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { CullFace } from '../../renderer/data/RenderParams';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
 import { Geometry } from '../geometry/Geometry';
 
@@ -13,7 +13,7 @@ import { Geometry } from '../geometry/Geometry';
  * @param object3Ds 实体列表
  * @return
  */
-export function rayCast(ray: Ray3, object3Ds: Object3D[])
+export function rayCast(ray: Ray3, object3Ds: Node3D[])
 {
     if (object3Ds.length === 0) return null;
 
@@ -66,7 +66,7 @@ export function rayCast(ray: Ray3, object3Ds: Object3D[])
  * @param object3Ds 实体列表
  * @return
  */
-export function rayCastAll(ray3D: Ray3, object3Ds: Object3D[])
+export function rayCastAll(ray3D: Ray3, object3Ds: Node3D[])
 {
     if (object3Ds.length === 0) return [];
 
@@ -109,7 +109,7 @@ export interface PickingCollisionVO
     /**
      * 第一个穿过的物体
      */
-    object3D: Object3D;
+    object3D: Node3D;
 
     /**
      * 碰撞的uv坐标

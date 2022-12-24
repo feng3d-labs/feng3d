@@ -1,6 +1,6 @@
 import { Camera } from '../core/cameras/Camera';
 import { HideFlags } from '../core/core/HideFlags';
-import { Object3D, Object3DEventMap } from '../core/core/Object3D';
+import { Node3D, Node3DEventMap } from '../core/core/Node3D';
 import { Scene } from '../core/scene/Scene';
 import { EventEmitter } from '../event/EventEmitter';
 import { Constructor } from '../polyfill/Types';
@@ -104,7 +104,7 @@ export type Components = ComponentMap[ComponentNames];
  *
  * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到Object3D(游戏物体)上。
  */
-export class Component extends EventEmitter<Object3DEventMap>
+export class Component extends EventEmitter<Node3DEventMap>
 {
     /**
      * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
@@ -282,11 +282,11 @@ export class Component extends EventEmitter<Object3DEventMap>
      *
      * @param object3D 游戏对象
      */
-    setObject3D(object3D: Object3D)
+    setObject3D(object3D: Node3D)
     {
         this._object3D = object3D;
     }
-    protected _object3D: Object3D;
+    protected _object3D: Node3D;
 
     /**
      * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。

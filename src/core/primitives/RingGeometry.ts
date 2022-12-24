@@ -5,7 +5,7 @@ import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
@@ -21,9 +21,9 @@ declare global
         Ring: RingGeometry;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Ring: Object3D;
+        Ring: Node3D;
     }
 }
 

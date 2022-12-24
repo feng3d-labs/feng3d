@@ -1,4 +1,4 @@
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 
 /**
  *
@@ -16,7 +16,7 @@ export interface MenuItem
     /**
      * 点击事件
      */
-    click?: () => Object3D,
+    click?: () => Node3D,
     /**
      * 是否启用，禁用时显示灰色
      */

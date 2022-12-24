@@ -6,7 +6,7 @@ import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';
 import { HideFlags } from '../core/HideFlags';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
 import { TextureMaterial } from '../materials/texture/TextureMaterial';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
@@ -116,12 +116,12 @@ export class Light extends Behaviour
     @oav({ tooltip: '是否调试阴影图' })
     debugShadowMap = false;
 
-    private debugShadowMapObject: Object3D;
+    private debugShadowMapObject: Node3D;
 
     constructor()
     {
         super();
-        this.shadowCamera = serialization.setValue(new Object3D(), { name: 'LightShadowCamera' }).addComponent(Camera);
+        this.shadowCamera = serialization.setValue(new Node3D(), { name: 'LightShadowCamera' }).addComponent(Camera);
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
@@ -129,7 +129,7 @@ export class Light extends Behaviour
         let object3D = this.debugShadowMapObject;
         if (!object3D)
         {
-            object3D = this.debugShadowMapObject = Object3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
+            object3D = this.debugShadowMapObject = Node3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
             object3D.hideFlags = HideFlags.Hide | HideFlags.DontSave;
             object3D.mouseEnabled = false;
             object3D.addComponent(BillboardComponent);

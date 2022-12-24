@@ -1,16 +1,16 @@
 import { Vector3 } from '../../math/geom/Vector3';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { ControllerBase } from './ControllerBase';
 
 export class LookAtController extends ControllerBase
 {
     protected _lookAtPosition: Vector3;
-    protected _lookAtObject: Object3D;
+    protected _lookAtObject: Node3D;
     protected _origin: Vector3 = new Vector3(0.0, 0.0, 0.0);
     protected _upAxis: Vector3 = Vector3.Y_AXIS;
     protected _pos: Vector3 = new Vector3();
 
-    constructor(target?: Object3D, lookAtObject?: Object3D)
+    constructor(target?: Node3D, lookAtObject?: Node3D)
     {
         super(target);
 

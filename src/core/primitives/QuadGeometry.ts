@@ -1,6 +1,6 @@
 import { Serializable } from '../../serialization/Serializable';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -17,9 +17,9 @@ declare global
         Quad: QuadGeometry;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Quad: Object3D;
+        Quad: Node3D;
     }
 }
 
@@ -53,7 +53,7 @@ export class QuadGeometry extends Geometry
 
 Geometry.setDefault('Quad', new QuadGeometry());
 
-Object3D.registerPrimitive('Quad', (g) =>
+Node3D.registerPrimitive('Quad', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Quad');
 });
@@ -64,7 +64,7 @@ createNodeMenu.push(
         path: '3D Object/Quad',
         priority: -6,
         click: () =>
-            Object3D.createPrimitive('Quad')
+            Node3D.createPrimitive('Quad')
     }
 );
 

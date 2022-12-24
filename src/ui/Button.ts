@@ -1,6 +1,6 @@
 import { Behaviour } from '../core/component/Behaviour';
 import { RegisterComponent } from '../ecs/Component';
-import { Object3D } from '../core/core/Object3D';
+import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { oav } from '../objectview/ObjectView';
@@ -17,9 +17,9 @@ declare global
         Button: Button;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Button: Object3D;
+        Button: Node3D;
     }
 }
 
@@ -94,7 +94,7 @@ export class Button extends Behaviour
     {
         const stateData = {};
         // 出现相同名称时，只保存第一个数据
-        const childMap: { [name: string]: Object3D } = {};
+        const childMap: { [name: string]: Node3D } = {};
         this.object3D.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
@@ -133,7 +133,7 @@ export class Button extends Behaviour
     {
         const statedata = this.allStateData[this.state];
         if (!statedata) return;
-        const childMap: { [name: string]: Object3D } = {};
+        const childMap: { [name: string]: Node3D } = {};
         this.object3D.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
@@ -146,7 +146,7 @@ export class Button extends Behaviour
     }
 }
 
-Object3D.registerPrimitive('Button', (g) =>
+Node3D.registerPrimitive('Button', (g) =>
 {
     const transform2D = g.addComponent(Transform2D);
 
@@ -161,7 +161,7 @@ createNodeMenu.push(
         path: 'UI/Button',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Button')
+            Node3D.createPrimitive('Button')
     }
 );
 

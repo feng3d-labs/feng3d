@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { LookAtController } from './LookAtController';
 
 export class HoverController extends LookAtController
@@ -170,7 +170,7 @@ export class HoverController extends LookAtController
     }
 
     // eslint-disable-next-line max-params
-    constructor(targetObject?: Object3D, lookAtObject?: Object3D, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
+    constructor(targetObject?: Node3D, lookAtObject?: Node3D, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
     {
         super(targetObject, lookAtObject);
         this.distance = distance;

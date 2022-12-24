@@ -4,7 +4,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { CylinderGeometry } from './CylinderGeometry';
@@ -19,9 +19,9 @@ declare global
     {
         Cone: ConeGeometry;
     }
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Cone: Object3D;
+        Cone: Node3D;
     }
 }
 
@@ -116,7 +116,7 @@ export class ConeGeometry extends Geometry
 
 Geometry.setDefault('Cone', new ConeGeometry());
 
-Object3D.registerPrimitive('Cone', (g) =>
+Node3D.registerPrimitive('Cone', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cone');
 });
@@ -127,7 +127,7 @@ createNodeMenu.push(
         path: '3D Object/Cone',
         priority: -10000,
         click: () =>
-            Object3D.createPrimitive('Cone')
+            Node3D.createPrimitive('Cone')
     }
 );
 

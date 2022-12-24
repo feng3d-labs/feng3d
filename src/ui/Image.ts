@@ -1,6 +1,6 @@
 import { Camera } from '../core/cameras/Camera';
 import { RegisterComponent, Component } from '../ecs/Component';
-import { Object3D } from '../core/core/Object3D';
+import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
@@ -20,9 +20,9 @@ declare global
         Image: Image
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Image: Object3D;
+        Image: Node3D;
     }
 }
 
@@ -74,7 +74,7 @@ export class Image extends Component
     }
 }
 
-Object3D.registerPrimitive('Image', (g) =>
+Node3D.registerPrimitive('Image', (g) =>
 {
     const transform2D = g.addComponent(Transform2D);
     g.addComponent(CanvasRenderer);
@@ -90,7 +90,7 @@ createNodeMenu.push(
         path: 'UI/Image',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Image')
+            Node3D.createPrimitive('Image')
     }
 );
 

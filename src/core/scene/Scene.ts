@@ -8,7 +8,7 @@ import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { HideFlags } from '../core/HideFlags';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { DirectionalLight } from '../light/DirectionalLight';
@@ -23,10 +23,10 @@ declare global
     /**
      * 组件事件
      */
-    export interface MixinsObject3DEventMap
+    export interface MixinsNode3DEventMap
     {
-        addToScene: Object3D;
-        removeFromScene: Object3D;
+        addToScene: Node3D;
+        removeFromScene: Node3D;
         addComponentToScene: Component;
     }
 
@@ -281,7 +281,7 @@ export class Scene extends Component
             {
                 targets.push(model);
             }
-            item.children.forEach((element: Object3D) =>
+            item.children.forEach((element: Node3D) =>
             {
                 openList.push(element);
             });
@@ -316,7 +316,7 @@ export class Scene extends Component
     }
 
     //
-    private _mouseCheckObjects: Object3D[];
+    private _mouseCheckObjects: Node3D[];
     private _models: Renderer[];
     private _visibleAndEnabledModels: Renderer[];
     private _skyBoxs: SkyBox[];

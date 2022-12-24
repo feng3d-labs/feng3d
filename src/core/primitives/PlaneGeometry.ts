@@ -4,7 +4,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -19,9 +19,9 @@ declare global
     {
         Plane: PlaneGeometry;
     }
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Plane: Object3D;
+        Plane: Node3D;
     }
 }
 
@@ -146,7 +146,7 @@ export class PlaneGeometry extends Geometry
 
 Geometry.setDefault('Plane', new PlaneGeometry(), { width: 10, height: 10 });
 
-Object3D.registerPrimitive('Plane', (g) =>
+Node3D.registerPrimitive('Plane', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Plane');
 });
@@ -157,7 +157,7 @@ createNodeMenu.push(
         path: '3D Object/Plane',
         priority: -5,
         click: () =>
-            Object3D.createPrimitive('Plane')
+            Node3D.createPrimitive('Plane')
     }
 );
 

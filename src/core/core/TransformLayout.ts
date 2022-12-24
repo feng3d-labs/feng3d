@@ -10,11 +10,11 @@ import { Component, RegisterComponent } from '../../ecs/Component';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';
-import { Object3D } from './Object3D';
+import { Node3D } from './Node3D';
 
 declare global
 {
-    export interface MixinsObject3DEventMap
+    export interface MixinsNode3DEventMap
     {
         /**
          * 尺寸变化事件
@@ -82,14 +82,14 @@ export class TransformLayout extends Component
         this.on('removed', this._onRemoved, this);
     }
 
-    private _onAdded(event: IEvent<{ parent: Object3D; }>)
+    private _onAdded(event: IEvent<{ parent: Node3D; }>)
     {
         event.data.parent.on('sizeChanged', this._invalidateLayout, this);
         event.data.parent.on('pivotChanged', this._invalidateLayout, this);
         this._invalidateLayout();
     }
 
-    private _onRemoved(event: IEvent<{ parent: Object3D; }>)
+    private _onRemoved(event: IEvent<{ parent: Node3D; }>)
     {
         event.data.parent.off('sizeChanged', this._invalidateLayout, this);
         event.data.parent.off('pivotChanged', this._invalidateLayout, this);

@@ -1,7 +1,7 @@
 import { Camera } from "../../core/cameras/Camera";
 import { Component, RegisterComponent } from "../../ecs/Component";
 import { HideFlags } from "../../core/core/HideFlags";
-import { Object3D } from "../../core/core/Object3D";
+import { Node3D } from "../../core/core/Node3D";
 import { TransformLayout } from "../../core/core/TransformLayout";
 import { AddComponentMenu } from "../../core/Menu";
 import { Scene } from "../../core/scene/Scene";
@@ -16,7 +16,7 @@ import { watcher } from "../../watcher/watcher";
 
 declare global
 {
-    export interface MixinsObject3D
+    export interface MixinsNode3D
     {
         /**
          * 游戏对象上的2D变换。
@@ -161,7 +161,7 @@ export class Transform2D extends Component
         this.on('removeComponent', this._onRemovedComponent, this);
     }
 
-    private _onAddComponent(event: IEvent<{ entity: Object3D; component: Component; }>)
+    private _onAddComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
     {
         if (event.data.entity !== this.object3D) return;
         const component = event.data.component;
@@ -172,7 +172,7 @@ export class Transform2D extends Component
         }
     }
 
-    private _onRemovedComponent(event: IEvent<{ entity: Object3D; component: Component; }>)
+    private _onRemovedComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
     {
         if (event.data.entity !== this.object3D) return;
         const component = event.data.component;
@@ -230,8 +230,8 @@ export class Transform2D extends Component
     }
 }
 
-Object.defineProperty(Object3D.prototype, 'transform2D', {
-    get(this: Object3D) { return this.getComponent(Transform2D); },
+Object.defineProperty(Node3D.prototype, 'transform2D', {
+    get(this: Node3D) { return this.getComponent(Transform2D); },
 });
 
 Object.defineProperty(Component.prototype, 'transform2D', {

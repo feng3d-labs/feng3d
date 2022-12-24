@@ -7,7 +7,7 @@ import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { rayCast } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
-import { Object3D } from './Object3D';
+import { Node3D } from './Node3D';
 import { View } from './View';
 
 /**
@@ -55,13 +55,13 @@ export class Mouse3DManager
         this.viewport = viewport;
     }
 
-    private _selectedObject3D: Object3D;
+    private _selectedObject3D: Node3D;
     private _mouseEventTypes: string[] = [];
 
     /**
      * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
      */
-    private preMouseDownObject3D: Object3D | null;
+    private preMouseDownObject3D: Node3D | null;
     /**
      * 统计处理click次数，判断是否达到dblclick
      */
@@ -109,7 +109,7 @@ export class Mouse3DManager
     /**
      * 设置选中对象
      */
-    private setSelectedObject3D(value: Object3D)
+    private setSelectedObject3D(value: Node3D)
     {
         if (this._selectedObject3D !== value)
         {

@@ -8,7 +8,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { AddComponentMenu } from '../Menu';
@@ -23,9 +23,9 @@ declare global
     {
         Water: Water
     }
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Water: Object3D;
+        Water: Node3D;
     }
 }
 
@@ -105,7 +105,7 @@ export class Water extends Component
         target.reflect(normal).negate();
         target.add(mirrorWorldPosition);
 
-        const mirrorCamera = serialization.setValue(new Object3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
+        const mirrorCamera = serialization.setValue(new Node3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
         mirrorCamera.object3D.position = view;
         mirrorCamera.object3D.lookAt(target, rotationMatrix.getAxisY());
 
@@ -165,7 +165,7 @@ export class Water extends Component
     }
 }
 
-Object3D.registerPrimitive('Water', (g) =>
+Node3D.registerPrimitive('Water', (g) =>
 {
     g.addComponent(Water);
 });
@@ -176,7 +176,7 @@ createNodeMenu.push(
         path: '3D Object/Water',
         priority: -20000,
         click: () =>
-            Object3D.createPrimitive('Water')
+            Node3D.createPrimitive('Water')
     }
 );
 

@@ -1,16 +1,16 @@
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 
 export class ControllerBase
 {
     /**
      * 控制对象
      */
-    protected _targetObject: Object3D | undefined;
+    protected _targetObject: Node3D | undefined;
 
     /**
      * 控制器基类，用于动态调整3D对象的属性
      */
-    constructor(targetObject?: Object3D)
+    constructor(targetObject?: Node3D)
     {
         this.targetObject = targetObject;
     }

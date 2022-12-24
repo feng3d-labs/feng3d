@@ -5,7 +5,7 @@ import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../../ecs/Component';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -20,9 +20,9 @@ declare global
         DirectionalLight: DirectionalLight;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        'Directional light': Object3D;
+        'Directional light': Node3D;
     }
 }
 
@@ -87,7 +87,7 @@ export class DirectionalLight extends Light
     }
 }
 
-Object3D.registerPrimitive('Directional light', (g) =>
+Node3D.registerPrimitive('Directional light', (g) =>
 {
     g.addComponent(DirectionalLight);
 });
@@ -98,7 +98,7 @@ createNodeMenu.push(
         path: 'Light/Directional light',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Directional light')
+            Node3D.createPrimitive('Directional light')
     }
 );
 

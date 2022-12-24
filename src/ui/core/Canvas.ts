@@ -1,6 +1,6 @@
 import { Behaviour } from '../../core/component/Behaviour';
 import { RegisterComponent } from '../../ecs/Component';
-import { Object3D } from '../../core/core/Object3D';
+import { Node3D } from '../../core/core/Node3D';
 import { View } from '../../core/core/View';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
@@ -18,9 +18,9 @@ declare global
         Canvas: Canvas
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Canvas: Object3D;
+        Canvas: Node3D;
     }
 }
 
@@ -116,7 +116,7 @@ export class Canvas extends Behaviour
     }
 }
 
-Object3D.registerPrimitive('Canvas', (g) =>
+Node3D.registerPrimitive('Canvas', (g) =>
 {
     g.addComponent(Transform2D);
     g.addComponent(Canvas);

@@ -3,7 +3,7 @@ import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { PolyhedronGeometry } from './PolyhedronGeometry';
@@ -20,9 +20,9 @@ declare global
         Tetrahedron: TetrahedronGeometry;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Tetrahedron: Object3D;
+        Tetrahedron: Node3D;
     }
 }
 

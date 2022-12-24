@@ -9,7 +9,7 @@ import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
-import { Object3D } from './Object3D';
+import { Node3D } from './Node3D';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Renderer } from './Renderer';
 import { Ray3 } from '../../math/geom/Ray3';
@@ -48,7 +48,7 @@ export class View
             const cameras = this.scene.getComponentsInChildren(Camera);
             if (cameras.length === 0)
             {
-                this._camera = serialization.setValue(new Object3D(), { name: 'defaultCamera' }).addComponent(Camera);
+                this._camera = serialization.setValue(new Node3D(), { name: 'defaultCamera' }).addComponent(Camera);
                 this.scene.object3D.addChild(this._camera.object3D);
             }
             else
@@ -128,7 +128,7 @@ export class View
             Object.assign(this._contextAttributes, contextAttributes);
         }
 
-        this.scene = scene || serialization.setValue(new Object3D(), { name: 'scene' }).addComponent(Scene);
+        this.scene = scene || serialization.setValue(new Node3D(), { name: 'scene' }).addComponent(Scene);
         this.camera = camera;
 
         this.start();
@@ -300,7 +300,7 @@ export class View
         const max = s.clone().max(e);
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
-        let object3Ds = this.scene.object3D.traverse((object3D: Object3D) =>
+        let object3Ds = this.scene.object3D.traverse((object3D: Node3D) =>
         {
             if (object3D === this.scene.object3D) return;
 
@@ -331,20 +331,20 @@ export class View
         return object3Ds;
     }
 
-    protected selectedObject: Object3D;
+    protected selectedObject: Node3D;
 
     static createNewScene()
     {
-        const scene = serialization.setValue(new Object3D(), { name: 'Untitled' }).addComponent(Scene);
+        const scene = serialization.setValue(new Node3D(), { name: 'Untitled' }).addComponent(Scene);
         scene.background.setTo(0.2784, 0.2784, 0.2784);
         scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
-        const camera = Object3D.createPrimitive('Camera', { name: 'Main Camera' });
+        const camera = Node3D.createPrimitive('Camera', { name: 'Main Camera' });
         camera.addComponent(AudioListener);
         camera.position = new Vector3(0, 1, -10);
         scene.object3D.addChild(camera);
 
-        const directionalLight = serialization.setValue(new Object3D(), { name: 'DirectionalLight' });
+        const directionalLight = serialization.setValue(new Node3D(), { name: 'DirectionalLight' });
         directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
         directionalLight.rx = 50;
         directionalLight.ry = -30;

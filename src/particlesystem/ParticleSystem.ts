@@ -1,7 +1,7 @@
 import { Camera } from '../core/cameras/Camera';
 import { Behaviour } from '../core/component/Behaviour';
 import { MeshRenderer } from '../core/core/MeshRenderer';
-import { Object3D } from '../core/core/Object3D';
+import { Node3D } from '../core/core/Node3D';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
@@ -50,12 +50,12 @@ declare global
     {
         'Billboard-Geometry': QuadGeometry;
     }
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        'Particle System': Object3D;
+        'Particle System': Node3D;
     }
 
-    export interface MixinsObject3DEventMap
+    export interface MixinsNode3DEventMap
     {
         /**
          * 粒子系统播放完一个周期
@@ -1234,7 +1234,7 @@ export interface ParticleSystemEmitInfo
 
 Geometry.setDefault('Billboard-Geometry', new QuadGeometry());
 
-Object3D.registerPrimitive('Particle System', (g) =>
+Node3D.registerPrimitive('Particle System', (g) =>
 {
     g.addComponent(ParticleSystem);
     g.rx = -90;
@@ -1246,7 +1246,7 @@ createNodeMenu.push(
         path: 'Effects/Particle System',
         priority: -1,
         click: () =>
-            Object3D.createPrimitive('Particle System')
+            Node3D.createPrimitive('Particle System')
     }
 );
 

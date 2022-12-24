@@ -1,4 +1,4 @@
-import { Object3D } from './Object3D';
+import { Node3D } from './Node3D';
 import { ScriptComponent } from './ScriptComponent';
 
 /**
@@ -9,7 +9,7 @@ export class Script
     /**
      * The game object this component is attached to. A component is always attached to a game object.
      */
-    get object3D(): Object3D
+    get object3D(): Node3D
     {
         return this.component.object3D;
     }

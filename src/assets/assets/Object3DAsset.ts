@@ -1,5 +1,5 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { Object3D } from '../../core/core/Object3D';
+import { Node3D } from '../../core/core/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
@@ -7,7 +7,7 @@ import { ObjectAsset } from '../ObjectAsset';
 
 export interface Object3DAsset
 {
-    getAssetData(): Promise<Object3D>;
+    getAssetData(): Promise<Node3D>;
 }
 
 /**
@@ -20,7 +20,7 @@ export class Object3DAsset extends ObjectAsset
      * 材质
      */
     @oav({ component: 'OAVObjectView' })
-    declare data: Object3D;
+    declare data: Node3D;
 
     assetType = AssetType.object3D;
 
@@ -28,7 +28,7 @@ export class Object3DAsset extends ObjectAsset
 
     initAsset()
     {
-        this.data = this.data || new Object3D();
+        this.data = this.data || new Node3D();
         this.data.assetId = this.data.assetId || this.assetId;
     }
 

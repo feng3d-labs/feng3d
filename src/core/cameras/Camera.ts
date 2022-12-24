@@ -8,7 +8,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component, RegisterComponent } from '../../ecs/Component';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { LensBase } from './lenses/LensBase';
@@ -18,7 +18,7 @@ import { Projection } from './Projection';
 
 declare global
 {
-    export interface MixinsObject3DEventMap
+    export interface MixinsNode3DEventMap
     {
         lensChanged;
     }
@@ -28,9 +28,9 @@ declare global
         Camera: Camera;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Camera: Object3D;
+        Camera: Node3D;
     }
 }
 
@@ -227,7 +227,7 @@ export class Camera extends Component
     private _frustumInvalid = true;
 }
 
-Object3D.registerPrimitive('Camera', (g) =>
+Node3D.registerPrimitive('Camera', (g) =>
 {
     g.addComponent(Camera);
 });
@@ -238,7 +238,7 @@ createNodeMenu.push(
         path: 'Camera',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Camera')
+            Node3D.createPrimitive('Camera')
     }
 );
 

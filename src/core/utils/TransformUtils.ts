@@ -2,44 +2,44 @@ import { Box3 } from '../../math/geom/Box3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 
 /**
  * 游戏对象变换工具
  */
 export class TransformUtils
 {
-    static moveForward(transform: Object3D, distance: number)
+    static moveForward(transform: Node3D, distance: number)
     {
         this.translateLocal(transform, Vector3.Z_AXIS, distance);
     }
 
-    static moveBackward(transform: Object3D, distance: number)
+    static moveBackward(transform: Node3D, distance: number)
     {
         this.translateLocal(transform, Vector3.Z_AXIS, -distance);
     }
 
-    static moveLeft(transform: Object3D, distance: number)
+    static moveLeft(transform: Node3D, distance: number)
     {
         this.translateLocal(transform, Vector3.X_AXIS, -distance);
     }
 
-    static moveRight(transform: Object3D, distance: number)
+    static moveRight(transform: Node3D, distance: number)
     {
         this.translateLocal(transform, Vector3.X_AXIS, distance);
     }
 
-    static moveUp(transform: Object3D, distance: number)
+    static moveUp(transform: Node3D, distance: number)
     {
         this.translateLocal(transform, Vector3.Y_AXIS, distance);
     }
 
-    static moveDown(transform: Object3D, distance: number)
+    static moveDown(transform: Node3D, distance: number)
     {
         this.translateLocal(transform, Vector3.Y_AXIS, -distance);
     }
 
-    static translate(transform: Object3D, axis: Vector3, distance: number)
+    static translate(transform: Node3D, axis: Vector3, distance: number)
     {
         const x = axis.x; const y = axis.y; const
             z = axis.z;
@@ -49,7 +49,7 @@ export class TransformUtils
         transform.z += z * len;
     }
 
-    static translateLocal(transform: Object3D, axis: Vector3, distance: number)
+    static translateLocal(transform: Node3D, axis: Vector3, distance: number)
     {
         const x = axis.x; const y = axis.y; const
             z = axis.z;
@@ -62,22 +62,22 @@ export class TransformUtils
         transform.z = p.z;
     }
 
-    static pitch(transform: Object3D, angle: number)
+    static pitch(transform: Node3D, angle: number)
     {
         this.rotate(transform, Vector3.X_AXIS, angle);
     }
 
-    static yaw(transform: Object3D, angle: number)
+    static yaw(transform: Node3D, angle: number)
     {
         this.rotate(transform, Vector3.Y_AXIS, angle);
     }
 
-    static roll(transform: Object3D, angle: number)
+    static roll(transform: Node3D, angle: number)
     {
         this.rotate(transform, Vector3.Z_AXIS, angle);
     }
 
-    static rotateTo(transform: Object3D, ax: number, ay: number, az: number)
+    static rotateTo(transform: Node3D, ax: number, ay: number, az: number)
     {
         transform.rotation.set(ax, ay, az);
     }
@@ -89,7 +89,7 @@ export class TransformUtils
      * @param    pivotPoint         旋转中心点
      *
      */
-    static rotate(transform: Object3D, axis: Vector3, angle: number, pivotPoint?: Vector3): void
+    static rotate(transform: Node3D, axis: Vector3, angle: number, pivotPoint?: Vector3): void
     {
         const position = transform.position;
         const rotation = transform.rotation;
@@ -124,7 +124,7 @@ export class TransformUtils
      * @param target    目标位置
      * @param upAxis    向上朝向
      */
-    static lookAt(transform: Object3D, target: Vector3, upAxis?: Vector3)
+    static lookAt(transform: Node3D, target: Vector3, upAxis?: Vector3)
     {
         const matrix = transform.matrix;
         matrix.lookAt(target, upAxis);
@@ -136,7 +136,7 @@ export class TransformUtils
      *
      * @param direction 局部空间方向
      */
-    static transformDirection(transform: Object3D, direction: Vector3)
+    static transformDirection(transform: Node3D, direction: Vector3)
     {
         direction = this.localToWolrdDirection(transform, direction);
 
@@ -148,7 +148,7 @@ export class TransformUtils
      *
      * @param direction 局部空间方向
      */
-    static localToWolrdDirection(transform: Object3D, direction: Vector3)
+    static localToWolrdDirection(transform: Node3D, direction: Vector3)
     {
         if (!transform.parent)
         {
@@ -168,7 +168,7 @@ export class TransformUtils
      *
      * @returns 变换之后的包围盒
      */
-    static localToWolrdBox(transform: Object3D, box: Box3, out = new Box3())
+    static localToWolrdBox(transform: Node3D, box: Box3, out = new Box3())
     {
         if (!transform.parent)
         {
@@ -185,7 +185,7 @@ export class TransformUtils
      *
      * @param position 局部空间位置
      */
-    static transformPoint(transform: Object3D, position: Vector3)
+    static transformPoint(transform: Node3D, position: Vector3)
     {
         position = this.localToWorldPoint(transform, position);
 
@@ -197,7 +197,7 @@ export class TransformUtils
      *
      * @param position 局部空间位置
      */
-    static localToWorldPoint(transform: Object3D, position: Vector3)
+    static localToWorldPoint(transform: Node3D, position: Vector3)
     {
         if (!transform.parent)
         {
@@ -213,7 +213,7 @@ export class TransformUtils
      *
      * @param vector 局部空间向量
      */
-    static transformVector(transform: Object3D, vector: Vector3)
+    static transformVector(transform: Node3D, vector: Vector3)
     {
         vector = this.localToWorldVector(transform, vector);
 
@@ -225,7 +225,7 @@ export class TransformUtils
      *
      * @param vector 局部空间位置
      */
-    static localToWorldVector(transform: Object3D, vector: Vector3)
+    static localToWorldVector(transform: Node3D, vector: Vector3)
     {
         if (!transform.parent)
         {
@@ -242,7 +242,7 @@ export class TransformUtils
      *
      * 将一个方向从世界空间转换到局部空间。
      */
-    static inverseTransformDirection(transform: Object3D, direction: Vector3)
+    static inverseTransformDirection(transform: Node3D, direction: Vector3)
     {
         direction = this.worldToLocalDirection(transform, direction);
 
@@ -252,7 +252,7 @@ export class TransformUtils
     /**
      * 将一个方向从世界空间转换到局部空间。
      */
-    static worldToLocalDirection(transform: Object3D, direction: Vector3)
+    static worldToLocalDirection(transform: Node3D, direction: Vector3)
     {
         if (!transform.parent)
         {
@@ -269,7 +269,7 @@ export class TransformUtils
      *
      * @param position 世界坐标系中位置
      */
-    static worldToLocalPoint(transform: Object3D, position: Vector3, out = new Vector3())
+    static worldToLocalPoint(transform: Node3D, position: Vector3, out = new Vector3())
     {
         if (!transform.parent)
         {
@@ -285,7 +285,7 @@ export class TransformUtils
      *
      * @param vector 世界坐标系中向量
      */
-    static worldToLocalVector(transform: Object3D, vector: Vector3)
+    static worldToLocalVector(transform: Node3D, vector: Vector3)
     {
         if (!transform.parent)
         {
@@ -302,7 +302,7 @@ export class TransformUtils
      * @param worldRay 世界空间射线。
      * @param localRay 局部空间射线。
      */
-    static rayWorldToLocal(transform: Object3D, worldRay: Ray3, localRay = new Ray3())
+    static rayWorldToLocal(transform: Node3D, worldRay: Ray3, localRay = new Ray3())
     {
         transform.globalInvertMatrix.transformRay(worldRay, localRay);
 

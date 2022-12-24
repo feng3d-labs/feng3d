@@ -6,16 +6,16 @@ import { serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Geometry } from './Geometry';
 
 declare global
 {
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Segment: Object3D;
+        Segment: Node3D;
     }
     export interface MixinsGeometryMap
     {
@@ -124,7 +124,7 @@ export class Segment
     endColor = new Color4();
 }
 
-Object3D.registerPrimitive('Segment', (g) =>
+Node3D.registerPrimitive('Segment', (g) =>
 {
     const model = g.addComponent(MeshRenderer);
     model.geometry = new SegmentGeometry();
@@ -137,7 +137,7 @@ createNodeMenu.push(
         path: '3D Object/Segment',
         priority: -10000,
         click: () =>
-            Object3D.createPrimitive('Segment')
+            Node3D.createPrimitive('Segment')
     }
 );
 

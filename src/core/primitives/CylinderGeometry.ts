@@ -4,7 +4,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -20,9 +20,9 @@ declare global
         Cylinder: CylinderGeometry;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Cylinder: Object3D;
+        Cylinder: Node3D;
     }
 }
 
@@ -525,7 +525,7 @@ export class CylinderGeometry extends Geometry implements ICylinderGeometry
 
 Geometry.setDefault('Cylinder', new CylinderGeometry());
 
-Object3D.registerPrimitive('Cylinder', (g) =>
+Node3D.registerPrimitive('Cylinder', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cylinder');
 });
@@ -536,7 +536,7 @@ createNodeMenu.push(
         path: '3D Object/Cylinder',
         priority: -4,
         click: () =>
-            Object3D.createPrimitive('Cylinder')
+            Node3D.createPrimitive('Cylinder')
     }
 );
 

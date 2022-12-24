@@ -4,7 +4,7 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../../ecs/Component';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
@@ -16,9 +16,9 @@ declare global
         SpotLight: SpotLight;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        'Spot Light': Object3D;
+        'Spot Light': Node3D;
     }
 }
 
@@ -91,7 +91,7 @@ export class SpotLight extends Light
     }
 }
 
-Object3D.registerPrimitive('Spot Light', (g) =>
+Node3D.registerPrimitive('Spot Light', (g) =>
 {
     g.addComponent(SpotLight);
 });
@@ -102,7 +102,7 @@ createNodeMenu.push(
         path: 'Light/Spot Light',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Spot Light')
+            Node3D.createPrimitive('Spot Light')
     }
 );
 

@@ -4,7 +4,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -16,9 +16,9 @@ declare global
     {
         Cube: CubeGeometry;
     }
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Cube: Object3D;
+        Cube: Node3D;
     }
 }
 
@@ -540,7 +540,7 @@ export class CubeGeometry extends Geometry
 
 Geometry.setDefault('Cube', new CubeGeometry());
 
-Object3D.registerPrimitive('Cube', (g) =>
+Node3D.registerPrimitive('Cube', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cube');
 });
@@ -551,7 +551,7 @@ createNodeMenu.push(
         path: '3D Object/Cube',
         priority: -1,
         click: () =>
-            Object3D.createPrimitive('Cube')
+            Node3D.createPrimitive('Cube')
     }
 );
 

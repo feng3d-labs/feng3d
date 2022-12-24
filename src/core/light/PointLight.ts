@@ -3,7 +3,7 @@ import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../../ecs/Component';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
@@ -16,9 +16,9 @@ declare global
         PointLight: PointLight;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        'Point Light': Object3D;
+        'Point Light': Node3D;
     }
 }
 
@@ -75,7 +75,7 @@ export class PointLight extends Light
     }
 }
 
-Object3D.registerPrimitive('Point Light', (g) =>
+Node3D.registerPrimitive('Point Light', (g) =>
 {
     g.addComponent(PointLight);
 });
@@ -86,7 +86,7 @@ createNodeMenu.push(
         path: 'Light/Point Light',
         priority: -1,
         click: () =>
-            Object3D.createPrimitive('Point Light')
+            Node3D.createPrimitive('Point Light')
     }
 );
 

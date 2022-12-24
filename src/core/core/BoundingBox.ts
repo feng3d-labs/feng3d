@@ -1,11 +1,11 @@
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Component } from '../../ecs/Component';
-import { Object3D } from './Object3D';
+import { Node3D } from './Node3D';
 
 declare global
 {
-    export interface MixinsObject3DEventMap
+    export interface MixinsNode3DEventMap
     {
         /**
          * 获取自身包围盒
@@ -26,7 +26,7 @@ declare global
  */
 export class BoundingBox
 {
-    private _object3D: Object3D;
+    private _object3D: Node3D;
 
     protected _selfLocalBounds = new Box3();
     protected _selfWorldBounds = new Box3();
@@ -36,7 +36,7 @@ export class BoundingBox
     protected _selfWorldBoundsInvalid = true;
     protected _worldBoundsInvalid = true;
 
-    constructor(object3D: Object3D)
+    constructor(object3D: Node3D)
     {
         this._object3D = object3D;
         object3D.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
@@ -124,7 +124,7 @@ export class BoundingBox
         this._worldBounds.copy(this.selfWorldBounds);
 
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
-        this._object3D.children.forEach((element: Object3D) =>
+        this._object3D.children.forEach((element: Node3D) =>
         {
             this._worldBounds.union(element.boundingBox.worldBounds);
         });

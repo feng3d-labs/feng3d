@@ -3,7 +3,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -17,9 +17,9 @@ declare global
     {
         Sphere: SphereGeometry;
     }
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Sphere: Object3D;
+        Sphere: Node3D;
     }
 }
 
@@ -249,7 +249,7 @@ export class SphereGeometry extends Geometry
 
 Geometry.setDefault('Sphere', new SphereGeometry());
 
-Object3D.registerPrimitive('Sphere', (g) =>
+Node3D.registerPrimitive('Sphere', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Sphere');
 });
@@ -260,7 +260,7 @@ createNodeMenu.push(
         path: '3D Object/Sphere',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Sphere')
+            Node3D.createPrimitive('Sphere')
     }
 );
 

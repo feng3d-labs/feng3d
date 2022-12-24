@@ -1,6 +1,6 @@
 import { Camera } from '../core/cameras/Camera';
 import { Component, RegisterComponent } from '../ecs/Component';
-import { Object3D } from '../core/core/Object3D';
+import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
@@ -23,9 +23,9 @@ declare global
         Text: Text;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Text: Object3D;
+        Text: Node3D;
     }
 }
 
@@ -114,7 +114,7 @@ export class Text extends Component
     }
 }
 
-Object3D.registerPrimitive('Text', (g) =>
+Node3D.registerPrimitive('Text', (g) =>
 {
     const transform2D = g.addComponent(Transform2D);
     g.addComponent(CanvasRenderer);
@@ -130,7 +130,7 @@ createNodeMenu.push(
         path: 'UI/Text',
         priority: -2,
         click: () =>
-            Object3D.createPrimitive('Text')
+            Node3D.createPrimitive('Text')
     }
 );
 

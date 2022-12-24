@@ -4,7 +4,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -18,9 +18,9 @@ declare global
 	{
 		Torus: TorusGeometry;
 	}
-	export interface MixinsPrimitiveObject3D
+	export interface MixinsPrimitiveNode3D
 	{
-		Torus: Object3D;
+		Torus: Node3D;
 	}
 }
 
@@ -262,7 +262,7 @@ export class TorusGeometry extends Geometry
 
 Geometry.setDefault('Torus', new TorusGeometry());
 
-Object3D.registerPrimitive('Torus', (g) =>
+Node3D.registerPrimitive('Torus', (g) =>
 {
 	g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Torus');
 });
@@ -273,6 +273,6 @@ createNodeMenu.push(
 		path: '3D Object/Torus',
 		priority: -10000,
 		click: () =>
-			Object3D.createPrimitive('Torus')
+			Node3D.createPrimitive('Torus')
 	}
 );

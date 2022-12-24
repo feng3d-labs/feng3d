@@ -3,7 +3,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -19,9 +19,9 @@ declare global
         Capsule: CapsuleGeometry;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Capsule: Object3D;
+        Capsule: Node3D;
     }
 }
 
@@ -247,7 +247,7 @@ export class CapsuleGeometry extends Geometry
 
 Geometry.setDefault('Capsule', new CapsuleGeometry());
 
-Object3D.registerPrimitive('Capsule', (g) =>
+Node3D.registerPrimitive('Capsule', (g) =>
 {
     g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Capsule');
 });
@@ -258,7 +258,7 @@ createNodeMenu.push(
         path: '3D Object/Capsule',
         priority: -3,
         click: () =>
-            Object3D.createPrimitive('Capsule')
+            Node3D.createPrimitive('Capsule')
     }
 );
 

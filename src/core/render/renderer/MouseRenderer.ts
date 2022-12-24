@@ -2,7 +2,7 @@ import { EventEmitter } from '../../../event/EventEmitter';
 import { Rectangle } from '../../../math/geom/Rectangle';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
-import { Object3D } from '../../core/Object3D';
+import { Node3D } from '../../core/Node3D';
 import { Renderer } from '../../core/Renderer';
 
 /**
@@ -10,7 +10,7 @@ import { Renderer } from '../../core/Renderer';
  */
 export class MouseRenderer extends EventEmitter
 {
-    private objects: Object3D[] = [];
+    private objects: Node3D[] = [];
 
     /**
      * 渲染

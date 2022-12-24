@@ -4,7 +4,7 @@ import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
-import { Object3D } from '../core/Object3D';
+import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
@@ -20,9 +20,9 @@ declare global
         Lathe: LatheGeometry;
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Lathe: Object3D;
+        Lathe: Node3D;
     }
 }
 

@@ -1,5 +1,5 @@
 import { MeshRenderer } from '../core/core/MeshRenderer';
-import { Object3D } from '../core/core/Object3D';
+import { Node3D } from '../core/core/Node3D';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
@@ -14,9 +14,9 @@ declare global
         Terrain: Terrain
     }
 
-    export interface MixinsPrimitiveObject3D
+    export interface MixinsPrimitiveNode3D
     {
-        Terrain: Object3D;
+        Terrain: Node3D;
     }
 }
 
@@ -64,7 +64,7 @@ export class Terrain extends Component
     }
 }
 
-Object3D.registerPrimitive('Terrain', (g) =>
+Node3D.registerPrimitive('Terrain', (g) =>
 {
     g.addComponent(Terrain);
 });
@@ -75,6 +75,6 @@ createNodeMenu.push(
         path: '3D Object/Terrain',
         priority: -20000,
         click: () =>
-            Object3D.createPrimitive('Terrain')
+            Node3D.createPrimitive('Terrain')
     }
 );

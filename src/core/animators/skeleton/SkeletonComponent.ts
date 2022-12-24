@@ -1,7 +1,7 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Serializable } from '../../../serialization/Serializable';
 import { Component, RegisterComponent } from '../../../ecs/Component';
-import { Object3D } from '../../core/Object3D';
+import { Node3D } from '../../core/Node3D';
 
 declare global
 {
@@ -35,7 +35,7 @@ export class SkeletonComponent extends Component
     {
         for (let i = 0; i < this.boneNames.length; i++)
         {
-            const jointObject = this.object3D.find(this.boneNames[i]) as Object3D;
+            const jointObject = this.object3D.find(this.boneNames[i]) as Node3D;
 
             this._globalMatrices[i] = this._globalMatrices[i] || new Matrix4x4();
             this._globalMatrices[i].copy(jointObject.globalMatrix).prepend(this.boneInverses[i]);
