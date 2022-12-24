@@ -1,3 +1,4 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
@@ -6,10 +7,10 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { Component, RegisterComponent } from '../../ecs/Component';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';
+import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
 
 declare global
@@ -43,7 +44,7 @@ declare global
 @AddComponentMenu('Layout/TransformLayout')
 @RegisterComponent()
 @Serializable()
-export class TransformLayout extends Component
+export class TransformLayout extends Component3D
 {
     get single() { return true; }
 
@@ -183,7 +184,7 @@ export class TransformLayout extends Component
     {
         if (!this._layoutInvalid) return;
 
-        const transformLayout = this.object3D && this.object3D.parent && this.object3D.parent.getComponent(TransformLayout);
+        const transformLayout = this.node3d?.parent?.getComponent(TransformLayout);
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标
@@ -248,9 +249,9 @@ export class TransformLayout extends Component
         }
 
         //
-        this.object3D.position.x = anchorLeftTop.x + position.x;
-        this.object3D.position.y = anchorLeftTop.y + position.y;
-        this.object3D.position.z = anchorLeftTop.z + position.z;
+        this.node3d.position.x = anchorLeftTop.x + position.x;
+        this.node3d.position.y = anchorLeftTop.y + position.y;
+        this.node3d.position.z = anchorLeftTop.z + position.z;
         //
         this._layoutInvalid = false;
         ticker.offFrame(this._updateLayout, this);

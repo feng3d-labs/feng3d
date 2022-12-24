@@ -41,13 +41,13 @@ export class HoldSizeComponent extends Component
 
     init()
     {
-        this.object3D.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.entity.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
     }
 
     dispose()
     {
         this.camera = null;
-        this.object3D.off('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.entity.off('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
         super.dispose();
     }
 
@@ -60,12 +60,12 @@ export class HoldSizeComponent extends Component
 
     private _invalidateGlobalTransform()
     {
-        if (this._object3D) this.object3D['_invalidateGlobalMatrix']();
+        if (this._entity) this.entity['_invalidateGlobalMatrix']();
     }
 
     private _onUpdateLocalToWorldMatrix()
     {
-        const _globalMatrix = this.object3D['_globalMatrix'];
+        const _globalMatrix = this.entity['_globalMatrix'];
         if (this.holdSize && this.camera && _globalMatrix)
         {
             const depthScale = this._getDepthScale(this.camera);
@@ -79,8 +79,8 @@ export class HoldSizeComponent extends Component
 
     private _getDepthScale(camera: Camera)
     {
-        const cameraGlobalMatrix = camera.object3D.globalMatrix;
-        const distance = this.object3D.worldPosition.subTo(cameraGlobalMatrix.getPosition());
+        const cameraGlobalMatrix = camera.entity.globalMatrix;
+        const distance = this.entity.worldPosition.subTo(cameraGlobalMatrix.getPosition());
         if (distance.length === 0)
         {
             distance.x = 1;

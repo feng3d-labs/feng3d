@@ -53,7 +53,7 @@ export class Light extends Behaviour
      */
     get position()
     {
-        return this.object3D.worldPosition;
+        return this.entity.worldPosition;
     }
 
     /**
@@ -61,7 +61,7 @@ export class Light extends Behaviour
      */
     get direction()
     {
-        return this.object3D.globalMatrix.getAxisZ();
+        return this.entity.globalMatrix.getAxisZ();
     }
 
     /**
@@ -147,13 +147,13 @@ export class Light extends Behaviour
         }
 
         const depth = viewCamera.lens.near * 2;
-        object3D.position = viewCamera.object3D.worldPosition.addTo(viewCamera.object3D.globalMatrix.getAxisZ().scaleNumberTo(depth));
+        object3D.position = viewCamera.entity.worldPosition.addTo(viewCamera.entity.globalMatrix.getAxisZ().scaleNumberTo(depth));
         const billboardComponent = object3D.getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)
         {
-            scene.object3D.addChild(object3D);
+            scene.entity.addChild(object3D);
         }
         else
         {

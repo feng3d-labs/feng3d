@@ -90,7 +90,7 @@ export class Animation extends Behaviour
 
     private getPropertyHost(propertyClip: PropertyClip)
     {
-        let propertyHost = this.object3D;
+        let propertyHost = this.entity;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)

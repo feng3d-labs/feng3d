@@ -55,12 +55,12 @@ export class SkinnedMeshRenderer extends Component
 
     private get u_modelMatrix()
     {
-        return this.object3D.globalMatrix;
+        return this.entity.globalMatrix;
     }
 
     private get u_ITModelMatrix()
     {
-        return this.object3D.globalNormalMatrix;
+        return this.entity.globalNormalMatrix;
     }
 
     private get u_skeletonGlobalMatrices()

@@ -35,7 +35,7 @@ export class SkeletonComponent extends Component
     {
         for (let i = 0; i < this.boneNames.length; i++)
         {
-            const jointObject = this.object3D.find(this.boneNames[i]) as Node3D;
+            const jointObject = this.entity.find(this.boneNames[i]) as Node3D;
 
             this._globalMatrices[i] = this._globalMatrices[i] || new Matrix4x4();
             this._globalMatrices[i].copy(jointObject.globalMatrix).prepend(this.boneInverses[i]);

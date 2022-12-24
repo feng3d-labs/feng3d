@@ -298,7 +298,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
         { this.removeComponentsByType(<Constructor<Components>>component.constructor); }
 
         this._components.splice(index, 0, component);
-        component.setObject3D(this as any);
+        component.setEntity(this as any);
         component.init();
         // 派发添加组件事件
         this.emit('addComponent', { component, entity: this as any }, true);

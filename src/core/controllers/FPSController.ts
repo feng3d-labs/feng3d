@@ -145,7 +145,7 @@ export class FPSController extends Behaviour
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
 
-            const matrix = this.object3D.globalMatrix;
+            const matrix = this.entity.globalMatrix;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -153,7 +153,7 @@ export class FPSController extends Behaviour
                 up.scaleNumber(-1);
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-            this.object3D.globalMatrix = matrix;
+            this.entity.globalMatrix = matrix;
             //
             this.preMousePoint = this.mousePoint;
             this.mousePoint = null;
@@ -172,9 +172,9 @@ export class FPSController extends Behaviour
         accelerationVec.scaleNumber(this.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = this.object3D.matrix.getAxisX();
-        const up = this.object3D.matrix.getAxisY();
-        const forward = this.object3D.matrix.getAxisZ();
+        const right = this.entity.matrix.getAxisX();
+        const up = this.entity.matrix.getAxisY();
+        const forward = this.entity.matrix.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);
@@ -182,9 +182,9 @@ export class FPSController extends Behaviour
         const displacement = right.clone();
         displacement.add(up);
         displacement.add(forward);
-        this.object3D.x += displacement.x;
-        this.object3D.y += displacement.y;
-        this.object3D.z += displacement.z;
+        this.entity.x += displacement.x;
+        this.entity.y += displacement.y;
+        this.entity.z += displacement.z;
     }
     private mousePoint: Vector2 | null;
     /**

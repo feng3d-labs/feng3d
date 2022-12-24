@@ -1,6 +1,6 @@
 import { Camera } from "../../core/cameras/Camera";
 import { HideFlags } from "../../core/core/HideFlags";
-import { Node } from "../../core/core/Node";
+import { Node, NodeEventMap } from "../../core/core/Node";
 import { Node3D } from "../../core/core/Node3D";
 import { TransformLayout } from "../../core/core/TransformLayout";
 import { Scene } from "../../core/scene/Scene";
@@ -19,12 +19,19 @@ declare global
 }
 
 /**
+ * 2D结点事件映射
+ */
+export interface Node2DEventMap extends NodeEventMap
+{
+}
+
+/**
  * 2D结点
  * 
  * 用于构建2D场景树结构，处理2D对象的位移旋转缩放等空间数据。
  */
 @Serializable()
-export class Node2D extends Node
+export class Node2D extends Node<Node2DEventMap>
 {
     get single() { return true; }
 

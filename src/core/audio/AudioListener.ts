@@ -62,7 +62,7 @@ export class AudioListener extends Behaviour
 
     private _onGlobalMatrixChanged()
     {
-        const globalMatrix = this.object3D.globalMatrix;
+        const globalMatrix = this.entity.globalMatrix;
         const position = globalMatrix.getPosition();
         const forward = globalMatrix.getAxisZ();
         const up = globalMatrix.getAxisY();

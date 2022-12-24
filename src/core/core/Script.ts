@@ -11,7 +11,7 @@ export class Script
      */
     get object3D(): Node3D
     {
-        return this.component.object3D;
+        return this.component.entity;
     }
 
     /**

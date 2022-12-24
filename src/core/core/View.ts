@@ -49,7 +49,7 @@ export class View
             if (cameras.length === 0)
             {
                 this._camera = serialization.setValue(new Node3D(), { name: 'defaultCamera' }).addComponent(Camera);
-                this.scene.object3D.addChild(this._camera.object3D);
+                this.scene.entity.addChild(this._camera.entity);
             }
             else
             {
@@ -73,7 +73,7 @@ export class View
      */
     get root()
     {
-        return this.scene.object3D;
+        return this.scene.entity;
     }
 
     get gl()
@@ -300,9 +300,9 @@ export class View
         const max = s.clone().max(e);
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
-        let object3Ds = this.scene.object3D.traverse((object3D: Node3D) =>
+        let object3Ds = this.scene.entity.traverse((object3D: Node3D) =>
         {
-            if (object3D === this.scene.object3D) return;
+            if (object3D === this.scene.entity) return;
 
             return object3D;
         });
@@ -342,14 +342,14 @@ export class View
         const camera = Node3D.createPrimitive('Camera', { name: 'Main Camera' });
         camera.addComponent(AudioListener);
         camera.position = new Vector3(0, 1, -10);
-        scene.object3D.addChild(camera);
+        scene.entity.addChild(camera);
 
         const directionalLight = serialization.setValue(new Node3D(), { name: 'DirectionalLight' });
         directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
         directionalLight.rx = 50;
         directionalLight.ry = -30;
         directionalLight.y = 3;
-        scene.object3D.addChild(directionalLight);
+        scene.entity.addChild(directionalLight);
 
         return scene;
     }

@@ -64,11 +64,11 @@ export class Water extends Component
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
         const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
-        const sun = this.object3D.scene.activeDirectionalLights[0];
+        const sun = this.entity.scene.activeDirectionalLights[0];
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
-            uniforms.u_sunDirection = sun.object3D.globalMatrix.getAxisZ().negate();
+            uniforms.u_sunDirection = sun.entity.globalMatrix.getAxisZ().negate();
         }
 
         const clipBias = 0;
@@ -82,10 +82,10 @@ export class Water extends Component
         // eslint-disable-next-line no-constant-condition
         if (1) return;
         //
-        const mirrorWorldPosition = this.object3D.worldPosition;
-        const cameraWorldPosition = camera.object3D.worldPosition;
+        const mirrorWorldPosition = this.entity.worldPosition;
+        const cameraWorldPosition = camera.entity.worldPosition;
 
-        let rotationMatrix = this.object3D.rotationMatrix;
+        let rotationMatrix = this.entity.rotationMatrix;
 
         const normal = rotationMatrix.getAxisZ();
 
@@ -95,7 +95,7 @@ export class Water extends Component
         view.reflect(normal).negate();
         view.add(mirrorWorldPosition);
 
-        rotationMatrix = camera.object3D.rotationMatrix;
+        rotationMatrix = camera.entity.rotationMatrix;
 
         const lookAtPosition = new Vector3(0, 0, -1);
         lookAtPosition.applyMatrix4x4(rotationMatrix);
@@ -106,8 +106,8 @@ export class Water extends Component
         target.add(mirrorWorldPosition);
 
         const mirrorCamera = serialization.setValue(new Node3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
-        mirrorCamera.object3D.position = view;
-        mirrorCamera.object3D.lookAt(target, rotationMatrix.getAxisY());
+        mirrorCamera.entity.position = view;
+        mirrorCamera.entity.lookAt(target, rotationMatrix.getAxisY());
 
         mirrorCamera.lens = camera.lens.clone();
 
@@ -121,7 +121,7 @@ export class Water extends Component
         );
         textureMatrix.append(mirrorCamera.viewProjection);
 
-        const mirrorPlane = new Plane().fromNormalAndPoint(mirrorCamera.object3D.globalInvertMatrix.transformVector3(normal), mirrorCamera.object3D.globalInvertMatrix.transformPoint3(mirrorWorldPosition));
+        const mirrorPlane = new Plane().fromNormalAndPoint(mirrorCamera.entity.globalInvertMatrix.transformVector3(normal), mirrorCamera.entity.globalInvertMatrix.transformPoint3(mirrorWorldPosition));
         const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
         const projectionMatrix = mirrorCamera.lens.matrix;
@@ -140,7 +140,7 @@ export class Water extends Component
         projectionMatrix.elements[14] = clipPlane.w;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const eye = camera.object3D.worldPosition;
+        const eye = camera.entity.worldPosition;
 
         // 不支持直接操作gl，下面代码暂时注释掉！
         // //

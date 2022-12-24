@@ -84,7 +84,7 @@ export class Renderer extends Behaviour
      */
     protected _updateWorldBounds()
     {
-        this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.object3D.globalMatrix);
+        this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.entity.globalMatrix);
     }
 
     /**

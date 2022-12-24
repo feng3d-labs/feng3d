@@ -49,9 +49,9 @@ export class MouseRenderer extends EventEmitter
 
     protected drawRenderables(_gl: WebGLRenderingContext, renderable: Renderer)
     {
-        if (renderable.object3D.mouseEnabled)
+        if (renderable.entity.mouseEnabled)
         {
-            const object = renderable.object3D;
+            const object = renderable.entity;
             const uObjectID = this.objects.length;
             this.objects[uObjectID] = object;
 

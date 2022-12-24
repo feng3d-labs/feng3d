@@ -37,7 +37,7 @@ export class Behaviour extends Component
      */
     get isVisibleAndEnabled()
     {
-        const v = this.enabled && this.object3D && this.object3D.visible;
+        const v = this.enabled && this.entity && this.entity.visible;
 
         return v;
     }

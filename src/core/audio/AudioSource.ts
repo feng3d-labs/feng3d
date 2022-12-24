@@ -292,7 +292,7 @@ export class AudioSource extends Behaviour
 
     private _onScenetransformChanged()
     {
-        const globalMatrix = this.object3D.globalMatrix;
+        const globalMatrix = this.entity.globalMatrix;
         const scenePosition = globalMatrix.getPosition();
 
         //

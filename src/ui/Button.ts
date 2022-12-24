@@ -95,7 +95,7 @@ export class Button extends Behaviour
         const stateData = {};
         // 出现相同名称时，只保存第一个数据
         const childMap: { [name: string]: Node3D } = {};
-        this.object3D.children.forEach((child) =>
+        this.entity.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
             childMap[child.name] = child;
@@ -134,7 +134,7 @@ export class Button extends Behaviour
         const statedata = this.allStateData[this.state];
         if (!statedata) return;
         const childMap: { [name: string]: Node3D } = {};
-        this.object3D.children.forEach((child) =>
+        this.entity.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
             childMap[child.name] = child;

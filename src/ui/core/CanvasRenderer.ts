@@ -52,7 +52,7 @@ export class CanvasRenderer extends Component
             worldRay = canvas.mouseRay;
         }
 
-        const localRay = TransformUtils.rayWorldToLocal(this.object3D, worldRay);
+        const localRay = TransformUtils.rayWorldToLocal(this.entity, worldRay);
         if (this.transform2D)
         {
             const size = new Vector3(this.transform2D.size.x, this.transform2D.size.y, 1);

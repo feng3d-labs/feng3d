@@ -88,17 +88,17 @@ export class Canvas extends Behaviour
 
         this.transform2D.pivot.set(0, 0);
 
-        this.object3D.x = 0;
-        this.object3D.y = 0;
-        this.object3D.z = 0;
+        this.entity.x = 0;
+        this.entity.y = 0;
+        this.entity.z = 0;
 
-        this.object3D.rx = 0;
-        this.object3D.ry = 0;
-        this.object3D.rz = 0;
+        this.entity.rx = 0;
+        this.entity.ry = 0;
+        this.entity.rz = 0;
 
-        this.object3D.sx = 1;
-        this.object3D.sy = 1;
-        this.object3D.sz = 1;
+        this.entity.sx = 1;
+        this.entity.sy = 1;
+        this.entity.sz = 1;
 
         const near = this.near;
         const far = this.far;

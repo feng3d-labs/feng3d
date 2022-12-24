@@ -78,11 +78,11 @@ export class Scene extends Component
     init()
     {
         super.init();
-        this.object3D.hideFlags = this.object3D.hideFlags | HideFlags.DontTransform;
+        this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
 
         //
-        this._object3D['_scene'] = this;
-        this._object3D['updateChildrenScene']();
+        this._entity['_scene'] = this;
+        this._entity['updateChildrenScene']();
     }
 
     update(interval?: number)
@@ -147,7 +147,7 @@ export class Scene extends Component
 
     get activeSkyBoxs()
     {
-        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => i.object3D.globalVisible);
+        this._activeSkyBoxs = this._activeSkyBoxs || this.skyBoxs.filter((i) => i.entity.globalVisible);
 
         return this._activeSkyBoxs;
     }
@@ -227,7 +227,7 @@ export class Scene extends Component
         if (this._mouseCheckObjects)
         { return this._mouseCheckObjects; }
 
-        let checkList = this.object3D.children;
+        let checkList = this.entity.children;
         this._mouseCheckObjects = [];
         let i = 0;
         // 获取所有需要拾取的对象并分层存储
@@ -267,7 +267,7 @@ export class Scene extends Component
      */
     getPickByDirectionalLight(_light: DirectionalLight)
     {
-        const openList = [this.object3D];
+        const openList = [this.entity];
         const targets: Renderer[] = [];
         while (openList.length > 0)
         {

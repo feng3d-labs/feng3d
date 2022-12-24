@@ -23,9 +23,9 @@ export class ForwardRenderer
         //
         uniforms.u_projectionMatrix = camera.lens.matrix;
         uniforms.u_viewProjection = camera.viewProjection;
-        uniforms.u_viewMatrix = camera.object3D.globalInvertMatrix;
-        uniforms.u_cameraMatrix = camera.object3D.globalMatrix;
-        uniforms.u_cameraPos = camera.object3D.worldPosition;
+        uniforms.u_viewMatrix = camera.entity.globalInvertMatrix;
+        uniforms.u_cameraMatrix = camera.entity.globalMatrix;
+        uniforms.u_cameraPos = camera.entity.worldPosition;
         uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
         uniforms.u_sceneAmbientColor = scene.ambientColor;
