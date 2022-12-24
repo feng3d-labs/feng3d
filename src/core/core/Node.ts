@@ -3,38 +3,38 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component } from '../../ecs/Component';
 import { Entity, EntityEventMap } from '../../ecs/Entity';
 
-export interface ContainerEventMap extends EntityEventMap
+export interface NodeEventMap extends EntityEventMap
 {
     /**
      * 添加了子对象，当child被添加到parent中时派发冒泡事件
      */
-    addChild: { parent: Container, child: Container }
+    addChild: { parent: Node, child: Node }
 
     /**
      * 删除了子对象，当child被parent移除时派发冒泡事件
      */
-    removeChild: { parent: Container, child: Container };
+    removeChild: { parent: Node, child: Node };
 
     /**
      * 自身被添加到父对象中事件
      */
-    added: { parent: Container };
+    added: { parent: Node };
 
     /**
      * 自身从父对象中移除事件
      */
-    removed: { parent: Container };
+    removed: { parent: Node };
 }
 
 /**
- * 容器
- *
- * 可以包含子对象，用于构成场景树结构。
+ * 结点
+ * 
+ * 解决父子结点关系，用于构建3D或者2D等场景树结构。
  */
-export class Container<T extends ContainerEventMap = ContainerEventMap> extends Entity<T>
+export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
 {
-    protected _parent: Container;
-    protected _children: Container[] = [];
+    protected _parent: Node;
+    protected _children: Node[] = [];
 
     /**
      * 父对象
@@ -137,7 +137,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @param child 可能的子孙对象
      */
-    contains(child: Container)
+    contains(child: Node)
     {
         let checkItem = child;
         do
@@ -157,7 +157,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @param child 子对象
      */
-    addChild(child: Container)
+    addChild(child: Node)
     {
         if (!child)
         {
@@ -193,11 +193,11 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @param children 子对象
      */
-    addChildren(...children: Container[])
+    addChildren(...children: Node[])
     {
         for (const childKey in children)
         {
-            const child: Container = children[childKey];
+            const child: Node = children[childKey];
             this.addChild(child);
         }
     }
@@ -226,7 +226,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @param child 子对象
      */
-    removeChild(child: Container)
+    removeChild(child: Node)
     {
         if (!child) return;
         const childIndex = this._children.indexOf(child);
@@ -256,7 +256,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
         return this._children[index];
     }
 
-    private removeChildInternal(childIndex: number, child: Container)
+    private removeChildInternal(childIndex: number, child: Node)
     {
         this._children.splice(childIndex, 1);
         child._setParent(null);
@@ -265,7 +265,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
         this.emit('removeChild', { child, parent: this as any }, true);
     }
 
-    protected _setParent(value: Container | null)
+    protected _setParent(value: Node | null)
     {
         this._parent = value;
     }
@@ -287,7 +287,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @param name 对象名称
      */
-    find(name: string): Container
+    find(name: string): Node
     {
         if (this.name === name)
         {
@@ -313,7 +313,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @returns 回调函数结果的列表。
      */
-    traverse<T>(callback: (container: Container) => T, results: T[] = [])
+    traverse<T>(callback: (container: Node) => T, results: T[] = [])
     {
         const result = callback(this);
         results.push(result);
@@ -334,7 +334,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @returns 回调函数结果的列表。
      */
-    traverseVisible(callback: (container: Container) => T, results: T[] = [])
+    traverseVisible(callback: (container: Node) => T, results: T[] = [])
     {
         if (this.visible === false) return;
         const result = callback(this);
@@ -356,7 +356,7 @@ export class Container<T extends ContainerEventMap = ContainerEventMap> extends 
      *
      * @returns 回调函数结果的列表。
      */
-    traverseAncestors(callback: (container: Container) => T, results: T[] = [])
+    traverseAncestors(callback: (container: Node) => T, results: T[] = [])
     {
         const parent = this.parent;
         if (parent !== null)

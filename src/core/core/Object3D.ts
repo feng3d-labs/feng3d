@@ -16,10 +16,10 @@ import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
-import { Container, ContainerEventMap } from './Container';
+import { Node, NodeEventMap } from './Node';
 import { HideFlags } from './HideFlags';
+import { MeshRenderer } from './MeshRenderer';
 import { MouseEventMap } from './Mouse3DManager';
-import { Renderer } from './Renderer';
 import { ScriptComponent } from './ScriptComponent';
 
 declare global
@@ -29,7 +29,7 @@ declare global
     interface MixinsObject3D { }
 }
 
-export interface Object3DEventMap extends ContainerEventMap, MixinsObject3DEventMap, MouseEventMap
+export interface Object3DEventMap extends NodeEventMap, MixinsObject3DEventMap, MouseEventMap
 {
     /**
      * 本地矩阵发生变化
@@ -100,7 +100,7 @@ export interface Object3D extends MixinsObject3D
  * 游戏对象，场景唯一存在的对象类型
  */
 @Serializable()
-export class Object3D extends Container<Object3DEventMap>
+export class Object3D extends Node<Object3DEventMap>
 {
     __class__: 'Object3D';
 
@@ -524,7 +524,7 @@ export class Object3D extends Container<Object3DEventMap>
      */
     get isSelfLoaded()
     {
-        const model = this.getComponent(Renderer);
+        const model = this.getComponent(MeshRenderer);
         if (model) return model.isLoaded;
 
         return true;
@@ -542,7 +542,7 @@ export class Object3D extends Container<Object3DEventMap>
 
             return;
         }
-        const model = this.getComponent(Renderer);
+        const model = this.getComponent(MeshRenderer);
         if (model)
         {
             model.onLoadCompleted(callback);
