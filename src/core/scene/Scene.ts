@@ -10,8 +10,6 @@ import { Component3D } from '../core/Component3D';
 import { HideFlags } from '../core/HideFlags';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
-import { NodeComponent } from '../core/NodeComponent';
-import { Renderer } from '../core/Renderer';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { DirectionalLight } from '../light/DirectionalLight';
 import { PointLight } from '../light/PointLight';
@@ -112,7 +110,7 @@ export class Scene extends Component3D
 
         this.behaviours.forEach((element) =>
         {
-            if (element.isVisibleAndEnabled && Boolean(this.runEnvironment & element.runEnvironment))
+            if (element !== this && element.isVisibleAndEnabled && Boolean(this.runEnvironment & element.runEnvironment))
             { element.update(interval); }
         });
     }
@@ -212,7 +210,7 @@ export class Scene extends Component3D
 
     get behaviours()
     {
-        this._behaviours = this._behaviours || this.getComponentsInChildren(NodeComponent);
+        this._behaviours = this._behaviours || this.getComponentsInChildren(Component3D);
 
         return this._behaviours;
     }
@@ -240,7 +238,7 @@ export class Scene extends Component3D
             const checkObject = checkList[i++];
             if (checkObject.mouseEnabled)
             {
-                if (checkObject.getComponents(Renderer))
+                if (checkObject.getComponents(MeshRenderer))
                 {
                     this._mouseCheckObjects.push(checkObject);
                 }
@@ -333,7 +331,7 @@ export class Scene extends Component3D
     private _activeSpotLights: SpotLight[];
     private _animations: Animation[];
     private _activeAnimations: Animation[];
-    private _behaviours: NodeComponent[];
-    private _activeBehaviours: NodeComponent[];
+    private _behaviours: Component3D[];
+    private _activeBehaviours: Component3D[];
     private _pickMap = new Map<Camera, ScenePickCache>();
 }

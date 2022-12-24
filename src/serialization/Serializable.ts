@@ -1,14 +1,7 @@
-import { ConstructorOf } from "../polyfill/Types";
+import { Constructor } from "../polyfill/Types";
 import { __class__ } from "./SerializationConst";
 
-/**
- * 类名称与定义映射
- */
-export interface ClassMap extends MixinsClassMap
-{
-}
-
-export const _definitionCache: ConstructorOf<ClassMap> = {} as any;
+export const _definitionCache = {};
 
 /**
  * 标记可序列化类
@@ -17,9 +10,9 @@ export const _definitionCache: ConstructorOf<ClassMap> = {} as any;
  * 
  * @see https://docs.unity3d.com/cn/current/ScriptReference/Serializable.html
  */
-export function Serializable<K extends keyof ClassMap>(className?: K)
+export function Serializable(className?: string)
 {
-    return (constructor: ConstructorOf<ClassMap>[K]) =>
+    return (constructor: Constructor<any>) =>
     {
         const prototype = constructor.prototype;
         if (!className)
@@ -30,21 +23,3 @@ export function Serializable<K extends keyof ClassMap>(className?: K)
         Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
     };
 }
-
-
-declare global
-{
-    interface MixinsClassMap
-    {
-        Number: Number;
-        Boolean: Boolean;
-        String: String;
-        Object: Object;
-    }
-}
-
-// 标记 JS 内置类型
-Serializable('Object')(Object);
-Serializable('Number')(Number);
-Serializable('String')(String);
-Serializable('Boolean')(Boolean);

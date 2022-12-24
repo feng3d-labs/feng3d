@@ -446,9 +446,9 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
 
         for (let i = 0; i < this.children.length; i++)
         {
-            const container = this.children[i];
-            if (!includeInactive && !container.visible) continue;
-            container.getComponentsInChildren(type, includeInactive, results);
+            const node = this.children[i];
+            if (!includeInactive && !node.visible) continue;
+            node.getComponentsInChildren(type, includeInactive, results);
         }
 
         return results;

@@ -1,4 +1,4 @@
-import { ClassMap, _definitionCache } from "./Serializable";
+import { _definitionCache } from "./Serializable";
 
 declare global
 {
@@ -16,14 +16,27 @@ declare global
  *
  * @param classname 类名称
  */
-export function getInstance<K extends keyof ClassMap>(classname: K)
+export function getInstance(classname: string)
 {
-    const Cls = _definitionCache[classname];
+    let Cls = _definitionCache[classname];
+
+    // 如果未定义则从全局查找
+    if (!Cls)
+    {
+        let definition = globalThis[classname];
+        if (definition && typeof definition === 'function' && definition.name === classname)
+        {
+            _definitionCache[classname] = definition;
+            Cls = definition as any;
+        }
+    }
+
+    //
     console.assert(Cls, `${classname} 未注册，请使用 @Serializable 进行注册反序列化的类。`);
 
     if (Cls.__create__)
     {
-        return Cls.__create__<ClassMap[K]>();
+        return Cls.__create__();
     }
 
     const instance = new Cls();

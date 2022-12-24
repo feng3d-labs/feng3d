@@ -20,14 +20,6 @@ declare global
     }
 }
 
-declare global
-{
-    interface MixinsClassMap
-    {
-        Terrain: Terrain
-    }
-}
-
 /**
  * The Terrain component renders the terrain.
  */

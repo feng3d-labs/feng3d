@@ -1,18 +1,8 @@
 import { equal } from 'assert';
-import { Vector2 } from '../../src/math/geom/Vector2';
 import { Vector3 } from '../../src/math/geom/Vector3';
 import { getClassName } from '../../src/serialization/getClassName';
 import { getInstance } from '../../src/serialization/getInstance';
 import { Serializable } from '../../src/serialization/Serializable';
-
-declare global
-{
-    interface MixinsClassMap
-    {
-        Vector2: Vector2
-        '别名': RegisteredClass别名
-    }
-}
 
 /**
  * 未使用 @Serializable() 进行注册的类
