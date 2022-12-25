@@ -32,7 +32,7 @@ declare global
 @Serializable('TorusKnotGeometry')
 export class TorusKnotGeometry extends Geometry
 {
-    declare __class__: 'TorusKnotGeometry' = 'TorusKnotGeometry';
+    declare __class__: 'TorusKnotGeometry';
 
     radius = 1;
     tube = 0.4;

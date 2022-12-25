@@ -34,7 +34,7 @@ declare global
 @Serializable('LatheGeometry')
 export class LatheGeometry extends Geometry
 {
-    declare __class__: 'LatheGeometry' = 'LatheGeometry';
+    declare __class__: 'LatheGeometry';
 
     points = [new Vector2(0, -0.5), new Vector2(0.5, 0), new Vector2(0, 0.5)];
     segments = 12;

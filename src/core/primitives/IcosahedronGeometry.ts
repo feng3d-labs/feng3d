@@ -34,7 +34,7 @@ declare global
 @Serializable('IcosahedronGeometry')
 export class IcosahedronGeometry extends Geometry
 {
-    declare __class__: 'IcosahedronGeometry' = 'IcosahedronGeometry';
+    declare __class__: 'IcosahedronGeometry';
 
     /**
      * 半径

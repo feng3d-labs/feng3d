@@ -50,7 +50,7 @@ export interface IRingGeometry
 @Serializable('RingGeometry')
 export class RingGeometry extends Geometry
 {
-    declare __class__: 'RingGeometry' = 'RingGeometry';
+    declare __class__: 'RingGeometry';
 
     @SerializeProperty()
     @oav()

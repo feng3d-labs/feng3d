@@ -31,7 +31,7 @@ declare global
 @Serializable('ConeGeometry')
 export class ConeGeometry extends Geometry
 {
-    declare __class__: 'ConeGeometry' = 'ConeGeometry';
+    declare __class__: 'ConeGeometry';
 
     name = 'Cone';
 
