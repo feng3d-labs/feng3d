@@ -104,7 +104,7 @@ describe('Serialization', () =>
         a.a2 = a;
 
         const r = serialization.serialize(a);
-
+        console.log(r);
         const r1 = serialization.deserialize(r);
         deepEqual(a, r1);
 

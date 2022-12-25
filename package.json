@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "webgl 3d engine",
   "standalone": true,
   "main": "src/index.ts",

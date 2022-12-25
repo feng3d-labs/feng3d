@@ -248,7 +248,6 @@ export class Serialization
             const value = refs.target[refs.property];
 
             delete value[serializeIsRawKey];
-            delete value[serializeRefKey];
             refs.refs.forEach((ref) =>
             {
                 ref.target[ref.property] = value;
@@ -366,15 +365,13 @@ serialization.serializeHandlers.push(
 
                 if (!ObjectUtils.isBaseType(tpv))
                 {
-                    if (!tpv[serializeRefKey])
+                    if (tpv[serializeIsRawKey] == undefined)
                     {
-                        tpv[serializeRefKey] = param.autoRefID++;
-                        tpv[serializeIsRawKey] = true;
+                        tpv[serializeIsRawKey] = param.autoRefID++;
                     }
                     const newtpv: any = {};
 
-                    newtpv[serializeRefKey] = tpv[serializeRefKey];
-                    newtpv[serializeIsRefKey] = true;
+                    newtpv[serializeIsRefKey] = tpv[serializeIsRawKey];
                     target[property] = newtpv;
 
                     return true;
@@ -575,7 +572,17 @@ serialization.deserializeHandlers = [
             return false;
         }
     },
-    // 处理循环引用以及多次引用
+    // 处理循环引用以及多次引用，学习 node.js 优化循环引用
+    /**
+     * ```
+     * var o = {};
+        o.o = o;
+        o.o1 = o;
+        o.o2 = o;
+
+        console.log(o);
+     * ```
+     */
     {
         priority: 0,
         handler(target, source, property, param)
@@ -584,9 +591,9 @@ serialization.deserializeHandlers = [
 
             const refs = param.refs;
 
-            if (spv[serializeRefKey] !== undefined)
+            if (spv[serializeIsRefKey] !== undefined || spv[serializeIsRawKey] !== undefined)
             {
-                const refid = spv[serializeRefKey];
+                const refid = spv[serializeIsRefKey] || spv[serializeIsRawKey];
 
                 const currentRef = refs[refid] = refs[refid] || { refs: [], target: null, property: null };
 
@@ -1052,8 +1059,14 @@ serialization.setValueHandlers = [
     };
 });
 
-const serializeRefKey = '__serialize__Ref__';
-const serializeIsRefKey = '__serialize__IsRef__';
-const serializeIsRawKey = '__serialize__IsRaw__';
+/**
+ * 别引用标记，最初出现。
+ */
+const serializeIsRawKey = '__ref__';
+/**
+ * 引用标记，多次出现时使用。
+ */
+const serializeIsRefKey = '__cycle__';
+
 const rootKey = '__root__';
 const protoKey = '__proto__';
