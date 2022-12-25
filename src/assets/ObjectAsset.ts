@@ -1,7 +1,7 @@
 import { FileAsset } from '../core/assets/FileAsset';
 import { objectEmitter } from '../event/ObjectEmitter';
 import { oav } from '../objectview/ObjectView';
-import { serialization } from '../serialization/Serialization';
+import { $serialize, serialization } from '../serialization/Serialization';
 import { watcher } from '../watcher/watcher';
 
 /**
@@ -24,7 +24,7 @@ export abstract class ObjectAsset extends FileAsset
     async saveFile()
     {
         this.data.assetId = this.assetId;
-        const d = serialization.serialize(this.data);
+        const d = $serialize(this.data);
         await this.rs.fs.writeObject(this.assetPath, d);
     }
 

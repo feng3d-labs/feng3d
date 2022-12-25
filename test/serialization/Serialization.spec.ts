@@ -1,5 +1,5 @@
 import { Serializable } from '../../src/serialization/Serializable';
-import { $clone, $diff, serialization } from '../../src/serialization/Serialization';
+import { $clone, $deserialize, $diff, $serialize, serialization } from '../../src/serialization/Serialization';
 import { SerializeProperty } from '../../src/serialization/SerializeProperty';
 
 import { assert, describe, expect, it } from 'vitest';
@@ -54,8 +54,8 @@ describe('Serialization', () =>
         {
             return a + b;
         }
-        const result = serialization.serialize(add);
-        const result1 = serialization.deserialize(result);
+        const result = $serialize(add);
+        const result1 = $deserialize(result);
 
         const a = Math.random();
         const b = Math.random();
@@ -64,19 +64,19 @@ describe('Serialization', () =>
 
         // 无法序列化复杂函数
         // // 序列化反序列化 serialization 工具中的函数列表
-        // const r0 = serialization.serialize(serialization.serializeHandlers);
-        // const serializeReplacers = serialization.deserialize(r0);
-        // const r = serialization.serialize(serialization.deserializeHandlers);
-        // const deserializeReplacers = serialization.deserialize(r);
+        // const r0 = $serialize($serializeHandlers);
+        // const serializeReplacers = $deserialize(r0);
+        // const r = $serialize($deserializeHandlers);
+        // const deserializeReplacers = $deserialize(r);
         // //
         // const mySerialization = new Serialization();
-        // mySerialization.serializeHandlers = serializeReplacers;
-        // mySerialization.deserializeHandlers = deserializeReplacers;
+        // my$serializeHandlers = serializeReplacers;
+        // my$deserializeHandlers = deserializeReplacers;
 
         // // 使用序列化反序列化后的 serialization 工具进行序列化函数测试
         // {
-        //     const result = mySerialization.serialize(add);
-        //     const result1 = mySerialization.deserialize(result);
+        //     const result = my$serialize(add);
+        //     const result1 = my$deserialize(result);
         //     const a = Math.random();
         //     const b = Math.random();
         //     ok(result1 !== add);
@@ -88,10 +88,10 @@ describe('Serialization', () =>
     {
         const arr = [1, 'abc', true, null, undefined];
 
-        const r = arr.map((v) => serialization.serialize(v));
+        const r = arr.map((v) => $serialize(v));
         deepEqual(arr, r);
 
-        const r1 = r.map((v) => serialization.deserialize(v));
+        const r1 = r.map((v) => $deserialize(v));
         deepEqual(arr, r1);
     });
 
@@ -113,9 +113,9 @@ describe('Serialization', () =>
         a.a1 = a;
         a.a2 = a;
 
-        const r = serialization.serialize(a);
+        const r = $serialize(a);
         console.log(r);
-        const r1 = serialization.deserialize(r);
+        const r1 = $deserialize(r);
         deepEqual(a, r1);
 
         ok(r1.a === r1);
@@ -124,27 +124,27 @@ describe('Serialization', () =>
 
         const aa = new LoopA();
 
-        const rr = serialization.serialize(aa);
+        const rr = $serialize(aa);
 
-        const rr1 = serialization.deserialize(rr);
+        const rr1 = $deserialize(rr);
         deepEqual(aa, rr1);
     });
 
     it('serialize&deserialize 带serializable属性对象', () =>
     {
         const obj = { Serializable: false, a: 1 };
-        const r = serialization.serialize(obj);
+        const r = $serialize(obj);
         ok(r === undefined);
 
         {
             obj.Serializable = true;
-            const r = serialization.serialize(obj);
+            const r = $serialize(obj);
             ok(r.a === obj.a);
         }
 
         {
             delete obj.Serializable;
-            const r = serialization.serialize(obj);
+            const r = $serialize(obj);
             ok(r.a === obj.a);
         }
     });
@@ -153,16 +153,16 @@ describe('Serialization', () =>
     // {
     //     const obj = new Feng3dObject();
     //     obj.hideFlags = HideFlags.DontSave;
-    //     const r = serialization.serialize(obj);
+    //     const r = $serialize(obj);
     //     ok(r === undefined);
 
     //     {
     //         obj.hideFlags = HideFlags.None;
-    //         const r = serialization.serialize(obj);
+    //         const r = $serialize(obj);
     //         deepEqual(r, <any>{ __class__: 'Feng3dObject' }); // 忽略默认值 hideFlags: HideFlags.None
     //     }
 
-    //     const obj1 = serialization.deserialize(r);
+    //     const obj1 = $deserialize(r);
     //     deepEqual(obj, obj1);
     // });
 
@@ -175,14 +175,14 @@ describe('Serialization', () =>
                 obj.a = this.a * 2;
             },
         };
-        const r = serialization.serialize(obj);
+        const r = $serialize(obj);
         ok(r.a === obj.a * 2);
 
         delete obj.serialize;
-        const r1 = serialization.serialize(obj);
+        const r1 = $serialize(obj);
         ok(r1.a === 1);
 
-        const r0 = serialization.deserialize(r1);
+        const r0 = $deserialize(r1);
         ok(r0.a === 1);
     });
 
@@ -190,8 +190,8 @@ describe('Serialization', () =>
     {
         const arr = [1, 2, 3, 'a', 'b'];
 
-        const result = serialization.serialize(arr);
-        const result1 = serialization.deserialize(result);
+        const result = $serialize(arr);
+        const result1 = $deserialize(result);
 
         deepEqual(arr, result1);
     });
@@ -200,8 +200,8 @@ describe('Serialization', () =>
     {
         const obj = { a: 1, b: 2, c: { f: 3, d: 'a', e: 'b' } };
 
-        const result = serialization.serialize(obj);
-        const result1 = serialization.deserialize(result);
+        const result = $serialize(obj);
+        const result1 = $deserialize(result);
 
         deepEqual(obj, result1);
     });
@@ -210,45 +210,45 @@ describe('Serialization', () =>
     {
         const base = new ObjectBase();
         base.id = Math.random();
-        const resultb = serialization.serialize(base);
-        const base1: ObjectBase = serialization.deserialize(resultb);
+        const resultb = $serialize(base);
+        const base1: ObjectBase = $deserialize(resultb);
         ok(base.id === base1.id);
 
         const c = new C();
         c.id = Math.random();
         c.a = Math.random();
         c.c = Math.random();
-        const result = serialization.serialize(c);
-        const c1: C = serialization.deserialize(result);
+        const result = $serialize(c);
+        const c1: C = $deserialize(result);
         deepEqual(c, c1);
 
         // // 检查 serialize 过程中使用 different 减少数据量
         // const o2 = new Vector2();
-        // const r2 = serialization.serialize(o2);
+        // const r2 = $serialize(o2);
         // deepEqual(r2, { __class__: 'Vector2' });
 
         // {
         //     o2.x = 1;
-        //     const r2 = serialization.serialize(o2);
+        //     const r2 = $serialize(o2);
         //     deepEqual(r2, { __class__: 'Vector2', x: 1 });
         // }
 
         // //
         // const obj = new Entity().addComponent(Node3D);
-        // const diff2 = serialization.serialize(obj);
+        // const diff2 = $serialize(obj);
         // deepEqual(diff2, { __class__: 'Node3D' });
 
         // //
-        // const obj2 = serialization.deserialize(diff2);
+        // const obj2 = $deserialize(diff2);
         // const diff = serialization.different(obj, obj2);
         // deepEqual(diff, {});
 
         // obj.x = 1;
-        // const r3 = serialization.serialize(obj);
+        // const r3 = $serialize(obj);
         // deepEqual(r3, { __class__: 'Node3D' });
 
         // //
-        // const obj3 = serialization.deserialize(r3);
+        // const obj3 = $deserialize(r3);
         // const diff1 = serialization.different(obj, obj3);
         // deepEqual(diff1, {});
 
@@ -353,8 +353,8 @@ describe('Serialization', () =>
     //     const o = { v: new Vector2() };
     //     const o1 = { v: new Vector3() };
 
-    //     const serO = serialization.serialize(o);
-    //     const serO1 = serialization.serialize(o1);
+    //     const serO = $serialize(o);
+    //     const serO1 = $serialize(o1);
 
     //     const diff = serialization.different(o, <any>o1);
     //     deepEqual(diff, serO);
@@ -376,7 +376,7 @@ describe('Serialization', () =>
     //     const o2 = { v: Material.getDefault('Default-Material') }; // 默认材质资源
     //     const o3 = { v: new Material() };
 
-    //     const expectDiff = serialization.serialize(o2);
+    //     const expectDiff = $serialize(o2);
     //     const diff1 = serialization.different(o2, o3);
     //     deepEqual(diff1, expectDiff);
     // });
@@ -405,10 +405,10 @@ describe('Serialization', () =>
     //     const curve = $set(new AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] });
 
     //     const curve1 = new AnimationCurve();
-    //     $set(curve1, serialization.serialize(curve));
+    //     $set(curve1, $serialize(curve));
 
-    //     const str = JSON.stringify(serialization.serialize(curve));
-    //     const str1 = JSON.stringify(serialization.serialize(curve1));
+    //     const str = JSON.stringify($serialize(curve));
+    //     const str1 = JSON.stringify($serialize(curve1));
 
     //     ok(str === str1);
     // });

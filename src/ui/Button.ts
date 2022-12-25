@@ -1,10 +1,9 @@
-import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
 import { Serializable } from '../serialization/Serializable';
-import { $set, serialization } from '../serialization/Serialization';
+import { $serialize, $set, serialization } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
@@ -102,7 +101,7 @@ export class Button extends Component2D
         });
         for (const childname in childMap)
         {
-            const jsonObj = serialization.serialize(childMap[childname]);
+            const jsonObj = $serialize(childMap[childname]);
             serialization.deleteClassKey(jsonObj);
             stateData[childname] = jsonObj;
         }

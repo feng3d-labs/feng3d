@@ -5,7 +5,7 @@ import { Texture2D } from '../../core/textures/Texture2D';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $serialize, serialization } from '../../serialization/Serialization';
 
 /**
  * 纹理文件
@@ -69,7 +69,7 @@ export class TextureAsset extends FileAsset
      */
     protected async writeMeta()
     {
-        this.meta.texture = serialization.serialize(this.data);
+        this.meta.texture = $serialize(this.data);
         await super.writeMeta();
     }
 }

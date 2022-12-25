@@ -7,7 +7,7 @@ import { mathUtil } from '../../../polyfill/MathUtil';
 import { ObjectUtils } from '../../../polyfill/ObjectUtils';
 import { Constructor, gPartial } from '../../../polyfill/Types';
 import { getInstance } from '../../../serialization/getInstance';
-import { $set, serialization } from '../../../serialization/Serialization';
+import { $deserialize, $set, serialization } from '../../../serialization/Serialization';
 import { __class__ } from '../../../serialization/SerializationConst';
 import { AssetData } from '../../core/AssetData';
 import { FileAsset } from '../FileAsset';
@@ -75,7 +75,7 @@ export class ReadRS
             const object = await this.fs.readObject(this.resources);
             if (object)
             {
-                const allAssets: FileAsset[] = <any>serialization.deserialize(object);
+                const allAssets: FileAsset[] = <any>$deserialize(object);
                 //
                 allAssets.forEach((asset) =>
                 {

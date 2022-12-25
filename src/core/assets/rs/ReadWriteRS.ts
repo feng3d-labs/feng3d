@@ -1,6 +1,6 @@
 import { ReadWriteFS } from '../../../filesystem/ReadWriteFS';
 import { gPartial } from '../../../polyfill/Types';
-import { serialization } from '../../../serialization/Serialization';
+import { $serialize, serialization } from '../../../serialization/Serialization';
 import { AssetData } from '../../core/AssetData';
 import { ticker } from '../../utils/Ticker';
 import { FileAsset } from '../FileAsset';
@@ -42,7 +42,7 @@ export class ReadWriteRS extends ReadRS
     private async save()
     {
         const allAssets = this.getAllAssets();
-        const object = serialization.serialize(allAssets);
+        const object = $serialize(allAssets);
         await this.fs.writeObject(this.resources, object);
     }
 
