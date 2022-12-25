@@ -1,6 +1,8 @@
-import { deepEqual } from 'assert';
 import { EventEmitter } from '../../src/event/EventEmitter';
 import { IEventTarget } from '../../src/event/IEventTarget';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 it('broadcast & bubbles', () =>
 {

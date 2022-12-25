@@ -1,5 +1,7 @@
-import { equal } from 'assert';
 import { watcher } from '../../src/watcher/watcher';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 describe('watcher.watchobject transform', () =>
 {

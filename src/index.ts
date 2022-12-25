@@ -123,6 +123,7 @@ export * from './core/utils/ImageUtil';
 export * from './core/utils/ObjectViewDefinitions';
 export * from './core/utils/RegExps';
 export * from './core/utils/Stats';
+export * from './core/utils/Task';
 export * from './core/utils/Ticker';
 export * from './core/utils/TransformUtils';
 export * from './core/utils/Uuid';
@@ -310,4 +311,3 @@ export * from './ui/text/drawText';
 export * from './ui/text/TextMetrics';
 export * from './ui/text/TextStyle';
 export * from './watcher/watcher';
-

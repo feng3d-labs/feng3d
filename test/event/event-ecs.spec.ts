@@ -1,7 +1,10 @@
-import { deepEqual } from 'assert';
 import { EventEmitter } from '../../src/event/EventEmitter';
 import { IEvent } from '../../src/event/IEvent';
 import { IEventTarget } from '../../src/event/IEventTarget';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
+
 // 要求
 // 1. Entity可以发射事件，Component无法发射事件。
 // 2. Entity发射的事件将会在Node组件之间传递，包括冒泡（向父结点传递）与广播（向子结点传递）。

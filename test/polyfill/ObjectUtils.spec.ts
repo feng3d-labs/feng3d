@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import { equal, ok } from 'assert';
 import { ObjectUtils } from '../../src/polyfill/ObjectUtils';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 class Vector2
 {

@@ -1,6 +1,8 @@
-import { ok } from 'assert';
 import { bezier } from '../../src/bezier/Bezier';
 import { equationSolving } from '../../src/bezier/EquationSolving';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual, strictEqual } = assert;
 
 describe('Bezier', () =>
 {

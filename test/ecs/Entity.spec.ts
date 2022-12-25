@@ -1,6 +1,8 @@
-import { ok } from 'assert';
 import { Entity } from '../../src/ecs/Entity';
 import { ComponentA, CustomComponent } from './common';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual, strictEqual } = assert;
 
 describe('Entity', () =>
 {

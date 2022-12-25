@@ -1,10 +1,12 @@
-import { deepEqual } from 'assert';
 import { RotationOrder } from '../../../src/math/enums/RotationOrder';
 import { Euler } from '../../../src/math/geom/Euler';
 import { Matrix4x4 } from '../../../src/math/geom/Matrix4x4';
 import { Quaternion } from '../../../src/math/geom/Quaternion';
 import { Vector3 } from '../../../src/math/geom/Vector3';
 import { mathUtil } from '../../../src/polyfill/MathUtil';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 describe('Euler', () =>
 {

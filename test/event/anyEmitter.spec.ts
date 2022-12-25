@@ -1,8 +1,10 @@
 /* eslint-disable camelcase */
 /* eslint-disable func-style */
-import { ok, strictEqual } from 'assert';
 import { anyEmitter } from '../../src/event/AnyEmitter';
 import { IEvent } from '../../src/event/IEvent';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual, strictEqual } = assert;
 
 it('可针对任意对象派发事件', () =>
 {

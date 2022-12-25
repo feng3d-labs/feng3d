@@ -1,8 +1,10 @@
-import { ok } from 'assert';
 import { Line3 } from '../../../src/math/geom/Line3';
 import { Plane } from '../../../src/math/geom/Plane';
 import { Vector3 } from '../../../src/math/geom/Vector3';
 import { mathUtil } from '../../../src/polyfill/MathUtil';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 describe('Plane', () =>
 {

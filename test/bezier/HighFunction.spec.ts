@@ -1,5 +1,7 @@
-import { ok } from 'assert';
 import { HighFunction } from '../../src/bezier/HighFunction';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual, strictEqual } = assert;
 
 describe('HighFunction', () =>
 {

@@ -1,7 +1,9 @@
-import { ok } from 'assert';
 import { Box3 } from '../../../src/math/geom/Box3';
 import { Triangle3 } from '../../../src/math/geom/Triangle3';
 import { Vector3 } from '../../../src/math/geom/Vector3';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 describe('Box3', () =>
 {

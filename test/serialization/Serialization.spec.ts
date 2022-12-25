@@ -1,7 +1,10 @@
-import { deepEqual, ok } from 'assert';
 import { Serializable } from '../../src/serialization/Serializable';
 import { serialization } from '../../src/serialization/Serialization';
 import { SerializeProperty } from '../../src/serialization/SerializeProperty';
+
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 class ObjectBase
 {

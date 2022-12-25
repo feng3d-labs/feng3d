@@ -2,13 +2,15 @@
  * @author bhouston / http://exocortex.com
  * @author TristanVALCKE / https://github.com/Itee
  */
-import { ok } from 'assert';
 import { Box3 } from '../../../src/math/geom/Box3';
 import { Frustum } from '../../../src/math/geom/Frustum';
 import { Matrix4x4 } from '../../../src/math/geom/Matrix4x4';
 import { Plane } from '../../../src/math/geom/Plane';
 import { Sphere } from '../../../src/math/geom/Sphere';
 import { Vector3 } from '../../../src/math/geom/Vector3';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 describe('Frustum', () =>
 {

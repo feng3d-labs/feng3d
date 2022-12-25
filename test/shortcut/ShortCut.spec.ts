@@ -1,6 +1,8 @@
-import { ok } from 'assert';
 import { EventEmitter } from '../../src/event/EventEmitter';
 import { shortcut } from '../../src/shortcut/ShortCut';
+
+import { assert, describe, it } from 'vitest';
+const { ok } = assert;
 
 describe('test', () =>
 {

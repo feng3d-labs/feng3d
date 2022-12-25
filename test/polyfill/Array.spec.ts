@@ -1,5 +1,7 @@
-import { deepEqual, equal, ok } from 'assert';
 import { ArrayUtils } from '../../src/polyfill/ArrayUtils';
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok, equal, deepEqual } = assert;
 
 describe('Array', () =>
 {

@@ -1,8 +1,11 @@
-import { equal } from 'assert';
 import { Vector3 } from '../../src/math/geom/Vector3';
 import { getClassName } from '../../src/serialization/getClassName';
 import { getInstance } from '../../src/serialization/getInstance';
 import { Serializable } from '../../src/serialization/Serializable';
+
+
+import { assert, describe, expect, it } from 'vitest'
+const { ok ,equal} = assert;
 
 /**
  * 未使用 @Serializable() 进行注册的类
