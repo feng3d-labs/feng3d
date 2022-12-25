@@ -203,6 +203,8 @@ function addTickerFunc(item: TickerFuncItem)
     }
     item.runtime = Date.now() + lazy.getValue(item.interval);
     tickerFuncs.push(item);
+
+    runTickerFuncs();
 }
 
 function removeTickerFunc(item: TickerFuncItem)
@@ -231,6 +233,10 @@ const affers: [Function, any[]][] = [];
 
 function runTickerFuncs()
 {
+    // 当没有任何需要处理的函数时终止循环
+    if (tickerFuncs.length === 0 && affers.length === 0) return;
+
+    //
     running = true;
     // 倒序，优先级高的排在后面
     tickerFuncs.sort((a, b) => <number>a.priority - <number>b.priority);
@@ -304,4 +310,3 @@ else
     localrequestAnimationFrame = requestAnimationFrame;
 }
 
-runTickerFuncs();
