@@ -1,7 +1,7 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemInheritVelocityMode } from '../enums/ParticleSystemInheritVelocityMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
@@ -34,7 +34,7 @@ export class ParticleInheritVelocityModule extends ParticleModule
      */
     @SerializeProperty()
     @oav({ tooltip: '曲线，用来定义在粒子的生命周期内应用了多少发射速度。' })
-    multiplier = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
+    multiplier = $set(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
      * Curve to define how much emitter velocity is applied during the lifetime of a particle.

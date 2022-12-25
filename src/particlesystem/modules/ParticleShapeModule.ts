@@ -4,7 +4,7 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';
@@ -112,7 +112,7 @@ export class ParticleShapeModule extends ParticleModule
      * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
      */
     @SerializeProperty()
-    arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
+    arcSpeed = $set(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
      * A multiplier of the arc speed of the emission shape.
@@ -255,7 +255,7 @@ export class ParticleShapeModule extends ParticleModule
      * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
      */
     @SerializeProperty()
-    radiusSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
+    radiusSpeed = $set(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
     /**
      * A multiplier of the radius speed of the emission shape.
@@ -444,7 +444,7 @@ export class ParticleShapeModule extends ParticleModule
                 console.warn(`错误 ParticleShapeModule.shapeType 值 ${this.shapeType}`);
                 break;
         }
-        serialization.setValue(this.activeShape, preValue);
+        $set(this.activeShape, preValue);
         this.emit('refreshView');
     }
 

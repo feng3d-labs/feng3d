@@ -6,7 +6,7 @@ import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { gPartial } from '../polyfill/Types';
 import { Serializable } from '../serialization/Serializable';
-import { serialization } from '../serialization/Serialization';
+import { $set, serialization } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 
@@ -94,7 +94,7 @@ export class TerrainGeometry extends Geometry
     {
         super();
         this.name = 'terrain';
-        serialization.setValue(this, raw);
+        $set(this, raw);
         //
         watcher.watch(this as TerrainGeometry, 'heightMap', this._onHeightMapChanged, this);
         watcher.watch(this as TerrainGeometry, 'width', this.invalidateGeometry, this);

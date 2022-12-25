@@ -4,7 +4,7 @@ import { oav } from '../../objectview/ObjectView';
 import { getClassName } from '../../serialization/getClassName';
 import { getInstance } from '../../serialization/getInstance';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AddComponentMenu } from '../Menu';
@@ -82,7 +82,7 @@ export class ScriptComponent extends Component3D
             // 如果两个类定义名称相同，则保留上个对象数据
             if (getClassName(oldInstance) === this.scriptName)
             {
-                serialization.setValue(this._scriptInstance, <any>oldInstance);
+                $set(this._scriptInstance, <any>oldInstance);
             }
             oldInstance.component = null;
             oldInstance.dispose();

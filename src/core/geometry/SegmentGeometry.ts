@@ -2,7 +2,7 @@ import { Color4 } from '../../math/Color4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -55,7 +55,7 @@ export class SegmentGeometry extends Geometry
     addSegment(segment: Partial<Segment>)
     {
         const s = new Segment();
-        serialization.setValue(s, segment);
+        $set(s, segment);
         this.segments.push(s);
         this.invalidateGeometry();
     }

@@ -5,7 +5,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
 import { MeshRenderer } from '../core/MeshRenderer';
@@ -106,7 +106,7 @@ export class Water extends Component3D
         target.reflect(normal).negate();
         target.add(mirrorWorldPosition);
 
-        const mirrorCamera = serialization.setValue(new Node3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
+        const mirrorCamera = $set(new Node3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
         mirrorCamera.node3d.position = view;
         mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
 

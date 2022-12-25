@@ -4,7 +4,7 @@ import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
 import { Serializable } from '../serialization/Serializable';
-import { serialization } from '../serialization/Serialization';
+import { $set, serialization } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
@@ -141,7 +141,7 @@ export class Button extends Component2D
         });
         for (const childname in childMap)
         {
-            childMap[childname] = serialization.setValue(childMap[childname], statedata[childname]);
+            childMap[childname] = $set(childMap[childname], statedata[childname]);
         }
     }
 }

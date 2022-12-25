@@ -252,7 +252,7 @@ describe('Serialization', () =>
         // const diff1 = serialization.different(obj, obj3);
         // deepEqual(diff1, {});
 
-        // const entity = serialization.setValue(new Entity(), {
+        // const entity = $set(new Entity(), {
         //     name: 'entity',
         //     components: [{ __class__: 'MeshRenderer', geometry: Geometry.getDefault('Plane') }]
         // });
@@ -400,12 +400,12 @@ describe('Serialization', () =>
     //     deepEqual(diff2, {});
     // });
 
-    // it('serialization.setValue', () =>
+    // it('$set', () =>
     // {
-    //     const curve = serialization.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] });
+    //     const curve = $set(new AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] });
 
     //     const curve1 = new AnimationCurve();
-    //     serialization.setValue(curve1, serialization.serialize(curve));
+    //     $set(curve1, serialization.serialize(curve));
 
     //     const str = JSON.stringify(serialization.serialize(curve));
     //     const str1 = JSON.stringify(serialization.serialize(curve1));

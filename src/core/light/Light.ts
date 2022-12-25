@@ -1,6 +1,6 @@
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { BillboardComponent } from '../component/BillboardComponent';
@@ -121,7 +121,7 @@ export class Light extends Component3D
     constructor()
     {
         super();
-        this.shadowCamera = serialization.setValue(new Node3D(), { name: 'LightShadowCamera' }).addComponent(Camera);
+        this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent(Camera);
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
@@ -136,7 +136,7 @@ export class Light extends Component3D
 
             // 材质
             const model = node3d.getComponent(MeshRenderer);
-            model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+            model.geometry = $set(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
             //
             // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';

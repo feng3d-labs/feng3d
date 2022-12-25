@@ -2,7 +2,7 @@ import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
@@ -27,7 +27,7 @@ export class ParticleRotationOverLifetimeModule extends ParticleModule
      */
     @SerializeProperty()
     @oav({ tooltip: '角速度，基于生命周期的旋转。' })
-    angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
+    angularVelocity = $set(new MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
 
     /**
      * Rotation over lifetime curve for the X axis.

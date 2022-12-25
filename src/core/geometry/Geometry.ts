@@ -9,7 +9,7 @@ import { AttributeBuffer, AttributeBufferSourceTypes } from '../../renderer/data
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { CullFace } from '../../renderer/data/RenderParams';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
@@ -381,8 +381,8 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
     static setDefault<K extends keyof DefaultGeometry>(name: K, geometry: DefaultGeometry[K], param?: gPartial<DefaultGeometry[K]>)
     {
         this._defaultGeometry[name] = geometry;
-        if (param) serialization.setValue(geometry, param);
-        serialization.setValue(geometry, { name, assetId: name });
+        if (param) $set(geometry, param);
+        $set(geometry, { name, assetId: name });
         AssetData.addAssetData(name, geometry);
     }
 

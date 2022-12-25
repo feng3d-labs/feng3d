@@ -3,7 +3,7 @@ import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { WebGLRenderer, WebGLRendererParameters } from '../../renderer/WebGLRenderer';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { AudioListener } from '../audio/AudioListener';
 import { Camera } from '../cameras/Camera';
@@ -48,7 +48,7 @@ export class View
             const cameras = this.scene.getComponentsInChildren(Camera);
             if (cameras.length === 0)
             {
-                this._camera = serialization.setValue(new Node3D(), { name: 'defaultCamera' }).addComponent(Camera);
+                this._camera = $set(new Node3D(), { name: 'defaultCamera' }).addComponent(Camera);
                 this.scene.node3d.addChild(this._camera.node3d);
             }
             else
@@ -128,7 +128,7 @@ export class View
             Object.assign(this._contextAttributes, contextAttributes);
         }
 
-        this.scene = scene || serialization.setValue(new Node3D(), { name: 'scene' }).addComponent(Scene);
+        this.scene = scene || $set(new Node3D(), { name: 'scene' }).addComponent(Scene);
         this.camera = camera;
 
         this.start();
@@ -335,7 +335,7 @@ export class View
 
     static createNewScene()
     {
-        const scene = serialization.setValue(new Node3D(), { name: 'Untitled' }).addComponent(Scene);
+        const scene = $set(new Node3D(), { name: 'Untitled' }).addComponent(Scene);
         scene.background.setTo(0.2784, 0.2784, 0.2784);
         scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
@@ -344,7 +344,7 @@ export class View
         camera.position = new Vector3(0, 1, -10);
         scene.node3d.addChild(camera);
 
-        const directionalLight = serialization.setValue(new Node3D(), { name: 'DirectionalLight' });
+        const directionalLight = $set(new Node3D(), { name: 'DirectionalLight' });
         directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
         directionalLight.rx = 50;
         directionalLight.ry = -30;

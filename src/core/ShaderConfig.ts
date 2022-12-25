@@ -14,7 +14,7 @@ import wireframeFragment from './shaders/wireframe_fragment_glsl';
 import wireframeVertex from './shaders/wireframe_vertex_glsl';
 //
 import { shaderlib } from '../renderer/shader/ShaderLib';
-import { serialization } from '../serialization/Serialization';
+import { $set, serialization } from '../serialization/Serialization';
 import alphatestFrag from './shaders/modules/alphatest_frag_glsl';
 import alphatestParsFrag from './shaders/modules/alphatest_pars_frag_glsl';
 import ambientFrag from './shaders/modules/ambient_frag_glsl';
@@ -68,7 +68,7 @@ import worldpositionVert from './shaders/modules/worldposition_vert_glsl';
 
 export { };
 
-serialization.setValue(shaderlib.shaderConfig, {
+$set(shaderlib.shaderConfig, {
     shaders: {
         mouse: { fragment: mouseFragment, vertex: mouseVertex },
         outline: { fragment: outlineFragment, vertex: outlineVertex },

@@ -4,7 +4,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
@@ -29,7 +29,7 @@ export class ParticleRotationBySpeedModule extends ParticleModule
      */
     @SerializeProperty()
     @oav({ tooltip: '角速度，随速度变化的旋转。' })
-    angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
+    angularVelocity = $set(new MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
 
     /**
      * Apply the rotation curve between these minimum and maximum speeds.

@@ -4,7 +4,7 @@ import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { RenderParams } from '../../renderer/data/RenderParams';
 import { Shader } from '../../renderer/data/Shader';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetData } from '../core/AssetData';
 import { Texture2D } from '../textures/Texture2D';
@@ -33,9 +33,9 @@ export abstract class Material extends EventEmitter
 {
     init(param: gPartial<this>)
     {
-        serialization.setValue(this, param);
+        $set(this, param);
 
-return this;
+        return this;
     }
 
     @oav({ component: 'OAVFeng3dPreView' })
@@ -74,7 +74,7 @@ return this;
     constructor(param?: gPartial<Material>)
     {
         super();
-        serialization.setValue(this, param);
+        $set(this, param);
         console.assert(this.constructor.name !== 'Material', `无法之间构建 Material`);
     }
 

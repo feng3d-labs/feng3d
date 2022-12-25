@@ -5,7 +5,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { noise } from '../../math/Noise';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';
 import { Particle } from '../Particle';
@@ -55,7 +55,7 @@ export class ParticleNoiseModule extends ParticleModule
      */
     @SerializeProperty()
     @oav({ tooltip: '整体噪音效应有多强。' })
-    strength3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
+    strength3D = $set(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
 
     /**
      * Define the strength of the effect on the X axis, when using separateAxes option.
@@ -197,7 +197,7 @@ export class ParticleNoiseModule extends ParticleModule
      */
     @SerializeProperty()
     @oav({ tooltip: '生成一维、二维或三维噪声。' })
-    remap3D = serialization.setValue(new MinMaxCurveVector3(), {
+    remap3D = $set(new MinMaxCurveVector3(), {
         xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },
         yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },
         zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }

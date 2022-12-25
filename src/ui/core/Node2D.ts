@@ -12,7 +12,7 @@ import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 
@@ -253,7 +253,7 @@ export class Node2D extends Node<Node2DEventMap>
         const createHandler = this._registerPrimitives[type];
         if (createHandler) createHandler(g);
 
-        serialization.setValue(g, param);
+        $set(g, param);
 
         return g;
     }

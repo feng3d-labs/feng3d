@@ -7,7 +7,7 @@ import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
@@ -652,7 +652,7 @@ export class Node3D extends Node<Node3DEventMap>
         const createHandler = this._registerPrimitives[type];
         if (createHandler) createHandler(g);
 
-        serialization.setValue(g, param);
+        $set(g, param);
 
         return g;
     }

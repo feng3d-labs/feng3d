@@ -1,7 +1,7 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
 import { ParticleModule } from './ParticleModule';
@@ -20,7 +20,7 @@ export class ParticleEmissionModule extends ParticleModule
     @SerializeProperty()
     // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
     @oav({ tooltip: '随着时间的推移，新粒子产生的速度。' })
-    rateOverTime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 });
+    rateOverTime = $set(new MinMaxCurve(), { between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 });
 
     /**
      * Change the rate over time multiplier.
@@ -50,7 +50,7 @@ export class ParticleEmissionModule extends ParticleModule
     @SerializeProperty()
     // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
     @oav({ tooltip: '产生新粒子的速度，通过距离。新粒子只有世界空间模拟且发射器移动时才会被发射出来。' })
-    rateOverDistance = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
+    rateOverDistance = $set(new MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
 
     /**
      * Change the rate over distance multiplier.

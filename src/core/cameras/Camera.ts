@@ -6,7 +6,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
@@ -74,7 +74,7 @@ export class Camera extends Component3D
             aspect = this.lens.aspect;
             near = this.lens.near;
             far = this.lens.far;
-            serialization.setValue(this._backups, this.lens as any);
+            $set(this._backups, this.lens as any);
         }
         const fov = this._backups ? this._backups.fov : 60;
         const size = this._backups ? this._backups.size : 1;

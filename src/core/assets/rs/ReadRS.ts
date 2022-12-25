@@ -7,7 +7,7 @@ import { mathUtil } from '../../../polyfill/MathUtil';
 import { ObjectUtils } from '../../../polyfill/ObjectUtils';
 import { Constructor, gPartial } from '../../../polyfill/Types';
 import { getInstance } from '../../../serialization/getInstance';
-import { serialization } from '../../../serialization/Serialization';
+import { $set, serialization } from '../../../serialization/Serialization';
 import { __class__ } from '../../../serialization/SerializationConst';
 import { AssetData } from '../../core/AssetData';
 import { FileAsset } from '../FileAsset';
@@ -113,7 +113,7 @@ export class ReadRS
 
         // 初始化
         asset.rs = this as any;
-        serialization.setValue(<T>asset, value);
+        $set(<T>asset, value);
         asset.assetId = assetId;
         asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
         asset.initAsset();
@@ -396,7 +396,7 @@ export class ReadRS
         // 创建资源数据实例
         const assetData = getInstance(object[__class__]);
         // 默认反序列
-        serialization.setValue(assetData, object);
+        $set(assetData, object);
 
         return assetData;
     }

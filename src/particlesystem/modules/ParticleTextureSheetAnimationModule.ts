@@ -4,7 +4,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
 import { UVChannelFlags } from '../enums/UVChannelFlags';
@@ -45,7 +45,7 @@ export class ParticleTextureSheetAnimationModule extends ParticleModule
     @SerializeProperty()
     // @oav({ tooltip: "Curve to control which frame of the texture sheet animation to play." })
     @oav({ tooltip: '曲线控制哪个帧的纹理表动画播放。' })
-    frameOverTime = serialization.setValue(new MinMaxCurve(), { mode: MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] } });
+    frameOverTime = $set(new MinMaxCurve(), { mode: MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] } });
 
     /**
      * Use a random row of the texture sheet for each particle emitted.

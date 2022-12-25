@@ -1,7 +1,7 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 @Serializable('ParticleEmissionBurst')
@@ -24,7 +24,7 @@ export class ParticleEmissionBurst
     @SerializeProperty()
     // @oav({ tooltip: "Number of particles to be emitted." })
     @oav({ tooltip: '要发射的粒子数。' })
-    count = serialization.setValue(new MinMaxCurve(), { constant: 30, constantMin: 30, constantMax: 30 });
+    count = $set(new MinMaxCurve(), { constant: 30, constantMin: 30, constantMax: 30 });
 
     /**
      * Minimum number of bursts to be emitted.

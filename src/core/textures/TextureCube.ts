@@ -3,7 +3,7 @@ import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
@@ -203,6 +203,6 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     static default: TextureCube;
 }
 
-TextureCube.default = serialization.setValue(new TextureCube(), { name: 'Default-TextureCube', hideFlags: HideFlags.NotEditable });
+TextureCube.default = $set(new TextureCube(), { name: 'Default-TextureCube', hideFlags: HideFlags.NotEditable });
 
 AssetData.addAssetData('Default-TextureCube', TextureCube.default);

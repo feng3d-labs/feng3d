@@ -4,7 +4,7 @@ import { Color4 } from '../../math/Color4';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
@@ -182,10 +182,10 @@ export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends 
     }
 }
 
-Texture2D.white = serialization.setValue(new Texture2D(), { name: 'white-Texture', noPixels: ImageDatas.white, hideFlags: HideFlags.NotEditable });
-Texture2D.default = serialization.setValue(new Texture2D(), { name: 'Default-Texture', hideFlags: HideFlags.NotEditable });
-Texture2D.defaultNormal = serialization.setValue(new Texture2D(), { name: 'Default-NormalTexture', noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable });
-Texture2D.defaultParticle = serialization.setValue(new Texture2D(), { name: 'Default-ParticleTexture', noPixels: ImageDatas.defaultParticle, format: 'RGBA', hideFlags: HideFlags.NotEditable });
+Texture2D.white = $set(new Texture2D(), { name: 'white-Texture', noPixels: ImageDatas.white, hideFlags: HideFlags.NotEditable });
+Texture2D.default = $set(new Texture2D(), { name: 'Default-Texture', hideFlags: HideFlags.NotEditable });
+Texture2D.defaultNormal = $set(new Texture2D(), { name: 'Default-NormalTexture', noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable });
+Texture2D.defaultParticle = $set(new Texture2D(), { name: 'Default-ParticleTexture', noPixels: ImageDatas.defaultParticle, format: 'RGBA', hideFlags: HideFlags.NotEditable });
 
 AssetData.addAssetData('white-Texture', Texture2D.white);
 AssetData.addAssetData('Default-Texture', Texture2D.default);

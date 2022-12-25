@@ -4,7 +4,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
@@ -76,7 +76,7 @@ export class ParticleMainModule extends ParticleModule
     @SerializeProperty()
     // @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
     @oav({ tooltip: '每个新粒子的总寿命(以秒计)。' })
-    startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constantMin: 5, constantMax: 5 });
+    startLifetime = $set(new MinMaxCurve(), { between0And1: true, constant: 5, constantMin: 5, constantMax: 5 });
 
     /**
      * Start lifetime multiplier.
@@ -103,7 +103,7 @@ export class ParticleMainModule extends ParticleModule
     @SerializeProperty()
     // @oav({ tooltip: "The initial speed of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始速度。' })
-    startSpeed = serialization.setValue(new MinMaxCurve(), { constant: 5, constantMin: 5, constantMax: 5 });
+    startSpeed = $set(new MinMaxCurve(), { constant: 5, constantMin: 5, constantMax: 5 });
 
     /**
      * A multiplier of the initial speed of particles when emitted.
@@ -175,7 +175,7 @@ export class ParticleMainModule extends ParticleModule
     @SerializeProperty()
     // @oav({ tooltip: "The initial size of particles when emitted." })
     @oav({ tooltip: '发射时粒子的初始大小。' })
-    startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
+    startSize3D = $set(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
 
     /**
      * The initial size of particles along the X axis when emitted.
@@ -323,7 +323,7 @@ export class ParticleMainModule extends ParticleModule
     @SerializeProperty()
     // @oav({ tooltip: "The initial rotation of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始旋转。' })
-    startRotation3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
+    startRotation3D = $set(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
 
     /**
      * The initial rotation of particles around the X axis when emitted.

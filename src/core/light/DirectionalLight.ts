@@ -1,7 +1,7 @@
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $set, serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../../ecs/Component';
@@ -82,7 +82,7 @@ export class DirectionalLight extends Light
         }
         else
         {
-            serialization.setValue(this.orthographicLens, { size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+            $set(this.orthographicLens, { size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
         }
     }
 }
