@@ -1,5 +1,5 @@
 import { Serializable } from '../../src/serialization/Serializable';
-import { serialization } from '../../src/serialization/Serialization';
+import { $clone, $diff, serialization } from '../../src/serialization/Serialization';
 import { SerializeProperty } from '../../src/serialization/SerializeProperty';
 
 
@@ -94,6 +94,16 @@ describe('Serialization', () =>
 
         const r1 = r.map((v) => serialization.deserialize(v));
         deepEqual(arr, r1);
+    });
+
+    it('$diff 循环引用以及多次引用', () =>
+    {
+        var o: any = { a: 1 };
+        o.o = o;
+        o.o1 = o;
+        o.o2 = o;
+
+        console.log($diff(o, $clone(o)))
     });
 
     it('serialize&deserialize 循环引用以及多次引用', () =>
