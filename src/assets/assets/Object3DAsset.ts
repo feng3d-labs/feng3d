@@ -2,7 +2,7 @@ import { AssetType } from '../../core/assets/AssetType';
 import { Node3D } from '../../core/core/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { serialization } from '../../serialization/Serialization';
+import { $clone } from '../../serialization/Serialization';
 import { ObjectAsset } from '../ObjectAsset';
 
 export interface Object3DAsset
@@ -34,7 +34,7 @@ export class Object3DAsset extends ObjectAsset
 
     protected _getAssetData()
     {
-        const node3d = serialization.clone(this.data);
+        const node3d = $clone(this.data);
         delete node3d.assetId;
         node3d.prefabId = this.assetId;
 
