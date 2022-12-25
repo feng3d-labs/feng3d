@@ -1,4 +1,4 @@
-import { watcher, __watchchains__ } from '../../src/watcher/watcher';
+import { watcher } from '../../src/watcher/watcher';
 
 import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
@@ -173,8 +173,6 @@ describe('watcher', () =>
         const f = (_h, _p, _o) => { out += 'f'; };
 
         watcher.watchobject(o, { a: { b: { c: 0 }, d: 0 } }, f);
-        // 添加监听后会自动生成 属性__watchchains__
-        ok(!!o[__watchchains__]);
 
         out = '';
         o.a.b.c = 10; // 调用一次函数f
@@ -182,8 +180,6 @@ describe('watcher', () =>
         equal(out, 'ff');
 
         watcher.unwatchobject(o, { a: { b: { c: 0 }, d: 0 } }, f);
-        // 添加监听后会自动生成 属性__watchchains__
-        ok(!o[__watchchains__]);
 
         out = '';
         o.a.b.c = 10; // 调用一次函数f
@@ -193,12 +189,10 @@ describe('watcher', () =>
         // 监听所有属性
         out = '';
         watcher.watchobject(o, o, f);
-        ok(!!o[__watchchains__]);
         o.a.d = 100;
         o.a.b.c = 100;
         equal(out, 'ff');
 
         watcher.unwatchobject(o, o, f);
-        ok(!o[__watchchains__]);
     });
 });

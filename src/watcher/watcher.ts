@@ -358,8 +358,8 @@ interface WatchChains
     [property: string]: { handler: (newValue: any, oldValue: any, host: any, property: string) => void, thisObject: any, watchchainFun: (newValue: any, oldValue: any, host: any, property: string) => void }[];
 }
 
-export const __watchs__ = '__watchs__';
-export const __watchchains__ = '__watchchains__';
+const __watchs__ = '__watchs__';
+const __watchchains__ = '__watchchains__';
 
 function notifyListener(newValue: any, oldValue: any, host: any, property: string): void
 {
