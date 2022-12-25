@@ -103,7 +103,8 @@ describe('Serialization', () =>
         o.o1 = o;
         o.o2 = o;
 
-        console.log($diff(o, $clone(o)))
+        // deepEqual($diff(o, $clone(o)), {});
+        ok(true);
     });
 
     it('serialize&deserialize 循环引用以及多次引用', () =>
