@@ -51,6 +51,10 @@ interface HandlerParam
 {
     handlers: PropertyHandler<HandlerParam>[]
     serialization: Serialization
+    /**
+     * 是否忽略默认值。
+     */
+    omitDefault: boolean
 }
 
 interface SerializeHandlerParam extends HandlerParam
@@ -94,11 +98,6 @@ interface DifferentHandlerParam extends HandlerParam
 export class Serialization
 {
     /**
-     * 是否忽略默认值
-     */
-    omitDefault = true;
-
-    /**
      * 序列化函数列表
      */
     serializeHandlers: { priority: number, handler: PropertyHandler<SerializeHandlerParam> }[] = [];
@@ -124,10 +123,11 @@ export class Serialization
      * 过程中使用 different与默认值作比较减少结果中的数据。
      *
      * @param target 被序列化的对象
+     * @param omitDefault 是否忽略默认值
      *
      * @returns 序列化后简单数据对象（由Object与Array组合可 JSON.stringify 的简单结构）
      */
-    serialize<T>(target: T): gPartial<T>
+    serialize<T>(target: T, omitDefault = true): gPartial<T>
     {
         //
         const handlers = this.serializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
@@ -136,6 +136,7 @@ export class Serialization
             handlers, serialization: this, root: target as any,
             serializedMap: new Map(),
             autoRefID: 1,
+            omitDefault
         };
 
         const result: any = {};
@@ -169,11 +170,11 @@ export class Serialization
      * @param object 换为Json的对象
      * @returns 反序列化后的数据
      */
-    deserialize<T>(object: gPartial<T>): T
+    deserialize<T>(object: gPartial<T>, omitDefault = true): T
     {
         const handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
-        const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {} };
+        const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {}, omitDefault };
 
         const result: any = {};
 
@@ -206,13 +207,13 @@ export class Serialization
      *
      * @returns 比较得出的不同数据（由Object与Array组合可 JSON.stringify 的简单结构）
      */
-    different<T>(target: T, source: T): gPartial<T>
+    different<T>(target: T, source: T, omitDefault = true): gPartial<T>
     {
         const handlers = this.differentHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
         const different = { __root__: {} };
 
-        const param: DifferentHandlerParam = { different, handlers, serialization: this };
+        const param: DifferentHandlerParam = { different, handlers, serialization: this, omitDefault };
 
         propertyHandler({ __root__: target }, { __root__: source }, rootKey, param);
 
@@ -225,12 +226,12 @@ export class Serialization
      * @param target 目标对象
      * @param source 数据对象 可由Object与Array以及自定义类型组合
      */
-    setValue<T>(target: T, source: gPartial<T>)
+    setValue<T>(target: T, source: gPartial<T>, omitDefault = true)
     {
         if (ObjectUtils.isBaseType(source) || target === source) return target;
         const handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
-        const param: HandlerParam = { handlers, serialization: this };
+        const param: HandlerParam = { handlers, serialization: this, omitDefault };
 
         propertyHandler({ __root__: target }, { __root__: source }, rootKey, param);
 
@@ -263,12 +264,6 @@ function getSerializableMembers(object: any, serializableMembers?: string[])
     ArrayUtils.unique(serializableMembers);
 
     return serializableMembers;
-}
-
-export interface SerializationTempInfo
-{
-    loadingNum?: number;
-    onLoaded?: () => void;
 }
 
 /**
@@ -449,7 +444,7 @@ serialization.serializeHandlers.push(
             const tpv = target[property];
             const spv = source[property];
 
-            if (!param.serialization.omitDefault)
+            if (!param.omitDefault)
             {
                 const object = {};
 
@@ -765,7 +760,7 @@ serialization.differentHandlers = [
             {
                 const keys = Object.keys(tpv);
                 const diff = [];
-                const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization };
+                const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization, omitDefault: param.omitDefault };
 
                 keys.forEach((key) =>
                 {
@@ -815,7 +810,7 @@ serialization.differentHandlers = [
             }
 
             const diff = {};
-            const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization };
+            const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization, omitDefault: param.omitDefault };
 
             keys.forEach((v) =>
             {

@@ -1,6 +1,5 @@
 import { Camera } from '../core/cameras/Camera';
 import { HideFlags } from '../core/core/HideFlags';
-import { Node3D } from '../core/core/Node3D';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Scene } from '../core/scene/Scene';
 import { EventEmitter } from '../event/EventEmitter';

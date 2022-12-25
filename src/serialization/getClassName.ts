@@ -7,7 +7,17 @@ import { __class__ } from "./SerializationConst";
  */
 export function getClassName(instance: Object): string
 {
-    const prototype: Object = Object.getPrototypeOf(instance);
+    let prototype: Object;
+    // 处理构造函数
+    if (typeof instance === 'function')
+    {
+        prototype = instance.prototype;
+    }
+    else
+    {
+        prototype = Object.getPrototypeOf(instance);
+    }
+
     if (prototype.hasOwnProperty(__class__))
     {
         return prototype[__class__];

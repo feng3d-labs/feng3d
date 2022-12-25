@@ -46,11 +46,17 @@ describe('getClassName', () =>
 
         className = getClassName(UnregisteredClass);
         equal(className, null); // UnregisteredClass 未注册返回 null
+        className = getClassName(new UnregisteredClass());
+        equal(className, null); // UnregisteredClass 未注册返回 null
 
         className = getClassName(RegisteredClass);
         equal(className, 'RegisteredClass');
+        className = getClassName(new RegisteredClass());
+        equal(className, 'RegisteredClass');
 
         className = getClassName(RegisteredClass别名);
+        equal(className, '别名');
+        className = getClassName(new RegisteredClass别名());
         equal(className, '别名');
     });
 });

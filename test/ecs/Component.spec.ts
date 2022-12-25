@@ -1,5 +1,5 @@
 import { ok } from 'assert';
-import { Component, getComponentType } from '../../src/core/component/Component';
+import { Component, getComponentType } from '../../src/ecs/Component';
 import { ComponentA, CustomComponent } from './common';
 
 describe('Component', () =>

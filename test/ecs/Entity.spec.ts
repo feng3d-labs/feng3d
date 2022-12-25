@@ -1,5 +1,5 @@
 import { ok } from 'assert';
-import { Entity } from '../../src/core/core/Entity';
+import { Entity } from '../../src/ecs/Entity';
 import { ComponentA, CustomComponent } from './common';
 
 describe('Entity', () =>
