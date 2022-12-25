@@ -1,5 +1,5 @@
 import { Serializable } from '../../src/serialization/Serializable';
-import { $clone, $deserialize, $diff, $serialize, serialization } from '../../src/serialization/Serialization';
+import { $clone, $deserialize, $diff, $serialize, Serialization, serialization } from '../../src/serialization/Serialization';
 import { SerializeProperty } from '../../src/serialization/SerializeProperty';
 
 import { assert, describe, expect, it } from 'vitest';
@@ -62,16 +62,16 @@ describe('Serialization', () =>
         ok(result1 !== add);
         ok(result1(a, b) === add(a, b));
 
-        // 无法序列化复杂函数
+        // // 无法序列化复杂函数
         // // 序列化反序列化 serialization 工具中的函数列表
-        // const r0 = $serialize($serializeHandlers);
+        // const r0 = $serialize(serialization.serializeHandlers);
         // const serializeReplacers = $deserialize(r0);
-        // const r = $serialize($deserializeHandlers);
+        // const r = $serialize(serialization.deserializeHandlers);
         // const deserializeReplacers = $deserialize(r);
         // //
         // const mySerialization = new Serialization();
-        // my$serializeHandlers = serializeReplacers;
-        // my$deserializeHandlers = deserializeReplacers;
+        // mySerialization.serializeHandlers = serializeReplacers;
+        // mySerialization.deserializeHandlers = deserializeReplacers;
 
         // // 使用序列化反序列化后的 serialization 工具进行序列化函数测试
         // {
@@ -240,7 +240,7 @@ describe('Serialization', () =>
 
         // //
         // const obj2 = $deserialize(diff2);
-        // const diff = serialization.different(obj, obj2);
+        // const diff = $diff(obj, obj2);
         // deepEqual(diff, {});
 
         // obj.x = 1;
@@ -249,7 +249,7 @@ describe('Serialization', () =>
 
         // //
         // const obj3 = $deserialize(r3);
-        // const diff1 = serialization.different(obj, obj3);
+        // const diff1 = $diff(obj, obj3);
         // deepEqual(diff1, {});
 
         // const entity = $set(new Entity(), {
@@ -267,17 +267,17 @@ describe('Serialization', () =>
     //     const o = { a: 1, b: { c: true, d: { e: 'str' } } };
     //     const o1 = { a: 1, b: { c: true, d: { e: 'str' } } };
 
-    //     const diff = serialization.different(o, o1);
+    //     const diff = $diff(o, o1);
     //     deepEqual(diff, {});
 
     //     const v = new Vector2();
     //     const v1 = new Vector2();
-    //     const diff1 = serialization.different(v, v1);
+    //     const diff1 = $diff(v, v1);
     //     deepEqual(diff1, {});
 
     //     const c = new C();
     //     const nc = new C();
-    //     const diff2 = serialization.different(c, nc);
+    //     const diff2 = $diff(c, nc);
     //     deepEqual(diff2, {});
     // });
 
@@ -289,25 +289,25 @@ describe('Serialization', () =>
     //     const diff: gPartial<{
     //         a: number;
     //         b: { c: boolean, d: { e: string } };
-    //     }> = serialization.different(o, o1);
+    //     }> = $diff(o, o1);
     //     deepEqual(diff, { b: null });
 
     //     {
     //         const diff: gPartial<{
     //             a: number;
     //             b: { c: boolean, d: { e: string } };
-    //         }> = serialization.different(o1, o);
+    //         }> = $diff(o1, o);
     //         deepEqual(diff, { b: { c: true, d: { e: 'str' } } });
     //     }
 
     //     const o2 = { v: new Vector2() };
     //     const o3: { v: Vector2 } = { v: null };
 
-    //     const diff1 = serialization.different(o2, o3);
+    //     const diff1 = $diff(o2, o3);
     //     deepEqual(diff1, { v: { __class__: 'Vector2' } });
 
     //     {
-    //         const diff1 = serialization.different(o3, o2);
+    //         const diff1 = $diff(o3, o2);
     //         deepEqual(diff1, { v: null });
     //     }
     // });
@@ -317,11 +317,11 @@ describe('Serialization', () =>
         const o = { a: 1, b: true, c: 'str', d: null, e: undefined, f: NaN };
         const o1 = { a: 2, b: false, c: 'str1', d: 1, e: 1, f: 1 };
 
-        const diff = serialization.different(o, o1);
+        const diff = $diff(o, o1);
         deepEqual(diff, o);
 
         {
-            const diff = serialization.different(o1, o);
+            const diff = $diff(o1, o);
             deepEqual(diff, <any>o1);
         }
     });
@@ -331,7 +331,7 @@ describe('Serialization', () =>
         const arr = [1, true, 'str', null, undefined, NaN];
         const arr1 = [1, false, 'str1', 1, 1, 1];
         //
-        const diff = serialization.different(arr, arr1);
+        const diff = $diff(arr, arr1);
         const expectDiff = [];
         arr.forEach((v, i) =>
         {
@@ -339,7 +339,7 @@ describe('Serialization', () =>
         });
         deepEqual(diff, expectDiff); // 此处有 expectDiff[0] 未定义
         //
-        const diff1 = serialization.different(arr1, arr);
+        const diff1 = $diff(arr1, arr);
         const expectDiff1 = [];
         arr.forEach((v, i) =>
         {
@@ -356,11 +356,11 @@ describe('Serialization', () =>
     //     const serO = $serialize(o);
     //     const serO1 = $serialize(o1);
 
-    //     const diff = serialization.different(o, <any>o1);
+    //     const diff = $diff(o, <any>o1);
     //     deepEqual(diff, serO);
 
     //     {
-    //         const diff = serialization.different(o1, <any>o);
+    //         const diff = $diff(o1, <any>o);
     //         deepEqual(diff, serO1);
     //     }
     // });
@@ -370,14 +370,14 @@ describe('Serialization', () =>
     //     const o = Material.getDefault('Default-Material'); // 默认材质资源
     //     const o1 = new Material();
 
-    //     const diff = serialization.different(o, o1);
+    //     const diff = $diff(o, o1);
     //     deepEqual(diff, { name: 'Default-Material', hideFlags: HideFlags.NotEditable });
 
     //     const o2 = { v: Material.getDefault('Default-Material') }; // 默认材质资源
     //     const o3 = { v: new Material() };
 
     //     const expectDiff = $serialize(o2);
-    //     const diff1 = serialization.different(o2, o3);
+    //     const diff1 = $diff(o2, o3);
     //     deepEqual(diff1, expectDiff);
     // });
 
@@ -386,21 +386,21 @@ describe('Serialization', () =>
     //     const o = { a: 1, b: true, c: 'abc' };
     //     const o1 = { a: 2, b: true, c: 'abc' };
 
-    //     const diff = serialization.different(o, o1);
+    //     const diff = $diff(o, o1);
     //     deepEqual(diff, { a: 1 });
 
     //     const o2 = new Vector3();
     //     const o3 = new Vector3(1, 2, 3);
 
-    //     const diff1 = serialization.different(o2, o3);
+    //     const diff1 = $diff(o2, o3);
     //     deepEqual(diff1, { x: 0, y: 0, z: 0 });
 
     //     //
-    //     const diff2 = serialization.different(new Entity(), new Entity());
+    //     const diff2 = $diff(new Entity(), new Entity());
     //     deepEqual(diff2, {});
     // });
 
-    // it('$set', () =>
+    // it('serialization.setValue', () =>
     // {
     //     const curve = $set(new AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] });
 
