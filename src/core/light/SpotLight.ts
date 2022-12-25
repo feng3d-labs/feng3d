@@ -25,7 +25,7 @@ declare global
 /**
  * 聚光灯光源
  */
-@RegisterComponent()
+@RegisterComponent({ name: 'SpotLight' })
 export class SpotLight extends Light
 {
     lightType = LightType.Spot;

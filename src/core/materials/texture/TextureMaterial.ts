@@ -16,7 +16,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('TextureMaterial')
 export class TextureMaterial extends Material
 {
     uniforms = new TextureUniforms();
@@ -28,10 +28,10 @@ export class TextureMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('TextureUniforms')
 export class TextureUniforms
 {
-    __class__: 'TextureUniforms';
+    declare __class__: 'TextureUniforms';
 
     /**
      * 颜色

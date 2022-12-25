@@ -30,11 +30,11 @@ declare global
  * 方向光源
  */
 @AddComponentMenu('Rendering/DirectionalLight')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'DirectionalLight' })
+@Serializable('DirectionalLight')
 export class DirectionalLight extends Light
 {
-    __class__: 'DirectionalLight';
+    declare __class__: 'DirectionalLight';
 
     lightType = LightType.Directional;
 

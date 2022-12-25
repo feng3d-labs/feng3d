@@ -28,7 +28,7 @@ declare global
 @Serializable('Terrain')
 export class Terrain extends Component
 {
-    __class__: 'Terrain';
+    declare __class__: 'Terrain';
 
     /**
      * 地形资源

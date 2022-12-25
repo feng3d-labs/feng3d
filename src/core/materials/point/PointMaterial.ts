@@ -15,10 +15,10 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('PointMaterial')
 export class PointMaterial extends Material
 {
-    __class__: 'PointMaterial';
+    declare __class__: 'PointMaterial';
 
     uniforms = new PointUniforms();
 
@@ -30,10 +30,10 @@ export class PointMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('PointUniforms')
 export class PointUniforms
 {
-    __class__: 'PointUniforms';
+    declare __class__: 'PointUniforms';
     /**
      * 颜色
      */

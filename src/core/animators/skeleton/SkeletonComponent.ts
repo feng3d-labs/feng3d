@@ -12,11 +12,11 @@ declare global
     }
 }
 
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'SkeletonComponent' })
+@Serializable('SkeletonComponent')
 export class SkeletonComponent extends Component3D
 {
-    __class__: 'SkeletonComponent';
+    declare __class__: 'SkeletonComponent';
 
     /**
      * 骨骼蒙皮时逆矩阵列表。

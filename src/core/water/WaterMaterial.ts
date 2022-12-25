@@ -23,7 +23,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('WaterMaterial')
 export class WaterMaterial extends Material
 {
     constructor()
@@ -33,10 +33,10 @@ export class WaterMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('WaterUniforms')
 export class WaterUniforms
 {
-    __class__: 'WaterUniforms';
+    declare __class__: 'WaterUniforms';
 
     @SerializeProperty()
     @oav({ tooltip: '透明度' })

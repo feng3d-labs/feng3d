@@ -31,10 +31,10 @@ declare global
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/OctahedronGeometry.js
  */
-@Serializable()
+@Serializable('OctahedronGeometry')
 export class OctahedronGeometry extends Geometry
 {
-    __class__: 'IcosahedronGeometry' = 'IcosahedronGeometry';
+    declare __class__: 'IcosahedronGeometry' = 'IcosahedronGeometry';
 
     /**
      * 半径

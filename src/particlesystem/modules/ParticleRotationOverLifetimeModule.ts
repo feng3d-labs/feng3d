@@ -10,7 +10,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统 旋转角度随时间变化模块
  */
-@Serializable()
+@Serializable('ParticleRotationOverLifetimeModule')
 export class ParticleRotationOverLifetimeModule extends ParticleModule
 {
     /**

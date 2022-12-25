@@ -26,10 +26,10 @@ declare global
 /**
  * 四边形面皮几何体
  */
-@Serializable()
+@Serializable('QuadGeometry')
 export class QuadGeometry extends Geometry
 {
-    __class__: 'QuadGeometry';
+    declare __class__: 'QuadGeometry';
 
     constructor()
     {

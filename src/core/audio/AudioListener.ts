@@ -20,8 +20,8 @@ declare global
  * 声音监听器
  */
 @AddComponentMenu('Audio/AudioListener')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'AudioListener' })
+@Serializable('AudioListener')
 export class AudioListener extends Component3D
 {
     gain: GainNode;

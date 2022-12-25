@@ -13,7 +13,7 @@ declare global
 }
 
 @AddComponentMenu('Animator/Animation')
-@RegisterComponent()
+@RegisterComponent({ name: 'Animation' })
 export class Animation extends NodeComponent
 {
     @oav({ component: 'OAVDefault', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' } } })

@@ -21,11 +21,11 @@ declare global
  * 天空盒组件
  */
 @AddComponentMenu('SkyBox/SkyBox')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'SkyBox' })
+@Serializable('SkyBox')
 export class SkyBox extends Component3D
 {
-    __class__: 'SkyBox';
+    declare __class__: 'SkyBox';
 
     // /**
     //  * The material used by the skybox.

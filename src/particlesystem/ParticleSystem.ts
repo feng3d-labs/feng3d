@@ -74,10 +74,10 @@ declare global
  */
 @AddComponentMenu('Effects/ParticleSystem')
 @RegisterComponent({ name: 'ParticleSystem', dependencies: [MeshRenderer] })
-@Serializable()
+@Serializable('ParticleSystem')
 export class ParticleSystem extends Component3D
 {
-    __class__: 'ParticleSystem';
+    declare __class__: 'ParticleSystem';
 
     /**
      * Is the particle system playing right now ?

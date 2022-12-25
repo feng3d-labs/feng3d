@@ -18,7 +18,7 @@ class UnregisteredClass
 /**
  * 使用 @Serializable() 进行注册的类
  */
-@Serializable()
+@Serializable('RegisteredClass')
 class RegisteredClass
 {
 

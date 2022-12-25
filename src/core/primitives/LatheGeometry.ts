@@ -31,10 +31,10 @@ declare global
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/LatheGeometry.js
  */
-@Serializable()
+@Serializable('LatheGeometry')
 export class LatheGeometry extends Geometry
 {
-    __class__: 'LatheGeometry' = 'LatheGeometry';
+    declare __class__: 'LatheGeometry' = 'LatheGeometry';
 
     points = [new Vector2(0, -0.5), new Vector2(0.5, 0), new Vector2(0, 0.5)];
     segments = 12;

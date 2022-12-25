@@ -10,10 +10,10 @@ import { GradientMode } from './GradientMode';
 /**
  * 颜色渐变
  */
-@Serializable()
+@Serializable('Gradient')
 export class Gradient
 {
-    __class__: 'Gradient';
+    declare __class__: 'Gradient';
 
     /**
      * 渐变模式

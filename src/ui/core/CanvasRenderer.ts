@@ -27,7 +27,7 @@ declare global
  */
 @AddComponentMenu('Rendering/CanvasRenderer')
 @RegisterComponent({ name: 'CanvasRenderer', dependencies: [MeshRenderer] })
-@Serializable()
+@Serializable('CanvasRenderer')
 export class CanvasRenderer extends MeshRenderer
 {
     geometry: UIGeometry = Geometry.getDefault('Default-UIGeometry');

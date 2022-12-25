@@ -36,11 +36,11 @@ declare global
 /**
  * 3D场景
  */
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'Scene' })
+@Serializable('Scene')
 export class Scene extends Component3D
 {
-    __class__: 'Scene';
+    declare __class__: 'Scene';
 
     /**
      * 背景颜色

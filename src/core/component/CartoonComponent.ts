@@ -1,3 +1,4 @@
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
@@ -7,7 +8,6 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
-import { Component, RegisterComponent } from '../../ecs/Component';
 
 declare global
 {
@@ -30,11 +30,11 @@ declare global
  * 参考
  */
 @AddComponentMenu('Rendering/CartoonComponent')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'CartoonComponent' })
+@Serializable('CartoonComponent')
 export class CartoonComponent extends Component
 {
-    __class__: 'CartoonComponent';
+    declare __class__: 'CartoonComponent';
 
     @oav()
     @SerializeProperty()

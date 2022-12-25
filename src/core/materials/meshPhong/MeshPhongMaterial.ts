@@ -13,7 +13,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('MeshPhongMaterial')
 export class MeshPhongMaterial extends Material
 {
     uniforms = new MeshPhongUniforms();
@@ -25,10 +25,10 @@ export class MeshPhongMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('MeshPhongUniforms')
 export class MeshPhongUniforms
 {
-    __class__: 'MeshPhongUniforms';
+    declare __class__: 'MeshPhongUniforms';
 
     map = Texture2D.default;
 

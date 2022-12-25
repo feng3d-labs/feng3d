@@ -5,7 +5,7 @@ const { ok, equal, deepEqual } = assert;
 
 class Vector2
 {
-    __class__: 'Vector2' = 'Vector2';
+    declare __class__: 'Vector2' = 'Vector2';
     constructor(
         public x = 0,
         public y = 0,
@@ -14,7 +14,7 @@ class Vector2
 
 class Vector3
 {
-    __class__: 'Vector3' = 'Vector3';
+    declare __class__: 'Vector3' = 'Vector3';
     constructor(
         public x = 0,
         public y = 0,

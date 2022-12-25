@@ -46,7 +46,7 @@ const __component__ = '__component__';
  *
  * @param component 组件名称，默认使用类名称
  */
-export function RegisterComponent(component?: {
+export function RegisterComponent(component: {
     /**
      * 组件名称，默认构造函数名称。当组件重名时可以使用该参数进行取别名，并且在接口 ComponentMap 中相应调整。
      */

@@ -7,10 +7,10 @@ import { Vector } from './Vector';
 /**
  * 二维向量和点的表示。
  */
-@Serializable()
+@Serializable('Vector2')
 export class Vector2 implements Vector
 {
-    __class__: 'Vector2';
+    declare __class__: 'Vector2';
 
     /**
      * 原点 Vector2(0,0)

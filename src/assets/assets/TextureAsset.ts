@@ -10,7 +10,7 @@ import { serialization } from "../../serialization/Serialization";
 /**
  * 纹理文件
  */
-@Serializable()
+@Serializable('TextureAsset')
 export class TextureAsset extends FileAsset
 {
     static extenson: '.jpg' | '.png' | '.jpeg' | '.gif' = '.png';

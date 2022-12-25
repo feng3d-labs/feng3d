@@ -10,7 +10,7 @@ import { LensBase } from './LensBase';
 /**
  * 透视摄像机镜头
  */
-@Serializable()
+@Serializable('PerspectiveLens')
 export class PerspectiveLens extends LensBase
 {
     /**

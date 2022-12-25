@@ -15,11 +15,11 @@ declare global
 }
 
 @AddComponentMenu('Layout/HoldSizeComponent')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'HoldSizeComponent' })
+@Serializable('HoldSizeComponent')
 export class HoldSizeComponent extends Component3D
 {
-    __class__: 'HoldSizeComponent';
+    declare __class__: 'HoldSizeComponent';
 
     /**
      * 保持缩放尺寸

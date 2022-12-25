@@ -14,7 +14,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统纹理表动画模块。
  */
-@Serializable()
+@Serializable('ParticleTextureSheetAnimationModule')
 export class ParticleTextureSheetAnimationModule extends ParticleModule
 {
     /**

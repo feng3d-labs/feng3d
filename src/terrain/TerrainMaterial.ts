@@ -23,7 +23,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('TerrainMaterial')
 export class TerrainMaterial extends Material
 {
     uniforms = new TerrainUniforms();
@@ -35,7 +35,7 @@ export class TerrainMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('TerrainUniforms')
 export class TerrainUniforms
 {
     declare __class__: 'TerrainUniforms';

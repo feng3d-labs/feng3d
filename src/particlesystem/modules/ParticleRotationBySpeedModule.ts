@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统 旋转角度随速度变化模块
  */
-@Serializable()
+@Serializable('ParticleRotationBySpeedModule')
 export class ParticleRotationBySpeedModule extends ParticleModule
 {
     /**

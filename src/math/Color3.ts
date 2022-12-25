@@ -18,10 +18,10 @@ export interface Color3 extends MixinsColor3 { }
 /**
  * 颜色
  */
-@Serializable()
+@Serializable('Color3')
 export class Color3
 {
-    __class__: 'Color3';
+    declare __class__: 'Color3';
 
     static get WHITE()
     {

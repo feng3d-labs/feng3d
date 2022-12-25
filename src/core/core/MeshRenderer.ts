@@ -25,11 +25,11 @@ declare global
 /**
  * 网格渲染器
  */
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'MeshRenderer' })
+@Serializable('MeshRenderer')
 export class MeshRenderer extends Renderer
 {
-    __class__: 'MeshRenderer';
+    declare __class__: 'MeshRenderer';
 
     /**
      * 几何体

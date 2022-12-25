@@ -5,10 +5,10 @@ import { Component } from '../../ecs/Component';
 /**
  * Graphics 类包含一组可用来创建矢量形状的方法。
  */
-@Serializable()
+@Serializable('Graphics')
 export class Graphics extends Component
 {
-    __class__: 'Graphics';
+    declare __class__: 'Graphics';
 
     private image: HTMLImageElement;
     private context2D: CanvasRenderingContext2D;

@@ -127,7 +127,7 @@ export interface TextStyleEventMap
  *
  * @see https://github.com/pixijs/pixi.js/blob/dev/packages/text/src/TextStyle.js
  */
-@Serializable()
+@Serializable('TextStyle')
 export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends EventEmitter<T>
 {
     /**

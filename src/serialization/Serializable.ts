@@ -10,15 +10,11 @@ export const _definitionCache = {};
  * 
  * @see https://docs.unity3d.com/cn/current/ScriptReference/Serializable.html
  */
-export function Serializable(className?: string)
+export function Serializable(className: string)
 {
     return (constructor: Constructor<any>) =>
     {
         const prototype = constructor.prototype;
-        if (!className)
-        {
-            className = prototype.constructor.name;
-        }
         _definitionCache[className] = constructor;
         Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
     };

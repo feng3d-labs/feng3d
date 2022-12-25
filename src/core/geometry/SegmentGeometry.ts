@@ -26,10 +26,10 @@ declare global
 /**
  * 线段组件
  */
-@Serializable()
+@Serializable('SegmentGeometry')
 export class SegmentGeometry extends Geometry
 {
-    __class__: 'SegmentGeometry';
+    declare __class__: 'SegmentGeometry';
 
     name = 'Segment';
 

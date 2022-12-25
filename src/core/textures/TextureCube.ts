@@ -25,10 +25,10 @@ export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positi
 /**
  * 立方体纹理
  */
-@Serializable()
+@Serializable('TextureCube')
 export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> extends TextureInfo<T>
 {
-    __class__: 'TextureCube';
+    declare __class__: 'TextureCube';
 
     textureType: TextureType = 'TEXTURE_CUBE_MAP';
 

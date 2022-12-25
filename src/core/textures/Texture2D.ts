@@ -56,10 +56,10 @@ export interface Texture2DEventMap
 /**
  * 2D纹理
  */
-@Serializable()
+@Serializable('Texture2D')
 export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends TextureInfo<T>
 {
-    __class__: 'Texture2D';
+    declare __class__: 'Texture2D';
 
     /**
      * 纹理类型

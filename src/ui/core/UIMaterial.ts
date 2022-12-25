@@ -24,7 +24,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('UIMaterial')
 export class UIMaterial extends Material
 {
     uniforms = new UIUniforms();
@@ -36,10 +36,10 @@ export class UIMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('UIUniforms')
 export class UIUniforms
 {
-    __class__: 'UIUniforms';
+    declare __class__: 'UIUniforms';
 
     /**
      * UI几何体尺寸，在shader中进行对几何体缩放。

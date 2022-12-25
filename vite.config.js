@@ -12,6 +12,7 @@ export default defineConfig({
             name: 'feng3d',
             // the proper extensions will be added
             fileName: 'index'
-        }
+        },
+        sourcemap: true
     },
 })

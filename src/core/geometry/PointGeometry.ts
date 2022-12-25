@@ -18,10 +18,10 @@ declare global
 /**
  * 点几何体
  */
-@Serializable()
+@Serializable('PointGeometry')
 export class PointGeometry extends Geometry
 {
-    __class__: 'PointGeometry';
+    declare __class__: 'PointGeometry';
 
     /**
      * 点数据列表

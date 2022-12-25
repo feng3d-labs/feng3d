@@ -12,10 +12,10 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('CustomGeometry')
 export class CustomGeometry extends Geometry
 {
-    __class__: 'CustomGeometry';
+    declare __class__: 'CustomGeometry';
 
     /**
      * 顶点索引缓冲

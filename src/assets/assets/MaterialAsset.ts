@@ -17,7 +17,7 @@ declare global
 /**
  * 材质资源
  */
-@Serializable()
+@Serializable('MaterialAsset')
 export class MaterialAsset extends ObjectAsset
 {
     static extenson = '.json';

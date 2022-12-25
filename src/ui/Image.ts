@@ -29,8 +29,8 @@ declare global
  * 用于显示图片
  */
 @AddComponentMenu('UI/Image')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'Image' })
+@Serializable('Image')
 export class Image extends Component2D
 {
     /**

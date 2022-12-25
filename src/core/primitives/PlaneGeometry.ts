@@ -28,10 +28,10 @@ declare global
 /**
  * 平面几何体
  */
-@Serializable()
+@Serializable('PlaneGeometry')
 export class PlaneGeometry extends Geometry
 {
-    __class__: 'PlaneGeometry';
+    declare __class__: 'PlaneGeometry';
 
     /**
      * 宽度

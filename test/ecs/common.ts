@@ -11,13 +11,13 @@ declare global
     }
 }
 
-@RegisterComponent()
+@RegisterComponent({ name: 'CustomComponent' })
 export class CustomComponent extends Component
 {
 
 }
 
-@RegisterComponent()
+@RegisterComponent({ name: 'ComponentA' })
 export class ComponentA extends Component
 {
 

@@ -7,10 +7,10 @@ import { MinMaxGradientMode } from './MinMaxGradientMode';
 /**
  * 最大最小颜色渐变
  */
-@Serializable()
+@Serializable('MinMaxGradient')
 export class MinMaxGradient
 {
-    __class__: 'MinMaxGradient';
+    declare __class__: 'MinMaxGradient';
 
     /**
      * Set the mode that the min-max gradient will use to evaluate colors.

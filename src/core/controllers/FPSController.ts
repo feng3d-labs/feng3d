@@ -21,8 +21,8 @@ declare global
  * FPS模式控制器
  */
 @AddComponentMenu('Controller/FPSController')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'FPSController' })
+@Serializable('FPSController')
 export class FPSController extends Component3D
 {
     /**

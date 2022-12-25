@@ -10,10 +10,10 @@ import { WrapMode } from './WrapMode';
  *
  * 基于时间轴的连续三阶Bézier曲线
  */
-@Serializable()
+@Serializable('AnimationCurve')
 export class AnimationCurve
 {
-    __class__: 'AnimationCurve';
+    declare __class__: 'AnimationCurve';
 
     /**
      * 最大tan值，超出该值后将会变成分段

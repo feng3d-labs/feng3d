@@ -19,10 +19,10 @@ export interface Vector3Like
 /**
  * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
  */
-@Serializable()
+@Serializable('Vector3')
 export class Vector3 implements Vector, Vector3Like
 {
-    __class__: 'Vector3';
+    declare __class__: 'Vector3';
 
     /**
     * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。

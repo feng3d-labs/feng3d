@@ -28,10 +28,10 @@ declare global
 /**
  * 圆锥体
  */
-@Serializable()
+@Serializable('ConeGeometry')
 export class ConeGeometry extends Geometry
 {
-    __class__: 'ConeGeometry' = 'ConeGeometry';
+    declare __class__: 'ConeGeometry' = 'ConeGeometry';
 
     name = 'Cone';
 

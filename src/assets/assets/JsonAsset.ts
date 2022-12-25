@@ -14,7 +14,7 @@ declare global
 /**
  * JSON 资源
  */
-@Serializable()
+@Serializable('JsonAsset')
 export class JsonAsset extends TextAsset
 {
     static extenson = '.json';

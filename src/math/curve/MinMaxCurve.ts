@@ -7,10 +7,10 @@ import { MinMaxCurveMode } from './MinMaxCurveMode';
 /**
  * 最大最小曲线
  */
-@Serializable()
+@Serializable('MinMaxCurve')
 export class MinMaxCurve
 {
-    __class__: 'MinMaxCurve';
+    declare __class__: 'MinMaxCurve';
 
     /**
      * 模式

@@ -14,7 +14,7 @@ declare global
 /**
  * JS资源
  */
-@Serializable()
+@Serializable('JSAsset')
 export class JSAsset extends TextAsset
 {
     static extenson = '.js';

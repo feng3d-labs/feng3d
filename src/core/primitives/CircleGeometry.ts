@@ -53,10 +53,10 @@ export interface ICircleGeometry
 /**
  * 圆片
  */
-@Serializable()
+@Serializable('CircleGeometry')
 export class CircleGeometry extends Geometry
 {
-    __class__: 'CircleGeometry' = 'CircleGeometry';
+    declare __class__: 'CircleGeometry' = 'CircleGeometry';
     /**
      * 半径
      */

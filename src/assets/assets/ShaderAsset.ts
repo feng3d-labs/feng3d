@@ -14,7 +14,7 @@ declare global
 /**
  * 着色器 资源
  */
-@Serializable()
+@Serializable('ShaderAsset')
 export class ShaderAsset extends ScriptAsset
 {
     static extenson = '.ts';

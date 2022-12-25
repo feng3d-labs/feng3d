@@ -39,11 +39,11 @@ declare global
  * 摄像机
  */
 @AddComponentMenu('Rendering/Camera')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'Camera' })
+@Serializable('Camera')
 export class Camera extends Component3D
 {
-    __class__: 'Camera';
+    declare __class__: 'Camera';
 
     // /**
     //  * How the camera clears the background.

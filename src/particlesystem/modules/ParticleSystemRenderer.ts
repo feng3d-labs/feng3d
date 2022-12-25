@@ -11,7 +11,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * Use this class to render particles on to the screen.
  */
-@Serializable()
+@Serializable('ParticleSystemRenderer')
 export class ParticleSystemRenderer extends ParticleModule
 {
     /**

@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  * 控制每个粒子在其生命周期内的力。
  * Script interface for the Force Over Lifetime module.
  */
-@Serializable()
+@Serializable('ParticleForceOverLifetimeModule')
 export class ParticleForceOverLifetimeModule extends ParticleModule
 {
     /**

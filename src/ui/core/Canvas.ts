@@ -28,8 +28,8 @@ declare global
  *
  * 能够被用于屏幕渲染的元素
  */
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'Canvas' })
+@Serializable('Canvas')
 export class Canvas extends Component2D
 {
     /**

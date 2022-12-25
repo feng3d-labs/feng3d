@@ -18,10 +18,10 @@ declare global
 /**
  * UI几何体
  */
-@Serializable()
+@Serializable('UIGeometry')
 export class UIGeometry extends Geometry
 {
-    __class__: 'UIGeometry';
+    declare __class__: 'UIGeometry';
 
     constructor()
     {

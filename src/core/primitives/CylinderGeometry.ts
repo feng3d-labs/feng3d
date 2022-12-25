@@ -80,10 +80,10 @@ export interface CylinderGeometry extends ICylinderGeometry { }
  * 圆柱体几何体
  * @author DawnKing 2016-09-12
  */
-@Serializable()
+@Serializable('CylinderGeometry')
 export class CylinderGeometry extends Geometry implements ICylinderGeometry
 {
-    __class__: 'CylinderGeometry';
+    declare __class__: 'CylinderGeometry';
 
     /**
      * 顶部半径

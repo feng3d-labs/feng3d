@@ -20,7 +20,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('ParticleMaterial')
 export class ParticleMaterial extends Material
 {
     uniforms = new ParticlesAdditiveUniforms();
@@ -35,10 +35,10 @@ export class ParticleMaterial extends Material
 /**
  * UnityShader "Particles/Additive"
  */
-@Serializable()
+@Serializable('ParticlesAdditiveUniforms')
 export class ParticlesAdditiveUniforms
 {
-    __class__: 'ParticlesAdditiveUniforms';
+    declare __class__: 'ParticlesAdditiveUniforms';
 
     @SerializeProperty()
     @oav()

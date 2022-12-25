@@ -4,7 +4,7 @@ import { Serializable } from "../serialization/Serializable";
 /**
  * 二进制 资源
  */
-@Serializable()
+@Serializable('ArrayBufferAsset')
 export class ArrayBufferAsset extends FileAsset
 {
     /**

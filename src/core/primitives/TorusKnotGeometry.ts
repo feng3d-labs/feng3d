@@ -29,10 +29,10 @@ declare global
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/TorusKnotGeometry.js
  */
-@Serializable()
+@Serializable('TorusKnotGeometry')
 export class TorusKnotGeometry extends Geometry
 {
-    __class__: 'TorusKnotGeometry' = 'TorusKnotGeometry';
+    declare __class__: 'TorusKnotGeometry' = 'TorusKnotGeometry';
 
     radius = 1;
     tube = 0.4;

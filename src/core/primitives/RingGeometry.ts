@@ -47,10 +47,10 @@ export interface IRingGeometry
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/RingGeometry.js
  */
-@Serializable()
+@Serializable('RingGeometry')
 export class RingGeometry extends Geometry
 {
-    __class__: 'RingGeometry' = 'RingGeometry';
+    declare __class__: 'RingGeometry' = 'RingGeometry';
 
     @SerializeProperty()
     @oav()

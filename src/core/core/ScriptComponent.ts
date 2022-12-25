@@ -24,8 +24,8 @@ declare global
  * 3d对象脚本
  */
 @AddComponentMenu('Script/Script')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'ScriptComponent' })
+@Serializable('ScriptComponent')
 export class ScriptComponent extends Component3D
 {
     runEnvironment = RunEnvironment.feng3d;

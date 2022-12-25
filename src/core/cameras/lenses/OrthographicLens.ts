@@ -8,7 +8,7 @@ import { LensBase } from './LensBase';
 /**
  * 正射投影镜头
  */
-@Serializable()
+@Serializable('OrthographicLens')
 export class OrthographicLens extends LensBase
 {
     /**

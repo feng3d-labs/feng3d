@@ -20,7 +20,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * 噪声模块允许你将湍流应用到粒子的运动中。使用低质量设置来创建计算效率高的噪声，或者使用高质量设置来模拟更平滑、更丰富的噪声。您还可以选择为每个轴分别定义噪声的行为。
  */
-@Serializable()
+@Serializable('ParticleNoiseModule')
 export class ParticleNoiseModule extends ParticleModule
 {
     /**

@@ -14,10 +14,10 @@ import { ParticleModule } from './ParticleModule';
  *
  * 基于时间轴限制速度模块。
  */
-@Serializable()
+@Serializable('ParticleLimitVelocityOverLifetimeModule')
 export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 {
-    __class__: 'ParticleLimitVelocityOverLifetimeModule';
+    declare __class__: 'ParticleLimitVelocityOverLifetimeModule';
 
     /**
      * Set the size over lifetime on each axis separately.

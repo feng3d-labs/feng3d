@@ -43,8 +43,8 @@ export enum DistanceModelType
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
  */
 @AddComponentMenu('Audio/AudioSource')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'AudioSource' })
+@Serializable('AudioSource')
 export class AudioSource extends Component3D
 {
     private panner: PannerNode;

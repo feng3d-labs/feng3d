@@ -27,10 +27,10 @@ import { ParticleModule } from './ParticleModule';
  * Shape of the emitter volume, which controls where particles are emitted and their initial direction.
  * 发射体体积的形状，它控制粒子发射的位置和初始方向。
  */
-@Serializable()
+@Serializable('ParticleShapeModule')
 export class ParticleShapeModule extends ParticleModule
 {
-    __class__: 'ParticleShapeModule';
+    declare __class__: 'ParticleShapeModule';
     /**
      * Type of shape to emit particles from.
      * 发射粒子的形状类型。

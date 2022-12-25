@@ -27,10 +27,10 @@ declare global
  * 球体几何体
  * @author DawnKing 2016-09-12
  */
-@Serializable()
+@Serializable('SphereGeometry')
 export class SphereGeometry extends Geometry
 {
-    __class__: 'SphereGeometry';
+    declare __class__: 'SphereGeometry';
 
     /**
      * 球体半径

@@ -13,7 +13,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * 粒子系统 缩放随速度变化模块
  */
-@Serializable()
+@Serializable('ParticleSizeBySpeedModule')
 export class ParticleSizeBySpeedModule extends ParticleModule
 {
     /**

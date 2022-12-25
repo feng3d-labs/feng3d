@@ -103,10 +103,10 @@ export interface Node3D
  * 
  * 用于构建3D场景树结构，处理3D对象的位移旋转缩放等空间数据。
  */
-@Serializable()
+@Serializable('Node3D')
 export class Node3D extends Node<Node3DEventMap>
 {
-    __class__: 'Node3D';
+    declare __class__: 'Node3D';
 
     declare protected _parent: Node3D;
     declare protected _children: Node3D[];

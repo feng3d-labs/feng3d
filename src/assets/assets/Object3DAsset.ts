@@ -13,7 +13,7 @@ export interface Object3DAsset
 /**
  * 游戏对象资源
  */
-@Serializable()
+@Serializable('Object3DAsset')
 export class Object3DAsset extends ObjectAsset
 {
     /**

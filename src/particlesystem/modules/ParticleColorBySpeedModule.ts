@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * 颜色随速度变化模块。
  */
-@Serializable()
+@Serializable('ParticleColorBySpeedModule')
 export class ParticleColorBySpeedModule extends ParticleModule
 {
     /**

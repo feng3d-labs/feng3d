@@ -35,8 +35,8 @@ declare global
  * 用于显示文字。
  */
 @AddComponentMenu('UI/Text')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'Text' })
+@Serializable('Text')
 export class Text extends Component2D
 {
     /**

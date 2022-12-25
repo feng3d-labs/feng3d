@@ -15,7 +15,7 @@ declare global
  * 文件夹资源
  */
 @ov({ component: 'OVFolderAsset' })
-@Serializable()
+@Serializable('FolderAsset')
 export class FolderAsset extends FileAsset
 {
     static extenson = '';

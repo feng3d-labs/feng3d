@@ -12,10 +12,10 @@ import { ParticleModule } from './ParticleModule';
  * Controls the velocity of each particle during its lifetime.
  * 控制每个粒子在其生命周期内的速度。
  */
-@Serializable()
+@Serializable('ParticleVelocityOverLifetimeModule')
 export class ParticleVelocityOverLifetimeModule extends ParticleModule
 {
-    __class__: 'ParticleVelocityOverLifetimeModule';
+    declare __class__: 'ParticleVelocityOverLifetimeModule';
 
     /**
      * Curve to control particle speed based on lifetime.

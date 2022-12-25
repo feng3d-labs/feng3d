@@ -34,11 +34,11 @@ declare global
 }
 
 @AddComponentMenu('Rendering/OutLineComponent')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'OutLineComponent' })
+@Serializable('OutLineComponent')
 export class OutLineComponent extends Component
 {
-    __class__: 'OutLineComponent';
+    declare __class__: 'OutLineComponent';
 
     @oav()
     @SerializeProperty()

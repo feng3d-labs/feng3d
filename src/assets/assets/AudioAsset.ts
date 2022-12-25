@@ -5,7 +5,7 @@ import { ArrayBufferAsset } from '../ArrayBufferAsset';
 /**
  * 音效资源
  */
-@Serializable()
+@Serializable('AudioAsset')
 export class AudioAsset extends ArrayBufferAsset
 {
     readonly assetType = AssetType.audio;

@@ -26,7 +26,7 @@ declare global
 /**
  * 地形几何体
  */
-@Serializable()
+@Serializable('TerrainGeometry')
 export class TerrainGeometry extends Geometry
 {
     /**

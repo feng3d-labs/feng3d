@@ -17,7 +17,7 @@ declare global
 /**
  * 几何体资源
  */
-@Serializable()
+@Serializable('GeometryAsset')
 export class GeometryAsset extends ObjectAsset
 {
     static extenson = '.json';

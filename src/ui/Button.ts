@@ -62,8 +62,8 @@ export enum ButtonState
  * 按钮
  */
 @AddComponentMenu('UI/Button')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'Button' })
+@Serializable('Button')
 export class Button extends Component2D
 {
     /**

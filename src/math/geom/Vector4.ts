@@ -8,10 +8,10 @@ import { Vector3 } from './Vector3';
 /**
  * 四维向量
  */
-@Serializable()
+@Serializable('Vector4')
 export class Vector4
 {
-    __class__: 'Vector4';
+    declare __class__: 'Vector4';
 
     /**
      * Vector4 对象中的第一个元素。默认值为 0

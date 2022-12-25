@@ -31,8 +31,8 @@ declare global
  * 用于填充UI中背景等颜色。
  */
 @AddComponentMenu('UI/Rect')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'Rect' })
+@Serializable('Rect')
 export class Rect extends Component
 {
     /**

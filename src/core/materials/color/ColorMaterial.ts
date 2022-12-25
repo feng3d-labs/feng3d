@@ -23,10 +23,10 @@ declare global
 /**
  * 纯颜色材质
  */
-@Serializable()
+@Serializable('ColorMaterial')
 export class ColorMaterial extends Material
 {
-    __class__: 'ColorMaterial';
+    declare __class__: 'ColorMaterial';
 
     uniforms = new ColorUniforms();
 
@@ -37,10 +37,10 @@ export class ColorMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('ColorUniforms')
 export class ColorUniforms
 {
-    __class__: 'ColorUniforms';
+    declare __class__: 'ColorUniforms';
     /**
      * 颜色
      */

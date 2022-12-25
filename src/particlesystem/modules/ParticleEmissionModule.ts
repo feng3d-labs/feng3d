@@ -9,10 +9,10 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统发射模块。
  */
-@Serializable()
+@Serializable('ParticleEmissionModule')
 export class ParticleEmissionModule extends ParticleModule
 {
-    __class__: 'ParticleEmissionModule';
+    declare __class__: 'ParticleEmissionModule';
 
     /**
      * 随着时间的推移，新粒子产生的速度。

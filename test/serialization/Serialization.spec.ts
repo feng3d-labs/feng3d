@@ -12,7 +12,7 @@ class ObjectBase
     id = 1;
 }
 
-@Serializable()
+@Serializable('C')
 class C extends ObjectBase
 {
     // @SerializeProperty()
@@ -34,7 +34,7 @@ class C extends ObjectBase
     }
 }
 
-@Serializable()
+@Serializable('LoopA')
 class LoopA
 {
     a: LoopA;

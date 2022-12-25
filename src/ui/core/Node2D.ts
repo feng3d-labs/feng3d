@@ -60,7 +60,7 @@ export interface Node2D
  * 
  * 用于构建2D场景树结构，处理2D对象的位移旋转缩放等空间数据。
  */
-@Serializable()
+@Serializable('Node2D')
 export class Node2D extends Node<Node2DEventMap>
 {
     get single() { return true; }

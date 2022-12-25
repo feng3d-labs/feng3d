@@ -8,7 +8,7 @@ import { ParticleSystem } from '../ParticleSystem';
 /**
  * 粒子模块
  */
-@Serializable()
+@Serializable('ParticleModule')
 export class ParticleModule extends EventEmitter
 {
     /**

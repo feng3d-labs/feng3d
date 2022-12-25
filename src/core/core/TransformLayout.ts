@@ -42,8 +42,8 @@ declare global
  * 通过修改Transform的数值实现
  */
 @AddComponentMenu('Layout/TransformLayout')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'TransformLayout' })
+@Serializable('TransformLayout')
 export class TransformLayout extends Component3D
 {
     get single() { return true; }

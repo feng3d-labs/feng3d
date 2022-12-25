@@ -23,7 +23,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('StandardMaterial')
 export class StandardMaterial extends Material
 {
     uniforms = new StandardUniforms();
@@ -46,10 +46,10 @@ export enum FogMode
     LINEAR = 3
 }
 
-@Serializable()
+@Serializable('StandardUniforms')
 export class StandardUniforms
 {
-    __class__: 'StandardUniforms';
+    declare __class__: 'StandardUniforms';
 
     /**
      * 点绘制时点的尺寸

@@ -16,7 +16,7 @@ declare global
 /**
  * 脚本资源
  */
-@Serializable()
+@Serializable('ScriptAsset')
 export class ScriptAsset extends TextAsset
 {
     static extenson = '.ts';

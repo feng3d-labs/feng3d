@@ -18,10 +18,10 @@ declare global
 }
 
 @RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: [MeshRenderer] })
-@Serializable()
+@Serializable('SkinnedMeshRenderer')
 export class SkinnedMeshRenderer extends Component3D
 {
-    __class__: 'SkinnedMeshRenderer';
+    declare __class__: 'SkinnedMeshRenderer';
 
     get single() { return true; }
 

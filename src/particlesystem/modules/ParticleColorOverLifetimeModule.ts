@@ -8,7 +8,7 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子系统 颜色随时间变化模块
  */
-@Serializable()
+@Serializable('ParticleColorOverLifetimeModule')
 export class ParticleColorOverLifetimeModule extends ParticleModule
 {
     /**

@@ -15,11 +15,11 @@ declare global
 }
 
 @AddComponentMenu('Layout/BillboardComponent')
-@RegisterComponent()
-@Serializable()
+@RegisterComponent({ name: 'BillboardComponent' })
+@Serializable('BillboardComponent')
 export class BillboardComponent extends Component3D
 {
-    __class__: 'BillboardComponent';
+    declare __class__: 'BillboardComponent';
 
     /**
      * 相机

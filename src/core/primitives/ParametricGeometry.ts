@@ -11,7 +11,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('ParametricGeometry')
 export class ParametricGeometry extends Geometry
 {
     func: (u: number, v: number) => Vector3;

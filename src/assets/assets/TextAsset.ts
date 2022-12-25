@@ -14,7 +14,7 @@ declare global
 /**
  * 文本 资源
  */
-@Serializable()
+@Serializable('TextAsset')
 export class TextAsset extends FileAsset
 {
     static extenson = '.txt';

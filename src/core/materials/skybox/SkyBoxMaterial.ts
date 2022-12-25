@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@Serializable()
+@Serializable('SkyBoxMaterial')
 export class SkyBoxMaterial extends Material
 {
     constructor()
@@ -25,10 +25,10 @@ export class SkyBoxMaterial extends Material
     }
 }
 
-@Serializable()
+@Serializable('SkyBoxUniforms')
 export class SkyBoxUniforms
 {
-    __class__: 'SkyBoxUniforms';
+    declare __class__: 'SkyBoxUniforms';
 
     @SerializeProperty()
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })

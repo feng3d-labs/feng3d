@@ -4,10 +4,10 @@ import { Serializable } from "../../serialization/Serializable";
 import { serialization } from "../../serialization/Serialization";
 import { SerializeProperty } from "../../serialization/SerializeProperty";
 
-@Serializable()
+@Serializable('ParticleEmissionBurst')
 export class ParticleEmissionBurst
 {
-    __class__: 'ParticleEmissionBurst';
+    declare __class__: 'ParticleEmissionBurst';
 
     /**
      * The time that each burst occurs.

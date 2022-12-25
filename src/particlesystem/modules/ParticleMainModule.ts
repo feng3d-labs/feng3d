@@ -14,10 +14,10 @@ import { ParticleModule } from './ParticleModule';
 /**
  * 粒子主模块
  */
-@Serializable()
+@Serializable('ParticleMainModule')
 export class ParticleMainModule extends ParticleModule
 {
-    __class__: 'ParticleMainModule';
+    declare __class__: 'ParticleMainModule';
 
     @oav({ exclude: true })
     enabled = true;

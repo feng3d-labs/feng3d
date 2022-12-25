@@ -26,10 +26,10 @@ declare global
  * 点光源
  */
 @AddComponentMenu('Rendering/PointLight')
-@RegisterComponent()
+@RegisterComponent({ name: 'PointLight' })
 export class PointLight extends Light
 {
-    __class__: 'PointLight';
+    declare __class__: 'PointLight';
 
     lightType = LightType.Point;
 

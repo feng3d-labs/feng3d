@@ -16,7 +16,7 @@ declare global
 /**
  * 立方体纹理资源
  */
-@Serializable()
+@Serializable('TextureCubeAsset')
 export class TextureCubeAsset extends ObjectAsset
 {
     static extenson = '.json';

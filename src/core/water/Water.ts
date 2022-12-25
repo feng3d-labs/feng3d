@@ -35,10 +35,10 @@ declare global
  */
 @AddComponentMenu('Graphics/Water')
 @RegisterComponent({ name: 'Water', dependencies: [MeshRenderer] })
-@Serializable()
+@Serializable('Water')
 export class Water extends Component3D
 {
-    __class__: 'Water';
+    declare __class__: 'Water';
 
     private meshRenderer: MeshRenderer;
 

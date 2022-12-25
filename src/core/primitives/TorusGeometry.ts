@@ -27,7 +27,7 @@ declare global
 /**
  * 圆环几何体
  */
-@Serializable()
+@Serializable('TorusGeometry')
 export class TorusGeometry extends Geometry
 {
 	__class__: 'TorusGeometry' = 'TorusGeometry';

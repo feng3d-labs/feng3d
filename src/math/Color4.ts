@@ -25,10 +25,10 @@ Color3.prototype.toColor4 = function toColor4(color4 = new Color4())
 /**
  * 颜色（包含透明度）
  */
-@Serializable()
+@Serializable('Color4')
 export class Color4
 {
-    __class__: 'Color4';
+    declare __class__: 'Color4';
 
     static get WHITE()
     {

@@ -25,10 +25,10 @@ declare global
 /**
  * 立（长）方体几何体
  */
-@Serializable()
+@Serializable('CubeGeometry')
 export class CubeGeometry extends Geometry
 {
-    __class__: 'CubeGeometry';
+    declare __class__: 'CubeGeometry';
 
     name = 'Cube';
 

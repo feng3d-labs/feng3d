@@ -8,10 +8,10 @@ import { SerializeProperty } from "../serialization/SerializeProperty";
 /**
  * UnityShader "Particles/Alpha Blended Premultiply"
  */
-@Serializable()
+@Serializable('ParticlesAlphaBlendedPremultiplyUniforms')
 export class ParticlesAlphaBlendedPremultiplyUniforms
 {
-    __class__: 'ParticlesAlphaBlendedPremultiplyUniforms';
+    declare __class__: 'ParticlesAlphaBlendedPremultiplyUniforms';
 
     /**
      * 粒子贴图

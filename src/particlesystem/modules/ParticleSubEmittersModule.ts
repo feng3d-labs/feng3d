@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * This module triggers child particle emission on events such as the birth, death, and collision of particles in the parent system.
  */
-@Serializable()
+@Serializable('ParticleSubEmittersModule')
 export class ParticleSubEmittersModule extends ParticleModule
 {
     /**

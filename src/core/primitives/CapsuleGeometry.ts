@@ -28,10 +28,10 @@ declare global
 /**
  * 胶囊体几何体
  */
-@Serializable()
+@Serializable('CapsuleGeometry')
 export class CapsuleGeometry extends Geometry
 {
-    __class__: 'CapsuleGeometry';
+    declare __class__: 'CapsuleGeometry';
 
     /**
      * 胶囊体半径
