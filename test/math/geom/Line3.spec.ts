@@ -2,7 +2,7 @@ import { Line3 } from '../../../src/math/geom/Line3';
 import { Vector3 } from '../../../src/math/geom/Vector3';
 
 import { Plane } from '../../../src/math/geom/Plane';
-Plane
+Plane;
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

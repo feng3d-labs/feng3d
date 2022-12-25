@@ -1,4 +1,4 @@
-import { __class__ } from "./SerializationConst";
+import { __class__ } from './SerializationConst';
 
 /**
  * 返回对象的类名。

@@ -1,8 +1,8 @@
-import { FileAsset } from "../core/assets/FileAsset";
-import { objectEmitter } from "../event/ObjectEmitter";
-import { oav } from "../objectview/ObjectView";
-import { serialization } from "../serialization/Serialization";
-import { watcher } from "../watcher/watcher";
+import { FileAsset } from '../core/assets/FileAsset';
+import { objectEmitter } from '../event/ObjectEmitter';
+import { oav } from '../objectview/ObjectView';
+import { serialization } from '../serialization/Serialization';
+import { watcher } from '../watcher/watcher';
 
 /**
  * 对象资源

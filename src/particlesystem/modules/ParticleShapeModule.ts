@@ -340,7 +340,8 @@ export class ParticleShapeModule extends ParticleModule
         const length = particle.velocity.length;
         if (this.randomDirectionAmount > 0)
         {
-            const velocity = new Vector3().random().scaleNumber(2).subNumber(1).normalize(length);
+            const velocity = new Vector3().random().scaleNumber(2).subNumber(1)
+.normalize(length);
             particle.velocity.lerpNumber(velocity, this.randomDirectionAmount).normalize(length);
         }
         if (this.sphericalDirectionAmount > 0)

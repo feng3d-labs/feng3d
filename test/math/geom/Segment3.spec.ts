@@ -1,9 +1,9 @@
 import { Line3 } from '../../../src/math/geom/Line3';
 import { Segment3 } from '../../../src/math/geom/Segment3';
 import { Vector3 } from '../../../src/math/geom/Vector3';
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 import { Plane } from '../../../src/math/geom/Plane';
-Plane
+Plane;
 
 const { ok, equal, deepEqual } = assert;
 

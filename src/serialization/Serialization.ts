@@ -365,7 +365,7 @@ serialization.serializeHandlers.push(
 
                 if (!ObjectUtils.isBaseType(tpv))
                 {
-                    if (tpv[serializeIsRawKey] == undefined)
+                    if (tpv[serializeIsRawKey] === undefined)
                     {
                         tpv[serializeIsRawKey] = param.autoRefID++;
                     }

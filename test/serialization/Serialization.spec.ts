@@ -2,8 +2,7 @@ import { Serializable } from '../../src/serialization/Serializable';
 import { $clone, $diff, serialization } from '../../src/serialization/Serialization';
 import { SerializeProperty } from '../../src/serialization/SerializeProperty';
 
-
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 class ObjectBase
@@ -98,7 +97,7 @@ describe('Serialization', () =>
 
     it('$diff 循环引用以及多次引用', () =>
     {
-        var o: any = { a: 1 };
+        const o: any = { a: 1 };
         o.o = o;
         o.o1 = o;
         o.o2 = o;

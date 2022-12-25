@@ -1,4 +1,4 @@
-import { mathUtil } from "../../polyfill/MathUtil";
+import { mathUtil } from '../../polyfill/MathUtil';
 
 declare global
 {

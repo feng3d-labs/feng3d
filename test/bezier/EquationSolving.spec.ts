@@ -1,7 +1,7 @@
 import { equationSolving } from '../../src/bezier/EquationSolving';
 import { HighFunction } from '../../src/bezier/HighFunction';
 
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual, strictEqual } = assert;
 
 describe('EquationSolving', () =>
@@ -26,7 +26,7 @@ describe('EquationSolving', () =>
             const f = (x: number) => hf.getValue(x) - (fa + fb) / 2;
 
             // 求解 ff(x) == 0
-            const x = equationSolving.binary(f, a, b, precision)!;
+            const x = equationSolving.binary(f, a, b, precision);
             const fx = f(x);
 
             ok(fx < precision);
@@ -49,7 +49,7 @@ describe('EquationSolving', () =>
 
             // 求解 ff(x) == 0
             const x = equationSolving.line(f, a, b, precision);
-            const fx = f(x!);
+            const fx = f(x);
 
             ok(fx < precision);
         }
@@ -79,7 +79,7 @@ describe('EquationSolving', () =>
             const x = equationSolving.tangent(f, f1, f2, a, b, precision, (err) =>
             {
                 ok(true, err.message);
-            })!;
+            });
 
             if (x < a || x > b)
             {
@@ -111,7 +111,7 @@ describe('EquationSolving', () =>
             const x = equationSolving.secant(f, a, b, precision, (err) =>
             {
                 ok(true, err.message);
-            })!;
+            });
 
             if (x < a || x > b)
             {

@@ -1,4 +1,4 @@
-import { _definitionCache } from "./Serializable";
+import { _definitionCache } from './Serializable';
 
 /**
  * 获取实例
@@ -12,7 +12,7 @@ export function getInstance(classname: string)
     // 如果未定义则从全局查找
     if (!Cls)
     {
-        let definition = globalThis[classname];
+        const definition = globalThis[classname];
         if (definition && typeof definition === 'function' && definition.name === classname)
         {
             _definitionCache[classname] = definition;

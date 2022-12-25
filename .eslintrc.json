@@ -28,7 +28,7 @@
         ],
         "no-constant-condition": 1,
         "no-control-regex": 1,
-        "no-debugger": 1,
+        "no-debugger": 0,
         "no-dupe-args": 1,
         "no-dupe-keys": 1,
         "no-duplicate-case": 1,
@@ -129,7 +129,7 @@
         "no-octal-escape": 1,
         "no-param-reassign": 0,
         "no-redeclare": 1,
-        "no-return-assign": 1,
+        "no-return-assign": 0,
         "no-script-url": 1,
         "no-self-assign": 1,
         "no-self-compare": 1,
@@ -305,13 +305,7 @@
         "no-negated-condition": 0,
         "no-new-object": 1,
         "no-plusplus": 0,
-        "no-restricted-syntax": [
-            1,
-            "DebuggerStatement",
-            "EmptyStatement",
-            "LabeledStatement",
-            "WithStatement"
-        ],
+        "no-restricted-syntax": 0,
         "no-spaced-func": 1,
         "no-ternary": 0,
         "no-trailing-spaces": 1,
@@ -473,14 +467,10 @@
                 "@typescript-eslint/semi": 1,
                 "@typescript-eslint/no-explicit-any": 0,
                 "@typescript-eslint/interface-name-prefix": 0,
-                "@typescript-eslint/no-unused-vars": [
-                    "error",
-                    {
-                        "argsIgnorePattern": "^_"
-                    }
-                ],
+                "@typescript-eslint/no-unused-vars": 0,
                 "@typescript-eslint/no-empty-interface": 0,
                 "@typescript-eslint/explicit-module-boundary-types": 0,
+                "@typescript-eslint/ban-ts-comment": 0,
                 "@typescript-eslint/no-empty-function": 0
             }
         }

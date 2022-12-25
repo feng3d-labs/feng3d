@@ -1,10 +1,10 @@
-import { EventEmitter } from "../../event/EventEmitter";
-import { Color4 } from "../../math/Color4";
-import { oav } from "../../objectview/ObjectView";
-import { Serializable } from "../../serialization/Serializable";
-import { serialization } from "../../serialization/Serialization";
-import { SerializeProperty } from "../../serialization/SerializeProperty";
-import { watcher } from "../../watcher/watcher";
+import { EventEmitter } from '../../event/EventEmitter';
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { Serializable } from '../../serialization/Serializable';
+import { serialization } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
 
 /**
  * 文本上渐变方向。

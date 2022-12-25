@@ -1,6 +1,6 @@
 import { ticker } from '../../src/core/utils/Ticker';
 
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 describe('ticker', () =>
@@ -14,7 +14,7 @@ describe('ticker', () =>
         ticker.repeat(100, timers, () =>
         {
             num++;
-        })
+        });
 
         ticker.once(1000, () =>
         {

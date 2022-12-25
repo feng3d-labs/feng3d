@@ -1,11 +1,11 @@
-import { AssetMeta } from "../../core/assets/AssetMeta";
-import { AssetType } from "../../core/assets/AssetType";
-import { FileAsset } from "../../core/assets/FileAsset";
-import { Texture2D } from "../../core/textures/Texture2D";
-import { oav } from "../../objectview/ObjectView";
-import { gPartial } from "../../polyfill/Types";
-import { Serializable } from "../../serialization/Serializable";
-import { serialization } from "../../serialization/Serialization";
+import { AssetMeta } from '../../core/assets/AssetMeta';
+import { AssetType } from '../../core/assets/AssetType';
+import { FileAsset } from '../../core/assets/FileAsset';
+import { Texture2D } from '../../core/textures/Texture2D';
+import { oav } from '../../objectview/ObjectView';
+import { gPartial } from '../../polyfill/Types';
+import { Serializable } from '../../serialization/Serializable';
+import { serialization } from '../../serialization/Serialization';
 
 /**
  * 纹理文件

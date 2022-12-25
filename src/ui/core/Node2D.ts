@@ -1,20 +1,20 @@
-import { Camera } from "../../core/cameras/Camera";
-import { HideFlags } from "../../core/core/HideFlags";
-import { Node, NodeEventMap } from "../../core/core/Node";
-import { Node3D } from "../../core/core/Node3D";
-import { TransformLayout } from "../../core/core/TransformLayout";
-import { Scene } from "../../core/scene/Scene";
-import { Component } from "../../ecs/Component";
-import { IEvent } from "../../event/IEvent";
-import { Vector2 } from "../../math/geom/Vector2";
-import { Vector4 } from "../../math/geom/Vector4";
-import { oav } from "../../objectview/ObjectView";
-import { gPartial } from "../../polyfill/Types";
-import { RenderAtomic } from "../../renderer/data/RenderAtomic";
-import { Serializable } from "../../serialization/Serializable";
-import { serialization } from "../../serialization/Serialization";
-import { SerializeProperty } from "../../serialization/SerializeProperty";
-import { watcher } from "../../watcher/watcher";
+import { Camera } from '../../core/cameras/Camera';
+import { HideFlags } from '../../core/core/HideFlags';
+import { Node, NodeEventMap } from '../../core/core/Node';
+import { Node3D } from '../../core/core/Node3D';
+import { TransformLayout } from '../../core/core/TransformLayout';
+import { Scene } from '../../core/scene/Scene';
+import { Component } from '../../ecs/Component';
+import { IEvent } from '../../event/IEvent';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector4 } from '../../math/geom/Vector4';
+import { oav } from '../../objectview/ObjectView';
+import { gPartial } from '../../polyfill/Types';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Serializable } from '../../serialization/Serializable';
+import { serialization } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
 
 declare global
 {
@@ -57,7 +57,7 @@ export interface Node2D
 
 /**
  * 2D结点
- * 
+ *
  * 用于构建2D场景树结构，处理2D对象的位移旋转缩放等空间数据。
  */
 @Serializable('Node2D')

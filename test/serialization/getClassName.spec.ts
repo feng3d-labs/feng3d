@@ -3,9 +3,8 @@ import { getClassName } from '../../src/serialization/getClassName';
 import { getInstance } from '../../src/serialization/getInstance';
 import { Serializable } from '../../src/serialization/Serializable';
 
-
-import { assert, describe, expect, it } from 'vitest'
-const { ok ,equal} = assert;
+import { assert, describe, expect, it } from 'vitest';
+const { ok, equal } = assert;
 
 /**
  * 未使用 @Serializable() 进行注册的类
@@ -34,12 +33,12 @@ describe('getClassName', () =>
 {
     it('getClassName 内置类型', () =>
     {
-        const name = getClassName(new Vector3())
+        const name = getClassName(new Vector3());
         // const name = getClassName({})
         // const name = getClassName(new Vector2())
         name;
 
-        getInstance('Vector2')
+        getInstance('Vector2');
         // getInstance('Vector3')
     });
 

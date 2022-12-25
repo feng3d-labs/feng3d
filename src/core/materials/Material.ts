@@ -34,7 +34,8 @@ export abstract class Material extends EventEmitter
     init(param: gPartial<this>)
     {
         serialization.setValue(this, param);
-        return this;
+
+return this;
     }
 
     @oav({ component: 'OAVFeng3dPreView' })
@@ -74,7 +75,7 @@ export abstract class Material extends EventEmitter
     {
         super();
         serialization.setValue(this, param);
-        console.assert(this.constructor.name !== 'Material', `无法之间构建 Material`)
+        console.assert(this.constructor.name !== 'Material', `无法之间构建 Material`);
     }
 
     beforeRender(renderAtomic: RenderAtomic)

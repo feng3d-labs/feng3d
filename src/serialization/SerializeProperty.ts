@@ -1,4 +1,4 @@
-import { _serialize__ } from "./SerializationConst";
+import { _serialize__ } from './SerializationConst';
 
 /**
  * 序列化装饰器
@@ -22,5 +22,5 @@ export function SerializeProperty()
         const serializePropertys: string[] = target[_serialize__];
 
         serializePropertys.push(propertyKey);
-    }
+    };
 }

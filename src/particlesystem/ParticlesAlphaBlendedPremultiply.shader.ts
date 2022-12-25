@@ -1,9 +1,9 @@
-import { Texture2D } from "../core/textures/Texture2D";
-import { Vector4 } from "../math/geom/Vector4";
-import { oav } from "../objectview/ObjectView";
-import { shaderConfig } from "../renderer/shader/ShaderLib";
-import { Serializable } from "../serialization/Serializable";
-import { SerializeProperty } from "../serialization/SerializeProperty";
+import { Texture2D } from '../core/textures/Texture2D';
+import { Vector4 } from '../math/geom/Vector4';
+import { oav } from '../objectview/ObjectView';
+import { shaderConfig } from '../renderer/shader/ShaderLib';
+import { Serializable } from '../serialization/Serializable';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 
 /**
  * UnityShader "Particles/Alpha Blended Premultiply"

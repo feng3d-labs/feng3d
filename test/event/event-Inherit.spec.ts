@@ -1,6 +1,6 @@
 import { EventEmitter } from '../../src/event/EventEmitter';
 
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 interface DisplayObjectEventMap

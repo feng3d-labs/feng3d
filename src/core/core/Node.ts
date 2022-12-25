@@ -28,7 +28,7 @@ export interface NodeEventMap extends EntityEventMap
 
 /**
  * 结点
- * 
+ *
  * 解决父子结点关系，用于构建3D或者2D等场景树结构。
  */
 export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>

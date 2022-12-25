@@ -92,7 +92,7 @@ export interface Node3D
      * 添加子对象
      *
      * @param child 子对象
-     * 
+     *
      * @returns 返回自身。
      */
     addChild(child: Node3D): this;
@@ -100,7 +100,7 @@ export interface Node3D
 
 /**
  * 3D结点
- * 
+ *
  * 用于构建3D场景树结构，处理3D对象的位移旋转缩放等空间数据。
  */
 @Serializable('Node3D')

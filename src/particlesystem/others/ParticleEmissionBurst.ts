@@ -1,8 +1,8 @@
-import { MinMaxCurve } from "../../math/curve/MinMaxCurve";
-import { oav } from "../../objectview/ObjectView";
-import { Serializable } from "../../serialization/Serializable";
-import { serialization } from "../../serialization/Serialization";
-import { SerializeProperty } from "../../serialization/SerializeProperty";
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { oav } from '../../objectview/ObjectView';
+import { Serializable } from '../../serialization/Serializable';
+import { serialization } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 @Serializable('ParticleEmissionBurst')
 export class ParticleEmissionBurst

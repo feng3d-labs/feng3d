@@ -8,7 +8,7 @@ import { Geometry } from '../geometry/Geometry';
 
 /**
  * 投射射线获取穿过的最近的对象
- * 
+ *
  * @param ray 射线
  * @param node3ds 实体列表
  * @return
@@ -61,7 +61,7 @@ export function rayCast(ray: Ray3, node3ds: Node3D[])
 
 /**
  * 投射射线获取穿过的所有对象
- * 
+ *
  * @param ray3D 射线
  * @param node3ds 实体列表
  * @return

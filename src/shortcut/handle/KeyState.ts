@@ -1,4 +1,4 @@
-import { EventEmitter } from "../../event/EventEmitter";
+import { EventEmitter } from '../../event/EventEmitter';
 
 /**
  * 按键状态

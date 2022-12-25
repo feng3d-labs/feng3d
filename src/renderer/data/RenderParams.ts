@@ -1,5 +1,5 @@
-import { oav } from "../../objectview/ObjectView";
-import { SerializeProperty } from "../../serialization/SerializeProperty";
+import { oav } from '../../objectview/ObjectView';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 /**
  * 渲染参数

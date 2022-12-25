@@ -1,10 +1,10 @@
-import { Component } from "../../ecs/Component";
-import { Constructor } from "../../polyfill/Types";
-import { Node, NodeEventMap } from "./Node";
+import { Component } from '../../ecs/Component';
+import { Constructor } from '../../polyfill/Types';
+import { Node, NodeEventMap } from './Node';
 
 /**
  * 結點組件
- * 
+ *
  * 附加在結點上的組件，處理結點相關的邏輯。
  */
 export class NodeComponent<T extends NodeEventMap = NodeEventMap> extends Component<T>
@@ -80,5 +80,4 @@ export class NodeComponent<T extends NodeEventMap = NodeEventMap> extends Compon
     {
         return this.node.getComponentsInParent(type, includeInactive, results);
     }
-
 }

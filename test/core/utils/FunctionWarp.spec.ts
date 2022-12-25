@@ -124,8 +124,6 @@ describe('FunctionWrap', () =>
                 callback();
             }));
 
-
-
             // 同时调用五次函数并等待完成
             task.parallel(fns)(() =>
             {

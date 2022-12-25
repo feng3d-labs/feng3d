@@ -1,11 +1,11 @@
 import { ObjectUtils } from '../../src/polyfill/ObjectUtils';
 
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 class Vector2
 {
-    declare __class__: 'Vector2' = 'Vector2';
+    declare __class__: 'Vector2';
     constructor(
         public x = 0,
         public y = 0,
@@ -14,7 +14,7 @@ class Vector2
 
 class Vector3
 {
-    declare __class__: 'Vector3' = 'Vector3';
+    declare __class__: 'Vector3';
     constructor(
         public x = 0,
         public y = 0,

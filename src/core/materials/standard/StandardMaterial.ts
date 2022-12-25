@@ -177,5 +177,4 @@ shaderlib.shaderConfig.shaders.standard = {
     cls: StandardUniforms
 };
 
-
 Material.setDefault('Default-Material', new StandardMaterial());

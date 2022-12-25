@@ -224,7 +224,7 @@ export class EquationSolving
      *
      * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
      */
-    tangent(f: (x) => number, f1: (x) => number, f2: (x) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void)
+    tangent(f: (x) => number, f1: (x) => number, f2: (x) => number, a: number, b: number, precision = 0.0000001, errorcallback?: (err: Error) => void): number
     {
         if (!this.hasSolution(f, a, b, errorcallback)) return undefined;
 

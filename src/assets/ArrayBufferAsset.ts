@@ -1,5 +1,5 @@
-import { FileAsset } from "../core/assets/FileAsset";
-import { Serializable } from "../serialization/Serializable";
+import { FileAsset } from '../core/assets/FileAsset';
+import { Serializable } from '../serialization/Serializable';
 
 /**
  * 二进制 资源

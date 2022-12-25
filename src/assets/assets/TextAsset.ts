@@ -1,7 +1,7 @@
-import { AssetType } from "../../core/assets/AssetType";
-import { FileAsset, setAssetTypeClass } from "../../core/assets/FileAsset";
-import { oav } from "../../objectview/ObjectView";
-import { Serializable } from "../../serialization/Serializable";
+import { AssetType } from '../../core/assets/AssetType';
+import { FileAsset, setAssetTypeClass } from '../../core/assets/FileAsset';
+import { oav } from '../../objectview/ObjectView';
+import { Serializable } from '../../serialization/Serializable';
 
 declare global
 {

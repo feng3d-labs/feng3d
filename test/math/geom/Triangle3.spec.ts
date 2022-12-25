@@ -4,7 +4,7 @@ import { Triangle3 } from '../../../src/math/geom/Triangle3';
 import { Vector3 } from '../../../src/math/geom/Vector3';
 import { mathUtil } from '../../../src/polyfill/MathUtil';
 
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 describe('Triangle3', () =>

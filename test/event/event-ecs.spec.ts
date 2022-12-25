@@ -2,7 +2,7 @@ import { EventEmitter } from '../../src/event/EventEmitter';
 import { IEvent } from '../../src/event/IEvent';
 import { IEventTarget } from '../../src/event/IEventTarget';
 
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 // 要求

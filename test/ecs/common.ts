@@ -1,4 +1,4 @@
-import { Component, RegisterComponent } from '../../src/ecs/Component'
+import { Component, RegisterComponent } from '../../src/ecs/Component';
 
 declare global
 {
