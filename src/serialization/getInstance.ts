@@ -1,16 +1,5 @@
 import { _definitionCache } from "./Serializable";
 
-declare global
-{
-    interface Function
-    {
-        /**
-         * 用戶提供的自定義構造函數
-         */
-        __create__<T>(): T;
-    }
-}
-
 /**
  * 获取实例
  *
@@ -33,11 +22,6 @@ export function getInstance(classname: string)
 
     //
     console.assert(Cls, `${classname} 未注册，请使用 @Serializable 进行注册反序列化的类。`);
-
-    if (Cls.__create__)
-    {
-        return Cls.__create__();
-    }
 
     const instance = new Cls();
 

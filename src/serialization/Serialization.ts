@@ -3,7 +3,67 @@ import { ObjectUtils } from '../polyfill/ObjectUtils';
 import { gPartial } from '../polyfill/Types';
 import { getClassName } from './getClassName';
 import { getInstance } from './getInstance';
-import { __class__ } from './SerializationConst';
+import { _serialize__, __class__ } from './SerializationConst';
+
+/**
+ * 序列化对象
+ *
+ * 过程中使用 different与默认值作比较减少结果中的数据。
+ *
+ * @param target 被序列化的对象
+ * @param omitDefault 是否忽略默认值
+ *
+ * @returns 序列化后简单数据对象（由Object与Array组合可 JSON.stringify 的简单结构）
+ */
+export function $serialize<T>(target: T, omitDefault = true): gPartial<T>
+{
+    return serialization.serialize(target, omitDefault);
+}
+
+/**
+ * 反序列化对象为基础对象数据（由Object与Array组合）
+ *
+ * @param object 换为Json的对象
+ * @returns 反序列化后的数据
+ */
+export function $deserialize<T>(object: gPartial<T>): T
+{
+    return serialization.deserialize(object, true);
+}
+
+/**
+ * 从数据对象中提取数据给目标对象赋值（可能会经过序列化处理）
+ *
+ * @param target 目标对象
+ * @param source 数据对象 可由Object与Array以及自定义类型组合
+ */
+export function $set<T>(target: T, source: gPartial<T>)
+{
+    return serialization.setValue(target, source);
+}
+
+/**
+ * 比较两个对象的不同，提取出不同的数据(可能会经过反序列化处理)
+ *
+ * @param target 用于检测不同的数据
+ * @param source 模板（默认）数据
+ *
+ * @returns 比较得出的不同数据（由Object与Array组合可 JSON.stringify 的简单结构）
+ */
+export function $diff<T>(target: T, source: T): gPartial<T>
+{
+    return serialization.different(target, source, true);
+}
+
+/**
+ * 深度克隆
+ *
+ * @param target 被克隆对象
+ */
+export function $clone<T>(target: T): T
+{
+    return serialization.clone(target);
+}
 
 /**
  * 序列化属性函数
@@ -997,4 +1057,3 @@ const serializeIsRefKey = '__serialize__IsRef__';
 const serializeIsRawKey = '__serialize__IsRaw__';
 const rootKey = '__root__';
 const protoKey = '__proto__';
-export const _serialize__ = '_serialize__';

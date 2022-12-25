@@ -1,4 +1,4 @@
-import { _serialize__ } from "./Serialization";
+import { _serialize__ } from "./SerializationConst";
 
 /**
  * 序列化装饰器
