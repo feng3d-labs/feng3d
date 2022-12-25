@@ -28,7 +28,7 @@ async function main()
     const {
         standalone,
     } = pkg;
-    const types = pkg['bundle:types'];
+    const types = pkg.dts;
 
     results.push({
         input,

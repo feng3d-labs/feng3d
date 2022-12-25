@@ -6,8 +6,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "module": "src/index.ts",
-  "bundle": "dist/index.js",
-  "bundle:types": "dist/index.d.ts",
+  "dts": "dist/index.d.ts",
   "author": "feng",
   "license": "MIT",
   "scripts": {
