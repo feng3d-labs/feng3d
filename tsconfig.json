@@ -16,11 +16,5 @@
     },
     "include": [
         "src/**/*.ts"
-    ],
-    "ts-node": {
-        "files": true,
-        "compilerOptions": {
-            "esModuleInterop": true
-        }
-    }
+    ]
 }
