@@ -1,7 +1,7 @@
 // @see https://cn.vitejs.dev/guide/build.html#library-mode
 
-import { resolve } from 'path'
-import { defineConfig } from 'vite'
+import { resolve } from 'path';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
     publicDir: false,
@@ -15,4 +15,4 @@ export default defineConfig({
         },
         sourcemap: true
     },
-})
+});
