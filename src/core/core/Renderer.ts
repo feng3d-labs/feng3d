@@ -8,7 +8,7 @@ import { Component3D } from './Component3D';
 
 declare global
 {
-    export interface MixinsComponentMap { Renderable: Renderer; }
+    export interface MixinsComponentMap { Renderer: Renderer; }
 }
 
 /**
