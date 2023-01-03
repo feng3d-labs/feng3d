@@ -204,8 +204,12 @@ function addTickerFunc(item: TickerFuncItem)
     item.runtime = Date.now() + lazy.getValue(item.interval);
     tickerFuncs.push(item);
 
-    runTickerFuncs();
+    if (!isLoopRunning)
+    {
+        runTickerFuncs();
+    }
 }
+let isLoopRunning = false;
 
 function removeTickerFunc(item: TickerFuncItem)
 {
@@ -233,8 +237,16 @@ const affers: [Function, any[]][] = [];
 
 function runTickerFuncs()
 {
+    isLoopRunning = true;
+
     // 当没有任何需要处理的函数时终止循环
-    if (tickerFuncs.length === 0 && affers.length === 0) return;
+    if (tickerFuncs.length === 0 && affers.length === 0)
+    {
+        // 回调函数已经全部处理结束，停止requestAnimationFrame循环
+        isLoopRunning = false;
+
+        return;
+    }
 
     //
     running = true;
