@@ -16,6 +16,7 @@ import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
+import { Component3D } from './Component3D';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Node3D } from './Node3D';
 import { Renderer } from './Renderer';
@@ -31,7 +32,7 @@ declare global
 /**
  * 视图
  */
-export class View
+export class View3D extends Component3D
 {
     //
     canvas: HTMLCanvasElement;
@@ -39,35 +40,19 @@ export class View
     private _contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };
 
     /**
-     * 摄像机
+     * 渲染时使用的摄像机。
+     *
+     * 如果值为undefined时，从自身与子结点中获取到 Camera 组件。默认为undefined。
      */
-    get camera()
-    {
-        if (!this._camera)
-        {
-            const cameras = this.scene.getComponentsInChildren(Camera);
-            if (cameras.length === 0)
-            {
-                this._camera = $set(new Node3D(), { name: 'defaultCamera' }).addComponent(Camera);
-                this.scene.node3d.addChild(this._camera.node3d);
-            }
-            else
-            {
-                this._camera = cameras[0];
-            }
-        }
+    camera: Camera;
 
-        return this._camera;
-    }
-    set camera(v)
-    {
-        this._camera = v;
-    }
-    private _camera: Camera;
     /**
-     * 3d场景
+     * 将要渲染的3D场景。
+     *
+     * 如果值为undefined时，从自身与子结点中获取到 Scene 组件。默认为undefined。
      */
     scene: Scene;
+
     /**
      * 根结点
      */
@@ -76,7 +61,7 @@ export class View
         return this.scene.node3d;
     }
 
-    get gl()
+    get webGLRenderer()
     {
         if (!this.canvas.gl)
         {
@@ -99,8 +84,6 @@ export class View
      */
     mouse3DManager: Mouse3DManager;
 
-    protected contextLost = false;
-
     /**
      * 构建3D视图
      * @param canvas    画布
@@ -109,6 +92,7 @@ export class View
      */
     constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera, contextAttributes?: WebGLContextAttributes)
     {
+        super();
         if (!canvas)
         {
             canvas = document.createElement('canvas');
@@ -128,7 +112,7 @@ export class View
             Object.assign(this._contextAttributes, contextAttributes);
         }
 
-        this.scene = scene || $set(new Node3D(), { name: 'scene' }).addComponent(Scene);
+        this.scene = scene;
         this.camera = camera;
 
         this.start();
@@ -166,56 +150,96 @@ export class View
     }
 
     /**
+     * 获取渲染时将使用的摄像机。
+     */
+    private getRenderCamera()
+    {
+        let camera = this.camera;
+        if (!camera)
+        {
+            camera = this.getComponentInChildren(Camera);
+        }
+
+        return camera;
+    }
+
+    /**
+     * 获取将被渲染的3D场景。
+     */
+    private getRenderScene()
+    {
+        let scene = this.scene;
+        if (!scene)
+        {
+            scene = this.getComponentInChildren(Scene);
+        }
+
+        return scene;
+    }
+
+    /**
      * 绘制场景
      */
     render(interval?: number)
     {
-        if (!this.scene) return;
-        if (this.contextLost) return;
+        const camera = this.getRenderCamera();
+        if (!camera)
+        {
+            console.warn(`无法从自身与子结点中获取到 Camera 组件，无法渲染！`);
 
-        this.scene.update(interval);
+            return null;
+        }
+        const scene = this.getRenderScene();
+        if (!scene)
+        {
+            console.warn(`无法从自身与子结点中获取到 Scene 组件，无法渲染！`);
 
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
-        if (this.canvas.width * this.canvas.height === 0) return;
+            return null;
+        }
 
-        const clientRect = this.canvas.getBoundingClientRect();
+        // scene.update(interval);
 
-        this.viewRect.x = clientRect.left;
-        this.viewRect.y = clientRect.top;
-        this.viewRect.width = clientRect.width;
-        this.viewRect.height = clientRect.height;
+        const { canvas, viewRect, mousePos, mouseRay3D, webGLRenderer, mouse3DManager } = this;
+        const gl = this.webGLRenderer.gl;
 
-        this.mousePos.x = windowEventProxy.clientX - clientRect.left;
-        this.mousePos.y = windowEventProxy.clientY - clientRect.top;
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        if (canvas.width * canvas.height === 0) return;
 
-        this.camera.lens.aspect = this.viewRect.width / this.viewRect.height;
+        const clientRect = canvas.getBoundingClientRect();
+
+        viewRect.x = clientRect.left;
+        viewRect.y = clientRect.top;
+        viewRect.width = clientRect.width;
+        viewRect.height = clientRect.height;
+
+        mousePos.x = windowEventProxy.clientX - clientRect.left;
+        mousePos.y = windowEventProxy.clientY - clientRect.top;
+
+        camera.lens.aspect = viewRect.width / viewRect.height;
 
         // 设置鼠标射线
         this.calcMouseRay3D();
 
-        this.scene.mouseRay3D = this.mouseRay3D;
-        this.scene.camera = this.camera;
-
-        const gl = this.gl.gl;
+        scene.mouseRay3D = mouseRay3D;
 
         // 默认渲染
         gl.colorMask(true, true, true, true);
-        gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
+        gl.clearColor(scene.background.r, scene.background.g, scene.background.b, scene.background.a);
         gl.clearStencil(0);
         gl.clearDepth(1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
         // 鼠标拾取渲染
-        this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
+        this.selectedObject = mouse3DManager.pick(this, scene, camera);
         // 绘制阴影图
-        shadowRenderer.draw(this.gl, this.scene, this.camera);
-        skyboxRenderer.draw(this.gl, this.scene, this.camera);
+        shadowRenderer.draw(webGLRenderer, scene, camera);
+        skyboxRenderer.draw(webGLRenderer, scene, camera);
         // 默认渲染
-        forwardRenderer.draw(this.gl, this.scene, this.camera);
-        outlineRenderer.draw(this.gl, this.scene, this.camera);
-        wireframeRenderer.draw(this.gl, this.scene, this.camera);
+        forwardRenderer.draw(webGLRenderer, scene, camera);
+        outlineRenderer.draw(webGLRenderer, scene, camera);
+        wireframeRenderer.draw(webGLRenderer, scene, camera);
     }
 
     /**
@@ -282,7 +306,9 @@ export class View
     private calcMouseRay3D()
     {
         const gpuPos = this.screenToGpuPosition(this.mousePos);
-        this.mouseRay3D = this.camera.getRay3D(gpuPos.x, gpuPos.y);
+        const camera = this.getRenderCamera();
+
+        this.mouseRay3D = camera.getRay3D(gpuPos.x, gpuPos.y);
     }
 
     /**

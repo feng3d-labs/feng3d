@@ -70,11 +70,6 @@ export class Scene extends Component3D
      */
     mouseRay3D: Ray3;
 
-    /**
-     * 上次渲染时用的摄像机
-     */
-    camera: Camera;
-
     init()
     {
         super.init();
@@ -111,7 +106,9 @@ export class Scene extends Component3D
         this.behaviours.forEach((element) =>
         {
             if (element !== this && element.isVisibleAndEnabled && Boolean(this.runEnvironment & element.runEnvironment))
-            { element.update(interval); }
+            {
+                element.update(interval);
+            }
         });
     }
 

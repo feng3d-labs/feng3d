@@ -1,5 +1,5 @@
 import { Node3D } from '../../core/core/Node3D';
-import { View } from '../../core/core/View';
+import { View3D } from '../../core/core/View3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
@@ -97,7 +97,7 @@ export class Canvas extends Component2D
      *
      * @param view
      */
-    calcMouseRay3D(view: View)
+    calcMouseRay3D(view: View3D)
     {
         this.mouseRay.origin.set(view.mousePos.x, view.mousePos.y, 0);
     }

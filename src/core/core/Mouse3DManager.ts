@@ -8,7 +8,7 @@ import { Camera } from '../cameras/Camera';
 import { rayCast } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
 import { Node3D } from './Node3D';
-import { View } from './View';
+import { View3D } from './View3D';
 
 /**
  * 鼠标事件管理
@@ -36,7 +36,7 @@ export class Mouse3DManager
      * @param scene 场景
      * @param _camera 摄像机
      */
-    pick(view: View, scene: Scene, _camera: Camera)
+    pick(view: View3D, scene: Scene, _camera: Camera)
     {
         if (this._mouseEventTypes.length === 0) return;
         // 计算得到鼠标射线相交的物体

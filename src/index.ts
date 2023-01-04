@@ -55,7 +55,7 @@ export * from './core/core/RunEnvironment';
 export * from './core/core/Script';
 export * from './core/core/ScriptComponent';
 export * from './core/core/TransformLayout';
-export * from './core/core/View';
+export * from './core/core/View3D';
 export * from './core/geometry/CustomGeometry';
 export * from './core/geometry/Geometry';
 export * from './core/geometry/GeometryUtils';

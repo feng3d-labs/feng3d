@@ -1,15 +1,14 @@
 import { MeshRenderer } from '../../core/core/MeshRenderer';
 import { TransformLayout } from '../../core/core/TransformLayout';
-import { View } from '../../core/core/View';
+import { View3D } from '../../core/core/View3D';
 import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { AddComponentMenu } from '../../core/Menu';
+import { Scene } from '../../core/scene/Scene';
 import { TransformUtils } from '../../core/utils/TransformUtils';
 import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
-import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { Canvas } from './Canvas';
 import { UIGeometry } from './UIGeometry';
@@ -82,10 +81,14 @@ export class CanvasRenderer extends MeshRenderer
     /**
      * 渲染
      */
-    static draw(view: View)
+    static draw(view: View3D)
     {
-        const gl = view.gl.gl;
-        const scene = view.scene;
+        const gl = view.webGLRenderer.gl;
+        let scene = view.scene;
+        if (!scene)
+        {
+            scene = view.getComponentInChildren(Scene);
+        }
 
         const canvasList = scene.getComponentsInChildren(Canvas).filter((v) => v.isVisibleAndEnabled);
         canvasList.forEach((canvas) =>
@@ -105,7 +108,7 @@ export class CanvasRenderer extends MeshRenderer
 
                 renderable.beforeRender(renderAtomic, null, null);
 
-                view.gl.render(renderAtomic);
+                view.webGLRenderer.render(renderAtomic);
             });
         });
     }
