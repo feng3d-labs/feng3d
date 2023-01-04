@@ -11,6 +11,7 @@ import { Component3D } from '../core/Component3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
+import { DirectionalLight } from '../light/DirectionalLight';
 import { Material } from '../materials/Material';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -65,7 +66,7 @@ export class Water extends Component3D
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
         const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
-        const sun = this.node3d.scene.activeDirectionalLights[0];
+        const sun = this.node3d.scene.getComponentsInChildren(DirectionalLight).filter((dl) => dl.isVisibleAndEnabled)[0];
         if (sun)
         {
             uniforms.u_sunColor = sun.color;

@@ -56,9 +56,7 @@ export class SkyBoxRenderer
      */
     draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
     {
-        scene.getComponentInChildren(SkyBox);
-
-        const skybox = scene.activeSkyBoxs[0];
+        const skybox = scene.getComponentsInChildren(SkyBox).filter((sb) => sb.isVisibleAndEnabled)[0];
         this.drawSkyBox(renderer, skybox, scene, camera);
     }
 

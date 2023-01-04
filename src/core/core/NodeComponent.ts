@@ -23,7 +23,7 @@ export class NodeComponent<T extends NodeEventMap = NodeEventMap> extends Compon
      */
     get isVisibleAndEnabled()
     {
-        const v = this.enabled && this.node.visible;
+        const v = this.enabled && this.node.globalVisible;
 
         return v;
     }

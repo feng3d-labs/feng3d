@@ -4,6 +4,7 @@ import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
+import { MeshRenderer } from '../../core/MeshRenderer';
 import { Renderer } from '../../core/Renderer';
 import { DirectionalLight } from '../../light/DirectionalLight';
 import { PointLight } from '../../light/PointLight';
@@ -29,21 +30,21 @@ export class ShadowRenderer
      */
     draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
     {
-        const pointLights = scene.activePointLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
+        const pointLights = scene.getComponentsInChildren(PointLight).filter((pl) => (pl.isVisibleAndEnabled && pl.shadowType !== ShadowType.No_Shadows));
         for (let i = 0; i < pointLights.length; i++)
         {
             pointLights[i].updateDebugShadowMap(scene, camera);
             this.drawForPointLight(gl, pointLights[i], scene, camera);
         }
 
-        const spotLights = scene.activeSpotLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
+        const spotLights = scene.getComponentsInChildren(SpotLight).filter((sp) => (sp.isVisibleAndEnabled && sp.shadowType !== ShadowType.No_Shadows));
         for (let i = 0; i < spotLights.length; i++)
         {
             spotLights[i].updateDebugShadowMap(scene, camera);
             this.drawForSpotLight(gl, spotLights[i], scene, camera);
         }
 
-        const directionalLights = scene.activeDirectionalLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
+        const directionalLights = scene.getComponentsInChildren(DirectionalLight).filter((dl) => (dl.isVisibleAndEnabled && dl.shadowType !== ShadowType.No_Shadows));
         for (let i = 0; i < directionalLights.length; i++)
         {
             directionalLights[i].updateDebugShadowMap(scene, camera);
@@ -67,7 +68,8 @@ export class ShadowRenderer
         const renderAtomic = this.renderAtomic;
 
         // 获取影响阴影图的渲染对象
-        const models = scene.getModelsByCamera(shadowCamera);
+        const models = scene.getComponentsInChildren(MeshRenderer).filter((mr) => shadowCamera.frustum.intersectsBox(mr.selfWorldBounds));
+
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
@@ -146,7 +148,8 @@ export class ShadowRenderer
             shadowCamera.node3d.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
 
             // 获取影响阴影图的渲染对象
-            const models = scene.getModelsByCamera(shadowCamera);
+            const models = scene.getComponentsInChildren(MeshRenderer).filter((mr) => shadowCamera.frustum.intersectsBox(mr.selfWorldBounds));
+
             // 筛选投射阴影的渲染对象
             const castShadowsModels = models.filter((i) => i.castShadows);
 
@@ -177,7 +180,11 @@ export class ShadowRenderer
     private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight, scene: Scene, camera: Camera): any
     {
         // 获取影响阴影图的渲染对象
-        const models = scene.getPickByDirectionalLight(light);
+        const models = scene.getComponentsInChildren(MeshRenderer).filter((model) => (
+            (model.castShadows || model.receiveShadows)
+            && !model.material.renderParams.enableBlend
+            && model.material.renderParams.renderMode === 'TRIANGLES'));
+
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
