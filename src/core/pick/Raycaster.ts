@@ -2,6 +2,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { CullFace } from '../../renderer/data/RenderParams';
+import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
 import { Geometry } from '../geometry/Geometry';
@@ -10,17 +11,16 @@ import { Geometry } from '../geometry/Geometry';
  * 投射射线获取穿过的最近的对象
  *
  * @param ray 射线
- * @param node3ds 实体列表
+ * @param meshRenderers 实体列表
  * @return
  */
-export function rayCast(ray: Ray3, node3ds: Node3D[])
+export function rayCast(ray: Ray3, meshRenderers: MeshRenderer[])
 {
-    if (node3ds.length === 0) return null;
+    if (meshRenderers.length === 0) return null;
 
-    const pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3d) =>
+    const pickingCollisionVOs = meshRenderers.reduce((pv: PickingCollisionVO[], meshRenderer) =>
     {
-        const model = node3d.getComponent(Renderer);
-        const pickingCollisionVO = model && model.worldRayIntersection(ray);
+        const pickingCollisionVO = meshRenderer && meshRenderer.worldRayIntersection(ray);
         if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
         return pv;

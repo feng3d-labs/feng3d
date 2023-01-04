@@ -84,7 +84,6 @@ export class Scene extends Component3D
     {
         interval = interval || (1000 / ticker.frameRate);
 
-        this._mouseCheckObjects = null;
         this._models = null;
         this._visibleAndEnabledModels = null;
         this._skyBoxs = null;
@@ -195,33 +194,6 @@ export class Scene extends Component3D
         return this._activeAnimations;
     }
 
-    get mouseCheckObjects()
-    {
-        if (this._mouseCheckObjects)
-        {
-            return this._mouseCheckObjects;
-        }
-
-        let checkList = this.node3d.children;
-        this._mouseCheckObjects = [];
-        let i = 0;
-        // 获取所有需要拾取的对象并分层存储
-        while (i < checkList.length)
-        {
-            const checkObject = checkList[i++];
-            if (checkObject.mouseEnabled)
-            {
-                if (checkObject.getComponents(MeshRenderer))
-                {
-                    this._mouseCheckObjects.push(checkObject);
-                }
-                checkList = checkList.concat(checkObject.children);
-            }
-        }
-
-        return this._mouseCheckObjects;
-    }
-
     /**
      * 获取拾取缓存
      * @param camera
@@ -291,7 +263,6 @@ export class Scene extends Component3D
     }
 
     //
-    private _mouseCheckObjects: Node3D[];
     private _models: MeshRenderer[];
     private _visibleAndEnabledModels: MeshRenderer[];
     private _skyBoxs: SkyBox[];

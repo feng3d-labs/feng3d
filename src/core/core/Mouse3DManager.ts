@@ -7,6 +7,7 @@ import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { rayCast } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
+import { MeshRenderer } from './MeshRenderer';
 import { Node3D } from './Node3D';
 import { View3D } from './View3D';
 
@@ -39,8 +40,10 @@ export class Mouse3DManager
     pick(view: View3D, scene: Scene, _camera: Camera)
     {
         if (this._mouseEventTypes.length === 0) return;
+
+        const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
         // 计算得到鼠标射线相交的物体
-        const pickingCollisionVO = rayCast(view.mouseRay3D, scene.mouseCheckObjects);
+        const pickingCollisionVO = rayCast(view.mouseRay3D, meshRenderers);
 
         const node3d = pickingCollisionVO && pickingCollisionVO.node3d;
 
