@@ -52,5 +52,4 @@ export class PointUniforms
 shaderlib.shaderConfig.shaders.point = {
     vertex: pointVertex,
     fragment: pointFragment,
-    cls: PointUniforms
 };

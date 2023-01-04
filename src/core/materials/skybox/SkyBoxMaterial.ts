@@ -38,5 +38,4 @@ export class SkyBoxUniforms
 shaderlib.shaderConfig.shaders.skybox = {
     fragment: skyboxFragment,
     vertex: skyboxVertex,
-    cls: SkyBoxUniforms
 };

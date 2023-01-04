@@ -51,5 +51,4 @@ export class TextureUniforms
 shaderlib.shaderConfig.shaders.texture = {
     vertex: textureVertex,
     fragment: textureFragment,
-    cls: TextureUniforms
 };

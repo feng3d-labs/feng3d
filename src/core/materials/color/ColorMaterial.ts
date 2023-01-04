@@ -52,5 +52,4 @@ export class ColorUniforms
 shaderlib.shaderConfig.shaders.color = {
     fragment: colorFragment,
     vertex: colorVertex,
-    cls: ColorUniforms
 };

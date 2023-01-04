@@ -3,8 +3,8 @@ import { Texture2D } from '../core/textures/Texture2D';
 import { Color4 } from '../math/Color4';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
-import { shaderConfig } from '../renderer/shader/ShaderLib';
 import { Serializable } from '../serialization/Serializable';
+import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 
 declare global
@@ -29,6 +29,14 @@ export class ParticleMaterial extends Material
     {
         super();
         this.shader.shaderName = 'Particles_Additive';
+        $set(this.renderParams, {
+            enableBlend: true,
+            sfactor: 'SRC_ALPHA',
+            dfactor: 'ONE',
+            colorMask: [true, true, true, false],
+            cullFace: 'NONE',
+            depthMask: false,
+        });
     }
 }
 
@@ -65,15 +73,5 @@ export class ParticlesAdditiveUniforms
     @oav()
     _InvFade = 1.0;
 }
-
-shaderConfig.shaders['Particles_Additive'].cls = ParticlesAdditiveUniforms;
-shaderConfig.shaders['Particles_Additive'].renderParams = {
-    enableBlend: true,
-    sfactor: 'SRC_ALPHA',
-    dfactor: 'ONE',
-    colorMask: [true, true, true, false],
-    cullFace: 'NONE',
-    depthMask: false,
-};
 
 Material.setDefault('Particle-Material', new ParticleMaterial());

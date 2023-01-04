@@ -56,8 +56,6 @@ export class SegmentUniforms
 shaderlib.shaderConfig.shaders.segment = {
     vertex: segmentVertex,
     fragment: segmentFragment,
-    cls: SegmentUniforms,
-    renderParams: { renderMode: 'LINES', enableBlend: true }
 };
 
 Material.setDefault('Segment-Material', new SegmentMaterial());

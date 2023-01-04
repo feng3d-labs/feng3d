@@ -174,7 +174,6 @@ export class StandardUniforms
 shaderlib.shaderConfig.shaders.standard = {
     vertex: standardVertex,
     fragment: standardFragment,
-    cls: StandardUniforms
 };
 
 Material.setDefault('Default-Material', new StandardMaterial());

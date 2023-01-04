@@ -73,5 +73,4 @@ export class MeshPhongUniforms
 shaderlib.shaderConfig.shaders.meshPhong = {
     vertex: meshPhongVertex,
     fragment: meshPhongFragment,
-    cls: MeshPhongUniforms
 };

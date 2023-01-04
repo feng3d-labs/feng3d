@@ -1,9 +1,30 @@
+import { Material } from '../core/materials/Material';
 import { Texture2D } from '../core/textures/Texture2D';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { shaderConfig } from '../renderer/shader/ShaderLib';
 import { Serializable } from '../serialization/Serializable';
+import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
+
+@Serializable('ParticlesAlphaBlendedPremultiplyMaterial')
+export class ParticlesAlphaBlendedPremultiplyMaterial extends Material
+{
+    constructor()
+    {
+        super();
+        this.shader.shaderName = 'Particles_AlphaBlendedPremultiply';
+
+        $set(this.renderParams, {
+            enableBlend: true,
+            sfactor: 'ONE',
+            dfactor: 'ONE_MINUS_SRC_ALPHA',
+            colorMask: [true, true, true, false],
+            cullFace: 'NONE',
+            depthMask: false,
+        });
+    }
+}
 
 /**
  * UnityShader "Particles/Alpha Blended Premultiply"
@@ -34,13 +55,3 @@ export class ParticlesAlphaBlendedPremultiplyUniforms
     @oav()
     u_softParticlesFactor = 1.0;
 }
-
-shaderConfig.shaders['Particles_AlphaBlendedPremultiply'].cls = ParticlesAlphaBlendedPremultiplyUniforms;
-shaderConfig.shaders['Particles_AlphaBlendedPremultiply'].renderParams = {
-    enableBlend: true,
-    sfactor: 'ONE',
-    dfactor: 'ONE_MINUS_SRC_ALPHA',
-    colorMask: [true, true, true, false],
-    cullFace: 'NONE',
-    depthMask: false,
-};

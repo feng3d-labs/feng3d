@@ -33,6 +33,9 @@ export class UIMaterial extends Material
     {
         super();
         this.shader.shaderName = 'ui';
+
+        this.renderParams.enableBlend = true;
+        this.renderParams.depthtest = false;
     }
 }
 
@@ -103,8 +106,6 @@ shaderConfig.shaders['ui'] = {
     }
     
     `,
-    cls: UIUniforms,
-    renderParams: { enableBlend: true, depthtest: false },
 };
 
 Material.setDefault('Default-UIMaterial', new UIMaterial());

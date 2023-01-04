@@ -180,6 +180,4 @@ export class TerrainUniforms
     u_splatRepeats = new Vector4(1, 1, 1, 1);
 }
 
-shaderConfig.shaders['terrain'].cls = TerrainUniforms;
-
 Material.setDefault('Terrain-Material', new TerrainMaterial());

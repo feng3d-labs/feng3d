@@ -18,8 +18,6 @@ export interface ShaderConfig
              * 从glsl读取的fragment shader
              */
             fragment: string,
-            cls?: new (...arg: any[]) => any,
-            renderParams?: Partial<RenderParams>,
         }
     },
     /**

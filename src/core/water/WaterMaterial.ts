@@ -81,7 +81,6 @@ export class WaterUniforms
 shaderlib.shaderConfig.shaders.water = {
     vertex: waterVertex,
     fragment: waterFragment,
-    cls: WaterUniforms
 };
 
 Material.setDefault('Water-Material', new WaterMaterial());
