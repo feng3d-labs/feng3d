@@ -97,19 +97,9 @@ export class Scene extends Component3D
         this._activeSpotLights = null;
         this._animations = null;
         this._activeAnimations = null;
-        this._behaviours = null;
-        this._activeBehaviours = null;
 
         // 每帧清理拾取缓存
         this._pickMap.forEach((item) => item.clear());
-
-        this.behaviours.forEach((element) =>
-        {
-            if (element !== this && element.isVisibleAndEnabled && Boolean(this.runEnvironment & element.runEnvironment))
-            {
-                element.update(interval);
-            }
-        });
     }
 
     /**
@@ -203,20 +193,6 @@ export class Scene extends Component3D
         this._activeAnimations = this._activeAnimations || this.animations.filter((i) => i.isVisibleAndEnabled);
 
         return this._activeAnimations;
-    }
-
-    get behaviours()
-    {
-        this._behaviours = this._behaviours || this.getComponentsInChildren(Component3D);
-
-        return this._behaviours;
-    }
-
-    get activeBehaviours()
-    {
-        this._activeBehaviours = this._activeBehaviours || this.behaviours.filter((i) => i.isVisibleAndEnabled);
-
-        return this._activeBehaviours;
     }
 
     get mouseCheckObjects()
@@ -328,7 +304,5 @@ export class Scene extends Component3D
     private _activeSpotLights: SpotLight[];
     private _animations: Animation[];
     private _activeAnimations: Animation[];
-    private _behaviours: Component3D[];
-    private _activeBehaviours: Component3D[];
     private _pickMap = new Map<Camera, ScenePickCache>();
 }

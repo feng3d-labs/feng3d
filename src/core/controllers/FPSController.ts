@@ -8,6 +8,7 @@ import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Component3D } from '../core/Component3D';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { AddComponentMenu } from '../Menu';
+import { ticker } from '../utils/Ticker';
 
 declare global
 {
@@ -19,6 +20,8 @@ declare global
 
 /**
  * FPS模式控制器
+ *
+ * 按下鼠标后，拖动鼠标旋转，按ASDWQE键进行平移。
  */
 @AddComponentMenu('Controller/FPSController')
 @RegisterComponent({ name: 'FPSController' })
@@ -53,8 +56,6 @@ export class FPSController extends Component3D
      */
     private preMousePoint: Vector2 | null;
 
-    private ischange = false;
-
     private _auto: boolean;
     get auto()
     {
@@ -68,15 +69,15 @@ export class FPSController extends Component3D
         }
         if (this._auto)
         {
-            windowEventProxy.off('mousedown', this.onMousedown, this);
-            windowEventProxy.off('mouseup', this.onMouseup, this);
-            this.onMouseup();
+            windowEventProxy.off('mousedown', this._onMousedown, this);
+            windowEventProxy.off('mouseup', this._onMouseup, this);
+            this._onMouseup();
         }
         this._auto = value;
         if (this._auto)
         {
-            windowEventProxy.on('mousedown', this.onMousedown, this);
-            windowEventProxy.on('mouseup', this.onMouseup, this);
+            windowEventProxy.on('mousedown', this._onMousedown, this);
+            windowEventProxy.on('mouseup', this._onMouseup, this);
         }
     }
 
@@ -97,31 +98,6 @@ export class FPSController extends Component3D
         this.auto = true;
     }
 
-    onMousedown()
-    {
-        this.ischange = true;
-
-        this.preMousePoint = null;
-        this.mousePoint = null;
-        this.velocity = new Vector3();
-        this.keyDownDic = {};
-
-        windowEventProxy.on('keydown', this.onKeydown, this);
-        windowEventProxy.on('keyup', this.onKeyup, this);
-        windowEventProxy.on('mousemove', this.onMouseMove, this);
-    }
-
-    onMouseup()
-    {
-        this.ischange = false;
-        this.preMousePoint = null;
-        this.mousePoint = null;
-
-        windowEventProxy.off('keydown', this.onKeydown, this);
-        windowEventProxy.off('keyup', this.onKeyup, this);
-        windowEventProxy.off('mousemove', this.onMouseMove, this);
-    }
-
     /**
      * 销毁
      */
@@ -130,14 +106,36 @@ export class FPSController extends Component3D
         this.auto = false;
     }
 
+    private _onMousedown()
+    {
+        ticker.onFrame(this._onFrame, this);
+
+        this.preMousePoint = null;
+        this.mousePoint = null;
+        this.velocity = new Vector3();
+        this.keyDownDic = {};
+
+        windowEventProxy.on('keydown', this._onKeydown, this);
+        windowEventProxy.on('keyup', this._onKeyup, this);
+        windowEventProxy.on('mousemove', this._onMouseMove, this);
+    }
+
+    private _onMouseup()
+    {
+        ticker.offFrame(this._onFrame, this);
+        this.preMousePoint = null;
+        this.mousePoint = null;
+
+        windowEventProxy.off('keydown', this._onKeydown, this);
+        windowEventProxy.off('keyup', this._onKeyup, this);
+        windowEventProxy.off('mousemove', this._onMouseMove, this);
+    }
+
     /**
      * 手动应用更新到目标3D对象
      */
-    update(): void
+    private _onFrame(): void
     {
-        if (!this.ischange)
-        { return; }
-
         if (this.mousePoint && this.preMousePoint)
         {
             // 计算旋转
@@ -190,7 +188,7 @@ export class FPSController extends Component3D
     /**
      * 处理鼠标移动事件
      */
-    private onMouseMove(event: IEvent<MouseEvent>)
+    private _onMouseMove(event: IEvent<MouseEvent>)
     {
         this.mousePoint = new Vector2(event.data.clientX, event.data.clientY);
 
@@ -204,7 +202,7 @@ export class FPSController extends Component3D
     /**
      * 键盘按下事件
      */
-    private onKeydown(event: IEvent<KeyboardEvent>): void
+    private _onKeydown(event: IEvent<KeyboardEvent>): void
     {
         const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
         if (!this.keyDirectionDic[boardKey])
@@ -220,7 +218,7 @@ export class FPSController extends Component3D
     /**
      * 键盘弹起事件
      */
-    private onKeyup(event: IEvent<KeyboardEvent>): void
+    private _onKeyup(event: IEvent<KeyboardEvent>): void
     {
         const boardKey = String.fromCharCode(event.data.keyCode).toLocaleLowerCase();
         if (!this.keyDirectionDic[boardKey])

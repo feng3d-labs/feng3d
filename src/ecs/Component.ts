@@ -224,13 +224,6 @@ export class Component<T extends EntityEventMap = EntityEventMap> extends EventE
         this._entity = <any>null;
     }
 
-    /**
-     * 每帧执行
-     */
-    update(_interval?: number)
-    {
-    }
-
     beforeRender(_renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
     {
 
