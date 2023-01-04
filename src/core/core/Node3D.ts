@@ -7,7 +7,7 @@ import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
@@ -16,11 +16,10 @@ import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
-import { Node, NodeEventMap } from './Node';
 import { HideFlags } from './HideFlags';
 import { MeshRenderer } from './MeshRenderer';
 import { MouseEventMap } from './Mouse3DManager';
-import { ScriptComponent } from './ScriptComponent';
+import { Node, NodeEventMap } from './Node';
 
 declare global
 {
@@ -508,19 +507,6 @@ export class Node3D extends Node<Node3DEventMap>
         watcher.watch(this._scale, 'x', this._scaleChanged, this);
         watcher.watch(this._scale, 'y', this._scaleChanged, this);
         watcher.watch(this._scale, 'z', this._scaleChanged, this);
-    }
-
-    /**
-     * 添加脚本
-     * @param scriptName   脚本路径
-     */
-    addScript(scriptName: string)
-    {
-        const scriptComponent = new ScriptComponent();
-        scriptComponent.scriptName = scriptName;
-        this.addComponentAt(scriptComponent, this._components.length);
-
-        return scriptComponent;
     }
 
     /**
