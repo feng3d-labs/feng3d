@@ -3,12 +3,8 @@ import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { WebGLRenderer, WebGLRendererParameters } from '../../renderer/WebGLRenderer';
-import { $set, serialization } from '../../serialization/Serialization';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { AudioListener } from '../audio/AudioListener';
 import { Camera } from '../cameras/Camera';
-import { DirectionalLight } from '../light/DirectionalLight';
-import { ShadowType } from '../light/shadow/ShadowType';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
@@ -34,7 +30,9 @@ declare global
  */
 export class View3D extends Component3D
 {
-    //
+    /**
+     * 将被绘制的目标画布。
+     */
     canvas: HTMLCanvasElement;
 
     private _contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };
@@ -118,6 +116,11 @@ export class View3D extends Component3D
         this.start();
 
         this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(), () => this.viewRect);
+    }
+
+    init(): void
+    {
+
     }
 
     /**
@@ -358,27 +361,6 @@ export class View3D extends Component3D
     }
 
     protected selectedObject: Node3D;
-
-    static createNewScene()
-    {
-        const scene = $set(new Node3D(), { name: 'Untitled' }).addComponent(Scene);
-        scene.background.setTo(0.2784, 0.2784, 0.2784);
-        scene.ambientColor.setTo(0.4, 0.4, 0.4);
-
-        const camera = Node3D.createPrimitive('Camera', { name: 'Main Camera' });
-        camera.addComponent(AudioListener);
-        camera.position = new Vector3(0, 1, -10);
-        scene.node3d.addChild(camera);
-
-        const directionalLight = $set(new Node3D(), { name: 'DirectionalLight' });
-        directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
-        directionalLight.rx = 50;
-        directionalLight.ry = -30;
-        directionalLight.y = 3;
-        scene.node3d.addChild(directionalLight);
-
-        return scene;
-    }
 }
 
 // var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };

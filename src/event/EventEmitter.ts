@@ -117,17 +117,16 @@ export class EventEmitter<T = any>
         }
 
         // 处理事件
-        const eventEmitter = EventEmitter.getOrCreateEventEmitter(currentTarget);
-        eventEmitter.handleEvent(event);
+        this.handleEvent(event);
 
         // 向平级分享事件
-        eventEmitter.handelEventShare(event);
+        this.handelEventShare(event);
 
         // 向上级报告事件
-        eventEmitter.handelEventBubbles(event);
+        this.handelEventBubbles(event);
 
         // 向下级广播事件
-        eventEmitter.handelEventBroadcast(event);
+        this.handelEventBroadcast(event);
 
         return event; // 当处理次数大于0时表示已被处理。
     }
@@ -459,13 +458,11 @@ export class EventEmitter<T = any>
             const bubbleTargets = eventTarget.getShareTargets();
             bubbleTargets?.forEach((v) =>
             {
-                if (v === undefined || event.targets.indexOf(v) !== -1) return;
+                if (v === undefined) return;
 
                 // 处理事件
                 const eventEmitter = EventEmitter.getOrCreateEventEmitter(v);
-                eventEmitter.handleEvent(event);
-                // 继续分享事件
-                eventEmitter.handelEventShare(event);
+                eventEmitter.emitEvent(event);
             });
         }
     }
@@ -493,13 +490,11 @@ export class EventEmitter<T = any>
         {
             if (v === undefined || event.targets.indexOf(v) !== -1) return;
 
+            if (v === undefined) return;
+
             // 处理事件
             const eventEmitter = EventEmitter.getOrCreateEventEmitter(v);
-            eventEmitter.handleEvent(event);
-            // 向平级分享事件
-            eventEmitter.handelEventShare(event);
-            // 向上级报告事件
-            eventEmitter.handelEventBubbles(event);
+            eventEmitter.emitEvent(event);
         });
     }
 
@@ -526,13 +521,11 @@ export class EventEmitter<T = any>
         {
             if (v === undefined || event.targets.indexOf(v) !== -1) return;
 
+            if (v === undefined) return;
+
             // 处理事件
             const eventEmitter = EventEmitter.getOrCreateEventEmitter(v);
-            eventEmitter.handleEvent(event);
-            // 向平级分享事件
-            eventEmitter.handelEventShare(event);
-            // 继续向下级广播事件
-            eventEmitter.handelEventBroadcast(event);
+            eventEmitter.emitEvent(event);
         });
     }
 

@@ -5,6 +5,7 @@ import { Node3D } from '../../core/core/Node3D';
 import { TransformLayout } from '../../core/core/TransformLayout';
 import { Scene } from '../../core/scene/Scene';
 import { Component } from '../../ecs/Component';
+import { EventEmitter } from '../../event/EventEmitter';
 import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector4 } from '../../math/geom/Vector4';
@@ -61,8 +62,10 @@ export interface Node2D
  * 用于构建2D场景树结构，处理2D对象的位移旋转缩放等空间数据。
  */
 @Serializable('Node2D')
-export class Node2D extends Node<Node2DEventMap>
+export class Node2D extends Node
 {
+    declare emitter: EventEmitter<Node2DEventMap>;
+
     get single() { return true; }
 
     transformLayout: TransformLayout;
@@ -169,8 +172,8 @@ export class Node2D extends Node<Node2DEventMap>
         watcher.bind(this.scale, 'x', this.scale, 'x');
         watcher.bind(this.scale, 'y', this.scale, 'y');
 
-        this.on('addComponent', this._onAddComponent, this);
-        this.on('removeComponent', this._onRemovedComponent, this);
+        this.emitter.on('addComponent', this._onAddComponent, this);
+        this.emitter.on('removeComponent', this._onRemovedComponent, this);
     }
 
     private _onAddComponent(event: IEvent<{ entity: Node3D; component: Component; }>)

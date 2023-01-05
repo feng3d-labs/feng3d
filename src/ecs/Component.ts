@@ -106,8 +106,13 @@ export type Components = ComponentMap[ComponentNames];
  *
  * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到实体上。
  */
-export class Component<T extends EntityEventMap = EntityEventMap> extends EventEmitter<T>
+export class Component
 {
+    /**
+     * 事件发射器。
+     */
+    readonly emitter: EventEmitter<EntityEventMap> = new EventEmitter(this);
+
     /**
      * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
      */
@@ -143,17 +148,6 @@ export class Component<T extends EntityEventMap = EntityEventMap> extends EventE
     get single()
     {
         return false;
-    }
-
-    // ------------------------------------------
-    // Functions
-    // ------------------------------------------
-    /**
-     * 创建一个组件
-     */
-    constructor()
-    {
-        super();
     }
 
     /**

@@ -2,6 +2,7 @@ import { Constructor } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component } from '../../ecs/Component';
 import { Entity, EntityEventMap } from '../../ecs/Entity';
+import { EventEmitter } from '../../event/EventEmitter';
 
 export interface NodeEventMap extends EntityEventMap
 {
@@ -31,8 +32,10 @@ export interface NodeEventMap extends EntityEventMap
  *
  * 解决父子结点关系，用于构建3D或者2D等场景树结构。
  */
-export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
+export class Node extends Entity
 {
+    declare emitter: EventEmitter<NodeEventMap>;
+
     protected _parent: Node;
     protected _children: Node[] = [];
 
@@ -181,8 +184,8 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
             if (child._parent) child._parent.removeChild(child);
             child._setParent(this);
             this._children.push(child);
-            child.emit('added', { parent: this });
-            this.emit('addChild', { child, parent: this }, true);
+            child.emitter.emit('added', { parent: this });
+            this.emitter.emit('addChild', { child, parent: this }, true);
         }
 
         return this;
@@ -261,8 +264,8 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
         this._children.splice(childIndex, 1);
         child._setParent(null);
 
-        child.emit('removed', { parent: this as any });
-        this.emit('removeChild', { child, parent: this as any }, true);
+        child.emitter.emit('removed', { parent: this as any });
+        this.emitter.emit('removeChild', { child, parent: this as any }, true);
     }
 
     protected _setParent(value: Node | null)
@@ -334,7 +337,7 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
      *
      * @returns 回调函数结果的列表。
      */
-    traverseVisible(callback: (container: Node) => T, results: T[] = [])
+    traverseVisible<T>(callback: (container: Node) => T, results: T[] = [])
     {
         if (this.visible === false) return;
         const result = callback(this);
@@ -356,7 +359,7 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
      *
      * @returns 回调函数结果的列表。
      */
-    traverseAncestors(callback: (container: Node) => T, results: T[] = [])
+    traverseAncestors<T>(callback: (container: Node) => T, results: T[] = [])
     {
         const parent = this.parent;
         if (parent !== null)
@@ -494,5 +497,20 @@ export class Node<T extends NodeEventMap = NodeEventMap> extends Entity<T>
         this._parent = null;
         this._children = null;
         super.dispose();
+    }
+
+    /**
+     * 获取报告的上级目标列表。默认返回 `[this.parent]` 。
+     *
+     * @see IEventTarget
+     */
+    getBubbleTargets()
+    {
+        return [this._parent];
+    }
+
+    getBroadcastTargets()
+    {
+        return this._children;
     }
 }
