@@ -23,7 +23,7 @@ declare global
 @Serializable('SegmentMaterial')
 export class SegmentMaterial extends Material
 {
-    __class: 'SegmentMaterial';
+    declare __class: 'SegmentMaterial';
 
     uniforms = new SegmentUniforms();
 

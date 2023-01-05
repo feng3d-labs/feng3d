@@ -1,6 +1,7 @@
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
-import { Constructor } from '../polyfill/Types';
+import { Constructor, gPartial } from '../polyfill/Types';
+import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Component, Components } from './Component';
 
@@ -79,7 +80,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
      * @param Type 组件类定义。
      * @returns 被添加的组件。
      */
-    addComponent<T extends Component>(Type: Constructor<T>): T
+    addComponent<T extends Component>(Type: Constructor<T>, params?: gPartial<T>): T
     {
         let component = this.getComponent(Type);
         if (component && Component.isSingleComponent(Type))
@@ -95,6 +96,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
         });
         //
         component = new Type();
+        $set(component, params);
         this.addComponentAt(component, this._components.length);
 
         return component;

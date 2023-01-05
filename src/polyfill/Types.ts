@@ -22,7 +22,7 @@ export type ConstructorOf<T> = { [P in keyof T]: Constructor<T[P]>; };
  * 让T中以及所有键值中的所有键都是可选的
  */
 export type gPartial<T> = {
-    [P in keyof T]?: gPartial<T[P]>;
+    [P in keyof T]?: T[P] | gPartial<T[P]>;
 };
 
 /**
