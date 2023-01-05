@@ -4,15 +4,10 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
 import { HideFlags } from '../core/HideFlags';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { DirectionalLight } from '../light/DirectionalLight';
-import { ticker } from '../utils/Ticker';
-import { ScenePickCache } from './ScenePickCache';
 
 declare global
 {
@@ -75,29 +70,4 @@ export class Scene extends Component3D
         this._entity['_scene'] = this;
         this._entity['updateChildrenScene']();
     }
-
-    update(interval?: number)
-    {
-        interval = interval || (1000 / ticker.frameRate);
-
-        // 每帧清理拾取缓存
-        this._pickMap.forEach((item) => item.clear());
-    }
-
-    /**
-     * 获取拾取缓存
-     * @param camera
-     */
-    getPickCache(camera: Camera)
-    {
-        if (this._pickMap.get(camera))
-        { return this._pickMap.get(camera); }
-        const pick = new ScenePickCache(this, camera);
-        this._pickMap.set(camera, pick);
-
-        return pick;
-    }
-
-    //
-    private _pickMap = new Map<Camera, ScenePickCache>();
 }

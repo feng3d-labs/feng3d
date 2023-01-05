@@ -104,7 +104,6 @@ export * from './core/render/renderer/ShadowRenderer';
 export * from './core/render/renderer/WireframeRenderer';
 export * from './core/render/shader/ShaderLib';
 export * from './core/scene/Scene';
-export * from './core/scene/ScenePickCache';
 export * from './core/ShaderConfig';
 export * from './core/skybox/SkyBox';
 export * from './core/skybox/SkyBoxRenderer';
