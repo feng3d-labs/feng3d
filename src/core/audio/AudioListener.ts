@@ -56,7 +56,7 @@ export class AudioListener extends Component3D
     init()
     {
         super.init();
-        this.on('globalMatrixChanged', this._onGlobalMatrixChanged, this);
+        this.emitter.on('globalMatrixChanged', this._onGlobalMatrixChanged, this);
         this._onGlobalMatrixChanged();
     }
 
@@ -103,7 +103,7 @@ export class AudioListener extends Component3D
 
     dispose()
     {
-        this.off('globalMatrixChanged', this._onGlobalMatrixChanged, this);
+        this.emitter.off('globalMatrixChanged', this._onGlobalMatrixChanged, this);
         super.dispose();
     }
 }

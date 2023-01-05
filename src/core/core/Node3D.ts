@@ -1,3 +1,4 @@
+import { EventEmitter } from '../../event/EventEmitter';
 import { Euler } from '../../math/geom/Euler';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Quaternion } from '../../math/geom/Quaternion';
@@ -103,8 +104,9 @@ export interface Node3D
  * 用于构建3D场景树结构，处理3D对象的位移旋转缩放等空间数据。
  */
 @Serializable('Node3D')
-export class Node3D extends Node<Node3DEventMap>
+export class Node3D extends Node
 {
+    declare emitter: EventEmitter<Node3DEventMap>;
     declare __class__: 'Node3D';
 
     declare protected _parent: Node3D;
@@ -431,7 +433,7 @@ export class Node3D extends Node<Node3DEventMap>
         if (this._matrixInvalid) return;
         this._matrixInvalid = true;
 
-        this.emit('matrixChanged', this);
+        this.emitter.emit('matrixChanged', this);
         this._invalidateGlobalMatrix();
     }
 
@@ -444,7 +446,7 @@ export class Node3D extends Node<Node3DEventMap>
         this._globalNormalMatrixInvalid = true;
         this._globalRotationMatrixInvalid = true;
 
-        this.emit('globalMatrixChanged', this);
+        this.emitter.emit('globalMatrixChanged', this);
         //
         for (let i = 0, n = this.numChildren; i < n; i++)
         {
@@ -464,7 +466,7 @@ export class Node3D extends Node<Node3DEventMap>
         {
             this._globalMatrix.append(this.parent.globalMatrix);
         }
-        this.emit('updateGlobalMatrix', this);
+        this.emitter.emit('updateGlobalMatrix', this);
         console.assert(!isNaN(this._globalMatrix.elements[0]));
     }
 
@@ -606,12 +608,12 @@ export class Node3D extends Node<Node3DEventMap>
         }
         if (this._scene)
         {
-            this.emit('removedFromScene', this);
+            this.emitter.emit('removedFromScene', this);
         }
         this._scene = newScene;
         if (this._scene)
         {
-            this.emit('addedToScene', this);
+            this.emitter.emit('addedToScene', this);
         }
         this.updateChildrenScene();
     }

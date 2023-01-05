@@ -28,8 +28,13 @@ export interface EntityEventMap
  *
  * `Entity`与`Component`构成`实体组件系统（ECS）`。
  */
-export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmitter<T>
+export class Entity
 {
+    /**
+     * 事件发射器。
+     */
+    readonly emitter: EventEmitter<EntityEventMap> = new EventEmitter(this);
+
     /**
      * 名称
      */
@@ -222,7 +227,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
 
         const component: Component = this._components.splice(index, 1)[0];
         // 派发移除组件事件
-        this.emit('removeComponent', { component, entity: this as any }, true);
+        this.emitter.emit('removeComponent', { component, entity: this as any }, true);
         component.dispose();
 
         return component;
@@ -308,7 +313,7 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
         component.setEntity(this as any);
         component.init();
         // 派发添加组件事件
-        this.emit('addComponent', { component, entity: this as any }, true);
+        this.emitter.emit('addComponent', { component, entity: this as any }, true);
     }
 
     /**
@@ -330,6 +335,5 @@ export class Entity<T extends EntityEventMap = EntityEventMap> extends EventEmit
             compnent.dispose();
         }
         this._components = null;
-        super.dispose();
     }
 }

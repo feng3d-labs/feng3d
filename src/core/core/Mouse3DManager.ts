@@ -117,9 +117,13 @@ export class Mouse3DManager
         if (this._selectedObject3D !== value)
         {
             if (this._selectedObject3D)
-            { this._selectedObject3D.emit('mouseout', null, true); }
+            {
+                this._selectedObject3D.emitter.emit('mouseout', null, true);
+            }
             if (value)
-            { value.emit('mouseover', null, true); }
+            {
+                value.emitter.emit('mouseover', null, true);
+            }
         }
         this._selectedObject3D = value;
         this._mouseEventTypes.forEach((element) =>
@@ -132,7 +136,7 @@ export class Mouse3DManager
                         this.object3DClickNum = 0;
                         this.preMouseDownObject3D = this._selectedObject3D;
                     }
-                    this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
+                    this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
                     break;
                 case 'mouseup':
                     if (this._selectedObject3D === this.preMouseDownObject3D)
@@ -144,19 +148,19 @@ export class Mouse3DManager
                         this.object3DClickNum = 0;
                         this.preMouseDownObject3D = null;
                     }
-                    this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
+                    this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
                     break;
                 case 'mousemove':
-                    this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
+                    this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
                     break;
                 case 'click':
                     if (this.object3DClickNum > 0)
-                    { this._selectedObject3D && this._selectedObject3D.emit(element, null, true); }
+                    { this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true); }
                     break;
                 case 'dblclick':
                     if (this.object3DClickNum > 1)
                     {
-                        this._selectedObject3D && this._selectedObject3D.emit(element, null, true);
+                        this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
                         this.object3DClickNum = 0;
                     }
                     break;

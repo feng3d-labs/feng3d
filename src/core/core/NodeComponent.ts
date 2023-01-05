@@ -1,4 +1,5 @@
 import { Component } from '../../ecs/Component';
+import { EventEmitter } from '../../event/EventEmitter';
 import { Constructor } from '../../polyfill/Types';
 import { Node, NodeEventMap } from './Node';
 
@@ -7,8 +8,10 @@ import { Node, NodeEventMap } from './Node';
  *
  * 附加在結點上的組件，處理結點相關的邏輯。
  */
-export class NodeComponent<T extends NodeEventMap = NodeEventMap> extends Component<T>
+export class NodeComponent extends Component
 {
+    declare emitter: EventEmitter<NodeEventMap>;
+
     /**
      * 2D节点。
      */

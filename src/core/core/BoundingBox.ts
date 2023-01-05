@@ -1,6 +1,6 @@
+import { Component } from '../../ecs/Component';
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
-import { Component } from '../../ecs/Component';
 import { Node3D } from './Node3D';
 
 declare global
@@ -39,8 +39,8 @@ export class BoundingBox
     constructor(node3d: Node3D)
     {
         this._object3D = node3d;
-        node3d.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
-        node3d.on('globalMatrixChanged', this._invalidateSelfWorldBounds, this);
+        node3d.emitter.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
+        node3d.emitter.on('globalMatrixChanged', this._invalidateSelfWorldBounds, this);
     }
 
     /**
@@ -96,7 +96,7 @@ export class BoundingBox
 
         // 获取对象上的包围盒
         const data: { bounds: Box3[]; } = { bounds: [] };
-        this._object3D.emit('getSelfBounds', data);
+        this._object3D.emitter.emit('getSelfBounds', data);
 
         data.bounds.forEach((b) =>
         {

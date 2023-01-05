@@ -42,20 +42,20 @@ export class HoldSizeComponent extends Component3D
 
     init()
     {
-        this.node3d.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
     }
 
     dispose()
     {
         this.camera = null;
-        this.node3d.off('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.node3d.emitter.off('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
         super.dispose();
     }
 
     private _onCameraChanged(value: Camera, oldValue: Camera)
     {
-        if (oldValue) oldValue.off('globalMatrixChanged', this._invalidateGlobalTransform, this);
-        if (value) value.on('globalMatrixChanged', this._invalidateGlobalTransform, this);
+        if (oldValue) oldValue.emitter.off('globalMatrixChanged', this._invalidateGlobalTransform, this);
+        if (value) value.emitter.on('globalMatrixChanged', this._invalidateGlobalTransform, this);
         this._invalidateGlobalTransform();
     }
 
