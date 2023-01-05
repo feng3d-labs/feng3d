@@ -30,7 +30,9 @@ declare global
  */
 export class View3D extends Component3D
 {
-    //
+    /**
+     * 将被绘制的目标画布。
+     */
     canvas: HTMLCanvasElement;
 
     private _contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };

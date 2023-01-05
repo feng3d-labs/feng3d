@@ -1,3 +1,4 @@
+import { EventEmitter } from '../../event/EventEmitter';
 import { Node3D, Node3DEventMap } from './Node3D';
 import { NodeComponent } from './NodeComponent';
 
@@ -6,8 +7,10 @@ import { NodeComponent } from './NodeComponent';
  *
  * 附加在3D结点上的組件，處理3D相關的邏輯。
  */
-export class Component3D extends NodeComponent<Node3DEventMap>
+export class Component3D extends NodeComponent
 {
+    declare emitter: EventEmitter<Node3DEventMap>;
+
     /**
      * 2D节点。
      */

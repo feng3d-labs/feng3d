@@ -1,3 +1,4 @@
+import { EventEmitter } from '../../event/EventEmitter';
 import { Euler } from '../../math/geom/Euler';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Quaternion } from '../../math/geom/Quaternion';
@@ -103,8 +104,9 @@ export interface Node3D
  * 用于构建3D场景树结构，处理3D对象的位移旋转缩放等空间数据。
  */
 @Serializable('Node3D')
-export class Node3D extends Node<Node3DEventMap>
+export class Node3D extends Node
 {
+    declare emitter: EventEmitter<Node3DEventMap>;
     declare __class__: 'Node3D';
 
     declare protected _parent: Node3D;

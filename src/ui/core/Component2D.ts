@@ -1,8 +1,10 @@
 import { NodeComponent } from '../../core/core/NodeComponent';
+import { EventEmitter } from '../../event/EventEmitter';
 import { Node2D, Node2DEventMap } from './Node2D';
 
-export class Component2D extends NodeComponent<Node2DEventMap>
+export class Component2D extends NodeComponent
 {
+    declare emitter: EventEmitter<Node2DEventMap>;
     /**
      * 2D节点。
      */
