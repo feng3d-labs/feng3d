@@ -79,21 +79,21 @@ export class TransformLayout extends Component3D
         watcher.watch(this.pivot, 'y', this._invalidatePivot, this);
         watcher.watch(this.pivot, 'z', this._invalidatePivot, this);
         //
-        this.on('added', this._onAdded, this);
-        this.on('removed', this._onRemoved, this);
+        this.emitter.on('added', this._onAdded, this);
+        this.emitter.on('removed', this._onRemoved, this);
     }
 
     private _onAdded(event: IEvent<{ parent: Node3D; }>)
     {
-        event.data.parent.on('sizeChanged', this._invalidateLayout, this);
-        event.data.parent.on('pivotChanged', this._invalidateLayout, this);
+        event.data.parent.emitter.on('sizeChanged', this._invalidateLayout, this);
+        event.data.parent.emitter.on('pivotChanged', this._invalidateLayout, this);
         this._invalidateLayout();
     }
 
     private _onRemoved(event: IEvent<{ parent: Node3D; }>)
     {
-        event.data.parent.off('sizeChanged', this._invalidateLayout, this);
-        event.data.parent.off('pivotChanged', this._invalidateLayout, this);
+        event.data.parent.emitter.off('sizeChanged', this._invalidateLayout, this);
+        event.data.parent.emitter.off('pivotChanged', this._invalidateLayout, this);
     }
 
     /**
@@ -271,12 +271,12 @@ export class TransformLayout extends Component3D
     private _invalidateSize()
     {
         this._invalidateLayout();
-        this.emit('sizeChanged', this);
+        this.emitter.emit('sizeChanged', this);
     }
 
     private _invalidatePivot()
     {
         this._invalidateLayout();
-        this.emit('pivotChanged', this);
+        this.emitter.emit('pivotChanged', this);
     }
 }

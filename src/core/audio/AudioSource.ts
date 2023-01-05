@@ -262,7 +262,7 @@ export class AudioSource extends Component3D
     init()
     {
         super.init();
-        this.on('globalMatrixChanged', this._onScenetransformChanged, this);
+        this.emitter.on('globalMatrixChanged', this._onScenetransformChanged, this);
     }
 
     @oav()
@@ -380,7 +380,7 @@ export class AudioSource extends Component3D
 
     dispose()
     {
-        this.off('globalMatrixChanged', this._onScenetransformChanged, this);
+        this.emitter.off('globalMatrixChanged', this._onScenetransformChanged, this);
         this._disconnect();
         super.dispose();
     }

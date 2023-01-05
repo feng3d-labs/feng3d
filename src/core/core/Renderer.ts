@@ -95,7 +95,7 @@ export class Renderer extends Component3D
         this._selfLocalBounds = null;
         this._selfWorldBounds = null;
 
-        this.emit('selfBoundsChanged', this);
+        this.emitter.emit('selfBoundsChanged', this);
     }
 
     protected _updateBounds() { }

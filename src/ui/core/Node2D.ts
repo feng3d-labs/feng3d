@@ -172,8 +172,8 @@ export class Node2D extends Node
         watcher.bind(this.scale, 'x', this.scale, 'x');
         watcher.bind(this.scale, 'y', this.scale, 'y');
 
-        this.on('addComponent', this._onAddComponent, this);
-        this.on('removeComponent', this._onRemovedComponent, this);
+        this.emitter.on('addComponent', this._onAddComponent, this);
+        this.emitter.on('removeComponent', this._onRemovedComponent, this);
     }
 
     private _onAddComponent(event: IEvent<{ entity: Node3D; component: Component; }>)

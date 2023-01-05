@@ -73,9 +73,9 @@ export class MeshRenderer extends Renderer
     init()
     {
         super.init();
-        this.on('globalMatrixChanged', this._onScenetransformChanged, this);
+        this.emitter.on('globalMatrixChanged', this._onScenetransformChanged, this);
 
-        this.on('getSelfBounds', this._onGetSelfBounds, this);
+        this.emitter.on('getSelfBounds', this._onGetSelfBounds, this);
     }
 
     /**

@@ -113,8 +113,8 @@ export class Camera extends Component3D
 
         this.invalidateViewProjection();
 
-        this.emit('refreshView');
-        this.emit('lensChanged');
+        this.emitter.emit('refreshView');
+        this.emitter.emit('lensChanged');
     }
     private _lens: LensBase;
 
@@ -157,7 +157,7 @@ export class Camera extends Component3D
         super.init();
         this.lens = this.lens || new PerspectiveLens();
         //
-        this.on('globalMatrixChanged', this.invalidateViewProjection, this);
+        this.emitter.on('globalMatrixChanged', this.invalidateViewProjection, this);
         this.invalidateViewProjection();
     }
 

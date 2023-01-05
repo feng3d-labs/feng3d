@@ -410,7 +410,7 @@ export class ParticleSystem extends Component3D
             {
                 element.calculateProbability();
             });
-            this.emit('particleCycled', this);
+            this.emitter.emit('particleCycled', this);
         }
 
         // 发射粒子
@@ -429,7 +429,7 @@ export class ParticleSystem extends Component3D
         if (!this.main.loop && this._activeParticles.length === 0 && emitInfo.currentTime > this.main.duration)
         {
             this.stop();
-            this.emit('particleCompleted', this);
+            this.emitter.emit('particleCompleted', this);
         }
     }
 

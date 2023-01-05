@@ -433,7 +433,7 @@ export class Node3D extends Node
         if (this._matrixInvalid) return;
         this._matrixInvalid = true;
 
-        this.emit('matrixChanged', this);
+        this.emitter.emit('matrixChanged', this);
         this._invalidateGlobalMatrix();
     }
 
@@ -446,7 +446,7 @@ export class Node3D extends Node
         this._globalNormalMatrixInvalid = true;
         this._globalRotationMatrixInvalid = true;
 
-        this.emit('globalMatrixChanged', this);
+        this.emitter.emit('globalMatrixChanged', this);
         //
         for (let i = 0, n = this.numChildren; i < n; i++)
         {
@@ -466,7 +466,7 @@ export class Node3D extends Node
         {
             this._globalMatrix.append(this.parent.globalMatrix);
         }
-        this.emit('updateGlobalMatrix', this);
+        this.emitter.emit('updateGlobalMatrix', this);
         console.assert(!isNaN(this._globalMatrix.elements[0]));
     }
 
@@ -608,12 +608,12 @@ export class Node3D extends Node
         }
         if (this._scene)
         {
-            this.emit('removedFromScene', this);
+            this.emitter.emit('removedFromScene', this);
         }
         this._scene = newScene;
         if (this._scene)
         {
-            this.emit('addedToScene', this);
+            this.emitter.emit('addedToScene', this);
         }
         this.updateChildrenScene();
     }
