@@ -152,7 +152,6 @@ it('has', () =>
     // once被触发后自动被移除，未检测到该监听。
     anyEmitter.emit(2, '2');
     ok(!anyEmitter.has(2, '2'));
-    console.log(out);
 });
 
 it('onAny offAny', () =>

@@ -5,4 +5,5 @@ declare global
 
 export interface Uniforms extends MixinsUniforms
 {
+    [key: string]: any;
 }

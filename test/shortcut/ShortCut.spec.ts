@@ -23,7 +23,6 @@ describe('test', () =>
         // 监听命令
         shortcut.on('command1', function (e): void
         {
-            console.log(`接受到命令：${e.type}`);
         });
 
         ok(!!EventEmitter);

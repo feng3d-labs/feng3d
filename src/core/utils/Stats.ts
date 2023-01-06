@@ -148,7 +148,7 @@ export class StatsPanel
         const context0 = canvas.getContext('2d');
         if (!context0)
         {
-            console.log(`无法创建 CanvasRenderingContext2D `);
+            console.warn(`无法创建 CanvasRenderingContext2D `);
 
             return;
         }

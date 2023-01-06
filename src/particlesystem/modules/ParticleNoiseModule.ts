@@ -365,7 +365,6 @@ export class ParticleNoiseModule extends ParticleModule
                 data[cell + 3] = 255; // alpha
             }
         }
-        // console.log(datas, min, max);
     }
 
     private _getDrawImageStrength()

@@ -19,7 +19,6 @@ describe('watcher.watchobject transform', () =>
         // 变化回调
         function onChanged(_newValue: any, _oldValue: any, _host: any, _property: string)
         {
-            console.warn(_newValue, _oldValue, _host, _property);
             changeCount++;
         }
 
