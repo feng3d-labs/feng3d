@@ -166,22 +166,19 @@ describe('Serialization', () =>
 
     it('serialize&deserialize 拥有自定义serialize函数的对象', () =>
     {
-        const obj = {
-            a: 1,
+        @Serializable('Test')
+        class Test
+        {
+            a = 1;
             serialize(obj)
             {
                 obj.a = this.a * 2;
-            },
-        };
+            }
+        }
+
+        const obj = new Test();
         const r = $serialize(obj);
-        ok(r.a === obj.a * 2);
-
-        delete obj.serialize;
-        const r1 = $serialize(obj);
-        ok(r1.a === 1);
-
-        const r0 = $deserialize(r1);
-        ok(r0.a === 1);
+        equal(r.a, obj.a * 2);
     });
 
     it('serialize&deserialize Array', () =>

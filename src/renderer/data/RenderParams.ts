@@ -1,9 +1,11 @@
 import { oav } from '../../objectview/ObjectView';
+import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 /**
  * 渲染参数
  */
+@Serializable('RenderParams')
 export class RenderParams
 {
     /**

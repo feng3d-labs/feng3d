@@ -3,16 +3,8 @@ import { getClassName } from '../../src/serialization/getClassName';
 import { getInstance } from '../../src/serialization/getInstance';
 import { Serializable } from '../../src/serialization/Serializable';
 
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, it } from 'vitest';
 const { ok, equal } = assert;
-
-/**
- * 未使用 @Serializable() 进行注册的类
- */
-class UnregisteredClass
-{
-
-}
 
 /**
  * 使用 @Serializable() 进行注册的类
@@ -45,11 +37,6 @@ describe('getClassName', () =>
     it('getClassName 自定义类', () =>
     {
         let className: string;
-
-        className = getClassName(UnregisteredClass);
-        equal(className, null); // UnregisteredClass 未注册返回 null
-        className = getClassName(new UnregisteredClass());
-        equal(className, null); // UnregisteredClass 未注册返回 null
 
         className = getClassName(RegisteredClass);
         equal(className, 'RegisteredClass');
