@@ -10,8 +10,7 @@
   "author": "feng",
   "license": "MIT",
   "scripts": {
-    "dev": "cd examples && npm run dev",
-    "clean": "rimraf \"{examples,.}/{lib,dist,public}\"",
+    "clean": "rimraf \"{lib,dist,public}\"",
     "build": "vite build",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -21,8 +20,7 @@
     "docs": "typedoc",
     "release": "npm run clean && npm run lint && npm run docs && npm run build && npm run types && npm publish",
     "prepublishOnly": "node scripts/prepublish.js",
-    "postpublish": "node scripts/postpublish.js",
-    "build:preview": "npm run docs && cd examples && vite build --outDir ../public"
+    "postpublish": "node scripts/postpublish.js"
   },
   "repository": {
     "type": "git",
