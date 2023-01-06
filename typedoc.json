@@ -5,5 +5,5 @@
         "src/index.ts"
     ],
     "sourceLinkTemplate": "https://gitlab.com/feng3d/feng3d/tree/master/{path}#L{line}",
-    "out": "public"
+    "out": "public/docs"
 }

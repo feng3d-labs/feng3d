@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Web3D Engine",
   "standalone": true,
   "main": "src/index.ts",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "cd examples && npm run dev",
-    "clean": "rimraf \"{lib,dist,public}\"",
+    "clean": "rimraf \"{examples,.}/{lib,dist,public}\"",
     "build": "vite build",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -19,9 +19,10 @@
     "lint": "eslint --ext .js --ext .ts src test rollup.config.js --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc",
-    "release": "npm run clean && npm run build && npm run types && npm publish",
+    "release": "npm run clean && npm run lint && npm run docs && npm run build && npm run types && npm publish",
     "prepublishOnly": "node scripts/prepublish.js",
-    "postpublish": "node scripts/postpublish.js"
+    "postpublish": "node scripts/postpublish.js",
+    "build:preview": "npm run docs && cd examples && vite build --outDir ../public"
   },
   "repository": {
     "type": "git",
