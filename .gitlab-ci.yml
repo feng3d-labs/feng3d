@@ -24,4 +24,4 @@ pages:
     paths:
     - public
   only:
-  - publish
+  - master
