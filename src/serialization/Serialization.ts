@@ -3,6 +3,7 @@ import { ObjectUtils } from '../polyfill/ObjectUtils';
 import { gPartial } from '../polyfill/Types';
 import { getClassName } from './getClassName';
 import { getInstance } from './getInstance';
+import { Serializable } from './Serializable';
 import { _serialize__, __class__ } from './SerializationConst';
 
 /**
@@ -1044,8 +1045,12 @@ serialization.setValueHandlers = [
     },
 ];
 
+Serializable(Object.name)(Object);
+
 [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach((element) =>
 {
+    Serializable(element.name)(element);
+
     element.prototype['serialize'] = function (object: { value: number[] })
     {
         object.value = Array.from(this);

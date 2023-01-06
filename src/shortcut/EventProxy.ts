@@ -151,7 +151,7 @@ export class EventProxy<T = any> extends EventEmitter<T>
                     {
                         if (this.mousedownposition.x === event.clientX && this.mousedownposition.y === event.clientY)
                         {
-                            // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
+                            // 由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！
                             return;
                         }
                     }

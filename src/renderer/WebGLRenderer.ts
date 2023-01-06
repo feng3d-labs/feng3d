@@ -153,14 +153,14 @@ export class WebGLRenderer
     {
         event.preventDefault();
 
-        console.log('WebGLRenderer: Context Lost.');
+        console.warn('WebGLRenderer: Context Lost.');
 
         this._isContextLost = true;
     };
 
     private _onContextRestore = () =>
     {
-        console.log('WebGLRenderer: Context Restored.');
+        console.warn('WebGLRenderer: Context Restored.');
 
         this._isContextLost = false;
 

@@ -5,6 +5,7 @@ import { SerializeProperty } from '../../src/serialization/SerializeProperty';
 import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
+@Serializable('ObjectBase')
 class ObjectBase
 {
     @SerializeProperty()
@@ -28,8 +29,6 @@ class C extends ObjectBase
 
     change()
     {
-        // eslint-disable-next-line prefer-rest-params
-        console.log('change', this.a, arguments);
     }
 }
 
@@ -114,7 +113,6 @@ describe('Serialization', () =>
         a.a2 = a;
 
         const r = $serialize(a);
-        console.log(r);
         const r1 = $deserialize(r);
         deepEqual(a, r1);
 
@@ -346,6 +344,20 @@ describe('Serialization', () =>
             if (arr[i] !== arr1[i]) expectDiff1[i] = arr1[i];
         });
         deepEqual(diff1, expectDiff1);
+    });
+
+    it('Float32Array 序列化反序列化', () =>
+    {
+        const arr = new Float32Array([1, 2, 3]);
+
+        const obj = { arr, arr1: arr };
+
+        const result = $serialize(obj);
+
+        const result1 = $deserialize(result);
+
+        deepEqual(result1.arr, arr);
+        equal(result1.arr, result1.arr1);
     });
 
     // it('different 不同对象类型', () =>

@@ -113,8 +113,6 @@ export class ShapePath2
             holesFirst = !holesFirst;
         }
 
-        // console.log("Holes first", holesFirst);
-
         const betterShapeHoles: { h: Path2, p: Vector2 }[][] = [];
         const newShapes: { s: Shape2, p: Vector2[] }[] = [];
         let newShapeHoles: { h: Path2, p: Vector2 }[][] = [];
@@ -143,12 +141,10 @@ export class ShapePath2
 
                 if (holesFirst) mainIdx++;
                 newShapeHoles[mainIdx] = [];
-                // console.log('cw', i);
             }
             else
             {
                 newShapeHoles[mainIdx].push({ h: tmpPath, p: tmpPoints[0] });
-                // console.log('ccw', i);
             }
         }
 
@@ -197,11 +193,9 @@ export class ShapePath2
                     }
                 }
             }
-            // console.log("ambiguous: ", ambiguous);
 
             if (toChange.length > 0)
             {
-                // console.log("to change: ", toChange);
                 if (!ambiguous) newShapeHoles = betterShapeHoles;
             }
         }
@@ -220,7 +214,6 @@ export class ShapePath2
             }
         }
 
-        // console.log("shape", shapes);
         return shapes;
     }
 }

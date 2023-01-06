@@ -63,36 +63,6 @@ describe('watcher', () =>
         ok((num as any) === 3);
     });
 
-    it('watch Object 性能', () =>
-    {
-        const o = { a: 1 };
-
-        const num = 10000000;
-        let out = '';
-        const f = () => { out += 'f'; };
-        let s = Date.now();
-        for (let i = 0; i < num; i++)
-        {
-            o.a = i;
-        }
-        const t1 = Date.now() - s;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        out = '';
-        watcher.watch(o, 'a', f);
-        o.a = 2;
-        watcher.unwatch(o, 'a', f);
-        o.a = 3;
-        s = Date.now();
-        for (let i = 0; i < num; i++)
-        {
-            o.a = i;
-        }
-        const t2 = Date.now() - s;
-
-        console.warn(`${t1}->${t2} watch与unwatch操作后性能 1->${t1 / t2}`);
-        ok(true);
-    });
-
     it('watchchain Object', () =>
     {
         const o = { a: { b: { c: 1 } } };
