@@ -119,7 +119,7 @@ export class GeometryUtils
      * @param uvs uv数据
      * @param useFaceWeights 是否使用面权重计算切线数据
      */
-    createVertexTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights = false)
+    createVertexTangents(indices: ArrayLike<number>, positions: ArrayLike<number>, uvs: ArrayLike<number>, useFaceWeights = false)
     {
         const faceTangentsResult = this.createFaceTangents(indices, positions, uvs, useFaceWeights);
         const faceWeights = faceTangentsResult.faceWeights;
@@ -187,27 +187,32 @@ export class GeometryUtils
      * @param uvs uv数据
      * @param useFaceWeights 是否计算面权重
      */
-    createFaceTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights = false)
+    createFaceTangents(indices: ArrayLike<number>, positions: ArrayLike<number>, uvs: ArrayLike<number>, useFaceWeights = false)
     {
-        let i = 0; let
-            k = 0;
-        let index1 = 0; let index2 = 0; let
-            index3 = 0;
+        let i = 0;
+        let k = 0;
+        let index1 = 0;
+        let index2 = 0;
+        let index3 = 0;
         const len = indices.length;
-        let ui = 0; let
-            vi = 0;
+        let ui = 0;
+        let vi = 0;
         let v0 = 0;
-        let dv1 = 0; let
-            dv2 = 0;
+        let dv1 = 0;
+        let dv2 = 0;
         let denom = 0;
-        let x0 = 0; let y0 = 0; let
-            z0 = 0;
-        let dx1 = 0; let dy1 = 0; let
-            dz1 = 0;
-        let dx2 = 0; let dy2 = 0; let
-            dz2 = 0;
-        let cx = 0; let cy = 0; let
-            cz = 0;
+        let x0 = 0;
+        let y0 = 0;
+        let z0 = 0;
+        let dx1 = 0;
+        let dy1 = 0;
+        let dz1 = 0;
+        let dx2 = 0;
+        let dy2 = 0;
+        let dz2 = 0;
+        let cx = 0;
+        let cy = 0;
+        let cz = 0;
         const posStride = 3;
         const posOffset = 0;
         const texStride = 2;
