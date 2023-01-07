@@ -50,7 +50,7 @@ importers:
       copyfiles: ^2.4.1
       eslint: 8.12.0
       fast-glob: ^3.2.12
-      feng3d: 0.7.7
+      feng3d: 0.7.8
       fs-extra: ^10.1.0
       lil-gui: ^0.17.0
       opentype.js: ^1.3.4
