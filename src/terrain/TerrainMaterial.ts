@@ -17,7 +17,7 @@ declare global
         terrain: TerrainUniforms
     }
 
-    export interface MixinsDefaultMaterial
+    export interface DefaultMaterialMap
     {
         'Terrain-Material': Material;
     }

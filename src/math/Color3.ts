@@ -5,16 +5,6 @@ import { SerializeProperty } from '../serialization/SerializeProperty';
 import type { Color4 } from './Color4';
 import { Vector3 } from './geom/Vector3';
 
-declare global
-{
-    interface MixinsColor3
-    {
-
-    }
-}
-
-export interface Color3 extends MixinsColor3 { }
-
 /**
  * 颜色
  */

@@ -8,23 +8,14 @@ import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { PolyhedronGeometry } from './PolyhedronGeometry';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        IcosahedronGeometry: IcosahedronGeometry
-    }
+    export interface GeometryMap { IcosahedronGeometry: IcosahedronGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Icosahedron: IcosahedronGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Icosahedron: Node3D;
-    }
+    export interface DefaultGeometryMap { Icosahedron: IcosahedronGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Icosahedron: Node3D; } }
 
 /**
  * 二十面体

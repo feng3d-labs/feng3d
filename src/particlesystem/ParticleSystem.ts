@@ -41,18 +41,13 @@ import { Particle } from './Particle';
 
 declare module '../ecs/Component' { interface ComponentMap { ParticleSystem: ParticleSystem } }
 
-declare global
-{
-    export interface MixinsDefaultGeometry
-    {
-        'Billboard-Geometry': QuadGeometry;
-    }
-    export interface MixinsPrimitiveNode3D
-    {
-        'Particle System': Node3D;
-    }
+declare module '../core/geometry/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
 
-    export interface MixinsNode3DEventMap
+declare module '../core/core/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
+
+declare module '../core/core/Node3D'
+{
+    interface Node3DEventMap
     {
         /**
          * 粒子系统播放完一个周期

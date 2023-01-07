@@ -14,7 +14,7 @@ declare global
         Particles_Additive: ParticlesAdditiveUniforms
     }
 
-    export interface MixinsDefaultMaterial
+    export interface DefaultMaterialMap
     {
         'Particle-Material': Material;
     }

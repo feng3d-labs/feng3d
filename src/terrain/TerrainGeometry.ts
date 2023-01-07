@@ -6,21 +6,15 @@ import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { gPartial } from '../polyfill/Types';
 import { Serializable } from '../serialization/Serializable';
-import { $set, serialization } from '../serialization/Serialization';
+import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 
-declare global
+declare module '../core/geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        TerrainGeometry: TerrainGeometry
-    }
+    export interface GeometryMap { TerrainGeometry: TerrainGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        'Terrain-Geometry': TerrainGeometry;
-    }
+    export interface DefaultGeometryMap { 'Terrain-Geometry': TerrainGeometry; }
 }
 
 /**

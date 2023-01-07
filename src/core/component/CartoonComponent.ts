@@ -3,6 +3,7 @@ import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import '../../renderer/data/Uniforms';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
@@ -17,16 +18,15 @@ declare module '../../ecs/Component'
     }
 }
 
-declare global
+declare module '../../renderer/data/Uniforms'
 {
-    export interface MixinsUniforms
+    interface Uniforms
     {
         u_diffuseSegment: Vector4;
         u_diffuseSegmentValue: Vector4;
 
         u_specularSegment: number;
     }
-
 }
 
 /**

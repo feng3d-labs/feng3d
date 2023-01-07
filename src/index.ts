@@ -265,7 +265,7 @@ export * from './renderer/data/RenderAtomic';
 export * from './renderer/data/RenderParams';
 export * from './renderer/data/Shader';
 export * from './renderer/data/Texture';
-export * from './renderer/data/Uniform';
+export * from './renderer/data/Uniforms';
 export * from './renderer/gl/WebGLCapabilities';
 export * from './renderer/gl/WebGLEnums';
 export * from './renderer/gl/WebGLExtensions';

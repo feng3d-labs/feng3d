@@ -64,7 +64,7 @@ export class Image extends Component2D
 
 declare global
 {
-    export interface MixinsPrimitiveNode2D
+    export interface PrimitiveNode2D
     {
         Image: Node2D;
     }

@@ -9,21 +9,9 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        PointLight: PointLight;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { PointLight: PointLight; } }
 
-declare global
-{
-    export interface MixinsPrimitiveNode3D
-    {
-        'Point Light': Node3D;
-    }
-}
+declare module '../core/Node3D' { interface PrimitiveNode3D { 'Point Light': Node3D; } }
 
 /**
  * 点光源

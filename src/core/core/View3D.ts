@@ -22,8 +22,11 @@ declare global
     {
         gl: WebGLRenderer;
     }
+}
 
-    export interface MixinsNode3DEventMap
+declare module './Node3D'
+{
+    interface Node3DEventMap
     {
         /**
          * 渲染前事件，将在每次渲染前进行派发。

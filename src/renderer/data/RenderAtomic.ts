@@ -5,17 +5,17 @@ import { AttributeBuffer } from './AttributeBuffer';
 import { ElementBuffer } from './ElementBuffer';
 import { RenderParams } from './RenderParams';
 import { Shader } from './Shader';
-import { Uniforms } from './Uniform';
+import { Uniforms } from './Uniforms';
 
 declare global
 {
-    interface MixinsRenderAtomic
+    interface RenderAtomic
     {
 
     }
 }
 
-export interface RenderAtomic extends MixinsRenderAtomic { }
+export interface RenderAtomic extends RenderAtomic { }
 
 /**
  * 渲染原子（该对象会收集一切渲染所需数据以及参数）

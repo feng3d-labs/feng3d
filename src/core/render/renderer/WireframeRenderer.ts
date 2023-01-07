@@ -9,9 +9,9 @@ import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderer } from '../../core/Renderer';
 import { Scene } from '../../scene/Scene';
 
-declare global
+declare module '../../../renderer/data/RenderAtomic'
 {
-    export interface MixinsRenderAtomic
+    interface RenderAtomic
     {
         /**
          * 顶点索引缓冲

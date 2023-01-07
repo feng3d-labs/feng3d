@@ -5,13 +5,7 @@ import { Material } from '../Material';
 import meshPhongFragment from './meshPhong_fragment_glsl';
 import meshPhongVertex from './meshPhong_vertex_glsl';
 
-declare global
-{
-    export interface MixinsMaterialMap
-    {
-        meshPhong: MeshPhongMaterial
-    }
-}
+declare module '../Material' { interface MaterialMap { meshPhong: MeshPhongMaterial } }
 
 @Serializable('MeshPhongMaterial')
 export class MeshPhongMaterial extends Material

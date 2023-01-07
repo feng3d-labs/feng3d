@@ -7,17 +7,11 @@ import { Material } from '../Material';
 import segmentFragment from './segment_fragment_glsl';
 import segmentVertex from './segment_vertex_glsl';
 
-declare global
+declare module '../Material'
 {
-    export interface MixinsMaterialMap
-    {
-        segment: SegmentMaterial
-    }
+    interface MaterialMap { segment: SegmentMaterial }
 
-    export interface MixinsDefaultMaterial
-    {
-        'Segment-Material': SegmentMaterial;
-    }
+    interface DefaultMaterialMap { 'Segment-Material': SegmentMaterial; }
 }
 
 @Serializable('SegmentMaterial')

@@ -14,7 +14,7 @@ declare module '../ecs/Component' { interface ComponentMap { Rect: Rect; } }
 
 declare global
 {
-    export interface MixinsPrimitiveNode2D
+    export interface PrimitiveNode2D
     {
         Rect: Node2D;
     }

@@ -8,21 +8,13 @@ import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { CylinderGeometry } from './CylinderGeometry';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        ConeGeometry: ConeGeometry
-    }
-    export interface MixinsDefaultGeometry
-    {
-        Cone: ConeGeometry;
-    }
-    export interface MixinsPrimitiveNode3D
-    {
-        Cone: Node3D;
-    }
+    interface GeometryMap { ConeGeometry: ConeGeometry }
+    interface DefaultGeometryMap { Cone: ConeGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Cone: Node3D; } }
 
 /**
  * 圆锥体

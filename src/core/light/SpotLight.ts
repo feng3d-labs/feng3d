@@ -9,20 +9,8 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        SpotLight: SpotLight;
-    }
-}
-declare global
-{
-    export interface MixinsPrimitiveNode3D
-    {
-        'Spot Light': Node3D;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { SpotLight: SpotLight; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { 'Spot Light': Node3D; } }
 
 /**
  * 聚光灯光源

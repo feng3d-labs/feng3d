@@ -25,19 +25,18 @@ declare module '../../ecs/Component'
     }
 }
 
-declare global
+declare module '../core/Node3D'
 {
-    export interface MixinsNode3DEventMap
+    export interface Node3DEventMap
     {
-        lensChanged;
+        lensChanged: Camera;
     }
 
-    export interface MixinsPrimitiveNode3D
+    export interface PrimitiveNode3D
     {
         Camera: Node3D;
     }
 }
-
 /**
  * 摄像机
  */
@@ -115,7 +114,7 @@ export class Camera extends Component3D
         this.invalidateViewProjection();
 
         this.emitter.emit('refreshView');
-        this.emitter.emit('lensChanged');
+        this.emitter.emit('lensChanged', this);
     }
     private _lens: LensBase;
 

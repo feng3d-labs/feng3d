@@ -14,11 +14,7 @@ declare global
         ui: UIUniforms
     }
 
-    export interface MixinsUniforms extends UIUniforms
-    {
-    }
-
-    export interface MixinsDefaultMaterial
+    export interface DefaultMaterialMap
     {
         'Default-UIMaterial': Material;
     }

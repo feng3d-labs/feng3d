@@ -7,19 +7,14 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap { CubeGeometry: CubeGeometry }
+    interface GeometryMap { CubeGeometry: CubeGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Cube: CubeGeometry;
-    }
-    export interface MixinsPrimitiveNode3D
-    {
-        Cube: Node3D;
-    }
+    interface DefaultGeometryMap { Cube: CubeGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Cube: Node3D; } }
 
 /**
  * 立（长）方体几何体

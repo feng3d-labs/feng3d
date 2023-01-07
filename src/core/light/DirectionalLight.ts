@@ -13,22 +13,9 @@ import { Scene } from '../scene/Scene';
 import { Light } from './Light';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        DirectionalLight: DirectionalLight;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { DirectionalLight: DirectionalLight; } }
 
-declare global
-{
-
-    export interface MixinsPrimitiveNode3D
-    {
-        'Directional light': Node3D;
-    }
-}
+declare module '../core/Node3D' { interface PrimitiveNode3D { 'Directional light': Node3D; } }
 
 /**
  * 方向光源

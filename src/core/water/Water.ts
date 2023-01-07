@@ -19,13 +19,8 @@ import { Scene } from '../scene/Scene';
 import { WaterUniforms } from './WaterMaterial';
 
 declare module '../../ecs/Component' { interface ComponentMap { Water: Water } }
-declare global
-{
-    export interface MixinsPrimitiveNode3D
-    {
-        Water: Node3D;
-    }
-}
+
+declare module '../core/Node3D' { export interface PrimitiveNode3D { Water: Node3D; } }
 
 /**
  * The Water component renders the terrain.

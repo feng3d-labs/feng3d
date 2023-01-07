@@ -1,8 +1,8 @@
 import { mathUtil } from '../../polyfill/MathUtil';
 
-declare global
+declare module '../../polyfill/MathUtil'
 {
-    interface MixinsMathUtil
+    interface MathUtil
     {
         /**
          * 引擎中使用的坐标系统，默认左手坐标系统。

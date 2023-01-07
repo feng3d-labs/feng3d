@@ -13,7 +13,7 @@ declare module '../ecs/Component' { interface ComponentMap { Button: Button; } }
 
 declare global
 {
-    export interface MixinsPrimitiveNode2D
+    export interface PrimitiveNode2D
     {
         Button: Node2D;
     }

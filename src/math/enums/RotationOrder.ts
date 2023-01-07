@@ -1,8 +1,8 @@
 import { mathUtil } from '../../polyfill/MathUtil';
 
-declare global
+declare module '../../polyfill/MathUtil'
 {
-    interface MixinsMathUtil
+    interface MathUtil
     {
         /**
          * 引擎中使用的旋转顺序。

@@ -7,22 +7,14 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        PlaneGeometry: PlaneGeometry
-    }
+    interface GeometryMap { PlaneGeometry: PlaneGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Plane: PlaneGeometry;
-    }
-    export interface MixinsPrimitiveNode3D
-    {
-        Plane: Node3D;
-    }
+    interface DefaultGeometryMap { Plane: PlaneGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Plane: Node3D; } }
 
 /**
  * 平面几何体

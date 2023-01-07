@@ -1,6 +1,6 @@
-declare global
+declare module '../../objectview/ObjectView'
 {
-    export interface MixinsOAVComponentParamMap
+    interface OAVComponentParamMap
     {
         OAVDefault: OAVDefaultParam;
         OAVArray: OAVArrayParam;

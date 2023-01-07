@@ -8,23 +8,14 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        LatheGeometry: LatheGeometry
-    }
+    interface GeometryMap { LatheGeometry: LatheGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Lathe: LatheGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Lathe: Node3D;
-    }
+    interface DefaultGeometryMap { Lathe: LatheGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Lathe: Node3D; } }
 
 /**
  * 旋转造型

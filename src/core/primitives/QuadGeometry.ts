@@ -4,23 +4,14 @@ import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        QuadGeometry: QuadGeometry
-    }
+    interface GeometryMap { QuadGeometry: QuadGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Quad: QuadGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Quad: Node3D;
-    }
+    interface DefaultGeometryMap { Quad: QuadGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Quad: Node3D; } }
 
 /**
  * 四边形面皮几何体

@@ -4,16 +4,6 @@ import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
 
-declare global
-{
-    interface MixinsQuaternion
-    {
-
-    }
-}
-
-export interface Quaternion extends MixinsQuaternion { }
-
 /**
  * 可用于表示旋转的四元数对象
  */

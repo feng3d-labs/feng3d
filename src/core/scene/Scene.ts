@@ -8,12 +8,12 @@ import { HideFlags } from '../core/HideFlags';
 import { Node3D } from '../core/Node3D';
 import { RunEnvironment } from '../core/RunEnvironment';
 
-declare global
+declare module '../core/Node3D'
 {
     /**
      * 组件事件
      */
-    export interface MixinsNode3DEventMap
+    interface Node3DEventMap
     {
         addToScene: Node3D;
         removeFromScene: Node3D;

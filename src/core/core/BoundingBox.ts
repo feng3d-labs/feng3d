@@ -3,9 +3,9 @@ import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Node3D } from './Node3D';
 
-declare global
+declare module './Node3D'
 {
-    export interface MixinsNode3DEventMap
+    interface Node3DEventMap
     {
         /**
          * 获取自身包围盒

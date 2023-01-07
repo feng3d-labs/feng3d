@@ -15,13 +15,7 @@ import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { geometryUtils } from './GeometryUtils';
 
-declare global
-{
-    interface MixinsDefaultGeometry { }
-    interface MixinsGeometryMap { }
-}
-
-export interface GeometryMap extends MixinsGeometryMap { }
+export interface GeometryMap { }
 
 export interface GeometryEventMap
 {
@@ -375,7 +369,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
      * @param name 默认几何体名称
      * @param geometry 默认几何体
      */
-    static setDefault<K extends keyof DefaultGeometry>(name: K, geometry: DefaultGeometry[K], param?: gPartial<DefaultGeometry[K]>)
+    static setDefault<K extends keyof DefaultGeometryMap>(name: K, geometry: DefaultGeometryMap[K], param?: gPartial<DefaultGeometryMap[K]>)
     {
         this._defaultGeometry[name] = geometry;
         if (param) $set(geometry, param);
@@ -388,17 +382,17 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
      *
      * @param name 默认几何体名称
      */
-    static getDefault<K extends keyof DefaultGeometry>(name: K)
+    static getDefault<K extends keyof DefaultGeometryMap>(name: K)
     {
         return this._defaultGeometry[name];
     }
-    private static _defaultGeometry: DefaultGeometry = <any>{};
+    private static _defaultGeometry: DefaultGeometryMap = <any>{};
 }
 
 /**
  * 默认几何体
  */
-export interface DefaultGeometry extends MixinsDefaultGeometry
+export interface DefaultGeometryMap
 {
 }
 

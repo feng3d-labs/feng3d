@@ -1,10 +1,3 @@
-declare global
-{
-	interface MixinsOAVComponentParamMap
-	{
-	}
-}
-
 /**
  * 构造函数
  */
@@ -534,7 +527,7 @@ function getObjectBlockInfos(object: any, objectAttributeInfos: AttributeViewInf
  * OAV 组件参数映射
  * {key: OAV组件名称,value：组件参数类定义}
  */
-export interface OAVComponentParamMap extends MixinsOAVComponentParamMap
+export interface OAVComponentParamMap
 {
 	OAVEnum: OAVEnumParam;
 }

@@ -4,11 +4,11 @@ import { Serializable } from '../../serialization/Serializable';
 
 declare global
 {
-    export interface MixinsGeometryMap
+    export interface GeometryMap
     {
         UIGeometry: UIGeometry
     }
-    export interface MixinsDefaultGeometry
+    export interface DefaultGeometryMap
     {
         'Default-UIGeometry': UIGeometry;
     }

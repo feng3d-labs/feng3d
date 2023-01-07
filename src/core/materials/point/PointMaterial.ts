@@ -7,13 +7,7 @@ import { Material } from '../Material';
 import pointFragment from './point_fragment_glsl';
 import pointVertex from './point_vertex_glsl';
 
-declare global
-{
-    interface MixinsMaterialMap
-    {
-        point: PointMaterial
-    }
-}
+declare module '../Material' { interface MaterialMap { point: PointMaterial } }
 
 @Serializable('PointMaterial')
 export class PointMaterial extends Material
