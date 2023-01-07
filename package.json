@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "description": "Web3D Engine",
   "standalone": true,
   "main": "src/index.ts",
