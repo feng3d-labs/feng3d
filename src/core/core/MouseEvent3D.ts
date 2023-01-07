@@ -60,10 +60,17 @@ export class MouseEvent3D extends Component3D
 
     private _onBeforeRender(event: IEvent<BeforeRenderEventData>)
     {
+        if (this._mouseEventTypes.size === 0)
+        {
+            this.setSelectedObject3D(null);
+
+            return;
+        }
+
         const { view, scene, camera } = event.data;
 
+        //
         const viewport = view.viewRect;
-
         if (viewport)
         {
             if (!viewport.contains(windowEventProxy.clientX, windowEventProxy.clientY))
@@ -244,8 +251,6 @@ export interface MouseEventMap
  */
 function pick(view: View3D, scene: Scene, camera: Camera)
 {
-    if (this._mouseEventTypes.size === 0) return;
-
     const mouseRay3D = view.getMouseRay3D(camera);
 
     const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
