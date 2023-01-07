@@ -17,13 +17,11 @@ declare global
     }
 }
 
-@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: [MeshRenderer] })
+@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: [MeshRenderer], single: true })
 @Serializable('SkinnedMeshRenderer')
 export class SkinnedMeshRenderer extends Component3D
 {
     declare __class__: 'SkinnedMeshRenderer';
-
-    get single() { return true; }
 
     /**
      * 创建一个骨骼动画类

@@ -1,7 +1,8 @@
-import { getComponentType, RegisterComponent } from '../../ecs/Component';
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
+import { MeshRenderer } from '../core/MeshRenderer';
 import { NodeComponent } from '../core/NodeComponent';
 import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
@@ -102,7 +103,7 @@ export class Animation extends NodeComponent
                     propertyHost = propertyHost.find(element[1]);
                     break;
                 case PropertyClipPathItemType.Component:
-                    const componentClass = getComponentType(element[1] as any);
+                    const componentClass = Component.getComponentType(element[1] as any);
                     propertyHost = propertyHost.getComponent(componentClass);
                     break;
                 default:

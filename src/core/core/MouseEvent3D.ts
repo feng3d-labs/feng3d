@@ -1,12 +1,11 @@
 import { IEvent } from '../../event/IEvent';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Camera } from '../cameras/Camera';
-import { rayCast } from '../pick/Raycaster';
+import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
 import { Component3D } from './Component3D';
 import { MeshRenderer } from './MeshRenderer';
 import { MouseInput } from './MouseInput';
-import { Node3D } from './Node3D';
 import { BeforeRenderEventData, View3D } from './View3D';
 import { WindowMouseInput } from './WindowMouseInput';
 
@@ -17,52 +16,53 @@ import { WindowMouseInput } from './WindowMouseInput';
  */
 export class MouseEvent3D extends Component3D
 {
-    /**
-     * 鼠标事件输入器。
-     */
-    private get mouseInput()
-    {
-        return this._mouseInput;
-    }
-    private set mouseInput(v)
-    {
-        if (this._mouseInput)
-        {
-            mouseEventTypes.forEach((element) =>
-            {
-                this._mouseInput.off(element, this.onMouseEvent, this);
-            });
-        }
-        this._mouseInput = v;
-        if (this._mouseInput)
-        {
-            mouseEventTypes.forEach((element) =>
-            {
-                this._mouseInput.on(element, this.onMouseEvent, this);
-            });
-        }
-    }
-    private _mouseInput: MouseInput;
-
     init(): void
     {
-        this.mouseInput = new WindowMouseInput();
+        this._mouseInput = new WindowMouseInput();
 
         this.emitter.on('beforeRender', this._onBeforeRender, this);
     }
 
     dispose(): void
     {
+        this._mouseInput = null;
         this.emitter.off('beforeRender', this._onBeforeRender, this);
 
         super.dispose();
     }
 
+    /**
+     * 鼠标事件输入器。
+     */
+    private get _mouseInput()
+    {
+        return this.__mouseInput;
+    }
+    private set _mouseInput(v)
+    {
+        if (this.__mouseInput)
+        {
+            mouseEventTypes.forEach((element) =>
+            {
+                this.__mouseInput.off(element, this._onMouseEvent, this);
+            });
+        }
+        this.__mouseInput = v;
+        if (this.__mouseInput)
+        {
+            mouseEventTypes.forEach((element) =>
+            {
+                this.__mouseInput.on(element, this._onMouseEvent, this);
+            });
+        }
+    }
+    private __mouseInput: MouseInput;
+
     private _onBeforeRender(event: IEvent<BeforeRenderEventData>)
     {
         if (this._mouseEventTypes.size === 0)
         {
-            this.setSelectedObject3D(null);
+            this._handlePickingCollisionVO(null);
 
             return;
         }
@@ -75,7 +75,7 @@ export class MouseEvent3D extends Component3D
         {
             if (!viewport.contains(windowEventProxy.clientX, windowEventProxy.clientY))
             {
-                this.setSelectedObject3D(null);
+                this._handlePickingCollisionVO(null);
 
                 return;
             }
@@ -84,82 +84,88 @@ export class MouseEvent3D extends Component3D
         // 鼠标拾取渲染
         const result = pick(view, scene, camera);
 
-        this.setSelectedObject3D(result);
+        this._handlePickingCollisionVO(result);
     }
 
-    private _selectedObject3D: Node3D;
+    private _selectedMeshRenderer: MeshRenderer;
     private _mouseEventTypes = new Set<string>();
-
     /**
      * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
      */
-    private preMouseDownObject3D: Node3D | null;
+    private _preMouseDownMeshRenderer: MeshRenderer;
+
     /**
      * 统计处理click次数，判断是否达到dblclick
      */
-    private object3DClickNum: number;
+    private _clickNum: number;
 
     /**
      * 监听鼠标事件收集事件类型
      */
-    private onMouseEvent(event: IEvent<any>)
+    private _onMouseEvent(event: IEvent<any>)
     {
         this._mouseEventTypes.add(event.type);
     }
 
     /**
-     * 设置选中对象
+     * 处理拾取的碰撞结果。
+     *
+     * @param pickingCollisionVO 拾取的碰撞结果。
      */
-    private setSelectedObject3D(value: Node3D)
+    private _handlePickingCollisionVO(pickingCollisionVO: PickingCollisionVO)
     {
-        if (this._selectedObject3D !== value)
+        const value = pickingCollisionVO?.meshRenderer;
+
+        if (this._selectedMeshRenderer !== value)
         {
-            if (this._selectedObject3D)
+            if (this._selectedMeshRenderer)
             {
-                this._selectedObject3D.emitter.emit('mouseout', null, true);
+                this._selectedMeshRenderer.emitter.emit('mouseout', pickingCollisionVO, true);
             }
             if (value)
             {
-                value.emitter.emit('mouseover', null, true);
+                value.emitter.emit('mouseover', pickingCollisionVO, true);
             }
         }
-        this._selectedObject3D = value;
+        this._selectedMeshRenderer = value;
         this._mouseEventTypes.forEach((element) =>
         {
             switch (element)
             {
                 case 'mousedown':
-                    if (this.preMouseDownObject3D !== this._selectedObject3D)
+                    if (this._preMouseDownMeshRenderer !== this._selectedMeshRenderer)
                     {
-                        this.object3DClickNum = 0;
-                        this.preMouseDownObject3D = this._selectedObject3D;
+                        this._clickNum = 0;
+                        this._preMouseDownMeshRenderer = this._selectedMeshRenderer;
                     }
-                    this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
+                    this._selectedMeshRenderer && this._selectedMeshRenderer.emitter.emit(element, pickingCollisionVO, true);
                     break;
                 case 'mouseup':
-                    if (this._selectedObject3D === this.preMouseDownObject3D)
+                    if (this._selectedMeshRenderer === this._preMouseDownMeshRenderer)
                     {
-                        this.object3DClickNum++;
+                        this._clickNum++;
                     }
                     else
                     {
-                        this.object3DClickNum = 0;
-                        this.preMouseDownObject3D = null;
+                        this._clickNum = 0;
+                        this._preMouseDownMeshRenderer = null;
                     }
-                    this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
+                    this._selectedMeshRenderer && this._selectedMeshRenderer.emitter.emit(element, pickingCollisionVO, true);
                     break;
                 case 'mousemove':
-                    this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
+                    this._selectedMeshRenderer && this._selectedMeshRenderer.emitter.emit(element, pickingCollisionVO, true);
                     break;
                 case 'click':
-                    if (this.object3DClickNum > 0)
-                    { this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true); }
+                    if (this._clickNum > 0)
+                    {
+                        this._selectedMeshRenderer && this._selectedMeshRenderer.emitter.emit(element, pickingCollisionVO, true);
+                    }
                     break;
                 case 'dblclick':
-                    if (this.object3DClickNum > 1)
+                    if (this._clickNum > 1)
                     {
-                        this._selectedObject3D && this._selectedObject3D.emitter.emit(element, null, true);
-                        this.object3DClickNum = 0;
+                        this._selectedMeshRenderer && this._selectedMeshRenderer.emitter.emit(element, pickingCollisionVO, true);
+                        this._clickNum = 0;
                     }
                     break;
             }
@@ -171,7 +177,7 @@ export class MouseEvent3D extends Component3D
 /**
  * 鼠标事件列表
  */
-const mouseEventTypes: (keyof MouseEventMap)[]
+const mouseEventTypes: (keyof MouseEvent3DMap)[]
     = [
         'mouseout',
         'mouseover',
@@ -188,60 +194,60 @@ const mouseEventTypes: (keyof MouseEventMap)[]
         'dblclick',
     ];
 
-export interface MouseEventMap
+export interface MouseEvent3DMap
 {
     /**
      * 鼠标移出对象
      */
-    mouseout: { clientX: number, clientY: number }
+    mouseout: PickingCollisionVO
     /**
      * 鼠标移入对象
      */
-    mouseover: { clientX: number, clientY: number }
+    mouseover: PickingCollisionVO
     /**
      * 鼠标在对象上移动
      */
-    mousemove: { clientX: number, clientY: number }
+    mousemove: PickingCollisionVO
     /**
      * 鼠标左键按下
      */
-    mousedown: { clientX: number, clientY: number }
+    mousedown: PickingCollisionVO
     /**
      * 鼠标左键弹起
      */
-    mouseup: { clientX: number, clientY: number }
+    mouseup: PickingCollisionVO
     /**
      * 单击
      */
-    click: { clientX: number, clientY: number }
+    click: PickingCollisionVO
     /**
      * 鼠标中键按下
      */
-    middlemousedown: { clientX: number, clientY: number }
+    middlemousedown: PickingCollisionVO
     /**
      * 鼠标中键弹起
      */
-    middlemouseup: { clientX: number, clientY: number }
+    middlemouseup: PickingCollisionVO
     /**
      * 鼠标中键单击
      */
-    middleclick: { clientX: number, clientY: number }
+    middleclick: PickingCollisionVO
     /**
      * 鼠标右键按下
      */
-    rightmousedown: { clientX: number, clientY: number }
+    rightmousedown: PickingCollisionVO
     /**
      * 鼠标右键弹起
      */
-    rightmouseup: { clientX: number, clientY: number }
+    rightmouseup: PickingCollisionVO
     /**
      * 鼠标右键单击
      */
-    rightclick: { clientX: number, clientY: number }
+    rightclick: PickingCollisionVO
     /**
      * 鼠标双击
      */
-    dblclick: { clientX: number, clientY: number }
+    dblclick: PickingCollisionVO
 }
 
 /**
@@ -257,7 +263,5 @@ function pick(view: View3D, scene: Scene, camera: Camera)
     // 计算得到鼠标射线相交的物体
     const pickingCollisionVO = rayCast(mouseRay3D, meshRenderers);
 
-    const node3d = pickingCollisionVO && pickingCollisionVO.node3d;
-
-    return node3d;
+    return pickingCollisionVO;
 }

@@ -19,7 +19,7 @@ import { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { HideFlags } from './HideFlags';
 import { MeshRenderer } from './MeshRenderer';
-import { MouseEventMap } from './MouseEvent3D';
+import { MouseEvent3DMap } from './MouseEvent3D';
 import { Node, NodeEventMap } from './Node';
 
 declare global
@@ -28,7 +28,7 @@ declare global
     interface MixinsPrimitiveNode3D { }
 }
 
-export interface Node3DEventMap extends NodeEventMap, MixinsNode3DEventMap, MouseEventMap
+export interface Node3DEventMap extends NodeEventMap, MixinsNode3DEventMap, MouseEvent3DMap
 {
     /**
      * 本地矩阵发生变化
