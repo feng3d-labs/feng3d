@@ -81,11 +81,6 @@ export function RegisterComponent(component: {
     };
 }
 
-export function getComponentType<T extends ComponentNames>(type: T): Constructor<ComponentMap[T]>
-{
-    return Component._componentMap[type] as any;
-}
-
 /**
  * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
  */
@@ -143,17 +138,9 @@ export class Component
     }
 
     /**
-     * 是否唯一，同类型3D对象组件只允许一个
-     */
-    get single()
-    {
-        return false;
-    }
-
-    /**
      * 初始化组件
      *
-     * 在添加到Object3D时立即被调用。
+     * 在添加到Entity时立即被调用。
      */
     init()
     {
@@ -240,6 +227,22 @@ export class Component
      * @private
      */
     static _componentMap: { [name: string]: Constructor<Component> } = {};
+
+    /**
+     * 通过组件名称获取构造函数。
+     *
+     * @param componentName 组件名称。
+     * @returns 对应组件构造函数。
+     */
+    static getComponentType<T extends ComponentNames>(componentName: T | ComponentMap[T]): Constructor<ComponentMap[T]>
+    {
+        if (typeof componentName === 'object')
+        {
+            return componentName.constructor as any;
+        }
+
+        return Component._componentMap[componentName] as any;
+    }
 
     /**
      * 获取组件依赖列表

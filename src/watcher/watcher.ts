@@ -1,3 +1,8 @@
+/**
+ * 对象属性变化监视器。
+ *
+ * 能用getset时就不使用watch，及时为了代码美观也尽量在低频使用的地方使用。
+ */
 export class Watcher
 {
     /**
@@ -525,7 +530,9 @@ function isBaseType(object: any): boolean
         || typeof object === 'string'
         || typeof object === 'number'
     )
-    { return true; }
+    {
+        return true;
+    }
 
     return false;
 }

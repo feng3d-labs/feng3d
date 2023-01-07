@@ -134,11 +134,13 @@ export class MeshRenderer extends Renderer
         // 检测射线与边界的碰撞
         const rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.origin, localRay.direction, localNormal);
         if (rayEntryDistance === Number.MAX_VALUE)
-        { return null; }
+        {
+            return null;
+        }
 
         // 保存碰撞数据
         const pickingCollisionVO: PickingCollisionVO = {
-            node3d: this.node3d,
+            meshRenderer: this,
             localNormal,
             localRay,
             rayEntryDistance,

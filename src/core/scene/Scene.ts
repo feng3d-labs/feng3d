@@ -1,6 +1,5 @@
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
-import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
@@ -55,11 +54,6 @@ export class Scene extends Component3D
      * 用于处理某些脚本只在在feng3d引擎或者编辑器中运行的问题。例如 FPSController 默认只在feng3d中运行，在编辑器模式下不会运行。
      */
     runEnvironment = RunEnvironment.feng3d;
-
-    /**
-     * 鼠标射线，在渲染时被设置
-     */
-    mouseRay3D: Ray3;
 
     init()
     {

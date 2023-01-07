@@ -6,7 +6,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
@@ -39,7 +39,7 @@ declare global
  * 摄像机
  */
 @AddComponentMenu('Rendering/Camera')
-@RegisterComponent({ name: 'Camera' })
+@RegisterComponent({ name: 'Camera', single: true })
 @Serializable('Camera')
 export class Camera extends Component3D
 {
@@ -53,8 +53,6 @@ export class Camera extends Component3D
     // @oav({ component: "OAVEnum", componentParam: { enumClass: CameraClearFlags }, tooltip: `What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas.` })
     // @SerializeProperty()
     // clearFlags = CameraClearFlags.Skybox;
-
-    get single() { return true; }
 
     @oav({ component: 'OAVEnum', componentParam: { enumClass: Projection } })
     get projection()
