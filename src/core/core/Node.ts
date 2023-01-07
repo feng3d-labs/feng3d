@@ -1,7 +1,6 @@
-import { Component, ComponentMap, ComponentNames } from '../../ecs/Component';
+import { ComponentMap } from '../../ecs/Component';
 import { Entity, EntityEventMap } from '../../ecs/Entity';
 import { EventEmitter } from '../../event/EventEmitter';
-import { Constructor } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 export interface NodeEventMap extends EntityEventMap
@@ -379,7 +378,7 @@ export class Node extends Entity
      * @param includeInactive 是否包含不活跃组件。
      * @returns 匹配类型的组件（如果找到）。
      */
-    getComponentInChildren<K extends ComponentNames>(component: K, includeInactive = false): ComponentMap[K]
+    getComponentInChildren<K extends keyof ComponentMap>(component: K, includeInactive = false): ComponentMap[K]
     {
         const instance = this.getComponent(component);
         if (instance)
@@ -410,7 +409,7 @@ export class Node extends Entity
      * @param includeInactive 是否包含不活跃组件。
      * @returns 如果找到与类型匹配的组件，则返回一个组件。否则返回 null。
      */
-    getComponentInParent<K extends ComponentNames>(compnent: K, includeInactive = false): ComponentMap[K]
+    getComponentInParent<K extends keyof ComponentMap>(compnent: K, includeInactive = false): ComponentMap[K]
     {
         if (includeInactive || this.visible)
         {
@@ -443,7 +442,7 @@ export class Node extends Entity
      * @param results 列出接收找到的组件。
      * @returns 所有找到的组件。
      */
-    getComponentsInChildren<K extends ComponentNames>(component?: K, includeInactive = false, results: ComponentMap[K][] = []): ComponentMap[K][]
+    getComponentsInChildren<K extends keyof ComponentMap>(component?: K, includeInactive = false, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
         this.getComponents(component, results);
 
@@ -465,7 +464,7 @@ export class Node extends Entity
      * @param results 列出找到的组件。
      * @returns Container或其任何父级中指定的所有组件。
      */
-    getComponentsInParent<K extends ComponentNames>(component?: K, includeInactive = false, results: ComponentMap[K][] = []): ComponentMap[K][]
+    getComponentsInParent<K extends keyof ComponentMap>(component?: K, includeInactive = false, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
         if (includeInactive || this.visible)
         {

@@ -31,7 +31,7 @@ interface ComponentInfo
     /**
      * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
      */
-    dependencies: ComponentNames[];
+    dependencies: (keyof ComponentMap)[];
 }
 
 /**
@@ -58,7 +58,7 @@ export function RegisterComponent(component: {
     /**
      * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
      */
-    dependencies?: ComponentNames[]
+    dependencies?: (keyof ComponentMap)[]
 })
 {
     return (constructor: Constructor<Component>) =>
@@ -90,9 +90,6 @@ export const componentMap: ComponentMap = <any>{};
  * 组件名称与类定义映射，新建组件一般都需扩展该接口。
  */
 export interface ComponentMap extends MixinsComponentMap { Component: Component }
-
-export type ComponentNames = keyof ComponentMap;
-export type Components = ComponentMap[ComponentNames];
 
 /**
  * 组件
@@ -158,7 +155,7 @@ export class Component
      * @param type 组件类定义。
      * @returns 被添加的组件。
      */
-    addComponent<K extends ComponentNames>(type: K): ComponentMap[K]
+    addComponent<K extends keyof ComponentMap>(type: K): ComponentMap[K]
     {
         return this._entity.addComponent(type);
     }
@@ -171,7 +168,7 @@ export class Component
      * @param component 要检索的组件类型。
      * @returns 要检索的组件。
      */
-    getComponent<K extends ComponentNames>(component: K): ComponentMap[K]
+    getComponent<K extends keyof ComponentMap>(component: K): ComponentMap[K]
     {
         return this._entity.getComponent(component);
     }
@@ -183,7 +180,7 @@ export class Component
      * @param results 列出接收找到的组件。
      * @returns 实体中指定类型的所有组件。
      */
-    getComponents<K extends ComponentNames>(type: K, results: ComponentMap[K][] = []): ComponentMap[K][]
+    getComponents<K extends keyof ComponentMap>(type: K, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
         return this._entity.getComponents(type, results);
     }
@@ -235,7 +232,7 @@ export class Component
      *
      * @returns 对应组件构造函数。
      */
-    static getConstructor<T extends ComponentNames>(component: T | ComponentMap[T] | Constructor<ComponentMap[T]>): Constructor<ComponentMap[T]>
+    static getConstructor<T extends keyof ComponentMap>(component: T | ComponentMap[T] | Constructor<ComponentMap[T]>): Constructor<ComponentMap[T]>
     {
         if (typeof component === 'function')
         {
@@ -255,12 +252,12 @@ export class Component
      *
      * @param component 组件类定义
      */
-    static getDependencies<K extends ComponentNames>(component: K)
+    static getDependencies<K extends keyof ComponentMap>(component: K)
     {
         const Constructor = Component.getConstructor(component);
 
         let prototype = Constructor.prototype;
-        let dependencies: ComponentNames[] = [];
+        let dependencies: (keyof ComponentMap)[] = [];
         while (prototype)
         {
             dependencies = dependencies.concat((prototype[__component__] as ComponentInfo)?.dependencies || []);
@@ -275,7 +272,7 @@ export class Component
      *
      * @param component 组件类定义
      */
-    static isSingleComponent<K extends ComponentNames>(component: K | ComponentMap[K] | Constructor<ComponentMap[K]>)
+    static isSingleComponent<K extends keyof ComponentMap>(component: K | ComponentMap[K] | Constructor<ComponentMap[K]>)
     {
         const Constructor = Component.getConstructor(component);
 

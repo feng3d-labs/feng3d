@@ -3,7 +3,7 @@ import { oav } from '../objectview/ObjectView';
 import { Constructor, gPartial } from '../polyfill/Types';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { Component, ComponentMap, ComponentNames, Components } from './Component';
+import { Component, ComponentMap } from './Component';
 
 export interface EntityEventMap
 {
@@ -68,7 +68,7 @@ export class Entity
             this.addComponentAt(value[i], this.numComponents);
         }
     }
-    protected _components: Components[] = [];
+    protected _components: Component[] = [];
 
     /**
      * 子组件个数
@@ -90,7 +90,7 @@ export class Entity
      * @param Constructor 组件类定义。
      * @returns 被添加的组件。
      */
-    addComponent<K extends ComponentNames>(componentName: K, params?: gPartial<ComponentMap[K]>): ComponentMap[K]
+    addComponent<K extends keyof ComponentMap>(componentName: K, params?: gPartial<ComponentMap[K]>): ComponentMap[K]
     {
         let component = this.getComponent(componentName);
         if (component && Component.isSingleComponent(componentName))
@@ -122,7 +122,7 @@ export class Entity
      * @param componentName 要检索的组件类型。
      * @returns 要检索的组件。
      */
-    getComponent<K extends ComponentNames>(componentName: K): ComponentMap[K]
+    getComponent<K extends keyof ComponentMap>(componentName: K): ComponentMap[K]
     {
         const Constructor = Component.getConstructor(componentName);
 
@@ -145,7 +145,7 @@ export class Entity
      * @param results 列出接收找到的组件。
      * @returns Entity中指定类型的所有组件。
      */
-    getComponents<K extends ComponentNames>(component?: K, results: ComponentMap[K][] = []): ComponentMap[K][]
+    getComponents<K extends keyof ComponentMap>(component?: K, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
         const Constructor = Component.getConstructor(component);
 
@@ -178,7 +178,7 @@ export class Entity
      * @param component				子组件
      * @param index				位置索引
      */
-    setComponentIndex(component: Components, index: number): void
+    setComponentIndex(component: Component, index: number): void
     {
         console.assert(index >= 0 && index < this.numComponents, '给出索引超出范围');
 
@@ -194,7 +194,7 @@ export class Entity
      * @param component		被设置的组件
      * @param index			索引
      */
-    setComponentAt(component: Components, index: number)
+    setComponentAt(component: Component, index: number)
     {
         if (this._components[index])
         {
@@ -207,7 +207,7 @@ export class Entity
      * 移除组件
      * @param component 被移除组件
      */
-    removeComponent(component: Components): void
+    removeComponent(component: Component): void
     {
         console.assert(component.entity === this, '只能移除在容器中的组件');
 
@@ -220,7 +220,7 @@ export class Entity
      * @param component			查询的组件
      * @return				    组件在容器的索引位置
      */
-    getComponentIndex(component: Components): number
+    getComponentIndex(component: Component): number
     {
         console.assert(this._components.indexOf(component) !== -1, '组件不在容器中');
 
@@ -255,7 +255,7 @@ export class Entity
         console.assert(index1 >= 0 && index1 < this.numComponents, '第一个子组件的索引位置超出范围');
         console.assert(index2 >= 0 && index2 < this.numComponents, '第二个子组件的索引位置超出范围');
 
-        const temp: Components = this._components[index1];
+        const temp: Component = this._components[index1];
         this._components[index1] = this._components[index2];
         this._components[index2] = temp;
     }
@@ -265,7 +265,7 @@ export class Entity
      * @param a		第一个子组件
      * @param b		第二个子组件
      */
-    swapComponents(a: Components, b: Components): void
+    swapComponents(a: Component, b: Component): void
     {
         console.assert(a.entity === this, '第一个子组件不在容器中');
         console.assert(b.entity === this, '第二个子组件不在容器中');
@@ -277,7 +277,7 @@ export class Entity
      * 移除指定类型组件
      * @param component 组件类型
      */
-    removeComponentsByType<K extends ComponentNames>(component: K | Constructor<ComponentMap[K]>)
+    removeComponentsByType<K extends keyof ComponentMap>(component: K | Constructor<ComponentMap[K]>)
     {
         const Constructor = Component.getConstructor(component);
 
@@ -298,7 +298,7 @@ export class Entity
      * @param component		被添加的组件
      * @param index			插入的位置
      */
-    protected addComponentAt(component: Components, index: number): void
+    protected addComponentAt(component: Component, index: number): void
     {
         if (!component)
         {
@@ -318,14 +318,14 @@ export class Entity
         const single = Component.isSingleComponent(component);
         if (single)
         {
-            this.removeComponentsByType(<Constructor<Components>>component.constructor);
+            this.removeComponentsByType(component.constructor as any);
         }
 
         this._components.splice(index, 0, component);
         component.setEntity(this as any);
         component.init();
         // 派发添加组件事件
-        this.emitter.emit('addComponent', { component, entity: this as any }, true);
+        this.emitter.emit('addComponent', { component, entity: this }, true);
     }
 
     /**
