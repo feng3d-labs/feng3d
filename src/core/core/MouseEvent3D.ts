@@ -1,12 +1,10 @@
 import { IEvent } from '../../event/IEvent';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { Camera } from '../cameras/Camera';
 import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
-import { Scene } from '../scene/Scene';
 import { Component3D } from './Component3D';
 import { MeshRenderer } from './MeshRenderer';
 import { MouseInput } from './MouseInput';
-import { BeforeRenderEventData, View3D } from './View3D';
+import { BeforeRenderEventData } from './View3D';
 import { WindowMouseInput } from './WindowMouseInput';
 
 /**
@@ -81,10 +79,14 @@ export class MouseEvent3D extends Component3D
             }
         }
 
-        // 鼠标拾取渲染
-        const result = pick(view, scene, camera);
+        //
+        const mouseRay3D = view.getMouseRay3D(camera);
 
-        this._handlePickingCollisionVO(result);
+        const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
+        // 计算得到鼠标射线相交的物体
+        const pickingCollisionVO = rayCast(mouseRay3D, meshRenderers);
+
+        this._handlePickingCollisionVO(pickingCollisionVO);
     }
 
     private _selectedMeshRenderer: MeshRenderer;
@@ -248,20 +250,4 @@ export interface MouseEvent3DMap
      * 鼠标双击
      */
     dblclick: PickingCollisionVO
-}
-
-/**
- * 拾取
- * @param scene 场景
- * @param camera 摄像机
- */
-function pick(view: View3D, scene: Scene, camera: Camera)
-{
-    const mouseRay3D = view.getMouseRay3D(camera);
-
-    const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
-    // 计算得到鼠标射线相交的物体
-    const pickingCollisionVO = rayCast(mouseRay3D, meshRenderers);
-
-    return pickingCollisionVO;
 }
