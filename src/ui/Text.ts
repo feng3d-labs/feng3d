@@ -15,13 +15,10 @@ import { Node2D } from './core/Node2D';
 import { drawText } from './text/drawText';
 import { TextStyle } from './text/TextStyle';
 
+declare module '../ecs/Component' { interface ComponentMap { Text: Text; } }
+
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Text: Text;
-    }
-
     export interface MixinsPrimitiveNode2D
     {
         Text: Node2D;

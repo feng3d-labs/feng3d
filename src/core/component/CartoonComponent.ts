@@ -9,13 +9,16 @@ import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         CartoonComponent: CartoonComponent;
     }
+}
 
+declare global
+{
     export interface MixinsUniforms
     {
         u_diffuseSegment: Vector4;

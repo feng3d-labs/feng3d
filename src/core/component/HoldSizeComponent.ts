@@ -6,9 +6,9 @@ import { AddComponentMenu } from '../Menu';
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { Component3D } from '../core/Component3D';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         HoldSizeComponent: HoldSizeComponent;
     }

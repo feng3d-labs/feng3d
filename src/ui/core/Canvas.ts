@@ -10,13 +10,10 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Component2D } from './Component2D';
 
+declare module '../../ecs/Component' { interface ComponentMap { Canvas: Canvas } }
+
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Canvas: Canvas
-    }
-
     export interface MixinsPrimitiveNode3D
     {
         Canvas: Node3D;

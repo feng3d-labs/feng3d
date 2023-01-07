@@ -39,12 +39,10 @@ import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSh
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
 
+declare module '../ecs/Component' { interface ComponentMap { ParticleSystem: ParticleSystem } }
+
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        ParticleSystem: ParticleSystem
-    }
     export interface MixinsDefaultGeometry
     {
         'Billboard-Geometry': QuadGeometry;

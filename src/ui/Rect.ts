@@ -1,24 +1,19 @@
 import { Camera } from '../core/cameras/Camera';
-import { RegisterComponent, Component } from '../ecs/Component';
-import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
+import { Component, RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { CanvasRenderer } from './core/CanvasRenderer';
 import { Node2D } from './core/Node2D';
+
+declare module '../ecs/Component' { interface ComponentMap { Rect: Rect; } }
 
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Rect: Rect;
-    }
-
     export interface MixinsPrimitiveNode2D
     {
         Rect: Node2D;

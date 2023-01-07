@@ -4,9 +4,9 @@ import { Serializable } from '../../../serialization/Serializable';
 import { Component3D } from '../../core/Component3D';
 import { Node3D } from '../../core/Node3D';
 
-declare global
+declare module '../../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         SkeletonComponent: SkeletonComponent;
     }

@@ -69,9 +69,9 @@ export function rayCastAll(ray3D: Ray3, node3ds: Node3D[])
 {
     if (node3ds.length === 0) return [];
 
-    const pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3ds) =>
+    const pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3d) =>
     {
-        const model = node3ds.getComponent('Renderer');
+        const model = node3d.getComponent('MeshRenderer');
         const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
         if (pickingCollisionVO) pv.push(pickingCollisionVO);
 

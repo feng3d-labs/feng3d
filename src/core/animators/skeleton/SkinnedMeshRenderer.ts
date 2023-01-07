@@ -7,9 +7,9 @@ import { Component3D } from '../../core/Component3D';
 import { HideFlags } from '../../core/HideFlags';
 import { Scene } from '../../scene/Scene';
 
-declare global
+declare module '../../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         SkinnedMeshRenderer: SkinnedMeshRenderer
     }

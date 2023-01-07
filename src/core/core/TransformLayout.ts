@@ -28,7 +28,11 @@ declare global
         pivotChanged: TransformLayout;
     }
 
-    export interface MixinsComponentMap
+}
+
+declare module '../../ecs/Component'
+{
+    interface ComponentMap
     {
         TransformLayout: TransformLayout;
     }

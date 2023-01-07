@@ -8,9 +8,9 @@ import { Component3D } from '../core/Component3D';
 import { AddComponentMenu } from '../Menu';
 import { audioCtx, globalGain } from './AudioListener';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         AudioSource: AudioSource;
     }

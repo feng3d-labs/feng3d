@@ -6,13 +6,10 @@ import { Component, RegisterComponent } from '../ecs/Component';
 import { Serializable } from '../serialization/Serializable';
 import { TerrainData } from './TerrainData';
 
+declare module '../ecs/Component' { interface ComponentMap { Terrain: Terrain } }
+
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Terrain: Terrain
-    }
-
     export interface MixinsPrimitiveNode3D
     {
         Terrain: Node3D;

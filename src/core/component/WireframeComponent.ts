@@ -3,9 +3,9 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { RegisterComponent, Component } from '../../ecs/Component';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         WireframeComponent: WireframeComponent;
     }

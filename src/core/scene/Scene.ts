@@ -19,8 +19,11 @@ declare global
         removeFromScene: Node3D;
         addComponentToScene: Component;
     }
+}
 
-    export interface MixinsComponentMap { Scene: Scene; }
+declare module '../../ecs/Component'
+{
+    interface ComponentMap { Scene: Scene; }
 }
 
 /**

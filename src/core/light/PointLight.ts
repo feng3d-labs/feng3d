@@ -9,13 +9,16 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         PointLight: PointLight;
     }
+}
 
+declare global
+{
     export interface MixinsPrimitiveNode3D
     {
         'Point Light': Node3D;

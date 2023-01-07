@@ -18,12 +18,9 @@ import { FrameBufferObject } from '../render/FrameBufferObject';
 import { Scene } from '../scene/Scene';
 import { WaterUniforms } from './WaterMaterial';
 
+declare module '../../ecs/Component' { interface ComponentMap { Water: Water } }
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Water: Water
-    }
     export interface MixinsPrimitiveNode3D
     {
         Water: Node3D;

@@ -16,9 +16,9 @@ import { Scene } from '../scene/Scene';
 import { TransformUtils } from '../utils/TransformUtils';
 import { Renderer } from './Renderer';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap { MeshRenderer: MeshRenderer }
+    interface ComponentMap { MeshRenderer: MeshRenderer }
 }
 
 /**

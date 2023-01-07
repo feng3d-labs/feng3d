@@ -70,8 +70,11 @@ declare global
          */
         dblclick: PickingCollisionVO
     }
+}
 
-    export interface MixinsComponentMap { MouseEvent3D: MouseEvent3D; }
+declare module '../../ecs/Component'
+{
+    interface ComponentMap { MouseEvent3D: MouseEvent3D; }
 }
 
 /**

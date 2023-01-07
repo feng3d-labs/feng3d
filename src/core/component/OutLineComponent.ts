@@ -8,13 +8,16 @@ import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { RegisterComponent, Component } from '../../ecs/Component';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         OutLineComponent: OutLineComponent;
     }
+}
 
+declare global
+{
     export interface MixinsUniforms
     {
         /**

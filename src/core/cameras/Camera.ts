@@ -17,16 +17,19 @@ import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
 import { Projection } from './Projection';
 
+declare module '../../ecs/Component'
+{
+    interface ComponentMap
+    {
+        Camera: Camera;
+    }
+}
+
 declare global
 {
     export interface MixinsNode3DEventMap
     {
         lensChanged;
-    }
-
-    export interface MixinsComponentMap
-    {
-        Camera: Camera;
     }
 
     export interface MixinsPrimitiveNode3D

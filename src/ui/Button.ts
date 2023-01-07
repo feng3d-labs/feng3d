@@ -9,13 +9,10 @@ import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 
+declare module '../ecs/Component' { interface ComponentMap { Button: Button; } }
+
 declare global
 {
-    export interface MixinsComponentMap
-    {
-        Button: Button;
-    }
-
     export interface MixinsPrimitiveNode2D
     {
         Button: Node2D;

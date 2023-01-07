@@ -5,7 +5,7 @@ declare global
     /**
      * 组件映射
      */
-    interface MixinsComponentMap
+    interface ComponentMap
     {
         CustomComponent: CustomComponent
     }

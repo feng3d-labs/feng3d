@@ -13,12 +13,16 @@ import { Scene } from '../scene/Scene';
 import { Light } from './Light';
 import { LightType } from './LightType';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         DirectionalLight: DirectionalLight;
     }
+}
+
+declare global
+{
 
     export interface MixinsPrimitiveNode3D
     {
