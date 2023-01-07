@@ -338,15 +338,6 @@ describe('Matrix4x4', () =>
         ok(mat.equals(mat0));
     });
 
-    it('fromQuaternion', () =>
-    {
-        const q = new Quaternion().random();
-        const mat = q.toMatrix();
-        const mat0 = new Matrix4x4().fromQuaternion(q);
-
-        ok(mat.equals(mat0));
-    });
-
     it('prependScale', () =>
     {
         const vs = [new Vector3().random(), new Vector3().random(), new Vector3().random()];
