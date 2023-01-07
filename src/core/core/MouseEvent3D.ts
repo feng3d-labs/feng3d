@@ -1,65 +1,87 @@
-import { EventEmitter } from '../../event/EventEmitter';
 import { IEvent } from '../../event/IEvent';
-import { Rectangle } from '../../math/geom/Rectangle';
-import { Lazy, lazy } from '../../polyfill/Types';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { rayCast } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
+import { Component3D } from './Component3D';
 import { MeshRenderer } from './MeshRenderer';
+import { MouseInput } from './MouseInput';
 import { Node3D } from './Node3D';
-import { View3D } from './View3D';
+import { BeforeRenderEventData, View3D } from './View3D';
+import { WindowMouseInput } from './WindowMouseInput';
 
 /**
- * 鼠标事件管理
+ * 3D结点鼠标事件组件。
+ *
+ * 在 View3D 所在或者子结点中添加该组件，View3D下的3D结点将响应鼠标事件。
  */
-export class Mouse3DManager
+export class MouseEvent3D extends Component3D
 {
-    mouseInput: MouseInput;
-
-    get selectedObject3D()
-    {
-        return this._selectedObject3D;
-    }
-    set selectedObject3D(v)
-    {
-        this.setSelectedObject3D(v);
-    }
-
     /**
-     * 视窗，鼠标在该矩形内时为有效事件
+     * 鼠标事件输入器。
      */
-    viewport: Lazy<Rectangle>;
-
-    /**
-     * 拾取
-     * @param scene 场景
-     * @param _camera 摄像机
-     */
-    pick(view: View3D, scene: Scene, _camera: Camera)
+    private get mouseInput()
     {
-        if (this._mouseEventTypes.length === 0) return;
+        return this._mouseInput;
+    }
+    private set mouseInput(v)
+    {
+        if (this._mouseInput)
+        {
+            mouseEventTypes.forEach((element) =>
+            {
+                this._mouseInput.off(element, this.onMouseEvent, this);
+            });
+        }
+        this._mouseInput = v;
+        if (this._mouseInput)
+        {
+            mouseEventTypes.forEach((element) =>
+            {
+                this._mouseInput.on(element, this.onMouseEvent, this);
+            });
+        }
+    }
+    private _mouseInput: MouseInput;
 
-        const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
-        // 计算得到鼠标射线相交的物体
-        const pickingCollisionVO = rayCast(view.mouseRay3D, meshRenderers);
+    init(): void
+    {
+        this.mouseInput = new WindowMouseInput();
 
-        const node3d = pickingCollisionVO && pickingCollisionVO.node3d;
-
-        return node3d;
+        this.emitter.on('beforeRender', this._onBeforeRender, this);
     }
 
-    constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
+    dispose(): void
     {
-        watcher.watch(this as Mouse3DManager, 'mouseInput', this._mouseInputChanged, this);
-        //
-        this.mouseInput = mouseInput;
-        this.viewport = viewport;
+        this.emitter.off('beforeRender', this._onBeforeRender, this);
+
+        super.dispose();
+    }
+
+    private _onBeforeRender(event: IEvent<BeforeRenderEventData>)
+    {
+        const { view, scene, camera } = event.data;
+
+        const viewport = view.viewRect;
+
+        if (viewport)
+        {
+            if (!viewport.contains(windowEventProxy.clientX, windowEventProxy.clientY))
+            {
+                this.setSelectedObject3D(null);
+
+                return;
+            }
+        }
+
+        // 鼠标拾取渲染
+        const result = pick(view, scene, camera);
+
+        this.setSelectedObject3D(result);
     }
 
     private _selectedObject3D: Node3D;
-    private _mouseEventTypes: string[] = [];
+    private _mouseEventTypes = new Set<string>();
 
     /**
      * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
@@ -70,43 +92,12 @@ export class Mouse3DManager
      */
     private object3DClickNum: number;
 
-    private _mouseInputChanged(newValue: MouseInput, oldValue: MouseInput)
-    {
-        if (oldValue)
-        {
-            mouseEventTypes.forEach((element) =>
-            {
-                oldValue.off(element, this.onMouseEvent, this);
-            });
-        }
-        if (newValue)
-        {
-            mouseEventTypes.forEach((element) =>
-            {
-                newValue.on(element, this.onMouseEvent, this);
-            });
-        }
-    }
-
-    private dispatch(type)
-    {
-        if (this.viewport)
-        {
-            const bound = lazy.getValue(this.viewport);
-            if (!bound.contains(windowEventProxy.clientX, windowEventProxy.clientY))
-            { return; }
-        }
-
-        if (this._mouseEventTypes.indexOf(type) === -1)
-        { this._mouseEventTypes.push(type); }
-    }
-
     /**
      * 监听鼠标事件收集事件类型
      */
     private onMouseEvent(event: IEvent<any>)
     {
-        this.dispatch(event.type);
+        this._mouseEventTypes.add(event.type);
     }
 
     /**
@@ -166,61 +157,7 @@ export class Mouse3DManager
                     break;
             }
         });
-        this._mouseEventTypes.length = 0;
-    }
-}
-
-/**
- * 鼠标事件输入
- */
-export class MouseInput<T = MouseEventMap> extends EventEmitter<T>
-{
-    /**
-     * 是否启动
-     */
-    enable = true;
-
-    /**
-     * 是否捕获鼠标移动
-     */
-    catchMouseMove = false;
-
-    /**
-     * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-     * @param type                      事件的类型。类型区分大小写。
-     * @param data                      事件携带的自定义数据。
-     * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-     */
-    emit<K extends keyof T & string>(type: K, data?: T[K], bubbles = false)
-    {
-        if (!this.enable)
-        {
-            return null;
-        }
-        if (!this.catchMouseMove && type === 'mousemove')
-        {
-            return null;
-        }
-
-        return super.emit(type, data, bubbles);
-    }
-
-    /**
-     * 派发事件
-     * @param event   事件对象
-     */
-    emitEvent<K extends keyof T & string>(event: IEvent<T[K]>)
-    {
-        if (!this.enable)
-        {
-            return event;
-        }
-        if (!this.catchMouseMove && event.type === 'mousemove')
-        {
-            return event;
-        }
-
-        return super.emitEvent(event);
+        this._mouseEventTypes.clear();
     }
 }
 
@@ -243,41 +180,6 @@ const mouseEventTypes: (keyof MouseEventMap)[]
         'rightclick',
         'dblclick',
     ];
-
-/**
- * Window鼠标事件输入
- */
-export class WindowMouseInput extends MouseInput
-{
-    constructor()
-    {
-        super();
-        windowEventProxy.on('click', this.onMouseEvent, this);
-        windowEventProxy.on('dblclick', this.onMouseEvent, this);
-        windowEventProxy.on('mousedown', this.onMouseEvent, this);
-        windowEventProxy.on('mouseup', this.onMouseEvent, this);
-        windowEventProxy.on('mousemove', this.onMouseEvent, this);
-    }
-
-    /**
-     * 监听鼠标事件收集事件类型
-     */
-    private onMouseEvent(event: IEvent<MouseEvent>)
-    {
-        const mouseEvent = event.data;
-        let type = mouseEvent.type;
-        // 处理鼠标中键与右键
-        if (mouseEvent instanceof MouseEvent)
-        {
-            if (['click', 'mousedown', 'mouseup'].indexOf(mouseEvent.type) !== -1)
-            {
-                type = ['', 'middle', 'right'][mouseEvent.button] + mouseEvent.type;
-            }
-        }
-
-        this.emit(<any>type, { mouseX: mouseEvent.clientX, mouseY: mouseEvent.clientY });
-    }
-}
 
 export interface MouseEventMap
 {
@@ -333,4 +235,24 @@ export interface MouseEventMap
      * 鼠标双击
      */
     dblclick: { clientX: number, clientY: number }
+}
+
+/**
+ * 拾取
+ * @param scene 场景
+ * @param camera 摄像机
+ */
+function pick(view: View3D, scene: Scene, camera: Camera)
+{
+    if (this._mouseEventTypes.size === 0) return;
+
+    const mouseRay3D = view.getMouseRay3D(camera);
+
+    const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
+    // 计算得到鼠标射线相交的物体
+    const pickingCollisionVO = rayCast(mouseRay3D, meshRenderers);
+
+    const node3d = pickingCollisionVO && pickingCollisionVO.node3d;
+
+    return node3d;
 }

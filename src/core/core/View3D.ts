@@ -1,4 +1,3 @@
-import { Ray3 } from '../../math/geom/Ray3';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -13,7 +12,6 @@ import { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Component3D } from './Component3D';
-import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Node3D } from './Node3D';
 import { Renderer } from './Renderer';
 
@@ -23,6 +21,47 @@ declare global
     {
         gl: WebGLRenderer;
     }
+
+    export interface MixinsNode3DEventMap
+    {
+        /**
+         * 渲染前事件，将在每次渲染前进行派发。
+         *
+         * 组件可以监听该事件，在渲染前更新渲染所需数据等。
+         */
+        beforeRender: BeforeRenderEventData;
+
+        /**
+         * 渲染后事件，将在每次渲染结束后进行派发。
+         */
+        afterRender: AfterRenderEventData;
+    }
+}
+
+/**
+ * 渲染后事件数据
+ */
+export interface AfterRenderEventData extends BeforeRenderEventData { }
+
+/**
+ * 渲染前事件数据
+ */
+export interface BeforeRenderEventData
+{
+    /**
+     *
+     */
+    view: View3D;
+
+    /**
+     * 渲染时将使用的摄像机。
+     */
+    camera: Camera;
+
+    /**
+     * 将被渲染的3D场景。
+     */
+    scene: Scene;
 }
 
 /**
@@ -78,11 +117,6 @@ export class View3D extends Component3D
     viewRect = new Rectangle();
 
     /**
-     * 鼠标事件管理
-     */
-    mouse3DManager: Mouse3DManager;
-
-    /**
      * 构建3D视图
      * @param canvas    画布
      * @param scene     3D场景
@@ -114,8 +148,6 @@ export class View3D extends Component3D
         this.camera = camera;
 
         this.start();
-
-        this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(), () => this.viewRect);
     }
 
     init(): void
@@ -138,46 +170,12 @@ export class View3D extends Component3D
 
     start()
     {
-        ticker.onFrame(this.update, this);
+        ticker.onFrame(this.render, this);
     }
 
     stop()
     {
-        ticker.offFrame(this.update, this);
-    }
-
-    update(interval?: number)
-    {
-        this.render(interval);
-        this.mouse3DManager.selectedObject3D = this.selectedObject;
-    }
-
-    /**
-     * 获取渲染时将使用的摄像机。
-     */
-    private getRenderCamera()
-    {
-        let camera = this.camera;
-        if (!camera)
-        {
-            camera = this.getComponentInChildren(Camera);
-        }
-
-        return camera;
-    }
-
-    /**
-     * 获取将被渲染的3D场景。
-     */
-    private getRenderScene()
-    {
-        let scene = this.scene;
-        if (!scene)
-        {
-            scene = this.getComponentInChildren(Scene);
-        }
-
-        return scene;
+        ticker.offFrame(this.render, this);
     }
 
     /**
@@ -185,24 +183,33 @@ export class View3D extends Component3D
      */
     render(interval?: number)
     {
-        const camera = this.getRenderCamera();
+        let camera = this.camera;
         if (!camera)
         {
-            console.warn(`无法从自身与子结点中获取到 Camera 组件，无法渲染！`);
+            camera = this.getComponentInChildren(Camera);
+            if (!camera)
+            {
+                console.warn(`无法从自身与子结点中获取到 Camera 组件，无法渲染！`);
 
-            return null;
+                return;
+            }
         }
-        const scene = this.getRenderScene();
+        let scene = this.scene;
         if (!scene)
         {
-            console.warn(`无法从自身与子结点中获取到 Scene 组件，无法渲染！`);
+            scene = this.getComponentInChildren(Scene);
+            if (!scene)
+            {
+                console.warn(`无法从自身与子结点中获取到 Scene 组件，无法渲染！`);
 
-            return null;
+                return;
+            }
         }
 
-        // scene.update(interval);
+        //
+        this.emitter.emit('beforeRender', { view: this, camera, scene }, true, true);
 
-        const { canvas, viewRect, mousePos, mouseRay3D, webGLRenderer, mouse3DManager } = this;
+        const { canvas, viewRect, mousePos, webGLRenderer } = this;
         const gl = this.webGLRenderer.gl;
 
         canvas.width = canvas.clientWidth;
@@ -221,11 +228,6 @@ export class View3D extends Component3D
 
         camera.lens.aspect = viewRect.width / viewRect.height;
 
-        // 设置鼠标射线
-        this.calcMouseRay3D();
-
-        scene.mouseRay3D = mouseRay3D;
-
         // 默认渲染
         gl.colorMask(true, true, true, true);
         gl.clearColor(scene.background.r, scene.background.g, scene.background.b, scene.background.a);
@@ -234,8 +236,6 @@ export class View3D extends Component3D
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
-        // 鼠标拾取渲染
-        this.selectedObject = mouse3DManager.pick(this, scene, camera);
         // 绘制阴影图
         shadowRenderer.draw(webGLRenderer, scene, camera);
         skyboxRenderer.draw(webGLRenderer, scene, camera);
@@ -243,6 +243,9 @@ export class View3D extends Component3D
         forwardRenderer.draw(webGLRenderer, scene, camera);
         outlineRenderer.draw(webGLRenderer, scene, camera);
         wireframeRenderer.draw(webGLRenderer, scene, camera);
+
+        // 派发渲染后事件
+        this.emitter.emit('afterRender', { view: this, camera, scene }, true, true);
     }
 
     /**
@@ -304,14 +307,13 @@ export class View3D extends Component3D
     /**
      * 获取鼠标射线（与鼠标重叠的摄像机射线）
      */
-    mouseRay3D: Ray3;
-
-    private calcMouseRay3D()
+    getMouseRay3D(camera: Camera)
     {
         const gpuPos = this.screenToGpuPosition(this.mousePos);
-        const camera = this.getRenderCamera();
 
-        this.mouseRay3D = camera.getRay3D(gpuPos.x, gpuPos.y);
+        const ray = camera.getRay3D(gpuPos.x, gpuPos.y);
+
+        return ray;
     }
 
     /**
@@ -359,8 +361,6 @@ export class View3D extends Component3D
 
         return node3ds;
     }
-
-    protected selectedObject: Node3D;
 }
 
 // var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };

@@ -19,7 +19,7 @@ import { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { HideFlags } from './HideFlags';
 import { MeshRenderer } from './MeshRenderer';
-import { MouseEventMap } from './Mouse3DManager';
+import { MouseEventMap } from './MouseEvent3D';
 import { Node, NodeEventMap } from './Node';
 
 declare global
