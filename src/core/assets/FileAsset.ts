@@ -8,14 +8,6 @@ import { AssetType } from './AssetType';
 import { FolderAsset } from './FolderAsset';
 import { ReadWriteRS } from './rs/ReadWriteRS';
 
-declare global
-{
-    interface MixinsAssetTypeClassMap
-    {
-
-    }
-}
-
 export function getAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K)
 {
     return assetTypeClassMap[type];
@@ -26,7 +18,7 @@ export function setAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K, cl
     assetTypeClassMap[type] = cls;
 }
 
-export interface AssetTypeClassMap extends MixinsAssetTypeClassMap
+export interface AssetTypeClassMap
 {
 }
 

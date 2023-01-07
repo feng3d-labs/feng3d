@@ -5,9 +5,9 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { ObjectAsset } from '../ObjectAsset';
 
-declare global
+declare module '../../core/assets/FileAsset'
 {
-    export interface MixinsAssetTypeClassMap
+    interface AssetTypeClassMap
     {
         'texturecube': new () => TextureCubeAsset;
     }
