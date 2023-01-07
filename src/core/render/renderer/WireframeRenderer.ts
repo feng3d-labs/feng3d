@@ -49,7 +49,7 @@ export class WireframeRenderer
             {
                 if (frustum.intersectsBox(cv.selfWorldBounds))
                 {
-                    if (!cv.material.renderParams.enableBlend)
+                    if (!cv.useMaterial.renderParams.enableBlend)
                     {
                         pv.push(cv);
                     }

@@ -7,11 +7,10 @@ import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { Geometry, Geometrys } from '../geometry/Geometry';
+import { Geometry, GeometryMap } from '../geometry/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
-import { Material, Materials } from '../materials/Material';
+import { Material, MaterialMap } from '../materials/Material';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
 import { TransformUtils } from '../utils/TransformUtils';
@@ -36,14 +35,31 @@ export class MeshRenderer extends Renderer
      */
     @oav({ component: 'OAVPick', tooltip: '几何体，提供模型以形状', componentParam: { accepttype: 'geometry', datatype: 'geometry' } })
     @SerializeProperty()
-    geometry: Geometrys = Geometry.getDefault('Cube');
+    get geometry()
+    {
+        return this._geometry;
+    }
+    set geometry(v)
+    {
+        if (this._geometry)
+        {
+            this._geometry.off('boundsInvalid', this._onBoundsInvalid, this);
+        }
+        this._geometry = v;
+        if (this._geometry)
+        {
+            this._geometry.on('boundsInvalid', this._onBoundsInvalid, this);
+        }
+        this._onBoundsInvalid();
+    }
+    private _geometry: GeometryMap[keyof GeometryMap];
 
     /**
      * 材质
      */
     @oav({ component: 'OAVPick', tooltip: '材质，提供模型以皮肤', componentParam: { accepttype: 'material', datatype: 'material' } })
     @SerializeProperty()
-    material: Materials = Material.getDefault('Default-Material');
+    material: MaterialMap[keyof MaterialMap];
 
     /**
      * 是否投射阴影
@@ -59,14 +75,32 @@ export class MeshRenderer extends Renderer
     @SerializeProperty()
     receiveShadows = true;
 
+    /**
+     * 当前渲染使用的几何体。
+     */
+    get useGeometry()
+    {
+        const geometry = this.geometry || Geometry.getDefault('Cube');
+
+        return geometry;
+    }
+
+    /**
+     * 当前渲染使用的材质。
+     */
+    get useMaterial()
+    {
+        const material = this.material || Material.getDefault('Default-Material');
+
+        return material;
+    }
+
     //
     private _lightPicker: LightPicker;
 
     constructor()
     {
         super();
-        watcher.watch(this as MeshRenderer, 'geometry', this._onGeometryChanged, this);
-
         this._lightPicker = new LightPicker(this);
     }
 
@@ -89,9 +123,13 @@ export class MeshRenderer extends Renderer
      */
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
+        const geometry = this.useGeometry;
+        const material = this.useMaterial;
+
         //
-        this.geometry.beforeRender(renderAtomic);
-        this.material.beforeRender(renderAtomic);
+        geometry.beforeRender(renderAtomic);
+        material.beforeRender(renderAtomic);
+
         this._lightPicker.beforeRender(renderAtomic);
 
         //
@@ -178,20 +216,6 @@ export class MeshRenderer extends Renderer
         this.geometry = <any>null;
         this.material = <any>null;
         super.dispose();
-    }
-
-    private _onGeometryChanged(value: Geometrys, oldValue: Geometrys)
-    {
-        if (oldValue)
-        {
-            oldValue.off('boundsInvalid', this._onBoundsInvalid, this);
-        }
-        if (value)
-        {
-            value.on('boundsInvalid', this._onBoundsInvalid, this);
-        }
-        this.geometry = this.geometry || Geometry.getDefault('Cube');
-        this._onBoundsInvalid();
     }
 
     protected _updateBounds()

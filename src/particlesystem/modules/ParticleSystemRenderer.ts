@@ -1,4 +1,4 @@
-import { Geometrys } from '../../core/geometry/Geometry';
+import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Serializable } from '../../serialization/Serializable';
@@ -67,7 +67,7 @@ export class ParticleSystemRenderer extends ParticleModule
     /**
      * The Mesh that the particle uses instead of a billboarded Texture.
      */
-    mesh: Geometrys;
+    mesh: Geometry;
 
     /**
      * The number of Meshes the system uses for particle rendering.

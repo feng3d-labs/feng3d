@@ -181,8 +181,8 @@ export class ShadowRenderer
         // 获取影响阴影图的渲染对象
         const models = scene.getComponentsInChildren('MeshRenderer').filter((model) => (
             (model.castShadows || model.receiveShadows)
-            && !model.material.renderParams.enableBlend
-            && model.material.renderParams.renderMode === 'TRIANGLES'));
+            && !model.useMaterial.renderParams.enableBlend
+            && model.useMaterial.renderParams.renderMode === 'TRIANGLES'));
 
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);

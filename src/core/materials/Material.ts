@@ -4,7 +4,7 @@ import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { RenderParams } from '../../renderer/data/RenderParams';
 import { Shader } from '../../renderer/data/Shader';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetData } from '../core/AssetData';
 import { Texture2D } from '../textures/Texture2D';
@@ -23,8 +23,6 @@ declare global
 }
 
 export interface MaterialMap extends MixinsMaterialMap { }
-export type MaterialNames = keyof MaterialMap;
-export type Materials = MaterialMap[keyof MaterialMap];
 
 /**
  * 材质

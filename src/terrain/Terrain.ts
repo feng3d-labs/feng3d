@@ -1,4 +1,3 @@
-import { MeshRenderer } from '../core/core/MeshRenderer';
 import { Node3D } from '../core/core/Node3D';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
@@ -35,8 +34,6 @@ export class Terrain extends Component
      */
     assign: TerrainData;
 
-    private meshRenderer: MeshRenderer;
-
     constructor()
     {
         super();
@@ -44,14 +41,17 @@ export class Terrain extends Component
 
     init(): void
     {
-        this.meshRenderer = this.getComponent('MeshRenderer');
-        this.meshRenderer.material = Material.getDefault('Terrain-Material');
-        this.meshRenderer.geometry = Geometry.getDefault('Terrain-Geometry');
+        const meshRenderer = this.getComponent('MeshRenderer');
+        meshRenderer.material = Material.getDefault('Terrain-Material');
+        meshRenderer.geometry = Geometry.getDefault('Terrain-Geometry');
     }
 
     dispose(): void
     {
-        this.meshRenderer = null;
+        const meshRenderer = this.getComponent('MeshRenderer');
+        meshRenderer.geometry = null;
+        meshRenderer.material = null;
+
         super.dispose();
     }
 }

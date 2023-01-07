@@ -8,7 +8,6 @@ import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { UIGeometry } from './UIGeometry';
 
 declare global
 {
@@ -22,14 +21,17 @@ declare global
  * 可在画布上渲染组件，使得拥有该组件的Object3D可以在画布上渲染。
  */
 @AddComponentMenu('Rendering/CanvasRenderer')
-@RegisterComponent({ name: 'CanvasRenderer', dependencies: ['MeshRenderer'] })
+@RegisterComponent({ name: 'CanvasRenderer' })
 @Serializable('CanvasRenderer')
 export class CanvasRenderer extends MeshRenderer
 {
-    geometry: UIGeometry = Geometry.getDefault('Default-UIGeometry');
-
     @oav()
     material = Material.getDefault('Default-UIMaterial');
+
+    init()
+    {
+        this.geometry = Geometry.getDefault('Default-UIGeometry');
+    }
 
     /**
      * 与世界空间射线相交
