@@ -1,4 +1,3 @@
-import { MeshRenderer } from '../core/core/MeshRenderer';
 import { Node3D } from '../core/core/Node3D';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
@@ -24,7 +23,7 @@ declare global
  * The Terrain component renders the terrain.
  */
 // @ov({ component: "OVTerrain" })
-@RegisterComponent({ name: 'Terrain', dependencies: [MeshRenderer] })
+@RegisterComponent({ name: 'Terrain', dependencies: ['MeshRenderer'] })
 @Serializable('Terrain')
 export class Terrain extends Component
 {
@@ -35,8 +34,6 @@ export class Terrain extends Component
      */
     assign: TerrainData;
 
-    private meshRenderer: MeshRenderer;
-
     constructor()
     {
         super();
@@ -44,21 +41,24 @@ export class Terrain extends Component
 
     init(): void
     {
-        this.meshRenderer = this.getComponent(MeshRenderer);
-        this.meshRenderer.material = Material.getDefault('Terrain-Material');
-        this.meshRenderer.geometry = Geometry.getDefault('Terrain-Geometry');
+        const meshRenderer = this.getComponent('MeshRenderer');
+        meshRenderer.material = Material.getDefault('Terrain-Material');
+        meshRenderer.geometry = Geometry.getDefault('Terrain-Geometry');
     }
 
     dispose(): void
     {
-        this.meshRenderer = null;
+        const meshRenderer = this.getComponent('MeshRenderer');
+        meshRenderer.geometry = null;
+        meshRenderer.material = null;
+
         super.dispose();
     }
 }
 
 Node3D.registerPrimitive('Terrain', (g) =>
 {
-    g.addComponent(Terrain);
+    g.addComponent('Terrain');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

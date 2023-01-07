@@ -1,5 +1,5 @@
+import { Component, ComponentMap } from '../ecs/Component';
 import { Constructor } from '../polyfill/Types';
-import { Components, ComponentNames } from '../ecs/Component';
 
 /**
  * 添加组件菜单
@@ -11,7 +11,7 @@ import { Components, ComponentNames } from '../ecs/Component';
  */
 export function AddComponentMenu(path: string, componentOrder = 0)
 {
-    return (target: Constructor<Components>) =>
+    return (target: Constructor<Component>) =>
     {
         if (!menuConfig.component) menuConfig.component = [];
         menuConfig.component.push({ path, order: componentOrder, type: target.name as any });
@@ -58,5 +58,5 @@ export interface ComponentMenu
     /**
      * 组件类定义
      */
-    type: ComponentNames;
+    type: keyof ComponentMap;
 }

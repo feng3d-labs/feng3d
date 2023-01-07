@@ -1,9 +1,9 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
-import { RegisterComponent } from '../../ecs/Component';
 import { Node3D } from '../core/Node3D';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
@@ -93,7 +93,7 @@ export class SpotLight extends Light
 
 Node3D.registerPrimitive('Spot Light', (g) =>
 {
-    g.addComponent(SpotLight);
+    g.addComponent('SpotLight');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

@@ -13,7 +13,7 @@ import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 
@@ -162,10 +162,10 @@ export class Node2D extends Node
         watcher.watch(this as Node2D, 'transformLayout', this._onTransformLayoutChanged, this);
 
         // 处理依赖组件
-        let transformLayout = this.getComponent(TransformLayout);
+        let transformLayout = this.getComponent('TransformLayout');
         if (!transformLayout)
         {
-            transformLayout = this.addComponent(TransformLayout);
+            transformLayout = this.addComponent('TransformLayout');
         }
         this.transformLayout = transformLayout;
 

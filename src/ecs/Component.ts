@@ -31,7 +31,7 @@ interface ComponentInfo
     /**
      * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
      */
-    dependencies: Constructor<Component>[];
+    dependencies: (keyof ComponentMap)[];
 }
 
 /**
@@ -58,7 +58,7 @@ export function RegisterComponent(component: {
     /**
      * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
      */
-    dependencies?: Constructor<Component>[]
+    dependencies?: (keyof ComponentMap)[]
 })
 {
     return (constructor: Constructor<Component>) =>
@@ -90,9 +90,6 @@ export const componentMap: ComponentMap = <any>{};
  * 组件名称与类定义映射，新建组件一般都需扩展该接口。
  */
 export interface ComponentMap extends MixinsComponentMap { Component: Component }
-
-export type ComponentNames = keyof ComponentMap;
-export type Components = ComponentMap[ComponentNames];
 
 /**
  * 组件
@@ -158,7 +155,7 @@ export class Component
      * @param type 组件类定义。
      * @returns 被添加的组件。
      */
-    addComponent<T extends Component>(type: Constructor<T>): T
+    addComponent<K extends keyof ComponentMap>(type: K): ComponentMap[K]
     {
         return this._entity.addComponent(type);
     }
@@ -168,12 +165,12 @@ export class Component
      *
      * 使用 Entity.GetComponent 将返回找到的第一个组件。如果您希望有多个相同类型的组件，请改用 Entity.GetComponents，并循环通过返回的组件测试某些唯一属性。
      *
-     * @param type 要检索的组件类型。
+     * @param component 要检索的组件类型。
      * @returns 要检索的组件。
      */
-    getComponent<T extends Component>(type: Constructor<T>): T
+    getComponent<K extends keyof ComponentMap>(component: K): ComponentMap[K]
     {
-        return this._entity.getComponent(type);
+        return this._entity.getComponent(component);
     }
 
     /**
@@ -183,7 +180,7 @@ export class Component
      * @param results 列出接收找到的组件。
      * @returns 实体中指定类型的所有组件。
      */
-    getComponents<T extends Component>(type: Constructor<T>, results: T[] = []): T[]
+    getComponents<K extends keyof ComponentMap>(type: K, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
         return this._entity.getComponents(type, results);
     }
@@ -229,30 +226,38 @@ export class Component
     static _componentMap: { [name: string]: Constructor<Component> } = {};
 
     /**
-     * 通过组件名称获取构造函数。
+     * 通过组件构造函数。
      *
-     * @param componentName 组件名称。
+     * @param component 组件名称，示例甚至构造函数。
+     *
      * @returns 对应组件构造函数。
      */
-    static getComponentType<T extends ComponentNames>(componentName: T | ComponentMap[T]): Constructor<ComponentMap[T]>
+    static getConstructor<T extends keyof ComponentMap>(component: T | ComponentMap[T] | Constructor<ComponentMap[T]>): Constructor<ComponentMap[T]>
     {
-        if (typeof componentName === 'object')
+        if (typeof component === 'function')
         {
-            return componentName.constructor as any;
+            return component;
         }
 
-        return Component._componentMap[componentName] as any;
+        if (typeof component === 'object')
+        {
+            return component.constructor as Constructor<ComponentMap[T]>;
+        }
+
+        return Component._componentMap[component] as Constructor<ComponentMap[T]>;
     }
 
     /**
      * 获取组件依赖列表
      *
-     * @param type 组件类定义
+     * @param component 组件类定义
      */
-    static getDependencies(type: Constructor<Component>)
+    static getDependencies<K extends keyof ComponentMap>(component: K)
     {
-        let prototype = type.prototype;
-        let dependencies: Constructor<Component>[] = [];
+        const Constructor = Component.getConstructor(component);
+
+        let prototype = Constructor.prototype;
+        let dependencies: (keyof ComponentMap)[] = [];
         while (prototype)
         {
             dependencies = dependencies.concat((prototype[__component__] as ComponentInfo)?.dependencies || []);
@@ -265,11 +270,13 @@ export class Component
     /**
      * 判断组件是否为唯一组件。
      *
-     * @param type 组件类定义
+     * @param component 组件类定义
      */
-    static isSingleComponent<T extends Component>(type: Constructor<T>)
+    static isSingleComponent<K extends keyof ComponentMap>(component: K | ComponentMap[K] | Constructor<ComponentMap[K]>)
     {
-        let prototype = type.prototype;
+        const Constructor = Component.getConstructor(component);
+
+        let prototype = Constructor.prototype;
         let isSingle = false;
         while (prototype && !isSingle)
         {

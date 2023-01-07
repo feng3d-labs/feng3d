@@ -81,11 +81,11 @@ declare global
 
 Node2D.registerPrimitive('Image', (g) =>
 {
-    g.addComponent(CanvasRenderer);
+    g.addComponent('CanvasRenderer');
 
     g.size.x = 100;
     g.size.y = 100;
-    g.addComponent(Image);
+    g.addComponent('Image');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

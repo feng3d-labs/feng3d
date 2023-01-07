@@ -1,6 +1,5 @@
 import { Camera } from '../core/cameras/Camera';
 import { Component3D } from '../core/core/Component3D';
-import { MeshRenderer } from '../core/core/MeshRenderer';
 import { Node3D } from '../core/core/Node3D';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Geometry } from '../core/geometry/Geometry';
@@ -73,7 +72,7 @@ declare global
  * 粒子系统
  */
 @AddComponentMenu('Effects/ParticleSystem')
-@RegisterComponent({ name: 'ParticleSystem', dependencies: [MeshRenderer], single: true })
+@RegisterComponent({ name: 'ParticleSystem', dependencies: ['MeshRenderer'], single: true })
 @Serializable('ParticleSystem')
 export class ParticleSystem extends Component3D
 {
@@ -1234,7 +1233,7 @@ Geometry.setDefault('Billboard-Geometry', new QuadGeometry());
 
 Node3D.registerPrimitive('Particle System', (g) =>
 {
-    g.addComponent(ParticleSystem);
+    g.addComponent('ParticleSystem');
     g.rx = -90;
 });
 

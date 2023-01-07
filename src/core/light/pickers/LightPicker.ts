@@ -25,9 +25,9 @@ export class LightPicker
         const scene = this._model.node3d.scene;
         if (scene)
         {
-            pointLights = scene.getComponentsInChildren(PointLight).filter((pl) => pl.isVisibleAndEnabled);
-            directionalLights = scene.getComponentsInChildren(DirectionalLight).filter((dl) => dl.isVisibleAndEnabled);
-            spotLights = scene.getComponentsInChildren(SpotLight).filter((sp) => (sp.isVisibleAndEnabled));
+            pointLights = scene.getComponentsInChildren('PointLight').filter((pl) => pl.isVisibleAndEnabled);
+            directionalLights = scene.getComponentsInChildren('DirectionalLight').filter((dl) => dl.isVisibleAndEnabled);
+            spotLights = scene.getComponentsInChildren('SpotLight').filter((sp) => (sp.isVisibleAndEnabled));
         }
 
         renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;

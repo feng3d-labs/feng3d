@@ -8,7 +8,6 @@ declare global
     {
         UIGeometry: UIGeometry
     }
-
     export interface MixinsDefaultGeometry
     {
         'Default-UIGeometry': UIGeometry;

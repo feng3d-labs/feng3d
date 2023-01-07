@@ -3,7 +3,6 @@ import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -118,7 +117,7 @@ Geometry.setDefault('Cone', new ConeGeometry());
 
 Node3D.registerPrimitive('Cone', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Cone');
+    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Cone');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

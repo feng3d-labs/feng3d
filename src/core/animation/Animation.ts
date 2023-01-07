@@ -2,7 +2,6 @@ import { Component, RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { NodeComponent } from '../core/NodeComponent';
 import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
@@ -103,8 +102,8 @@ export class Animation extends NodeComponent
                     propertyHost = propertyHost.find(element[1]);
                     break;
                 case PropertyClipPathItemType.Component:
-                    const componentClass = Component.getComponentType(element[1] as any);
-                    propertyHost = propertyHost.getComponent(componentClass);
+                    const componentClass = Component.getConstructor(element[1] as any);
+                    propertyHost = propertyHost.getComponent(element[1] as any);
                     break;
                 default:
                     console.error(`无法获取 PropertyHost ${element}`);

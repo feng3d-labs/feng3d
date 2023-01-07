@@ -6,7 +6,6 @@ import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
-import { MeshRenderer } from '../../core/MeshRenderer';
 import { Renderer } from '../../core/Renderer';
 import { Scene } from '../../scene/Scene';
 
@@ -44,13 +43,13 @@ export class WireframeRenderer
     draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
     {
         const frustum = camera.frustum;
-        const unblenditems = scene.getComponentsInChildren(MeshRenderer).reduce((pv, cv) =>
+        const unblenditems = scene.getComponentsInChildren('MeshRenderer').reduce((pv, cv) =>
         {
             if (cv.isVisibleAndEnabled)
             {
                 if (frustum.intersectsBox(cv.selfWorldBounds))
                 {
-                    if (!cv.material.renderParams.enableBlend)
+                    if (!cv.useMaterial.renderParams.enableBlend)
                     {
                         pv.push(cv);
                     }

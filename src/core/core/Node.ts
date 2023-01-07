@@ -1,8 +1,7 @@
-import { Constructor } from '../../polyfill/Types';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Component } from '../../ecs/Component';
+import { ComponentMap } from '../../ecs/Component';
 import { Entity, EntityEventMap } from '../../ecs/Entity';
 import { EventEmitter } from '../../event/EventEmitter';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 export interface NodeEventMap extends EntityEventMap
 {
@@ -379,22 +378,22 @@ export class Node extends Entity
      * @param includeInactive 是否包含不活跃组件。
      * @returns 匹配类型的组件（如果找到）。
      */
-    getComponentInChildren<T extends Component>(type: Constructor<T>, includeInactive = false): T
+    getComponentInChildren<K extends keyof ComponentMap>(component: K, includeInactive = false): ComponentMap[K]
     {
-        const component = this.getComponent(type);
-        if (component)
+        const instance = this.getComponent(component);
+        if (instance)
         {
-            return component;
+            return instance;
         }
 
         for (let i = 0; i < this.numChildren; i++)
         {
             const node = this.children[i];
             if (!includeInactive && !node.visible) continue;
-            const component = node.getComponentInChildren(type, includeInactive);
-            if (component)
+            const instance = node.getComponentInChildren(component, includeInactive);
+            if (instance)
             {
-                return component;
+                return instance;
             }
         }
 
@@ -410,23 +409,23 @@ export class Node extends Entity
      * @param includeInactive 是否包含不活跃组件。
      * @returns 如果找到与类型匹配的组件，则返回一个组件。否则返回 null。
      */
-    getComponentInParent<T extends Component>(type: Constructor<T>, includeInactive = false): T
+    getComponentInParent<K extends keyof ComponentMap>(compnent: K, includeInactive = false): ComponentMap[K]
     {
         if (includeInactive || this.visible)
         {
-            const component = this.getComponent(type);
-            if (component)
+            const instance = this.getComponent(compnent);
+            if (instance)
             {
-                return component;
+                return instance;
             }
         }
 
         if (this.parent)
         {
-            const component = this.parent.getComponentInParent(type, includeInactive);
-            if (component)
+            const instance = this.parent.getComponentInParent(compnent, includeInactive);
+            if (instance)
             {
-                return component;
+                return instance;
             }
         }
 
@@ -438,20 +437,20 @@ export class Node extends Entity
      *
      * Unity 在子游戏对象上递归搜索组件。这意味着它还包括目标 Node 的所有子 Container，以及所有后续子 Container。
      *
-     * @param type 要检索的组件类型。
+     * @param component 要检索的组件类型。
      * @param includeInactive 非活动游戏对象上的组件是否应该包含在搜索结果中？
      * @param results 列出接收找到的组件。
      * @returns 所有找到的组件。
      */
-    getComponentsInChildren<T extends Component>(type?: Constructor<T>, includeInactive = false, results: T[] = []): T[]
+    getComponentsInChildren<K extends keyof ComponentMap>(component?: K, includeInactive = false, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
-        this.getComponents(type, results);
+        this.getComponents(component, results);
 
         for (let i = 0; i < this.children.length; i++)
         {
             const node = this.children[i];
             if (!includeInactive && !node.visible) continue;
-            node.getComponentsInChildren(type, includeInactive, results);
+            node.getComponentsInChildren(component, includeInactive, results);
         }
 
         return results;
@@ -460,21 +459,21 @@ export class Node extends Entity
     /**
      * 返回Container或其任何父级中指定的所有组件。
      *
-     * @param type 要检索的组件类型。
+     * @param component 要检索的组件类型。
      * @param includeInactive 非活动组件是否应该包含在搜索结果中？
      * @param results 列出找到的组件。
      * @returns Container或其任何父级中指定的所有组件。
      */
-    getComponentsInParent<T extends Component>(type?: Constructor<T>, includeInactive = false, results: T[] = []): T[]
+    getComponentsInParent<K extends keyof ComponentMap>(component?: K, includeInactive = false, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
         if (includeInactive || this.visible)
         {
-            this.getComponents(type, results);
+            this.getComponents(component, results);
         }
 
         if (this.parent)
         {
-            this.parent.getComponentsInParent(type, includeInactive, results);
+            this.parent.getComponentsInParent(component, includeInactive, results);
         }
 
         return results;

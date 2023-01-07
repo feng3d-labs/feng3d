@@ -1,17 +1,86 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
+import { Serializable } from '../../serialization/Serializable';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
 import { Component3D } from './Component3D';
 import { MeshRenderer } from './MeshRenderer';
-import { MouseInput } from './MouseInput';
+import { MouseEventMap, MouseInput } from './MouseInput';
 import { BeforeRenderEventData } from './View3D';
 import { WindowMouseInput } from './WindowMouseInput';
+
+declare global
+{
+    /**
+     * 组件事件
+     */
+    export interface MixinsNode3DEventMap
+    {
+
+        /**
+         * 鼠标移出对象
+         */
+        mouseout: PickingCollisionVO
+        /**
+         * 鼠标移入对象
+         */
+        mouseover: PickingCollisionVO
+        /**
+         * 鼠标在对象上移动
+         */
+        mousemove: PickingCollisionVO
+        /**
+         * 鼠标左键按下
+         */
+        mousedown: PickingCollisionVO
+        /**
+         * 鼠标左键弹起
+         */
+        mouseup: PickingCollisionVO
+        /**
+         * 单击
+         */
+        click: PickingCollisionVO
+        /**
+         * 鼠标中键按下
+         */
+        middlemousedown: PickingCollisionVO
+        /**
+         * 鼠标中键弹起
+         */
+        middlemouseup: PickingCollisionVO
+        /**
+         * 鼠标中键单击
+         */
+        middleclick: PickingCollisionVO
+        /**
+         * 鼠标右键按下
+         */
+        rightmousedown: PickingCollisionVO
+        /**
+         * 鼠标右键弹起
+         */
+        rightmouseup: PickingCollisionVO
+        /**
+         * 鼠标右键单击
+         */
+        rightclick: PickingCollisionVO
+        /**
+         * 鼠标双击
+         */
+        dblclick: PickingCollisionVO
+    }
+
+    export interface MixinsComponentMap { MouseEvent3D: MouseEvent3D; }
+}
 
 /**
  * 3D结点鼠标事件组件。
  *
  * 在 View3D 所在或者子结点中添加该组件，View3D下的3D结点将响应鼠标事件。
  */
+@RegisterComponent({ name: 'MouseEvent3D' })
+@Serializable('MouseEvent3D')
 export class MouseEvent3D extends Component3D
 {
     init(): void
@@ -82,7 +151,7 @@ export class MouseEvent3D extends Component3D
         //
         const mouseRay3D = view.getMouseRay3D(camera);
 
-        const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
+        const meshRenderers = scene.getComponentsInChildren('MeshRenderer').filter((mr) => mr.node.mouseEnabled);
         // 计算得到鼠标射线相交的物体
         const pickingCollisionVO = rayCast(mouseRay3D, meshRenderers);
 
@@ -179,7 +248,7 @@ export class MouseEvent3D extends Component3D
 /**
  * 鼠标事件列表
  */
-const mouseEventTypes: (keyof MouseEvent3DMap)[]
+const mouseEventTypes: (keyof MouseEventMap)[]
     = [
         'mouseout',
         'mouseover',
@@ -196,58 +265,3 @@ const mouseEventTypes: (keyof MouseEvent3DMap)[]
         'dblclick',
     ];
 
-export interface MouseEvent3DMap
-{
-    /**
-     * 鼠标移出对象
-     */
-    mouseout: PickingCollisionVO
-    /**
-     * 鼠标移入对象
-     */
-    mouseover: PickingCollisionVO
-    /**
-     * 鼠标在对象上移动
-     */
-    mousemove: PickingCollisionVO
-    /**
-     * 鼠标左键按下
-     */
-    mousedown: PickingCollisionVO
-    /**
-     * 鼠标左键弹起
-     */
-    mouseup: PickingCollisionVO
-    /**
-     * 单击
-     */
-    click: PickingCollisionVO
-    /**
-     * 鼠标中键按下
-     */
-    middlemousedown: PickingCollisionVO
-    /**
-     * 鼠标中键弹起
-     */
-    middlemouseup: PickingCollisionVO
-    /**
-     * 鼠标中键单击
-     */
-    middleclick: PickingCollisionVO
-    /**
-     * 鼠标右键按下
-     */
-    rightmousedown: PickingCollisionVO
-    /**
-     * 鼠标右键弹起
-     */
-    rightmouseup: PickingCollisionVO
-    /**
-     * 鼠标右键单击
-     */
-    rightclick: PickingCollisionVO
-    /**
-     * 鼠标双击
-     */
-    dblclick: PickingCollisionVO
-}

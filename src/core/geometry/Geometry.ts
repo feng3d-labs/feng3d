@@ -9,7 +9,7 @@ import { AttributeBuffer, AttributeBufferSourceTypes } from '../../renderer/data
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { CullFace } from '../../renderer/data/RenderParams';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
@@ -22,9 +22,6 @@ declare global
 }
 
 export interface GeometryMap extends MixinsGeometryMap { }
-
-export type GeometryNames = keyof GeometryMap;
-export type Geometrys = GeometryMap[GeometryNames];
 
 export interface GeometryEventMap
 {

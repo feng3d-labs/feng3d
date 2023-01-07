@@ -1,12 +1,10 @@
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { BillboardComponent } from '../component/BillboardComponent';
 import { Component3D } from '../core/Component3D';
 import { HideFlags } from '../core/HideFlags';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { TextureMaterial } from '../materials/texture/TextureMaterial';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
@@ -121,7 +119,7 @@ export class Light extends Component3D
     constructor()
     {
         super();
-        this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent(Camera);
+        this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent('Camera');
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
@@ -132,10 +130,10 @@ export class Light extends Component3D
             node3d = this.debugShadowMapObject = Node3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
             node3d.hideFlags = HideFlags.Hide | HideFlags.DontSave;
             node3d.mouseEnabled = false;
-            node3d.addComponent(BillboardComponent);
+            node3d.addComponent('BillboardComponent');
 
             // 材质
-            const model = node3d.getComponent(MeshRenderer);
+            const model = node3d.getComponent('MeshRenderer');
             model.geometry = $set(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
             //
@@ -148,7 +146,7 @@ export class Light extends Component3D
 
         const depth = viewCamera.lens.near * 2;
         node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
-        const billboardComponent = node3d.getComponent(BillboardComponent);
+        const billboardComponent = node3d.getComponent('BillboardComponent');
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)

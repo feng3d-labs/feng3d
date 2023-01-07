@@ -1,10 +1,9 @@
 import { Vector4 } from '../../../math/geom/Vector4';
 import { mathUtil } from '../../../polyfill/MathUtil';
-import { LazyObject, lazy } from '../../../polyfill/Types';
+import { lazy, LazyObject } from '../../../polyfill/Types';
 import { Uniforms } from '../../../renderer/data/Uniform';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
-import { MeshRenderer } from '../../core/MeshRenderer';
 import { Scene } from '../../scene/Scene';
 
 /**
@@ -18,13 +17,13 @@ export class ForwardRenderer
     draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
     {
         const frustum = camera.frustum;
-        const { blendItems, unblenditems } = scene.getComponentsInChildren(MeshRenderer).reduce((pv, cv) =>
+        const { blendItems, unblenditems } = scene.getComponentsInChildren('MeshRenderer').reduce((pv, cv) =>
         {
             if (cv.isVisibleAndEnabled)
             {
                 if (frustum.intersectsBox(cv.selfWorldBounds))
                 {
-                    if (cv.material.renderParams.enableBlend)
+                    if (cv.useMaterial.renderParams.enableBlend)
                     {
                         pv.blendItems.push(cv);
                     }

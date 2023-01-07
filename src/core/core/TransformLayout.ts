@@ -182,7 +182,7 @@ export class TransformLayout extends Component3D
     {
         if (!this._layoutInvalid) return;
 
-        const transformLayout = this.node3d?.parent?.getComponent(TransformLayout);
+        const transformLayout = this.node3d?.parent?.getComponent('TransformLayout');
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标
