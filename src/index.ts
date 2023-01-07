@@ -252,7 +252,6 @@ export * from './particlesystem/shapes/ParticleSystemShapeSphere';
 export * from './polyfill/Array';
 export * from './polyfill/ArrayUtils';
 export * from './polyfill/DataTransform';
-export * from './polyfill/global';
 export * from './polyfill/MapUtils';
 export * from './polyfill/MathUtil';
 export * from './polyfill/ObjectUtils';
