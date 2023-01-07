@@ -10,7 +10,6 @@ import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
-import { CanvasRenderer } from './core/CanvasRenderer';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 import { drawText } from './text/drawText';
@@ -116,11 +115,11 @@ export class Text extends Component2D
 
 Node2D.registerPrimitive('Text', (g) =>
 {
-    g.addComponent(CanvasRenderer);
+    g.addComponent('CanvasRenderer');
 
     g.size.x = 160;
     g.size.y = 30;
-    g.addComponent(Text);
+    g.addComponent('Text');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

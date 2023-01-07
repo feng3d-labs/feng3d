@@ -2,10 +2,9 @@ import { Color4 } from '../../math/Color4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -126,7 +125,7 @@ export class Segment
 
 Node3D.registerPrimitive('Segment', (g) =>
 {
-    const model = g.addComponent(MeshRenderer);
+    const model = g.addComponent('MeshRenderer');
     model.geometry = new SegmentGeometry();
     model.material = Material.getDefault('Segment-Material');
 });

@@ -149,7 +149,7 @@ Node2D.registerPrimitive('Button', (g) =>
 {
     g.size.x = 160;
     g.size.y = 30;
-    g.addComponent(Button);
+    g.addComponent('Button');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

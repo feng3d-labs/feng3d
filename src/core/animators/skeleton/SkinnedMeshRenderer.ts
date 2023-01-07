@@ -5,9 +5,7 @@ import { Serializable } from '../../../serialization/Serializable';
 import { Camera } from '../../cameras/Camera';
 import { Component3D } from '../../core/Component3D';
 import { HideFlags } from '../../core/HideFlags';
-import { MeshRenderer } from '../../core/MeshRenderer';
 import { Scene } from '../../scene/Scene';
-import { SkeletonComponent } from './SkeletonComponent';
 
 declare global
 {
@@ -17,7 +15,7 @@ declare global
     }
 }
 
-@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: [MeshRenderer], single: true })
+@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: ['MeshRenderer'], single: true })
 @Serializable('SkinnedMeshRenderer')
 export class SkinnedMeshRenderer extends Component3D
 {
@@ -65,7 +63,7 @@ export class SkinnedMeshRenderer extends Component3D
 
     private get u_skeletonGlobalMatrices()
     {
-        const skeletonComponent = this.getComponentInParent(SkeletonComponent);
+        const skeletonComponent = this.getComponentInParent('SkeletonComponent');
 
         let skeletonGlobalMatrices: Matrix4x4[] = [];
         if (skeletonComponent)

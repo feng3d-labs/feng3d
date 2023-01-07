@@ -82,7 +82,7 @@ export class MouseEvent3D extends Component3D
         //
         const mouseRay3D = view.getMouseRay3D(camera);
 
-        const meshRenderers = scene.getComponentsInChildren(MeshRenderer).filter((mr) => mr.node.mouseEnabled);
+        const meshRenderers = scene.getComponentsInChildren('MeshRenderer').filter((mr) => mr.node.mouseEnabled);
         // 计算得到鼠标射线相交的物体
         const pickingCollisionVO = rayCast(mouseRay3D, meshRenderers);
 

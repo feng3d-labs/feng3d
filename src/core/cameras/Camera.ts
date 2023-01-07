@@ -228,7 +228,7 @@ export class Camera extends Component3D
 
 Node3D.registerPrimitive('Camera', (g) =>
 {
-    g.addComponent(Camera);
+    g.addComponent('Camera');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

@@ -2,7 +2,6 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -249,7 +248,7 @@ Geometry.setDefault('Capsule', new CapsuleGeometry());
 
 Node3D.registerPrimitive('Capsule', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Capsule');
+    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Capsule');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

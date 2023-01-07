@@ -5,13 +5,12 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
-import { DirectionalLight } from '../light/DirectionalLight';
 import { Material } from '../materials/Material';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -35,7 +34,7 @@ declare global
  * The Water component renders the terrain.
  */
 @AddComponentMenu('Graphics/Water')
-@RegisterComponent({ name: 'Water', dependencies: [MeshRenderer] })
+@RegisterComponent({ name: 'Water', dependencies: ['MeshRenderer'] })
 @Serializable('Water')
 export class Water extends Component3D
 {
@@ -45,7 +44,7 @@ export class Water extends Component3D
 
     init()
     {
-        this.meshRenderer = this.getComponent(MeshRenderer);
+        this.meshRenderer = this.getComponent('MeshRenderer');
 
         this.meshRenderer.geometry = Geometry.getDefault('Plane');
         this.meshRenderer.material = Material.getDefault('Water-Material');
@@ -66,7 +65,7 @@ export class Water extends Component3D
     beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
     {
         const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
-        const sun = this.node3d.scene.getComponentsInChildren(DirectionalLight).filter((dl) => dl.isVisibleAndEnabled)[0];
+        const sun = this.node3d.scene.getComponentsInChildren('DirectionalLight').filter((dl) => dl.isVisibleAndEnabled)[0];
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
@@ -107,7 +106,7 @@ export class Water extends Component3D
         target.reflect(normal).negate();
         target.add(mirrorWorldPosition);
 
-        const mirrorCamera = $set(new Node3D(), { name: 'waterMirrorCamera' }).addComponent(Camera);
+        const mirrorCamera = $set(new Node3D(), { name: 'waterMirrorCamera' }).addComponent('Camera');
         mirrorCamera.node3d.position = view;
         mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
 
@@ -169,7 +168,7 @@ export class Water extends Component3D
 
 Node3D.registerPrimitive('Water', (g) =>
 {
-    g.addComponent(Water);
+    g.addComponent('Water');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

@@ -1,10 +1,10 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
-import { RegisterComponent } from '../../ecs/Component';
 import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
 import { AddComponentMenu } from '../Menu';
@@ -89,7 +89,7 @@ export class DirectionalLight extends Light
 
 Node3D.registerPrimitive('Directional light', (g) =>
 {
-    g.addComponent(DirectionalLight);
+    g.addComponent('DirectionalLight');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

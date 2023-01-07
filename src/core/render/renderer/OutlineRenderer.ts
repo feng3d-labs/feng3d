@@ -4,7 +4,6 @@ import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';
-import { MeshRenderer } from '../../core/MeshRenderer';
 import { Scene } from '../../scene/Scene';
 
 /**
@@ -30,7 +29,7 @@ export class OutlineRenderer
     draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
     {
         const frustum = camera.frustum;
-        const unblenditems = scene.getComponentsInChildren(MeshRenderer).reduce((pv, cv) =>
+        const unblenditems = scene.getComponentsInChildren('MeshRenderer').reduce((pv, cv) =>
         {
             if (cv.isVisibleAndEnabled)
             {

@@ -13,7 +13,6 @@ import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
-import { Renderer } from './Renderer';
 
 declare global
 {
@@ -122,30 +121,20 @@ export class View3D extends Component3D
      * @param scene     3D场景
      * @param camera    摄像机
      */
-    constructor(canvas?: HTMLCanvasElement, scene?: Scene, camera?: Camera, contextAttributes?: WebGLContextAttributes)
+    constructor()
     {
         super();
-        if (!canvas)
-        {
-            canvas = document.createElement('canvas');
-            canvas.id = 'glcanvas';
-            canvas.style.position = 'fixed';
-            canvas.style.left = '0px';
-            canvas.style.top = '0px';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            document.body.appendChild(canvas);
-        }
+        const canvas = document.createElement('canvas');
+        canvas.id = 'glcanvas';
+        canvas.style.position = 'fixed';
+        canvas.style.left = '0px';
+        canvas.style.top = '0px';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        document.body.appendChild(canvas);
         console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
 
         this.canvas = canvas;
-        if (contextAttributes)
-        {
-            Object.assign(this._contextAttributes, contextAttributes);
-        }
-
-        this.scene = scene;
-        this.camera = camera;
 
         this.start();
     }
@@ -186,7 +175,7 @@ export class View3D extends Component3D
         let camera = this.camera;
         if (!camera)
         {
-            camera = this.getComponentInChildren(Camera);
+            camera = this.getComponentInChildren('Camera');
             if (!camera)
             {
                 console.warn(`无法从自身与子结点中获取到 Camera 组件，无法渲染！`);
@@ -197,7 +186,7 @@ export class View3D extends Component3D
         let scene = this.scene;
         if (!scene)
         {
-            scene = this.getComponentInChildren(Scene);
+            scene = this.getComponentInChildren('Scene');
             if (!scene)
             {
                 console.warn(`无法从自身与子结点中获取到 Scene 组件，无法渲染！`);
@@ -342,7 +331,7 @@ export class View3D extends Component3D
         {
             if (!node3d) return false;
 
-            const m = node3d.getComponent(Renderer);
+            const m = node3d.getComponent('Renderer');
             if (m)
             {
                 const include = m.selfWorldBounds.toPoints().every((pos) =>

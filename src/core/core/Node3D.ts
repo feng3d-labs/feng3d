@@ -18,7 +18,6 @@ import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { HideFlags } from './HideFlags';
-import { MeshRenderer } from './MeshRenderer';
 import { MouseEvent3DMap } from './MouseEvent3D';
 import { Node, NodeEventMap } from './Node';
 
@@ -516,30 +515,10 @@ export class Node3D extends Node
      */
     get isSelfLoaded()
     {
-        const model = this.getComponent(MeshRenderer);
+        const model = this.getComponent('MeshRenderer');
         if (model) return model.isLoaded;
 
         return true;
-    }
-
-    /**
-     * 已加载完成或者加载完成时立即调用
-     * @param callback 完成回调
-     */
-    onSelfLoadCompleted(callback: () => void)
-    {
-        if (this.isSelfLoaded)
-        {
-            callback();
-
-            return;
-        }
-        const model = this.getComponent(MeshRenderer);
-        if (model)
-        {
-            model.onLoadCompleted(callback);
-        }
-        else callback();
     }
 
     /**
@@ -555,39 +534,6 @@ export class Node3D extends Node
         }
 
         return true;
-    }
-
-    /**
-     * 已加载完成或者加载完成时立即调用
-     * @param callback 完成回调
-     */
-    onLoadCompleted(callback: () => void)
-    {
-        let loadingNum = 0;
-        if (!this.isSelfLoaded)
-        {
-            loadingNum++;
-            this.onSelfLoadCompleted(() =>
-            {
-                loadingNum--;
-                if (loadingNum === 0) callback();
-            });
-        }
-        for (let i = 0; i < this.children.length; i++)
-        {
-            const element = this.children[i];
-            if (!element.isLoaded)
-            {
-                loadingNum++;
-                // eslint-disable-next-line no-loop-func
-                element.onLoadCompleted(() =>
-                {
-                    loadingNum--;
-                    if (loadingNum === 0) callback();
-                });
-            }
-        }
-        if (loadingNum === 0) callback();
     }
 
     protected _scene: Scene;

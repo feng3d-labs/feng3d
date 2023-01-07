@@ -92,20 +92,20 @@ export class Entity
      */
     addComponent<K extends ComponentNames>(componentName: K, params?: gPartial<ComponentMap[K]>): ComponentMap[K]
     {
-        const Constructor = getComponentType(componentName);
-
         let component = this.getComponent(componentName);
-        if (component && Component.isSingleComponent(Constructor))
+        if (component && Component.isSingleComponent(componentName))
         {
             // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
             return component;
         }
-        const dependencies = Component.getDependencies(Constructor);
+        const dependencies = Component.getDependencies(componentName);
         // 先添加依赖
         dependencies.forEach((dependency) =>
         {
             this.addComponent(dependency);
         });
+
+        const Constructor = Component.getConstructor(componentName);
         //
         component = new Constructor();
         $set(component, params);
@@ -124,7 +124,7 @@ export class Entity
      */
     getComponent<K extends ComponentNames>(componentName: K): ComponentMap[K]
     {
-        const Constructor = getComponentType(componentName);
+        const Constructor = Component.getConstructor(componentName);
 
         for (let i = 0; i < this._components.length; i++)
         {
@@ -141,16 +141,18 @@ export class Entity
     /**
      * 返回Entity中指定类型的所有组件。
      *
-     * @param type 要检索的组件类型。
+     * @param component 要检索的组件。
      * @param results 列出接收找到的组件。
      * @returns Entity中指定类型的所有组件。
      */
-    getComponents<T extends Component = Component>(type?: Constructor<T>, results: T[] = []): T[]
+    getComponents<K extends ComponentNames>(component?: K, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
+        const Constructor = Component.getConstructor(component);
+
         for (let i = 0; i < this._components.length; i++)
         {
             const component = this._components[i];
-            if (!type || component instanceof type)
+            if (component instanceof Constructor)
             {
                 results.push(component as any);
             }

@@ -52,11 +52,11 @@ export class Rect extends Component
 
 Node2D.registerPrimitive('Rect', (g) =>
 {
-    g.addComponent(CanvasRenderer);
+    g.addComponent('CanvasRenderer');
 
     g.size.x = 100;
     g.size.y = 100;
-    g.addComponent(Rect);
+    g.addComponent('Rect');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

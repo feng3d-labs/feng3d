@@ -4,7 +4,6 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { CullFace } from '../../renderer/data/RenderParams';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
-import { Renderer } from '../core/Renderer';
 import { Geometry } from '../geometry/Geometry';
 
 /**
@@ -72,7 +71,7 @@ export function rayCastAll(ray3D: Ray3, node3ds: Node3D[])
 
     const pickingCollisionVOs = node3ds.reduce((pv: PickingCollisionVO[], node3ds) =>
     {
-        const model = node3ds.getComponent(Renderer);
+        const model = node3ds.getComponent('Renderer');
         const pickingCollisionVO = model && model.worldRayIntersection(ray3D);
         if (pickingCollisionVO) pv.push(pickingCollisionVO);
 

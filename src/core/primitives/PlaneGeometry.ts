@@ -3,7 +3,6 @@ import { gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -148,7 +147,7 @@ Geometry.setDefault('Plane', new PlaneGeometry(), { width: 10, height: 10 });
 
 Node3D.registerPrimitive('Plane', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Plane');
+    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Plane');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

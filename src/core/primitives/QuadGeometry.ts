@@ -1,5 +1,4 @@
 import { Serializable } from '../../serialization/Serializable';
-import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
@@ -55,7 +54,7 @@ Geometry.setDefault('Quad', new QuadGeometry());
 
 Node3D.registerPrimitive('Quad', (g) =>
 {
-    g.addComponent(MeshRenderer).geometry = Geometry.getDefault('Quad');
+    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Quad');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

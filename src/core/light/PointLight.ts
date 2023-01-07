@@ -1,8 +1,8 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
-import { RegisterComponent } from '../../ecs/Component';
 import { Node3D } from '../core/Node3D';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -77,7 +77,7 @@ export class PointLight extends Light
 
 Node3D.registerPrimitive('Point Light', (g) =>
 {
-    g.addComponent(PointLight);
+    g.addComponent('PointLight');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

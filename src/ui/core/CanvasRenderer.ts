@@ -1,16 +1,13 @@
 import { MeshRenderer } from '../../core/core/MeshRenderer';
-import { TransformLayout } from '../../core/core/TransformLayout';
 import { View3D } from '../../core/core/View3D';
 import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { AddComponentMenu } from '../../core/Menu';
-import { Scene } from '../../core/scene/Scene';
 import { TransformUtils } from '../../core/utils/TransformUtils';
 import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { Canvas } from './Canvas';
 import { UIGeometry } from './UIGeometry';
 
 declare global
@@ -25,7 +22,7 @@ declare global
  * 可在画布上渲染组件，使得拥有该组件的Object3D可以在画布上渲染。
  */
 @AddComponentMenu('Rendering/CanvasRenderer')
-@RegisterComponent({ name: 'CanvasRenderer', dependencies: [MeshRenderer] })
+@RegisterComponent({ name: 'CanvasRenderer', dependencies: ['MeshRenderer'] })
 @Serializable('CanvasRenderer')
 export class CanvasRenderer extends MeshRenderer
 {
@@ -43,7 +40,7 @@ export class CanvasRenderer extends MeshRenderer
      */
     worldRayIntersection(worldRay: Ray3)
     {
-        const canvas = this.getComponentsInParent(Canvas)[0];
+        const canvas = this.getComponentsInParent('Canvas')[0];
         if (canvas)
         {
             worldRay = canvas.mouseRay;
@@ -70,7 +67,7 @@ export class CanvasRenderer extends MeshRenderer
     protected _updateBounds()
     {
         const bounding = this.geometry.bounding.clone();
-        const transformLayout = this.getComponent(TransformLayout);
+        const transformLayout = this.getComponent('TransformLayout');
         if (transformLayout)
         {
             bounding.scale(transformLayout.size);
@@ -87,10 +84,10 @@ export class CanvasRenderer extends MeshRenderer
         let scene = view.scene;
         if (!scene)
         {
-            scene = view.getComponentInChildren(Scene);
+            scene = view.getComponentInChildren('Scene');
         }
 
-        const canvasList = scene.getComponentsInChildren(Canvas).filter((v) => v.isVisibleAndEnabled);
+        const canvasList = scene.getComponentsInChildren('Canvas').filter((v) => v.isVisibleAndEnabled);
         canvasList.forEach((canvas) =>
         {
             canvas.layout(gl.canvas.width, gl.canvas.height);
@@ -98,7 +95,7 @@ export class CanvasRenderer extends MeshRenderer
             // 更新鼠标射线
             canvas.calcMouseRay3D(view);
 
-            const renderables = canvas.getComponentsInChildren(CanvasRenderer).filter((v) => v.isVisibleAndEnabled);
+            const renderables = canvas.getComponentsInChildren('CanvasRenderer').filter((v) => v.isVisibleAndEnabled);
             renderables.forEach((renderable) =>
             {
                 // 绘制
