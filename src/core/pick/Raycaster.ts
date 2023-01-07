@@ -109,7 +109,7 @@ export interface PickingCollisionVO
     /**
      * 第一个穿过的物体
      */
-    node3d: Node3D;
+    meshRenderer: MeshRenderer;
 
     /**
      * 碰撞的uv坐标

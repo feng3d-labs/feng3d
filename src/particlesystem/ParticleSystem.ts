@@ -73,7 +73,7 @@ declare global
  * 粒子系统
  */
 @AddComponentMenu('Effects/ParticleSystem')
-@RegisterComponent({ name: 'ParticleSystem', dependencies: [MeshRenderer] })
+@RegisterComponent({ name: 'ParticleSystem', dependencies: [MeshRenderer], single: true })
 @Serializable('ParticleSystem')
 export class ParticleSystem extends Component3D
 {
@@ -345,8 +345,6 @@ export class ParticleSystem extends Component3D
     @oav({ block: 'Renderer' })
     @SerializeProperty()
     receiveShadows = true;
-
-    get single() { return true; }
 
     constructor()
     {

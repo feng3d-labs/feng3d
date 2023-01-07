@@ -3,7 +3,7 @@ import { oav } from '../objectview/ObjectView';
 import { Constructor, gPartial } from '../polyfill/Types';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { Component, ComponentMap, ComponentNames, Components, getComponentType } from './Component';
+import { Component, ComponentMap, ComponentNames, Components } from './Component';
 
 export interface EntityEventMap
 {
@@ -59,7 +59,12 @@ export class Entity
         {
             const component = value[i];
             if (!component) continue;
-            if (component.single) this.removeComponentsByType(<any>component.constructor);
+
+            const single = Component.isSingleComponent(component.constructor as any);
+            if (single)
+            {
+                this.removeComponentsByType(<any>component.constructor);
+            }
             this.addComponentAt(value[i], this.numComponents);
         }
     }
@@ -300,7 +305,9 @@ export class Entity
     protected addComponentAt(component: Components, index: number): void
     {
         if (!component)
-        { return; }
+        {
+            return;
+        }
         console.assert(index >= 0 && index <= this.numComponents, '给出索引超出范围');
 
         if (this.hasComponent(component))
@@ -310,9 +317,13 @@ export class Entity
 
             return;
         }
+
         // 组件唯一时移除同类型的组件
-        if (component.single)
-        { this.removeComponentsByType(<Constructor<Components>>component.constructor); }
+        const single = Component.isSingleComponent(component.constructor as any);
+        if (single)
+        {
+            this.removeComponentsByType(<Constructor<Components>>component.constructor);
+        }
 
         this._components.splice(index, 0, component);
         component.setEntity(this as any);
