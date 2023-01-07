@@ -1,6 +1,6 @@
 import { Component, RegisterComponent } from '../../src/ecs/Component';
 
-declare global
+declare module '../../src/ecs/Component'
 {
     /**
      * 组件映射

@@ -17,7 +17,7 @@ import { TextStyle } from './text/TextStyle';
 
 declare module '../ecs/Component' { interface ComponentMap { Text: Text; } }
 
-declare global
+declare module './core/Node2D'
 {
     export interface PrimitiveNode2D
     {

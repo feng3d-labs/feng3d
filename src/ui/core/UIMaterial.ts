@@ -7,14 +7,9 @@ import { shaderConfig } from '../../renderer/shader/ShaderLib';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 
-declare global
+declare module '../../core/materials/Material'
 {
-    export interface MixinsUniformsTypes
-    {
-        ui: UIUniforms
-    }
-
-    export interface DefaultMaterialMap
+    interface DefaultMaterialMap
     {
         'Default-UIMaterial': Material;
     }

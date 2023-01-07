@@ -11,9 +11,9 @@ import { Node2D } from './core/Node2D';
 
 declare module '../ecs/Component' { interface ComponentMap { Button: Button; } }
 
-declare global
+declare module './core/Node2D'
 {
-    export interface PrimitiveNode2D
+    interface PrimitiveNode2D
     {
         Button: Node2D;
     }

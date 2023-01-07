@@ -17,10 +17,6 @@ import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 
-declare global
-{
-}
-
 /**
  * 2D结点事件映射
  */

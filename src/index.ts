@@ -201,7 +201,6 @@ export * from './math/shape/curves/QuadraticBezierCurve2';
 export * from './math/shape/curves/QuadraticBezierCurve3';
 export * from './math/shape/curves/SplineCurve2';
 export * from './math/shape/ShapeUtils';
-export * from './objectview/MixinsIObjectView';
 export * from './objectview/ObjectView';
 export * from './particlesystem/enums/ParticleSystemAnimationType';
 export * from './particlesystem/enums/ParticleSystemInheritVelocityMode';

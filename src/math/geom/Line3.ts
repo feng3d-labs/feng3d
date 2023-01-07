@@ -2,8 +2,6 @@ import { mathUtil } from '../../polyfill/MathUtil';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
 
-export interface Line3 extends MixinsLine3 { }
-
 /**
  * 3d直线
  */

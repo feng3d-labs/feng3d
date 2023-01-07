@@ -1,14 +1,4 @@
-declare global
-{
-    interface MathUtil
-    {
-
-    }
-}
-
-export interface MathUtil extends MathUtil { }
-
-export class MathUtil implements MathUtil
+export class MathUtil
 {
     /**
      * 角度转弧度因子

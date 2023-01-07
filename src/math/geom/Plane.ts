@@ -3,9 +3,9 @@ import { PlaneClassification } from '../enums/PlaneClassification';
 import { Line3 } from './Line3';
 import { Vector3 } from './Vector3';
 
-declare global
+declare module './Line3'
 {
-    interface MixinsLine3
+    interface Line3
     {
         /**
          * 获取经过该直线的平面
