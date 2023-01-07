@@ -209,7 +209,7 @@ export class Entity
      */
     removeComponent(component: Components): void
     {
-        console.assert(this.hasComponent(component), '只能移除在容器中的组件');
+        console.assert(component.entity === this, '只能移除在容器中的组件');
 
         const index = this.getComponentIndex(component);
         this.removeComponentAt(index);
@@ -267,36 +267,30 @@ export class Entity
      */
     swapComponents(a: Components, b: Components): void
     {
-        console.assert(this.hasComponent(a), '第一个子组件不在容器中');
-        console.assert(this.hasComponent(b), '第二个子组件不在容器中');
+        console.assert(a.entity === this, '第一个子组件不在容器中');
+        console.assert(b.entity === this, '第二个子组件不在容器中');
 
         this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
     }
 
     /**
      * 移除指定类型组件
-     * @param type 组件类型
+     * @param component 组件类型
      */
-    removeComponentsByType<T extends Components>(type: Constructor<T>)
+    removeComponentsByType<K extends ComponentNames>(component: K | Constructor<ComponentMap[K]>)
     {
-        const removeComponents: T[] = [];
+        const Constructor = Component.getConstructor(component);
+
+        const removeComponents: ComponentMap[K][] = [];
         for (let i = this._components.length - 1; i >= 0; i--)
         {
-            if (this._components[i].constructor === type)
-            { removeComponents.push(this.removeComponentAt(i) as T); }
+            if (this._components[i].constructor === Constructor)
+            {
+                removeComponents.push(this.removeComponentAt(i) as any);
+            }
         }
 
         return removeComponents;
-    }
-
-    /**
-     * 判断是否拥有组件
-     * @param com	被检测的组件
-     * @return		true：拥有该组件；false：不拥有该组件。
-     */
-    private hasComponent(com: Components): boolean
-    {
-        return this._components.indexOf(com) !== -1;
     }
 
     /**
@@ -312,7 +306,7 @@ export class Entity
         }
         console.assert(index >= 0 && index <= this.numComponents, '给出索引超出范围');
 
-        if (this.hasComponent(component))
+        if (component.entity === this)
         {
             index = Math.min(index, this._components.length - 1);
             this.setComponentIndex(component, index);
@@ -321,7 +315,7 @@ export class Entity
         }
 
         // 组件唯一时移除同类型的组件
-        const single = Component.isSingleComponent(component.constructor as any);
+        const single = Component.isSingleComponent(component);
         if (single)
         {
             this.removeComponentsByType(<Constructor<Components>>component.constructor);
