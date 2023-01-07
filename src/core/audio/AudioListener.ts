@@ -9,9 +9,9 @@ import { AddComponentMenu } from '../Menu';
 export let audioCtx: AudioContext;
 export let globalGain: GainNode;
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         AudioListener: AudioListener;
     }

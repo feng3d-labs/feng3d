@@ -9,23 +9,13 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        CircleGeometry: CircleGeometry
-    }
-
-    export interface MixinsDefaultGeometry
-    {
-        Circle: CircleGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Circle: Node3D;
-    }
+    interface GeometryMap { CircleGeometry: CircleGeometry }
+    interface DefaultGeometryMap { Circle: CircleGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Circle: Node3D; } }
 
 export interface ICircleGeometry
 {

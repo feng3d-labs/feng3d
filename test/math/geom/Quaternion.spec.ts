@@ -32,7 +32,7 @@ describe('Quaternion', () =>
         const v = new Vector3().random();
 
         const v1 = quat.rotatePoint(v);
-        const v2 = quat.toMatrix().transformPoint3(v);
+        const v2 = new Matrix4x4().fromQuaternion(quat).transformPoint3(v);
 
         ok(
             v1.equals(v2)

@@ -8,23 +8,14 @@ import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { PolyhedronGeometry } from './PolyhedronGeometry';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        OctahedronGeometry: OctahedronGeometry
-    }
+    interface GeometryMap { OctahedronGeometry: OctahedronGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Octahedron: OctahedronGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Octahedron: Node3D;
-    }
+    interface DefaultGeometryMap { Octahedron: OctahedronGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Octahedron: Node3D; } }
 
 /**
  * 八面体

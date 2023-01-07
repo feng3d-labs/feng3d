@@ -9,12 +9,12 @@ import { MouseEventMap, MouseInput } from './MouseInput';
 import { BeforeRenderEventData } from './View3D';
 import { WindowMouseInput } from './WindowMouseInput';
 
-declare global
+declare module './Node3D'
 {
     /**
      * 组件事件
      */
-    export interface MixinsNode3DEventMap
+    interface Node3DEventMap
     {
 
         /**
@@ -70,8 +70,11 @@ declare global
          */
         dblclick: PickingCollisionVO
     }
+}
 
-    export interface MixinsComponentMap { MouseEvent3D: MouseEvent3D; }
+declare module '../../ecs/Component'
+{
+    interface ComponentMap { MouseEvent3D: MouseEvent3D; }
 }
 
 /**

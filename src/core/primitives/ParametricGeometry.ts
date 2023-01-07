@@ -3,13 +3,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
-declare global
-{
-    export interface MixinsGeometryMap
-    {
-        ParametricGeometry: ParametricGeometry
-    }
-}
+declare module '../geometry/Geometry' { interface GeometryMap { ParametricGeometry: ParametricGeometry } }
 
 @Serializable('ParametricGeometry')
 export class ParametricGeometry extends Geometry

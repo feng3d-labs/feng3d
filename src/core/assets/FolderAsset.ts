@@ -3,9 +3,9 @@ import { Serializable } from '../../serialization/Serializable';
 import { AssetType } from './AssetType';
 import { FileAsset, setAssetTypeClass } from './FileAsset';
 
-declare global
+declare module '../../core/assets/FileAsset'
 {
-    export interface MixinsAssetTypeClassMap
+    interface AssetTypeClassMap
     {
         'folder': new () => FolderAsset;
     }

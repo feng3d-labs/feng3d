@@ -6,21 +6,13 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        SphereGeometry: SphereGeometry
-    }
-    export interface MixinsDefaultGeometry
-    {
-        Sphere: SphereGeometry;
-    }
-    export interface MixinsPrimitiveNode3D
-    {
-        Sphere: Node3D;
-    }
+    interface GeometryMap { SphereGeometry: SphereGeometry }
+    interface DefaultGeometryMap { Sphere: SphereGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Sphere: Node3D; } }
 
 /**
  * 球体几何体

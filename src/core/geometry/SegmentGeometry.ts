@@ -10,17 +10,9 @@ import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Geometry } from './Geometry';
 
-declare global
-{
-    export interface MixinsPrimitiveNode3D
-    {
-        Segment: Node3D;
-    }
-    export interface MixinsGeometryMap
-    {
-        SegmentGeometry: SegmentGeometry
-    }
-}
+declare module '../core/Node3D' { interface PrimitiveNode3D { Segment: Node3D; } }
+
+declare module './Geometry' { interface GeometryMap { SegmentGeometry: SegmentGeometry } }
 
 /**
  * 线段组件

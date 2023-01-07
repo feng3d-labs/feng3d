@@ -10,17 +10,10 @@ import { Material } from '../Material';
 import standardFragment from './standard_fragment_glsl';
 import standardVertex from './standard_vertex_glsl';
 
-declare global
+declare module '../Material'
 {
-    export interface MixinsDefaultMaterial
-    {
-        'Default-Material': Material;
-    }
-
-    export interface MixinsMaterialMap
-    {
-        standard: StandardMaterial
-    }
+    interface DefaultMaterialMap { 'Default-Material': Material; }
+    interface MaterialMap { standard: StandardMaterial }
 }
 
 @Serializable('StandardMaterial')

@@ -6,23 +6,14 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        TorusKnotGeometry: TorusKnotGeometry
-    }
+    interface GeometryMap { TorusKnotGeometry: TorusKnotGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        TorusKnot: TorusKnotGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        TorusKnot: Node3D;
-    }
+    interface DefaultGeometryMap { TorusKnot: TorusKnotGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { TorusKnot: Node3D; } }
 
 /**
  * 环形结

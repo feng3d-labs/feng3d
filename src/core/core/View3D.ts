@@ -22,8 +22,11 @@ declare global
     {
         gl: WebGLRenderer;
     }
+}
 
-    export interface MixinsNode3DEventMap
+declare module './Node3D'
+{
+    interface Node3DEventMap
     {
         /**
          * 渲染前事件，将在每次渲染前进行派发。
@@ -37,8 +40,11 @@ declare global
          */
         afterRender: AfterRenderEventData;
     }
+}
 
-    export interface MixinsComponentMap { View3D: View3D; }
+declare module '../../ecs/Component'
+{
+    interface ComponentMap { View3D: View3D; }
 }
 
 /**
@@ -337,7 +343,7 @@ export class View3D extends Component3D
         {
             if (!node3d) return false;
 
-            const m = node3d.getComponent('Renderer');
+            const m = node3d.getComponent('MeshRenderer');
             if (m)
             {
                 const include = m.selfWorldBounds.toPoints().every((pos) =>

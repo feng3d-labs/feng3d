@@ -9,13 +9,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        CanvasRenderer: CanvasRenderer;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: CanvasRenderer; } }
 
 /**
  * 可在画布上渲染组件，使得拥有该组件的Object3D可以在画布上渲染。

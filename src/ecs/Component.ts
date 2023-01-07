@@ -9,11 +9,6 @@ import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Entity, EntityEventMap } from './Entity';
 
-declare global
-{
-    interface MixinsComponentMap { }
-}
-
 interface ComponentInfo
 {
     /**
@@ -89,7 +84,7 @@ export const componentMap: ComponentMap = <any>{};
 /**
  * 组件名称与类定义映射，新建组件一般都需扩展该接口。
  */
-export interface ComponentMap extends MixinsComponentMap { Component: Component }
+export interface ComponentMap { Component: Component }
 
 /**
  * 组件

@@ -4,13 +4,7 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Geometry } from './Geometry';
 
-declare global
-{
-    export interface MixinsGeometryMap
-    {
-        CustomGeometry: CustomGeometry
-    }
-}
+declare module './Geometry' { interface GeometryMap { CustomGeometry: CustomGeometry } }
 
 @Serializable('CustomGeometry')
 export class CustomGeometry extends Geometry

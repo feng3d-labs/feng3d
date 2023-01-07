@@ -12,13 +12,7 @@ import { SpotLight } from '../../light/SpotLight';
 import { Scene } from '../../scene/Scene';
 import { FrameBufferObject } from '../FrameBufferObject';
 
-declare global
-{
-    export interface MixinsRenderAtomic
-    {
-        shadowShader: Shader;
-    }
-}
+declare module '../../../renderer/data/RenderAtomic' { interface RenderAtomic { shadowShader: Shader; } }
 
 export class ShadowRenderer
 {

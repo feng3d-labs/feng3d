@@ -3,9 +3,9 @@ import { setAssetTypeClass } from '../../core/assets/FileAsset';
 import { Serializable } from '../../serialization/Serializable';
 import { ScriptAsset } from './ScriptAsset';
 
-declare global
+declare module '../../core/assets/FileAsset'
 {
-    export interface MixinsAssetTypeClassMap
+    interface AssetTypeClassMap
     {
         'shader': new () => ShaderAsset;
     }

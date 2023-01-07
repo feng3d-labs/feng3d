@@ -14,7 +14,7 @@
     "build": "vite build",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "types": "tsc && rollup -c",
+    "types": "tsc && rollup -c && node scripts/indexdts.js",
     "lint": "eslint --ext .js --ext .ts src test rollup.config.js --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc",

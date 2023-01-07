@@ -13,9 +13,9 @@ import { ticker } from '../utils/Ticker';
 import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
 
-declare global
+declare module './Node3D'
 {
-    export interface MixinsNode3DEventMap
+    export interface Node3DEventMap
     {
         /**
          * 尺寸变化事件
@@ -28,7 +28,11 @@ declare global
         pivotChanged: TransformLayout;
     }
 
-    export interface MixinsComponentMap
+}
+
+declare module '../../ecs/Component'
+{
+    interface ComponentMap
     {
         TransformLayout: TransformLayout;
     }

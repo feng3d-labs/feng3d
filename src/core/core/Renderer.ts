@@ -2,14 +2,9 @@ import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Component3D } from './Component3D';
-
-declare global
-{
-    export interface MixinsComponentMap { Renderer: Renderer; }
-}
 
 /**
  * 渲染器组件

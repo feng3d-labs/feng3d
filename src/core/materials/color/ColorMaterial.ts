@@ -7,17 +7,11 @@ import { Material } from '../Material';
 import colorFragment from './color_fragment_glsl';
 import colorVertex from './color_vertex_glsl';
 
-declare global
+declare module '../Material'
 {
-    interface MixinsMaterialMap
-    {
-        color: ColorMaterial
-    }
+    interface MaterialMap { color: ColorMaterial }
 
-    export interface MixinsDefaultMaterial
-    {
-        'Color-Material': ColorMaterial;
-    }
+    interface DefaultMaterialMap { 'Color-Material': ColorMaterial; }
 }
 
 /**

@@ -10,9 +10,9 @@ import { RunEnvironment } from '../core/RunEnvironment';
 import { AddComponentMenu } from '../Menu';
 import { ticker } from '../utils/Ticker';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         FPSController: FPSController;
     }

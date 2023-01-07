@@ -2,13 +2,13 @@ import { Geometry } from '../../core/geometry/Geometry';
 import { geometryUtils } from '../../core/geometry/GeometryUtils';
 import { Serializable } from '../../serialization/Serializable';
 
-declare global
+declare module '../../core/geometry/Geometry'
 {
-    export interface MixinsGeometryMap
+    interface GeometryMap
     {
         UIGeometry: UIGeometry
     }
-    export interface MixinsDefaultGeometry
+    interface DefaultGeometryMap
     {
         'Default-UIGeometry': UIGeometry;
     }

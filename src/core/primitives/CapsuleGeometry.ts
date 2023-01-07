@@ -6,23 +6,11 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
-declare global
-{
-    export interface MixinsGeometryMap
-    {
-        CapsuleGeometry: CapsuleGeometry
-    }
+declare module '../geometry/Geometry' { interface GeometryMap { CapsuleGeometry: CapsuleGeometry } }
 
-    export interface MixinsDefaultGeometry
-    {
-        Capsule: CapsuleGeometry;
-    }
+declare module '../geometry/Geometry' { interface DefaultGeometryMap { Capsule: CapsuleGeometry; } }
 
-    export interface MixinsPrimitiveNode3D
-    {
-        Capsule: Node3D;
-    }
-}
+declare module '../core/Node3D' { interface PrimitiveNode3D { Capsule: Node3D; } }
 
 /**
  * 胶囊体几何体

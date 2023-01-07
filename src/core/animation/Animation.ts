@@ -7,9 +7,9 @@ import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap { Animation: Animation; }
+    interface ComponentMap { Animation: Animation; }
 }
 
 @AddComponentMenu('Animator/Animation')

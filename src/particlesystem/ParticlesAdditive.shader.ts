@@ -7,14 +7,9 @@ import { Serializable } from '../serialization/Serializable';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 
-declare global
+declare module '../core/materials/Material'
 {
-    export interface MixinsUniformsTypes
-    {
-        Particles_Additive: ParticlesAdditiveUniforms
-    }
-
-    export interface MixinsDefaultMaterial
+    interface DefaultMaterialMap
     {
         'Particle-Material': Material;
     }

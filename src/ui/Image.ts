@@ -1,27 +1,18 @@
 import { Camera } from '../core/cameras/Camera';
-import { RegisterComponent, Component } from '../ecs/Component';
-import { Node3D } from '../core/core/Node3D';
 import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
 import { Texture2D } from '../core/textures/Texture2D';
+import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { CanvasRenderer } from './core/CanvasRenderer';
-import { Node2D } from './core/Node2D';
-import { Component3D } from '../core/core/Component3D';
 import { Component2D } from './core/Component2D';
+import { Node2D } from './core/Node2D';
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        Image: Image
-    }
-}
+declare module '../ecs/Component' { interface ComponentMap { Image: Image } }
 
 /**
  * 图片组件
@@ -71,9 +62,9 @@ export class Image extends Component2D
     }
 }
 
-declare global
+declare module './core/Node2D'
 {
-    export interface MixinsPrimitiveNode2D
+    interface PrimitiveNode2D
     {
         Image: Node2D;
     }

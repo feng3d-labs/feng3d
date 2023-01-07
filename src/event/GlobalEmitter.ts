@@ -1,16 +1,13 @@
 import { EventEmitter } from './EventEmitter';
 
-declare global
+/**
+ * 全局事件列表
+ */
+export interface GlobalEvents
 {
-    /**
-     * 事件列表
-     */
-    export interface MixinsGlobalEvents
-    {
-    }
 }
 
 /**
  * 全局事件发射器。
  */
-export const globalEmitter = new EventEmitter<MixinsGlobalEvents>();
+export const globalEmitter = new EventEmitter<GlobalEvents>();

@@ -17,24 +17,26 @@ import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
 import { Projection } from './Projection';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsNode3DEventMap
-    {
-        lensChanged;
-    }
-
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         Camera: Camera;
     }
+}
 
-    export interface MixinsPrimitiveNode3D
+declare module '../core/Node3D'
+{
+    export interface Node3DEventMap
+    {
+        lensChanged: Camera;
+    }
+
+    export interface PrimitiveNode3D
     {
         Camera: Node3D;
     }
 }
-
 /**
  * 摄像机
  */
@@ -112,7 +114,7 @@ export class Camera extends Component3D
         this.invalidateViewProjection();
 
         this.emitter.emit('refreshView');
-        this.emitter.emit('lensChanged');
+        this.emitter.emit('lensChanged', this);
     }
     private _lens: LensBase;
 

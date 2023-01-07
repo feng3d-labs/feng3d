@@ -6,18 +6,12 @@ import { Color3 } from '../math/Color3';
 import { Color4 } from '../math/Color4';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
-import { shaderConfig } from '../renderer/shader/ShaderLib';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 
-declare global
+declare module '../core/materials/Material'
 {
-    export interface MixinsUniformsTypes
-    {
-        terrain: TerrainUniforms
-    }
-
-    export interface MixinsDefaultMaterial
+    interface DefaultMaterialMap
     {
         'Terrain-Material': Material;
     }

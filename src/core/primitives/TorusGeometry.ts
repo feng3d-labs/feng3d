@@ -7,21 +7,13 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
-declare global
+declare module '../geometry/Geometry'
 {
-	export interface MixinsGeometryMap
-	{
-		TorusGeometry: TorusGeometry
-	}
-	export interface MixinsDefaultGeometry
-	{
-		Torus: TorusGeometry;
-	}
-	export interface MixinsPrimitiveNode3D
-	{
-		Torus: Node3D;
-	}
+	interface GeometryMap { TorusGeometry: TorusGeometry }
+	interface DefaultGeometryMap { Torus: TorusGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Torus: Node3D; } }
 
 /**
  * 圆环几何体

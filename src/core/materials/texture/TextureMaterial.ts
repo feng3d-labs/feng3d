@@ -8,13 +8,7 @@ import { Material } from '../Material';
 import textureFragment from './texture_fragment_glsl';
 import textureVertex from './texture_vertex_glsl';
 
-declare global
-{
-    export interface MixinsMaterialMap
-    {
-        texture: TextureMaterial
-    }
-}
+declare module '../Material' { interface MaterialMap { texture: TextureMaterial } }
 
 @Serializable('TextureMaterial')
 export class TextureMaterial extends Material

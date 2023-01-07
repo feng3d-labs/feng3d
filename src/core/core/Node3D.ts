@@ -20,13 +20,7 @@ import { BoundingBox } from './BoundingBox';
 import { HideFlags } from './HideFlags';
 import { Node, NodeEventMap } from './Node';
 
-declare global
-{
-    interface MixinsNode3DEventMap { }
-    interface MixinsPrimitiveNode3D { }
-}
-
-export interface Node3DEventMap extends NodeEventMap, MixinsNode3DEventMap
+export interface Node3DEventMap extends NodeEventMap
 {
     /**
      * 本地矩阵发生变化
@@ -577,7 +571,7 @@ export class Node3D extends Node
      * @param type 游戏对象类型。
      * @param param 游戏对象参数。
      */
-    static createPrimitive<K extends keyof PrimitiveObject3D>(type: K, param?: gPartial<Node3D>)
+    static createPrimitive<K extends keyof PrimitiveNode3D>(type: K, param?: gPartial<Node3D>)
     {
         const g = new Node3D();
         g.name = type;
@@ -596,7 +590,7 @@ export class Node3D extends Node
      * @param type 原始游戏对象类型。
      * @param handler 构建原始游戏对象的函数。
      */
-    static registerPrimitive<K extends keyof PrimitiveObject3D>(type: K, handler: (node3d: Node3D) => void)
+    static registerPrimitive<K extends keyof PrimitiveNode3D>(type: K, handler: (node3d: Node3D) => void)
     {
         if (this._registerPrimitives[type])
         {
@@ -608,9 +602,9 @@ export class Node3D extends Node
 }
 
 /**
- * 原始游戏对象，可以通过Object3D.createPrimitive进行创建。
+ * 原始游戏对象，可以通过Node3D.createPrimitive进行创建。
  */
-export interface PrimitiveObject3D extends MixinsPrimitiveNode3D
+export interface PrimitiveNode3D
 {
 }
 

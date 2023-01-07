@@ -5,23 +5,6 @@ import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Color3 } from './Color3';
 import { Vector4 } from './geom/Vector4';
 
-declare global
-{
-    interface MixinsColor3
-    {
-        toColor4(color4?: Color4): Color4
-    }
-}
-
-Color3.prototype.toColor4 = function toColor4(color4 = new Color4())
-{
-    color4.r = this.r;
-    color4.g = this.g;
-    color4.b = this.b;
-
-    return color4;
-};
-
 /**
  * 颜色（包含透明度）
  */

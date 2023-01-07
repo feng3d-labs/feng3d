@@ -1,3 +1,4 @@
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
@@ -6,16 +7,19 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
-import { RegisterComponent, Component } from '../../ecs/Component';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         OutLineComponent: OutLineComponent;
     }
+}
 
-    export interface MixinsUniforms
+import '../../renderer/data/Uniforms';
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
     {
         /**
          * 描边宽度

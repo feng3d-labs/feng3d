@@ -10,19 +10,7 @@ import { AssetData } from '../core/AssetData';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 
-declare global
-{
-    interface MixinsDefaultMaterial
-    {
-
-    }
-    interface MixinsMaterialMap
-    {
-
-    }
-}
-
-export interface MaterialMap extends MixinsMaterialMap { }
+export interface MaterialMap { }
 
 /**
  * 材质
@@ -139,7 +127,7 @@ export abstract class Material extends EventEmitter
      * @param name 材质名称
      * @param material 材质数据
      */
-    static setDefault<K extends keyof DefaultMaterial>(name: K, material: Material)
+    static setDefault<K extends keyof DefaultMaterialMap>(name: K, material: Material)
     {
         this._defaultMaterials[<any>name] = material;
         material.name = name;
@@ -151,17 +139,17 @@ export abstract class Material extends EventEmitter
      *
      * @param name 材质名称
      */
-    static getDefault<K extends keyof DefaultMaterial>(name: K)
+    static getDefault<K extends keyof DefaultMaterialMap>(name: K)
     {
         return this._defaultMaterials[name];
     }
-    private static _defaultMaterials: DefaultMaterial = <any>{};
+    private static _defaultMaterials: DefaultMaterialMap = <any>{};
 }
 
 /**
  * 默认材质
  */
-export interface DefaultMaterial extends MixinsDefaultMaterial
+export interface DefaultMaterialMap
 {
 }
 

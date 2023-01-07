@@ -1,14 +1,14 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { AddComponentMenu } from '../Menu';
-import { Component, RegisterComponent } from '../../ecs/Component';
 import { Component3D } from '../core/Component3D';
+import { AddComponentMenu } from '../Menu';
 
-declare global
+declare module '../../ecs/Component'
 {
-    export interface MixinsComponentMap
+    interface ComponentMap
     {
         BillboardComponent: BillboardComponent;
     }

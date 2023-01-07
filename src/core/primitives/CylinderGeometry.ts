@@ -7,23 +7,14 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        CylinderGeometry: CylinderGeometry
-    }
+    export interface GeometryMap { CylinderGeometry: CylinderGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Cylinder: CylinderGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Cylinder: Node3D;
-    }
+    export interface DefaultGeometryMap { Cylinder: CylinderGeometry; }
 }
+
+declare module '../core/Node3D' { export interface PrimitiveNode3D { Cylinder: Node3D; } }
 
 export interface ICylinderGeometry
 {

@@ -5,9 +5,9 @@ import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { TextAsset } from './TextAsset';
 
-declare global
+declare module '../../core/assets/FileAsset'
 {
-    export interface MixinsAssetTypeClassMap
+    interface AssetTypeClassMap
     {
         'script': new () => ScriptAsset;
     }

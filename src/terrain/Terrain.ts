@@ -6,18 +6,9 @@ import { Component, RegisterComponent } from '../ecs/Component';
 import { Serializable } from '../serialization/Serializable';
 import { TerrainData } from './TerrainData';
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        Terrain: Terrain
-    }
+declare module '../ecs/Component' { interface ComponentMap { Terrain: Terrain } }
 
-    export interface MixinsPrimitiveNode3D
-    {
-        Terrain: Node3D;
-    }
-}
+declare module '../core/core/Node3D' { interface PrimitiveNode3D { Terrain: Node3D; } }
 
 /**
  * The Terrain component renders the terrain.

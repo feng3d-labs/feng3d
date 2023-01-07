@@ -7,55 +7,6 @@ import { Ray3 } from './Ray3';
 import { Vector3 } from './Vector3';
 import { Vector4 } from './Vector4';
 
-declare global
-{
-    interface MixinsQuaternion
-    {
-        toMatrix(target?: Matrix4x4): Matrix4x4
-    }
-}
-
-/**
- * 转换为矩阵
- *
- * @param target
- */
-Quaternion.prototype.toMatrix = function toMatrix(this: Quaternion, target = new Matrix4x4())
-{
-    const elements = target.elements;
-    const { x, y, z, w } = this;
-    //
-    const xy2 = 2 * x * y;
-    const xz2 = 2 * x * z;
-    const xw2 = 2 * x * w;
-    const yz2 = 2 * y * z;
-    const yw2 = 2 * y * w;
-    const zw2 = 2 * z * w;
-    const xx = x * x;
-    const yy = y * y;
-    const zz = z * z;
-    const ww = w * w;
-
-    elements[0] = xx - yy - zz + ww;
-    elements[4] = xy2 - zw2;
-    elements[8] = xz2 + yw2;
-    elements[12] = 0;
-    elements[1] = xy2 + zw2;
-    elements[5] = -xx + yy - zz + ww;
-    elements[9] = yz2 - xw2;
-    elements[13] = 0;
-    elements[2] = xz2 - yw2;
-    elements[6] = yz2 + xw2;
-    elements[10] = -xx - yy + zz + ww;
-    elements[14] = 0;
-    elements[3] = 0;
-    elements[7] = 0;
-    elements[11] = 0;
-    elements[15] = 1;
-
-    return target;
-};
-
 type NumberArray16 = [
     number, number, number, number,
     number, number, number, number,
@@ -344,7 +295,36 @@ export class Matrix4x4
      */
     fromQuaternion(q: Quaternion)
     {
-        q.toMatrix(this);
+        const elements = this.elements;
+        const { x, y, z, w } = q;
+        //
+        const xy2 = 2 * x * y;
+        const xz2 = 2 * x * z;
+        const xw2 = 2 * x * w;
+        const yz2 = 2 * y * z;
+        const yw2 = 2 * y * w;
+        const zw2 = 2 * z * w;
+        const xx = x * x;
+        const yy = y * y;
+        const zz = z * z;
+        const ww = w * w;
+
+        elements[0] = xx - yy - zz + ww;
+        elements[4] = xy2 - zw2;
+        elements[8] = xz2 + yw2;
+        elements[12] = 0;
+        elements[1] = xy2 + zw2;
+        elements[5] = -xx + yy - zz + ww;
+        elements[9] = yz2 - xw2;
+        elements[13] = 0;
+        elements[2] = xz2 - yw2;
+        elements[6] = yz2 + xw2;
+        elements[10] = -xx - yy + zz + ww;
+        elements[14] = 0;
+        elements[3] = 0;
+        elements[7] = 0;
+        elements[11] = 0;
+        elements[15] = 1;
 
         return this;
     }

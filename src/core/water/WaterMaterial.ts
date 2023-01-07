@@ -10,14 +10,14 @@ import { Texture2D } from '../textures/Texture2D';
 import waterFragment from './water_fragment_glsl';
 import waterVertex from './water_vertex_glsl';
 
-declare global
+declare module '../materials/Material'
 {
-    export interface MixinsMaterialMap
+    interface MaterialMap
     {
         water: WaterMaterial
     }
 
-    export interface MixinsDefaultMaterial
+    interface DefaultMaterialMap
     {
         'Water-Material': WaterMaterial;
     }

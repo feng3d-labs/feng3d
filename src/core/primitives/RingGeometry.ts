@@ -9,23 +9,14 @@ import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        Ring: RingGeometry
-    }
+    interface GeometryMap { Ring: RingGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Ring: RingGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Ring: Node3D;
-    }
+    interface DefaultGeometryMap { Ring: RingGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Ring: Node3D; } }
 
 export interface IRingGeometry
 {

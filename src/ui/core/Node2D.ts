@@ -17,10 +17,6 @@ import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 
-declare global
-{
-}
-
 /**
  * 2D结点事件映射
  */
@@ -248,7 +244,7 @@ export class Node2D extends Node
      * @param type 游戏对象类型。
      * @param param 游戏对象参数。
      */
-    static createPrimitive<K extends keyof PrimitiveObject2D>(type: K, param?: gPartial<Node2D>)
+    static createPrimitive<K extends keyof PrimitiveNode2D>(type: K, param?: gPartial<Node2D>)
     {
         const g = new Node2D();
         g.name = type;
@@ -267,7 +263,7 @@ export class Node2D extends Node
      * @param type 原始游戏对象类型。
      * @param handler 构建原始游戏对象的函数。
      */
-    static registerPrimitive<K extends keyof PrimitiveObject2D>(type: K, handler: (object2D: Node2D) => void)
+    static registerPrimitive<K extends keyof PrimitiveNode2D>(type: K, handler: (object2D: Node2D) => void)
     {
         if (this._registerPrimitives[type])
         {
@@ -278,15 +274,9 @@ export class Node2D extends Node
     static _registerPrimitives: { [type: string]: (node2d: Node2D) => void } = {};
 }
 
-declare global
-{
-    interface MixinsNode3DEventMap { }
-    interface MixinsPrimitiveNode2D { }
-}
-
 /**
  * 原始游戏对象，可以通过Object3D.createPrimitive进行创建。
  */
-export interface PrimitiveObject2D extends MixinsPrimitiveNode2D
+export interface PrimitiveNode2D
 {
 }

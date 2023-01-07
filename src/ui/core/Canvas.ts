@@ -10,18 +10,9 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Component2D } from './Component2D';
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        Canvas: Canvas
-    }
+declare module '../../ecs/Component' { interface ComponentMap { Canvas: Canvas } }
 
-    export interface MixinsPrimitiveNode3D
-    {
-        Canvas: Node3D;
-    }
-}
+declare module '../../core/core/Node3D' { interface PrimitiveNode3D { Canvas: Node3D; } }
 
 /**
  * Element that can be used for screen rendering.

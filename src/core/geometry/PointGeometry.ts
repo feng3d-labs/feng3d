@@ -7,13 +7,7 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Geometry } from './Geometry';
 
-declare global
-{
-    export interface MixinsGeometryMap
-    {
-        PointGeometry: PointGeometry
-    }
-}
+declare module './Geometry' { interface GeometryMap { PointGeometry: PointGeometry } }
 
 /**
  * 点几何体

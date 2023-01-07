@@ -1,21 +1,11 @@
-import { LazyObject, Lazy, gPartial, lazy } from '../../polyfill/Types';
+import { gPartial, Lazy, lazy, LazyObject } from '../../polyfill/Types';
 import { WebGLAttributeBuffers } from '../gl/WebGLAttributeBuffers';
 import { ShaderMacro } from '../shader/Macro';
 import { AttributeBuffer } from './AttributeBuffer';
 import { ElementBuffer } from './ElementBuffer';
 import { RenderParams } from './RenderParams';
 import { Shader } from './Shader';
-import { Uniforms } from './Uniform';
-
-declare global
-{
-    interface MixinsRenderAtomic
-    {
-
-    }
-}
-
-export interface RenderAtomic extends MixinsRenderAtomic { }
+import { Uniforms } from './Uniforms';
 
 /**
  * 渲染原子（该对象会收集一切渲染所需数据以及参数）

@@ -3,9 +3,9 @@ import { FileAsset, setAssetTypeClass } from '../../core/assets/FileAsset';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 
-declare global
+declare module '../../core/assets/FileAsset'
 {
-    export interface MixinsAssetTypeClassMap
+    interface AssetTypeClassMap
     {
         'txt': new () => TextAsset;
     }

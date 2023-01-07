@@ -1,3 +1,16 @@
+declare global
+{
+    interface ArrayBuffer
+    {
+        image: HTMLImageElement
+    }
+
+    interface HTMLImageElement
+    {
+        arraybuffer: ArrayBuffer
+    }
+}
+
 /**
  * 数据类型转换
  * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换

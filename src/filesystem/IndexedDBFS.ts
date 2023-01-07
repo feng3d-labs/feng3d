@@ -4,6 +4,22 @@ import { _indexedDB } from './base/_IndexedDB';
 import { FSType } from './FSType';
 import { IReadWriteFS } from './IReadWriteFS';
 
+declare module '../event/GlobalEmitter'
+{
+    interface GlobalEvents
+    {
+        /**
+         * 删除文件
+         */
+        'fs.delete': string;
+
+        /**
+         * 写文件
+         */
+        'fs.write': string;
+    }
+}
+
 /**
  * 用于是否为文件夹
  */

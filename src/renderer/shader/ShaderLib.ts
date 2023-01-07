@@ -1,4 +1,4 @@
-import { RenderParams } from '../data/RenderParams';
+import { globalEmitter } from '../../event/GlobalEmitter';
 import { shaderMacroUtils } from './ShaderMacroUtils';
 
 export const shaderConfig: ShaderConfig = { shaders: {}, modules: {} };
@@ -117,3 +117,19 @@ export class ShaderLib
  * shader 库
  */
 export const shaderlib = new ShaderLib();
+
+declare module '../../event/GlobalEmitter'
+{
+    interface GlobalEvents
+    {
+        /**
+         * shader资源发生变化
+         */
+        'asset.shaderChanged': any;
+    }
+}
+
+globalEmitter.on('asset.shaderChanged', () =>
+{
+    shaderlib.clearCache();
+});

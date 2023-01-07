@@ -39,22 +39,15 @@ import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSh
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
 
-declare global
-{
-    export interface MixinsComponentMap
-    {
-        ParticleSystem: ParticleSystem
-    }
-    export interface MixinsDefaultGeometry
-    {
-        'Billboard-Geometry': QuadGeometry;
-    }
-    export interface MixinsPrimitiveNode3D
-    {
-        'Particle System': Node3D;
-    }
+declare module '../ecs/Component' { interface ComponentMap { ParticleSystem: ParticleSystem } }
 
-    export interface MixinsNode3DEventMap
+declare module '../core/geometry/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
+
+declare module '../core/core/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
+
+declare module '../core/core/Node3D'
+{
+    interface Node3DEventMap
     {
         /**
          * 粒子系统播放完一个周期

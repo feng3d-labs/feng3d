@@ -8,23 +8,14 @@ import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { PolyhedronGeometry } from './PolyhedronGeometry';
 
-declare global
+declare module '../geometry/Geometry'
 {
-    export interface MixinsGeometryMap
-    {
-        TetrahedronGeometry: TetrahedronGeometry
-    }
+    interface GeometryMap { TetrahedronGeometry: TetrahedronGeometry }
 
-    export interface MixinsDefaultGeometry
-    {
-        Tetrahedron: TetrahedronGeometry;
-    }
-
-    export interface MixinsPrimitiveNode3D
-    {
-        Tetrahedron: Node3D;
-    }
+    interface DefaultGeometryMap { Tetrahedron: TetrahedronGeometry; }
 }
+
+declare module '../core/Node3D' { interface PrimitiveNode3D { Tetrahedron: Node3D; } }
 
 /**
  * 四面体
