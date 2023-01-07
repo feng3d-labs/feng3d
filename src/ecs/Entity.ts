@@ -3,7 +3,7 @@ import { oav } from '../objectview/ObjectView';
 import { Constructor, gPartial } from '../polyfill/Types';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { Component, Components } from './Component';
+import { Component, ComponentMap, ComponentNames, Components, getComponentType } from './Component';
 
 export interface EntityEventMap
 {
@@ -82,25 +82,27 @@ export class Entity
     /**
      * 添加一个类型为`type`的组件到游戏对象。
      *
-     * @param Type 组件类定义。
+     * @param Constructor 组件类定义。
      * @returns 被添加的组件。
      */
-    addComponent<T extends Component>(Type: Constructor<T>, params?: gPartial<T>): T
+    addComponent<K extends ComponentNames>(componentName: K, params?: gPartial<ComponentMap[K]>): ComponentMap[K]
     {
-        let component = this.getComponent(Type);
-        if (component && Component.isSingleComponent(Type))
+        const Constructor = getComponentType(componentName);
+
+        let component = this.getComponent(componentName);
+        if (component && Component.isSingleComponent(Constructor))
         {
             // alert(`The compnent ${param["name"]} can't be added because ${this.name} already contains the same component.`);
             return component;
         }
-        const dependencies = Component.getDependencies(Type);
+        const dependencies = Component.getDependencies(Constructor);
         // 先添加依赖
         dependencies.forEach((dependency) =>
         {
             this.addComponent(dependency);
         });
         //
-        component = new Type();
+        component = new Constructor();
         $set(component, params);
         this.addComponentAt(component, this._components.length);
 
@@ -112,16 +114,19 @@ export class Entity
      *
      * 使用 Entity.GetComponent 将返回找到的第一个组件。如果您希望有多个相同类型的组件，请改用 Entity.GetComponents，并循环通过返回的组件测试某些唯一属性。
      *
-     * @param type 要检索的组件类型。
+     * @param componentName 要检索的组件类型。
      * @returns 要检索的组件。
      */
-    getComponent<T extends Component>(type: Constructor<T>): T
+    getComponent<K extends ComponentNames>(componentName: K): ComponentMap[K]
     {
+        const Constructor = getComponentType(componentName);
+
         for (let i = 0; i < this._components.length; i++)
         {
-            if (this._components[i] instanceof type)
+            const compnent = this._components[i];
+            if (compnent instanceof Constructor)
             {
-                return this._components[i] as T;
+                return compnent;
             }
         }
 
