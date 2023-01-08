@@ -16,14 +16,6 @@ import { ticker } from '../utils/Ticker';
 import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
 
-declare global
-{
-    interface HTMLCanvasElement
-    {
-        gl: WebGLRenderer;
-    }
-}
-
 declare module './Node3D'
 {
     interface Node3DEventMap
@@ -111,14 +103,15 @@ export class View3D extends Component3D
 
     get webGLRenderer()
     {
-        if (!this.canvas.gl)
+        if (!this._webGLRenderer)
         {
             const parameters: Partial<WebGLRendererParameters> = Object.assign({ canvas: this.canvas }, this._contextAttributes);
-            this.canvas.gl = new WebGLRenderer(parameters);
+            this._webGLRenderer = new WebGLRenderer(parameters);
         }
 
-        return this.canvas.gl;
+        return this._webGLRenderer;
     }
+    private _webGLRenderer: WebGLRenderer;
 
     /**
      * 鼠标在3D视图中的位置

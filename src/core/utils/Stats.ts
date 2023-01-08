@@ -1,192 +1,90 @@
-import { ticker } from './Ticker';
+import Stats1 from 'stats.js';
+import { Component, RegisterComponent } from '../../ecs/Component';
+import { Serializable } from '../../serialization/Serializable';
 
-/**
- * @author mrdoob / http://mrdoob.com/
- */
-declare global
+declare module '../../ecs/Component'
 {
-
-    interface Performance
-    {
-        memory: any;
-    }
+    interface ComponentMap { Stats: Stats; }
 }
 
-export class Stats
+@RegisterComponent({ name: 'Stats' })
+@Serializable('Stats')
+export class Stats extends Component
 {
-    static instance: Stats;
-    static init(parent?: HTMLElement)
+    __class__: 'Stats';
+
+    /**
+     * @private
+     */
+    private _stats: Stats1;
+
+    private _handle: number;
+
+    /**
+     * 是否自动更新。
+     */
+    isAuto = true;
+
+    /**
+     * 所在容器。
+     */
+    get container()
     {
-        if (!this.instance)
-        {
-            this.instance = new Stats();
-            parent = parent || document.body;
-            parent.appendChild(this.instance.dom);
-        }
-        ticker.onFrame(this.instance.update, this.instance);
+        return this._container;
+    }
+    set container(v)
+    {
+        this._container = v;
+        this._updateContainer();
     }
 
-    REVISION: number;
-    dom: HTMLDivElement;
-    domElement: HTMLDivElement;
-    addPanel: (panel: StatsPanel) => StatsPanel;
-    showPanel: (id: number) => void;
-    setMode: (id: number) => void;
-    begin: () => void;
-    end: () => number;
-    update: () => void;
-
-    constructor()
+    private _updateContainer()
     {
-        let mode = 0;
-        if (typeof document === 'undefined') return;
+        if (!this._stats) return;
 
-        const container = document.createElement('div');
-        container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;';
-        container.addEventListener('click', function (event)
+        if (this._container)
         {
-            event.preventDefault();
-            showPanel(++mode % container.children.length);
-        }, false);
-
-        //
-        function addPanel(panel: StatsPanel)
-        {
-            container.appendChild(panel.dom);
-
-            return panel;
+            this._container.appendChild(this._stats.dom);
         }
-
-        function showPanel(id: number)
+        else
         {
-            for (let i = 0; i < container.children.length; i++)
-            {
-                (<HTMLCanvasElement>container.children[i]).style.display = i === id ? 'block' : 'none';
-            }
-            mode = id;
+            document.body.appendChild(this._stats.dom);
         }
-
-        //
-        let beginTime = (performance || Date).now(); let prevTime = beginTime; let
-            frames = 0;
-
-        const fpsPanel = addPanel(new StatsPanel('FPS', '#0ff', '#002'));
-        const msPanel = addPanel(new StatsPanel('MS', '#0f0', '#020'));
-
-        let memPanel: StatsPanel;
-        if (self.performance && self.performance.memory)
-        {
-            memPanel = addPanel(new StatsPanel('MB', '#f08', '#201'));
-        }
-
-        showPanel(0);
-
-        this.REVISION = 16;
-        this.dom = container;
-        this.addPanel = addPanel;
-        this.showPanel = showPanel;
-
-        this.begin = () =>
-        {
-            beginTime = (performance || Date).now();
-        };
-
-        this.end = () =>
-        {
-            frames++;
-            const time = (performance || Date).now();
-            msPanel.update(time - beginTime, 200);
-            if (time > prevTime + 1000)
-            {
-                fpsPanel.update((frames * 1000) / (time - prevTime), 100);
-                prevTime = time;
-                frames = 0;
-                if (memPanel)
-                {
-                    const memory = performance.memory;
-                    memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
-                }
-            }
-
-            return time;
-        };
-
-        this.update = () =>
-        {
-            beginTime = this.end();
-        };
-
-        // Backwards Compatibility
-
-        this.domElement = container;
-        this.setMode = showPanel;
     }
-}
 
-export class StatsPanel
-{
-    dom: HTMLCanvasElement;
-    update: (value: number, maxValue: number) => void;
+    private _container: HTMLDivElement;
 
-    constructor(name: string, fg: string, bg: string)
+    init()
     {
-        let min = Infinity; let max = 0; const
-            round = Math.round;
-        const PR = round(window.devicePixelRatio || 1);
+        this._stats = new Stats1();
+        this._updateContainer();
 
-        const WIDTH = 80 * PR; const HEIGHT = 48 * PR;
-        const TEXT_X = 3 * PR; const TEXT_Y = 2 * PR;
-        const GRAPH_X = 3 * PR; const GRAPH_Y = 15 * PR;
-        const GRAPH_WIDTH = 74 * PR; const
-            GRAPH_HEIGHT = 30 * PR;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = WIDTH;
-        canvas.height = HEIGHT;
-        canvas.style.cssText = 'width:80px;height:48px';
-
-        const context0 = canvas.getContext('2d');
-        if (!context0)
+        if (this.isAuto)
         {
-            console.warn(`无法创建 CanvasRenderingContext2D `);
-
-            return;
+            this._handle = requestAnimationFrame(this.update.bind(this));
         }
-        const context = context0;
-        context.font = `bold ${9 * PR}px Helvetica,Arial,sans-serif`;
-        context.textBaseline = 'top';
+    }
 
-        context.fillStyle = bg;
-        context.fillRect(0, 0, WIDTH, HEIGHT);
+    update()
+    {
+        this._stats.update();
 
-        context.fillStyle = fg;
-        context.fillText(name, TEXT_X, TEXT_Y);
-        context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
-
-        context.fillStyle = bg;
-        context.globalAlpha = 0.9;
-        context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
-
-        this.dom = canvas;
-
-        this.update = (value: number, maxValue: number) =>
+        if (this.isAuto)
         {
-            min = Math.min(min, value);
-            max = Math.max(max, value);
+            this._handle = requestAnimationFrame(this.update.bind(this));
+        }
+    }
 
-            context.fillStyle = bg;
-            context.globalAlpha = 1;
-            context.fillRect(0, 0, WIDTH, GRAPH_Y);
-            context.fillStyle = fg;
-            context.fillText(`${round(value)} ${name} (${round(min)}-${round(max)})`, TEXT_X, TEXT_Y);
+    dispose()
+    {
+        if (this._handle)
+        {
+            cancelAnimationFrame(this._handle);
+        }
 
-            context.drawImage(canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
+        document.body.removeChild(this._stats.dom);
+        this._stats = null;
 
-            context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
-
-            context.fillStyle = bg;
-            context.globalAlpha = 0.9;
-            context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - (value / maxValue)) * GRAPH_HEIGHT));
-        };
+        super.dispose();
     }
 }

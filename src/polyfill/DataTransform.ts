@@ -1,16 +1,3 @@
-declare global
-{
-    interface ArrayBuffer
-    {
-        image: HTMLImageElement
-    }
-
-    interface HTMLImageElement
-    {
-        arraybuffer: ArrayBuffer
-    }
-}
-
 /**
  * 数据类型转换
  * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
@@ -203,14 +190,15 @@ export class DataTransform
 
     async imageToArrayBuffer(img: HTMLImageElement)
     {
-        if (img.arraybuffer)
+        let arraybuffer = imageBufferMap.get(img);
+        if (arraybuffer)
         {
-            return img.arraybuffer;
+            return arraybuffer;
         }
         const dataUrl = this.imageToDataURL(img);
-        const arraybuffer = await this.dataURLToArrayBuffer(dataUrl);
-        img.arraybuffer = arraybuffer;
-        arraybuffer.image = img;
+        arraybuffer = await this.dataURLToArrayBuffer(dataUrl);
+        imageBufferMap.set(img, arraybuffer);
+        bufferImageMap.set(arraybuffer, img);
 
         return arraybuffer;
     }
@@ -244,15 +232,16 @@ export class DataTransform
 
     async arrayBufferToImage(arrayBuffer: ArrayBuffer)
     {
-        if (arrayBuffer.image)
+        let img = bufferImageMap.get(arrayBuffer);
+        if (img)
         {
-            return arrayBuffer.image;
+            return img;
         }
 
         const dataurl = await this.arrayBufferToDataURL(arrayBuffer);
-        const img = await this.dataURLToImage(dataurl);
-        img.arraybuffer = arrayBuffer;
-        arrayBuffer.image = img;
+        img = await this.dataURLToImage(dataurl);
+        bufferImageMap.set(arrayBuffer, img);
+        imageBufferMap.set(img, arrayBuffer);
 
         return img;
     }
@@ -330,3 +319,6 @@ export class DataTransform
  * @see http://blog.csdn.net/yinwhm12/article/details/73482904
  */
 export const dataTransform = new DataTransform();
+
+const imageBufferMap = new WeakMap<HTMLImageElement, ArrayBuffer>();
+const bufferImageMap = new WeakMap<ArrayBuffer, HTMLImageElement>();

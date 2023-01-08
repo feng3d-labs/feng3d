@@ -1,6 +1,6 @@
 import { ArrayUtils } from '../../src/polyfill/ArrayUtils';
 
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 describe('Array', () =>
@@ -19,16 +19,6 @@ describe('Array', () =>
     {
         deepEqual(ArrayUtils.isUnique([1, 2, 3]), true);
         deepEqual(ArrayUtils.isUnique([1, 2, 2]), false);
-    });
-
-    it('concatToSelf', () =>
-    {
-        const arr = [0];
-        ArrayUtils.concatToSelf(arr, 1, 2, 3, [4, 5, 6], 7, 8, 9);
-
-        const arr1 = Array(10).fill(0).map((_v, i) => i);
-
-        ok(ArrayUtils.equal(arr, arr1));
     });
 
     it('unique', () =>

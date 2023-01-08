@@ -318,9 +318,12 @@ function getSerializableMembers(object: any, serializableMembers?: string[])
     {
         getSerializableMembers(object[protoKey], serializableMembers);
     }
-    const serializePropertys = object[_serialize__];
+    const serializePropertys: string[] = object[_serialize__];
 
-    if (serializePropertys) ArrayUtils.concatToSelf(serializableMembers, serializePropertys);
+    serializePropertys?.forEach((v) =>
+    {
+        serializableMembers.push(v);
+    });
     ArrayUtils.unique(serializableMembers);
 
     return serializableMembers;
