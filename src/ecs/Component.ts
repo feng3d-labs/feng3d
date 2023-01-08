@@ -239,7 +239,13 @@ export class Component
             return component.constructor as Constructor<ComponentMap[T]>;
         }
 
-        return Component._componentMap[component] as Constructor<ComponentMap[T]>;
+        const Constructor = Component._componentMap[component] as Constructor<ComponentMap[T]>;
+        if (!Constructor)
+        {
+            console.warn(`无法获取 ${component} 对应的构造函数，请使用 @RegisterComponent 进行注册！`);
+        }
+
+        return Constructor;
     }
 
     /**
@@ -251,8 +257,8 @@ export class Component
     {
         const Constructor = Component.getConstructor(component);
 
-        let prototype = Constructor.prototype;
         let dependencies: (keyof ComponentMap)[] = [];
+        let prototype = Constructor?.prototype;
         while (prototype)
         {
             dependencies = dependencies.concat((prototype[__component__] as ComponentInfo)?.dependencies || []);
