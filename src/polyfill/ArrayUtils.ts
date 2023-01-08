@@ -20,22 +20,6 @@ export class ArrayUtils
     }
 
     /**
-     * 连接一个或多个数组到自身
-     *
-     * @param array 被操作数组
-     * @param items 要添加到数组末尾的其他项。
-     * @returns 返回自身
-     */
-    static concatToSelf<T>(array: T[], ...items: (T | ConcatArray<T>)[]): T[]
-    {
-        let arr: T[] = [];
-        items.forEach((v) => { arr = arr.concat(v); });
-        arr.forEach((v) => array.push(v));
-
-        return array;
-    }
-
-    /**
      * 使数组变得唯一，不存在两个相等的元素
      *
      * @param array 被操作数组

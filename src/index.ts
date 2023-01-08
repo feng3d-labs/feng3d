@@ -249,7 +249,6 @@ export * from './particlesystem/shapes/ParticleSystemShapeCone';
 export * from './particlesystem/shapes/ParticleSystemShapeEdge';
 export * from './particlesystem/shapes/ParticleSystemShapeHemisphere';
 export * from './particlesystem/shapes/ParticleSystemShapeSphere';
-export * from './polyfill/Array';
 export * from './polyfill/ArrayUtils';
 export * from './polyfill/DataTransform';
 export * from './polyfill/MapUtils';

@@ -9,6 +9,7 @@
         "experimentalDecorators": true,
         "emitDeclarationOnly": true,
         "lib": [
+            "ES2016",
             "ES2015",
             "DOM",
         ],

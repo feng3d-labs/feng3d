@@ -3,15 +3,6 @@ import { ticker } from './Ticker';
 /**
  * @author mrdoob / http://mrdoob.com/
  */
-declare global
-{
-
-    interface Performance
-    {
-        memory: any;
-    }
-}
-
 export class Stats
 {
     static instance: Stats;
@@ -74,7 +65,7 @@ export class Stats
         const msPanel = addPanel(new StatsPanel('MS', '#0f0', '#020'));
 
         let memPanel: StatsPanel;
-        if (self.performance && self.performance.memory)
+        if (self.performance && self.performance['memory'])
         {
             memPanel = addPanel(new StatsPanel('MB', '#f08', '#201'));
         }
@@ -103,7 +94,7 @@ export class Stats
                 frames = 0;
                 if (memPanel)
                 {
-                    const memory = performance.memory;
+                    const memory = performance['memory'];
                     memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
                 }
             }
