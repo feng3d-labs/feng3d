@@ -116,9 +116,8 @@ export class Light extends Component3D
 
     private debugShadowMapObject: Node3D;
 
-    constructor()
+    init(): void
     {
-        super();
         this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent('Camera');
     }
 

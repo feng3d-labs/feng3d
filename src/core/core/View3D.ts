@@ -120,15 +120,8 @@ export class View3D extends Component3D
 
     viewRect = new Rectangle();
 
-    /**
-     * 构建3D视图
-     * @param canvas    画布
-     * @param scene     3D场景
-     * @param camera    摄像机
-     */
-    constructor()
+    init(): void
     {
-        super();
         const canvas = document.createElement('canvas');
         canvas.id = 'glcanvas';
         canvas.style.position = 'fixed';
@@ -142,11 +135,6 @@ export class View3D extends Component3D
         this.canvas = canvas;
 
         this.start();
-    }
-
-    init(): void
-    {
-
     }
 
     /**

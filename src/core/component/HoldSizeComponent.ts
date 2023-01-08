@@ -1,10 +1,10 @@
+import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { AddComponentMenu } from '../Menu';
-import { Component, RegisterComponent } from '../../ecs/Component';
 import { Component3D } from '../core/Component3D';
+import { AddComponentMenu } from '../Menu';
 
 declare module '../../ecs/Component'
 {
@@ -33,15 +33,10 @@ export class HoldSizeComponent extends Component3D
     @oav()
     camera: Camera;
 
-    constructor()
-    {
-        super();
-        watcher.watch(this as HoldSizeComponent, 'holdSize', this._invalidateGlobalTransform, this);
-        watcher.watch(this as HoldSizeComponent, 'camera', this._onCameraChanged, this);
-    }
-
     init()
     {
+        watcher.watch(this as HoldSizeComponent, 'holdSize', this._invalidateGlobalTransform, this);
+        watcher.watch(this as HoldSizeComponent, 'camera', this._onCameraChanged, this);
         this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
     }
 

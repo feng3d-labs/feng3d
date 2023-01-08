@@ -51,9 +51,9 @@ export class PointLight extends Light
         return new Vector2(x / 4, y / 2);
     }
 
-    constructor()
+    init(): void
     {
-        super();
+        super.init();
         this.shadowCamera.lens = new PerspectiveLens(90, 1, 0.1, this.range);
     }
 

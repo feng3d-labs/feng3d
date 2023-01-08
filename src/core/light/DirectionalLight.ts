@@ -39,11 +39,6 @@ export class DirectionalLight extends Light
         return this.shadowCamera.node3d.worldPosition;
     }
 
-    constructor()
-    {
-        super();
-    }
-
     /**
      * 通过视窗摄像机进行更新
      * @param viewCamera 视窗摄像机

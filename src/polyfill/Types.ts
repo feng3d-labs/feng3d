@@ -6,7 +6,7 @@
  * const Vector2Constructor: Constructor<Vector2> = Vector2;
  * ```
  */
-export type Constructor<T> = (new (...args: any[]) => T);
+export type Constructor<T = any> = (new (...args: any[]) => T);
 
 /**
  * 映射每个属性的类定义

@@ -129,6 +129,11 @@ export class Component
         return this._entity;
     }
 
+    constructor(...args: any[])
+    {
+        console.assert(args[0] === Component.constructorCode, `请组件使用默认构造函数，并使用 Entity.addComponent 进行新增组件!`, this);
+    }
+
     /**
      * 初始化组件
      *
@@ -213,6 +218,27 @@ export class Component
         this._entity = entity;
     }
     protected _entity: Entity;
+
+    /**
+     * 组件构造代码。
+     *
+     * 用于限制用户自己构造组件，推荐使用 Entity.addComponent 进行新增组件。
+     *
+     * @see Component.isOpenConstruct
+     */
+    private static readonly constructorCode = Math.random();
+
+    /**
+     * 组件无法直接使用关键字 new 来构造。
+     *
+     * @returns 新建的组件实例。
+     *
+     * @private
+     */
+    static __create__<T>(this: Constructor<T>): T
+    {
+        return new this(Component.constructorCode);
+    }
 
     /**
      * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。

@@ -107,7 +107,7 @@ export class Entity
 
         const Constructor = Component.getConstructor(componentName);
         //
-        component = new Constructor();
+        component = Constructor.__create__();
         $set(component, params);
         this.addComponentAt(component, this._components.length);
 

@@ -1,8 +1,6 @@
 import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
-import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { $set } from '../../serialization/Serialization';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Component3D } from './Component3D';
 
@@ -49,12 +47,6 @@ export class Renderer extends Component3D
         }
 
         return this._selfWorldBounds;
-    }
-
-    constructor(param?: gPartial<Renderer>)
-    {
-        super();
-        $set(this, param);
     }
 
     /**

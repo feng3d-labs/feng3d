@@ -27,15 +27,10 @@ export class BillboardComponent extends Component3D
     @oav()
     camera: Camera;
 
-    constructor()
-    {
-        super();
-        watcher.watch(this as BillboardComponent, 'camera', this._onCameraChanged, this);
-    }
-
     init()
     {
         super.init();
+        watcher.watch(this as BillboardComponent, 'camera', this._onCameraChanged, this);
         this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
         this._invalidHoldSizeMatrix();
     }
