@@ -38,6 +38,9 @@ declare global
 {
     interface Function
     {
+        /**
+         * @see Component.__create__
+         */
         __create__<T>(this: Constructor<T>): T
     }
 }

@@ -234,6 +234,8 @@ export class Component
      * @returns 新建的组件实例。
      *
      * @private
+     *
+     * @see getInstance
      */
     static __create__<T>(this: Constructor<T>): T
     {
