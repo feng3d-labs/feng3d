@@ -1,23 +1,22 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { Material } from '../../core/materials/Material';
 import { StandardMaterial } from '../../core/materials/standard/StandardMaterial';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare module '../../core/assets/FileAsset'
 {
     interface AssetTypeClassMap
     {
-        'material': new () => MaterialAsset;
+        MaterialAsset: MaterialAsset;
     }
 }
 
 /**
  * 材质资源
  */
-@Serializable('MaterialAsset')
+@RegisterAsset('MaterialAsset')
 export class MaterialAsset extends ObjectAsset
 {
     static extenson = '.json';
@@ -36,4 +35,3 @@ export class MaterialAsset extends ObjectAsset
     }
 }
 
-setAssetTypeClass('material', MaterialAsset);

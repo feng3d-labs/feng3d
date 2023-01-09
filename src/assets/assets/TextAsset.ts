@@ -1,20 +1,19 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { FileAsset, setAssetTypeClass } from '../../core/assets/FileAsset';
+import { FileAsset, RegisterAsset } from '../../core/assets/FileAsset';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 
 declare module '../../core/assets/FileAsset'
 {
     interface AssetTypeClassMap
     {
-        'txt': new () => TextAsset;
+        TextAsset: TextAsset;
     }
 }
 
 /**
  * 文本 资源
  */
-@Serializable('TextAsset')
+@RegisterAsset('TextAsset')
 export class TextAsset extends FileAsset
 {
     static extenson = '.txt';
@@ -45,4 +44,3 @@ export class TextAsset extends FileAsset
     }
 }
 
-setAssetTypeClass('txt', TextAsset);

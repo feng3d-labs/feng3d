@@ -77,11 +77,6 @@ export function RegisterComponent(component: {
 }
 
 /**
- * 组件名称与类定义映射，由 @RegisterComponent 装饰器进行填充。
- */
-export const componentMap: ComponentMap = <any>{};
-
-/**
  * 组件名称与类定义映射，新建组件一般都需扩展该接口。
  */
 export interface ComponentMap { Component: Component }

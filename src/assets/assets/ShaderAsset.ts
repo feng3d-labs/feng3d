@@ -1,20 +1,19 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { setAssetTypeClass } from '../../core/assets/FileAsset';
-import { Serializable } from '../../serialization/Serializable';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { ScriptAsset } from './ScriptAsset';
 
 declare module '../../core/assets/FileAsset'
 {
     interface AssetTypeClassMap
     {
-        'shader': new () => ShaderAsset;
+        ShaderAsset: ShaderAsset;
     }
 }
 
 /**
  * 着色器 资源
  */
-@Serializable('ShaderAsset')
+@RegisterAsset('ShaderAsset')
 export class ShaderAsset extends ScriptAsset
 {
     static extenson = '.ts';
@@ -22,4 +21,3 @@ export class ShaderAsset extends ScriptAsset
     assetType = AssetType.shader;
 }
 
-setAssetTypeClass('shader', ShaderAsset);

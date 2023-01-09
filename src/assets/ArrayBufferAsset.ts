@@ -1,10 +1,17 @@
-import { FileAsset } from '../core/assets/FileAsset';
-import { Serializable } from '../serialization/Serializable';
+import { FileAsset, RegisterAsset } from '../core/assets/FileAsset';
+
+declare module '../core/assets/FileAsset'
+{
+    interface AssetTypeClassMap
+    {
+        ArrayBufferAsset: ArrayBufferAsset;
+    }
+}
 
 /**
  * 二进制 资源
  */
-@Serializable('ArrayBufferAsset')
+@RegisterAsset('ArrayBufferAsset')
 export class ArrayBufferAsset extends FileAsset
 {
     /**

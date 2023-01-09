@@ -1,6 +1,8 @@
 import { path } from '@feng3d/path';
 import { anyEmitter } from '../../event/AnyEmitter';
 import { pathUtils } from '../../filesystem/PathUtils';
+import { Constructor } from '../../polyfill/Types';
+import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ticker } from '../utils/Ticker';
 import { AssetMeta } from './AssetMeta';
@@ -8,21 +10,34 @@ import { AssetType } from './AssetType';
 import { FolderAsset } from './FolderAsset';
 import { ReadWriteRS } from './rs/ReadWriteRS';
 
-export function getAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K)
+/**
+ * 注册Asset
+ *
+ * 使用 @RegisterAsset 注册Asset，也将同时使用 @Serializable 进行注册为可序列化。
+ *
+ * @param geometry 几何体名称，默认使用类名称。
+ *
+ * @see Serializable
+ */
+export function RegisterAsset<K extends keyof AssetTypeClassMap>(geometry: K)
 {
-    return assetTypeClassMap[type];
-}
-
-export function setAssetTypeClass<K extends keyof AssetTypeClassMap>(type: K, cls: AssetTypeClassMap[K])
-{
-    assetTypeClassMap[type] = cls;
+    return (constructor: Constructor<AssetTypeClassMap[K]>) =>
+    {
+        Serializable(geometry)(constructor as any);
+        assetTypeClassMap.set(geometry, constructor);
+    };
 }
 
 export interface AssetTypeClassMap
 {
 }
 
-export const assetTypeClassMap: AssetTypeClassMap = <any>{};
+const assetTypeClassMap = new Map();
+
+declare module '../../serialization/Serializable'
+{
+    interface SerializableMap extends AssetTypeClassMap { }
+}
 
 /**
  * feng3d资源

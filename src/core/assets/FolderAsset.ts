@@ -1,13 +1,12 @@
 import { ov } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { AssetType } from './AssetType';
-import { FileAsset, setAssetTypeClass } from './FileAsset';
+import { FileAsset, RegisterAsset } from './FileAsset';
 
 declare module '../../core/assets/FileAsset'
 {
     interface AssetTypeClassMap
     {
-        'folder': new () => FolderAsset;
+        FolderAsset: FolderAsset;
     }
 }
 
@@ -15,7 +14,7 @@ declare module '../../core/assets/FileAsset'
  * 文件夹资源
  */
 @ov({ component: 'OVFolderAsset' })
-@Serializable('FolderAsset')
+@RegisterAsset('FolderAsset')
 export class FolderAsset extends FileAsset
 {
     static extenson = '';
@@ -59,5 +58,3 @@ export class FolderAsset extends FileAsset
     {
     }
 }
-
-setAssetTypeClass('folder', FolderAsset);

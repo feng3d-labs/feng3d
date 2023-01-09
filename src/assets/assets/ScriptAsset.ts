@@ -1,7 +1,6 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { regExps } from '../../core/utils/RegExps';
-import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { TextAsset } from './TextAsset';
 
@@ -9,14 +8,14 @@ declare module '../../core/assets/FileAsset'
 {
     interface AssetTypeClassMap
     {
-        'script': new () => ScriptAsset;
+        ScriptAsset: ScriptAsset;
     }
 }
 
 /**
  * 脚本资源
  */
-@Serializable('ScriptAsset')
+@RegisterAsset('ScriptAsset')
 export class ScriptAsset extends TextAsset
 {
     static extenson = '.ts';
@@ -95,4 +94,3 @@ export class ScriptAsset extends TextAsset
     }
 }
 
-setAssetTypeClass('script', ScriptAsset);
