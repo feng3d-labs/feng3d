@@ -43,12 +43,12 @@ export class MeshRenderer extends Renderer
     {
         if (this._geometry)
         {
-            this._geometry.off('boundsInvalid', this._onBoundsInvalid, this);
+            this._geometry.emitter.off('boundsInvalid', this._onBoundsInvalid, this);
         }
         this._geometry = v;
         if (this._geometry)
         {
-            this._geometry.on('boundsInvalid', this._onBoundsInvalid, this);
+            this._geometry.emitter.on('boundsInvalid', this._onBoundsInvalid, this);
         }
         this._onBoundsInvalid();
     }

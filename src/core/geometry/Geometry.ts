@@ -54,8 +54,13 @@ export function RegisterGeometry(
  *
  * 可使用 Geometry.create 进行构建。
  */
-export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends EventEmitter<T>
+export class Geometry
 {
+    /**
+     * 事件发射器。
+     */
+    readonly emitter: EventEmitter<GeometryEventMap> = new EventEmitter(this);
+
     @oav({ component: 'OAVFeng3dPreView' })
     private preview = '';
 
@@ -83,14 +88,6 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
         ].join('\n');
 
         return str;
-    }
-
-    /**
-     * 创建一个几何体
-     */
-    constructor()
-    {
-        super();
     }
 
     /**
@@ -248,7 +245,7 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
     invalidateBounds()
     {
         this._bounding = <any>null;
-        this.emit('boundsInvalid', this);
+        this.emitter.emit('boundsInvalid', this);
     }
 
     get bounding()
