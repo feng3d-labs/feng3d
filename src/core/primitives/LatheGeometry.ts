@@ -2,10 +2,9 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
 declare module '../geometry/Geometry'
@@ -22,7 +21,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { Lathe: Node3D; } }
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/LatheGeometry.js
  */
-@Serializable('LatheGeometry')
+@RegisterGeometry('LatheGeometry')
 export class LatheGeometry extends Geometry
 {
     declare __class__: 'LatheGeometry';

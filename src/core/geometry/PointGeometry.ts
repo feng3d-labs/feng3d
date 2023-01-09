@@ -2,17 +2,16 @@ import { Color4 } from '../../math/Color4';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Geometry } from './Geometry';
+import { Geometry, RegisterGeometry } from './Geometry';
 
 declare module './Geometry' { interface GeometryMap { PointGeometry: PointGeometry } }
 
 /**
  * 点几何体
  */
-@Serializable('PointGeometry')
+@RegisterGeometry('PointGeometry')
 export class PointGeometry extends Geometry
 {
     declare __class__: 'PointGeometry';

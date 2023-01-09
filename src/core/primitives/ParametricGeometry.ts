@@ -1,11 +1,10 @@
 import { Vector3 } from '../../math/geom/Vector3';
-import { Serializable } from '../../serialization/Serializable';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
 declare module '../geometry/Geometry' { interface GeometryMap { ParametricGeometry: ParametricGeometry } }
 
-@Serializable('ParametricGeometry')
+@RegisterGeometry('ParametricGeometry')
 export class ParametricGeometry extends Geometry
 {
     func: (u: number, v: number) => Vector3;

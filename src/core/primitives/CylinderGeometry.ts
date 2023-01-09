@@ -1,10 +1,9 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
 declare module '../geometry/Geometry'
@@ -70,7 +69,7 @@ export interface CylinderGeometry extends ICylinderGeometry { }
  * 圆柱体几何体
  * @author DawnKing 2016-09-12
  */
-@Serializable('CylinderGeometry')
+@RegisterGeometry('CylinderGeometry')
 export class CylinderGeometry extends Geometry implements ICylinderGeometry
 {
     declare __class__: 'CylinderGeometry';

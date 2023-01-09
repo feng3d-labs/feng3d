@@ -1,11 +1,10 @@
-import { Geometry } from '../core/geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../core/geometry/Geometry';
 import { geometryUtils } from '../core/geometry/GeometryUtils';
 import { Texture2D } from '../core/textures/Texture2D';
 import { ImageUtil } from '../core/utils/ImageUtil';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { gPartial } from '../polyfill/Types';
-import { Serializable } from '../serialization/Serializable';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
@@ -20,7 +19,7 @@ declare module '../core/geometry/Geometry'
 /**
  * 地形几何体
  */
-@Serializable('TerrainGeometry')
+@RegisterGeometry('TerrainGeometry')
 export class TerrainGeometry extends Geometry
 {
     /**
