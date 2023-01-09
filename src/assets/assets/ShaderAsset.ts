@@ -4,7 +4,7 @@ import { ScriptAsset } from './ScriptAsset';
 
 declare module '../../core/assets/FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
         ShaderAsset: ShaderAsset;
     }

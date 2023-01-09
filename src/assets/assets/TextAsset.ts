@@ -4,7 +4,7 @@ import { oav } from '../../objectview/ObjectView';
 
 declare module '../../core/assets/FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
         TextAsset: TextAsset;
     }

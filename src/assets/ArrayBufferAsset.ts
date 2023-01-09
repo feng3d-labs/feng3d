@@ -2,7 +2,7 @@ import { FileAsset, RegisterAsset } from '../core/assets/FileAsset';
 
 declare module '../core/assets/FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
         ArrayBufferAsset: ArrayBufferAsset;
     }

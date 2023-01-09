@@ -4,7 +4,7 @@ import { TextAsset } from './TextAsset';
 
 declare module '../../core/assets/FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
         JSAsset: JSAsset;
     }

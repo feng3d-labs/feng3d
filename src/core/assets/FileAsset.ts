@@ -19,16 +19,16 @@ import { ReadWriteRS } from './rs/ReadWriteRS';
  *
  * @see Serializable
  */
-export function RegisterAsset<K extends keyof AssetTypeClassMap>(geometry: K)
+export function RegisterAsset<K extends keyof AssetMap>(geometry: K)
 {
-    return (constructor: Constructor<AssetTypeClassMap[K]>) =>
+    return (constructor: Constructor<AssetMap[K]>) =>
     {
         Serializable(geometry)(constructor as any);
         assetTypeClassMap.set(geometry, constructor);
     };
 }
 
-export interface AssetTypeClassMap
+export interface AssetMap
 {
 }
 
@@ -36,7 +36,7 @@ const assetTypeClassMap = new Map();
 
 declare module '../../serialization/Serializable'
 {
-    interface SerializableMap extends AssetTypeClassMap { }
+    interface SerializableMap extends AssetMap { }
 }
 
 /**

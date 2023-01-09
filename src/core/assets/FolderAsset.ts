@@ -2,9 +2,9 @@ import { ov } from '../../objectview/ObjectView';
 import { AssetType } from './AssetType';
 import { FileAsset, RegisterAsset } from './FileAsset';
 
-declare module '../../core/assets/FileAsset'
+declare module './FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
         FolderAsset: FolderAsset;
     }

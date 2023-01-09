@@ -6,7 +6,7 @@ import { ObjectAsset } from '../ObjectAsset';
 
 declare module '../../core/assets/FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
         TextureCubeAsset: TextureCubeAsset;
     }
