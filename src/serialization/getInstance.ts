@@ -1,12 +1,13 @@
 import { Constructor } from '../polyfill/Types';
 import { _definitionCache } from './Serializable';
+import { $set } from './Serialization';
 
 /**
  * 获取实例
  *
  * @param classname 类名称
  */
-export function getInstance(classname: string)
+export function getInstance(classname: string, params?: any)
 {
     let Cls: Constructor = _definitionCache[classname];
 
@@ -24,12 +25,16 @@ export function getInstance(classname: string)
     //
     console.assert(!!Cls, `${classname} 未注册，请使用 @Serializable 进行注册反序列化的类。`);
 
+    let instance: any;
     if (Cls.__create__)
     {
-        return Cls.__create__();
+        instance = Cls.__create__();
     }
-
-    const instance = new Cls();
+    else
+    {
+        instance = new Cls();
+    }
+    $set(instance, params);
 
     return instance;
 }

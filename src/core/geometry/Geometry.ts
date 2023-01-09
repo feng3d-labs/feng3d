@@ -9,6 +9,8 @@ import { AttributeBuffer, AttributeBufferSourceTypes } from '../../renderer/data
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { CullFace } from '../../renderer/data/RenderParams';
+import { getInstance } from '../../serialization/getInstance';
+import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
@@ -26,7 +28,31 @@ export interface GeometryEventMap
 }
 
 /**
+ * 注册几何体
+ *
+ * 使用 @RegisterGeometry 在几何体类定义上注册几何体，配合扩展 GeometryMap 接口后可使用 Geometry.create 方法构造几何体。
+ *
+ * @param geometry 几何体名称，默认使用类名称。
+ *
+ * @see Serializable
+ */
+export function RegisterGeometry(
+    /**
+     * 几何体
+     */
+    geometry: string,
+)
+{
+    return (constructor: Constructor<Geometry>) =>
+    {
+        Serializable(geometry)(constructor);
+    };
+}
+
+/**
  * 几何体
+ *
+ * 可使用 Geometry.create 进行构建。
  */
 export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends EventEmitter<T>
 {
@@ -362,6 +388,21 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Eve
     private _geometryInvalid = true;
 
     private _bounding: Box3;
+
+    /**
+     * 构造几何体。
+     *
+     * @param geometry 几何体名称。
+     * @param params 几何体参数。
+     *
+     * @returns 几何体实例。
+     */
+    static create<K extends keyof GeometryMap>(geometry: K, params?: gPartial<GeometryMap[K]>): GeometryMap[K]
+    {
+        const instance = getInstance(geometry, params);
+
+        return instance;
+    }
 
     /**
      * 设置默认几何体

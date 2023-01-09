@@ -14,8 +14,15 @@ export function Serializable(className: string)
 {
     return (constructor: Constructor<any>) =>
     {
-        const prototype = constructor.prototype;
-        _definitionCache[className] = constructor;
-        Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
+        if (_definitionCache[className])
+        {
+            console.warn(`重复定义类型 ${className}，${_definitionCache[className]} ${constructor} ！`);
+        }
+        else
+        {
+            const prototype = constructor.prototype;
+            _definitionCache[className] = constructor;
+            Object.defineProperty(prototype, __class__, { value: className, writable: true, enumerable: false });
+        }
     };
 }
