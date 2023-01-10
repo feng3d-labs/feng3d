@@ -1,7 +1,6 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
@@ -22,7 +21,6 @@ declare module '../../ecs/Component'
  */
 @AddComponentMenu('SkyBox/SkyBox')
 @RegisterComponent({ name: 'SkyBox' })
-@Serializable('SkyBox')
 export class SkyBox extends Component3D
 {
     declare __class__: 'SkyBox';

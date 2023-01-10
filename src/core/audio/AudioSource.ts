@@ -1,7 +1,6 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';
@@ -44,7 +43,6 @@ export enum DistanceModelType
  */
 @AddComponentMenu('Audio/AudioSource')
 @RegisterComponent({ name: 'AudioSource' })
-@Serializable('AudioSource')
 export class AudioSource extends Component3D
 {
     private panner: PannerNode;

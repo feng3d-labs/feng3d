@@ -1,6 +1,5 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';
@@ -21,7 +20,6 @@ declare module '../../ecs/Component'
  */
 @AddComponentMenu('Audio/AudioListener')
 @RegisterComponent({ name: 'AudioListener' })
-@Serializable('AudioListener')
 export class AudioListener extends Component3D
 {
     gain: GainNode;

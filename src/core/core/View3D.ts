@@ -3,7 +3,6 @@ import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { WebGLRenderer, WebGLRendererParameters } from '../../renderer/WebGLRenderer';
-import { Serializable } from '../../serialization/Serializable';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Camera } from '../cameras/Camera';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
@@ -69,7 +68,6 @@ export interface BeforeRenderEventData
  * 视图
  */
 @RegisterComponent({ name: 'View3D' })
-@Serializable('View3D')
 export class View3D extends Component3D
 {
     /**

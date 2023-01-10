@@ -1,6 +1,5 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
-import { Serializable } from '../../serialization/Serializable';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
 import { Component3D } from './Component3D';
@@ -83,7 +82,6 @@ declare module '../../ecs/Component'
  * 在 View3D 所在或者子结点中添加该组件，View3D下的3D结点将响应鼠标事件。
  */
 @RegisterComponent({ name: 'MouseEvent3D' })
-@Serializable('MouseEvent3D')
 export class MouseEvent3D extends Component3D
 {
     init(): void

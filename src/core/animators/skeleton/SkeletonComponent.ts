@@ -1,6 +1,5 @@
 import { RegisterComponent } from '../../../ecs/Component';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { Serializable } from '../../../serialization/Serializable';
 import { Component3D } from '../../core/Component3D';
 import { Node3D } from '../../core/Node3D';
 
@@ -13,7 +12,6 @@ declare module '../../../ecs/Component'
 }
 
 @RegisterComponent({ name: 'SkeletonComponent' })
-@Serializable('SkeletonComponent')
 export class SkeletonComponent extends Component3D
 {
     declare __class__: 'SkeletonComponent';

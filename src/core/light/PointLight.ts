@@ -17,7 +17,6 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { 'Point Light': Nod
  * 点光源
  */
 @AddComponentMenu('Rendering/PointLight')
-@RegisterComponent({ name: 'PointLight' })
 export class PointLight extends Light
 {
     declare __class__: 'PointLight';

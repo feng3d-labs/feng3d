@@ -1,7 +1,8 @@
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
 import { Constructor, gPartial } from '../polyfill/Types';
-import { $set } from '../serialization/Serialization';
+import { getConstructor } from '../serialization/getConstructor';
+import { getInstance } from '../serialization/getInstance';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Component, ComponentMap } from './Component';
 
@@ -105,10 +106,7 @@ export class Entity
             this.addComponent(dependency);
         });
 
-        const Constructor = Component.getConstructor(componentName);
-        //
-        component = Constructor.__create__();
-        $set(component, params);
+        component = getInstance(componentName as any, params);
         this.addComponentAt(component, this._components.length);
 
         return component;
@@ -124,7 +122,7 @@ export class Entity
      */
     getComponent<K extends keyof ComponentMap>(componentName: K): ComponentMap[K]
     {
-        const Constructor = Component.getConstructor(componentName);
+        const Constructor = getConstructor(componentName);
 
         for (let i = 0; i < this._components.length; i++)
         {
@@ -147,7 +145,7 @@ export class Entity
      */
     getComponents<K extends keyof ComponentMap>(component?: K, results: ComponentMap[K][] = []): ComponentMap[K][]
     {
-        const Constructor = Component.getConstructor(component);
+        const Constructor = getConstructor(component);
 
         for (let i = 0; i < this._components.length; i++)
         {
@@ -279,7 +277,7 @@ export class Entity
      */
     removeComponentsByType<K extends keyof ComponentMap>(component: K | Constructor<ComponentMap[K]>)
     {
-        const Constructor = Component.getConstructor(component);
+        const Constructor = getConstructor(component as any);
 
         const removeComponents: ComponentMap[K][] = [];
         for (let i = this._components.length - 1; i >= 0; i--)

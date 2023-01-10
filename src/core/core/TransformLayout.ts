@@ -3,7 +3,6 @@ import { IEvent } from '../../event/IEvent';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
@@ -47,7 +46,6 @@ declare module '../../ecs/Component'
  */
 @AddComponentMenu('Layout/TransformLayout')
 @RegisterComponent({ name: 'TransformLayout', single: true })
-@Serializable('TransformLayout')
 export class TransformLayout extends Component3D
 {
     /**

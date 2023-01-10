@@ -1,7 +1,6 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
-import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
@@ -22,7 +21,6 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { 'Directional light
  */
 @AddComponentMenu('Rendering/DirectionalLight')
 @RegisterComponent({ name: 'DirectionalLight' })
-@Serializable('DirectionalLight')
 export class DirectionalLight extends Light
 {
     declare __class__: 'DirectionalLight';

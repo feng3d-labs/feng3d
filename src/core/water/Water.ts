@@ -4,7 +4,6 @@ import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
@@ -27,7 +26,6 @@ declare module '../core/Node3D' { export interface PrimitiveNode3D { Water: Node
  */
 @AddComponentMenu('Graphics/Water')
 @RegisterComponent({ name: 'Water', dependencies: ['MeshRenderer'] })
-@Serializable('Water')
 export class Water extends Component3D
 {
     declare __class__: 'Water';

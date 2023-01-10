@@ -2,7 +2,6 @@ import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
@@ -39,7 +38,6 @@ declare module '../../renderer/data/Uniforms'
 
 @AddComponentMenu('Rendering/OutLineComponent')
 @RegisterComponent({ name: 'OutLineComponent' })
-@Serializable('OutLineComponent')
 export class OutLineComponent extends Component
 {
     declare __class__: 'OutLineComponent';

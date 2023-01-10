@@ -7,7 +7,6 @@ import { RegisterComponent } from '../ecs/Component';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
@@ -17,13 +16,7 @@ import { TextStyle } from './text/TextStyle';
 
 declare module '../ecs/Component' { interface ComponentMap { Text: Text; } }
 
-declare module './core/Node2D'
-{
-    export interface PrimitiveNode2D
-    {
-        Text: Node2D;
-    }
-}
+declare module './core/Node2D' { export interface PrimitiveNode2D { Text: Node2D; } }
 
 /**
  * 文本组件
@@ -32,7 +25,6 @@ declare module './core/Node2D'
  */
 @AddComponentMenu('UI/Text')
 @RegisterComponent({ name: 'Text' })
-@Serializable('Text')
 export class Text extends Component2D
 {
     /**

@@ -5,7 +5,6 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { Geometry, GeometryMap } from '../geometry/Geometry';
@@ -25,7 +24,6 @@ declare module '../../ecs/Component'
  * 网格渲染器
  */
 @RegisterComponent({ name: 'MeshRenderer' })
-@Serializable('MeshRenderer')
 export class MeshRenderer extends Renderer
 {
     declare __class__: 'MeshRenderer';

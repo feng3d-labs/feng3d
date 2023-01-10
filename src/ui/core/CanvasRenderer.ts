@@ -7,7 +7,6 @@ import { TransformUtils } from '../../core/utils/TransformUtils';
 import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 
 declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: CanvasRenderer; } }
 
@@ -16,7 +15,6 @@ declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: 
  */
 @AddComponentMenu('Rendering/CanvasRenderer')
 @RegisterComponent({ name: 'CanvasRenderer' })
-@Serializable('CanvasRenderer')
 export class CanvasRenderer extends MeshRenderer
 {
     @oav()

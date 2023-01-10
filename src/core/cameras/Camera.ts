@@ -5,7 +5,6 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component3D } from '../core/Component3D';
@@ -42,7 +41,6 @@ declare module '../core/Node3D'
  */
 @AddComponentMenu('Rendering/Camera')
 @RegisterComponent({ name: 'Camera', single: true })
-@Serializable('Camera')
 export class Camera extends Component3D
 {
     declare __class__: 'Camera';

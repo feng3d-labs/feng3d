@@ -3,7 +3,6 @@ import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Component3D } from '../core/Component3D';
 import { RunEnvironment } from '../core/RunEnvironment';
@@ -25,7 +24,6 @@ declare module '../../ecs/Component'
  */
 @AddComponentMenu('Controller/FPSController')
 @RegisterComponent({ name: 'FPSController' })
-@Serializable('FPSController')
 export class FPSController extends Component3D
 {
     /**

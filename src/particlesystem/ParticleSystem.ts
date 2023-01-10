@@ -16,7 +16,6 @@ import { oav } from '../objectview/ObjectView';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
@@ -66,7 +65,6 @@ declare module '../core/core/Node3D'
  */
 @AddComponentMenu('Effects/ParticleSystem')
 @RegisterComponent({ name: 'ParticleSystem', dependencies: ['MeshRenderer'], single: true })
-@Serializable('ParticleSystem')
 export class ParticleSystem extends Component3D
 {
     declare __class__: 'ParticleSystem';
