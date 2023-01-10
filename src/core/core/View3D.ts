@@ -46,7 +46,7 @@ export interface AfterRenderEventData extends BeforeRenderEventData { }
 /**
  * 渲染前事件数据
  */
-export interface BeforeRenderEventData
+export class BeforeRenderEventData
 {
     /**
      *
@@ -62,6 +62,28 @@ export interface BeforeRenderEventData
      * 将被渲染的3D场景。
      */
     scene: Scene;
+
+    /**
+     * 画布。
+     */
+    canvas: HTMLCanvasElement;
+
+    /**
+     * 视窗（canvas）所在页面显示区域。
+     */
+    get viewRect()
+    {
+        const clientRect = this.canvas.getBoundingClientRect();
+        this._viewRect = new Rectangle(clientRect.x, clientRect.y, clientRect.width, clientRect.height);
+
+        return this._viewRect;
+    }
+    private _viewRect: Rectangle;
+
+    constructor(params: Partial<BeforeRenderEventData>)
+    {
+        Object.assign(this, params);
+    }
 }
 
 /**
@@ -267,6 +289,8 @@ export class View3D extends Component3D
         canvas.height = canvas.clientHeight;
         if (canvas.width * canvas.height === 0) return;
 
+        const data = new BeforeRenderEventData({ view: this, canvas, camera, scene });
+
         const viewRect = this.viewRect;
         const clientRect = canvas.getBoundingClientRect();
 
@@ -274,6 +298,7 @@ export class View3D extends Component3D
         viewRect.y = clientRect.top;
         viewRect.width = clientRect.width;
         viewRect.height = clientRect.height;
+
         camera.lens.aspect = viewRect.width / viewRect.height;
 
         const mousePos = this.mousePos;
@@ -281,7 +306,7 @@ export class View3D extends Component3D
         mousePos.y = windowEventProxy.clientY - clientRect.top;
 
         //
-        this.emitter.emit('beforeRender', { view: this, camera, scene }, true, true);
+        this.emitter.emit('beforeRender', data, true, true);
 
         const { webGLRenderer } = this;
 
@@ -303,7 +328,7 @@ export class View3D extends Component3D
         wireframeRenderer.draw(webGLRenderer, scene, camera);
 
         // 派发渲染后事件
-        this.emitter.emit('afterRender', { view: this, camera, scene }, true, true);
+        this.emitter.emit('afterRender', data, true, true);
     }
 
     /**
