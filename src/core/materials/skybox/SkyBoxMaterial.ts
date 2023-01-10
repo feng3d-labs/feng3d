@@ -7,7 +7,10 @@ import { Material } from '../Material';
 import skyboxFragment from './skybox_fragment_glsl';
 import skyboxVertex from './skybox_vertex_glsl';
 
-declare module '../Material' { interface MaterialMap { skybox: SkyBoxMaterial } }
+declare module '../Material' {
+    interface MaterialMap { SkyBoxMaterial: SkyBoxMaterial }
+    interface UniformsMap { SkyBoxUniforms: SkyBoxUniforms }
+}
 
 @Serializable('SkyBoxMaterial')
 export class SkyBoxMaterial extends Material

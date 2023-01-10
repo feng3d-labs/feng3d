@@ -7,7 +7,10 @@ import { Material } from '../Material';
 import pointFragment from './point_fragment_glsl';
 import pointVertex from './point_vertex_glsl';
 
-declare module '../Material' { interface MaterialMap { point: PointMaterial } }
+declare module '../Material' {
+    interface MaterialMap { PointMaterial: PointMaterial }
+    interface UniformsMap { PointUniforms: PointUniforms }
+}
 
 @Serializable('PointMaterial')
 export class PointMaterial extends Material

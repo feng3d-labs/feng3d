@@ -1,12 +1,59 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
+import { Constructor, gPartial } from '../../polyfill/Types';
+import { getInstance } from '../../serialization/getInstance';
+import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from '../gl/WebGLEnums';
 
+declare module '../../serialization/Serializable'
+{
+    interface SerializableMap extends TextureMap { }
+}
+
+export interface TextureMap { }
+
+/**
+ * 注册纹理
+ *
+ * 使用 @RegisterTexture 注册纹理，配合扩展 TextureMap 接口后可使用 Texture.create 方法构造纹理。
+ *
+ * 将同时使用 @Serializable 进行注册为可序列化。
+ *
+ * @param texture 纹理类名称，默认使用类名称。
+ *
+ * @see Serializable
+ */
+export function RegisterTexture<K extends keyof TextureMap>(texture: K)
+{
+    return (constructor: Constructor<TextureMap[K]>) =>
+    {
+        Serializable(texture)(constructor as any);
+    };
+}
+
+/**
+ * 纹理
+ */
 export class Texture<T = any> extends EventEmitter<T>
 {
+    /**
+     * 构造纹理。
+     *
+     * @param geometry 纹理类名称。
+     * @param params 纹理参数。
+     *
+     * @returns 纹理实例。
+     */
+    static create<K extends keyof TextureMap>(geometry: K, params?: gPartial<TextureMap[K]>): TextureMap[K]
+    {
+        const instance = getInstance(geometry, params as any);
+
+        return instance;
+    }
+
     /**
      * 纹理类型
      */

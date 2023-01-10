@@ -1,9 +1,9 @@
 import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { RegisterTexture } from '../../renderer/data/Texture';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
@@ -22,10 +22,15 @@ export interface TextureCubeEventMap
 
 export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positive_z_url' | 'negative_x_url' | 'negative_y_url' | 'negative_z_url';
 
+declare module '../../renderer/data/Texture'
+{
+    interface TextureMap { TextureCube: TextureCube }
+}
+
 /**
  * 立方体纹理
  */
-@Serializable('TextureCube')
+@RegisterTexture('TextureCube')
 export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> extends TextureInfo<T>
 {
     declare __class__: 'TextureCube';

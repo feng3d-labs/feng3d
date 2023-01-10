@@ -2,9 +2,9 @@ import { loader } from '../../filesystem/base/Loader';
 import { ColorKeywords } from '../../math/Color3';
 import { Color4 } from '../../math/Color4';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { RegisterTexture } from '../../renderer/data/Texture';
 import { TextureType } from '../../renderer/gl/WebGLEnums';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
@@ -53,10 +53,15 @@ export interface Texture2DEventMap
     loadCompleted: any;
 }
 
+declare module '../../renderer/data/Texture'
+{
+    interface TextureMap { Texture2D: Texture2D }
+}
+
 /**
  * 2D纹理
  */
-@Serializable('Texture2D')
+@RegisterTexture('Texture2D')
 export class Texture2D<T extends Texture2DEventMap = Texture2DEventMap> extends TextureInfo<T>
 {
     declare __class__: 'Texture2D';
