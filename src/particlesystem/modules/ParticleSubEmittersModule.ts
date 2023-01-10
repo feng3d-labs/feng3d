@@ -1,10 +1,10 @@
-import { Serializable } from '../../serialization/Serializable';
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';
 import { ParticleSystem } from '../ParticleSystem';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleSubEmittersModule: ParticleSubEmittersModule } }
 /**
  * Script interface for the SubEmittersModule.
  *
@@ -12,7 +12,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * This module triggers child particle emission on events such as the birth, death, and collision of particles in the parent system.
  */
-@Serializable('ParticleSubEmittersModule')
+@RegisterParticleModule('ParticleSubEmittersModule')
 export class ParticleSubEmittersModule extends ParticleModule
 {
     /**
@@ -44,7 +44,7 @@ export class ParticleSubEmittersModule extends ParticleModule
     {
         if (!this.subEmitters[index]) return 0;
 
-return this.subEmitters[index].emitProbability;
+        return this.subEmitters[index].emitProbability;
     }
 
     /**
@@ -56,7 +56,7 @@ return this.subEmitters[index].emitProbability;
     {
         if (!this.subEmitters[index]) return null;
 
-return this.subEmitters[index].properties;
+        return this.subEmitters[index].properties;
     }
 
     /**
@@ -68,7 +68,7 @@ return this.subEmitters[index].properties;
     {
         if (!this.subEmitters[index]) return null;
 
-return this.subEmitters[index].subEmitter;
+        return this.subEmitters[index].subEmitter;
     }
 
     /**
@@ -80,7 +80,7 @@ return this.subEmitters[index].subEmitter;
     {
         if (!this.subEmitters[index]) return null;
 
-return this.subEmitters[index].type;
+        return this.subEmitters[index].type;
     }
 
     /**

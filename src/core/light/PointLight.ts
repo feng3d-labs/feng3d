@@ -4,7 +4,6 @@ import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { Node3D } from '../core/Node3D';
-import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
@@ -16,8 +15,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { 'Point Light': Nod
 /**
  * 点光源
  */
-@AddComponentMenu('Rendering/PointLight')
-@RegisterComponent({ name: 'PointLight' })
+@RegisterComponent({ name: 'PointLight', menu: 'Rendering/PointLight' })
 export class PointLight extends Light
 {
     declare __class__: 'PointLight';

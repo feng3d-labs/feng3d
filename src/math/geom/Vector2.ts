@@ -4,6 +4,8 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Vector } from './Vector';
 
+declare module '../../serialization/Serializable' { interface SerializableMap { Vector2: Vector2 } }
+
 /**
  * 二维向量和点的表示。
  */

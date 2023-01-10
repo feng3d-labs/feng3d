@@ -1,33 +1,23 @@
 import { Camera } from '../core/cameras/Camera';
-import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
 import { Component, RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Node2D } from './core/Node2D';
 
 declare module '../ecs/Component' { interface ComponentMap { Rect: Rect; } }
 
-declare module './core/Node2D'
-{
-    interface PrimitiveNode2D
-    {
-        Rect: Node2D;
-    }
-}
+declare module './core/Node2D' { interface PrimitiveNode2D { Rect: Node2D; } }
 
 /**
  * 矩形纯色组件
  *
  * 用于填充UI中背景等颜色。
  */
-@AddComponentMenu('UI/Rect')
-@RegisterComponent({ name: 'Rect' })
-@Serializable('Rect')
+@RegisterComponent({ name: 'Rect', menu: 'UI/Rect' })
 export class Rect extends Component
 {
     /**

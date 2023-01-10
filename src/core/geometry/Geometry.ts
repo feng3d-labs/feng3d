@@ -17,6 +17,8 @@ import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { geometryUtils } from './GeometryUtils';
 
+declare module '../../serialization/Serializable' { interface SerializableMap extends GeometryMap { } }
+
 export interface GeometryMap { }
 
 export interface GeometryEventMap
@@ -30,22 +32,19 @@ export interface GeometryEventMap
 /**
  * 注册几何体
  *
- * 使用 @RegisterGeometry 在几何体类定义上注册几何体，配合扩展 GeometryMap 接口后可使用 Geometry.create 方法构造几何体。
+ * 使用 @RegisterGeometry 注册几何体，配合扩展 GeometryMap 接口后可使用 Geometry.create 方法构造几何体。
+ *
+ * 将同时使用 @Serializable 进行注册为可序列化。
  *
  * @param geometry 几何体名称，默认使用类名称。
  *
  * @see Serializable
  */
-export function RegisterGeometry(
-    /**
-     * 几何体
-     */
-    geometry: string,
-)
+export function RegisterGeometry<K extends keyof GeometryMap>(geometry: K)
 {
-    return (constructor: Constructor<Geometry>) =>
+    return (constructor: Constructor<GeometryMap[K]>) =>
     {
-        Serializable(geometry)(constructor);
+        Serializable(geometry)(constructor as any);
     };
 }
 
@@ -396,7 +395,7 @@ export class Geometry
      */
     static create<K extends keyof GeometryMap>(geometry: K, params?: gPartial<GeometryMap[K]>): GeometryMap[K]
     {
-        const instance = getInstance(geometry, params);
+        const instance = getInstance(geometry, params as any);
 
         return instance;
     }

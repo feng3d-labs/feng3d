@@ -1,6 +1,5 @@
-import { Geometry } from '../../core/geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../../core/geometry/Geometry';
 import { geometryUtils } from '../../core/geometry/GeometryUtils';
-import { Serializable } from '../../serialization/Serializable';
 
 declare module '../../core/geometry/Geometry'
 {
@@ -17,7 +16,7 @@ declare module '../../core/geometry/Geometry'
 /**
  * UI几何体
  */
-@Serializable('UIGeometry')
+@RegisterGeometry('UIGeometry')
 export class UIGeometry extends Geometry
 {
     declare __class__: 'UIGeometry';

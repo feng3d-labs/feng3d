@@ -1,9 +1,10 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
+import { Constructor, gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { RenderParams } from '../../renderer/data/RenderParams';
 import { Shader } from '../../renderer/data/Shader';
+import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetData } from '../core/AssetData';
@@ -11,6 +12,28 @@ import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 
 export interface MaterialMap { }
+export interface UniformsMap { }
+
+declare module '../../serialization/Serializable' { interface SerializableMap extends MaterialMap, UniformsMap { } }
+
+/**
+ * 注册材质
+ *
+ * 使用 @RegisterMaterial 注册材质，配合扩展 MaterialMap 接口后可使用 Material.create 方法构造材质。
+ *
+ * 将同时使用 @Serializable 进行注册为可序列化。
+ *
+ * @param material 材质名称，默认使用类名称。
+ *
+ * @see Serializable
+ */
+export function RegisterMaterial<K extends keyof MaterialMap>(material: K)
+{
+    return (constructor: Constructor<MaterialMap[K]>) =>
+    {
+        Serializable(material)(constructor as any);
+    };
+}
 
 /**
  * 材质

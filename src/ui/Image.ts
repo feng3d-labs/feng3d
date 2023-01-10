@@ -1,5 +1,4 @@
 import { Camera } from '../core/cameras/Camera';
-import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
 import { Texture2D } from '../core/textures/Texture2D';
@@ -7,7 +6,6 @@ import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
@@ -19,9 +17,7 @@ declare module '../ecs/Component' { interface ComponentMap { Image: Image } }
  *
  * 用于显示图片
  */
-@AddComponentMenu('UI/Image')
-@RegisterComponent({ name: 'Image' })
-@Serializable('Image')
+@RegisterComponent({ name: 'Image', menu: 'UI/Image' })
 export class Image extends Component2D
 {
     /**

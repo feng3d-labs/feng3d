@@ -1,17 +1,17 @@
 import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { Vector3 } from '../../math/geom/Vector3';
-import { Serializable } from '../../serialization/Serializable';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
 import { ParticleSystemRenderSpace } from '../enums/ParticleSystemRenderSpace';
 import { ParticleSystemSortMode } from '../enums/ParticleSystemSortMode';
 import { SpriteMaskInteraction } from '../enums/SpriteMaskInteraction';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleSystemRenderer: ParticleSystemRenderer } }
 /**
  * Use this class to render particles on to the screen.
  */
-@Serializable('ParticleSystemRenderer')
+@RegisterParticleModule('ParticleSystemRenderer')
 export class ParticleSystemRenderer extends ParticleModule
 {
     /**

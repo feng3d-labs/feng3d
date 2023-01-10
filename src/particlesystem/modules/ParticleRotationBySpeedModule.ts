@@ -3,16 +3,16 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleRotationBySpeedModule: ParticleRotationBySpeedModule } }
 /**
  * 粒子系统 旋转角度随速度变化模块
  */
-@Serializable('ParticleRotationBySpeedModule')
+@RegisterParticleModule('ParticleRotationBySpeedModule')
 export class ParticleRotationBySpeedModule extends ParticleModule
 {
     /**

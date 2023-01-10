@@ -1,10 +1,9 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
 declare module '../geometry/Geometry'
@@ -19,7 +18,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { Plane: Node3D; } }
 /**
  * 平面几何体
  */
-@Serializable('PlaneGeometry')
+@RegisterGeometry('PlaneGeometry')
 export class PlaneGeometry extends Geometry
 {
     declare __class__: 'PlaneGeometry';

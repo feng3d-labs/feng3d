@@ -1,12 +1,11 @@
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Geometry } from './Geometry';
+import { Geometry, RegisterGeometry } from './Geometry';
 
 declare module './Geometry' { interface GeometryMap { CustomGeometry: CustomGeometry } }
 
-@Serializable('CustomGeometry')
+@RegisterGeometry('CustomGeometry')
 export class CustomGeometry extends Geometry
 {
     declare __class__: 'CustomGeometry';

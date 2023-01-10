@@ -90,6 +90,11 @@ export interface Node3D
     addChild(child: Node3D): this;
 }
 
+declare module '../../serialization/Serializable'
+{
+    interface SerializableMap { Node3D: Node3D }
+}
+
 /**
  * 3D结点
  *

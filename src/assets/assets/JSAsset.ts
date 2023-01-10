@@ -1,20 +1,19 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { setAssetTypeClass } from '../../core/assets/FileAsset';
-import { Serializable } from '../../serialization/Serializable';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { TextAsset } from './TextAsset';
 
 declare module '../../core/assets/FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
-        'js': new () => JSAsset;
+        JSAsset: JSAsset;
     }
 }
 
 /**
  * JS资源
  */
-@Serializable('JSAsset')
+@RegisterAsset('JSAsset')
 export class JSAsset extends TextAsset
 {
     static extenson = '.js';
@@ -28,5 +27,3 @@ export class JSAsset extends TextAsset
         this.textContent = this.textContent || '';
     }
 }
-
-setAssetTypeClass('js', JSAsset);

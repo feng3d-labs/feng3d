@@ -1,7 +1,6 @@
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { RegisterComponent, Component } from '../../ecs/Component';
 
 declare module '../../ecs/Component'
 {
@@ -15,7 +14,6 @@ declare module '../../ecs/Component'
  * 线框组件，将会对拥有该组件的对象绘制线框
  */
 @RegisterComponent({ name: 'WireframeComponent' })
-@Serializable('WireframeComponent')
 export class WireframeComponent extends Component
 {
     declare __class__: 'WireframeComponent';

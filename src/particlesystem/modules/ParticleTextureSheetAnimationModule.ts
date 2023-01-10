@@ -3,18 +3,18 @@ import { MinMaxCurveMode } from '../../math/curve/MinMaxCurveMode';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
 import { UVChannelFlags } from '../enums/UVChannelFlags';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleTextureSheetAnimationModule: ParticleTextureSheetAnimationModule } }
 /**
  * 粒子系统纹理表动画模块。
  */
-@Serializable('ParticleTextureSheetAnimationModule')
+@RegisterParticleModule('ParticleTextureSheetAnimationModule')
 export class ParticleTextureSheetAnimationModule extends ParticleModule
 {
     /**

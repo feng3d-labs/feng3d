@@ -1,6 +1,5 @@
 import Stats1 from 'stats.js';
 import { Component, RegisterComponent } from '../../ecs/Component';
-import { Serializable } from '../../serialization/Serializable';
 
 declare module '../../ecs/Component'
 {
@@ -8,7 +7,6 @@ declare module '../../ecs/Component'
 }
 
 @RegisterComponent({ name: 'Stats' })
-@Serializable('Stats')
 export class Stats extends Component
 {
     __class__: 'Stats';

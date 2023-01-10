@@ -1,6 +1,5 @@
-import { Serializable } from '../../serialization/Serializable';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -16,7 +15,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { Quad: Node3D; } }
 /**
  * 四边形面皮几何体
  */
-@Serializable('QuadGeometry')
+@RegisterGeometry('QuadGeometry')
 export class QuadGeometry extends Geometry
 {
     declare __class__: 'QuadGeometry';

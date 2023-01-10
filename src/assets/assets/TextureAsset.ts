@@ -1,16 +1,17 @@
 import { AssetMeta } from '../../core/assets/AssetMeta';
 import { AssetType } from '../../core/assets/AssetType';
-import { FileAsset } from '../../core/assets/FileAsset';
+import { FileAsset, RegisterAsset } from '../../core/assets/FileAsset';
 import { Texture2D } from '../../core/textures/Texture2D';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
-import { $serialize, serialization } from '../../serialization/Serialization';
+import { $serialize } from '../../serialization/Serialization';
+
+declare module '../../core/assets/FileAsset' { interface AssetMap { TextureAsset: TextureAsset; } }
 
 /**
  * 纹理文件
  */
-@Serializable('TextureAsset')
+@RegisterAsset('TextureAsset')
 export class TextureAsset extends FileAsset
 {
     static extenson: '.jpg' | '.png' | '.jpeg' | '.gif' = '.png';

@@ -1,14 +1,15 @@
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
+
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleColorOverLifetimeModule: ParticleColorOverLifetimeModule } }
 
 /**
  * 粒子系统 颜色随时间变化模块
  */
-@Serializable('ParticleColorOverLifetimeModule')
+@RegisterParticleModule('ParticleColorOverLifetimeModule')
 export class ParticleColorOverLifetimeModule extends ParticleModule
 {
     /**

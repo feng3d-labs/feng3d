@@ -1,7 +1,6 @@
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component3D } from '../core/Component3D';
 import { HideFlags } from '../core/HideFlags';
@@ -30,7 +29,6 @@ declare module '../../ecs/Component'
  * 3D场景
  */
 @RegisterComponent({ name: 'Scene' })
-@Serializable('Scene')
 export class Scene extends Component3D
 {
     declare __class__: 'Scene';

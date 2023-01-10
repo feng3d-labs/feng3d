@@ -1,7 +1,6 @@
 import { RegisterComponent } from '../../../ecs/Component';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Serializable } from '../../../serialization/Serializable';
 import { Camera } from '../../cameras/Camera';
 import { Component3D } from '../../core/Component3D';
 import { HideFlags } from '../../core/HideFlags';
@@ -16,7 +15,6 @@ declare module '../../../ecs/Component'
 }
 
 @RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: ['MeshRenderer'], single: true })
-@Serializable('SkinnedMeshRenderer')
 export class SkinnedMeshRenderer extends Component3D
 {
     declare __class__: 'SkinnedMeshRenderer';

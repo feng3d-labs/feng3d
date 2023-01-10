@@ -1,19 +1,19 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemInheritVelocityMode } from '../enums/ParticleSystemInheritVelocityMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleInheritVelocityModule: ParticleInheritVelocityModule } }
 /**
  * The Inherit Velocity Module controls how the velocity of the emitter is transferred to the particles as they are emitted.
  *
  * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
  */
-@Serializable('ParticleInheritVelocityModule')
+@RegisterParticleModule('ParticleInheritVelocityModule')
 export class ParticleInheritVelocityModule extends ParticleModule
 {
     '__class__': 'ParticleInheritVelocityModule' = 'ParticleInheritVelocityModule';

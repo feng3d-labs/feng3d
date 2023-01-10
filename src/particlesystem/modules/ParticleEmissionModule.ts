@@ -1,15 +1,15 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleEmissionModule: ParticleEmissionModule } }
 /**
  * 粒子系统发射模块。
  */
-@Serializable('ParticleEmissionModule')
+@RegisterParticleModule('ParticleEmissionModule')
 export class ParticleEmissionModule extends ParticleModule
 {
     declare __class__: 'ParticleEmissionModule';

@@ -5,44 +5,29 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
-import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
 import { Projection } from './Projection';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        Camera: Camera;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { Camera: Camera; } }
 
 declare module '../core/Node3D'
 {
-    export interface Node3DEventMap
-    {
-        lensChanged: Camera;
-    }
+    export interface Node3DEventMap { lensChanged: Camera; }
 
-    export interface PrimitiveNode3D
-    {
-        Camera: Node3D;
-    }
+    export interface PrimitiveNode3D { Camera: Node3D; }
 }
+
 /**
  * 摄像机
  */
-@AddComponentMenu('Rendering/Camera')
-@RegisterComponent({ name: 'Camera', single: true })
-@Serializable('Camera')
+@RegisterComponent({ name: 'Camera', single: true, menu: 'Rendering/Camera' })
 export class Camera extends Component3D
 {
     declare __class__: 'Camera';

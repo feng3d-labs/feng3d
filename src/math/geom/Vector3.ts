@@ -16,6 +16,8 @@ export interface Vector3Like
     z: number;
 }
 
+declare module '../../serialization/Serializable' { interface SerializableMap { Vector3: Vector3 } }
+
 /**
  * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
  */

@@ -3,13 +3,14 @@ import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../Material';
+import { Material, RegisterMaterial } from '../Material';
 import colorFragment from './color_fragment_glsl';
 import colorVertex from './color_vertex_glsl';
 
 declare module '../Material'
 {
-    interface MaterialMap { color: ColorMaterial }
+    interface MaterialMap { ColorMaterial: ColorMaterial }
+    interface UniformsMap { ColorUniforms: ColorUniforms }
 
     interface DefaultMaterialMap { 'Color-Material': ColorMaterial; }
 }
@@ -17,7 +18,7 @@ declare module '../Material'
 /**
  * 纯颜色材质
  */
-@Serializable('ColorMaterial')
+@RegisterMaterial('ColorMaterial')
 export class ColorMaterial extends Material
 {
     declare __class__: 'ColorMaterial';

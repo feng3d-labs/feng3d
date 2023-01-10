@@ -9,7 +9,8 @@ import segmentVertex from './segment_vertex_glsl';
 
 declare module '../Material'
 {
-    interface MaterialMap { segment: SegmentMaterial }
+    interface MaterialMap { SegmentMaterial: SegmentMaterial }
+    interface UniformsMap { SegmentUniforms: SegmentUniforms }
 
     interface DefaultMaterialMap { 'Segment-Material': SegmentMaterial; }
 }

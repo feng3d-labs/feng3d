@@ -7,6 +7,8 @@ import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
 
+declare module '../../../serialization/Serializable' { interface SerializableMap { PerspectiveLens: PerspectiveLens } }
+
 /**
  * 透视摄像机镜头
  */

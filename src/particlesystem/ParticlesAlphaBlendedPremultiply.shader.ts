@@ -1,13 +1,18 @@
-import { Material } from '../core/materials/Material';
+import { Material, RegisterMaterial } from '../core/materials/Material';
 import { Texture2D } from '../core/textures/Texture2D';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
-import { shaderConfig } from '../renderer/shader/ShaderLib';
 import { Serializable } from '../serialization/Serializable';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 
-@Serializable('ParticlesAlphaBlendedPremultiplyMaterial')
+declare module '../core/materials/Material'
+{
+    interface MaterialMap { ParticlesAlphaBlendedPremultiplyMaterial: ParticlesAlphaBlendedPremultiplyMaterial }
+    interface UniformsMap { ParticlesAlphaBlendedPremultiplyUniforms: ParticlesAlphaBlendedPremultiplyUniforms }
+}
+
+@RegisterMaterial('ParticlesAlphaBlendedPremultiplyMaterial')
 export class ParticlesAlphaBlendedPremultiplyMaterial extends Material
 {
     constructor()

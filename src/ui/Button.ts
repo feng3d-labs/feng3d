@@ -1,8 +1,6 @@
-import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
-import { Serializable } from '../serialization/Serializable';
 import { $serialize, $set, serialization } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
@@ -57,9 +55,7 @@ export enum ButtonState
 /**
  * 按钮
  */
-@AddComponentMenu('UI/Button')
-@RegisterComponent({ name: 'Button' })
-@Serializable('Button')
+@RegisterComponent({ name: 'Button', menu: 'UI/Button' })
 export class Button extends Component2D
 {
     /**

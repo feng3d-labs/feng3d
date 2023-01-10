@@ -1,22 +1,15 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { TextureCube } from '../../core/textures/TextureCube';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { ObjectAsset } from '../ObjectAsset';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetTypeClassMap
-    {
-        'texturecube': new () => TextureCubeAsset;
-    }
-}
+declare module '../../core/assets/FileAsset' { interface AssetMap { TextureCubeAsset: TextureCubeAsset; } }
 
 /**
  * 立方体纹理资源
  */
-@Serializable('TextureCubeAsset')
+@RegisterAsset('TextureCubeAsset')
 export class TextureCubeAsset extends ObjectAsset
 {
     static extenson = '.json';
@@ -35,4 +28,3 @@ export class TextureCubeAsset extends ObjectAsset
     }
 }
 
-setAssetTypeClass('texturecube', TextureCubeAsset);

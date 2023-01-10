@@ -1,20 +1,19 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { setAssetTypeClass } from '../../core/assets/FileAsset';
-import { Serializable } from '../../serialization/Serializable';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { TextAsset } from './TextAsset';
 
 declare module '../../core/assets/FileAsset'
 {
-    interface AssetTypeClassMap
+    interface AssetMap
     {
-        'json': new () => JsonAsset;
+        JsonAsset: JsonAsset;
     }
 }
 
 /**
  * JSON 资源
  */
-@Serializable('JsonAsset')
+@RegisterAsset('JsonAsset')
 export class JsonAsset extends TextAsset
 {
     static extenson = '.json';
@@ -29,4 +28,3 @@ export class JsonAsset extends TextAsset
     }
 }
 
-setAssetTypeClass('json', JsonAsset);

@@ -8,6 +8,7 @@ declare module '../../src/ecs/Component'
     interface ComponentMap
     {
         CustomComponent: CustomComponent
+        ComponentA: ComponentA
     }
 }
 

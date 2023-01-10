@@ -3,29 +3,19 @@ import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Component3D } from '../core/Component3D';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { AddComponentMenu } from '../Menu';
 import { ticker } from '../utils/Ticker';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        FPSController: FPSController;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { FPSController: FPSController; } }
 
 /**
  * FPS模式控制器
  *
  * 按下鼠标后，拖动鼠标旋转，按ASDWQE键进行平移。
  */
-@AddComponentMenu('Controller/FPSController')
-@RegisterComponent({ name: 'FPSController' })
-@Serializable('FPSController')
+@RegisterComponent({ name: 'FPSController', menu: 'Controller/FPSController' })
 export class FPSController extends Component3D
 {
     /**

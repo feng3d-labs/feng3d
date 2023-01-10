@@ -1,9 +1,8 @@
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
 declare module '../geometry/Geometry' { interface GeometryMap { CapsuleGeometry: CapsuleGeometry } }
@@ -15,7 +14,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { Capsule: Node3D; }
 /**
  * 胶囊体几何体
  */
-@Serializable('CapsuleGeometry')
+@RegisterGeometry('CapsuleGeometry')
 export class CapsuleGeometry extends Geometry
 {
     declare __class__: 'CapsuleGeometry';

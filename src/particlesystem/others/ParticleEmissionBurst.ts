@@ -1,8 +1,10 @@
 import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+
+declare module '../../serialization/Serializable' { interface SerializableMap { ParticleEmissionBurst: ParticleEmissionBurst } }
 
 @Serializable('ParticleEmissionBurst')
 export class ParticleEmissionBurst
@@ -80,6 +82,6 @@ export class ParticleEmissionBurst
     {
         this._isProbability = this.probability >= Math.random();
 
-return this._isProbability;
+        return this._isProbability;
     }
 }

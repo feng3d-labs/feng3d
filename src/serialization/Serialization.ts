@@ -1050,7 +1050,7 @@ serialization.setValueHandlers = [
 
 [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach((element) =>
 {
-    Serializable(element.name)(element);
+    Serializable(element.name as any)(element);
 
     element.prototype['serialize'] = function (object: { value: number[] })
     {

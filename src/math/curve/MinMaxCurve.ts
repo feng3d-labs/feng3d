@@ -4,6 +4,8 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
 
+declare module '../../serialization/Serializable' { interface SerializableMap { MinMaxCurve: MinMaxCurve } }
+
 /**
  * 最大最小曲线
  */

@@ -1,9 +1,8 @@
 import { Vector3 } from '../../math/geom/Vector3';
 import { gPartial } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
 declare module '../geometry/Geometry'
@@ -20,7 +19,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { TorusKnot: Node3D;
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/TorusKnotGeometry.js
  */
-@Serializable('TorusKnotGeometry')
+@RegisterGeometry('TorusKnotGeometry')
 export class TorusKnotGeometry extends Geometry
 {
     declare __class__: 'TorusKnotGeometry';

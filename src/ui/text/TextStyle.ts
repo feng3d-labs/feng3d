@@ -2,7 +2,7 @@ import { EventEmitter } from '../../event/EventEmitter';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 
@@ -119,6 +119,8 @@ export interface TextStyleEventMap
      */
     changed
 }
+
+declare module '../../serialization/Serializable' { interface SerializableMap { TextStyle: TextStyle } }
 
 /**
  * 文本样式

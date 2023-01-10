@@ -3,7 +3,6 @@ import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { NodeComponent } from '../core/NodeComponent';
-import { AddComponentMenu } from '../Menu';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
@@ -12,8 +11,7 @@ declare module '../../ecs/Component'
     interface ComponentMap { Animation: Animation; }
 }
 
-@AddComponentMenu('Animator/Animation')
-@RegisterComponent({ name: 'Animation' })
+@RegisterComponent({ name: 'Animation', menu: 'Animator/Animation' })
 export class Animation extends NodeComponent
 {
     @oav({ component: 'OAVDefault', componentParam: { dragparam: { accepttype: 'animationclip', datatype: 'animationclip' } } })

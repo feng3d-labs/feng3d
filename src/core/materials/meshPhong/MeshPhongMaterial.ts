@@ -1,13 +1,16 @@
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { Texture2D } from '../../textures/Texture2D';
-import { Material } from '../Material';
+import { Material, RegisterMaterial } from '../Material';
 import meshPhongFragment from './meshPhong_fragment_glsl';
 import meshPhongVertex from './meshPhong_vertex_glsl';
 
-declare module '../Material' { interface MaterialMap { meshPhong: MeshPhongMaterial } }
+declare module '../Material' {
+    interface MaterialMap { MeshPhongMaterial: MeshPhongMaterial }
+    interface UniformsMap { MeshPhongUniforms: MeshPhongUniforms }
+}
 
-@Serializable('MeshPhongMaterial')
+@RegisterMaterial('MeshPhongMaterial')
 export class MeshPhongMaterial extends Material
 {
     uniforms = new MeshPhongUniforms();

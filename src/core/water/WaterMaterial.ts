@@ -12,10 +12,8 @@ import waterVertex from './water_vertex_glsl';
 
 declare module '../materials/Material'
 {
-    interface MaterialMap
-    {
-        water: WaterMaterial
-    }
+    interface MaterialMap { WaterMaterial: WaterMaterial }
+    interface UniformsMap { WaterUniforms: WaterUniforms }
 
     interface DefaultMaterialMap
     {

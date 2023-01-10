@@ -3,7 +3,6 @@ import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Component, RegisterComponent } from '../ecs/Component';
-import { Serializable } from '../serialization/Serializable';
 import { TerrainData } from './TerrainData';
 
 declare module '../ecs/Component' { interface ComponentMap { Terrain: Terrain } }
@@ -15,7 +14,6 @@ declare module '../core/core/Node3D' { interface PrimitiveNode3D { Terrain: Node
  */
 // @ov({ component: "OVTerrain" })
 @RegisterComponent({ name: 'Terrain', dependencies: ['MeshRenderer'] })
-@Serializable('Terrain')
 export class Terrain extends Component
 {
     declare __class__: 'Terrain';

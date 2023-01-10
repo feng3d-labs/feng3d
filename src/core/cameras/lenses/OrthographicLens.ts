@@ -5,6 +5,8 @@ import { watcher } from '../../../watcher/watcher';
 import { Projection } from '../Projection';
 import { LensBase } from './LensBase';
 
+declare module '../../../serialization/Serializable' { interface SerializableMap { OrthographicLens: OrthographicLens } }
+
 /**
  * 正射投影镜头
  */

@@ -8,7 +8,10 @@ import { Material } from '../Material';
 import textureFragment from './texture_fragment_glsl';
 import textureVertex from './texture_vertex_glsl';
 
-declare module '../Material' { interface MaterialMap { texture: TextureMaterial } }
+declare module '../Material' {
+    interface MaterialMap { TextureMaterial: TextureMaterial }
+    interface UniformsMap { TextureUniforms: TextureUniforms }
+}
 
 @Serializable('TextureMaterial')
 export class TextureMaterial extends Material

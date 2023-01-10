@@ -1,10 +1,9 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 import { PolyhedronGeometry } from './PolyhedronGeometry';
 
@@ -22,7 +21,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { Icosahedron: Node3
  *
  * @see https://github.com/mrdoob/three.js/blob/dev/src/geometries/IcosahedronGeometry.js
  */
-@Serializable('IcosahedronGeometry')
+@RegisterGeometry('IcosahedronGeometry')
 export class IcosahedronGeometry extends Geometry
 {
     declare __class__: 'IcosahedronGeometry';

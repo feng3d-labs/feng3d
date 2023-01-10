@@ -1,23 +1,16 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { Geometry } from '../../core/geometry/Geometry';
 import { CubeGeometry } from '../../core/primitives/CubeGeometry';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { ObjectAsset } from '../ObjectAsset';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetTypeClassMap
-    {
-        'geometry': new () => GeometryAsset;
-    }
-}
+declare module '../../core/assets/FileAsset' { interface AssetMap { GeometryAsset: GeometryAsset; } }
 
 /**
  * 几何体资源
  */
-@Serializable('GeometryAsset')
+@RegisterAsset('GeometryAsset')
 export class GeometryAsset extends ObjectAsset
 {
     static extenson = '.json';
@@ -36,5 +29,3 @@ export class GeometryAsset extends ObjectAsset
         this.data.assetId = this.data.assetId || this.assetId;
     }
 }
-
-setAssetTypeClass('geometry', GeometryAsset);

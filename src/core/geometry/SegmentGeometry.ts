@@ -1,14 +1,13 @@
 import { Color4 } from '../../math/Color4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { Geometry } from './Geometry';
+import { Geometry, RegisterGeometry } from './Geometry';
 
 declare module '../core/Node3D' { interface PrimitiveNode3D { Segment: Node3D; } }
 
@@ -17,7 +16,7 @@ declare module './Geometry' { interface GeometryMap { SegmentGeometry: SegmentGe
 /**
  * 线段组件
  */
-@Serializable('SegmentGeometry')
+@RegisterGeometry('SegmentGeometry')
 export class SegmentGeometry extends Geometry
 {
     declare __class__: 'SegmentGeometry';

@@ -13,7 +13,8 @@ import standardVertex from './standard_vertex_glsl';
 declare module '../Material'
 {
     interface DefaultMaterialMap { 'Default-Material': Material; }
-    interface MaterialMap { standard: StandardMaterial }
+    interface UniformsMap { StandardUniforms: StandardUniforms }
+    interface MaterialMap { StandardMaterial: StandardMaterial }
 }
 
 @Serializable('StandardMaterial')

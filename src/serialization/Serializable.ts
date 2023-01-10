@@ -1,7 +1,12 @@
 import { Constructor } from '../polyfill/Types';
 import { __class__ } from './SerializationConst';
 
-export const _definitionCache = {};
+export const _definitionCache: any = {};
+
+/**
+ * 组件名称与类定义映射，新建组件一般都需扩展该接口。
+ */
+export interface SerializableMap { }
 
 /**
  * 标记可序列化类
@@ -10,9 +15,9 @@ export const _definitionCache = {};
  *
  * @see https://docs.unity3d.com/cn/current/ScriptReference/Serializable.html
  */
-export function Serializable(className: string)
+export function Serializable<K extends keyof SerializableMap>(className: K)
 {
-    return (constructor: Constructor<any>) =>
+    return (constructor: Constructor<SerializableMap[K]>) =>
     {
         if (_definitionCache[className])
         {

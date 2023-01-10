@@ -1,7 +1,7 @@
 import { AssetType } from '../../core/assets/AssetType';
+import { RegisterAsset } from '../../core/assets/FileAsset';
 import { Node3D } from '../../core/core/Node3D';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { $clone } from '../../serialization/Serialization';
 import { ObjectAsset } from '../ObjectAsset';
 
@@ -10,10 +10,12 @@ export interface Object3DAsset
     getAssetData(): Promise<Node3D>;
 }
 
+declare module '../../core/assets/FileAsset' { interface AssetMap { Object3DAsset: Object3DAsset; } }
+
 /**
  * 游戏对象资源
  */
-@Serializable('Object3DAsset')
+@RegisterAsset('Object3DAsset')
 export class Object3DAsset extends ObjectAsset
 {
     /**

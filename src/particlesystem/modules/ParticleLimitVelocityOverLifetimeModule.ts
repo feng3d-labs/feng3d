@@ -2,19 +2,19 @@ import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleLimitVelocityOverLifetimeModule: ParticleLimitVelocityOverLifetimeModule } }
 /**
  * Limit Velocity Over Lifetime module.
  *
  * 基于时间轴限制速度模块。
  */
-@Serializable('ParticleLimitVelocityOverLifetimeModule')
+@RegisterParticleModule('ParticleLimitVelocityOverLifetimeModule')
 export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
 {
     declare __class__: 'ParticleLimitVelocityOverLifetimeModule';

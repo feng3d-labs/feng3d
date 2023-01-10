@@ -2,11 +2,10 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
 declare module '../geometry/Geometry'
@@ -43,7 +42,7 @@ export interface ICircleGeometry
 /**
  * 圆片
  */
-@Serializable('CircleGeometry')
+@RegisterGeometry('CircleGeometry')
 export class CircleGeometry extends Geometry
 {
     declare __class__: 'CircleGeometry';

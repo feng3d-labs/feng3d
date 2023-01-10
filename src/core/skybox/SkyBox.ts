@@ -1,28 +1,18 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
-import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { TextureCube } from '../textures/TextureCube';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        SkyBox: SkyBox;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { SkyBox: SkyBox; } }
 
 /**
  * 天空盒组件
  */
-@AddComponentMenu('SkyBox/SkyBox')
-@RegisterComponent({ name: 'SkyBox' })
-@Serializable('SkyBox')
+@RegisterComponent({ name: 'SkyBox', menu: 'SkyBox/SkyBox' })
 export class SkyBox extends Component3D
 {
     declare __class__: 'SkyBox';

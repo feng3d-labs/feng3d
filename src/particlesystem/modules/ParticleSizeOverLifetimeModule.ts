@@ -1,15 +1,15 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleSizeOverLifetimeModule: ParticleSizeOverLifetimeModule } }
 /**
  * 粒子系统 缩放随时间变化模块
  */
-@Serializable('ParticleSizeOverLifetimeModule')
+@RegisterParticleModule('ParticleSizeOverLifetimeModule')
 export class ParticleSizeOverLifetimeModule extends ParticleModule
 {
     /**

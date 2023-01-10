@@ -4,13 +4,13 @@ import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { noise } from '../../math/Noise';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleNoiseModule: ParticleNoiseModule } }
 /**
  * Script interface for the Noise Module.
  *
@@ -20,7 +20,7 @@ import { ParticleModule } from './ParticleModule';
  *
  * 噪声模块允许你将湍流应用到粒子的运动中。使用低质量设置来创建计算效率高的噪声，或者使用高质量设置来模拟更平滑、更丰富的噪声。您还可以选择为每个轴分别定义噪声的行为。
  */
-@Serializable('ParticleNoiseModule')
+@RegisterParticleModule('ParticleNoiseModule')
 export class ParticleNoiseModule extends ParticleModule
 {
     /**

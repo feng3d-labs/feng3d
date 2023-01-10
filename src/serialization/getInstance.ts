@@ -1,5 +1,5 @@
-import { Constructor } from '../polyfill/Types';
-import { _definitionCache } from './Serializable';
+import { Constructor, gPartial } from '../polyfill/Types';
+import { SerializableMap, _definitionCache } from './Serializable';
 import { $set } from './Serialization';
 
 /**
@@ -7,15 +7,15 @@ import { $set } from './Serialization';
  *
  * @param classname 类名称
  */
-export function getInstance(classname: string, params?: any)
+export function getInstance<K extends keyof SerializableMap>(classname: K, params?: gPartial<SerializableMap[K]>)
 {
     let Cls: Constructor = _definitionCache[classname];
 
     // 如果未定义则从全局查找
     if (!Cls)
     {
-        const definition = globalThis[classname];
-        if (definition && typeof definition === 'function' && definition.name === classname)
+        const definition = globalThis[classname as string];
+        if (definition && typeof definition === 'function' && definition['name'] === classname)
         {
             _definitionCache[classname] = definition;
             Cls = definition as any;

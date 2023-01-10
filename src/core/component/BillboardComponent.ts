@@ -1,22 +1,12 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
-import { AddComponentMenu } from '../Menu';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        BillboardComponent: BillboardComponent;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { BillboardComponent: BillboardComponent; } }
 
-@AddComponentMenu('Layout/BillboardComponent')
-@RegisterComponent({ name: 'BillboardComponent' })
-@Serializable('BillboardComponent')
+@RegisterComponent({ name: 'BillboardComponent', menu: 'Layout/BillboardComponent' })
 export class BillboardComponent extends Component3D
 {
     declare __class__: 'BillboardComponent';
