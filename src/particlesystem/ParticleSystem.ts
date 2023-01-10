@@ -4,7 +4,6 @@ import { Node3D } from '../core/core/Node3D';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
-import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { QuadGeometry } from '../core/primitives/QuadGeometry';
 import { Scene } from '../core/scene/Scene';
@@ -63,8 +62,7 @@ declare module '../core/core/Node3D'
 /**
  * 粒子系统
  */
-@AddComponentMenu('Effects/ParticleSystem')
-@RegisterComponent({ name: 'ParticleSystem', dependencies: ['MeshRenderer'], single: true })
+@RegisterComponent({ name: 'ParticleSystem', dependencies: ['MeshRenderer'], single: true, menu: 'Effects/ParticleSystem' })
 export class ParticleSystem extends Component3D
 {
     declare __class__: 'ParticleSystem';

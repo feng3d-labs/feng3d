@@ -6,7 +6,6 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';
 import { Component3D } from './Component3D';
@@ -29,13 +28,7 @@ declare module './Node3D'
 
 }
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        TransformLayout: TransformLayout;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { TransformLayout: TransformLayout; } }
 
 /**
  * 变换布局
@@ -44,8 +37,7 @@ declare module '../../ecs/Component'
  *
  * 通过修改Transform的数值实现
  */
-@AddComponentMenu('Layout/TransformLayout')
-@RegisterComponent({ name: 'TransformLayout', single: true })
+@RegisterComponent({ name: 'TransformLayout', single: true, menu: 'Layout/TransformLayout' })
 export class TransformLayout extends Component3D
 {
     /**

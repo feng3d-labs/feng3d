@@ -4,7 +4,6 @@ import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';
-import { AddComponentMenu } from '../Menu';
 import { audioCtx, globalGain } from './AudioListener';
 
 declare module '../../ecs/Component'
@@ -41,8 +40,7 @@ export enum DistanceModelType
  * 声源
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
  */
-@AddComponentMenu('Audio/AudioSource')
-@RegisterComponent({ name: 'AudioSource' })
+@RegisterComponent({ name: 'AudioSource', menu: 'Audio/AudioSource' })
 export class AudioSource extends Component3D
 {
     private panner: PannerNode;

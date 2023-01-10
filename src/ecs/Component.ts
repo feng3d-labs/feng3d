@@ -1,6 +1,7 @@
 import { Camera } from '../core/cameras/Camera';
 import { HideFlags } from '../core/core/HideFlags';
 import { RunEnvironment } from '../core/core/RunEnvironment';
+import { AddComponentMenu } from '../core/Menu';
 import { Scene } from '../core/scene/Scene';
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
@@ -46,7 +47,15 @@ export function RegisterComponent<K extends keyof ComponentMap>(component: {
     /**
      * 所依赖的组件列表。当该组件被添加Entity上时，会补齐缺少的依赖组件。
      */
-    dependencies?: (keyof ComponentMap)[]
+    dependencies?: (keyof ComponentMap)[],
+    /**
+     * 组件菜单路径。
+     */
+    menu?: string,
+    /**
+     * 组件菜单优先级(从低到高)。
+     */
+    menuOrder?: number;
 })
 {
     return (constructor: Constructor<ComponentMap[K]>) =>
@@ -59,6 +68,10 @@ export function RegisterComponent<K extends keyof ComponentMap>(component: {
         constructor.prototype[__component__] = info;
 
         Serializable(info.name as any)(constructor);
+        if (component.menu)
+        {
+            AddComponentMenu(component.name, component.menu, component.menuOrder)(constructor);
+        }
     };
 }
 

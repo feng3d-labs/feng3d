@@ -11,7 +11,6 @@ import { MeshRenderer } from '../core/MeshRenderer';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
-import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { FrameBufferObject } from '../render/FrameBufferObject';
 import { Scene } from '../scene/Scene';
@@ -24,8 +23,7 @@ declare module '../core/Node3D' { export interface PrimitiveNode3D { Water: Node
 /**
  * The Water component renders the terrain.
  */
-@AddComponentMenu('Graphics/Water')
-@RegisterComponent({ name: 'Water', dependencies: ['MeshRenderer'] })
+@RegisterComponent({ name: 'Water', dependencies: ['MeshRenderer'], menu: 'Graphics/Water' })
 export class Water extends Component3D
 {
     declare __class__: 'Water';

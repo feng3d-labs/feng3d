@@ -6,7 +6,6 @@ import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { Node3D } from '../core/Node3D';
 import { Renderer } from '../core/Renderer';
-import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
 import { Light } from './Light';
@@ -19,8 +18,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { 'Directional light
 /**
  * 方向光源
  */
-@AddComponentMenu('Rendering/DirectionalLight')
-@RegisterComponent({ name: 'DirectionalLight' })
+@RegisterComponent({ name: 'DirectionalLight', menu: 'Rendering/DirectionalLight' })
 export class DirectionalLight extends Light
 {
     declare __class__: 'DirectionalLight';

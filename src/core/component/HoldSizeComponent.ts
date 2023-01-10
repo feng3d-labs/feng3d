@@ -3,18 +3,10 @@ import { oav } from '../../objectview/ObjectView';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
-import { AddComponentMenu } from '../Menu';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        HoldSizeComponent: HoldSizeComponent;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { HoldSizeComponent: HoldSizeComponent; } }
 
-@AddComponentMenu('Layout/HoldSizeComponent')
-@RegisterComponent({ name: 'HoldSizeComponent' })
+@RegisterComponent({ name: 'HoldSizeComponent', menu: 'Layout/HoldSizeComponent' })
 export class HoldSizeComponent extends Component3D
 {
     declare __class__: 'HoldSizeComponent';

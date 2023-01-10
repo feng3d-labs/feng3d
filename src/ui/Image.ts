@@ -1,5 +1,4 @@
 import { Camera } from '../core/cameras/Camera';
-import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
 import { Texture2D } from '../core/textures/Texture2D';
@@ -18,8 +17,7 @@ declare module '../ecs/Component' { interface ComponentMap { Image: Image } }
  *
  * 用于显示图片
  */
-@AddComponentMenu('UI/Image')
-@RegisterComponent({ name: 'Image' })
+@RegisterComponent({ name: 'Image', menu: 'UI/Image' })
 export class Image extends Component2D
 {
     /**

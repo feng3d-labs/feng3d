@@ -6,24 +6,16 @@ import { oav } from '../../objectview/ObjectView';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Component3D } from '../core/Component3D';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { AddComponentMenu } from '../Menu';
 import { ticker } from '../utils/Ticker';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        FPSController: FPSController;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { FPSController: FPSController; } }
 
 /**
  * FPS模式控制器
  *
  * 按下鼠标后，拖动鼠标旋转，按ASDWQE键进行平移。
  */
-@AddComponentMenu('Controller/FPSController')
-@RegisterComponent({ name: 'FPSController' })
+@RegisterComponent({ name: 'FPSController', menu: 'Controller/FPSController' })
 export class FPSController extends Component3D
 {
     /**

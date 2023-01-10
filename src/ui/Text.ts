@@ -1,5 +1,4 @@
 import { Camera } from '../core/cameras/Camera';
-import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene } from '../core/scene/Scene';
 import { Texture2D } from '../core/textures/Texture2D';
@@ -23,8 +22,7 @@ declare module './core/Node2D' { export interface PrimitiveNode2D { Text: Node2D
  *
  * 用于显示文字。
  */
-@AddComponentMenu('UI/Text')
-@RegisterComponent({ name: 'Text' })
+@RegisterComponent({ name: 'Text', menu: 'UI/Text' })
 export class Text extends Component2D
 {
     /**

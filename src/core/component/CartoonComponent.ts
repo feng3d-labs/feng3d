@@ -6,16 +6,9 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        CartoonComponent: CartoonComponent;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { CartoonComponent: CartoonComponent; } }
 
 declare module '../../renderer/data/Uniforms'
 {
@@ -31,8 +24,7 @@ declare module '../../renderer/data/Uniforms'
 /**
  * 参考
  */
-@AddComponentMenu('Rendering/CartoonComponent')
-@RegisterComponent({ name: 'CartoonComponent' })
+@RegisterComponent({ name: 'CartoonComponent', menu: 'Rendering/CartoonComponent' })
 export class CartoonComponent extends Component
 {
     declare __class__: 'CartoonComponent';

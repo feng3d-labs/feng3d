@@ -2,7 +2,6 @@ import { MeshRenderer } from '../../core/core/MeshRenderer';
 import { View3D } from '../../core/core/View3D';
 import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
-import { AddComponentMenu } from '../../core/Menu';
 import { TransformUtils } from '../../core/utils/TransformUtils';
 import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
@@ -13,8 +12,7 @@ declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: 
 /**
  * 可在画布上渲染组件，使得拥有该组件的Object3D可以在画布上渲染。
  */
-@AddComponentMenu('Rendering/CanvasRenderer')
-@RegisterComponent({ name: 'CanvasRenderer' })
+@RegisterComponent({ name: 'CanvasRenderer', menu: 'Rendering/CanvasRenderer' })
 export class CanvasRenderer extends MeshRenderer
 {
     @oav()

@@ -1,4 +1,3 @@
-import { AddComponentMenu } from '../core/Menu';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
@@ -56,8 +55,7 @@ export enum ButtonState
 /**
  * 按钮
  */
-@AddComponentMenu('UI/Button')
-@RegisterComponent({ name: 'Button' })
+@RegisterComponent({ name: 'Button', menu: 'UI/Button' })
 export class Button extends Component2D
 {
     /**

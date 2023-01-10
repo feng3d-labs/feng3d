@@ -4,16 +4,9 @@ import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        OutLineComponent: OutLineComponent;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { OutLineComponent: OutLineComponent; } }
 
 import '../../renderer/data/Uniforms';
 declare module '../../renderer/data/Uniforms'
@@ -36,8 +29,7 @@ declare module '../../renderer/data/Uniforms'
     }
 }
 
-@AddComponentMenu('Rendering/OutLineComponent')
-@RegisterComponent({ name: 'OutLineComponent' })
+@RegisterComponent({ name: 'OutLineComponent', menu: 'Rendering/OutLineComponent' })
 export class OutLineComponent extends Component
 {
     declare __class__: 'OutLineComponent';

@@ -3,7 +3,6 @@ import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';
-import { AddComponentMenu } from '../Menu';
 
 export let audioCtx: AudioContext;
 export let globalGain: GainNode;
@@ -18,8 +17,7 @@ declare module '../../ecs/Component'
 /**
  * 声音监听器
  */
-@AddComponentMenu('Audio/AudioListener')
-@RegisterComponent({ name: 'AudioListener' })
+@RegisterComponent({ name: 'AudioListener', menu: 'Audio/AudioListener' })
 export class AudioListener extends Component3D
 {
     gain: GainNode;

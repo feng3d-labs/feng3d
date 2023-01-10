@@ -1,4 +1,4 @@
-import { Component, ComponentMap } from '../ecs/Component';
+import { ComponentMap } from '../ecs/Component';
 import { Constructor } from '../polyfill/Types';
 
 /**
@@ -9,12 +9,12 @@ import { Constructor } from '../polyfill/Types';
  * @param path 组件菜单中路径
  * @param componentOrder 组件菜单中组件的顺序(从低到高)。
  */
-export function AddComponentMenu(path: string, componentOrder = 0)
+export function AddComponentMenu<K extends keyof ComponentMap>(component: K, path: string, componentOrder = 0)
 {
-    return (target: Constructor<Component>) =>
+    return (_target: Constructor<ComponentMap[K]>) =>
     {
         if (!menuConfig.component) menuConfig.component = [];
-        menuConfig.component.push({ path, order: componentOrder, type: target.name as any });
+        menuConfig.component.push({ path, order: componentOrder, type: component as any });
 
         menuConfig.component.sort((a, b) =>
         {
