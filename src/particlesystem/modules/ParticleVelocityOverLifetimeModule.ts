@@ -1,18 +1,18 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleVelocityOverLifetimeModule: ParticleVelocityOverLifetimeModule } }
 /**
  * 粒子系统 速度随时间变化模块
  *
  * Controls the velocity of each particle during its lifetime.
  * 控制每个粒子在其生命周期内的速度。
  */
-@Serializable('ParticleVelocityOverLifetimeModule')
+@RegisterParticleModule('ParticleVelocityOverLifetimeModule')
 export class ParticleVelocityOverLifetimeModule extends ParticleModule
 {
     declare __class__: 'ParticleVelocityOverLifetimeModule';

@@ -3,18 +3,18 @@ import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleMainModule: ParticleMainModule } }
 /**
  * 粒子主模块
  */
-@Serializable('ParticleMainModule')
+@RegisterParticleModule('ParticleMainModule')
 export class ParticleMainModule extends ParticleModule
 {
     declare __class__: 'ParticleMainModule';

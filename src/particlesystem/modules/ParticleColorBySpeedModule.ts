@@ -2,17 +2,18 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
+
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleColorBySpeedModule: ParticleColorBySpeedModule } }
 
 /**
  * the Color By Speed module.
  *
  * 颜色随速度变化模块。
  */
-@Serializable('ParticleColorBySpeedModule')
+@RegisterParticleModule('ParticleColorBySpeedModule')
 export class ParticleColorBySpeedModule extends ParticleModule
 {
     /**

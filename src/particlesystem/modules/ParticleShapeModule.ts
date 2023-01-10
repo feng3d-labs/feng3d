@@ -3,8 +3,7 @@ import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';
@@ -21,13 +20,14 @@ import { ParticleSystemShapeCone } from '../shapes/ParticleSystemShapeCone';
 import { ParticleSystemShapeEdge } from '../shapes/ParticleSystemShapeEdge';
 import { ParticleSystemShapeHemisphere } from '../shapes/ParticleSystemShapeHemisphere';
 import { ParticleSystemShapeSphere } from '../shapes/ParticleSystemShapeSphere';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleShapeModule: ParticleShapeModule } }
 /**
  * Shape of the emitter volume, which controls where particles are emitted and their initial direction.
  * 发射体体积的形状，它控制粒子发射的位置和初始方向。
  */
-@Serializable('ParticleShapeModule')
+@RegisterParticleModule('ParticleShapeModule')
 export class ParticleShapeModule extends ParticleModule
 {
     declare __class__: 'ParticleShapeModule';

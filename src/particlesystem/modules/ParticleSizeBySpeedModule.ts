@@ -2,18 +2,19 @@ import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Serializable } from '../../serialization/Serializable';
-import { $set, serialization } from '../../serialization/Serialization';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
+
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleSizeBySpeedModule: ParticleSizeBySpeedModule } }
 
 /**
  * Script interface for the Size By Speed module.
  *
  * 粒子系统 缩放随速度变化模块
  */
-@Serializable('ParticleSizeBySpeedModule')
+@RegisterParticleModule('ParticleSizeBySpeedModule')
 export class ParticleSizeBySpeedModule extends ParticleModule
 {
     /**

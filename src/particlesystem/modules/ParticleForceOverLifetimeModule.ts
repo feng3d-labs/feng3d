@@ -1,18 +1,18 @@
 import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
+declare module './ParticleModule' { interface ParticleModuleMap { ParticleForceOverLifetimeModule: ParticleForceOverLifetimeModule } }
 /**
  * 粒子系统 作用在粒子上的力随时间变化模块
  *
  * 控制每个粒子在其生命周期内的力。
  * Script interface for the Force Over Lifetime module.
  */
-@Serializable('ParticleForceOverLifetimeModule')
+@RegisterParticleModule('ParticleForceOverLifetimeModule')
 export class ParticleForceOverLifetimeModule extends ParticleModule
 {
     /**

@@ -17,10 +17,7 @@ import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { geometryUtils } from './GeometryUtils';
 
-declare module '../../serialization/Serializable'
-{
-    interface SerializableMap extends GeometryMap { }
-}
+declare module '../../serialization/Serializable' { interface SerializableMap extends GeometryMap { } }
 
 export interface GeometryMap { }
 
