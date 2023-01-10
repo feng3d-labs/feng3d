@@ -5,6 +5,8 @@ import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
 import { bezierCurve } from './BezierCurve';
 import { WrapMode } from './WrapMode';
 
+declare module '../../serialization/Serializable' { interface SerializableMap { AnimationCurve: AnimationCurve } }
+
 /**
  * 动画曲线
  *

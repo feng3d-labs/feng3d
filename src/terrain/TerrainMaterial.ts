@@ -11,6 +11,8 @@ import { SerializeProperty } from '../serialization/SerializeProperty';
 
 declare module '../core/materials/Material'
 {
+    interface MaterialMap { TerrainMaterial: TerrainMaterial }
+    interface UniformsMap { TerrainUniforms: TerrainUniforms }
     interface DefaultMaterialMap
     {
         'Terrain-Material': Material;

@@ -5,6 +5,8 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
 
+declare module '../../serialization/Serializable' { interface SerializableMap { Vector4: Vector4 } }
+
 /**
  * 四维向量
  */

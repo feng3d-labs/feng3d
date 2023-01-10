@@ -5,6 +5,8 @@ import { SerializeProperty } from '../serialization/SerializeProperty';
 import type { Color4 } from './Color4';
 import { Vector3 } from './geom/Vector3';
 
+declare module '../serialization/Serializable' { interface SerializableMap { Color3: Color3 } }
+
 /**
  * 颜色
  */

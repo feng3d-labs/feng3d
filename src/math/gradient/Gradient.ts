@@ -7,6 +7,7 @@ import { GradientAlphaKey } from './GradientAlphaKey';
 import { GradientColorKey } from './GradientColorKey';
 import { GradientMode } from './GradientMode';
 
+declare module '../../serialization/Serializable' { interface SerializableMap { Gradient: Gradient } }
 /**
  * 颜色渐变
  */

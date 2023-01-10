@@ -2,6 +2,8 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 
+declare module '../../serialization/Serializable' { interface SerializableMap { RenderParams: RenderParams } }
+
 /**
  * 渲染参数
  */
