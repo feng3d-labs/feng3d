@@ -10,7 +10,7 @@ describe('ECS中事件系统', () =>
     it('实体与组件事件互通', () =>
     {
         const entity = new Entity();
-        const component = entity.addComponent(Component);
+        const component = entity.addComponent('Component');
 
         let emitData = { value: Math.random() }; // 发射的数据
         let receiveData: any; // 接收到的数据
@@ -68,7 +68,7 @@ describe('ECS中事件系统', () =>
         // 子结点
         const child = new Node();
         // 子结点组件
-        const childComponent = child.addComponent(Component);
+        const childComponent = child.addComponent('Component');
         // 建立父子结点关系
         parent.addChild(child);
 
@@ -112,12 +112,12 @@ describe('ECS中事件系统', () =>
         // 父节点
         const parent = new Node();
         // 父节点组件
-        const parentComponent = parent.addComponent(Component);
+        const parentComponent = parent.addComponent('Component');
 
         // 子结点
         const child = new Node();
         // 子结点组件
-        const childComponent = child.addComponent(Component);
+        const childComponent = child.addComponent('Component');
         // 建立父子结点关系
         parent.addChild(child);
 

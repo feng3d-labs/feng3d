@@ -2,6 +2,7 @@ import { Component } from '../../src/ecs/Component';
 import { ComponentA, CustomComponent } from './common';
 
 import { assert, describe, it } from 'vitest';
+import { getConstructor } from '../../src/serialization/getConstructor';
 const { ok, equal, deepEqual, strictEqual } = assert;
 
 describe('Component', () =>
@@ -14,15 +15,15 @@ describe('Component', () =>
 
     it('RegisterComponent', () =>
     {
-        const compnentCls = Component.getConstructor('CustomComponent');
+        const compnentCls = getConstructor('CustomComponent');
         ok(compnentCls === CustomComponent);
 
         // ComponentA 使用@RegisterComponent进行注册，但是
-        const compnentACls = Component.getConstructor('ComponentA' as any);
+        const compnentACls = getConstructor('ComponentA' as any);
         ok(compnentACls === ComponentA);
 
         // ComponentB 没有使用@RegisterComponent进行注册
-        const compnentBCls = Component.getConstructor('ComponentB' as any);
+        const compnentBCls = getConstructor('ComponentB' as any);
         ok(compnentBCls === undefined);
     });
 });

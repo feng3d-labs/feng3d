@@ -82,6 +82,7 @@ export function RegisterComponent<K extends keyof ComponentMap>(component: {
  *
  * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到实体上。
  */
+@RegisterComponent({ name: 'Component' })
 export class Component
 {
     /**
