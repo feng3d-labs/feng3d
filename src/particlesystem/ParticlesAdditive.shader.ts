@@ -1,4 +1,4 @@
-import { Material } from '../core/materials/Material';
+import { Material, RegisterMaterial } from '../core/materials/Material';
 import { Texture2D } from '../core/textures/Texture2D';
 import { Color4 } from '../math/Color4';
 import { Vector4 } from '../math/geom/Vector4';
@@ -9,13 +9,15 @@ import { SerializeProperty } from '../serialization/SerializeProperty';
 
 declare module '../core/materials/Material'
 {
+    interface MaterialMap { ParticleMaterial: ParticleMaterial }
+    interface UniformsMap { ParticlesAdditiveUniforms: ParticlesAdditiveUniforms }
     interface DefaultMaterialMap
     {
         'Particle-Material': Material;
     }
 }
 
-@Serializable('ParticleMaterial')
+@RegisterMaterial('ParticleMaterial')
 export class ParticleMaterial extends Material
 {
     uniforms = new ParticlesAdditiveUniforms();
