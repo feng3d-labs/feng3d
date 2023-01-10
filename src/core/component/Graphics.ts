@@ -1,11 +1,12 @@
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { dataTransform } from '../../polyfill/DataTransform';
-import { Serializable } from '../../serialization/Serializable';
-import { Component } from '../../ecs/Component';
+
+declare module '../../ecs/Component' { interface ComponentMap { Graphics: Graphics; } }
 
 /**
  * Graphics 类包含一组可用来创建矢量形状的方法。
  */
-@Serializable('Graphics')
+@RegisterComponent({ name: 'Graphics' })
 export class Graphics extends Component
 {
     declare __class__: 'Graphics';
