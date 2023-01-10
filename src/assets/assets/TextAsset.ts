@@ -2,13 +2,7 @@ import { AssetType } from '../../core/assets/AssetType';
 import { FileAsset, RegisterAsset } from '../../core/assets/FileAsset';
 import { oav } from '../../objectview/ObjectView';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetMap
-    {
-        TextAsset: TextAsset;
-    }
-}
+declare module '../../core/assets/FileAsset' { interface AssetMap { TextAsset: TextAsset; } }
 
 /**
  * 文本 资源

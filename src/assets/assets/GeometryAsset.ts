@@ -5,13 +5,7 @@ import { CubeGeometry } from '../../core/primitives/CubeGeometry';
 import { oav } from '../../objectview/ObjectView';
 import { ObjectAsset } from '../ObjectAsset';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetMap
-    {
-        GeometryAsset: GeometryAsset;
-    }
-}
+declare module '../../core/assets/FileAsset' { interface AssetMap { GeometryAsset: GeometryAsset; } }
 
 /**
  * 几何体资源

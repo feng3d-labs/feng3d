@@ -4,13 +4,7 @@ import { regExps } from '../../core/utils/RegExps';
 import { watcher } from '../../watcher/watcher';
 import { TextAsset } from './TextAsset';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetMap
-    {
-        ScriptAsset: ScriptAsset;
-    }
-}
+declare module '../../core/assets/FileAsset' { interface AssetMap { ScriptAsset: ScriptAsset; } }
 
 /**
  * 脚本资源

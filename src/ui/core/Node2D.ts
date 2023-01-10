@@ -52,6 +52,11 @@ export interface Node2D
     find(name: string): Node2D;
 }
 
+declare module '../../serialization/Serializable'
+{
+    interface SerializableMap { Node2D: Node2D }
+}
+
 /**
  * 2D结点
  *

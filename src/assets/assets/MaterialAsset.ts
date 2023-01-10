@@ -5,13 +5,7 @@ import { StandardMaterial } from '../../core/materials/standard/StandardMaterial
 import { oav } from '../../objectview/ObjectView';
 import { ObjectAsset } from '../ObjectAsset';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetMap
-    {
-        MaterialAsset: MaterialAsset;
-    }
-}
+declare module '../../core/assets/FileAsset' { interface AssetMap { MaterialAsset: MaterialAsset; } }
 
 /**
  * 材质资源
