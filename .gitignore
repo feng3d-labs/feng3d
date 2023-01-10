@@ -6,3 +6,4 @@ public
 out
 package-lock.json
 .lib
+pnpm-lock.yaml
