@@ -2,7 +2,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
-import { WebGLRenderer, WebGLRendererParameters } from '../../renderer/WebGLRenderer';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Camera } from '../cameras/Camera';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
@@ -73,9 +73,42 @@ export class View3D extends Component3D
     /**
      * 将被绘制的目标画布。
      */
-    canvas: HTMLCanvasElement;
+    get canvas()
+    {
+        if (!this._canvas)
+        {
+            const canvas = document.createElement('canvas');
+            canvas.id = 'glcanvas';
+            canvas.style.position = 'fixed';
+            canvas.style.left = '0px';
+            canvas.style.top = '0px';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            document.body.appendChild(canvas);
+            this.canvas = canvas;
+        }
 
-    private _contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };
+        return this._canvas;
+    }
+    set canvas(v)
+    {
+        if (this._canvas)
+        {
+            this._canvas.removeEventListener('webglcontextlost', this._onContextLost, false);
+            this._canvas.removeEventListener('webglcontextrestored', this._onContextRestore, false);
+            this._canvas.removeEventListener('webglcontextcreationerror', this._onContextCreationError, false);
+        }
+        this._canvas = v;
+        if (this._canvas)
+        {
+            this._canvas.addEventListener('webglcontextlost', this._onContextLost, false);
+            this._canvas.addEventListener('webglcontextrestored', this._onContextRestore, false);
+            this._canvas.addEventListener('webglcontextcreationerror', this._onContextCreationError, false);
+        }
+    }
+    private _canvas: HTMLCanvasElement;
+
+    contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };
 
     /**
      * 渲染时使用的摄像机。
@@ -99,12 +132,44 @@ export class View3D extends Component3D
         return this.scene.node3d;
     }
 
+    get gl()
+    {
+        if (!this._gl)
+        {
+            const canvas = this.canvas;
+
+            const contextAttributes = Object.assign({
+                depth: true,
+                stencil: true,
+                antialias: false,
+                premultipliedAlpha: true,
+                preserveDrawingBuffer: false,
+                powerPreference: 'default',
+                failIfMajorPerformanceCaveat: false,
+            } as Partial<WebGLContextAttributes>, this.contextAttributes);
+
+            const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
+            this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
+        }
+
+        return this._gl;
+    }
+    set gl(v)
+    {
+        this._gl = v;
+        if (this._webGLRenderer)
+        {
+            this._webGLRenderer.gl = this._gl;
+        }
+    }
+    private _gl: WebGLRenderingContext;
+
     get webGLRenderer()
     {
         if (!this._webGLRenderer)
         {
-            const parameters: Partial<WebGLRendererParameters> = Object.assign({ canvas: this.canvas }, this._contextAttributes);
-            this._webGLRenderer = new WebGLRenderer(parameters);
+            this._webGLRenderer = new WebGLRenderer();
+            this._webGLRenderer.gl = this.gl;
         }
 
         return this._webGLRenderer;
@@ -120,18 +185,6 @@ export class View3D extends Component3D
 
     init(): void
     {
-        const canvas = document.createElement('canvas');
-        canvas.id = 'glcanvas';
-        canvas.style.position = 'fixed';
-        canvas.style.left = '0px';
-        canvas.style.top = '0px';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        document.body.appendChild(canvas);
-        console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
-
-        this.canvas = canvas;
-
         this.start();
     }
 
@@ -163,6 +216,8 @@ export class View3D extends Component3D
      */
     render(interval?: number)
     {
+        if (this._isContextLost === true) return;
+
         let camera = this.camera;
         if (!camera)
         {
@@ -341,6 +396,59 @@ export class View3D extends Component3D
 
         return node3ds;
     }
+
+    private _isContextLost = false;
+    private _onContextLost = (event: Event) =>
+    {
+        event.preventDefault();
+
+        console.warn('WebGLRenderer: Context Lost.');
+
+        this._isContextLost = true;
+    };
+
+    private _onContextRestore = () =>
+    {
+        console.warn('WebGLRenderer: Context Restored.');
+
+        this._isContextLost = false;
+
+        this.webGLRenderer.init();
+    };
+
+    private _onContextCreationError = (event: WebGLContextEvent) =>
+    {
+        console.error('WebGLRenderer: A WebGL context could not be created. Reason: ', event.statusMessage);
+    };
 }
 
-// var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
+function getContext(canvas: HTMLCanvasElement, contextNames: string[], contextAttributes?: Partial<WebGLContextAttributes>)
+{
+    const context = _getContext(canvas, contextNames, contextAttributes);
+
+    if (!context)
+    {
+        if (_getContext(canvas, contextNames))
+        {
+            throw new Error('Error creating WebGL context with your selected attributes.');
+        }
+        else
+        {
+            throw new Error('Error creating WebGL context.');
+        }
+    }
+
+    return context;
+}
+
+function _getContext(canvas: HTMLCanvasElement, contextNames: string[], contextAttributes?: Partial<WebGLContextAttributes>)
+{
+    let context: RenderingContext;
+    for (let i = 0; i < contextNames.length; ++i)
+    {
+        context = canvas.getContext(contextNames[i], contextAttributes);
+        if (context) return context;
+    }
+
+    return null;
+}
