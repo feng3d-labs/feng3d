@@ -118,6 +118,34 @@ export class View3D extends Component3D
     camera: Camera;
 
     /**
+     * 当前渲染时将使用的 Camera 。
+     */
+    getRenderCamera()
+    {
+        let camera = this.camera;
+        if (!camera)
+        {
+            camera = this.getComponentInChildren('Camera');
+        }
+
+        return camera;
+    }
+
+    /**
+     * 当前渲染时将使用的 Scene 。
+     */
+    getRenderScene()
+    {
+        let scene = this.scene;
+        if (!scene)
+        {
+            scene = this.getComponentInChildren('Scene');
+        }
+
+        return scene;
+    }
+
+    /**
      * 将要渲染的3D场景。
      *
      * 如果值为undefined时，从自身与子结点中获取到 Scene 组件。默认为undefined。
@@ -183,86 +211,81 @@ export class View3D extends Component3D
 
     viewRect = new Rectangle();
 
+    /**
+     * 是否自动调用 render() 渲染。
+     *
+     * 默认为true。
+     */
+    get isAutoRender()
+    {
+        return this._isAutoRender;
+    }
+    set isAutoRender(v)
+    {
+        if (this._isAutoRender)
+        {
+            ticker.offFrame(this.render, this);
+        }
+        this._isAutoRender = v;
+        if (this._isAutoRender)
+        {
+            ticker.onFrame(this.render, this);
+        }
+    }
+    private _isAutoRender: boolean;
+
     init(): void
     {
-        this.start();
-    }
-
-    /**
-     * 修改canvas尺寸
-     * @param width 宽度
-     * @param height 高度
-     */
-    setSize(width: number, height: number)
-    {
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.canvas.style.width = `${width}px`;
-        this.canvas.style.height = `${height}px`;
-    }
-
-    start()
-    {
-        ticker.onFrame(this.render, this);
-    }
-
-    stop()
-    {
-        ticker.offFrame(this.render, this);
+        this.isAutoRender = true;
     }
 
     /**
      * 绘制场景
      */
-    render(interval?: number)
+    render(_interval?: number)
     {
         if (this._isContextLost === true) return;
 
-        let camera = this.camera;
+        const camera = this.getRenderCamera();
         if (!camera)
         {
-            camera = this.getComponentInChildren('Camera');
-            if (!camera)
-            {
-                console.warn(`无法从自身与子结点中获取到 Camera 组件，无法渲染！`);
+            console.warn(`无法从自身与子结点中获取到 Camera 组件，无法渲染！`);
 
-                return;
-            }
+            return;
         }
-        let scene = this.scene;
+        const scene = this.getRenderScene();
         if (!scene)
         {
-            scene = this.getComponentInChildren('Scene');
-            if (!scene)
-            {
-                console.warn(`无法从自身与子结点中获取到 Scene 组件，无法渲染！`);
+            console.warn(`无法从自身与子结点中获取到 Scene 组件，无法渲染！`);
 
-                return;
-            }
+            return;
         }
 
-        //
-        this.emitter.emit('beforeRender', { view: this, camera, scene }, true, true);
-
-        const { canvas, viewRect, mousePos, webGLRenderer } = this;
-        const gl = this.webGLRenderer.gl;
+        const canvas = this.canvas;
 
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
         if (canvas.width * canvas.height === 0) return;
 
+        const viewRect = this.viewRect;
         const clientRect = canvas.getBoundingClientRect();
 
         viewRect.x = clientRect.left;
         viewRect.y = clientRect.top;
         viewRect.width = clientRect.width;
         viewRect.height = clientRect.height;
+        camera.lens.aspect = viewRect.width / viewRect.height;
 
+        const mousePos = this.mousePos;
         mousePos.x = windowEventProxy.clientX - clientRect.left;
         mousePos.y = windowEventProxy.clientY - clientRect.top;
 
-        camera.lens.aspect = viewRect.width / viewRect.height;
+        //
+        this.emitter.emit('beforeRender', { view: this, camera, scene }, true, true);
 
+        const { webGLRenderer } = this;
+
+        const gl = this.gl;
         // 默认渲染
         gl.colorMask(true, true, true, true);
         gl.clearColor(scene.background.r, scene.background.g, scene.background.b, scene.background.a);
