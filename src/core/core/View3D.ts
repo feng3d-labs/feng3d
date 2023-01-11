@@ -100,6 +100,29 @@ export class View3D extends Component3D
     contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };
 
     /**
+     * 是否自动调用 render() 渲染。
+     *
+     * 默认为true。
+     */
+    get isAutoRender()
+    {
+        return this._isAutoRender;
+    }
+    set isAutoRender(v)
+    {
+        if (this._isAutoRender)
+        {
+            ticker.offFrame(this.render, this);
+        }
+        this._isAutoRender = v;
+        if (this._isAutoRender)
+        {
+            ticker.onFrame(this.render, this);
+        }
+    }
+    private _isAutoRender: boolean;
+
+    /**
      * 当前渲染时将使用的 Camera 。
      */
     private getRenderCamera()
@@ -128,15 +151,7 @@ export class View3D extends Component3D
     }
 
     /**
-     * 根结点
-     */
-    get root()
-    {
-        return this.scene.node3d;
-    }
-
-    /**
-     * WebGL渲染上下文。
+     * WebGL渲染上下文，圖形庫。
      */
     private get gl()
     {
@@ -155,18 +170,10 @@ export class View3D extends Component3D
             } as Partial<WebGLContextAttributes>, this.contextAttributes);
 
             const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
-            this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
+            this._gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
         }
 
         return this._gl;
-    }
-    private set gl(v)
-    {
-        this._gl = v;
-        if (this._webGLRenderer)
-        {
-            this._webGLRenderer.gl = this._gl;
-        }
     }
     private _gl: WebGLRenderingContext;
 
@@ -184,29 +191,6 @@ export class View3D extends Component3D
         return this._webGLRenderer;
     }
     private _webGLRenderer: WebGLRenderer;
-
-    /**
-     * 是否自动调用 render() 渲染。
-     *
-     * 默认为true。
-     */
-    get isAutoRender()
-    {
-        return this._isAutoRender;
-    }
-    set isAutoRender(v)
-    {
-        if (this._isAutoRender)
-        {
-            ticker.offFrame(this.render, this);
-        }
-        this._isAutoRender = v;
-        if (this._isAutoRender)
-        {
-            ticker.onFrame(this.render, this);
-        }
-    }
-    private _isAutoRender: boolean;
 
     init(): void
     {
