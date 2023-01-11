@@ -78,8 +78,6 @@ export class View3D extends Component3D
     }
     private _canvas: HTMLCanvasElement;
 
-    contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };
-
     /**
      * 渲染时使用的摄像机。
      *
@@ -88,9 +86,23 @@ export class View3D extends Component3D
     camera: Camera;
 
     /**
+     * 将要渲染的3D场景。
+     *
+     * 如果值为undefined时，从自身与子结点中获取到 Scene 组件。默认为undefined。
+     */
+    scene: Scene;
+
+    /**
+     * webgl初始化参数。
+     *
+     * 注：只在初始化时设置生效。
+     */
+    contextAttributes: WebGLContextAttributes = { stencil: true, antialias: true };
+
+    /**
      * 当前渲染时将使用的 Camera 。
      */
-    getRenderCamera()
+    private getRenderCamera()
     {
         let camera = this.camera;
         if (!camera)
@@ -104,7 +116,7 @@ export class View3D extends Component3D
     /**
      * 当前渲染时将使用的 Scene 。
      */
-    getRenderScene()
+    private getRenderScene()
     {
         let scene = this.scene;
         if (!scene)
@@ -116,13 +128,6 @@ export class View3D extends Component3D
     }
 
     /**
-     * 将要渲染的3D场景。
-     *
-     * 如果值为undefined时，从自身与子结点中获取到 Scene 组件。默认为undefined。
-     */
-    scene: Scene;
-
-    /**
      * 根结点
      */
     get root()
@@ -130,6 +135,9 @@ export class View3D extends Component3D
         return this.scene.node3d;
     }
 
+    /**
+     * WebGL渲染上下文。
+     */
     private get gl()
     {
         if (!this._gl)
@@ -162,6 +170,9 @@ export class View3D extends Component3D
     }
     private _gl: WebGLRenderingContext;
 
+    /**
+     * WebGL渲染器。
+     */
     private get webGLRenderer()
     {
         if (!this._webGLRenderer)

@@ -69,6 +69,13 @@ export class WebGLRenderer
 
     elementBuffers: WebGLElementBuffers;
 
+    /**
+     * 渲染一次。
+     *
+     * @param renderAtomic 渲染原子，包含渲染所需的所有数据。
+     * @param offset ToDO 合并到RenderAtomic中
+     * @param count ToDO 合并到RenderAtomic中
+     */
     render(renderAtomic: RenderAtomic, offset?: number, count?: number)
     {
         const { bindingStates, renderParams, elementBuffers: elementBufferRenderer, uniforms, shaders } = this;
