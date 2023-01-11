@@ -135,10 +135,11 @@ export class MouseEvent3D extends Component3D
             return;
         }
 
-        const { view, scene, camera } = event.data;
+        const data = event.data;
+        const scene = data.scene;
 
         //
-        const viewport = view.viewRect;
+        const viewport = data.viewRect;
         if (viewport)
         {
             if (!viewport.contains(windowEventProxy.clientX, windowEventProxy.clientY))
@@ -150,7 +151,7 @@ export class MouseEvent3D extends Component3D
         }
 
         //
-        const mouseRay3D = view.getMouseRay3D(camera);
+        const mouseRay3D = data.getMouseRay3D();
 
         const meshRenderers = scene.getComponentsInChildren('MeshRenderer').filter((mr) => mr.node.mouseEnabled);
         // 计算得到鼠标射线相交的物体

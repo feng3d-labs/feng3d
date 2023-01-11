@@ -1,8 +1,8 @@
 import { Node3D } from '../../core/core/Node3D';
-import { View3D } from '../../core/core/View3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
+import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
@@ -84,10 +84,10 @@ export class Canvas extends Component2D
     /**
      * 计算鼠标射线
      *
-     * @param view
+     * @param mousePos 鼠标所在画布中的位置
      */
-    calcMouseRay3D(view: View3D)
+    calcMouseRay3D(mousePos: Vector2)
     {
-        this.mouseRay.origin.set(view.mousePos.x, view.mousePos.y, 0);
+        this.mouseRay.origin.set(mousePos.x, mousePos.y, 0);
     }
 }
