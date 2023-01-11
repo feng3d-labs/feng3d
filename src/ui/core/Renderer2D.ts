@@ -1,5 +1,5 @@
 import { Component3D } from '../../core/core/Component3D';
-import { BeforeRenderEventData } from '../../core/core/View3D';
+import { RenderContext } from '../../core/core/RenderContext';
 import { IEvent } from '../../event/IEvent';
 
 /**
@@ -21,7 +21,7 @@ export class Renderer2D extends Component3D
         super.dispose();
     }
 
-    private _onBeforeRender(event: IEvent<BeforeRenderEventData>)
+    private _onBeforeRender(event: IEvent<RenderContext>)
     {
         this.draw(event.data);
     }
@@ -29,9 +29,9 @@ export class Renderer2D extends Component3D
     /**
      * 渲染
      */
-    draw(data: BeforeRenderEventData)
+    draw(data: RenderContext)
     {
-        const { view, webGLRenderer, scene, viewRect, mousePos } = data;
+        const { webGLRenderer, scene, viewRect, mousePos } = data;
 
         const canvasList = scene.getComponentsInChildren('Canvas').filter((v) => v.isVisibleAndEnabled);
         canvasList.forEach((canvas) =>
@@ -51,7 +51,7 @@ export class Renderer2D extends Component3D
 
                 renderable.beforeRender(renderAtomic, null, null);
 
-                view.webGLRenderer.render(renderAtomic);
+                webGLRenderer.render(renderAtomic);
             });
         });
     }

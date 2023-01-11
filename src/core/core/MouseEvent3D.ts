@@ -5,7 +5,7 @@ import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
 import { Component3D } from './Component3D';
 import { MeshRenderer } from './MeshRenderer';
 import { MouseEventMap, MouseInput } from './MouseInput';
-import { BeforeRenderEventData } from './View3D';
+import { RenderContext } from './RenderContext';
 import { WindowMouseInput } from './WindowMouseInput';
 
 declare module './Node3D'
@@ -126,7 +126,7 @@ export class MouseEvent3D extends Component3D
     }
     private __mouseInput: MouseInput;
 
-    private _onBeforeRender(event: IEvent<BeforeRenderEventData>)
+    private _onBeforeRender(event: IEvent<RenderContext>)
     {
         if (this._mouseEventTypes.size === 0)
         {
