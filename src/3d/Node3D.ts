@@ -1,5 +1,5 @@
 import { AssetType } from '../core/assets/AssetType';
-import { Camera } from '../core/cameras/Camera';
+import { Camera3D } from '../core/cameras/Camera3D';
 import { HideFlags } from '../core/core/HideFlags';
 import { Node, NodeEventMap } from '../core/core/Node';
 import { Geometry } from './geometrys/Geometry';
@@ -371,7 +371,7 @@ export class Node3D extends Node
         return mat;
     }
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
         renderAtomic.uniforms.u_modelMatrix = () => this.globalMatrix;
         renderAtomic.uniforms.u_ITModelMatrix = () => this.globalNormalMatrix;

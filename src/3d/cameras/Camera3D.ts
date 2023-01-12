@@ -1,5 +1,6 @@
 import { Component3D } from '../../3d/Component3D';
 import { Node3D } from '../../3d/Node3D';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Frustum } from '../../math/geom/Frustum';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
@@ -9,28 +10,27 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
 import { Projection } from './Projection';
 
-declare module '../../ecs/Component' { interface ComponentMap { Camera: Camera; } }
+declare module '../../ecs/Component' { interface ComponentMap { Camera3D: Camera3D; } }
 
 declare module '../../3d/Node3D'
 {
-    export interface Node3DEventMap { lensChanged: Camera; }
+    export interface Node3DEventMap { lensChanged: Camera3D; }
 
-    export interface PrimitiveNode3D { Camera: Node3D; }
+    export interface PrimitiveNode3D { Camera3D: Node3D; }
 }
 
 /**
  * 摄像机
  */
-@RegisterComponent({ name: 'Camera', single: true, menu: 'Rendering/Camera' })
-export class Camera extends Component3D
+@RegisterComponent({ name: 'Camera3D', single: true, menu: 'Rendering/Camera3D' })
+export class Camera3D extends Component3D
 {
-    declare __class__: 'Camera';
+    declare __class__: 'Camera3D';
 
     // /**
     //  * How the camera clears the background.
@@ -213,18 +213,18 @@ export class Camera extends Component3D
     private _frustumInvalid = true;
 }
 
-Node3D.registerPrimitive('Camera', (g) =>
+Node3D.registerPrimitive('Camera3D', (g) =>
 {
-    g.addComponent('Camera');
+    g.addComponent('Camera3D');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
 createNodeMenu.push(
     {
-        path: 'Camera',
+        path: 'Camera3D',
         priority: -2,
         click: () =>
-            Node3D.createPrimitive('Camera')
+            Node3D.createPrimitive('Camera3D')
     }
 );
 

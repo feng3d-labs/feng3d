@@ -1,4 +1,4 @@
-import { Camera } from '../core/cameras/Camera';
+import { Camera3D } from '../core/cameras/Camera3D';
 import { Renderable3D } from '../core/core/Renderable3D';
 import { Geometry, GeometryMap } from './geometrys/Geometry';
 import { Material, MaterialMap } from '../core/materials/Material';
@@ -115,7 +115,7 @@ export class Mesh3D extends Renderable3D
      * @param scene
      * @param camera
      */
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {
         const geometry = this.useGeometry;
         const material = this.useMaterial;

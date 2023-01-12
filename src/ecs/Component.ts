@@ -1,4 +1,4 @@
-import { Camera } from '../core/cameras/Camera';
+import { Camera3D } from '../core/cameras/Camera3D';
 import { HideFlags } from '../core/core/HideFlags';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { AddComponentMenu } from '../core/Menu';
@@ -192,7 +192,7 @@ export class Component
         this._entity = <any>null;
     }
 
-    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
+    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
 
     }

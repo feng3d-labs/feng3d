@@ -1,4 +1,4 @@
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
@@ -26,7 +26,7 @@ export class Outline3DRenderer
         }
     }
 
-    draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera)
+    draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera3D)
     {
         const frustum = camera.frustum;
         const unblenditems = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>

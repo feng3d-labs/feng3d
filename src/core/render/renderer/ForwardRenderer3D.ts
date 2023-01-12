@@ -3,7 +3,7 @@ import { mathUtil } from '../../../polyfill/MathUtil';
 import { lazy, LazyObject } from '../../../polyfill/Types';
 import { Uniforms } from '../../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
-import { Camera } from '../../cameras/Camera';
+import { Camera3D } from '../../cameras/Camera3D';
 import { Scene3D } from '../../../3d/Scene3D';
 
 /**
@@ -14,7 +14,7 @@ export class ForwardRenderer
     /**
      * 渲染
      */
-    draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera)
+    draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera3D)
     {
         const frustum = camera.frustum;
         const { blendItems, unblenditems } = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>

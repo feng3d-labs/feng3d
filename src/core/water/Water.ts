@@ -9,7 +9,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
-import { Camera } from '../cameras/Camera';
+import { Camera3D } from '../cameras/Camera3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -51,7 +51,7 @@ export class Water extends Component3D
      */
     private frameBufferObject = new FrameBufferObject();
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {
         const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
         const sun = this.node3d.scene.getComponentsInChildren('DirectionalLight').filter((dl) => dl.isVisibleAndEnabled)[0];

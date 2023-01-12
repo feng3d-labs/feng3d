@@ -1,4 +1,4 @@
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
@@ -54,7 +54,7 @@ export class SkyBox3DRenderer
      * @param scene 场景
      * @param camera 摄像机
      */
-    draw(renderer: WebGLRenderer, scene: Scene3D, camera: Camera)
+    draw(renderer: WebGLRenderer, scene: Scene3D, camera: Camera3D)
     {
         const skybox = scene.getComponentsInChildren('SkyBox').filter((sb) => sb.isVisibleAndEnabled)[0];
         this.drawSkyBox(renderer, skybox, scene, camera);
@@ -66,7 +66,7 @@ export class SkyBox3DRenderer
      * @param skybox 天空盒
      * @param camera 摄像机
      */
-    drawSkyBox(renderer: WebGLRenderer, skybox: SkyBox3D, scene: Scene3D, camera: Camera)
+    drawSkyBox(renderer: WebGLRenderer, skybox: SkyBox3D, scene: Scene3D, camera: Camera3D)
     {
         if (!skybox) return;
 

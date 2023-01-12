@@ -1,4 +1,4 @@
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { RunEnvironment } from '../../core/core/RunEnvironment';
 import { Geometry } from '../geometrys/Geometry';
 import { Material } from '../../core/materials/Material';
@@ -490,7 +490,7 @@ export class ParticleSystem3D extends Component3D
         }
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {
         super.beforeRender(renderAtomic, scene, camera);
 

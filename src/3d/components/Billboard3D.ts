@@ -1,4 +1,4 @@
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { watcher } from '../../watcher/watcher';
@@ -18,7 +18,7 @@ export class Billboard3D extends Component3D
      * 相机
      */
     @oav()
-    camera: Camera;
+    camera: Camera3D;
 
     init()
     {
@@ -28,7 +28,7 @@ export class Billboard3D extends Component3D
         this._invalidHoldSizeMatrix();
     }
 
-    private _onCameraChanged(value: Camera, oldValue: Camera)
+    private _onCameraChanged(value: Camera3D, oldValue: Camera3D)
     {
         if (oldValue) oldValue.emitter.off('globalMatrixChanged', this._invalidHoldSizeMatrix, this);
         if (value) value.emitter.on('globalMatrixChanged', this._invalidHoldSizeMatrix, this);

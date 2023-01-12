@@ -1,7 +1,7 @@
 import { Component3D } from '../../3d/Component3D';
 import { Node3D } from '../../3d/Node3D';
 import { Scene3D } from '../../3d/Scene3D';
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { HideFlags } from '../../core/core/HideFlags';
 import { TextureMaterial } from '../../core/materials/texture/TextureMaterial';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
@@ -91,7 +91,7 @@ export class Light3D extends Component3D
     /**
      * 投影摄像机
      */
-    shadowCamera: Camera;
+    shadowCamera: Camera3D;
 
     /**
      * 阴影图尺寸
@@ -121,7 +121,7 @@ export class Light3D extends Component3D
         this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent('Camera');
     }
 
-    updateDebugShadowMap(scene: Scene3D, viewCamera: Camera)
+    updateDebugShadowMap(scene: Scene3D, viewCamera: Camera3D)
     {
         let node3d = this.debugShadowMapObject;
         if (!node3d)

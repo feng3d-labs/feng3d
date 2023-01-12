@@ -122,7 +122,7 @@ export * from './core/assets/FileAsset';
 export * from './core/assets/FolderAsset';
 export * from './core/assets/rs/ReadRS';
 export * from './core/assets/rs/ReadWriteRS';
-export * from './core/cameras/Camera';
+export * from './core/cameras/Camera3D';
 export * from './core/cameras/lenses/LensBase';
 export * from './core/cameras/lenses/OrthographicLens';
 export * from './core/cameras/lenses/PerspectiveLens';

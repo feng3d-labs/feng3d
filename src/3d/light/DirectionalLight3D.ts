@@ -1,6 +1,6 @@
 import { Node3D } from '../../3d/Node3D';
 import { Scene3D } from '../../3d/Scene3D';
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { OrthographicLens } from '../../core/cameras/lenses/OrthographicLens';
 import { Renderable3D } from '../../core/core/Renderable3D';
 import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
@@ -39,7 +39,7 @@ export class DirectionalLight3D extends Light3D
      * 通过视窗摄像机进行更新
      * @param viewCamera 视窗摄像机
      */
-    updateShadowByCamera(scene: Scene3D, viewCamera: Camera, models: Renderable3D[])
+    updateShadowByCamera(scene: Scene3D, viewCamera: Camera3D, models: Renderable3D[])
     {
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {

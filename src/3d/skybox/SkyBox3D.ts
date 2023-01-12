@@ -4,7 +4,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { TextureCube } from '../../core/textures/TextureCube';
 
 declare module '../../ecs/Component' { interface ComponentMap { SkyBox: SkyBox3D; } }
@@ -27,7 +27,7 @@ export class SkyBox3D extends Component3D
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
     s_skyBoxTexture = TextureCube.default;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
         renderAtomic.uniforms.s_skyBoxTexture = () => this.s_skyBoxTexture;
     }

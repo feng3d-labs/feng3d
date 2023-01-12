@@ -1,4 +1,4 @@
-import { Camera } from '../core/cameras/Camera';
+import { Camera3D } from '../core/cameras/Camera3D';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene3D } from '../3d/Scene3D';
 import { Component, RegisterComponent } from '../ecs/Component';
@@ -27,7 +27,7 @@ export class Rect extends Component
     @SerializeProperty()
     color = new Color4();
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {
         super.beforeRender(renderAtomic, scene, camera);
 

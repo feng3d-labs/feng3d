@@ -8,7 +8,7 @@ import { Vector3 } from '../../../math/geom/Vector3';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
-import { Camera } from '../../cameras/Camera';
+import { Camera3D } from '../../cameras/Camera3D';
 import { Renderable3D } from '../../core/Renderable3D';
 import { FrameBufferObject } from '../FrameBufferObject';
 
@@ -21,7 +21,7 @@ export class ShadowRenderer
     /**
      * 渲染
      */
-    draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera)
+    draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera3D)
     {
         const pointLights = scene.getComponentsInChildren('PointLight3D').filter((pl) => (pl.isVisibleAndEnabled && pl.shadowType !== ShadowType.No_Shadows));
         for (let i = 0; i < pointLights.length; i++)
@@ -45,7 +45,7 @@ export class ShadowRenderer
         }
     }
 
-    private drawForSpotLight(renderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera): any
+    private drawForSpotLight(renderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
     {
         const { gl } = renderer;
         FrameBufferObject.active(renderer, light.frameBufferObject);
@@ -90,7 +90,7 @@ export class ShadowRenderer
         light.frameBufferObject.deactive(gl);
     }
 
-    private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera): any
+    private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera3D): any
     {
         const gl = webGLRenderer.gl;
 
@@ -170,7 +170,7 @@ export class ShadowRenderer
         light.frameBufferObject.deactive(gl);
     }
 
-    private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight3D, scene: Scene3D, camera: Camera): any
+    private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight3D, scene: Scene3D, camera: Camera3D): any
     {
         // 获取影响阴影图的渲染对象
         const models = scene.getComponentsInChildren('Mesh3D').filter((model) => (
@@ -221,7 +221,7 @@ export class ShadowRenderer
     /**
      * 绘制3D对象
      */
-    private drawObject3D(gl: WebGLRenderer, renderable: Renderable3D, scene: Scene3D, camera: Camera)
+    private drawObject3D(gl: WebGLRenderer, renderable: Renderable3D, scene: Scene3D, camera: Camera3D)
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);

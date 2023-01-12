@@ -1,6 +1,6 @@
 import { Component3D } from '../Component3D';
 import { Scene3D } from '../Scene3D';
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
@@ -70,7 +70,7 @@ export class Cartoon3D extends Component3D
     }
     _cartoon_Anti_aliasing = false;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
         renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
         renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;

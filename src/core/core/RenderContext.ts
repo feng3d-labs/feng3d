@@ -3,7 +3,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { Camera } from '../cameras/Camera';
+import { Camera3D } from '../cameras/Camera3D';
 import { Scene3D } from '../../3d/Scene3D';
 import { Node3D } from '../../3d/Node3D';
 
@@ -17,7 +17,7 @@ export class RenderContext
     /**
      * 渲染时将使用的摄像机。
      */
-    camera: Camera;
+    camera: Camera3D;
 
     /**
      * 将被渲染的3D场景。
@@ -44,7 +44,7 @@ export class RenderContext
      */
     mousePos: Vector2;
 
-    constructor(canvas: HTMLCanvasElement, camera: Camera, scene: Scene3D, webGLRenderer: WebGLRenderer)
+    constructor(canvas: HTMLCanvasElement, camera: Camera3D, scene: Scene3D, webGLRenderer: WebGLRenderer)
     {
         this.canvas = canvas;
         this.camera = camera;

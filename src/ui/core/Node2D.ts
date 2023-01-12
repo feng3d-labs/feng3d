@@ -1,4 +1,4 @@
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { HideFlags } from '../../core/core/HideFlags';
 import { Node, NodeEventMap } from '../../core/core/Node';
 import { Node3D } from '../../3d/Node3D';
@@ -238,7 +238,7 @@ export class Node2D extends Node
         }
     }
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
         renderAtomic.uniforms.u_rect = this.rect;
     }

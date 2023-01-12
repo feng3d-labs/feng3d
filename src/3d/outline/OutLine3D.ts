@@ -1,6 +1,6 @@
 import { Component3D } from '../Component3D';
 import { Scene3D } from '../Scene3D';
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
@@ -51,7 +51,7 @@ export class OutLine3D extends Component3D
     @SerializeProperty()
     outlineMorphFactor = 0.0;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
         renderAtomic.uniforms.u_outlineSize = this.size;
         renderAtomic.uniforms.u_outlineColor = this.color;

@@ -1,4 +1,4 @@
-import { Camera } from '../../core/cameras/Camera';
+import { Camera3D } from '../../core/cameras/Camera3D';
 import { Renderable3D } from '../../core/core/Renderable3D';
 import { Color4 } from '../../math/Color4';
 import { lazy } from '../../polyfill/Types';
@@ -40,7 +40,7 @@ export class Wireframe3DRenderer
     /**
      * 渲染
      */
-    draw(renderer: WebGLRenderer, scene: Scene3D, camera: Camera)
+    draw(renderer: WebGLRenderer, scene: Scene3D, camera: Camera3D)
     {
         const frustum = camera.frustum;
         const unblenditems = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>
@@ -80,7 +80,7 @@ export class Wireframe3DRenderer
     /**
      * 绘制3D对象
      */
-    drawObject3D(renderer: WebGLRenderer, renderable: Renderable3D, scene: Scene3D, camera: Camera, wireframeColor = new Color4())
+    drawObject3D(renderer: WebGLRenderer, renderable: Renderable3D, scene: Scene3D, camera: Camera3D, wireframeColor = new Color4())
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);

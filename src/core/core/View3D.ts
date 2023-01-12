@@ -3,7 +3,7 @@ import { Node3D } from '../../3d/Node3D';
 import { Scene3D } from '../../3d/Scene3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { Camera } from '../cameras/Camera';
+import { Camera3D } from '../cameras/Camera3D';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer3D';
 import { outlineRenderer } from '../../3d/outline/Outline3DRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
@@ -84,7 +84,7 @@ export class View3D extends Component3D
      *
      * 如果值为undefined时，从自身与子结点中获取到 Camera 组件。默认为undefined。
      */
-    camera: Camera;
+    camera: Camera3D;
 
     /**
      * 将要渲染的3D场景。

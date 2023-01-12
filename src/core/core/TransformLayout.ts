@@ -8,7 +8,7 @@ import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Camera } from '../cameras/Camera';
+import { Camera3D } from '../cameras/Camera3D';
 import { ticker } from '../utils/Ticker';
 
 declare module '../../3d/Node3D'
@@ -167,7 +167,7 @@ export class TransformLayout extends Component3D
     @SerializeProperty()
     pivot = new Vector3(0.5, 0.5, 0.5);
 
-    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
+    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
         // renderAtomic.uniforms.u_rect = this.rect;
     }

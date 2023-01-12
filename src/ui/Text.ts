@@ -1,4 +1,4 @@
-import { Camera } from '../core/cameras/Camera';
+import { Camera3D } from '../core/cameras/Camera3D';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene3D } from '../3d/Scene3D';
 import { Texture2D } from '../core/textures/Texture2D';
@@ -59,7 +59,7 @@ export class Text extends Component2D
         watcher.watch(this as Text, 'style', this._styleChanged, this);
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {
         super.beforeRender(renderAtomic, scene, camera);
 
