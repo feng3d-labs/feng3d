@@ -1,4 +1,4 @@
-import { Component3D } from '../../3d/Component3D';
+import { Component3D } from '../Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';

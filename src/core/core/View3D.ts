@@ -7,7 +7,7 @@ import { Camera } from '../cameras/Camera';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
-import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
+import { wireframeRenderer } from '../../3d/wireframe/Wireframe3DRenderer';
 import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';
 import { ticker } from '../utils/Ticker';
 import { RenderContext } from './RenderContext';

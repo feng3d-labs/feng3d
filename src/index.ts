@@ -148,7 +148,7 @@ export * from './core/render/renderer/ForwardRenderer';
 export * from './core/render/renderer/MouseRenderer';
 export * from './core/render/renderer/OutlineRenderer';
 export * from './core/render/renderer/ShadowRenderer';
-export * from './core/render/renderer/WireframeRenderer';
+export * from './3d/wireframe/Wireframe3DRenderer';
 export * from './core/ShaderConfig';
 export * from './3d/skybox/SkyBox3D';
 export * from './3d/skybox/SkyBox3DRenderer';

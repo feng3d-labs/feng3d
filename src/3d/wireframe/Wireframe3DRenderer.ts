@@ -1,15 +1,15 @@
-import { Color4 } from '../../../math/Color4';
-import { lazy } from '../../../polyfill/Types';
-import { ElementBuffer } from '../../../renderer/data/ElementBuffer';
-import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Shader } from '../../../renderer/data/Shader';
-import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
-import { Camera } from '../../cameras/Camera';
-import { Wireframe3D } from '../../component/Wireframe3D';
-import { Renderable3D } from '../../core/Renderable3D';
-import { Scene3D } from '../../../3d/Scene3D';
+import { Camera } from '../../core/cameras/Camera';
+import { Renderable3D } from '../../core/core/Renderable3D';
+import { Color4 } from '../../math/Color4';
+import { lazy } from '../../polyfill/Types';
+import { ElementBuffer } from '../../renderer/data/ElementBuffer';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Shader } from '../../renderer/data/Shader';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { Scene3D } from '../Scene3D';
+import { Wireframe3D } from './Wireframe3D';
 
-declare module '../../../renderer/data/RenderAtomic'
+declare module '../../renderer/data/RenderAtomic'
 {
     interface RenderAtomic
     {
@@ -22,7 +22,7 @@ declare module '../../../renderer/data/RenderAtomic'
     }
 }
 
-export class WireframeRenderer
+export class Wireframe3DRenderer
 {
     private renderAtomic: RenderAtomic;
 
@@ -141,4 +141,4 @@ export class WireframeRenderer
 /**
  * 线框渲染器
  */
-export const wireframeRenderer = new WireframeRenderer();
+export const wireframeRenderer = new Wireframe3DRenderer();
