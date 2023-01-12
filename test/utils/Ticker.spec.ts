@@ -1,6 +1,6 @@
-import { ticker } from '../../src/core/utils/Ticker';
 
 import { assert, describe, expect, it } from 'vitest';
+import { ticker } from '../../src/utils/Ticker';
 const { ok, equal, deepEqual } = assert;
 
 describe('ticker', () =>

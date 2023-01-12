@@ -1,4 +1,4 @@
-import { OrthographicLens } from '../../../../src/core/cameras/lenses/OrthographicLens';
+import { OrthographicLens } from '../../../../src/3d/cameras/lenses/OrthographicLens';
 import { Vector3 } from '../../../../src/math/geom/Vector3';
 import { mathUtil } from '../../../../src/polyfill/MathUtil';
 

@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { Node } from '../../src/core/core/Node';
-import { Component } from '../../src/ecs/Component';
+import { Node } from '../../src/core/Node';
 import { Entity } from '../../src/ecs/Entity';
 import { IEvent } from '../../src/event/IEvent';
 const { ok, equal, deepEqual, strictEqual } = assert;
