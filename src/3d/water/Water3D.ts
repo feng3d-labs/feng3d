@@ -14,7 +14,7 @@ import { $set } from '../../serialization/Serialization';
 import { Material } from '../../core/Material';
 import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
-import { WaterUniforms } from './WaterMaterial3D';
+import { Water3DUniforms } from './WaterMaterial3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Water3D: Water3D } }
 
@@ -53,7 +53,7 @@ export class Water3D extends Component3D
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {
-        const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
+        const uniforms = this.meshRenderer.material.uniforms as Water3DUniforms;
         const sun = this.node3d.scene.getComponentsInChildren('DirectionalLight3D').filter((dl) => dl.isVisibleAndEnabled)[0];
         if (sun)
         {

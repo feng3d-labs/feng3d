@@ -1,5 +1,4 @@
 import { Material } from '../../core/Material';
-import { Texture2D } from '../../textures/Texture2D';
 import { Color3 } from '../../math/Color3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -7,22 +6,23 @@ import { oav } from '../../objectview/ObjectView';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Texture2D } from '../../textures/Texture2D';
 import waterFragment from './water_fragment_glsl';
 import waterVertex from './water_vertex_glsl';
 
 declare module '../../core/Material'
 {
-    interface MaterialMap { WaterMaterial: WaterMaterial }
-    interface UniformsMap { WaterUniforms: WaterUniforms }
+    interface MaterialMap { Water3DMaterial: Water3DMaterial }
+    interface UniformsMap { Water3DUniforms: Water3DUniforms }
 
     interface DefaultMaterialMap
     {
-        'Water-Material': WaterMaterial;
+        'Water-Material': Water3DMaterial;
     }
 }
 
-@Serializable('WaterMaterial')
-export class WaterMaterial extends Material
+@Serializable('Water3DMaterial')
+export class Water3DMaterial extends Material
 {
     constructor()
     {
@@ -31,10 +31,10 @@ export class WaterMaterial extends Material
     }
 }
 
-@Serializable('WaterUniforms')
-export class WaterUniforms
+@Serializable('Water3DUniforms')
+export class Water3DUniforms
 {
-    declare __class__: 'WaterUniforms';
+    declare __class__: 'Water3DUniforms';
 
     @SerializeProperty()
     @oav({ tooltip: '透明度' })
@@ -81,4 +81,4 @@ shaderlib.shaderConfig.shaders.water = {
     fragment: waterFragment,
 };
 
-Material.setDefault('Water-Material', new WaterMaterial());
+Material.setDefault('Water-Material', new Water3DMaterial());
