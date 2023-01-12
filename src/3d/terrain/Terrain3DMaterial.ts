@@ -1,28 +1,28 @@
-import { Material } from '../core/materials/Material';
-import { FogMode } from '../core/materials/standard/StandardMaterial';
-import { Texture2D } from '../textures/Texture2D';
-import { TextureCube } from '../textures/TextureCube';
-import { Color3 } from '../math/Color3';
-import { Color4 } from '../math/Color4';
-import { Vector4 } from '../math/geom/Vector4';
-import { oav } from '../objectview/ObjectView';
-import { Serializable } from '../serialization/Serializable';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { Material } from '../../core/Material';
+import { Color3 } from '../../math/Color3';
+import { Color4 } from '../../math/Color4';
+import { Vector4 } from '../../math/geom/Vector4';
+import { oav } from '../../objectview/ObjectView';
+import { Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Texture2D } from '../../textures/Texture2D';
+import { TextureCube } from '../../textures/TextureCube';
+import { FogMode } from '../materials/standard/StandardMaterial';
 
-declare module '../core/materials/Material'
+declare module '../../core/Material'
 {
-    interface MaterialMap { TerrainMaterial: TerrainMaterial }
-    interface UniformsMap { TerrainUniforms: TerrainUniforms }
+    interface MaterialMap { Terrain3DMaterial: Terrain3DMaterial }
+    interface UniformsMap { Terrain3DUniforms: Terrain3DUniforms }
     interface DefaultMaterialMap
     {
         'Terrain-Material': Material;
     }
 }
 
-@Serializable('TerrainMaterial')
-export class TerrainMaterial extends Material
+@Serializable('Terrain3DMaterial')
+export class Terrain3DMaterial extends Material
 {
-    uniforms = new TerrainUniforms();
+    uniforms = new Terrain3DUniforms();
 
     constructor()
     {
@@ -31,10 +31,10 @@ export class TerrainMaterial extends Material
     }
 }
 
-@Serializable('TerrainUniforms')
-export class TerrainUniforms
+@Serializable('Terrain3DUniforms')
+export class Terrain3DUniforms
 {
-    declare __class__: 'TerrainUniforms';
+    declare __class__: 'Terrain3DUniforms';
 
     /**
      * 点绘制时点的尺寸
@@ -176,4 +176,4 @@ export class TerrainUniforms
     u_splatRepeats = new Vector4(1, 1, 1, 1);
 }
 
-Material.setDefault('Terrain-Material', new TerrainMaterial());
+Material.setDefault('Terrain-Material', new Terrain3DMaterial());

@@ -1,4 +1,4 @@
-import { Vector3 } from '../math/geom/Vector3';
+import { Vector3 } from '../../math/geom/Vector3';
 
 /**
  * The TerrainData class stores heightmaps, detail mesh positions, tree instances, and terrain texture alpha maps.

@@ -1,13 +1,13 @@
-import { Texture2D } from '../textures/Texture2D';
-import { EventEmitter } from '../event/EventEmitter';
-import { Vector2 } from '../math/geom/Vector2';
-import { Vector4 } from '../math/geom/Vector4';
-import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { EventEmitter } from '../../event/EventEmitter';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector4 } from '../../math/geom/Vector4';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Texture2D } from '../../textures/Texture2D';
 
 /**
  * 地形材质
  */
-export class TerrainMergeMethod extends EventEmitter
+export class Terrain3DMergeMethod extends EventEmitter
 {
     splatMergeTexture = Texture2D.default;
 

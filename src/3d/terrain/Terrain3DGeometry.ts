@@ -1,26 +1,26 @@
-import { Geometry, RegisterGeometry } from '../3d/geometrys/Geometry';
-import { geometryUtils } from '../3d/geometrys/GeometryUtils';
-import { Texture2D } from '../textures/Texture2D';
-import { ImageUtil } from '../core/utils/ImageUtil';
-import { Color4 } from '../math/Color4';
-import { oav } from '../objectview/ObjectView';
-import { gPartial } from '../polyfill/Types';
-import { $set } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
-import { watcher } from '../watcher/watcher';
+import { ImageUtil } from '../../core/utils/ImageUtil';
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { gPartial } from '../../polyfill/Types';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Texture2D } from '../../textures/Texture2D';
+import { watcher } from '../../watcher/watcher';
+import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
+import { geometryUtils } from '../geometrys/GeometryUtils';
 
-declare module '../core/geometry/Geometry'
+declare module '../geometrys/Geometry'
 {
-    export interface GeometryMap { TerrainGeometry: TerrainGeometry }
+    export interface GeometryMap { TerrainGeometry: Terrain3DGeometry }
 
-    export interface DefaultGeometryMap { 'Terrain-Geometry': TerrainGeometry; }
+    export interface DefaultGeometryMap { 'Terrain-Geometry': Terrain3DGeometry; }
 }
 
 /**
  * 地形几何体
  */
 @RegisterGeometry('TerrainGeometry')
-export class TerrainGeometry extends Geometry
+export class Terrain3DGeometry extends Geometry
 {
     /**
      * 高度图路径
@@ -83,20 +83,20 @@ export class TerrainGeometry extends Geometry
     /**
      * 创建高度地形 拥有segmentsW*segmentsH个顶点
      */
-    constructor(raw?: gPartial<TerrainGeometry>)
+    constructor(raw?: gPartial<Terrain3DGeometry>)
     {
         super();
         this.name = 'terrain';
         $set(this, raw);
         //
-        watcher.watch(this as TerrainGeometry, 'heightMap', this._onHeightMapChanged, this);
-        watcher.watch(this as TerrainGeometry, 'width', this.invalidateGeometry, this);
-        watcher.watch(this as TerrainGeometry, 'height', this.invalidateGeometry, this);
-        watcher.watch(this as TerrainGeometry, 'depth', this.invalidateGeometry, this);
-        watcher.watch(this as TerrainGeometry, 'segmentsW', this.invalidateGeometry, this);
-        watcher.watch(this as TerrainGeometry, 'segmentsH', this.invalidateGeometry, this);
-        watcher.watch(this as TerrainGeometry, 'maxElevation', this.invalidateGeometry, this);
-        watcher.watch(this as TerrainGeometry, 'minElevation', this.invalidateGeometry, this);
+        watcher.watch(this as Terrain3DGeometry, 'heightMap', this._onHeightMapChanged, this);
+        watcher.watch(this as Terrain3DGeometry, 'width', this.invalidateGeometry, this);
+        watcher.watch(this as Terrain3DGeometry, 'height', this.invalidateGeometry, this);
+        watcher.watch(this as Terrain3DGeometry, 'depth', this.invalidateGeometry, this);
+        watcher.watch(this as Terrain3DGeometry, 'segmentsW', this.invalidateGeometry, this);
+        watcher.watch(this as Terrain3DGeometry, 'segmentsH', this.invalidateGeometry, this);
+        watcher.watch(this as Terrain3DGeometry, 'maxElevation', this.invalidateGeometry, this);
+        watcher.watch(this as Terrain3DGeometry, 'minElevation', this.invalidateGeometry, this);
     }
 
     private _onHeightMapChanged()
@@ -277,4 +277,4 @@ function getDefaultHeightMap()
 }
 let _defaultHeightMap: ImageData;
 
-Geometry.setDefault('Terrain-Geometry', new TerrainGeometry());
+Geometry.setDefault('Terrain-Geometry', new Terrain3DGeometry());

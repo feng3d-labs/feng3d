@@ -1,20 +1,20 @@
-import { Node3D } from '../3d/Node3D';
-import { Geometry } from '../3d/geometrys/Geometry';
-import { Material } from '../core/materials/Material';
-import { createNodeMenu } from '../core/menu/CreateNodeMenu';
-import { Component, RegisterComponent } from '../ecs/Component';
-import { TerrainData } from './TerrainData';
+import { Material } from '../../core/Material';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { Component, RegisterComponent } from '../../ecs/Component';
+import { Node3D } from '../core/Node3D';
+import { Geometry } from '../geometrys/Geometry';
+import { TerrainData } from './Terrain3DData';
 
-declare module '../ecs/Component' { interface ComponentMap { Terrain: Terrain } }
+declare module '../../ecs/Component' { interface ComponentMap { Terrain: Terrain3D } }
 
-declare module '../3d/Node3D' { interface PrimitiveNode3D { Terrain: Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { Terrain: Node3D; } }
 
 /**
  * The Terrain component renders the terrain.
  */
 // @ov({ component: "OVTerrain" })
 @RegisterComponent({ name: 'Terrain', dependencies: ['Mesh3D'] })
-export class Terrain extends Component
+export class Terrain3D extends Component
 {
     declare __class__: 'Terrain';
 
