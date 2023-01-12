@@ -1,5 +1,5 @@
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Node3D } from '../core/Node3D';
+import { Node3D } from '../../3d/Node3D';
 import { LookAtController } from './LookAtController';
 
 export class HoverController extends LookAtController

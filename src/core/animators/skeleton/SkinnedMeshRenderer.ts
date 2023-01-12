@@ -4,7 +4,7 @@ import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Camera } from '../../cameras/Camera';
 import { Component3D } from '../../../3d/Component3D';
 import { HideFlags } from '../../core/HideFlags';
-import { Scene } from '../../scene/Scene';
+import { Scene3D } from '../../../3d/Scene3D';
 
 declare module '../../../ecs/Component'
 {
@@ -28,7 +28,7 @@ export class SkinnedMeshRenderer extends Component3D
         this.hideFlags = HideFlags.DontTransform;
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
     {
         super.beforeRender(renderAtomic, scene, camera);
 

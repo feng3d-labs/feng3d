@@ -1,4 +1,4 @@
-import { Node3D } from '../../core/core/Node3D';
+import { Node3D } from '../../3d/Node3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';

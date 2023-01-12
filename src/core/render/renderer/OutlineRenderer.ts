@@ -4,7 +4,7 @@ import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';
-import { Scene } from '../../scene/Scene';
+import { Scene3D } from '../../../3d/Scene3D';
 
 /**
  * 轮廓渲染器
@@ -26,7 +26,7 @@ export class OutlineRenderer
         }
     }
 
-    draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
+    draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera)
     {
         const frustum = camera.frustum;
         const unblenditems = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>

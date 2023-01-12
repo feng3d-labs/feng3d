@@ -1,9 +1,9 @@
 import { Camera } from '../../core/cameras/Camera';
 import { HideFlags } from '../../core/core/HideFlags';
 import { Node, NodeEventMap } from '../../core/core/Node';
-import { Node3D } from '../../core/core/Node3D';
+import { Node3D } from '../../3d/Node3D';
 import { TransformLayout } from '../../core/core/TransformLayout';
-import { Scene } from '../../core/scene/Scene';
+import { Scene3D } from '../../3d/Scene3D';
 import { Component } from '../../ecs/Component';
 import { EventEmitter } from '../../event/EventEmitter';
 import { IEvent } from '../../event/IEvent';
@@ -238,7 +238,7 @@ export class Node2D extends Node
         }
     }
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
     {
         renderAtomic.uniforms.u_rect = this.rect;
     }

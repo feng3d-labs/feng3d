@@ -1,6 +1,6 @@
 import { Camera } from '../core/cameras/Camera';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
-import { Scene } from '../core/scene/Scene';
+import { Scene3D } from '../3d/Scene3D';
 import { Texture2D } from '../core/textures/Texture2D';
 import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
@@ -49,7 +49,7 @@ export class Image extends Component2D
         this.node2d.size.y = imagesize.y;
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
     {
         super.beforeRender(renderAtomic, scene, camera);
 

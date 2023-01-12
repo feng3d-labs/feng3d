@@ -1,6 +1,6 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { RegisterAsset } from '../../core/assets/FileAsset';
-import { Node3D } from '../../core/core/Node3D';
+import { Node3D } from '../../3d/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { $clone } from '../../serialization/Serialization';
 import { ObjectAsset } from '../ObjectAsset';

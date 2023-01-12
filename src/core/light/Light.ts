@@ -5,11 +5,11 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../../3d/Component3D';
 import { HideFlags } from '../core/HideFlags';
-import { Node3D } from '../core/Node3D';
+import { Node3D } from '../../3d/Node3D';
 import { TextureMaterial } from '../materials/texture/TextureMaterial';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../render/FrameBufferObject';
-import { Scene } from '../scene/Scene';
+import { Scene3D } from '../../3d/Scene3D';
 import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
@@ -121,7 +121,7 @@ export class Light extends Component3D
         this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent('Camera');
     }
 
-    updateDebugShadowMap(scene: Scene, viewCamera: Camera)
+    updateDebugShadowMap(scene: Scene3D, viewCamera: Camera)
     {
         let node3d = this.debugShadowMapObject;
         if (!node3d)

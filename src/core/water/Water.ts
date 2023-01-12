@@ -8,12 +8,12 @@ import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../../3d/Component3D';
 import { Mesh3D } from '../../3d/Mesh3D';
-import { Node3D } from '../core/Node3D';
+import { Node3D } from '../../3d/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { FrameBufferObject } from '../render/FrameBufferObject';
-import { Scene } from '../scene/Scene';
+import { Scene3D } from '../../3d/Scene3D';
 import { WaterUniforms } from './WaterMaterial';
 
 declare module '../../ecs/Component' { interface ComponentMap { Water: Water } }
@@ -51,7 +51,7 @@ export class Water extends Component3D
      */
     private frameBufferObject = new FrameBufferObject();
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
     {
         const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
         const sun = this.node3d.scene.getComponentsInChildren('DirectionalLight').filter((dl) => dl.isVisibleAndEnabled)[0];

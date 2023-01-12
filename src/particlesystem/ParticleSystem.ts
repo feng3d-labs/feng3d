@@ -1,12 +1,12 @@
 import { Camera } from '../core/cameras/Camera';
 import { Component3D } from '../3d/Component3D';
-import { Node3D } from '../core/core/Node3D';
+import { Node3D } from '../3d/Node3D';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { QuadGeometry } from '../core/primitives/QuadGeometry';
-import { Scene } from '../core/scene/Scene';
+import { Scene3D } from '../3d/Scene3D';
 import { RegisterComponent } from '../ecs/Component';
 import { Matrix3x3 } from '../math/geom/Matrix3x3';
 import { Matrix4x4 } from '../math/geom/Matrix4x4';
@@ -490,7 +490,7 @@ export class ParticleSystem extends Component3D
         }
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
     {
         super.beforeRender(renderAtomic, scene, camera);
 

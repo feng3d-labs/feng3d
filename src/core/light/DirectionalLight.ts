@@ -4,10 +4,10 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
-import { Node3D } from '../core/Node3D';
+import { Node3D } from '../../3d/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { Scene } from '../scene/Scene';
+import { Scene3D } from '../../3d/Scene3D';
 import { Light } from './Light';
 import { LightType } from './LightType';
 
@@ -39,7 +39,7 @@ export class DirectionalLight extends Light
      * 通过视窗摄像机进行更新
      * @param viewCamera 视窗摄像机
      */
-    updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable3D[])
+    updateShadowByCamera(scene: Scene3D, viewCamera: Camera, models: Renderable3D[])
     {
         const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
         {

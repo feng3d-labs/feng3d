@@ -6,7 +6,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { Scene } from '../scene/Scene';
+import { Scene3D } from '../../3d/Scene3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { CartoonComponent: CartoonComponent; } }
 
@@ -70,7 +70,7 @@ export class CartoonComponent extends Component
     }
     _cartoon_Anti_aliasing = false;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
     {
         renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
         renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;

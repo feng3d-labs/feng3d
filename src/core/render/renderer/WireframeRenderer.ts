@@ -7,7 +7,7 @@ import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable3D } from '../../core/Renderable3D';
-import { Scene } from '../../scene/Scene';
+import { Scene3D } from '../../../3d/Scene3D';
 
 declare module '../../../renderer/data/RenderAtomic'
 {
@@ -40,7 +40,7 @@ export class WireframeRenderer
     /**
      * 渲染
      */
-    draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
+    draw(renderer: WebGLRenderer, scene: Scene3D, camera: Camera)
     {
         const frustum = camera.frustum;
         const unblenditems = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>
@@ -80,7 +80,7 @@ export class WireframeRenderer
     /**
      * 绘制3D对象
      */
-    drawObject3D(renderer: WebGLRenderer, renderable: Renderable3D, scene: Scene, camera: Camera, wireframeColor = new Color4())
+    drawObject3D(renderer: WebGLRenderer, renderable: Renderable3D, scene: Scene3D, camera: Camera, wireframeColor = new Color4())
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);

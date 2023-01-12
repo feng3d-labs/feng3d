@@ -1,24 +1,24 @@
-import { EventEmitter } from '../../event/EventEmitter';
-import { Euler } from '../../math/geom/Euler';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Quaternion } from '../../math/geom/Quaternion';
-import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
-import { mathUtil } from '../../polyfill/MathUtil';
-import { gPartial } from '../../polyfill/Types';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
-import { AssetType } from '../assets/AssetType';
-import { Camera } from '../cameras/Camera';
-import { Geometry } from '../geometry/Geometry';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { Scene } from '../scene/Scene';
-import { BoundingBox3D } from '../../3d/BoundingBox3D';
-import { HideFlags } from './HideFlags';
-import { Node, NodeEventMap } from './Node';
+import { AssetType } from '../core/assets/AssetType';
+import { Camera } from '../core/cameras/Camera';
+import { HideFlags } from '../core/core/HideFlags';
+import { Node, NodeEventMap } from '../core/core/Node';
+import { Geometry } from '../core/geometry/Geometry';
+import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { Scene3D } from './Scene3D';
+import { EventEmitter } from '../event/EventEmitter';
+import { Euler } from '../math/geom/Euler';
+import { Matrix4x4 } from '../math/geom/Matrix4x4';
+import { Quaternion } from '../math/geom/Quaternion';
+import { Vector3 } from '../math/geom/Vector3';
+import { oav } from '../objectview/ObjectView';
+import { mathUtil } from '../polyfill/MathUtil';
+import { gPartial } from '../polyfill/Types';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { Serializable } from '../serialization/Serializable';
+import { $set } from '../serialization/Serialization';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { watcher } from '../watcher/watcher';
+import { BoundingBox3D } from './BoundingBox3D';
 
 export interface Node3DEventMap extends NodeEventMap
 {
@@ -90,7 +90,7 @@ export interface Node3D
     addChild(child: Node3D): this;
 }
 
-declare module '../../serialization/Serializable'
+declare module '../serialization/Serializable'
 {
     interface SerializableMap { Node3D: Node3D }
 }
@@ -371,7 +371,7 @@ export class Node3D extends Node
         return mat;
     }
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
     {
         renderAtomic.uniforms.u_modelMatrix = () => this.globalMatrix;
         renderAtomic.uniforms.u_ITModelMatrix = () => this.globalNormalMatrix;
@@ -534,7 +534,7 @@ export class Node3D extends Node
         return true;
     }
 
-    protected _scene: Scene;
+    protected _scene: Scene3D;
 
     protected _setParent(value: Node3D | null)
     {

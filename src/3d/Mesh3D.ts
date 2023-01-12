@@ -4,7 +4,7 @@ import { Geometry, GeometryMap } from '../core/geometry/Geometry';
 import { LightPicker } from '../core/light/pickers/LightPicker';
 import { Material, MaterialMap } from '../core/materials/Material';
 import { PickingCollisionVO } from '../core/pick/Raycaster';
-import { Scene } from '../core/scene/Scene';
+import { Scene3D } from './Scene3D';
 import { TransformUtils } from '../core/utils/TransformUtils';
 import { RegisterComponent } from '../ecs/Component';
 import { IEvent } from '../event/IEvent';
@@ -115,7 +115,7 @@ export class Mesh3D extends Renderable3D
      * @param scene
      * @param camera
      */
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera)
     {
         const geometry = this.useGeometry;
         const material = this.useMaterial;

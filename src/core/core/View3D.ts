@@ -5,7 +5,7 @@ import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { Scene } from '../scene/Scene';
+import { Scene3D } from '../../3d/Scene3D';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Component3D } from '../../3d/Component3D';
@@ -90,7 +90,7 @@ export class View3D extends Component3D
      *
      * 如果值为undefined时，从自身与子结点中获取到 Scene 组件。默认为undefined。
      */
-    scene: Scene;
+    scene: Scene3D;
 
     /**
      * webgl初始化参数。

@@ -1,4 +1,4 @@
-import { Node3D, Node3DEventMap } from '../core/core/Node3D';
+import { Node3D, Node3DEventMap } from './Node3D';
 import { NodeComponent } from '../core/core/NodeComponent';
 import { EventEmitter } from '../event/EventEmitter';
 

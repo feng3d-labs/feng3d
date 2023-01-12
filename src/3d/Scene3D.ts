@@ -1,13 +1,13 @@
-import { Component, RegisterComponent } from '../../ecs/Component';
-import { Color4 } from '../../math/Color4';
-import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Component3D } from '../../3d/Component3D';
-import { HideFlags } from '../core/HideFlags';
-import { Node3D } from '../core/Node3D';
-import { RunEnvironment } from '../core/RunEnvironment';
+import { HideFlags } from '../core/core/HideFlags';
+import { RunEnvironment } from '../core/core/RunEnvironment';
+import { Component, RegisterComponent } from '../ecs/Component';
+import { Color4 } from '../math/Color4';
+import { oav } from '../objectview/ObjectView';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { Component3D } from './Component3D';
+import { Node3D } from './Node3D';
 
-declare module '../core/Node3D'
+declare module './Node3D'
 {
     /**
      * 组件事件
@@ -20,18 +20,18 @@ declare module '../core/Node3D'
     }
 }
 
-declare module '../../ecs/Component'
+declare module '../ecs/Component'
 {
-    interface ComponentMap { Scene: Scene; }
+    interface ComponentMap { Scene3D: Scene3D; }
 }
 
 /**
  * 3D场景
  */
-@RegisterComponent({ name: 'Scene' })
-export class Scene extends Component3D
+@RegisterComponent({ name: 'Scene3D' })
+export class Scene3D extends Component3D
 {
-    declare __class__: 'Scene';
+    declare __class__: 'Scene3D';
 
     /**
      * 背景颜色

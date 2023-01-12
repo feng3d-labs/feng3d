@@ -1,4 +1,4 @@
-import { Node3D } from '../core/core/Node3D';
+import { Node3D } from '../3d/Node3D';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';

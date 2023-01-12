@@ -4,7 +4,7 @@ import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { Scene } from '../scene/Scene';
+import { Scene3D } from '../../3d/Scene3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { OutLineComponent: OutLineComponent; } }
 
@@ -46,7 +46,7 @@ export class OutLineComponent extends Component
     @SerializeProperty()
     outlineMorphFactor = 0.0;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera)
     {
         renderAtomic.uniforms.u_outlineSize = this.size;
         renderAtomic.uniforms.u_outlineColor = this.color;
