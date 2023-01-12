@@ -5,7 +5,7 @@ import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera3D } from '../../core/cameras/Camera3D';
-import { TextureCube } from '../../core/textures/TextureCube';
+import { TextureCube } from '../../textures/TextureCube';
 
 declare module '../../ecs/Component' { interface ComponentMap { SkyBox: SkyBox3D; } }
 

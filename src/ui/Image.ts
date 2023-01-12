@@ -1,7 +1,7 @@
 import { Camera3D } from '../core/cameras/Camera3D';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene3D } from '../3d/Scene3D';
-import { Texture2D } from '../core/textures/Texture2D';
+import { Texture2D } from '../textures/Texture2D';
 import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';

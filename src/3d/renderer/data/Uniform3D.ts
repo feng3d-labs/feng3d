@@ -9,8 +9,8 @@ import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Vector2 } from '../../../math/geom/Vector2';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { Vector4 } from '../../../math/geom/Vector4';
-import { Texture2D } from '../../../core/textures/Texture2D';
-import { TextureCube } from '../../../core/textures/TextureCube';
+import { Texture2D } from '../../../textures/Texture2D';
+import { TextureCube } from '../../../textures/TextureCube';
 
 declare module '../../../renderer/data/Uniforms' { interface Uniforms extends Uniforms3D { } }
 

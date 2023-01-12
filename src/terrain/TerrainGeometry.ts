@@ -1,6 +1,6 @@
 import { Geometry, RegisterGeometry } from '../3d/geometrys/Geometry';
 import { geometryUtils } from '../3d/geometrys/GeometryUtils';
-import { Texture2D } from '../core/textures/Texture2D';
+import { Texture2D } from '../textures/Texture2D';
 import { ImageUtil } from '../core/utils/ImageUtil';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';

@@ -1,6 +1,6 @@
 import { HideFlags } from '../../core/core/HideFlags';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
-import { RenderTargetTexture2D } from '../../core/textures/RenderTargetTexture2D';
+import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
 import { $set } from '../../serialization/Serialization';

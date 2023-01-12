@@ -8,8 +8,8 @@ import { Serializable } from '../serialization/Serializable';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { AssetData } from './core/AssetData';
-import { Texture2D } from './textures/Texture2D';
-import { TextureCube } from './textures/TextureCube';
+import { Texture2D } from '../textures/Texture2D';
+import { TextureCube } from '../textures/TextureCube';
 
 export interface MaterialMap { }
 export interface UniformsMap { }

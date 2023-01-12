@@ -1,5 +1,5 @@
-import { Texture2D } from '../../../core/textures/Texture2D';
-import { TextureCube } from '../../../core/textures/TextureCube';
+import { Texture2D } from '../../../textures/Texture2D';
+import { TextureCube } from '../../../textures/TextureCube';
 import { Color3 } from '../../../math/Color3';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';

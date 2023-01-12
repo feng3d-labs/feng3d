@@ -1,4 +1,4 @@
-import { Texture2D } from '../../../core/textures/Texture2D';
+import { Texture2D } from '../../../textures/Texture2D';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { Material, RegisterMaterial } from '../../../core/Material';

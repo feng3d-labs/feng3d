@@ -1,4 +1,4 @@
-import { Texture2D } from '../core/textures/Texture2D';
+import { Texture2D } from '../textures/Texture2D';
 import { EventEmitter } from '../event/EventEmitter';
 import { Vector2 } from '../math/geom/Vector2';
 import { Vector4 } from '../math/geom/Vector4';

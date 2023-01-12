@@ -1,4 +1,4 @@
-import { Texture2D } from '../../../core/textures/Texture2D';
+import { Texture2D } from '../../../textures/Texture2D';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';

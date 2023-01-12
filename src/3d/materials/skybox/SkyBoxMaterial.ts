@@ -1,4 +1,4 @@
-import { TextureCube } from '../../../core/textures/TextureCube';
+import { TextureCube } from '../../../textures/TextureCube';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';

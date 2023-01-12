@@ -1,14 +1,14 @@
-import { FS } from '../../filesystem/FS';
-import { oav } from '../../objectview/ObjectView';
-import { ArrayUtils } from '../../polyfill/ArrayUtils';
-import { RegisterTexture } from '../../renderer/data/Texture';
-import { TextureType } from '../../renderer/gl/WebGLEnums';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
+import { FS } from '../filesystem/FS';
+import { oav } from '../objectview/ObjectView';
+import { ArrayUtils } from '../polyfill/ArrayUtils';
+import { RegisterTexture } from '../renderer/data/Texture';
+import { TextureType } from '../renderer/gl/WebGLEnums';
+import { $set } from '../serialization/Serialization';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { watcher } from '../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
-import { AssetData } from '../core/AssetData';
-import { HideFlags } from '../core/HideFlags';
+import { AssetData } from '../core/core/AssetData';
+import { HideFlags } from '../core/core/HideFlags';
 import { TextureInfo } from './TextureInfo';
 import { ImageDatas, Texture2D } from './Texture2D';
 
@@ -22,7 +22,7 @@ export interface TextureCubeEventMap
 
 export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positive_z_url' | 'negative_x_url' | 'negative_y_url' | 'negative_z_url';
 
-declare module '../../renderer/data/Texture'
+declare module '../renderer/data/Texture'
 {
     interface TextureMap { TextureCube: TextureCube }
 }

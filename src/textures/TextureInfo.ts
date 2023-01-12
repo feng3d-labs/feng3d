@@ -1,7 +1,7 @@
-import { dataTransform } from '../../polyfill/DataTransform';
-import { Texture } from '../../renderer/data/Texture';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { HideFlags } from '../core/HideFlags';
+import { dataTransform } from '../polyfill/DataTransform';
+import { Texture } from '../renderer/data/Texture';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { HideFlags } from '../core/core/HideFlags';
 import { imageDatas } from './Texture2D';
 
 /**

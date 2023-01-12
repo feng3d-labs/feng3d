@@ -1,5 +1,5 @@
 import { Material, RegisterMaterial } from '../../core/materials/Material';
-import { Texture2D } from '../../core/textures/Texture2D';
+import { Texture2D } from '../../textures/Texture2D';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';

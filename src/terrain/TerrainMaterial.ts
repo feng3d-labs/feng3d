@@ -1,7 +1,7 @@
 import { Material } from '../core/materials/Material';
 import { FogMode } from '../core/materials/standard/StandardMaterial';
-import { Texture2D } from '../core/textures/Texture2D';
-import { TextureCube } from '../core/textures/TextureCube';
+import { Texture2D } from '../textures/Texture2D';
+import { TextureCube } from '../textures/TextureCube';
 import { Color3 } from '../math/Color3';
 import { Color4 } from '../math/Color4';
 import { Vector4 } from '../math/geom/Vector4';

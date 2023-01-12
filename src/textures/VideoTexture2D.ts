@@ -1,4 +1,4 @@
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '../watcher/watcher';
 import { Texture2D } from './Texture2D';
 
 export class VideoTexture2D extends Texture2D

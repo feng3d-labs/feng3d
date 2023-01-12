@@ -1,5 +1,5 @@
-import { TextureFormat, TextureMinFilter, TextureMagFilter } from '../../renderer/gl/WebGLEnums';
-import { watcher } from '../../watcher/watcher';
+import { TextureFormat, TextureMinFilter, TextureMagFilter } from '../renderer/gl/WebGLEnums';
+import { watcher } from '../watcher/watcher';
 import { Texture2D } from './Texture2D';
 
 /**

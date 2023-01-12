@@ -1,5 +1,5 @@
 import { Material } from '../../core/Material';
-import { Texture2D } from '../../core/textures/Texture2D';
+import { Texture2D } from '../../textures/Texture2D';
 import { Color3 } from '../../math/Color3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
