@@ -1,5 +1,3 @@
-import { Component3D } from '../../3d/Component3D';
-import { Node3D } from '../../3d/Node3D';
 import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Frustum } from '../../math/geom/Frustum';
@@ -10,6 +8,8 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Component3D } from '../core/Component3D';
+import { Node3D } from '../core/Node3D';
 import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
@@ -17,7 +17,7 @@ import { Projection } from './Projection';
 
 declare module '../../ecs/Component' { interface ComponentMap { Camera3D: Camera3D; } }
 
-declare module '../../3d/Node3D'
+declare module '../core/Node3D'
 {
     export interface Node3DEventMap { lensChanged: Camera3D; }
 

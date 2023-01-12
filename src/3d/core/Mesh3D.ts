@@ -10,7 +10,7 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera3D } from '../cameras/Camera3D';
 import { Geometry, GeometryMap } from '../geometrys/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
-import { Material, MaterialMap } from '../materials/Material';
+import { Material, MaterialMap } from '../../core/Material';
 import { PickingCollisionVO } from '../raycast/rayCast3D';
 import { Renderable3D } from './Renderable3D';
 import { Scene3D } from './Scene3D';

@@ -1,7 +1,9 @@
-import { Component3D } from '../../3d/Component3D';
-import { Mesh3D } from '../../3d/Mesh3D';
-import { Node3D } from '../../3d/Node3D';
-import { Scene3D } from '../../3d/Scene3D';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
+import { Mesh3D } from '../core/Mesh3D';
+import { Node3D } from '../../3d/core/Node3D';
+import { Scene3D } from '../core/Scene3D';
+import { Geometry } from '../../3d/geometrys/Geometry';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Plane } from '../../math/geom/Plane';
@@ -9,24 +11,22 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
-import { Camera3D } from '../cameras/Camera3D';
-import { Geometry } from '../../3d/geometrys/Geometry';
-import { Material } from '../materials/Material';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { FrameBufferObject } from '../render/FrameBufferObject';
-import { WaterUniforms } from './WaterMaterial';
+import { Material } from '../../core/Material';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { FrameBufferObject } from '../../core/render/FrameBufferObject';
+import { WaterUniforms } from './WaterMaterial3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { Water: Water } }
+declare module '../../ecs/Component' { interface ComponentMap { Water3D: Water3D } }
 
-declare module '../../3d/Node3D' { export interface PrimitiveNode3D { Water: Node3D; } }
+declare module '../../3d/core/Node3D' { export interface PrimitiveNode3D { Water3D: Node3D; } }
 
 /**
  * The Water component renders the terrain.
  */
-@RegisterComponent({ name: 'Water', dependencies: ['Mesh3D'], menu: 'Graphics/Water' })
-export class Water extends Component3D
+@RegisterComponent({ name: 'Water3D', dependencies: ['Mesh3D'], menu: 'Graphics/Water3D' })
+export class Water3D extends Component3D
 {
-    declare __class__: 'Water';
+    declare __class__: 'Water3D';
 
     private meshRenderer: Mesh3D;
 
@@ -54,7 +54,7 @@ export class Water extends Component3D
     beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {
         const uniforms = this.meshRenderer.material.uniforms as WaterUniforms;
-        const sun = this.node3d.scene.getComponentsInChildren('DirectionalLight').filter((dl) => dl.isVisibleAndEnabled)[0];
+        const sun = this.node3d.scene.getComponentsInChildren('DirectionalLight3D').filter((dl) => dl.isVisibleAndEnabled)[0];
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
@@ -95,7 +95,7 @@ export class Water extends Component3D
         target.reflect(normal).negate();
         target.add(mirrorWorldPosition);
 
-        const mirrorCamera = $set(new Node3D(), { name: 'waterMirrorCamera' }).addComponent('Camera');
+        const mirrorCamera = $set(new Node3D(), { name: 'waterMirrorCamera' }).addComponent('Camera3D');
         mirrorCamera.node3d.position = view;
         mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
 
@@ -155,18 +155,18 @@ export class Water extends Component3D
     }
 }
 
-Node3D.registerPrimitive('Water', (g) =>
+Node3D.registerPrimitive('Water3D', (g) =>
 {
-    g.addComponent('Water');
+    g.addComponent('Water3D');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
 createNodeMenu.push(
     {
-        path: '3D Object/Water',
+        path: '3D Object/Water3D',
         priority: -20000,
         click: () =>
-            Node3D.createPrimitive('Water')
+            Node3D.createPrimitive('Water3D')
     }
 );
 

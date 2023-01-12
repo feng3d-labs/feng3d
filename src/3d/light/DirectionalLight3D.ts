@@ -1,19 +1,19 @@
-import { Node3D } from '../../3d/Node3D';
-import { Scene3D } from '../../3d/Scene3D';
-import { Camera3D } from '../../core/cameras/Camera3D';
-import { OrthographicLens } from '../../core/cameras/lenses/OrthographicLens';
-import { Renderable3D } from '../../core/core/Renderable3D';
 import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { $set } from '../../serialization/Serialization';
+import { Camera3D } from '../cameras/Camera3D';
+import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
+import { Node3D } from '../core/Node3D';
+import { Renderable3D } from '../core/Renderable3D';
+import { Scene3D } from '../core/Scene3D';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
 declare module '../../ecs/Component' { interface ComponentMap { DirectionalLight3D: DirectionalLight3D; } }
 
-declare module '../../3d/Node3D' { interface PrimitiveNode3D { 'Directional light': Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { 'Directional light': Node3D; } }
 
 /**
  * 方向光源

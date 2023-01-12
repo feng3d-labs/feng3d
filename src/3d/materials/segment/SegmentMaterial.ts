@@ -3,7 +3,7 @@ import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../Material';
+import { Material } from '../../../core/Material';
 import segmentFragment from './segment_fragment_glsl';
 import segmentVertex from './segment_vertex_glsl';
 

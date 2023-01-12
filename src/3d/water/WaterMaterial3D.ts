@@ -1,3 +1,5 @@
+import { Material } from '../../core/Material';
+import { Texture2D } from '../../core/textures/Texture2D';
 import { Color3 } from '../../math/Color3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -5,12 +7,10 @@ import { oav } from '../../objectview/ObjectView';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Material } from '../materials/Material';
-import { Texture2D } from '../textures/Texture2D';
 import waterFragment from './water_fragment_glsl';
 import waterVertex from './water_vertex_glsl';
 
-declare module '../materials/Material'
+declare module '../../core/Material'
 {
     interface MaterialMap { WaterMaterial: WaterMaterial }
     interface UniformsMap { WaterUniforms: WaterUniforms }

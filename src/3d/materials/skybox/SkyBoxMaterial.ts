@@ -3,7 +3,7 @@ import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../Material';
+import { Material } from '../../../core/Material';
 import skyboxFragment from './skybox_fragment_glsl';
 import skyboxVertex from './skybox_vertex_glsl';
 

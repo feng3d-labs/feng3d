@@ -1,16 +1,16 @@
-import { Component3D } from '../../3d/Component3D';
-import { Node3D } from '../../3d/Node3D';
-import { Scene3D } from '../../3d/Scene3D';
-import { Camera3D } from '../../core/cameras/Camera3D';
 import { HideFlags } from '../../core/core/HideFlags';
-import { TextureMaterial } from '../../core/materials/texture/TextureMaterial';
-import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../../core/render/FrameBufferObject';
 import { RenderTargetTexture2D } from '../../core/textures/RenderTargetTexture2D';
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
+import { Node3D } from '../core/Node3D';
+import { Scene3D } from '../core/Scene3D';
+import { PlaneGeometry } from '../geometrys/PlaneGeometry';
+import { TextureMaterial } from '../materials/texture/TextureMaterial';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 
@@ -118,7 +118,7 @@ export class Light3D extends Component3D
 
     init(): void
     {
-        this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent('Camera');
+        this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent('Camera3D');
     }
 
     updateDebugShadowMap(scene: Scene3D, viewCamera: Camera3D)
@@ -129,7 +129,7 @@ export class Light3D extends Component3D
             node3d = this.debugShadowMapObject = Node3D.createPrimitive('Plane', { name: 'debugShadowMapObject' });
             node3d.hideFlags = HideFlags.Hide | HideFlags.DontSave;
             node3d.mouseEnabled = false;
-            node3d.addComponent('BillboardComponent');
+            node3d.addComponent('Billboard3D');
 
             // 材质
             const model = node3d.getComponent('Mesh3D');
@@ -145,7 +145,7 @@ export class Light3D extends Component3D
 
         const depth = viewCamera.lens.near * 2;
         node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
-        const billboardComponent = node3d.getComponent('BillboardComponent');
+        const billboardComponent = node3d.getComponent('Billboard3D');
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)

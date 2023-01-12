@@ -3,7 +3,7 @@ import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material, RegisterMaterial } from '../Material';
+import { Material, RegisterMaterial } from '../../../core/Material';
 import colorFragment from './color_fragment_glsl';
 import colorVertex from './color_vertex_glsl';
 
