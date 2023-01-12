@@ -2,7 +2,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Component3D } from '../core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 
 export let audioCtx: AudioContext;
 export let globalGain: GainNode;

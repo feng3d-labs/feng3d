@@ -2,7 +2,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
-import { Component3D } from './Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { Mesh3D } from '../../3d/Mesh3D';
 import { MouseEventMap, MouseInput } from './MouseInput';
 import { RenderContext } from './RenderContext';

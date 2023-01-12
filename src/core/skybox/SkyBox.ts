@@ -3,7 +3,7 @@ import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { Component3D } from '../core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { Scene } from '../scene/Scene';
 import { TextureCube } from '../textures/TextureCube';
 

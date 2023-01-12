@@ -16,7 +16,7 @@ import { Camera } from '../cameras/Camera';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
-import { BoundingBox } from './BoundingBox';
+import { BoundingBox3D } from './BoundingBox';
 import { HideFlags } from './HideFlags';
 import { Node, NodeEventMap } from './Node';
 
@@ -474,12 +474,12 @@ export class Node3D extends Node
     {
         if (!this._boundingBox)
         {
-            this._boundingBox = new BoundingBox(this);
+            this._boundingBox = new BoundingBox3D(this);
         }
 
         return this._boundingBox;
     }
-    private _boundingBox: BoundingBox;
+    private _boundingBox: BoundingBox3D;
 
     get scene()
     {

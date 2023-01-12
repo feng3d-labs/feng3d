@@ -24,7 +24,7 @@ declare module './Node3D'
  *
  * 用于优化计算射线碰撞检测以及视锥剔除等。
  */
-export class BoundingBox
+export class BoundingBox3D
 {
     private _object3D: Node3D;
 

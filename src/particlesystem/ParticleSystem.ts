@@ -1,5 +1,5 @@
 import { Camera } from '../core/cameras/Camera';
-import { Component3D } from '../core/core/Component3D';
+import { Component3D } from '../3d/Component3D';
 import { Node3D } from '../core/core/Node3D';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Geometry } from '../core/geometry/Geometry';

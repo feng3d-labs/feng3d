@@ -2,7 +2,7 @@ import { RegisterComponent } from '../../../ecs/Component';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Camera } from '../../cameras/Camera';
-import { Component3D } from '../../core/Component3D';
+import { Component3D } from '../../../3d/Component3D';
 import { HideFlags } from '../../core/HideFlags';
 import { Scene } from '../../scene/Scene';
 

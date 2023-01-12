@@ -7,7 +7,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Component3D } from '../core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { Node3D } from '../core/Node3D';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { LensBase } from './lenses/LensBase';

@@ -1,4 +1,4 @@
-import { Component3D } from '../../core/core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { RenderContext } from '../../core/core/RenderContext';
 import { IEvent } from '../../event/IEvent';
 

@@ -4,7 +4,7 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { Component3D } from '../core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { ticker } from '../utils/Ticker';
 

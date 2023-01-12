@@ -6,7 +6,7 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
-import { Component3D } from '../core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { Mesh3D } from '../../3d/Mesh3D';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';

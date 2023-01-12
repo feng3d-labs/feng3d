@@ -8,7 +8,7 @@ import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
 import { Scene } from '../scene/Scene';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
-import { Component3D } from './Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { RenderContext } from './RenderContext';
 
 declare module './Node3D'

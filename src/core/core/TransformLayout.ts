@@ -8,7 +8,7 @@ import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';
-import { Component3D } from './Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { Node3D } from './Node3D';
 
 declare module './Node3D'

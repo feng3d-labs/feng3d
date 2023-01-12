@@ -2,7 +2,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { Component3D } from '../core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { HoldSizeComponent: HoldSizeComponent; } }
 

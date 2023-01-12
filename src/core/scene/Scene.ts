@@ -2,7 +2,7 @@ import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Component3D } from '../core/Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { HideFlags } from '../core/HideFlags';
 import { Node3D } from '../core/Node3D';
 import { RunEnvironment } from '../core/RunEnvironment';

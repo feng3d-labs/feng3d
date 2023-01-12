@@ -2,7 +2,7 @@ import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { PickingCollisionVO } from '../pick/Raycaster';
-import { Component3D } from './Component3D';
+import { Component3D } from '../../3d/Component3D';
 import { IRayCastable } from './IRayCastable';
 import { IRenderable } from './IRenderable';
 
