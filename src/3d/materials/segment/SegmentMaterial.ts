@@ -1,13 +1,13 @@
+import { Material } from '../../../core/Material';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../../../core/Material';
 import segmentFragment from './segment_fragment_glsl';
 import segmentVertex from './segment_vertex_glsl';
 
-declare module '../Material'
+declare module '../../../core/Material'
 {
     interface MaterialMap { SegmentMaterial: SegmentMaterial }
     interface UniformsMap { SegmentUniforms: SegmentUniforms }

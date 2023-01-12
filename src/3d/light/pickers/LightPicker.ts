@@ -1,7 +1,7 @@
-import { Mesh3D } from '../../../3d/Mesh3D';
-import { Texture2D } from '../../../textures/Texture2D';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Texture2D } from '../../../textures/Texture2D';
+import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
 import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
@@ -26,7 +26,7 @@ export class LightPicker
         if (scene)
         {
             pointLights = scene.getComponentsInChildren('PointLight3D').filter((pl) => pl.isVisibleAndEnabled);
-            directionalLights = scene.getComponentsInChildren('DirectionalLight').filter((dl) => dl.isVisibleAndEnabled);
+            directionalLights = scene.getComponentsInChildren('DirectionalLight3D').filter((dl) => dl.isVisibleAndEnabled);
             spotLights = scene.getComponentsInChildren('SpotLight3D').filter((sp) => (sp.isVisibleAndEnabled));
         }
 

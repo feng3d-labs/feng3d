@@ -1,16 +1,16 @@
-import { Node3D } from '../../3d/Node3D';
-import { PerspectiveLens } from '../../core/cameras/lenses/PerspectiveLens';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
+import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
+import { Node3D } from '../core/Node3D';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
 declare module '../../ecs/Component' { interface ComponentMap { SpotLight3D: SpotLight3D; } }
-declare module '../../3d/Node3D' { interface PrimitiveNode3D { 'Spot Light': Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { 'Spot Light': Node3D; } }
 
 /**
  * 聚光灯光源

@@ -10,7 +10,7 @@ import { Material } from '../../../core/Material';
 import standardFragment from './standard_fragment_glsl';
 import standardVertex from './standard_vertex_glsl';
 
-declare module '../Material'
+declare module '../../../core/Material'
 {
     interface DefaultMaterialMap { 'Default-Material': Material; }
     interface UniformsMap { StandardUniforms: StandardUniforms }

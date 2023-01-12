@@ -1,8 +1,8 @@
-import { Component3D } from '../../3d/Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { watcher } from '../../watcher/watcher';
-import { Camera } from '../cameras/Camera';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { HoldSize3D: HoldSize3D; } }
 
@@ -24,7 +24,7 @@ export class HoldSize3D extends Component3D
      * 相机
      */
     @oav()
-    camera: Camera;
+    camera: Camera3D;
 
     init()
     {
@@ -40,7 +40,7 @@ export class HoldSize3D extends Component3D
         super.dispose();
     }
 
-    private _onCameraChanged(value: Camera, oldValue: Camera)
+    private _onCameraChanged(value: Camera3D, oldValue: Camera3D)
     {
         if (oldValue) oldValue.emitter.off('globalMatrixChanged', this._invalidateGlobalTransform, this);
         if (value) value.emitter.on('globalMatrixChanged', this._invalidateGlobalTransform, this);
@@ -66,7 +66,7 @@ export class HoldSize3D extends Component3D
         }
     }
 
-    private _getDepthScale(camera: Camera)
+    private _getDepthScale(camera: Camera3D)
     {
         const cameraGlobalMatrix = camera.node3d.globalMatrix;
         const distance = this.node3d.worldPosition.subTo(cameraGlobalMatrix.getPosition());

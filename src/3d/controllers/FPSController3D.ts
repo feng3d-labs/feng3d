@@ -1,12 +1,12 @@
-import { RunEnvironment } from '../../core/core/RunEnvironment';
-import { ticker } from '../../utils/Ticker';
+import { RunEnvironment } from '../../core/RunEnvironment';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { Component3D } from '../Component3D';
+import { ticker } from '../../utils/Ticker';
+import { Component3D } from '../core/Component3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { FPSController3D: FPSController3D; } }
 

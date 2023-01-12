@@ -2,8 +2,8 @@ import { EventEmitter } from '../../event/EventEmitter';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { Node3D } from '../Node3D';
-import { Renderable3D } from '../../core/core/Renderable3D';
+import { Node3D } from '../core/Node3D';
+import { Renderable3D } from '../core/Renderable3D';
 
 /**
  * 鼠标拾取渲染器

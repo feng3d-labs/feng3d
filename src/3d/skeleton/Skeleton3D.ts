@@ -1,7 +1,7 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Component3D } from '../Component3D';
-import { Node3D } from '../Node3D';
+import { Component3D } from '../core/Component3D';
+import { Node3D } from '../core/Node3D';
 
 declare module '../../ecs/Component'
 {

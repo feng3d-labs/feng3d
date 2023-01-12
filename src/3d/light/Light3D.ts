@@ -1,10 +1,10 @@
-import { HideFlags } from '../../core/core/HideFlags';
-import { FrameBufferObject } from '../../renderer/FrameBufferObject';
-import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
+import { HideFlags } from '../../core/HideFlags';
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
+import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';

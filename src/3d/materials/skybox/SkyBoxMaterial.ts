@@ -1,13 +1,13 @@
-import { TextureCube } from '../../../textures/TextureCube';
+import { Material } from '../../../core/Material';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../../../core/Material';
+import { TextureCube } from '../../../textures/TextureCube';
 import skyboxFragment from './skybox_fragment_glsl';
 import skyboxVertex from './skybox_vertex_glsl';
 
-declare module '../Material' {
+declare module '../../../core/Material' {
     interface MaterialMap { SkyBoxMaterial: SkyBoxMaterial }
     interface UniformsMap { SkyBoxUniforms: SkyBoxUniforms }
 }

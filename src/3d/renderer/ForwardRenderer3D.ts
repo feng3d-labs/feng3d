@@ -4,7 +4,7 @@ import { lazy, LazyObject } from '../../polyfill/Types';
 import { Uniforms } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
-import { Scene3D } from '../Scene3D';
+import { Scene3D } from '../core/Scene3D';
 
 /**
  * 前向渲染器

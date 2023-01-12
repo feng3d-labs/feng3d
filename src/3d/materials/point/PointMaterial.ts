@@ -1,13 +1,13 @@
+import { Material } from '../../../core/Material';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../../../core/Material';
 import pointFragment from './point_fragment_glsl';
 import pointVertex from './point_vertex_glsl';
 
-declare module '../Material' {
+declare module '../../../core/Material' {
     interface MaterialMap { PointMaterial: PointMaterial }
     interface UniformsMap { PointUniforms: PointUniforms }
 }

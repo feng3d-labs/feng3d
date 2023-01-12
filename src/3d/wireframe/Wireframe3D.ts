@@ -1,7 +1,7 @@
-import { Component3D } from '../Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
+import { Component3D } from '../core/Component3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Wireframe3D: Wireframe3D; } }
 

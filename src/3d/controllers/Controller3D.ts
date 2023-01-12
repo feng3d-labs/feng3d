@@ -1,4 +1,4 @@
-import { Node3D } from '../../3d/Node3D';
+import { Node3D } from '../core/Node3D';
 
 export class Controller3D
 {

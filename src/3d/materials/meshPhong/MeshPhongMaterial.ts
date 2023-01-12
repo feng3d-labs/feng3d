@@ -1,11 +1,11 @@
-import { Texture2D } from '../../../textures/Texture2D';
+import { Material, RegisterMaterial } from '../../../core/Material';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
-import { Material, RegisterMaterial } from '../../../core/Material';
+import { Texture2D } from '../../../textures/Texture2D';
 import meshPhongFragment from './meshPhong_fragment_glsl';
 import meshPhongVertex from './meshPhong_vertex_glsl';
 
-declare module '../Material' {
+declare module '../../../core/Material' {
     interface MaterialMap { MeshPhongMaterial: MeshPhongMaterial }
     interface UniformsMap { MeshPhongUniforms: MeshPhongUniforms }
 }

@@ -1,4 +1,4 @@
-import { IRenderable } from '../../core/core/IRenderable';
+import { IRenderable } from '../../core/IRenderable';
 import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';

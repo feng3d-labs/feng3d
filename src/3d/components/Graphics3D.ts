@@ -1,6 +1,6 @@
-import { Component3D } from '../../3d/Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { dataTransform } from '../../polyfill/DataTransform';
+import { Component3D } from '../core/Component3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Graphics3D: Graphics3D; } }
 

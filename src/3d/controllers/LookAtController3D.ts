@@ -1,5 +1,5 @@
-import { Node3D } from '../../3d/Node3D';
 import { Vector3 } from '../../math/geom/Vector3';
+import { Node3D } from '../core/Node3D';
 import { Controller3D } from './Controller3D';
 
 export class LookAtController3D extends Controller3D
