@@ -4,9 +4,9 @@ import { forwardRenderer } from '../../3d/renderer/ForwardRenderer3D';
 import { shadowRenderer } from '../../3d/renderer/ShadowRenderer';
 import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';
 import { wireframeRenderer } from '../../3d/wireframe/Wireframe3DRenderer';
-import { ticker } from '../../utils/Ticker';
 import { RegisterComponent } from '../../ecs/Component';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { ticker } from '../../utils/Ticker';
 import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
 import { RenderContext3D } from './RenderContext3D';
@@ -42,44 +42,6 @@ declare module '../../ecs/Component'
 export class View3D extends Component3D
 {
     /**
-     * 将被绘制的目标画布。
-     */
-    get canvas()
-    {
-        if (!this._canvas)
-        {
-            const canvas = document.createElement('canvas');
-            canvas.id = 'glcanvas';
-            canvas.style.position = 'fixed';
-            canvas.style.left = '0px';
-            canvas.style.top = '0px';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            document.body.appendChild(canvas);
-            this.canvas = canvas;
-        }
-
-        return this._canvas;
-    }
-    set canvas(v)
-    {
-        if (this._canvas)
-        {
-            this._canvas.removeEventListener('webglcontextlost', this._onContextLost, false);
-            this._canvas.removeEventListener('webglcontextrestored', this._onContextRestore, false);
-            this._canvas.removeEventListener('webglcontextcreationerror', this._onContextCreationError, false);
-        }
-        this._canvas = v;
-        if (this._canvas)
-        {
-            this._canvas.addEventListener('webglcontextlost', this._onContextLost, false);
-            this._canvas.addEventListener('webglcontextrestored', this._onContextRestore, false);
-            this._canvas.addEventListener('webglcontextcreationerror', this._onContextCreationError, false);
-        }
-    }
-    private _canvas: HTMLCanvasElement;
-
-    /**
      * 渲染时使用的摄像机。
      *
      * 如果值为undefined时，从自身与子结点中获取到 Camera 组件。默认为undefined。
@@ -92,6 +54,13 @@ export class View3D extends Component3D
      * 如果值为undefined时，从自身与子结点中获取到 Scene 组件。默认为undefined。
      */
     scene: Scene3D;
+
+    /**
+     * 初始化传入画布
+     *
+     * 注：只在初始化时设置生效。
+     */
+    canvas: HTMLCanvasElement;
 
     /**
      * webgl初始化参数。
@@ -123,6 +92,11 @@ export class View3D extends Component3D
     }
     private _isAutoRender: boolean;
 
+    getRenderCanvas()
+    {
+        return this.webGLRenderer.canvas;
+    }
+
     /**
      * 当前渲染时将使用的 Camera 。
      */
@@ -152,41 +126,13 @@ export class View3D extends Component3D
     }
 
     /**
-     * WebGL渲染上下文，圖形庫。
-     */
-    private get gl()
-    {
-        if (!this._gl)
-        {
-            const canvas = this.canvas;
-
-            const contextAttributes = Object.assign({
-                depth: true,
-                stencil: true,
-                antialias: false,
-                premultipliedAlpha: true,
-                preserveDrawingBuffer: false,
-                powerPreference: 'default',
-                failIfMajorPerformanceCaveat: false,
-            } as Partial<WebGLContextAttributes>, this.contextAttributes);
-
-            const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
-            this._gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
-        }
-
-        return this._gl;
-    }
-    private _gl: WebGLRenderingContext;
-
-    /**
      * WebGL渲染器。
      */
     private get webGLRenderer()
     {
         if (!this._webGLRenderer)
         {
-            this._webGLRenderer = new WebGLRenderer();
-            this._webGLRenderer.gl = this.gl;
+            this._webGLRenderer = new WebGLRenderer(this.canvas, this.contextAttributes);
         }
 
         return this._webGLRenderer;
@@ -203,8 +149,6 @@ export class View3D extends Component3D
      */
     render(_interval?: number)
     {
-        if (this._isContextLost === true) return;
-
         const camera = this.getRenderCamera();
         if (!camera)
         {
@@ -220,7 +164,7 @@ export class View3D extends Component3D
             return;
         }
 
-        const canvas = this.canvas;
+        const canvas = this.webGLRenderer.canvas;
 
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
@@ -233,7 +177,7 @@ export class View3D extends Component3D
         //
         this.emitter.emit('beforeRender', data, true, true);
 
-        const gl = this.gl;
+        const gl = webGLRenderer.gl;
         // 默认渲染
         gl.colorMask(true, true, true, true);
         gl.clearColor(scene.background.r, scene.background.g, scene.background.b, scene.background.a);
@@ -253,59 +197,4 @@ export class View3D extends Component3D
         // 派发渲染后事件
         this.emitter.emit('afterRender', data, true, true);
     }
-
-    private _isContextLost = false;
-    private _onContextLost = (event: Event) =>
-    {
-        event.preventDefault();
-
-        console.warn('WebGLRenderer: Context Lost.');
-
-        this._isContextLost = true;
-    };
-
-    private _onContextRestore = () =>
-    {
-        console.warn('WebGLRenderer: Context Restored.');
-
-        this._isContextLost = false;
-
-        this.webGLRenderer.init();
-    };
-
-    private _onContextCreationError = (event: WebGLContextEvent) =>
-    {
-        console.error('WebGLRenderer: A WebGL context could not be created. Reason: ', event.statusMessage);
-    };
-}
-
-function getContext(canvas: HTMLCanvasElement, contextNames: string[], contextAttributes?: Partial<WebGLContextAttributes>)
-{
-    const context = _getContext(canvas, contextNames, contextAttributes);
-
-    if (!context)
-    {
-        if (_getContext(canvas, contextNames))
-        {
-            throw new Error('Error creating WebGL context with your selected attributes.');
-        }
-        else
-        {
-            throw new Error('Error creating WebGL context.');
-        }
-    }
-
-    return context;
-}
-
-function _getContext(canvas: HTMLCanvasElement, contextNames: string[], contextAttributes?: Partial<WebGLContextAttributes>)
-{
-    let context: RenderingContext;
-    for (let i = 0; i < contextNames.length; ++i)
-    {
-        context = canvas.getContext(contextNames[i], contextAttributes);
-        if (context) return context;
-    }
-
-    return null;
 }
