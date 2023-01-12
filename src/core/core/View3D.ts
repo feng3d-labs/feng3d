@@ -8,7 +8,7 @@ import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
+import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';
 import { ticker } from '../utils/Ticker';
 import { RenderContext } from './RenderContext';
 

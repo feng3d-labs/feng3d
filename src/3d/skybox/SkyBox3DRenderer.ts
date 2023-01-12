@@ -1,14 +1,14 @@
+import { Camera } from '../../core/cameras/Camera';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { Camera } from '../cameras/Camera';
-import { Scene3D } from '../../3d/Scene3D';
-import { SkyBox } from './SkyBox';
+import { Scene3D } from '../Scene3D';
+import { SkyBox3D } from './SkyBox3D';
 
 /**
  * 天空盒渲染器
  */
-export class SkyBoxRenderer
+export class SkyBox3DRenderer
 {
     private renderAtomic: RenderAtomic;
 
@@ -66,7 +66,7 @@ export class SkyBoxRenderer
      * @param skybox 天空盒
      * @param camera 摄像机
      */
-    drawSkyBox(renderer: WebGLRenderer, skybox: SkyBox, scene: Scene3D, camera: Camera)
+    drawSkyBox(renderer: WebGLRenderer, skybox: SkyBox3D, scene: Scene3D, camera: Camera)
     {
         if (!skybox) return;
 
@@ -89,4 +89,4 @@ export class SkyBoxRenderer
 /**
  * 天空盒渲染器
  */
-export const skyboxRenderer = new SkyBoxRenderer();
+export const skyboxRenderer = new SkyBox3DRenderer();
