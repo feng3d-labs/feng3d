@@ -11,14 +11,14 @@ import { $set } from '../../serialization/Serialization';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component' { interface ComponentMap { DirectionalLight: DirectionalLight3D; } }
+declare module '../../ecs/Component' { interface ComponentMap { DirectionalLight3D: DirectionalLight3D; } }
 
 declare module '../../3d/Node3D' { interface PrimitiveNode3D { 'Directional light': Node3D; } }
 
 /**
  * 方向光源
  */
-@RegisterComponent({ name: 'DirectionalLight', menu: 'Rendering/DirectionalLight' })
+@RegisterComponent({ name: 'DirectionalLight3D', menu: 'Rendering/DirectionalLight3D' })
 export class DirectionalLight3D extends Light3D
 {
     declare __class__: 'DirectionalLight';
@@ -71,7 +71,7 @@ export class DirectionalLight3D extends Light3D
 
 Node3D.registerPrimitive('Directional light', (g) =>
 {
-    g.addComponent('DirectionalLight');
+    g.addComponent('DirectionalLight3D');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

@@ -1,3 +1,6 @@
+import { AssetData } from '../../core/core/AssetData';
+import { Texture2D } from '../../core/textures/Texture2D';
+import { TextureCube } from '../../core/textures/TextureCube';
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial } from '../../polyfill/Types';
@@ -7,9 +10,6 @@ import { Shader } from '../../renderer/data/Shader';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { AssetData } from '../core/AssetData';
-import { Texture2D } from '../textures/Texture2D';
-import { TextureCube } from '../textures/TextureCube';
 
 export interface MaterialMap { }
 export interface UniformsMap { }

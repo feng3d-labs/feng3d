@@ -1,11 +1,11 @@
+import { Texture2D } from '../../../core/textures/Texture2D';
+import { TextureCube } from '../../../core/textures/TextureCube';
 import { Color3 } from '../../../math/Color3';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
-import { TextureCube } from '../../textures/TextureCube';
 import { Material } from '../Material';
 import standardFragment from './standard_fragment_glsl';
 import standardVertex from './standard_vertex_glsl';

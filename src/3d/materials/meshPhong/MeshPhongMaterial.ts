@@ -1,6 +1,6 @@
+import { Texture2D } from '../../../core/textures/Texture2D';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
-import { Texture2D } from '../../textures/Texture2D';
 import { Material, RegisterMaterial } from '../Material';
 import meshPhongFragment from './meshPhong_fragment_glsl';
 import meshPhongVertex from './meshPhong_vertex_glsl';

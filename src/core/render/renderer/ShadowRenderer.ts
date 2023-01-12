@@ -1,3 +1,8 @@
+import { DirectionalLight3D } from '../../../3d/light/DirectionalLight3D';
+import { PointLight3D } from '../../../3d/light/PointLight3D';
+import { ShadowType } from '../../../3d/light/shadow/ShadowType';
+import { SpotLight3D } from '../../../3d/light/SpotLight3D';
+import { Scene3D } from '../../../3d/Scene3D';
 import { Rectangle } from '../../../math/geom/Rectangle';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
@@ -5,11 +10,6 @@ import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { Renderable3D } from '../../core/Renderable3D';
-import { DirectionalLight3D } from '../../light/DirectionalLight3D';
-import { PointLight3D } from '../../light/PointLight3D';
-import { ShadowType } from '../../light/shadow/ShadowType';
-import { SpotLight3D } from '../../light/SpotLight3D';
-import { Scene3D } from '../../../3d/Scene3D';
 import { FrameBufferObject } from '../FrameBufferObject';
 
 declare module '../../../renderer/data/RenderAtomic' { interface RenderAtomic { shadowShader: Shader; } }
@@ -23,21 +23,21 @@ export class ShadowRenderer
      */
     draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera)
     {
-        const pointLights = scene.getComponentsInChildren('PointLight').filter((pl) => (pl.isVisibleAndEnabled && pl.shadowType !== ShadowType.No_Shadows));
+        const pointLights = scene.getComponentsInChildren('PointLight3D').filter((pl) => (pl.isVisibleAndEnabled && pl.shadowType !== ShadowType.No_Shadows));
         for (let i = 0; i < pointLights.length; i++)
         {
             pointLights[i].updateDebugShadowMap(scene, camera);
             this.drawForPointLight(gl, pointLights[i], scene, camera);
         }
 
-        const spotLights = scene.getComponentsInChildren('SpotLight').filter((sp) => (sp.isVisibleAndEnabled && sp.shadowType !== ShadowType.No_Shadows));
+        const spotLights = scene.getComponentsInChildren('SpotLight3D').filter((sp) => (sp.isVisibleAndEnabled && sp.shadowType !== ShadowType.No_Shadows));
         for (let i = 0; i < spotLights.length; i++)
         {
             spotLights[i].updateDebugShadowMap(scene, camera);
             this.drawForSpotLight(gl, spotLights[i], scene, camera);
         }
 
-        const directionalLights = scene.getComponentsInChildren('DirectionalLight').filter((dl) => (dl.isVisibleAndEnabled && dl.shadowType !== ShadowType.No_Shadows));
+        const directionalLights = scene.getComponentsInChildren('DirectionalLight3D').filter((dl) => (dl.isVisibleAndEnabled && dl.shadowType !== ShadowType.No_Shadows));
         for (let i = 0; i < directionalLights.length; i++)
         {
             directionalLights[i].updateDebugShadowMap(scene, camera);
