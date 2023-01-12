@@ -2,7 +2,7 @@ import { Camera } from '../core/cameras/Camera';
 import { Renderable3D } from '../core/core/Renderable3D';
 import { Geometry, GeometryMap } from './geometrys/Geometry';
 import { Material, MaterialMap } from '../core/materials/Material';
-import { PickingCollisionVO } from '../core/pick/Raycaster';
+import { PickingCollisionVO } from './raycast/rayCast3D';
 import { Scene3D } from './Scene3D';
 import { TransformUtils } from '../core/utils/TransformUtils';
 import { RegisterComponent } from '../ecs/Component';

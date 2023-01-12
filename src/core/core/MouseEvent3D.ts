@@ -4,7 +4,7 @@ import { Node3D } from '../../3d/Node3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
+import { PickingCollisionVO, rayCast3D } from '../../3d/raycast/rayCast3D';
 import { MouseEventMap, MouseInput } from './MouseInput';
 import { RenderContext } from './RenderContext';
 import { WindowMouseInput } from './WindowMouseInput';
@@ -156,7 +156,7 @@ export class MouseEvent3D extends Component3D
 
         const meshRenderers = scene.getComponentsInChildren('Mesh3D').filter((mr) => mr.node.mouseEnabled);
         // 计算得到鼠标射线相交的物体
-        const pickingCollisionVO = rayCast(mouseRay3D, meshRenderers);
+        const pickingCollisionVO = rayCast3D(mouseRay3D, meshRenderers);
 
         this._handlePickingCollisionVO(pickingCollisionVO);
     }

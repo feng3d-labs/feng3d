@@ -2,9 +2,9 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { CullFace } from '../../renderer/data/RenderParams';
-import { Mesh3D } from '../../3d/Mesh3D';
-import { Node3D } from '../../3d/Node3D';
-import { Geometry } from '../../3d/geometrys/Geometry';
+import { Geometry } from '../geometrys/Geometry';
+import { Mesh3D } from '../Mesh3D';
+import { Node3D } from '../Node3D';
 
 /**
  * 投射射线获取穿过的最近的对象
@@ -13,7 +13,7 @@ import { Geometry } from '../../3d/geometrys/Geometry';
  * @param meshRenderers 实体列表
  * @return
  */
-export function rayCast(ray: Ray3, meshRenderers: Mesh3D[])
+export function rayCast3D(ray: Ray3, meshRenderers: Mesh3D[])
 {
     if (meshRenderers.length === 0) return null;
 

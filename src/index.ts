@@ -144,7 +144,7 @@ export * from './core/materials/standard/StandardMaterial';
 export * from './core/materials/texture/TextureMaterial';
 export * from './core/Menu';
 export * from './core/menu/CreateNodeMenu';
-export * from './core/pick/Raycaster';
+export * from './3d/raycast/rayCast3D';
 export * from './core/render/data/TextureInfo';
 export * from './core/render/data/Uniform';
 export * from './core/render/FrameBufferObject';
