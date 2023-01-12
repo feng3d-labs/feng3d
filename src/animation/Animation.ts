@@ -1,12 +1,12 @@
-import { RegisterComponent } from '../../ecs/Component';
-import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
-import { NodeComponent } from '../core/NodeComponent';
+import { NodeComponent } from '../core/core/NodeComponent';
+import { RegisterComponent } from '../ecs/Component';
+import { oav } from '../objectview/ObjectView';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { watcher } from '../watcher/watcher';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
-declare module '../../ecs/Component'
+declare module '../ecs/Component'
 {
     interface ComponentMap { Animation: Animation; }
 }
