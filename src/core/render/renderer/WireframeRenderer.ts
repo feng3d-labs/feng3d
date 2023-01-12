@@ -6,7 +6,7 @@ import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
-import { Renderer } from '../../core/Renderer';
+import { Renderable3D } from '../../core/Renderable3D';
 import { Scene } from '../../scene/Scene';
 
 declare module '../../../renderer/data/RenderAtomic'
@@ -59,7 +59,7 @@ export class WireframeRenderer
             return pv;
         }, []);
 
-        const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderer }[], cv) =>
+        const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable3D }[], cv) =>
         {
             const wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push({ wireframe, renderable: cv });
 
@@ -80,7 +80,7 @@ export class WireframeRenderer
     /**
      * 绘制3D对象
      */
-    drawObject3D(renderer: WebGLRenderer, renderable: Renderer, scene: Scene, camera: Camera, wireframeColor = new Color4())
+    drawObject3D(renderer: WebGLRenderer, renderable: Renderable3D, scene: Scene, camera: Camera, wireframeColor = new Color4())
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);

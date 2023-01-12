@@ -13,7 +13,7 @@ import { Material, MaterialMap } from '../materials/Material';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
 import { TransformUtils } from '../utils/TransformUtils';
-import { Renderer } from './Renderer';
+import { Renderable3D } from './Renderable3D';
 
 declare module '../../ecs/Component'
 {
@@ -24,7 +24,7 @@ declare module '../../ecs/Component'
  * 网格渲染器
  */
 @RegisterComponent({ name: 'MeshRenderer' })
-export class MeshRenderer extends Renderer
+export class MeshRenderer extends Renderable3D
 {
     declare __class__: 'MeshRenderer';
 

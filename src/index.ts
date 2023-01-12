@@ -50,7 +50,7 @@ export * from './core/core/HideFlags';
 export * from './core/core/MeshRenderer';
 export * from './core/core/MouseEvent3D';
 export * from './core/core/Node3D';
-export * from './core/core/Renderer';
+export * from './core/core/Renderable3D';
 export * from './core/core/RunEnvironment';
 export * from './core/core/TransformLayout';
 export * from './core/core/View3D';

@@ -7,15 +7,15 @@ import { IRayCastable } from './IRayCastable';
 import { IRenderable } from './IRenderable';
 
 /**
- * 渲染器组件
+ * 3D可渲染组件
  *
- * 该渲染器组件为虚类，无法直接实例化，但如果需要渲染则必须包含渲染器组件的子类。
+ * 该3D可渲染组件为虚类，无法直接实例化，但如果需要渲染则必须包含3D可渲染组件的子类。
  *
  * 可渲染对象也就意味着拥有判断是否需要渲染的包围盒，因此该组件提供包围盒管理功能。
  *
  * @see https://docs.unity3d.com/cn/current/ScriptReference/Renderer.html
  */
-export class Renderer extends Component3D implements IRenderable, IRayCastable
+export class Renderable3D extends Component3D implements IRenderable, IRayCastable
 {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
