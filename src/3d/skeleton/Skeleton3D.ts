@@ -1,20 +1,20 @@
-import { RegisterComponent } from '../../../ecs/Component';
-import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { Component3D } from '../../../3d/Component3D';
-import { Node3D } from '../../../3d/Node3D';
+import { RegisterComponent } from '../../ecs/Component';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Component3D } from '../Component3D';
+import { Node3D } from '../Node3D';
 
-declare module '../../../ecs/Component'
+declare module '../../ecs/Component'
 {
     interface ComponentMap
     {
-        SkeletonComponent: SkeletonComponent;
+        Skeleton3D: Skeleton3D;
     }
 }
 
-@RegisterComponent({ name: 'SkeletonComponent' })
-export class SkeletonComponent extends Component3D
+@RegisterComponent({ name: 'Skeleton3D' })
+export class Skeleton3D extends Component3D
 {
-    declare __class__: 'SkeletonComponent';
+    declare __class__: 'Skeleton3D';
 
     /**
      * 骨骼蒙皮时逆矩阵列表。

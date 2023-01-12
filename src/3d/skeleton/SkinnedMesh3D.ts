@@ -1,23 +1,23 @@
-import { RegisterComponent } from '../../../ecs/Component';
-import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Camera } from '../../cameras/Camera';
-import { Component3D } from '../../../3d/Component3D';
-import { HideFlags } from '../../core/HideFlags';
-import { Scene3D } from '../../../3d/Scene3D';
+import { Component3D } from '../Component3D';
+import { Scene3D } from '../Scene3D';
+import { RegisterComponent } from '../../ecs/Component';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Camera } from '../../core/cameras/Camera';
+import { HideFlags } from '../../core/core/HideFlags';
 
-declare module '../../../ecs/Component'
+declare module '../../ecs/Component'
 {
     interface ComponentMap
     {
-        SkinnedMeshRenderer: SkinnedMeshRenderer
+        SkinnedMesh3D: SkinnedMesh3D
     }
 }
 
-@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: ['Mesh3D'], single: true })
-export class SkinnedMeshRenderer extends Component3D
+@RegisterComponent({ name: 'SkinnedMesh3D', dependencies: ['Mesh3D'], single: true })
+export class SkinnedMesh3D extends Component3D
 {
-    declare __class__: 'SkinnedMeshRenderer';
+    declare __class__: 'SkinnedMesh3D';
 
     /**
      * 创建一个骨骼动画类
@@ -61,7 +61,7 @@ export class SkinnedMeshRenderer extends Component3D
 
     private get u_skeletonGlobalMatrices()
     {
-        const skeletonComponent = this.getComponentInParent('SkeletonComponent');
+        const skeletonComponent = this.getComponentInParent('Skeleton3D');
 
         let skeletonGlobalMatrices: Matrix4x4[] = [];
         if (skeletonComponent)
