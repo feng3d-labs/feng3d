@@ -16,7 +16,7 @@ import { Camera } from '../cameras/Camera';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
-import { BoundingBox3D } from './BoundingBox';
+import { BoundingBox3D } from '../../3d/BoundingBox3D';
 import { HideFlags } from './HideFlags';
 import { Node, NodeEventMap } from './Node';
 

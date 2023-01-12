@@ -44,7 +44,7 @@ export * from './core/controllers/FPSController';
 export * from './core/controllers/HoverController';
 export * from './core/controllers/LookAtController';
 export * from './core/core/AssetData';
-export * from './core/core/BoundingBox';
+export * from './3d/BoundingBox3D';
 export * from './3d/Component3D';
 export * from './core/core/HideFlags';
 export * from './3d/Mesh3D';
