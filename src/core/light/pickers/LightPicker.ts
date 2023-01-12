@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Mesh3D } from '../../core/Mesh3D';
+import { Mesh3D } from '../../../3d/Mesh3D';
 import { Texture2D } from '../../textures/Texture2D';
 import { DirectionalLight } from '../DirectionalLight';
 import { PointLight } from '../PointLight';

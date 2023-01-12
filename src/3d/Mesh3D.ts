@@ -1,32 +1,32 @@
-import { RegisterComponent } from '../../ecs/Component';
-import { IEvent } from '../../event/IEvent';
-import { Box3 } from '../../math/geom/Box3';
-import { Ray3 } from '../../math/geom/Ray3';
-import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Camera } from '../cameras/Camera';
-import { Geometry, GeometryMap } from '../geometry/Geometry';
-import { LightPicker } from '../light/pickers/LightPicker';
-import { Material, MaterialMap } from '../materials/Material';
-import { PickingCollisionVO } from '../pick/Raycaster';
-import { Scene } from '../scene/Scene';
-import { TransformUtils } from '../utils/TransformUtils';
-import { Renderable3D } from './Renderable3D';
+import { Camera } from '../core/cameras/Camera';
+import { Renderable3D } from '../core/core/Renderable3D';
+import { Geometry, GeometryMap } from '../core/geometry/Geometry';
+import { LightPicker } from '../core/light/pickers/LightPicker';
+import { Material, MaterialMap } from '../core/materials/Material';
+import { PickingCollisionVO } from '../core/pick/Raycaster';
+import { Scene } from '../core/scene/Scene';
+import { TransformUtils } from '../core/utils/TransformUtils';
+import { RegisterComponent } from '../ecs/Component';
+import { IEvent } from '../event/IEvent';
+import { Box3 } from '../math/geom/Box3';
+import { Ray3 } from '../math/geom/Ray3';
+import { Vector3 } from '../math/geom/Vector3';
+import { oav } from '../objectview/ObjectView';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 
-declare module '../../ecs/Component'
+declare module '../ecs/Component'
 {
-    interface ComponentMap { MeshRenderer: Mesh3D }
+    interface ComponentMap { Mesh3D: Mesh3D }
 }
 
 /**
  * 3D网格
  */
-@RegisterComponent({ name: 'MeshRenderer' })
+@RegisterComponent({ name: 'Mesh3D' })
 export class Mesh3D extends Renderable3D
 {
-    declare __class__: 'MeshRenderer';
+    declare __class__: 'Mesh3D';
 
     /**
      * 几何体

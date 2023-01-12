@@ -108,7 +108,7 @@ Geometry.setDefault('Cone', new ConeGeometry());
 
 Node3D.registerPrimitive('Cone', (g) =>
 {
-    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Cone');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Cone');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

@@ -14,7 +14,7 @@ declare module '../../../ecs/Component'
     }
 }
 
-@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: ['MeshRenderer'], single: true })
+@RegisterComponent({ name: 'SkinnedMeshRenderer', dependencies: ['Mesh3D'], single: true })
 export class SkinnedMeshRenderer extends Component3D
 {
     declare __class__: 'SkinnedMeshRenderer';

@@ -516,7 +516,7 @@ Geometry.setDefault('Cylinder', new CylinderGeometry());
 
 Node3D.registerPrimitive('Cylinder', (g) =>
 {
-    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Cylinder');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Cylinder');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

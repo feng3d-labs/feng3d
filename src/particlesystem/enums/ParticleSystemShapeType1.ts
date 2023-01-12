@@ -49,7 +49,7 @@ export enum ParticleSystemShapeType1
      *
      * @todo
      */
-    MeshRenderer,
+    Mesh3D,
 
     /**
      * Emit from a skinned mesh renderer.

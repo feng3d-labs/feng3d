@@ -13,7 +13,7 @@ declare module '../core/core/Node3D' { interface PrimitiveNode3D { Terrain: Node
  * The Terrain component renders the terrain.
  */
 // @ov({ component: "OVTerrain" })
-@RegisterComponent({ name: 'Terrain', dependencies: ['MeshRenderer'] })
+@RegisterComponent({ name: 'Terrain', dependencies: ['Mesh3D'] })
 export class Terrain extends Component
 {
     declare __class__: 'Terrain';
@@ -30,14 +30,14 @@ export class Terrain extends Component
 
     init(): void
     {
-        const meshRenderer = this.getComponent('MeshRenderer');
+        const meshRenderer = this.getComponent('Mesh3D');
         meshRenderer.material = Material.getDefault('Terrain-Material');
         meshRenderer.geometry = Geometry.getDefault('Terrain-Geometry');
     }
 
     dispose(): void
     {
-        const meshRenderer = this.getComponent('MeshRenderer');
+        const meshRenderer = this.getComponent('Mesh3D');
         meshRenderer.geometry = null;
         meshRenderer.material = null;
 

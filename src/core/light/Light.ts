@@ -132,7 +132,7 @@ export class Light extends Component3D
             node3d.addComponent('BillboardComponent');
 
             // 材质
-            const model = node3d.getComponent('MeshRenderer');
+            const model = node3d.getComponent('Mesh3D');
             model.geometry = $set(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
             //

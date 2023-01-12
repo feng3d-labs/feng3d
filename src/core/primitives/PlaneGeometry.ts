@@ -138,7 +138,7 @@ Geometry.setDefault('Plane', new PlaneGeometry(), { width: 10, height: 10 });
 
 Node3D.registerPrimitive('Plane', (g) =>
 {
-    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Plane');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Plane');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

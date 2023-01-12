@@ -62,7 +62,7 @@ declare module '../core/core/Node3D'
 /**
  * 粒子系统
  */
-@RegisterComponent({ name: 'ParticleSystem', dependencies: ['MeshRenderer'], single: true, menu: 'Effects/ParticleSystem' })
+@RegisterComponent({ name: 'ParticleSystem', dependencies: ['Mesh3D'], single: true, menu: 'Effects/ParticleSystem' })
 export class ParticleSystem extends Component3D
 {
     declare __class__: 'ParticleSystem';

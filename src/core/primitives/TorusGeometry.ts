@@ -254,7 +254,7 @@ Geometry.setDefault('Torus', new TorusGeometry());
 
 Node3D.registerPrimitive('Torus', (g) =>
 {
-	g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Torus');
+	g.addComponent('Mesh3D').geometry = Geometry.getDefault('Torus');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

@@ -17,7 +17,7 @@ export class ForwardRenderer
     draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
     {
         const frustum = camera.frustum;
-        const { blendItems, unblenditems } = scene.getComponentsInChildren('MeshRenderer').reduce((pv, cv) =>
+        const { blendItems, unblenditems } = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>
         {
             if (cv.isVisibleAndEnabled)
             {

@@ -47,7 +47,7 @@ export * from './core/core/AssetData';
 export * from './core/core/BoundingBox';
 export * from './core/core/Component3D';
 export * from './core/core/HideFlags';
-export * from './core/core/Mesh3D';
+export * from './3d/Mesh3D';
 export * from './core/core/MouseEvent3D';
 export * from './core/core/Node3D';
 export * from './core/core/Renderable3D';

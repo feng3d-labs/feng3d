@@ -181,13 +181,13 @@ export class ParticleShapeModule extends ParticleModule
     meshMaterialIndex: number;
 
     /**
-     * MeshRenderer to emit particles from.
+     * Mesh3D to emit particles from.
      *
-     * 从 MeshRenderer 发射粒子。
+     * 从 Mesh3D 发射粒子。
      *
      * @todo
      */
-    // meshRenderer: MeshRenderer
+    // meshRenderer: Mesh3D
     meshRenderer: any;
 
     /**
@@ -416,8 +416,8 @@ export class ParticleShapeModule extends ParticleModule
                 console.warn(`未实现 ParticleSystemShapeType.Mesh`);
                 this.activeShape = null;
                 break;
-            case ParticleSystemShapeType.MeshRenderer:
-                this.shape = ParticleSystemShapeType1.MeshRenderer;
+            case ParticleSystemShapeType.Mesh3D:
+                this.shape = ParticleSystemShapeType1.Mesh3D;
                 console.warn(`未实现 ParticleSystemShapeType.Mesh`);
                 this.activeShape = null;
                 break;
@@ -498,8 +498,8 @@ export class ParticleShapeModule extends ParticleModule
             case ParticleSystemShapeType1.Mesh:
                 this.shapeType = ParticleSystemShapeType.Mesh;
                 break;
-            case ParticleSystemShapeType1.MeshRenderer:
-                this.shapeType = ParticleSystemShapeType.MeshRenderer;
+            case ParticleSystemShapeType1.Mesh3D:
+                this.shapeType = ParticleSystemShapeType.Mesh3D;
                 break;
             case ParticleSystemShapeType1.SkinnedMeshRenderer:
                 this.shapeType = ParticleSystemShapeType.SkinnedMeshRenderer;

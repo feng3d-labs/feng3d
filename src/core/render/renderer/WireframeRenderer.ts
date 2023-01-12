@@ -43,7 +43,7 @@ export class WireframeRenderer
     draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
     {
         const frustum = camera.frustum;
-        const unblenditems = scene.getComponentsInChildren('MeshRenderer').reduce((pv, cv) =>
+        const unblenditems = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>
         {
             if (cv.isVisibleAndEnabled)
             {

@@ -513,7 +513,7 @@ export class Node3D extends Node
      */
     get isSelfLoaded()
     {
-        const model = this.getComponent('MeshRenderer');
+        const model = this.getComponent('Mesh3D');
         if (model) return model.isLoaded;
 
         return true;

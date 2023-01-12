@@ -535,7 +535,7 @@ Geometry.setDefault('Cube', new CubeGeometry());
 
 Node3D.registerPrimitive('Cube', (g) =>
 {
-    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Cube');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Cube');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

@@ -61,7 +61,7 @@ export class ShadowRenderer
         const renderAtomic = this.renderAtomic;
 
         // 获取影响阴影图的渲染对象
-        const models = scene.getComponentsInChildren('MeshRenderer').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
+        const models = scene.getComponentsInChildren('Mesh3D').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
 
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
@@ -141,7 +141,7 @@ export class ShadowRenderer
             shadowCamera.node3d.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
 
             // 获取影响阴影图的渲染对象
-            const models = scene.getComponentsInChildren('MeshRenderer').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
+            const models = scene.getComponentsInChildren('Mesh3D').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
 
             // 筛选投射阴影的渲染对象
             const castShadowsModels = models.filter((i) => i.castShadows);
@@ -173,7 +173,7 @@ export class ShadowRenderer
     private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight, scene: Scene, camera: Camera): any
     {
         // 获取影响阴影图的渲染对象
-        const models = scene.getComponentsInChildren('MeshRenderer').filter((model) => (
+        const models = scene.getComponentsInChildren('Mesh3D').filter((model) => (
             (model.castShadows || model.receiveShadows)
             && !model.useMaterial.renderParams.enableBlend
             && model.useMaterial.renderParams.renderMode === 'TRIANGLES'));

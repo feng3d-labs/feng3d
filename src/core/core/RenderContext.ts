@@ -156,7 +156,7 @@ export class RenderContext
         {
             if (!node3d) return false;
 
-            const m = node3d.getComponent('MeshRenderer');
+            const m = node3d.getComponent('Mesh3D');
             if (m)
             {
                 const include = m.worldBounds.toPoints().every((pos) =>

@@ -1,4 +1,4 @@
-import { Mesh3D } from '../../core/core/Mesh3D';
+import { Mesh3D } from '../../3d/Mesh3D';
 import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { TransformUtils } from '../../core/utils/TransformUtils';

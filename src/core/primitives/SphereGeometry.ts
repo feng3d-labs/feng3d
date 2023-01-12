@@ -241,7 +241,7 @@ Geometry.setDefault('Sphere', new SphereGeometry());
 
 Node3D.registerPrimitive('Sphere', (g) =>
 {
-    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Sphere');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Sphere');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

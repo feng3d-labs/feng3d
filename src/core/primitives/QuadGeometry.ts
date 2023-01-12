@@ -44,7 +44,7 @@ Geometry.setDefault('Quad', new QuadGeometry());
 
 Node3D.registerPrimitive('Quad', (g) =>
 {
-    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Quad');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Quad');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

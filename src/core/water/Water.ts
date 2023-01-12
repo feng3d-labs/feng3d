@@ -7,7 +7,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
-import { Mesh3D } from '../core/Mesh3D';
+import { Mesh3D } from '../../3d/Mesh3D';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
@@ -23,7 +23,7 @@ declare module '../core/Node3D' { export interface PrimitiveNode3D { Water: Node
 /**
  * The Water component renders the terrain.
  */
-@RegisterComponent({ name: 'Water', dependencies: ['MeshRenderer'], menu: 'Graphics/Water' })
+@RegisterComponent({ name: 'Water', dependencies: ['Mesh3D'], menu: 'Graphics/Water' })
 export class Water extends Component3D
 {
     declare __class__: 'Water';
@@ -32,7 +32,7 @@ export class Water extends Component3D
 
     init()
     {
-        this.meshRenderer = this.getComponent('MeshRenderer');
+        this.meshRenderer = this.getComponent('Mesh3D');
         this.meshRenderer.geometry = Geometry.getDefault('Plane');
         this.meshRenderer.material = Material.getDefault('Water-Material');
     }

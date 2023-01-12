@@ -116,7 +116,7 @@ export class Segment
 
 Node3D.registerPrimitive('Segment', (g) =>
 {
-    const model = g.addComponent('MeshRenderer');
+    const model = g.addComponent('Mesh3D');
     model.geometry = new SegmentGeometry();
     model.material = Material.getDefault('Segment-Material');
 });

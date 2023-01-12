@@ -235,7 +235,7 @@ Geometry.setDefault('Capsule', new CapsuleGeometry());
 
 Node3D.registerPrimitive('Capsule', (g) =>
 {
-    g.addComponent('MeshRenderer').geometry = Geometry.getDefault('Capsule');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Capsule');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
