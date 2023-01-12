@@ -1,10 +1,10 @@
-import { Vector4 } from '../../../math/geom/Vector4';
-import { mathUtil } from '../../../polyfill/MathUtil';
-import { lazy, LazyObject } from '../../../polyfill/Types';
-import { Uniforms } from '../../../renderer/data/Uniforms';
-import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
-import { Camera3D } from '../../cameras/Camera3D';
-import { Scene3D } from '../../../3d/Scene3D';
+import { Vector4 } from '../../math/geom/Vector4';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { lazy, LazyObject } from '../../polyfill/Types';
+import { Uniforms } from '../../renderer/data/Uniforms';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { Camera3D } from '../cameras/Camera3D';
+import { Scene3D } from '../Scene3D';
 
 /**
  * 前向渲染器

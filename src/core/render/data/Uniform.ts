@@ -1,3 +1,7 @@
+import { DirectionalLight3D } from '../../../3d/light/DirectionalLight3D';
+import { LightType } from '../../../3d/light/LightType';
+import { PointLight3D } from '../../../3d/light/PointLight3D';
+import { SpotLight3D } from '../../../3d/light/SpotLight3D';
 import { Color3 } from '../../../math/Color3';
 import { Color4 } from '../../../math/Color4';
 import { Matrix3x3 } from '../../../math/geom/Matrix3x3';
@@ -8,11 +12,6 @@ import { Vector4 } from '../../../math/geom/Vector4';
 import { Texture2D } from '../../textures/Texture2D';
 import { TextureCube } from '../../textures/TextureCube';
 
-import '../../../renderer/data/Uniforms';
-import { DirectionalLight3D } from '../../../3d/light/DirectionalLight3D';
-import { LightType } from '../../../3d/light/LightType';
-import { PointLight3D } from '../../../3d/light/PointLight3D';
-import { SpotLight3D } from '../../../3d/light/SpotLight3D';
 declare module '../../../renderer/data/Uniforms'
 {
     interface Uniforms

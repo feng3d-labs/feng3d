@@ -1,10 +1,10 @@
 import { Node3D } from '../../3d/Node3D';
-import { PerspectiveLens } from '../../core/cameras/lenses/PerspectiveLens';
 import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
