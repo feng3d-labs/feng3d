@@ -17,14 +17,14 @@ import { Renderable3D } from './Renderable3D';
 
 declare module '../../ecs/Component'
 {
-    interface ComponentMap { MeshRenderer: MeshRenderer }
+    interface ComponentMap { MeshRenderer: Mesh3D }
 }
 
 /**
- * 网格渲染器
+ * 3D网格
  */
 @RegisterComponent({ name: 'MeshRenderer' })
-export class MeshRenderer extends Renderable3D
+export class Mesh3D extends Renderable3D
 {
     declare __class__: 'MeshRenderer';
 

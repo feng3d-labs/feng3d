@@ -3,7 +3,7 @@ import { IEvent } from '../../event/IEvent';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { PickingCollisionVO, rayCast } from '../pick/Raycaster';
 import { Component3D } from './Component3D';
-import { MeshRenderer } from './MeshRenderer';
+import { Mesh3D } from './Mesh3D';
 import { MouseEventMap, MouseInput } from './MouseInput';
 import { RenderContext } from './RenderContext';
 import { WindowMouseInput } from './WindowMouseInput';
@@ -160,12 +160,12 @@ export class MouseEvent3D extends Component3D
         this._handlePickingCollisionVO(pickingCollisionVO);
     }
 
-    private _selectedMeshRenderer: MeshRenderer;
+    private _selectedMeshRenderer: Mesh3D;
     private _mouseEventTypes = new Set<string>();
     /**
      * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
      */
-    private _preMouseDownMeshRenderer: MeshRenderer;
+    private _preMouseDownMeshRenderer: Mesh3D;
 
     /**
      * 统计处理click次数，判断是否达到dblclick

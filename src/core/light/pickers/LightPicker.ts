@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { MeshRenderer } from '../../core/MeshRenderer';
+import { Mesh3D } from '../../core/Mesh3D';
 import { Texture2D } from '../../textures/Texture2D';
 import { DirectionalLight } from '../DirectionalLight';
 import { PointLight } from '../PointLight';
@@ -9,9 +9,9 @@ import { SpotLight } from '../SpotLight';
 
 export class LightPicker
 {
-    private _model: MeshRenderer;
+    private _model: Mesh3D;
 
-    constructor(model: MeshRenderer)
+    constructor(model: Mesh3D)
     {
         this._model = model;
     }

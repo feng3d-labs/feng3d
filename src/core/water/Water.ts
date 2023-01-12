@@ -7,7 +7,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Component3D } from '../core/Component3D';
-import { MeshRenderer } from '../core/MeshRenderer';
+import { Mesh3D } from '../core/Mesh3D';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
@@ -28,7 +28,7 @@ export class Water extends Component3D
 {
     declare __class__: 'Water';
 
-    private meshRenderer: MeshRenderer;
+    private meshRenderer: Mesh3D;
 
     init()
     {

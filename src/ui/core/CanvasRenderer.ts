@@ -1,4 +1,4 @@
-import { MeshRenderer } from '../../core/core/MeshRenderer';
+import { Mesh3D } from '../../core/core/Mesh3D';
 import { Geometry } from '../../core/geometry/Geometry';
 import { Material } from '../../core/materials/Material';
 import { TransformUtils } from '../../core/utils/TransformUtils';
@@ -12,7 +12,7 @@ declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: 
  * 可在画布上渲染组件，使得拥有该组件的Object3D可以在画布上渲染。
  */
 @RegisterComponent({ name: 'CanvasRenderer', menu: 'Rendering/CanvasRenderer' })
-export class CanvasRenderer extends MeshRenderer
+export class CanvasRenderer extends Mesh3D
 {
     @oav()
     material = Material.getDefault('Default-UIMaterial');
