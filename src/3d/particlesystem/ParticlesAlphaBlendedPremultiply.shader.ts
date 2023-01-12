@@ -1,12 +1,12 @@
-import { Material, RegisterMaterial } from '../core/materials/Material';
-import { Texture2D } from '../core/textures/Texture2D';
-import { Vector4 } from '../math/geom/Vector4';
-import { oav } from '../objectview/ObjectView';
-import { Serializable } from '../serialization/Serializable';
-import { $set } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { Material, RegisterMaterial } from '../../core/Material';
+import { Vector4 } from '../../math/geom/Vector4';
+import { oav } from '../../objectview/ObjectView';
+import { Serializable } from '../../serialization/Serializable';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Texture2D } from '../../textures/Texture2D';
 
-declare module '../core/materials/Material'
+declare module '../../core/Material'
 {
     interface MaterialMap { ParticlesAlphaBlendedPremultiplyMaterial: ParticlesAlphaBlendedPremultiplyMaterial }
     interface UniformsMap { ParticlesAlphaBlendedPremultiplyUniforms: ParticlesAlphaBlendedPremultiplyUniforms }

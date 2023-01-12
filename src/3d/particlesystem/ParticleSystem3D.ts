@@ -1,9 +1,6 @@
-import { Camera3D } from '../../core/cameras/Camera3D';
-import { RunEnvironment } from '../../core/core/RunEnvironment';
-import { Geometry } from '../geometrys/Geometry';
-import { Material } from '../../core/materials/Material';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
-import { QuadGeometry } from '../primitives/QuadGeometry';
+import { Material } from '../../core/Material';
+import { RunEnvironment } from '../../core/RunEnvironment';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix3x3 } from '../../math/geom/Matrix3x3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
@@ -14,9 +11,12 @@ import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Component3D } from '../Component3D';
-import { Node3D } from '../Node3D';
-import { Scene3D } from '../Scene3D';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
+import { Node3D } from '../core/Node3D';
+import { Scene3D } from '../core/Scene3D';
+import { Geometry } from '../geometrys/Geometry';
+import { QuadGeometry } from '../geometrys/QuadGeometry';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
@@ -39,11 +39,11 @@ import { Particle } from './Particle';
 
 declare module '../../ecs/Component' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 
-declare module '../../core/geometry/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
+declare module '../geometrys/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
 
-declare module '../Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
 
-declare module '../Node3D'
+declare module '../core/Node3D'
 {
     interface Node3DEventMap
     {

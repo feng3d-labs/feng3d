@@ -1,8 +1,8 @@
-import { Node3D } from '../../3d/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
+import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';
 import { PolyhedronGeometry } from './PolyhedronGeometry';
@@ -14,7 +14,7 @@ declare module './Geometry'
     interface DefaultGeometryMap { Octahedron: OctahedronGeometry; }
 }
 
-declare module '../../3d/Node3D' { interface PrimitiveNode3D { Octahedron: Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { Octahedron: Node3D; } }
 
 /**
  * 八面体

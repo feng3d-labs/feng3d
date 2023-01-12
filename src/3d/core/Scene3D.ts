@@ -1,5 +1,5 @@
-import { HideFlags } from '../../core/core/HideFlags';
-import { RunEnvironment } from '../../core/core/RunEnvironment';
+import { HideFlags } from '../../core/HideFlags';
+import { RunEnvironment } from '../../core/RunEnvironment';
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';

@@ -1,4 +1,4 @@
-import { AssetType } from '../../core/assets/AssetType';
+import { AssetType } from '../../assets/AssetType';
 import { AssetData } from '../../core/AssetData';
 import { EventEmitter } from '../../event/EventEmitter';
 import { Box3 } from '../../math/geom/Box3';

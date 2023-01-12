@@ -1,4 +1,4 @@
-import { Node3D } from '../../3d/Node3D';
+import { Node3D } from '../../3d/core/Node3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
@@ -11,7 +11,7 @@ import { Component2D } from './Component2D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Canvas: Canvas } }
 
-declare module '../../3d/Node3D' { interface PrimitiveNode3D { Canvas: Node3D; } }
+declare module '../../3d/core/Node3D' { interface PrimitiveNode3D { Canvas: Node3D; } }
 
 /**
  * Element that can be used for screen rendering.

@@ -1,7 +1,6 @@
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
-import { HideFlags } from '../core/core/HideFlags';
-import { ImageUtil } from '../utils/ImageUtil';
+import { HideFlags } from '../core/HideFlags';
 import { loader } from '../filesystem/base/Loader';
 import { ColorKeywords } from '../math/Color3';
 import { Color4 } from '../math/Color4';
@@ -10,6 +9,7 @@ import { RegisterTexture } from '../renderer/data/Texture';
 import { TextureType } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
+import { ImageUtil } from '../utils/ImageUtil';
 import { TextureInfo } from './TextureInfo';
 
 export enum ImageDatas

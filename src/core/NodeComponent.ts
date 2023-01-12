@@ -1,5 +1,5 @@
-import { Component, ComponentMap } from '../../ecs/Component';
-import { EventEmitter } from '../../event/EventEmitter';
+import { Component, ComponentMap } from '../ecs/Component';
+import { EventEmitter } from '../event/EventEmitter';
 import { Node, NodeEventMap } from './Node';
 
 /**

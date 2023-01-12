@@ -1,10 +1,10 @@
-import { Camera3D } from '../../core/cameras/Camera3D';
-import { HideFlags } from '../../core/core/HideFlags';
-import { Node, NodeEventMap } from '../../core/core/Node';
-import { Node3D } from '../../3d/Node3D';
-import { TransformLayout3D } from '../../core/core/TransformLayout3D';
-import { Scene3D } from '../../3d/Scene3D';
+import { Camera3D } from '../../3d/cameras/Camera3D';
+import { TransformLayout3D } from '../../3d/components/TransformLayout3D';
+import { Scene3D } from '../../3d/core/Scene3D';
+import { HideFlags } from '../../core/HideFlags';
+import { Node, NodeEventMap } from '../../core/Node';
 import { Component } from '../../ecs/Component';
+import { Entity } from '../../ecs/Entity';
 import { EventEmitter } from '../../event/EventEmitter';
 import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
@@ -163,10 +163,10 @@ export class Node2D extends Node
         watcher.watch(this as Node2D, 'transformLayout', this._onTransformLayoutChanged, this);
 
         // 处理依赖组件
-        let transformLayout = this.getComponent('TransformLayout');
+        let transformLayout = this.getComponent('TransformLayout3D');
         if (!transformLayout)
         {
-            transformLayout = this.addComponent('TransformLayout');
+            transformLayout = this.addComponent('TransformLayout3D');
         }
         this.transformLayout = transformLayout;
 
@@ -177,7 +177,7 @@ export class Node2D extends Node
         this.emitter.on('removeComponent', this._onRemovedComponent, this);
     }
 
-    private _onAddComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
+    private _onAddComponent(event: IEvent<{ entity: Entity; component: Component; }>)
     {
         const component = event.data.component;
         if (component instanceof TransformLayout3D)
@@ -187,7 +187,7 @@ export class Node2D extends Node
         }
     }
 
-    private _onRemovedComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
+    private _onRemovedComponent(event: IEvent<{ entity: Entity; component: Component; }>)
     {
         const component = event.data.component;
         if (component instanceof TransformLayout3D)

@@ -1,10 +1,10 @@
-import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
-import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
-import { Vector3 } from '../../math/geom/Vector3';
-import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
-import { oav } from '../../objectview/ObjectView';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
+import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { MinMaxGradient } from '../../../math/gradient/MinMaxGradient';
+import { oav } from '../../../objectview/ObjectView';
+import { $set } from '../../../serialization/Serialization';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';

@@ -1,8 +1,8 @@
-import { Vector2 } from '../../math/geom/Vector2';
-import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
-import { oav } from '../../objectview/ObjectView';
-import { mathUtil } from '../../polyfill/MathUtil';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Vector2 } from '../../../math/geom/Vector2';
+import { MinMaxGradient } from '../../../math/gradient/MinMaxGradient';
+import { oav } from '../../../objectview/ObjectView';
+import { mathUtil } from '../../../polyfill/MathUtil';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 

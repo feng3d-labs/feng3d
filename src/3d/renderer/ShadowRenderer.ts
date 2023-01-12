@@ -1,18 +1,18 @@
-import { Camera3D } from '../cameras/Camera3D';
-import { DirectionalLight3D } from '../light/DirectionalLight3D';
-import { PointLight3D } from '../light/PointLight3D';
-import { ShadowType } from '../light/shadow/ShadowType';
-import { SpotLight3D } from '../light/SpotLight3D';
-import { Scene3D } from '../Scene3D';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
-import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { Renderable3D } from '../../core/core/Renderable3D';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { Camera3D } from '../cameras/Camera3D';
+import { Renderable3D } from '../core/Renderable3D';
+import { Scene3D } from '../core/Scene3D';
+import { DirectionalLight3D } from '../light/DirectionalLight3D';
+import { PointLight3D } from '../light/PointLight3D';
+import { ShadowType } from '../light/shadow/ShadowType';
+import { SpotLight3D } from '../light/SpotLight3D';
 
-declare module '../../../renderer/data/RenderAtomic' { interface RenderAtomic { shadowShader: Shader; } }
+declare module '../../renderer/data/RenderAtomic' { interface RenderAtomic { shadowShader: Shader; } }
 
 export class ShadowRenderer
 {

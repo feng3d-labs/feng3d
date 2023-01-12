@@ -1,20 +1,17 @@
-import { Material, RegisterMaterial } from '../core/materials/Material';
-import { Texture2D } from '../core/textures/Texture2D';
-import { Color4 } from '../math/Color4';
-import { Vector4 } from '../math/geom/Vector4';
-import { oav } from '../objectview/ObjectView';
-import { Serializable } from '../serialization/Serializable';
-import { $set } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { Material, RegisterMaterial } from '../../core/Material';
+import { Color4 } from '../../math/Color4';
+import { Vector4 } from '../../math/geom/Vector4';
+import { oav } from '../../objectview/ObjectView';
+import { Serializable } from '../../serialization/Serializable';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Texture2D } from '../../textures/Texture2D';
 
-declare module '../core/materials/Material'
+declare module '../../core/Material'
 {
     interface MaterialMap { ParticleMaterial: ParticleMaterial }
     interface UniformsMap { ParticlesAdditiveUniforms: ParticlesAdditiveUniforms }
-    interface DefaultMaterialMap
-    {
-        'Particle-Material': Material;
-    }
+    interface DefaultMaterialMap { 'Particle-Material': Material }
 }
 
 @RegisterMaterial('ParticleMaterial')

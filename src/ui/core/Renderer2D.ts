@@ -1,5 +1,5 @@
-import { Component3D } from '../../3d/Component3D';
-import { RenderContext3D } from '../../core/core/RenderContext3D';
+import { Component3D } from '../../3d/core/Component3D';
+import { RenderContext3D } from '../../3d/core/RenderContext3D';
 import { IEvent } from '../../event/IEvent';
 
 /**

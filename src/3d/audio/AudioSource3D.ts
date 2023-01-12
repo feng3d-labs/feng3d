@@ -1,18 +1,12 @@
-import { Component3D } from '../Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
+import { Component3D } from '../core/Component3D';
 import { audioCtx, globalGain } from './AudioListener3D';
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        AudioSource3D: AudioSource3D;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { AudioSource3D: AudioSource3D; } }
 
 /**
  * 音量与距离算法

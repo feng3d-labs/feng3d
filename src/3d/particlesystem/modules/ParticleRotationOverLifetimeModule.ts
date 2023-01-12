@@ -1,8 +1,8 @@
-import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
-import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { oav } from '../../../objectview/ObjectView';
+import { $set } from '../../../serialization/Serialization';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 

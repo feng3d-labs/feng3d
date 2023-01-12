@@ -1,4 +1,4 @@
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
 
 /**
  * 可渲染接口

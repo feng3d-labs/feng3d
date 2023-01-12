@@ -1,19 +1,13 @@
-import { Component3D } from '../Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
+import { Component3D } from '../core/Component3D';
 
 export let audioCtx: AudioContext;
 export let globalGain: GainNode;
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap
-    {
-        AudioListener3D: AudioListener3D;
-    }
-}
+declare module '../../ecs/Component' { interface ComponentMap { AudioListener3D: AudioListener3D; } }
 
 /**
  * 声音监听器

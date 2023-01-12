@@ -1,14 +1,14 @@
-import { Texture2D } from '../../../textures/Texture2D';
+import { Material } from '../../../core/Material';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../../../core/Material';
+import { Texture2D } from '../../../textures/Texture2D';
 import textureFragment from './texture_fragment_glsl';
 import textureVertex from './texture_vertex_glsl';
 
-declare module '../Material' {
+declare module '../../../core/Material' {
     interface MaterialMap { TextureMaterial: TextureMaterial }
     interface UniformsMap { TextureUniforms: TextureUniforms }
 }

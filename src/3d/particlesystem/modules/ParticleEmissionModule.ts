@@ -1,7 +1,7 @@
-import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
-import { oav } from '../../objectview/ObjectView';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
+import { oav } from '../../../objectview/ObjectView';
+import { $set } from '../../../serialization/Serialization';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { ParticleEmissionBurst } from '../others/ParticleEmissionBurst';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 

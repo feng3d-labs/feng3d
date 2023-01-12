@@ -1,8 +1,8 @@
+import { Node3D } from '../3d/core/Node3D';
 import { Box3 } from '../math/geom/Box3';
 import { Matrix4x4 } from '../math/geom/Matrix4x4';
 import { Ray3 } from '../math/geom/Ray3';
 import { Vector3 } from '../math/geom/Vector3';
-import { Node3D } from '../../3d/Node3D';
 
 /**
  * 游戏对象变换工具

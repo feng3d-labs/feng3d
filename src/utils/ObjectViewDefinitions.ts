@@ -1,4 +1,6 @@
-declare module '../../objectview/ObjectView'
+import { ObjectView } from '../objectview/ObjectView';
+
+declare module '../objectview/ObjectView'
 {
     interface OAVComponentParamMap
     {

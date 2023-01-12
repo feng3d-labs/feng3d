@@ -1,13 +1,13 @@
-import { Material, RegisterMaterial } from '../../core/materials/Material';
-import { Texture2D } from '../../textures/Texture2D';
+import { Material, RegisterMaterial } from '../../core/Material';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { shaderConfig } from '../../renderer/shader/ShaderLib';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Texture2D } from '../../textures/Texture2D';
 
-declare module '../../core/materials/Material'
+declare module '../../core/Material'
 {
     interface MaterialMap { UIMaterial: UIMaterial }
     interface UniformsMap { UIUniforms: UIUniforms }

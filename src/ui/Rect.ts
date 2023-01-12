@@ -1,6 +1,6 @@
-import { Camera3D } from '../core/cameras/Camera3D';
+import { Camera3D } from '../3d/cameras/Camera3D';
+import { Scene3D } from '../3d/core/Scene3D';
 import { createNodeMenu } from '../core/CreateNodeMenu';
-import { Scene3D } from '../3d/Scene3D';
 import { Component, RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';

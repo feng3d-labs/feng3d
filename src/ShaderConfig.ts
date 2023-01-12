@@ -13,8 +13,8 @@ import terrainVertex from './shaders/terrain_vertex_glsl';
 import wireframeFragment from './shaders/wireframe_fragment_glsl';
 import wireframeVertex from './shaders/wireframe_vertex_glsl';
 //
-import { shaderlib } from '../renderer/shader/ShaderLib';
-import { $set, serialization } from '../serialization/Serialization';
+import { shaderlib } from './renderer/shader/ShaderLib';
+import { $set, serialization } from './serialization/Serialization';
 import alphatestFrag from './shaders/modules/alphatest_frag_glsl';
 import alphatestParsFrag from './shaders/modules/alphatest_pars_frag_glsl';
 import ambientFrag from './shaders/modules/ambient_frag_glsl';

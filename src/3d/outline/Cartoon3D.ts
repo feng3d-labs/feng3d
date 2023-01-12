@@ -1,12 +1,12 @@
-import { Component3D } from '../Component3D';
-import { Scene3D } from '../Scene3D';
-import { Camera3D } from '../../core/cameras/Camera3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
+import { Scene3D } from '../core/Scene3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Cartoon3D: Cartoon3D; } }
 

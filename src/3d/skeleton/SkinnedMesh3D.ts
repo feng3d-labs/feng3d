@@ -1,10 +1,10 @@
-import { Component3D } from '../Component3D';
-import { Scene3D } from '../Scene3D';
+import { HideFlags } from '../../core/HideFlags';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Camera3D } from '../../core/cameras/Camera3D';
-import { HideFlags } from '../../core/core/HideFlags';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
+import { Scene3D } from '../core/Scene3D';
 
 declare module '../../ecs/Component'
 {

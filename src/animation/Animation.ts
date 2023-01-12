@@ -1,4 +1,4 @@
-import { NodeComponent } from '../core/core/NodeComponent';
+import { NodeComponent } from '../core/NodeComponent';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
 import { SerializeProperty } from '../serialization/SerializeProperty';

@@ -1,4 +1,4 @@
-import { NodeComponent } from '../../core/core/NodeComponent';
+import { NodeComponent } from '../../core/NodeComponent';
 import { EventEmitter } from '../../event/EventEmitter';
 import { Node2D, Node2DEventMap } from './Node2D';
 

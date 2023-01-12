@@ -1,16 +1,10 @@
 import { Geometry, RegisterGeometry } from '../../3d/geometrys/Geometry';
 import { geometryUtils } from '../../3d/geometrys/GeometryUtils';
 
-declare module '../../core/geometry/Geometry'
+declare module '../../3d/geometrys/Geometry'
 {
-    interface GeometryMap
-    {
-        UIGeometry: UIGeometry
-    }
-    interface DefaultGeometryMap
-    {
-        'Default-UIGeometry': UIGeometry;
-    }
+    interface GeometryMap { UIGeometry: UIGeometry }
+    interface DefaultGeometryMap { 'Default-UIGeometry': UIGeometry; }
 }
 
 /**

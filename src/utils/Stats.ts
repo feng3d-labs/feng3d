@@ -1,7 +1,7 @@
 import Stats1 from 'stats.js';
 import { Component, RegisterComponent } from '../ecs/Component';
 
-declare module '../../ecs/Component'
+declare module '../ecs/Component'
 {
     interface ComponentMap { Stats: Stats; }
 }

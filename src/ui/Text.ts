@@ -1,12 +1,12 @@
-import { Camera3D } from '../core/cameras/Camera3D';
+import { Camera3D } from '../3d/cameras/Camera3D';
+import { Scene3D } from '../3d/core/Scene3D';
 import { createNodeMenu } from '../core/CreateNodeMenu';
-import { Scene3D } from '../3d/Scene3D';
-import { Texture2D } from '../textures/Texture2D';
 import { RegisterComponent } from '../ecs/Component';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../serialization/SerializeProperty';
+import { Texture2D } from '../textures/Texture2D';
 import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';

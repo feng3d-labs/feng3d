@@ -1,6 +1,6 @@
-import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
-import { mathUtil } from '../../polyfill/MathUtil';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { oav } from '../../../objectview/ObjectView';
+import { mathUtil } from '../../../polyfill/MathUtil';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';
 import { ParticleSystemShape } from './ParticleSystemShape';

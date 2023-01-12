@@ -1,7 +1,7 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { HideFlags } from '../../core/core/HideFlags';
-import { Node, NodeEventMap } from '../../core/core/Node';
+import { AssetType } from '../../assets/AssetType';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
+import { HideFlags } from '../../core/HideFlags';
+import { Node, NodeEventMap } from '../../core/Node';
 import { EventEmitter } from '../../event/EventEmitter';
 import { Euler } from '../../math/geom/Euler';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';

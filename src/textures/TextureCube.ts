@@ -1,3 +1,6 @@
+import { AssetType } from '../assets/AssetType';
+import { AssetData } from '../core/AssetData';
+import { HideFlags } from '../core/HideFlags';
 import { FS } from '../filesystem/FS';
 import { oav } from '../objectview/ObjectView';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
@@ -6,11 +9,8 @@ import { TextureType } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
-import { AssetType } from '../assets/AssetType';
-import { AssetData } from '../core/AssetData';
-import { HideFlags } from '../core/core/HideFlags';
-import { TextureInfo } from './TextureInfo';
 import { ImageDatas, Texture2D } from './Texture2D';
+import { TextureInfo } from './TextureInfo';
 
 export interface TextureCubeEventMap
 {

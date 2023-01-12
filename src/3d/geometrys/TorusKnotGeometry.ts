@@ -1,7 +1,7 @@
-import { Node3D } from '../../3d/Node3D';
 import { Vector3 } from '../../math/geom/Vector3';
 import { gPartial } from '../../polyfill/Types';
 import { watcher } from '../../watcher/watcher';
+import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';
 
@@ -12,7 +12,7 @@ declare module './Geometry'
     interface DefaultGeometryMap { TorusKnot: TorusKnotGeometry; }
 }
 
-declare module '../../3d/Node3D' { interface PrimitiveNode3D { TorusKnot: Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { TorusKnot: Node3D; } }
 
 /**
  * 环形结

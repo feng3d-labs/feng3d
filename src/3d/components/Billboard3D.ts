@@ -1,8 +1,8 @@
-import { Camera3D } from '../../core/cameras/Camera3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { watcher } from '../../watcher/watcher';
-import { Component3D } from '../Component3D';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Billboard3D: Billboard3D; } }
 

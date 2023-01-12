@@ -1,10 +1,10 @@
-import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
-import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '../../serialization/Serializable';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
+import { oav } from '../../../objectview/ObjectView';
+import { Serializable } from '../../../serialization/Serializable';
+import { $set } from '../../../serialization/Serialization';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 
-declare module '../../serialization/Serializable' { interface SerializableMap { ParticleEmissionBurst: ParticleEmissionBurst } }
+declare module '../../../serialization/Serializable' { interface SerializableMap { ParticleEmissionBurst: ParticleEmissionBurst } }
 
 @Serializable('ParticleEmissionBurst')
 export class ParticleEmissionBurst

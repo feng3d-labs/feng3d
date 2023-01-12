@@ -1,6 +1,6 @@
-import { Geometry } from '../../core/geometry/Geometry';
-import { Material } from '../../core/materials/Material';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Material } from '../../../core/Material';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { Geometry } from '../../geometrys/Geometry';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
 import { ParticleSystemRenderSpace } from '../enums/ParticleSystemRenderSpace';
 import { ParticleSystemSortMode } from '../enums/ParticleSystemSortMode';

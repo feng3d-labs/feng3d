@@ -1,10 +1,10 @@
-import { Mesh3D } from '../../3d/Mesh3D';
+import { Mesh3D } from '../../3d/core/Mesh3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
-import { Material } from '../../core/materials/Material';
-import { TransformUtils } from '../../utils/TransformUtils';
+import { Material } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
+import { TransformUtils } from '../../utils/TransformUtils';
 
 declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: CanvasRenderer; } }
 
@@ -58,7 +58,7 @@ export class CanvasRenderer extends Mesh3D
     protected _updateBounds()
     {
         const bounding = this.geometry.bounding.clone();
-        const transformLayout = this.getComponent('TransformLayout');
+        const transformLayout = this.getComponent('TransformLayout3D');
         if (transformLayout)
         {
             bounding.scale(transformLayout.size);

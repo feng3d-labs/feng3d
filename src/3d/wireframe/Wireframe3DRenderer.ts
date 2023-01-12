@@ -1,12 +1,12 @@
-import { Camera3D } from '../../core/cameras/Camera3D';
-import { Renderable3D } from '../../core/core/Renderable3D';
 import { Color4 } from '../../math/Color4';
 import { lazy } from '../../polyfill/Types';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { Scene3D } from '../Scene3D';
+import { Camera3D } from '../cameras/Camera3D';
+import { Renderable3D } from '../core/Renderable3D';
+import { Scene3D } from '../core/Scene3D';
 import { Wireframe3D } from './Wireframe3D';
 
 declare module '../../renderer/data/RenderAtomic'

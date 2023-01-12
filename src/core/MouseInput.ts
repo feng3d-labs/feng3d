@@ -1,5 +1,5 @@
-import { EventEmitter } from '../../event/EventEmitter';
-import { IEvent } from '../../event/IEvent';
+import { EventEmitter } from '../event/EventEmitter';
+import { IEvent } from '../event/IEvent';
 
 export interface MouseEventMap
 {

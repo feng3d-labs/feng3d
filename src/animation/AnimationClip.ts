@@ -1,6 +1,6 @@
+import { AssetType } from '../assets/AssetType';
 import { oav } from '../objectview/ObjectView';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { AssetType } from '../core/assets/AssetType';
 import { PropertyClip } from './PropertyClip';
 
 export class AnimationClip
