@@ -1,5 +1,5 @@
 import { Material } from '../../core/Material';
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometrys/Geometry';

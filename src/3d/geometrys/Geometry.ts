@@ -1,5 +1,5 @@
 import { AssetType } from '../../core/assets/AssetType';
-import { AssetData } from '../../core/core/AssetData';
+import { AssetData } from '../../core/AssetData';
 import { EventEmitter } from '../../event/EventEmitter';
 import { Box3 } from '../../math/geom/Box3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';

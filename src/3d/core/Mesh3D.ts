@@ -1,4 +1,4 @@
-import { TransformUtils } from '../../core/utils/TransformUtils';
+import { TransformUtils } from '../../utils/TransformUtils';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Box3 } from '../../math/geom/Box3';

@@ -1,5 +1,5 @@
 import { Node3D } from '../../3d/Node3D';
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';

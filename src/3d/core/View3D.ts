@@ -4,7 +4,7 @@ import { forwardRenderer } from '../../3d/renderer/ForwardRenderer3D';
 import { shadowRenderer } from '../../3d/renderer/ShadowRenderer';
 import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';
 import { wireframeRenderer } from '../../3d/wireframe/Wireframe3DRenderer';
-import { ticker } from '../../core/utils/Ticker';
+import { ticker } from '../../utils/Ticker';
 import { RegisterComponent } from '../../ecs/Component';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Component3D } from './Component3D';

@@ -2,7 +2,7 @@ import { Camera3D } from '../../core/cameras/Camera3D';
 import { RunEnvironment } from '../../core/core/RunEnvironment';
 import { Geometry } from '../geometrys/Geometry';
 import { Material } from '../../core/materials/Material';
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { QuadGeometry } from '../primitives/QuadGeometry';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix3x3 } from '../../math/geom/Matrix3x3';

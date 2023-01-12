@@ -1,5 +1,5 @@
 import { path as fengpath } from '@feng3d/path';
-import { AssetData } from '../../core/core/AssetData';
+import { AssetData } from '../../core/AssetData';
 import { FS } from '../../filesystem/FS';
 import { pathUtils } from '../../filesystem/PathUtils';
 import { ReadFS } from '../../filesystem/ReadFS';

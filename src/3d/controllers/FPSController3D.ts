@@ -1,5 +1,5 @@
 import { RunEnvironment } from '../../core/core/RunEnvironment';
-import { ticker } from '../../core/utils/Ticker';
+import { ticker } from '../../utils/Ticker';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';

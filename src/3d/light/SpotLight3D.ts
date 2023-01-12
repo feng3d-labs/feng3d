@@ -1,6 +1,6 @@
 import { Node3D } from '../../3d/Node3D';
 import { PerspectiveLens } from '../../core/cameras/lenses/PerspectiveLens';
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';

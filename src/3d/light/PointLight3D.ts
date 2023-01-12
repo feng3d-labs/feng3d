@@ -1,5 +1,5 @@
 import { Node3D } from '../../3d/Node3D';
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';

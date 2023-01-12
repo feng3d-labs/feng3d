@@ -1,5 +1,5 @@
 import Stats1 from 'stats.js';
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component, RegisterComponent } from '../ecs/Component';
 
 declare module '../../ecs/Component'
 {

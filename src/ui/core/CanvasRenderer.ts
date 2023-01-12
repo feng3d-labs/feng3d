@@ -1,7 +1,7 @@
 import { Mesh3D } from '../../3d/Mesh3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
 import { Material } from '../../core/materials/Material';
-import { TransformUtils } from '../../core/utils/TransformUtils';
+import { TransformUtils } from '../../utils/TransformUtils';
 import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';

@@ -1,5 +1,5 @@
-import { AssetData } from '../../core/core/AssetData';
-import { ticker } from '../../core/utils/Ticker';
+import { AssetData } from '../../core/AssetData';
+import { ticker } from '../../utils/Ticker';
 import { ReadWriteFS } from '../../filesystem/ReadWriteFS';
 import { gPartial } from '../../polyfill/Types';
 import { $serialize } from '../../serialization/Serialization';

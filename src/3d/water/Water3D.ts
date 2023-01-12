@@ -12,7 +12,7 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
 import { Material } from '../../core/Material';
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { Water3DUniforms } from './WaterMaterial3D';
 

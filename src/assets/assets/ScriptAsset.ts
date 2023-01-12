@@ -1,4 +1,4 @@
-import { regExps } from '../../core/utils/RegExps';
+import { regExps } from '../../utils/RegExps';
 import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../AssetType';
 import { RegisterAsset } from '../FileAsset';

@@ -7,7 +7,7 @@ import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
-import { AssetData } from '../core/core/AssetData';
+import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/core/HideFlags';
 import { TextureInfo } from './TextureInfo';
 import { ImageDatas, Texture2D } from './Texture2D';

@@ -1,4 +1,4 @@
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Frustum } from '../../math/geom/Frustum';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';

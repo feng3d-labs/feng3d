@@ -1,6 +1,6 @@
-import { anyEmitter } from '../../event/AnyEmitter';
-import { ArrayUtils } from '../../polyfill/ArrayUtils';
-import { FunctionPropertyNames } from '../../polyfill/Types';
+import { anyEmitter } from '../event/AnyEmitter';
+import { ArrayUtils } from '../polyfill/ArrayUtils';
+import { FunctionPropertyNames } from '../polyfill/Types';
 import { uuid } from './Uuid';
 
 type Wraps<T, K extends keyof T> = {

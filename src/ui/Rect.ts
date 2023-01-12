@@ -1,5 +1,5 @@
 import { Camera3D } from '../core/cameras/Camera3D';
-import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../core/CreateNodeMenu';
 import { Scene3D } from '../3d/Scene3D';
 import { Component, RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';

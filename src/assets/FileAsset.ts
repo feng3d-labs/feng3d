@@ -1,5 +1,5 @@
 import { path } from '@feng3d/path';
-import { ticker } from '../core/utils/Ticker';
+import { ticker } from '../utils/Ticker';
 import { anyEmitter } from '../event/AnyEmitter';
 import { pathUtils } from '../filesystem/PathUtils';
 import { Constructor } from '../polyfill/Types';

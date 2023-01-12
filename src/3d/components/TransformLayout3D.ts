@@ -1,4 +1,4 @@
-import { ticker } from '../../core/utils/Ticker';
+import { ticker } from '../../utils/Ticker';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector3 } from '../../math/geom/Vector3';

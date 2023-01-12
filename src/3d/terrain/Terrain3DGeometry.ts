@@ -1,4 +1,4 @@
-import { ImageUtil } from '../../core/utils/ImageUtil';
+import { ImageUtil } from '../../utils/ImageUtil';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';

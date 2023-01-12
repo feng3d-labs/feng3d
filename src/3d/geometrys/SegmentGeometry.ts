@@ -1,6 +1,6 @@
 import { Node3D } from '../../3d/Node3D';
 import { Material } from '../../core/materials/Material';
-import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Color4 } from '../../math/Color4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';

@@ -7,7 +7,7 @@ import { Shader } from '../renderer/data/Shader';
 import { Serializable } from '../serialization/Serializable';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { AssetData } from './core/AssetData';
+import { AssetData } from './AssetData';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 

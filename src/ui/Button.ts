@@ -1,4 +1,4 @@
-import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { createNodeMenu } from '../core/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
 import { $serialize, $set, serialization } from '../serialization/Serialization';

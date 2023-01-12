@@ -1,7 +1,7 @@
 import { AssetType } from '../assets/AssetType';
-import { AssetData } from '../core/core/AssetData';
+import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/core/HideFlags';
-import { ImageUtil } from '../core/utils/ImageUtil';
+import { ImageUtil } from '../utils/ImageUtil';
 import { loader } from '../filesystem/base/Loader';
 import { ColorKeywords } from '../math/Color3';
 import { Color4 } from '../math/Color4';
