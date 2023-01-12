@@ -1,5 +1,5 @@
-import { Component3D } from '../../3d/Component3D';
-import { Scene3D } from '../../3d/Scene3D';
+import { Component3D } from '../Component3D';
+import { Scene3D } from '../Scene3D';
 import { Camera } from '../../core/cameras/Camera';
 import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';

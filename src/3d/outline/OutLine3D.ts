@@ -1,11 +1,11 @@
-import { Component3D } from '../../3d/Component3D';
-import { Scene3D } from '../../3d/Scene3D';
+import { Component3D } from '../Component3D';
+import { Scene3D } from '../Scene3D';
+import { Camera } from '../../core/cameras/Camera';
 import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Camera } from '../cameras/Camera';
 
 declare module '../../ecs/Component' { interface ComponentMap { OutLine3D: OutLine3D; } }
 

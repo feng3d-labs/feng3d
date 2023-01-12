@@ -146,7 +146,7 @@ export * from './core/render/data/Uniform';
 export * from './core/render/FrameBufferObject';
 export * from './core/render/renderer/ForwardRenderer';
 export * from './core/render/renderer/MouseRenderer';
-export * from './core/render/renderer/OutlineRenderer';
+export * from './3d/outline/OutlineRenderer';
 export * from './core/render/renderer/ShadowRenderer';
 export * from './3d/wireframe/Wireframe3DRenderer';
 export * from './core/ShaderConfig';

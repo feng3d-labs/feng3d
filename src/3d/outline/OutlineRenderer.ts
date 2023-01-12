@@ -1,10 +1,10 @@
-import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Shader } from '../../../renderer/data/Shader';
-import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
-import { Camera } from '../../cameras/Camera';
-import { Cartoon3D } from '../../component/Cartoon3D';
-import { OutLine3D } from '../../component/OutLine3D';
-import { Scene3D } from '../../../3d/Scene3D';
+import { Cartoon3D } from './Cartoon3D';
+import { OutLine3D } from './OutLine3D';
+import { Scene3D } from '../Scene3D';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Shader } from '../../renderer/data/Shader';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { Camera } from '../../core/cameras/Camera';
 
 /**
  * 轮廓渲染器
