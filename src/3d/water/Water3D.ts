@@ -13,7 +13,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
 import { Material } from '../../core/Material';
 import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
-import { FrameBufferObject } from '../../core/render/FrameBufferObject';
+import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { WaterUniforms } from './WaterMaterial3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Water3D: Water3D } }

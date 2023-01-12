@@ -10,7 +10,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Renderable3D } from '../../core/core/Renderable3D';
-import { FrameBufferObject } from '../../core/render/FrameBufferObject';
+import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 
 declare module '../../../renderer/data/RenderAtomic' { interface RenderAtomic { shadowShader: Shader; } }
 

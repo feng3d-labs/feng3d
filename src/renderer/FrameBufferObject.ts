@@ -1,8 +1,8 @@
-import { FrameBuffer } from '../../renderer/data/FrameBuffer';
-import { RenderBuffer } from '../../renderer/RenderBuffer';
-import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { watcher } from '../../watcher/watcher';
-import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
+import { FrameBuffer } from './data/FrameBuffer';
+import { RenderBuffer } from './RenderBuffer';
+import { WebGLRenderer } from './WebGLRenderer';
+import { watcher } from '../watcher/watcher';
+import { RenderTargetTexture2D } from '../core/textures/RenderTargetTexture2D';
 
 /**
  * 帧缓冲对象

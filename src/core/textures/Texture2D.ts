@@ -9,7 +9,7 @@ import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { TextureInfo } from '../render/data/TextureInfo';
+import { TextureInfo } from './TextureInfo';
 import { ImageUtil } from '../utils/ImageUtil';
 
 export enum ImageDatas

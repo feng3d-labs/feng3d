@@ -9,7 +9,7 @@ import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { TextureInfo } from '../render/data/TextureInfo';
+import { TextureInfo } from './TextureInfo';
 import { ImageDatas, Texture2D } from './Texture2D';
 
 export interface TextureCubeEventMap

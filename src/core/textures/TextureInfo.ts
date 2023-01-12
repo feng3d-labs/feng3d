@@ -1,8 +1,8 @@
-import { dataTransform } from '../../../polyfill/DataTransform';
-import { Texture } from '../../../renderer/data/Texture';
-import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { HideFlags } from '../../core/HideFlags';
-import { imageDatas } from '../../textures/Texture2D';
+import { dataTransform } from '../../polyfill/DataTransform';
+import { Texture } from '../../renderer/data/Texture';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { HideFlags } from '../core/HideFlags';
+import { imageDatas } from './Texture2D';
 
 /**
  * 纹理信息
