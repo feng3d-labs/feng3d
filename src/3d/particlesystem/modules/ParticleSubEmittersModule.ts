@@ -1,7 +1,7 @@
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';
-import { ParticleSystem } from '../ParticleSystem';
+import { ParticleSystem3D } from '../ParticleSystem3D';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
 declare module './ParticleModule' { interface ParticleModuleMap { ParticleSubEmittersModule: ParticleSubEmittersModule } }
@@ -23,12 +23,12 @@ export class ParticleSubEmittersModule extends ParticleModule
         return this.subEmitters.length;
     }
 
-    private subEmitters: { subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number }[] = [];
+    private subEmitters: { subEmitter: ParticleSystem3D, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number }[] = [];
 
     /**
      * Add a new sub-emitter.
      */
-    AddSubEmitter(subEmitter: ParticleSystem, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number)
+    AddSubEmitter(subEmitter: ParticleSystem3D, type: ParticleSystemSubEmitterType, properties: ParticleSystemSubEmitterProperties, emitProbability: number)
     {
         subEmitter._isSubParticleSystem = true;
 
@@ -121,7 +121,7 @@ export class ParticleSubEmittersModule extends ParticleModule
     /**
      * Sets the Particle System to use as the sub - emitter at the given index.
      */
-    SetSubEmitterSystem(index: number, subEmitter: ParticleSystem)
+    SetSubEmitterSystem(index: number, subEmitter: ParticleSystem3D)
     {
         if (!this.subEmitters[index]) return;
         this.subEmitters[index].subEmitter = subEmitter;

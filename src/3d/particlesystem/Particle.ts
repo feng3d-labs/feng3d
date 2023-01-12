@@ -2,7 +2,7 @@ import { Color4 } from '../math/Color4';
 import { Vector2 } from '../math/geom/Vector2';
 import { Vector3 } from '../math/geom/Vector3';
 import { Vector4 } from '../math/geom/Vector4';
-import { ParticleSystemEmitInfo } from './ParticleSystem';
+import { ParticleSystemEmitInfo } from './ParticleSystem3D';
 
 /**
  * 粒子

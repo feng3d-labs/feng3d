@@ -1,12 +1,12 @@
-import { Camera } from '../core/cameras/Camera';
 import { Component3D } from '../3d/Component3D';
 import { Node3D } from '../3d/Node3D';
+import { Scene3D } from '../3d/Scene3D';
+import { Camera } from '../core/cameras/Camera';
 import { RunEnvironment } from '../core/core/RunEnvironment';
 import { Geometry } from '../core/geometry/Geometry';
 import { Material } from '../core/materials/Material';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { QuadGeometry } from '../core/primitives/QuadGeometry';
-import { Scene3D } from '../3d/Scene3D';
 import { RegisterComponent } from '../ecs/Component';
 import { Matrix3x3 } from '../math/geom/Matrix3x3';
 import { Matrix4x4 } from '../math/geom/Matrix4x4';
@@ -37,35 +37,35 @@ import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSh
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
 
-declare module '../ecs/Component' { interface ComponentMap { ParticleSystem: ParticleSystem } }
+declare module '../ecs/Component' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 
 declare module '../core/geometry/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
 
-declare module '../core/core/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
+declare module '../3d/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
 
-declare module '../core/core/Node3D'
+declare module '../3d/Node3D'
 {
     interface Node3DEventMap
     {
         /**
          * 粒子系统播放完一个周期
          */
-        particleCycled: ParticleSystem;
+        particleCycled: ParticleSystem3D;
 
         /**
          * 粒子效果播放结束
          */
-        particleCompleted: ParticleSystem;
+        particleCompleted: ParticleSystem3D;
     }
 }
 
 /**
  * 粒子系统
  */
-@RegisterComponent({ name: 'ParticleSystem', dependencies: ['Mesh3D'], single: true, menu: 'Effects/ParticleSystem' })
-export class ParticleSystem extends Component3D
+@RegisterComponent({ name: 'ParticleSystem3D', dependencies: ['Mesh3D'], single: true, menu: 'Effects/ParticleSystem' })
+export class ParticleSystem3D extends Component3D
 {
-    declare __class__: 'ParticleSystem';
+    declare __class__: 'ParticleSystem3D';
 
     /**
      * Is the particle system playing right now ?
@@ -1222,7 +1222,7 @@ Geometry.setDefault('Billboard-Geometry', new QuadGeometry());
 
 Node3D.registerPrimitive('Particle System', (g) =>
 {
-    g.addComponent('ParticleSystem');
+    g.addComponent('ParticleSystem3D');
     g.rx = -90;
 });
 

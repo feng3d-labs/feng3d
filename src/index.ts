@@ -241,7 +241,7 @@ export * from './particlesystem/others/ParticleEmissionBurst';
 export * from './particlesystem/Particle';
 export * from './particlesystem/ParticlesAdditive.shader';
 export * from './particlesystem/ParticlesAlphaBlendedPremultiply.shader';
-export * from './particlesystem/ParticleSystem';
+export * from './particlesystem/ParticleSystem3D';
 export * from './particlesystem/shapes/ParticleSystemShape';
 export * from './particlesystem/shapes/ParticleSystemShapeBox';
 export * from './particlesystem/shapes/ParticleSystemShapeCircle';

@@ -4,7 +4,7 @@ import { Constructor } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
-import { ParticleSystem } from '../ParticleSystem';
+import { ParticleSystem3D } from '../ParticleSystem3D';
 
 export interface ParticleModuleMap { }
 
@@ -44,7 +44,7 @@ export class ParticleModule extends EventEmitter
     /**
      * 粒子系统
      */
-    particleSystem: ParticleSystem;
+    particleSystem: ParticleSystem3D;
 
     /**
      * 初始化粒子状态
