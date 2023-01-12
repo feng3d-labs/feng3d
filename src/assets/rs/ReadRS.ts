@@ -1,15 +1,15 @@
 import { path as fengpath } from '@feng3d/path';
-import { FS } from '../../../filesystem/FS';
-import { pathUtils } from '../../../filesystem/PathUtils';
-import { ReadFS } from '../../../filesystem/ReadFS';
-import { ArrayUtils } from '../../../polyfill/ArrayUtils';
-import { mathUtil } from '../../../polyfill/MathUtil';
-import { ObjectUtils } from '../../../polyfill/ObjectUtils';
-import { Constructor, gPartial } from '../../../polyfill/Types';
-import { getInstance } from '../../../serialization/getInstance';
-import { $deserialize, $set, serialization } from '../../../serialization/Serialization';
-import { __class__ } from '../../../serialization/SerializationConst';
-import { AssetData } from '../../core/AssetData';
+import { AssetData } from '../../core/core/AssetData';
+import { FS } from '../../filesystem/FS';
+import { pathUtils } from '../../filesystem/PathUtils';
+import { ReadFS } from '../../filesystem/ReadFS';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { ObjectUtils } from '../../polyfill/ObjectUtils';
+import { Constructor, gPartial } from '../../polyfill/Types';
+import { getInstance } from '../../serialization/getInstance';
+import { $deserialize, $set } from '../../serialization/Serialization';
+import { __class__ } from '../../serialization/SerializationConst';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';
 

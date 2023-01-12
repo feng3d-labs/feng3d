@@ -1,4 +1,4 @@
-import { ov } from '../../objectview/ObjectView';
+import { ov } from '../objectview/ObjectView';
 import { AssetType } from './AssetType';
 import { FileAsset, RegisterAsset } from './FileAsset';
 

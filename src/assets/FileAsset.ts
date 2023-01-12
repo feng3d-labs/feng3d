@@ -1,10 +1,10 @@
 import { path } from '@feng3d/path';
-import { anyEmitter } from '../../event/AnyEmitter';
-import { pathUtils } from '../../filesystem/PathUtils';
-import { Constructor } from '../../polyfill/Types';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { ticker } from '../utils/Ticker';
+import { ticker } from '../core/utils/Ticker';
+import { anyEmitter } from '../event/AnyEmitter';
+import { pathUtils } from '../filesystem/PathUtils';
+import { Constructor } from '../polyfill/Types';
+import { Serializable } from '../serialization/Serializable';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { AssetMeta } from './AssetMeta';
 import { AssetType } from './AssetType';
 import { FolderAsset } from './FolderAsset';
@@ -28,13 +28,11 @@ export function RegisterAsset<K extends keyof AssetMap>(geometry: K)
     };
 }
 
-export interface AssetMap
-{
-}
+export interface AssetMap { }
 
 const assetTypeClassMap = new Map();
 
-declare module '../../serialization/Serializable'
+declare module '../serialization/Serializable'
 {
     interface SerializableMap extends AssetMap { }
 }
