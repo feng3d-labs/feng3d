@@ -1,8 +1,8 @@
+import { Component3D } from '../Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Component3D } from '../../3d/Component3D';
 
 export let audioCtx: AudioContext;
 export let globalGain: GainNode;
@@ -11,14 +11,15 @@ declare module '../../ecs/Component'
 {
     interface ComponentMap
     {
-        AudioListener: AudioListener;
+        AudioListener3D: AudioListener3D;
     }
 }
+
 /**
  * 声音监听器
  */
-@RegisterComponent({ name: 'AudioListener', menu: 'Audio/AudioListener' })
-export class AudioListener extends Component3D
+@RegisterComponent({ name: 'AudioListener3D', menu: 'Audio/AudioListener' })
+export class AudioListener3D extends Component3D
 {
     gain: GainNode;
 
@@ -43,7 +44,7 @@ export class AudioListener extends Component3D
     constructor()
     {
         super();
-        watcher.watch(this as AudioListener, 'enabled', this._enabledChanged, this);
+        watcher.watch(this as AudioListener3D, 'enabled', this._enabledChanged, this);
         this.gain = audioCtx.createGain();
         this.gain.connect(audioCtx.destination);
         this.enabled = true;

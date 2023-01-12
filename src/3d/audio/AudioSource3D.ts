@@ -1,16 +1,16 @@
+import { Component3D } from '../Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { FS } from '../../filesystem/FS';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Component3D } from '../../3d/Component3D';
-import { audioCtx, globalGain } from './AudioListener';
+import { audioCtx, globalGain } from './AudioListener3D';
 
 declare module '../../ecs/Component'
 {
     interface ComponentMap
     {
-        AudioSource: AudioSource;
+        AudioSource3D: AudioSource3D;
     }
 }
 
@@ -40,8 +40,8 @@ export enum DistanceModelType
  * 声源
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
  */
-@RegisterComponent({ name: 'AudioSource', menu: 'Audio/AudioSource' })
-export class AudioSource extends Component3D
+@RegisterComponent({ name: 'AudioSource3D', menu: 'Audio/AudioSource' })
+export class AudioSource3D extends Component3D
 {
     private panner: PannerNode;
     private source: AudioBufferSourceNode;
@@ -235,8 +235,8 @@ export class AudioSource extends Component3D
     constructor()
     {
         super();
-        watcher.watch(this as AudioSource, 'enabled', this._enabledChanged, this);
-        watcher.watch(this as AudioSource, 'url', this._onUrlChanged, this);
+        watcher.watch(this as AudioSource3D, 'enabled', this._enabledChanged, this);
+        watcher.watch(this as AudioSource3D, 'url', this._onUrlChanged, this);
         this.panner = createPanner();
         this.panningModel = 'HRTF';
         this.distanceModel = DistanceModelType.inverse;
