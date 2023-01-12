@@ -1,23 +1,23 @@
+import { Component3D } from '../../3d/Component3D';
+import { Node3D } from '../../3d/Node3D';
+import { Scene3D } from '../../3d/Scene3D';
+import { Camera } from '../../core/cameras/Camera';
+import { HideFlags } from '../../core/core/HideFlags';
+import { TextureMaterial } from '../../core/materials/texture/TextureMaterial';
+import { PlaneGeometry } from '../../core/primitives/PlaneGeometry';
+import { FrameBufferObject } from '../../core/render/FrameBufferObject';
+import { RenderTargetTexture2D } from '../../core/textures/RenderTargetTexture2D';
 import { Color3 } from '../../math/Color3';
 import { oav } from '../../objectview/ObjectView';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Camera } from '../cameras/Camera';
-import { Component3D } from '../../3d/Component3D';
-import { HideFlags } from '../core/HideFlags';
-import { Node3D } from '../../3d/Node3D';
-import { TextureMaterial } from '../materials/texture/TextureMaterial';
-import { PlaneGeometry } from '../primitives/PlaneGeometry';
-import { FrameBufferObject } from '../render/FrameBufferObject';
-import { Scene3D } from '../../3d/Scene3D';
-import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 
 /**
  * 灯光
  */
-export class Light extends Component3D
+export class Light3D extends Component3D
 {
     /**
      * 灯光类型

@@ -1,22 +1,22 @@
 import { Node3D } from '../../3d/Node3D';
+import { PerspectiveLens } from '../../core/cameras/lenses/PerspectiveLens';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { Light } from './Light';
+import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component' { interface ComponentMap { SpotLight: SpotLight; } }
+declare module '../../ecs/Component' { interface ComponentMap { SpotLight3D: SpotLight3D; } }
 declare module '../../3d/Node3D' { interface PrimitiveNode3D { 'Spot Light': Node3D; } }
 
 /**
  * 聚光灯光源
  */
-@RegisterComponent({ name: 'SpotLight' })
-export class SpotLight extends Light
+@RegisterComponent({ name: 'SpotLight3D' })
+export class SpotLight3D extends Light3D
 {
     lightType = LightType.Spot;
 
@@ -59,8 +59,8 @@ export class SpotLight extends Light
     constructor()
     {
         super();
-        watcher.watch(this as SpotLight, 'angle', this._invalidAngle, this);
-        watcher.watch(this as SpotLight, 'range', this._invalidRange, this);
+        watcher.watch(this as SpotLight3D, 'angle', this._invalidAngle, this);
+        watcher.watch(this as SpotLight3D, 'range', this._invalidRange, this);
         this.perspectiveLens = this.shadowCamera.lens = new PerspectiveLens(this.angle, 1, 0.1, this.range);
     }
 
@@ -83,7 +83,7 @@ export class SpotLight extends Light
 
 Node3D.registerPrimitive('Spot Light', (g) =>
 {
-    g.addComponent('SpotLight');
+    g.addComponent('SpotLight3D');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

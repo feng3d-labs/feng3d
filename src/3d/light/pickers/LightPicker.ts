@@ -1,11 +1,11 @@
+import { Mesh3D } from '../../../3d/Mesh3D';
+import { Texture2D } from '../../../core/textures/Texture2D';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Mesh3D } from '../../../3d/Mesh3D';
-import { Texture2D } from '../../textures/Texture2D';
-import { DirectionalLight } from '../DirectionalLight';
-import { PointLight } from '../PointLight';
+import { DirectionalLight3D } from '../DirectionalLight3D';
+import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
-import { SpotLight } from '../SpotLight';
+import { SpotLight3D } from '../SpotLight3D';
 
 export class LightPicker
 {
@@ -18,23 +18,23 @@ export class LightPicker
 
     beforeRender(renderAtomic: RenderAtomic)
     {
-        let pointLights: PointLight[] = [];
-        let directionalLights: DirectionalLight[] = [];
-        let spotLights: SpotLight[] = [];
+        let pointLights: PointLight3D[] = [];
+        let directionalLights: DirectionalLight3D[] = [];
+        let spotLights: SpotLight3D[] = [];
 
         const scene = this._model.node3d.scene;
         if (scene)
         {
-            pointLights = scene.getComponentsInChildren('PointLight').filter((pl) => pl.isVisibleAndEnabled);
+            pointLights = scene.getComponentsInChildren('PointLight3D').filter((pl) => pl.isVisibleAndEnabled);
             directionalLights = scene.getComponentsInChildren('DirectionalLight').filter((dl) => dl.isVisibleAndEnabled);
-            spotLights = scene.getComponentsInChildren('SpotLight').filter((sp) => (sp.isVisibleAndEnabled));
+            spotLights = scene.getComponentsInChildren('SpotLight3D').filter((sp) => (sp.isVisibleAndEnabled));
         }
 
         renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;
 
         // 设置点光源数据
-        const castShadowPointLights: PointLight[] = [];
-        const unCastShadowPointLights: PointLight[] = [];
+        const castShadowPointLights: PointLight3D[] = [];
+        const unCastShadowPointLights: PointLight3D[] = [];
         const pointShadowMaps: Texture2D[] = [];
         pointLights.forEach((element) =>
         {
@@ -57,8 +57,8 @@ export class LightPicker
         renderAtomic.uniforms.u_pointShadowMaps = pointShadowMaps;
 
         // 设置聚光灯光源数据
-        const castShadowSpotLights: SpotLight[] = [];
-        const unCastShadowSpotLights: SpotLight[] = [];
+        const castShadowSpotLights: SpotLight3D[] = [];
+        const unCastShadowSpotLights: SpotLight3D[] = [];
         const spotShadowMaps: Texture2D[] = [];
         const spotShadowMatrix: Matrix4x4[] = [];
         spotLights.forEach((element) =>
@@ -84,8 +84,8 @@ export class LightPicker
         renderAtomic.uniforms.u_spotShadowMaps = spotShadowMaps;
 
         // 设置方向光源数据
-        const castShadowDirectionalLights: DirectionalLight[] = [];
-        const unCastShadowDirectionalLights: DirectionalLight[] = [];
+        const castShadowDirectionalLights: DirectionalLight3D[] = [];
+        const unCastShadowDirectionalLights: DirectionalLight3D[] = [];
         const directionalShadowMatrix: Matrix4x4[] = [];
         const directionalShadowMaps: Texture2D[] = [];
         directionalLights.forEach((element) =>

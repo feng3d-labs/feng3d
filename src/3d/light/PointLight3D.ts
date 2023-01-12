@@ -1,24 +1,24 @@
 import { Node3D } from '../../3d/Node3D';
+import { PerspectiveLens } from '../../core/cameras/lenses/PerspectiveLens';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { Light } from './Light';
+import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component' { interface ComponentMap { PointLight: PointLight; } }
+declare module '../../ecs/Component' { interface ComponentMap { PointLight3D: PointLight3D; } }
 
 declare module '../../3d/Node3D' { interface PrimitiveNode3D { 'Point Light': Node3D; } }
 
 /**
  * 点光源
  */
-@RegisterComponent({ name: 'PointLight', menu: 'Rendering/PointLight' })
-export class PointLight extends Light
+@RegisterComponent({ name: 'PointLight3D', menu: 'Rendering/PointLight' })
+export class PointLight3D extends Light3D
 {
-    declare __class__: 'PointLight';
+    declare __class__: 'PointLight3D';
 
     lightType = LightType.Point;
 
@@ -66,7 +66,7 @@ export class PointLight extends Light
 
 Node3D.registerPrimitive('Point Light', (g) =>
 {
-    g.addComponent('PointLight');
+    g.addComponent('PointLight3D');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

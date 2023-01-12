@@ -1,25 +1,25 @@
+import { Node3D } from '../../3d/Node3D';
+import { Scene3D } from '../../3d/Scene3D';
+import { Camera } from '../../core/cameras/Camera';
+import { OrthographicLens } from '../../core/cameras/lenses/OrthographicLens';
+import { Renderable3D } from '../../core/core/Renderable3D';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { $set } from '../../serialization/Serialization';
-import { Camera } from '../cameras/Camera';
-import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
-import { Node3D } from '../../3d/Node3D';
-import { Renderable3D } from '../core/Renderable3D';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
-import { Scene3D } from '../../3d/Scene3D';
-import { Light } from './Light';
+import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component' { interface ComponentMap { DirectionalLight: DirectionalLight; } }
+declare module '../../ecs/Component' { interface ComponentMap { DirectionalLight: DirectionalLight3D; } }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { 'Directional light': Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { 'Directional light': Node3D; } }
 
 /**
  * 方向光源
  */
 @RegisterComponent({ name: 'DirectionalLight', menu: 'Rendering/DirectionalLight' })
-export class DirectionalLight extends Light
+export class DirectionalLight3D extends Light3D
 {
     declare __class__: 'DirectionalLight';
 

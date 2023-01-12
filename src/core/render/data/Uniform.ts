@@ -5,10 +5,10 @@ import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Vector2 } from '../../../math/geom/Vector2';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { Vector4 } from '../../../math/geom/Vector4';
-import { DirectionalLight } from '../../light/DirectionalLight';
+import { DirectionalLight3D } from '../../light/DirectionalLight3D';
 import { LightType } from '../../light/LightType';
-import { PointLight } from '../../light/PointLight';
-import { SpotLight } from '../../light/SpotLight';
+import { PointLight3D } from '../../light/PointLight3D';
+import { SpotLight3D } from '../../light/SpotLight3D';
 import { Texture2D } from '../../textures/Texture2D';
 import { TextureCube } from '../../textures/TextureCube';
 
@@ -149,12 +149,12 @@ declare module '../../../renderer/data/Uniforms'
         /**
          * 点光源
          */
-        u_pointLights: PointLight[];
+        u_pointLights: PointLight3D[];
 
         /**
          * 生成投影的点光源
          */
-        u_castShadowPointLights: PointLight[]
+        u_castShadowPointLights: PointLight3D[]
 
         /**
          * 点光源阴影图
@@ -164,12 +164,12 @@ declare module '../../../renderer/data/Uniforms'
         /**
          * 聚光灯光源
          */
-        u_spotLights: SpotLight[];
+        u_spotLights: SpotLight3D[];
 
         /**
          * 生成投影的聚光灯光源
          */
-        u_castShadowSpotLights: SpotLight[]
+        u_castShadowSpotLights: SpotLight3D[]
 
         u_spotShadowMatrix: Matrix4x4[];
 
@@ -181,12 +181,12 @@ declare module '../../../renderer/data/Uniforms'
         /**
          * 方向光源数组
          */
-        u_directionalLights: DirectionalLight[]
+        u_directionalLights: DirectionalLight3D[]
 
         /**
          * 生成投影的方向光源
          */
-        u_castShadowDirectionalLights: DirectionalLight[]
+        u_castShadowDirectionalLights: DirectionalLight3D[]
 
         /**
          * 方向光源投影矩阵列表

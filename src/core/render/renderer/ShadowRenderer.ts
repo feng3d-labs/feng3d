@@ -5,10 +5,10 @@ import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { Renderable3D } from '../../core/Renderable3D';
-import { DirectionalLight } from '../../light/DirectionalLight';
-import { PointLight } from '../../light/PointLight';
+import { DirectionalLight3D } from '../../light/DirectionalLight3D';
+import { PointLight3D } from '../../light/PointLight3D';
 import { ShadowType } from '../../light/shadow/ShadowType';
-import { SpotLight } from '../../light/SpotLight';
+import { SpotLight3D } from '../../light/SpotLight3D';
 import { Scene3D } from '../../../3d/Scene3D';
 import { FrameBufferObject } from '../FrameBufferObject';
 
@@ -45,7 +45,7 @@ export class ShadowRenderer
         }
     }
 
-    private drawForSpotLight(renderer: WebGLRenderer, light: SpotLight, scene: Scene3D, camera: Camera): any
+    private drawForSpotLight(renderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera): any
     {
         const { gl } = renderer;
         FrameBufferObject.active(renderer, light.frameBufferObject);
@@ -90,7 +90,7 @@ export class ShadowRenderer
         light.frameBufferObject.deactive(gl);
     }
 
-    private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight, scene: Scene3D, camera: Camera): any
+    private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera): any
     {
         const gl = webGLRenderer.gl;
 
@@ -170,7 +170,7 @@ export class ShadowRenderer
         light.frameBufferObject.deactive(gl);
     }
 
-    private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight, scene: Scene3D, camera: Camera): any
+    private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight3D, scene: Scene3D, camera: Camera): any
     {
         // 获取影响阴影图的渲染对象
         const models = scene.getComponentsInChildren('Mesh3D').filter((model) => (
