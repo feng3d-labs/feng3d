@@ -21,7 +21,7 @@ declare module '../core/Node3D' { interface PrimitiveNode3D { 'Directional light
 @RegisterComponent({ name: 'DirectionalLight3D', menu: 'Rendering/DirectionalLight3D' })
 export class DirectionalLight3D extends Light3D
 {
-    declare __class__: 'DirectionalLight';
+    declare __class__: 'DirectionalLight3D';
 
     lightType = LightType.Directional;
 

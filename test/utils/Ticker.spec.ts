@@ -1,4 +1,3 @@
-
 import { assert, describe, expect, it } from 'vitest';
 import { ticker } from '../../src/utils/Ticker';
 const { ok, equal, deepEqual } = assert;
