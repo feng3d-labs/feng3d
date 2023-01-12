@@ -1,3 +1,7 @@
+import { Component3D } from '../../3d/Component3D';
+import { Mesh3D } from '../../3d/Mesh3D';
+import { Node3D } from '../../3d/Node3D';
+import { Scene3D } from '../../3d/Scene3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Plane } from '../../math/geom/Plane';
@@ -6,19 +10,15 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
-import { Component3D } from '../../3d/Component3D';
-import { Mesh3D } from '../../3d/Mesh3D';
-import { Node3D } from '../../3d/Node3D';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { FrameBufferObject } from '../render/FrameBufferObject';
-import { Scene3D } from '../../3d/Scene3D';
 import { WaterUniforms } from './WaterMaterial';
 
 declare module '../../ecs/Component' { interface ComponentMap { Water: Water } }
 
-declare module '../core/Node3D' { export interface PrimitiveNode3D { Water: Node3D; } }
+declare module '../../3d/Node3D' { export interface PrimitiveNode3D { Water: Node3D; } }
 
 /**
  * The Water component renders the terrain.
