@@ -1,9 +1,9 @@
-import { Camera3D } from '../../3d/cameras/Camera3D';
-import { outlineRenderer } from '../../3d/outline/Outline3DRenderer';
-import { forwardRenderer } from '../../3d/renderer/ForwardRenderer3D';
-import { shadowRenderer } from '../../3d/renderer/ShadowRenderer';
-import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';
-import { wireframeRenderer } from '../../3d/wireframe/Wireframe3DRenderer';
+import { Camera3D } from '../cameras/Camera3D';
+import { outlineRenderer } from '../outline/Outline3DRenderer';
+import { forwardRenderer } from '../renderer/ForwardRenderer3D';
+import { shadowRenderer } from '../renderer/ShadowRenderer';
+import { skyboxRenderer } from '../skybox/SkyBox3DRenderer';
+import { wireframeRenderer } from '../wireframe/Wireframe3DRenderer';
 import { RegisterComponent } from '../../ecs/Component';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { ticker } from '../../utils/Ticker';
@@ -30,16 +30,13 @@ declare module './Node3D'
     }
 }
 
-declare module '../../ecs/Component'
-{
-    interface ComponentMap { View3D: View3D; }
-}
+declare module '../../ecs/Component' { interface ComponentMap { WebGLRenderer3D: WebGLRenderer3D; } }
 
 /**
  * 视图
  */
-@RegisterComponent({ name: 'View3D' })
-export class View3D extends Component3D
+@RegisterComponent({ name: 'WebGLRenderer3D' })
+export class WebGLRenderer3D extends Component3D
 {
     /**
      * 渲染时使用的摄像机。
@@ -94,7 +91,7 @@ export class View3D extends Component3D
 
     getRenderCanvas()
     {
-        return this.webGLRenderer.canvas;
+        return this._webGLRenderer.canvas;
     }
 
     /**
@@ -128,20 +125,13 @@ export class View3D extends Component3D
     /**
      * WebGL渲染器。
      */
-    private get webGLRenderer()
-    {
-        if (!this._webGLRenderer)
-        {
-            this._webGLRenderer = new WebGLRenderer(this.canvas, this.contextAttributes);
-        }
-
-        return this._webGLRenderer;
-    }
     private _webGLRenderer: WebGLRenderer;
 
     init(): void
     {
         this.isAutoRender = true;
+
+        this._webGLRenderer = new WebGLRenderer(this.canvas, this.contextAttributes);
     }
 
     /**
@@ -164,15 +154,15 @@ export class View3D extends Component3D
             return;
         }
 
-        const canvas = this.webGLRenderer.canvas;
+        const canvas = this._webGLRenderer.canvas;
 
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
         if (canvas.width * canvas.height === 0) return;
 
-        const webGLRenderer = this.webGLRenderer;
+        const webGLRenderer = this._webGLRenderer;
 
-        const data = new RenderContext3D(canvas, camera, scene, webGLRenderer);
+        const data = new RenderContext3D(camera, scene, webGLRenderer);
 
         //
         this.emitter.emit('beforeRender', data, true, true);

@@ -21,7 +21,7 @@ export * from './3d/core/MouseEvent3D';
 export * from './3d/core/Node3D';
 export * from './3d/core/Renderable3D';
 export * from './3d/core/Scene3D';
-export * from './3d/core/View3D';
+export * from './3d/core/WebGLRenderer3D';
 export * from './3d/geometrys/CapsuleGeometry';
 export * from './3d/geometrys/CircleGeometry';
 export * from './3d/geometrys/ConeGeometry';

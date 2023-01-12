@@ -44,9 +44,9 @@ export class RenderContext3D
      */
     mousePos: Vector2;
 
-    constructor(canvas: HTMLCanvasElement, camera: Camera3D, scene: Scene3D, webGLRenderer: WebGLRenderer)
+    constructor(camera: Camera3D, scene: Scene3D, webGLRenderer: WebGLRenderer)
     {
-        this.canvas = canvas;
+        this.canvas = webGLRenderer.canvas;
         this.camera = camera;
         this.scene = scene;
         this.webGLRenderer = webGLRenderer;
