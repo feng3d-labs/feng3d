@@ -1,37 +1,33 @@
 import { Node3D } from '../../3d/Node3D';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Geometry, RegisterGeometry } from '../geometry/Geometry';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
+import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 
-declare module '../geometry/Geometry' { interface GeometryMap { CapsuleGeometry: CapsuleGeometry } }
+declare module './Geometry'
+{
+    interface GeometryMap { SphereGeometry: SphereGeometry }
+    interface DefaultGeometryMap { Sphere: SphereGeometry; }
+}
 
-declare module '../geometry/Geometry' { interface DefaultGeometryMap { Capsule: CapsuleGeometry; } }
-
-declare module '../../3d/Node3D' { interface PrimitiveNode3D { Capsule: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Sphere: Node3D; } }
 
 /**
- * 胶囊体几何体
+ * 球体几何体
+ * @author DawnKing 2016-09-12
  */
-@RegisterGeometry('CapsuleGeometry')
-export class CapsuleGeometry extends Geometry
+@RegisterGeometry('SphereGeometry')
+export class SphereGeometry extends Geometry
 {
-    declare __class__: 'CapsuleGeometry';
+    declare __class__: 'SphereGeometry';
 
     /**
-     * 胶囊体半径
+     * 球体半径
      */
     @SerializeProperty()
     @oav()
     radius = 0.5;
-
-    /**
-     * 胶囊体高度
-     */
-    @SerializeProperty()
-    @oav()
-    height = 1;
 
     /**
      * 横向分割数
@@ -45,29 +41,33 @@ export class CapsuleGeometry extends Geometry
      */
     @SerializeProperty()
     @oav()
-    segmentsH = 15;
+    segmentsH = 12;
 
     /**
-     * 正面朝向 true:Y+ false:Z+
+     * 是否朝上
      */
     @SerializeProperty()
     @oav()
     yUp = true;
 
-    name = 'Capsule';
+    name = 'Sphere';
 
-    constructor()
+    constructor(param?: Partial<SphereGeometry>)
     {
         super();
-        watcher.watch(this as CapsuleGeometry, 'radius', this.invalidateGeometry, this);
-        watcher.watch(this as CapsuleGeometry, 'height', this.invalidateGeometry, this);
-        watcher.watch(this as CapsuleGeometry, 'segmentsW', this.invalidateGeometry, this);
-        watcher.watch(this as CapsuleGeometry, 'segmentsH', this.invalidateGeometry, this);
-        watcher.watch(this as CapsuleGeometry, 'yUp', this.invalidateGeometry, this);
+        Object.assign(this, param);
+        watcher.watch(this as SphereGeometry, 'radius', this.invalidateGeometry, this);
+        watcher.watch(this as SphereGeometry, 'segmentsW', this.invalidateGeometry, this);
+        watcher.watch(this as SphereGeometry, 'segmentsH', this.invalidateGeometry, this);
+        watcher.watch(this as SphereGeometry, 'yUp', this.invalidateGeometry, this);
     }
 
     /**
      * 构建几何体数据
+     * @param this.radius 球体半径
+     * @param this.segmentsW 横向分割数
+     * @param this.segmentsH 纵向分割数
+     * @param this.yUp 正面朝向 true:Y+ false:Z+
      */
     protected buildGeometry()
     {
@@ -94,7 +94,6 @@ export class CapsuleGeometry extends Geometry
                 const y = ringradius * Math.sin(verangle);
                 const normLen = 1 / Math.sqrt(x * x + y * y + z * z);
                 const tanLen = Math.sqrt(y * y + x * x);
-                const offset = yi > this.segmentsH / 2 ? this.height / 2 : -this.height / 2;
 
                 if (this.yUp)
                 {
@@ -117,19 +116,19 @@ export class CapsuleGeometry extends Geometry
                     vertexPositionData[index + 1] = vertexPositionData[startIndex + 1];
                     vertexPositionData[index + 2] = vertexPositionData[startIndex + 2];
 
-                    vertexNormalData[index] = (vertexNormalData[startIndex] + x * normLen) * 0.5;
-                    vertexNormalData[index + 1] = (vertexNormalData[startIndex + 1] + comp1 * normLen) * 0.5;
-                    vertexNormalData[index + 2] = (vertexNormalData[startIndex + 2] + comp2 * normLen) * 0.5;
+                    vertexNormalData[index] = vertexNormalData[startIndex] + x * normLen * 0.5;
+                    vertexNormalData[index + 1] = vertexNormalData[startIndex + 1] + comp1 * normLen * 0.5;
+                    vertexNormalData[index + 2] = vertexNormalData[startIndex + 2] + comp2 * normLen * 0.5;
 
-                    vertexTangentData[index] = (vertexTangentData[startIndex] + tanLen > 0.007 ? -y / tanLen : 1) * 0.5;
-                    vertexTangentData[index + 1] = (vertexTangentData[startIndex + 1] + t1) * 0.5;
-                    vertexTangentData[index + 2] = (vertexTangentData[startIndex + 2] + t2) * 0.5;
+                    vertexTangentData[index] = tanLen > 0.007 ? -y / tanLen : 1;
+                    vertexTangentData[index + 1] = t1;
+                    vertexTangentData[index + 2] = t2;
                 }
                 else
                 {
                     vertexPositionData[index] = x;
-                    vertexPositionData[index + 1] = this.yUp ? comp1 - offset : comp1;
-                    vertexPositionData[index + 2] = this.yUp ? comp2 : comp2 + offset;
+                    vertexPositionData[index + 1] = comp1;
+                    vertexPositionData[index + 2] = comp2;
 
                     vertexNormalData[index] = x * normLen;
                     vertexNormalData[index + 1] = comp1 * normLen;
@@ -153,7 +152,9 @@ export class CapsuleGeometry extends Geometry
                 index += 3;
             }
         }
+
         const uvData = this.buildUVs();
+
         const indices = this.buildIndices();
 
         this.indexBuffer = { array: indices };
@@ -165,6 +166,9 @@ export class CapsuleGeometry extends Geometry
 
     /**
      * 构建顶点索引
+     * @param this.segmentsW 横向分割数
+     * @param this.segmentsH 纵向分割数
+     * @param this.yUp 正面朝向 true:Y+ false:Z+
      */
     private buildIndices()
     {
@@ -212,6 +216,8 @@ export class CapsuleGeometry extends Geometry
 
     /**
      * 构建uv
+     * @param this.segmentsW 横向分割数
+     * @param this.segmentsH 纵向分割数
      */
     private buildUVs()
     {
@@ -231,20 +237,20 @@ export class CapsuleGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Capsule', new CapsuleGeometry());
+Geometry.setDefault('Sphere', new SphereGeometry());
 
-Node3D.registerPrimitive('Capsule', (g) =>
+Node3D.registerPrimitive('Sphere', (g) =>
 {
-    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Capsule');
+    g.addComponent('Mesh3D').geometry = Geometry.getDefault('Sphere');
 });
 
 // 在 Hierarchy 界面新增右键菜单项
 createNodeMenu.push(
     {
-        path: '3D Object/Capsule',
-        priority: -3,
+        path: '3D Object/Sphere',
+        priority: -2,
         click: () =>
-            Node3D.createPrimitive('Capsule')
+            Node3D.createPrimitive('Sphere')
     }
 );
 

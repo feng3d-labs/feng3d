@@ -1,8 +1,8 @@
 import { Vector3 } from '../../math/geom/Vector3';
-import { Geometry, RegisterGeometry } from '../geometry/Geometry';
-import { geometryUtils } from '../geometry/GeometryUtils';
+import { Geometry, RegisterGeometry } from './Geometry';
+import { geometryUtils } from './GeometryUtils';
 
-declare module '../geometry/Geometry' { interface GeometryMap { ParametricGeometry: ParametricGeometry } }
+declare module './Geometry' { interface GeometryMap { ParametricGeometry: ParametricGeometry } }
 
 @RegisterGeometry('ParametricGeometry')
 export class ParametricGeometry extends Geometry

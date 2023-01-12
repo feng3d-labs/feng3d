@@ -1,7 +1,6 @@
 import { Camera } from '../core/cameras/Camera';
 import { Renderable3D } from '../core/core/Renderable3D';
-import { Geometry, GeometryMap } from '../core/geometry/Geometry';
-import { LightPicker } from '../core/light/pickers/LightPicker';
+import { Geometry, GeometryMap } from './geometrys/Geometry';
 import { Material, MaterialMap } from '../core/materials/Material';
 import { PickingCollisionVO } from '../core/pick/Raycaster';
 import { Scene3D } from './Scene3D';
@@ -14,6 +13,7 @@ import { Vector3 } from '../math/geom/Vector3';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../serialization/SerializeProperty';
+import { LightPicker } from './light/pickers/LightPicker';
 
 declare module '../ecs/Component'
 {

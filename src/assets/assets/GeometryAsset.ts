@@ -1,7 +1,7 @@
 import { AssetType } from '../../core/assets/AssetType';
 import { RegisterAsset } from '../../core/assets/FileAsset';
-import { Geometry } from '../../core/geometry/Geometry';
-import { CubeGeometry } from '../../core/primitives/CubeGeometry';
+import { Geometry } from '../../3d/geometrys/Geometry';
+import { CubeGeometry } from '../../3d/primitives/CubeGeometry';
 import { oav } from '../../objectview/ObjectView';
 import { ObjectAsset } from '../ObjectAsset';
 

@@ -5,10 +5,10 @@ import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Geometry, RegisterGeometry } from '../geometry/Geometry';
-import { geometryUtils } from '../geometry/GeometryUtils';
+import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
+import { geometryUtils } from '../geometrys/GeometryUtils';
 
-declare module '../geometry/Geometry'
+declare module './Geometry'
 {
     interface GeometryMap { RingGeometry: RingGeometry }
 

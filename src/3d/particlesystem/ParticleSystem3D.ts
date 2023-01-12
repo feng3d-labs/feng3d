@@ -1,9 +1,9 @@
 import { Camera } from '../../core/cameras/Camera';
 import { RunEnvironment } from '../../core/core/RunEnvironment';
-import { Geometry } from '../../core/geometry/Geometry';
+import { Geometry } from '../geometrys/Geometry';
 import { Material } from '../../core/materials/Material';
 import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
-import { QuadGeometry } from '../../core/primitives/QuadGeometry';
+import { QuadGeometry } from '../primitives/QuadGeometry';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix3x3 } from '../../math/geom/Matrix3x3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';

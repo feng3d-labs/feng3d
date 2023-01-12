@@ -1,13 +1,13 @@
+import { Node3D } from '../../3d/Node3D';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Node3D } from '../../3d/Node3D';
-import { Geometry, RegisterGeometry } from '../geometry/Geometry';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
+import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { CylinderGeometry } from './CylinderGeometry';
 
-declare module '../geometry/Geometry'
+declare module './Geometry'
 {
     interface GeometryMap { ConeGeometry: ConeGeometry }
     interface DefaultGeometryMap { Cone: ConeGeometry; }

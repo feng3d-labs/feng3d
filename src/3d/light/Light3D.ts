@@ -4,7 +4,7 @@ import { Scene3D } from '../../3d/Scene3D';
 import { Camera } from '../../core/cameras/Camera';
 import { HideFlags } from '../../core/core/HideFlags';
 import { TextureMaterial } from '../../core/materials/texture/TextureMaterial';
-import { PlaneGeometry } from '../../core/primitives/PlaneGeometry';
+import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../../core/render/FrameBufferObject';
 import { RenderTargetTexture2D } from '../../core/textures/RenderTargetTexture2D';
 import { Color3 } from '../../math/Color3';

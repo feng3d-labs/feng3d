@@ -1,5 +1,5 @@
-import { Geometry, RegisterGeometry } from '../../core/geometry/Geometry';
-import { geometryUtils } from '../../core/geometry/GeometryUtils';
+import { Geometry, RegisterGeometry } from '../../3d/geometrys/Geometry';
+import { geometryUtils } from '../../3d/geometrys/GeometryUtils';
 
 declare module '../../core/geometry/Geometry'
 {

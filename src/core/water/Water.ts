@@ -10,7 +10,7 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { $set } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
-import { Geometry } from '../geometry/Geometry';
+import { Geometry } from '../../3d/geometrys/Geometry';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { FrameBufferObject } from '../render/FrameBufferObject';

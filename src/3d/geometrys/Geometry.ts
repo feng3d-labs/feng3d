@@ -1,3 +1,5 @@
+import { AssetType } from '../../core/assets/AssetType';
+import { AssetData } from '../../core/core/AssetData';
 import { EventEmitter } from '../../event/EventEmitter';
 import { Box3 } from '../../math/geom/Box3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
@@ -13,8 +15,6 @@ import { getInstance } from '../../serialization/getInstance';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { AssetType } from '../assets/AssetType';
-import { AssetData } from '../core/AssetData';
 import { geometryUtils } from './GeometryUtils';
 
 declare module '../../serialization/Serializable' { interface SerializableMap extends GeometryMap { } }

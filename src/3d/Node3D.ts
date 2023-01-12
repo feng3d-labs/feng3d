@@ -2,7 +2,7 @@ import { AssetType } from '../core/assets/AssetType';
 import { Camera } from '../core/cameras/Camera';
 import { HideFlags } from '../core/core/HideFlags';
 import { Node, NodeEventMap } from '../core/core/Node';
-import { Geometry } from '../core/geometry/Geometry';
+import { Geometry } from './geometrys/Geometry';
 import { createNodeMenu } from '../core/menu/CreateNodeMenu';
 import { Scene3D } from './Scene3D';
 import { EventEmitter } from '../event/EventEmitter';

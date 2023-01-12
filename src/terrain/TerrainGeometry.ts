@@ -1,5 +1,5 @@
-import { Geometry, RegisterGeometry } from '../core/geometry/Geometry';
-import { geometryUtils } from '../core/geometry/GeometryUtils';
+import { Geometry, RegisterGeometry } from '../3d/geometrys/Geometry';
+import { geometryUtils } from '../3d/geometrys/GeometryUtils';
 import { Texture2D } from '../core/textures/Texture2D';
 import { ImageUtil } from '../core/utils/ImageUtil';
 import { Color4 } from '../math/Color4';

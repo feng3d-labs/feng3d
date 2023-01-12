@@ -1,7 +1,7 @@
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
-import { Geometry } from '../geometry/Geometry';
-import { geometryUtils } from '../geometry/GeometryUtils';
+import { Geometry } from '../geometrys/Geometry';
+import { geometryUtils } from '../geometrys/GeometryUtils';
 
 export interface IPolyhedronGeometry
 {

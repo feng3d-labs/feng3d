@@ -1,5 +1,5 @@
 import { Mesh3D } from '../../3d/Mesh3D';
-import { Geometry } from '../../core/geometry/Geometry';
+import { Geometry } from '../../3d/geometrys/Geometry';
 import { Material } from '../../core/materials/Material';
 import { TransformUtils } from '../../core/utils/TransformUtils';
 import { RegisterComponent } from '../../ecs/Component';

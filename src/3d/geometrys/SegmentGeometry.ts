@@ -1,15 +1,15 @@
+import { Node3D } from '../../3d/Node3D';
+import { Material } from '../../core/materials/Material';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
 import { Color4 } from '../../math/Color4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Node3D } from '../../3d/Node3D';
-import { Material } from '../materials/Material';
-import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Geometry, RegisterGeometry } from './Geometry';
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Segment: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Segment: Node3D; } }
 
 declare module './Geometry' { interface GeometryMap { SegmentGeometry: SegmentGeometry } }
 
