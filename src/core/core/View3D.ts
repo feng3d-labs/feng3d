@@ -5,7 +5,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera } from '../cameras/Camera';
 import { forwardRenderer } from '../render/renderer/ForwardRenderer';
-import { outlineRenderer } from '../../3d/outline/OutlineRenderer';
+import { outlineRenderer } from '../../3d/outline/Outline3DRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../../3d/wireframe/Wireframe3DRenderer';
 import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';

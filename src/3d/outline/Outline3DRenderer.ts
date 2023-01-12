@@ -9,7 +9,7 @@ import { Camera } from '../../core/cameras/Camera';
 /**
  * 轮廓渲染器
  */
-export class OutlineRenderer
+export class Outline3DRenderer
 {
     renderAtomic: RenderAtomic;
 
@@ -66,4 +66,4 @@ export class OutlineRenderer
 /**
  * 轮廓渲染器
  */
-export const outlineRenderer = new OutlineRenderer();
+export const outlineRenderer = new Outline3DRenderer();
