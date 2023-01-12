@@ -61,7 +61,7 @@ export class ShadowRenderer
         const renderAtomic = this.renderAtomic;
 
         // 获取影响阴影图的渲染对象
-        const models = scene.getComponentsInChildren('MeshRenderer').filter((mr) => shadowCamera.frustum.intersectsBox(mr.selfWorldBounds));
+        const models = scene.getComponentsInChildren('MeshRenderer').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
 
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
@@ -141,7 +141,7 @@ export class ShadowRenderer
             shadowCamera.node3d.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
 
             // 获取影响阴影图的渲染对象
-            const models = scene.getComponentsInChildren('MeshRenderer').filter((mr) => shadowCamera.frustum.intersectsBox(mr.selfWorldBounds));
+            const models = scene.getComponentsInChildren('MeshRenderer').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
 
             // 筛选投射阴影的渲染对象
             const castShadowsModels = models.filter((i) => i.castShadows);

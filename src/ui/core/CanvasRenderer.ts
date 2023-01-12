@@ -63,6 +63,6 @@ export class CanvasRenderer extends MeshRenderer
         {
             bounding.scale(transformLayout.size);
         }
-        this._selfLocalBounds = bounding;
+        this._localBounds = bounding;
     }
 }

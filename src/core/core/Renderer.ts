@@ -3,6 +3,8 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Component3D } from './Component3D';
+import { IRayCastable } from './IRayCastable';
+import { IRenderable } from './IRenderable';
 
 /**
  * 渲染器组件
@@ -13,40 +15,40 @@ import { Component3D } from './Component3D';
  *
  * @see https://docs.unity3d.com/cn/current/ScriptReference/Renderer.html
  */
-export class Renderer extends Component3D
+export class Renderer extends Component3D implements IRenderable, IRayCastable
 {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
      */
     readonly renderAtomic = new RenderAtomic();
 
-    protected _selfLocalBounds: Box3;
-    protected _selfWorldBounds: Box3;
+    protected _localBounds: Box3;
+    protected _worldBounds: Box3;
 
     /**
-     * 自身局部包围盒
+     * 局部包围盒
      */
-    get selfLocalBounds()
+    get localBounds()
     {
-        if (!this._selfLocalBounds)
+        if (!this._localBounds)
         {
             this._updateBounds();
         }
 
-        return this._selfLocalBounds;
+        return this._localBounds;
     }
 
     /**
-     * 自身世界包围盒
+     * 世界包围盒
      */
-    get selfWorldBounds()
+    get worldBounds()
     {
-        if (!this._selfWorldBounds)
+        if (!this._worldBounds)
         {
             this._updateWorldBounds();
         }
 
-        return this._selfWorldBounds;
+        return this._worldBounds;
     }
 
     /**
@@ -61,17 +63,12 @@ export class Renderer extends Component3D
         throw '请在子类中实现！';
     }
 
-    protected _onScenetransformChanged()
-    {
-        this._selfWorldBounds = null;
-    }
-
     /**
      * 更新世界边界
      */
     protected _updateWorldBounds()
     {
-        this._selfWorldBounds = this.selfLocalBounds.applyMatrixTo(this.node3d.globalMatrix);
+        this._worldBounds = this.localBounds.applyMatrixTo(this.node3d.globalMatrix);
     }
 
     /**
@@ -79,8 +76,8 @@ export class Renderer extends Component3D
      */
     protected _onBoundsInvalid()
     {
-        this._selfLocalBounds = null;
-        this._selfWorldBounds = null;
+        this._localBounds = null;
+        this._worldBounds = null;
 
         this.emitter.emit('selfBoundsChanged', this);
     }

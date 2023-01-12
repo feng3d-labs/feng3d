@@ -164,7 +164,7 @@ export class MeshRenderer extends Renderer
         const localNormal = new Vector3();
 
         // 检测射线与边界的碰撞
-        const rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.origin, localRay.direction, localNormal);
+        const rayEntryDistance = this.localBounds.rayIntersection(localRay.origin, localRay.direction, localNormal);
         if (rayEntryDistance === Number.MAX_VALUE)
         {
             return null;
@@ -212,9 +212,14 @@ export class MeshRenderer extends Renderer
         super.dispose();
     }
 
+    protected _onScenetransformChanged()
+    {
+        this._worldBounds = null;
+    }
+
     protected _updateBounds()
     {
-        this._selfLocalBounds = this.geometry.bounding;
+        this._localBounds = this.geometry.bounding;
     }
 
     protected _onGetSelfBounds(event: IEvent<{ bounds: Box3[]; }>)

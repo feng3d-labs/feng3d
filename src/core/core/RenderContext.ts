@@ -159,7 +159,7 @@ export class RenderContext
             const m = node3d.getComponent('MeshRenderer');
             if (m)
             {
-                const include = m.selfWorldBounds.toPoints().every((pos) =>
+                const include = m.worldBounds.toPoints().every((pos) =>
                 {
                     const p = this.project(pos);
 
