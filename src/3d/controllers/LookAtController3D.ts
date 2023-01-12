@@ -1,8 +1,8 @@
-import { Vector3 } from '../../math/geom/Vector3';
 import { Node3D } from '../../3d/Node3D';
-import { ControllerBase } from './ControllerBase';
+import { Vector3 } from '../../math/geom/Vector3';
+import { Controller3D } from './Controller3D';
 
-export class LookAtController extends ControllerBase
+export class LookAtController3D extends Controller3D
 {
     protected _lookAtPosition: Vector3;
     protected _lookAtObject: Node3D;

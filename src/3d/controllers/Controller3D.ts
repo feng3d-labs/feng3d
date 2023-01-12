@@ -1,6 +1,6 @@
 import { Node3D } from '../../3d/Node3D';
 
-export class ControllerBase
+export class Controller3D
 {
     /**
      * 控制对象

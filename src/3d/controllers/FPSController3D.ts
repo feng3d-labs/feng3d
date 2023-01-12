@@ -1,22 +1,22 @@
+import { RunEnvironment } from '../../core/core/RunEnvironment';
+import { ticker } from '../../core/utils/Ticker';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
-import { Component3D } from '../../3d/Component3D';
-import { RunEnvironment } from '../core/RunEnvironment';
-import { ticker } from '../utils/Ticker';
+import { Component3D } from '../Component3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { FPSController: FPSController; } }
+declare module '../../ecs/Component' { interface ComponentMap { FPSController3D: FPSController3D; } }
 
 /**
  * FPS模式控制器
  *
  * 按下鼠标后，拖动鼠标旋转，按ASDWQE键进行平移。
  */
-@RegisterComponent({ name: 'FPSController', menu: 'Controller/FPSController' })
-export class FPSController extends Component3D
+@RegisterComponent({ name: 'FPSController3D', menu: 'Controller/FPSController' })
+export class FPSController3D extends Component3D
 {
     /**
      * 加速度

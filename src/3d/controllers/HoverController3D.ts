@@ -1,8 +1,8 @@
-import { mathUtil } from '../../polyfill/MathUtil';
 import { Node3D } from '../../3d/Node3D';
-import { LookAtController } from './LookAtController';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { LookAtController3D } from './LookAtController3D';
 
-export class HoverController extends LookAtController
+export class HoverController3D extends LookAtController3D
 {
     _currentPanAngle = 0;
     _currentTiltAngle = 90;
