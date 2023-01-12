@@ -1,8 +1,8 @@
+import { Node3D } from '../../3d/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Node3D } from '../../3d/Node3D';
 import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -13,7 +13,7 @@ declare module '../geometry/Geometry'
     interface DefaultGeometryMap { Plane: PlaneGeometry; }
 }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Plane: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Plane: Node3D; } }
 
 /**
  * 平面几何体

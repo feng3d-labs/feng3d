@@ -1,22 +1,22 @@
-import { Component3D } from '../3d/Component3D';
-import { Node3D } from '../3d/Node3D';
-import { Scene3D } from '../3d/Scene3D';
-import { Camera } from '../core/cameras/Camera';
-import { RunEnvironment } from '../core/core/RunEnvironment';
-import { Geometry } from '../core/geometry/Geometry';
-import { Material } from '../core/materials/Material';
-import { createNodeMenu } from '../core/menu/CreateNodeMenu';
-import { QuadGeometry } from '../core/primitives/QuadGeometry';
-import { RegisterComponent } from '../ecs/Component';
-import { Matrix3x3 } from '../math/geom/Matrix3x3';
-import { Matrix4x4 } from '../math/geom/Matrix4x4';
-import { Vector3 } from '../math/geom/Vector3';
-import { oav } from '../objectview/ObjectView';
-import { ArrayUtils } from '../polyfill/ArrayUtils';
-import { AttributeBuffer } from '../renderer/data/AttributeBuffer';
-import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { SerializeProperty } from '../serialization/SerializeProperty';
-import { watcher } from '../watcher/watcher';
+import { Camera } from '../../core/cameras/Camera';
+import { RunEnvironment } from '../../core/core/RunEnvironment';
+import { Geometry } from '../../core/geometry/Geometry';
+import { Material } from '../../core/materials/Material';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { QuadGeometry } from '../../core/primitives/QuadGeometry';
+import { RegisterComponent } from '../../ecs/Component';
+import { Matrix3x3 } from '../../math/geom/Matrix3x3';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
+import { Component3D } from '../Component3D';
+import { Node3D } from '../Node3D';
+import { Scene3D } from '../Scene3D';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
@@ -37,13 +37,13 @@ import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSh
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
 
-declare module '../ecs/Component' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
+declare module '../../ecs/Component' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 
-declare module '../core/geometry/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
+declare module '../../core/geometry/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
 
-declare module '../3d/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
+declare module '../Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
 
-declare module '../3d/Node3D'
+declare module '../Node3D'
 {
     interface Node3DEventMap
     {

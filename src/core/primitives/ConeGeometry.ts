@@ -13,7 +13,7 @@ declare module '../geometry/Geometry'
     interface DefaultGeometryMap { Cone: ConeGeometry; }
 }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Cone: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Cone: Node3D; } }
 
 /**
  * 圆锥体

@@ -11,7 +11,7 @@ import { Component2D } from './Component2D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Canvas: Canvas } }
 
-declare module '../../core/core/Node3D' { interface PrimitiveNode3D { Canvas: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Canvas: Node3D; } }
 
 /**
  * Element that can be used for screen rendering.

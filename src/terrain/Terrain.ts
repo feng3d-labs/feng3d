@@ -7,7 +7,7 @@ import { TerrainData } from './TerrainData';
 
 declare module '../ecs/Component' { interface ComponentMap { Terrain: Terrain } }
 
-declare module '../core/core/Node3D' { interface PrimitiveNode3D { Terrain: Node3D; } }
+declare module '../3d/Node3D' { interface PrimitiveNode3D { Terrain: Node3D; } }
 
 /**
  * The Terrain component renders the terrain.

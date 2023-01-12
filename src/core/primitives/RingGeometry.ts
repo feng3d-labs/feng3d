@@ -1,10 +1,10 @@
+import { Node3D } from '../../3d/Node3D';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Node3D } from '../../3d/Node3D';
 import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
@@ -15,7 +15,7 @@ declare module '../geometry/Geometry'
     interface DefaultGeometryMap { Ring: RingGeometry; }
 }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Ring: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Ring: Node3D; } }
 
 export interface IRingGeometry
 {

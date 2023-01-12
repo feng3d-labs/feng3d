@@ -1,7 +1,7 @@
+import { Node3D } from '../../3d/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Node3D } from '../../3d/Node3D';
 import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -11,7 +11,7 @@ declare module '../geometry/Geometry'
     interface DefaultGeometryMap { Sphere: SphereGeometry; }
 }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Sphere: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Sphere: Node3D; } }
 
 /**
  * 球体几何体

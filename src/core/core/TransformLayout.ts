@@ -1,3 +1,6 @@
+import { Component3D } from '../../3d/Component3D';
+import { Node3D } from '../../3d/Node3D';
+import { Scene3D } from '../../3d/Scene3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -6,12 +9,9 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { Scene3D } from '../../3d/Scene3D';
 import { ticker } from '../utils/Ticker';
-import { Component3D } from '../../3d/Component3D';
-import { Node3D } from '../../3d/Node3D';
 
-declare module './Node3D'
+declare module '../../3d/Node3D'
 {
     export interface Node3DEventMap
     {

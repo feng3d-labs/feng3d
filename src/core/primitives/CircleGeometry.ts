@@ -14,7 +14,7 @@ declare module '../geometry/Geometry'
     interface DefaultGeometryMap { Circle: CircleGeometry; }
 }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Circle: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Circle: Node3D; } }
 
 export interface ICircleGeometry
 {

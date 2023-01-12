@@ -15,6 +15,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "types": "tsc && rollup -c && node scripts/indexdts.js",
+    "watch": "tsc -w",
     "lint": "eslint --ext .js --ext .ts src test rollup.config.js --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc",

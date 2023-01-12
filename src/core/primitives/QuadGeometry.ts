@@ -10,7 +10,7 @@ declare module '../geometry/Geometry'
     interface DefaultGeometryMap { Quad: QuadGeometry; }
 }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Quad: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Quad: Node3D; } }
 
 /**
  * 四边形面皮几何体

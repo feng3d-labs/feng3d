@@ -1,3 +1,6 @@
+import { Component3D } from '../../3d/Component3D';
+import { Node3D } from '../../3d/Node3D';
+import { Scene3D } from '../../3d/Scene3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera } from '../cameras/Camera';
@@ -5,13 +8,11 @@ import { forwardRenderer } from '../render/renderer/ForwardRenderer';
 import { outlineRenderer } from '../render/renderer/OutlineRenderer';
 import { shadowRenderer } from '../render/renderer/ShadowRenderer';
 import { wireframeRenderer } from '../render/renderer/WireframeRenderer';
-import { Scene3D } from '../../3d/Scene3D';
 import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
-import { Component3D } from '../../3d/Component3D';
 import { RenderContext } from './RenderContext';
 
-declare module './Node3D'
+declare module '../../3d/Node3D'
 {
     interface Node3DEventMap
     {
@@ -144,7 +145,7 @@ export class View3D extends Component3D
         let scene = this.scene;
         if (!scene)
         {
-            scene = this.getComponentInChildren('Scene');
+            scene = this.getComponentInChildren('Scene3D');
         }
 
         return scene;

@@ -1,9 +1,9 @@
+import { Node3D } from '../../3d/Node3D';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
 import { watcher } from '../../watcher/watcher';
-import { Node3D } from '../../3d/Node3D';
 import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
@@ -14,7 +14,7 @@ declare module '../geometry/Geometry'
     interface DefaultGeometryMap { Lathe: LatheGeometry; }
 }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Lathe: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Lathe: Node3D; } }
 
 /**
  * 旋转造型

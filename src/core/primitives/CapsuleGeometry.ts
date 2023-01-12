@@ -1,7 +1,7 @@
+import { Node3D } from '../../3d/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { Node3D } from '../../3d/Node3D';
 import { Geometry, RegisterGeometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -9,7 +9,7 @@ declare module '../geometry/Geometry' { interface GeometryMap { CapsuleGeometry:
 
 declare module '../geometry/Geometry' { interface DefaultGeometryMap { Capsule: CapsuleGeometry; } }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { Capsule: Node3D; } }
+declare module '../../3d/Node3D' { interface PrimitiveNode3D { Capsule: Node3D; } }
 
 /**
  * 胶囊体几何体
