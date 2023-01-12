@@ -1,24 +1,24 @@
-import { AssetType } from '../core/assets/AssetType';
-import { Camera3D } from '../core/cameras/Camera3D';
-import { HideFlags } from '../core/core/HideFlags';
-import { Node, NodeEventMap } from '../core/core/Node';
-import { Geometry } from './geometrys/Geometry';
-import { createNodeMenu } from '../core/menu/CreateNodeMenu';
-import { Scene3D } from './Scene3D';
-import { EventEmitter } from '../event/EventEmitter';
-import { Euler } from '../math/geom/Euler';
-import { Matrix4x4 } from '../math/geom/Matrix4x4';
-import { Quaternion } from '../math/geom/Quaternion';
-import { Vector3 } from '../math/geom/Vector3';
-import { oav } from '../objectview/ObjectView';
-import { mathUtil } from '../polyfill/MathUtil';
-import { gPartial } from '../polyfill/Types';
-import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Serializable } from '../serialization/Serializable';
-import { $set } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
-import { watcher } from '../watcher/watcher';
+import { AssetType } from '../../core/assets/AssetType';
+import { HideFlags } from '../../core/core/HideFlags';
+import { Node, NodeEventMap } from '../../core/core/Node';
+import { createNodeMenu } from '../../core/menu/CreateNodeMenu';
+import { EventEmitter } from '../../event/EventEmitter';
+import { Euler } from '../../math/geom/Euler';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Quaternion } from '../../math/geom/Quaternion';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { gPartial } from '../../polyfill/Types';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Serializable } from '../../serialization/Serializable';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
+import { Camera3D } from '../cameras/Camera3D';
+import { Geometry } from '../geometrys/Geometry';
 import { BoundingBox3D } from './BoundingBox3D';
+import { Scene3D } from './Scene3D';
 
 export interface Node3DEventMap extends NodeEventMap
 {
@@ -90,7 +90,7 @@ export interface Node3D
     addChild(child: Node3D): this;
 }
 
-declare module '../serialization/Serializable'
+declare module '../../serialization/Serializable'
 {
     interface SerializableMap { Node3D: Node3D }
 }

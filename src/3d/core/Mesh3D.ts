@@ -1,21 +1,21 @@
-import { Camera3D } from '../core/cameras/Camera3D';
-import { Renderable3D } from '../core/core/Renderable3D';
-import { Geometry, GeometryMap } from './geometrys/Geometry';
-import { Material, MaterialMap } from '../core/materials/Material';
-import { PickingCollisionVO } from './raycast/rayCast3D';
+import { TransformUtils } from '../../core/utils/TransformUtils';
+import { RegisterComponent } from '../../ecs/Component';
+import { IEvent } from '../../event/IEvent';
+import { Box3 } from '../../math/geom/Box3';
+import { Ray3 } from '../../math/geom/Ray3';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Camera3D } from '../cameras/Camera3D';
+import { Geometry, GeometryMap } from '../geometrys/Geometry';
+import { LightPicker } from '../light/pickers/LightPicker';
+import { Material, MaterialMap } from '../materials/Material';
+import { PickingCollisionVO } from '../raycast/rayCast3D';
+import { Renderable3D } from './Renderable3D';
 import { Scene3D } from './Scene3D';
-import { TransformUtils } from '../core/utils/TransformUtils';
-import { RegisterComponent } from '../ecs/Component';
-import { IEvent } from '../event/IEvent';
-import { Box3 } from '../math/geom/Box3';
-import { Ray3 } from '../math/geom/Ray3';
-import { Vector3 } from '../math/geom/Vector3';
-import { oav } from '../objectview/ObjectView';
-import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { SerializeProperty } from '../serialization/SerializeProperty';
-import { LightPicker } from './light/pickers/LightPicker';
 
-declare module '../ecs/Component'
+declare module '../../ecs/Component'
 {
     interface ComponentMap { Mesh3D: Mesh3D }
 }

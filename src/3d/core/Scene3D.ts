@@ -1,9 +1,9 @@
-import { HideFlags } from '../core/core/HideFlags';
-import { RunEnvironment } from '../core/core/RunEnvironment';
-import { Component, RegisterComponent } from '../ecs/Component';
-import { Color4 } from '../math/Color4';
-import { oav } from '../objectview/ObjectView';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { HideFlags } from '../../core/core/HideFlags';
+import { RunEnvironment } from '../../core/core/RunEnvironment';
+import { Component, RegisterComponent } from '../../ecs/Component';
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
 
@@ -20,7 +20,7 @@ declare module './Node3D'
     }
 }
 
-declare module '../ecs/Component'
+declare module '../../ecs/Component'
 {
     interface ComponentMap { Scene3D: Scene3D; }
 }

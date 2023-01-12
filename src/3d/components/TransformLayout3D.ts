@@ -1,6 +1,4 @@
-import { Component3D } from '../../3d/Component3D';
-import { Node3D } from '../../3d/Node3D';
-import { Scene3D } from '../../3d/Scene3D';
+import { ticker } from '../../core/utils/Ticker';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Vector3 } from '../../math/geom/Vector3';
@@ -9,26 +7,28 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera3D } from '../cameras/Camera3D';
-import { ticker } from '../utils/Ticker';
+import { Component3D } from '../core/Component3D';
+import { Node3D } from '../core/Node3D';
+import { Scene3D } from '../core/Scene3D';
 
-declare module '../../3d/Node3D'
+declare module '../core/Node3D'
 {
     export interface Node3DEventMap
     {
         /**
          * 尺寸变化事件
          */
-        sizeChanged: TransformLayout;
+        sizeChanged: TransformLayout3D;
 
         /**
          * 中心点变化事件
          */
-        pivotChanged: TransformLayout;
+        pivotChanged: TransformLayout3D;
     }
 
 }
 
-declare module '../../ecs/Component' { interface ComponentMap { TransformLayout: TransformLayout; } }
+declare module '../../ecs/Component' { interface ComponentMap { TransformLayout3D: TransformLayout3D; } }
 
 /**
  * 变换布局
@@ -37,8 +37,8 @@ declare module '../../ecs/Component' { interface ComponentMap { TransformLayout:
  *
  * 通过修改Transform的数值实现
  */
-@RegisterComponent({ name: 'TransformLayout', single: true, menu: 'Layout/TransformLayout' })
-export class TransformLayout extends Component3D
+@RegisterComponent({ name: 'TransformLayout3D', single: true, menu: 'Layout/TransformLayout' })
+export class TransformLayout3D extends Component3D
 {
     /**
      * 创建一个实体，该类为虚类
@@ -176,7 +176,7 @@ export class TransformLayout extends Component3D
     {
         if (!this._layoutInvalid) return;
 
-        const transformLayout = this.node3d?.parent?.getComponent('TransformLayout');
+        const transformLayout = this.node3d?.parent?.getComponent('TransformLayout3D');
         if (!transformLayout) return;
 
         // 中心点基于anchorMin的坐标

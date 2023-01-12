@@ -1,10 +1,10 @@
+import { IRenderable } from '../../core/core/IRenderable';
 import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { PickingCollisionVO } from '../../3d/raycast/rayCast3D';
-import { Component3D } from '../../3d/Component3D';
-import { IRayCastable } from './IRayCastable';
-import { IRenderable } from './IRenderable';
+import { PickingCollisionVO } from '../raycast/rayCast3D';
+import { Component3D } from './Component3D';
+import { IRayCastable3D } from './IRayCastable3D';
 
 /**
  * 3D可渲染组件
@@ -15,7 +15,7 @@ import { IRenderable } from './IRenderable';
  *
  * @see https://docs.unity3d.com/cn/current/ScriptReference/Renderer.html
  */
-export class Renderable3D extends Component3D implements IRenderable, IRayCastable
+export class Renderable3D extends Component3D implements IRenderable, IRayCastable3D
 {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）

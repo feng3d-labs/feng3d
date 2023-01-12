@@ -2,7 +2,7 @@ import { Camera3D } from '../../core/cameras/Camera3D';
 import { HideFlags } from '../../core/core/HideFlags';
 import { Node, NodeEventMap } from '../../core/core/Node';
 import { Node3D } from '../../3d/Node3D';
-import { TransformLayout } from '../../core/core/TransformLayout';
+import { TransformLayout3D } from '../../core/core/TransformLayout3D';
 import { Scene3D } from '../../3d/Scene3D';
 import { Component } from '../../ecs/Component';
 import { EventEmitter } from '../../event/EventEmitter';
@@ -69,7 +69,7 @@ export class Node2D extends Node
 
     get single() { return true; }
 
-    transformLayout: TransformLayout;
+    transformLayout: TransformLayout3D;
 
     /**
      * 描述了2D对象在未经过变换前的位置与尺寸
@@ -180,7 +180,7 @@ export class Node2D extends Node
     private _onAddComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
     {
         const component = event.data.component;
-        if (component instanceof TransformLayout)
+        if (component instanceof TransformLayout3D)
         {
             component.hideFlags = component.hideFlags | HideFlags.HideInInspector;
             this.transformLayout = component;
@@ -190,13 +190,13 @@ export class Node2D extends Node
     private _onRemovedComponent(event: IEvent<{ entity: Node3D; component: Component; }>)
     {
         const component = event.data.component;
-        if (component instanceof TransformLayout)
+        if (component instanceof TransformLayout3D)
         {
             this.transformLayout = null;
         }
     }
 
-    private _onTransformLayoutChanged(newValue: TransformLayout, oldValue: TransformLayout, _object: Node2D, _property: string)
+    private _onTransformLayoutChanged(newValue: TransformLayout3D, oldValue: TransformLayout3D, _object: Node2D, _property: string)
     {
         if (oldValue)
         {

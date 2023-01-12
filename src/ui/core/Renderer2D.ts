@@ -1,5 +1,5 @@
 import { Component3D } from '../../3d/Component3D';
-import { RenderContext } from '../../core/core/RenderContext';
+import { RenderContext3D } from '../../core/core/RenderContext3D';
 import { IEvent } from '../../event/IEvent';
 
 /**
@@ -21,7 +21,7 @@ export class Renderer2D extends Component3D
         super.dispose();
     }
 
-    private _onBeforeRender(event: IEvent<RenderContext>)
+    private _onBeforeRender(event: IEvent<RenderContext3D>)
     {
         this.draw(event.data);
     }
@@ -29,7 +29,7 @@ export class Renderer2D extends Component3D
     /**
      * 渲染
      */
-    draw(data: RenderContext)
+    draw(data: RenderContext3D)
     {
         const { webGLRenderer, scene, viewRect, mousePos } = data;
 

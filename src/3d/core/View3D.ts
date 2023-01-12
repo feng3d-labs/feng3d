@@ -1,18 +1,18 @@
-import { Component3D } from '../../3d/Component3D';
-import { Node3D } from '../../3d/Node3D';
-import { Scene3D } from '../../3d/Scene3D';
+import { Camera3D } from '../../3d/cameras/Camera3D';
+import { outlineRenderer } from '../../3d/outline/Outline3DRenderer';
+import { forwardRenderer } from '../../3d/renderer/ForwardRenderer3D';
+import { shadowRenderer } from '../../3d/renderer/ShadowRenderer';
+import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';
+import { wireframeRenderer } from '../../3d/wireframe/Wireframe3DRenderer';
+import { ticker } from '../../core/utils/Ticker';
 import { RegisterComponent } from '../../ecs/Component';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { Camera3D } from '../cameras/Camera3D';
-import { forwardRenderer } from '../../3d/renderer/ForwardRenderer3D';
-import { outlineRenderer } from '../../3d/outline/Outline3DRenderer';
-import { shadowRenderer } from '../../3d/renderer/ShadowRenderer';
-import { wireframeRenderer } from '../../3d/wireframe/Wireframe3DRenderer';
-import { skyboxRenderer } from '../../3d/skybox/SkyBox3DRenderer';
-import { ticker } from '../utils/Ticker';
-import { RenderContext } from './RenderContext';
+import { Component3D } from './Component3D';
+import { Node3D } from './Node3D';
+import { RenderContext3D } from './RenderContext3D';
+import { Scene3D } from './Scene3D';
 
-declare module '../../3d/Node3D'
+declare module './Node3D'
 {
     interface Node3DEventMap
     {
@@ -21,12 +21,12 @@ declare module '../../3d/Node3D'
          *
          * 组件可以监听该事件，在渲染前更新渲染所需数据等。
          */
-        beforeRender: RenderContext;
+        beforeRender: RenderContext3D;
 
         /**
          * 渲染后事件，将在每次渲染结束后进行派发。
          */
-        afterRender: RenderContext;
+        afterRender: RenderContext3D;
     }
 }
 
@@ -131,7 +131,7 @@ export class View3D extends Component3D
         let camera = this.camera;
         if (!camera)
         {
-            camera = this.getComponentInChildren('Camera');
+            camera = this.getComponentInChildren('Camera3D');
         }
 
         return camera;
@@ -228,7 +228,7 @@ export class View3D extends Component3D
 
         const webGLRenderer = this.webGLRenderer;
 
-        const data = new RenderContext(canvas, camera, scene, webGLRenderer);
+        const data = new RenderContext3D(canvas, camera, scene, webGLRenderer);
 
         //
         this.emitter.emit('beforeRender', data, true, true);
