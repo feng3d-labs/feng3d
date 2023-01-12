@@ -1,15 +1,18 @@
+import { Camera } from '../../core/cameras/Camera';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { watcher } from '../../watcher/watcher';
-import { Camera } from '../cameras/Camera';
-import { Component3D } from '../../3d/Component3D';
+import { Component3D } from '../Component3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { BillboardComponent: BillboardComponent; } }
+declare module '../../ecs/Component' { interface ComponentMap { Billboard3D: Billboard3D; } }
 
-@RegisterComponent({ name: 'BillboardComponent', menu: 'Layout/BillboardComponent' })
-export class BillboardComponent extends Component3D
+/**
+ * 保持面向摄像机。
+ */
+@RegisterComponent({ name: 'Billboard3D', menu: 'Layout/Billboard3D' })
+export class Billboard3D extends Component3D
 {
-    declare __class__: 'BillboardComponent';
+    declare __class__: 'Billboard3D';
 
     /**
      * 相机
@@ -20,7 +23,7 @@ export class BillboardComponent extends Component3D
     init()
     {
         super.init();
-        watcher.watch(this as BillboardComponent, 'camera', this._onCameraChanged, this);
+        watcher.watch(this as Billboard3D, 'camera', this._onCameraChanged, this);
         this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
         this._invalidHoldSizeMatrix();
     }

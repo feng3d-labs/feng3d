@@ -1,15 +1,16 @@
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../../3d/Component3D';
+import { RegisterComponent } from '../../ecs/Component';
 import { dataTransform } from '../../polyfill/DataTransform';
 
-declare module '../../ecs/Component' { interface ComponentMap { Graphics: Graphics; } }
+declare module '../../ecs/Component' { interface ComponentMap { Graphics3D: Graphics3D; } }
 
 /**
  * Graphics 类包含一组可用来创建矢量形状的方法。
  */
-@RegisterComponent({ name: 'Graphics' })
-export class Graphics extends Component
+@RegisterComponent({ name: 'Graphics3D' })
+export class Graphics3D extends Component3D
 {
-    declare __class__: 'Graphics';
+    declare __class__: 'Graphics3D';
 
     private image: HTMLImageElement;
     private context2D: CanvasRenderingContext2D;

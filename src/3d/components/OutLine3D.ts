@@ -1,14 +1,14 @@
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../../3d/Component3D';
+import { Scene3D } from '../../3d/Scene3D';
+import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera } from '../cameras/Camera';
-import { Scene3D } from '../../3d/Scene3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { OutLineComponent: OutLineComponent; } }
+declare module '../../ecs/Component' { interface ComponentMap { OutLine3D: OutLine3D; } }
 
-import '../../renderer/data/Uniforms';
 declare module '../../renderer/data/Uniforms'
 {
     interface Uniforms
@@ -29,10 +29,15 @@ declare module '../../renderer/data/Uniforms'
     }
 }
 
-@RegisterComponent({ name: 'OutLineComponent', menu: 'Rendering/OutLineComponent' })
-export class OutLineComponent extends Component
+/**
+ * 描边。
+ *
+ * 由 OutlineRenderer 进行渲染。
+ */
+@RegisterComponent({ name: 'OutLine3D', menu: 'Rendering/OutLine3D' })
+export class OutLine3D extends Component3D
 {
-    declare __class__: 'OutLineComponent';
+    declare __class__: 'OutLine3D';
 
     @oav()
     @SerializeProperty()

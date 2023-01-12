@@ -1,14 +1,14 @@
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component3D } from '../../3d/Component3D';
+import { Scene3D } from '../../3d/Scene3D';
+import { Camera } from '../../core/cameras/Camera';
+import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Camera } from '../cameras/Camera';
-import { Scene3D } from '../../3d/Scene3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { CartoonComponent: CartoonComponent; } }
+declare module '../../ecs/Component' { interface ComponentMap { Cartoon3D: Cartoon3D; } }
 
 declare module '../../renderer/data/Uniforms'
 {
@@ -24,10 +24,10 @@ declare module '../../renderer/data/Uniforms'
 /**
  * 参考
  */
-@RegisterComponent({ name: 'CartoonComponent', menu: 'Rendering/CartoonComponent' })
-export class CartoonComponent extends Component
+@RegisterComponent({ name: 'Cartoon3D', menu: 'Rendering/Cartoon3D' })
+export class Cartoon3D extends Component3D
 {
-    declare __class__: 'CartoonComponent';
+    declare __class__: 'Cartoon3D';
 
     @oav()
     @SerializeProperty()

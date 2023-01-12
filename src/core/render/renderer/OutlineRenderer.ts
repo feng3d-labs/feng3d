@@ -2,8 +2,8 @@ import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
-import { CartoonComponent } from '../../component/CartoonComponent';
-import { OutLineComponent } from '../../component/OutLineComponent';
+import { Cartoon3D } from '../../component/Cartoon3D';
+import { OutLine3D } from '../../component/OutLine3D';
 import { Scene3D } from '../../../3d/Scene3D';
 
 /**
@@ -50,7 +50,7 @@ export class OutlineRenderer
         for (let i = 0; i < unblenditems.length; i++)
         {
             const renderable = unblenditems[i];
-            if (renderable.getComponent(OutLineComponent) || renderable.getComponent(CartoonComponent))
+            if (renderable.getComponent(OutLine3D) || renderable.getComponent(Cartoon3D))
             {
                 const renderAtomic = renderable.renderAtomic;
                 renderable.beforeRender(renderAtomic, scene, camera);

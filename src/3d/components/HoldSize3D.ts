@@ -1,15 +1,18 @@
+import { Component3D } from '../../3d/Component3D';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
-import { Component3D } from '../../3d/Component3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { HoldSizeComponent: HoldSizeComponent; } }
+declare module '../../ecs/Component' { interface ComponentMap { HoldSize3D: HoldSize3D; } }
 
-@RegisterComponent({ name: 'HoldSizeComponent', menu: 'Layout/HoldSizeComponent' })
-export class HoldSizeComponent extends Component3D
+/**
+ * 保持固定缩放尺寸。
+ */
+@RegisterComponent({ name: 'HoldSize3D', menu: 'Layout/HoldSize3D' })
+export class HoldSize3D extends Component3D
 {
-    declare __class__: 'HoldSizeComponent';
+    declare __class__: 'HoldSize3D';
 
     /**
      * 保持缩放尺寸
@@ -25,8 +28,8 @@ export class HoldSizeComponent extends Component3D
 
     init()
     {
-        watcher.watch(this as HoldSizeComponent, 'holdSize', this._invalidateGlobalTransform, this);
-        watcher.watch(this as HoldSizeComponent, 'camera', this._onCameraChanged, this);
+        watcher.watch(this as HoldSize3D, 'holdSize', this._invalidateGlobalTransform, this);
+        watcher.watch(this as HoldSize3D, 'camera', this._onCameraChanged, this);
         this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
     }
 

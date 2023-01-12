@@ -5,7 +5,7 @@ import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Shader } from '../../../renderer/data/Shader';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
-import { WireframeComponent } from '../../component/WireframeComponent';
+import { Wireframe3D } from '../../component/Wireframe3D';
 import { Renderable3D } from '../../core/Renderable3D';
 import { Scene3D } from '../../../3d/Scene3D';
 
@@ -59,9 +59,9 @@ export class WireframeRenderer
             return pv;
         }, []);
 
-        const wireframes = unblenditems.reduce((pv: { wireframe: WireframeComponent, renderable: Renderable3D }[], cv) =>
+        const wireframes = unblenditems.reduce((pv: { wireframe: Wireframe3D, renderable: Renderable3D }[], cv) =>
         {
-            const wireframe = cv.getComponent(WireframeComponent); if (wireframe) pv.push({ wireframe, renderable: cv });
+            const wireframe = cv.getComponent(Wireframe3D); if (wireframe) pv.push({ wireframe, renderable: cv });
 
             return pv;
         }, []);
