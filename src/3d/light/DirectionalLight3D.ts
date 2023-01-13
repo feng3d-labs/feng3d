@@ -4,7 +4,7 @@ import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
-import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
+import { OrthographicCamera3D } from '../cameras/OrthographicLens';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';
@@ -25,7 +25,7 @@ export class DirectionalLight3D extends Light3D
 
     lightType = LightType.Directional;
 
-    private orthographicLens: OrthographicLens;
+    private orthographicLens: OrthographicCamera3D;
 
     /**
      * 光源位置
@@ -60,7 +60,7 @@ export class DirectionalLight3D extends Light3D
         //
         if (!this.orthographicLens)
         {
-            this.shadowCamera.lens = this.orthographicLens = new OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+            this.shadowCamera.lens = this.orthographicLens = new OrthographicCamera3D(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
         }
         else
         {

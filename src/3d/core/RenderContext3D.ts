@@ -56,7 +56,7 @@ export class RenderContext3D
         this.viewRect = new Rectangle(clientRect.x, clientRect.y, clientRect.width, clientRect.height);
 
         // 更新摄像机宽高比
-        camera.lens.aspect = clientRect.width / clientRect.height;
+        camera.aspect = clientRect.width / clientRect.height;
 
         // 计算鼠标所在画布中的位置
         this.mousePos = new Vector2(windowEventProxy.clientX - clientRect.left, windowEventProxy.clientX - clientRect.left);
@@ -103,7 +103,7 @@ export class RenderContext3D
     {
         const gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
 
-        return this.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+        return this.camera.unproject(new Vector3(gpuPos.x, gpuPos.y, sZ), v);
     }
 
     /**
@@ -125,7 +125,7 @@ export class RenderContext3D
     {
         const gpuPos = this.screenToGpuPosition(this.mousePos);
 
-        const ray = this.camera.getRay3D(gpuPos.x, gpuPos.y);
+        const ray = this.camera.getWorldRay3D(gpuPos.x, gpuPos.y);
 
         return ray;
     }

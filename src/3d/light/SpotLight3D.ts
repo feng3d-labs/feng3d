@@ -4,7 +4,7 @@ import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
+import { PerspectiveCamera3D } from '../cameras/PerspectiveCamera3D';
 import { Node3D } from '../core/Node3D';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
@@ -54,14 +54,14 @@ export class SpotLight3D extends Light3D
         return Math.cos(this.angle * 0.5 * mathUtil.DEG2RAD * (1 - this.penumbra));
     }
 
-    private perspectiveLens: PerspectiveLens;
+    private perspectiveLens: PerspectiveCamera3D;
 
     constructor()
     {
         super();
         watcher.watch(this as SpotLight3D, 'angle', this._invalidAngle, this);
         watcher.watch(this as SpotLight3D, 'range', this._invalidRange, this);
-        this.perspectiveLens = this.shadowCamera.lens = new PerspectiveLens(this.angle, 1, 0.1, this.range);
+        this.perspectiveLens = this.shadowCamera.lens = new PerspectiveCamera3D(this.angle, 1, 0.1, this.range);
     }
 
     private _invalidRange()
