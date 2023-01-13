@@ -33,7 +33,9 @@ declare module './Node3D'
 declare module '../../ecs/Component' { interface ComponentMap { WebGLRenderer3D: WebGLRenderer3D; } }
 
 /**
- * 视图
+ * 3D渲染器。
+ *
+ * 給定3D場景與攝像機，進行渲染。
  */
 @RegisterComponent({ name: 'WebGLRenderer3D' })
 export class WebGLRenderer3D extends Component3D
