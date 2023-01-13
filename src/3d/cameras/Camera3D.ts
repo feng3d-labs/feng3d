@@ -120,13 +120,13 @@ export class Camera3D extends Component3D
     {
         super.init();
 
-        watcher.watch(this as Camera3D, 'near', this.invalidateProjectionMatrix, this);
-        watcher.watch(this as Camera3D, 'far', this.invalidateProjectionMatrix, this);
-        watcher.watch(this as Camera3D, 'aspect', this.invalidateProjectionMatrix, this);
+        watcher.watch(this as Camera3D, 'near', this._invalidateProjectionMatrix, this);
+        watcher.watch(this as Camera3D, 'far', this._invalidateProjectionMatrix, this);
+        watcher.watch(this as Camera3D, 'aspect', this._invalidateProjectionMatrix, this);
 
         //
-        this.emitter.on('globalMatrixChanged', this.invalidateViewProjection, this);
-        this.invalidateViewProjection();
+        this.emitter.on('globalMatrixChanged', this._invalidateViewProjection, this);
+        this._invalidateViewProjection();
     }
 
     /**
@@ -235,7 +235,7 @@ export class Camera3D extends Component3D
     /**
      * 处理场景变换改变事件
      */
-    protected invalidateViewProjection()
+    protected _invalidateViewProjection()
     {
         this._viewProjectionInvalid = true;
         this._frustumInvalid = true;
@@ -251,14 +251,14 @@ export class Camera3D extends Component3D
     /**
      * 投影矩阵失效
      */
-    protected invalidateProjectionMatrix()
+    protected _invalidateProjectionMatrix()
     {
         console.assert(!isNaN(this.aspect));
 
         this._projectionMatrixInvalid = true;
         this._inversepPojectionMatrixInvalid = true;
 
-        this.invalidateViewProjection();
+        this._invalidateViewProjection();
     }
 
     private _updateInversepPojectionMatrix()
@@ -272,7 +272,8 @@ export class Camera3D extends Component3D
      */
     protected _updateProjectionMatrix()
     {
-        console.warn(`需要在 Camera3D 子类中实现！`);
+        // 默认提供一个 fov 为 60 的投影矩阵。
+        this._projectionMatrix.setPerspectiveFromFOV(60, this.aspect, this.near, this.far);
     }
 
     //

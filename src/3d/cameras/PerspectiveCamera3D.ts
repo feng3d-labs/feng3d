@@ -19,18 +19,11 @@ export class PerspectiveCamera3D extends Camera3D
      */
     @SerializeProperty()
     @oav()
-    fov: number;
+    fov = 60;
 
-    /**
-     * 创建一个透视摄像机镜头
-     * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
-     *
-     */
-    constructor(fov = 60, aspect = 1, near = 0.3, far = 1000)
+    init(): void
     {
-        super(aspect, near, far);
-        watcher.watch(this as PerspectiveCamera3D, 'fov', this.invalidateProjectionMatrix, this);
-        this.fov = fov;
+        watcher.watch(this as PerspectiveCamera3D, 'fov', this._invalidateProjectionMatrix, this);
     }
 
     /**
@@ -95,10 +88,5 @@ export class PerspectiveCamera3D extends Camera3D
     protected _updateProjectionMatrix()
     {
         this._projectionMatrix.setPerspectiveFromFOV(this.fov, this.aspect, this.near, this.far);
-    }
-
-    clone()
-    {
-        return new PerspectiveCamera3D(this.fov, this.aspect, this.near, this.far);
     }
 }

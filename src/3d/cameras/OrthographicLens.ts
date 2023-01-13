@@ -7,7 +7,7 @@ import { Camera3D } from './Camera3D';
 declare module '../../ecs/Component' { interface ComponentMap { OrthographicCamera3D: OrthographicCamera3D; } }
 
 /**
- * 正射投影镜头
+ * 正射投影相机。
  */
 @RegisterComponent({ name: 'OrthographicCamera3D' })
 export class OrthographicCamera3D extends Camera3D
@@ -17,26 +17,20 @@ export class OrthographicCamera3D extends Camera3D
      */
     @SerializeProperty()
     @oav()
-    size: number;
+    size = 1;
 
-    /**
-     * 构建正射投影镜头
-     * @param size 尺寸
-     */
-    constructor(size = 1, aspect = 1, near = 0.3, far = 1000)
+    init(): void
     {
-        super(aspect, near, far);
-        watcher.watch(this as OrthographicCamera3D, 'size', this.invalidateProjectionMatrix, this);
-        this.size = size;
+        watcher.watch(this as OrthographicCamera3D, 'size', this._invalidateProjectionMatrix, this);
+    }
+
+    dispose(): void
+    {
+        watcher.unwatch(this as OrthographicCamera3D, 'size', this._invalidateProjectionMatrix, this);
     }
 
     protected _updateProjectionMatrix()
     {
         this._projectionMatrix.setOrtho(-this.size * this.aspect, this.size * this.aspect, this.size, -this.size, this.near, this.far);
-    }
-
-    clone()
-    {
-        return new OrthographicCamera3D(this.size, this.aspect, this.near, this.far);
     }
 }
