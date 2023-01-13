@@ -1,9 +1,9 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { PerspectiveCamera3D } from '../cameras/PerspectiveCamera3D';
 import { Node3D } from '../core/Node3D';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
@@ -52,14 +52,15 @@ export class PointLight3D extends Light3D
     init(): void
     {
         super.init();
-        this.shadowCamera.lens = new PerspectiveCamera3D(90, 1, 0.1, this.range);
+
+        this.shadowCamera.projectionMatrix = new Matrix4x4().setPerspectiveFromFOV(90, 1, 0.1, this.range);
     }
 
     private invalidRange()
     {
         if (this.shadowCamera)
         {
-            this.shadowCamera.lens.far = this.range;
+            this.shadowCamera.far = this.range;
         }
     }
 }

@@ -61,14 +61,14 @@ export class SpotLight3D extends Light3D
         super();
         watcher.watch(this as SpotLight3D, 'angle', this._invalidAngle, this);
         watcher.watch(this as SpotLight3D, 'range', this._invalidRange, this);
-        this.perspectiveLens = this.shadowCamera.lens = new PerspectiveCamera3D(this.angle, 1, 0.1, this.range);
+        this.perspectiveLens = new PerspectiveCamera3D(this.angle, 1, 0.1, this.range);
     }
 
     private _invalidRange()
     {
         if (this.shadowCamera)
         {
-            this.shadowCamera.lens.far = this.range;
+            this.shadowCamera.far = this.range;
         }
     }
 

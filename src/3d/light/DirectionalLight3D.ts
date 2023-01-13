@@ -1,6 +1,7 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
 import { Box3 } from '../../math/geom/Box3';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
@@ -60,7 +61,7 @@ export class DirectionalLight3D extends Light3D
         //
         if (!this.orthographicLens)
         {
-            this.shadowCamera.lens = this.orthographicLens = new OrthographicCamera3D(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+            this.shadowCamera.projectionMatrix = new Matrix4x4().setOrtho(-radius, radius, -radius, radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
         }
         else
         {

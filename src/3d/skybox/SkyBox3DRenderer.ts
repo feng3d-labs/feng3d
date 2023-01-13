@@ -80,7 +80,7 @@ export class SkyBox3DRenderer
         this.renderAtomic.uniforms.u_viewMatrix = camera.node3d.globalInvertMatrix;
         this.renderAtomic.uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
         this.renderAtomic.uniforms.u_cameraPos = camera.node3d.worldPosition;
-        this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+        this.renderAtomic.uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
 
         renderer.render(this.renderAtomic);
     }

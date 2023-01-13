@@ -1,19 +1,19 @@
-import { Camera3D } from '../cameras/Camera3D';
-import { Component3D } from '../core/Component3D';
-import { Mesh3D } from '../core/Mesh3D';
 import { Node3D } from '../../3d/core/Node3D';
-import { Scene3D } from '../core/Scene3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
+import { Material } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { $set } from '../../serialization/Serialization';
-import { Material } from '../../core/Material';
-import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
+import { $set } from '../../serialization/Serialization';
+import { Camera3D } from '../cameras/Camera3D';
+import { Component3D } from '../core/Component3D';
+import { Mesh3D } from '../core/Mesh3D';
+import { Scene3D } from '../core/Scene3D';
 import { Water3DUniforms } from './WaterMaterial3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Water3D: Water3D } }
@@ -99,7 +99,8 @@ export class Water3D extends Component3D
         mirrorCamera.node3d.position = view;
         mirrorCamera.node3d.lookAt(target, rotationMatrix.getAxisY());
 
-        mirrorCamera.lens = camera.lens.clone();
+        mirrorCamera.projectionMatrix.copy(camera.projectionMatrix);
+        mirrorCamera.inversepPojectionMatrix.copy(camera.inversepPojectionMatrix);
 
         const textureMatrix = new Matrix4x4(
             [
@@ -114,7 +115,7 @@ export class Water3D extends Component3D
         const mirrorPlane = new Plane().fromNormalAndPoint(mirrorCamera.node3d.globalInvertMatrix.transformVector3(normal), mirrorCamera.node3d.globalInvertMatrix.transformPoint3(mirrorWorldPosition));
         const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
-        const projectionMatrix = mirrorCamera.lens.matrix;
+        const projectionMatrix = mirrorCamera.projectionMatrix;
 
         const q = new Vector4();
         q.x = (clipPlane.x / Math.abs(clipPlane.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];

@@ -77,7 +77,7 @@ export class Light3D extends Component3D
      */
     get shadowCameraNear()
     {
-        return this.shadowCamera.lens.near;
+        return this.shadowCamera.near;
     }
 
     /**
@@ -85,7 +85,7 @@ export class Light3D extends Component3D
      */
     get shadowCameraFar()
     {
-        return this.shadowCamera.lens.far;
+        return this.shadowCamera.far;
     }
 
     /**
@@ -143,7 +143,7 @@ export class Light3D extends Component3D
             textureMaterial.renderParams.dfactor = 'ZERO';
         }
 
-        const depth = viewCamera.lens.near * 2;
+        const depth = viewCamera.near * 2;
         node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
         const billboardComponent = node3d.getComponent('Billboard3D');
         billboardComponent.camera = viewCamera;

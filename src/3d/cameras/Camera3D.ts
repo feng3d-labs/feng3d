@@ -62,6 +62,12 @@ export class Camera3D extends Component3D
         return this._projectionMatrix;
     }
 
+    set projectionMatrix(v)
+    {
+        this._projectionMatrix = v;
+        this._inversepPojectionMatrixInvalid = true;
+    }
+
     /**
      * 逆矩阵
      */

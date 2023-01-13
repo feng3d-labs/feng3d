@@ -32,7 +32,7 @@ export class OrthographicCamera3D extends Camera3D
 
     protected _updateProjectionMatrix()
     {
-        this._projectionMatrix.setOrtho(-this.size, this.size, this.size, -this.size, this.near, this.far);
+        this._projectionMatrix.setOrtho(-this.size * this.aspect, this.size * this.aspect, this.size, -this.size, this.near, this.far);
     }
 
     clone()
