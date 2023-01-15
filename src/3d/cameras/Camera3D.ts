@@ -132,55 +132,42 @@ export class Camera3D extends Component3D
     /**
      * 获取全局空间射线。
      *
-     * @param x GPU坐标的X
-     * @param y GPU坐标的Y
-     * @return
-     */
-    getWorldRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
-    {
-        this.getLocalRay(x, y, ray3D); // 计算摄像机空间射线
-        ray3D.applyMatrix4x4(this.node3d.globalMatrix); // 转换为全局空间射线
-
-        return ray3D;
-    }
-
-    /**
-     * 获取摄像机空间射线。
-     *
      * @param x GPU空间坐标x值
      * @param y GPU空间坐标y值
+     * @return
      */
-    getLocalRay(x: number, y: number, ray = new Ray3())
+    getWorldRay3D(x: number, y: number, ray = new Ray3()): Ray3
     {
         const p0 = this.unproject(new Vector3(x, y, 0));
         const p1 = this.unproject(new Vector3(x, y, 1));
         // 初始化射线
         ray.fromPosAndDir(p0, p1.sub(p0));
-        // 获取z==0的点
-        const sp = ray.getPointWithZ(0);
-        ray.origin = sp;
 
         return ray;
     }
 
     /**
-     * 全局空间坐标
+     * 全局坐标转换为GPU坐标
      *
-     * @param point3d 全局坐标转换为GPU空间坐标
+     * @param point3d 全局坐标
      *
-     * @return GPU空间坐标
+     * @return GPU坐标
      */
     project(point3d: Vector3, v = new Vector3()): Vector3
     {
-        const point3dInCamera = this.node3d.globalInvertMatrix.transformPoint3(point3d); // 全局坐标转换为摄像机空间坐标
-        const v4 = this.projectionMatrix.transformVector4(new Vector4().fromVector3(point3dInCamera, 1)); // 摄像机空间坐标投影到GPU空间坐标
-        v.fromVector4(v4); // 转换为 Vector3
+        // 全局坐标转换为摄像机空间坐标
+        const point3dInCamera = this.node3d.globalInvertMatrix.transformPoint3(point3d);
+        // 摄像机空间坐标转换为GPU空间坐标
+        const v4 = this.projectionMatrix.transformVector4(new Vector4().fromVector3(point3dInCamera, 1));
+        // 透视投影结果中w!=1，需要标准化齐次坐标
+        v4.scaleNumber(1 / v4.w);
+        v.fromVector4(v4);
 
         return v;
     }
 
     /**
-     * 屏幕坐标投影到全局坐标
+     * GPU坐标转换为全局坐标
      *
      * @param point3d  GPU空间坐标 Z: 到屏幕的距离
      *
@@ -189,9 +176,14 @@ export class Camera3D extends Component3D
      */
     unproject(point3d: Vector3, v = new Vector3()): Vector3
     {
-        const v4 = this.inversepPojectionMatrix.transformVector4(new Vector4().fromVector3(point3d, 1)); // GPU空间坐标转换为摄像机空间坐标
-        v.fromVector4(v4);
-
+        // GPU空间坐标
+        const gpuP4 = new Vector4().fromVector3(point3d, 1);
+        // 转换为摄像机空间坐标
+        const cameraP4 = this.inversepPojectionMatrix.transformVector4(gpuP4);
+        cameraP4.scaleNumber(1 / cameraP4.w);
+        // 转换为 Vector3
+        v.fromVector4(cameraP4);
+        // 转换为全局空间坐标
         this.node3d.globalMatrix.transformPoint3(v, v); // 摄像机空间转换为全局坐标
 
         return v;
@@ -211,25 +203,6 @@ export class Camera3D extends Component3D
         const scale = lt.subTo(rb).length;
 
         return scale;
-    }
-
-    /**
-     * 获取本地坐标点。
-     *
-     * 获取投影在指定GPU坐标且摄像机前方（深度）sZ处的点的3D坐标
-     *
-     * @param nX GPU空间坐标X
-     * @param nY GPU空间坐标Y
-     * @param sZ 到摄像机的距离
-     * @param v 摄像机空间坐标（输出）
-     * @return 摄像机空间坐标
-     */
-    getLocalPoint(nX: number, nY: number, sZ: number, v = new Vector3())
-    {
-        const localRay = this.getLocalRay(nX, nY); // 计算摄像机空间射线
-        localRay.getPointWithZ(sZ, v); // 获取指定深度坐标
-
-        return v;
     }
 
     /**

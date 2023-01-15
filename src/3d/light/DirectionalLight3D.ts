@@ -5,7 +5,7 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
-import { OrthographicCamera3D } from '../cameras/OrthographicLens';
+import { OrthographicCamera3D } from '../cameras/OrthographicCamera3D';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';

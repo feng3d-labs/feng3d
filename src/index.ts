@@ -16,7 +16,7 @@ export * from './2d/text/TextStyle';
 export * from './3d/audio/AudioListener3D';
 export * from './3d/audio/AudioSource3D';
 export * from './3d/cameras/Camera3D';
-export * from './3d/cameras/OrthographicLens';
+export * from './3d/cameras/OrthographicCamera3D';
 export * from './3d/cameras/PerspectiveCamera3D';
 export * from './3d/components/Billboard3D';
 export * from './3d/components/Graphics3D';
