@@ -69,7 +69,7 @@ export class Entity
             this.addComponentAt(value[i], this.numComponents);
         }
     }
-    protected _components: Component[] = [];
+    protected _components: ComponentMap[keyof ComponentMap][] = [];
 
     /**
      * 子组件个数

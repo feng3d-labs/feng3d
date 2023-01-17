@@ -21,12 +21,16 @@ export class OrthographicCamera3D extends Camera3D
 
     init(): void
     {
+        super.init();
+
         watcher.watch(this as OrthographicCamera3D, 'size', this._invalidateProjectionMatrix, this);
     }
 
     dispose(): void
     {
         watcher.unwatch(this as OrthographicCamera3D, 'size', this._invalidateProjectionMatrix, this);
+
+        super.dispose();
     }
 
     protected _updateProjectionMatrix()

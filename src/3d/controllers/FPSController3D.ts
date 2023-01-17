@@ -18,6 +18,8 @@ declare module '../../ecs/Component' { interface ComponentMap { FPSController3D:
 @RegisterComponent({ name: 'FPSController3D', menu: 'Controller/FPSController' })
 export class FPSController3D extends Component3D
 {
+    declare __class__: 'FPSController3D';
+
     /**
      * 加速度
      */

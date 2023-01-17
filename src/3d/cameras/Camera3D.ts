@@ -27,8 +27,6 @@ declare module '../core/Node3D'
 @RegisterComponent({ name: 'Camera3D', single: true, menu: 'Rendering/Camera3D' })
 export class Camera3D extends Component3D
 {
-    declare __class__: 'Camera3D';
-
     /**
      * 最近距离
      */

@@ -12,6 +12,8 @@ declare module '../../ecs/Component' { interface ComponentMap { PerspectiveCamer
 @RegisterComponent({ name: 'PerspectiveCamera3D' })
 export class PerspectiveCamera3D extends Camera3D
 {
+    declare __class__: 'PerspectiveCamera3D';
+
     /**
      * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
      */
@@ -21,7 +23,16 @@ export class PerspectiveCamera3D extends Camera3D
 
     init(): void
     {
+        super.init();
+
         watcher.watch(this as PerspectiveCamera3D, 'fov', this._invalidateProjectionMatrix, this);
+    }
+
+    dispose()
+    {
+        watcher.unwatch(this as PerspectiveCamera3D, 'fov', this._invalidateProjectionMatrix, this);
+
+        super.dispose();
     }
 
     /**

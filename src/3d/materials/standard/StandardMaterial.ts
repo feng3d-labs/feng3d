@@ -20,6 +20,8 @@ declare module '../../../core/Material'
 @Serializable('StandardMaterial')
 export class StandardMaterial extends Material
 {
+    declare __class__: 'StandardMaterial';
+
     uniforms = new StandardUniforms();
 
     constructor()
