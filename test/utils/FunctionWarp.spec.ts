@@ -1,7 +1,4 @@
-import { Vector2 } from '../../../src/math/geom/Vector2';
-import { mathUtil } from '../../../src/polyfill/MathUtil';
-import { functionwrap, __functionwrap__ } from '../../../src/utils/FunctionWarp';
-import { task } from '../../../src/utils/Task';
+import { functionwrap, mathUtil, task, Vector2, __functionwrap__ } from '../../src';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

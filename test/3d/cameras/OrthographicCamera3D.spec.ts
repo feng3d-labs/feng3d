@@ -1,13 +1,11 @@
-import { OrthographicLens } from '../../../../src/3d/cameras/lenses/OrthographicLens';
-import { Vector3 } from '../../../../src/math/geom/Vector3';
-import { mathUtil } from '../../../../src/polyfill/MathUtil';
+import { mathUtil, Node3D, OrthographicCamera3D, Vector3 } from '../../../src';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 const NUM = 10;
 
-describe('OrthographicLens', () =>
+describe('OrthographicCamera3D', () =>
 {
     it('project', () =>
     {
@@ -16,39 +14,42 @@ describe('OrthographicLens', () =>
         const near = Math.random();
         const far = Math.random() + near;
 
-        const orthographicLens = new OrthographicLens(size, 1, near, far);
-
+        const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
+            size,
+            near,
+            far,
+        });
         // 测试可视空间的8个顶点是否被正确投影
         const lbn = new Vector3(-size, -size, near);
-        let tv = orthographicLens.project(lbn);
+        let tv = orthographicCamera3D.project(lbn);
         ok(new Vector3(-1, -1, -1).equals(tv));
 
         const lbf = new Vector3(-size, -size, far);
-        tv = orthographicLens.project(lbf);
+        tv = orthographicCamera3D.project(lbf);
         ok(new Vector3(-1, -1, 1).equals(tv));
 
         const ltn = new Vector3(-size, size, near);
-        tv = orthographicLens.project(ltn);
+        tv = orthographicCamera3D.project(ltn);
         ok(new Vector3(-1, 1, -1).equals(tv));
 
         const ltf = new Vector3(-size, size, far);
-        tv = orthographicLens.project(ltf);
+        tv = orthographicCamera3D.project(ltf);
         ok(new Vector3(-1, 1, 1).equals(tv));
 
         const rbn = new Vector3(size, -size, near);
-        tv = orthographicLens.project(rbn);
+        tv = orthographicCamera3D.project(rbn);
         ok(new Vector3(1, -1, -1).equals(tv));
 
         const rbf = new Vector3(size, -size, far);
-        tv = orthographicLens.project(rbf);
+        tv = orthographicCamera3D.project(rbf);
         ok(new Vector3(1, -1, 1).equals(tv));
 
         const rtn = new Vector3(size, size, near);
-        tv = orthographicLens.project(rtn);
+        tv = orthographicCamera3D.project(rtn);
         ok(new Vector3(1, 1, -1).equals(tv));
 
         const rtf = new Vector3(size, size, far);
-        tv = orthographicLens.project(rtf);
+        tv = orthographicCamera3D.project(rtf);
         ok(new Vector3(1, 1, 1).equals(tv));
     });
 
@@ -59,39 +60,44 @@ describe('OrthographicLens', () =>
         const near = Math.random();
         const far = Math.random() + near;
 
-        const orthographicLens = new OrthographicLens(size, 1, near, far);
+        const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
+            size,
+            aspect: 1,
+            near,
+            far,
+        });
 
         // 测试可视空间的8个顶点是否被正确投影
         const lbn = new Vector3(-1, -1, -1);
-        let tv = orthographicLens.unproject(lbn);
+        let tv = orthographicCamera3D.unproject(lbn);
         ok(new Vector3(-size, -size, near).equals(tv));
 
         const lbf = new Vector3(-1, -1, 1);
-        tv = orthographicLens.unproject(lbf);
+        tv = orthographicCamera3D.unproject(lbf);
         ok(new Vector3(-size, -size, far).equals(tv));
 
         const ltn = new Vector3(-1, 1, -1);
-        tv = orthographicLens.unproject(ltn);
+        tv = orthographicCamera3D.unproject(ltn);
         ok(new Vector3(-size, size, near).equals(tv));
 
         const ltf = new Vector3(-1, 1, 1);
-        tv = orthographicLens.unproject(ltf);
+        tv = orthographicCamera3D.unproject(ltf);
         ok(new Vector3(-size, size, far).equals(tv));
 
         const rbn = new Vector3(1, -1, -1);
-        tv = orthographicLens.unproject(rbn);
+        tv = orthographicCamera3D.unproject(rbn);
         ok(new Vector3(size, -size, near).equals(tv));
 
         const rbf = new Vector3(1, -1, 1);
-        tv = orthographicLens.unproject(rbf);
+        tv = orthographicCamera3D.unproject(rbf);
         ok(new Vector3(size, -size, far).equals(tv));
 
         const rtn = new Vector3(1, 1, -1);
-        tv = orthographicLens.unproject(rtn);
+        tv = orthographicCamera3D.unproject(rtn);
         ok(new Vector3(size, size, near).equals(tv));
 
         const rtf = new Vector3(1, 1, 1);
-        tv = orthographicLens.unproject(rtf);
+        tv = orthographicCamera3D.unproject(rtf);
         ok(new Vector3(size, size, far).equals(tv));
     });
 
@@ -101,39 +107,21 @@ describe('OrthographicLens', () =>
         const near = Math.random();
         const far = Math.random() + near;
 
-        const orthographicLens = new OrthographicLens(size, 1, near, far);
+        const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
+            size,
+            aspect: 1,
+            near,
+            far,
+        });
 
         const x = Math.random();
         const y = Math.random();
 
         for (let i = 0; i < NUM; i++)
         {
-            const ray = orthographicLens.unprojectRay(x, y);
+            const ray = orthographicCamera3D.getWorldRay3D(x, y);
             const p = ray.getPointWithZ(mathUtil.lerp(near, far, Math.random()));
-            const pp = orthographicLens.project(p);
-            ok(mathUtil.equals(x, pp.x));
-            ok(mathUtil.equals(y, pp.y));
-        }
-    });
-
-    it('unprojectWithDepth', () =>
-    {
-        const size = Math.random();
-        const near = Math.random();
-        const far = Math.random() + near;
-
-        const orthographicLens = new OrthographicLens(size, 1, near, far);
-
-        const x = Math.random();
-        const y = Math.random();
-
-        for (let i = 0; i < NUM; i++)
-        {
-            const sZ = mathUtil.lerp(near, far, Math.random());
-            const p = orthographicLens.unprojectWithDepth(x, y, sZ);
-            ok(mathUtil.equals(sZ, p.z));
-
-            const pp = orthographicLens.project(p);
+            const pp = orthographicCamera3D.project(p);
             ok(mathUtil.equals(x, pp.x));
             ok(mathUtil.equals(y, pp.y));
         }
