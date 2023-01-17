@@ -21,6 +21,7 @@ export * from './3d/cameras/PerspectiveCamera3D';
 export * from './3d/components/Billboard3D';
 export * from './3d/components/Graphics3D';
 export * from './3d/components/HoldSize3D';
+export * from './3d/components/MouseRay3D';
 export * from './3d/components/TransformLayout3D';
 export * from './3d/controllers/Controller3D';
 export * from './3d/controllers/FPSController3D';
@@ -300,4 +301,3 @@ export * from './utils/Ticker';
 export * from './utils/TransformUtils';
 export * from './utils/Uuid';
 export * from './watcher/watcher';
-

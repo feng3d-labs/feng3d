@@ -1,4 +1,4 @@
-import { TransformUtils } from '../../utils/TransformUtils';
+import { Material, MaterialMap } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
 import { IEvent } from '../../event/IEvent';
 import { Box3 } from '../../math/geom/Box3';
@@ -7,10 +7,10 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { TransformUtils } from '../../utils/TransformUtils';
 import { Camera3D } from '../cameras/Camera3D';
 import { Geometry, GeometryMap } from '../geometrys/Geometry';
 import { LightPicker } from '../light/pickers/LightPicker';
-import { Material, MaterialMap } from '../../core/Material';
 import { PickingCollisionVO } from '../raycast/rayCast3D';
 import { Renderable3D } from './Renderable3D';
 import { Scene3D } from './Scene3D';
@@ -162,6 +162,8 @@ export class Mesh3D extends Renderable3D
     localRayIntersection(localRay: Ray3)
     {
         const localNormal = new Vector3();
+        const geometry = this.useGeometry;
+        const material = this.useMaterial;
 
         // 检测射线与边界的碰撞
         const rayEntryDistance = this.localBounds.rayIntersection(localRay.origin, localRay.direction, localNormal);
@@ -177,8 +179,8 @@ export class Mesh3D extends Renderable3D
             localRay,
             rayEntryDistance,
             rayOriginIsInsideBounds: rayEntryDistance === 0,
-            geometry: this.geometry,
-            cullFace: this.material.renderParams.cullFace,
+            geometry,
+            cullFace: material.renderParams.cullFace,
         };
 
         return pickingCollisionVO;
