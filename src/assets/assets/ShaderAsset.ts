@@ -1,8 +1,8 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
 import { ScriptAsset } from './ScriptAsset';
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { ShaderAsset: ShaderAsset; } }
+declare module '../FileAsset' { interface AssetMap { ShaderAsset: ShaderAsset; } }
 
 /**
  * 着色器 资源

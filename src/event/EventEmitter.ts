@@ -55,7 +55,7 @@ export class EventEmitter<T = any>
 
     constructor(target?: any)
     {
-        if (target === undefined)
+        if (target === undefined || target === null)
         {
             target = this;
         }
@@ -458,7 +458,7 @@ export class EventEmitter<T = any>
             const bubbleTargets = eventTarget.getShareTargets();
             bubbleTargets?.forEach((v) =>
             {
-                if (v === undefined) return;
+                if (v === undefined || v === null) return;
 
                 // 处理事件
                 const eventEmitter = EventEmitter.getOrCreateEventEmitter(v);
@@ -488,9 +488,9 @@ export class EventEmitter<T = any>
         }
         bubbleTargets?.forEach((v) =>
         {
-            if (v === undefined || event.targets.indexOf(v) !== -1) return;
+            if (v === undefined || v === null) return;
 
-            if (v === undefined) return;
+            if (event.targets.indexOf(v) !== -1) return;
 
             // 处理事件
             const eventEmitter = EventEmitter.getOrCreateEventEmitter(v);
@@ -519,9 +519,9 @@ export class EventEmitter<T = any>
         }
         broadcastTargets?.forEach((v) =>
         {
-            if (v === undefined || event.targets.indexOf(v) !== -1) return;
+            if (v === undefined || v === null) return;
 
-            if (v === undefined) return;
+            if (event.targets.indexOf(v) !== -1) return;
 
             // 处理事件
             const eventEmitter = EventEmitter.getOrCreateEventEmitter(v);

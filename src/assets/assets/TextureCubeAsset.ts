@@ -1,10 +1,10 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
-import { TextureCube } from '../../core/textures/TextureCube';
 import { oav } from '../../objectview/ObjectView';
-import { ObjectAsset } from '../ObjectAsset';
+import { TextureCube } from '../../textures/TextureCube';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { ObjectAsset } from './ObjectAsset';
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { TextureCubeAsset: TextureCubeAsset; } }
+declare module '../FileAsset' { interface AssetMap { TextureCubeAsset: TextureCubeAsset; } }
 
 /**
  * 立方体纹理资源

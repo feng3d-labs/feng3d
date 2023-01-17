@@ -1,16 +1,16 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
-import { Node3D } from '../../core/core/Node3D';
+import { Node3D } from '../../3d/core/Node3D';
 import { oav } from '../../objectview/ObjectView';
 import { $clone } from '../../serialization/Serialization';
-import { ObjectAsset } from '../ObjectAsset';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { ObjectAsset } from './ObjectAsset';
 
 export interface Object3DAsset
 {
     getAssetData(): Promise<Node3D>;
 }
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { Object3DAsset: Object3DAsset; } }
+declare module '../FileAsset' { interface AssetMap { Object3DAsset: Object3DAsset; } }
 
 /**
  * 游戏对象资源

@@ -1,8 +1,8 @@
-import { Camera } from '../core/cameras/Camera';
-import { HideFlags } from '../core/core/HideFlags';
-import { RunEnvironment } from '../core/core/RunEnvironment';
+import { Camera3D } from '../3d/cameras/Camera3D';
+import { Scene3D } from '../3d/core/Scene3D';
+import { HideFlags } from '../core/HideFlags';
 import { AddComponentMenu } from '../core/Menu';
-import { Scene } from '../core/scene/Scene';
+import { RunEnvironment } from '../core/RunEnvironment';
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
 import { Constructor } from '../polyfill/Types';
@@ -192,7 +192,7 @@ export class Component
         this._entity = <any>null;
     }
 
-    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
 
     }

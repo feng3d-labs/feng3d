@@ -1,14 +1,8 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
 import { TextAsset } from './TextAsset';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetMap
-    {
-        JSAsset: JSAsset;
-    }
-}
+declare module '../FileAsset' { interface AssetMap { JSAsset: JSAsset; } }
 
 /**
  * JS资源

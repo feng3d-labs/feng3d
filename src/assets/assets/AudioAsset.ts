@@ -1,8 +1,8 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
-import { ArrayBufferAsset } from '../ArrayBufferAsset';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { ArrayBufferAsset } from './ArrayBufferAsset';
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { AudioAsset: AudioAsset; } }
+declare module '../FileAsset' { interface AssetMap { AudioAsset: AudioAsset; } }
 
 /**
  * 音效资源

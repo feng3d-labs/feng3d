@@ -1,10 +1,10 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
-import { regExps } from '../../core/utils/RegExps';
+import { regExps } from '../../utils/RegExps';
 import { watcher } from '../../watcher/watcher';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
 import { TextAsset } from './TextAsset';
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { ScriptAsset: ScriptAsset; } }
+declare module '../FileAsset' { interface AssetMap { ScriptAsset: ScriptAsset; } }
 
 /**
  * 脚本资源

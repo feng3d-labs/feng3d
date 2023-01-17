@@ -1,14 +1,8 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
 import { TextAsset } from './TextAsset';
 
-declare module '../../core/assets/FileAsset'
-{
-    interface AssetMap
-    {
-        JsonAsset: JsonAsset;
-    }
-}
+declare module '../FileAsset' { interface AssetMap { JsonAsset: JsonAsset; } }
 
 /**
  * JSON 资源

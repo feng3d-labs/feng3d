@@ -1,11 +1,11 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
-import { Material } from '../../core/materials/Material';
-import { StandardMaterial } from '../../core/materials/standard/StandardMaterial';
+import { StandardMaterial } from '../../3d/materials/standard/StandardMaterial';
+import { Material } from '../../core/Material';
 import { oav } from '../../objectview/ObjectView';
-import { ObjectAsset } from '../ObjectAsset';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { ObjectAsset } from './ObjectAsset';
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { MaterialAsset: MaterialAsset; } }
+declare module '../FileAsset' { interface AssetMap { MaterialAsset: MaterialAsset; } }
 
 /**
  * 材质资源

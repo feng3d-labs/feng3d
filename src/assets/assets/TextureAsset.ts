@@ -1,12 +1,12 @@
-import { AssetMeta } from '../../core/assets/AssetMeta';
-import { AssetType } from '../../core/assets/AssetType';
-import { FileAsset, RegisterAsset } from '../../core/assets/FileAsset';
-import { Texture2D } from '../../core/textures/Texture2D';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { $serialize } from '../../serialization/Serialization';
+import { Texture2D } from '../../textures/Texture2D';
+import { AssetMeta } from '../AssetMeta';
+import { AssetType } from '../AssetType';
+import { FileAsset, RegisterAsset } from '../FileAsset';
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { TextureAsset: TextureAsset; } }
+declare module '../FileAsset' { interface AssetMap { TextureAsset: TextureAsset; } }
 
 /**
  * 纹理文件

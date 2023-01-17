@@ -249,11 +249,11 @@ describe('Serialization', () =>
 
         // const entity = $set(new Entity(), {
         //     name: 'entity',
-        //     components: [{ __class__: 'MeshRenderer', geometry: Geometry.getDefault('Plane') }]
+        //     components: [{ __class__: 'Mesh3D', geometry: Geometry.getDefault('Plane') }]
         // });
 
         // equal(entity.numComponents, 2);
-        // const model = entity.getComponent(MeshRenderer);
+        // const model = entity.getComponent(Mesh3D);
         // assert.notEqual(model, null);
     });
 

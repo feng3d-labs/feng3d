@@ -18,26 +18,26 @@ import { WebGLUniforms } from './gl/WebGLUniforms';
 /**
  * WEBGL 渲染器
  *
- * 所有渲染都由该渲染器执行
+ * 所有渲染都由该渲染器执行。與2D、3D場景無關，屬於更加底層的API。針對每一個 RenderAtomic 渲染數據進行渲染。
+ *
+ * 3D 渲染請使用 WebGLRenderer3D。
  */
 export class WebGLRenderer
 {
-    get gl()
-    {
-        return this._gl;
-    }
-    set gl(v)
-    {
-        this.dipose();
-        this._gl = v;
-        this.init();
-    }
-    private _gl: WebGLRenderingContext;
+    /**
+     * 将被绘制的目标画布。
+     */
+    readonly canvas: HTMLCanvasElement;
+
+    /**
+     * WebGL渲染上下文，圖形庫。
+     */
+    readonly gl: WebGLRenderingContext;
 
     /**
      * WebGL扩展
      */
-    extensions: WebGLExtensions;
+    readonly extensions: WebGLExtensions;
 
     /**
      * WEBGL支持功能
@@ -69,6 +69,56 @@ export class WebGLRenderer
 
     elementBuffers: WebGLElementBuffers;
 
+    constructor(canvas?: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
+    {
+        if (!canvas)
+        {
+            canvas = document.createElement('canvas');
+            canvas.id = 'glcanvas';
+            canvas.style.position = 'fixed';
+            canvas.style.left = '0px';
+            canvas.style.top = '0px';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            document.body.appendChild(canvas);
+        }
+        canvas.addEventListener('webglcontextlost', this._onContextLost, false);
+        canvas.addEventListener('webglcontextrestored', this._onContextRestore, false);
+        canvas.addEventListener('webglcontextcreationerror', this._onContextCreationError, false);
+        this.canvas = canvas;
+
+        contextAttributes = Object.assign({
+            depth: true,
+            stencil: true,
+            antialias: false,
+            premultipliedAlpha: true,
+            preserveDrawingBuffer: false,
+            powerPreference: 'default',
+            failIfMajorPerformanceCaveat: false,
+        } as Partial<WebGLContextAttributes>, contextAttributes);
+
+        const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
+        const gl = this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
+
+        this.extensions = new WebGLExtensions(gl);
+
+        this.capabilities = new WebGLCapabilities(gl, this.extensions);
+        this.extensions.init(this.capabilities);
+        this.info = new WebGLInfo(gl);
+        this.cacheStates = new WebGLCacheStates(gl);
+        this.shaders = new WebGLShaders(gl);
+        this.textures = new WebGLTextures(gl, this.extensions, this.capabilities);
+        this.state = new WebGLState(gl, this.extensions, this.capabilities);
+        this.attributeBuffers = new WebGLAttributeBuffers(gl, this.capabilities);
+        this.elementBuffers = new WebGLElementBuffers(this);
+
+        this.bindingStates = new WebGLBindingStates(gl, this.extensions, this.attributeBuffers, this.elementBuffers, this.capabilities, this.shaders);
+        this.renderParams = new WebGLRenderParams(gl, this.capabilities, this.state);
+        this.uniforms = new WebGLUniforms(gl, this.textures);
+        this.renderbuffers = new WebGLRenderbuffers(gl);
+        this.framebuffers = new WebGLFramebuffers(gl);
+    }
+
     /**
      * 渲染一次。
      *
@@ -78,6 +128,8 @@ export class WebGLRenderer
      */
     render(renderAtomic: RenderAtomic, offset?: number, count?: number)
     {
+        if (this._isContextLost === true) return;
+
         const { bindingStates, renderParams, elementBuffers: elementBufferRenderer, uniforms, shaders } = this;
 
         try
@@ -98,30 +150,56 @@ export class WebGLRenderer
         }
     }
 
-    dipose()
+    private _isContextLost = false;
+    private _onContextLost = (event: Event) =>
     {
+        event.preventDefault();
+
+        console.warn('WebGLRenderer: Context Lost.');
+
+        this._isContextLost = true;
+    };
+
+    private _onContextRestore = () =>
+    {
+        console.warn('WebGLRenderer: Context Restored.');
+
+        this._isContextLost = false;
+    };
+
+    private _onContextCreationError = (event: WebGLContextEvent) =>
+    {
+        console.error('WebGLRenderer: A WebGL context could not be created. Reason: ', event.statusMessage);
+    };
+}
+
+function getContext(canvas: HTMLCanvasElement, contextNames: string[], contextAttributes?: Partial<WebGLContextAttributes>)
+{
+    const context = _getContext(canvas, contextNames, contextAttributes);
+
+    if (!context)
+    {
+        if (_getContext(canvas, contextNames))
+        {
+            throw new Error('Error creating WebGL context with your selected attributes.');
+        }
+        else
+        {
+            throw new Error('Error creating WebGL context.');
+        }
     }
 
-    init()
+    return context;
+}
+
+function _getContext(canvas: HTMLCanvasElement, contextNames: string[], contextAttributes?: Partial<WebGLContextAttributes>)
+{
+    let context: RenderingContext;
+    for (let i = 0; i < contextNames.length; ++i)
     {
-        const gl = this.gl;
-
-        this.extensions = new WebGLExtensions(gl);
-
-        this.capabilities = new WebGLCapabilities(gl, this.extensions);
-        this.extensions.init(this.capabilities);
-        this.info = new WebGLInfo(gl);
-        this.cacheStates = new WebGLCacheStates(gl);
-        this.shaders = new WebGLShaders(gl);
-        this.textures = new WebGLTextures(gl, this.extensions, this.capabilities);
-        this.state = new WebGLState(gl, this.extensions, this.capabilities);
-        this.attributeBuffers = new WebGLAttributeBuffers(gl, this.capabilities);
-        this.elementBuffers = new WebGLElementBuffers(this);
-
-        this.bindingStates = new WebGLBindingStates(gl, this.extensions, this.attributeBuffers, this.elementBuffers, this.capabilities, this.shaders);
-        this.renderParams = new WebGLRenderParams(gl, this.capabilities, this.state);
-        this.uniforms = new WebGLUniforms(gl, this.textures);
-        this.renderbuffers = new WebGLRenderbuffers(gl);
-        this.framebuffers = new WebGLFramebuffers(gl);
+        context = canvas.getContext(contextNames[i], contextAttributes);
+        if (context) return context;
     }
+
+    return null;
 }

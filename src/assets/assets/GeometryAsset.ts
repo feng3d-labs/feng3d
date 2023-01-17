@@ -1,11 +1,11 @@
-import { AssetType } from '../../core/assets/AssetType';
-import { RegisterAsset } from '../../core/assets/FileAsset';
-import { Geometry } from '../../core/geometry/Geometry';
-import { CubeGeometry } from '../../core/primitives/CubeGeometry';
+import { CubeGeometry } from '../../3d/geometrys/CubeGeometry';
+import { Geometry } from '../../3d/geometrys/Geometry';
 import { oav } from '../../objectview/ObjectView';
-import { ObjectAsset } from '../ObjectAsset';
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { ObjectAsset } from './ObjectAsset';
 
-declare module '../../core/assets/FileAsset' { interface AssetMap { GeometryAsset: GeometryAsset; } }
+declare module '../FileAsset' { interface AssetMap { GeometryAsset: GeometryAsset; } }
 
 /**
  * 几何体资源
