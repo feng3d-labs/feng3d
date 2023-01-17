@@ -59,7 +59,7 @@ export class RenderContext3D
         camera.aspect = clientRect.width / clientRect.height;
 
         // 计算鼠标所在画布中的位置
-        this.mousePos = new Vector2(windowEventProxy.clientX - clientRect.left, windowEventProxy.clientX - clientRect.left);
+        this.mousePos = new Vector2(windowEventProxy.clientX - clientRect.left, windowEventProxy.clientY - clientRect.top);
     }
 
     /**

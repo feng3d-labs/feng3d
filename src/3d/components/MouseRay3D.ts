@@ -54,6 +54,7 @@ export class MouseRay3D extends Component3D
 
         const sphere = Node3D.createPrimitive('Sphere');
         sphere.position.copy(cameraLP);
+        sphere.mouseEnabled = false;
         // 添加到根节点上
         this.node.addChild(sphere);
 
@@ -71,7 +72,7 @@ export class MouseRay3D extends Component3D
             else
             {
                 sphere.remove();
-                // sphere.dispose();
+                sphere.dispose();
             }
         };
 
