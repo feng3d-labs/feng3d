@@ -1,6 +1,5 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
@@ -27,17 +26,7 @@ export class PointLight3D extends Light3D
      */
     @oav()
     @SerializeProperty()
-    get range()
-    {
-        return this._range;
-    }
-    set range(v)
-    {
-        if (this._range === v) return;
-        this._range = v;
-        this.invalidRange();
-    }
-    private _range = 10;
+    range = 10;
 
     /**
      * 阴影图尺寸
@@ -47,21 +36,6 @@ export class PointLight3D extends Light3D
         const { x, y } = this.shadowMap.getSize();
 
         return new Vector2(x / 4, y / 2);
-    }
-
-    init(): void
-    {
-        super.init();
-
-        this.shadowCamera.projectionMatrix = new Matrix4x4().setPerspectiveFromFOV(90, 1, 0.1, this.range);
-    }
-
-    private invalidRange()
-    {
-        if (this.shadowCamera)
-        {
-            this.shadowCamera.far = this.range;
-        }
     }
 }
 

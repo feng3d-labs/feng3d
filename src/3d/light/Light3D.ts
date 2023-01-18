@@ -73,27 +73,6 @@ export class Light3D extends Component3D
     shadowRadius = 1;
 
     /**
-     * 阴影近平面距离
-     */
-    get shadowCameraNear()
-    {
-        return this.shadowCamera.near;
-    }
-
-    /**
-     * 阴影近平面距离
-     */
-    get shadowCameraFar()
-    {
-        return this.shadowCamera.far;
-    }
-
-    /**
-     * 投影摄像机
-     */
-    shadowCamera: Camera3D;
-
-    /**
      * 阴影图尺寸
      */
     get shadowMapSize()
@@ -118,7 +97,6 @@ export class Light3D extends Component3D
 
     init(): void
     {
-        this.shadowCamera = $set(new Node3D(), { name: 'LightShadowCamera' }).addComponent('Camera3D');
     }
 
     updateDebugShadowMap(scene: Scene3D, viewCamera: Camera3D)

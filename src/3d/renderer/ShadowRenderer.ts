@@ -1,12 +1,10 @@
 import { Box3 } from '../../math/geom/Box3';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
@@ -59,7 +57,12 @@ export class ShadowRenderer
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const shadowCamera = light.shadowCamera;
+        const shadowCamera = new Node3D().addComponent('PerspectiveCamera3D', {
+            fov: light.angle,
+            aspect: 1,
+            near: 0.1,
+            far: light.range,
+        });
         shadowCamera.node3d.globalMatrix = light.node3d.globalMatrix;
 
         const renderAtomic = this.renderAtomic;
@@ -83,8 +86,8 @@ export class ShadowRenderer
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
         renderAtomic.uniforms.u_lightPosition = light.position;
-        renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-        renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+        renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
+        renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
         castShadowsModels.forEach((renderable) =>
         {
@@ -135,7 +138,12 @@ export class ShadowRenderer
         // negative Y
         cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
 
-        const shadowCamera = light.shadowCamera;
+        const shadowCamera = new Node3D().addComponent('PerspectiveCamera3D', {
+            fov: 90,
+            aspect: 1,
+            near: 0.1,
+            far: light.range
+        });
         shadowCamera.node3d.position = light.node3d.position;
 
         const renderAtomic = this.renderAtomic;
@@ -163,8 +171,8 @@ export class ShadowRenderer
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.position;
-            renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-            renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+            renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
+            renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
             castShadowsModels.forEach((renderable) =>
             {
@@ -234,8 +242,8 @@ export class ShadowRenderer
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
         renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.worldPosition;
-        renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-        renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+        renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
+        renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
         //
         castShadowsModels.forEach((renderable) =>
         {
