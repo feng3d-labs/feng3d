@@ -1,10 +1,14 @@
+import { Box3 } from '../../math/geom/Box3';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
+import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';
 import { DirectionalLight3D } from '../light/DirectionalLight3D';
@@ -181,8 +185,33 @@ export class ShadowRenderer
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
-        light.updateShadowByCamera(scene, camera, models);
+        const worldBounds: Box3 = castShadowsModels.reduce((pre: Box3, i) =>
+        {
+            const box = i.node3d.boundingBox.worldBounds;
+            if (!pre)
+            {
+                return box.clone();
+            }
+            pre.union(box);
 
+            return pre;
+        }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
+
+        //
+        const center = worldBounds.getCenter();
+        const radius = worldBounds.getSize().length / 2;
+        // 默认近平面距离
+        const near = 0.3;
+        // 初始化摄像机
+        const shadowCamera = new Node3D().addComponent('OrthographicCamera3D', {
+            size: radius,
+            near,
+            far: near + radius * 2,
+        });
+        shadowCamera.node3d.position = center.addTo(light.direction.normalize(radius + near).negate());
+        shadowCamera.node3d.lookAt(center, Vector3.Y_AXIS);
+
+        //
         FrameBufferObject.active(renderer, light.frameBufferObject);
 
         const gl = renderer.gl;
@@ -191,8 +220,6 @@ export class ShadowRenderer
         gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        const shadowCamera = light.shadowCamera;
 
         const renderAtomic = this.renderAtomic;
         //
