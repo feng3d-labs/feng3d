@@ -10,7 +10,7 @@ describe('Camera3D', () =>
         // 生成随机正交矩阵
         const near = Math.random();
         const far = Math.random() + near;
-        const aspect = 1;
+        const aspect = Math.random();
 
         const camera3D: Camera3D = new Node3D().addComponent('Camera3D', {
             aspect,
@@ -19,8 +19,8 @@ describe('Camera3D', () =>
         });
         const fov = 60; // Camera3D 默认为fov为60度的视野。
 
-        const nearW = near * Math.tan(fov * 0.5 * Math.PI / 180);
-        const nearH = nearW * aspect;
+        const nearH = near * Math.tan(fov * 0.5 * Math.PI / 180);
+        const nearW = nearH * aspect;
 
         // 测试可视空间的8个顶点是否被正确投影
         const lbn = new Vector3(-nearW, -nearH, near);
@@ -39,8 +39,8 @@ describe('Camera3D', () =>
         tv = camera3D.project(rtn);
         ok(new Vector3(1, 1, -1).equals(tv));
 
-        const farW = far * Math.tan(fov * 0.5 * Math.PI / 180);
-        const farH = farW * aspect;
+        const farH = far * Math.tan(fov * 0.5 * Math.PI / 180);
+        const farW = farH * aspect;
 
         const lbf = new Vector3(-farW, -farH, far);
         tv = camera3D.project(lbf);
