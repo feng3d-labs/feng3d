@@ -1,5 +1,6 @@
 import { HideFlags } from '../../core/HideFlags';
 import { Color3 } from '../../math/Color3';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { oav } from '../../objectview/ObjectView';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { $set } from '../../serialization/Serialization';
@@ -73,6 +74,24 @@ export class Light3D extends Component3D
     shadowRadius = 1;
 
     /**
+     * 阴影近平面距离
+     *
+     * 由生成阴影贴图时计算的摄像机远平面距离。
+     *
+     * @private
+     */
+    shadowCameraNear: number;
+
+    /**
+     * 阴影近平面距离
+     *
+     * 由生成阴影贴图时计算的摄像机远平面距离。
+     *
+     * @private
+     */
+    shadowCameraFar: number;
+
+    /**
      * 阴影图尺寸
      */
     get shadowMapSize()
@@ -94,6 +113,13 @@ export class Light3D extends Component3D
     debugShadowMap = false;
 
     private debugShadowMapObject: Node3D;
+
+    /**
+     * 生成阴影贴图时使用的VP矩阵
+     *
+     * @private
+     */
+    _shadowCameraViewProjection: Matrix4x4;
 
     init(): void
     {

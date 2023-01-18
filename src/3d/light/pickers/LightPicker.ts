@@ -67,7 +67,7 @@ export class LightPicker
             if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
                 castShadowSpotLights.push(element);
-                spotShadowMatrix.push(element.shadowCamera.viewProjection);
+                spotShadowMatrix.push(element._shadowCameraViewProjection);
                 spotShadowMaps.push(element.shadowMap);
             }
             else
@@ -94,7 +94,7 @@ export class LightPicker
             if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
                 castShadowDirectionalLights.push(element);
-                directionalShadowMatrix.push(element.shadowCamera.viewProjection);
+                directionalShadowMatrix.push(element._shadowCameraViewProjection);
                 directionalShadowMaps.push(element.shadowMap);
             }
             else

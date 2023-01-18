@@ -57,13 +57,24 @@ export class ShadowRenderer
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        //
+        const fov = light.angle;
+        const aspect = 1;
+        const near = 0.1;
+        const far = light.range;
+
         const shadowCamera = new Node3D().addComponent('PerspectiveCamera3D', {
-            fov: light.angle,
-            aspect: 1,
-            near: 0.1,
-            far: light.range,
+            fov,
+            aspect,
+            near,
+            far,
         });
         shadowCamera.node3d.globalMatrix = light.node3d.globalMatrix;
+
+        // 保存生成阴影贴图时使用的VP矩阵
+        light.shadowCameraNear = near;
+        light.shadowCameraFar = far;
+        light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         const renderAtomic = this.renderAtomic;
 
@@ -138,14 +149,24 @@ export class ShadowRenderer
         // negative Y
         cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
 
+        //
+        const fov = 90;
+        const aspect = 1;
+        const near = light.shadowCameraNear;
+        const far = light.range;
+
         const shadowCamera = new Node3D().addComponent('PerspectiveCamera3D', {
-            fov: 90,
-            aspect: 1,
-            near: 0.1,
-            far: light.range
+            fov,
+            aspect,
+            near,
+            far
         });
         shadowCamera.node3d.position = light.node3d.position;
 
+        //
+        light.shadowCameraFar = far;
+
+        //
         const renderAtomic = this.renderAtomic;
 
         for (let face = 0; face < 6; face++)
@@ -209,15 +230,24 @@ export class ShadowRenderer
         const center = worldBounds.getCenter();
         const radius = worldBounds.getSize().length / 2;
         // 默认近平面距离
-        const near = 0.3;
+        const near = 0.1;
+        const size = radius;
+        const far = near + radius * 2;
+        light.shadowCameraFar = far;
+
         // 初始化摄像机
         const shadowCamera = new Node3D().addComponent('OrthographicCamera3D', {
-            size: radius,
+            size,
             near,
-            far: near + radius * 2,
+            far,
         });
         shadowCamera.node3d.position = center.addTo(light.direction.normalize(radius + near).negate());
         shadowCamera.node3d.lookAt(center, Vector3.Y_AXIS);
+
+        // 保存生成阴影贴图时使用的VP矩阵
+        light.shadowCameraNear = near;
+        light.shadowCameraFar = far;
+        light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         //
         FrameBufferObject.active(renderer, light.frameBufferObject);
