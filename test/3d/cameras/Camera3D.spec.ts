@@ -5,7 +5,7 @@ const { ok, equal, deepEqual } = assert;
 
 describe('Camera3D', () =>
 {
-    it('project', () =>
+    it('project unproject', () =>
     {
         // 生成随机正交矩阵
         const near = Math.random();
@@ -24,38 +24,62 @@ describe('Camera3D', () =>
 
         // 测试可视空间的8个顶点是否被正确投影
         const lbn = new Vector3(-nearW, -nearH, near);
+        const lbn1 = new Vector3(-1, -1, -1);
         let tv = camera3D.project(lbn);
-        ok(new Vector3(-1, -1, -1).equals(tv));
+        ok(lbn1.equals(tv));
+        tv = camera3D.unproject(lbn1);
+        ok(lbn.equals(tv));
 
         const ltn = new Vector3(-nearW, nearH, near);
+        const ltn1 = new Vector3(-1, 1, -1);
         tv = camera3D.project(ltn);
-        ok(new Vector3(-1, 1, -1).equals(tv));
+        ok(ltn1.equals(tv));
+        tv = camera3D.unproject(ltn1);
+        ok(ltn.equals(tv));
 
         const rbn = new Vector3(nearW, -nearH, near);
+        const rbn1 = new Vector3(1, -1, -1);
         tv = camera3D.project(rbn);
-        ok(new Vector3(1, -1, -1).equals(tv));
+        ok(rbn1.equals(tv));
+        tv = camera3D.unproject(rbn1);
+        ok(rbn.equals(tv));
 
         const rtn = new Vector3(nearW, nearH, near);
+        const rtn1 = new Vector3(1, 1, -1);
         tv = camera3D.project(rtn);
-        ok(new Vector3(1, 1, -1).equals(tv));
+        ok(rtn1.equals(tv));
+        tv = camera3D.unproject(rtn1);
+        ok(rtn.equals(tv));
 
         const farH = far * Math.tan(fov * 0.5 * Math.PI / 180);
         const farW = farH * aspect;
 
         const lbf = new Vector3(-farW, -farH, far);
+        const lbf1 = new Vector3(-1, -1, 1);
         tv = camera3D.project(lbf);
-        ok(new Vector3(-1, -1, 1).equals(tv));
+        ok(lbf1.equals(tv));
+        tv = camera3D.unproject(lbf1);
+        ok(lbf.equals(tv));
 
         const ltf = new Vector3(-farW, farH, far);
+        const ltf1 = new Vector3(-1, 1, 1);
         tv = camera3D.project(ltf);
-        ok(new Vector3(-1, 1, 1).equals(tv));
+        ok(ltf1.equals(tv));
+        tv = camera3D.unproject(ltf1);
+        ok(ltf.equals(tv));
 
         const rbf = new Vector3(farW, -farH, far);
+        const rbf1 = new Vector3(1, -1, 1);
         tv = camera3D.project(rbf);
-        ok(new Vector3(1, -1, 1).equals(tv));
+        ok(rbf1.equals(tv));
+        tv = camera3D.unproject(rbf1);
+        ok(rbf.equals(tv));
 
         const rtf = new Vector3(farW, farH, far);
+        const rtf1 = new Vector3(1, 1, 1);
         tv = camera3D.project(rtf);
-        ok(new Vector3(1, 1, 1).equals(tv));
+        ok(rtf1.equals(tv));
+        tv = camera3D.unproject(rtf1);
+        ok(rtf.equals(tv));
     });
 });
