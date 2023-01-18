@@ -68,16 +68,10 @@ export class HoldSize3D extends Component3D
 
     private _getDepthScale(camera: Camera3D)
     {
-        const cameraGlobalMatrix = camera.node3d.globalMatrix;
-        const distance = this.node3d.worldPosition.subTo(cameraGlobalMatrix.getPosition());
-        if (distance.length === 0)
-        {
-            distance.x = 1;
-        }
-        const depth = distance.dot(cameraGlobalMatrix.getAxisZ());
-        let scale = camera.getScaleByDepth(depth);
-        // 限制在放大缩小100倍之间，否则容易出现矩阵不可逆问题
-        scale = Math.max(Math.min(100, scale), 0.01);
+        // 计算GPU空间坐标
+        const gpuP = camera.project(this.node3d.worldPosition);
+        // 根据GPU空间坐标深度值计算缩放
+        const scale = camera.getScaleByDepth(gpuP.z);
 
         return scale;
     }

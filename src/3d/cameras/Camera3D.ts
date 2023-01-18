@@ -190,14 +190,19 @@ export class Camera3D extends Component3D
     /**
      * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
      *
-     * @param   depth   深度
+     * depth为-1，方向为纵向（0, 1）时，返回scale值为近平面一半高度。
+     * depth为-1，方向为纵向（1, 0）时，返回scale值为近平面一半宽度。
+     * depth为1，方向为纵向（0, 1）时，返回scale值为远平面一半高度。
+     * depth为1，方向为纵向（1, 0）时，返回scale值为远平面一半宽度。
+     *
+     * @param   gpuDepth   GPU空间深度（near处depth值为-1，far处值为1）。
      */
-    getScaleByDepth(depth: number, dir = new Vector2(0, 1))
+    getScaleByDepth(gpuDepth: number, dir = new Vector2(0, 1))
     {
         const temp = new Vector3();
 
-        const lt = this.unproject(temp.set(-0.5 * dir.x, -0.5 * dir.y, depth));
-        const rb = this.unproject(temp.set(+0.5 * dir.x, +0.5 * dir.y, depth));
+        const lt = this.unproject(temp.set(-0.5 * dir.x, -0.5 * dir.y, gpuDepth));
+        const rb = this.unproject(temp.set(+0.5 * dir.x, +0.5 * dir.y, gpuDepth));
         const scale = lt.subTo(rb).length;
 
         return scale;

@@ -1,4 +1,4 @@
-import { Camera3D, mathUtil, Node3D, OrthographicCamera3D, Vector3 } from '../../../src';
+import { Camera3D, mathUtil, Node3D, OrthographicCamera3D, Vector2, Vector3 } from '../../../src';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
@@ -11,13 +11,13 @@ describe('Camera3D', () =>
         const near = Math.random();
         const far = Math.random() + near;
         const aspect = Math.random();
+        const fov = 60; // Camera3D 默认为fov为60度的视野。
 
         const camera3D: Camera3D = new Node3D().addComponent('Camera3D', {
             aspect,
             near,
             far,
         });
-        const fov = 60; // Camera3D 默认为fov为60度的视野。
 
         const nearH = near * Math.tan(fov * 0.5 * Math.PI / 180);
         const nearW = nearH * aspect;
@@ -81,5 +81,66 @@ describe('Camera3D', () =>
         ok(rtf1.equals(tv));
         tv = camera3D.unproject(rtf1);
         ok(rtf.equals(tv));
+    });
+
+    it('getWorldRay3D', () =>
+    {
+        // 生成随机正交矩阵
+        const near = Math.random();
+        const far = Math.random() + near;
+        const aspect = Math.random();
+        const fov = 60; // Camera3D 默认为fov为60度的视野。
+
+        const camera3D: Camera3D = new Node3D().addComponent('Camera3D', {
+            aspect,
+            near,
+            far,
+        });
+
+        const nearH = near * Math.tan(fov * 0.5 * Math.PI / 180);
+        const nearW = nearH * aspect;
+
+        const lbn = new Vector3(-nearW, -nearH, near);
+        const lbn1 = new Vector3(-1, -1, -1);
+
+        const ray = camera3D.getWorldRay3D(lbn1.x, lbn1.y);
+        const r = ray.onWithPoint(lbn);
+
+        equal(r, true);
+    });
+
+    it('getScaleByDepth', () =>
+    {
+        // 生成随机正交矩阵
+        const near = Math.random();
+        const far = Math.random() + near;
+        const aspect = Math.random();
+        const fov = 60; // Camera3D 默认为fov为60度的视野。
+
+        const camera3D: Camera3D = new Node3D().addComponent('Camera3D', {
+            aspect,
+            near,
+            far,
+        });
+
+        const nearH = near * Math.tan(fov * 0.5 * Math.PI / 180);
+        const nearW = nearH * aspect;
+
+        let scale: number;
+
+        scale = camera3D.getScaleByDepth(-1, new Vector2(1, 0));
+        ok(mathUtil.equals(scale, nearW));
+
+        scale = camera3D.getScaleByDepth(-1, new Vector2(0, 1));
+        ok(mathUtil.equals(scale, nearH));
+
+        const farH = far * Math.tan(fov * 0.5 * Math.PI / 180);
+        const farW = farH * aspect;
+
+        scale = camera3D.getScaleByDepth(1, new Vector2(1, 0));
+        ok(mathUtil.equals(scale, farW));
+
+        scale = camera3D.getScaleByDepth(1, new Vector2(0, 1));
+        ok(mathUtil.equals(scale, farH));
     });
 });
