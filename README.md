@@ -2,6 +2,9 @@
 
 > feng3d是使用TypeScript进行编写基于WebGL的3D游戏引擎，致力于打造一个优秀的3d游戏引擎以及易用且可以快速开发项目的配套编辑器。
 
+## 源代码
+feng3d源码可在 https://gitlab.com/feng3d/feng3d.git 上找到。
+
 ## 示例
 https://feng3d.gitlab.io/examples
 
@@ -133,12 +136,12 @@ https://feng3d.gitlab.io/examples
 首先感谢天底下所有愿意奉献的人！
 1. 如果你有什么想法或者需求欢迎在 [issues](https://gitee.com/feng3d/feng3d/issues) 发布
 
-## 项目托管
+## 源镜像
 1. gitee 提供了不亚于github的功能。除了知名度，国内访问速度非常快，开发效率，作为主要仓库。
-    * https://gitee.com/feng3d
+    * https://gitee.com/feng3d/feng3d
 
 1. github 国内访问较慢，有时甚至无法访问，放弃作为主仓库，将会不定期从gitee上同步。
-    * https://github.com/feng3d-labs
+    * https://github.com/feng3d-labs/feng3d
 
 ## 作者
 
