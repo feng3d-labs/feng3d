@@ -1,7 +1,3 @@
-import { DirectionalLight3D } from '../../light/DirectionalLight3D';
-import { LightType } from '../../light/LightType';
-import { PointLight3D } from '../../light/PointLight3D';
-import { SpotLight3D } from '../../light/SpotLight3D';
 import { Color3 } from '../../../math/Color3';
 import { Color4 } from '../../../math/Color4';
 import { Matrix3x3 } from '../../../math/geom/Matrix3x3';
@@ -11,10 +7,13 @@ import { Vector3 } from '../../../math/geom/Vector3';
 import { Vector4 } from '../../../math/geom/Vector4';
 import { Texture2D } from '../../../textures/Texture2D';
 import { TextureCube } from '../../../textures/TextureCube';
+import { LightType } from '../../light/LightType';
+import { PointLight3D } from '../../light/PointLight3D';
+import { SpotLight3D } from '../../light/SpotLight3D';
 
 declare module '../../../renderer/data/Uniforms' { interface Uniforms extends Uniforms3D { } }
 
-interface Uniforms3D
+export interface Uniforms3D
 {
     /**
      * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
@@ -176,16 +175,6 @@ interface Uniforms3D
      * 点光源阴影图
      */
     u_spotShadowMaps: Texture2D[];
-
-    /**
-     * 方向光源数组
-     */
-    u_directionalLights: DirectionalLight3D[]
-
-    /**
-     * 生成投影的方向光源
-     */
-    u_castShadowDirectionalLights: DirectionalLight3D[]
 
     /**
      * 方向光源投影矩阵列表

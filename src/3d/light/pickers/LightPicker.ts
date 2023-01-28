@@ -1,4 +1,5 @@
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Vector3 } from '../../../math/geom/Vector3';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Texture2D } from '../../../textures/Texture2D';
 import { Mesh3D } from '../../core/Mesh3D';
@@ -6,6 +7,25 @@ import { DirectionalLight3D } from '../DirectionalLight3D';
 import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
 import { SpotLight3D } from '../SpotLight3D';
+
+
+declare module '../../renderer/data/Uniform3D'
+{
+    interface Uniforms3D
+    {
+
+        /**
+         * 方向光源数组
+         */
+        u_directionalLights: UDirectionalLight[]
+
+        /**
+         * 生成投影的方向光源
+         */
+        u_castShadowDirectionalLights: UCastShadowDirectionalLight[]
+    }
+
+}
 
 export class LightPicker
 {
@@ -84,22 +104,44 @@ export class LightPicker
         renderAtomic.uniforms.u_spotShadowMaps = spotShadowMaps;
 
         // 设置方向光源数据
-        const castShadowDirectionalLights: DirectionalLight3D[] = [];
-        const unCastShadowDirectionalLights: DirectionalLight3D[] = [];
+        const castShadowDirectionalLights: UCastShadowDirectionalLight[] = [];
+        const unCastShadowDirectionalLights: UDirectionalLight[] = [];
         const directionalShadowMatrix: Matrix4x4[] = [];
         const directionalShadowMaps: Texture2D[] = [];
+        const tempVec3 = new Vector3();
         directionalLights.forEach((element) =>
         {
             if (!element.isVisibleAndEnabled) return;
+
+            const direction = element.node3d.globalMatrix.getAxisZ(tempVec3).normalize();
+            const color = element.color;
+
             if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
-                castShadowDirectionalLights.push(element);
+                const globalPosition = element.node3d.globalPosition;
+                //
+                castShadowDirectionalLights.push({
+                    direction: [direction.x, direction.y, direction.z],
+                    color: [color.r, color.g, color.b],
+                    intensity: element.intensity,
+                    shadowType: element.shadowType,
+                    shadowBias: element.shadowBias,
+                    shadowRadius: element.shadowRadius,
+                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    position: [globalPosition.x, globalPosition.y, globalPosition.z],
+                    shadowCameraNear: element.shadowCameraNear,
+                    shadowCameraFar: element.shadowCameraFar,
+                });
                 directionalShadowMatrix.push(element._shadowCameraViewProjection);
                 directionalShadowMaps.push(element.shadowMap);
             }
             else
             {
-                unCastShadowDirectionalLights.push(element);
+                unCastShadowDirectionalLights.push({
+                    direction: [direction.x, direction.y, direction.z],
+                    color: [color.r, color.g, color.b],
+                    intensity: element.intensity,
+                });
             }
         });
 
@@ -111,4 +153,31 @@ export class LightPicker
         renderAtomic.uniforms.u_directionalShadowMatrices = directionalShadowMatrix;
         renderAtomic.uniforms.u_directionalShadowMaps = directionalShadowMaps;
     }
+}
+
+// 方向光源
+interface UDirectionalLight
+{
+    // 方向
+    direction: [number, number, number];
+    // 颜色
+    color: [number, number, number];
+    // 强度
+    intensity: number;
+};
+
+interface UCastShadowDirectionalLight extends UDirectionalLight
+{
+    // 阴影类型
+    shadowType: number;
+    // 阴影偏差，用来解决判断是否为阴影时精度问题
+    shadowBias: number;
+    // 阴影半径，边缘宽度
+    shadowRadius: number;
+    // 阴影图尺寸
+    shadowMapSize: [number, number];
+    // 位置
+    position: [number, number, number];
+    shadowCameraNear: number;
+    shadowCameraFar: number;
 }

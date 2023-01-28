@@ -48,14 +48,6 @@ export class Light3D extends Component3D
     shadowType = ShadowType.No_Shadows;
 
     /**
-     * 光照方向
-     */
-    get direction()
-    {
-        return this.node3d.globalMatrix.getAxisZ();
-    }
-
-    /**
      * 阴影偏差，用来解决判断是否为阴影时精度问题
      */
     shadowBias = -0.005;

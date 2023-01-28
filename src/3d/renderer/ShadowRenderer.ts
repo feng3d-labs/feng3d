@@ -241,7 +241,8 @@ export class ShadowRenderer
             near,
             far,
         });
-        shadowCamera.node3d.position = center.addTo(light.direction.normalize(radius + near).negate());
+        const direction = light.node3d.globalMatrix.getAxisZ();
+        shadowCamera.node3d.position = center.addTo(direction.normalize(radius + near).negate());
         shadowCamera.node3d.lookAt(center, Vector3.Y_AXIS);
 
         // 保存生成阴影贴图时使用的VP矩阵
