@@ -8,8 +8,6 @@ import { Vector4 } from '../../../math/geom/Vector4';
 import { Texture2D } from '../../../textures/Texture2D';
 import { TextureCube } from '../../../textures/TextureCube';
 import { LightType } from '../../light/LightType';
-import { PointLight3D } from '../../light/PointLight3D';
-import { SpotLight3D } from '../../light/SpotLight3D';
 
 declare module '../../../renderer/data/Uniforms' { interface Uniforms extends Uniforms3D { } }
 
@@ -144,46 +142,6 @@ export interface Uniforms3D
      * lod0时在贴图中的uv缩放偏移向量
      */
     u_lod0vec: Vector4;
-    /**
-     * 点光源
-     */
-    u_pointLights: PointLight3D[];
-
-    /**
-     * 生成投影的点光源
-     */
-    u_castShadowPointLights: PointLight3D[]
-
-    /**
-     * 点光源阴影图
-     */
-    u_pointShadowMaps: Texture2D[];
-
-    /**
-     * 聚光灯光源
-     */
-    u_spotLights: SpotLight3D[];
-
-    /**
-     * 生成投影的聚光灯光源
-     */
-    u_castShadowSpotLights: SpotLight3D[]
-
-    u_spotShadowMatrix: Matrix4x4[];
-
-    /**
-     * 点光源阴影图
-     */
-    u_spotShadowMaps: Texture2D[];
-
-    /**
-     * 方向光源投影矩阵列表
-     */
-    u_directionalShadowMatrices: Matrix4x4[];
-    /**
-     * 方向光源阴影图
-     */
-    u_directionalShadowMaps: Texture2D[];
 
     /**
      * 场景环境光

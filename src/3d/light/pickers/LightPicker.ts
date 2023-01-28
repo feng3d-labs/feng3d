@@ -8,22 +8,61 @@ import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
 import { SpotLight3D } from '../SpotLight3D';
 
+declare module '../../renderer/data/Uniform3D' { interface Uniforms3D extends LightUniforms3D { } }
 
-declare module '../../renderer/data/Uniform3D'
+interface LightUniforms3D
 {
-    interface Uniforms3D
-    {
+    /**
+     * 方向光源数组
+     */
+    u_directionalLights: UDirectionalLight[];
 
-        /**
-         * 方向光源数组
-         */
-        u_directionalLights: UDirectionalLight[]
+    /**
+     * 生成投影的方向光源
+     */
+    u_castShadowDirectionalLights: UCastShadowDirectionalLight[];
 
-        /**
-         * 生成投影的方向光源
-         */
-        u_castShadowDirectionalLights: UCastShadowDirectionalLight[]
-    }
+    /**
+     * 方向光源投影矩阵列表
+     */
+    u_directionalShadowMatrices: Matrix4x4[];
+
+    /**
+     * 方向光源阴影图
+     */
+    u_directionalShadowMaps: Texture2D[];
+
+    /**
+     * 聚光灯光源
+     */
+    u_spotLights: USpotLight[];
+
+    /**
+     * 生成投影的聚光灯光源
+     */
+    u_castShadowSpotLights: UCastShadowSpotLight[]
+
+    u_spotShadowMatrix: Matrix4x4[];
+
+    /**
+     * 点光源阴影图
+     */
+    u_spotShadowMaps: Texture2D[];
+
+    /**
+     * 点光源
+     */
+    u_pointLights: UPointLight[];
+
+    /**
+     * 生成投影的点光源
+     */
+    u_castShadowPointLights: UCastShadowPointLight[]
+
+    /**
+     * 点光源阴影图
+     */
+    u_pointShadowMaps: Texture2D[];
 
 }
 
@@ -53,20 +92,40 @@ export class LightPicker
         renderAtomic.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;
 
         // 设置点光源数据
-        const castShadowPointLights: PointLight3D[] = [];
-        const unCastShadowPointLights: PointLight3D[] = [];
+        const castShadowPointLights: UCastShadowPointLight[] = [];
+        const unCastShadowPointLights: UPointLight[] = [];
         const pointShadowMaps: Texture2D[] = [];
         pointLights.forEach((element) =>
         {
             if (!element.isVisibleAndEnabled) return;
+
+            const position = element.node3d.globalPosition;
+            const color = element.color;
+
             if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
-                castShadowPointLights.push(element);
+                castShadowPointLights.push({
+                    position: [position.x, position.y, position.z],
+                    color: [color.r, color.g, color.b],
+                    intensity: element.intensity,
+                    range: element.range,
+                    shadowType: element.shadowType,
+                    shadowBias: element.shadowBias,
+                    shadowRadius: element.shadowRadius,
+                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowCameraNear: element.shadowCameraNear,
+                    shadowCameraFar: element.shadowCameraFar,
+                });
                 pointShadowMaps.push(element.shadowMap);
             }
             else
             {
-                unCastShadowPointLights.push(element);
+                unCastShadowPointLights.push({
+                    position: [position.x, position.y, position.z],
+                    color: [color.r, color.g, color.b],
+                    intensity: element.intensity,
+                    range: element.range,
+                });
             }
         });
         renderAtomic.shaderMacro.NUM_POINTLIGHT = unCastShadowPointLights.length;
@@ -77,22 +136,49 @@ export class LightPicker
         renderAtomic.uniforms.u_pointShadowMaps = pointShadowMaps;
 
         // 设置聚光灯光源数据
-        const castShadowSpotLights: SpotLight3D[] = [];
-        const unCastShadowSpotLights: SpotLight3D[] = [];
+        const castShadowSpotLights: UCastShadowSpotLight[] = [];
+        const unCastShadowSpotLights: USpotLight[] = [];
         const spotShadowMaps: Texture2D[] = [];
         const spotShadowMatrix: Matrix4x4[] = [];
         spotLights.forEach((element) =>
         {
             if (!element.isVisibleAndEnabled) return;
+
+            const direction = element.node3d.globalMatrix.getAxisZ(tempVec3).normalize();
+            const position = element.node3d.globalPosition;
+            const color = element.color;
+
             if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
-                castShadowSpotLights.push(element);
+                castShadowSpotLights.push({
+                    position: [position.x, position.y, position.z],
+                    color: [color.r, color.g, color.b],
+                    intensity: element.intensity,
+                    range: element.range,
+                    direction: [direction.x, direction.y, direction.z],
+                    coneCos: element.coneCos,
+                    penumbraCos: element.penumbraCos,
+                    shadowType: element.shadowType,
+                    shadowBias: element.shadowBias,
+                    shadowRadius: element.shadowRadius,
+                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowCameraNear: element.shadowCameraNear,
+                    shadowCameraFar: element.shadowCameraFar,
+                });
                 spotShadowMatrix.push(element._shadowCameraViewProjection);
                 spotShadowMaps.push(element.shadowMap);
             }
             else
             {
-                unCastShadowSpotLights.push(element);
+                unCastShadowSpotLights.push({
+                    position: [position.x, position.y, position.z],
+                    color: [color.r, color.g, color.b],
+                    intensity: element.intensity,
+                    range: element.range,
+                    direction: [direction.x, direction.y, direction.z],
+                    coneCos: element.coneCos,
+                    penumbraCos: element.penumbraCos,
+                });
             }
         });
         renderAtomic.shaderMacro.NUM_SPOT_LIGHTS = unCastShadowSpotLights.length;
@@ -166,8 +252,14 @@ interface UDirectionalLight
     intensity: number;
 };
 
-interface UCastShadowDirectionalLight extends UDirectionalLight
+interface UCastShadowDirectionalLight
 {
+    // 方向
+    direction: [number, number, number];
+    // 颜色
+    color: [number, number, number];
+    // 强度
+    intensity: number;
     // 阴影类型
     shadowType: number;
     // 阴影偏差，用来解决判断是否为阴影时精度问题
@@ -181,3 +273,73 @@ interface UCastShadowDirectionalLight extends UDirectionalLight
     shadowCameraNear: number;
     shadowCameraFar: number;
 }
+
+// 聚光灯
+interface USpotLight
+{
+    // 位置
+    position: [number, number, number];
+    // 颜色
+    color: [number, number, number];
+    // 强度
+    intensity: number;
+    // 范围
+    range: number;
+    // 方向
+    direction: [number, number, number];
+    // 椎体cos值
+    coneCos: number;
+    // 半影cos
+    penumbraCos: number;
+};
+
+// 投影的聚光灯
+interface UCastShadowSpotLight extends USpotLight
+{
+    // 阴影类型
+    shadowType: number;
+    // 阴影偏差，用来解决判断是否为阴影时精度问题
+    shadowBias: number;
+    // 阴影半径，边缘宽度
+    shadowRadius: number;
+    // 阴影图尺寸
+    shadowMapSize: [number, number];
+    shadowCameraNear: number;
+    shadowCameraFar: number;
+};
+
+// 点光源
+interface UPointLight
+{
+    // 位置
+    position: [number, number, number];
+    // 颜色
+    color: [number, number, number];
+    // 强度
+    intensity: number;
+    // 范围
+    range: number;
+};
+
+// 投影的点光源
+interface UCastShadowPointLight
+{
+    // 位置
+    position: [number, number, number];
+    // 颜色
+    color: [number, number, number];
+    // 强度
+    intensity: number;
+    // 范围
+    range: number;
+    // 阴影类型
+    shadowType: number;
+    // 阴影偏差，用来解决判断是否为阴影时精度问题
+    shadowBias: number;
+    // 阴影半径，边缘宽度
+    shadowRadius: number;
+    // 阴影图尺寸
+    shadowMapSize: [number, number];
+    shadowCameraNear: number;
+    shadowCameraFar: number;
+};
