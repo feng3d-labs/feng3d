@@ -58,7 +58,7 @@ export class BoundingBox3D
     }
 
     /**
-     * 自身世界空间的包围盒
+     * 自身全局空间的包围盒
      */
     get selfGlobalBounds()
     {
@@ -72,7 +72,7 @@ export class BoundingBox3D
     }
 
     /**
-     * 世界包围盒
+     * 全局包围盒
      */
     get globalBounds()
     {
@@ -109,7 +109,7 @@ export class BoundingBox3D
     }
 
     /**
-     * 更新自身世界包围盒
+     * 更新自身全局包围盒
      */
     protected _updateSelfGlobalBounds()
     {
@@ -117,13 +117,13 @@ export class BoundingBox3D
     }
 
     /**
-     * 更新世界包围盒
+     * 更新全局包围盒
      */
     protected _updateGlobalBounds()
     {
         this._globalBounds.copy(this.selfGlobalBounds);
 
-        // 获取子对象的世界包围盒与自身世界包围盒进行合并
+        // 获取子对象的全局包围盒与自身全局包围盒进行合并
         this._object3D.children.forEach((element: Node3D) =>
         {
             this._globalBounds.union(element.boundingBox.globalBounds);
@@ -142,7 +142,7 @@ export class BoundingBox3D
     }
 
     /**
-     * 使自身世界包围盒失效
+     * 使自身全局包围盒失效
      */
     protected _invalidateSelfGlobalBounds()
     {
@@ -153,7 +153,7 @@ export class BoundingBox3D
     }
 
     /**
-     * 使世界包围盒失效
+     * 使全局包围盒失效
      */
     protected _invalidateGlobalBounds()
     {
@@ -161,7 +161,7 @@ export class BoundingBox3D
 
         this._globalBoundsInvalid = true;
 
-        // 世界包围盒失效会影响父对象世界包围盒失效
+        // 全局包围盒失效会影响父对象全局包围盒失效
         const parent = this._object3D.parent;
         if (!parent) return;
         parent.boundingBox._invalidateGlobalBounds();

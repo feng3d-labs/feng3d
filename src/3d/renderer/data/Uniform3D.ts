@@ -54,7 +54,7 @@ interface Uniforms3D
      */
     u_ITMVMatrix: Matrix4x4;
     /**
-     * 世界投影矩阵
+     * 全局投影矩阵
      */
     u_viewProjection: Matrix4x4;
 

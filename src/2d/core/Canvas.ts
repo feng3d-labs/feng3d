@@ -24,10 +24,10 @@ export class Canvas extends Component2D
     /**
      * Is the Canvas in Global or Overlay mode?
      *
-     * 画布是在世界或覆盖模式?
+     * 画布的覆盖模式?
      */
     @SerializeProperty()
-    @oav({ component: 'OAVEnum', tooltip: '画布是在世界或覆盖模式', componentParam: { enumClass: UIRenderMode } })
+    @oav({ component: 'OAVEnum', tooltip: '画布的覆盖模式', componentParam: { enumClass: UIRenderMode } })
     renderMode = UIRenderMode.ScreenSpaceOverlay;
 
     /**

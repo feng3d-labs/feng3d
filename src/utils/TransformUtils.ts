@@ -132,7 +132,7 @@ export class TransformUtils
     }
 
     /**
-     * 将方向从局部空间转换到世界空间。
+     * 将方向从局部空间转换到全局空间。
      *
      * @param direction 局部空间方向
      */
@@ -144,7 +144,7 @@ export class TransformUtils
     }
 
     /**
-     * 将方向从局部空间转换到世界空间。
+     * 将方向从局部空间转换到全局空间。
      *
      * @param direction 局部空间方向
      */
@@ -161,7 +161,7 @@ export class TransformUtils
     }
 
     /**
-     * 将包围盒从局部空间转换到世界空间
+     * 将包围盒从局部空间转换到全局空间
      *
      * @param box 变换前的包围盒
      * @param out 变换之后的包围盒
@@ -181,7 +181,7 @@ export class TransformUtils
     }
 
     /**
-     * 将位置从局部空间转换为世界空间。
+     * 将位置从局部空间转换为全局空间。
      *
      * @param position 局部空间位置
      */
@@ -193,7 +193,7 @@ export class TransformUtils
     }
 
     /**
-     * 将位置从局部空间转换为世界空间。
+     * 将位置从局部空间转换为全局空间。
      *
      * @param position 局部空间位置
      */
@@ -209,7 +209,7 @@ export class TransformUtils
     }
 
     /**
-     * 将向量从局部空间变换到世界空间。
+     * 将向量从局部空间变换到全局空间。
      *
      * @param vector 局部空间向量
      */
@@ -221,7 +221,7 @@ export class TransformUtils
     }
 
     /**
-     * 将向量从局部空间变换到世界空间。
+     * 将向量从局部空间变换到全局空间。
      *
      * @param vector 局部空间位置
      */
@@ -240,7 +240,7 @@ export class TransformUtils
     /**
      * Transforms a direction from global space to local space. The opposite of Node3D.TransformDirection.
      *
-     * 将一个方向从世界空间转换到局部空间。
+     * 将一个方向从全局空间转换到局部空间。
      */
     static inverseTransformDirection(transform: Node3D, direction: Vector3)
     {
@@ -250,7 +250,7 @@ export class TransformUtils
     }
 
     /**
-     * 将一个方向从世界空间转换到局部空间。
+     * 将一个方向从全局空间转换到局部空间。
      */
     static globalToLocalDirection(transform: Node3D, direction: Vector3)
     {
@@ -265,9 +265,9 @@ export class TransformUtils
     }
 
     /**
-     * 将位置从世界空间转换为局部空间。
+     * 将位置从全局空间转换为局部空间。
      *
-     * @param position 世界坐标系中位置
+     * @param position 全局坐标系中位置
      */
     static globalToLocalPoint(transform: Node3D, position: Vector3, out = new Vector3())
     {
@@ -281,9 +281,9 @@ export class TransformUtils
     }
 
     /**
-     * 将向量从世界空间转换为局部空间
+     * 将向量从全局空间转换为局部空间
      *
-     * @param vector 世界坐标系中向量
+     * @param vector 全局坐标系中向量
      */
     static globalToLocalVector(transform: Node3D, vector: Vector3)
     {
@@ -297,9 +297,9 @@ export class TransformUtils
     }
 
     /**
-     * 将 Ray3 从世界空间转换为局部空间。
+     * 将 Ray3 从全局空间转换为局部空间。
      *
-     * @param globalRay 世界空间射线。
+     * @param globalRay 全局空间射线。
      * @param localRay 局部空间射线。
      */
     static rayGlobalToLocal(transform: Node3D, globalRay: Ray3, localRay = new Ray3())

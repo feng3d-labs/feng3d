@@ -1104,7 +1104,7 @@ export class ParticleSystem3D extends Component3D
         {
             if (Math.random() > probability) return;
 
-            // 粒子所在世界坐标
+            // 粒子所在全局坐标
             const particleWoldPos = this.node3d.globalMatrix.transformPoint3(particle.position);
             // 粒子在子粒子系统的坐标
             const subEmitPos = subEmitter.node3d.invertGlobalMatrix.transformPoint3(particleWoldPos);
@@ -1172,12 +1172,12 @@ export interface ParticleSystemEmitInfo
     currentTime: number;
 
     /**
-     * 上次世界坐标
+     * 上次全局坐标
      */
     preGlobalPos: Vector3;
 
     /**
-     * 当前世界坐标
+     * 当前全局坐标
      */
     currentGlobalPos: Vector3;
 

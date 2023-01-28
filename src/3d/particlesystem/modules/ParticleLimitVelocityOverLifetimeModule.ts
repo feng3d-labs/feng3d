@@ -52,11 +52,11 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     /**
      * Specifies if the velocities are in local space (rotated with the transform) or global space.
      *
-     * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
+     * 指定速度是在局部空间(与变换一起旋转)还是在全局空间。
      */
     // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or global space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
     @SerializeProperty()
-    @oav({ tooltip: '指定速度是在局部空间(与变换一起旋转)还是在世界空间。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
+    @oav({ tooltip: '指定速度是在局部空间(与变换一起旋转)还是在全局空间。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
     space = ParticleSystemSimulationSpace.Local;
 
     /**

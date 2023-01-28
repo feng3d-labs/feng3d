@@ -78,8 +78,8 @@ export class RenderContext3D
     }
 
     /**
-     * 投影坐标（世界坐标转换为3D视图坐标）
-     * @param point3d 世界坐标
+     * 投影坐标（全局坐标转换为3D视图坐标）
+     * @param point3d 全局坐标
      * @return 屏幕的绝对坐标
      */
     project(point3d: Vector3): Vector3

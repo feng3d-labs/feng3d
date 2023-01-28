@@ -138,9 +138,9 @@ export class Mesh3D extends Renderable3D
     }
 
     /**
-     * 与世界空间射线相交
+     * 与全局空间射线相交
      *
-     * @param globalRay 世界空间射线
+     * @param globalRay 全局空间射线
      *
      * @return 相交信息
      */

@@ -25,11 +25,11 @@ export class ParticleForceOverLifetimeModule extends ParticleModule
     /**
      * Are the forces being applied in local or global space?
      *
-     * 这些力是作用于局部空间还是世界空间
+     * 这些力是作用于局部空间还是全局空间
      */
     @SerializeProperty()
     // @oav({ tooltip: "Are the forces being applied in local or global space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-    @oav({ tooltip: '这些力是作用于局部空间还是世界空间?', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
+    @oav({ tooltip: '这些力是作用于局部空间还是全局空间?', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
     space = ParticleSystemSimulationSpace.Local;
 
     /**

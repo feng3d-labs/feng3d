@@ -81,15 +81,15 @@ export class Camera3D extends Component3D
     }
 
     /**
-     * 场景投影矩阵，世界空间转投影空间
+     * 视窗投影矩阵，全局空间转投影空间
      */
     get viewProjection(): Matrix4x4
     {
         if (this._viewProjectionInvalid)
         {
-            // 场景空间转摄像机空间
+            // 全局空间转摄像机空间
             this._viewProjection.copy(this.node3d.invertGlobalMatrix);
-            // +摄像机空间转投影空间 = 场景空间转投影空间
+            // +摄像机空间转投影空间 = 全局空间转投影空间
             this._viewProjection.append(this.projectionMatrix);
             this._viewProjectionInvalid = false;
         }

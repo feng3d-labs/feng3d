@@ -23,7 +23,7 @@ export class CanvasRenderer extends Mesh3D
     }
 
     /**
-     * 与世界空间射线相交
+     * 与全局空间射线相交
      *
      * @param globalRay 全局空间射线
      *

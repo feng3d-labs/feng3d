@@ -39,7 +39,7 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
     }
 
     /**
-     * 世界包围盒
+     * 全局包围盒
      */
     get globalBounds()
     {
@@ -52,9 +52,9 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
     }
 
     /**
-     * 与世界空间射线相交
+     * 与全局空间射线相交
      *
-     * @param _globalRay 世界空间射线
+     * @param _globalRay 全局空间射线
      *
      * @return 相交信息
      */
@@ -64,7 +64,7 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
     }
 
     /**
-     * 更新世界边界
+     * 更新全局边界
      */
     protected _updateGlobalBounds()
     {

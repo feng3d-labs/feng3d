@@ -13,7 +13,7 @@ export enum ParticleSystemSimulationSpace
     /**
      * Simulate particles in global space.
      *
-     * 模拟世界空间中的粒子。
+     * 模拟全局空间中的粒子。
      */
     Global = 1,
 }

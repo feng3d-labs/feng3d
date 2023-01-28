@@ -11,7 +11,7 @@ declare module './ParticleModule' { interface ParticleModuleMap { ParticleInheri
 /**
  * The Inherit Velocity Module controls how the velocity of the emitter is transferred to the particles as they are emitted.
  *
- * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
+ * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在全局空间中模拟时生效）
  */
 @RegisterParticleModule('ParticleInheritVelocityModule')
 export class ParticleInheritVelocityModule extends ParticleModule
