@@ -119,7 +119,7 @@ describe('OrthographicCamera3D', () =>
 
         for (let i = 0; i < NUM; i++)
         {
-            const ray = orthographicCamera3D.getWorldRay3D(x, y);
+            const ray = orthographicCamera3D.getGlobalRay3D(x, y);
             const p = ray.getPointWithZ(mathUtil.lerp(near, far, Math.random()));
             const pp = orthographicCamera3D.project(p);
             ok(mathUtil.equals(x, pp.x));

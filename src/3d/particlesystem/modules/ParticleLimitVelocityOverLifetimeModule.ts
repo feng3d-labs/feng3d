@@ -50,11 +50,11 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     limit3D = $set(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
 
     /**
-     * Specifies if the velocities are in local space (rotated with the transform) or world space.
+     * Specifies if the velocities are in local space (rotated with the transform) or global space.
      *
      * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
      */
-    // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+    // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or global space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
     @SerializeProperty()
     @oav({ tooltip: '指定速度是在局部空间(与变换一起旋转)还是在世界空间。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
     space = ParticleSystemSimulationSpace.Local;
@@ -202,13 +202,13 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
         //
         if (this.space !== this.particleSystem.main.simulationSpace)
         {
-            if (this.space === ParticleSystemSimulationSpace.World)
+            if (this.space === ParticleSystemSimulationSpace.Global)
             {
                 mat.copy(this.particleSystem.node3d.globalMatrix);
             }
             else
             {
-                mat.copy(this.particleSystem.node3d.globalInvertMatrix);
+                mat.copy(this.particleSystem.node3d.invertGlobalMatrix);
             }
         }
         // 变换到现在空间进行限速

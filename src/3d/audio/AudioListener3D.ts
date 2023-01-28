@@ -5,7 +5,7 @@ import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';
 
 export let audioCtx: AudioContext;
-export let globalGain: GainNode;
+export let gainNode: GainNode;
 
 declare module '../../ecs/Component' { interface ComponentMap { AudioListener3D: AudioListener3D; } }
 
@@ -84,11 +84,11 @@ export class AudioListener3D extends Component3D
         if (!this.gain) return;
         if (this.enabled)
         {
-            globalGain.connect(this.gain);
+            gainNode.connect(this.gain);
         }
         else
         {
-            globalGain.disconnect(this.gain);
+            gainNode.disconnect(this.gain);
         }
     }
 
@@ -106,12 +106,12 @@ export class AudioListener3D extends Component3D
     window['AudioContext'] = window['AudioContext'] || window['webkitAudioContext'];
 
     audioCtx = new AudioContext();
-    globalGain = audioCtx.createGain();
+    gainNode = audioCtx.createGain();
 
     // 新增无音Gain，避免没有AudioListener组件时暂停声音播放进度
     const zeroGain = audioCtx.createGain();
     zeroGain.connect(audioCtx.destination);
-    globalGain.connect(zeroGain);
+    gainNode.connect(zeroGain);
     zeroGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
     //
     const listener = audioCtx.listener;

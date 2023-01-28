@@ -33,7 +33,7 @@ export class Outline3DRenderer
         {
             if (cv.isVisibleAndEnabled)
             {
-                if (frustum.intersectsBox(cv.worldBounds))
+                if (frustum.intersectsBox(cv.globalBounds))
                 {
                     if (!cv.useMaterial.renderParams.enableBlend)
                     {

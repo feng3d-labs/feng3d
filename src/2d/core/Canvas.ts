@@ -22,7 +22,7 @@ declare module '../../3d/core/Node3D' { interface PrimitiveNode3D { Canvas: Node
 export class Canvas extends Component2D
 {
     /**
-     * Is the Canvas in World or Overlay mode?
+     * Is the Canvas in Global or Overlay mode?
      *
      * 画布是在世界或覆盖模式?
      */

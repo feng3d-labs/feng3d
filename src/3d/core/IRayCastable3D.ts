@@ -6,7 +6,7 @@ export interface IRayCastable3D
 {
     get localBounds(): Box3;
 
-    get worldBounds(): Box3;
+    get globalBounds(): Box3;
 
-    worldRayIntersection(worldRay: Ray3): PickingCollisionVO
+    globalRayIntersection(globalRay: Ray3): PickingCollisionVO
 }

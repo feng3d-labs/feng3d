@@ -452,14 +452,14 @@ export class ParticleMainModule extends ParticleModule
     gravityModifier = new MinMaxCurve();
 
     /**
-     * This selects the space in which to simulate particles. It can be either world or local space.
+     * This selects the space in which to simulate particles. It can be either global or local space.
      *
      * 模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
      *
      * @todo
      */
     @SerializeProperty()
-    // @oav({ tooltip: "This selects the space in which to simulate particles. It can be either world or local space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+    // @oav({ tooltip: "This selects the space in which to simulate particles. It can be either global or local space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
     @oav({ tooltip: '模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemSimulationSpace } })
     simulationSpace = ParticleSystemSimulationSpace.Local;
 
@@ -551,8 +551,8 @@ export class ParticleMainModule extends ParticleModule
     updateParticleState(particle: Particle)
     {
         // 加速度
-        const gravity = worldGravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem._emitInfo.rateAtDuration));
-        this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, MainPreGravity);
+        const gravity = globalGravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem._emitInfo.rateAtDuration));
+        this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.Global, MainPreGravity);
 
         //
         particle.size.copy(particle.startSize);
@@ -560,5 +560,5 @@ export class ParticleMainModule extends ParticleModule
     }
 }
 
-const worldGravity = new Vector3(0, -9.8, 0);
+const globalGravity = new Vector3(0, -9.8, 0);
 const MainPreGravity = '_Main_preGravity';

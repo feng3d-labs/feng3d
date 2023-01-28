@@ -48,14 +48,6 @@ export class Light3D extends Component3D
     shadowType = ShadowType.No_Shadows;
 
     /**
-     * 光源位置
-     */
-    get position()
-    {
-        return this.node3d.worldPosition;
-    }
-
-    /**
      * 光照方向
      */
     get direction()
@@ -148,7 +140,7 @@ export class Light3D extends Component3D
         }
 
         const depth = viewCamera.near * 2;
-        node3d.position = viewCamera.node3d.worldPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
+        node3d.position = viewCamera.node3d.globalPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
         const billboardComponent = node3d.getComponent('Billboard3D');
         billboardComponent.camera = viewCamera;
 

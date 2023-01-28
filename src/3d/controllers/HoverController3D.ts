@@ -238,10 +238,10 @@ export class HoverController3D extends LookAtController3D
             {
                 if (this._targetObject.parent !== this._lookAtObject.parent)
                 {
-                    this._pos.x = this._lookAtObject.worldPosition.x;
-                    this._pos.y = this._lookAtObject.worldPosition.y;
-                    this._pos.z = this._lookAtObject.worldPosition.z;
-                    this._targetObject.parent.globalInvertMatrix.transformPoint3(this._pos, this._pos);
+                    this._pos.x = this._lookAtObject.globalPosition.x;
+                    this._pos.y = this._lookAtObject.globalPosition.y;
+                    this._pos.z = this._lookAtObject.globalPosition.z;
+                    this._targetObject.parent.invertGlobalMatrix.transformPoint3(this._pos, this._pos);
                 }
                 else
                 {
@@ -250,9 +250,9 @@ export class HoverController3D extends LookAtController3D
             }
             else if (this._lookAtObject.scene)
             {
-                this._pos.x = this._lookAtObject.worldPosition.x;
-                this._pos.y = this._lookAtObject.worldPosition.y;
-                this._pos.z = this._lookAtObject.worldPosition.z;
+                this._pos.x = this._lookAtObject.globalPosition.x;
+                this._pos.y = this._lookAtObject.globalPosition.y;
+                this._pos.z = this._lookAtObject.globalPosition.z;
             }
             else
             {

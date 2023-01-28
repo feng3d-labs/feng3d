@@ -9,9 +9,9 @@ export enum ParticleSystemRenderSpace
     View,
 
     /**
-     * Particles align with the world.
+     * Particles align with the global.
      */
-    World,
+    Global,
 
     /**
      * Particles align with their local transform.

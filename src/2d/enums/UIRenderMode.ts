@@ -22,5 +22,5 @@ export enum UIRenderMode
      *
      * 使用场景中任何可以渲染图层的相机渲染。
      */
-    WorldSpace,
+    GlobalSpace,
 }

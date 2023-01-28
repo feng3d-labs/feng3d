@@ -140,13 +140,13 @@ export class Mesh3D extends Renderable3D
     /**
      * 与世界空间射线相交
      *
-     * @param worldRay 世界空间射线
+     * @param globalRay 世界空间射线
      *
      * @return 相交信息
      */
-    worldRayIntersection(worldRay: Ray3)
+    globalRayIntersection(globalRay: Ray3)
     {
-        const localRay = TransformUtils.rayWorldToLocal(this.node3d, worldRay);
+        const localRay = TransformUtils.rayGlobalToLocal(this.node3d, globalRay);
         const pickingCollisionVO = this.localRayIntersection(localRay);
 
         return pickingCollisionVO;
@@ -216,7 +216,7 @@ export class Mesh3D extends Renderable3D
 
     protected _onScenetransformChanged()
     {
-        this._worldBounds = null;
+        this._globalBounds = null;
     }
 
     protected _updateBounds()

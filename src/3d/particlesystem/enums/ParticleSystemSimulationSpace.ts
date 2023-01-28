@@ -11,9 +11,9 @@ export enum ParticleSystemSimulationSpace
     Local = 0,
 
     /**
-     * Simulate particles in world space.
+     * Simulate particles in global space.
      *
      * 模拟世界空间中的粒子。
      */
-    World = 1,
+    Global = 1,
 }

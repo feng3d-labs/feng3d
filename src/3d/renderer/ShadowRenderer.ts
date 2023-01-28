@@ -79,7 +79,7 @@ export class ShadowRenderer
         const renderAtomic = this.renderAtomic;
 
         // 获取影响阴影图的渲染对象
-        const models = scene.getComponentsInChildren('Mesh3D').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
+        const models = scene.getComponentsInChildren('Mesh3D').filter((mr) => shadowCamera.frustum.intersectsBox(mr.globalBounds));
 
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
@@ -91,12 +91,12 @@ export class ShadowRenderer
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
         renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.globalInvertMatrix;
+        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
         renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
+        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = light.position;
+        renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
         renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
         renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
@@ -171,10 +171,10 @@ export class ShadowRenderer
 
         for (let face = 0; face < 6; face++)
         {
-            shadowCamera.node3d.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
+            shadowCamera.node3d.lookAt(light.node3d.globalPosition.addTo(cubeDirections[face]), cubeUps[face]);
 
             // 获取影响阴影图的渲染对象
-            const models = scene.getComponentsInChildren('Mesh3D').filter((mr) => shadowCamera.frustum.intersectsBox(mr.worldBounds));
+            const models = scene.getComponentsInChildren('Mesh3D').filter((mr) => shadowCamera.frustum.intersectsBox(mr.globalBounds));
 
             // 筛选投射阴影的渲染对象
             const castShadowsModels = models.filter((i) => i.castShadows);
@@ -186,12 +186,12 @@ export class ShadowRenderer
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.globalInvertMatrix;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = light.position;
+            renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
             renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
             renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
@@ -214,9 +214,9 @@ export class ShadowRenderer
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
 
-        const worldBounds: Box3 = castShadowsModels.reduce((pre: Box3, i) =>
+        const globalBounds: Box3 = castShadowsModels.reduce((pre: Box3, i) =>
         {
-            const box = i.node3d.boundingBox.worldBounds;
+            const box = i.node3d.boundingBox.globalBounds;
             if (!pre)
             {
                 return box.clone();
@@ -227,8 +227,8 @@ export class ShadowRenderer
         }, null) || new Box3(new Vector3(), new Vector3(1, 1, 1));
 
         //
-        const center = worldBounds.getCenter();
-        const radius = worldBounds.getSize().length / 2;
+        const center = globalBounds.getCenter();
+        const radius = globalBounds.getSize().length / 2;
         // 默认近平面距离
         const near = 0.1;
         const size = radius;
@@ -266,12 +266,12 @@ export class ShadowRenderer
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
         renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.globalInvertMatrix;
+        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
         renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.worldPosition;
+        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.worldPosition;
+        renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.globalPosition;
         renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
         renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
         //

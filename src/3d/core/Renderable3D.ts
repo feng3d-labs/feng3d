@@ -23,7 +23,7 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
     readonly renderAtomic = new RenderAtomic();
 
     protected _localBounds: Box3;
-    protected _worldBounds: Box3;
+    protected _globalBounds: Box3;
 
     /**
      * 局部包围盒
@@ -41,24 +41,24 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
     /**
      * 世界包围盒
      */
-    get worldBounds()
+    get globalBounds()
     {
-        if (!this._worldBounds)
+        if (!this._globalBounds)
         {
-            this._updateWorldBounds();
+            this._updateGlobalBounds();
         }
 
-        return this._worldBounds;
+        return this._globalBounds;
     }
 
     /**
      * 与世界空间射线相交
      *
-     * @param _worldRay 世界空间射线
+     * @param _globalRay 世界空间射线
      *
      * @return 相交信息
      */
-    worldRayIntersection(_worldRay: Ray3): PickingCollisionVO
+    globalRayIntersection(_globalRay: Ray3): PickingCollisionVO
     {
         throw '请在子类中实现！';
     }
@@ -66,9 +66,9 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
     /**
      * 更新世界边界
      */
-    protected _updateWorldBounds()
+    protected _updateGlobalBounds()
     {
-        this._worldBounds = this.localBounds.applyMatrixTo(this.node3d.globalMatrix);
+        this._globalBounds = this.localBounds.applyMatrixTo(this.node3d.globalMatrix);
     }
 
     /**
@@ -77,7 +77,7 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
     protected _onBoundsInvalid()
     {
         this._localBounds = null;
-        this._worldBounds = null;
+        this._globalBounds = null;
 
         this.emitter.emit('selfBoundsChanged', this);
     }

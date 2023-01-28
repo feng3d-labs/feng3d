@@ -4,7 +4,7 @@ import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';
-import { audioCtx, globalGain } from './AudioListener3D';
+import { audioCtx, gainNode } from './AudioListener3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { AudioSource3D: AudioSource3D; } }
 
@@ -360,11 +360,11 @@ export class AudioSource3D extends Component3D
         }
         if (this.enabled)
         {
-            this.gain.connect(globalGain);
+            this.gain.connect(gainNode);
         }
         else
         {
-            this.gain.disconnect(globalGain);
+            this.gain.disconnect(gainNode);
         }
     }
 

@@ -24,7 +24,7 @@ export class Billboard3D extends Component3D
     {
         super.init();
         watcher.watch(this as Billboard3D, 'camera', this._onCameraChanged, this);
-        this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateGlobalMatrix, this);
         this._invalidHoldSizeMatrix();
     }
 
@@ -37,16 +37,18 @@ export class Billboard3D extends Component3D
 
     private _invalidHoldSizeMatrix()
     {
-        if (this._entity) this.entity['_invalidateGlobalMatrix']();
+        // @ts-ignore
+        this.node3d._invalidateGlobalMatrix();
     }
-
-    private _onUpdateLocalToWorldMatrix()
+    
+    private _onUpdateGlobalMatrix()
     {
-        const _globalMatrix = this.node3d['_globalMatrix'];
+        // @ts-ignore
+        const _globalMatrix = this.node3d._globalMatrix;
         if (_globalMatrix && this.camera)
         {
             const camera = this.camera;
-            const cameraPos = camera.node3d.worldPosition;
+            const cameraPos = camera.node3d.globalPosition;
             const yAxis = camera.node3d.globalMatrix.getAxisY();
             _globalMatrix.lookAt(cameraPos, yAxis);
         }
@@ -55,7 +57,7 @@ export class Billboard3D extends Component3D
     dispose()
     {
         this.camera = null;
-        this.node3d.emitter.off('updateGlobalMatrix', this._onUpdateLocalToWorldMatrix, this);
+        this.node3d.emitter.off('updateGlobalMatrix', this._onUpdateGlobalMatrix, this);
         super.dispose();
     }
 }

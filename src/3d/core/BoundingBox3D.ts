@@ -29,18 +29,18 @@ export class BoundingBox3D
     private _object3D: Node3D;
 
     protected _selfLocalBounds = new Box3();
-    protected _selfWorldBounds = new Box3();
-    protected _worldBounds = new Box3();
+    protected _selfGlobalBounds = new Box3();
+    protected _globalBounds = new Box3();
 
     protected _selfBoundsInvalid = true;
-    protected _selfWorldBoundsInvalid = true;
-    protected _worldBoundsInvalid = true;
+    protected _selfGlobalBoundsInvalid = true;
+    protected _globalBoundsInvalid = true;
 
     constructor(node3d: Node3D)
     {
         this._object3D = node3d;
         node3d.emitter.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
-        node3d.emitter.on('globalMatrixChanged', this._invalidateSelfWorldBounds, this);
+        node3d.emitter.on('globalMatrixChanged', this._invalidateSelfGlobalBounds, this);
     }
 
     /**
@@ -60,29 +60,29 @@ export class BoundingBox3D
     /**
      * 自身世界空间的包围盒
      */
-    get selfWorldBounds()
+    get selfGlobalBounds()
     {
-        if (this._selfWorldBoundsInvalid)
+        if (this._selfGlobalBoundsInvalid)
         {
-            this._updateSelfWorldBounds();
-            this._selfWorldBoundsInvalid = false;
+            this._updateSelfGlobalBounds();
+            this._selfGlobalBoundsInvalid = false;
         }
 
-        return this._selfWorldBounds;
+        return this._selfGlobalBounds;
     }
 
     /**
      * 世界包围盒
      */
-    get worldBounds()
+    get globalBounds()
     {
-        if (this._worldBoundsInvalid)
+        if (this._globalBoundsInvalid)
         {
-            this._updateWorldBounds();
-            this._worldBoundsInvalid = false;
+            this._updateGlobalBounds();
+            this._globalBoundsInvalid = false;
         }
 
-        return this._worldBounds;
+        return this._globalBounds;
     }
 
     /**
@@ -111,22 +111,22 @@ export class BoundingBox3D
     /**
      * 更新自身世界包围盒
      */
-    protected _updateSelfWorldBounds()
+    protected _updateSelfGlobalBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._object3D.globalMatrix);
+        this._selfGlobalBounds.copy(this.selfLocalBounds).applyMatrix(this._object3D.globalMatrix);
     }
 
     /**
      * 更新世界包围盒
      */
-    protected _updateWorldBounds()
+    protected _updateGlobalBounds()
     {
-        this._worldBounds.copy(this.selfWorldBounds);
+        this._globalBounds.copy(this.selfGlobalBounds);
 
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
         this._object3D.children.forEach((element: Node3D) =>
         {
-            this._worldBounds.union(element.boundingBox.worldBounds);
+            this._globalBounds.union(element.boundingBox.globalBounds);
         });
     }
 
@@ -138,32 +138,32 @@ export class BoundingBox3D
         if (this._selfBoundsInvalid) return;
 
         this._selfBoundsInvalid = true;
-        this._invalidateSelfWorldBounds();
+        this._invalidateSelfGlobalBounds();
     }
 
     /**
      * 使自身世界包围盒失效
      */
-    protected _invalidateSelfWorldBounds()
+    protected _invalidateSelfGlobalBounds()
     {
-        if (this._selfWorldBoundsInvalid) return;
+        if (this._selfGlobalBoundsInvalid) return;
 
-        this._selfWorldBoundsInvalid = true;
-        this._invalidateWorldBounds();
+        this._selfGlobalBoundsInvalid = true;
+        this._invalidateGlobalBounds();
     }
 
     /**
      * 使世界包围盒失效
      */
-    protected _invalidateWorldBounds()
+    protected _invalidateGlobalBounds()
     {
-        if (this._worldBoundsInvalid) return;
+        if (this._globalBoundsInvalid) return;
 
-        this._worldBoundsInvalid = true;
+        this._globalBoundsInvalid = true;
 
         // 世界包围盒失效会影响父对象世界包围盒失效
         const parent = this._object3D.parent;
         if (!parent) return;
-        parent.boundingBox._invalidateWorldBounds();
+        parent.boundingBox._invalidateGlobalBounds();
     }
 }

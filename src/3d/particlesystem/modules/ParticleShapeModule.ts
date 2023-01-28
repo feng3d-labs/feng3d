@@ -313,7 +313,7 @@ export class ParticleShapeModule extends ParticleModule
         }
 
         dir.scaleNumber(startSpeed);
-        if (this.particleSystem.main.simulationSpace === ParticleSystemSimulationSpace.World)
+        if (this.particleSystem.main.simulationSpace === ParticleSystemSimulationSpace.Global)
         {
             const globalMatrix = this.particleSystem.node3d.globalMatrix;
 

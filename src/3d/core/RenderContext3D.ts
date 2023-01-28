@@ -125,7 +125,7 @@ export class RenderContext3D
     {
         const gpuPos = this.screenToGpuPosition(this.mousePos);
 
-        const ray = this.camera.getWorldRay3D(gpuPos.x, gpuPos.y);
+        const ray = this.camera.getGlobalRay3D(gpuPos.x, gpuPos.y);
 
         return ray;
     }
@@ -159,7 +159,7 @@ export class RenderContext3D
             const m = node3d.getComponent('Mesh3D');
             if (m)
             {
-                const include = m.worldBounds.toPoints().every((pos) =>
+                const include = m.globalBounds.toPoints().every((pos) =>
                 {
                     const p = this.project(pos);
 
@@ -168,7 +168,7 @@ export class RenderContext3D
 
                 return include;
             }
-            const p = this.project(node3d.worldPosition);
+            const p = this.project(node3d.globalPosition);
 
             return rect.contains(p.x, p.y);
         });

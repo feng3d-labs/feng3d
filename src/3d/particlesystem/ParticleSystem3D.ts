@@ -371,13 +371,13 @@ export class ParticleSystem3D extends Component3D
 
         emitInfo.preTime = emitInfo.currentTime;
         emitInfo.currentTime = this.time - emitInfo.startDelay;
-        emitInfo.preWorldPos.copy(emitInfo.currentWorldPos);
+        emitInfo.preGlobalPos.copy(emitInfo.currentGlobalPos);
 
         // 粒子系统位置
-        emitInfo.currentWorldPos.copy(this.node3d.worldPosition);
+        emitInfo.currentGlobalPos.copy(this.node3d.globalPosition);
 
         // 粒子系统位移
-        emitInfo.moveVec.copy(emitInfo.currentWorldPos).sub(emitInfo.preWorldPos);
+        emitInfo.moveVec.copy(emitInfo.currentGlobalPos).sub(emitInfo.preGlobalPos);
         // 粒子系统速度
         emitInfo.speed.copy(emitInfo.moveVec).divideNumber(deltaTime);
 
@@ -448,8 +448,8 @@ export class ParticleSystem3D extends Component3D
             = {
             preTime: -startDelay,
             currentTime: -startDelay,
-            preWorldPos: new Vector3(),
-            currentWorldPos: new Vector3(),
+            preGlobalPos: new Vector3(),
+            currentGlobalPos: new Vector3(),
             rateAtDuration: 0,
             _leftRateOverDistance: 0,
             _isRateOverDistance: false,
@@ -585,7 +585,7 @@ export class ParticleSystem3D extends Component3D
         //
         renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
 
-        if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
+        if (this.main.simulationSpace === ParticleSystemSimulationSpace.Global)
         {
             renderAtomic.uniforms.u_modelMatrix = () => new Matrix4x4();
             renderAtomic.uniforms.u_ITModelMatrix = () => new Matrix4x4();
@@ -679,13 +679,13 @@ export class ParticleSystem3D extends Component3D
     private _emitWithMove(emitInfo: ParticleSystemEmitInfo)
     {
         const emits: { time: number; num: number; position: Vector3; emitInfo: ParticleSystemEmitInfo; }[] = [];
-        if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
+        if (this.main.simulationSpace === ParticleSystemSimulationSpace.Global)
         {
             if (emitInfo._isRateOverDistance)
             {
-                const moveVec = emitInfo.currentWorldPos.subTo(emitInfo.preWorldPos);
+                const moveVec = emitInfo.currentGlobalPos.subTo(emitInfo.preGlobalPos);
                 const moveDistance = moveVec.length;
-                const worldPos = emitInfo.currentWorldPos;
+                const globalPos = emitInfo.currentGlobalPos;
                 // 本次移动距离
                 if (moveDistance > 0)
                 {
@@ -700,12 +700,12 @@ export class ParticleSystem3D extends Component3D
                     // 发射间隔位移
                     const invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
                     // 上次发射位置
-                    const lastRateOverDistance = emitInfo.preWorldPos.addTo(moveDir.negateTo().scaleNumber(emitInfo._leftRateOverDistance));
+                    const lastRateOverDistance = emitInfo.preGlobalPos.addTo(moveDir.negateTo().scaleNumber(emitInfo._leftRateOverDistance));
 
                     while (invRateOverDistance < leftRateOverDistance)
                     {
                         emits.push({
-                            position: lastRateOverDistance.add(invRateOverDistanceVec).clone().sub(worldPos),
+                            position: lastRateOverDistance.add(invRateOverDistanceVec).clone().sub(globalPos),
                             time: emitInfo.preTime + (emitInfo.currentTime - emitInfo.preTime) * (1 - leftRateOverDistance / moveDistance),
                             num: 1,
                             emitInfo
@@ -867,7 +867,7 @@ export class ParticleSystem3D extends Component3D
 
         if (this._main.simulationSpace === ParticleSystemSimulationSpace.Local)
         {
-            const globalInvertMatrix = this.node3d.globalInvertMatrix;
+            const globalInvertMatrix = this.node3d.invertGlobalMatrix;
             this._activeParticles.forEach((p) =>
             {
                 globalInvertMatrix.transformPoint3(p.position, p.position);
@@ -905,9 +905,9 @@ export class ParticleSystem3D extends Component3D
 
         if (space !== this.main.simulationSpace)
         {
-            if (space === ParticleSystemSimulationSpace.World)
+            if (space === ParticleSystemSimulationSpace.Global)
             {
-                this.node3d.globalInvertMatrix.transformPoint3(position, position);
+                this.node3d.invertGlobalMatrix.transformPoint3(position, position);
             }
             else
             {
@@ -935,9 +935,9 @@ export class ParticleSystem3D extends Component3D
             const value = obj.value;
             if (space !== this.main.simulationSpace)
             {
-                if (space === ParticleSystemSimulationSpace.World)
+                if (space === ParticleSystemSimulationSpace.Global)
                 {
-                    this.node3d.globalInvertMatrix.transformPoint3(value, value);
+                    this.node3d.invertGlobalMatrix.transformPoint3(value, value);
                 }
                 else
                 {
@@ -967,9 +967,9 @@ export class ParticleSystem3D extends Component3D
 
         if (space !== this.main.simulationSpace)
         {
-            if (space === ParticleSystemSimulationSpace.World)
+            if (space === ParticleSystemSimulationSpace.Global)
             {
-                this.node3d.globalInvertMatrix.transformVector3(velocity, velocity);
+                this.node3d.invertGlobalMatrix.transformVector3(velocity, velocity);
             }
             else
             {
@@ -997,9 +997,9 @@ export class ParticleSystem3D extends Component3D
             const value = obj.value;
             if (space !== this.main.simulationSpace)
             {
-                if (space === ParticleSystemSimulationSpace.World)
+                if (space === ParticleSystemSimulationSpace.Global)
                 {
-                    this.node3d.globalInvertMatrix.transformVector3(value, value);
+                    this.node3d.invertGlobalMatrix.transformVector3(value, value);
                 }
                 else
                 {
@@ -1029,9 +1029,9 @@ export class ParticleSystem3D extends Component3D
 
         if (space !== this.main.simulationSpace)
         {
-            if (space === ParticleSystemSimulationSpace.World)
+            if (space === ParticleSystemSimulationSpace.Global)
             {
-                this.node3d.globalInvertMatrix.transformVector3(acceleration, acceleration);
+                this.node3d.invertGlobalMatrix.transformVector3(acceleration, acceleration);
             }
             else
             {
@@ -1059,9 +1059,9 @@ export class ParticleSystem3D extends Component3D
             const value = obj.value;
             if (space !== this.main.simulationSpace)
             {
-                if (space === ParticleSystemSimulationSpace.World)
+                if (space === ParticleSystemSimulationSpace.Global)
                 {
-                    this.node3d.globalInvertMatrix.transformVector3(value, value);
+                    this.node3d.invertGlobalMatrix.transformVector3(value, value);
                 }
                 else
                 {
@@ -1107,15 +1107,15 @@ export class ParticleSystem3D extends Component3D
             // 粒子所在世界坐标
             const particleWoldPos = this.node3d.globalMatrix.transformPoint3(particle.position);
             // 粒子在子粒子系统的坐标
-            const subEmitPos = subEmitter.node3d.globalInvertMatrix.transformPoint3(particleWoldPos);
+            const subEmitPos = subEmitter.node3d.invertGlobalMatrix.transformPoint3(particleWoldPos);
             if (!particle.subEmitInfo)
             {
                 const startDelay = this.main.startDelay.getValue(Math.random());
                 particle.subEmitInfo = {
                     preTime: particle.preTime - particle.birthTime - startDelay,
                     currentTime: particle.preTime - particle.birthTime - startDelay,
-                    preWorldPos: particleWoldPos.clone(),
-                    currentWorldPos: particleWoldPos.clone(),
+                    preGlobalPos: particleWoldPos.clone(),
+                    currentGlobalPos: particleWoldPos.clone(),
                     rateAtDuration: 0,
                     _leftRateOverDistance: 0,
                     _isRateOverDistance: false,
@@ -1174,12 +1174,12 @@ export interface ParticleSystemEmitInfo
     /**
      * 上次世界坐标
      */
-    preWorldPos: Vector3;
+    preGlobalPos: Vector3;
 
     /**
      * 当前世界坐标
      */
-    currentWorldPos: Vector3;
+    currentGlobalPos: Vector3;
 
     /**
      * 发射器本地位置

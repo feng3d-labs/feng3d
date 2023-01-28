@@ -88,7 +88,7 @@ export class Camera3D extends Component3D
         if (this._viewProjectionInvalid)
         {
             // 场景空间转摄像机空间
-            this._viewProjection.copy(this.node3d.globalInvertMatrix);
+            this._viewProjection.copy(this.node3d.invertGlobalMatrix);
             // +摄像机空间转投影空间 = 场景空间转投影空间
             this._viewProjection.append(this.projectionMatrix);
             this._viewProjectionInvalid = false;
@@ -134,7 +134,7 @@ export class Camera3D extends Component3D
      * @param y GPU空间坐标y值
      * @return
      */
-    getWorldRay3D(x: number, y: number, ray = new Ray3()): Ray3
+    getGlobalRay3D(x: number, y: number, ray = new Ray3()): Ray3
     {
         const p0 = this.unproject(new Vector3(x, y, 0));
         const p1 = this.unproject(new Vector3(x, y, 1));
@@ -154,7 +154,7 @@ export class Camera3D extends Component3D
     project(point3d: Vector3, v = new Vector3()): Vector3
     {
         // 全局坐标转换为摄像机空间坐标
-        const point3dInCamera = this.node3d.globalInvertMatrix.transformPoint3(point3d);
+        const point3dInCamera = this.node3d.invertGlobalMatrix.transformPoint3(point3d);
         // 摄像机空间坐标转换为GPU空间坐标
         const v4 = this.projectionMatrix.transformVector4(new Vector4().fromVector3(point3dInCamera, 1));
         // 透视投影结果中w!=1，需要标准化齐次坐标

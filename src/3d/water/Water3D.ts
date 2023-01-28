@@ -72,28 +72,28 @@ export class Water3D extends Component3D
         // eslint-disable-next-line no-constant-condition
         if (1) return;
         //
-        const mirrorWorldPosition = this.node3d.worldPosition;
-        const cameraWorldPosition = camera.node3d.worldPosition;
+        const mirrorGlobalPosition = this.node3d.globalPosition;
+        const cameraGlobalPosition = camera.node3d.globalPosition;
 
         let rotationMatrix = this.node3d.rotationMatrix;
 
         const normal = rotationMatrix.getAxisZ();
 
-        const view = mirrorWorldPosition.subTo(cameraWorldPosition);
+        const view = mirrorGlobalPosition.subTo(cameraGlobalPosition);
         if (view.dot(normal) > 0) return;
 
         view.reflect(normal).negate();
-        view.add(mirrorWorldPosition);
+        view.add(mirrorGlobalPosition);
 
         rotationMatrix = camera.node3d.rotationMatrix;
 
         const lookAtPosition = new Vector3(0, 0, -1);
         lookAtPosition.applyMatrix4x4(rotationMatrix);
-        lookAtPosition.add(cameraWorldPosition);
+        lookAtPosition.add(cameraGlobalPosition);
 
-        const target = mirrorWorldPosition.subTo(lookAtPosition);
+        const target = mirrorGlobalPosition.subTo(lookAtPosition);
         target.reflect(normal).negate();
-        target.add(mirrorWorldPosition);
+        target.add(mirrorGlobalPosition);
 
         const mirrorCamera = $set(new Node3D(), { name: 'waterMirrorCamera' }).addComponent('Camera3D');
         mirrorCamera.node3d.position = view;
@@ -112,7 +112,7 @@ export class Water3D extends Component3D
         );
         textureMatrix.append(mirrorCamera.viewProjection);
 
-        const mirrorPlane = new Plane().fromNormalAndPoint(mirrorCamera.node3d.globalInvertMatrix.transformVector3(normal), mirrorCamera.node3d.globalInvertMatrix.transformPoint3(mirrorWorldPosition));
+        const mirrorPlane = new Plane().fromNormalAndPoint(mirrorCamera.node3d.invertGlobalMatrix.transformVector3(normal), mirrorCamera.node3d.invertGlobalMatrix.transformPoint3(mirrorGlobalPosition));
         const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
         const projectionMatrix = mirrorCamera.projectionMatrix;
@@ -131,7 +131,7 @@ export class Water3D extends Component3D
         projectionMatrix.elements[14] = clipPlane.w;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const eye = camera.node3d.worldPosition;
+        const eye = camera.node3d.globalPosition;
 
         // 不支持直接操作gl，下面代码暂时注释掉！
         // //

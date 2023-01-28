@@ -136,9 +136,9 @@ export class Node3D extends Node
     assetId: string;
 
     /**
-     * 世界坐标
+     * 全局坐标
      */
-    get worldPosition()
+    get globalPosition()
     {
         return this.globalMatrix.getPosition();
     }
@@ -308,7 +308,7 @@ export class Node3D extends Node
     set globalMatrix(value)
     {
         value = value.clone();
-        this.parent && value.append(this.parent.globalInvertMatrix);
+        this.parent && value.append(this.parent.invertGlobalMatrix);
         this.matrix = value;
     }
 
@@ -328,17 +328,17 @@ export class Node3D extends Node
     }
 
     /**
-     * 全局逆变换矩阵。
+     * 逆全局矩阵。
      */
-    get globalInvertMatrix()
+    get invertGlobalMatrix()
     {
-        if (this._globalInvertMatrixInvalid)
+        if (this._invertGlobalMatrixInvalid)
         {
-            this._globalInvertMatrixInvalid = false;
-            this._globalInvertMatrix.copy(this.globalMatrix).invert();
+            this._invertGlobalMatrixInvalid = false;
+            this._invertGlobalMatrix.copy(this.globalMatrix).invert();
         }
 
-        return this._globalInvertMatrix;
+        return this._invertGlobalMatrix;
     }
 
     /**
@@ -394,8 +394,8 @@ export class Node3D extends Node
     protected readonly _globalNormalMatrix = new Matrix4x4();
     protected _globalNormalMatrixInvalid = false;
 
-    protected readonly _globalInvertMatrix = new Matrix4x4();
-    protected _globalInvertMatrixInvalid = false;
+    protected readonly _invertGlobalMatrix = new Matrix4x4();
+    protected _invertGlobalMatrixInvalid = false;
 
     protected readonly _globalRotationMatrix = new Matrix4x4();
     protected _globalRotationMatrixInvalid = false;
@@ -439,7 +439,7 @@ export class Node3D extends Node
         if (this._globalMatrixInvalid) return;
 
         this._globalMatrixInvalid = true;
-        this._globalInvertMatrixInvalid = true;
+        this._invertGlobalMatrixInvalid = true;
         this._globalNormalMatrixInvalid = true;
         this._globalRotationMatrixInvalid = true;
 

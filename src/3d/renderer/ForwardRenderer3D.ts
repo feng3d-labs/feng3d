@@ -21,7 +21,7 @@ export class ForwardRenderer
         {
             if (cv.isVisibleAndEnabled)
             {
-                if (frustum.intersectsBox(cv.worldBounds))
+                if (frustum.intersectsBox(cv.globalBounds))
                 {
                     if (cv.useMaterial.renderParams.enableBlend)
                     {
@@ -41,9 +41,9 @@ export class ForwardRenderer
         //
         uniforms.u_projectionMatrix = camera.projectionMatrix;
         uniforms.u_viewProjection = camera.viewProjection;
-        uniforms.u_viewMatrix = camera.node3d.globalInvertMatrix;
+        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix;
         uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
-        uniforms.u_cameraPos = camera.node3d.worldPosition;
+        uniforms.u_cameraPos = camera.node3d.globalPosition;
         uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
         uniforms.u_sceneAmbientColor = scene.ambientColor;

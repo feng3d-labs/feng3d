@@ -25,19 +25,19 @@ export class CanvasRenderer extends Mesh3D
     /**
      * 与世界空间射线相交
      *
-     * @param worldRay 世界空间射线
+     * @param globalRay 全局空间射线
      *
      * @return 相交信息
      */
-    worldRayIntersection(worldRay: Ray3)
+    globalRayIntersection(globalRay: Ray3)
     {
         const canvas = this.getComponentsInParent('Canvas')[0];
         if (canvas)
         {
-            worldRay = canvas.mouseRay;
+            globalRay = canvas.mouseRay;
         }
 
-        const localRay = TransformUtils.rayWorldToLocal(this.node3d, worldRay);
+        const localRay = TransformUtils.rayGlobalToLocal(this.node3d, globalRay);
         // if (this.transform2D)
         // {
         //     const size = new Vector3(this.transform2D.size.x, this.transform2D.size.y, 1);

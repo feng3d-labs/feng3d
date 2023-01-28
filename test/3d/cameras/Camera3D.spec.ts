@@ -83,7 +83,7 @@ describe('Camera3D', () =>
         ok(rtf.equals(tv));
     });
 
-    it('getWorldRay3D', () =>
+    it('getGlobalRay3D', () =>
     {
         // 生成随机正交矩阵
         const near = Math.random();
@@ -103,7 +103,7 @@ describe('Camera3D', () =>
         const lbn = new Vector3(-nearW, -nearH, near);
         const lbn1 = new Vector3(-1, -1, -1);
 
-        const ray = camera3D.getWorldRay3D(lbn1.x, lbn1.y);
+        const ray = camera3D.getGlobalRay3D(lbn1.x, lbn1.y);
         const r = ray.onWithPoint(lbn);
 
         equal(r, true);

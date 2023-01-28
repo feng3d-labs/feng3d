@@ -37,7 +37,7 @@ export class TerrainData
     }
 
     /**
-     * The total size in world units of the terrain.
+     * The total size in global units of the terrain.
      */
     size = new Vector3(500, 600, 500);
 

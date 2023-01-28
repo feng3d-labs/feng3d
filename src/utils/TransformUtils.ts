@@ -187,7 +187,7 @@ export class TransformUtils
      */
     static transformPoint(transform: Node3D, position: Vector3)
     {
-        position = this.localToWorldPoint(transform, position);
+        position = this.localToGlobalPoint(transform, position);
 
         return position;
     }
@@ -197,7 +197,7 @@ export class TransformUtils
      *
      * @param position 局部空间位置
      */
-    static localToWorldPoint(transform: Node3D, position: Vector3)
+    static localToGlobalPoint(transform: Node3D, position: Vector3)
     {
         if (!transform.parent)
         {
@@ -215,7 +215,7 @@ export class TransformUtils
      */
     static transformVector(transform: Node3D, vector: Vector3)
     {
-        vector = this.localToWorldVector(transform, vector);
+        vector = this.localToGlobalVector(transform, vector);
 
         return vector;
     }
@@ -225,7 +225,7 @@ export class TransformUtils
      *
      * @param vector 局部空间位置
      */
-    static localToWorldVector(transform: Node3D, vector: Vector3)
+    static localToGlobalVector(transform: Node3D, vector: Vector3)
     {
         if (!transform.parent)
         {
@@ -238,13 +238,13 @@ export class TransformUtils
     }
 
     /**
-     * Transforms a direction from world space to local space. The opposite of Node3D.TransformDirection.
+     * Transforms a direction from global space to local space. The opposite of Node3D.TransformDirection.
      *
      * 将一个方向从世界空间转换到局部空间。
      */
     static inverseTransformDirection(transform: Node3D, direction: Vector3)
     {
-        direction = this.worldToLocalDirection(transform, direction);
+        direction = this.globalToLocalDirection(transform, direction);
 
         return direction;
     }
@@ -252,7 +252,7 @@ export class TransformUtils
     /**
      * 将一个方向从世界空间转换到局部空间。
      */
-    static worldToLocalDirection(transform: Node3D, direction: Vector3)
+    static globalToLocalDirection(transform: Node3D, direction: Vector3)
     {
         if (!transform.parent)
         {
@@ -269,13 +269,13 @@ export class TransformUtils
      *
      * @param position 世界坐标系中位置
      */
-    static worldToLocalPoint(transform: Node3D, position: Vector3, out = new Vector3())
+    static globalToLocalPoint(transform: Node3D, position: Vector3, out = new Vector3())
     {
         if (!transform.parent)
         {
             return out.copy(position);
         }
-        position = transform.parent.globalInvertMatrix.transformPoint3(position, out);
+        position = transform.parent.invertGlobalMatrix.transformPoint3(position, out);
 
         return position;
     }
@@ -285,13 +285,13 @@ export class TransformUtils
      *
      * @param vector 世界坐标系中向量
      */
-    static worldToLocalVector(transform: Node3D, vector: Vector3)
+    static globalToLocalVector(transform: Node3D, vector: Vector3)
     {
         if (!transform.parent)
         {
             return vector.clone();
         }
-        vector = transform.parent.globalInvertMatrix.transformVector3(vector);
+        vector = transform.parent.invertGlobalMatrix.transformVector3(vector);
 
         return vector;
     }
@@ -299,12 +299,12 @@ export class TransformUtils
     /**
      * 将 Ray3 从世界空间转换为局部空间。
      *
-     * @param worldRay 世界空间射线。
+     * @param globalRay 世界空间射线。
      * @param localRay 局部空间射线。
      */
-    static rayWorldToLocal(transform: Node3D, worldRay: Ray3, localRay = new Ray3())
+    static rayGlobalToLocal(transform: Node3D, globalRay: Ray3, localRay = new Ray3())
     {
-        transform.globalInvertMatrix.transformRay(worldRay, localRay);
+        transform.invertGlobalMatrix.transformRay(globalRay, localRay);
 
         return localRay;
     }
