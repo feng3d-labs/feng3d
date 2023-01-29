@@ -1,6 +1,7 @@
 import { HideFlags } from '../../core/HideFlags';
 import { Color3 } from '../../math/Color3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { $set } from '../../serialization/Serialization';
@@ -56,6 +57,13 @@ export class Light3D extends Component3D
      * 阴影半径，边缘宽度
      */
     shadowRadius = 1;
+
+    /**
+     * 由生成阴影贴图时计算的摄像机全局位置。
+     * 
+     * @private
+     */
+    shadowCameraPosition: Vector3;
 
     /**
      * 阴影近平面距离

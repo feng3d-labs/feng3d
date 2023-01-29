@@ -37,6 +37,8 @@ export class ForwardRenderer
             return pv;
         }, { blendItems: [], unblenditems: [] });
 
+        unblenditems.reverse();
+
         const uniforms: LazyObject<Uniforms> = <any>{};
         //
         uniforms.u_projectionMatrix = camera.projectionMatrix;

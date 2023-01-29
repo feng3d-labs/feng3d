@@ -152,7 +152,7 @@ export class ShadowRenderer
         //
         const fov = 90;
         const aspect = 1;
-        const near = light.shadowCameraNear;
+        const near = 0.3;
         const far = light.range;
 
         const shadowCamera = new Node3D().addComponent('PerspectiveCamera3D', {
@@ -164,6 +164,7 @@ export class ShadowRenderer
         shadowCamera.node3d.position = light.node3d.position;
 
         //
+        light.shadowCameraNear = near;
         light.shadowCameraFar = far;
 
         //
@@ -230,10 +231,9 @@ export class ShadowRenderer
         const center = globalBounds.getCenter();
         const radius = globalBounds.getSize().length / 2;
         // 默认近平面距离
-        const near = 0.1;
+        const near = 0.3;
         const size = radius;
         const far = near + radius * 2;
-        light.shadowCameraFar = far;
 
         // 初始化摄像机
         const shadowCamera = new Node3D().addComponent('OrthographicCamera3D', {
@@ -248,6 +248,7 @@ export class ShadowRenderer
         // 保存生成阴影贴图时使用的VP矩阵
         light.shadowCameraNear = near;
         light.shadowCameraFar = far;
+        light.shadowCameraPosition = shadowCamera.node3d.position.clone();
         light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         //
@@ -287,7 +288,7 @@ export class ShadowRenderer
     /**
      * 绘制3D对象
      */
-    private drawObject3D(gl: WebGLRenderer, renderable: Renderable3D, scene: Scene3D, camera: Camera3D)
+    private drawObject3D(webGLRenderer: WebGLRenderer, renderable: Renderable3D, scene: Scene3D, camera: Camera3D)
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);
@@ -299,7 +300,7 @@ export class ShadowRenderer
 
         // 使用shadowShader
         this.renderAtomic.shader = renderAtomic.shadowShader;
-        gl.render(this.renderAtomic);
+        webGLRenderer.render(this.renderAtomic);
         this.renderAtomic.shader = null;
     }
 }

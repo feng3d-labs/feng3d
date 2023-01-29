@@ -81,6 +81,8 @@ export class LightPicker
         let directionalLights: DirectionalLight3D[] = [];
         let spotLights: SpotLight3D[] = [];
 
+        const tempVec3 = new Vector3();
+
         const scene = this._model.node3d.scene;
         if (scene)
         {
@@ -194,7 +196,6 @@ export class LightPicker
         const unCastShadowDirectionalLights: UDirectionalLight[] = [];
         const directionalShadowMatrix: Matrix4x4[] = [];
         const directionalShadowMaps: Texture2D[] = [];
-        const tempVec3 = new Vector3();
         directionalLights.forEach((element) =>
         {
             if (!element.isVisibleAndEnabled) return;
@@ -204,7 +205,7 @@ export class LightPicker
 
             if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
             {
-                const globalPosition = element.node3d.globalPosition;
+                const lightCameraPosition = element.shadowCameraPosition;
                 //
                 castShadowDirectionalLights.push({
                     direction: [direction.x, direction.y, direction.z],
@@ -214,7 +215,7 @@ export class LightPicker
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
                     shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
-                    position: [globalPosition.x, globalPosition.y, globalPosition.z],
+                    position: [lightCameraPosition.x, lightCameraPosition.y, lightCameraPosition.z],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
@@ -268,7 +269,7 @@ interface UCastShadowDirectionalLight
     shadowRadius: number;
     // 阴影图尺寸
     shadowMapSize: [number, number];
-    // 位置
+    // 光照相机位置
     position: [number, number, number];
     shadowCameraNear: number;
     shadowCameraFar: number;
