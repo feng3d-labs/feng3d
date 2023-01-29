@@ -1,4 +1,4 @@
-lockfileVersion: 5.3
+lockfileVersion: 5.4
 
 specifiers:
   '@feng3d/earcut': ^0.0.1
@@ -26,16 +26,16 @@ dependencies:
   stats.js: 0.17.0
 
 devDependencies:
-  '@typescript-eslint/eslint-plugin': 5.17.0_fedd7e9fddcc62eaa079571c3f49759c
-  '@typescript-eslint/parser': 5.17.0_eslint@8.12.0+typescript@4.8.4
+  '@typescript-eslint/eslint-plugin': 5.17.0_73ox5h65zrrovidzk4od6slvtq
+  '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
   '@vitest/ui': 0.26.3
   cross-env: 7.0.3
   eslint: 8.12.0
   rimraf: 3.0.2
   rollup: 2.70.1
-  rollup-plugin-dts: 4.2.0_rollup@2.70.1+typescript@4.8.4
+  rollup-plugin-dts: 4.2.0_wxjzibzhjqgzxmyetj7qj3mwna
   rollup-plugin-json: 4.0.0
-  rollup-plugin-typescript: 1.0.1_tslib@2.5.0+typescript@4.8.4
+  rollup-plugin-typescript: 1.0.1_4nc65xtnoilsylyj3mthsh6kaq
   tslib: 2.5.0
   typedoc: 0.23.23_typescript@4.8.4
   typescript: 4.8.4
@@ -170,7 +170,7 @@ packages:
     resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
     dev: true
 
-  /@typescript-eslint/eslint-plugin/5.17.0_fedd7e9fddcc62eaa079571c3f49759c:
+  /@typescript-eslint/eslint-plugin/5.17.0_73ox5h65zrrovidzk4od6slvtq:
     resolution: {integrity: sha512-qVstvQilEd89HJk3qcbKt/zZrfBZ+9h2ynpAGlWjWiizA7m/MtLT9RoX6gjtpE500vfIg8jogAkDzdCxbsFASQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -181,10 +181,10 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 5.17.0_eslint@8.12.0+typescript@4.8.4
+      '@typescript-eslint/parser': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
       '@typescript-eslint/scope-manager': 5.17.0
-      '@typescript-eslint/type-utils': 5.17.0_eslint@8.12.0+typescript@4.8.4
-      '@typescript-eslint/utils': 5.17.0_eslint@8.12.0+typescript@4.8.4
+      '@typescript-eslint/type-utils': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
+      '@typescript-eslint/utils': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
       debug: 4.3.4
       eslint: 8.12.0
       functional-red-black-tree: 1.0.1
@@ -197,7 +197,7 @@ packages:
       - supports-color
     dev: true
 
-  /@typescript-eslint/parser/5.17.0_eslint@8.12.0+typescript@4.8.4:
+  /@typescript-eslint/parser/5.17.0_iqokrdhiz7bccawj5qurem2l4e:
     resolution: {integrity: sha512-aRzW9Jg5Rlj2t2/crzhA2f23SIYFlF9mchGudyP0uiD6SenIxzKoLjwzHbafgHn39dNV/TV7xwQkLfFTZlJ4ig==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -225,7 +225,7 @@ packages:
       '@typescript-eslint/visitor-keys': 5.17.0
     dev: true
 
-  /@typescript-eslint/type-utils/5.17.0_eslint@8.12.0+typescript@4.8.4:
+  /@typescript-eslint/type-utils/5.17.0_iqokrdhiz7bccawj5qurem2l4e:
     resolution: {integrity: sha512-3hU0RynUIlEuqMJA7dragb0/75gZmwNwFf/QJokWzPehTZousP/MNifVSgjxNcDCkM5HI2K22TjQWUmmHUINSg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -235,7 +235,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/utils': 5.17.0_eslint@8.12.0+typescript@4.8.4
+      '@typescript-eslint/utils': 5.17.0_iqokrdhiz7bccawj5qurem2l4e
       debug: 4.3.4
       eslint: 8.12.0
       tsutils: 3.21.0_typescript@4.8.4
@@ -270,7 +270,7 @@ packages:
       - supports-color
     dev: true
 
-  /@typescript-eslint/utils/5.17.0_eslint@8.12.0+typescript@4.8.4:
+  /@typescript-eslint/utils/5.17.0_iqokrdhiz7bccawj5qurem2l4e:
     resolution: {integrity: sha512-DVvndq1QoxQH+hFv+MUQHrrWZ7gQ5KcJzyjhzcqB1Y2Xes1UQQkTRPUfRpqhS8mhTWsSb2+iyvDW1Lef5DD7vA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -1306,7 +1306,7 @@ packages:
       glob: 7.2.3
     dev: true
 
-  /rollup-plugin-dts/4.2.0_rollup@2.70.1+typescript@4.8.4:
+  /rollup-plugin-dts/4.2.0_wxjzibzhjqgzxmyetj7qj3mwna:
     resolution: {integrity: sha512-lx6irWVhz/x4//tIqRhzk4FOqGQ0n37ZM2wpPCn4uafl/EmiV92om7ZdAsq7Bzho6C+Xh5GfsyuP9H+Udv72Lg==}
     engines: {node: '>=v12.22.10'}
     peerDependencies:
@@ -1327,7 +1327,7 @@ packages:
       rollup-pluginutils: 2.8.2
     dev: true
 
-  /rollup-plugin-typescript/1.0.1_tslib@2.5.0+typescript@4.8.4:
+  /rollup-plugin-typescript/1.0.1_4nc65xtnoilsylyj3mthsh6kaq:
     resolution: {integrity: sha512-rwJDNn9jv/NsKZuyBb/h0jsclP4CJ58qbvZt2Q9zDIGILF2LtdtvCqMOL+Gq9IVq5MTrTlHZNrn8h7VjQgd8tw==}
     deprecated: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-typescript.
     peerDependencies:
