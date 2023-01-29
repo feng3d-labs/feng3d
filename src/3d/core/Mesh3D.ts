@@ -93,14 +93,10 @@ export class Mesh3D extends Renderable3D
         return material;
     }
 
-    //
-    private _lightPicker: LightPicker;
-
     init()
     {
         super.init();
 
-        this._lightPicker = new LightPicker(this);
         this.emitter.on('globalMatrixChanged', this._onScenetransformChanged, this);
 
         this.emitter.on('getSelfBounds', this._onGetSelfBounds, this);
@@ -123,8 +119,6 @@ export class Mesh3D extends Renderable3D
         //
         geometry.beforeRender(renderAtomic);
         material.beforeRender(renderAtomic);
-
-        this._lightPicker.beforeRender(renderAtomic);
 
         //
         this.node3d.beforeRender(renderAtomic, scene, camera);

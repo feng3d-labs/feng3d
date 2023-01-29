@@ -248,7 +248,7 @@ export class ShadowRenderer
         // 保存生成阴影贴图时使用的VP矩阵
         light.shadowCameraNear = near;
         light.shadowCameraFar = far;
-        light.shadowCameraPosition = shadowCamera.node3d.position.clone();
+        light.shadowCameraPosition = shadowCamera.node3d.globalPosition;
         light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         //

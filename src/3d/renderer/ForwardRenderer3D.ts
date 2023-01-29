@@ -4,7 +4,9 @@ import { lazy, LazyObject } from '../../polyfill/Types';
 import { Uniforms } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
+import { Mesh3D } from '../core/Mesh3D';
 import { Scene3D } from '../core/Scene3D';
+import { LightPicker } from '../light/pickers/LightPicker';
 
 /**
  * 前向渲染器
@@ -17,7 +19,7 @@ export class ForwardRenderer
     draw(gl: WebGLRenderer, scene: Scene3D, camera: Camera3D)
     {
         const frustum = camera.frustum;
-        const { blendItems, unblenditems } = scene.getComponentsInChildren('Mesh3D').reduce((pv, cv) =>
+        const { blendItems, unblenditems } = scene.getComponentsInChildren('Mesh3D').reduce((pv: { blendItems: Mesh3D[], unblenditems: Mesh3D[] }, cv) =>
         {
             if (cv.isVisibleAndEnabled)
             {
@@ -72,10 +74,14 @@ export class ForwardRenderer
 
             renderable.beforeRender(renderAtomic, scene, camera);
 
+            lightPicker.beforeRender(renderAtomic, renderable);
+
             gl.render(renderAtomic);
         });
     }
 }
+
+const lightPicker = new LightPicker();
 
 /**
  * 前向渲染器

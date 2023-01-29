@@ -68,14 +68,7 @@ interface LightUniforms3D
 
 export class LightPicker
 {
-    private _model: Mesh3D;
-
-    constructor(model: Mesh3D)
-    {
-        this._model = model;
-    }
-
-    beforeRender(renderAtomic: RenderAtomic)
+    beforeRender(renderAtomic: RenderAtomic, model: Mesh3D)
     {
         let pointLights: PointLight3D[] = [];
         let directionalLights: DirectionalLight3D[] = [];
@@ -83,7 +76,7 @@ export class LightPicker
 
         const tempVec3 = new Vector3();
 
-        const scene = this._model.node3d.scene;
+        const scene = model.node3d.scene;
         if (scene)
         {
             pointLights = scene.getComponentsInChildren('PointLight3D').filter((pl) => pl.isVisibleAndEnabled);
@@ -104,7 +97,7 @@ export class LightPicker
             const position = element.node3d.globalPosition;
             const color = element.color;
 
-            if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
+            if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
                 castShadowPointLights.push({
                     position: [position.x, position.y, position.z],
@@ -150,7 +143,7 @@ export class LightPicker
             const position = element.node3d.globalPosition;
             const color = element.color;
 
-            if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
+            if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
                 castShadowSpotLights.push({
                     position: [position.x, position.y, position.z],
@@ -203,9 +196,9 @@ export class LightPicker
             const direction = element.node3d.globalMatrix.getAxisZ(tempVec3).normalize();
             const color = element.color;
 
-            if (element.shadowType !== ShadowType.No_Shadows && this._model.receiveShadows)
+            if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
-                const lightCameraPosition = element.shadowCameraPosition;
+                const shadowCameraPosition = element.shadowCameraPosition;
                 //
                 castShadowDirectionalLights.push({
                     direction: [direction.x, direction.y, direction.z],
@@ -215,7 +208,7 @@ export class LightPicker
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
                     shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
-                    position: [lightCameraPosition.x, lightCameraPosition.y, lightCameraPosition.z],
+                    position: [shadowCameraPosition.x, shadowCameraPosition.y, shadowCameraPosition.z],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
