@@ -244,7 +244,7 @@ interface UDirectionalLight
     color: [number, number, number];
     // 强度
     intensity: number;
-};
+}
 
 interface UCastShadowDirectionalLight
 {
@@ -285,7 +285,7 @@ interface USpotLight
     coneCos: number;
     // 半影cos
     penumbraCos: number;
-};
+}
 
 // 投影的聚光灯
 interface UCastShadowSpotLight extends USpotLight
@@ -300,7 +300,7 @@ interface UCastShadowSpotLight extends USpotLight
     shadowMapSize: [number, number];
     shadowCameraNear: number;
     shadowCameraFar: number;
-};
+}
 
 // 点光源
 interface UPointLight
@@ -313,7 +313,7 @@ interface UPointLight
     intensity: number;
     // 范围
     range: number;
-};
+}
 
 // 投影的点光源
 interface UCastShadowPointLight
@@ -336,4 +336,4 @@ interface UCastShadowPointLight
     shadowMapSize: [number, number];
     shadowCameraNear: number;
     shadowCameraFar: number;
-};
+}

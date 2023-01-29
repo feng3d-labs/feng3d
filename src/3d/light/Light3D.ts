@@ -60,7 +60,7 @@ export class Light3D extends Component3D
 
     /**
      * 由生成阴影贴图时计算的摄像机全局位置。
-     * 
+     *
      * @private
      */
     shadowCameraPosition: Vector3;

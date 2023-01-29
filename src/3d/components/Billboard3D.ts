@@ -40,7 +40,7 @@ export class Billboard3D extends Component3D
         // @ts-ignore
         this.node3d._invalidateGlobalMatrix();
     }
-    
+
     private _onUpdateGlobalMatrix()
     {
         // @ts-ignore
