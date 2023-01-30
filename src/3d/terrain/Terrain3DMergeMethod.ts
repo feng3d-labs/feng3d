@@ -4,6 +4,54 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Texture2D } from '../../textures/Texture2D';
 
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 地形混合贴图
+         */
+        s_blendTexture: Texture2D;
+
+        /**
+         * 地形块混合贴图
+         */
+        s_splatMergeTexture: Texture2D;
+        /**
+         * 地形块重复次数
+         */
+        u_splatRepeats: Vector4;
+        /**
+         * 地形混合贴图尺寸
+         */
+        u_splatMergeTextureSize: Vector2;
+        /**
+         * 图片尺寸
+         */
+        u_imageSize: Vector2;
+        /**
+         * 地形块尺寸
+         */
+        u_tileSize: Vector2;
+        /**
+         * 地形块偏移
+         */
+        u_tileOffset: Vector4[];
+        /**
+         * 最大lod
+         */
+        u_maxLod: number;
+        /**
+         * uv与坐标比
+         */
+        u_uvPositionScale: number;
+        /**
+         * lod0时在贴图中的uv缩放偏移向量
+         */
+        u_lod0vec: Vector4;
+    }
+}
+
 /**
  * 地形材质
  */

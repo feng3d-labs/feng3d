@@ -1,3 +1,6 @@
+import { Color4 } from '../../math/Color4';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { lazy, LazyObject } from '../../polyfill/Types';
@@ -7,6 +10,65 @@ import { Camera3D } from '../cameras/Camera3D';
 import { Mesh3D } from '../core/Mesh3D';
 import { Scene3D } from '../core/Scene3D';
 import { LightPicker } from '../light/pickers/LightPicker';
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
+         */
+        _Time: Vector4;
+
+        /**
+         * （view矩阵）摄像机逆矩阵
+         */
+        u_viewMatrix: Matrix4x4;
+
+        /**
+         * 投影矩阵
+         */
+        u_projectionMatrix: Matrix4x4;
+
+        /**
+         * 全局投影矩阵
+         */
+        u_viewProjection: Matrix4x4;
+
+        /**
+         * 摄像机矩阵
+         */
+        u_cameraMatrix: Matrix4x4;
+        /**
+         * 摄像机位置
+         */
+        u_cameraPos: Vector3;
+        /**
+         * 模型-摄像机 矩阵
+         */
+        u_mvMatrix: Matrix4x4;
+
+        /**
+         * 模型-摄像机 逆转置矩阵，用于计算摄像机空间法线
+         */
+        u_ITMVMatrix: Matrix4x4;
+
+        /**
+         * 天空盒尺寸
+         */
+        u_skyBoxSize: number;
+
+        /**
+         * 单位深度映射到屏幕像素值
+         */
+        u_scaleByDepth: number;
+
+        /**
+         * 场景环境光
+         */
+        u_sceneAmbientColor: Color4;
+    }
+}
 
 /**
  * 前向渲染器

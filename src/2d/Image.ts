@@ -5,12 +5,24 @@ import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { Uniforms } from '../renderer/data/Uniforms';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Texture2D } from '../textures/Texture2D';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 
 declare module '../ecs/Component' { interface ComponentMap { Image: Image } }
+
+declare module '../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 漫反射贴图
+         */
+        s_texture: Texture2D;
+    }
+}
 
 /**
  * 图片组件

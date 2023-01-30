@@ -8,62 +8,62 @@ import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
 import { SpotLight3D } from '../SpotLight3D';
 
-declare module '../../renderer/data/Uniform3D' { interface Uniforms3D extends LightUniforms3D { } }
-
-interface LightUniforms3D
+declare module '../../../renderer/data/Uniforms'
 {
-    /**
-     * 方向光源数组
-     */
-    u_directionalLights: UDirectionalLight[];
+    interface Uniforms
+    {
+        /**
+         * 方向光源数组
+         */
+        u_directionalLights: UDirectionalLight[];
 
-    /**
-     * 生成投影的方向光源
-     */
-    u_castShadowDirectionalLights: UCastShadowDirectionalLight[];
+        /**
+         * 生成投影的方向光源
+         */
+        u_castShadowDirectionalLights: UCastShadowDirectionalLight[];
 
-    /**
-     * 方向光源投影矩阵列表
-     */
-    u_directionalShadowMatrices: Matrix4x4[];
+        /**
+         * 方向光源投影矩阵列表
+         */
+        u_directionalShadowMatrices: Matrix4x4[];
 
-    /**
-     * 方向光源阴影图
-     */
-    u_directionalShadowMaps: Texture2D[];
+        /**
+         * 方向光源阴影图
+         */
+        u_directionalShadowMaps: Texture2D[];
 
-    /**
-     * 聚光灯光源
-     */
-    u_spotLights: USpotLight[];
+        /**
+         * 聚光灯光源
+         */
+        u_spotLights: USpotLight[];
 
-    /**
-     * 生成投影的聚光灯光源
-     */
-    u_castShadowSpotLights: UCastShadowSpotLight[]
+        /**
+         * 生成投影的聚光灯光源
+         */
+        u_castShadowSpotLights: UCastShadowSpotLight[]
 
-    u_spotShadowMatrix: Matrix4x4[];
+        u_spotShadowMatrix: Matrix4x4[];
 
-    /**
-     * 点光源阴影图
-     */
-    u_spotShadowMaps: Texture2D[];
+        /**
+         * 点光源阴影图
+         */
+        u_spotShadowMaps: Texture2D[];
 
-    /**
-     * 点光源
-     */
-    u_pointLights: UPointLight[];
+        /**
+         * 点光源
+         */
+        u_pointLights: UPointLight[];
 
-    /**
-     * 生成投影的点光源
-     */
-    u_castShadowPointLights: UCastShadowPointLight[]
+        /**
+         * 生成投影的点光源
+         */
+        u_castShadowPointLights: UCastShadowPointLight[]
 
-    /**
-     * 点光源阴影图
-     */
-    u_pointShadowMaps: Texture2D[];
-
+        /**
+         * 点光源阴影图
+         */
+        u_pointShadowMaps: Texture2D[];
+    }
 }
 
 export class LightPicker

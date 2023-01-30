@@ -1,6 +1,7 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Uniforms } from '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { TextureCube } from '../../textures/TextureCube';
 import { Camera3D } from '../cameras/Camera3D';
@@ -8,6 +9,17 @@ import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { SkyBox: SkyBox3D; } }
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 天空盒纹理
+         */
+        s_skyBoxTexture: TextureCube;
+    }
+}
 
 /**
  * 天空盒组件

@@ -20,6 +20,23 @@ import { Geometry } from '../geometrys/Geometry';
 import { BoundingBox3D } from './BoundingBox3D';
 import { Scene3D } from './Scene3D';
 
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 模型矩阵
+         */
+        u_modelMatrix: Matrix4x4;
+
+        /**
+         * 模型逆转置矩阵,用于计算全局法线
+         * 参考：http://blog.csdn.net/christina123y/article/details/5963679
+         */
+        u_ITModelMatrix: Matrix4x4;
+    }
+}
+
 export interface Node3DEventMap extends NodeEventMap
 {
     /**
