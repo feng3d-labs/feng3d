@@ -1,4 +1,4 @@
-import { Constructor } from "../polyfill/Types";
+import { Constructor } from '../polyfill/Types';
 
 /**
  * 标记objectview对象界面类

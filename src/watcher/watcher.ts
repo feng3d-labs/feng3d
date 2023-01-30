@@ -1,4 +1,4 @@
-import { gPartial, PropertyNames } from "../polyfill/Types";
+import { gPartial, PropertyNames } from '../polyfill/Types';
 
 /**
  * 对象属性变化监视器。
