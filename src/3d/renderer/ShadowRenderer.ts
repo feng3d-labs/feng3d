@@ -3,6 +3,7 @@ import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
+import { Uniforms } from '../../renderer/data/Uniforms';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
@@ -10,11 +11,23 @@ import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';
 import { DirectionalLight3D } from '../light/DirectionalLight3D';
+import { LightType } from '../light/LightType';
 import { PointLight3D } from '../light/PointLight3D';
 import { ShadowType } from '../light/shadow/ShadowType';
 import { SpotLight3D } from '../light/SpotLight3D';
 
 declare module '../../renderer/data/RenderAtomic' { interface RenderAtomic { shadowShader: Shader; } }
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        u_lightType: LightType;
+        u_lightPosition: Vector3;
+        u_shadowCameraNear: number;
+        u_shadowCameraFar: number;
+    }
+}
 
 export class ShadowRenderer
 {

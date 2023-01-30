@@ -2,6 +2,7 @@ import { HideFlags } from '../../core/HideFlags';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Uniforms } from '../../renderer/data/Uniforms';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
@@ -11,6 +12,17 @@ declare module '../../ecs/Component'
     interface ComponentMap
     {
         SkinnedMesh3D: SkinnedMesh3D
+    }
+}
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 骨骼全局矩阵
+         */
+        u_skeletonGlobalMatrices: Matrix4x4[];
     }
 }
 
@@ -32,31 +44,13 @@ export class SkinnedMesh3D extends Component3D
     {
         super.beforeRender(renderAtomic, scene, camera);
 
-        renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
-        renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
+        renderAtomic.uniforms.u_modelMatrix = () => this.node3d.globalMatrix;
+        renderAtomic.uniforms.u_ITModelMatrix = () => this.node3d.globalNormalMatrix;
         //
         renderAtomic.uniforms.u_skeletonGlobalMatrices = this.u_skeletonGlobalMatrices;
 
         renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
         renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.u_skeletonGlobalMatrices.length;
-    }
-
-    /**
-     * 销毁
-     */
-    dispose()
-    {
-        super.dispose();
-    }
-
-    private get u_modelMatrix()
-    {
-        return this.node3d.globalMatrix;
-    }
-
-    private get u_ITModelMatrix()
-    {
-        return this.node3d.globalNormalMatrix;
     }
 
     private get u_skeletonGlobalMatrices()

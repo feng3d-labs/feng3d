@@ -9,6 +9,7 @@ import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Uniforms } from '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera3D } from '../cameras/Camera3D';
@@ -56,6 +57,17 @@ declare module '../core/Node3D'
          * 粒子效果播放结束
          */
         particleCompleted: ParticleSystem3D;
+    }
+}
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 粒子公告牌矩阵
+         */
+        u_particle_billboardMatrix: Matrix3x3;
     }
 }
 

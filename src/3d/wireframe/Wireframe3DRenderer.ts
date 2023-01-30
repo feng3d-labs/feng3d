@@ -3,6 +3,7 @@ import { lazy } from '../../polyfill/Types';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
+import { Uniforms } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
 import { Renderable3D } from '../core/Renderable3D';
@@ -19,6 +20,17 @@ declare module '../../renderer/data/RenderAtomic'
         wireframeindexBuffer: ElementBuffer;
 
         wireframeShader: Shader;
+    }
+}
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 线框颜色
+         */
+        u_wireframeColor: Color4;
     }
 }
 

@@ -121,7 +121,6 @@ export * from './3d/particlesystem/shapes/ParticleSystemShapeEdge';
 export * from './3d/particlesystem/shapes/ParticleSystemShapeHemisphere';
 export * from './3d/particlesystem/shapes/ParticleSystemShapeSphere';
 export * from './3d/raycast/rayCast3D';
-export * from './3d/renderer/data/Uniform3D';
 export * from './3d/renderer/ForwardRenderer3D';
 export * from './3d/renderer/MouseRenderer3D';
 export * from './3d/renderer/ShadowRenderer';
@@ -301,3 +300,4 @@ export * from './utils/Ticker';
 export * from './utils/TransformUtils';
 export * from './utils/Uuid';
 export * from './watcher/watcher';
+

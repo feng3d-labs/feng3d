@@ -9,10 +9,37 @@ const indexpath = path.resolve('dist/index.d.ts');
 let source = fs.readFileSync(indexpath, 'utf8');
 
 // 移除所有 declare module
-source = source.replace(/declare module ['\.\/\w\s]+{([\s\w]+{[\s\w:;]+})\s+}/g, '$1');
-
-// 验证全部被替换
-console.assert(source.indexOf('declare module') === -1);
+let newSource = '';
+let index = 0;
+while (index < source.length)
+{
+    let declareIndex = source.indexOf('declare module', index);
+    if (declareIndex === -1)
+    {
+        newSource += source.substring(index, source.length);
+        break;
+    }
+    newSource += source.substring(index, declareIndex);
+    let start = source.indexOf('{', declareIndex) + 1;
+    let count = 1;
+    index = start;
+    while (index < source.length)
+    {
+        if (source[index] === '{')
+        {
+            count++;
+        } else if (source[index] === '}')
+        {
+            count--;
+        }
+        index++;
+        if (count === 0)
+        {
+            break;
+        }
+    }
+    newSource += source.substring(start, index - 1);
+}
 
 // 回写文件
-fs.writeFileSync(indexpath, source, 'utf8');
+fs.writeFileSync(indexpath, newSource, 'utf8');
