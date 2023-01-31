@@ -2,7 +2,7 @@ import { HideFlags } from '../../core/HideFlags';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Uniforms } from '../../renderer/data/Uniforms';
+import { Mat4 } from '../../renderer/data/Uniforms';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
@@ -44,8 +44,8 @@ export class SkinnedMesh3D extends Component3D
     {
         super.beforeRender(renderAtomic, scene, camera);
 
-        renderAtomic.uniforms.u_modelMatrix = () => this.node3d.globalMatrix;
-        renderAtomic.uniforms.u_ITModelMatrix = () => this.node3d.globalNormalMatrix;
+        renderAtomic.uniforms.u_modelMatrix = () => this.node3d.globalMatrix.toArray() as Mat4;
+        renderAtomic.uniforms.u_ITModelMatrix = () => this.node3d.globalNormalMatrix.toArray() as Mat4;
         //
         renderAtomic.uniforms.u_skeletonGlobalMatrices = this.u_skeletonGlobalMatrices;
 

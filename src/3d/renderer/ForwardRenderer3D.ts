@@ -18,7 +18,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
          */
-        _Time: Vector4;
+        _Time: Vec4;
 
         /**
          * （view矩阵）摄像机逆矩阵
@@ -115,7 +115,7 @@ export class ForwardRenderer
         uniforms.u_sceneAmbientColor = scene.ambientColor;
 
         const ctime = (Date.now() / 1000) % 3600;
-        uniforms._Time = new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3);
+        uniforms._Time = [ctime / 20, ctime, ctime * 2, ctime * 3];
 
         unblenditems.concat(blendItems).forEach((renderable) =>
         {
@@ -128,7 +128,14 @@ export class ForwardRenderer
             }
             //
             renderAtomic.uniforms.u_mvMatrix = () =>
-                lazy.getValue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getValue(renderAtomic.uniforms.u_viewMatrix));
+            {
+                const u_modelMatrix = lazy.getValue(renderAtomic.uniforms.u_modelMatrix);
+                const u_viewMatrix = lazy.getValue(renderAtomic.uniforms.u_viewMatrix);
+                const matrix = new Matrix4x4(u_modelMatrix)
+                matrix.append(u_viewMatrix);
+
+                return matrix;
+            }
             renderAtomic.uniforms.u_ITMVMatrix = () =>
                 lazy.getValue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
 

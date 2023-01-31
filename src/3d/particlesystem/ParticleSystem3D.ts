@@ -3,7 +3,7 @@ import { Material } from '../../core/Material';
 import { RunEnvironment } from '../../core/RunEnvironment';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix3x3 } from '../../math/geom/Matrix3x3';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { identityMat4, Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
@@ -599,8 +599,8 @@ export class ParticleSystem3D extends Component3D
 
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.Global)
         {
-            renderAtomic.uniforms.u_modelMatrix = () => new Matrix4x4();
-            renderAtomic.uniforms.u_ITModelMatrix = () => new Matrix4x4();
+            renderAtomic.uniforms.u_modelMatrix = () => identityMat4;
+            renderAtomic.uniforms.u_ITModelMatrix = () => identityMat4;
         }
 
         for (const key in this._attributes)

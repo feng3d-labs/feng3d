@@ -1,3 +1,11 @@
+export type Vec4 = [number, number, number, number];
+export type Mat4 = [
+    number, number, number, number,
+    number, number, number, number,
+    number, number, number, number,
+    number, number, number, number,
+];
+
 export interface Uniforms
 {
     [key: string]: any;

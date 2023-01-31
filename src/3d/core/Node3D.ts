@@ -11,6 +11,7 @@ import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Mat4 } from '../../renderer/data/Uniforms';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
@@ -27,13 +28,13 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 模型矩阵
          */
-        u_modelMatrix: Matrix4x4;
+        u_modelMatrix: Mat4;
 
         /**
          * 模型逆转置矩阵,用于计算全局法线
          * 参考：http://blog.csdn.net/christina123y/article/details/5963679
          */
-        u_ITModelMatrix: Matrix4x4;
+        u_ITModelMatrix: Mat4;
     }
 }
 
@@ -390,8 +391,8 @@ export class Node3D extends Node
 
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
-        renderAtomic.uniforms.u_modelMatrix = () => this.globalMatrix;
-        renderAtomic.uniforms.u_ITModelMatrix = () => this.globalNormalMatrix;
+        renderAtomic.uniforms.u_modelMatrix = () => this.globalMatrix.toArray() as Mat4;
+        renderAtomic.uniforms.u_ITModelMatrix = () => this.globalNormalMatrix.toArray() as Mat4;
     }
 
     private readonly _position = new Vector3();
