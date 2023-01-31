@@ -13,7 +13,7 @@ test:
   stage: test
   script:
     - npm i -g pnpm
-    - pnpm i
+    - pnpm i --no-frozen-lockfile
     - npm run test
 
 pages:
