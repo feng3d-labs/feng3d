@@ -3,7 +3,7 @@ import { lazy } from '../../polyfill/Types';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
-import { Uniforms } from '../../renderer/data/Uniforms';
+import { Vec3 } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
 import { Renderable3D } from '../core/Renderable3D';
@@ -109,11 +109,11 @@ export class Wireframe3DRenderer
 
         const uniforms = this.renderAtomic.uniforms;
         //
-        uniforms.u_projectionMatrix = camera.projectionMatrix;
-        uniforms.u_viewProjection = camera.viewProjection;
-        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix;
-        uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
-        uniforms.u_cameraPos = camera.node3d.globalPosition;
+        uniforms.u_projectionMatrix = camera.projectionMatrix.elements;
+        uniforms.u_viewProjection = camera.viewProjection.elements;
+        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix.elements;
+        uniforms.u_cameraMatrix = camera.node3d.globalMatrix.elements;
+        uniforms.u_cameraPos = camera.node3d.globalPosition.toArray() as Vec3;
         uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
 

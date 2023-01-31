@@ -9,7 +9,7 @@ import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Uniforms } from '../../renderer/data/Uniforms';
+import { Mat3 } from '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera3D } from '../cameras/Camera3D';
@@ -67,7 +67,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 粒子公告牌矩阵
          */
-        u_particle_billboardMatrix: Matrix3x3;
+        u_particle_billboardMatrix: Mat3;
     }
 }
 
@@ -595,7 +595,7 @@ export class ParticleSystem3D extends Component3D
         this._attributes.a_particle_flipUV.array = flipUVs;
 
         //
-        renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
+        renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix.toArray() as Mat3;
 
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.Global)
         {

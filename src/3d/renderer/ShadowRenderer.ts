@@ -3,7 +3,7 @@ import { Rectangle } from '../../math/geom/Rectangle';
 import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
-import { Uniforms } from '../../renderer/data/Uniforms';
+import { Vec3 } from '../../renderer/data/Uniforms';
 import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
@@ -102,11 +102,11 @@ export class ShadowRenderer
         renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
 
         //
-        renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
-        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
-        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
+        renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
+        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements;
+        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix.elements;
+        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix.elements;
+        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition.toArray() as Vec3;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
         renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
@@ -198,11 +198,11 @@ export class ShadowRenderer
             renderAtomic.renderParams.viewPort = cube2DViewPorts[face];
 
             //
-            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
-            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
+            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements
+            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix.elements
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix.elements;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition.toArray() as Vec3;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
@@ -279,11 +279,11 @@ export class ShadowRenderer
         renderAtomic.renderParams.useViewPort = true;
         renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         //
-        renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
-        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
-        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
+        renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
+        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements
+        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix.elements;
+        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix.elements;
+        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition.toArray() as Vec3;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
         renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.globalPosition;

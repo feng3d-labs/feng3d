@@ -1,10 +1,8 @@
 import { Color4 } from '../../math/Color4';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Vector3 } from '../../math/geom/Vector3';
-import { Vector4 } from '../../math/geom/Vector4';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { lazy, LazyObject } from '../../polyfill/Types';
-import { Uniforms } from '../../renderer/data/Uniforms';
+import { Uniforms, Vec3 } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
 import { Mesh3D } from '../core/Mesh3D';
@@ -23,26 +21,26 @@ declare module '../../renderer/data/Uniforms'
         /**
          * （view矩阵）摄像机逆矩阵
          */
-        u_viewMatrix: Matrix4x4;
+        u_viewMatrix: Mat4;
 
         /**
          * 投影矩阵
          */
-        u_projectionMatrix: Matrix4x4;
+        u_projectionMatrix: Mat4;
 
         /**
          * 全局投影矩阵
          */
-        u_viewProjection: Matrix4x4;
+        u_viewProjection: Mat4;
 
         /**
          * 摄像机矩阵
          */
-        u_cameraMatrix: Matrix4x4;
+        u_cameraMatrix: Mat4;
         /**
          * 摄像机位置
          */
-        u_cameraPos: Vector3;
+        u_cameraPos: Vec3;
         /**
          * 模型-摄像机 矩阵
          */
@@ -105,11 +103,11 @@ export class ForwardRenderer
 
         const uniforms: LazyObject<Uniforms> = <any>{};
         //
-        uniforms.u_projectionMatrix = camera.projectionMatrix;
-        uniforms.u_viewProjection = camera.viewProjection;
-        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix;
-        uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
-        uniforms.u_cameraPos = camera.node3d.globalPosition;
+        uniforms.u_projectionMatrix = camera.projectionMatrix.elements;
+        uniforms.u_viewProjection = camera.viewProjection.elements;
+        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix.elements;
+        uniforms.u_cameraMatrix = camera.node3d.globalMatrix.elements;
+        uniforms.u_cameraPos = camera.node3d.globalPosition.toArray() as Vec3;
         uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
         uniforms.u_sceneAmbientColor = scene.ambientColor;
