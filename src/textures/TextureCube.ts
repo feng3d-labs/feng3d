@@ -1,6 +1,7 @@
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
+import { EventEmitter } from '../event/EventEmitter';
 import { FS } from '../filesystem/FS';
 import { oav } from '../objectview/ObjectView';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
@@ -31,9 +32,11 @@ declare module '../renderer/data/Texture'
  * 立方体纹理
  */
 @RegisterTexture('TextureCube')
-export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> extends TextureInfo<T>
+export class TextureCube extends TextureInfo
 {
     declare __class__: 'TextureCube';
+
+    declare emitter: EventEmitter<TextureCubeEventMap>;
 
     textureType: TextureType = 'TEXTURE_CUBE_MAP';
 

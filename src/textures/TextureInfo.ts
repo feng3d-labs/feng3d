@@ -7,7 +7,7 @@ import { imageDatas } from './Texture2D';
 /**
  * 纹理信息
  */
-export abstract class TextureInfo<T> extends Texture<T>
+export abstract class TextureInfo extends Texture
 {
     name: string;
 

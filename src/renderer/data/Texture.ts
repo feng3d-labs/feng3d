@@ -37,8 +37,13 @@ export function RegisterTexture<K extends keyof TextureMap>(texture: K)
 /**
  * 纹理
  */
-export class Texture<T = any> extends EventEmitter<T>
+export class Texture extends EventEmitter
 {
+    /**
+     * 事件发射器
+     */
+    readonly emitter = new EventEmitter(this);
+
     /**
      * 构造纹理。
      *
@@ -201,13 +206,13 @@ export class Texture<T = any> extends EventEmitter<T>
     constructor()
     {
         super();
-        watcher.watch(this as Texture<any>, 'format', this.invalidate, this);
-        watcher.watch(this as Texture<any>, 'type', this.invalidate, this);
-        watcher.watch(this as Texture<any>, 'generateMipmap', this.invalidate, this);
-        watcher.watch(this as Texture<any>, 'flipY', this.invalidate, this);
-        watcher.watch(this as Texture<any>, 'premulAlpha', this.invalidate, this);
-        watcher.watch(this as Texture<any>, 'OFFSCREEN_WIDTH', this.invalidate, this);
-        watcher.watch(this as Texture<any>, 'OFFSCREEN_HEIGHT', this.invalidate, this);
+        watcher.watch(this as Texture, 'format', this.invalidate, this);
+        watcher.watch(this as Texture, 'type', this.invalidate, this);
+        watcher.watch(this as Texture, 'generateMipmap', this.invalidate, this);
+        watcher.watch(this as Texture, 'flipY', this.invalidate, this);
+        watcher.watch(this as Texture, 'premulAlpha', this.invalidate, this);
+        watcher.watch(this as Texture, 'OFFSCREEN_WIDTH', this.invalidate, this);
+        watcher.watch(this as Texture, 'OFFSCREEN_HEIGHT', this.invalidate, this);
     }
 
     /**
