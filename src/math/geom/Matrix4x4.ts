@@ -7,12 +7,19 @@ import { Ray3 } from './Ray3';
 import { Vector3 } from './Vector3';
 import { Vector4 } from './Vector4';
 
-type NumberArray16 = [
+type Number16 = [
     number, number, number, number,
     number, number, number, number,
     number, number, number, number,
     number, number, number, number,
 ];
+
+export const identityMat4: Number16 = Object.freeze([
+    1, 0, 0, 0, //
+    0, 1, 0, 0, //
+    0, 0, 1, 0, //
+    0, 0, 0, 1, //
+]) as any;
 
 /**
  * Matrix4x4 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
@@ -44,7 +51,7 @@ export class Matrix4x4
      * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
     @SerializeProperty()
-    elements: NumberArray16;
+    elements: Number16;
 
     /**
      * 获取位移
@@ -227,7 +234,7 @@ export class Matrix4x4
      * 创建 Matrix4x4 对象。
      * @param rawData 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
-    constructor(rawData: NumberArray16 = [
+    constructor(rawData: Number16 = [
         1, 0, 0, 0, //
         0, 1, 0, 0, //
         0, 0, 1, 0, //
@@ -364,7 +371,7 @@ export class Matrix4x4
     /**
      * 通过将另一个 Matrix4x4 对象与当前 Matrix4x4 对象相乘来后置一个矩阵。
      */
-    append(lhs: Matrix4x4)
+    append(lhs: { elements: Number16 } | Number16)
     {
         const m111 = this.elements[0];
         const m121 = this.elements[4];
@@ -383,22 +390,32 @@ export class Matrix4x4
         const m134 = this.elements[11];
         const m144 = this.elements[15];
 
-        const m211 = lhs.elements[0];
-        const m221 = lhs.elements[4];
-        const m231 = lhs.elements[8];
-        const m241 = lhs.elements[12];
-        const m212 = lhs.elements[1];
-        const m222 = lhs.elements[5];
-        const m232 = lhs.elements[9];
-        const m242 = lhs.elements[13];
-        const m213 = lhs.elements[2];
-        const m223 = lhs.elements[6];
-        const m233 = lhs.elements[10];
-        const m243 = lhs.elements[14];
-        const m214 = lhs.elements[3];
-        const m224 = lhs.elements[7];
-        const m234 = lhs.elements[11];
-        const m244 = lhs.elements[15];
+        let lhsElements: Number16;
+        if (Array.isArray(lhs))
+        {
+            lhsElements = lhs;
+        }
+        else
+        {
+            lhsElements = lhs.elements;
+        }
+
+        const m211 = lhsElements[0];
+        const m221 = lhsElements[4];
+        const m231 = lhsElements[8];
+        const m241 = lhsElements[12];
+        const m212 = lhsElements[1];
+        const m222 = lhsElements[5];
+        const m232 = lhsElements[9];
+        const m242 = lhsElements[13];
+        const m213 = lhsElements[2];
+        const m223 = lhsElements[6];
+        const m233 = lhsElements[10];
+        const m243 = lhsElements[14];
+        const m214 = lhsElements[3];
+        const m224 = lhsElements[7];
+        const m234 = lhsElements[11];
+        const m244 = lhsElements[15];
 
         this.elements[0] = (m111 * m211) + (m112 * m221) + (m113 * m231) + (m114 * m241);
         this.elements[1] = (m111 * m212) + (m112 * m222) + (m113 * m232) + (m114 * m242);

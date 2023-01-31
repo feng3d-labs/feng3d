@@ -1,9 +1,21 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { Rectangle } from '../../math/geom/Rectangle';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Uniforms } from '../../renderer/data/Uniforms';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 3D对象编号
+         */
+        u_objectID: number;
+    }
+}
 
 /**
  * 鼠标拾取渲染器

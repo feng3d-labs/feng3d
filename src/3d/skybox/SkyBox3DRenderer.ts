@@ -1,5 +1,6 @@
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
+import { Vec3 } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
 import { Scene3D } from '../core/Scene3D';
@@ -76,10 +77,10 @@ export class SkyBox3DRenderer
         skybox.beforeRender(this.renderAtomic, scene, camera);
 
         //
-        this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
-        this.renderAtomic.uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix;
-        this.renderAtomic.uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
-        this.renderAtomic.uniforms.u_cameraPos = camera.node3d.globalPosition;
+        this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection.elements;
+        this.renderAtomic.uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix.elements;
+        this.renderAtomic.uniforms.u_cameraMatrix = camera.node3d.globalMatrix.elements;
+        this.renderAtomic.uniforms.u_cameraPos = camera.node3d.globalPosition.toArray() as Vec3;
         this.renderAtomic.uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
 
         renderer.render(this.renderAtomic);

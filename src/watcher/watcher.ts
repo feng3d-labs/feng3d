@@ -1,3 +1,5 @@
+import { gPartial, PropertyNames } from '../polyfill/Types';
+
 /**
  * 对象属性变化监视器。
  *
@@ -378,13 +380,6 @@ function notifyListener(newValue: any, oldValue: any, host: any, property: strin
 }
 
 /**
- * 让T中以及所有键值中的所有键都是可选的
- */
-type gPartial<T> = {
-    [P in keyof T]?: gPartial<T[P]>;
-};
-
-/**
  * 从对象自身或者对象的原型中获取属性描述
  *
  * @param object 对象
@@ -421,28 +416,6 @@ function objectIsEmpty(obj: any)
 
     return false;
 }
-
-/**
- * 选取T类型中值为非函数类型的所有键
- */
-type PropertyNames<T> = NonTypePropertyNames<T, Function>;
-
-/**
- * 获取T类型中除值为KT类型以外的所有键
- *
- * ```
- * class A
- * {
- *      a = 1;
- *      f(){}
- * }
- *
- * var a: NonTypePropertyNames<A, number>; //var a:"f"
- * var a1: NonTypePropertyNames<A, Function>; //var a:"a"
- *
- * ```
- */
-type NonTypePropertyNames<T, KT> = { [K in keyof T]: T[K] extends KT ? never : K }[keyof T];
 
 /**
  * 获取对象对应属性上的值

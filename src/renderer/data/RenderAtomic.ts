@@ -5,7 +5,7 @@ import { AttributeBuffer } from './AttributeBuffer';
 import { ElementBuffer } from './ElementBuffer';
 import { RenderParams } from './RenderParams';
 import { Shader } from './Shader';
-import { Uniforms } from './Uniforms';
+import { Uniforms, UniformType } from './Uniforms';
 
 /**
  * 渲染原子（该对象会收集一切渲染所需数据以及参数）
@@ -131,7 +131,7 @@ export class RenderAtomic
         return uniforms;
     }
 
-    getUniformByKey(key: string): Uniforms
+    getUniformByKey(key: string): UniformType
     {
         if (this.uniforms[key] !== undefined) return lazy.getValue(this.uniforms[key]);
 

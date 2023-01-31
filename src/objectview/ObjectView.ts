@@ -1,7 +1,4 @@
-/**
- * 构造函数
- */
-type Constructor<T> = (new (...args: any[]) => T);
+import { Constructor } from '../polyfill/Types';
 
 /**
  * 标记objectview对象界面类

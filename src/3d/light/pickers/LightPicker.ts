@@ -1,6 +1,6 @@
-import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Mat4 } from '../../../renderer/data/Uniforms';
 import { Texture2D } from '../../../textures/Texture2D';
 import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
@@ -8,62 +8,74 @@ import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
 import { SpotLight3D } from '../SpotLight3D';
 
-declare module '../../renderer/data/Uniform3D' { interface Uniforms3D extends LightUniforms3D { } }
-
-interface LightUniforms3D
+declare module '../../../renderer/data/Uniforms'
 {
-    /**
-     * 方向光源数组
-     */
-    u_directionalLights: UDirectionalLight[];
+    interface Uniforms
+    {
+        /**
+         * 方向光源数组
+         */
+        u_directionalLights: UDirectionalLight[];
 
-    /**
-     * 生成投影的方向光源
-     */
-    u_castShadowDirectionalLights: UCastShadowDirectionalLight[];
+        /**
+         * 生成投影的方向光源
+         */
+        u_castShadowDirectionalLights: UCastShadowDirectionalLight[];
 
-    /**
-     * 方向光源投影矩阵列表
-     */
-    u_directionalShadowMatrices: Matrix4x4[];
+        /**
+         * 方向光源投影矩阵列表
+         */
+        u_directionalShadowMatrices: Mat4[];
 
-    /**
-     * 方向光源阴影图
-     */
-    u_directionalShadowMaps: Texture2D[];
+        /**
+         * 方向光源阴影图
+         */
+        u_directionalShadowMaps: Texture2D[];
 
-    /**
-     * 聚光灯光源
-     */
-    u_spotLights: USpotLight[];
+        /**
+         * 聚光灯光源
+         */
+        u_spotLights: USpotLight[];
 
-    /**
-     * 生成投影的聚光灯光源
-     */
-    u_castShadowSpotLights: UCastShadowSpotLight[]
+        /**
+         * 生成投影的聚光灯光源
+         */
+        u_castShadowSpotLights: UCastShadowSpotLight[]
 
-    u_spotShadowMatrix: Matrix4x4[];
+        u_spotShadowMatrix: Mat4[];
 
-    /**
-     * 点光源阴影图
-     */
-    u_spotShadowMaps: Texture2D[];
+        /**
+         * 点光源阴影图
+         */
+        u_spotShadowMaps: Texture2D[];
 
-    /**
-     * 点光源
-     */
-    u_pointLights: UPointLight[];
+        /**
+         * 点光源
+         */
+        u_pointLights: UPointLight[];
 
-    /**
-     * 生成投影的点光源
-     */
-    u_castShadowPointLights: UCastShadowPointLight[]
+        /**
+         * 生成投影的点光源
+         */
+        u_castShadowPointLights: UCastShadowPointLight[]
 
-    /**
-     * 点光源阴影图
-     */
-    u_pointShadowMaps: Texture2D[];
+        /**
+         * 点光源阴影图
+         */
+        u_pointShadowMaps: Texture2D[];
+    }
 
+    interface UniformTypeMap
+    {
+        DirectionalLightArray: UDirectionalLight[];
+        UCastShadowDirectionalLightArray: UCastShadowDirectionalLight[];
+
+        SpotLightArray: USpotLight[];
+        CastShadowSpotLightArray: UCastShadowSpotLight[];
+
+        PointLightArray: UPointLight[];
+        CastShadowPointLightArray: UCastShadowPointLight[];
+    }
 }
 
 export class LightPicker
@@ -134,7 +146,7 @@ export class LightPicker
         const castShadowSpotLights: UCastShadowSpotLight[] = [];
         const unCastShadowSpotLights: USpotLight[] = [];
         const spotShadowMaps: Texture2D[] = [];
-        const spotShadowMatrix: Matrix4x4[] = [];
+        const spotShadowMatrix: Mat4[] = [];
         spotLights.forEach((element) =>
         {
             if (!element.isVisibleAndEnabled) return;
@@ -160,7 +172,7 @@ export class LightPicker
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
-                spotShadowMatrix.push(element._shadowCameraViewProjection);
+                spotShadowMatrix.push(element._shadowCameraViewProjection.toArray() as Mat4);
                 spotShadowMaps.push(element.shadowMap);
             }
             else
@@ -187,7 +199,7 @@ export class LightPicker
         // 设置方向光源数据
         const castShadowDirectionalLights: UCastShadowDirectionalLight[] = [];
         const unCastShadowDirectionalLights: UDirectionalLight[] = [];
-        const directionalShadowMatrix: Matrix4x4[] = [];
+        const directionalShadowMatrix: Mat4[] = [];
         const directionalShadowMaps: Texture2D[] = [];
         directionalLights.forEach((element) =>
         {
@@ -212,7 +224,7 @@ export class LightPicker
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
-                directionalShadowMatrix.push(element._shadowCameraViewProjection);
+                directionalShadowMatrix.push(element._shadowCameraViewProjection.toArray() as Mat4);
                 directionalShadowMaps.push(element.shadowMap);
             }
             else

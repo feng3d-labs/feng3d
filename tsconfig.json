@@ -9,6 +9,7 @@
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "emitDeclarationOnly": true,
+        "resolveJsonModule": true,
         "lib": [
             "ES2016",
             "ES2015",

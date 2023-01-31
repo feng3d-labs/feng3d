@@ -21,7 +21,7 @@ export class Vector2 implements Vector
     {
         this._ZERO ||= Object.freeze(new Vector2());
 
-return this._ZERO;
+        return this._ZERO;
     }
     private static _ZERO: Vector2;
 

@@ -5,6 +5,7 @@ import { Component, RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { Vec4 } from '../renderer/data/Uniforms';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Node2D } from './core/Node2D';
 
@@ -31,7 +32,7 @@ export class Rect extends Component
     {
         super.beforeRender(renderAtomic, scene, camera);
 
-        renderAtomic.uniforms.u_color = this.color;
+        renderAtomic.uniforms.u_color = this.color.toArray() as Vec4;
     }
 }
 

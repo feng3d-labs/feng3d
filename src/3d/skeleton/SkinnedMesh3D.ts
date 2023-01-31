@@ -2,6 +2,7 @@ import { HideFlags } from '../../core/HideFlags';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Mat4 } from '../../renderer/data/Uniforms';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
@@ -11,6 +12,17 @@ declare module '../../ecs/Component'
     interface ComponentMap
     {
         SkinnedMesh3D: SkinnedMesh3D
+    }
+}
+
+declare module '../../renderer/data/Uniforms'
+{
+    interface Uniforms
+    {
+        /**
+         * 骨骼全局矩阵
+         */
+        u_skeletonGlobalMatrices: Mat4[];
     }
 }
 
@@ -32,8 +44,8 @@ export class SkinnedMesh3D extends Component3D
     {
         super.beforeRender(renderAtomic, scene, camera);
 
-        renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
-        renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
+        renderAtomic.uniforms.u_modelMatrix = () => this.node3d.globalMatrix.toArray() as Mat4;
+        renderAtomic.uniforms.u_ITModelMatrix = () => this.node3d.globalNormalMatrix.toArray() as Mat4;
         //
         renderAtomic.uniforms.u_skeletonGlobalMatrices = this.u_skeletonGlobalMatrices;
 
@@ -41,32 +53,14 @@ export class SkinnedMesh3D extends Component3D
         renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.u_skeletonGlobalMatrices.length;
     }
 
-    /**
-     * 销毁
-     */
-    dispose()
-    {
-        super.dispose();
-    }
-
-    private get u_modelMatrix()
-    {
-        return this.node3d.globalMatrix;
-    }
-
-    private get u_ITModelMatrix()
-    {
-        return this.node3d.globalNormalMatrix;
-    }
-
     private get u_skeletonGlobalMatrices()
     {
         const skeletonComponent = this.getComponentInParent('Skeleton3D');
 
-        let skeletonGlobalMatrices: Matrix4x4[] = [];
+        let skeletonGlobalMatrices: Mat4[] = [];
         if (skeletonComponent)
         {
-            skeletonGlobalMatrices = skeletonComponent.globalMatrices;
+            skeletonGlobalMatrices = skeletonComponent.globalMatrices.map((v) => v.elements);
         }
         else
         {
@@ -77,9 +71,9 @@ export class SkinnedMesh3D extends Component3D
     }
 }
 
-const defaultSkeletonGlobalMatrices: Matrix4x4[] = (() =>
+const defaultSkeletonGlobalMatrices: Mat4[] = (() =>
 {
-    const v = [new Matrix4x4()]; let i = 150; while (i-- > 1) v.push(v[0]);
+    const v: Mat4[] = [new Matrix4x4().elements]; let i = 150; while (i-- > 1) v.push(v[0]);
 
     return v;
 })();

@@ -5,6 +5,7 @@ import { RegisterComponent } from '../ecs/Component';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { Vec4 } from '../renderer/data/Uniforms';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Texture2D } from '../textures/Texture2D';
 import { watcher } from '../watcher/watcher';
@@ -85,7 +86,7 @@ export class Text extends Component2D
 
         //
         renderAtomic.uniforms.s_texture = this._image;
-        renderAtomic.uniforms.u_uvRect = this._uvRect;
+        renderAtomic.uniforms.u_uvRect = this._uvRect.toArray() as Vec4;
     }
 
     invalidate()
