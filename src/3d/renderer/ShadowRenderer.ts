@@ -23,7 +23,7 @@ declare module '../../renderer/data/Uniforms'
     interface Uniforms
     {
         u_lightType: LightType;
-        u_lightPosition: Vector3;
+        u_lightPosition: Vec3;
         u_shadowCameraNear: number;
         u_shadowCameraFar: number;
     }
@@ -109,7 +109,7 @@ export class ShadowRenderer
         renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition.toArray() as Vec3;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
+        renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition.toArray() as Vec3;
         renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
         renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
@@ -198,14 +198,14 @@ export class ShadowRenderer
             renderAtomic.renderParams.viewPort = cube2DViewPorts[face];
 
             //
-            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements
-            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix.elements
+            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
+            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix.elements;
             renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix.elements;
             renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition.toArray() as Vec3;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
+            renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition.toArray() as Vec3;
             renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
             renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
@@ -280,13 +280,13 @@ export class ShadowRenderer
         renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
-        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements
+        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements;
         renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix.elements;
         renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix.elements;
         renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition.toArray() as Vec3;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.globalPosition;
+        renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.globalPosition.toArray() as Vec3;
         renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
         renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
         //

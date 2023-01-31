@@ -64,6 +64,18 @@ declare module '../../../renderer/data/Uniforms'
          */
         u_pointShadowMaps: Texture2D[];
     }
+
+    interface UniformTypeMap
+    {
+        DirectionalLightArray: UDirectionalLight[];
+        UCastShadowDirectionalLightArray: UCastShadowDirectionalLight[];
+
+        SpotLightArray: USpotLight[];
+        CastShadowSpotLightArray: UCastShadowSpotLight[];
+
+        PointLightArray: UPointLight[];
+        CastShadowPointLightArray: UCastShadowPointLight[];
+    }
 }
 
 export class LightPicker

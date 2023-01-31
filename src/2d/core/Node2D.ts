@@ -12,6 +12,7 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Vec4 } from '../../renderer/data/Uniforms';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
@@ -240,7 +241,7 @@ export class Node2D extends Node
 
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
-        renderAtomic.uniforms.u_rect = this.rect;
+        renderAtomic.uniforms.u_rect = this.rect.toArray() as Vec4;
     }
 
     /**

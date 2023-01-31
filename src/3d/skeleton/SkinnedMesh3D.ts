@@ -22,7 +22,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 骨骼全局矩阵
          */
-        u_skeletonGlobalMatrices: Matrix4x4[];
+        u_skeletonGlobalMatrices: Mat4[];
     }
 }
 
@@ -57,10 +57,10 @@ export class SkinnedMesh3D extends Component3D
     {
         const skeletonComponent = this.getComponentInParent('Skeleton3D');
 
-        let skeletonGlobalMatrices: Matrix4x4[] = [];
+        let skeletonGlobalMatrices: Mat4[] = [];
         if (skeletonComponent)
         {
-            skeletonGlobalMatrices = skeletonComponent.globalMatrices;
+            skeletonGlobalMatrices = skeletonComponent.globalMatrices.map((v) => v.elements);
         }
         else
         {
@@ -71,9 +71,9 @@ export class SkinnedMesh3D extends Component3D
     }
 }
 
-const defaultSkeletonGlobalMatrices: Matrix4x4[] = (() =>
+const defaultSkeletonGlobalMatrices: Mat4[] = (() =>
 {
-    const v = [new Matrix4x4()]; let i = 150; while (i-- > 1) v.push(v[0]);
+    const v: Mat4[] = [new Matrix4x4().elements]; let i = 150; while (i-- > 1) v.push(v[0]);
 
     return v;
 })();

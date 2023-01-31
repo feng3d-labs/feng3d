@@ -5,7 +5,7 @@ import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Uniforms } from '../renderer/data/Uniforms';
+import { Vec4 } from '../renderer/data/Uniforms';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Texture2D } from '../textures/Texture2D';
 import { Component2D } from './core/Component2D';
@@ -21,6 +21,10 @@ declare module '../renderer/data/Uniforms'
          * 漫反射贴图
          */
         s_texture: Texture2D;
+
+        u_color: Vec4;
+
+        u_uvRect: Vec4;
     }
 }
 
@@ -66,7 +70,7 @@ export class Image extends Component2D
         super.beforeRender(renderAtomic, scene, camera);
 
         renderAtomic.uniforms.s_texture = this.image;
-        renderAtomic.uniforms.u_color = this.color;
+        renderAtomic.uniforms.u_color = this.color.toArray() as Vec4;
     }
 }
 

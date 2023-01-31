@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../event/EventEmitter';
-import { Vector2 } from '../../math/geom/Vector2';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Vec4 } from '../../renderer/data/Uniforms';
 import { Texture2D } from '../../textures/Texture2D';
 
 declare module '../../renderer/data/Uniforms'
@@ -20,23 +20,23 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 地形块重复次数
          */
-        u_splatRepeats: Vector4;
+        u_splatRepeats: Vec4;
         /**
          * 地形混合贴图尺寸
          */
-        u_splatMergeTextureSize: Vector2;
+        u_splatMergeTextureSize: Vec2;
         /**
          * 图片尺寸
          */
-        u_imageSize: Vector2;
+        u_imageSize: Vec2;
         /**
          * 地形块尺寸
          */
-        u_tileSize: Vector2;
+        u_tileSize: Vec2;
         /**
          * 地形块偏移
          */
-        u_tileOffset: Vector4[];
+        u_tileOffset: [Vec4, Vec4, Vec4];
         /**
          * 最大lod
          */
@@ -48,7 +48,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * lod0时在贴图中的uv缩放偏移向量
          */
-        u_lod0vec: Vector4;
+        u_lod0vec: Vec4;
     }
 }
 
@@ -81,18 +81,18 @@ export class Terrain3DMergeMethod extends EventEmitter
         renderAtomic.uniforms.s_blendTexture = this.blendTexture;
         renderAtomic.uniforms.s_splatMergeTexture = this.splatMergeTexture;
         const size = this.splatMergeTexture.getSize();
-        renderAtomic.uniforms.u_splatMergeTextureSize = new Vector2(size.x, size.y);
-        renderAtomic.uniforms.u_splatRepeats = this.splatRepeats;
+        renderAtomic.uniforms.u_splatMergeTextureSize = [size.x, size.y];
+        renderAtomic.uniforms.u_splatRepeats = this.splatRepeats.toArray() as Vec4;
         //
-        renderAtomic.uniforms.u_imageSize = new Vector2(2048.0, 1024.0);
-        renderAtomic.uniforms.u_tileSize = new Vector2(512.0, 512.0);
+        renderAtomic.uniforms.u_imageSize = [2048.0, 1024.0];
+        renderAtomic.uniforms.u_tileSize = [512.0, 512.0];
         renderAtomic.uniforms.u_maxLod = 7;
         renderAtomic.uniforms.u_uvPositionScale = 0.001;
         renderAtomic.uniforms.u_tileOffset = [
-            new Vector4(0.5, 0.5, 0.0, 0.0),
-            new Vector4(0.5, 0.5, 0.5, 0.0),
-            new Vector4(0.5, 0.5, 0.0, 0.5),
+            [0.5, 0.5, 0.0, 0.0],
+            [0.5, 0.5, 0.5, 0.0],
+            [0.5, 0.5, 0.0, 0.5],
         ];
-        renderAtomic.uniforms.u_lod0vec = new Vector4(0.5, 1, 0, 0);
+        renderAtomic.uniforms.u_lod0vec = [0.5, 1, 0, 0];
     }
 }

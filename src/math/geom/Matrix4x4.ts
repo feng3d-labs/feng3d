@@ -7,14 +7,14 @@ import { Ray3 } from './Ray3';
 import { Vector3 } from './Vector3';
 import { Vector4 } from './Vector4';
 
-type Matrix4x4Raw = [
+type Number16 = [
     number, number, number, number,
     number, number, number, number,
     number, number, number, number,
     number, number, number, number,
 ];
 
-export const identityMat4: Matrix4x4Raw = Object.freeze([
+export const identityMat4: Number16 = Object.freeze([
     1, 0, 0, 0, //
     0, 1, 0, 0, //
     0, 0, 1, 0, //
@@ -51,7 +51,7 @@ export class Matrix4x4
      * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
     @SerializeProperty()
-    elements: Matrix4x4Raw;
+    elements: Number16;
 
     /**
      * 获取位移
@@ -234,7 +234,7 @@ export class Matrix4x4
      * 创建 Matrix4x4 对象。
      * @param rawData 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
-    constructor(rawData: Matrix4x4Raw = [
+    constructor(rawData: Number16 = [
         1, 0, 0, 0, //
         0, 1, 0, 0, //
         0, 0, 1, 0, //
@@ -371,7 +371,7 @@ export class Matrix4x4
     /**
      * 通过将另一个 Matrix4x4 对象与当前 Matrix4x4 对象相乘来后置一个矩阵。
      */
-    append(lhs: { elements: Matrix4x4Raw } | Matrix4x4Raw)
+    append(lhs: { elements: Number16 } | Number16)
     {
         const m111 = this.elements[0];
         const m121 = this.elements[4];
@@ -390,7 +390,7 @@ export class Matrix4x4
         const m134 = this.elements[11];
         const m144 = this.elements[15];
 
-        let lhsElements: Matrix4x4Raw;
+        let lhsElements: Number16;
         if (Array.isArray(lhs))
         {
             lhsElements = lhs;
