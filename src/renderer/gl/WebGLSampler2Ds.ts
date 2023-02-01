@@ -1,4 +1,5 @@
-import { Sampler2D } from '../data/Sampler2D';
+import { Sampler } from '../data/Sampler';
+import { Texture } from '../data/Texture';
 import { WebGLCapabilities } from './WebGLCapabilities';
 import { TextureMagFilter, TextureMinFilter, TextureWrap } from './WebGLEnums';
 import { WebGLExtensions } from './WebGLExtensions';
@@ -7,7 +8,7 @@ import { UniformInfo } from './WebGLShaders';
 /**
  * WebGL纹理
  */
-export class WebGLSampler2Ds
+export class WebGLTextures
 {
     gl: WebGLRenderingContext;
     extensions: WebGLExtensions;
@@ -16,7 +17,7 @@ export class WebGLSampler2Ds
     /**
      * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
      */
-    private textures = new WeakMap<Sampler2D, {
+    private textures = new WeakMap<Sampler, {
         texture: WebGLTexture,
         minFilter?: TextureMinFilter,
         magFilter?: TextureMagFilter,
@@ -32,7 +33,7 @@ export class WebGLSampler2Ds
         this.capabilities = capabilities;
     }
 
-    active(data: Sampler2D, activeInfo?: UniformInfo)
+    active(data: Texture, activeInfo?: UniformInfo)
     {
         const { gl } = this;
 
@@ -60,7 +61,7 @@ export class WebGLSampler2Ds
         return texture;
     }
 
-    private setTextureParameters(texture: Sampler2D)
+    private setTextureParameters(texture: Sampler)
     {
         const { gl, extensions, capabilities, textures } = this;
 
@@ -114,10 +115,15 @@ export class WebGLSampler2Ds
      * 获取顶点属性缓冲
      * @param data 数据
      */
-    private getTexture(data: Sampler2D)
+    private getTexture(data: Sampler)
     {
         const { gl, textures } = this;
 
+        if (data.invalid)
+        {
+            this.clear(data);
+            data.invalid = false;
+        }
         let cache = textures.get(data);
         if (!cache)
         {
@@ -139,7 +145,40 @@ export class WebGLSampler2Ds
             // 绑定纹理
             gl.bindTexture(textureType, texture);
             // 设置纹理图片
-            gl.texImage2D(textureType, 0, format, format, type, data.source);
+            switch (textureType)
+            {
+                case gl.TEXTURE_CUBE_MAP:
+                    const pixels: TexImageSource[] = data.activePixels as any;
+                    const faces = [
+                        gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                        gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                    ];
+                    for (let i = 0; i < faces.length; i++)
+                    {
+                        if (data.isRenderTarget)
+                        {
+                            gl.texImage2D(faces[i], 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
+                        }
+                        else
+                        {
+                            gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
+                        }
+                    }
+                    break;
+                case gl.TEXTURE_2D:
+                    const _pixel: TexImageSource = data.activePixels as any;
+                    if (data.isRenderTarget)
+                    {
+                        gl.texImage2D(textureType, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
+                    }
+                    else
+                    {
+                        gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                    }
+                    break;
+                default:
+                    throw '';
+            }
             if (data.generateMipmap)
             {
                 gl.generateMipmap(textureType);
@@ -157,7 +196,7 @@ export class WebGLSampler2Ds
      *
      * @param data
      */
-    private clear(data: Sampler2D)
+    private clear(data: Sampler)
     {
         const { gl, textures } = this;
 
