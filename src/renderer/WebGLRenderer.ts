@@ -107,14 +107,14 @@ export class WebGLRenderer
         this.info = new WebGLInfo(gl);
         this.cacheStates = new WebGLCacheStates(gl);
         this.shaders = new WebGLShaders(gl);
-        this.textures = new WebGLTextures(gl, this.extensions, this.capabilities);
+        this.textures = new WebGLTextures();
         this.state = new WebGLState(gl, this.extensions, this.capabilities);
         this.attributeBuffers = new WebGLAttributeBuffers(gl, this.capabilities);
         this.elementBuffers = new WebGLElementBuffers(this);
 
         this.bindingStates = new WebGLBindingStates(gl, this.extensions, this.attributeBuffers, this.elementBuffers, this.capabilities, this.shaders);
         this.renderParams = new WebGLRenderParams(gl, this.capabilities, this.state);
-        this.uniforms = new WebGLUniforms(gl, this.textures);
+        this.uniforms = new WebGLUniforms();
         this.renderbuffers = new WebGLRenderbuffers(gl);
         this.framebuffers = new WebGLFramebuffers(gl);
     }
@@ -140,7 +140,7 @@ export class WebGLRenderer
 
             bindingStates.setup(renderAtomic);
 
-            uniforms.activeUniforms(renderAtomic, shaderResult.uniforms);
+            uniforms.activeUniforms(this, renderAtomic, shaderResult.uniforms);
 
             elementBufferRenderer.render(renderAtomic, offset, count);
         }

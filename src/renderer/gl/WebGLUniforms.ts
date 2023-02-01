@@ -1,29 +1,16 @@
 import { RenderAtomic } from '../data/RenderAtomic';
+import { WebGLRenderer } from '../WebGLRenderer';
 import { UniformInfo } from './WebGLShaders';
-import { WebGLTextures } from './WebGLTextures';
 
 /**
  * WebGL统一变量
  */
 export class WebGLUniforms
 {
-    private gl: WebGLRenderingContext;
-
-    /**
-     * WebGL纹理
-     */
-    private textures: WebGLTextures;
-
-    constructor(gl: WebGLRenderingContext, textures: WebGLTextures)
-    {
-        this.gl = gl;
-        this.textures = textures;
-    }
-
     /**
      * 激活常量
      */
-    activeUniforms(renderAtomic: RenderAtomic, uniformInfos: { [name: string]: UniformInfo })
+    activeUniforms(webGLRenderer: WebGLRenderer, renderAtomic: RenderAtomic, uniformInfos: { [name: string]: UniformInfo })
     {
         for (const name in uniformInfos)
         {
@@ -34,16 +21,16 @@ export class WebGLUniforms
             {
                 uniformData = uniformData[paths[i]];
             }
-            this.setContext3DUniform(activeInfo, uniformData);
+            this.setContext3DUniform(webGLRenderer, activeInfo, uniformData);
         }
     }
 
     /**
      * 设置环境Uniform数据
      */
-    private setContext3DUniform(activeInfo: UniformInfo, data)
+    private setContext3DUniform(webGLRenderer: WebGLRenderer, activeInfo: UniformInfo, data)
     {
-        const { gl, textures } = this;
+        const { gl, textures } = webGLRenderer;
 
         let vec: number[] = data;
         if (data.toArray) vec = data.toArray();
@@ -74,7 +61,9 @@ export class WebGLUniforms
                 break;
             case gl.SAMPLER_2D:
             case gl.SAMPLER_CUBE:
-                textures.active(data, activeInfo);
+                // (data as Texture).active(
+
+                textures.active(webGLRenderer, data, activeInfo);
                 break;
             default:
                 console.error(`无法识别的uniform类型 ${activeInfo.name} ${data}`);

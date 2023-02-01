@@ -7,6 +7,8 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from '../gl/WebGLEnums';
+import { UniformInfo } from '../gl/WebGLShaders';
+import { WebGLRenderer } from '../WebGLRenderer';
 
 declare module '../../serialization/Serializable'
 {
@@ -263,4 +265,33 @@ export class Texture
     protected updateActivePixels()
     {
     }
+
+    // active(webGLRenderer: WebGLRenderer, data: Texture, activeInfo?: UniformInfo)
+    // {
+    //     const { gl } = webGLRenderer;
+
+    //     if (activeInfo)
+    //     {
+    //         // 激活纹理编号
+    //         gl.activeTexture(gl[`TEXTURE${activeInfo.textureID}`]);
+    //     }
+
+    //     const texture = this.getTexture(webGLRenderer, data);
+
+    //     const textureType = gl[data.textureType];
+
+    //     // 绑定纹理
+    //     gl.bindTexture(textureType, texture);
+
+    //     this.setTextureParameters(webGLRenderer, data);
+
+    //     if (activeInfo)
+    //     {
+    //         // 设置纹理所在采样编号
+    //         gl.uniform1i(activeInfo.location, activeInfo.textureID);
+    //     }
+
+    //     return texture;
+    // }
+
 }

@@ -1,7 +1,6 @@
 import { Texture } from '../data/Texture';
-import { WebGLCapabilities } from './WebGLCapabilities';
+import { WebGLRenderer } from '../WebGLRenderer';
 import { TextureMagFilter, TextureMinFilter, TextureWrap } from './WebGLEnums';
-import { WebGLExtensions } from './WebGLExtensions';
 import { UniformInfo } from './WebGLShaders';
 
 /**
@@ -9,10 +8,6 @@ import { UniformInfo } from './WebGLShaders';
  */
 export class WebGLTextures
 {
-    gl: WebGLRenderingContext;
-    extensions: WebGLExtensions;
-    capabilities: WebGLCapabilities;
-
     /**
      * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
      */
@@ -25,16 +20,9 @@ export class WebGLTextures
         anisotropy?: number,
     }>();
 
-    constructor(gl: WebGLRenderingContext, extensions: WebGLExtensions, capabilities: WebGLCapabilities)
+    active(webGLRenderer: WebGLRenderer, data: Texture, activeInfo?: UniformInfo)
     {
-        this.gl = gl;
-        this.extensions = extensions;
-        this.capabilities = capabilities;
-    }
-
-    active(data: Texture, activeInfo?: UniformInfo)
-    {
-        const { gl } = this;
+        const { gl } = webGLRenderer;
 
         if (activeInfo)
         {
@@ -42,14 +30,14 @@ export class WebGLTextures
             gl.activeTexture(gl[`TEXTURE${activeInfo.textureID}`]);
         }
 
-        const texture = this.getTexture(data);
+        const texture = this.getTexture(webGLRenderer, data);
 
         const textureType = gl[data.textureType];
 
         // 绑定纹理
         gl.bindTexture(textureType, texture);
 
-        this.setTextureParameters(data);
+        this.setTextureParameters(webGLRenderer, data);
 
         if (activeInfo)
         {
@@ -60,9 +48,10 @@ export class WebGLTextures
         return texture;
     }
 
-    private setTextureParameters(texture: Texture)
+    private setTextureParameters(webGLRenderer: WebGLRenderer, texture: Texture)
     {
-        const { gl, extensions, capabilities, textures } = this;
+        const { gl, extensions, capabilities } = webGLRenderer;
+        const { textures } = this;
 
         const { textureType, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
 
@@ -114,13 +103,14 @@ export class WebGLTextures
      * 获取顶点属性缓冲
      * @param data 数据
      */
-    private getTexture(data: Texture)
+    private getTexture(webGLRenderer: WebGLRenderer, data: Texture)
     {
-        const { gl, textures } = this;
+        const { gl } = webGLRenderer;
+        const { textures } = this;
 
         if (data.invalid)
         {
-            this.clear(data);
+            this.clear(webGLRenderer, data);
             data.invalid = false;
         }
         let cache = textures.get(data);
@@ -195,9 +185,10 @@ export class WebGLTextures
      *
      * @param data
      */
-    private clear(data: Texture)
+    private clear(webGLRenderer: WebGLRenderer, data: Texture)
     {
-        const { gl, textures } = this;
+        const { gl } = webGLRenderer;
+        const { textures } = this;
 
         const tex = textures.get(data);
         if (tex)
