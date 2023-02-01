@@ -1,4 +1,5 @@
-import { TextureFormat, TextureMinFilter, TextureMagFilter } from '../renderer/gl/WebGLEnums';
+import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
+import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { watcher } from '../watcher/watcher';
 import { Texture2D } from './Texture2D';
 
@@ -24,5 +25,16 @@ export class RenderTargetTexture2D extends Texture2D
         super();
         watcher.watch(this as RenderTargetTexture2D, 'OFFSCREEN_WIDTH', this.invalidate, this);
         watcher.watch(this as RenderTargetTexture2D, 'OFFSCREEN_HEIGHT', this.invalidate, this);
+    }
+
+    setTextureData(webGLRenderer: WebGLRenderer)
+    {
+        const { gl } = webGLRenderer;
+        const data = this;
+
+        const format = gl[data.format];
+        const type = gl[data.type];
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
     }
 }

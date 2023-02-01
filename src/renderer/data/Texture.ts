@@ -7,7 +7,6 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from '../gl/WebGLEnums';
-import { UniformInfo } from '../gl/WebGLShaders';
 import { WebGLRenderer } from '../WebGLRenderer';
 
 declare module '../../serialization/Serializable'
@@ -264,5 +263,10 @@ export class Texture
 
     protected updateActivePixels()
     {
+    }
+
+    setTextureData(_webGLRenderer: WebGLRenderer)
+    {
+        throw `请在子类中实现`;
     }
 }

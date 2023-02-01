@@ -8,6 +8,7 @@ import { Color4 } from '../math/Color4';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TextureType } from '../renderer/gl/WebGLEnums';
+import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { ImageUtil } from '../utils/ImageUtil';
@@ -187,6 +188,18 @@ export class Texture2D extends TextureInfo
         texture.source = { url };
 
         return texture;
+    }
+
+    setTextureData(webGLRenderer: WebGLRenderer)
+    {
+        const { gl } = webGLRenderer;
+        const data = this;
+
+        const format = gl[data.format];
+        const type = gl[data.type];
+        const _pixel: TexImageSource = data.activePixels as any;
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, format, format, type, _pixel);
     }
 }
 

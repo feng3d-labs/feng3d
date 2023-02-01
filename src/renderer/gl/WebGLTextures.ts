@@ -142,31 +142,7 @@ export class WebGLTextures
             gl.bindTexture(textureType, texture);
 
             // 设置纹理图片
-            switch (textureType)
-            {
-                case gl.TEXTURE_CUBE_MAP:
-                    if (data.isRenderTarget)
-                    {
-                        this.renderTexImageCube(webGLRenderer, data);
-                    }
-                    else
-                    {
-                        this.texImageCube(webGLRenderer, data);
-                    }
-                    break;
-                case gl.TEXTURE_2D:
-                    if (data.isRenderTarget)
-                    {
-                        this.renderTexImage2D(webGLRenderer, data);
-                    }
-                    else
-                    {
-                        this.texImage2D(webGLRenderer, data);
-                    }
-                    break;
-                default:
-                    throw '';
-            }
+            data.setTextureData(webGLRenderer);
 
             if (data.generateMipmap)
             {
@@ -178,62 +154,6 @@ export class WebGLTextures
         }
 
         return cache.texture;
-    }
-
-    private renderTexImageCube(webGLRenderer: WebGLRenderer, data: Texture)
-    {
-        const { gl } = webGLRenderer;
-
-        const format = gl[data.format];
-        const type = gl[data.type];
-
-        const faces = [
-            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-        ];
-        for (let i = 0; i < faces.length; i++)
-        {
-            gl.texImage2D(faces[i], 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
-        }
-    }
-
-    private texImageCube(webGLRenderer: WebGLRenderer, data: Texture)
-    {
-        const { gl } = webGLRenderer;
-
-        const format = gl[data.format];
-        const type = gl[data.type];
-
-        const pixels: TexImageSource[] = data.activePixels as any;
-        const faces = [
-            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-        ];
-        for (let i = 0; i < faces.length; i++)
-        {
-            gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
-        }
-    }
-
-    private renderTexImage2D(webGLRenderer: WebGLRenderer, data: Texture)
-    {
-        const { gl } = webGLRenderer;
-
-        const format = gl[data.format];
-        const type = gl[data.type];
-
-        gl.texImage2D(gl.TEXTURE_2D, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
-    }
-
-    private texImage2D(webGLRenderer: WebGLRenderer, data: Texture)
-    {
-        const { gl } = webGLRenderer;
-
-        const format = gl[data.format];
-        const type = gl[data.type];
-        const _pixel: TexImageSource = data.activePixels as any;
-
-        gl.texImage2D(gl.TEXTURE_2D, 0, format, format, type, _pixel);
     }
 
     /**
