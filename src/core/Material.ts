@@ -131,7 +131,7 @@ export abstract class Material extends EventEmitter
                 {
                     loadingNum++;
                     // eslint-disable-next-line no-loop-func
-                    texture.on('loadCompleted', () =>
+                    texture.emitter.on('loadCompleted', () =>
                     {
                         loadingNum--;
                         if (loadingNum === 0) callback();

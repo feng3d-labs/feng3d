@@ -43,7 +43,7 @@ export class FrameBufferObject
 
     static active(webGLRenderer: WebGLRenderer, frameBufferObject: FrameBufferObject)
     {
-        const { gl, renderbuffers, framebuffers } = webGLRenderer;
+        const { gl, renderbuffers, framebuffers, textures } = webGLRenderer;
         if (frameBufferObject._invalid)
         {
             frameBufferObject._invalid = false;
@@ -54,7 +54,7 @@ export class FrameBufferObject
         if (!obj)
         {
             const framebuffer = framebuffers.active(frameBufferObject.frameBuffer);
-            const texture = frameBufferObject.texture.active(webGLRenderer);
+            const texture = textures.active(frameBufferObject.texture);
             const depthBuffer = renderbuffers.active(frameBufferObject.depthBuffer);
 
             // 绑定帧缓冲区对象

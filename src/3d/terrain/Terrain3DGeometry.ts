@@ -106,7 +106,7 @@ export class Terrain3DGeometry extends Geometry
             this._heightImageData = getDefaultHeightMap();
             this.invalidateGeometry();
 
-            this.heightMap.once('loadCompleted', () =>
+            this.heightMap.emitter.once('loadCompleted', () =>
             {
                 const img = this.heightMap['_pixels'] as HTMLImageElement;
                 this._heightImageData = ImageUtil.fromImage(img).imageData;
