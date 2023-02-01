@@ -6,7 +6,7 @@ import { FS } from '../filesystem/FS';
 import { oav } from '../objectview/ObjectView';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { RegisterTexture } from '../renderer/data/Texture';
-import { TextureType } from '../renderer/gl/WebGLEnums';
+import { TexImage2DTarget, TextureType } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
@@ -213,20 +213,16 @@ export class TextureCube extends TextureInfo
 
     setTextureData(webGLRenderer: WebGLRenderer)
     {
-        const { gl } = webGLRenderer;
         const data = this;
 
-        const format = gl[data.format];
-        const type = gl[data.type];
-
         const pixels: TexImageSource[] = data.activePixels as any;
-        const faces = [
-            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+        const faces: TexImage2DTarget[] = [
+            'TEXTURE_CUBE_MAP_POSITIVE_X', 'TEXTURE_CUBE_MAP_POSITIVE_Y', 'TEXTURE_CUBE_MAP_POSITIVE_Z',
+            'TEXTURE_CUBE_MAP_NEGATIVE_X', 'TEXTURE_CUBE_MAP_NEGATIVE_Y', 'TEXTURE_CUBE_MAP_NEGATIVE_Z'
         ];
         for (let i = 0; i < faces.length; i++)
         {
-            gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
+            webGLRenderer.texImage2D(faces[i], 0, data.format, data.format, data.type, pixels[i]);
         }
     }
 }

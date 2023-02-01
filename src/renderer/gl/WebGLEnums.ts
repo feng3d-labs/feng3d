@@ -130,6 +130,27 @@ export type TextureMinFilter = 'LINEAR' | 'NEAREST' | 'NEAREST_MIPMAP_NEAREST' |
 export type TextureType = 'TEXTURE_2D' | 'TEXTURE_CUBE_MAP' | 'TEXTURE_3D' | 'TEXTURE_2D_ARRAY';
 
 /**
+ *
+ *
+ * gl.TEXTURE_2D: A two-dimensional texture.
+ * gl.TEXTURE_CUBE_MAP_POSITIVE_X: Positive X face for a cube-mapped texture.
+ * gl.TEXTURE_CUBE_MAP_NEGATIVE_X: Negative X face for a cube-mapped texture.
+ * gl.TEXTURE_CUBE_MAP_POSITIVE_Y: Positive Y face for a cube-mapped texture.
+ * gl.TEXTURE_CUBE_MAP_NEGATIVE_Y: Negative Y face for a cube-mapped texture.
+ * gl.TEXTURE_CUBE_MAP_POSITIVE_Z: Positive Z face for a cube-mapped texture.
+ * gl.TEXTURE_CUBE_MAP_NEGATIVE_Z: Negative Z face for a cube-mapped texture.
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+ */
+export type TexImage2DTarget = 'TEXTURE_2D'
+    | 'TEXTURE_CUBE_MAP_POSITIVE_X'
+    | 'TEXTURE_CUBE_MAP_NEGATIVE_X'
+    | 'TEXTURE_CUBE_MAP_POSITIVE_Y'
+    | 'TEXTURE_CUBE_MAP_NEGATIVE_Y'
+    | 'TEXTURE_CUBE_MAP_POSITIVE_Z'
+    | 'TEXTURE_CUBE_MAP_NEGATIVE_Z';
+
+/**
  * 纹理坐标s包装函数枚举
  * Wrapping function for texture coordinate s
  *

@@ -6,6 +6,7 @@ import { WebGLRenderbuffers } from './gl/WebGLBuffers';
 import { WebGLCacheStates } from './gl/WebGLCacheStates';
 import { WebGLCapabilities } from './gl/WebGLCapabilities';
 import { WebGLElementBuffers } from './gl/WebGLElementBuffers';
+import { TexImage2DTarget, TextureDataType, TextureFormat } from './gl/WebGLEnums';
 import { WebGLExtensions } from './gl/WebGLExtensions';
 import { WebGLFramebuffers } from './gl/WebGLFramebuffers';
 import { WebGLInfo } from './gl/WebGLInfo';
@@ -171,6 +172,45 @@ export class WebGLRenderer
     {
         console.error('WebGLRenderer: A WebGL context could not be created. Reason: ', event.statusMessage);
     };
+
+    /**
+     * 
+     *
+     * @param target A GLenum specifying the binding point (target) of the active texture.
+     * @param level A GLint specifying the level of detail. Level 0 is the base image level and level n is the n-th mipmap reduction level.
+     * @param internalformat A GLenum specifying the color components in the texture.
+     * @param format A GLenum specifying the format of the texel data. In WebGL 1, this must be the same as internalformat (see above).
+     * @param type A GLenum specifying the data type of the texel data.
+     * @param source One of the following objects can be used as a pixel source for the texture.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    texImage2D(target: TexImage2DTarget, level: number, internalformat: TextureFormat, format: TextureFormat, type: TextureDataType, source: TexImageSource)
+    {
+        const { gl } = this;
+        gl.texImage2D(gl[target], level, gl[internalformat], gl[format], gl[type], source);
+    }
+
+    /**
+     * 
+     *
+     * @param target A GLenum specifying the binding point (target) of the active texture.
+     * @param level A GLint specifying the level of detail. Level 0 is the base image level and level n is the n-th mipmap reduction level.
+     * @param internalformat A GLenum specifying the color components in the texture.
+     * @param width A GLsizei specifying the width of the texture.
+     * @param height A GLsizei specifying the height of the texture.
+     * @param border A GLint specifying the width of the border. Must be 0.
+     * @param format A GLenum specifying the format of the texel data. In WebGL 1, this must be the same as internalformat (see above).
+     * @param type A GLenum specifying the data type of the texel data.
+     * @param pixels One of the following objects can be used as a pixel source for the texture.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    texImage2DPixels(target: TexImage2DTarget, level: GLint, internalformat: TextureFormat, width: GLsizei, height: GLsizei, border: GLint, format: TextureFormat, type: TextureDataType, pixels: ArrayBufferView | null)
+    {
+        const { gl } = this;
+        gl.texImage2D(gl[target], level, gl[internalformat], width, height, border, gl[format], gl[type], pixels);
+    }
 }
 
 function getContext(canvas: HTMLCanvasElement, contextNames: string[], contextAttributes?: Partial<WebGLContextAttributes>)
