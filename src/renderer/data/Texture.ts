@@ -275,15 +275,16 @@ export class Texture
             // 激活纹理编号
             gl.activeTexture(gl[`TEXTURE${activeInfo.textureID}`]);
         }
+        const data = this;
 
-        const texture = this.getTexture(webGLRenderer, this);
+        const texture = this.getTexture(webGLRenderer, data);
 
-        const textureType = gl[this.textureType];
+        const textureType = gl[data.textureType];
 
         // 绑定纹理
         gl.bindTexture(textureType, texture);
 
-        this.setTextureParameters(webGLRenderer, this);
+        this.setTextureParameters(webGLRenderer, data);
 
         if (activeInfo)
         {
@@ -415,7 +416,7 @@ export class Texture
         return cache.texture;
     }
 
-    renderTexImageCube(webGLRenderer: WebGLRenderer, data: Texture)
+    private renderTexImageCube(webGLRenderer: WebGLRenderer, data: Texture)
     {
         const { gl } = webGLRenderer;
 
@@ -432,7 +433,7 @@ export class Texture
         }
     }
 
-    texImageCube(webGLRenderer: WebGLRenderer, data: Texture)
+    private texImageCube(webGLRenderer: WebGLRenderer, data: Texture)
     {
         const { gl } = webGLRenderer;
 
@@ -450,7 +451,7 @@ export class Texture
         }
     }
 
-    renderTexImage2D(webGLRenderer: WebGLRenderer, data: Texture)
+    private renderTexImage2D(webGLRenderer: WebGLRenderer, data: Texture)
     {
         const { gl } = webGLRenderer;
 
@@ -460,7 +461,7 @@ export class Texture
         gl.texImage2D(gl.TEXTURE_2D, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
     }
 
-    texImage2D(webGLRenderer: WebGLRenderer, data: Texture)
+    private texImage2D(webGLRenderer: WebGLRenderer, data: Texture)
     {
         const { gl } = webGLRenderer;
 
