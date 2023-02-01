@@ -1,3 +1,4 @@
+import { watcher } from "../../watcher/watcher";
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from "../gl/WebGLEnums";
 
 export class Sampler
@@ -56,4 +57,18 @@ export class Sampler
      * 是否生成mipmap
      */
     generateMipmap = true;
+
+    constructor()
+    {
+        watcher.watch(this as Sampler, 'format', this._invalidate, this);
+        watcher.watch(this as Sampler, 'type', this._invalidate, this);
+        watcher.watch(this as Sampler, 'generateMipmap', this._invalidate, this);
+        watcher.watch(this as Sampler, 'flipY', this._invalidate, this);
+        watcher.watch(this as Sampler, 'premulAlpha', this._invalidate, this);
+    }
+
+    private _invalidate()
+    {
+
+    }
 }

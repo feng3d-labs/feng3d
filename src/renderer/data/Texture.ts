@@ -37,7 +37,7 @@ export function RegisterTexture<K extends keyof TextureMap>(texture: K)
 /**
  * 纹理
  */
-export class Texture extends EventEmitter
+export class Texture
 {
     /**
      * 事件发射器
@@ -205,7 +205,6 @@ export class Texture extends EventEmitter
 
     constructor()
     {
-        super();
         watcher.watch(this as Texture, 'format', this.invalidate, this);
         watcher.watch(this as Texture, 'type', this.invalidate, this);
         watcher.watch(this as Texture, 'generateMipmap', this.invalidate, this);

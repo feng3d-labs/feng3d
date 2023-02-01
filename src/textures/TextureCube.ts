@@ -190,7 +190,7 @@ export class TextureCube extends TextureInfo
 
     private _onItemLoadCompleted()
     {
-        if (this._loading.length === 0) this.emit('loadCompleted');
+        if (this._loading.length === 0) this.emitter.emit('loadCompleted');
     }
 
     /**
@@ -205,7 +205,7 @@ export class TextureCube extends TextureInfo
 
             return;
         }
-        this.once('loadCompleted', callback);
+        this.emitter.once('loadCompleted', callback);
     }
 
     static default: TextureCube;

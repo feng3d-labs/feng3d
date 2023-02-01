@@ -136,7 +136,7 @@ export class Texture2D extends TextureInfo
 
     private onItemLoadCompleted()
     {
-        if (this._loadings.length === 0) this.emit('loadCompleted');
+        if (this._loadings.length === 0) this.emitter.emit('loadCompleted');
     }
 
     /**
@@ -150,7 +150,7 @@ export class Texture2D extends TextureInfo
         }
         await new Promise((resolve) =>
         {
-            this.once('loadCompleted', resolve);
+            this.emitter.once('loadCompleted', resolve);
         });
     }
 
