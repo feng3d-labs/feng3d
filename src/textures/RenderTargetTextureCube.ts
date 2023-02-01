@@ -1,3 +1,4 @@
+import { mathUtil } from '../polyfill/MathUtil';
 import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { watcher } from '../watcher/watcher';
@@ -18,7 +19,22 @@ export class RenderTargetTextureCube extends TextureCube
 
     magFilter: TextureMagFilter = 'NEAREST';
 
-    isRenderTarget = true;
+    /**
+     * 是否为2的幂贴图
+     */
+    get isPowerOfTwo()
+    {
+        if (this.OFFSCREEN_WIDTH === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_WIDTH))
+        {
+            return false;
+        }
+        if (this.OFFSCREEN_HEIGHT === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     constructor()
     {

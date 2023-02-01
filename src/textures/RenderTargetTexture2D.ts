@@ -1,3 +1,4 @@
+import { mathUtil } from '../polyfill/MathUtil';
 import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { watcher } from '../watcher/watcher';
@@ -18,13 +19,36 @@ export class RenderTargetTexture2D extends Texture2D
 
     magFilter: TextureMagFilter = 'NEAREST';
 
-    isRenderTarget = true;
+    /**
+     * 是否为2的幂贴图
+     */
+    get isPowerOfTwo()
+    {
+        if (this.OFFSCREEN_WIDTH === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_WIDTH))
+        {
+            return false;
+        }
+        if (this.OFFSCREEN_HEIGHT === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     constructor()
     {
         super();
         watcher.watch(this as RenderTargetTexture2D, 'OFFSCREEN_WIDTH', this.invalidate, this);
         watcher.watch(this as RenderTargetTexture2D, 'OFFSCREEN_HEIGHT', this.invalidate, this);
+    }
+
+    /**
+     * 纹理尺寸
+     */
+    getSize()
+    {
+        return { x: this.OFFSCREEN_WIDTH, y: this.OFFSCREEN_HEIGHT };
     }
 
     setTextureData(webGLRenderer: WebGLRenderer)

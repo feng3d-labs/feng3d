@@ -22,10 +22,6 @@ export abstract class TextureInfo extends Texture
      */
     getSize()
     {
-        if (this.isRenderTarget)
-        {
-            return { x: this.OFFSCREEN_WIDTH, y: this.OFFSCREEN_HEIGHT };
-        }
         let pixels = this.activePixels;
         if (!pixels)
         {

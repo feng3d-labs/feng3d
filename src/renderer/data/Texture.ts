@@ -186,15 +186,6 @@ export class Texture
     protected _activePixels: TexImageSource | TexImageSource[];
 
     /**
-     * 是否为渲染目标纹理
-     */
-    isRenderTarget = false;
-
-    OFFSCREEN_WIDTH = 1024;
-
-    OFFSCREEN_HEIGHT = 1024;
-
-    /**
      * 当贴图数据未加载好等情况时代替使用
      */
     noPixels: string | string[];
@@ -211,8 +202,6 @@ export class Texture
         watcher.watch(this as Texture, 'generateMipmap', this.invalidate, this);
         watcher.watch(this as Texture, 'flipY', this.invalidate, this);
         watcher.watch(this as Texture, 'premulAlpha', this.invalidate, this);
-        watcher.watch(this as Texture, 'OFFSCREEN_WIDTH', this.invalidate, this);
-        watcher.watch(this as Texture, 'OFFSCREEN_HEIGHT', this.invalidate, this);
     }
 
     /**
@@ -228,19 +217,6 @@ export class Texture
      */
     get isPowerOfTwo()
     {
-        if (this.isRenderTarget)
-        {
-            if (this.OFFSCREEN_WIDTH === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_WIDTH))
-            {
-                return false;
-            }
-            if (this.OFFSCREEN_HEIGHT === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
-            {
-                return false;
-            }
-
-            return true;
-        }
         let pixels = this.activePixels;
         if (!pixels) return false;
         if (!Array.isArray(pixels))
