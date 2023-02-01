@@ -369,49 +369,40 @@ export class Texture
 
             //
             const textureType = gl[data.textureType];
-            const format = gl[data.format];
-            const type = gl[data.type];
 
             // 设置图片y轴方向
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, data.flipY ? 1 : 0);
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, data.premulAlpha ? 1 : 0);
             // 绑定纹理
             gl.bindTexture(textureType, texture);
+
             // 设置纹理图片
             switch (textureType)
             {
                 case gl.TEXTURE_CUBE_MAP:
-                    const pixels: TexImageSource[] = data.activePixels as any;
-                    const faces = [
-                        gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                        gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                    ];
-                    for (let i = 0; i < faces.length; i++)
-                    {
-                        if (data.isRenderTarget)
-                        {
-                            gl.texImage2D(faces[i], 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
-                        }
-                        else
-                        {
-                            gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
-                        }
-                    }
-                    break;
-                case gl.TEXTURE_2D:
-                    const _pixel: TexImageSource = data.activePixels as any;
                     if (data.isRenderTarget)
                     {
-                        gl.texImage2D(textureType, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
+                        this.renderTexImageCube(webGLRenderer, data);
                     }
                     else
                     {
-                        gl.texImage2D(textureType, 0, format, format, type, _pixel);
+                        this.texImageCube(webGLRenderer, data);
+                    }
+                    break;
+                case gl.TEXTURE_2D:
+                    if (data.isRenderTarget)
+                    {
+                        this.renderTexImage2D(webGLRenderer, data);
+                    }
+                    else
+                    {
+                        this.texImage2D(webGLRenderer, data);
                     }
                     break;
                 default:
                     throw '';
             }
+
             if (data.generateMipmap)
             {
                 gl.generateMipmap(textureType);
@@ -422,6 +413,62 @@ export class Texture
         }
 
         return cache.texture;
+    }
+
+    renderTexImageCube(webGLRenderer: WebGLRenderer, data: Texture)
+    {
+        const { gl } = webGLRenderer;
+
+        const format = gl[data.format];
+        const type = gl[data.type];
+
+        const faces = [
+            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+        ];
+        for (let i = 0; i < faces.length; i++)
+        {
+            gl.texImage2D(faces[i], 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
+        }
+    }
+
+    texImageCube(webGLRenderer: WebGLRenderer, data: Texture)
+    {
+        const { gl } = webGLRenderer;
+
+        const format = gl[data.format];
+        const type = gl[data.type];
+
+        const pixels: TexImageSource[] = data.activePixels as any;
+        const faces = [
+            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+        ];
+        for (let i = 0; i < faces.length; i++)
+        {
+            gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
+        }
+    }
+
+    renderTexImage2D(webGLRenderer: WebGLRenderer, data: Texture)
+    {
+        const { gl } = webGLRenderer;
+
+        const format = gl[data.format];
+        const type = gl[data.type];
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
+    }
+
+    texImage2D(webGLRenderer: WebGLRenderer, data: Texture)
+    {
+        const { gl } = webGLRenderer;
+
+        const format = gl[data.format];
+        const type = gl[data.type];
+        const _pixel: TexImageSource = data.activePixels as any;
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, format, format, type, _pixel);
     }
 
     /**
