@@ -1,8 +1,8 @@
+import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
+import { watcher } from '../watcher/watcher';
 import { FrameBuffer } from './data/FrameBuffer';
 import { RenderBuffer } from './RenderBuffer';
 import { WebGLRenderer } from './WebGLRenderer';
-import { watcher } from '../watcher/watcher';
-import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
 
 /**
  * 帧缓冲对象
@@ -54,7 +54,7 @@ export class FrameBufferObject
         if (!obj)
         {
             const framebuffer = framebuffers.active(frameBufferObject.frameBuffer);
-            const texture = webGLRenderer.textures.active(webGLRenderer, frameBufferObject.texture);
+            const texture = frameBufferObject.texture.active(webGLRenderer);
             const depthBuffer = renderbuffers.active(frameBufferObject.depthBuffer);
 
             // 绑定帧缓冲区对象
