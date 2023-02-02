@@ -169,14 +169,15 @@ export class WebGLRenderer3D extends Component3D
         //
         this.emitter.emit('beforeRender', data, true, true);
 
-        const gl = webGLRenderer.gl;
+        const { webGLContext } = webGLRenderer;
+
         // 默认渲染
-        gl.colorMask(true, true, true, true);
-        gl.clearColor(scene.background.r, scene.background.g, scene.background.b, scene.background.a);
-        gl.clearStencil(0);
-        gl.clearDepth(1);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST);
+        webGLContext.colorMask(true, true, true, true);
+        webGLContext.clearColor(scene.background.r, scene.background.g, scene.background.b, scene.background.a);
+        webGLContext.clearStencil(0);
+        webGLContext.clearDepth(1);
+        webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT', 'STENCIL_BUFFER_BIT']);
+        webGLContext.enable('DEPTH_TEST');
 
         // 绘制阴影图
         shadowRenderer.draw(webGLRenderer, scene, camera);

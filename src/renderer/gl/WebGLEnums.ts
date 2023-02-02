@@ -12,6 +12,41 @@
 export type AttributeUsage = 'STATIC_DRAW' | 'DYNAMIC_DRAW' | 'STREAM_DRAW';
 
 /**
+ * A GLbitfield bitwise OR mask that indicates the buffers to be cleared. Possible values are:
+ *
+ * gl.COLOR_BUFFER_BIT
+ * gl.DEPTH_BUFFER_BIT
+ * gl.STENCIL_BUFFER_BIT
+ *
+ */
+export type ClearMask = 'COLOR_BUFFER_BIT' | 'DEPTH_BUFFER_BIT' | 'STENCIL_BUFFER_BIT';
+
+/**
+ * A GLenum specifying which WebGL capability to enable. Possible values:
+ *
+ * gl.BLEND	Activates blending of the computed fragment color values. See WebGLRenderingContext.blendFunc().
+ * gl.CULL_FACE	Activates culling of polygons. See WebGLRenderingContext.cullFace().
+ * gl.DEPTH_TEST	Activates depth comparisons and updates to the depth buffer. See WebGLRenderingContext.depthFunc().
+ * gl.DITHER	Activates dithering of color components before they get written to the color buffer.
+ * gl.POLYGON_OFFSET_FILL	Activates adding an offset to depth values of polygon's fragments. See WebGLRenderingContext.polygonOffset().
+ * gl.SAMPLE_ALPHA_TO_COVERAGE	Activates the computation of a temporary coverage value determined by the alpha value.
+ * gl.SAMPLE_COVERAGE	Activates ANDing the fragment's coverage with the temporary coverage value. See WebGLRenderingContext.sampleCoverage().
+ * gl.SCISSOR_TEST	Activates the scissor test that discards fragments that are outside of the scissor rectangle. See WebGLRenderingContext.scissor().
+ * gl.STENCIL_TEST	Activates stencil testing and updates to the stencil buffer. See WebGLRenderingContext.stencilFunc().
+ *
+ * When using a WebGL 2 context, the following values are available additionally:
+ *
+ * gl.RASTERIZER_DISCARD	Primitives are discarded immediately before the rasterization stage, but after the optional transform feedback stage. gl.clear() commands are ignored.
+ */
+export type EnableCap =
+    'BLEND' | 'CULL_FACE' | 'DEPTH_TEST' | 'DITHER'
+    | 'POLYGON_OFFSET_FILL' | 'SAMPLE_ALPHA_TO_COVERAGE' | 'SAMPLE_COVERAGE'
+    | 'SCISSOR_TEST'
+    | 'STENCIL_TEST'
+    | 'RASTERIZER_DISCARD'
+    ;
+
+/**
  * 纹理数据类型
  * A GLenum specifying the data type of the texel data
  *

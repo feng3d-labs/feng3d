@@ -1,5 +1,5 @@
 import { imageDatas } from '../textures/Texture2D';
-import { AttachmentPoint, FramebufferTarget, Renderbuffertarget, TexImage2DTarget, TextureDataType, TextureFormat, TextureTarget } from './gl/WebGLEnums';
+import { AttachmentPoint, ClearMask, EnableCap, FramebufferTarget, Renderbuffertarget, TexImage2DTarget, TextureDataType, TextureFormat, TextureTarget } from './gl/WebGLEnums';
 import { WebGLRenderer } from './WebGLRenderer';
 
 /**
@@ -21,6 +21,8 @@ export class WebGLContext
      *
      * @param target A GLenum specifying the binding point (target).
      * @param texture A WebGLTexture object to bind.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
      */
     bindTexture(target: TextureTarget, texture: WebGLTexture | null): void
     {
@@ -47,11 +49,129 @@ export class WebGLContext
      *
      * @param target A GLenum specifying the binding point (target).
      * @param renderbuffer A WebGLRenderbuffer object to bind.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindRenderbuffer
      */
     bindRenderbuffer(target: Renderbuffertarget, renderbuffer: WebGLRenderbuffer | null): void
     {
         const { gl } = this._webGLRenderer;
         gl.bindRenderbuffer(gl[target], renderbuffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.checkFramebufferStatus() method of the WebGL API returns the completeness status of the WebGLFramebuffer object.
+     *
+     * @param target A GLenum specifying the binding point (target).
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/checkFramebufferStatus
+     */
+    checkFramebufferStatus(target: FramebufferTarget): GLenum
+    {
+        const { gl } = this._webGLRenderer;
+        const status = gl.checkFramebufferStatus(gl[target]);
+
+        return status;
+    }
+
+    /**
+     * The WebGLRenderingContext.clear() method of the WebGL API clears buffers to preset values.
+     *
+     * The preset values can be set by clearColor(), clearDepth() or clearStencil().
+     *
+     * The scissor box, dithering, and buffer writemasks can affect the clear() method.
+     *
+     * @param mask A GLbitfield bitwise OR mask that indicates the buffers to be cleared. 
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
+     */
+    clear(mask: ClearMask[]): void
+    {
+        const { gl } = this._webGLRenderer;
+        const value = mask.reduce((pv, cv) =>
+        {
+            pv |= gl[cv];
+
+            return pv;
+        }, 0);
+
+        gl.clear(value);
+    }
+
+    /**
+     * The WebGLRenderingContext.clearColor() method of the WebGL API specifies the color values used when clearing color buffers.
+     *
+     * This specifies what color values to use when calling the clear() method. The values are clamped between 0 and 1.
+     *
+     * @param red A GLclampf specifying the red color value used when the color buffers are cleared. Default value: 0.
+     * @param green A GLclampf specifying the green color value used when the color buffers are cleared. Default value: 0.
+     * @param blue A GLclampf specifying the blue color value used when the color buffers are cleared. Default value: 0.
+     * @param alpha A GLclampf specifying the alpha (transparency) value used when the color buffers are cleared. Default value: 0.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor
+     */
+    clearColor(red: GLclampf = 0, green: GLclampf = 0, blue: GLclampf = 0, alpha: GLclampf = 0): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.clearColor(red, green, blue, alpha);
+    }
+
+    /**
+     * The WebGLRenderingContext.clearDepth() method of the WebGL API specifies the clear value for the depth buffer.
+     *
+     * This specifies what depth value to use when calling the clear() method. The value is clamped between 0 and 1.
+     *
+     * @param depth A GLclampf specifying the depth value used when the depth buffer is cleared. Default value: 1.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearDepth
+     */
+    clearDepth(depth: GLclampf): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.clearDepth(depth);
+    }
+
+    /**
+     * The WebGLRenderingContext.clearStencil() method of the WebGL API specifies the clear value for the stencil buffer.
+     *
+     * This specifies what stencil value to use when calling the clear() method.
+     *
+     * @param s A GLint specifying the index used when the stencil buffer is cleared. Default value: 0.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearStencil
+     */
+    clearStencil(s: GLint = 0): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.clearStencil(s);
+    }
+
+    /**
+     * The WebGLRenderingContext.colorMask() method of the WebGL API sets which color components to enable or to disable when drawing or rendering to a WebGLFramebuffer.
+     *
+     * @param red A GLboolean specifying whether or not the red color component can be written into the frame buffer. Default value: true.
+     * @param green A GLboolean specifying whether or not the green color component can be written into the frame buffer. Default value: true.
+     * @param blue A GLboolean specifying whether or not the blue color component can be written into the frame buffer. Default value: true.
+     * @param alpha A GLboolean specifying whether or not the alpha (transparency) component can be written into the frame buffer. Default value: true.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+     */
+    colorMask(red: GLboolean, green: GLboolean, blue: GLboolean, alpha: GLboolean): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.colorMask(red, green, blue, alpha);
+    }
+
+    /**
+     * The WebGLRenderingContext.enable() method of the WebGL API enables specific WebGL capabilities for this context.
+     *
+     * @param cap A GLenum specifying which WebGL capability to enable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
+     */
+    enable(cap: EnableCap): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.enable(gl[cap]);
     }
 
     /**
@@ -78,24 +198,13 @@ export class WebGLContext
      * @param AttachmentPoint A GLenum specifying the attachment point for the render buffer.
      * @param renderbuffertarget A GLenum specifying the binding point (target) for the render buffer.
      * @param renderbuffer A WebGLRenderbuffer object to attach.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferRenderbuffer
      */
     framebufferRenderbuffer(target: FramebufferTarget, attachment: AttachmentPoint, renderbuffertarget: Renderbuffertarget, renderbuffer: WebGLRenderbuffer | null): void
     {
         const { gl } = this._webGLRenderer;
         gl.framebufferRenderbuffer(gl[target], gl[attachment], gl[renderbuffertarget], renderbuffer);
-    }
-
-    /**
-     * The WebGLRenderingContext.checkFramebufferStatus() method of the WebGL API returns the completeness status of the WebGLFramebuffer object.
-     *
-     * @param target A GLenum specifying the binding point (target).
-     */
-    checkFramebufferStatus(target: FramebufferTarget): GLenum
-    {
-        const { gl } = this._webGLRenderer;
-        const status = gl.checkFramebufferStatus(gl[target]);
-
-        return status;
     }
 
     /**

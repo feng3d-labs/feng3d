@@ -62,13 +62,13 @@ export class ShadowRenderer
 
     private drawForSpotLight(webGLRenderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
     {
-        const { gl } = webGLRenderer;
+        const { gl, webGLContext } = webGLRenderer;
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
         //
         gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
+        webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
         //
         const fov = light.angle;
@@ -123,14 +123,14 @@ export class ShadowRenderer
 
     private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera3D): any
     {
-        const gl = webGLRenderer.gl;
+        const { gl, webGLContext } = webGLRenderer;
 
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
         //
         gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
+        webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
         const vpWidth = light.shadowMapSize.x;
         const vpHeight = light.shadowMapSize.y;
@@ -267,12 +267,12 @@ export class ShadowRenderer
         //
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
-        const gl = webGLRenderer.gl;
+        const { gl, webGLContext } = webGLRenderer;
 
         //
         gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
+        webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
         const renderAtomic = this.renderAtomic;
         //
