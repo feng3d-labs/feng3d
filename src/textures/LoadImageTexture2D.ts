@@ -1,9 +1,9 @@
-import { loader } from "../filesystem/base/Loader";
-import { RegisterTexture } from "../renderer/data/Texture";
-import { watcher } from "../watcher/watcher";
-import { imageDatas, Texture2D } from "./Texture2D";
+import { loader } from '../filesystem/base/Loader';
+import { RegisterTexture } from '../renderer/data/Texture';
+import { watcher } from '../watcher/watcher';
+import { imageDatas, Texture2D } from './Texture2D';
 
-declare module "./Texture2D"
+declare module './Texture2D'
 {
     interface Texture2DMap { LoadImageTexture2D: LoadImageTexture2D }
 }
@@ -48,7 +48,8 @@ export class LoadImageTexture2D extends Texture2D
         if (!loadUrl)
         {
             this.source = this.defaultSource;
-            return;
+
+return;
         }
 
         this.source = this.loadingSource;

@@ -1,11 +1,10 @@
-import { loader } from "../filesystem/base/Loader";
-import { RegisterTexture } from "../renderer/data/Texture";
-import { watcher } from "../watcher/watcher";
-import { imageDatas } from "./Texture2D";
-import { TextureCube, TextureCubeSources } from "./TextureCube";
+import { loader } from '../filesystem/base/Loader';
+import { RegisterTexture } from '../renderer/data/Texture';
+import { watcher } from '../watcher/watcher';
+import { imageDatas } from './Texture2D';
+import { TextureCube, TextureCubeSources } from './TextureCube';
 
-
-declare module "./TextureCube"
+declare module './TextureCube'
 {
     interface TextureCubeMap
     {
@@ -21,8 +20,8 @@ export class LoadImageTextureCube extends TextureCube
     /**
      * 默认贴图
      */
-    defaultSources =
-        {
+    defaultSources
+        = {
             TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
             TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
             TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
@@ -66,7 +65,8 @@ export class LoadImageTextureCube extends TextureCube
         if (!loadUrls)
         {
             this.sources = this.defaultSources;
-            return;
+
+return;
         }
 
         this.sources = this.loadingSources;
@@ -80,7 +80,7 @@ export class LoadImageTextureCube extends TextureCube
             pv[face] = images[i];
 
             return pv;
-        }, {} as TextureCubeSources)
+        }, {} as TextureCubeSources);
 
         if (this.urls === loadUrls)
         {

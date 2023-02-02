@@ -1,11 +1,11 @@
-import { imageDatas } from "../textures/Texture2D";
-import { TexImage2DTarget, TextureDataType, TextureFormat } from "./gl/WebGLEnums";
-import { WebGLRenderer } from "./WebGLRenderer";
+import { imageDatas } from '../textures/Texture2D';
+import { TexImage2DTarget, TextureDataType, TextureFormat } from './gl/WebGLEnums';
+import { WebGLRenderer } from './WebGLRenderer';
 
 /**
  * WebGL上下文。
- * 
- * 包装 WebGLRenderingContext 
+ *
+ * 包装 WebGLRenderingContext
  */
 export class WebGLContext
 {
@@ -100,5 +100,4 @@ export class WebGLContext
         const { gl } = this._webGLRenderer;
         gl.texImage2D(gl[target], level, gl[internalformat], width, height, border, gl[format], gl[type], pixels);
     }
-
 }

@@ -24,7 +24,7 @@ declare module '../renderer/data/Texture'
     interface TextureMap extends TextureCubeMap { }
 }
 
-export interface TextureCubeMap 
+export interface TextureCubeMap
 {
     TextureCube: TextureCube
 }
@@ -83,7 +83,7 @@ export class TextureCube extends TextureInfo
             TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
         };
 
-        TextureCube.faces.forEach(face =>
+        TextureCube.faces.forEach((face) =>
         {
             webGLRenderer.webGLContext.texImage2D(face, 0, data.format, data.format, data.type, sources[face]);
         });

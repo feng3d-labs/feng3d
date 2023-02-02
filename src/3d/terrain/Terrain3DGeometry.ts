@@ -120,7 +120,8 @@ export class Terrain3DGeometry extends Geometry
             this.invalidateGeometry();
 
             this.isloading = false;
-            return;
+
+return;
         }
         this.isloading = true;
 
