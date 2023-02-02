@@ -1,6 +1,5 @@
 import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
-import { mathUtil } from '../../polyfill/MathUtil';
 import { Constructor, gPartial } from '../../polyfill/Types';
 import { getInstance } from '../../serialization/getInstance';
 import { Serializable } from '../../serialization/Serializable';
@@ -127,40 +126,14 @@ export class Texture
      */
     @SerializeProperty()
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ['REPEAT', 'CLAMP_TO_EDGE', 'MIRRORED_REPEAT'] } })
-    get wrapS()
-    {
-        if (!this.isPowerOfTwo)
-        {
-            return 'CLAMP_TO_EDGE';
-        }
-
-        return this._wrapS;
-    }
-    set wrapS(v)
-    {
-        this._wrapS = v;
-    }
-    private _wrapS: TextureWrap = 'REPEAT';
+    wrapS: TextureWrap = 'REPEAT';
 
     /**
      * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式。
      */
     @SerializeProperty()
     @oav({ component: 'OAVEnum', componentParam: { enumClass: ['REPEAT', 'CLAMP_TO_EDGE', 'MIRRORED_REPEAT'] } })
-    get wrapT()
-    {
-        if (!this.isPowerOfTwo)
-        {
-            return 'CLAMP_TO_EDGE';
-        }
-
-        return this._wrapT;
-    }
-    set wrapT(v)
-    {
-        this._wrapT = v;
-    }
-    private _wrapT: TextureWrap = 'REPEAT';
+    wrapT: TextureWrap = 'REPEAT';
 
     /**
      * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为1。
@@ -210,31 +183,6 @@ export class Texture
     invalidate()
     {
         this.version++;
-    }
-
-    /**
-     * 是否为2的幂贴图
-     */
-    get isPowerOfTwo()
-    {
-        let pixels = this.activePixels;
-        if (!pixels) return false;
-        if (!Array.isArray(pixels))
-        { pixels = [pixels]; }
-        for (let i = 0; i < pixels.length; i++)
-        {
-            const element = pixels[i];
-            if (element.width === 0 || !mathUtil.isPowerOfTwo(element.width))
-            {
-                return false;
-            }
-            if (element.height === 0 || !mathUtil.isPowerOfTwo(element.height))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     protected updateActivePixels()

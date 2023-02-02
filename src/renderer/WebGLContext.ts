@@ -1,3 +1,4 @@
+import { imageDatas } from "../textures/Texture2D";
 import { TexImage2DTarget, TextureDataType, TextureFormat } from "./gl/WebGLEnums";
 import { WebGLRenderer } from "./WebGLRenderer";
 
@@ -71,6 +72,11 @@ export class WebGLContext
     private _texImage2DTexImageSource(target: TexImage2DTarget, level: number, internalformat: TextureFormat, format: TextureFormat, type: TextureDataType, source: TexImageSource): void
     {
         const { gl } = this._webGLRenderer;
+        if (!source)
+        {
+            source = imageDatas.white;
+        }
+
         gl.texImage2D(gl[target], level, gl[internalformat], gl[format], gl[type], source);
     }
 

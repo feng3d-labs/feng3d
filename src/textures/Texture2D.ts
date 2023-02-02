@@ -2,15 +2,12 @@ import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { EventEmitter } from '../event/EventEmitter';
-import { loader } from '../filesystem/base/Loader';
 import { ColorKeywords } from '../math/Color3';
 import { Color4 } from '../math/Color4';
-import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TextureType } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
 import { ImageUtil } from '../utils/ImageUtil';
 import { TextureInfo } from './TextureInfo';
 
@@ -75,6 +72,11 @@ export class Texture2D extends TextureInfo
      */
     textureType: TextureType = 'TEXTURE_2D';
 
+    /**
+     * One of the following objects can be used as a pixel source for the texture.
+     */
+    source: TexImageSource;
+
     assetType = AssetType.texture;
 
     /**
@@ -82,80 +84,11 @@ export class Texture2D extends TextureInfo
      */
     noPixels = ImageDatas.white;
 
-    /**
-     * 是否已加载
-     */
-    get isLoaded() { return this._loadings.length === 0; }
-    private _loadings = [];
-
-    get image(): HTMLImageElement
-    {
-        return this._pixels as any;
-    }
-
-    /**
-     * 用于表示初始化纹理的数据来源
-     */
-    @SerializeProperty()
-    get source()
-    {
-        return this._source;
-    }
-    set source(v)
-    {
-        this._source = v;
-        if (!v)
-        {
-            this._pixels = null;
-            this.invalidate();
-
-            return;
-        }
-        if (v.url)
-        {
-            this._loadings.push(v.url);
-            loader.loadImage(v.url).then((img) =>
-            {
-                this._pixels = img;
-                this.invalidate();
-                ArrayUtils.deleteItem(this._loadings, v.url);
-                this.onItemLoadCompleted();
-            }, (e) =>
-            {
-                console.error(e);
-                ArrayUtils.deleteItem(this._loadings, v.url);
-                this.onItemLoadCompleted();
-            });
-        }
-    }
-
     constructor(param?: Partial<Texture2D>)
     {
         super();
         Object.assign(this, param);
     }
-
-    private onItemLoadCompleted()
-    {
-        if (this._loadings.length === 0) this.emitter.emit('loadCompleted');
-    }
-
-    /**
-     * 已加载完成或者加载完成时立即调用
-     */
-    async onLoadCompleted()
-    {
-        if (this.isLoaded)
-        {
-            return;
-        }
-        await new Promise((resolve) =>
-        {
-            this.emitter.once('loadCompleted', resolve);
-        });
-    }
-
-    private _source: { url: string };
 
     /**
      * 默认贴图
@@ -177,27 +110,12 @@ export class Texture2D extends TextureInfo
      */
     static defaultParticle: Texture2D;
 
-    /**
-     * 从url初始化纹理
-     *
-     * @param url 路径
-     */
-    static fromUrl(url: string)
-    {
-        const texture = new Texture2D();
-        texture.source = { url };
-
-        return texture;
-    }
-
     setTextureData(webGLRenderer: WebGLRenderer)
     {
         const data = this;
-
-        const _pixel: TexImageSource = data.activePixels as any;
         const level = 0;
 
-        webGLRenderer.webGLContext.texImage2D('TEXTURE_2D', level, data.format, data.format, data.type, _pixel);
+        webGLRenderer.webGLContext.texImage2D('TEXTURE_2D', level, data.format, data.format, data.type, data.source);
     }
 }
 
