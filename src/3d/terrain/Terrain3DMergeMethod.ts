@@ -80,8 +80,7 @@ export class Terrain3DMergeMethod extends EventEmitter
     {
         renderAtomic.uniforms.s_blendTexture = this.blendTexture;
         renderAtomic.uniforms.s_splatMergeTexture = this.splatMergeTexture;
-        const size = this.splatMergeTexture.getSize();
-        renderAtomic.uniforms.u_splatMergeTextureSize = [size.x, size.y];
+        renderAtomic.uniforms.u_splatMergeTextureSize = [this.splatMergeTexture.source.width, this.splatMergeTexture.source.height];
         renderAtomic.uniforms.u_splatRepeats = this.splatRepeats.toArray() as Vec4;
         //
         renderAtomic.uniforms.u_imageSize = [2048.0, 1024.0];

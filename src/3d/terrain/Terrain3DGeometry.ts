@@ -1,10 +1,10 @@
-import { ImageUtil } from '../../utils/ImageUtil';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
+import { Texture2D, Texture2DLike } from '../../textures/Texture2D';
+import { ImageUtil } from '../../utils/ImageUtil';
 import { watcher } from '../../watcher/watcher';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';
@@ -27,7 +27,7 @@ export class Terrain3DGeometry extends Geometry
      */
     @SerializeProperty()
     @oav()
-    heightMap = Texture2D.default;
+    heightMap: Texture2DLike = Texture2D.default;
 
     /**
      * 地形宽度

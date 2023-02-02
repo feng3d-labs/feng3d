@@ -1,4 +1,3 @@
-import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { EventEmitter } from '../event/EventEmitter';
@@ -7,9 +6,8 @@ import { RegisterTexture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureType } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
-import { imageDatas, ImageDatas, Texture2D } from './Texture2D';
+import { imageDatas } from './Texture2D';
 import { TextureInfo } from './TextureInfo';
 
 export interface TextureCubeEventMap
@@ -33,6 +31,18 @@ export interface TextureCubeMap
 }
 
 /**
+ * 立方体纹理贴图
+ */
+export type TextureCubeSources = {
+    TEXTURE_CUBE_MAP_POSITIVE_X: TexImageSource,
+    TEXTURE_CUBE_MAP_POSITIVE_Y: TexImageSource,
+    TEXTURE_CUBE_MAP_POSITIVE_Z: TexImageSource,
+    TEXTURE_CUBE_MAP_NEGATIVE_X: TexImageSource,
+    TEXTURE_CUBE_MAP_NEGATIVE_Y: TexImageSource,
+    TEXTURE_CUBE_MAP_NEGATIVE_Z: TexImageSource,
+};
+
+/**
  * 立方体纹理
  */
 @RegisterTexture('TextureCube')
@@ -42,20 +52,16 @@ export class TextureCube extends TextureInfo
 
     textureType: TextureType = 'TEXTURE_CUBE_MAP';
 
-    assetType = AssetType.texturecube;
-
-    static ImageNames: TextureCubeImageName[] = ['positive_x_url', 'positive_y_url', 'positive_z_url', 'negative_x_url', 'negative_y_url', 'negative_z_url'];
+    /**
+     * 立方体六个面。
+     */
+    static faces: TexImage2DTarget[] = [
+        'TEXTURE_CUBE_MAP_POSITIVE_X', 'TEXTURE_CUBE_MAP_POSITIVE_Y', 'TEXTURE_CUBE_MAP_POSITIVE_Z',
+        'TEXTURE_CUBE_MAP_NEGATIVE_X', 'TEXTURE_CUBE_MAP_NEGATIVE_Y', 'TEXTURE_CUBE_MAP_NEGATIVE_Z'
+    ];
 
     @oav({ component: 'OAVCubeMap', priority: 1 })
     OAVCubeMap = '';
-
-    /**
-     * 原始数据
-     */
-    @SerializeProperty()
-    rawData: { type: 'texture', textures: Texture2D[] } | { type: 'path', paths: string[] };
-
-    noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 
     constructor()
     {
@@ -65,22 +71,25 @@ export class TextureCube extends TextureInfo
 
     static default: TextureCube;
 
-    sources: TexImageSource[];
+    sources: TextureCubeSources;
 
     setTextureData(webGLRenderer: WebGLRenderer)
     {
         const data = this;
 
-        const sources = data.sources || [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
+        const sources = data.sources || {
+            TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
+            TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
+            TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
+            TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
+            TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
+            TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+        };
 
-        const faces: TexImage2DTarget[] = [
-            'TEXTURE_CUBE_MAP_POSITIVE_X', 'TEXTURE_CUBE_MAP_POSITIVE_Y', 'TEXTURE_CUBE_MAP_POSITIVE_Z',
-            'TEXTURE_CUBE_MAP_NEGATIVE_X', 'TEXTURE_CUBE_MAP_NEGATIVE_Y', 'TEXTURE_CUBE_MAP_NEGATIVE_Z'
-        ];
-        for (let i = 0; i < faces.length; i++)
+        TextureCube.faces.forEach(face =>
         {
-            webGLRenderer.webGLContext.texImage2D(faces[i], 0, data.format, data.format, data.type, sources[i]);
-        }
+            webGLRenderer.webGLContext.texImage2D(face, 0, data.format, data.format, data.type, sources[face]);
+        });
     }
 }
 

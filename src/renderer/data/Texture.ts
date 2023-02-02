@@ -147,27 +147,6 @@ export class Texture
      */
     version = 0;
 
-    /**
-     * 当前使用的贴图数据
-     */
-    get activePixels()
-    {
-        this.updateActivePixels();
-
-        return this._activePixels;
-    }
-    protected _activePixels: TexImageSource | TexImageSource[];
-
-    /**
-     * 当贴图数据未加载好等情况时代替使用
-     */
-    noPixels: string | string[];
-
-    /**
-     * 需要使用的贴图数据
-     */
-    protected _pixels: TexImageSource | TexImageSource[];
-
     constructor()
     {
         watcher.watch(this as Texture, 'format', this.invalidate, this);
@@ -183,10 +162,6 @@ export class Texture
     invalidate()
     {
         this.version++;
-    }
-
-    protected updateActivePixels()
-    {
     }
 
     setTextureData(_webGLRenderer: WebGLRenderer)

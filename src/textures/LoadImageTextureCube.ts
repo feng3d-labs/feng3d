@@ -2,7 +2,7 @@ import { loader } from "../filesystem/base/Loader";
 import { RegisterTexture } from "../renderer/data/Texture";
 import { watcher } from "../watcher/watcher";
 import { imageDatas } from "./Texture2D";
-import { TextureCube } from "./TextureCube";
+import { TextureCube, TextureCubeSources } from "./TextureCube";
 
 
 declare module "./TextureCube"
@@ -21,17 +21,32 @@ export class LoadImageTextureCube extends TextureCube
     /**
      * 默认贴图
      */
-    defaultSources = [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
+    defaultSources =
+        {
+            TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
+            TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
+            TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
+            TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
+            TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
+            TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+        };
 
     /**
      * 加载中贴图
      */
-    loadingSources = [imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white, imageDatas.white];
+    loadingSources = {
+        TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
+        TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
+        TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
+        TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
+        TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
+        TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+    };
 
     /**
      * 图片路径。
      */
-    urls: [string, string, string, string, string, string];
+    urls: TextureCubeSources;
 
     /**
      * 是否正在加载。
@@ -57,12 +72,19 @@ export class LoadImageTextureCube extends TextureCube
         this.sources = this.loadingSources;
         this.isloading = true;
 
-        const imagePs = this.urls.map((v) => loader.loadImage(v));
+        const imagePs = TextureCube.faces.map((face) => loader.loadImage(loadUrls[face]));
         const images = await Promise.all(imagePs);
+
+        const sources = TextureCube.faces.reduce((pv, face, i) =>
+        {
+            pv[face] = images[i];
+
+            return pv;
+        }, {} as TextureCubeSources)
 
         if (this.urls === loadUrls)
         {
-            this.sources = images;
+            this.sources = sources;
         }
     }
 }
