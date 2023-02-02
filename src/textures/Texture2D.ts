@@ -4,7 +4,7 @@ import { HideFlags } from '../core/HideFlags';
 import { ColorKeywords } from '../math/Color3';
 import { Color4 } from '../math/Color4';
 import { RegisterTexture } from '../renderer/data/Texture';
-import { TextureType } from '../renderer/gl/WebGLEnums';
+import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
@@ -73,7 +73,7 @@ export class Texture2D extends TextureInfo
     /**
      * 纹理类型
      */
-    textureType: TextureType = 'TEXTURE_2D';
+    textureTarget: TextureTarget = 'TEXTURE_2D';
 
     /**
      * One of the following objects can be used as a pixel source for the texture.

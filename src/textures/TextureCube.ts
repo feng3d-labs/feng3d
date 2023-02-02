@@ -2,7 +2,7 @@ import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { oav } from '../objectview/ObjectView';
 import { RegisterTexture } from '../renderer/data/Texture';
-import { TexImage2DTarget, TextureType } from '../renderer/gl/WebGLEnums';
+import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { watcher } from '../watcher/watcher';
@@ -47,7 +47,7 @@ export type TextureCubeSources = {
 @RegisterTexture('TextureCube')
 export class TextureCube extends TextureInfo
 {
-    textureType: TextureType = 'TEXTURE_CUBE_MAP';
+    textureTarget: TextureTarget = 'TEXTURE_CUBE_MAP';
 
     /**
      * 立方体六个面。

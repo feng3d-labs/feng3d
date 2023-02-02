@@ -4,7 +4,7 @@ import { getInstance } from '../../serialization/getInstance';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
-import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from '../gl/WebGLEnums';
+import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureTarget, TextureWrap } from '../gl/WebGLEnums';
 import { WebGLRenderer } from '../WebGLRenderer';
 
 declare module '../../serialization/Serializable'
@@ -56,7 +56,7 @@ export class Texture
     /**
      * 纹理类型
      */
-    textureType: TextureType;
+    textureTarget: TextureTarget;
 
     /**
      * 格式

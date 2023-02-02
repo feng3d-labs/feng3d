@@ -60,10 +60,10 @@ export class ShadowRenderer
         }
     }
 
-    private drawForSpotLight(renderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
+    private drawForSpotLight(webGLRenderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
     {
-        const { gl } = renderer;
-        FrameBufferObject.active(renderer, light.frameBufferObject);
+        const { gl } = webGLRenderer;
+        FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
         //
         gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -115,10 +115,10 @@ export class ShadowRenderer
 
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawObject3D(renderer, renderable, scene, camera);
+            this.drawObject3D(webGLRenderer, renderable, scene, camera);
         });
 
-        light.frameBufferObject.deactive(gl);
+        light.frameBufferObject.deactive(webGLRenderer);
     }
 
     private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera3D): any
@@ -214,10 +214,10 @@ export class ShadowRenderer
                 this.drawObject3D(webGLRenderer, renderable, scene, camera);
             });
         }
-        light.frameBufferObject.deactive(gl);
+        light.frameBufferObject.deactive(webGLRenderer);
     }
 
-    private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight3D, scene: Scene3D, camera: Camera3D): any
+    private drawForDirectionalLight(webGLRenderer: WebGLRenderer, light: DirectionalLight3D, scene: Scene3D, camera: Camera3D): any
     {
         // 获取影响阴影图的渲染对象
         const models = scene.getComponentsInChildren('Mesh3D').filter((model) => (
@@ -265,9 +265,9 @@ export class ShadowRenderer
         light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         //
-        FrameBufferObject.active(renderer, light.frameBufferObject);
+        FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
-        const gl = renderer.gl;
+        const gl = webGLRenderer.gl;
 
         //
         gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -292,10 +292,10 @@ export class ShadowRenderer
         //
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawObject3D(renderer, renderable, scene, camera);
+            this.drawObject3D(webGLRenderer, renderable, scene, camera);
         });
 
-        light.frameBufferObject.deactive(gl);
+        light.frameBufferObject.deactive(webGLRenderer);
     }
 
     /**

@@ -31,7 +31,7 @@ export class WebGLTextures
     active(data: Texture, activeInfo?: UniformInfo)
     {
         const { webGLRenderer } = this;
-        const { gl } = webGLRenderer;
+        const { gl, webGLContext } = webGLRenderer;
 
         if (activeInfo)
         {
@@ -41,10 +41,8 @@ export class WebGLTextures
 
         const texture = this.getTexture(webGLRenderer, data);
 
-        const textureType = gl[data.textureType];
-
         // 绑定纹理
-        gl.bindTexture(textureType, texture);
+        webGLContext.bindTexture(data.textureTarget, texture);
 
         this.setTextureParameters(webGLRenderer, data);
 
@@ -62,7 +60,7 @@ export class WebGLTextures
         const { gl, extensions, capabilities } = webGLRenderer;
         const { _texturesCache: textures } = this;
 
-        const { textureType, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
+        const { textureTarget: textureType, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
 
         const cache = textures.get(texture);
 
@@ -114,7 +112,7 @@ export class WebGLTextures
      */
     private getTexture(webGLRenderer: WebGLRenderer, data: Texture)
     {
-        const { gl } = webGLRenderer;
+        const { gl, webGLContext } = webGLRenderer;
         const { _texturesCache: textures } = this;
 
         let cache = textures.get(data);
@@ -133,13 +131,13 @@ export class WebGLTextures
             }
 
             //
-            const textureType = gl[data.textureType];
+            const textureType = gl[data.textureTarget];
 
             // 设置图片y轴方向
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, data.flipY ? 1 : 0);
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, data.premulAlpha ? 1 : 0);
             // 绑定纹理
-            gl.bindTexture(textureType, texture);
+            webGLContext.bindTexture(data.textureTarget, texture);
 
             // 设置纹理图片
             data.setTextureData(webGLRenderer);

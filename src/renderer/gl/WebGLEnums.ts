@@ -117,7 +117,6 @@ export type TextureMagFilter = 'LINEAR' | 'NEAREST';
 export type TextureMinFilter = 'LINEAR' | 'NEAREST' | 'NEAREST_MIPMAP_NEAREST' | 'LINEAR_MIPMAP_NEAREST' | 'NEAREST_MIPMAP_LINEAR' | 'LINEAR_MIPMAP_LINEAR';
 
 /**
- * 纹理类型
  * A GLenum specifying the binding point (target). Possible values:
  *
  * * `TEXTURE_2D` gl.TEXTURE_2D: A two-dimensional texture.
@@ -127,10 +126,10 @@ export type TextureMinFilter = 'LINEAR' | 'NEAREST' | 'NEAREST_MIPMAP_NEAREST' |
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
  */
-export type TextureType = 'TEXTURE_2D' | 'TEXTURE_CUBE_MAP' | 'TEXTURE_3D' | 'TEXTURE_2D_ARRAY';
+export type TextureTarget = 'TEXTURE_2D' | 'TEXTURE_CUBE_MAP' | 'TEXTURE_3D' | 'TEXTURE_2D_ARRAY';
 
 /**
- *
+ * A GLenum specifying the texture target.
  *
  * gl.TEXTURE_2D: A two-dimensional texture.
  * gl.TEXTURE_CUBE_MAP_POSITIVE_X: Positive X face for a cube-mapped texture.
@@ -161,3 +160,41 @@ export type TexImage2DTarget = 'TEXTURE_2D'
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
  */
 export type TextureWrap = 'REPEAT' | 'CLAMP_TO_EDGE' | 'MIRRORED_REPEAT';
+
+/**
+ * A GLenum specifying the binding point (target). Possible values:
+ *
+ * gl.FRAMEBUFFER   Collection buffer data storage of color, alpha, depth and stencil buffers used as both a destination for drawing and as a source for reading (see below).
+ *
+ * When using a WebGL 2 context, the following values are available additionally:
+ *
+ * gl.DRAW_FRAMEBUFFER  Used as a destination for drawing operations such as gl.draw*, gl.clear* and gl.blitFramebuffer.
+ * gl.READ_FRAMEBUFFER  Used as a source for reading operations such as gl.readPixels and gl.blitFramebuffer.
+ */
+export type FramebufferTarget = 'FRAMEBUFFER' | 'DRAW_FRAMEBUFFER' | 'READ_FRAMEBUFFER';
+
+/**
+ * A GLenum specifying the binding point (target). Possible values:
+ *
+ * gl.RENDERBUFFER  Buffer data storage for single images in a renderable internal format.
+ */
+export type Renderbuffertarget = 'RENDERBUFFER';
+
+/**
+ * A GLenum specifying the attachment point for the texture. Possible values:
+ *
+ * gl.COLOR_ATTACHMENT0: Attaches the texture to the framebuffer's color buffer.
+ * gl.DEPTH_ATTACHMENT: Attaches the texture to the framebuffer's depth buffer.
+ * gl.STENCIL_ATTACHMENT: Attaches the texture to the framebuffer's stencil buffer.
+ *
+ * When using a WebGL 2 context, the following values are available additionally:
+ *
+ * gl.DEPTH_STENCIL_ATTACHMENT: depth and stencil buffer.
+ * gl.COLOR_ATTACHMENT1 gl.COLOR_ATTACHMENT2 gl.COLOR_ATTACHMENT3 gl.COLOR_ATTACHMENT4 gl.COLOR_ATTACHMENT5 gl.COLOR_ATTACHMENT6 gl.COLOR_ATTACHMENT7 gl.COLOR_ATTACHMENT8 gl.COLOR_ATTACHMENT9 gl.COLOR_ATTACHMENT10 gl.COLOR_ATTACHMENT11 gl.COLOR_ATTACHMENT12 gl.COLOR_ATTACHMENT13 gl.COLOR_ATTACHMENT14 gl.COLOR_ATTACHMENT15
+ */
+export type AttachmentPoint = 'COLOR_ATTACHMENT0' | 'DEPTH_ATTACHMENT' | 'STENCIL_ATTACHMENT'
+    | 'DEPTH_STENCIL_ATTACHMENT'
+    | 'COLOR_ATTACHMENT1' | 'COLOR_ATTACHMENT2' | 'COLOR_ATTACHMENT3' | 'COLOR_ATTACHMENT4' | 'COLOR_ATTACHMENT5'
+    | 'COLOR_ATTACHMENT6' | 'COLOR_ATTACHMENT7' | 'COLOR_ATTACHMENT8' | 'COLOR_ATTACHMENT9' | 'COLOR_ATTACHMENT10'
+    | 'COLOR_ATTACHMENT11' | 'COLOR_ATTACHMENT12' | 'COLOR_ATTACHMENT13' | 'COLOR_ATTACHMENT14' | 'COLOR_ATTACHMENT15'
+    ;
