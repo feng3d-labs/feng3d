@@ -1,12 +1,12 @@
-import { Texture2D } from '../../../textures/Texture2D';
-import { TextureCube } from '../../../textures/TextureCube';
+import { Material } from '../../../core/Material';
 import { Color3 } from '../../../math/Color3';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '../../../objectview/ObjectView';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
-import { Material } from '../../../core/Material';
+import { Texture2D, Texture2DLike } from '../../../textures/Texture2D';
+import { TextureCube } from '../../../textures/TextureCube';
 import standardFragment from './standard_fragment_glsl';
 import standardVertex from './standard_vertex_glsl';
 
@@ -59,7 +59,7 @@ export class StandardUniforms
      */
     @SerializeProperty()
     @oav({ block: 'diffuse' })
-    s_diffuse = Texture2D.default;
+    s_diffuse: Texture2DLike = Texture2D.default;
 
     /**
      * 基本颜色
@@ -80,14 +80,14 @@ export class StandardUniforms
      */
     @SerializeProperty()
     @oav({ block: 'normalMethod' })
-    s_normal = Texture2D.defaultNormal;
+    s_normal: Texture2DLike = Texture2D.defaultNormal;
 
     /**
      * 镜面反射光泽图
      */
     @SerializeProperty()
     @oav({ block: 'specular' })
-    s_specular = Texture2D.default;
+    s_specular: Texture2DLike = Texture2D.default;
 
     /**
      * 镜面反射颜色

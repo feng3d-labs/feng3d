@@ -9,6 +9,7 @@ import { TextureType } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
+import { watcher } from '../watcher/watcher';
 import { TextureInfo } from './TextureInfo';
 
 export enum ImageDatas
@@ -54,8 +55,15 @@ export interface Texture2DEventMap
 
 declare module '../renderer/data/Texture'
 {
-    interface TextureMap { Texture2D: Texture2D }
+    interface TextureMap extends Texture2DMap { }
 }
+
+export interface Texture2DMap
+{
+    Texture2D: Texture2D;
+}
+
+export type Texture2DLike = Texture2DMap[keyof Texture2DMap];
 
 /**
  * 2D纹理
@@ -63,7 +71,7 @@ declare module '../renderer/data/Texture'
 @RegisterTexture('Texture2D')
 export class Texture2D extends TextureInfo
 {
-    declare __class__: 'Texture2D';
+    // declare __class__: 'Texture2D';
 
     declare emitter: EventEmitter<Texture2DEventMap>;
 
@@ -88,6 +96,8 @@ export class Texture2D extends TextureInfo
     {
         super();
         Object.assign(this, param);
+
+        watcher.watch(this as Texture2D, 'source', this.invalidate, this);
     }
 
     /**

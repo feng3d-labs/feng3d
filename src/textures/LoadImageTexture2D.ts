@@ -1,7 +1,14 @@
 import { loader } from "../filesystem/base/Loader";
+import { RegisterTexture } from "../renderer/data/Texture";
 import { watcher } from "../watcher/watcher";
 import { imageDatas, Texture2D } from "./Texture2D";
 
+declare module "./Texture2D"
+{
+    interface Texture2DMap { LoadImageTexture2D: LoadImageTexture2D }
+}
+
+@RegisterTexture('LoadImageTexture2D')
 export class LoadImageTexture2D extends Texture2D
 {
     declare __class__: 'LoadImageTexture2D';

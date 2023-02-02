@@ -8,6 +8,7 @@ import { TexImage2DTarget, TextureType } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
+import { watcher } from '../watcher/watcher';
 import { imageDatas, ImageDatas, Texture2D } from './Texture2D';
 import { TextureInfo } from './TextureInfo';
 
@@ -23,7 +24,12 @@ export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positi
 
 declare module '../renderer/data/Texture'
 {
-    interface TextureMap { TextureCube: TextureCube }
+    interface TextureMap extends TextureCubeMap { }
+}
+
+export interface TextureCubeMap 
+{
+    TextureCube: TextureCube
 }
 
 /**
@@ -32,8 +38,6 @@ declare module '../renderer/data/Texture'
 @RegisterTexture('TextureCube')
 export class TextureCube extends TextureInfo
 {
-    declare __class__: 'TextureCube';
-
     declare emitter: EventEmitter<TextureCubeEventMap>;
 
     textureType: TextureType = 'TEXTURE_CUBE_MAP';
@@ -56,6 +60,7 @@ export class TextureCube extends TextureInfo
     constructor()
     {
         super();
+        watcher.watch(this as TextureCube, 'sources', this.invalidate, this);
     }
 
     static default: TextureCube;
