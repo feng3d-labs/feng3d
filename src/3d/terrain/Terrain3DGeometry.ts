@@ -1,9 +1,10 @@
+import { loader } from '../../filesystem/base/Loader';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D, Texture2DLike } from '../../textures/Texture2D';
+import { Texture2D } from '../../textures/Texture2D';
 import { ImageUtil } from '../../utils/ImageUtil';
 import { watcher } from '../../watcher/watcher';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
@@ -27,7 +28,7 @@ export class Terrain3DGeometry extends Geometry
      */
     @SerializeProperty()
     @oav()
-    heightMap: Texture2DLike = Texture2D.default;
+    heightMapUrl: string;
 
     /**
      * 地形宽度
@@ -78,7 +79,17 @@ export class Terrain3DGeometry extends Geometry
     @oav()
     minElevation = 0;
 
+    /**
+     * 高度图路径
+     */
+    private _heightMap = new Texture2D();
+
     private _heightImageData: ImageData;
+
+    /**
+     * 是否正在加载。
+     */
+    isloading = false;
 
     /**
      * 创建高度地形 拥有segmentsW*segmentsH个顶点
@@ -89,7 +100,7 @@ export class Terrain3DGeometry extends Geometry
         this.name = 'terrain';
         $set(this, raw);
         //
-        watcher.watch(this as Terrain3DGeometry, 'heightMap', this._onHeightMapChanged, this);
+        watcher.watch(this as Terrain3DGeometry, 'heightMapUrl', this._onHeightMapUrlUrlChanged, this);
         watcher.watch(this as Terrain3DGeometry, 'width', this.invalidateGeometry, this);
         watcher.watch(this as Terrain3DGeometry, 'height', this.invalidateGeometry, this);
         watcher.watch(this as Terrain3DGeometry, 'depth', this.invalidateGeometry, this);
@@ -99,25 +110,27 @@ export class Terrain3DGeometry extends Geometry
         watcher.watch(this as Terrain3DGeometry, 'minElevation', this.invalidateGeometry, this);
     }
 
-    private _onHeightMapChanged()
+    private async _onHeightMapUrlUrlChanged()
     {
-        if (!this.heightMap['_pixels'])
+        const heightMapUrl = this.heightMapUrl;
+        if (!heightMapUrl)
         {
             this._heightImageData = getDefaultHeightMap();
+            this._heightMap.source = this._heightImageData;
             this.invalidateGeometry();
 
-            this.heightMap.emitter.once('loadCompleted', () =>
-            {
-                const img = this.heightMap['_pixels'] as HTMLImageElement;
-                this._heightImageData = ImageUtil.fromImage(img).imageData;
-                this.invalidateGeometry();
-            });
-
+            this.isloading = false;
             return;
         }
-        const img = this.heightMap['_pixels'] as HTMLImageElement;
-        this._heightImageData = ImageUtil.fromImage(img).imageData;
-        this.invalidateGeometry();
+        this.isloading = true;
+
+        const image = await loader.loadImage(heightMapUrl);
+        if (heightMapUrl === this.heightMapUrl)
+        {
+            this._heightImageData = ImageUtil.fromImage(image).imageData;
+            this._heightMap.source = image;
+            this.invalidateGeometry();
+        }
     }
 
     /**

@@ -1,6 +1,5 @@
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureType } from '../renderer/gl/WebGLEnums';
@@ -48,8 +47,6 @@ export type TextureCubeSources = {
 @RegisterTexture('TextureCube')
 export class TextureCube extends TextureInfo
 {
-    declare emitter: EventEmitter<TextureCubeEventMap>;
-
     textureType: TextureType = 'TEXTURE_CUBE_MAP';
 
     /**

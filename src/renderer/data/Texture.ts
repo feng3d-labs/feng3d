@@ -1,4 +1,3 @@
-import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial } from '../../polyfill/Types';
 import { getInstance } from '../../serialization/getInstance';
@@ -39,11 +38,6 @@ export function RegisterTexture<K extends keyof TextureMap>(texture: K)
  */
 export class Texture
 {
-    /**
-     * 事件发射器
-     */
-    readonly emitter = new EventEmitter(this);
-
     /**
      * 构造纹理。
      *

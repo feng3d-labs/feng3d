@@ -1,7 +1,6 @@
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { EventEmitter } from '../event/EventEmitter';
 import { ColorKeywords } from '../math/Color3';
 import { Color4 } from '../math/Color4';
 import { RegisterTexture } from '../renderer/data/Texture';
@@ -71,10 +70,6 @@ export type Texture2DLike = Texture2DMap[keyof Texture2DMap];
 @RegisterTexture('Texture2D')
 export class Texture2D extends TextureInfo
 {
-    // declare __class__: 'Texture2D';
-
-    declare emitter: EventEmitter<Texture2DEventMap>;
-
     /**
      * 纹理类型
      */
