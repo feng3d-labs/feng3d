@@ -197,7 +197,7 @@ export class Texture2D extends TextureInfo
         const _pixel: TexImageSource = data.activePixels as any;
         const level = 0;
 
-        webGLRenderer.texImage2D('TEXTURE_2D', level, data.format, data.format, data.type, _pixel);
+        webGLRenderer.webGLContext.texImage2D('TEXTURE_2D', level, data.format, data.format, data.type, _pixel);
     }
 }
 

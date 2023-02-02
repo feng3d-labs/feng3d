@@ -222,7 +222,7 @@ export class TextureCube extends TextureInfo
         ];
         for (let i = 0; i < faces.length; i++)
         {
-            webGLRenderer.texImage2D(faces[i], 0, data.format, data.format, data.type, pixels[i]);
+            webGLRenderer.webGLContext.texImage2D(faces[i], 0, data.format, data.format, data.type, pixels[i]);
         }
     }
 }

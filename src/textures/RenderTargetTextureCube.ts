@@ -53,7 +53,7 @@ export class RenderTargetTextureCube extends TextureCube
         ];
         for (let i = 0; i < faces.length; i++)
         {
-            webGLRenderer.texImage2DPixels(faces[i], 0, data.format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, data.format, data.type, null);
+            webGLRenderer.webGLContext.texImage2D(faces[i], 0, data.format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, data.format, data.type, null);
         }
     }
 }
