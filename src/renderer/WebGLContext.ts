@@ -1,5 +1,5 @@
 import { imageDatas } from '../textures/Texture2D';
-import { AttachmentPoint, ClearMask, EnableCap, FramebufferTarget, Renderbuffertarget, TexImage2DTarget, TextureDataType, TextureFormat, TextureTarget } from './gl/WebGLEnums';
+import { AttachmentPoint, Capability, ClearMask, FramebufferTarget, ReadPixelsFormat, ReadPixelsType, Renderbuffertarget, TexImage2DTarget, TextureDataType, TextureFormat, TextureTarget } from './gl/WebGLEnums';
 import { WebGLRenderer } from './WebGLRenderer';
 
 /**
@@ -162,13 +162,26 @@ export class WebGLContext
     }
 
     /**
+     * The WebGLRenderingContext.disable() method of the WebGL API disables specific WebGL capabilities for this context.
+     *
+     * @param cap A GLenum specifying which WebGL capability to disable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disable
+     */
+    disable(cap: Capability): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.disable(gl[cap]);
+    }
+
+    /**
      * The WebGLRenderingContext.enable() method of the WebGL API enables specific WebGL capabilities for this context.
      *
      * @param cap A GLenum specifying which WebGL capability to enable.
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
      */
-    enable(cap: EnableCap): void
+    enable(cap: Capability): void
     {
         const { gl } = this._webGLRenderer;
         gl.enable(gl[cap]);
@@ -221,6 +234,25 @@ export class WebGLContext
     {
         const { gl } = this._webGLRenderer;
         gl.scissor(x, y, width, height);
+    }
+
+    /**
+     * The WebGLRenderingContext.readPixels() method of the WebGL API reads a block of pixels from a specified rectangle of the current color framebuffer into a TypedArray or a DataView object.
+     *
+     * @param x A GLint specifying the first horizontal pixel that is read from the lower left corner of a rectangular block of pixels.
+     * @param y A GLint specifying the first vertical pixel that is read from the lower left corner of a rectangular block of pixels.
+     * @param width A GLsizei specifying the width of the rectangle.
+     * @param height A GLsizei specifying the height of the rectangle.
+     * @param format A GLenum specifying the format of the pixel data.
+     * @param type A GLenum specifying the data type of the pixel data.
+     * @param pixels An object to read data into.
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels
+     */
+    readPixels(x: GLint, y: GLint, width: GLsizei, height: GLsizei, format: ReadPixelsFormat, type: ReadPixelsType, pixels: ArrayBufferView): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.readPixels(x, y, width, height, gl[format], gl[type], pixels);
     }
 
     /**

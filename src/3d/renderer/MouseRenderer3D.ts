@@ -49,13 +49,13 @@ export class MouseRenderer extends EventEmitter
         webGLContext.enable('SCISSOR_TEST');
         webGLContext.scissor(0, 0, 1, 1);
         // super.draw(renderContext);
-        gl.disable(gl.SCISSOR_TEST);
+        webGLContext.disable('SCISSOR_TEST');
 
         // 读取鼠标拾取索引
         // this.frameBufferObject.readBuffer(gl, "objectID");
 
         const data = new Uint8Array(4);
-        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+        webGLContext.readPixels(0, 0, 1, 1, 'RGBA', 'UNSIGNED_BYTE', data);
         const id = data[0] + data[1] * 255 + data[2] * 255 * 255 + data[3] * 255 * 255 * 255 - data[3];// 最后（- data[3]）表示很奇怪，不过data[3]一般情况下为0
         // log(`选中索引3D对象${id}`, data.toString());
 

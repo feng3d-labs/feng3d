@@ -34,7 +34,7 @@ export class WebGLRenderParams
 
         if (cullFace === 'NONE')
         {
-            gl.disable(gl.CULL_FACE);
+            webGLContext.disable('CULL_FACE');
         }
         else
         {
@@ -52,7 +52,7 @@ export class WebGLRenderParams
         }
         else
         {
-            gl.disable(gl.BLEND);
+            webGLContext.disable('BLEND');
         }
 
         if (depthtest)
@@ -62,7 +62,7 @@ export class WebGLRenderParams
         }
         else
         {
-            gl.disable(gl.DEPTH_TEST);
+            webGLContext.disable('DEPTH_TEST');
         }
 
         gl.depthMask(depthMask);
@@ -85,7 +85,7 @@ export class WebGLRenderParams
         }
         else
         {
-            gl.disable(gl.POLYGON_OFFSET_FILL);
+            webGLContext.disable('POLYGON_OFFSET_FILL');
         }
 
         if (useScissor)
@@ -95,7 +95,7 @@ export class WebGLRenderParams
         }
         else
         {
-            gl.disable(gl.SCISSOR_TEST);
+            webGLContext.disable('SCISSOR_TEST');
         }
 
         if (useStencil)
@@ -111,7 +111,7 @@ export class WebGLRenderParams
         }
         else
         {
-            gl.disable(gl.STENCIL_TEST);
+            webGLContext.disable('STENCIL_TEST');
         }
     }
 }

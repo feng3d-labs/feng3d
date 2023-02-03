@@ -38,7 +38,7 @@ export type ClearMask = 'COLOR_BUFFER_BIT' | 'DEPTH_BUFFER_BIT' | 'STENCIL_BUFFE
  *
  * gl.RASTERIZER_DISCARD	Primitives are discarded immediately before the rasterization stage, but after the optional transform feedback stage. gl.clear() commands are ignored.
  */
-export type EnableCap =
+export type Capability =
     'BLEND' | 'CULL_FACE' | 'DEPTH_TEST' | 'DITHER'
     | 'POLYGON_OFFSET_FILL' | 'SAMPLE_ALPHA_TO_COVERAGE' | 'SAMPLE_COVERAGE'
     | 'SCISSOR_TEST'
@@ -47,33 +47,107 @@ export type EnableCap =
     ;
 
 /**
- * 纹理数据类型
- * A GLenum specifying the data type of the texel data
+ * A GLenum specifying the format of the pixel data. Possible values:
  *
- * * `UNSIGNED_BYTE` 8 bits per channel for gl.RGBA
- * * `UNSIGNED_SHORT_5_6_5` 5 red bits, 6 green bits, 5 blue bits.
- * * `UNSIGNED_SHORT_4_4_4_4` 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
- * * `UNSIGNED_SHORT_5_5_5_1` 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
- * * `UNSIGNED_SHORT` When using the WEBGL_depth_texture extension:
- * * `UNSIGNED_INT` When using the WEBGL_depth_texture extension:
- * * `UNSIGNED_INT_24_8_WEBGL` When using the WEBGL_depth_texture extension:(constant provided by the extension)
- * * `FLOAT` When using the OES_texture_float extension:
- * * `HALF_FLOAT_OES` When using the OES_texture_half_float extension:(constant provided by the extension)
- * * `BYTE` using a WebGL 2 context
- * * `SHORT` using a WebGL 2 context
- * * `INT` using a WebGL 2 context
- * * `HALF_FLOAT` using a WebGL 2 context
- * * `UNSIGNED_INT_2_10_10_10_REV` using a WebGL 2 context
- * * `UNSIGNED_INT_10F_11F_11F_REV` using a WebGL 2 context
- * * `UNSIGNED_INT_5_9_9_9_REV` using a WebGL 2 context
- * * `UNSIGNED_INT_24_8` using a WebGL 2 context
- * * `FLOAT_32_UNSIGNED_INT_24_8_REV` using a WebGL 2 context(pixels must be null)
+ * * gl.ALPHA Discards the red, green and blue components and reads the alpha component.
+ * * gl.RGB   Discards the alpha components and reads the red, green and blue components.
+ * * gl.RGBA  Red, green, blue and alpha components are read from the color buffer.
+ *
+ * WebGL2 adds
+ *
+ * * gl.RED
+ * * gl.RG
+ * * gl.RED_INTEGER
+ * * gl.RG_INTEGER
+ * * gl.RGB_INTEGER
+ * * gl.RGBA_INTEGER
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels
+ */
+export type ReadPixelsFormat = 'ALPHA' | 'RGB' | 'RGBA' // WebGL1
+    | 'RED' | 'RG' | 'RED_INTEGER' | 'RG_INTEGER' | 'RGB_INTEGER' | 'RGBA_INTEGER' // WebGL2
+    ;
+
+/**
+ * A GLenum specifying the data type of the pixel data. Possible values:
+ * * gl.UNSIGNED_BYTE
+ * * gl.UNSIGNED_SHORT_5_6_5
+ * * gl.UNSIGNED_SHORT_4_4_4_4
+ * * gl.UNSIGNED_SHORT_5_5_5_1
+ * * gl.FLOAT
+ *
+ * WebGL2 adds
+ * * gl.BYTE
+ * * gl.UNSIGNED_INT_2_10_10_10_REV
+ * * gl.HALF_FLOAT
+ * * gl.SHORT
+ * * gl.UNSIGNED_SHORT
+ * * gl.INT
+ * * gl.UNSIGNED_INT
+ * * gl.UNSIGNED_INT_10F_11F_11F_REV
+ * * gl.UNSIGNED_INT_5_9_9_9_REV
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels
+ */
+export type ReadPixelsType =
+    | 'UNSIGNED_BYTE'
+    | 'UNSIGNED_SHORT_5_6_5'
+    | 'UNSIGNED_SHORT_4_4_4_4'
+    | 'UNSIGNED_SHORT_5_5_5_1'
+    | 'FLOAT'
+    | 'BYTE'
+    | 'UNSIGNED_INT_2_10_10_10_REV'
+    | 'HALF_FLOAT'
+    | 'SHORT'
+    | 'UNSIGNED_SHORT'
+    | 'INT'
+    | 'UNSIGNED_INT'
+    | 'UNSIGNED_INT_10F_11F_11F_REV'
+    | 'UNSIGNED_INT_5_9_9_9_REV'
+    ;
+
+/**
+ * 纹理数据类型
+ *
+ * A GLenum specifying the data type of the texel data. Possible values:
+ * * gl.UNSIGNED_BYTE: 8 bits per channel for gl.RGBA
+ * * gl.UNSIGNED_SHORT_5_6_5: 5 red bits, 6 green bits, 5 blue bits.
+ * * gl.UNSIGNED_SHORT_4_4_4_4: 4 red bits, 4 green bits, 4 blue bits, 4 alpha bits.
+ * * gl.UNSIGNED_SHORT_5_5_5_1: 5 red bits, 5 green bits, 5 blue bits, 1 alpha bit.
+ *
+ * When using the WEBGL_depth_texture extension:
+ * * gl.UNSIGNED_SHORT
+ * * gl.UNSIGNED_INT
+ * * ext.UNSIGNED_INT_24_8_WEBGL (constant provided by the extension)
+ *
+ * When using the OES_texture_float extension:
+ * * gl.FLOAT
+ *
+ * When using the OES_texture_half_float extension:
+ * * ext.HALF_FLOAT_OES (constant provided by the extension)
+ *
+ * When using a WebGL 2 context, the following values are available additionally:
+ * * gl.BYTE
+ * * gl.UNSIGNED_SHORT
+ * * gl.SHORT
+ * * gl.UNSIGNED_INT
+ * * gl.INT
+ * * gl.HALF_FLOAT
+ * * gl.FLOAT
+ * * gl.UNSIGNED_INT_2_10_10_10_REV
+ * * gl.UNSIGNED_INT_10F_11F_11F_REV
+ * * gl.UNSIGNED_INT_5_9_9_9_REV
+ * * gl.UNSIGNED_INT_24_8
+ * * gl.FLOAT_32_UNSIGNED_INT_24_8_REV (pixels must be null)
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
  */
-export type TextureDataType = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT_5_6_5' | 'UNSIGNED_SHORT_4_4_4_4' | 'UNSIGNED_SHORT_5_5_5_1' | 'UNSIGNED_SHORT'
-    | 'UNSIGNED_INT' | 'UNSIGNED_INT_24_8_WEBGL' | 'FLOAT' | 'HALF_FLOAT_OES' | 'BYTE' | 'SHORT' | 'INT'
-    | 'HALF_FLOAT' | 'UNSIGNED_INT_2_10_10_10_REV' | 'UNSIGNED_INT_10F_11F_11F_REV' | 'UNSIGNED_INT_5_9_9_9_REV' | 'UNSIGNED_INT_24_8' | 'FLOAT_32_UNSIGNED_INT_24_8_REV'
+export type TextureDataType = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT_5_6_5' | 'UNSIGNED_SHORT_4_4_4_4' | 'UNSIGNED_SHORT_5_5_5_1' // WebGL1
+    | 'UNSIGNED_SHORT' | 'UNSIGNED_INT' | 'UNSIGNED_INT_24_8_WEBGL' // WEBGL_depth_texture
+    | 'FLOAT' // OES_texture_float
+    | 'HALF_FLOAT_OES' //  OES_texture_half_float
+    | 'BYTE' | 'UNSIGNED_SHORT' | 'SHORT' | 'UNSIGNED_INT' | 'INT' | 'HALF_FLOAT' | 'FLOAT' | 'UNSIGNED_INT_2_10_10_10_REV' // WebGL2
+    | 'UNSIGNED_INT_10F_11F_11F_REV' | 'UNSIGNED_INT_5_9_9_9_REV' | 'UNSIGNED_INT_24_8' | 'FLOAT_32_UNSIGNED_INT_24_8_REV' // WebGL2
     ;
 
 /**
