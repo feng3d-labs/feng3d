@@ -237,6 +237,19 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext method enableVertexAttribArray(), part of the WebGL API, turns on the generic vertex attribute array at the specified index into the list of attribute arrays.
+     *
+     * @param index A GLuint specifying the index number that uniquely identifies the vertex attribute to enable. If you know the name of the attribute but not its index, you can get the index by calling getAttribLocation().
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
+     */
+    enableVertexAttribArray(index: GLuint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.enableVertexAttribArray(index);
+    }
+
+    /**
      * The WebGLRenderingContext.framebufferTexture2D() method of the WebGL API attaches a texture to a WebGLFramebuffer.
      *
      * @param target A GLenum specifying the binding point (target).

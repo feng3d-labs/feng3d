@@ -1,5 +1,5 @@
 import { imageDatas } from '../textures/Texture2D';
-import { BufferUsage, BufferTarget, ReadPixelsFormat, ReadPixelsType, TexImage2DTarget, TextureDataType, TextureFormat } from './gl/WebGLEnums';
+import { BufferTarget, BufferUsage, ReadPixelsFormat, ReadPixelsType, TexImage2DTarget, TextureDataType, TextureFormat } from './gl/WebGLEnums';
 import { WebGLContextBase } from './WebGLContextBase';
 
 /**
@@ -23,7 +23,6 @@ export class WebGLContextOverloads extends WebGLContextBase
     }
 
     // bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum): void;
-    // bufferData(target: GLenum, data: BufferSource | null, usage: GLenum): void;
     // bufferSubData(target: GLenum, offset: GLintptr, data: BufferSource): void;
     // compressedTexImage2D(target: GLenum, level: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei, border: GLint, data: ArrayBufferView): void;
     // compressedTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, data: ArrayBufferView): void;

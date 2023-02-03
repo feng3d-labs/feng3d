@@ -7,6 +7,66 @@ import { WebGLContextOverloads } from './WebGLContextOverloads';
 export class WebGL2ContextBase extends WebGLContextOverloads
 {
     /**
+     * The WebGL2RenderingContext.bindVertexArray() method of the WebGL 2 API binds a passed WebGLVertexArrayObject object to the buffer.
+     *
+     * @param array A WebGLVertexArrayObject (VAO) object to bind.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/bindVertexArray
+     */
+    bindVertexArray(array: WebGLVertexArrayObject | null): void
+    {
+        const { gl2, capabilities, extensions } = this._webGLRenderer;
+
+        if (capabilities.isWebGL2) return gl2.bindVertexArray(array);
+
+        const extension = extensions.get('OES_vertex_array_object');
+        extension.bindVertexArrayOES(array);
+    }
+
+    /**
+     * The WebGL2RenderingContext.createVertexArray() method of the WebGL 2 API creates and initializes a WebGLVertexArrayObject object that represents a vertex array object (VAO) pointing to vertex array data and which provides names for different sets of vertex data.
+     *
+     * @returns A WebGLVertexArrayObject representing a vertex array object (VAO) which points to vertex array data.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/createVertexArray
+     */
+    createVertexArray(): WebGLVertexArrayObject | null
+    {
+        const { gl2, capabilities, extensions } = this._webGLRenderer;
+
+        if (capabilities.isWebGL2)
+        {
+            return gl2.createVertexArray();
+        }
+
+        const extension = extensions.get('OES_vertex_array_object');
+
+        return extension.createVertexArrayOES();
+    }
+
+    /**
+     * The WebGL2RenderingContext.vertexAttribDivisor() method of the WebGL 2 API modifies the rate at which generic vertex attributes advance when rendering multiple instances of primitives with gl.drawArraysInstanced() and gl.drawElementsInstanced().
+     *
+     * @param index A GLuint specifying the index of the generic vertex attributes.
+     * @param divisor A GLuint specifying the number of instances that will pass between updates of the generic attribute.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/vertexAttribDivisor
+     */
+    vertexAttribDivisor(index: GLuint, divisor: GLuint): void
+    {
+        const { gl2, capabilities, extensions } = this._webGLRenderer;
+
+        if (capabilities.isWebGL2)
+        {
+            gl2.vertexAttribDivisor(index, divisor);
+
+            return;
+        }
+        const extension = extensions.get('ANGLE_instanced_arrays');
+        extension.vertexAttribDivisorANGLE(index, divisor);
+    }
+
+    /**
      * The WebGL2RenderingContext.vertexAttribIPointer() method of the WebGL 2 API specifies integer data formats and locations of vertex attributes in a vertex attributes array.
      *
      * @param index A GLuint specifying the index of the vertex attribute that is to be modified.

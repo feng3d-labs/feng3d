@@ -189,12 +189,8 @@ export class WebGLBindingStates
      */
     private bindVertexArrayObject(vao: WebGLVertexArrayObject)
     {
-        const { gl, extensions, capabilities } = this._webGLRenderer;
-
-        if (capabilities.isWebGL2) return (gl as any as WebGL2RenderingContext).bindVertexArray(vao);
-
-        const extension = extensions.get('OES_vertex_array_object');
-        extension.bindVertexArrayOES(vao);
+        const { webGLContext } = this._webGLRenderer;
+        webGLContext.bindVertexArray(vao);
     }
 
     /**
@@ -208,7 +204,7 @@ export class WebGLBindingStates
      */
     enableAttribute(location: number, divisor?: number)
     {
-        const { gl, extensions, capabilities } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { currentState } = this;
         divisor = ~~divisor;
 
@@ -221,21 +217,13 @@ export class WebGLBindingStates
 
         if (enabledAttributes[location] === 0)
         {
-            gl.enableVertexAttribArray(location);
+            webGLContext.enableVertexAttribArray(location);
             enabledAttributes[location] = 1;
         }
 
         if (attributeDivisors[location] !== divisor)
         {
-            if (capabilities.isWebGL2)
-            {
-                (gl as WebGL2RenderingContext).vertexAttribDivisor(location, divisor);
-            }
-            else
-            {
-                const extension = extensions.get('ANGLE_instanced_arrays');
-                extension.vertexAttribDivisorANGLE(location, divisor);
-            }
+            webGLContext.vertexAttribDivisor(location, divisor);
             attributeDivisors[location] = divisor;
         }
     }
@@ -302,16 +290,9 @@ export class WebGLBindingStates
      */
     private createVertexArrayObject()
     {
-        const { gl, extensions, capabilities } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
-        if (capabilities.isWebGL2)
-        {
-            return (gl as any as WebGL2RenderingContext).createVertexArray();
-        }
-
-        const extension = extensions.get('OES_vertex_array_object');
-
-        return extension.createVertexArrayOES();
+        return webGLContext.createVertexArray();
     }
 
     /**

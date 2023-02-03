@@ -192,7 +192,7 @@ class WebGLElementBuffer
 
     updateBuffer()
     {
-        const { gl, webGLContext } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { element } = this;
 
         if (this.version === element.version)
