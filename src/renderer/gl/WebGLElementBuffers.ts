@@ -3,7 +3,7 @@ import { watcher } from '../../watcher/watcher';
 import { DrawElementTypes, ElementBuffer, ElementBufferSourceTypes } from '../data/ElementBuffer';
 import { RenderAtomic } from '../data/RenderAtomic';
 import { WebGLRenderer } from '../WebGLRenderer';
-import { AttributeUsage } from './WebGLEnums';
+import { BufferUsage } from './WebGLEnums';
 
 export class WebGLElementBuffers
 {
@@ -205,17 +205,17 @@ class WebGLElementBuffer
         let buffer = this.buffer;
         if (buffer)
         {
-            gl.deleteBuffer(buffer);
+            webGLContext.deleteBuffer(buffer);
         }
 
         //
         const { type, array } = transfromArrayType(element.array, element.type);
-        const usage: AttributeUsage = element.usage || 'STATIC_DRAW';
+        const usage: BufferUsage = element.usage || 'STATIC_DRAW';
 
-        buffer = gl.createBuffer();
+        buffer = webGLContext.createBuffer();
 
         webGLContext.bindBuffer('ELEMENT_ARRAY_BUFFER', buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array, gl[usage]);
+        webGLContext.bufferData('ELEMENT_ARRAY_BUFFER', array, usage);
 
         this.type = type;
         this.count = array.length;
@@ -225,10 +225,10 @@ class WebGLElementBuffer
 
     dispose()
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { buffer, element } = this;
 
-        gl.deleteBuffer(buffer);
+        webGLContext.deleteBuffer(buffer);
 
         watcher.watch(element, 'array', this.needsUpdate, this);
 

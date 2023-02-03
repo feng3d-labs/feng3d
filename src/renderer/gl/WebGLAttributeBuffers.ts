@@ -50,7 +50,7 @@ export class WebGLAttributeBuffers
 
     vertexAttribPointer(location: number, attribute: AttributeBuffer)
     {
-        const { gl, capabilities, webGLContext } = this._webGLRenderer;
+        const { capabilities, webGLContext } = this._webGLRenderer;
 
         const attributeBufferCacle = this.get(attribute);
 
@@ -129,7 +129,7 @@ export class WebGLAttributeBuffer
         let buffer = this.buffer;
         if (buffer)
         {
-            gl.deleteBuffer(buffer);
+            webGLContext.deleteBuffer(buffer);
         }
 
         const { type, array } = transfromArrayType(attribute.array, attribute.type);
@@ -137,7 +137,7 @@ export class WebGLAttributeBuffer
         const count = array !== undefined ? array.length / attribute.itemSize : 0;
         const normalized = attribute.normalized === true;
 
-        buffer = gl.createBuffer();
+        buffer = webGLContext.createBuffer();
 
         webGLContext.bindBuffer('ARRAY_BUFFER', buffer);
         gl.bufferData(gl.ARRAY_BUFFER, array, gl[usage]);
@@ -151,10 +151,10 @@ export class WebGLAttributeBuffer
 
     dispose()
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { buffer, attribute } = this;
 
-        gl.deleteBuffer(buffer);
+        webGLContext.deleteBuffer(buffer);
 
         watcher.watch(attribute, 'array', this.needsUpdate, this);
 

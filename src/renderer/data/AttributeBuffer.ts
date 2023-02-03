@@ -1,4 +1,4 @@
-import { AttributeUsage } from '../gl/WebGLEnums';
+import { BufferUsage } from '../gl/WebGLEnums';
 
 /**
  * 属性缓冲数据类型。
@@ -84,7 +84,7 @@ export interface AttributeBuffer
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
      */
-    usage?: AttributeUsage;
+    usage?: BufferUsage;
 
     /**
      * 属性缓冲数据类型

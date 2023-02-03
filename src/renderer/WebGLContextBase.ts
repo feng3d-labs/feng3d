@@ -183,6 +183,34 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.createBuffer() method of the WebGL API creates and initializes a WebGLBuffer storing data such as vertices or colors.
+     *
+     * @returns A WebGLBuffer storing data such as vertices or colors.
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createBuffer
+     */
+    createBuffer(): WebGLBuffer | null
+    {
+        const { gl } = this._webGLRenderer;
+        const buffer = gl.createBuffer();
+
+        return buffer;
+    }
+
+    /**
+     * The WebGLRenderingContext.deleteBuffer() method of the WebGL API deletes a given WebGLBuffer. This method has no effect if the buffer has already been deleted. Normally you don't need to call this method yourself, when the buffer object is dereferenced it will be marked as free.
+     *
+     * @param buffer A WebGLBuffer object to delete.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteBuffer
+     */
+    deleteBuffer(buffer: WebGLBuffer | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.deleteBuffer(buffer);
+    }
+
+    /**
      * The WebGLRenderingContext.disable() method of the WebGL API disables specific WebGL capabilities for this context.
      *
      * @param cap A GLenum specifying which WebGL capability to disable.

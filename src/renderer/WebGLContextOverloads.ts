@@ -1,5 +1,5 @@
 import { imageDatas } from '../textures/Texture2D';
-import { ReadPixelsFormat, ReadPixelsType, TexImage2DTarget, TextureDataType, TextureFormat } from './gl/WebGLEnums';
+import { BufferUsage, BufferTarget, ReadPixelsFormat, ReadPixelsType, TexImage2DTarget, TextureDataType, TextureFormat } from './gl/WebGLEnums';
 import { WebGLContextBase } from './WebGLContextBase';
 
 /**
@@ -7,6 +7,21 @@ import { WebGLContextBase } from './WebGLContextBase';
  */
 export class WebGLContextOverloads extends WebGLContextBase
 {
+    /**
+     * The WebGLRenderingContext.bufferData() method of the WebGL API initializes and creates the buffer object's data store.
+     *
+     * @param target A GLenum specifying the binding point (target).
+     * @param data An ArrayBuffer, SharedArrayBuffer, a TypedArray or a DataView that will be copied into the data store. If null, a data store is still created, but the content is uninitialized and undefined.
+     * @param usage A GLenum specifying the intended usage pattern of the data store for optimization purposes.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+     */
+    bufferData(target: BufferTarget, data: BufferSource | null, usage: BufferUsage): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.bufferData(gl[target], data, gl[usage]);
+    }
+
     // bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum): void;
     // bufferData(target: GLenum, data: BufferSource | null, usage: GLenum): void;
     // bufferSubData(target: GLenum, offset: GLintptr, data: BufferSource): void;

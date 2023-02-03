@@ -1,15 +1,24 @@
 /**
- * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
+ * A GLenum specifying the intended usage pattern of the data store for optimization purposes. Possible values:
  *
- * 指定数据存储区的使用方法。
+ * * gl.STATIC_DRAW: The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
+ * * gl.DYNAMIC_DRAW: The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
+ * * gl.STREAM_DRAW: The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands.
  *
- * * `STATIC_DRAW` 内容由应用程序指定一次，并多次用作WebGL绘图和图像规范命令的源。缓冲区的内容可能经常使用，而不会经常更改。内容被写入缓冲区，但不被读取。
- * * `DYNAMIC_DRAW` 这些内容将由应用程序反复重新指定，并多次用作WebGL绘图和图像规范命令的源。
- * * `STREAM_DRAW` 内容由应用程序指定一次，最多几次用作WebGL绘图和图像规范命令的源。
+ * When using a WebGL 2 context, the following values are available additionally:
  *
- * @see https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/bufferData
+ * * gl.STATIC_READ     The contents are intended to be specified once by reading data from WebGL, and queried many times by the application.
+ * * gl.DYNAMIC_READ    The contents are intended to be respecified repeatedly by reading data from WebGL, and queried many times by the application.
+ * * gl.STREAM_READ     The contents are intended to be specified once by reading data from WebGL, and queried at most a few times by the application
+ * * gl.STATIC_COPY     The contents are intended to be specified once by reading data from WebGL, and used many times as the source for WebGL drawing and image specification commands.
+ * * gl.DYNAMIC_COPY    The contents are intended to be respecified repeatedly by reading data from WebGL, and used many times as the source for WebGL drawing and image specification commands.
+ * * gl.STREAM_COPY     The contents are intended to be specified once by reading data from WebGL, and used at most a few times as the source for WebGL drawing and image specification commands.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
  */
-export type AttributeUsage = 'STATIC_DRAW' | 'DYNAMIC_DRAW' | 'STREAM_DRAW';
+export type BufferUsage = 'STATIC_DRAW' | 'DYNAMIC_DRAW' | 'STREAM_DRAW' // WebGL1
+    | 'STATIC_READ' | 'DYNAMIC_READ' | 'STREAM_READ' | 'STATIC_COPY' | 'DYNAMIC_COPY' | 'STREAM_COPY' // WebGL2
+    ;
 
 /**
  * A GLenum specifying the binding point (target). Possible values:
