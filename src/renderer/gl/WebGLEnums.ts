@@ -15,7 +15,7 @@ export type AttributeUsage = 'STATIC_DRAW' | 'DYNAMIC_DRAW' | 'STREAM_DRAW';
  * A GLenum specifying the binding point (target). Possible values:
  *
  * * gl.ARRAY_BUFFER: Buffer containing vertex attributes, such as vertex coordinates, texture coordinate data, or vertex color data.
- * * gl.ELEMENT_ARRAY_BUFFER: Buffer used for element indices. 
+ * * gl.ELEMENT_ARRAY_BUFFER: Buffer used for element indices.
  *
  * When using a WebGL 2 context, the following values are available additionally:
  * * gl.COPY_READ_BUFFER: Buffer for copying from one buffer object to another.

@@ -1,5 +1,5 @@
 import { watcher } from '../../watcher/watcher';
-import { AttributeBuffer, AttributeBufferSourceTypes, AttributeTypes } from '../data/AttributeBuffer';
+import { AttributeBuffer, AttributeBufferSourceTypes, VertexAttributeTypes } from '../data/AttributeBuffer';
 import { WebGLRenderer } from '../WebGLRenderer';
 
 export class WebGLAttributeBuffers
@@ -56,7 +56,7 @@ export class WebGLAttributeBuffers
 
         const size = attribute.itemSize;
         const buffer = attributeBufferCacle.buffer;
-        const type = gl[attributeBufferCacle.type];
+        const type = attributeBufferCacle.type;
         const bytesPerElement = attributeBufferCacle.bytesPerElement;
         const normalized = attributeBufferCacle.normalized;
 
@@ -65,13 +65,13 @@ export class WebGLAttributeBuffers
 
         webGLContext.bindBuffer('ARRAY_BUFFER', buffer);
 
-        if (capabilities.isWebGL2 === true && (type === gl.INT || type === gl.UNSIGNED_INT))
+        if (capabilities.isWebGL2 === true && (type === 'INT' || type === 'UNSIGNED_INT'))
         {
-            (gl as WebGL2RenderingContext).vertexAttribIPointer(location, size, type, stride, offset);
+            webGLContext.vertexAttribIPointer(location, size, type, stride, offset);
         }
         else
         {
-            gl.vertexAttribPointer(location, size, type, normalized, stride, offset);
+            webGLContext.vertexAttribPointer(location, size, attributeBufferCacle.type, normalized, stride, offset);
         }
     }
 }
@@ -82,7 +82,7 @@ export class WebGLAttributeBuffer
     attribute: AttributeBuffer;
     buffer: WebGLBuffer;
 
-    type: AttributeTypes;
+    type: VertexAttributeTypes;
 
     /**
      * 数据数量
@@ -164,7 +164,7 @@ export class WebGLAttributeBuffer
     }
 }
 
-function transfromArrayType(array: AttributeBufferSourceTypes, type: AttributeTypes)
+function transfromArrayType(array: AttributeBufferSourceTypes, type: VertexAttributeTypes)
 {
     // 处理 type
     if (type === undefined)

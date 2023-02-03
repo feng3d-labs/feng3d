@@ -1,3 +1,4 @@
+import { VertexAttributeTypes } from './data/AttributeBuffer';
 import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
 import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
@@ -299,6 +300,27 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.scissor(x, y, width, height);
+    }
+
+    /**
+     * The WebGLRenderingContext.vertexAttribPointer() method of the WebGL API binds the buffer currently bound to gl.ARRAY_BUFFER to a generic vertex attribute of the current vertex buffer object and specifies its layout.
+     *
+     * @param index A GLuint specifying the index of the vertex attribute that is to be modified.
+     * @param size A GLint specifying the number of components per vertex attribute. Must be 1, 2, 3, or 4.
+     * @param type A GLenum specifying the data type of each component in the array.
+     * @param normalized A GLboolean specifying whether integer data values should be normalized into a certain range when being cast to a float.
+     * * For types gl.BYTE and gl.SHORT, normalizes the values to [-1, 1] if true.
+     * * For types gl.UNSIGNED_BYTE and gl.UNSIGNED_SHORT, normalizes the values to [0, 1] if true.
+     * * For types gl.FLOAT and gl.HALF_FLOAT, this parameter has no effect.
+     * @param stride A GLsizei specifying the offset in bytes between the beginning of consecutive vertex attributes. Cannot be larger than 255. If stride is 0, the attribute is assumed to be tightly packed, that is, the attributes are not interleaved but each attribute is in a separate block, and the next vertex' attribute follows immediately after the current vertex.
+     * @param offset A GLintptr specifying an offset in bytes of the first component in the vertex attribute array. Must be a multiple of the byte length of type.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
+     */
+    vertexAttribPointer(index: GLuint, size: 1 | 2 | 3 | 4, type: VertexAttributeTypes, normalized: GLboolean, stride: GLsizei, offset: GLintptr): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.vertexAttribPointer(index, size, gl[type], normalized, stride, offset);
     }
 
     /**

@@ -34,6 +34,8 @@ export class WebGLRenderer
      */
     readonly gl: WebGLRenderingContext;
 
+    readonly gl2: WebGL2RenderingContext;
+
     /**
      * WebGL扩展
      */
@@ -97,6 +99,7 @@ export class WebGLRenderer
 
         const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
         this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
+        this.gl2 = this.gl as any;
 
         this.webGLContext = new WebGLContext(this);
         this.extensions = new WebGLExtensions(this);
