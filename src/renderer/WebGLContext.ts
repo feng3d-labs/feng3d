@@ -80,7 +80,7 @@ export class WebGLContext
      *
      * The scissor box, dithering, and buffer writemasks can affect the clear() method.
      *
-     * @param mask A GLbitfield bitwise OR mask that indicates the buffers to be cleared. 
+     * @param mask A GLbitfield bitwise OR mask that indicates the buffers to be cleared.
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
      */
@@ -208,6 +208,22 @@ export class WebGLContext
     }
 
     /**
+     * The WebGLRenderingContext.scissor() method of the WebGL API sets a scissor box, which limits the drawing to a specified rectangle.
+     *
+     * @param x A GLint specifying the horizontal coordinate for the lower left corner of the box. Default value: 0.
+     * @param y A GLint specifying the vertical coordinate for the lower left corner of the box. Default value: 0.
+     * @param width A non-negative GLsizei specifying the width of the scissor box. Default value: width of the canvas.
+     * @param height A non-negative GLsizei specifying the height of the scissor box. Default value: height of the canvas.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+     */
+    scissor(x: GLint, y: GLint, width: GLsizei, height: GLsizei): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.scissor(x, y, width, height);
+    }
+
+    /**
      * The WebGLRenderingContext.texImage2D() method of the WebGL API specifies a two-dimensional texture image.
      *
      * @param target A GLenum specifying the binding point (target) of the active texture.
@@ -246,6 +262,22 @@ export class WebGLContext
         {
             this._texImage2DPixels.apply(this, args);
         }
+    }
+
+    /**
+     * The WebGLRenderingContext.viewport() method of the WebGL API sets the viewport, which specifies the affine transformation of x and y from normalized device coordinates to window coordinates.
+     *
+     * @param x A GLint specifying the horizontal coordinate for the lower left corner of the viewport origin. Default value: 0.
+     * @param y A GLint specifying the vertical coordinate for the lower left corner of the viewport origin. Default value: 0.
+     * @param width A non-negative GLsizei specifying the width of the viewport. Default value: width of the canvas.
+     * @param height A non-negative GLsizei specifying the height of the viewport. Default value: height of the canvas.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
+     */
+    viewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.viewport(x, y, width, height);
     }
 
     /**

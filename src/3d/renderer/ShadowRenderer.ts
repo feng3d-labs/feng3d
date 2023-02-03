@@ -66,7 +66,7 @@ export class ShadowRenderer
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
         //
-        gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
@@ -128,7 +128,7 @@ export class ShadowRenderer
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
         //
-        gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
@@ -270,7 +270,7 @@ export class ShadowRenderer
         const { gl, webGLContext } = webGLRenderer;
 
         //
-        gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 

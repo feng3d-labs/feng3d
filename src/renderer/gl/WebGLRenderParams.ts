@@ -1,18 +1,16 @@
+import { WebGLRenderer3D } from '../../3d/core/WebGLRenderer3D';
 import { RenderParams } from '../data/RenderParams';
+import { WebGLRenderer } from '../WebGLRenderer';
 import { WebGLCapabilities } from './WebGLCapabilities';
 import { WebGLState } from './WebGLState';
 
 export class WebGLRenderParams
 {
-    gl: WebGLRenderingContext;
-    capabilities: WebGLCapabilities;
-    state: WebGLState;
+    private _webGLRenderer: WebGLRenderer;
 
-    constructor(gl: WebGLRenderingContext, capabilities: WebGLCapabilities, state: WebGLState)
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
-        this.capabilities = capabilities;
-        this.state = state;
+        this._webGLRenderer = webGLRenderer;
     }
 
     /**
@@ -20,7 +18,7 @@ export class WebGLRenderParams
      */
     updateRenderParams(renderParams: RenderParams)
     {
-        const { gl, capabilities, state } = this;
+        const { gl, capabilities, state, webGLContext } = this._webGLRenderer;
 
         const { cullFace, frontFace,
             enableBlend, sfactor, dfactor,
@@ -40,7 +38,7 @@ export class WebGLRenderParams
         }
         else
         {
-            gl.enable(gl.CULL_FACE);
+            webGLContext.enable('CULL_FACE');
             gl.cullFace(gl[cullFace]);
             gl.frontFace(gl[frontFace]);
         }
@@ -48,7 +46,7 @@ export class WebGLRenderParams
         if (enableBlend)
         {
             //
-            gl.enable(gl.BLEND);
+            webGLContext.enable('BLEND');
             gl.blendEquation(blendEquation);
             gl.blendFunc(gl[sfactor], gl[dfactor]);
         }
@@ -59,7 +57,7 @@ export class WebGLRenderParams
 
         if (depthtest)
         {
-            gl.enable(gl.DEPTH_TEST);
+            webGLContext.enable('DEPTH_TEST');
             gl.depthFunc(gl[depthFunc]);
         }
         else
@@ -73,16 +71,16 @@ export class WebGLRenderParams
 
         if (useViewPort)
         {
-            gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
+            webGLContext.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
         }
         else
         {
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            webGLContext.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         }
 
         if (usePolygonOffset)
         {
-            gl.enable(gl.POLYGON_OFFSET_FILL);
+            webGLContext.enable('POLYGON_OFFSET_FILL');
             gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
         }
         else
@@ -92,8 +90,8 @@ export class WebGLRenderParams
 
         if (useScissor)
         {
-            gl.enable(gl.SCISSOR_TEST);
-            gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
+            webGLContext.enable('SCISSOR_TEST');
+            webGLContext.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
         }
         else
         {
@@ -106,7 +104,7 @@ export class WebGLRenderParams
             {
                 console.warn(`${gl} 不支持 stencil，参考 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil`);
             }
-            gl.enable(gl.STENCIL_TEST);
+            webGLContext.enable('STENCIL_TEST');
             gl.stencilFunc(gl[stencilFunc], stencilFuncRef, stencilFuncMask);
             gl.stencilOp(gl[stencilOpFail], gl[stencilOpZFail], gl[stencilOpZPass]);
             gl.stencilMask(stencilMask);

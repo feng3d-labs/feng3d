@@ -41,13 +41,13 @@ export class MouseRenderer extends EventEmitter
         webGLContext.clearColor(0, 0, 0, 0);
         webGLContext.clearDepth(1);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
-        gl.viewport(offsetX, offsetY, viewRect.width, viewRect.height);
+        webGLContext.viewport(offsetX, offsetY, viewRect.width, viewRect.height);
 
         this.objects.length = 1;
 
         // 启动裁剪，只绘制一个像素
         webGLContext.enable('SCISSOR_TEST');
-        gl.scissor(0, 0, 1, 1);
+        webGLContext.scissor(0, 0, 1, 1);
         // super.draw(renderContext);
         gl.disable(gl.SCISSOR_TEST);
 

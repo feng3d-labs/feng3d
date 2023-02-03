@@ -3,7 +3,6 @@ import { RenderAtomic } from './data/RenderAtomic';
 import { WebGLAttributeBuffers } from './gl/WebGLAttributeBuffers';
 import { WebGLBindingStates } from './gl/WebGLBindingStates';
 import { WebGLRenderbuffers } from './gl/WebGLBuffers';
-import { WebGLCacheStates } from './gl/WebGLCacheStates';
 import { WebGLCapabilities } from './gl/WebGLCapabilities';
 import { WebGLElementBuffers } from './gl/WebGLElementBuffers';
 import { WebGLExtensions } from './gl/WebGLExtensions';
@@ -57,10 +56,6 @@ export class WebGLRenderer
      */
     info: WebGLInfo;
 
-    /**
-     * 缓存WebGL状态
-     */
-    cacheStates: WebGLCacheStates;
     shaders: WebGLShaders;
     state: WebGLState;
     bindingStates: WebGLBindingStates;
@@ -108,7 +103,6 @@ export class WebGLRenderer
         this.capabilities = new WebGLCapabilities(gl, this.extensions);
         this.extensions.init(this.capabilities);
         this.info = new WebGLInfo(gl);
-        this.cacheStates = new WebGLCacheStates(gl);
         this.shaders = new WebGLShaders(gl);
         this.textures = new WebGLTextures(this);
         this.state = new WebGLState(gl, this.extensions, this.capabilities);
@@ -116,7 +110,7 @@ export class WebGLRenderer
         this.elementBuffers = new WebGLElementBuffers(this);
 
         this.bindingStates = new WebGLBindingStates(gl, this.extensions, this.attributeBuffers, this.elementBuffers, this.capabilities, this.shaders);
-        this.renderParams = new WebGLRenderParams(gl, this.capabilities, this.state);
+        this.renderParams = new WebGLRenderParams(this);
         this.uniforms = new WebGLUniforms();
         this.renderbuffers = new WebGLRenderbuffers(gl);
         this.framebuffers = new WebGLFramebuffers(gl);
