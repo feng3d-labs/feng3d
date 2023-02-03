@@ -3,16 +3,145 @@
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
  */
-export interface WebGLParameters extends WebGL1Parameters { }
+export interface WebGLParameters extends WebGL2Parameters { }
 
-/**
- * You can query the following pname parameters when using a WebGLRenderingContext.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
- */
-export type ParameterName = keyof WebGLParameters;
+interface WebGL2Parameters extends WebGL1Parameters
+{
+    /**
+     * 	See bindBuffer.
+     */
+    COPY_READ_BUFFER_BINDING: WebGLBuffer | null;
+    /**
+     * 	See bindBuffer.
+     */
+    COPY_WRITE_BUFFER_BINDING: WebGLBuffer | null;
+    /**
+     * 	gl.BACK, gl.NONE or gl.COLOR_ATTACHMENT{0-15}. See also drawBuffers.
+     */
+    DRAW_BUFFERi: GLenum;
 
-interface WebGL1Parameters
+    /**
+     * 	null corresponds to a binding to the default framebuffer. See also bindFramebuffer.
+     */
+    DRAW_FRAMEBUFFER_BINDING: WebGLFramebuffer | null;
+
+    /**
+     * 	gl.FASTEST, gl.NICEST or gl.DONT_CARE. See also hint.
+     */
+    FRAGMENT_SHADER_DERIVATIVE_HINT: GLenum;
+    MAX_3D_TEXTURE_SIZE: GLint;
+    MAX_ARRAY_TEXTURE_LAYERS: GLint;
+    MAX_CLIENT_WAIT_TIMEOUT_WEBGL: GLint64;
+    MAX_COLOR_ATTACHMENTS: GLint;
+    MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS: GLint64;
+    MAX_COMBINED_UNIFORM_BLOCKS: GLint;
+    MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS: GLint64;
+    MAX_DRAW_BUFFERS: GLint;
+    MAX_ELEMENT_INDEX: GLint64
+    MAX_ELEMENTS_INDICES: GLint
+    MAX_ELEMENTS_VERTICES: GLint
+    MAX_FRAGMENT_INPUT_COMPONENTS: GLint
+    MAX_FRAGMENT_UNIFORM_BLOCKS: GLint
+    MAX_FRAGMENT_UNIFORM_COMPONENTS: GLint
+    MAX_PROGRAM_TEXEL_OFFSET: GLint
+    MAX_SAMPLES: GLint
+    MAX_SERVER_WAIT_TIMEOUT: GLint64
+    MAX_TEXTURE_LOD_BIAS: GLfloat
+    MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: GLint
+    MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS: GLint
+    MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS: GLint
+    MAX_UNIFORM_BLOCK_SIZE: GLint64
+    MAX_UNIFORM_BUFFER_BINDINGS: GLint
+    MAX_VARYING_COMPONENTS: GLint
+    MAX_VERTEX_OUTPUT_COMPONENTS: GLint
+    MAX_VERTEX_UNIFORM_BLOCKS: GLint
+    MAX_VERTEX_UNIFORM_COMPONENTS: GLint
+    MIN_PROGRAM_TEXEL_OFFSET: GLint
+    /**
+     * See pixelStorei.
+     */
+    PACK_ROW_LENGTH: GLint
+    /**
+     * See pixelStorei.
+     */
+    PACK_SKIP_PIXELS: GLint
+    /**
+     * See pixelStorei.
+     */
+    PACK_SKIP_ROWS: GLint
+    /**
+     * 	See bindBuffer.
+     */
+    PIXEL_PACK_BUFFER_BINDING: WebGLBuffer | null
+    /**
+     * 	See bindBuffer.
+     */
+    PIXEL_UNPACK_BUFFER_BINDING: WebGLBuffer | null
+    RASTERIZER_DISCARD: GLboolean
+    READ_BUFFER: GLenum
+    /**
+     * 	null corresponds to a binding to the default framebuffer. See also bindFramebuffer.
+     */
+    READ_FRAMEBUFFER_BINDING: WebGLFramebuffer | null
+    SAMPLE_ALPHA_TO_COVERAGE: GLboolean
+    SAMPLE_COVERAGE: GLboolean
+    /**
+     * 	See bindSampler.
+     */
+    SAMPLER_BINDING: WebGLSampler | null
+    /**
+     * 	See bindTexture.
+     */
+    TEXTURE_BINDING_2D_ARRAY: WebGLTexture | null
+    /**
+     * 	See bindTexture.
+     */
+    TEXTURE_BINDING_3D: WebGLTexture | null
+    TRANSFORM_FEEDBACK_ACTIVE: GLboolean
+    /**
+     * 	See bindTransformFeedback.
+     */
+    TRANSFORM_FEEDBACK_BINDING: WebGLTransformFeedback | null
+    /**
+     * 	See bindBuffer.
+     */
+    TRANSFORM_FEEDBACK_BUFFER_BINDING: WebGLBuffer | null
+    TRANSFORM_FEEDBACK_PAUSED: GLboolean
+    /**
+     * 	See bindBuffer.
+     */
+    UNIFORM_BUFFER_BINDING: WebGLBuffer | null
+    /**
+     * 	See pixelStorei.
+     */
+    UNIFORM_BUFFER_OFFSET_ALIGNMENT: GLint
+    /**
+     * See pixelStorei.
+     */
+    UNPACK_IMAGE_HEIGHT: GLint
+    /**
+     * See pixelStorei.
+     */
+    UNPACK_ROW_LENGTH: GLint
+    /**
+     * See pixelStorei.
+     */
+    UNPACK_SKIP_IMAGES: GLint
+    /**
+     * 	See pixelStorei.
+     */
+    UNPACK_SKIP_PIXELS: GLint
+    /**
+     * See pixelStorei.
+     */
+    UNPACK_SKIP_ROWS: GLint
+    /**
+     * 	See bindVertexArray.
+     */
+    VERTEX_ARRAY_BINDING: WebGLVertexArrayObject | null;
+}
+
+interface WebGL1Parameters extends WebGLParameters_EXT
 {
     ACTIVE_TEXTURE: GLenum;
 
@@ -125,4 +254,14 @@ interface WebGL1Parameters
     VENDOR: string
     VERSION: string
     VIEWPORT: Int32Array & [GLint, GLint, GLint, GLint];
+}
+
+interface WebGLParameters_EXT extends WebGLParameters_EXT_texture_filter_anisotropic { }
+
+interface WebGLParameters_EXT_texture_filter_anisotropic
+{
+    /**
+     * 	Maximum available anisotropy.
+     */
+    MAX_TEXTURE_MAX_ANISOTROPY_EXT: GLfloat;
 }

@@ -322,8 +322,8 @@ export class WebGLBindingStates
      */
     private createBindingState(vao: WebGLVertexArrayObject)
     {
-        const { gl } = this._webGLRenderer;
-        const maxVertexAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+        const { webGLContext } = this._webGLRenderer;
+        const maxVertexAttributes = webGLContext.getParameter('MAX_VERTEX_ATTRIBS');
         const bindingState = new BindingState(vao, maxVertexAttributes);
 
         return bindingState;

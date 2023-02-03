@@ -109,53 +109,30 @@ export class WebGLCapabilities
             this.isWebGL2 = true;
         }
 
-        this.maxAnisotropy = this._getMaxAnisotropy();
-        this.maxPrecision = this._getMaxPrecision('highp');
+        this.maxAnisotropy = webGLContext.getParameter('MAX_TEXTURE_MAX_ANISOTROPY_EXT');
+        this.maxPrecision = this._getMaxPrecision();
 
         this.maxTextures = webGLContext.getParameter('MAX_TEXTURE_IMAGE_UNITS');
-        this.maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-        this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-        this.maxCubemapSize = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+        this.maxVertexTextures = webGLContext.getParameter('MAX_VERTEX_TEXTURE_IMAGE_UNITS');
+        this.maxTextureSize = webGLContext.getParameter('MAX_TEXTURE_SIZE');
+        this.maxCubemapSize = webGLContext.getParameter('MAX_CUBE_MAP_TEXTURE_SIZE');
 
-        this.maxAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
-        this.maxVertexUniforms = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
-        this.maxVaryings = gl.getParameter(gl.MAX_VARYING_VECTORS);
-        this.maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+        this.maxAttributes = webGLContext.getParameter('MAX_VERTEX_ATTRIBS');
+        this.maxVertexUniforms = webGLContext.getParameter('MAX_VERTEX_UNIFORM_VECTORS');
+        this.maxVaryings = webGLContext.getParameter('MAX_VARYING_VECTORS');
+        this.maxFragmentUniforms = webGLContext.getParameter('MAX_FRAGMENT_UNIFORM_VECTORS');
 
         this.vertexTextures = this.maxVertexTextures > 0;
         this.floatFragmentTextures = this.isWebGL2 || !!extensions.get('OES_texture_float');
         this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
 
-        this.maxSamples = this.isWebGL2 ? gl.getParameter(gl2.MAX_SAMPLES) : 0;
-        this.stencilBits = gl.getParameter(gl.STENCIL_BITS);
+        this.maxSamples = this.isWebGL2 ? webGLContext.getParameter('MAX_SAMPLES') : 0;
+        this.stencilBits = webGLContext.getParameter('STENCIL_BITS');
 
         this.vaoAvailable = this.isWebGL2 || !!extensions.get('OES_vertex_array_object');
     }
 
-    /**
-     * 纹理各向异性过滤最大值
-     */
-    private _getMaxAnisotropy()
-    {
-        const { gl, extensions } = this._webGLRenderer;
-
-        let maxAnisotropy: number;
-
-        if (extensions.has('EXT_texture_filter_anisotropic') === true)
-        {
-            const extension = extensions.get('EXT_texture_filter_anisotropic');
-
-            maxAnisotropy = gl.getParameter(extension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-        }
-        else
-        {
-            maxAnisotropy = 0;
-        }
-
-        return maxAnisotropy;
-    }
-
-    private _getMaxPrecision(precision: 'highp' | 'mediump' | 'lowp')
+    private _getMaxPrecision(precision: 'highp' | 'mediump' | 'lowp' = 'highp')
     {
         const { webGLContext } = this._webGLRenderer;
 

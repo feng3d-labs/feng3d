@@ -1,5 +1,5 @@
 import { AttachmentPoint, Capability, ClearMask, FramebufferTarget, PrecisionType, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
-import { ParameterName } from './gl/WebGLParameters';
+import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
 
 /**
@@ -233,10 +233,25 @@ export class WebGLContextBase
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
      */
-    getParameter(pname: ParameterName): any
+    getParameter(pname: keyof WebGLParameters): any
     {
-        const { gl } = this._webGLRenderer;
-        gl.getParameter(gl[pname]);
+        const { gl, extensions } = this._webGLRenderer;
+
+        let pnameV: number = gl[pname];
+
+        switch (pname)
+        {
+            case 'MAX_TEXTURE_MAX_ANISOTROPY_EXT':
+                const ext = extensions.get('EXT_texture_filter_anisotropic');
+                if (!ext)
+                {
+                    return 0;
+                }
+                pnameV = ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT;
+                break;
+        }
+
+        gl.getParameter(pnameV);
     }
 
     /**
