@@ -1,5 +1,4 @@
 import { WebGLRenderer } from '../WebGLRenderer';
-import { WebGLExtensions } from './WebGLExtensions';
 
 /**
  * WEBGL支持功能
@@ -100,30 +99,7 @@ export class WebGLCapabilities
     {
         this._webGLRenderer = webGLRenderer;
 
-        const { gl, extensions } = this._webGLRenderer;
-
-        function getMaxPrecision(precision)
-        {
-            if (precision === 'highp')
-            {
-                if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision > 0
-                    && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision > 0)
-                {
-                    return 'highp';
-                }
-                precision = 'mediump';
-            }
-            if (precision === 'mediump')
-            {
-                if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).precision > 0
-                    && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).precision > 0)
-                {
-                    return 'mediump';
-                }
-            }
-
-            return 'lowp';
-        }
+        const { gl, extensions, webGLContext } = this._webGLRenderer;
 
         this.isWebGL2 = false;
         let gl2: WebGL2RenderingContext = null;
@@ -133,11 +109,10 @@ export class WebGLCapabilities
             this.isWebGL2 = true;
         }
 
-        this.maxAnisotropy = getMaxAnisotropy(gl, extensions);
+        this.maxAnisotropy = this._getMaxAnisotropy();
+        this.maxPrecision = this._getMaxPrecision('highp');
 
-        this.maxPrecision = getMaxPrecision('highp');
-
-        this.maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+        this.maxTextures = webGLContext.getParameter('MAX_TEXTURE_IMAGE_UNITS');
         this.maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
         this.maxCubemapSize = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
@@ -156,25 +131,52 @@ export class WebGLCapabilities
 
         this.vaoAvailable = this.isWebGL2 || !!extensions.get('OES_vertex_array_object');
     }
-}
 
-/**
- * 纹理各向异性过滤最大值
- */
-function getMaxAnisotropy(gl: WebGLRenderingContext, extensions: WebGLExtensions)
-{
-    let maxAnisotropy: number;
-
-    if (extensions.has('EXT_texture_filter_anisotropic') === true)
+    /**
+     * 纹理各向异性过滤最大值
+     */
+    private _getMaxAnisotropy()
     {
-        const extension = extensions.get('EXT_texture_filter_anisotropic');
+        const { gl, extensions } = this._webGLRenderer;
 
-        maxAnisotropy = gl.getParameter(extension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        let maxAnisotropy: number;
+
+        if (extensions.has('EXT_texture_filter_anisotropic') === true)
+        {
+            const extension = extensions.get('EXT_texture_filter_anisotropic');
+
+            maxAnisotropy = gl.getParameter(extension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        }
+        else
+        {
+            maxAnisotropy = 0;
+        }
+
+        return maxAnisotropy;
     }
-    else
+
+    private _getMaxPrecision(precision: 'highp' | 'mediump' | 'lowp')
     {
-        maxAnisotropy = 0;
-    }
+        const { webGLContext } = this._webGLRenderer;
 
-    return maxAnisotropy;
+        if (precision === 'highp')
+        {
+            if (webGLContext.getShaderPrecisionFormat('VERTEX_SHADER', 'HIGH_FLOAT').precision > 0
+                && webGLContext.getShaderPrecisionFormat('FRAGMENT_SHADER', 'HIGH_FLOAT').precision > 0)
+            {
+                return 'highp';
+            }
+            precision = 'mediump';
+        }
+        if (precision === 'mediump')
+        {
+            if (webGLContext.getShaderPrecisionFormat('VERTEX_SHADER', 'MEDIUM_FLOAT').precision > 0
+                && webGLContext.getShaderPrecisionFormat('FRAGMENT_SHADER', 'MEDIUM_FLOAT').precision > 0)
+            {
+                return 'mediump';
+            }
+        }
+
+        return 'lowp';
+    }
 }

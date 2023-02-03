@@ -290,6 +290,18 @@ export type FramebufferTarget = 'FRAMEBUFFER' | 'DRAW_FRAMEBUFFER' | 'READ_FRAME
 export type Renderbuffertarget = 'RENDERBUFFER';
 
 /**
+ * Shader type.
+ *
+ * Either a gl.FRAGMENT_SHADER or a gl.VERTEX_SHADER.
+ */
+export type ShaderType = 'FRAGMENT_SHADER' | 'VERTEX_SHADER';
+
+/**
+ * A precision type value. Either gl.LOW_FLOAT, gl.MEDIUM_FLOAT, gl.HIGH_FLOAT, gl.LOW_INT, gl.MEDIUM_INT, or gl.HIGH_INT.
+ */
+export type PrecisionType = 'LOW_FLOAT' | 'MEDIUM_FLOAT' | 'HIGH_FLOAT' | 'LOW_INT' | 'MEDIUM_INT' | 'HIGH_INT';
+
+/**
  * A GLenum specifying the attachment point for the texture. Possible values:
  *
  * gl.COLOR_ATTACHMENT0: Attaches the texture to the framebuffer's color buffer.

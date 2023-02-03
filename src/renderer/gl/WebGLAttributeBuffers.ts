@@ -1,7 +1,6 @@
 import { watcher } from '../../watcher/watcher';
 import { AttributeBuffer, AttributeBufferSourceTypes, AttributeTypes } from '../data/AttributeBuffer';
 import { WebGLRenderer } from '../WebGLRenderer';
-import { WebGLCapabilities } from './WebGLCapabilities';
 
 export class WebGLAttributeBuffers
 {
@@ -37,14 +36,13 @@ export class WebGLAttributeBuffers
 
     update(attribute: AttributeBuffer)
     {
-        const { gl, capabilities } = this._webGLRenderer;
         const { buffers } = this;
 
         let data = buffers.get(attribute);
 
         if (data === undefined)
         {
-            data = new WebGLAttributeBuffer(gl, capabilities, attribute);
+            data = new WebGLAttributeBuffer(this._webGLRenderer, attribute);
             buffers.set(attribute, data);
         }
         data.updateBuffer();
@@ -80,8 +78,6 @@ export class WebGLAttributeBuffers
 
 export class WebGLAttributeBuffer
 {
-    gl: WebGLRenderingContext;
-    capabilities: WebGLCapabilities;
     //
     attribute: AttributeBuffer;
     buffer: WebGLBuffer;
@@ -101,10 +97,11 @@ export class WebGLAttributeBuffer
     bytesPerElement: number;
     version = -1;
 
-    constructor(gl: WebGLRenderingContext, capabilities: WebGLCapabilities, attribute: AttributeBuffer)
+    private _webGLRenderer: WebGLRenderer;
+
+    constructor(webGLRenderer: WebGLRenderer, attribute: AttributeBuffer)
     {
-        this.gl = gl;
-        this.capabilities = capabilities;
+        this._webGLRenderer = webGLRenderer;
 
         this.attribute = attribute;
 
@@ -119,7 +116,8 @@ export class WebGLAttributeBuffer
 
     updateBuffer()
     {
-        const { gl, attribute } = this;
+        const { gl } = this._webGLRenderer;
+        const { attribute } = this;
 
         if (this.version === attribute.version)
         {
@@ -153,14 +151,14 @@ export class WebGLAttributeBuffer
 
     dispose()
     {
-        const { gl, buffer, attribute } = this;
+        const { gl } = this._webGLRenderer;
+        const { buffer, attribute } = this;
 
         gl.deleteBuffer(buffer);
 
         watcher.watch(attribute, 'array', this.needsUpdate, this);
 
-        this.gl = null;
-        this.capabilities = null;
+        this._webGLRenderer = null;
         this.attribute = null;
         this.buffer = null;
     }

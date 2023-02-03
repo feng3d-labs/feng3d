@@ -1,4 +1,5 @@
-import { AttachmentPoint, Capability, ClearMask, FramebufferTarget, Renderbuffertarget, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
+import { AttachmentPoint, Capability, ClearMask, FramebufferTarget, PrecisionType, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
+import { ParameterName } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
 
 /**
@@ -223,6 +224,36 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.framebufferRenderbuffer(gl[target], gl[attachment], gl[renderbuffertarget], renderbuffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.getParameter() method of the WebGL API returns a value for the passed parameter name.
+     *
+     * @param pname A GLenum specifying which parameter value to return.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
+     */
+    getParameter(pname: ParameterName): any
+    {
+        const { gl } = this._webGLRenderer;
+        gl.getParameter(gl[pname]);
+    }
+
+    /**
+     * The WebGLRenderingContext.getShaderPrecisionFormat() method of the WebGL API returns a new WebGLShaderPrecisionFormat object describing the range and precision for the specified shader numeric format.
+     *
+     * @param shadertype Either a gl.FRAGMENT_SHADER or a gl.VERTEX_SHADER.
+     * @param precisiontype A precision type value. Either gl.LOW_FLOAT, gl.MEDIUM_FLOAT, gl.HIGH_FLOAT, gl.LOW_INT, gl.MEDIUM_INT, or gl.HIGH_INT.
+     * @returns A WebGLShaderPrecisionFormat object or null, if an error occurs.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderPrecisionFormat
+     */
+    getShaderPrecisionFormat(shadertype: ShaderType, precisiontype: PrecisionType): WebGLShaderPrecisionFormat | null
+    {
+        const { gl } = this._webGLRenderer;
+        const result = gl.getShaderPrecisionFormat(gl[shadertype], gl[precisiontype]);
+
+        return result;
     }
 
     /**
