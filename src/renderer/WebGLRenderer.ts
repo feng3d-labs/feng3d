@@ -98,6 +98,7 @@ export class WebGLRenderer
         const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
         this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
 
+        this.webGLContext = new WebGLContext(this);
         this.extensions = new WebGLExtensions(this);
 
         this.capabilities = new WebGLCapabilities(this);
@@ -114,8 +115,6 @@ export class WebGLRenderer
         this.uniforms = new WebGLUniforms();
         this.renderbuffers = new WebGLRenderbuffers(this);
         this.framebuffers = new WebGLFramebuffers(this);
-
-        this.webGLContext = new WebGLContext(this);
     }
 
     /**
