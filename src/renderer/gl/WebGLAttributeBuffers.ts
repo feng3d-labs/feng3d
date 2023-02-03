@@ -50,7 +50,7 @@ export class WebGLAttributeBuffers
 
     vertexAttribPointer(location: number, attribute: AttributeBuffer)
     {
-        const { gl, capabilities } = this._webGLRenderer;
+        const { gl, capabilities, webGLContext } = this._webGLRenderer;
 
         const attributeBufferCacle = this.get(attribute);
 
@@ -63,7 +63,7 @@ export class WebGLAttributeBuffers
         const stride = size * bytesPerElement;
         const offset = 0;
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        webGLContext.bindBuffer('ARRAY_BUFFER', buffer);
 
         if (capabilities.isWebGL2 === true && (type === gl.INT || type === gl.UNSIGNED_INT))
         {
@@ -116,7 +116,7 @@ export class WebGLAttributeBuffer
 
     updateBuffer()
     {
-        const { gl } = this._webGLRenderer;
+        const { gl, webGLContext } = this._webGLRenderer;
         const { attribute } = this;
 
         if (this.version === attribute.version)
@@ -139,7 +139,7 @@ export class WebGLAttributeBuffer
 
         buffer = gl.createBuffer();
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        webGLContext.bindBuffer('ARRAY_BUFFER', buffer);
         gl.bufferData(gl.ARRAY_BUFFER, array, gl[usage]);
 
         this.buffer = buffer;

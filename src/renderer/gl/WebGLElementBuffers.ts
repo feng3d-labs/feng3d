@@ -109,24 +109,23 @@ export class WebGLElementBuffers
 
     bindBuffer(element: ElementBuffer)
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
         if (element)
         {
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.get(element).buffer);
+            webGLContext.bindBuffer('ELEMENT_ARRAY_BUFFER', this.get(element).buffer);
         }
     }
 
     get(element: ElementBuffer)
     {
-        const { gl } = this._webGLRenderer;
         const buffers = this.buffers;
 
         let data = buffers.get(element);
 
         if (data === undefined)
         {
-            data = new WebGLElementBuffer(gl, element);
+            data = new WebGLElementBuffer(this._webGLRenderer, element);
             buffers.set(element, data);
         }
 
@@ -155,7 +154,6 @@ export class WebGLElementBuffers
  */
 class WebGLElementBuffer
 {
-    gl: WebGLRenderingContext;
     //
     element: ElementBuffer;
     buffer: WebGLBuffer;
@@ -177,9 +175,10 @@ class WebGLElementBuffer
 
     version = -1;
 
-    constructor(gl: WebGLRenderingContext, element: ElementBuffer)
+    private _webGLRenderer: WebGLRenderer;
+    constructor(webGLRenderer: WebGLRenderer, element: ElementBuffer)
     {
-        this.gl = gl;
+        this._webGLRenderer = webGLRenderer;
         this.element = element;
 
         //
@@ -193,7 +192,8 @@ class WebGLElementBuffer
 
     updateBuffer()
     {
-        const { gl, element } = this;
+        const { gl, webGLContext } = this._webGLRenderer;
+        const { element } = this;
 
         if (this.version === element.version)
         {
@@ -214,7 +214,7 @@ class WebGLElementBuffer
 
         buffer = gl.createBuffer();
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+        webGLContext.bindBuffer('ELEMENT_ARRAY_BUFFER', buffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array, gl[usage]);
 
         this.type = type;
@@ -225,13 +225,14 @@ class WebGLElementBuffer
 
     dispose()
     {
-        const { gl, buffer, element } = this;
+        const { gl } = this._webGLRenderer;
+        const { buffer, element } = this;
 
         gl.deleteBuffer(buffer);
 
         watcher.watch(element, 'array', this.needsUpdate, this);
 
-        this.gl = null;
+        this._webGLRenderer = null;
         this.element = null;
         this.buffer = null;
     }

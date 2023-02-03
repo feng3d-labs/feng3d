@@ -1,4 +1,4 @@
-import { AttachmentPoint, Capability, ClearMask, FramebufferTarget, PrecisionType, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
+import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
 import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
 
@@ -20,6 +20,20 @@ export class WebGLContextBase
     constructor(webGLRenderer: WebGLRenderer)
     {
         this._webGLRenderer = webGLRenderer;
+    }
+
+    /**
+     * The WebGLRenderingContext.bindBuffer() method of the WebGL API binds a given WebGLBuffer to a target.
+     *
+     * @param target A GLenum specifying the binding point (target).
+     * @param buffer A WebGLBuffer to bind.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindBuffer
+     */
+    bindBuffer(target: BufferTarget, buffer: WebGLBuffer | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.bindBuffer(gl[target], buffer);
     }
 
     /**
