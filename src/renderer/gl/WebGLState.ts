@@ -1,19 +1,15 @@
 import { BlendEquation } from '../data/RenderParams';
-import { WebGLCapabilities } from './WebGLCapabilities';
-import { WebGLExtensions } from './WebGLExtensions';
+import { WebGLRenderer } from '../WebGLRenderer';
 
 export class WebGLState
 {
-    private gl: WebGLRenderingContext;
-    private extensions: WebGLExtensions;
-    private capabilities: WebGLCapabilities;
     private blendEquationCache: { [key: string]: number } = {};
 
-    constructor(gl: WebGLRenderingContext, extensions: WebGLExtensions, capabilities: WebGLCapabilities)
+    private _webGLRenderer: WebGLRenderer;
+
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
-        this.extensions = extensions;
-        this.capabilities = capabilities;
+        this._webGLRenderer = webGLRenderer;
     }
 
     /**
@@ -29,7 +25,7 @@ export class WebGLState
             return this.blendEquationCache[blendEquation];
         }
 
-        const { gl, capabilities, extensions } = this;
+        const { gl, capabilities, extensions } = this._webGLRenderer;
 
         let value: number;
         if (blendEquation === 'MIN' || blendEquation === 'MAX')

@@ -1,17 +1,17 @@
 import { watcher } from '../../watcher/watcher';
 import { AttributeBuffer, AttributeBufferSourceTypes, AttributeTypes } from '../data/AttributeBuffer';
+import { WebGLRenderer } from '../WebGLRenderer';
 import { WebGLCapabilities } from './WebGLCapabilities';
 
 export class WebGLAttributeBuffers
 {
-    private gl: WebGLRenderingContext;
     private buffers = new WeakMap<AttributeBuffer, WebGLAttributeBuffer>();
-    private capabilities: WebGLCapabilities;
 
-    constructor(gl: WebGLRenderingContext, capabilities: WebGLCapabilities)
+    private _webGLRenderer: WebGLRenderer;
+
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
-        this.capabilities = capabilities;
+        this._webGLRenderer = webGLRenderer;
     }
 
     get(attribute: AttributeBuffer)
@@ -37,7 +37,8 @@ export class WebGLAttributeBuffers
 
     update(attribute: AttributeBuffer)
     {
-        const { gl, capabilities, buffers } = this;
+        const { gl, capabilities } = this._webGLRenderer;
+        const { buffers } = this;
 
         let data = buffers.get(attribute);
 
@@ -51,7 +52,7 @@ export class WebGLAttributeBuffers
 
     vertexAttribPointer(location: number, attribute: AttributeBuffer)
     {
-        const { gl, capabilities } = this;
+        const { gl, capabilities } = this._webGLRenderer;
 
         const attributeBufferCacle = this.get(attribute);
 

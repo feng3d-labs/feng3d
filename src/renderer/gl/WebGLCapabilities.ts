@@ -1,3 +1,4 @@
+import { WebGLRenderer } from '../WebGLRenderer';
 import { WebGLExtensions } from './WebGLExtensions';
 
 /**
@@ -88,18 +89,18 @@ export class WebGLCapabilities
      */
     stencilBits: number;
 
-    gl: WebGLRenderingContext;
-    extensions: WebGLExtensions;
-
     /**
      * 是否支持VAO。
      */
     vaoAvailable: boolean;
 
-    constructor(gl: WebGLRenderingContext, extensions: WebGLExtensions)
+    private _webGLRenderer: WebGLRenderer;
+
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
-        this.extensions = extensions;
+        this._webGLRenderer = webGLRenderer;
+
+        const { gl, extensions } = this._webGLRenderer;
 
         function getMaxPrecision(precision)
         {

@@ -1,23 +1,26 @@
 import { RenderAtomic } from '../data/RenderAtomic';
 import { Shader } from '../data/Shader';
 import { shaderlib } from '../shader/ShaderLib';
+import { WebGLRenderer } from '../WebGLRenderer';
 
 /**
  * WebGLShader处理器
  */
 export class WebGLShaders
 {
-    private gl: WebGLRenderingContext;
+    private _webGLRenderer: WebGLRenderer;
 
     private compileShaderResults: { [key: string]: CompileShaderResult } = {};
 
-    constructor(gl: WebGLRenderingContext)
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
+        this._webGLRenderer = webGLRenderer;
     }
 
     activeShader(renderAtomic: RenderAtomic)
     {
+        const { gl } = this._webGLRenderer;
+
         const shaderMacro = renderAtomic.getShaderMacro();
         const shader = renderAtomic.getShader();
         shader.shaderMacro = shaderMacro;
@@ -27,7 +30,7 @@ export class WebGLShaders
             throw new Error(`缺少着色器，无法渲染!`);
         }
         //
-        this.gl.useProgram(shaderResult.program);
+        gl.useProgram(shaderResult.program);
 
         return shaderResult;
     }
@@ -142,7 +145,7 @@ export class WebGLShaders
 
     private compileShaderProgram(vshader: string, fshader: string): CompileShaderResult
     {
-        const { gl } = this;
+        const { gl } = this._webGLRenderer;
 
         // 创建着色器程序
         // 编译顶点着色器

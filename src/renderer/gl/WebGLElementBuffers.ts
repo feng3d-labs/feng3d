@@ -7,17 +7,17 @@ import { AttributeUsage } from './WebGLEnums';
 
 export class WebGLElementBuffers
 {
-    private webGLRenderer: WebGLRenderer;
     private buffers = new WeakMap<ElementBuffer, WebGLElementBuffer>();
 
+    private _webGLRenderer: WebGLRenderer;
     constructor(webGLRenderer: WebGLRenderer)
     {
-        this.webGLRenderer = webGLRenderer;
+        this._webGLRenderer = webGLRenderer;
     }
 
     render(renderAtomic: RenderAtomic, offset: number, count: number)
     {
-        const { gl, extensions, info, capabilities, attributeBuffers: attributes } = this.webGLRenderer;
+        const { gl, extensions, info, capabilities, attributeBuffers: attributes } = this._webGLRenderer;
 
         let instanceCount = ~~lazy.getValue(renderAtomic.getInstanceCount());
         const mode = gl[renderAtomic.getRenderParams().renderMode];
@@ -109,7 +109,7 @@ export class WebGLElementBuffers
 
     bindBuffer(element: ElementBuffer)
     {
-        const { gl } = this.webGLRenderer;
+        const { gl } = this._webGLRenderer;
 
         if (element)
         {
@@ -119,7 +119,7 @@ export class WebGLElementBuffers
 
     get(element: ElementBuffer)
     {
-        const { gl } = this.webGLRenderer;
+        const { gl } = this._webGLRenderer;
         const buffers = this.buffers;
 
         let data = buffers.get(element);

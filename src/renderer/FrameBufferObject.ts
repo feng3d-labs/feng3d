@@ -44,7 +44,7 @@ export class FrameBufferObject
 
     static active(webGLRenderer: WebGLRenderer, frameBufferObject: FrameBufferObject)
     {
-        const { gl, renderbuffers, framebuffers, textures, webGLContext } = webGLRenderer;
+        const { renderbuffers, framebuffers, textures, webGLContext } = webGLRenderer;
         if (frameBufferObject._invalid)
         {
             frameBufferObject._invalid = false;
@@ -69,7 +69,7 @@ export class FrameBufferObject
 
             // 检查Framebuffer状态
             const e = webGLContext.checkFramebufferStatus(target);
-            if (gl.FRAMEBUFFER_COMPLETE !== e)
+            if (webGLContext.FRAMEBUFFER_COMPLETE !== e)
             {
                 console.warn(`Frame buffer object is incomplete: ${e.toString()}`);
 

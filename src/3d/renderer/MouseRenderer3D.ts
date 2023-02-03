@@ -30,7 +30,7 @@ export class MouseRenderer extends EventEmitter
      */
     draw(WebGLRenderer: WebGLRenderer, viewRect: Rectangle)
     {
-        const { gl, webGLContext } = WebGLRenderer;
+        const { webGLContext } = WebGLRenderer;
 
         const mouseX = windowEventProxy.clientX;
         const mouseY = windowEventProxy.clientY;

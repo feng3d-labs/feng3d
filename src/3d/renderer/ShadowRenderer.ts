@@ -62,7 +62,7 @@ export class ShadowRenderer
 
     private drawForSpotLight(webGLRenderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
     {
-        const { gl, webGLContext } = webGLRenderer;
+        const { webGLContext } = webGLRenderer;
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
         //
@@ -123,7 +123,7 @@ export class ShadowRenderer
 
     private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera3D): any
     {
-        const { gl, webGLContext } = webGLRenderer;
+        const { webGLContext } = webGLRenderer;
 
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
@@ -267,7 +267,7 @@ export class ShadowRenderer
         //
         FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
 
-        const { gl, webGLContext } = webGLRenderer;
+        const { webGLContext } = webGLRenderer;
 
         //
         webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);

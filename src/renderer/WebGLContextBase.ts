@@ -6,6 +6,14 @@ import { WebGLRenderer } from './WebGLRenderer';
  */
 export class WebGLContextBase
 {
+    /**
+     * FrameBuffer 状态完整。
+     */
+    get FRAMEBUFFER_COMPLETE(): GLenum
+    {
+        return this._webGLRenderer.gl.FRAMEBUFFER_COMPLETE;
+    }
+
     protected _webGLRenderer: WebGLRenderer;
 
     constructor(webGLRenderer: WebGLRenderer)

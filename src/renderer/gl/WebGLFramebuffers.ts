@@ -1,22 +1,24 @@
 import { FrameBuffer } from '../data/FrameBuffer';
+import { WebGLRenderer } from '../WebGLRenderer';
 
 export class WebGLFramebuffers
 {
-    private gl: WebGLRenderingContext;
-
     /**
      * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
      */
     private frameBuffers = new Map<FrameBuffer, WebGLFramebuffer>();
 
-    constructor(gl: WebGLRenderingContext)
+    private _webGLRenderer: WebGLRenderer;
+
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
+        this._webGLRenderer = webGLRenderer;
     }
 
     active(frameBuffer: FrameBuffer)
     {
-        const { gl, frameBuffers } = this;
+        const { gl } = this._webGLRenderer;
+        const { frameBuffers } = this;
 
         if (frameBuffer.invalid)
         {
@@ -46,7 +48,8 @@ export class WebGLFramebuffers
      */
     private clear(frameBuffer: FrameBuffer)
     {
-        const { gl, frameBuffers } = this;
+        const { gl } = this._webGLRenderer;
+        const { frameBuffers } = this;
 
         const buffer = frameBuffers.get(frameBuffer);
         if (buffer)

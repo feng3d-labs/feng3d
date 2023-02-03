@@ -8,11 +8,11 @@ import { UniformInfo } from './WebGLShaders';
  */
 export class WebGLTextures
 {
-    readonly webGLRenderer: WebGLRenderer;
+    private _webGLRenderer: WebGLRenderer;
 
     constructor(webGLRenderer: WebGLRenderer)
     {
-        this.webGLRenderer = webGLRenderer;
+        this._webGLRenderer = webGLRenderer;
     }
 
     /**
@@ -30,7 +30,7 @@ export class WebGLTextures
 
     active(data: Texture, activeInfo?: UniformInfo)
     {
-        const { webGLRenderer } = this;
+        const { _webGLRenderer: webGLRenderer } = this;
         const { gl, webGLContext } = webGLRenderer;
 
         if (activeInfo)

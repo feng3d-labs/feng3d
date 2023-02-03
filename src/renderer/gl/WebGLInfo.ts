@@ -1,3 +1,5 @@
+import { WebGLRenderer } from '../WebGLRenderer';
+
 /**
  * WebGL信息
  */
@@ -16,16 +18,17 @@ export class WebGLInfo
         lines: 0
     };
 
-    gl: WebGLRenderingContext;
+    private _webGLRenderer: WebGLRenderer;
 
-    constructor(gl: WebGLRenderingContext)
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
+        this._webGLRenderer = webGLRenderer;
     }
 
     update(count: number, mode: number, instanceCount: number)
     {
-        const { gl, render } = this;
+        const { gl } = this._webGLRenderer;
+        const { render } = this;
 
         render.calls++;
 

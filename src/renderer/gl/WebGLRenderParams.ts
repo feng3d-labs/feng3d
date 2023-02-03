@@ -1,8 +1,5 @@
-import { WebGLRenderer3D } from '../../3d/core/WebGLRenderer3D';
 import { RenderParams } from '../data/RenderParams';
 import { WebGLRenderer } from '../WebGLRenderer';
-import { WebGLCapabilities } from './WebGLCapabilities';
-import { WebGLState } from './WebGLState';
 
 export class WebGLRenderParams
 {

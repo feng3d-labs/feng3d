@@ -1,41 +1,27 @@
 import { AttributeBuffer } from '../data/AttributeBuffer';
 import { ElementBuffer } from '../data/ElementBuffer';
 import { RenderAtomic } from '../data/RenderAtomic';
-import { WebGLAttributeBuffers } from './WebGLAttributeBuffers';
-import { WebGLCapabilities } from './WebGLCapabilities';
-import { WebGLElementBuffers } from './WebGLElementBuffers';
-import { WebGLExtensions } from './WebGLExtensions';
-import { WebGLShaders } from './WebGLShaders';
+import { WebGLRenderer } from '../WebGLRenderer';
 
 export class WebGLBindingStates
 {
-    private gl: WebGLRenderingContext;
-    private extensions: WebGLExtensions;
-    private attributes: WebGLAttributeBuffers;
-    private elementBuffers: WebGLElementBuffers;
-    private capabilities: WebGLCapabilities;
-    private shaders: WebGLShaders;
-
     private currentState: BindingState;
     private defaultState: BindingState;
     private bindingStates = new WeakMap<RenderAtomic, BindingState>();
 
-    constructor(gl: WebGLRenderingContext, extensions: WebGLExtensions, attributes: WebGLAttributeBuffers, elementBuffers: WebGLElementBuffers, capabilities: WebGLCapabilities, shaders: WebGLShaders)
+    private _webGLRenderer: WebGLRenderer;
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
-        this.extensions = extensions;
-        this.attributes = attributes;
-        this.elementBuffers = elementBuffers;
-        this.capabilities = capabilities;
-        this.shaders = shaders;
+        this._webGLRenderer = webGLRenderer;
 
+        //
         this.defaultState = this.createBindingState(null);
         this.currentState = this.defaultState;
     }
 
     setup(renderAtomic: RenderAtomic)
     {
-        const { elementBuffers: indexedBufferRenderer, capabilities } = this;
+        const { elementBuffers: indexedBufferRenderer, capabilities } = this._webGLRenderer;
 
         let updateBuffers = false;
 
@@ -75,7 +61,8 @@ export class WebGLBindingStates
      */
     private needsUpdate(renderAtomic: RenderAtomic)
     {
-        const { currentState, shaders } = this;
+        const { currentState } = this;
+        const { shaders } = this._webGLRenderer;
 
         const cachedAttributes = currentState.attributes;
 
@@ -119,7 +106,8 @@ export class WebGLBindingStates
      */
     private saveCache(renderAtomic: RenderAtomic)
     {
-        const { currentState, shaders } = this;
+        const { shaders } = this._webGLRenderer;
+        const { currentState } = this;
 
         const cache: { [key: string]: { version: number, attribute: AttributeBuffer } } = {};
         let attributesNum = 0;
@@ -160,7 +148,7 @@ export class WebGLBindingStates
      */
     private setupVertexAttributes(renderAtomic: RenderAtomic)
     {
-        const { attributes, capabilities, extensions, shaders } = this;
+        const { attributeBuffers, capabilities, extensions, shaders } = this._webGLRenderer;
 
         if (capabilities.isWebGL2 === false && renderAtomic.getInstanceCount() > 0)
         {
@@ -186,9 +174,9 @@ export class WebGLBindingStates
 
             this.enableAttribute(location, attribute.divisor);
 
-            attributes.update(attribute);
+            attributeBuffers.update(attribute);
 
-            attributes.vertexAttribPointer(location, attribute);
+            attributeBuffers.vertexAttribPointer(location, attribute);
         }
 
         this.disableUnusedAttributes();
@@ -201,7 +189,7 @@ export class WebGLBindingStates
      */
     private bindVertexArrayObject(vao: WebGLVertexArrayObject)
     {
-        const { gl, extensions, capabilities } = this;
+        const { gl, extensions, capabilities } = this._webGLRenderer;
 
         if (capabilities.isWebGL2) return (gl as any as WebGL2RenderingContext).bindVertexArray(vao);
 
@@ -220,7 +208,8 @@ export class WebGLBindingStates
      */
     enableAttribute(location: number, divisor?: number)
     {
-        const { gl, extensions, capabilities, currentState } = this;
+        const { gl, extensions, capabilities } = this._webGLRenderer;
+        const { currentState } = this;
         divisor = ~~divisor;
 
         //
@@ -271,7 +260,8 @@ export class WebGLBindingStates
      */
     disableUnusedAttributes()
     {
-        const { gl, currentState } = this;
+        const { gl } = this._webGLRenderer;
+        const { currentState } = this;
 
         const newAttributes = currentState.newAttributes;
         const enabledAttributes = currentState.enabledAttributes;
@@ -312,7 +302,7 @@ export class WebGLBindingStates
      */
     private createVertexArrayObject()
     {
-        const { gl, extensions, capabilities } = this;
+        const { gl, extensions, capabilities } = this._webGLRenderer;
 
         if (capabilities.isWebGL2)
         {
@@ -332,7 +322,7 @@ export class WebGLBindingStates
      */
     private createBindingState(vao: WebGLVertexArrayObject)
     {
-        const { gl } = this;
+        const { gl } = this._webGLRenderer;
         const maxVertexAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
         const bindingState = new BindingState(vao, maxVertexAttributes);
 

@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { WebGLRenderer } from '../WebGLRenderer';
 import { WebGLCapabilities } from './WebGLCapabilities';
 
 interface WebGLExtensionMap
@@ -40,12 +41,12 @@ interface WebGLExtensionMap
  */
 export class WebGLExtensions
 {
-    private gl: WebGLRenderingContext;
+    private _webGLRenderer: WebGLRenderer;
     private extensions: { [extensionName: string]: any } = {};
 
-    constructor(gl: WebGLRenderingContext)
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
+        this._webGLRenderer = webGLRenderer;
     }
 
     init(capabilities: WebGLCapabilities)
@@ -102,7 +103,8 @@ export class WebGLExtensions
 
     private getExtension<K extends keyof WebGLExtensionMap>(name: K): WebGLExtensionMap[K]
     {
-        const { gl, extensions } = this;
+        const { gl } = this._webGLRenderer;
+        const { extensions } = this;
         if (extensions[name] !== undefined)
         {
             return extensions[name];

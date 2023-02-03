@@ -2,7 +2,7 @@
 import { RenderAtomic } from './data/RenderAtomic';
 import { WebGLAttributeBuffers } from './gl/WebGLAttributeBuffers';
 import { WebGLBindingStates } from './gl/WebGLBindingStates';
-import { WebGLRenderbuffers } from './gl/WebGLBuffers';
+import { WebGLRenderbuffers } from './gl/WebGLRenderbuffers';
 import { WebGLCapabilities } from './gl/WebGLCapabilities';
 import { WebGLElementBuffers } from './gl/WebGLElementBuffers';
 import { WebGLExtensions } from './gl/WebGLExtensions';
@@ -96,24 +96,24 @@ export class WebGLRenderer
         } as Partial<WebGLContextAttributes>, contextAttributes);
 
         const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
-        const gl = this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
+        this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
 
-        this.extensions = new WebGLExtensions(gl);
+        this.extensions = new WebGLExtensions(this);
 
-        this.capabilities = new WebGLCapabilities(gl, this.extensions);
+        this.capabilities = new WebGLCapabilities(this);
         this.extensions.init(this.capabilities);
-        this.info = new WebGLInfo(gl);
-        this.shaders = new WebGLShaders(gl);
+        this.info = new WebGLInfo(this);
+        this.shaders = new WebGLShaders(this);
         this.textures = new WebGLTextures(this);
-        this.state = new WebGLState(gl, this.extensions, this.capabilities);
-        this.attributeBuffers = new WebGLAttributeBuffers(gl, this.capabilities);
+        this.state = new WebGLState(this);
+        this.attributeBuffers = new WebGLAttributeBuffers(this);
         this.elementBuffers = new WebGLElementBuffers(this);
 
-        this.bindingStates = new WebGLBindingStates(gl, this.extensions, this.attributeBuffers, this.elementBuffers, this.capabilities, this.shaders);
+        this.bindingStates = new WebGLBindingStates(this);
         this.renderParams = new WebGLRenderParams(this);
         this.uniforms = new WebGLUniforms();
-        this.renderbuffers = new WebGLRenderbuffers(gl);
-        this.framebuffers = new WebGLFramebuffers(gl);
+        this.renderbuffers = new WebGLRenderbuffers(this);
+        this.framebuffers = new WebGLFramebuffers(this);
 
         this.webGLContext = new WebGLContext(this);
     }
