@@ -248,11 +248,11 @@ export class WebGLContextBase
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
      */
-    getParameter(pname: keyof WebGLParameters): any
+    getParameter<K extends keyof WebGLParameters>(pname: K): WebGLParameters[K]
     {
         const { gl, extensions } = this._webGLRenderer;
 
-        let pnameV: number = gl[pname];
+        let pnameV: number = gl[pname as any];
 
         switch (pname)
         {
@@ -260,13 +260,14 @@ export class WebGLContextBase
                 const ext = extensions.get('EXT_texture_filter_anisotropic');
                 if (!ext)
                 {
-                    return 0;
+                    return 0 as any;
                 }
                 pnameV = ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT;
                 break;
         }
+        const result = gl.getParameter(pnameV);
 
-        gl.getParameter(pnameV);
+        return result;
     }
 
     /**
