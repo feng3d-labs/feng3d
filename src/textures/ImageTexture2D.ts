@@ -6,7 +6,7 @@ import { Texture2D } from './Texture2D';
  */
 export class ImageTexture2D extends Texture2D
 {
-    // __class__: "ImageTexture2D" = "ImageTexture2D";
+    declare __class__: 'ImageTexture2D';
 
     imageSource: HTMLImageElement;
 
@@ -18,7 +18,6 @@ export class ImageTexture2D extends Texture2D
 
     private _imageChanged()
     {
-        this._pixels = this.imageSource;
-        this.invalidate();
+        this.source = this.imageSource;
     }
 }

@@ -13,7 +13,6 @@ export class CanvasTexture2D extends Texture2D
 
     private _canvasChanged()
     {
-        this._pixels = this.canvas;
-        this.invalidate();
+        this.source = this.canvas;
     }
 }

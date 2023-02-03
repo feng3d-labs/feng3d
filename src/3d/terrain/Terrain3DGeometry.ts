@@ -121,7 +121,7 @@ export class Terrain3DGeometry extends Geometry
 
             this.isloading = false;
 
-return;
+            return;
         }
         this.isloading = true;
 

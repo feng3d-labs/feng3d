@@ -8,12 +8,11 @@ export class VideoTexture2D extends Texture2D
     constructor()
     {
         super();
-        watcher.watch(this as VideoTexture2D, 'video', this._videoChanged, this);
+        watcher.watch(this as VideoTexture2D, 'video', this._onVideoChanged, this);
     }
 
-    private _videoChanged()
+    private _onVideoChanged()
     {
-        this._pixels = this.video;
-        this.invalidate();
+        this.source = this.video;
     }
 }

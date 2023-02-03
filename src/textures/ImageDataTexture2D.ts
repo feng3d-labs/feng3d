@@ -8,12 +8,11 @@ export class ImageDataTexture2D extends Texture2D
     constructor()
     {
         super();
-        watcher.watch(this as ImageDataTexture2D, 'imageData', this._imageDataChanged, this);
+        watcher.watch(this as ImageDataTexture2D, 'imageData', this._onImageDataChanged, this);
     }
 
-    private _imageDataChanged()
+    private _onImageDataChanged()
     {
-        this._pixels = this.imageData;
-        this.invalidate();
+        this.source = this.imageData;
     }
 }
