@@ -26,7 +26,7 @@ export class RenderParams
      */
     @SerializeProperty()
     @oav({ component: 'OAVEnum', tooltip: '渲染模式，默认RenderMode.TRIANGLES', componentParam: { enumClass: ['POINTS', 'LINE_LOOP', 'LINE_STRIP', 'LINES', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'] } })
-    renderMode: DrawMode = 'TRIANGLES';
+    drawMode: DrawMode = 'TRIANGLES';
 
     /**
      * 剔除面，默认 BACK，剔除背面。

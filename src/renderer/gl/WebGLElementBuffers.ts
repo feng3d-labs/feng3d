@@ -21,9 +21,9 @@ export class WebGLElementBuffers
 
         let instanceCount = ~~lazy.getValue(renderAtomic.getInstanceCount());
 
-        const renderMode = renderAtomic.getRenderParams().renderMode;
+        const drawMode = renderAtomic.getRenderParams().drawMode;
 
-        const mode = gl[renderMode];
+        const mode = gl[drawMode];
 
         const element = renderAtomic.getIndexBuffer();
 
@@ -63,46 +63,32 @@ export class WebGLElementBuffers
 
         if (instanceCount > 1)
         {
-            if (capabilities.isWebGL2)
+            if (element)
             {
-                if (element)
+                if (capabilities.isWebGL2)
                 {
                     (gl as WebGL2RenderingContext).drawElementsInstanced(mode, count, type, offset * bytesPerElement, instanceCount);
                 }
                 else
                 {
-                    (gl as WebGL2RenderingContext).drawArraysInstanced(mode, offset, count, instanceCount);
+                    const extension = extensions.get('ANGLE_instanced_arrays');
+                    extension.drawElementsInstancedANGLE(mode, count, type, offset * bytesPerElement, instanceCount);
                 }
             }
             else
             {
-                const extension = extensions.get('ANGLE_instanced_arrays');
-
-                if (extension === null)
-                {
-                    console.error('hardware does not support extension ANGLE_instanced_arrays.');
-
-                    return;
-                }
-                if (element)
-                {
-                    extension.drawElementsInstancedANGLE(mode, count, type, offset * bytesPerElement, instanceCount);
-                }
-                else
-                {
-                    extension.drawArraysInstancedANGLE(mode, offset, count, instanceCount);
-                }
+                webGLContext.drawArraysInstanced(drawMode, offset, count, instanceCount);
             }
         }
         else
         {
             if (element)
             {
-                webGLContext.drawElements(renderMode, count, elementCache.type, offset * bytesPerElement);
+                webGLContext.drawElements(drawMode, count, elementCache.type, offset * bytesPerElement);
             }
             else
             {
-                gl.drawArrays(mode, offset, count);
+                webGLContext.drawArrays(drawMode, offset, count);
             }
             instanceCount = 1;
         }

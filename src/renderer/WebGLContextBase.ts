@@ -239,6 +239,19 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.drawArrays() method of the WebGL API renders primitives from array data.
+     *
+     * @param mode A GLenum specifying the type primitive to render.
+     * @param first A GLint specifying the starting index in the array of vector points.
+     * @param count A GLsizei specifying the number of indices to be rendered.
+     */
+    drawArrays(mode: DrawMode, first: GLint, count: GLsizei): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.drawArrays(gl[mode], first, count);
+    }
+
+    /**
      * The WebGLRenderingContext.drawElements() method of the WebGL API renders primitives from array data.
      *
      * @param mode A GLenum specifying the type primitive to render.

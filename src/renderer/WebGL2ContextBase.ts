@@ -1,4 +1,5 @@
 import { VertexAttributeIntegerTypes } from './data/AttributeBuffer';
+import { DrawMode } from './data/RenderParams';
 import { WebGLContextOverloads } from './WebGLContextOverloads';
 
 /**
@@ -42,6 +43,30 @@ export class WebGL2ContextBase extends WebGLContextOverloads
         const extension = extensions.get('OES_vertex_array_object');
 
         return extension.createVertexArrayOES();
+    }
+
+    /**
+     * The WebGL2RenderingContext.drawArraysInstanced() method of the WebGL 2 API renders primitives from array data like the gl.drawArrays() method. In addition, it can execute multiple instances of the range of elements.
+     *
+     * @param mode A GLenum specifying the type primitive to render.
+     * @param first A GLint specifying the starting index in the array of vector points.
+     * @param count A GLsizei specifying the number of indices to be rendered.
+     * @param instanceCount A GLsizei specifying the number of instances of the range of elements to execute.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/drawArraysInstanced
+     */
+    drawArraysInstanced(mode: DrawMode, first: GLint, count: GLsizei, instanceCount: GLsizei): void
+    {
+        const { gl2, capabilities, extensions } = this._webGLRenderer;
+        if (capabilities.isWebGL2)
+        {
+            gl2.drawArraysInstanced(gl2[mode], first, count, instanceCount);
+
+            return;
+        }
+
+        const extension = extensions.get('ANGLE_instanced_arrays');
+        extension.drawArraysInstancedANGLE(gl2[mode], first, count, instanceCount);
     }
 
     /**

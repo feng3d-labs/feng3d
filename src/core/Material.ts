@@ -91,7 +91,7 @@ export abstract class Material extends EventEmitter
 
         renderAtomic.shader = this.shader;
         renderAtomic.renderParams = this.renderParams;
-        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === 'POINTS';
+        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.drawMode === 'POINTS';
     }
 
     /**
