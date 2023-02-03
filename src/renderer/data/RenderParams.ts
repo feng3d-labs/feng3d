@@ -26,7 +26,7 @@ export class RenderParams
      */
     @SerializeProperty()
     @oav({ component: 'OAVEnum', tooltip: '渲染模式，默认RenderMode.TRIANGLES', componentParam: { enumClass: ['POINTS', 'LINE_LOOP', 'LINE_STRIP', 'LINES', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'] } })
-    renderMode: RenderMode = 'TRIANGLES';
+    renderMode: DrawMode = 'TRIANGLES';
 
     /**
      * 剔除面，默认 BACK，剔除背面。
@@ -334,9 +334,18 @@ export type CullFace = 'NONE' | 'FRONT' | 'BACK' | 'FRONT_AND_BACK';
  * * TRIANGLE_FAN  绘制三角扇形。
  *
  * A GLenum specifying the type primitive to render. Possible values are:
+ *
+ * * gl.POINTS: Draws a single dot.
+ * * gl.LINE_STRIP: Draws a straight line to the next vertex.
+ * * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
+ * * gl.LINES: Draws a line between a pair of vertices.
+ * * gl.TRIANGLE_STRIP
+ * * gl.TRIANGLE_FAN
+ * * gl.TRIANGLES: Draws a triangle for a group of three vertices.
+ *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
  */
-export type RenderMode = 'POINTS' | 'LINE_LOOP' | 'LINE_STRIP' | 'LINES' | 'TRIANGLES' | 'TRIANGLE_STRIP' | 'TRIANGLE_FAN';
+export type DrawMode = 'POINTS' | 'LINE_STRIP' | 'LINE_LOOP' | 'LINES' | 'TRIANGLE_STRIP' | 'TRIANGLE_FAN' | 'TRIANGLES';
 
 /**
  * 正面方向枚举

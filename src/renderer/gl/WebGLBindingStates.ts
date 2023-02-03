@@ -248,7 +248,7 @@ export class WebGLBindingStates
      */
     disableUnusedAttributes()
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { currentState } = this;
 
         const newAttributes = currentState.newAttributes;
@@ -258,7 +258,7 @@ export class WebGLBindingStates
         {
             if (enabledAttributes[i] !== newAttributes[i])
             {
-                gl.disableVertexAttribArray(i);
+                webGLContext.disableVertexAttribArray(i);
                 enabledAttributes[i] = 0;
             }
         }

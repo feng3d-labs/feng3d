@@ -1,6 +1,6 @@
 import { lazy } from '../../polyfill/Types';
 import { watcher } from '../../watcher/watcher';
-import { DrawElementTypes, ElementBuffer, ElementBufferSourceTypes } from '../data/ElementBuffer';
+import { DrawElementType, ElementBuffer, ElementBufferSourceTypes } from '../data/ElementBuffer';
 import { RenderAtomic } from '../data/RenderAtomic';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { BufferUsage } from './WebGLEnums';
@@ -17,10 +17,13 @@ export class WebGLElementBuffers
 
     render(renderAtomic: RenderAtomic, offset: number, count: number)
     {
-        const { gl, extensions, info, capabilities, attributeBuffers: attributes } = this._webGLRenderer;
+        const { gl, extensions, info, capabilities, attributeBuffers: attributes, webGLContext } = this._webGLRenderer;
 
         let instanceCount = ~~lazy.getValue(renderAtomic.getInstanceCount());
-        const mode = gl[renderAtomic.getRenderParams().renderMode];
+
+        const renderMode = renderAtomic.getRenderParams().renderMode;
+
+        const mode = gl[renderMode];
 
         const element = renderAtomic.getIndexBuffer();
 
@@ -28,9 +31,9 @@ export class WebGLElementBuffers
         let bytesPerElement: number;
         let vertexNum: number;
 
+        const elementCache = this.get(element);
         if (element)
         {
-            const elementCache = this.get(element);
             type = gl[elementCache.type];
             bytesPerElement = elementCache.bytesPerElement;
             vertexNum = elementCache.count;
@@ -95,7 +98,7 @@ export class WebGLElementBuffers
         {
             if (element)
             {
-                gl.drawElements(mode, count, type, offset * bytesPerElement);
+                webGLContext.drawElements(renderMode, count, elementCache.type, offset * bytesPerElement);
             }
             else
             {
@@ -161,7 +164,7 @@ class WebGLElementBuffer
     /**
      * 元素数据类型
      */
-    type: DrawElementTypes;
+    type: DrawElementType;
 
     /**
      * 每个元素占用字符数量
@@ -238,7 +241,7 @@ class WebGLElementBuffer
     }
 }
 
-function transfromArrayType(array: ElementBufferSourceTypes, type?: DrawElementTypes)
+function transfromArrayType(array: ElementBufferSourceTypes, type?: DrawElementType)
 {
     // 处理 type
     if (type === undefined)

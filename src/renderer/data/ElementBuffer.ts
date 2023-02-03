@@ -8,9 +8,18 @@ export type ElementBufferSourceTypes = number[] | Uint16Array | Uint32Array | Ui
 /**
  * 元素缓冲数据类型。
  *
+ * A GLenum specifying the type of the values in the element array buffer. Possible values are:
+ *
+ * * gl.UNSIGNED_BYTE
+ * * gl.UNSIGNED_SHORT
+ *
+ * When using the OES_element_index_uint extension:
+ *
+ * * gl.UNSIGNED_INT
+ *
  * @see https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/drawElements
  */
-export type DrawElementTypes = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT';
+export type DrawElementType = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT';
 
 /**
  * WebGL元素缓冲，顶点索引缓冲。
@@ -41,10 +50,10 @@ export interface ElementBuffer
      *
      * @see https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/drawElements
      */
-    type?: DrawElementTypes;
+    type?: DrawElementType;
 
     /**
      * 版本号，用于标记是否变化。
      */
-    version?:number;
+    version?: number;
 }

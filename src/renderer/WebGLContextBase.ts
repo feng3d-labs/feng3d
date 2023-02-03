@@ -1,4 +1,6 @@
 import { VertexAttributeTypes } from './data/AttributeBuffer';
+import { DrawElementType } from './data/ElementBuffer';
+import { DrawMode } from './data/RenderParams';
 import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
 import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
@@ -221,6 +223,35 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.disable(gl[cap]);
+    }
+
+    /**
+     * The WebGLRenderingContext.disableVertexAttribArray() method of the WebGL API turns the generic vertex attribute array off at a given index position.
+     *
+     * @param index A GLuint specifying the index of the vertex attribute to disable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disableVertexAttribArray
+     */
+    disableVertexAttribArray(index: GLuint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.disableVertexAttribArray(index);
+    }
+
+    /**
+     * The WebGLRenderingContext.drawElements() method of the WebGL API renders primitives from array data.
+     *
+     * @param mode A GLenum specifying the type primitive to render.
+     * @param count A GLsizei specifying the number of elements of the bound element array buffer to be rendered. For example, to draw a wireframe triangle with gl.LINES the count should be 2 endpoints per line × 3 lines = 6 elements. However to draw the same wireframe triangle with gl.LINE_STRIP the element array buffer does not repeat the indices for the end of the first line/start of the second line, and end of the second line/start of the third line, so count will be four. To draw the same triangle with gl.LINE_LOOP the element array buffer does not repeat the first/last vertex either so count will be three.
+     * @param type A GLenum specifying the type of the values in the element array buffer.
+     * @param offset A GLintptr specifying a byte offset in the element array buffer. Must be a valid multiple of the size of the given type.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+     */
+    drawElements(mode: DrawMode, count: GLsizei, type: DrawElementType, offset: GLintptr): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.drawElements(gl[mode], count, gl[type], offset);
     }
 
     /**
