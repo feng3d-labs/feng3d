@@ -17,24 +17,20 @@ export class WebGLElementBuffers
 
     render(renderAtomic: RenderAtomic, offset: number, count: number)
     {
-        const { gl, extensions, info, capabilities, attributeBuffers: attributes, webGLContext } = this._webGLRenderer;
+        const { info, attributeBuffers: attributes, webGLContext } = this._webGLRenderer;
 
         let instanceCount = ~~lazy.getValue(renderAtomic.getInstanceCount());
 
         const drawMode = renderAtomic.getRenderParams().drawMode;
 
-        const mode = gl[drawMode];
-
         const element = renderAtomic.getIndexBuffer();
 
-        let type: number;
         let bytesPerElement: number;
         let vertexNum: number;
 
         const elementCache = this.get(element);
         if (element)
         {
-            type = gl[elementCache.type];
             bytesPerElement = elementCache.bytesPerElement;
             vertexNum = elementCache.count;
         }
@@ -65,15 +61,7 @@ export class WebGLElementBuffers
         {
             if (element)
             {
-                if (capabilities.isWebGL2)
-                {
-                    (gl as WebGL2RenderingContext).drawElementsInstanced(mode, count, type, offset * bytesPerElement, instanceCount);
-                }
-                else
-                {
-                    const extension = extensions.get('ANGLE_instanced_arrays');
-                    extension.drawElementsInstancedANGLE(mode, count, type, offset * bytesPerElement, instanceCount);
-                }
+                webGLContext.drawElementsInstanced(drawMode, count, elementCache.type, offset * bytesPerElement, instanceCount);
             }
             else
             {
@@ -93,7 +81,7 @@ export class WebGLElementBuffers
             instanceCount = 1;
         }
 
-        info.update(count, mode, instanceCount);
+        info.update(count, drawMode, instanceCount);
     }
 
     bindBuffer(element: ElementBuffer)

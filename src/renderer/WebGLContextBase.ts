@@ -1,7 +1,8 @@
 import { VertexAttributeTypes } from './data/AttributeBuffer';
 import { DrawElementType } from './data/ElementBuffer';
 import { DrawMode } from './data/RenderParams';
-import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
+import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, RenderbufferInternalformat, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
+import { WebGLExtensionMapFull } from './gl/WebGLExtensions';
 import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
 
@@ -200,6 +201,36 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.createFramebuffer() method of the WebGL API creates and initializes a WebGLFramebuffer object.
+     *
+     * @returns A WebGLFramebuffer object.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
+     */
+    createFramebuffer(): WebGLFramebuffer | null
+    {
+        const { gl } = this._webGLRenderer;
+        const framebuffer = gl.createFramebuffer();
+
+        return framebuffer;
+    }
+
+    /**
+     * The WebGLRenderingContext.createRenderbuffer() method of the WebGL API creates and initializes a WebGLRenderbuffer object.
+     *
+     * @returns A WebGLRenderbuffer object that stores data such an image, or can be source or target of an rendering operation.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createRenderbuffer
+     */
+    createRenderbuffer(): WebGLRenderbuffer | null
+    {
+        const { gl } = this._webGLRenderer;
+        const buffer = gl.createRenderbuffer();
+
+        return buffer;
+    }
+
+    /**
      * The WebGLRenderingContext.deleteBuffer() method of the WebGL API deletes a given WebGLBuffer. This method has no effect if the buffer has already been deleted. Normally you don't need to call this method yourself, when the buffer object is dereferenced it will be marked as free.
      *
      * @param buffer A WebGLBuffer object to delete.
@@ -210,6 +241,32 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.deleteBuffer(buffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.deleteFramebuffer() method of the WebGL API deletes a given WebGLFramebuffer object. This method has no effect if the frame buffer has already been deleted.
+     *
+     * @param framebuffer A WebGLFramebuffer object to delete.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteFramebuffer
+     */
+    deleteFramebuffer(framebuffer: WebGLFramebuffer | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.deleteFramebuffer(framebuffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.deleteRenderbuffer() method of the WebGL API deletes a given WebGLRenderbuffer object. This method has no effect if the render buffer has already been deleted.
+     *
+     * @param renderbuffer deleteRenderbuffer(renderbuffer)
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteRenderbuffer
+     */
+    deleteRenderbuffer(renderbuffer: WebGLRenderbuffer | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.deleteRenderbuffer(renderbuffer);
     }
 
     /**
@@ -327,6 +384,22 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.getExtension() method enables a WebGL extension.
+     *
+     * @param name A String for the name of the WebGL extension to enable.
+     * @returns A WebGL extension object, or null if name does not match (case-insensitive) to one of the strings in WebGLRenderingContext.getSupportedExtensions.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getExtension
+     */
+    getExtension<K extends keyof WebGLExtensionMapFull>(name: K): WebGLExtensionMapFull[K]
+    {
+        const { gl } = this._webGLRenderer;
+        const ext = gl.getExtension(name);
+
+        return ext;
+    }
+
+    /**
      * The WebGLRenderingContext.getParameter() method of the WebGL API returns a value for the passed parameter name.
      *
      * @param pname A GLenum specifying which parameter value to return.
@@ -342,7 +415,7 @@ export class WebGLContextBase
         switch (pname)
         {
             case 'MAX_TEXTURE_MAX_ANISOTROPY_EXT':
-                const ext = extensions.get('EXT_texture_filter_anisotropic');
+                const ext = extensions.getExtension('EXT_texture_filter_anisotropic');
                 if (!ext)
                 {
                     return 0 as any;
@@ -373,6 +446,20 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.renderbufferStorage() method of the WebGL API creates and initializes a renderbuffer object's data store.
+     *
+     * @param target A GLenum specifying the target renderbuffer object. Possible values:
+     * @param internalformat A GLenum specifying the internal format of the renderbuffer.
+     * @param width A GLsizei specifying the width of the renderbuffer in pixels.
+     * @param height A GLsizei specifying the height of the renderbuffer in pixels.
+     */
+    renderbufferStorage(target: Renderbuffertarget, internalformat: RenderbufferInternalformat, width: GLsizei, height: GLsizei): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.renderbufferStorage(gl[target], gl[internalformat], width, height);
+    }
+
+    /**
      * The WebGLRenderingContext.scissor() method of the WebGL API sets a scissor box, which limits the drawing to a specified rectangle.
      *
      * @param x A GLint specifying the horizontal coordinate for the lower left corner of the box. Default value: 0.
@@ -386,6 +473,19 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.scissor(x, y, width, height);
+    }
+
+    /**
+     * The WebGLRenderingContext.useProgram() method of the WebGL API sets the specified WebGLProgram as part of the current rendering state.
+     *
+     * @param program A WebGLProgram to use.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/useProgram
+     */
+    useProgram(program: WebGLProgram | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.useProgram(program);
     }
 
     /**

@@ -20,7 +20,7 @@ export class WebGLRenderbuffers
      */
     active(renderBuffer: RenderBuffer)
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { renderBuffers } = this;
         const { OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT } = renderBuffer;
 
@@ -37,15 +37,15 @@ export class WebGLRenderbuffers
         if (!cache)
         {
             // Create a renderbuffer object and Set its size and parameters
-            const buffer = gl.createRenderbuffer(); // Create a renderbuffer object
+            const buffer = webGLContext.createRenderbuffer(); // Create a renderbuffer object
             if (!buffer)
             {
                 console.warn('Failed to create renderbuffer object');
 
                 return;
             }
-            gl.bindRenderbuffer(gl.RENDERBUFFER, buffer);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT);
+            webGLContext.bindRenderbuffer('RENDERBUFFER', buffer);
+            webGLContext.renderbufferStorage('RENDERBUFFER', 'DEPTH_COMPONENT16', OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT);
 
             cache = { buffer, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT };
             renderBuffers.set(renderBuffer, cache);
@@ -59,13 +59,13 @@ export class WebGLRenderbuffers
      */
     private clear(renderBuffer: RenderBuffer)
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { renderBuffers } = this;
 
         const buffer = renderBuffers.get(renderBuffer);
         if (buffer)
         {
-            gl.deleteRenderbuffer(buffer);
+            webGLContext.deleteRenderbuffer(buffer);
             renderBuffers.delete(renderBuffer);
         }
     }

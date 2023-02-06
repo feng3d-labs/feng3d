@@ -19,7 +19,7 @@ export class WebGLShaders
 
     activeShader(renderAtomic: RenderAtomic)
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
         const shaderMacro = renderAtomic.getShaderMacro();
         const shader = renderAtomic.getShader();
@@ -30,7 +30,7 @@ export class WebGLShaders
             throw new Error(`缺少着色器，无法渲染!`);
         }
         //
-        gl.useProgram(shaderResult.program);
+        webGLContext.useProgram(shaderResult.program);
 
         return shaderResult;
     }

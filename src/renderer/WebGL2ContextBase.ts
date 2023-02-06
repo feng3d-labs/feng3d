@@ -1,4 +1,5 @@
 import { VertexAttributeIntegerTypes } from './data/AttributeBuffer';
+import { DrawElementType } from './data/ElementBuffer';
 import { DrawMode } from './data/RenderParams';
 import { WebGLContextOverloads } from './WebGLContextOverloads';
 
@@ -20,7 +21,7 @@ export class WebGL2ContextBase extends WebGLContextOverloads
 
         if (isWebGL2) return gl2.bindVertexArray(array);
 
-        const extension = extensions.get('OES_vertex_array_object');
+        const extension = extensions.getExtension('OES_vertex_array_object');
         extension.bindVertexArrayOES(array);
     }
 
@@ -40,7 +41,7 @@ export class WebGL2ContextBase extends WebGLContextOverloads
             return gl2.createVertexArray();
         }
 
-        const extension = extensions.get('OES_vertex_array_object');
+        const extension = extensions.getExtension('OES_vertex_array_object');
 
         return extension.createVertexArrayOES();
     }
@@ -65,8 +66,31 @@ export class WebGL2ContextBase extends WebGLContextOverloads
             return;
         }
 
-        const extension = extensions.get('ANGLE_instanced_arrays');
+        const extension = extensions.getExtension('ANGLE_instanced_arrays');
         extension.drawArraysInstancedANGLE(gl2[mode], first, count, instanceCount);
+    }
+
+    /**
+     * The WebGL2RenderingContext.drawElementsInstanced() method of the WebGL 2 API renders primitives from array data like the gl.drawElements() method. In addition, it can execute multiple instances of a set of elements.
+     *
+     * @param mode A GLenum specifying the type primitive to render.
+     * @param count A GLsizei specifying the number of elements to be rendered.
+     * @param type A GLenum specifying the type of the values in the element array buffer.
+     * @param offset A GLintptr specifying an offset in the element array buffer. Must be a valid multiple of the size of the given type.
+     * @param instanceCount A GLsizei specifying the number of instances of the set of elements to execute.
+     */
+    drawElementsInstanced(mode: DrawMode, count: GLsizei, type: DrawElementType, offset: GLintptr, instanceCount: GLsizei): void
+    {
+        const { isWebGL2, gl2, extensions } = this._webGLRenderer;
+        if (isWebGL2)
+        {
+            gl2.drawElementsInstanced(gl2[mode], count, gl2[type], offset, instanceCount);
+        }
+        else
+        {
+            const extension = extensions.getExtension('ANGLE_instanced_arrays');
+            extension.drawElementsInstancedANGLE(gl2[mode], count, gl2[type], offset, instanceCount);
+        }
     }
 
     /**
@@ -87,7 +111,7 @@ export class WebGL2ContextBase extends WebGLContextOverloads
 
             return;
         }
-        const extension = extensions.get('ANGLE_instanced_arrays');
+        const extension = extensions.getExtension('ANGLE_instanced_arrays');
         extension.vertexAttribDivisorANGLE(index, divisor);
     }
 

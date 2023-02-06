@@ -57,7 +57,7 @@ export class WebGLTextures
 
     private setTextureParameters(webGLRenderer: WebGLRenderer, texture: Texture)
     {
-        const { gl, extensions, capabilities } = webGLRenderer;
+        const { gl, extensions, capabilities, isWebGL2 } = webGLRenderer;
         const { _texturesCache: textures } = this;
 
         const { textureTarget: textureType, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
@@ -90,12 +90,14 @@ export class WebGLTextures
 
         if (cache.anisotropy !== anisotropy)
         {
-            if (extensions.has('EXT_texture_filter_anisotropic') === true)
+            const extension = extensions.getExtension('EXT_texture_filter_anisotropic');
+            if (extension)
             {
-                const extension = extensions.get('EXT_texture_filter_anisotropic');
+                const ext1 = extensions.getExtension('OES_texture_float_linear');
+                const ext2 = extensions.getExtension('OES_texture_half_float_linear');
 
-                if (type === 'FLOAT' && extensions.has('OES_texture_float_linear') === false) return; // verify extension for WebGL 1 and WebGL 2
-                if (capabilities.isWebGL2 === false && (type === 'HALF_FLOAT' && extensions.has('OES_texture_half_float_linear') === false)) return; // verify extension for WebGL 1 only
+                if (type === 'FLOAT' && !ext1) return; // verify extension for WebGL 1 and WebGL 2
+                if (isWebGL2 === false && (type === 'HALF_FLOAT' && !ext2)) return; // verify extension for WebGL 1 only
 
                 if (anisotropy > 1)
                 {

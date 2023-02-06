@@ -1,3 +1,4 @@
+import { DrawMode } from '../data/RenderParams';
 import { WebGLRenderer } from '../WebGLRenderer';
 
 /**
@@ -25,36 +26,39 @@ export class WebGLInfo
         this._webGLRenderer = webGLRenderer;
     }
 
-    update(count: number, mode: number, instanceCount: number)
+    update(count: number, mode: DrawMode, instanceCount: number)
     {
-        const { gl } = this._webGLRenderer;
         const { render } = this;
 
         render.calls++;
 
         switch (mode)
         {
-            case gl.TRIANGLES:
-                render.triangles += instanceCount * (count / 3);
-                break;
-
-            case gl.TRIANGLE_STRIP:
+            case 'TRIANGLE_FAN':
                 render.triangles += instanceCount * (count - 2);
                 break;
 
-            case gl.LINES:
+            case 'TRIANGLES':
+                render.triangles += instanceCount * (count / 3);
+                break;
+
+            case 'TRIANGLE_STRIP':
+                render.triangles += instanceCount * (count - 2);
+                break;
+
+            case 'LINES':
                 render.lines += instanceCount * (count / 2);
                 break;
 
-            case gl.LINE_STRIP:
+            case 'LINE_STRIP':
                 render.lines += instanceCount * (count - 1);
                 break;
 
-            case gl.LINE_LOOP:
+            case 'LINE_LOOP':
                 render.lines += instanceCount * count;
                 break;
 
-            case gl.POINTS:
+            case 'POINTS':
                 render.points += instanceCount * count;
                 break;
 

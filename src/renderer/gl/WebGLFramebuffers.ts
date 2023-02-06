@@ -17,7 +17,7 @@ export class WebGLFramebuffers
 
     active(frameBuffer: FrameBuffer)
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { frameBuffers } = this;
 
         if (frameBuffer.invalid)
@@ -30,7 +30,7 @@ export class WebGLFramebuffers
         let buffer = frameBuffers.get(frameBuffer);
         if (!buffer)
         {
-            buffer = gl.createFramebuffer();
+            buffer = webGLContext.createFramebuffer();
             if (!buffer)
             {
                 console.warn('Failed to create frame buffer object');
@@ -48,13 +48,13 @@ export class WebGLFramebuffers
      */
     private clear(frameBuffer: FrameBuffer)
     {
-        const { gl } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { frameBuffers } = this;
 
         const buffer = frameBuffers.get(frameBuffer);
         if (buffer)
         {
-            gl.deleteFramebuffer(buffer);
+            webGLContext.deleteFramebuffer(buffer);
             frameBuffers.delete(frameBuffer);
         }
     }
