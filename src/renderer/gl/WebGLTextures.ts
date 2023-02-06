@@ -94,10 +94,17 @@ export class WebGLTextures
             if (extension)
             {
                 const ext1 = extensions.getExtension('OES_texture_float_linear');
-                const ext2 = extensions.getExtension('OES_texture_half_float_linear');
 
                 if (type === 'FLOAT' && !ext1) return; // verify extension for WebGL 1 and WebGL 2
-                if (isWebGL2 === false && (type === 'HALF_FLOAT' && !ext2)) return; // verify extension for WebGL 1 only
+                // verify extension for WebGL 1 only
+                if (isWebGL2 === false && type === 'HALF_FLOAT')
+                {
+                    const ext2 = extensions.getExtension('OES_texture_half_float_linear');
+                    if (!ext2)
+                    {
+                        return;
+                    }
+                }
 
                 if (anisotropy > 1)
                 {

@@ -23,7 +23,7 @@ export class WebGLExtensions
             this.getExtension('WEBGL_depth_texture');
             this.getExtension('OES_texture_float');
             this.getExtension('OES_texture_half_float');
-            this.getExtension('OES_texture_half_float_linear');
+            this.getExtension('OES_texture_half_float_linear', false);
             this.getExtension('OES_standard_derivatives');
             this.getExtension('OES_element_index_uint');
             this.getExtension('OES_vertex_array_object');
@@ -32,7 +32,7 @@ export class WebGLExtensions
 
         this.getExtension('OES_texture_float_linear');
         this.getExtension('EXT_color_buffer_half_float');
-        this.getExtension('WEBGL_multisampled_render_to_texture');
+        this.getExtension('WEBGL_multisampled_render_to_texture', false);
     }
 
     /**
@@ -41,7 +41,7 @@ export class WebGLExtensions
      * @param name WebGL扩展名称。
      * @returns 返回指定WebGL扩展。
      */
-    getExtension<K extends keyof WebGLExtensionMap>(name: K): WebGLExtensionMap[K]
+    getExtension<K extends keyof WebGLExtensionMap>(name: K, isWarn = true): WebGLExtensionMap[K]
     {
         const { webGLContext } = this._webGLRenderer;
         const { extensions } = this;
@@ -74,7 +74,7 @@ export class WebGLExtensions
                 extension = webGLContext.getExtension(name);
         }
 
-        if (extension === null)
+        if (extension === null && isWarn)
         {
             console.warn(`WebGLRenderer: ${name} extension not supported.`);
         }
