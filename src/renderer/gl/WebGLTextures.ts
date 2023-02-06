@@ -57,34 +57,32 @@ export class WebGLTextures
 
     private setTextureParameters(webGLRenderer: WebGLRenderer, texture: Texture)
     {
-        const { gl, extensions, capabilities, isWebGL2 } = webGLRenderer;
+        const { gl, webGLContext, extensions, capabilities, isWebGL2 } = webGLRenderer;
         const { _texturesCache: textures } = this;
 
-        const { textureTarget: textureType, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
+        const { textureTarget, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
 
         const cache = textures.get(texture);
-
-        const textureTarget = gl[textureType];
 
         // 设置纹理参数
         if (cache.minFilter !== minFilter)
         {
-            gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, gl[minFilter]);
+            webGLContext.texParameteri(textureTarget, 'TEXTURE_MIN_FILTER', minFilter);
             cache.minFilter = minFilter;
         }
         if (cache.magFilter !== magFilter)
         {
-            gl.texParameteri(textureTarget, gl.TEXTURE_MAG_FILTER, gl[magFilter]);
+            webGLContext.texParameteri(textureTarget, 'TEXTURE_MAG_FILTER', magFilter);
             cache.magFilter = magFilter;
         }
         if (cache.wrapS !== wrapS)
         {
-            gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_S, gl[wrapS]);
+            webGLContext.texParameteri(textureTarget, 'TEXTURE_WRAP_S', wrapS);
             cache.wrapS = wrapS;
         }
         if (cache.wrapT !== wrapT)
         {
-            gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_T, gl[wrapT]);
+            webGLContext.texParameteri(textureTarget, 'TEXTURE_WRAP_T', wrapT);
             cache.wrapT = wrapT;
         }
 
@@ -108,7 +106,7 @@ export class WebGLTextures
 
                 if (anisotropy > 1)
                 {
-                    gl.texParameterf(textureTarget, extension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(anisotropy, capabilities.maxAnisotropy));
+                    webGLContext.texParameterf(textureTarget, 'TEXTURE_MAX_ANISOTROPY_EXT', Math.min(anisotropy, capabilities.maxAnisotropy));
                 }
             }
             cache.anisotropy = anisotropy;

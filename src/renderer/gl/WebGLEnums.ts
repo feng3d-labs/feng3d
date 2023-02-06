@@ -256,14 +256,98 @@ export type TextureMinFilter = 'LINEAR' | 'NEAREST' | 'NEAREST_MIPMAP_NEAREST' |
 /**
  * A GLenum specifying the binding point (target). Possible values:
  *
- * * `TEXTURE_2D` gl.TEXTURE_2D: A two-dimensional texture.
- * * `TEXTURE_CUBE_MAP` gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
- * * `TEXTURE_3D` using a WebGL 2 context gl.TEXTURE_3D: A three-dimensional texture.
- * * `TEXTURE_2D_ARRAY` using a WebGL 2 context gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
+ * * gl.TEXTURE_2D: A two-dimensional texture.
+ * * gl.TEXTURE_CUBE_MAP: A cube-mapped texture.
+ *
+ * When using a WebGL 2 context, the following values are available additionally:
+ *
+ * * gl.TEXTURE_3D: A three-dimensional texture.
+ * * gl.TEXTURE_2D_ARRAY: A two-dimensional array texture.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
  */
 export type TextureTarget = 'TEXTURE_2D' | 'TEXTURE_CUBE_MAP' | 'TEXTURE_3D' | 'TEXTURE_2D_ARRAY';
+
+/**
+ * The pname parameter is a GLenum specifying the texture parameter to set.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+ */
+export interface TexParameteri extends TexParameteri_WebGL2
+{
+    /**
+     * Texture magnification filter
+     */
+    TEXTURE_MAG_FILTER: TextureMagFilter;
+
+    /**
+     * Texture minification filter
+     */
+    TEXTURE_MIN_FILTER: TextureMinFilter;
+
+    /**
+     * Wrapping function for texture coordinate s
+     */
+    TEXTURE_WRAP_S: TextureWrap;
+
+    /**
+     * Wrapping function for texture coordinate t
+     */
+    TEXTURE_WRAP_T: TextureWrap;
+}
+
+/**
+ * The pname parameter is a GLenum specifying the texture parameter to set.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+ */
+export interface TexParameterf
+{
+    /**
+     * 	Maximum anisotropy for a texture. A GLfloat value.
+     *
+     * EXT_texture_filter_anisotropic
+     */
+    TEXTURE_MAX_ANISOTROPY_EXT: number;
+
+    /**
+     * 	Texture maximum level-of-detail value. Any float values.
+     */
+    TEXTURE_MAX_LOD: number;
+
+    /**
+     * TEXTURE_MIN_LOD	Texture minimum level-of-detail value	Any float values.
+     */
+    TEXTURE_MIN_LOD: number;
+}
+
+export interface TexParameteri_WebGL2
+{
+    /**
+     * Texture mipmap level. Any int values.
+     */
+    TEXTURE_BASE_LEVEL: number;
+
+    /**
+     * Texture Comparison function
+     */
+    TEXTURE_COMPARE_FUNC: 'LEQUAL' | 'GEQUAL' | 'LESS' | 'GREATER' | 'EQUAL' | 'NOTEQUAL' | 'ALWAYS' | 'NEVER';
+
+    /**
+     * Texture comparison mode
+     */
+    TEXTURE_COMPARE_MODE: 'NONE' | 'COMPARE_REF_TO_TEXTURE';
+
+    /**
+     * 	Maximum texture mipmap array level. Any int values.
+     */
+    TEXTURE_MAX_LEVEL: number;
+
+    /**
+     * Wrapping function for texture coordinate r
+     */
+    TEXTURE_WRAP_R: TextureWrap;
+}
 
 /**
  * A GLenum specifying the texture target.

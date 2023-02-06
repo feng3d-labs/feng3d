@@ -10,7 +10,6 @@ import { WebGLInfo } from './gl/WebGLInfo';
 import { WebGLRenderbuffers } from './gl/WebGLRenderbuffers';
 import { WebGLRenderParams } from './gl/WebGLRenderParams';
 import { WebGLShaders } from './gl/WebGLShaders';
-import { WebGLState } from './gl/WebGLState';
 import { WebGLTextures } from './gl/WebGLTextures';
 import { WebGLUniforms } from './gl/WebGLUniforms';
 import { WebGLContext } from './WebGLContext';
@@ -59,7 +58,6 @@ export class WebGLRenderer
     info: WebGLInfo;
 
     shaders: WebGLShaders;
-    state: WebGLState;
     bindingStates: WebGLBindingStates;
     attributeBuffers: WebGLAttributeBuffers;
     renderParams: WebGLRenderParams;
@@ -73,6 +71,16 @@ export class WebGLRenderer
      * 是否为 WebGL2
      */
     readonly isWebGL2: boolean;
+
+    get width()
+    {
+        return this.canvas.width;
+    }
+
+    get height()
+    {
+        return this.canvas.height;
+    }
 
     constructor(canvas?: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
     {
@@ -119,7 +127,6 @@ export class WebGLRenderer
         this.info = new WebGLInfo(this);
         this.shaders = new WebGLShaders(this);
         this.textures = new WebGLTextures(this);
-        this.state = new WebGLState(this);
         this.attributeBuffers = new WebGLAttributeBuffers(this);
         this.elementBuffers = new WebGLElementBuffers(this);
 

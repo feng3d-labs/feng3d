@@ -1,7 +1,7 @@
 import { VertexAttributeTypes } from './data/AttributeBuffer';
 import { DrawElementType } from './data/ElementBuffer';
-import { DrawMode } from './data/RenderParams';
-import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, RenderbufferInternalformat, Renderbuffertarget, ShaderType, TexImage2DTarget, TextureTarget } from './gl/WebGLEnums';
+import { BlendEquation, BlendFactor, CullFace, DepthFunc, DrawMode, FrontFace, StencilFunc, StencilOp } from './data/RenderParams';
+import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, RenderbufferInternalformat, Renderbuffertarget, ShaderType, TexImage2DTarget, TexParameterf, TexParameteri, TextureTarget } from './gl/WebGLEnums';
 import { WebGLExtensionMapFull } from './gl/WebGLExtensions';
 import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
@@ -80,6 +80,35 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.bindRenderbuffer(gl[target], renderbuffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.blendEquation() method of the WebGL API is used to set both the RGB blend equation and alpha blend equation to a single equation.
+     *
+     * The blend equation determines how a new pixel is combined with a pixel already in the WebGLFramebuffer.
+     *
+     * @param mode A GLenum specifying how source and destination colors are combined.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
+     */
+    blendEquation(mode: BlendEquation): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.blendEquation(gl[mode]);
+    }
+
+    /**
+     * The WebGLRenderingContext.blendFunc() method of the WebGL API defines which function is used for blending pixel arithmetic.
+     *
+     * @param sfactor A WebGL_API.Types specifying a multiplier for the source blending factors. The default value is gl.ONE. For possible values, see below.
+     * @param dfactor A WebGL_API.Types specifying a multiplier for the destination blending factors. The default value is gl.ZERO. For possible values, see below.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
+     */
+    blendFunc(sfactor: BlendFactor, dfactor: BlendFactor): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.blendFunc(gl[sfactor], gl[dfactor]);
     }
 
     /**
@@ -231,6 +260,19 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.cullFace() method of the WebGL API specifies whether or not front- and/or back-facing polygons can be culled.
+     *
+     * @param mode A GLenum specifying whether front- or back-facing polygons are candidates for culling.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
+     */
+    cullFace(mode: CullFace): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.cullFace(gl[mode]);
+    }
+
+    /**
      * The WebGLRenderingContext.deleteBuffer() method of the WebGL API deletes a given WebGLBuffer. This method has no effect if the buffer has already been deleted. Normally you don't need to call this method yourself, when the buffer object is dereferenced it will be marked as free.
      *
      * @param buffer A WebGLBuffer object to delete.
@@ -267,6 +309,32 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.deleteRenderbuffer(renderbuffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.depthFunc() method of the WebGL API specifies a function that compares incoming pixel depth to the current depth buffer value.
+     *
+     * @param func A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
+     */
+    depthFunc(func: DepthFunc): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.depthFunc(gl[func]);
+    }
+
+    /**
+     * The WebGLRenderingContext.depthMask() method of the WebGL API sets whether writing into the depth buffer is enabled or disabled.
+     *
+     * @param flag A GLboolean specifying whether or not writing into the depth buffer is enabled. Default value: true, meaning that writing is enabled.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
+     */
+    depthMask(flag: GLboolean): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.depthMask(flag);
     }
 
     /**
@@ -384,6 +452,19 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.frontFace() method of the WebGL API specifies whether polygons are front- or back-facing by setting a winding orientation.
+     *
+     * @param mode A GLenum type winding orientation. The default value is gl.CCW.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
+     */
+    frontFace(mode: FrontFace): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.frontFace(gl[mode]);
+    }
+
+    /**
      * The WebGLRenderingContext.getExtension() method enables a WebGL extension.
      *
      * @param name A String for the name of the WebGL extension to enable.
@@ -446,6 +527,22 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.polygonOffset() method of the WebGL API specifies the scale factors and units to calculate depth values.
+     *
+     * The offset is added before the depth test is performed and before the value is written into the depth buffer.
+     *
+     * @param factor A GLfloat which sets the scale factor for the variable depth offset for each polygon. The default value is 0.
+     * @param units A GLfloat which sets the multiplier by which an implementation-specific value is multiplied with to create a constant depth offset. The default value is 0.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
+     */
+    polygonOffset(factor: GLfloat, units: GLfloat): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.polygonOffset(factor, units);
+    }
+
+    /**
      * The WebGLRenderingContext.renderbufferStorage() method of the WebGL API creates and initializes a renderbuffer object's data store.
      *
      * @param target A GLenum specifying the target renderbuffer object. Possible values:
@@ -473,6 +570,93 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.scissor(x, y, width, height);
+    }
+
+    /**
+     * The WebGLRenderingContext.stencilFunc() method of the WebGL API sets the front and back function and reference value for stencil testing.
+     *
+     * Stenciling enables and disables drawing on a per-pixel basis. It is typically used in multipass rendering to achieve special effects.
+     *
+     * @param func A GLenum specifying the test function. The default function is gl.ALWAYS.
+     * @param ref A GLint specifying the reference value for the stencil test. This value is clamped to the range 0 to 2^n - 1 where n is the number of bitplanes in the stencil buffer. The default value is 0.
+     * @param mask A GLuint specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done. The default value is all 1.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+     */
+    stencilFunc(func: StencilFunc, ref: GLint, mask: GLuint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.stencilFunc(gl[func], ref, mask);
+    }
+
+    /**
+     * The WebGLRenderingContext.stencilMask() method of the WebGL API controls enabling and disabling of both the front and back writing of individual bits in the stencil planes.
+     *
+     * The WebGLRenderingContext.stencilMaskSeparate() method can set front and back stencil writemasks to different values.
+     *
+     * @param mask A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
+     */
+    stencilMask(mask: GLuint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.stencilMask(mask);
+    }
+
+    /**
+     * The WebGLRenderingContext.stencilOp() method of the WebGL API sets both the front and back-facing stencil test actions.
+     *
+     * @param fail A GLenum specifying the function to use when the stencil test fails. The default value is gl.KEEP.
+     * @param zfail A GLenum specifying the function to use when the stencil test passes, but the depth test fails. The default value is gl.KEEP.
+     * @param zpassA GLenum specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled. The default value is gl.KEEP.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOp
+     */
+    stencilOp(fail: StencilOp, zfail: StencilOp, zpass: StencilOp): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.stencilOp(gl[fail], gl[zfail], gl[zpass]);
+    }
+
+    /**
+     * The WebGLRenderingContext.texParameter[fi]() methods of the WebGL API set texture parameters.
+     *
+     * @param target A GLenum specifying the binding point (target).
+     * @param pname The param parameter is a GLfloat or GLint specifying the value for the specified parameter
+     * @param param The pname parameter is a GLenum specifying the texture parameter to set.
+     *
+     * @see The WebGLRenderingContext.texParameter[fi]() methods of the WebGL API set texture parameters.
+     */
+    texParameterf<K extends keyof TexParameterf>(target: TextureTarget, pname: K, param: TexParameterf[K]): void
+    {
+        const { gl2 } = this._webGLRenderer;
+        let paramV: GLint = param as any;
+        if (typeof paramV === 'string')
+        {
+            paramV = gl2[paramV];
+        }
+        gl2.texParameterf(gl2[target], gl2[pname], paramV);
+    }
+
+    /**
+     * The WebGLRenderingContext.texParameter[fi]() methods of the WebGL API set texture parameters.
+     *
+     * @param target A GLenum specifying the binding point (target).
+     * @param pname The param parameter is a GLfloat or GLint specifying the value for the specified parameter
+     * @param param The pname parameter is a GLenum specifying the texture parameter to set.
+     *
+     * @see The WebGLRenderingContext.texParameter[fi]() methods of the WebGL API set texture parameters.
+     */
+    texParameteri<K extends keyof TexParameteri>(target: TextureTarget, pname: K, param: TexParameteri[K]): void
+    {
+        const { gl2 } = this._webGLRenderer;
+        let paramV: GLint = param as any;
+        if (typeof paramV === 'string')
+        {
+            paramV = gl2[paramV];
+        }
+        gl2.texParameteri(gl2[target], gl2[pname], paramV);
     }
 
     /**
