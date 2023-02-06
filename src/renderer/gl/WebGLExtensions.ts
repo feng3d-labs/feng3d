@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import { WebGLRenderer } from '../WebGLRenderer';
-import { WebGLCapabilities } from './WebGLCapabilities';
 
 interface WebGLExtensionMap
 {
@@ -47,11 +46,9 @@ export class WebGLExtensions
     constructor(webGLRenderer: WebGLRenderer)
     {
         this._webGLRenderer = webGLRenderer;
-    }
 
-    init(capabilities: WebGLCapabilities)
-    {
-        if (capabilities.isWebGL2)
+        const { isWebGL2 } = this._webGLRenderer;
+        if (isWebGL2)
         {
             this.getExtension('EXT_color_buffer_float');
         }

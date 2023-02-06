@@ -2,12 +2,12 @@
 import { RenderAtomic } from './data/RenderAtomic';
 import { WebGLAttributeBuffers } from './gl/WebGLAttributeBuffers';
 import { WebGLBindingStates } from './gl/WebGLBindingStates';
-import { WebGLRenderbuffers } from './gl/WebGLRenderbuffers';
 import { WebGLCapabilities } from './gl/WebGLCapabilities';
 import { WebGLElementBuffers } from './gl/WebGLElementBuffers';
 import { WebGLExtensions } from './gl/WebGLExtensions';
 import { WebGLFramebuffers } from './gl/WebGLFramebuffers';
 import { WebGLInfo } from './gl/WebGLInfo';
+import { WebGLRenderbuffers } from './gl/WebGLRenderbuffers';
 import { WebGLRenderParams } from './gl/WebGLRenderParams';
 import { WebGLShaders } from './gl/WebGLShaders';
 import { WebGLState } from './gl/WebGLState';
@@ -69,6 +69,11 @@ export class WebGLRenderer
 
     elementBuffers: WebGLElementBuffers;
 
+    /**
+     * 是否为 WebGL2
+     */
+    readonly isWebGL2: boolean;
+
     constructor(canvas?: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
     {
         if (!canvas)
@@ -98,14 +103,19 @@ export class WebGLRenderer
         } as Partial<WebGLContextAttributes>, contextAttributes);
 
         const contextNames = ['webgl2', 'webgl', 'experimental-webgl'];
-        this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
-        this.gl2 = this.gl as any;
+        const gl = this.gl = getContext(canvas, contextNames, contextAttributes) as WebGLRenderingContext;
+
+        this.isWebGL2 = false;
+        if (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext)
+        {
+            this.gl2 = gl;
+            this.isWebGL2 = true;
+        }
 
         this.webGLContext = new WebGLContext(this);
         this.extensions = new WebGLExtensions(this);
 
         this.capabilities = new WebGLCapabilities(this);
-        this.extensions.init(this.capabilities);
         this.info = new WebGLInfo(this);
         this.shaders = new WebGLShaders(this);
         this.textures = new WebGLTextures(this);

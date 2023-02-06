@@ -9,11 +9,6 @@ import { WebGLRenderer } from '../WebGLRenderer';
 export class WebGLCapabilities
 {
     /**
-     * 是否为 WebGL2
-     */
-    isWebGL2: boolean;
-
-    /**
      * 纹理各向异性过滤最大值
      */
     maxAnisotropy: number;
@@ -99,15 +94,7 @@ export class WebGLCapabilities
     {
         this._webGLRenderer = webGLRenderer;
 
-        const { gl, extensions, webGLContext } = this._webGLRenderer;
-
-        this.isWebGL2 = false;
-        let gl2: WebGL2RenderingContext = null;
-        if (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext)
-        {
-            gl2 = gl;
-            this.isWebGL2 = true;
-        }
+        const { isWebGL2, extensions, webGLContext } = this._webGLRenderer;
 
         this.maxAnisotropy = webGLContext.getParameter('MAX_TEXTURE_MAX_ANISOTROPY_EXT');
         this.maxPrecision = this._getMaxPrecision();
@@ -123,13 +110,13 @@ export class WebGLCapabilities
         this.maxFragmentUniforms = webGLContext.getParameter('MAX_FRAGMENT_UNIFORM_VECTORS');
 
         this.vertexTextures = this.maxVertexTextures > 0;
-        this.floatFragmentTextures = this.isWebGL2 || !!extensions.get('OES_texture_float');
+        this.floatFragmentTextures = isWebGL2 || !!extensions.get('OES_texture_float');
         this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
 
-        this.maxSamples = this.isWebGL2 ? webGLContext.getParameter('MAX_SAMPLES') : 0;
+        this.maxSamples = isWebGL2 ? webGLContext.getParameter('MAX_SAMPLES') : 0;
         this.stencilBits = webGLContext.getParameter('STENCIL_BITS');
 
-        this.vaoAvailable = this.isWebGL2 || !!extensions.get('OES_vertex_array_object');
+        this.vaoAvailable = isWebGL2 || !!extensions.get('OES_vertex_array_object');
     }
 
     private _getMaxPrecision(precision: 'highp' | 'mediump' | 'lowp' = 'highp')

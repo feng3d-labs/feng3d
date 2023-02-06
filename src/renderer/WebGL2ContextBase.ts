@@ -16,9 +16,9 @@ export class WebGL2ContextBase extends WebGLContextOverloads
      */
     bindVertexArray(array: WebGLVertexArrayObject | null): void
     {
-        const { gl2, capabilities, extensions } = this._webGLRenderer;
+        const { gl2, isWebGL2, extensions } = this._webGLRenderer;
 
-        if (capabilities.isWebGL2) return gl2.bindVertexArray(array);
+        if (isWebGL2) return gl2.bindVertexArray(array);
 
         const extension = extensions.get('OES_vertex_array_object');
         extension.bindVertexArrayOES(array);
@@ -33,9 +33,9 @@ export class WebGL2ContextBase extends WebGLContextOverloads
      */
     createVertexArray(): WebGLVertexArrayObject | null
     {
-        const { gl2, capabilities, extensions } = this._webGLRenderer;
+        const { gl2, isWebGL2, extensions } = this._webGLRenderer;
 
-        if (capabilities.isWebGL2)
+        if (isWebGL2)
         {
             return gl2.createVertexArray();
         }
@@ -57,8 +57,8 @@ export class WebGL2ContextBase extends WebGLContextOverloads
      */
     drawArraysInstanced(mode: DrawMode, first: GLint, count: GLsizei, instanceCount: GLsizei): void
     {
-        const { gl2, capabilities, extensions } = this._webGLRenderer;
-        if (capabilities.isWebGL2)
+        const { gl2, isWebGL2, extensions } = this._webGLRenderer;
+        if (isWebGL2)
         {
             gl2.drawArraysInstanced(gl2[mode], first, count, instanceCount);
 
@@ -79,9 +79,9 @@ export class WebGL2ContextBase extends WebGLContextOverloads
      */
     vertexAttribDivisor(index: GLuint, divisor: GLuint): void
     {
-        const { gl2, capabilities, extensions } = this._webGLRenderer;
+        const { gl2, isWebGL2, extensions } = this._webGLRenderer;
 
-        if (capabilities.isWebGL2)
+        if (isWebGL2)
         {
             gl2.vertexAttribDivisor(index, divisor);
 
