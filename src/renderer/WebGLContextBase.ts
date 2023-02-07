@@ -1,7 +1,7 @@
 import { VertexAttributeTypes } from './data/AttributeBuffer';
 import { DrawElementType } from './data/ElementBuffer';
 import { BlendEquation, BlendFactor, CullFace, DepthFunc, DrawMode, FrontFace, StencilFunc, StencilOp } from './data/RenderParams';
-import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, RenderbufferInternalformat, Renderbuffertarget, ShaderType, TexImage2DTarget, TexParameterf, TexParameteri, TextureTarget } from './gl/WebGLEnums';
+import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, ProgramParameter, RenderbufferInternalformat, Renderbuffertarget, ShaderParameter, ShaderType, TexImage2DTarget, TexParameterf, TexParameteri, TextureTarget } from './gl/WebGLEnums';
 import { WebGLExtensionMapFull } from './gl/WebGLExtensions';
 import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
@@ -215,6 +215,19 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.compileShader() method of the WebGL API compiles a GLSL shader into binary data so that it can be used by a WebGLProgram.
+     *
+     * @param shader A fragment or vertex WebGLShader.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
+     */
+    compileShader(shader: WebGLShader): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.compileShader(shader);
+    }
+
+    /**
      * The WebGLRenderingContext.createBuffer() method of the WebGL API creates and initializes a WebGLBuffer storing data such as vertices or colors.
      *
      * @returns A WebGLBuffer storing data such as vertices or colors.
@@ -257,6 +270,26 @@ export class WebGLContextBase
         const buffer = gl.createRenderbuffer();
 
         return buffer;
+    }
+
+    /**
+     * The WebGLRenderingContext method createShader() of the WebGL API creates a WebGLShader that can then be configured further using WebGLRenderingContext.shaderSource() and WebGLRenderingContext.compileShader().
+     *
+     * @param type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+     * @returns A new (WebGLShader).
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
+     */
+    createShader(type: ShaderType): WebGLShader | null
+    {
+        const { gl } = this._webGLRenderer;
+        const shader = gl.createShader(gl[type]);
+        if (!shader)
+        {
+            throw 'unable to create shader';
+        }
+
+        return shader;
     }
 
     /**
@@ -309,6 +342,19 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.deleteRenderbuffer(renderbuffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.deleteShader() method of the WebGL API marks a given WebGLShader object for deletion. It will then be deleted whenever the shader is no longer in use. This method has no effect if the shader has already been deleted, and the WebGLShader is automatically marked for deletion when it is destroyed by the garbage collector.
+     *
+     * @param shader A WebGLShader object to delete.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteShader
+     */
+    deleteShader(shader: WebGLShader | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.deleteShader(shader);
     }
 
     /**
@@ -465,6 +511,58 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.getActiveAttrib() method of the WebGL API returns a WebGLActiveInfo object containing size, type, and name of a vertex attribute. It is generally used when querying unknown attributes either for debugging or generic library creation.
+     *
+     * @param program A WebGLProgram containing the vertex attribute.
+     * @param index A GLuint specifying the index of the vertex attribute to get. This value is an index 0 to N - 1 as returned by gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES).
+     * @returns A WebGLActiveInfo object.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveAttrib
+     */
+    getActiveAttrib(program: WebGLProgram, index: GLuint): WebGLActiveInfo | null
+    {
+        const { gl } = this._webGLRenderer;
+        const activeInfo = gl.getActiveAttrib(program, index);
+
+        return activeInfo;
+    }
+
+    /**
+     * The WebGLRenderingContext.getActiveUniform() method of the WebGL API returns a WebGLActiveInfo object containing size, type, and name of a uniform attribute. It is generally used when querying unknown uniforms either for debugging or generic library creation.
+     *
+     * @param program A WebGLProgram specifying the WebGL shader program from which to obtain the uniform variable's information.
+     * @param index A GLuint specifying the index of the uniform attribute to get. This value is an index 0 to N - 1 as returned by gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS).
+     * @returns A WebGLActiveInfo object describing the uniform.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
+     */
+    getActiveUniform(program: WebGLProgram, index: GLuint): WebGLActiveUniformInfo | null
+    {
+        const { gl } = this._webGLRenderer;
+        const activeInfo = gl.getActiveUniform(program, index);
+        const activeUniformInfo = new WebGLActiveUniformInfo(gl, activeInfo);
+
+        return activeUniformInfo;
+    }
+
+    /**
+     * The WebGLRenderingContext.getAttribLocation() method of the WebGL API returns the location of an attribute variable in a given WebGLProgram.
+     *
+     * @param program A WebGLProgram containing the attribute variable.
+     * @param name A string specifying the name of the attribute variable whose location to get.
+     * @returns A GLint number indicating the location of the variable name if found. Returns -1 otherwise.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttribLocation
+     */
+    getAttribLocation(program: WebGLProgram, name: string): GLint
+    {
+        const { gl } = this._webGLRenderer;
+        const location = gl.getAttribLocation(program, name);
+
+        return location;
+    }
+
+    /**
      * The WebGLRenderingContext.getExtension() method enables a WebGL extension.
      *
      * @param name A String for the name of the WebGL extension to enable.
@@ -510,6 +608,39 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.getProgramParameter() method of the WebGL API returns information about the given program.
+     *
+     * @param program A WebGLProgram to get parameter information from.
+     * @param pname A GLenum specifying the information to query.
+     * @returns Returns the requested program information (as specified with pname).
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramParameter
+     */
+    getProgramParameter<K extends keyof ProgramParameter>(program: WebGLProgram, pname: K): ProgramParameter[K]
+    {
+        const { gl2 } = this._webGLRenderer;
+        const result = gl2.getProgramParameter(program, gl2[pname]);
+
+        return result;
+    }
+
+    /**
+     * The WebGLRenderingContext.getShaderInfoLog returns the information log for the specified WebGLShader object. It contains warnings, debugging and compile information.
+     *
+     * @param shader A WebGLShader to query.
+     * @returns A string that contains diagnostic messages, warning messages, and other information about the last compile operation. When a WebGLShader object is initially created, its information log will be a string of length 0.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
+     */
+    getShaderInfoLog(shader: WebGLShader): string | null
+    {
+        const { gl } = this._webGLRenderer;
+        const info = gl.getShaderInfoLog(shader);
+
+        return info;
+    }
+
+    /**
      * The WebGLRenderingContext.getShaderPrecisionFormat() method of the WebGL API returns a new WebGLShaderPrecisionFormat object describing the range and precision for the specified shader numeric format.
      *
      * @param shadertype Either a gl.FRAGMENT_SHADER or a gl.VERTEX_SHADER.
@@ -524,6 +655,40 @@ export class WebGLContextBase
         const result = gl.getShaderPrecisionFormat(gl[shadertype], gl[precisiontype]);
 
         return result;
+    }
+
+    /**
+     * The WebGLRenderingContext.getShaderParameter() method of the WebGL API returns information about the given shader.
+     *
+     * @param shader A WebGLShader to get parameter information from.
+     * @param pname A GLenum specifying the information to query.
+     * @returns Returns the requested shader information (as specified with pname).
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
+     */
+    getShaderParameter<K extends keyof ShaderParameter>(shader: WebGLShader, pname: K): ShaderParameter[K]
+    {
+        const { gl } = this._webGLRenderer;
+        const result = gl.getShaderParameter(shader, gl[pname]);
+
+        return result;
+    }
+
+    /**
+     * Part of the WebGL API, the WebGLRenderingContext method getUniformLocation() returns the location of a specific uniform variable which is part of a given WebGLProgram.
+     *
+     * @param program The WebGLProgram in which to locate the specified uniform variable.
+     * @param name A string specifying the name of the uniform variable whose location is to be returned. The name can't have any whitespace in it, and you can't use this function to get the location of any uniforms starting with the reserved string "gl_", since those are internal to the WebGL layer.
+     * @returns A WebGLUniformLocation value indicating the location of the named variable, if it exists. If the specified variable doesn't exist, null is returned instead.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
+     */
+    getUniformLocation(program: WebGLProgram, name: string): WebGLUniformLocation | null
+    {
+        const { gl } = this._webGLRenderer;
+        const location = gl.getUniformLocation(program, name);
+
+        return location;
     }
 
     /**
@@ -570,6 +735,20 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.scissor(x, y, width, height);
+    }
+
+    /**
+     * The WebGLRenderingContext.shaderSource() method of the WebGL API sets the source code of a WebGLShader.
+     *
+     * @param shader A WebGLShader object in which to set the source code.
+     * @param source A string containing the GLSL source code to set.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
+     */
+    shaderSource(shader: WebGLShader, source: string): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.shaderSource(shader, source);
     }
 
     /**
@@ -707,5 +886,26 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.viewport(x, y, width, height);
+    }
+}
+
+export class WebGLActiveUniformInfo
+{
+    readonly name: string;
+    readonly size: GLint;
+    readonly type: GLenum;
+    readonly isTexture: boolean;
+
+    constructor(gl: WebGLRenderingContext, info: WebGLActiveInfo)
+    {
+        this.name = info.name;
+        this.size = info.size;
+        this.type = info.type;
+
+        this.isTexture = false;
+        if (info.type === gl.SAMPLER_2D || info.type === gl.SAMPLER_CUBE)
+        {
+            this.isTexture = true;
+        }
     }
 }
