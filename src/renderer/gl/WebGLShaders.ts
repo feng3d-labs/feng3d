@@ -91,30 +91,28 @@ export class WebGLShaders
         return shader;
     }
 
-    private createLinkProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader)
+    private createLinkProgram(webGLRenderer: WebGLRenderer, vertexShader: WebGLShader, fragmentShader: WebGLShader)
     {
+        const { webGLContext } = webGLRenderer;
+
         // 创建程序对象
-        const program = gl.createProgram();
-        if (!program)
-        {
-            throw '创建 WebGLProgram 失败！';
-        }
+        const program = webGLContext.createProgram();
 
         // 添加着色器
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
+        webGLContext.attachShader(program, vertexShader);
+        webGLContext.attachShader(program, fragmentShader);
 
         // 链接程序
-        gl.linkProgram(program);
+        webGLContext.linkProgram(program);
 
         // 检查结果
-        const linked = gl.getProgramParameter(program, gl.LINK_STATUS);
+        const linked = webGLContext.getProgramParameter(program, 'LINK_STATUS');
         if (!linked)
         {
-            const error = gl.getProgramInfoLog(program);
-            gl.deleteProgram(program);
-            gl.deleteShader(fragmentShader);
-            gl.deleteShader(vertexShader);
+            const error = webGLContext.getProgramInfoLog(program);
+            webGLContext.deleteProgram(program);
+            webGLContext.deleteShader(fragmentShader);
+            webGLContext.deleteShader(vertexShader);
             throw `Failed to link program: ${error}`;
         }
 
@@ -143,7 +141,7 @@ export class WebGLShaders
 
     private compileShaderProgram(vshader: string, fshader: string): CompileShaderResult
     {
-        const { gl, webGLContext } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
         // 创建着色器程序
         // 编译顶点着色器
@@ -153,7 +151,7 @@ export class WebGLShaders
         const fragmentShader = this.compileShaderCode('FRAGMENT_SHADER', fshader);
 
         // 创建着色器程序
-        const shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
+        const shaderProgram = this.createLinkProgram(this._webGLRenderer, vertexShader, fragmentShader);
 
         // 获取属性信息
         const numAttributes = webGLContext.getProgramParameter(shaderProgram, 'ACTIVE_ATTRIBUTES');

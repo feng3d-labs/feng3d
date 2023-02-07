@@ -509,6 +509,40 @@ export interface ShaderParameter
 }
 
 /**
+ * Pixel storage parameters
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
+ */
+export interface PixelStoreiParameter extends PixelStoreiParameter_WebGL1 { }
+export interface PixelStoreiParameter_WebGL1
+{
+    /**
+     * Packing of pixel data into memory. default 4.
+     */
+    PACK_ALIGNMENT: 1 | 2 | 4 | 8;
+
+    /**
+     * Unpacking of pixel data from memory. default 4.
+     */
+    UNPACK_ALIGNMENT: 1 | 2 | 4 | 8;
+
+    /**
+     * Flips the source data along its vertical axis if true. default false.
+     */
+    UNPACK_FLIP_Y_WEBGL: GLboolean;
+
+    /**
+     * Multiplies the alpha channel into the other color channels. default false.
+     */
+    UNPACK_PREMULTIPLY_ALPHA_WEBGL: GLboolean;
+
+    /**
+     * Default color space conversion or no color space conversion. default gl.BROWSER_DEFAULT_WEBGL.
+     */
+    UNPACK_COLORSPACE_CONVERSION_WEBGL: 'BROWSER_DEFAULT_WEBGL' | 'NONE';
+}
+
+/**
  * A GLenum specifying the information to query. Possible values:
  * * gl.DELETE_STATUS       Returns a GLboolean indicating whether or not the program is flagged for deletion.
  * * gl.LINK_STATUS         Returns a GLboolean indicating whether or not the last link operation was successful.

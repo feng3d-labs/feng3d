@@ -1,7 +1,7 @@
 import { VertexAttributeTypes } from './data/AttributeBuffer';
 import { DrawElementType } from './data/ElementBuffer';
 import { BlendEquation, BlendFactor, CullFace, DepthFunc, DrawMode, FrontFace, StencilFunc, StencilOp } from './data/RenderParams';
-import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PrecisionType, ProgramParameter, RenderbufferInternalformat, Renderbuffertarget, ShaderParameter, ShaderType, TexImage2DTarget, TexParameterf, TexParameteri, TextureTarget } from './gl/WebGLEnums';
+import { AttachmentPoint, BufferTarget, Capability, ClearMask, FramebufferTarget, PixelStoreiParameter, PrecisionType, ProgramParameter, RenderbufferInternalformat, Renderbuffertarget, ShaderParameter, ShaderType, TexImage2DTarget, TexParameterf, TexParameteri, TextureTarget } from './gl/WebGLEnums';
 import { WebGLExtensionMapFull } from './gl/WebGLExtensions';
 import { WebGLParameters } from './gl/WebGLParameters';
 import { WebGLRenderer } from './WebGLRenderer';
@@ -24,6 +24,33 @@ export class WebGLContextBase
     constructor(webGLRenderer: WebGLRenderer)
     {
         this._webGLRenderer = webGLRenderer;
+    }
+
+    /**
+     * The WebGLRenderingContext.activeTexture() method of the WebGL API specifies which texture unit to make active.
+     *
+     * @param texture The texture unit to make active. The value is a gl.TEXTUREI where I is within the range from 0 to gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/activeTexture
+     */
+    activeTexture(textureID: GLenum): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.activeTexture(gl[`TEXTURE${textureID}`]);
+    }
+
+    /**
+     * The WebGLRenderingContext.attachShader() method of the WebGL API attaches either a fragment or vertex WebGLShader to a WebGLProgram.
+     *
+     * @param program A WebGLProgram.
+     * @param shader A fragment or vertex WebGLShader.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/attachShader
+     */
+    attachShader(program: WebGLProgram, shader: WebGLShader): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.attachShader(program, shader);
     }
 
     /**
@@ -293,6 +320,44 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.createTexture() method of the WebGL API creates and initializes a WebGLTexture object.
+     *
+     * @returns A WebGLTexture object to which images can be bound to.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
+     */
+    createTexture(): WebGLTexture | null
+    {
+        const { gl } = this._webGLRenderer;
+        const texture = gl.createTexture();
+        if (!texture)
+        {
+            throw 'createTexture 失败！';
+        }
+
+        return texture;
+    }
+
+    /**
+     * The WebGLRenderingContext.createProgram() method of the WebGL API creates and initializes a WebGLProgram object.
+     *
+     * @returns A WebGLProgram object that is a combination of two compiled WebGLShaders consisting of a vertex shader and a fragment shader (both written in GLSL). These are then linked into a usable program.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+     */
+    createProgram(): WebGLProgram | null
+    {
+        const { gl } = this._webGLRenderer;
+        const program = gl.createProgram();
+        if (!program)
+        {
+            throw '创建 WebGLProgram 失败！';
+        }
+
+        return program;
+    }
+
+    /**
      * The WebGLRenderingContext.cullFace() method of the WebGL API specifies whether or not front- and/or back-facing polygons can be culled.
      *
      * @param mode A GLenum specifying whether front- or back-facing polygons are candidates for culling.
@@ -332,6 +397,19 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.deleteProgram() method of the WebGL API deletes a given WebGLProgram object. This method has no effect if the program has already been deleted.
+     *
+     * @param program A WebGLProgram object to delete.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteProgram
+     */
+    deleteProgram(program: WebGLProgram | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.deleteProgram(program);
+    }
+
+    /**
      * The WebGLRenderingContext.deleteRenderbuffer() method of the WebGL API deletes a given WebGLRenderbuffer object. This method has no effect if the render buffer has already been deleted.
      *
      * @param renderbuffer deleteRenderbuffer(renderbuffer)
@@ -355,6 +433,19 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.deleteShader(shader);
+    }
+
+    /**
+     * The WebGLRenderingContext.deleteTexture() method of the WebGL API deletes a given WebGLTexture object. This method has no effect if the texture has already been deleted.
+     *
+     * @param texture A WebGLTexture object to delete.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteTexture
+     */
+    deleteTexture(texture: WebGLTexture | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.deleteTexture(texture);
     }
 
     /**
@@ -511,6 +602,21 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.generateMipmap() method of the WebGL API generates a set of mipmaps for a WebGLTexture object.
+     *
+     * Mipmaps are used to create distance with objects. A higher-resolution mipmap is used for objects that are closer, and a lower-resolution mipmap is used for objects that are farther away. It starts with the resolution of the texture image and halves the resolution until a 1x1 dimension texture image is created.
+     *
+     * @param target A GLenum specifying the binding point (target) of the active texture whose mipmaps will be generated.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/generateMipmap
+     */
+    generateMipmap(target: TextureTarget): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.generateMipmap(gl[target]);
+    }
+
+    /**
      * The WebGLRenderingContext.getActiveAttrib() method of the WebGL API returns a WebGLActiveInfo object containing size, type, and name of a vertex attribute. It is generally used when querying unknown attributes either for debugging or generic library creation.
      *
      * @param program A WebGLProgram containing the vertex attribute.
@@ -608,6 +714,22 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.getProgramInfoLog returns the information log for the specified WebGLProgram object. It contains errors that occurred during failed linking or validation of WebGLProgram objects.
+     *
+     * @param program The WebGLProgram to query.
+     * @returns A string that contains diagnostic messages, warning messages, and other information about the last linking or validation operation. When a WebGLProgram object is initially created, its information log will be a string of length 0.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
+     */
+    getProgramInfoLog(program: WebGLProgram): string | null
+    {
+        const { gl } = this._webGLRenderer;
+        const infoLog = gl.getProgramInfoLog(program);
+
+        return infoLog;
+    }
+
+    /**
      * The WebGLRenderingContext.getProgramParameter() method of the WebGL API returns information about the given program.
      *
      * @param program A WebGLProgram to get parameter information from.
@@ -689,6 +811,40 @@ export class WebGLContextBase
         const location = gl.getUniformLocation(program, name);
 
         return location;
+    }
+
+    /**
+     * The WebGLRenderingContext interface's linkProgram() method links a given WebGLProgram, completing the process of preparing the GPU code for the program's fragment and vertex shaders.
+     *
+     * @param program  The WebGLProgram to link.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/linkProgram
+     */
+    linkProgram(program: WebGLProgram): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.linkProgram(program);
+    }
+
+    /**
+     * The WebGLRenderingContext.pixelStorei() method of the WebGL API specifies the pixel storage modes.
+     *
+     * @param pname A GLenum specifying which parameter to set.
+     * @param param A GLint specifying a value to set the pname parameter to.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
+     */
+    pixelStorei<K extends keyof PixelStoreiParameter>(pname: K, param: PixelStoreiParameter[K]): void
+    {
+        const { gl } = this._webGLRenderer;
+
+        let paramV: number | boolean = param as any;
+        if (typeof param === 'string')
+        {
+            paramV = gl[param];
+        }
+
+        gl.pixelStorei(gl[pname], paramV);
     }
 
     /**
@@ -836,6 +992,20 @@ export class WebGLContextBase
             paramV = gl2[paramV];
         }
         gl2.texParameteri(gl2[target], gl2[pname], paramV);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform1i(location: WebGLUniformLocation | null, x: GLint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform1i(location, x);
     }
 
     /**
