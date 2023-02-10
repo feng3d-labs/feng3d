@@ -30,7 +30,7 @@ export class WebGLUniforms
      */
     private setContext3DUniform(webGLRenderer: WebGLRenderer, activeInfo: UniformInfo, data)
     {
-        const { gl, textures } = webGLRenderer;
+        const { gl, textures, webGLContext } = webGLRenderer;
 
         let vec: number[] = data;
         if (data.toArray) vec = data.toArray();
@@ -39,7 +39,7 @@ export class WebGLUniforms
         {
             case gl.BOOL:
             case gl.INT:
-                gl.uniform1i(location, data);
+                webGLContext.uniform1i(location, data);
                 break;
             case gl.FLOAT_MAT3:
                 gl.uniformMatrix3fv(location, false, vec);
@@ -48,13 +48,13 @@ export class WebGLUniforms
                 gl.uniformMatrix4fv(location, false, vec);
                 break;
             case gl.FLOAT:
-                gl.uniform1f(location, data);
+                webGLContext.uniform1f(location, data);
                 break;
             case gl.FLOAT_VEC2:
-                gl.uniform2f(location, vec[0], vec[1]);
+                webGLContext.uniform2f(location, vec[0], vec[1]);
                 break;
             case gl.FLOAT_VEC3:
-                gl.uniform3f(location, vec[0], vec[1], vec[2]);
+                webGLContext.uniform3f(location, vec[0], vec[1], vec[2]);
                 break;
             case gl.FLOAT_VEC4:
                 gl.uniform4f(location, vec[0], vec[1], vec[2], vec[3]);

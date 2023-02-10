@@ -1002,10 +1002,120 @@ export class WebGLContextBase
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
      */
+    uniform1f(location: WebGLUniformLocation | null, x: GLfloat): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform1f(location, x);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
     uniform1i(location: WebGLUniformLocation | null, x: GLint): void
     {
         const { gl } = this._webGLRenderer;
         gl.uniform1i(location, x);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     * @param y A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform2f(location: WebGLUniformLocation | null, x: GLfloat, y: GLfloat): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform2f(location, x, y);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     * @param y A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform2i(location: WebGLUniformLocation | null, x: GLint, y: GLint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform2i(location, x, y);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     * @param y A new value to be used for the uniform variable.
+     * @param z A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform3f(location: WebGLUniformLocation | null, x: GLfloat, y: GLfloat, z: GLfloat): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform3f(location, x, y, z);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     * @param y A new value to be used for the uniform variable.
+     * @param z A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform3i(location: WebGLUniformLocation | null, x: GLint, y: GLint, z: GLint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform3i(location, x, y, z);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     * @param y A new value to be used for the uniform variable.
+     * @param z A new value to be used for the uniform variable.
+     * @param w A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform4f(location: WebGLUniformLocation | null, x: GLfloat, y: GLfloat, z: GLfloat, w: GLfloat): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform4f(location, x, y, z, w);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param x A new value to be used for the uniform variable.
+     * @param y A new value to be used for the uniform variable.
+     * @param z A new value to be used for the uniform variable.
+     * @param w A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform4i(location: WebGLUniformLocation | null, x: GLint, y: GLint, z: GLint, w: GLint): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform4i(location, x, y, z, w);
     }
 
     /**

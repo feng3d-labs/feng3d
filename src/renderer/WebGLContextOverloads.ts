@@ -88,9 +88,49 @@ export class WebGLContextOverloads extends WebGLContextBase
     }
     // texSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, type: GLenum, pixels: ArrayBufferView | null): void;
     // texSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, format: GLenum, type: GLenum, source: TexImageSource): void;
-    // uniform1fv(location: WebGLUniformLocation | null, v: Float32List): void;
-    // uniform1iv(location: WebGLUniformLocation | null, v: Int32List): void;
-    // uniform2fv(location: WebGLUniformLocation | null, v: Float32List): void;
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform1fv(location: WebGLUniformLocation | null, v: Float32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform1fv(location, v);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform1iv(location: WebGLUniformLocation | null, v: Int32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform1iv(location, v);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform2fv(location: WebGLUniformLocation | null, v: Float32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform2fv(location, v);
+    }
+
     // uniform2iv(location: WebGLUniformLocation | null, v: Int32List): void;
     // uniform3fv(location: WebGLUniformLocation | null, v: Float32List): void;
     // uniform3iv(location: WebGLUniformLocation | null, v: Int32List): void;
