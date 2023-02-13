@@ -94,13 +94,13 @@ export class WebGLContextOverloads extends WebGLContextBase
         {
             const target: TexImage2DTarget = args[0];
             const level: GLint = args[1];
-            const internalformat: TextureFormat = args[3];
-            const width: GLsizei = args[4];
-            const height: GLsizei = args[5];
-            const border: GLint = args[6];
-            const format: TextureFormat = args[7];
-            const type: TextureDataType = args[8];
-            const pixels: ArrayBufferView | null = args[9];
+            const internalformat: TextureFormat = args[2];
+            const width: GLsizei = args[3];
+            const height: GLsizei = args[4];
+            const border: GLint = args[5];
+            const format: TextureFormat = args[6];
+            const type: TextureDataType = args[7];
+            const pixels: ArrayBufferView | null = args[8];
 
             gl.texImage2D(gl[target], level, gl[internalformat], width, height, border, gl[format], gl[type], pixels);
         }
