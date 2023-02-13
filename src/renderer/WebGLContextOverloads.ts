@@ -7,6 +7,8 @@ import { WebGLContextBase } from './WebGLContextBase';
  */
 export class WebGLContextOverloads extends WebGLContextBase
 {
+    // bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum): void;
+
     /**
      * The WebGLRenderingContext.bufferData() method of the WebGL API initializes and creates the buffer object's data store.
      *
@@ -22,7 +24,6 @@ export class WebGLContextOverloads extends WebGLContextBase
         gl.bufferData(gl[target], data, gl[usage]);
     }
 
-    // bufferData(target: GLenum, size: GLsizeiptr, usage: GLenum): void;
     // bufferSubData(target: GLenum, offset: GLintptr, data: BufferSource): void;
     // compressedTexImage2D(target: GLenum, level: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei, border: GLint, data: ArrayBufferView): void;
     // compressedTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, data: ArrayBufferView): void;
@@ -77,13 +78,31 @@ export class WebGLContextOverloads extends WebGLContextBase
     texImage2D(target: TexImage2DTarget, level: GLint, internalformat: TextureFormat, width: GLsizei, height: GLsizei, border: GLint, format: TextureFormat, type: TextureDataType, pixels: ArrayBufferView | null): void;
     texImage2D(...args: any[]): void
     {
+        const { gl } = this._webGLRenderer;
         if (args.length === 6)
         {
-            this._texImage2DTexImageSource.apply(this, args);
+            const target: TexImage2DTarget = args[0];
+            const level: number = args[1];
+            const internalformat: TextureFormat = args[2];
+            const format: TextureFormat = args[3];
+            const type: TextureDataType = args[4];
+            const source: TexImageSource = args[5] || imageDatas.white;
+
+            gl.texImage2D(gl[target], level, gl[internalformat], gl[format], gl[type], source);
         }
         else
         {
-            this._texImage2DPixels.apply(this, args);
+            const target: TexImage2DTarget = args[0];
+            const level: GLint = args[1];
+            const internalformat: TextureFormat = args[3];
+            const width: GLsizei = args[4];
+            const height: GLsizei = args[5];
+            const border: GLint = args[6];
+            const format: TextureFormat = args[7];
+            const type: TextureDataType = args[8];
+            const pixels: ArrayBufferView | null = args[9];
+
+            gl.texImage2D(gl[target], level, gl[internalformat], width, height, border, gl[format], gl[type], pixels);
         }
     }
     // texSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, type: GLenum, pixels: ArrayBufferView | null): void;
@@ -131,11 +150,75 @@ export class WebGLContextOverloads extends WebGLContextBase
         gl.uniform2fv(location, v);
     }
 
-    // uniform2iv(location: WebGLUniformLocation | null, v: Int32List): void;
-    // uniform3fv(location: WebGLUniformLocation | null, v: Float32List): void;
-    // uniform3iv(location: WebGLUniformLocation | null, v: Int32List): void;
-    // uniform4fv(location: WebGLUniformLocation | null, v: Float32List): void;
-    // uniform4iv(location: WebGLUniformLocation | null, v: Int32List): void;
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform2iv(location: WebGLUniformLocation | null, v: Int32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform2iv(location, v);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform3fv(location: WebGLUniformLocation | null, v: Float32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform3fv(location, v);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform3iv(location: WebGLUniformLocation | null, v: Int32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform3iv(location, v);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform4fv(location: WebGLUniformLocation | null, v: Float32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform4fv(location, v);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniform[1234][fi][v]() methods of the WebGL API specify values of uniform variables. All active uniform variables defined in a program object are initialized to 0 when the program object is linked successfully. They retain the values assigned to them by a call to this method until the next successful link operation occurs on the program object, when they are once again initialized to 0.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify.
+     * @param v A new value to be used for the uniform variable.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    uniform4iv(location: WebGLUniformLocation | null, v: Int32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniform4iv(location, v);
+    }
 
     /**
      * The WebGLRenderingContext.uniformMatrix[234]fv() methods of the WebGL API specify matrix values for uniform variables.
@@ -186,49 +269,5 @@ export class WebGLContextOverloads extends WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.uniformMatrix4fv(location, transpose, value);
-    }
-
-    /**
-     * The WebGLRenderingContext.texImage2D() method of the WebGL API specifies a two-dimensional texture image.
-     *
-     * @param target A GLenum specifying the binding point (target) of the active texture.
-     * @param level A GLint specifying the level of detail. Level 0 is the base image level and level n is the n-th mipmap reduction level.
-     * @param internalformat A GLenum specifying the color components in the texture.
-     * @param format A GLenum specifying the format of the texel data. In WebGL 1, this must be the same as internalformat (see above).
-     * @param type A GLenum specifying the data type of the texel data.
-     * @param source One of the following objects can be used as a pixel source for the texture.
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
-     */
-    private _texImage2DTexImageSource(target: TexImage2DTarget, level: number, internalformat: TextureFormat, format: TextureFormat, type: TextureDataType, source: TexImageSource): void
-    {
-        const { gl } = this._webGLRenderer;
-        if (!source)
-        {
-            source = imageDatas.white;
-        }
-
-        gl.texImage2D(gl[target], level, gl[internalformat], gl[format], gl[type], source);
-    }
-
-    /**
-     * The WebGLRenderingContext.texImage2D() method of the WebGL API specifies a two-dimensional texture image.
-     *
-     * @param target A GLenum specifying the binding point (target) of the active texture.
-     * @param level A GLint specifying the level of detail. Level 0 is the base image level and level n is the n-th mipmap reduction level.
-     * @param internalformat A GLenum specifying the color components in the texture.
-     * @param width A GLsizei specifying the width of the texture.
-     * @param height A GLsizei specifying the height of the texture.
-     * @param border A GLint specifying the width of the border. Must be 0.
-     * @param format A GLenum specifying the format of the texel data. In WebGL 1, this must be the same as internalformat (see above).
-     * @param type A GLenum specifying the data type of the texel data.
-     * @param pixels One of the following objects can be used as a pixel source for the texture.
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
-     */
-    private _texImage2DPixels(target: TexImage2DTarget, level: GLint, internalformat: TextureFormat, width: GLsizei, height: GLsizei, border: GLint, format: TextureFormat, type: TextureDataType, pixels: ArrayBufferView | null)
-    {
-        const { gl } = this._webGLRenderer;
-        gl.texImage2D(gl[target], level, gl[internalformat], width, height, border, gl[format], gl[type], pixels);
     }
 }
