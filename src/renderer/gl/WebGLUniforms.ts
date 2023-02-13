@@ -42,10 +42,10 @@ export class WebGLUniforms
                 webGLContext.uniform1i(location, data);
                 break;
             case gl.FLOAT_MAT3:
-                gl.uniformMatrix3fv(location, false, vec);
+                webGLContext.uniformMatrix3fv(location, false, vec);
                 break;
             case gl.FLOAT_MAT4:
-                gl.uniformMatrix4fv(location, false, vec);
+                webGLContext.uniformMatrix4fv(location, false, vec);
                 break;
             case gl.FLOAT:
                 webGLContext.uniform1f(location, data);
@@ -57,11 +57,11 @@ export class WebGLUniforms
                 webGLContext.uniform3f(location, vec[0], vec[1], vec[2]);
                 break;
             case gl.FLOAT_VEC4:
-                gl.uniform4f(location, vec[0], vec[1], vec[2], vec[3]);
+                webGLContext.uniform4f(location, vec[0], vec[1], vec[2], vec[3]);
                 break;
             case gl.SAMPLER_2D:
             case gl.SAMPLER_CUBE:
-                webGLRenderer.textures.active(data, activeInfo);
+                textures.active(data, activeInfo);
                 break;
             default:
                 console.error(`无法识别的uniform类型 ${activeInfo.name} ${data}`);

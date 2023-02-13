@@ -136,9 +136,57 @@ export class WebGLContextOverloads extends WebGLContextBase
     // uniform3iv(location: WebGLUniformLocation | null, v: Int32List): void;
     // uniform4fv(location: WebGLUniformLocation | null, v: Float32List): void;
     // uniform4iv(location: WebGLUniformLocation | null, v: Int32List): void;
-    // uniformMatrix2fv(location: WebGLUniformLocation | null, transpose: GLboolean, value: Float32List): void;
-    // uniformMatrix3fv(location: WebGLUniformLocation | null, transpose: GLboolean, value: Float32List): void;
-    // uniformMatrix4fv(location: WebGLUniformLocation | null, transpose: GLboolean, value: Float32List): void;
+
+    /**
+     * The WebGLRenderingContext.uniformMatrix[234]fv() methods of the WebGL API specify matrix values for uniform variables.
+     *
+     * The three versions of this method (uniformMatrix2fv(), uniformMatrix3fv(), and uniformMatrix4fv()) take as the input value 2-component, 3-component, and 4-component square matrices, respectively. They are expected to have 4, 9 or 16 floats.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify. The location is obtained using getUniformLocation().
+     * @param transpose A GLboolean specifying whether to transpose the matrix. Must be false.
+     * @param value A Float32Array or sequence of GLfloat values. The values are assumed to be supplied in column major order.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
+     */
+    uniformMatrix2fv(location: WebGLUniformLocation | null, transpose: GLboolean, value: Float32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniformMatrix2fv(location, transpose, value);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniformMatrix[234]fv() methods of the WebGL API specify matrix values for uniform variables.
+     *
+     * The three versions of this method (uniformMatrix2fv(), uniformMatrix3fv(), and uniformMatrix4fv()) take as the input value 2-component, 3-component, and 4-component square matrices, respectively. They are expected to have 4, 9 or 16 floats.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify. The location is obtained using getUniformLocation().
+     * @param transpose A GLboolean specifying whether to transpose the matrix. Must be false.
+     * @param value A Float32Array or sequence of GLfloat values. The values are assumed to be supplied in column major order.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
+     */
+    uniformMatrix3fv(location: WebGLUniformLocation | null, transpose: GLboolean, value: Float32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniformMatrix3fv(location, transpose, value);
+    }
+
+    /**
+     * The WebGLRenderingContext.uniformMatrix[234]fv() methods of the WebGL API specify matrix values for uniform variables.
+     *
+     * The three versions of this method (uniformMatrix2fv(), uniformMatrix3fv(), and uniformMatrix4fv()) take as the input value 2-component, 3-component, and 4-component square matrices, respectively. They are expected to have 4, 9 or 16 floats.
+     *
+     * @param location A WebGLUniformLocation object containing the location of the uniform attribute to modify. The location is obtained using getUniformLocation().
+     * @param transpose A GLboolean specifying whether to transpose the matrix. Must be false.
+     * @param value A Float32Array or sequence of GLfloat values. The values are assumed to be supplied in column major order.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
+     */
+    uniformMatrix4fv(location: WebGLUniformLocation | null, transpose: GLboolean, value: Float32List): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.uniformMatrix4fv(location, transpose, value);
+    }
 
     /**
      * The WebGLRenderingContext.texImage2D() method of the WebGL API specifies a two-dimensional texture image.
