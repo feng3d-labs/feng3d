@@ -53,6 +53,8 @@ export class WebGLContextBase
         gl.attachShader(program, shader);
     }
 
+    // bindAttribLocation(program: WebGLProgram, index: GLuint, name: string): void;
+
     /**
      * The WebGLRenderingContext.bindBuffer() method of the WebGL API binds a given WebGLBuffer to a target.
      *
@@ -65,20 +67,6 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.bindBuffer(gl[target], buffer);
-    }
-
-    /**
-     * The WebGLRenderingContext.bindTexture() method of the WebGL API binds a given WebGLTexture to a target (binding point).
-     *
-     * @param target A GLenum specifying the binding point (target).
-     * @param texture A WebGLTexture object to bind.
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
-     */
-    bindTexture(target: TextureTarget, texture: WebGLTexture | null): void
-    {
-        const { gl } = this._webGLRenderer;
-        gl.bindTexture(gl[target], texture);
     }
 
     /**
@@ -110,6 +98,22 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.bindTexture() method of the WebGL API binds a given WebGLTexture to a target (binding point).
+     *
+     * @param target A GLenum specifying the binding point (target).
+     * @param texture A WebGLTexture object to bind.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
+     */
+    bindTexture(target: TextureTarget, texture: WebGLTexture | null): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.bindTexture(gl[target], texture);
+    }
+
+    // blendColor(red: GLclampf, green: GLclampf, blue: GLclampf, alpha: GLclampf): void;
+
+    /**
      * The WebGLRenderingContext.blendEquation() method of the WebGL API is used to set both the RGB blend equation and alpha blend equation to a single equation.
      *
      * The blend equation determines how a new pixel is combined with a pixel already in the WebGLFramebuffer.
@@ -124,6 +128,8 @@ export class WebGLContextBase
         gl.blendEquation(gl[mode]);
     }
 
+    // blendEquationSeparate(modeRGB: GLenum, modeAlpha: GLenum): void;
+
     /**
      * The WebGLRenderingContext.blendFunc() method of the WebGL API defines which function is used for blending pixel arithmetic.
      *
@@ -137,6 +143,8 @@ export class WebGLContextBase
         const { gl } = this._webGLRenderer;
         gl.blendFunc(gl[sfactor], gl[dfactor]);
     }
+
+    // blendFuncSeparate(srcRGB: GLenum, dstRGB: GLenum, srcAlpha: GLenum, dstAlpha: GLenum): void;
 
     /**
      * The WebGLRenderingContext.checkFramebufferStatus() method of the WebGL API returns the completeness status of the WebGLFramebuffer object.
@@ -254,6 +262,9 @@ export class WebGLContextBase
         gl.compileShader(shader);
     }
 
+    // copyTexImage2D(target: GLenum, level: GLint, internalformat: GLenum, x: GLint, y: GLint, width: GLsizei, height: GLsizei, border: GLint): void;
+    // copyTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, x: GLint, y: GLint, width: GLsizei, height: GLsizei): void;
+
     /**
      * The WebGLRenderingContext.createBuffer() method of the WebGL API creates and initializes a WebGLBuffer storing data such as vertices or colors.
      *
@@ -282,6 +293,25 @@ export class WebGLContextBase
         const framebuffer = gl.createFramebuffer();
 
         return framebuffer;
+    }
+
+    /**
+     * The WebGLRenderingContext.createProgram() method of the WebGL API creates and initializes a WebGLProgram object.
+     *
+     * @returns A WebGLProgram object that is a combination of two compiled WebGLShaders consisting of a vertex shader and a fragment shader (both written in GLSL). These are then linked into a usable program.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+     */
+    createProgram(): WebGLProgram | null
+    {
+        const { gl } = this._webGLRenderer;
+        const program = gl.createProgram();
+        if (!program)
+        {
+            throw '创建 WebGLProgram 失败！';
+        }
+
+        return program;
     }
 
     /**
@@ -336,25 +366,6 @@ export class WebGLContextBase
         }
 
         return texture;
-    }
-
-    /**
-     * The WebGLRenderingContext.createProgram() method of the WebGL API creates and initializes a WebGLProgram object.
-     *
-     * @returns A WebGLProgram object that is a combination of two compiled WebGLShaders consisting of a vertex shader and a fragment shader (both written in GLSL). These are then linked into a usable program.
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
-     */
-    createProgram(): WebGLProgram | null
-    {
-        const { gl } = this._webGLRenderer;
-        const program = gl.createProgram();
-        if (!program)
-        {
-            throw '创建 WebGLProgram 失败！';
-        }
-
-        return program;
     }
 
     /**
@@ -474,6 +485,9 @@ export class WebGLContextBase
         gl.depthMask(flag);
     }
 
+    // depthRange(zNear: GLclampf, zFar: GLclampf): void;
+    // detachShader(program: WebGLProgram, shader: WebGLShader): void;
+
     /**
      * The WebGLRenderingContext.disable() method of the WebGL API disables specific WebGL capabilities for this context.
      *
@@ -555,22 +569,8 @@ export class WebGLContextBase
         gl.enableVertexAttribArray(index);
     }
 
-    /**
-     * The WebGLRenderingContext.framebufferTexture2D() method of the WebGL API attaches a texture to a WebGLFramebuffer.
-     *
-     * @param target A GLenum specifying the binding point (target).
-     * @param attachment A GLenum specifying the attachment point for the texture.
-     * @param textarget A GLenum specifying the texture target.
-     * @param texture A WebGLTexture object whose image to attach.
-     * @param level A GLint specifying the mipmap level of the texture image to be attached. Must be 0.
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferTexture2D
-     */
-    framebufferTexture2D(target: FramebufferTarget, attachment: AttachmentPoint, textarget: TexImage2DTarget, texture: WebGLTexture | null, level: GLint = 0): void
-    {
-        const { gl } = this._webGLRenderer;
-        gl.framebufferTexture2D(gl[target], gl[attachment], gl[textarget], texture, level);
-    }
+    // finish(): void;
+    // flush(): void;
 
     /**
      * The WebGLRenderingContext.framebufferRenderbuffer() method of the WebGL API attaches a WebGLRenderbuffer object to a WebGLFramebuffer object.
@@ -586,6 +586,23 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.framebufferRenderbuffer(gl[target], gl[attachment], gl[renderbuffertarget], renderbuffer);
+    }
+
+    /**
+     * The WebGLRenderingContext.framebufferTexture2D() method of the WebGL API attaches a texture to a WebGLFramebuffer.
+     *
+     * @param target A GLenum specifying the binding point (target).
+     * @param attachment A GLenum specifying the attachment point for the texture.
+     * @param textarget A GLenum specifying the texture target.
+     * @param texture A WebGLTexture object whose image to attach.
+     * @param level A GLint specifying the mipmap level of the texture image to be attached. Must be 0.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferTexture2D
+     */
+    framebufferTexture2D(target: FramebufferTarget, attachment: AttachmentPoint, textarget: TexImage2DTarget, texture: WebGLTexture | null, level: GLint = 0): void
+    {
+        const { gl } = this._webGLRenderer;
+        gl.framebufferTexture2D(gl[target], gl[attachment], gl[textarget], texture, level);
     }
 
     /**
@@ -651,6 +668,8 @@ export class WebGLContextBase
         return activeUniformInfo;
     }
 
+    // getAttachedShaders(program: WebGLProgram): WebGLShader[] | null;
+
     /**
      * The WebGLRenderingContext.getAttribLocation() method of the WebGL API returns the location of an attribute variable in a given WebGLProgram.
      *
@@ -668,6 +687,10 @@ export class WebGLContextBase
         return location;
     }
 
+    // getBufferParameter(target: GLenum, pname: GLenum): any;
+    // getContextAttributes(): WebGLContextAttributes | null;
+    // getError(): GLenum;
+
     /**
      * The WebGLRenderingContext.getExtension() method enables a WebGL extension.
      *
@@ -683,6 +706,8 @@ export class WebGLContextBase
 
         return ext;
     }
+
+    // getFramebufferAttachmentParameter(target: GLenum, attachment: GLenum, pname: GLenum): any;
 
     /**
      * The WebGLRenderingContext.getParameter() method of the WebGL API returns a value for the passed parameter name.
@@ -746,6 +771,8 @@ export class WebGLContextBase
         return result;
     }
 
+    // getRenderbufferParameter(target: GLenum, pname: GLenum): any;
+
     /**
      * The WebGLRenderingContext.getShaderInfoLog returns the information log for the specified WebGLShader object. It contains warnings, debugging and compile information.
      *
@@ -760,23 +787,6 @@ export class WebGLContextBase
         const info = gl.getShaderInfoLog(shader);
 
         return info;
-    }
-
-    /**
-     * The WebGLRenderingContext.getShaderPrecisionFormat() method of the WebGL API returns a new WebGLShaderPrecisionFormat object describing the range and precision for the specified shader numeric format.
-     *
-     * @param shadertype Either a gl.FRAGMENT_SHADER or a gl.VERTEX_SHADER.
-     * @param precisiontype A precision type value. Either gl.LOW_FLOAT, gl.MEDIUM_FLOAT, gl.HIGH_FLOAT, gl.LOW_INT, gl.MEDIUM_INT, or gl.HIGH_INT.
-     * @returns A WebGLShaderPrecisionFormat object or null, if an error occurs.
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderPrecisionFormat
-     */
-    getShaderPrecisionFormat(shadertype: ShaderType, precisiontype: PrecisionType): WebGLShaderPrecisionFormat | null
-    {
-        const { gl } = this._webGLRenderer;
-        const result = gl.getShaderPrecisionFormat(gl[shadertype], gl[precisiontype]);
-
-        return result;
     }
 
     /**
@@ -797,6 +807,28 @@ export class WebGLContextBase
     }
 
     /**
+     * The WebGLRenderingContext.getShaderPrecisionFormat() method of the WebGL API returns a new WebGLShaderPrecisionFormat object describing the range and precision for the specified shader numeric format.
+     *
+     * @param shadertype Either a gl.FRAGMENT_SHADER or a gl.VERTEX_SHADER.
+     * @param precisiontype A precision type value. Either gl.LOW_FLOAT, gl.MEDIUM_FLOAT, gl.HIGH_FLOAT, gl.LOW_INT, gl.MEDIUM_INT, or gl.HIGH_INT.
+     * @returns A WebGLShaderPrecisionFormat object or null, if an error occurs.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderPrecisionFormat
+     */
+    getShaderPrecisionFormat(shadertype: ShaderType, precisiontype: PrecisionType): WebGLShaderPrecisionFormat | null
+    {
+        const { gl } = this._webGLRenderer;
+        const result = gl.getShaderPrecisionFormat(gl[shadertype], gl[precisiontype]);
+
+        return result;
+    }
+
+    // getShaderSource(shader: WebGLShader): string | null;
+    // getSupportedExtensions(): string[] | null;
+    // getTexParameter(target: GLenum, pname: GLenum): any;
+    // getUniform(program: WebGLProgram, location: WebGLUniformLocation): any;
+
+    /**
      * Part of the WebGL API, the WebGLRenderingContext method getUniformLocation() returns the location of a specific uniform variable which is part of a given WebGLProgram.
      *
      * @param program The WebGLProgram in which to locate the specified uniform variable.
@@ -812,6 +844,19 @@ export class WebGLContextBase
 
         return location;
     }
+
+    // getVertexAttrib(index: GLuint, pname: GLenum): any;
+    // getVertexAttribOffset(index: GLuint, pname: GLenum): GLintptr;
+    // hint(target: GLenum, mode: GLenum): void;
+    // isBuffer(buffer: WebGLBuffer | null): GLboolean;
+    // isContextLost(): boolean;
+    // isEnabled(cap: GLenum): GLboolean;
+    // isFramebuffer(framebuffer: WebGLFramebuffer | null): GLboolean;
+    // isProgram(program: WebGLProgram | null): GLboolean;
+    // isRenderbuffer(renderbuffer: WebGLRenderbuffer | null): GLboolean;
+    // isShader(shader: WebGLShader | null): GLboolean;
+    // isTexture(texture: WebGLTexture | null): GLboolean;
+    // lineWidth(width: GLfloat): void;
 
     /**
      * The WebGLRenderingContext interface's linkProgram() method links a given WebGLProgram, completing the process of preparing the GPU code for the program's fragment and vertex shaders.
@@ -877,6 +922,8 @@ export class WebGLContextBase
         gl.renderbufferStorage(gl[target], gl[internalformat], width, height);
     }
 
+    // sampleCoverage(value: GLclampf, invert: GLboolean): void;
+
     /**
      * The WebGLRenderingContext.scissor() method of the WebGL API sets a scissor box, which limits the drawing to a specified rectangle.
      *
@@ -924,6 +971,8 @@ export class WebGLContextBase
         gl.stencilFunc(gl[func], ref, mask);
     }
 
+    // stencilFuncSeparate(face: GLenum, func: GLenum, ref: GLint, mask: GLuint): void;
+
     /**
      * The WebGLRenderingContext.stencilMask() method of the WebGL API controls enabling and disabling of both the front and back writing of individual bits in the stencil planes.
      *
@@ -939,6 +988,8 @@ export class WebGLContextBase
         gl.stencilMask(mask);
     }
 
+    // stencilMaskSeparate(face: GLenum, mask: GLuint): void;
+
     /**
      * The WebGLRenderingContext.stencilOp() method of the WebGL API sets both the front and back-facing stencil test actions.
      *
@@ -953,6 +1004,8 @@ export class WebGLContextBase
         const { gl } = this._webGLRenderer;
         gl.stencilOp(gl[fail], gl[zfail], gl[zpass]);
     }
+
+    // stencilOpSeparate(face: GLenum, fail: GLenum, zfail: GLenum, zpass: GLenum): void;
 
     /**
      * The WebGLRenderingContext.texParameter[fi]() methods of the WebGL API set texture parameters.
@@ -1130,6 +1183,16 @@ export class WebGLContextBase
         const { gl } = this._webGLRenderer;
         gl.useProgram(program);
     }
+
+    // validateProgram(program: WebGLProgram): void;
+    // vertexAttrib1f(index: GLuint, x: GLfloat): void;
+    // vertexAttrib1fv(index: GLuint, values: Float32List): void;
+    // vertexAttrib2f(index: GLuint, x: GLfloat, y: GLfloat): void;
+    // vertexAttrib2fv(index: GLuint, values: Float32List): void;
+    // vertexAttrib3f(index: GLuint, x: GLfloat, y: GLfloat, z: GLfloat): void;
+    // vertexAttrib3fv(index: GLuint, values: Float32List): void;
+    // vertexAttrib4f(index: GLuint, x: GLfloat, y: GLfloat, z: GLfloat, w: GLfloat): void;
+    // vertexAttrib4fv(index: GLuint, values: Float32List): void;
 
     /**
      * The WebGLRenderingContext.vertexAttribPointer() method of the WebGL API binds the buffer currently bound to gl.ARRAY_BUFFER to a generic vertex attribute of the current vertex buffer object and specifies its layout.
