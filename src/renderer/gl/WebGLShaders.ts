@@ -201,7 +201,7 @@ export class WebGLShaders
                 const isTexture = webGLUniformType.isTexture(type);
                 uniforms[name] = new WebGLUniform({ name: paths[0], paths, size: activeInfo.size, type, location, textureID });
 
-                if (activeInfo.isTexture)
+                if (isTexture)
                 {
                     textureID++;
                 }

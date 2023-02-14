@@ -659,13 +659,12 @@ export class WebGLContextBase
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
      */
-    getActiveUniform(program: WebGLProgram, index: GLuint): WebGLActiveUniformInfo | null
+    getActiveUniform(program: WebGLProgram, index: GLuint): WebGLActiveInfo | null
     {
         const { gl } = this._webGLRenderer;
         const activeInfo = gl.getActiveUniform(program, index);
-        const activeUniformInfo = new WebGLActiveUniformInfo(gl, activeInfo);
 
-        return activeUniformInfo;
+        return activeInfo;
     }
 
     // getAttachedShaders(program: WebGLProgram): WebGLShader[] | null;
@@ -1229,26 +1228,5 @@ export class WebGLContextBase
     {
         const { gl } = this._webGLRenderer;
         gl.viewport(x, y, width, height);
-    }
-}
-
-export class WebGLActiveUniformInfo
-{
-    readonly name: string;
-    readonly size: GLint;
-    readonly type: GLenum;
-    readonly isTexture: boolean;
-
-    constructor(gl: WebGLRenderingContext, info: WebGLActiveInfo)
-    {
-        this.name = info.name;
-        this.size = info.size;
-        this.type = info.type;
-
-        this.isTexture = false;
-        if (info.type === gl.SAMPLER_2D || info.type === gl.SAMPLER_CUBE)
-        {
-            this.isTexture = true;
-        }
     }
 }
