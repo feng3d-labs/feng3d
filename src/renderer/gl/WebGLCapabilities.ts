@@ -110,13 +110,13 @@ export class WebGLCapabilities
         this.maxFragmentUniforms = webGLContext.getParameter('MAX_FRAGMENT_UNIFORM_VECTORS');
 
         this.vertexTextures = this.maxVertexTextures > 0;
-        this.floatFragmentTextures = isWebGL2 || !!extensions.get('OES_texture_float');
+        this.floatFragmentTextures = isWebGL2 || !!extensions.getExtension('OES_texture_float');
         this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
 
         this.maxSamples = isWebGL2 ? webGLContext.getParameter('MAX_SAMPLES') : 0;
         this.stencilBits = webGLContext.getParameter('STENCIL_BITS');
 
-        this.vaoAvailable = isWebGL2 || !!extensions.get('OES_vertex_array_object');
+        this.vaoAvailable = isWebGL2 || !!extensions.getExtension('OES_vertex_array_object');
     }
 
     private _getMaxPrecision(precision: 'highp' | 'mediump' | 'lowp' = 'highp')

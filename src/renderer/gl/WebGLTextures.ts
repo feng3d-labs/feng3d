@@ -1,7 +1,7 @@
 import { Texture } from '../data/Texture';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { TextureMagFilter, TextureMinFilter, TextureWrap } from './WebGLEnums';
-import { UniformInfo } from './WebGLShaders';
+import { WebGLUniform } from './WebGLUniforms';
 
 /**
  * WebGL纹理
@@ -28,7 +28,7 @@ export class WebGLTextures
         anisotropy?: number,
     }>();
 
-    active(data: Texture, activeInfo?: UniformInfo)
+    active(data: Texture, activeInfo?: WebGLUniform)
     {
         const { _webGLRenderer: webGLRenderer } = this;
         const { webGLContext } = webGLRenderer;

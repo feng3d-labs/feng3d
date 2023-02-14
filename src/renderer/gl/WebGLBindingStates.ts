@@ -148,11 +148,11 @@ export class WebGLBindingStates
      */
     private setupVertexAttributes(renderAtomic: RenderAtomic)
     {
-        const { attributeBuffers, capabilities, extensions, shaders } = this._webGLRenderer;
+        const { attributeBuffers, isWebGL2, extensions, shaders } = this._webGLRenderer;
 
-        if (capabilities.isWebGL2 === false && renderAtomic.getInstanceCount() > 0)
+        if (isWebGL2 === false && renderAtomic.getInstanceCount() > 0)
         {
-            if (extensions.get('ANGLE_instanced_arrays') === null) return;
+            if (extensions.getExtension('ANGLE_instanced_arrays') === null) return;
         }
 
         this.initAttributes();
