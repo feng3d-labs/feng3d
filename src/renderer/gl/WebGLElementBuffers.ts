@@ -27,12 +27,14 @@ export class WebGLElementBuffers
 
         let bytesPerElement: number;
         let vertexNum: number;
+        let type: DrawElementType;
 
-        const elementCache = this.get(element);
         if (element)
         {
+            const elementCache = this.get(element);
             bytesPerElement = elementCache.bytesPerElement;
             vertexNum = elementCache.count;
+            type = elementCache.type;
         }
         else
         {
@@ -61,7 +63,7 @@ export class WebGLElementBuffers
         {
             if (element)
             {
-                webGLContext.drawElementsInstanced(drawMode, count, elementCache.type, offset * bytesPerElement, instanceCount);
+                webGLContext.drawElementsInstanced(drawMode, count, type, offset * bytesPerElement, instanceCount);
             }
             else
             {
@@ -72,7 +74,7 @@ export class WebGLElementBuffers
         {
             if (element)
             {
-                webGLContext.drawElements(drawMode, count, elementCache.type, offset * bytesPerElement);
+                webGLContext.drawElements(drawMode, count, type, offset * bytesPerElement);
             }
             else
             {
