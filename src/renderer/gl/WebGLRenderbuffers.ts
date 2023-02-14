@@ -1,12 +1,20 @@
 import { RenderBuffer } from '../RenderBuffer';
 import { WebGLRenderer } from '../WebGLRenderer';
 
+declare global
+{
+    interface WebGLRenderbuffer
+    {
+        version: number;
+    }
+}
+
 export class WebGLRenderbuffers
 {
     /**
      * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
      */
-    private renderBuffers = new WeakMap<RenderBuffer, { buffer: WebGLRenderbuffer, OFFSCREEN_WIDTH: number, OFFSCREEN_HEIGHT: number }>();
+    private renderBuffers = new WeakMap<RenderBuffer, WebGLRenderbuffer>();
 
     private _webGLRenderer: WebGLRenderer;
 
@@ -22,36 +30,36 @@ export class WebGLRenderbuffers
     {
         const { webGLContext } = this._webGLRenderer;
         const { renderBuffers } = this;
-        const { OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT } = renderBuffer;
 
-        let cache = renderBuffers.get(renderBuffer);
-        if (cache)
+        let webGLRenderbuffer = renderBuffers.get(renderBuffer);
+        if (webGLRenderbuffer)
         {
-            if (cache.OFFSCREEN_WIDTH !== OFFSCREEN_WIDTH || cache.OFFSCREEN_HEIGHT !== OFFSCREEN_HEIGHT)
+            if (webGLRenderbuffer.version !== renderBuffer.version)
             {
                 this.clear(renderBuffer);
-                cache = null;
+                webGLRenderbuffer = null;
             }
         }
 
-        if (!cache)
+        if (!webGLRenderbuffer)
         {
             // Create a renderbuffer object and Set its size and parameters
-            const buffer = webGLContext.createRenderbuffer(); // Create a renderbuffer object
-            if (!buffer)
+            webGLRenderbuffer = webGLContext.createRenderbuffer(); // Create a renderbuffer object
+            if (!webGLRenderbuffer)
             {
                 console.warn('Failed to create renderbuffer object');
 
                 return;
             }
-            webGLContext.bindRenderbuffer('RENDERBUFFER', buffer);
-            webGLContext.renderbufferStorage('RENDERBUFFER', 'DEPTH_COMPONENT16', OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT);
+            webGLContext.bindRenderbuffer('RENDERBUFFER', webGLRenderbuffer);
+            webGLContext.renderbufferStorage('RENDERBUFFER', renderBuffer.internalformat, renderBuffer.width, renderBuffer.height);
 
-            cache = { buffer, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT };
-            renderBuffers.set(renderBuffer, cache);
+            webGLRenderbuffer.version = renderBuffer.version;
+
+            renderBuffers.set(renderBuffer, webGLRenderbuffer);
         }
 
-        return cache.buffer;
+        return webGLRenderbuffer;
     }
 
     /**

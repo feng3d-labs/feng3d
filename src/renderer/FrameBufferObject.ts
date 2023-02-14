@@ -42,23 +42,23 @@ export class FrameBufferObject
         this.OFFSCREEN_HEIGHT = height;
     }
 
-    static active(webGLRenderer: WebGLRenderer, frameBufferObject: FrameBufferObject)
+    active(webGLRenderer: WebGLRenderer)
     {
         const { renderbuffers, framebuffers, textures, webGLContext } = webGLRenderer;
-        if (frameBufferObject._invalid)
+        if (this._invalid)
         {
-            frameBufferObject._invalid = false;
-            this.clear(frameBufferObject);
+            this._invalid = false;
+            this.clear();
         }
 
-        let obj = FrameBufferObject.frameBufferObjects.get(frameBufferObject);
+        const target: FramebufferTarget = 'FRAMEBUFFER';
+
+        let obj = FrameBufferObject.frameBufferObjects.get(this);
         if (!obj)
         {
-            const framebuffer = framebuffers.active(frameBufferObject.frameBuffer);
-            const texture = textures.active(frameBufferObject.texture);
-            const depthBuffer = renderbuffers.active(frameBufferObject.depthBuffer);
-
-            const target: FramebufferTarget = 'FRAMEBUFFER';
+            const framebuffer = framebuffers.active(this.frameBuffer);
+            const texture = textures.getTexture(this.texture);
+            const depthBuffer = renderbuffers.active(this.depthBuffer);
 
             // 绑定帧缓冲区对象
             webGLContext.bindFramebuffer(target, framebuffer);
@@ -76,15 +76,12 @@ export class FrameBufferObject
                 return null;
             }
 
-            webGLContext.bindTexture('TEXTURE_2D', null);
-            webGLContext.bindRenderbuffer('RENDERBUFFER', null);
-
             obj = { framebuffer, texture, depthBuffer };
-            FrameBufferObject.frameBufferObjects.set(frameBufferObject, obj);
+            FrameBufferObject.frameBufferObjects.set(this, obj);
         }
         else
         {
-            webGLContext.bindFramebuffer('FRAMEBUFFER', obj.framebuffer);
+            webGLContext.bindFramebuffer(target, obj.framebuffer);
         }
 
         return obj;
@@ -117,18 +114,18 @@ export class FrameBufferObject
         }
         if (this.depthBuffer)
         {
-            this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-            this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+            this.depthBuffer.width = this.OFFSCREEN_WIDTH;
+            this.depthBuffer.height = this.OFFSCREEN_HEIGHT;
         }
         this._invalid = true;
     }
 
-    static clear(frameBufferObject: FrameBufferObject)
+    clear()
     {
-        const buffer = FrameBufferObject.frameBufferObjects.get(frameBufferObject);
+        const buffer = FrameBufferObject.frameBufferObjects.get(this);
         if (buffer)
         {
-            FrameBufferObject.frameBufferObjects.delete(frameBufferObject);
+            FrameBufferObject.frameBufferObjects.delete(this);
         }
     }
 }

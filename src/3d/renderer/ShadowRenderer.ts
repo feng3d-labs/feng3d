@@ -4,7 +4,6 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { Vec3 } from '../../renderer/data/Uniforms';
-import { FrameBufferObject } from '../../renderer/FrameBufferObject';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
 import { Node3D } from '../core/Node3D';
@@ -63,7 +62,7 @@ export class ShadowRenderer
     private drawForSpotLight(webGLRenderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
     {
         const { webGLContext } = webGLRenderer;
-        FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
+        light.frameBufferObject.active(webGLRenderer);
 
         //
         webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -125,7 +124,7 @@ export class ShadowRenderer
     {
         const { webGLContext } = webGLRenderer;
 
-        FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
+        light.frameBufferObject.active(webGLRenderer);
 
         //
         webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -265,7 +264,7 @@ export class ShadowRenderer
         light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         //
-        FrameBufferObject.active(webGLRenderer, light.frameBufferObject);
+        light.frameBufferObject.active(webGLRenderer);
 
         const { webGLContext } = webGLRenderer;
 

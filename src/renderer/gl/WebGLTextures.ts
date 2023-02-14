@@ -30,8 +30,7 @@ export class WebGLTextures
 
     active(data: Texture, activeInfo?: WebGLUniform)
     {
-        const { _webGLRenderer: webGLRenderer } = this;
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
         if (activeInfo)
         {
@@ -39,12 +38,12 @@ export class WebGLTextures
             webGLContext.activeTexture(activeInfo.textureID);
         }
 
-        const texture = this.getTexture(webGLRenderer, data);
+        const texture = this.getTexture(data);
 
         // 绑定纹理
         webGLContext.bindTexture(data.textureTarget, texture);
 
-        this.setTextureParameters(webGLRenderer, data);
+        this.setTextureParameters(data);
 
         if (activeInfo)
         {
@@ -55,9 +54,9 @@ export class WebGLTextures
         return texture;
     }
 
-    private setTextureParameters(webGLRenderer: WebGLRenderer, texture: Texture)
+    private setTextureParameters(texture: Texture)
     {
-        const { webGLContext, extensions, capabilities, isWebGL2 } = webGLRenderer;
+        const { webGLContext, extensions, capabilities, isWebGL2 } = this._webGLRenderer;
         const { _texturesCache: textures } = this;
 
         const { textureTarget, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
@@ -117,15 +116,16 @@ export class WebGLTextures
      * 获取顶点属性缓冲
      * @param data 数据
      */
-    private getTexture(webGLRenderer: WebGLRenderer, data: Texture)
+    getTexture(data: Texture)
     {
+        const webGLRenderer = this._webGLRenderer;
         const { webGLContext } = webGLRenderer;
         const { _texturesCache: textures } = this;
 
         let cache = textures.get(data);
         if (cache && data.version !== cache.version)
         {
-            this.clear(webGLRenderer, data);
+            this.clear(data);
             cache = null;
         }
         if (!cache)
@@ -156,9 +156,9 @@ export class WebGLTextures
     /**
      * 清除纹理
      */
-    private clear(webGLRenderer: WebGLRenderer, data: Texture)
+    private clear(data: Texture)
     {
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { _texturesCache: textures } = this;
 
         const tex = textures.get(data);
