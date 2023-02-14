@@ -3,6 +3,7 @@ import { Shader } from '../data/Shader';
 import { shaderlib } from '../shader/ShaderLib';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { ShaderType } from './WebGLEnums';
+import { WebGLUniform } from './WebGLUniforms';
 
 /**
  * WebGLShader处理器
@@ -141,7 +142,7 @@ export class WebGLShaders
 
     private compileShaderProgram(vshader: string, fshader: string): CompileShaderResult
     {
-        const { webGLContext } = this._webGLRenderer;
+        const { webGLContext, webGLUniformType } = this._webGLRenderer;
 
         // 创建着色器程序
         // 编译顶点着色器
@@ -165,7 +166,7 @@ export class WebGLShaders
         }
         // 获取uniform信息
         const numUniforms = webGLContext.getProgramParameter(shaderProgram, 'ACTIVE_UNIFORMS');
-        const uniforms: { [name: string]: UniformInfo } = {};
+        const uniforms: { [name: string]: WebGLUniform } = {};
         i = 0;
         let textureID = 0;
         while (i < numUniforms)
@@ -196,7 +197,10 @@ export class WebGLShaders
                     result = reg.exec(name);
                 }
                 const location = webGLContext.getUniformLocation(shaderProgram, name);
-                uniforms[name] = { name: paths[0], paths, size: activeInfo.size, type: activeInfo.type, location, textureID };
+                const type = webGLUniformType.getType(activeInfo.type);
+                const isTexture = webGLUniformType.isTexture(type);
+                uniforms[name] = new WebGLUniform({ name: paths[0], paths, size: activeInfo.size, type, location, textureID });
+
                 if (activeInfo.isTexture)
                 {
                     textureID++;
@@ -237,34 +241,7 @@ export interface CompileShaderResult
     /**
      * uniform信息列表
      */
-    uniforms: { [name: string]: UniformInfo };
-}
-
-/**
- * WebGL渲染程序有效信息
- */
-export interface UniformInfo
-{
-    /**
-     * uniform名称
-     */
-    name: string;
-
-    size: number;
-    type: number;
-    /**
-     * uniform地址
-     */
-    location: WebGLUniformLocation;
-    /**
-     * texture索引
-     */
-    textureID: number;
-
-    /**
-     * Uniform数组索引，当Uniform数据为数组数据时生效
-     */
-    paths: string[];
+    uniforms: { [name: string]: WebGLUniform };
 }
 
 export interface AttributeInfo

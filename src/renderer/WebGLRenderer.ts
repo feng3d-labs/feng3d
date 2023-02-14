@@ -1,4 +1,5 @@
 /* eslint-disable no-new */
+import { WebGLUniformType } from './const/WebGLUniformType';
 import { RenderAtomic } from './data/RenderAtomic';
 import { WebGLAttributeBuffers } from './gl/WebGLAttributeBuffers';
 import { WebGLBindingStates } from './gl/WebGLBindingStates';
@@ -41,6 +42,8 @@ export class WebGLRenderer
     readonly extensions: WebGLExtensions;
 
     readonly webGLContext: WebGLContext;
+
+    readonly webGLUniformType: WebGLUniformType;
 
     /**
      * WEBGL支持功能
@@ -119,6 +122,8 @@ export class WebGLRenderer
             this.gl2 = gl;
             this.isWebGL2 = true;
         }
+
+        this.webGLUniformType = new WebGLUniformType(gl);
 
         this.webGLContext = new WebGLContext(this);
         this.extensions = new WebGLExtensions(this);
