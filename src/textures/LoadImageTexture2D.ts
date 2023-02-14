@@ -49,7 +49,7 @@ export class LoadImageTexture2D extends Texture2D
         {
             this.source = this.defaultSource;
 
-return;
+            return;
         }
 
         this.source = this.loadingSource;

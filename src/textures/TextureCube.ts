@@ -1,21 +1,12 @@
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { oav } from '../objectview/ObjectView';
-import { RegisterTexture } from '../renderer/data/Texture';
+import { RegisterTexture, Texture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { watcher } from '../watcher/watcher';
 import { imageDatas } from './Texture2D';
-import { TextureInfo } from './TextureInfo';
-
-export interface TextureCubeEventMap
-{
-    /**
-     * 加载完成
-     */
-    loadCompleted: any;
-}
 
 export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positive_z_url' | 'negative_x_url' | 'negative_y_url' | 'negative_z_url';
 
@@ -45,7 +36,7 @@ export type TextureCubeSources = {
  * 立方体纹理
  */
 @RegisterTexture('TextureCube')
-export class TextureCube extends TextureInfo
+export class TextureCube extends Texture
 {
     textureTarget: TextureTarget = 'TEXTURE_CUBE_MAP';
 

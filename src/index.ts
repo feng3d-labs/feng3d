@@ -289,7 +289,6 @@ export * from './textures/LoadImageTextureCube';
 export * from './textures/RenderTargetTexture2D';
 export * from './textures/Texture2D';
 export * from './textures/TextureCube';
-export * from './textures/TextureInfo';
 export * from './textures/VideoTexture2D';
 export * from './utils/debug';
 export * from './utils/FunctionWarp';

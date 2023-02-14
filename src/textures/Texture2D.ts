@@ -3,13 +3,12 @@ import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { ColorKeywords } from '../math/Color3';
 import { Color4 } from '../math/Color4';
-import { RegisterTexture } from '../renderer/data/Texture';
+import { RegisterTexture, Texture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
 import { watcher } from '../watcher/watcher';
-import { TextureInfo } from './TextureInfo';
 
 export enum ImageDatas
 {
@@ -44,14 +43,6 @@ if (typeof document !== 'undefined')
     };
 }
 
-export interface Texture2DEventMap
-{
-    /**
-     * 加载完成
-     */
-    loadCompleted: any;
-}
-
 declare module '../renderer/data/Texture'
 {
     interface TextureMap extends Texture2DMap { }
@@ -68,7 +59,7 @@ export type Texture2DLike = Texture2DMap[keyof Texture2DMap];
  * 2D纹理
  */
 @RegisterTexture('Texture2D')
-export class Texture2D extends TextureInfo
+export class Texture2D extends Texture
 {
     /**
      * 纹理类型
