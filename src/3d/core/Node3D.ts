@@ -526,32 +526,6 @@ export class Node3D extends Node
         watcher.watch(this._scale, 'z', this._scaleChanged, this);
     }
 
-    /**
-     * 是否加载完成
-     */
-    get isSelfLoaded()
-    {
-        const model = this.getComponent('Mesh3D');
-        if (model) return model.isLoaded;
-
-        return true;
-    }
-
-    /**
-     * 是否加载完成
-     */
-    get isLoaded()
-    {
-        if (!this.isSelfLoaded) return false;
-        for (let i = 0; i < this.children.length; i++)
-        {
-            const element = this.children[i] as Node3D;
-            if (!element.isLoaded) return false;
-        }
-
-        return true;
-    }
-
     protected _scene: Scene3D;
 
     protected _setParent(value: Node3D | null)

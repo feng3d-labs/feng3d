@@ -8,8 +8,6 @@ import { Serializable } from '../serialization/Serializable';
 import { $set } from '../serialization/Serialization';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { AssetData } from './AssetData';
-import { Texture2D } from '../textures/Texture2D';
-import { TextureCube } from '../textures/TextureCube';
 
 export interface MaterialMap { }
 export interface UniformsMap { }
@@ -93,53 +91,7 @@ export abstract class Material extends EventEmitter
 
         renderAtomic.shader = this.shader;
         renderAtomic.renderParams = this.renderParams;
-        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === 'POINTS';
-    }
-
-    /**
-     * 是否加载完成
-     */
-    get isLoaded()
-    {
-        const uniforms = this.uniforms;
-        for (const key in uniforms)
-        {
-            const texture = uniforms[key];
-            if (texture instanceof Texture2D || texture instanceof TextureCube)
-            {
-                if (!texture.isLoaded) return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * 已加载完成或者加载完成时立即调用
-     * @param callback 完成回调
-     */
-    onLoadCompleted(callback: () => void)
-    {
-        let loadingNum = 0;
-        const uniforms = this.uniforms;
-        for (const key in uniforms)
-        {
-            const texture = uniforms[key];
-            if (texture instanceof Texture2D || texture instanceof TextureCube)
-            {
-                if (!texture.isLoaded)
-                {
-                    loadingNum++;
-                    // eslint-disable-next-line no-loop-func
-                    texture.on('loadCompleted', () =>
-                    {
-                        loadingNum--;
-                        if (loadingNum === 0) callback();
-                    });
-                }
-            }
-        }
-        if (loadingNum === 0) callback();
+        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.drawMode === 'POINTS';
     }
 
     /**

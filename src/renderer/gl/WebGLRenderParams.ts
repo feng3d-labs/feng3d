@@ -1,18 +1,13 @@
 import { RenderParams } from '../data/RenderParams';
-import { WebGLCapabilities } from './WebGLCapabilities';
-import { WebGLState } from './WebGLState';
+import { WebGLRenderer } from '../WebGLRenderer';
 
 export class WebGLRenderParams
 {
-    gl: WebGLRenderingContext;
-    capabilities: WebGLCapabilities;
-    state: WebGLState;
+    private _webGLRenderer: WebGLRenderer;
 
-    constructor(gl: WebGLRenderingContext, capabilities: WebGLCapabilities, state: WebGLState)
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
-        this.capabilities = capabilities;
-        this.state = state;
+        this._webGLRenderer = webGLRenderer;
     }
 
     /**
@@ -20,10 +15,10 @@ export class WebGLRenderParams
      */
     updateRenderParams(renderParams: RenderParams)
     {
-        const { gl, capabilities, state } = this;
+        const { webGLContext, width, height } = this._webGLRenderer;
 
         const { cullFace, frontFace,
-            enableBlend, sfactor, dfactor,
+            enableBlend, blendEquation, sfactor, dfactor,
             depthtest, depthFunc, depthMask,
             colorMask,
             useViewPort, viewPort,
@@ -32,88 +27,82 @@ export class WebGLRenderParams
             useStencil, stencilFunc, stencilFuncRef, stencilFuncMask, stencilOpFail, stencilOpZFail, stencilOpZPass, stencilMask,
         } = renderParams;
 
-        const blendEquation = state.convertBlendEquation(renderParams.blendEquation);
-
         if (cullFace === 'NONE')
         {
-            gl.disable(gl.CULL_FACE);
+            webGLContext.disable('CULL_FACE');
         }
         else
         {
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(gl[cullFace]);
-            gl.frontFace(gl[frontFace]);
+            webGLContext.enable('CULL_FACE');
+            webGLContext.cullFace(cullFace);
+            webGLContext.frontFace(frontFace);
         }
 
         if (enableBlend)
         {
             //
-            gl.enable(gl.BLEND);
-            gl.blendEquation(blendEquation);
-            gl.blendFunc(gl[sfactor], gl[dfactor]);
+            webGLContext.enable('BLEND');
+            webGLContext.blendEquation(blendEquation);
+            webGLContext.blendFunc(sfactor, dfactor);
         }
         else
         {
-            gl.disable(gl.BLEND);
+            webGLContext.disable('BLEND');
         }
 
         if (depthtest)
         {
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthFunc(gl[depthFunc]);
+            webGLContext.enable('DEPTH_TEST');
+            webGLContext.depthFunc(depthFunc);
         }
         else
         {
-            gl.disable(gl.DEPTH_TEST);
+            webGLContext.disable('DEPTH_TEST');
         }
 
-        gl.depthMask(depthMask);
+        webGLContext.depthMask(depthMask);
 
-        gl.colorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
+        webGLContext.colorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 
         if (useViewPort)
         {
-            gl.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
+            webGLContext.viewport(viewPort.x, viewPort.y, viewPort.width, viewPort.height);
         }
         else
         {
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            webGLContext.viewport(0, 0, width, height);
         }
 
         if (usePolygonOffset)
         {
-            gl.enable(gl.POLYGON_OFFSET_FILL);
-            gl.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
+            webGLContext.enable('POLYGON_OFFSET_FILL');
+            webGLContext.polygonOffset(polygonOffsetFactor, polygonOffsetUnits);
         }
         else
         {
-            gl.disable(gl.POLYGON_OFFSET_FILL);
+            webGLContext.disable('POLYGON_OFFSET_FILL');
         }
 
         if (useScissor)
         {
-            gl.enable(gl.SCISSOR_TEST);
-            gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
+            webGLContext.enable('SCISSOR_TEST');
+            webGLContext.scissor(scissor.x, scissor.y, scissor.width, scissor.height);
         }
         else
         {
-            gl.disable(gl.SCISSOR_TEST);
+            webGLContext.disable('SCISSOR_TEST');
         }
 
         if (useStencil)
         {
-            if (capabilities.stencilBits === 0)
-            {
-                console.warn(`${gl} 不支持 stencil，参考 https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext WebGL context attributes: stencil`);
-            }
-            gl.enable(gl.STENCIL_TEST);
-            gl.stencilFunc(gl[stencilFunc], stencilFuncRef, stencilFuncMask);
-            gl.stencilOp(gl[stencilOpFail], gl[stencilOpZFail], gl[stencilOpZPass]);
-            gl.stencilMask(stencilMask);
+            webGLContext.enable('STENCIL_TEST');
+            webGLContext.stencilFunc(stencilFunc, stencilFuncRef, stencilFuncMask);
+            webGLContext.stencilOp(stencilOpFail, stencilOpZFail, stencilOpZPass);
+            webGLContext.stencilMask(stencilMask);
         }
         else
         {
-            gl.disable(gl.STENCIL_TEST);
+            webGLContext.disable('STENCIL_TEST');
         }
     }
 }

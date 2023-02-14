@@ -60,9 +60,8 @@ export class Image extends Component2D
     @oav({ tooltip: '使图片显示实际尺寸', componentParam: { label: 'ReSize' } })
     setNativeSize()
     {
-        const imagesize = this.image.getSize();
-        this.node2d.size.x = imagesize.x;
-        this.node2d.size.y = imagesize.y;
+        this.node2d.size.x = this.image.source.width;
+        this.node2d.size.y = this.image.source.height;
     }
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)

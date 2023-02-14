@@ -44,7 +44,7 @@ export class Wireframe3DRenderer
         {
             this.renderAtomic = new RenderAtomic();
             const renderParams = this.renderAtomic.renderParams;
-            renderParams.renderMode = 'LINES';
+            renderParams.drawMode = 'LINES';
             // renderParams.depthMask = false;
         }
     }
@@ -97,11 +97,11 @@ export class Wireframe3DRenderer
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);
 
-        const renderMode = lazy.getValue(renderAtomic.renderParams.renderMode);
-        if (renderMode === 'POINTS'
-            || renderMode === 'LINES'
-            || renderMode === 'LINE_LOOP'
-            || renderMode === 'LINE_STRIP'
+        const drawMode = lazy.getValue(renderAtomic.renderParams.drawMode);
+        if (drawMode === 'POINTS'
+            || drawMode === 'LINES'
+            || drawMode === 'LINE_LOOP'
+            || drawMode === 'LINE_STRIP'
         )
         { return; }
 

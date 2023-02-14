@@ -9,8 +9,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { TransformUtils } from '../../utils/TransformUtils';
 import { Camera3D } from '../cameras/Camera3D';
-import { Geometry, GeometryMap } from '../geometrys/Geometry';
-import { LightPicker } from '../light/pickers/LightPicker';
+import { Geometry, GeometryLike } from '../geometrys/Geometry';
 import { PickingCollisionVO } from '../raycast/rayCast3D';
 import { Renderable3D } from './Renderable3D';
 import { Scene3D } from './Scene3D';
@@ -50,7 +49,7 @@ export class Mesh3D extends Renderable3D
         }
         this._onBoundsInvalid();
     }
-    private _geometry: GeometryMap[keyof GeometryMap];
+    private _geometry: GeometryLike;
 
     /**
      * 材质
@@ -178,24 +177,6 @@ export class Mesh3D extends Renderable3D
         };
 
         return pickingCollisionVO;
-    }
-
-    /**
-     * 是否加载完成
-     */
-    get isLoaded()
-    {
-        return this.material.isLoaded;
-    }
-
-    /**
-     * 已加载完成或者加载完成时立即调用
-     * @param callback 完成回调
-     */
-    onLoadCompleted(callback: () => void)
-    {
-        if (this.isLoaded) callback();
-        this.material.onLoadCompleted(callback);
     }
 
     /**

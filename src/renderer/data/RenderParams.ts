@@ -26,7 +26,7 @@ export class RenderParams
      */
     @SerializeProperty()
     @oav({ component: 'OAVEnum', tooltip: '渲染模式，默认RenderMode.TRIANGLES', componentParam: { enumClass: ['POINTS', 'LINE_LOOP', 'LINE_STRIP', 'LINES', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'] } })
-    renderMode: RenderMode = 'TRIANGLES';
+    drawMode: DrawMode = 'TRIANGLES';
 
     /**
      * 剔除面，默认 BACK，剔除背面。
@@ -334,9 +334,18 @@ export type CullFace = 'NONE' | 'FRONT' | 'BACK' | 'FRONT_AND_BACK';
  * * TRIANGLE_FAN  绘制三角扇形。
  *
  * A GLenum specifying the type primitive to render. Possible values are:
+ *
+ * * gl.POINTS: Draws a single dot.
+ * * gl.LINE_STRIP: Draws a straight line to the next vertex.
+ * * gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
+ * * gl.LINES: Draws a line between a pair of vertices.
+ * * gl.TRIANGLE_STRIP
+ * * gl.TRIANGLE_FAN
+ * * gl.TRIANGLES: Draws a triangle for a group of three vertices.
+ *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
  */
-export type RenderMode = 'POINTS' | 'LINE_LOOP' | 'LINE_STRIP' | 'LINES' | 'TRIANGLES' | 'TRIANGLE_STRIP' | 'TRIANGLE_FAN';
+export type DrawMode = 'POINTS' | 'LINE_STRIP' | 'LINE_LOOP' | 'LINES' | 'TRIANGLE_STRIP' | 'TRIANGLE_FAN' | 'TRIANGLES';
 
 /**
  * 正面方向枚举
@@ -356,6 +365,22 @@ export type FrontFace = 'CW' | 'CCW';
  * * FUNC_REVERSE_SUBTRACT 目标 - 源
  * * MIN 源与目标的最小值，在 WebGL 2 中可使用。在 WebGL 1 时，自动使用 EXT_blend_minmax 扩展中 MIN_EXT 值。
  * * MAX 源与目标的最大值，在 WebGL 2 中可使用。在 WebGL 1 时，自动使用 EXT_blend_minmax 扩展中 MAX_EXT 值。
+ *
+ * A GLenum specifying how source and destination colors are combined. Must be either:
+ *
+ * * gl.FUNC_ADD: source + destination (default value)
+ * * gl.FUNC_SUBTRACT: source - destination
+ * * gl.FUNC_REVERSE_SUBTRACT: destination - source
+ *
+ * When using the EXT_blend_minmax extension:
+ *
+ * * ext.MIN_EXT: Minimum of source and destination
+ * * ext.MAX_EXT: Maximum of source and destination
+ *
+ * When using a WebGL 2 context, the following values are available additionally:
+ *
+ * * gl.MIN: Minimum of source and destination
+ * * gl.MAX: Maximum of source and destination
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
  */

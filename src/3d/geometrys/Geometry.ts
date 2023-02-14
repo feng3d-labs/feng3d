@@ -21,6 +21,11 @@ declare module '../../serialization/Serializable' { interface SerializableMap ex
 
 export interface GeometryMap { }
 
+/**
+ * 几何体类型
+ */
+export type GeometryLike = GeometryMap[keyof GeometryMap];
+
 export interface GeometryEventMap
 {
     /**

@@ -1,17 +1,16 @@
 import { watcher } from '../../watcher/watcher';
-import { AttributeBuffer, AttributeBufferSourceTypes, AttributeTypes } from '../data/AttributeBuffer';
-import { WebGLCapabilities } from './WebGLCapabilities';
+import { AttributeBuffer, AttributeBufferSourceTypes, VertexAttributeTypes } from '../data/AttributeBuffer';
+import { WebGLRenderer } from '../WebGLRenderer';
 
 export class WebGLAttributeBuffers
 {
-    private gl: WebGLRenderingContext;
     private buffers = new WeakMap<AttributeBuffer, WebGLAttributeBuffer>();
-    private capabilities: WebGLCapabilities;
 
-    constructor(gl: WebGLRenderingContext, capabilities: WebGLCapabilities)
+    private _webGLRenderer: WebGLRenderer;
+
+    constructor(webGLRenderer: WebGLRenderer)
     {
-        this.gl = gl;
-        this.capabilities = capabilities;
+        this._webGLRenderer = webGLRenderer;
     }
 
     get(attribute: AttributeBuffer)
@@ -37,13 +36,13 @@ export class WebGLAttributeBuffers
 
     update(attribute: AttributeBuffer)
     {
-        const { gl, capabilities, buffers } = this;
+        const { buffers } = this;
 
         let data = buffers.get(attribute);
 
         if (data === undefined)
         {
-            data = new WebGLAttributeBuffer(gl, capabilities, attribute);
+            data = new WebGLAttributeBuffer(this._webGLRenderer, attribute);
             buffers.set(attribute, data);
         }
         data.updateBuffer();
@@ -51,41 +50,39 @@ export class WebGLAttributeBuffers
 
     vertexAttribPointer(location: number, attribute: AttributeBuffer)
     {
-        const { gl, capabilities } = this;
+        const { capabilities, webGLContext } = this._webGLRenderer;
 
         const attributeBufferCacle = this.get(attribute);
 
         const size = attribute.itemSize;
         const buffer = attributeBufferCacle.buffer;
-        const type = gl[attributeBufferCacle.type];
+        const type = attributeBufferCacle.type;
         const bytesPerElement = attributeBufferCacle.bytesPerElement;
         const normalized = attributeBufferCacle.normalized;
 
         const stride = size * bytesPerElement;
         const offset = 0;
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        webGLContext.bindBuffer('ARRAY_BUFFER', buffer);
 
-        if (capabilities.isWebGL2 === true && (type === gl.INT || type === gl.UNSIGNED_INT))
+        if (capabilities.isWebGL2 === true && (type === 'INT' || type === 'UNSIGNED_INT'))
         {
-            (gl as WebGL2RenderingContext).vertexAttribIPointer(location, size, type, stride, offset);
+            webGLContext.vertexAttribIPointer(location, size, type, stride, offset);
         }
         else
         {
-            gl.vertexAttribPointer(location, size, type, normalized, stride, offset);
+            webGLContext.vertexAttribPointer(location, size, attributeBufferCacle.type, normalized, stride, offset);
         }
     }
 }
 
 export class WebGLAttributeBuffer
 {
-    gl: WebGLRenderingContext;
-    capabilities: WebGLCapabilities;
     //
     attribute: AttributeBuffer;
     buffer: WebGLBuffer;
 
-    type: AttributeTypes;
+    type: VertexAttributeTypes;
 
     /**
      * 数据数量
@@ -100,10 +97,11 @@ export class WebGLAttributeBuffer
     bytesPerElement: number;
     version = -1;
 
-    constructor(gl: WebGLRenderingContext, capabilities: WebGLCapabilities, attribute: AttributeBuffer)
+    private _webGLRenderer: WebGLRenderer;
+
+    constructor(webGLRenderer: WebGLRenderer, attribute: AttributeBuffer)
     {
-        this.gl = gl;
-        this.capabilities = capabilities;
+        this._webGLRenderer = webGLRenderer;
 
         this.attribute = attribute;
 
@@ -118,7 +116,8 @@ export class WebGLAttributeBuffer
 
     updateBuffer()
     {
-        const { gl, attribute } = this;
+        const { webGLContext } = this._webGLRenderer;
+        const { attribute } = this;
 
         if (this.version === attribute.version)
         {
@@ -130,7 +129,7 @@ export class WebGLAttributeBuffer
         let buffer = this.buffer;
         if (buffer)
         {
-            gl.deleteBuffer(buffer);
+            webGLContext.deleteBuffer(buffer);
         }
 
         const { type, array } = transfromArrayType(attribute.array, attribute.type);
@@ -138,10 +137,10 @@ export class WebGLAttributeBuffer
         const count = array !== undefined ? array.length / attribute.itemSize : 0;
         const normalized = attribute.normalized === true;
 
-        buffer = gl.createBuffer();
+        buffer = webGLContext.createBuffer();
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, array, gl[usage]);
+        webGLContext.bindBuffer('ARRAY_BUFFER', buffer);
+        webGLContext.bufferData('ARRAY_BUFFER', array, usage);
 
         this.buffer = buffer;
         this.type = type;
@@ -152,20 +151,20 @@ export class WebGLAttributeBuffer
 
     dispose()
     {
-        const { gl, buffer, attribute } = this;
+        const { webGLContext } = this._webGLRenderer;
+        const { buffer, attribute } = this;
 
-        gl.deleteBuffer(buffer);
+        webGLContext.deleteBuffer(buffer);
 
         watcher.watch(attribute, 'array', this.needsUpdate, this);
 
-        this.gl = null;
-        this.capabilities = null;
+        this._webGLRenderer = null;
         this.attribute = null;
         this.buffer = null;
     }
 }
 
-function transfromArrayType(array: AttributeBufferSourceTypes, type: AttributeTypes)
+function transfromArrayType(array: AttributeBufferSourceTypes, type: VertexAttributeTypes)
 {
     // 处理 type
     if (type === undefined)

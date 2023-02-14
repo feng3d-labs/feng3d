@@ -1,8 +1,9 @@
+import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
+import { watcher } from '../watcher/watcher';
 import { FrameBuffer } from './data/FrameBuffer';
+import { FramebufferTarget } from './gl/WebGLEnums';
 import { RenderBuffer } from './RenderBuffer';
 import { WebGLRenderer } from './WebGLRenderer';
-import { watcher } from '../watcher/watcher';
-import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
 
 /**
  * 帧缓冲对象
@@ -43,7 +44,7 @@ export class FrameBufferObject
 
     static active(webGLRenderer: WebGLRenderer, frameBufferObject: FrameBufferObject)
     {
-        const { gl, renderbuffers, framebuffers } = webGLRenderer;
+        const { renderbuffers, framebuffers, textures, webGLContext } = webGLRenderer;
         if (frameBufferObject._invalid)
         {
             frameBufferObject._invalid = false;
@@ -54,42 +55,44 @@ export class FrameBufferObject
         if (!obj)
         {
             const framebuffer = framebuffers.active(frameBufferObject.frameBuffer);
-            const texture = webGLRenderer.textures.active(frameBufferObject.texture);
+            const texture = textures.active(frameBufferObject.texture);
             const depthBuffer = renderbuffers.active(frameBufferObject.depthBuffer);
 
+            const target: FramebufferTarget = 'FRAMEBUFFER';
+
             // 绑定帧缓冲区对象
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            webGLContext.bindFramebuffer(target, framebuffer);
             // 设置颜色关联对象
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            webGLContext.framebufferTexture2D(target, 'COLOR_ATTACHMENT0', 'TEXTURE_2D', texture, 0);
             // 设置深度关联对象
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            webGLContext.framebufferRenderbuffer(target, 'DEPTH_ATTACHMENT', 'RENDERBUFFER', depthBuffer);
 
             // 检查Framebuffer状态
-            const e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-            if (gl.FRAMEBUFFER_COMPLETE !== e)
+            const e = webGLContext.checkFramebufferStatus(target);
+            if (webGLContext.FRAMEBUFFER_COMPLETE !== e)
             {
                 console.warn(`Frame buffer object is incomplete: ${e.toString()}`);
 
                 return null;
             }
 
-            gl.bindTexture(gl.TEXTURE_2D, null);
-            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            webGLContext.bindTexture('TEXTURE_2D', null);
+            webGLContext.bindRenderbuffer('RENDERBUFFER', null);
 
             obj = { framebuffer, texture, depthBuffer };
             FrameBufferObject.frameBufferObjects.set(frameBufferObject, obj);
         }
         else
         {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
+            webGLContext.bindFramebuffer('FRAMEBUFFER', obj.framebuffer);
         }
 
         return obj;
     }
 
-    deactive(gl: WebGLRenderingContext)
+    deactive(webGLRenderer: WebGLRenderer)
     {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        webGLRenderer.webGLContext.bindFramebuffer('FRAMEBUFFER', null);
     }
 
     /**

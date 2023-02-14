@@ -1,5 +1,132 @@
 /* eslint-disable camelcase */
-import { WebGLCapabilities } from './WebGLCapabilities';
+import { WebGLRenderer } from '../WebGLRenderer';
+
+/**
+ * WebGL扩展
+ */
+export class WebGLExtensions
+{
+    private _webGLRenderer: WebGLRenderer;
+    private extensions: { [extensionName: string]: any } = {};
+
+    constructor(webGLRenderer: WebGLRenderer)
+    {
+        this._webGLRenderer = webGLRenderer;
+
+        const { isWebGL2, gl } = this._webGLRenderer;
+        if (isWebGL2)
+        {
+            this.getExtension('EXT_color_buffer_float');
+        }
+        else
+        {
+            this.getExtension('WEBGL_depth_texture');
+            this.getExtension('OES_texture_float');
+            this.getExtension('OES_texture_half_float');
+            this.getExtension('OES_texture_half_float_linear', false);
+            this.getExtension('OES_standard_derivatives');
+            this.getExtension('OES_element_index_uint');
+            this.getExtension('OES_vertex_array_object');
+            this.getExtension('ANGLE_instanced_arrays');
+            //
+            const ext = this.getExtension('EXT_blend_minmax');
+
+            console.assert(gl.MIN === undefined);
+            console.assert(gl.MAX === undefined);
+
+            // @ts-ignore
+            gl.MIN = ext.MIN_EXT;
+            // @ts-ignore
+            gl.MAX = ext.MAX_EXT;
+        }
+
+        this.getExtension('OES_texture_float_linear');
+        this.getExtension('EXT_color_buffer_half_float');
+        this.getExtension('WEBGL_multisampled_render_to_texture', false);
+    }
+
+    /**
+     * 获取指定WebGL扩展。
+     *
+     * @param name WebGL扩展名称。
+     * @returns 返回指定WebGL扩展。
+     */
+    getExtension<K extends keyof WebGLExtensionMap>(name: K, isWarn = true): WebGLExtensionMap[K]
+    {
+        const { webGLContext, gl } = this._webGLRenderer;
+        const { extensions } = this;
+        if (extensions[name] !== undefined)
+        {
+            return extensions[name];
+        }
+
+        let extension: any;
+
+        switch (name)
+        {
+            case 'WEBGL_depth_texture':
+                extension = webGLContext.getExtension('WEBGL_depth_texture') || webGLContext.getExtension('MOZ_WEBGL_depth_texture') || webGLContext.getExtension('WEBKIT_WEBGL_depth_texture');
+                break;
+
+            case 'EXT_texture_filter_anisotropic':
+                const ext = extension = webGLContext.getExtension('EXT_texture_filter_anisotropic') || webGLContext.getExtension('MOZ_EXT_texture_filter_anisotropic') || webGLContext.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+
+                console.assert(gl.MAX_TEXTURE_MAX_ANISOTROPY_EXT === undefined);
+                console.assert(gl.TEXTURE_MAX_ANISOTROPY_EXT === undefined);
+                // @ts-ignore
+                gl.MAX_TEXTURE_MAX_ANISOTROPY_EXT = ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT;
+                // @ts-ignore
+                gl.TEXTURE_MAX_ANISOTROPY_EXT = ext.TEXTURE_MAX_ANISOTROPY_EXT;
+                break;
+
+            case 'WEBGL_compressed_texture_s3tc':
+                extension = webGLContext.getExtension('WEBGL_compressed_texture_s3tc') || webGLContext.getExtension('MOZ_WEBGL_compressed_texture_s3tc') || webGLContext.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc');
+                break;
+
+            case 'WEBGL_compressed_texture_pvrtc':
+                extension = webGLContext.getExtension('WEBGL_compressed_texture_pvrtc') || webGLContext.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
+                break;
+
+            default:
+                extension = webGLContext.getExtension(name);
+        }
+
+        if (extension === null && isWarn)
+        {
+            console.warn(`WebGLRenderer: ${name} extension not supported.`);
+        }
+
+        extensions[name] = extension;
+
+        return extension;
+    }
+}
+
+declare global
+{
+    interface WebGLRenderingContextBase
+    {
+        /**
+         * EXT_texture_filter_anisotropic
+         */
+        readonly MAX_TEXTURE_MAX_ANISOTROPY_EXT: number;
+
+        /**
+         * EXT_texture_filter_anisotropic
+         */
+        readonly TEXTURE_MAX_ANISOTROPY_EXT: number;
+
+        /**
+         * EXT_blend_minmax
+         */
+        readonly MIN: GLenum;
+
+        /**
+         * EXT_blend_minmax
+         */
+        readonly MAX: GLenum;
+    }
+}
 
 interface WebGLExtensionMap
 {
@@ -35,105 +162,19 @@ interface WebGLExtensionMap
     'WEBGL_multisampled_render_to_texture': null;
 }
 
-/**
- * WebGL扩展
- */
-export class WebGLExtensions
+interface WEBGL_compressed_texture_pvrtc { }
+
+export interface WebGLExtensionMapFull extends WebGLExtensionMap
 {
-    private gl: WebGLRenderingContext;
-    private extensions: { [extensionName: string]: any } = {};
+    MOZ_WEBGL_depth_texture: WEBGL_depth_texture;
+    WEBKIT_WEBGL_depth_texture: WEBGL_depth_texture;
 
-    constructor(gl: WebGLRenderingContext)
-    {
-        this.gl = gl;
-    }
+    MOZ_EXT_texture_filter_anisotropic: EXT_texture_filter_anisotropic;
+    WEBKIT_EXT_texture_filter_anisotropic: EXT_texture_filter_anisotropic;
 
-    init(capabilities: WebGLCapabilities)
-    {
-        if (capabilities.isWebGL2)
-        {
-            this.getExtension('EXT_color_buffer_float');
-        }
-        else
-        {
-            this.getExtension('WEBGL_depth_texture');
-            this.getExtension('OES_texture_float');
-            this.getExtension('OES_texture_half_float');
-            this.getExtension('OES_texture_half_float_linear');
-            this.getExtension('OES_standard_derivatives');
-            this.getExtension('OES_element_index_uint');
-            this.getExtension('OES_vertex_array_object');
-            this.getExtension('ANGLE_instanced_arrays');
-        }
+    MOZ_WEBGL_compressed_texture_s3tc: WEBGL_compressed_texture_s3tc | null;
+    WEBKIT_WEBGL_compressed_texture_s3tc: WEBGL_compressed_texture_s3tc | null;
 
-        this.getExtension('OES_texture_float_linear');
-        this.getExtension('EXT_color_buffer_half_float');
-        this.getExtension('WEBGL_multisampled_render_to_texture');
-    }
-
-    /**
-     * 判断是否存在指定WebGL扩展。
-     *
-     * @param name WebGL扩展名称。
-     * @returns 是否存在指定WebGL扩展。
-     */
-    has<K extends keyof WebGLExtensionMap>(name: K): boolean
-    {
-        return this.getExtension(name) !== null;
-    }
-
-    /**
-     * 获取指定WebGL扩展。
-     *
-     * @param name WebGL扩展名称。
-     * @returns 返回指定WebGL扩展。
-     */
-    get<K extends keyof WebGLExtensionMap>(name: K): WebGLExtensionMap[K]
-    {
-        const extension = this.getExtension(name);
-
-        if (extension === null)
-        {
-            console.warn(`WebGLRenderer: ${name} extension not supported.`);
-        }
-
-        return extension;
-    }
-
-    private getExtension<K extends keyof WebGLExtensionMap>(name: K): WebGLExtensionMap[K]
-    {
-        const { gl, extensions } = this;
-        if (extensions[name] !== undefined)
-        {
-            return extensions[name];
-        }
-
-        let extension: WebGLExtensionMap[K];
-
-        switch (name)
-        {
-            case 'WEBGL_depth_texture':
-                extension = gl.getExtension('WEBGL_depth_texture') || gl.getExtension('MOZ_WEBGL_depth_texture') || gl.getExtension('WEBKIT_WEBGL_depth_texture');
-                break;
-
-            case 'EXT_texture_filter_anisotropic':
-                extension = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
-                break;
-
-            case 'WEBGL_compressed_texture_s3tc':
-                extension = gl.getExtension('WEBGL_compressed_texture_s3tc') || gl.getExtension('MOZ_WEBGL_compressed_texture_s3tc') || gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc');
-                break;
-
-            case 'WEBGL_compressed_texture_pvrtc':
-                extension = gl.getExtension('WEBGL_compressed_texture_pvrtc') || gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
-                break;
-
-            default:
-                extension = gl.getExtension(name);
-        }
-
-        extensions[name] = extension;
-
-        return extension;
-    }
+    WEBGL_compressed_texture_pvrtc: WEBGL_compressed_texture_pvrtc;
+    WEBKIT_WEBGL_compressed_texture_pvrtc: WEBGL_compressed_texture_pvrtc;
 }

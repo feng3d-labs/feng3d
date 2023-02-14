@@ -284,6 +284,8 @@ export * from './shortcut/WindowEventProxy';
 export * from './textures/CanvasTexture2D';
 export * from './textures/ImageDataTexture2D';
 export * from './textures/ImageTexture2D';
+export * from './textures/LoadImageTexture2D';
+export * from './textures/LoadImageTextureCube';
 export * from './textures/RenderTargetTexture2D';
 export * from './textures/Texture2D';
 export * from './textures/TextureCube';
