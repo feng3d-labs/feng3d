@@ -1,6 +1,7 @@
 import { WebGLUniformTypeUtils } from '../const/WebGLUniformType';
 import { RenderAtomic } from '../data/RenderAtomic';
 import { Shader } from '../data/Shader';
+import { ShaderMacro } from '../shader/Macro';
 import { shaderlib } from '../shader/ShaderLib';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { ShaderType } from './WebGLEnums';
@@ -26,8 +27,7 @@ export class WebGLShaders
 
         const shaderMacro = renderAtomic.getShaderMacro();
         const shader = renderAtomic.getShader();
-        shader.shaderMacro = shaderMacro;
-        const shaderResult = this.activeShaderProgram(shader);
+        const shaderResult = this.activeShaderProgram(shader, shaderMacro);
         if (!shaderResult)
         {
             throw new Error(`缺少着色器，无法渲染!`);
@@ -41,11 +41,11 @@ export class WebGLShaders
     /**
      * 激活渲染程序
      */
-    activeShaderProgram(shader: Shader)
+    activeShaderProgram(shader: Shader, shaderMacro: ShaderMacro)
     {
         const { shaderName } = shader;
 
-        const { vertex, fragment } = this.updateShaderCode(shader);
+        const { vertex, fragment } = this.updateShaderCode(shader, shaderMacro);
 
         const shaderKey = vertex + fragment;
         let result = this.compileShaderResults[shaderKey];
@@ -124,9 +124,9 @@ export class WebGLShaders
     /**
      * 更新渲染代码
      */
-    private updateShaderCode(shader: Shader)
+    private updateShaderCode(shader: Shader, shaderMacro: ShaderMacro)
     {
-        const { shaderName, shaderMacro } = shader;
+        const { shaderName } = shader;
 
         if (!shaderName) return shader;
 
