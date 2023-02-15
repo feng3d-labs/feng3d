@@ -69,11 +69,6 @@ export class SourceTexture2D extends Texture2D
 
     assetType = AssetType.texture;
 
-    /**
-     * 当贴图数据未加载好等情况时代替使用
-     */
-    noPixels = ImageDatas.white;
-
     constructor(param?: Partial<SourceTexture2D>)
     {
         super(param);
@@ -87,10 +82,10 @@ export class SourceTexture2D extends Texture2D
     }
 }
 
-Texture2D.white = $set(new SourceTexture2D(), { name: 'white-Texture', noPixels: ImageDatas.white, hideFlags: HideFlags.NotEditable });
+Texture2D.white = $set(new SourceTexture2D(), { name: 'white-Texture', source: ImageDatas.white, hideFlags: HideFlags.NotEditable });
 Texture2D.default = $set(new SourceTexture2D(), { name: 'Default-Texture', hideFlags: HideFlags.NotEditable });
-Texture2D.defaultNormal = $set(new SourceTexture2D(), { name: 'Default-NormalTexture', noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable });
-Texture2D.defaultParticle = $set(new SourceTexture2D(), { name: 'Default-ParticleTexture', noPixels: ImageDatas.defaultParticle, format: 'RGBA', hideFlags: HideFlags.NotEditable });
+Texture2D.defaultNormal = $set(new SourceTexture2D(), { name: 'Default-NormalTexture', source: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable });
+Texture2D.defaultParticle = $set(new SourceTexture2D(), { name: 'Default-ParticleTexture', source: ImageDatas.defaultParticle, format: 'RGBA', hideFlags: HideFlags.NotEditable });
 
 AssetData.addAssetData('white-Texture', Texture2D.white);
 AssetData.addAssetData('Default-Texture', Texture2D.default);
