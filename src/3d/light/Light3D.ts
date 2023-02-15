@@ -6,7 +6,6 @@ import { oav } from '../../objectview/ObjectView';
 import { FrameBuffer } from '../../renderer/FrameBuffer';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
@@ -17,10 +16,43 @@ import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
 
 /**
- * 灯光
+ * 光源
  */
 export class Light3D extends Component3D
 {
+    /**
+     * 获取计算光源阴影贴图时使用的帧缓冲。
+     *
+     * @param light3D 光源。
+     * @returns 计算光源阴影贴图时使用的帧缓冲。
+     */
+    static getFrameBuffer(light3D: Light3D)
+    {
+        const cache = this._frameBufferCache;
+        let frameBuffer = cache.get(light3D);
+        if (!frameBuffer)
+        {
+            frameBuffer = new FrameBuffer();
+            cache.set(light3D, frameBuffer);
+        }
+
+        return frameBuffer;
+    }
+    private static _frameBufferCache = new Map<Light3D, FrameBuffer>();
+
+    /**
+     * 获取光源阴影贴图。
+     *
+     * @param light3D 光源。
+     * @returns 光源阴影贴图。
+     */
+    static getShadowMap(light3D: Light3D)
+    {
+        const frameBuffer = this.getFrameBuffer(light3D);
+
+        return frameBuffer.texture;
+    }
+
     /**
      * 灯光类型
      */
@@ -83,24 +115,6 @@ export class Light3D extends Component3D
      */
     shadowCameraFar: number;
 
-    /**
-     * 阴影图尺寸
-     */
-    get shadowMapSize()
-    {
-        return this.shadowMap.getSize();
-    }
-
-    get shadowMap(): RenderTargetTexture2D
-    {
-        return this.frameBufferObject.texture;
-    }
-
-    /**
-     * 帧缓冲对象，用于处理光照阴影贴图渲染
-     */
-    frameBufferObject = new FrameBuffer();
-
     @oav({ tooltip: '是否调试阴影图' })
     debugShadowMap = false;
 
@@ -130,7 +144,10 @@ export class Light3D extends Component3D
             // 材质
             const model = node3d.getComponent('Mesh3D');
             model.geometry = $set(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-            const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: this.frameBufferObject.texture as any } });
+
+            const shadermap = Light3D.getShadowMap(this);
+
+            const textureMaterial = model.material = new TextureMaterial().init({ uniforms: { s_texture: shadermap as any } });
             //
             // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
             // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);

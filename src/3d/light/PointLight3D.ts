@@ -1,6 +1,5 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
-import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Node3D } from '../core/Node3D';
@@ -27,16 +26,6 @@ export class PointLight3D extends Light3D
     @oav()
     @SerializeProperty()
     range = 10;
-
-    /**
-     * 阴影图尺寸
-     */
-    get shadowMapSize()
-    {
-        const { x, y } = this.shadowMap.getSize();
-
-        return new Vector2(x / 4, y / 2);
-    }
 }
 
 Node3D.registerPrimitive('Point Light', (g) =>

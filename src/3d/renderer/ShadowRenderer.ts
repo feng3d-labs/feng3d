@@ -10,6 +10,7 @@ import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';
 import { DirectionalLight3D } from '../light/DirectionalLight3D';
+import { Light3D } from '../light/Light3D';
 import { LightType } from '../light/LightType';
 import { PointLight3D } from '../light/PointLight3D';
 import { ShadowType } from '../light/shadow/ShadowType';
@@ -62,10 +63,12 @@ export class ShadowRenderer
     private drawForSpotLight(webGLRenderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
     {
         const { webGLContext, framebuffers } = webGLRenderer;
-        framebuffers.active(light.frameBufferObject);
+        const frameBuffer = Light3D.getFrameBuffer(light);
+
+        framebuffers.active(frameBuffer);
 
         //
-        webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
+        webGLContext.viewport(0, 0, frameBuffer.width, frameBuffer.height);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
@@ -98,7 +101,7 @@ export class ShadowRenderer
 
         //
         renderAtomic.renderParams.useViewPort = true;
-        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
+        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, frameBuffer.width, frameBuffer.height);
 
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
@@ -123,16 +126,20 @@ export class ShadowRenderer
     private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera3D): any
     {
         const { webGLContext, framebuffers } = webGLRenderer;
+        const frameBuffer = Light3D.getFrameBuffer(light);
 
-        framebuffers.active(light.frameBufferObject);
+        framebuffers.active(frameBuffer);
 
         //
-        webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
+        webGLContext.viewport(0, 0, frameBuffer.width, frameBuffer.height);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
-        const vpWidth = light.shadowMapSize.x;
-        const vpHeight = light.shadowMapSize.y;
+        const shadowMap = Light3D.getShadowMap(light);
+        const shadowMapSize = shadowMap.getSize();
+
+        const vpWidth = shadowMapSize.x / 4;
+        const vpHeight = shadowMapSize.y / 2;
 
         // These viewports map a cube-map onto a 2D texture with the
         // following orientation:
@@ -264,17 +271,18 @@ export class ShadowRenderer
         light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         const { webGLContext, framebuffers } = webGLRenderer;
-        framebuffers.active(light.frameBufferObject);
+        const frameBuffer = Light3D.getFrameBuffer(light);
+        framebuffers.active(frameBuffer);
 
         //
-        webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
+        webGLContext.viewport(0, 0, frameBuffer.width, frameBuffer.height);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
         const renderAtomic = this.renderAtomic;
         //
         renderAtomic.renderParams.useViewPort = true;
-        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
+        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, frameBuffer.width, frameBuffer.height);
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
         renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements;

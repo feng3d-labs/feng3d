@@ -4,6 +4,7 @@ import { Mat4 } from '../../../renderer/data/Uniforms';
 import { Texture2D } from '../../../textures/Texture2D';
 import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
+import { Light3D } from '../Light3D';
 import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
 import { SpotLight3D } from '../SpotLight3D';
@@ -78,6 +79,11 @@ declare module '../../../renderer/data/Uniforms'
     }
 }
 
+/**
+ * 光源拾取器。
+ *
+ * 用于收集照射到对象上的光源。
+ */
 export class LightPicker
 {
     beforeRender(renderAtomic: RenderAtomic, model: Mesh3D)
@@ -111,6 +117,12 @@ export class LightPicker
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
+                const shadowMap = Light3D.getShadowMap(element);
+                const shadowMapSize = shadowMap.getSize();
+
+                const vpWidth = shadowMapSize.x / 4;
+                const vpHeight = shadowMapSize.y / 2;
+
                 castShadowPointLights.push({
                     position: [position.x, position.y, position.z],
                     color: [color.r, color.g, color.b],
@@ -119,11 +131,12 @@ export class LightPicker
                     shadowType: element.shadowType,
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
-                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowMapSize: [vpWidth, vpHeight],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
-                pointShadowMaps.push(element.shadowMap);
+
+                pointShadowMaps.push(shadowMap);
             }
             else
             {
@@ -157,6 +170,9 @@ export class LightPicker
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
+                const shadowMap = Light3D.getShadowMap(element);
+                const shadowMapSize = shadowMap.getSize();
+
                 castShadowSpotLights.push({
                     position: [position.x, position.y, position.z],
                     color: [color.r, color.g, color.b],
@@ -168,12 +184,12 @@ export class LightPicker
                     shadowType: element.shadowType,
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
-                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowMapSize: [shadowMapSize.x, shadowMapSize.y],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
                 spotShadowMatrix.push(element._shadowCameraViewProjection.toArray() as Mat4);
-                spotShadowMaps.push(element.shadowMap);
+                spotShadowMaps.push(shadowMap);
             }
             else
             {
@@ -211,6 +227,8 @@ export class LightPicker
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
                 const shadowCameraPosition = element.shadowCameraPosition;
+                const shadowMap = Light3D.getShadowMap(element);
+                const shadowMapSize = shadowMap.getSize();
                 //
                 castShadowDirectionalLights.push({
                     direction: [direction.x, direction.y, direction.z],
@@ -219,13 +237,13 @@ export class LightPicker
                     shadowType: element.shadowType,
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
-                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowMapSize: [shadowMapSize.x, shadowMapSize.y],
                     position: [shadowCameraPosition.x, shadowCameraPosition.y, shadowCameraPosition.z],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
                 directionalShadowMatrix.push(element._shadowCameraViewProjection.toArray() as Mat4);
-                directionalShadowMaps.push(element.shadowMap);
+                directionalShadowMaps.push(shadowMap);
             }
             else
             {
