@@ -3,17 +3,24 @@ import { RenderAtomic } from '../data/RenderAtomic';
 import { WebGLRenderer } from '../WebGLRenderer';
 
 /**
- * WebGL渲染程序有效信息
+ * WebGL统一变量
  */
-export class WebGLUniform
+export interface WebGLUniform
 {
     /**
      * uniform名称
      */
     name: string;
 
+    /**
+     * 尺寸
+     */
     size: number;
-    type: keyof WebGLUniformType;
+
+    /**
+     * WebGL中Uniform类型
+     */
+    type: WebGLUniformType;
     /**
      * uniform地址
      */
@@ -27,16 +34,6 @@ export class WebGLUniform
      * Uniform数组索引，当Uniform数据为数组数据时生效
      */
     paths: string[];
-
-    constructor(ps: { name: string, paths: string[], size: number, type: keyof WebGLUniformType, location: WebGLUniformLocation, textureID: number })
-    {
-        this.name = ps.name;
-        this.paths = ps.paths;
-        this.size = ps.size;
-        this.type = ps.type;
-        this.location = ps.location;
-        this.textureID = ps.textureID;
-    }
 }
 
 /**

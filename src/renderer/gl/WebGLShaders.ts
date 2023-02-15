@@ -1,3 +1,4 @@
+import { WebGLUniformTypeUtils } from '../const/WebGLUniformType';
 import { RenderAtomic } from '../data/RenderAtomic';
 import { Shader } from '../data/Shader';
 import { shaderlib } from '../shader/ShaderLib';
@@ -142,7 +143,7 @@ export class WebGLShaders
 
     private compileShaderProgram(vshader: string, fshader: string): CompileShaderResult
     {
-        const { webGLContext, webGLUniformType } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
         // 创建着色器程序
         // 编译顶点着色器
@@ -197,9 +198,9 @@ export class WebGLShaders
                     result = reg.exec(name);
                 }
                 const location = webGLContext.getUniformLocation(shaderProgram, name);
-                const type = webGLUniformType.getType(activeInfo.type);
-                const isTexture = webGLUniformType.isTexture(type);
-                uniforms[name] = new WebGLUniform({ name: paths[0], paths, size: activeInfo.size, type, location, textureID });
+                const type = WebGLUniformTypeUtils.getType(activeInfo.type);
+                const isTexture = WebGLUniformTypeUtils.isTexture(type);
+                uniforms[name] = { name: paths[0], paths, size: activeInfo.size, type, location, textureID };
 
                 if (isTexture)
                 {
