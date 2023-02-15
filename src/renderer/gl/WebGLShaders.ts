@@ -163,7 +163,7 @@ export class WebGLShaders
         {
             const activeInfo = webGLContext.getActiveAttrib(shaderProgram, i++);
             const location = webGLContext.getAttribLocation(shaderProgram, activeInfo.name);
-            attributes[activeInfo.name] = { name: activeInfo.name, size: activeInfo.size, type: activeInfo.type, location };
+            attributes[activeInfo.name] = { activeInfo, location };
         }
         // 获取uniform信息
         const numUniforms = webGLContext.getProgramParameter(shaderProgram, 'ACTIVE_UNIFORMS');
@@ -200,7 +200,7 @@ export class WebGLShaders
                 const location = webGLContext.getUniformLocation(shaderProgram, name);
                 const type = WebGLUniformTypeUtils.getType(activeInfo.type);
                 const isTexture = WebGLUniformTypeUtils.isTexture(type);
-                uniforms[name] = { name: paths[0], paths, size: activeInfo.size, type, location, textureID };
+                uniforms[name] = { activeInfo, location, type, paths, textureID };
 
                 if (isTexture)
                 {
@@ -248,12 +248,9 @@ export interface CompileShaderResult
 export interface AttributeInfo
 {
     /**
-     * 名称
+     * WebGL激活信息。
      */
-    name: string;
-
-    size: number;
-    type: number;
+    activeInfo: WebGLActiveInfo;
 
     /**
      * 属性地址

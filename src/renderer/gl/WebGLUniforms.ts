@@ -8,23 +8,20 @@ import { WebGLRenderer } from '../WebGLRenderer';
 export interface WebGLUniform
 {
     /**
-     * uniform名称
+     * WebGL激活信息。
      */
-    name: string;
-
-    /**
-     * 尺寸
-     */
-    size: number;
+    activeInfo: WebGLActiveInfo;
 
     /**
      * WebGL中Uniform类型
      */
     type: WebGLUniformType;
+
     /**
      * uniform地址
      */
     location: WebGLUniformLocation;
+
     /**
      * texture索引
      */
@@ -62,14 +59,14 @@ export class WebGLUniforms
     /**
      * 设置环境Uniform数据
      */
-    private setContext3DUniform(webGLRenderer: WebGLRenderer, activeInfo: WebGLUniform, data)
+    private setContext3DUniform(webGLRenderer: WebGLRenderer, webGLUniform: WebGLUniform, data)
     {
         const { textures, webGLContext } = webGLRenderer;
 
         let vec: number[] = data;
         if (data.toArray) vec = data.toArray();
-        const location = activeInfo.location;
-        switch (activeInfo.type)
+        const location = webGLUniform.location;
+        switch (webGLUniform.type)
         {
             case 'BOOL':
             case 'INT':
@@ -95,10 +92,10 @@ export class WebGLUniforms
                 break;
             case 'SAMPLER_2D':
             case 'SAMPLER_CUBE':
-                textures.active(data, activeInfo);
+                textures.active(data, webGLUniform);
                 break;
             default:
-                console.error(`无法识别的uniform类型 ${activeInfo.name} ${data}`);
+                console.error(`无法识别的uniform类型 ${webGLUniform.activeInfo.name} ${data}`);
         }
     }
 }
