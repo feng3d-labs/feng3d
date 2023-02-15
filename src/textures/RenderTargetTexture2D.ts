@@ -1,6 +1,5 @@
 import { mathUtil } from '../polyfill/MathUtil';
 import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
-import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { watcher } from '../watcher/watcher';
 import { Texture2D } from './Texture2D';
 
@@ -49,12 +48,5 @@ export class RenderTargetTexture2D extends Texture2D
     getSize()
     {
         return { x: this.width, y: this.height };
-    }
-
-    setTextureData(webGLRenderer: WebGLRenderer)
-    {
-        const data = this;
-
-        webGLRenderer.webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.width, data.height, 0, data.format, data.type, null);
     }
 }

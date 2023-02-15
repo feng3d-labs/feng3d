@@ -1,10 +1,10 @@
 import { watcher } from '../watcher/watcher';
-import { Texture2D } from './Texture2D';
+import { SourceTexture2D } from './SourceTexture2D';
 
 /**
  * 2D纹理
  */
-export class ImageTexture2D extends Texture2D
+export class ImageTexture2D extends SourceTexture2D
 {
     declare __class__: 'ImageTexture2D';
 

@@ -1,6 +1,7 @@
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { $serialize } from '../../serialization/Serialization';
+import { LoadImageTexture2D } from '../../textures/LoadImageTexture2D';
 import { Texture2D } from '../../textures/Texture2D';
 import { AssetMeta } from '../AssetMeta';
 import { AssetType } from '../AssetType';
@@ -38,7 +39,7 @@ export class TextureAsset extends FileAsset
 
     initAsset()
     {
-        this.data = this.data || new Texture2D();
+        this.data = this.data || new LoadImageTexture2D();
     }
 
     async saveFile()

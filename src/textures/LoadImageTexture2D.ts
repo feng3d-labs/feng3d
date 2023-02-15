@@ -1,7 +1,8 @@
 import { loader } from '../filesystem/base/Loader';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { watcher } from '../watcher/watcher';
-import { imageDatas, Texture2D } from './Texture2D';
+import { imageDatas, SourceTexture2D } from './SourceTexture2D';
+import { Texture2D } from './Texture2D';
 
 declare module './Texture2D'
 {
@@ -9,7 +10,7 @@ declare module './Texture2D'
 }
 
 @RegisterTexture('LoadImageTexture2D')
-export class LoadImageTexture2D extends Texture2D
+export class LoadImageTexture2D extends SourceTexture2D
 {
     declare __class__: 'LoadImageTexture2D';
 

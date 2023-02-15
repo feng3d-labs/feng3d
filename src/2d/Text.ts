@@ -7,7 +7,7 @@ import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Vec4 } from '../renderer/data/Uniforms';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { Texture2D } from '../textures/Texture2D';
+import { CanvasTexture2D } from '../textures/CanvasTexture2D';
 import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
@@ -49,7 +49,7 @@ export class Text extends Component2D
      */
     private _uvRect = new Vector4(0, 0, 1, 1);
 
-    private _image = new Texture2D();
+    private _image = new CanvasTexture2D();
     private _canvas: HTMLCanvasElement;
     private _invalid = true;
 
@@ -69,8 +69,7 @@ export class Text extends Component2D
         if (!this._canvas || this._invalid)
         {
             canvas = this._canvas = drawText(this._canvas, this.text, this.style);
-            this._image['_pixels'] = canvas; this._image.wrapS;
-            this._image.invalidate();
+            this._image.canvas = canvas;
             this._invalid = false;
         }
 

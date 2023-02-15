@@ -1,3 +1,8 @@
+import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
+import { RenderTargetTextureCube } from '../../textures/RenderTargetTextureCube';
+import { imageDatas, SourceTexture2D } from '../../textures/SourceTexture2D';
+import { SourceTextureCube } from '../../textures/SourceTextureCube';
+import { TextureCube } from '../../textures/TextureCube';
 import { Texture } from '../data/Texture';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { TextureMagFilter, TextureMinFilter, TextureWrap } from './WebGLEnums';
@@ -118,8 +123,7 @@ export class WebGLTextures
      */
     get(data: Texture)
     {
-        const webGLRenderer = this._webGLRenderer;
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { _texturesCache: textures } = this;
 
         let cache = textures.get(data);
@@ -139,7 +143,7 @@ export class WebGLTextures
             webGLContext.bindTexture(data.textureTarget, texture);
 
             // 设置纹理图片
-            data.setTextureData(webGLRenderer);
+            this.setTextureData(data);
 
             if (data.generateMipmap)
             {
@@ -151,6 +155,34 @@ export class WebGLTextures
         }
 
         return cache.texture;
+    }
+
+    private setTextureData(data: Texture)
+    {
+        const { webGLContext } = this._webGLRenderer;
+
+        if (data instanceof SourceTexture2D)
+        {
+            webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.format, data.type, data.source || imageDatas.white);
+        }
+        else if (data instanceof SourceTextureCube)
+        {
+            TextureCube.faces.forEach((face) =>
+            {
+                webGLContext.texImage2D(face, 0, data.format, data.format, data.type, data.sources[face] || imageDatas.white);
+            });
+        }
+        else if (data instanceof RenderTargetTexture2D)
+        {
+            webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.width, data.height, 0, data.format, data.type, null);
+        }
+        else if (data instanceof RenderTargetTextureCube)
+        {
+            TextureCube.faces.forEach((face) =>
+            {
+                webGLContext.texImage2D(face, 0, data.format, data.width, data.height, 0, data.format, data.type, null);
+            });
+        }
     }
 
     /**

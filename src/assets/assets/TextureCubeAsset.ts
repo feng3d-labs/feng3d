@@ -1,4 +1,5 @@
 import { oav } from '../../objectview/ObjectView';
+import { SourceTextureCube } from '../../textures/SourceTextureCube';
 import { TextureCube } from '../../textures/TextureCube';
 import { AssetType } from '../AssetType';
 import { RegisterAsset } from '../FileAsset';
@@ -24,7 +25,7 @@ export class TextureCubeAsset extends ObjectAsset
 
     initAsset()
     {
-        this.data = this.data || new TextureCube();
+        this.data = this.data || new SourceTextureCube();
     }
 }
 

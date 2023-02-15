@@ -6,7 +6,6 @@ import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureTarget, TextureWrap } from '../gl/WebGLEnums';
-import { WebGLRenderer } from '../WebGLRenderer';
 
 declare module '../../serialization/Serializable'
 {
@@ -37,7 +36,7 @@ export function RegisterTexture<K extends keyof TextureMap>(texture: K)
 /**
  * 纹理
  */
-export class Texture
+export abstract class Texture
 {
     /**
      * 构造纹理。
@@ -167,8 +166,8 @@ export class Texture
         this.version++;
     }
 
-    setTextureData(_webGLRenderer: WebGLRenderer)
-    {
-        throw `请在子类中实现`;
-    }
+    /**
+     * 纹理尺寸。
+     */
+    abstract getSize(): { x: number; y: number; };
 }

@@ -1,7 +1,8 @@
 import { loader } from '../filesystem/base/Loader';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { watcher } from '../watcher/watcher';
-import { imageDatas } from './Texture2D';
+import { imageDatas } from './SourceTexture2D';
+import { SourceTextureCube } from './SourceTextureCube';
 import { TextureCube, TextureCubeSources } from './TextureCube';
 
 declare module './TextureCube'
@@ -13,7 +14,7 @@ declare module './TextureCube'
 }
 
 @RegisterTexture('LoadImageTextureCube')
-export class LoadImageTextureCube extends TextureCube
+export class LoadImageTextureCube extends SourceTextureCube
 {
     declare __class__: 'LoadImageTexture2D';
 
@@ -66,7 +67,7 @@ export class LoadImageTextureCube extends TextureCube
         {
             this.sources = this.defaultSources;
 
-return;
+            return;
         }
 
         this.sources = this.loadingSources;

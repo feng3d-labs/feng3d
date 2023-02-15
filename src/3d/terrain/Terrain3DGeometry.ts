@@ -4,7 +4,7 @@ import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
+import { ImageDataTexture2D } from '../../textures/ImageDataTexture2D';
 import { ImageUtil } from '../../utils/ImageUtil';
 import { watcher } from '../../watcher/watcher';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
@@ -82,7 +82,7 @@ export class Terrain3DGeometry extends Geometry
     /**
      * 高度图路径
      */
-    private _heightMap = new Texture2D();
+    private _heightMap = new ImageDataTexture2D();
 
     private _heightImageData: ImageData;
 
@@ -116,7 +116,7 @@ export class Terrain3DGeometry extends Geometry
         if (!heightMapUrl)
         {
             this._heightImageData = getDefaultHeightMap();
-            this._heightMap.source = this._heightImageData;
+            this._heightMap.imageData = this._heightImageData;
             this.invalidateGeometry();
 
             this.isloading = false;
