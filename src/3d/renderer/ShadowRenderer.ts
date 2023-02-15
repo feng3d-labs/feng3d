@@ -29,6 +29,9 @@ declare module '../../renderer/data/Uniforms'
     }
 }
 
+/**
+ * 光照阴影贴图渲染器。
+ */
 export class ShadowRenderer
 {
     private renderAtomic = new RenderAtomic();
