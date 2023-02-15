@@ -65,7 +65,7 @@ export class ShadowRenderer
         light.frameBufferObject.active(webGLRenderer);
 
         //
-        webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
@@ -98,7 +98,7 @@ export class ShadowRenderer
 
         //
         renderAtomic.renderParams.useViewPort = true;
-        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
 
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
@@ -127,7 +127,7 @@ export class ShadowRenderer
         light.frameBufferObject.active(webGLRenderer);
 
         //
-        webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
@@ -269,14 +269,14 @@ export class ShadowRenderer
         const { webGLContext } = webGLRenderer;
 
         //
-        webGLContext.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
         webGLContext.clearColor(1.0, 1.0, 1.0, 1.0);
         webGLContext.clear(['COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT']);
 
         const renderAtomic = this.renderAtomic;
         //
         renderAtomic.renderParams.useViewPort = true;
-        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix.elements;
         renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection.elements;
