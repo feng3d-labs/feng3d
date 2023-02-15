@@ -1,7 +1,8 @@
 import { loader } from '../filesystem/base/Loader';
 import { RegisterTexture } from '../renderer/data/Texture';
+import { ImageUtil } from '../utils/ImageUtil';
 import { watcher } from '../watcher/watcher';
-import { imageDatas, SourceTexture2D } from './SourceTexture2D';
+import { SourceTexture2D } from './SourceTexture2D';
 import { Texture2D } from './Texture2D';
 
 declare module './Texture2D'
@@ -17,12 +18,12 @@ export class LoadImageTexture2D extends SourceTexture2D
     /**
      * 默认贴图
      */
-    defaultSource = imageDatas.white;
+    defaultSource = ImageUtil.get('white');
 
     /**
      * 加载中贴图
      */
-    loadingSource = imageDatas.white;
+    loadingSource = ImageUtil.get('white');
 
     /**
      * 图片路径。

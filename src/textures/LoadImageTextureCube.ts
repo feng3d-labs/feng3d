@@ -1,7 +1,7 @@
 import { loader } from '../filesystem/base/Loader';
 import { RegisterTexture } from '../renderer/data/Texture';
+import { ImageUtil } from '../utils/ImageUtil';
 import { watcher } from '../watcher/watcher';
-import { imageDatas } from './SourceTexture2D';
 import { SourceTextureCube } from './SourceTextureCube';
 import { TextureCube, TextureCubeSources } from './TextureCube';
 
@@ -23,24 +23,24 @@ export class LoadImageTextureCube extends SourceTextureCube
      */
     defaultSources
         = {
-            TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
-            TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
-            TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+            TEXTURE_CUBE_MAP_POSITIVE_X: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_POSITIVE_Y: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_POSITIVE_Z: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_NEGATIVE_X: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_NEGATIVE_Y: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_NEGATIVE_Z: ImageUtil.get('white'),
         };
 
     /**
      * 加载中贴图
      */
     loadingSources = {
-        TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
-        TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
-        TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+        TEXTURE_CUBE_MAP_POSITIVE_X: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_POSITIVE_Y: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_POSITIVE_Z: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_X: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_Y: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_Z: ImageUtil.get('white'),
     };
 
     /**

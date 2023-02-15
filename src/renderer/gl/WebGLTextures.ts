@@ -1,8 +1,9 @@
 import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
 import { RenderTargetTextureCube } from '../../textures/RenderTargetTextureCube';
-import { imageDatas, SourceTexture2D } from '../../textures/SourceTexture2D';
+import { SourceTexture2D } from '../../textures/SourceTexture2D';
 import { SourceTextureCube } from '../../textures/SourceTextureCube';
 import { TextureCube } from '../../textures/TextureCube';
+import { ImageUtil } from '../../utils/ImageUtil';
 import { Texture } from '../data/Texture';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { TextureMagFilter, TextureMinFilter, TextureWrap } from './WebGLEnums';
@@ -163,13 +164,13 @@ export class WebGLTextures
 
         if (data instanceof SourceTexture2D)
         {
-            webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.format, data.type, data.source || imageDatas.white);
+            webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.format, data.type, data.source || ImageUtil.get('white'));
         }
         else if (data instanceof SourceTextureCube)
         {
             TextureCube.faces.forEach((face) =>
             {
-                webGLContext.texImage2D(face, 0, data.format, data.format, data.type, data.sources[face] || imageDatas.white);
+                webGLContext.texImage2D(face, 0, data.format, data.format, data.type, data.sources[face] || ImageUtil.get('white'));
             });
         }
         else if (data instanceof RenderTargetTexture2D)

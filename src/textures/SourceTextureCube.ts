@@ -4,8 +4,8 @@ import { oav } from '../objectview/ObjectView';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';
+import { ImageUtil } from '../utils/ImageUtil';
 import { watcher } from '../watcher/watcher';
-import { imageDatas } from './SourceTexture2D';
 import { TextureCube } from './TextureCube';
 
 export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positive_z_url' | 'negative_x_url' | 'negative_y_url' | 'negative_z_url';
@@ -52,12 +52,12 @@ export class SourceTextureCube extends TextureCube
     OAVCubeMap = '';
 
     sources: TextureCubeSources = {
-        TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
-        TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
-        TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+        TEXTURE_CUBE_MAP_POSITIVE_X: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_POSITIVE_Y: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_POSITIVE_Z: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_X: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_Y: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_Z: ImageUtil.get('white'),
     };
 
     constructor()
