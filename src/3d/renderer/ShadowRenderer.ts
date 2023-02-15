@@ -61,8 +61,8 @@ export class ShadowRenderer
 
     private drawForSpotLight(webGLRenderer: WebGLRenderer, light: SpotLight3D, scene: Scene3D, camera: Camera3D): any
     {
-        const { webGLContext } = webGLRenderer;
-        light.frameBufferObject.active(webGLRenderer);
+        const { webGLContext, framebuffers } = webGLRenderer;
+        framebuffers.active(light.frameBufferObject);
 
         //
         webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
@@ -117,14 +117,14 @@ export class ShadowRenderer
             this.drawObject3D(webGLRenderer, renderable, scene, camera);
         });
 
-        light.frameBufferObject.deactive(webGLRenderer);
+        framebuffers.active(null);
     }
 
     private drawForPointLight(webGLRenderer: WebGLRenderer, light: PointLight3D, scene: Scene3D, camera: Camera3D): any
     {
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext, framebuffers } = webGLRenderer;
 
-        light.frameBufferObject.active(webGLRenderer);
+        framebuffers.active(light.frameBufferObject);
 
         //
         webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
@@ -213,7 +213,7 @@ export class ShadowRenderer
                 this.drawObject3D(webGLRenderer, renderable, scene, camera);
             });
         }
-        light.frameBufferObject.deactive(webGLRenderer);
+        framebuffers.active(null);
     }
 
     private drawForDirectionalLight(webGLRenderer: WebGLRenderer, light: DirectionalLight3D, scene: Scene3D, camera: Camera3D): any
@@ -263,10 +263,8 @@ export class ShadowRenderer
         light.shadowCameraPosition = shadowCamera.node3d.globalPosition;
         light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
-        //
-        light.frameBufferObject.active(webGLRenderer);
-
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext, framebuffers } = webGLRenderer;
+        framebuffers.active(light.frameBufferObject);
 
         //
         webGLContext.viewport(0, 0, light.frameBufferObject.width, light.frameBufferObject.height);
@@ -294,7 +292,7 @@ export class ShadowRenderer
             this.drawObject3D(webGLRenderer, renderable, scene, camera);
         });
 
-        light.frameBufferObject.deactive(webGLRenderer);
+        framebuffers.active(null);
     }
 
     /**

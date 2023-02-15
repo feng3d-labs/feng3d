@@ -3,7 +3,7 @@ import { Color3 } from '../../math/Color3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { FrameBufferObject } from '../../renderer/FrameBufferObject';
+import { FrameBuffer } from '../../renderer/FrameBuffer';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
@@ -99,7 +99,7 @@ export class Light3D extends Component3D
     /**
      * 帧缓冲对象，用于处理光照阴影贴图渲染
      */
-    frameBufferObject = new FrameBufferObject();
+    frameBufferObject = new FrameBuffer();
 
     @oav({ tooltip: '是否调试阴影图' })
     debugShadowMap = false;

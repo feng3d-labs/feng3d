@@ -8,7 +8,7 @@ import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { FrameBufferObject } from '../../renderer/FrameBufferObject';
+import { FrameBuffer } from '../../renderer/FrameBuffer';
 import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
@@ -49,7 +49,7 @@ export class Water3D extends Component3D
     /**
      * 帧缓冲对象，用于处理水面反射
      */
-    private frameBufferObject = new FrameBufferObject();
+    private frameBufferObject = new FrameBuffer();
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
     {

@@ -38,7 +38,7 @@ export class WebGLTextures
             webGLContext.activeTexture(activeInfo.textureID);
         }
 
-        const texture = this.getTexture(data);
+        const texture = this.get(data);
 
         // 绑定纹理
         webGLContext.bindTexture(data.textureTarget, texture);
@@ -116,7 +116,7 @@ export class WebGLTextures
      * 获取顶点属性缓冲
      * @param data 数据
      */
-    getTexture(data: Texture)
+    get(data: Texture)
     {
         const webGLRenderer = this._webGLRenderer;
         const { webGLContext } = webGLRenderer;

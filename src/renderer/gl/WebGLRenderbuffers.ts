@@ -26,7 +26,7 @@ export class WebGLRenderbuffers
     /**
      * 激活
      */
-    active(renderBuffer: RenderBuffer)
+    get(renderBuffer: RenderBuffer)
     {
         const { webGLContext } = this._webGLRenderer;
         const { renderBuffers } = this;
