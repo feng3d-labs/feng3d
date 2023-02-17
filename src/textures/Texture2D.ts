@@ -1,4 +1,5 @@
 import { Texture } from '../renderer/data/Texture';
+import { UniformTypeMap } from '../renderer/data/Uniforms';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 
 declare module '../renderer/data/Texture'
@@ -12,6 +13,15 @@ export interface Texture2DMap
 }
 
 export type Texture2DLike = Texture2DMap[keyof Texture2DMap];
+
+declare module '../renderer/data/Uniforms'
+{
+    interface UniformTypeMap
+    {
+        texture2D: Texture2D;
+        texture2DArray: Texture2D[];
+    }
+}
 
 /**
  * 2D纹理

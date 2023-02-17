@@ -1,3 +1,4 @@
+import { Vector2 } from '../math/geom/Vector2';
 import { mathUtil } from '../polyfill/MathUtil';
 import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
 import { watcher } from '../watcher/watcher';
@@ -44,6 +45,6 @@ export class RenderTargetTextureCube extends TextureCube
 
     getSize()
     {
-        return { x: this.width, y: this.height };
+        return new Vector2(this.width, this.height);
     }
 }

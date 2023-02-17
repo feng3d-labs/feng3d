@@ -1,4 +1,5 @@
 import { HideFlags } from '../../core/HideFlags';
+import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial } from '../../polyfill/Types';
 import { getInstance } from '../../serialization/getInstance';
@@ -169,5 +170,5 @@ export abstract class Texture
     /**
      * 纹理尺寸。
      */
-    abstract getSize(): { x: number; y: number; };
+    abstract getSize(): Vector2;
 }

@@ -1,6 +1,7 @@
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
+import { Vector2 } from '../math/geom/Vector2';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
@@ -42,7 +43,7 @@ export class SourceTexture2D extends Texture2D
 
     getSize()
     {
-        return { x: this.source.width, y: this.source.height };
+        return new Vector2(this.source.width, this.source.height);
     }
 }
 

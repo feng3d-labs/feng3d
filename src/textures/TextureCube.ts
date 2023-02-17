@@ -11,6 +11,14 @@ declare module '../renderer/data/Texture'
 
 export interface TextureCubeMap { }
 
+declare module '../renderer/data/Uniforms'
+{
+    interface UniformTypeMap
+    {
+        TextureCube: TextureCube;
+    }
+}
+
 /**
  * 立方体纹理贴图
  */

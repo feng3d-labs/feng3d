@@ -3,7 +3,6 @@ import { lazy } from '../../polyfill/Types';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
-import { Vec3, Vec4 } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
 import { Renderable3D } from '../core/Renderable3D';
@@ -30,7 +29,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 线框颜色
          */
-        u_wireframeColor: Vec4;
+        u_wireframeColor: Color4;
     }
 }
 
@@ -109,11 +108,11 @@ export class Wireframe3DRenderer
 
         const uniforms = this.renderAtomic.uniforms;
         //
-        uniforms.u_projectionMatrix = camera.projectionMatrix.elements;
-        uniforms.u_viewProjection = camera.viewProjection.elements;
-        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix.elements;
-        uniforms.u_cameraMatrix = camera.node3d.globalMatrix.elements;
-        uniforms.u_cameraPos = camera.node3d.globalPosition.toArray() as Vec3;
+        uniforms.u_projectionMatrix = camera.projectionMatrix;
+        uniforms.u_viewProjection = camera.viewProjection;
+        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix;
+        uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
+        uniforms.u_cameraPos = camera.node3d.globalPosition;
         uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
 
@@ -140,7 +139,7 @@ export class Wireframe3DRenderer
         renderAtomic.wireframeShader = renderAtomic.wireframeShader || new Shader({ shaderName: 'wireframe' });
         this.renderAtomic.index = renderAtomic.wireframeindexBuffer;
 
-        this.renderAtomic.uniforms.u_wireframeColor = wireframeColor.toArray() as Vec4;
+        this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
 
         //
         this.renderAtomic.shader = renderAtomic.wireframeShader;

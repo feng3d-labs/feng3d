@@ -47,7 +47,7 @@ export class Renderer2D extends Component3D
                 // 绘制
                 const renderAtomic = renderable.renderAtomic;
 
-                renderAtomic.uniforms.u_viewProjection = canvas.projection.elements;
+                renderAtomic.uniforms.u_viewProjection = canvas.projection;
 
                 renderable.beforeRender(renderAtomic, null, null);
 

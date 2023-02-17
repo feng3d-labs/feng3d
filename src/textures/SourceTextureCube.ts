@@ -1,5 +1,6 @@
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
+import { Vector2 } from '../math/geom/Vector2';
 import { oav } from '../objectview/ObjectView';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
@@ -68,7 +69,7 @@ export class SourceTextureCube extends TextureCube
 
     getSize()
     {
-        return { x: this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.width, y: this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.height };
+        return new Vector2(this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.width, this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.height);
     }
 
     static default: TextureCube;

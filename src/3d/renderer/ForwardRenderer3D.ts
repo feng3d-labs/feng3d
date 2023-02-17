@@ -1,7 +1,10 @@
+import { Color4 } from '../../math/Color4';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Vector3 } from '../../math/geom/Vector3';
+import { Vector4 } from '../../math/geom/Vector4';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { lazy, LazyObject } from '../../polyfill/Types';
-import { Uniforms, Vec3, Vec4 } from '../../renderer/data/Uniforms';
+import { Uniforms } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera3D } from '../cameras/Camera3D';
 import { Mesh3D } from '../core/Mesh3D';
@@ -15,40 +18,40 @@ declare module '../../renderer/data/Uniforms'
         /**
          * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
          */
-        _Time: Vec4;
+        _Time: Vector4;
 
         /**
          * （view矩阵）摄像机逆矩阵
          */
-        u_viewMatrix: Mat4;
+        u_viewMatrix: Matrix4x4;
 
         /**
          * 投影矩阵
          */
-        u_projectionMatrix: Mat4;
+        u_projectionMatrix: Matrix4x4;
 
         /**
          * 全局投影矩阵
          */
-        u_viewProjection: Mat4;
+        u_viewProjection: Matrix4x4;
 
         /**
          * 摄像机矩阵
          */
-        u_cameraMatrix: Mat4;
+        u_cameraMatrix: Matrix4x4;
         /**
          * 摄像机位置
          */
-        u_cameraPos: Vec3;
+        u_cameraPos: Vector3;
         /**
          * 模型-摄像机 矩阵
          */
-        u_mvMatrix: Mat4;
+        u_mvMatrix: Matrix4x4;
 
         /**
          * 模型-摄像机 逆转置矩阵，用于计算摄像机空间法线
          */
-        u_ITMVMatrix: Mat4;
+        u_ITMVMatrix: Matrix4x4;
 
         /**
          * 天空盒尺寸
@@ -63,7 +66,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 场景环境光
          */
-        u_sceneAmbientColor: Vec4;
+        u_sceneAmbientColor: Color4;
     }
 }
 
@@ -102,17 +105,17 @@ export class ForwardRenderer
 
         const uniforms: LazyObject<Uniforms> = <any>{};
         //
-        uniforms.u_projectionMatrix = camera.projectionMatrix.elements;
-        uniforms.u_viewProjection = camera.viewProjection.elements;
-        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix.elements;
-        uniforms.u_cameraMatrix = camera.node3d.globalMatrix.elements;
-        uniforms.u_cameraPos = camera.node3d.globalPosition.toArray() as Vec3;
+        uniforms.u_projectionMatrix = camera.projectionMatrix;
+        uniforms.u_viewProjection = camera.viewProjection;
+        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix;
+        uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
+        uniforms.u_cameraPos = camera.node3d.globalPosition;
         uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
-        uniforms.u_sceneAmbientColor = scene.ambientColor.toArray() as Vec4;
+        uniforms.u_sceneAmbientColor = scene.ambientColor;
 
         const ctime = (Date.now() / 1000) % 3600;
-        uniforms._Time = [ctime / 20, ctime, ctime * 2, ctime * 3];
+        uniforms._Time = new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3);
 
         unblenditems.concat(blendItems).forEach((renderable) =>
         {
@@ -124,17 +127,9 @@ export class ForwardRenderer
                 renderAtomic.uniforms[key] = uniforms[key];
             }
             //
-            renderAtomic.uniforms.u_mvMatrix = () =>
-            {
-                const modelMatrix = lazy.getValue(renderAtomic.uniforms.u_modelMatrix);
-                const viewMatrix = lazy.getValue(renderAtomic.uniforms.u_viewMatrix);
-                const matrix = new Matrix4x4(modelMatrix);
-                matrix.append(viewMatrix);
+            renderAtomic.uniforms.u_mvMatrix = lazy.getValue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getValue(renderAtomic.uniforms.u_viewMatrix));
 
-                return matrix.elements;
-            };
-            renderAtomic.uniforms.u_ITMVMatrix = () =>
-                new Matrix4x4(lazy.getValue(renderAtomic.uniforms.u_mvMatrix)).invert().transpose().elements;
+            renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getValue(renderAtomic.uniforms.u_mvMatrix).invert().transpose();
 
             renderAtomic.shaderMacro.RotationOrder = mathUtil.DefaultRotationOrder;
 

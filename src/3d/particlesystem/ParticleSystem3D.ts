@@ -3,13 +3,12 @@ import { Material } from '../../core/Material';
 import { RunEnvironment } from '../../core/RunEnvironment';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix3x3 } from '../../math/geom/Matrix3x3';
-import { identityMat4, Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Mat3 } from '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera3D } from '../cameras/Camera3D';
@@ -67,7 +66,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 粒子公告牌矩阵
          */
-        u_particle_billboardMatrix: Mat3;
+        u_particle_billboardMatrix: Matrix3x3;
     }
 }
 
@@ -595,12 +594,12 @@ export class ParticleSystem3D extends Component3D
         this._attributes.a_particle_flipUV.array = flipUVs;
 
         //
-        renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix.toArray() as Mat3;
+        renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
 
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.Global)
         {
-            renderAtomic.uniforms.u_modelMatrix = () => identityMat4;
-            renderAtomic.uniforms.u_ITModelMatrix = () => identityMat4;
+            renderAtomic.uniforms.u_modelMatrix = () => identityMatrix4x4;
+            renderAtomic.uniforms.u_ITModelMatrix = () => identityMatrix4x4;
         }
 
         for (const key in this._attributes)
@@ -1248,3 +1247,7 @@ createNodeMenu.push(
     }
 );
 
+/**
+ * 单位矩阵。
+ */
+const identityMatrix4x4 = new Matrix4x4();
