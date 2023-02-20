@@ -2,8 +2,6 @@ import { oav } from '../objectview/ObjectView';
 import { Texture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
 
-export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positive_z_url' | 'negative_x_url' | 'negative_y_url' | 'negative_z_url';
-
 declare module '../renderer/data/Texture'
 {
     interface TextureMap extends TextureCubeMap { }
