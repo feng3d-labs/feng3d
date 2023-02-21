@@ -1,7 +1,8 @@
-import { Lazy, lazy, LazyObject } from '../../polyfill/Types';
+import { lazy, LazyObject } from '../../polyfill/Types';
 import { WebGLAttributeBuffers } from '../gl/WebGLAttributeBuffers';
 import { ShaderMacro } from '../shader/Macro';
 import { AttributeBuffer } from './AttributeBuffer';
+import { DrawCall } from './DrawCall';
 import { ElementBuffer } from './ElementBuffer';
 import { RenderParams } from './RenderParams';
 import { Shader } from './Shader';
@@ -32,10 +33,7 @@ export class RenderAtomic
      */
     uniforms: LazyObject<Uniforms> = {} as any;
 
-    /**
-     * 渲染实例数量
-     */
-    instanceCount: Lazy<number>;
+    drawCall = new DrawCall();
 
     /**
      * 渲染程序
@@ -89,11 +87,12 @@ export class RenderAtomic
         return (this.next && this.next.getUniformByKey(key));
     }
 
-    getInstanceCount(): number
+    getDrawCall(drawCall = new DrawCall())
     {
-        if (this.instanceCount !== undefined) return lazy.getValue(this.instanceCount);
+        this.next && this.next.getDrawCall(drawCall);
+        Object.assign(drawCall, this.drawCall);
 
-        return this.next && this.next.getInstanceCount();
+        return drawCall;
     }
 
     getShader(): Shader

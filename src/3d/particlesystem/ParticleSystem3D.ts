@@ -514,7 +514,7 @@ export class ParticleSystem3D extends Component3D
             this._awaked = true;
         }
 
-        renderAtomic.instanceCount = this._activeParticles.length;
+        renderAtomic.drawCall.instanceCount = this._activeParticles.length;
         //
         renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
 

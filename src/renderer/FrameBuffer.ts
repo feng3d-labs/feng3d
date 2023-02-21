@@ -22,26 +22,21 @@ export class FrameBuffer
      *
      * Attaches the texture to the framebuffer's color buffer.
      */
-    texture: RenderTargetTexture2D;
+    texture = new RenderTargetTexture2D();
 
     /**
      * 附加到帧缓冲上的深度缓冲。
      *
      * Attaches the texture to the framebuffer's depth buffer.
      */
-    depthBuffer: RenderBuffer;
+    depthBuffer = new RenderBuffer();
 
-    constructor(width = 1024, height = 1024)
+    constructor()
     {
         watcher.watch(this as FrameBuffer, 'width', this.invalidateSize, this);
         watcher.watch(this as FrameBuffer, 'height', this.invalidateSize, this);
         watcher.watch(this as FrameBuffer, 'texture', this.invalidateSize, this);
         watcher.watch(this as FrameBuffer, 'depthBuffer', this.invalidateSize, this);
-        //
-        this.texture = new RenderTargetTexture2D();
-        this.depthBuffer = new RenderBuffer();
-        this.width = width;
-        this.height = height;
     }
 
     private invalidateSize()

@@ -141,10 +141,8 @@ export class WebGLRenderer
      * 渲染一次。
      *
      * @param renderAtomic 渲染原子，包含渲染所需的所有数据。
-     * @param offset ToDO 合并到RenderAtomic中
-     * @param count ToDO 合并到RenderAtomic中
      */
-    render(renderAtomic: RenderAtomic, offset?: number, count?: number)
+    render(renderAtomic: RenderAtomic)
     {
         if (this._isContextLost === true) return;
 
@@ -160,7 +158,7 @@ export class WebGLRenderer
 
             uniforms.activeUniforms(this, renderAtomic, shaderResult.uniforms);
 
-            elementBufferRenderer.render(renderAtomic, offset, count);
+            elementBufferRenderer.render(renderAtomic);
         }
         catch (error)
         {

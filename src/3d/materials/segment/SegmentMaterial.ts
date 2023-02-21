@@ -26,7 +26,7 @@ export class SegmentMaterial extends Material
     {
         super();
         this.shader.shaderName = 'segment';
-        this.renderParams.drawMode = 'LINES';
+        this.drawMode = 'LINES';
         this.renderParams.enableBlend = true;
     }
 }

@@ -232,7 +232,7 @@ export class ShadowRenderer
         const models = scene.getComponentsInChildren('Mesh3D').filter((model) => (
             (model.castShadows || model.receiveShadows)
             && !model.useMaterial.renderParams.enableBlend
-            && model.useMaterial.renderParams.drawMode === 'TRIANGLES'));
+            && model.useMaterial.drawMode === 'TRIANGLES'));
 
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);

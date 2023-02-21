@@ -15,13 +15,16 @@ export class WebGLElementBuffers
         this._webGLRenderer = webGLRenderer;
     }
 
-    render(renderAtomic: RenderAtomic, offset: number, count: number)
+    render(renderAtomic: RenderAtomic)
     {
         const { info, attributeBuffers: attributes, webGLContext } = this._webGLRenderer;
 
-        let instanceCount = ~~lazy.getValue(renderAtomic.getInstanceCount());
+        const drawCall = renderAtomic.getDrawCall();
 
-        const drawMode = renderAtomic.getRenderParams().drawMode;
+        let instanceCount = ~~lazy.getValue(drawCall.instanceCount);
+        const drawMode = drawCall.drawMode;
+        let offset = drawCall.offset;
+        let count = drawCall.count;
 
         const element = renderAtomic.getIndexBuffer();
 
