@@ -1,9 +1,9 @@
 import { lazy } from '../../polyfill/Types';
 import { watcher } from '../../watcher/watcher';
 import { DrawElementType, ElementBuffer, ElementBufferSourceTypes } from '../data/ElementBuffer';
-import { RenderAtomic } from '../data/RenderAtomic';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { BufferUsage } from './WebGLEnums';
+import { WebGLRenderAtomic } from './WebGLRenderAtomic';
 
 export class WebGLElementBuffers
 {
@@ -15,18 +15,18 @@ export class WebGLElementBuffers
         this._webGLRenderer = webGLRenderer;
     }
 
-    render(renderAtomic: RenderAtomic)
+    render(renderAtomic: WebGLRenderAtomic)
     {
         const { info, attributeBuffers: attributes, webGLContext } = this._webGLRenderer;
 
-        const drawCall = renderAtomic.getDrawCall();
+        const drawCall = renderAtomic.drawCall;
 
         let instanceCount = ~~lazy.getValue(drawCall.instanceCount);
         const drawMode = drawCall.drawMode;
         let offset = drawCall.offset;
         let count = drawCall.count;
 
-        const element = renderAtomic.getIndexBuffer();
+        const element = renderAtomic.index;
 
         let bytesPerElement: number;
         let vertexNum: number;

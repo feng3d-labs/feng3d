@@ -1,6 +1,7 @@
+import { lazy } from '../../polyfill/Types';
 import { WebGLUniformType } from '../const/WebGLUniformType';
-import { RenderAtomic } from '../data/RenderAtomic';
 import { WebGLRenderer } from '../WebGLRenderer';
+import { WebGLRenderAtomic } from './WebGLRenderAtomic';
 
 /**
  * WebGL统一变量
@@ -41,13 +42,13 @@ export class WebGLUniforms
     /**
      * 激活常量
      */
-    activeUniforms(webGLRenderer: WebGLRenderer, renderAtomic: RenderAtomic, uniformInfos: { [name: string]: WebGLUniform })
+    activeUniforms(webGLRenderer: WebGLRenderer, renderAtomic: WebGLRenderAtomic, uniformInfos: { [name: string]: WebGLUniform })
     {
         for (const name in uniformInfos)
         {
             const activeInfo = uniformInfos[name];
             const paths = activeInfo.paths;
-            let uniformData = renderAtomic.getUniformByKey(paths[0]);
+            let uniformData = lazy.getValue(renderAtomic.uniforms[paths[0]]);
             for (let i = 1; i < paths.length; i++)
             {
                 uniformData = uniformData[paths[i]];

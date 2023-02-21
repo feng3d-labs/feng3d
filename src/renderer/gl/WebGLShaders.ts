@@ -1,10 +1,10 @@
 import { WebGLUniformTypeUtils } from '../const/WebGLUniformType';
-import { RenderAtomic } from '../data/RenderAtomic';
 import { Shader } from '../data/Shader';
 import { ShaderMacro } from '../shader/Macro';
 import { shaderlib } from '../shader/ShaderLib';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { ShaderType } from './WebGLEnums';
+import { WebGLRenderAtomic } from './WebGLRenderAtomic';
 import { WebGLUniform } from './WebGLUniforms';
 
 /**
@@ -21,12 +21,12 @@ export class WebGLShaders
         this._webGLRenderer = webGLRenderer;
     }
 
-    activeShader(renderAtomic: RenderAtomic)
+    activeShader(renderAtomic: WebGLRenderAtomic)
     {
         const { webGLContext } = this._webGLRenderer;
 
-        const shaderMacro = renderAtomic.getShaderMacro();
-        const shader = renderAtomic.getShader();
+        const shaderMacro = renderAtomic.shaderMacro;
+        const shader = renderAtomic.shader;
         const shaderResult = this.activeShaderProgram(shader, shaderMacro);
         if (!shaderResult)
         {
