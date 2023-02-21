@@ -132,7 +132,6 @@ export * from './3d/terrain/Terrain3D';
 export * from './3d/terrain/Terrain3DData';
 export * from './3d/terrain/Terrain3DGeometry';
 export * from './3d/terrain/Terrain3DMaterial';
-export * from './3d/terrain/Terrain3DMergeMethod';
 export * from './3d/water/Water3D';
 export * from './3d/water/WaterMaterial3D';
 export * from './3d/wireframe/Wireframe3D';

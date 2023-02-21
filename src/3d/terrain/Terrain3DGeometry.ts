@@ -85,11 +85,6 @@ export class Terrain3DGeometry extends Geometry
     private _heightImageData: ImageData;
 
     /**
-     * 是否正在加载。
-     */
-    isloading = false;
-
-    /**
      * 创建高度地形 拥有segmentsW*segmentsH个顶点
      */
     constructor()
@@ -105,6 +100,7 @@ export class Terrain3DGeometry extends Geometry
         watcher.watch(this as Terrain3DGeometry, 'segmentsH', this.invalidateGeometry, this);
         watcher.watch(this as Terrain3DGeometry, 'maxElevation', this.invalidateGeometry, this);
         watcher.watch(this as Terrain3DGeometry, 'minElevation', this.invalidateGeometry, this);
+        this._heightImageData = getDefaultHeightMap();
     }
 
     private async _onHeightMapUrlUrlChanged()
@@ -116,11 +112,8 @@ export class Terrain3DGeometry extends Geometry
             this._heightMap.imageData = this._heightImageData;
             this.invalidateGeometry();
 
-            this.isloading = false;
-
             return;
         }
-        this.isloading = true;
 
         const image = await loader.loadImage(heightMapUrl);
         if (heightMapUrl === this.heightMapUrl)
