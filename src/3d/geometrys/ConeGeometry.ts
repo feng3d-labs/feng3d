@@ -1,6 +1,5 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -67,10 +66,9 @@ export class ConeGeometry extends Geometry
     @oav()
     yUp = true;
 
-    constructor(param?: gPartial<ConeGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as ConeGeometry, 'bottomRadius', this.invalidateGeometry, this);
         watcher.watch(this as ConeGeometry, 'height', this.invalidateGeometry, this);
         watcher.watch(this as ConeGeometry, 'segmentsW', this.invalidateGeometry, this);

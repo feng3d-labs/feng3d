@@ -4,6 +4,7 @@ import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';
@@ -136,7 +137,7 @@ export class Wireframe3DRenderer
             }
             renderAtomic.wireframeindexBuffer = { array: wireframeindices };
         }
-        renderAtomic.wireframeShader = renderAtomic.wireframeShader || new Shader({ shaderName: 'wireframe' });
+        renderAtomic.wireframeShader = renderAtomic.wireframeShader || $set(new Shader(), { shaderName: 'wireframe' });
         this.renderAtomic.index = renderAtomic.wireframeindexBuffer;
 
         this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;

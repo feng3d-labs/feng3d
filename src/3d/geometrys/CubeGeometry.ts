@@ -1,6 +1,5 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -74,10 +73,9 @@ export class CubeGeometry extends Geometry
     @oav()
     tile6 = false;
 
-    constructor(param?: gPartial<CubeGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as CubeGeometry, 'width', this.invalidateGeometry, this);
         watcher.watch(this as CubeGeometry, 'height', this.invalidateGeometry, this);
         watcher.watch(this as CubeGeometry, 'depth', this.invalidateGeometry, this);

@@ -1,8 +1,6 @@
 import { loader } from '../../filesystem/base/Loader';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
-import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ImageDataTexture2D } from '../../textures/ImageDataTexture2D';
 import { ImageUtil } from '../../utils/ImageUtil';
@@ -94,11 +92,10 @@ export class Terrain3DGeometry extends Geometry
     /**
      * 创建高度地形 拥有segmentsW*segmentsH个顶点
      */
-    constructor(raw?: gPartial<Terrain3DGeometry>)
+    constructor()
     {
         super();
         this.name = 'terrain';
-        $set(this, raw);
         //
         watcher.watch(this as Terrain3DGeometry, 'heightMapUrl', this._onHeightMapUrlUrlChanged, this);
         watcher.watch(this as Terrain3DGeometry, 'width', this.invalidateGeometry, this);

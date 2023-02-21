@@ -1,6 +1,5 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -60,10 +59,9 @@ export class PlaneGeometry extends Geometry
 
     name = 'Plane';
 
-    constructor(param?: gPartial<PlaneGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as PlaneGeometry, 'width', this.invalidateGeometry, this);
         watcher.watch(this as PlaneGeometry, 'height', this.invalidateGeometry, this);
         watcher.watch(this as PlaneGeometry, 'segmentsW', this.invalidateGeometry, this);

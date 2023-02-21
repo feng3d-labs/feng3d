@@ -1,7 +1,6 @@
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { gPartial } from '../../polyfill/Types';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
@@ -31,10 +30,9 @@ export class LatheGeometry extends Geometry
     phiStart = 0;
     phiLength = Math.PI * 2;
 
-    constructor(param?: gPartial<LatheGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as LatheGeometry, 'points', this.invalidateGeometry, this);
         watcher.watch(this as LatheGeometry, 'segments', this.invalidateGeometry, this);
         watcher.watch(this as LatheGeometry, 'phiStart', this.invalidateGeometry, this);

@@ -4,6 +4,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
@@ -312,7 +313,7 @@ export class ShadowRenderer
     {
         const renderAtomic = renderable.renderAtomic;
         renderable.beforeRender(renderAtomic, scene, camera);
-        renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader({ shaderName: 'shadow' });
+        renderAtomic.shadowShader = renderAtomic.shadowShader || $set(new Shader(), { shaderName: 'shadow' });
 
         //
         this.renderAtomic.next = renderAtomic;

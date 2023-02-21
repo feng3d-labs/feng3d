@@ -1,6 +1,5 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -71,10 +70,9 @@ export class TorusGeometry extends Geometry
 	private _vertexNormalStride = 3;
 	private _vertexTangentStride = 3;
 
-	constructor(param?: gPartial<TorusGeometry>)
+	constructor()
 	{
 		super();
-		Object.assign(this, param);
 		watcher.watch(this as TorusGeometry, 'radius', this.invalidateGeometry, this);
 		watcher.watch(this as TorusGeometry, 'tubeRadius', this.invalidateGeometry, this);
 		watcher.watch(this as TorusGeometry, 'segmentsR', this.invalidateGeometry, this);

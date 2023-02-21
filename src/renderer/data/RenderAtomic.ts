@@ -25,21 +25,7 @@ export class RenderAtomic
     /**
      * 属性数据列表
      */
-    get attributes()
-    {
-        return this._attributes;
-    }
-
-    set attributes(v)
-    {
-        this._attributes = {} as any;
-        for (const key in v)
-        {
-            this._attributes[key] = v[key];
-        }
-    }
-
-    private _attributes: { [key: string]: AttributeBuffer; } = {};
+    attributes: { [key: string]: AttributeBuffer; } = {};
 
     /**
      * Uniform渲染数据
@@ -54,22 +40,7 @@ export class RenderAtomic
     /**
      * 渲染程序
      */
-    get shader()
-    {
-        return this._shader;
-    }
-    set shader(v)
-    {
-        if (v instanceof Shader)
-        {
-            this._shader = v;
-        }
-        else
-        {
-            this._shader = new Shader(v);
-        }
-    }
-    private _shader: Shader;
+    shader: Shader;
 
     /**
      * shader 中的 宏
@@ -79,22 +50,7 @@ export class RenderAtomic
     /**
      * 渲染参数
      */
-    get renderParams()
-    {
-        return this._renderParams;
-    }
-    set renderParams(v)
-    {
-        if (v instanceof RenderParams)
-        {
-            this._renderParams = v;
-        }
-        else
-        {
-            this._renderParams = new RenderParams(v);
-        }
-    }
-    private _renderParams = new RenderParams();
+    renderParams = new RenderParams();
 
     getIndexBuffer(): ElementBuffer
     {

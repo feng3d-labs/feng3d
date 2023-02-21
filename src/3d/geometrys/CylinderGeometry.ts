@@ -1,6 +1,5 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -139,10 +138,9 @@ export class CylinderGeometry extends Geometry implements ICylinderGeometry
 
     name = 'Cylinder';
 
-    constructor(param?: gPartial<CylinderGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as CylinderGeometry, 'topRadius', this.invalidateGeometry, this);
         watcher.watch(this as CylinderGeometry, 'bottomRadius', this.invalidateGeometry, this);
         watcher.watch(this as CylinderGeometry, 'height', this.invalidateGeometry, this);

@@ -1,5 +1,3 @@
-import { gPartial } from '../../polyfill/Types';
-
 /**
  * shader
  */
@@ -19,9 +17,4 @@ export class Shader
      * 片段着色器代码
      */
     fragment: string;
-
-    constructor(source?: gPartial<Shader>)
-    {
-        Object.assign(this, source);
-    }
 }

@@ -1,6 +1,7 @@
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Scene3D } from '../core/Scene3D';
 import { SkyBox3D } from './SkyBox3D';
@@ -44,7 +45,7 @@ export class SkyBox3DRenderer
             renderParams.cullFace = 'NONE';
             //
 
-            renderAtomic.shader = new Shader({ shaderName: 'skybox' });
+            renderAtomic.shader = $set(new Shader(), { shaderName: 'skybox' });
         }
     }
 
