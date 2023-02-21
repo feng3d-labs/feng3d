@@ -299,11 +299,6 @@ export class RenderParams
     @oav({ tooltip: 'A GLuint specifying a bit mask to enable or disable writing of individual bits in the stencil planes. By default, the mask is all 1.' })
     @SerializeProperty()
     stencilMask = 1;
-
-    constructor(raw?: Partial<RenderParams>)
-    {
-        Object.assign(this, raw);
-    }
 }
 
 /**

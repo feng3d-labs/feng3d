@@ -2,7 +2,6 @@ import { EventEmitter } from '../../event/EventEmitter';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
-import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 
@@ -135,10 +134,9 @@ export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends 
     /**
      * @param style 样式参数
      */
-    constructor(style?: Partial<TextStyle>)
+    constructor()
     {
         super();
-        $set(this, style);
         //
         watcher.watch(this as TextStyle, 'fontFamily', this.invalidate, this);
         watcher.watch(this as TextStyle, 'fontSize', this.invalidate, this);
