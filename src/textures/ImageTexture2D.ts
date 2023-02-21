@@ -8,16 +8,16 @@ export class ImageTexture2D extends SourceTexture2D
 {
     declare __class__: 'ImageTexture2D';
 
-    imageSource: HTMLImageElement;
+    image: HTMLImageElement;
 
     constructor()
     {
         super();
-        watcher.watch(this as ImageTexture2D, 'imageSource', this._imageChanged, this);
+        watcher.watch(this as ImageTexture2D, 'image', this._imageChanged, this);
     }
 
     private _imageChanged()
     {
-        this.source = this.imageSource;
+        this.source = this.image;
     }
 }

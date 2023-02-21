@@ -34,10 +34,9 @@ export class SourceTexture2D extends Texture2D
 
     assetType = AssetType.texture;
 
-    constructor(param?: Partial<SourceTexture2D>)
+    constructor()
     {
-        super(param);
-
+        super();
         watcher.watch(this as SourceTexture2D, 'source', this.invalidate, this);
     }
 

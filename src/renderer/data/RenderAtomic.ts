@@ -1,4 +1,4 @@
-import { gPartial, Lazy, lazy, LazyObject } from '../../polyfill/Types';
+import { Lazy, lazy, LazyObject } from '../../polyfill/Types';
 import { WebGLAttributeBuffers } from '../gl/WebGLAttributeBuffers';
 import { ShaderMacro } from '../shader/Macro';
 import { AttributeBuffer } from './AttributeBuffer';
@@ -95,11 +95,6 @@ export class RenderAtomic
         }
     }
     private _renderParams = new RenderParams();
-
-    constructor(source?: gPartial<RenderAtomic>)
-    {
-        Object.assign(this, source);
-    }
 
     getIndexBuffer(): ElementBuffer
     {

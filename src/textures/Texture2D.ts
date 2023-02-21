@@ -30,12 +30,6 @@ export abstract class Texture2D extends Texture
 {
     textureTarget: TextureTarget = 'TEXTURE_2D';
 
-    constructor(param?: Partial<Texture2D>)
-    {
-        super();
-        Object.assign(this, param);
-    }
-
     /**
      * 默认贴图
      */

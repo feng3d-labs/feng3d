@@ -1,5 +1,4 @@
 import { gPartial } from '../../polyfill/Types';
-import { ShaderMacro } from '../shader/Macro';
 
 /**
  * shader

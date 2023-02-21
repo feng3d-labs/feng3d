@@ -3,7 +3,6 @@ import { RegisterTexture } from '../renderer/data/Texture';
 import { ImageUtil } from '../utils/ImageUtil';
 import { watcher } from '../watcher/watcher';
 import { SourceTexture2D } from './SourceTexture2D';
-import { Texture2D } from './Texture2D';
 
 declare module './Texture2D'
 {
@@ -35,13 +34,11 @@ export class LoadImageTexture2D extends SourceTexture2D
      */
     isloading = false;
 
-    constructor(url = '')
+    constructor()
     {
         super();
         watcher.watch(this as LoadImageTexture2D, 'url', this._onUrlChanged, this);
         this.source = this.defaultSource;
-
-        this.url = url;
     }
 
     private async _onUrlChanged()

@@ -127,7 +127,7 @@ export class ForwardRenderer
                 renderAtomic.uniforms[key] = uniforms[key];
             }
             //
-            renderAtomic.uniforms.u_mvMatrix = lazy.getValue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getValue(renderAtomic.uniforms.u_viewMatrix));
+            renderAtomic.uniforms.u_mvMatrix = () => lazy.getValue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getValue(renderAtomic.uniforms.u_viewMatrix));
 
             renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getValue(renderAtomic.uniforms.u_mvMatrix).invert().transpose();
 
