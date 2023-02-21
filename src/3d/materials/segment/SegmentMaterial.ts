@@ -53,4 +53,4 @@ shaderlib.shaderConfig.shaders.segment = {
     fragment: segmentFragment,
 };
 
-Material.setDefault('Segment-Material', new SegmentMaterial());
+Material.setDefault('Segment-Material', () => new SegmentMaterial());

@@ -1,5 +1,6 @@
 import { Camera3D } from '../3d/cameras/Camera3D';
 import { Scene3D } from '../3d/core/Scene3D';
+import { AssetData } from '../core/AssetData';
 import { createNodeMenu } from '../core/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
@@ -43,7 +44,7 @@ export class Image extends Component2D
      */
     @oav()
     @SerializeProperty()
-    image = Texture2D.default;
+    image = AssetData.getDefaultAssetData('Default-Texture');
 
     /**
      * Tinting color for this Image.

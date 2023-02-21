@@ -51,6 +51,4 @@ export abstract class TextureCube extends Texture
     {
         super();
     }
-
-    static default: TextureCube;
 }

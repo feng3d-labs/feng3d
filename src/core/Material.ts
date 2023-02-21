@@ -1,6 +1,6 @@
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
-import { Constructor, gPartial } from '../polyfill/Types';
+import { Constructor, gPartial, Lazy } from '../polyfill/Types';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { DrawMode, RenderParams } from '../renderer/data/RenderParams';
 import { Shader } from '../renderer/data/Shader';
@@ -13,6 +13,8 @@ export interface MaterialMap { }
 export interface UniformsMap { }
 
 declare module '../serialization/Serializable' { interface SerializableMap extends MaterialMap, UniformsMap { } }
+
+declare module './AssetData' { interface DefaultAssetDataMap extends DefaultMaterialMap { } }
 
 /**
  * 注册材质
@@ -121,11 +123,9 @@ export abstract class Material extends EventEmitter
      * @param name 材质名称
      * @param material 材质数据
      */
-    static setDefault<K extends keyof DefaultMaterialMap>(name: K, material: Material)
+    static setDefault<K extends keyof DefaultMaterialMap>(name: K, material: Lazy<DefaultMaterialMap[K]>)
     {
-        this._defaultMaterials[<any>name] = material;
-        material.name = name;
-        AssetData.addAssetData(name, material);
+        AssetData.addDefaultAssetData(name, material as any);
     }
 
     /**
@@ -133,11 +133,10 @@ export abstract class Material extends EventEmitter
      *
      * @param name 材质名称
      */
-    static getDefault<K extends keyof DefaultMaterialMap>(name: K)
+    static getDefault<K extends keyof DefaultMaterialMap>(name: K): DefaultMaterialMap[K]
     {
-        return this._defaultMaterials[name];
+        return AssetData.getDefaultAssetData(name);
     }
-    private static _defaultMaterials: DefaultMaterialMap = <any>{};
 }
 
 /**
@@ -146,4 +145,3 @@ export abstract class Material extends EventEmitter
 export interface DefaultMaterialMap
 {
 }
-

@@ -1,6 +1,6 @@
 import { Camera3D, mathUtil, Node3D, OrthographicCamera3D, Vector2, Vector3 } from '../../../src';
-
 import { assert, describe, it } from 'vitest';
+
 const { ok, equal, deepEqual } = assert;
 
 describe('Camera3D', () =>

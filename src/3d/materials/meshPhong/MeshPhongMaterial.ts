@@ -1,7 +1,7 @@
+import { AssetData } from '../../../core/AssetData';
 import { Material, RegisterMaterial } from '../../../core/Material';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '../../../serialization/Serializable';
-import { Texture2D } from '../../../textures/Texture2D';
 import meshPhongFragment from './meshPhong_fragment_glsl';
 import meshPhongVertex from './meshPhong_vertex_glsl';
 
@@ -27,7 +27,7 @@ export class MeshPhongUniforms
 {
     declare __class__: 'MeshPhongUniforms';
 
-    map = Texture2D.default;
+    map = AssetData.getDefaultAssetData('Default-Texture');
 
     modelViewMatrix = [0.6234, -0.6258, -0.4688, 0, -0.6025, -0.0023, -0.7981, 0, 0.4983, 0.7800, -0.3785, 0, 229.1123, 86.6113, -1067.6498, 1];
 

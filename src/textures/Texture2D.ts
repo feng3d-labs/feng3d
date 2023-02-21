@@ -29,25 +29,5 @@ declare module '../renderer/data/Uniforms'
 export abstract class Texture2D extends Texture
 {
     textureTarget: TextureTarget = 'TEXTURE_2D';
-
-    /**
-     * 默认贴图
-     */
-    static white: Texture2D;
-
-    /**
-     * 默认贴图
-     */
-    static default: Texture2D;
-
-    /**
-     * 默认法线贴图
-     */
-    static defaultNormal: Texture2D;
-
-    /**
-     * 默认粒子贴图
-     */
-    static defaultParticle: Texture2D;
 }
 

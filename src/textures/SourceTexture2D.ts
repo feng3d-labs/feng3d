@@ -2,6 +2,7 @@ import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { Vector2 } from '../math/geom/Vector2';
+import { Texture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
@@ -46,12 +47,18 @@ export class SourceTexture2D extends Texture2D
     }
 }
 
-Texture2D.white = $set(new SourceTexture2D(), { name: 'white-Texture', source: ImageUtil.get('white'), hideFlags: HideFlags.NotEditable });
-Texture2D.default = $set(new SourceTexture2D(), { name: 'Default-Texture', hideFlags: HideFlags.NotEditable });
-Texture2D.defaultNormal = $set(new SourceTexture2D(), { name: 'Default-NormalTexture', source: ImageUtil.defaultNormal, hideFlags: HideFlags.NotEditable });
-Texture2D.defaultParticle = $set(new SourceTexture2D(), { name: 'Default-ParticleTexture', source: ImageUtil.defaultParticle, format: 'RGBA', hideFlags: HideFlags.NotEditable });
+declare module '../core/AssetData'
+{
+    interface DefaultAssetDataMap
+    {
+        'white-Texture': Texture2D;
+        'Default-Texture': Texture2D;
+        'Default-NormalTexture': Texture2D;
+        'Default-ParticleTexture': Texture2D;
+    }
+}
 
-AssetData.addAssetData('white-Texture', Texture2D.white);
-AssetData.addAssetData('Default-Texture', Texture2D.default);
-AssetData.addAssetData('Default-NormalTexture', Texture2D.defaultNormal);
-AssetData.addAssetData('Default-ParticleTexture', Texture2D.defaultParticle);
+AssetData.addDefaultAssetData('white-Texture', () => $set(new SourceTexture2D(), { name: 'white-Texture', source: ImageUtil.get('white'), hideFlags: HideFlags.NotEditable }));
+AssetData.addAssetData('Default-Texture', () => $set(new SourceTexture2D(), { name: 'Default-Texture', hideFlags: HideFlags.NotEditable }));
+AssetData.addAssetData('Default-NormalTexture', () => $set(new SourceTexture2D(), { name: 'Default-NormalTexture', source: ImageUtil.defaultNormal, hideFlags: HideFlags.NotEditable }));
+AssetData.addAssetData('Default-ParticleTexture', () => $set(new SourceTexture2D(), { name: 'Default-ParticleTexture', source: ImageUtil.defaultParticle, format: 'RGBA', hideFlags: HideFlags.NotEditable }));

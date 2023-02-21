@@ -1,12 +1,17 @@
+import { AssetType } from '../assets/AssetType';
+import { ReadRS } from '../assets/rs/ReadRS';
 import { EventEmitter } from '../event/EventEmitter';
 import { MapUtils } from '../polyfill/MapUtils';
+import { lazy, Lazy } from '../polyfill/Types';
 import { getClassName } from '../serialization/getClassName';
 import { getInstance } from '../serialization/getInstance';
 import { serialization } from '../serialization/Serialization';
 import { __class__ } from '../serialization/SerializationConst';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { AssetType } from '../assets/AssetType';
-import { ReadRS } from '../assets/rs/ReadRS';
+
+export interface DefaultAssetDataMap
+{
+}
 
 /**
  * 资源数据
@@ -64,7 +69,7 @@ export class AssetData extends EventEmitter
      * @param assetId 资源编号
      * @param data 资源数据
      */
-    static addAssetData<T>(assetId: string, data: T)
+    static addAssetData(assetId: string, data: any)
     {
         if (!data) return;
         if (this.assetMap.has(data) || this.idAssetMap.has(assetId))
@@ -74,6 +79,40 @@ export class AssetData extends EventEmitter
 
         this.assetMap.set(data, assetId);
         this.idAssetMap.set(assetId, data);
+
+        return data;
+    }
+
+    /**
+     * 新增默认资源数据
+     *
+     * @param assetId 资源编号
+     * @param data 资源数据
+     */
+    static addDefaultAssetData<K extends keyof DefaultAssetDataMap>(assetId: K, data: Lazy<DefaultAssetDataMap[K]>)
+    {
+        console.assert(!this._defaultAssetData[assetId]);
+        this._defaultAssetData[assetId] = data;
+    }
+    private static _defaultAssetData: any = {};
+
+    /**
+     * 获取默认资源数据
+     *
+     * @param assetId
+     * @returns
+     */
+    static getDefaultAssetData<K extends keyof DefaultAssetDataMap>(assetId: K): DefaultAssetDataMap[K]
+    {
+        let data = this.idAssetMap.get(assetId);
+        if (!data)
+        {
+            console.assert(!this._defaultAssetData[assetId]);
+            data = lazy.getValue(this._defaultAssetData[assetId]);
+
+            this.assetMap.set(data, assetId);
+            this.idAssetMap.set(assetId, data);
+        }
 
         return data;
     }

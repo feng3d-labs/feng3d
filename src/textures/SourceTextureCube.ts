@@ -61,10 +61,14 @@ export class SourceTextureCube extends TextureCube
     {
         return new Vector2(this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.width, this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.height);
     }
-
-    static default: TextureCube;
 }
 
-TextureCube.default = $set(new SourceTextureCube(), { name: 'Default-TextureCube', hideFlags: HideFlags.NotEditable });
+declare module '../core/AssetData'
+{
+    interface DefaultAssetDataMap
+    {
+        'Default-TextureCube': TextureCube;
+    }
+}
 
-AssetData.addAssetData('Default-TextureCube', TextureCube.default);
+AssetData.addDefaultAssetData('Default-TextureCube', () => $set(new SourceTextureCube(), { name: 'Default-TextureCube', hideFlags: HideFlags.NotEditable }));
