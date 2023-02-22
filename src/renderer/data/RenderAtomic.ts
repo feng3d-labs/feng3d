@@ -32,7 +32,7 @@ export class RenderAtomic
      */
     uniforms: LazyObject<Uniforms> = {} as any;
 
-    drawCall = new DrawCall();
+    drawCall: Partial<DrawCall> = {};
 
     /**
      * 渲染程序
@@ -47,5 +47,5 @@ export class RenderAtomic
     /**
      * 渲染参数
      */
-    renderParams = new RenderParams();
+    renderParams: Partial<RenderParams> = {};
 }

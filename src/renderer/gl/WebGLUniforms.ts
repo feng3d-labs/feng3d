@@ -48,10 +48,14 @@ export class WebGLUniforms
         {
             const activeInfo = uniformInfos[name];
             const paths = activeInfo.paths;
-            let uniformData = lazy.getValue(renderAtomic.uniforms[paths[0]]);
+            let uniformData = lazy.getValue(renderAtomic.uniforms[paths[0]], renderAtomic.uniforms);
             for (let i = 1; i < paths.length; i++)
             {
                 uniformData = uniformData[paths[i]];
+            }
+            if (uniformData === undefined)
+            {
+                console.error(`沒有找到Uniform ${name} 數據！`);
             }
             this.setContext3DUniform(webGLRenderer, activeInfo, uniformData);
         }

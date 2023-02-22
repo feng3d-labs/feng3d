@@ -107,7 +107,7 @@ export class AssetData extends EventEmitter
         let data = this.idAssetMap.get(assetId);
         if (!data)
         {
-            console.assert(!this._defaultAssetData[assetId]);
+            console.assert(!!this._defaultAssetData[assetId]);
             data = lazy.getValue(this._defaultAssetData[assetId]);
 
             this.assetMap.set(data, assetId);

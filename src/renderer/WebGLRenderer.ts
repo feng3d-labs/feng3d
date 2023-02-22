@@ -151,22 +151,15 @@ export class WebGLRenderer
 
         const { bindingStates, renderParams, elementBuffers: elementBufferRenderer, uniforms, shaders } = this;
 
-        try
-        {
-            const shaderResult = shaders.activeShader(webGLRenderAtomic);
+        const shaderResult = shaders.activeShader(webGLRenderAtomic);
 
-            renderParams.updateRenderParams(webGLRenderAtomic.renderParams);
+        renderParams.updateRenderParams(webGLRenderAtomic.renderParams);
 
-            bindingStates.setup(webGLRenderAtomic);
+        bindingStates.setup(webGLRenderAtomic);
 
-            uniforms.activeUniforms(this, webGLRenderAtomic, shaderResult.uniforms);
+        uniforms.activeUniforms(this, webGLRenderAtomic, shaderResult.uniforms);
 
-            elementBufferRenderer.render(webGLRenderAtomic);
-        }
-        catch (error)
-        {
-            console.warn(error);
-        }
+        elementBufferRenderer.render(webGLRenderAtomic);
     }
 
     private _isContextLost = false;
