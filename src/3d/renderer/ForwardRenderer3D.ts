@@ -117,6 +117,7 @@ export class ForwardRenderer
         uniforms.u_cameraPos = camera.node3d.globalPosition;
         uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
+
         uniforms.u_sceneAmbientColor = scene.ambientColor;
 
         //
@@ -144,7 +145,8 @@ export class ForwardRenderer
 
             renderable.beforeRender(renderAtomic, scene, camera);
 
-            lightPicker.beforeRender(renderAtomic, renderable);
+            const lightRenderAtomic = lightPicker.beforeRender(renderable);
+            renderAtomic.next = lightRenderAtomic;
 
             gloablRenderAtomic.next = renderAtomic;
 

@@ -86,8 +86,12 @@ declare module '../../../renderer/data/Uniforms'
  */
 export class LightPicker
 {
-    beforeRender(renderAtomic: RenderAtomic, model: Mesh3D)
+    private renderAtomic = new RenderAtomic();
+
+    beforeRender(model: Mesh3D)
     {
+        const renderAtomic = this.renderAtomic;
+
         let pointLights: PointLight3D[] = [];
         let directionalLights: DirectionalLight3D[] = [];
         let spotLights: SpotLight3D[] = [];
@@ -262,6 +266,8 @@ export class LightPicker
         renderAtomic.uniforms.u_castShadowDirectionalLights = castShadowDirectionalLights;
         renderAtomic.uniforms.u_directionalShadowMatrices = directionalShadowMatrix;
         renderAtomic.uniforms.u_directionalShadowMaps = directionalShadowMaps;
+
+        return renderAtomic;
     }
 }
 
