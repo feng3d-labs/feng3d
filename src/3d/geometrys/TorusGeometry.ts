@@ -248,7 +248,7 @@ export class TorusGeometry extends Geometry
 	}
 }
 
-Geometry.setDefault('Torus', new TorusGeometry());
+Geometry.setDefault('Torus', () => new TorusGeometry());
 
 Node3D.registerPrimitive('Torus', (g) =>
 {

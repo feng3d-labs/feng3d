@@ -1,8 +1,8 @@
 import { loader } from '../../filesystem/base/Loader';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { ImageDataTexture2D } from '../../textures/ImageDataTexture2D';
 import { ImageUtil } from '../../utils/ImageUtil';
 import { watcher } from '../../watcher/watcher';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
@@ -77,11 +77,6 @@ export class Terrain3DGeometry extends Geometry
     @oav()
     minElevation = 0;
 
-    /**
-     * 高度图路径
-     */
-    private _heightMap = new ImageDataTexture2D();
-
     private _heightImageData: ImageData;
 
     /**
@@ -100,7 +95,16 @@ export class Terrain3DGeometry extends Geometry
         watcher.watch(this as Terrain3DGeometry, 'segmentsH', this.invalidateGeometry, this);
         watcher.watch(this as Terrain3DGeometry, 'maxElevation', this.invalidateGeometry, this);
         watcher.watch(this as Terrain3DGeometry, 'minElevation', this.invalidateGeometry, this);
-        this._heightImageData = getDefaultHeightMap();
+    }
+
+    beforeRender(renderAtomic: RenderAtomic): void
+    {
+        super.beforeRender(renderAtomic);
+        if (!this._heightImageData)
+        {
+            this._heightImageData = getDefaultHeightMap();
+            this.invalidateGeometry();
+        }
     }
 
     private async _onHeightMapUrlUrlChanged()
@@ -109,7 +113,6 @@ export class Terrain3DGeometry extends Geometry
         if (!heightMapUrl)
         {
             this._heightImageData = getDefaultHeightMap();
-            this._heightMap.imageData = this._heightImageData;
             this.invalidateGeometry();
 
             return;
@@ -119,7 +122,6 @@ export class Terrain3DGeometry extends Geometry
         if (heightMapUrl === this.heightMapUrl)
         {
             this._heightImageData = ImageUtil.fromImage(image).imageData;
-            this._heightMap.source = image;
             this.invalidateGeometry();
         }
     }
@@ -281,4 +283,4 @@ function getDefaultHeightMap()
 }
 let _defaultHeightMap: ImageData;
 
-Geometry.setDefault('Terrain-Geometry', new Terrain3DGeometry());
+Geometry.setDefault('Terrain-Geometry', () => new Terrain3DGeometry());

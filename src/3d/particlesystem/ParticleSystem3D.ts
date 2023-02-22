@@ -1229,7 +1229,7 @@ export interface ParticleSystemEmitInfo
     _isRateOverDistance: boolean;
 }
 
-Geometry.setDefault('Billboard-Geometry', new QuadGeometry());
+Geometry.setDefault('Billboard-Geometry', () => new QuadGeometry());
 
 Node3D.registerPrimitive('Particle System', (g) =>
 {

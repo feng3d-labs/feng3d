@@ -529,7 +529,7 @@ export class CubeGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Cube', new CubeGeometry());
+Geometry.setDefault('Cube', () => new CubeGeometry());
 
 Node3D.registerPrimitive('Cube', (g) =>
 {

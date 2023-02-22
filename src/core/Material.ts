@@ -17,6 +17,11 @@ declare module '../serialization/Serializable' { interface SerializableMap exten
 declare module './AssetData' { interface DefaultAssetDataMap extends DefaultMaterialMap { } }
 
 /**
+ * 默认材质
+ */
+export interface DefaultMaterialMap { }
+
+/**
  * 注册材质
  *
  * 使用 @RegisterMaterial 注册材质，配合扩展 MaterialMap 接口后可使用 Material.create 方法构造材质。
@@ -137,11 +142,4 @@ export abstract class Material extends EventEmitter
     {
         return AssetData.getDefaultAssetData(name);
     }
-}
-
-/**
- * 默认材质
- */
-export interface DefaultMaterialMap
-{
 }

@@ -102,7 +102,7 @@ export class ConeGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Cone', new ConeGeometry());
+Geometry.setDefault('Cone', () => new ConeGeometry());
 
 Node3D.registerPrimitive('Cone', (g) =>
 {

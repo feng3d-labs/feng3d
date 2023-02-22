@@ -236,7 +236,7 @@ export class SphereGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Sphere', new SphereGeometry());
+Geometry.setDefault('Sphere', () => new SphereGeometry());
 
 Node3D.registerPrimitive('Sphere', (g) =>
 {

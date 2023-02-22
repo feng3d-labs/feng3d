@@ -510,7 +510,7 @@ export class CylinderGeometry extends Geometry implements ICylinderGeometry
     }
 }
 
-Geometry.setDefault('Cylinder', new CylinderGeometry());
+Geometry.setDefault('Cylinder', () => new CylinderGeometry());
 
 Node3D.registerPrimitive('Cylinder', (g) =>
 {
