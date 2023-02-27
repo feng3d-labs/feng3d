@@ -291,7 +291,7 @@ export * from './textures/VideoTexture2D';
 export * from './utils/debug';
 export * from './utils/FunctionWarp';
 export * from './utils/ImageUtil';
-export * from './utils/ObjectViewDefinitions';
+export * from './objectview/ObjectViewDefinitions';
 export * from './utils/RegExps';
 export * from './utils/Stats';
 export * from './utils/Task';
