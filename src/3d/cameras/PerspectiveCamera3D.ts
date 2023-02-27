@@ -28,11 +28,11 @@ export class PerspectiveCamera3D extends Camera3D
         watcher.watch(this as PerspectiveCamera3D, 'fov', this._invalidateProjectionMatrix, this);
     }
 
-    dispose()
+    destroy()
     {
         watcher.unwatch(this as PerspectiveCamera3D, 'fov', this._invalidateProjectionMatrix, this);
 
-        super.dispose();
+        super.destroy();
     }
 
     /**

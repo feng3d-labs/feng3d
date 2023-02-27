@@ -33,11 +33,11 @@ export class HoldSize3D extends Component3D
         this.entity.emitter.on('updateGlobalMatrix', this._onUpdateLocalToGlobalMatrix, this);
     }
 
-    dispose()
+    destroy()
     {
         this.camera = null;
         this.entity.emitter.off('updateGlobalMatrix', this._onUpdateLocalToGlobalMatrix, this);
-        super.dispose();
+        super.destroy();
     }
 
     private _onCameraChanged(value: Camera3D, oldValue: Camera3D)

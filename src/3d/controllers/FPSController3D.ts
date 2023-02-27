@@ -93,7 +93,7 @@ export class FPSController3D extends Component3D
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         this.auto = false;
     }

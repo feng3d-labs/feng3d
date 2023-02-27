@@ -186,7 +186,7 @@ export class Component
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         this.enabled = false;
         this._entity = <any>null;

@@ -92,10 +92,10 @@ export class AudioListener3D extends Component3D
         }
     }
 
-    dispose()
+    destroy()
     {
         this.emitter.off('globalMatrixChanged', this._onGlobalMatrixChanged, this);
-        super.dispose();
+        super.destroy();
     }
 }
 

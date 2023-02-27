@@ -37,13 +37,13 @@ export class Water3D extends Component3D
         this.meshRenderer.material = Material.getDefault('Water-Material');
     }
 
-    dispose(): void
+    destroy(): void
     {
         this.meshRenderer.geometry = null;
         this.meshRenderer.material = null;
         this.meshRenderer = null;
 
-        super.dispose();
+        super.destroy();
     }
 
     /**

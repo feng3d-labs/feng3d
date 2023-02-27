@@ -182,11 +182,11 @@ export class Mesh3D extends Renderable3D
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         this.geometry = <any>null;
         this.material = <any>null;
-        super.dispose();
+        super.destroy();
     }
 
     protected _onScenetransformChanged()

@@ -368,11 +368,11 @@ export class AudioSource3D extends Component3D
         }
     }
 
-    dispose()
+    destroy()
     {
         this.emitter.off('globalMatrixChanged', this._onScenetransformChanged, this);
         this._disconnect();
-        super.dispose();
+        super.destroy();
     }
 }
 

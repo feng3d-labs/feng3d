@@ -14,11 +14,11 @@ export class Renderer2D extends Component3D
         this.emitter.on('beforeRender', this._onBeforeRender, this);
     }
 
-    dispose(): void
+    destroy(): void
     {
         this.emitter.off('beforeRender', this._onBeforeRender, this);
 
-        super.dispose();
+        super.destroy();
     }
 
     private _onBeforeRender(event: IEvent<RenderContext3D>)
