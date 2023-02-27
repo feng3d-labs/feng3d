@@ -157,13 +157,13 @@ export class Light3D extends Component3D
         }
 
         const depth = viewCamera.near * 2;
-        node3d.position = viewCamera.node3d.globalPosition.addTo(viewCamera.node3d.globalMatrix.getAxisZ().scaleNumberTo(depth));
+        node3d.position = viewCamera.entity.globalPosition.addTo(viewCamera.entity.globalMatrix.getAxisZ().scaleNumberTo(depth));
         const billboardComponent = node3d.getComponent('Billboard3D');
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)
         {
-            scene.node3d.addChild(node3d);
+            scene.entity.addChild(node3d);
         }
         else
         {

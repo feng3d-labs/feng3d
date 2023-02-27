@@ -282,7 +282,7 @@ export class AudioSource3D extends Component3D
 
     private _onScenetransformChanged()
     {
-        const globalMatrix = this.node3d.globalMatrix;
+        const globalMatrix = this.entity.globalMatrix;
         const scenePosition = globalMatrix.getPosition();
 
         //

@@ -43,8 +43,8 @@ export class SkinnedMesh3D extends Component3D
     {
         super.beforeRender(renderAtomic, scene, camera);
 
-        renderAtomic.uniforms.u_modelMatrix = () => this.node3d.globalMatrix;
-        renderAtomic.uniforms.u_ITModelMatrix = () => this.node3d.globalNormalMatrix;
+        renderAtomic.uniforms.u_modelMatrix = () => this.entity.globalMatrix;
+        renderAtomic.uniforms.u_ITModelMatrix = () => this.entity.globalNormalMatrix;
         //
         renderAtomic.uniforms.u_skeletonGlobalMatrices = this.u_skeletonGlobalMatrices;
 

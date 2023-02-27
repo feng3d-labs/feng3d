@@ -120,8 +120,8 @@ export class Mesh3D extends Renderable3D
         material.beforeRender(renderAtomic);
 
         //
-        this.node3d.beforeRender(renderAtomic, scene, camera);
-        this.node3d.components.forEach((element) =>
+        this.entity.beforeRender(renderAtomic, scene, camera);
+        this.entity.components.forEach((element) =>
         {
             if (element !== this)
             {
@@ -139,7 +139,7 @@ export class Mesh3D extends Renderable3D
      */
     globalRayIntersection(globalRay: Ray3)
     {
-        const localRay = TransformUtils.rayGlobalToLocal(this.node3d, globalRay);
+        const localRay = TransformUtils.rayGlobalToLocal(this.entity, globalRay);
         const pickingCollisionVO = this.localRayIntersection(localRay);
 
         return pickingCollisionVO;

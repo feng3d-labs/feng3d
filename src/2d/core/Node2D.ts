@@ -26,6 +26,8 @@ export interface Node2DEventMap extends NodeEventMap
 
 export interface Node2D
 {
+    readonly emitter: EventEmitter<Node2DEventMap>;
+
     /**
      * 父对象
      */
@@ -65,8 +67,6 @@ declare module '../../serialization/Serializable'
 @Serializable('Node2D')
 export class Node2D extends Node
 {
-    declare emitter: EventEmitter<Node2DEventMap>;
-
     get single() { return true; }
 
     transformLayout: TransformLayout3D;

@@ -87,7 +87,7 @@ export class ShadowRenderer
             near,
             far,
         });
-        shadowCamera.node3d.globalMatrix = light.node3d.globalMatrix;
+        shadowCamera.entity.globalMatrix = light.entity.globalMatrix;
 
         // 保存生成阴影贴图时使用的VP矩阵
         light.shadowCameraNear = near;
@@ -109,12 +109,12 @@ export class ShadowRenderer
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
         renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
-        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
+        renderAtomic.uniforms.u_viewMatrix = shadowCamera.entity.invertGlobalMatrix;
+        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.entity.globalMatrix;
+        renderAtomic.uniforms.u_cameraPos = shadowCamera.entity.globalPosition;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
+        renderAtomic.uniforms.u_lightPosition = light.entity.globalPosition;
         renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
         renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
@@ -183,7 +183,7 @@ export class ShadowRenderer
             near,
             far
         });
-        shadowCamera.node3d.position = light.node3d.position;
+        shadowCamera.entity.position = light.entity.position;
 
         //
         light.shadowCameraNear = near;
@@ -194,7 +194,7 @@ export class ShadowRenderer
 
         for (let face = 0; face < 6; face++)
         {
-            shadowCamera.node3d.lookAt(light.node3d.globalPosition.addTo(cubeDirections[face]), cubeUps[face]);
+            shadowCamera.entity.lookAt(light.entity.globalPosition.addTo(cubeDirections[face]), cubeUps[face]);
 
             // 获取影响阴影图的渲染对象
             const models = scene.getComponentsInChildren('Mesh3D').filter((mr) => shadowCamera.frustum.intersectsBox(mr.globalBounds));
@@ -209,12 +209,12 @@ export class ShadowRenderer
             //
             renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.entity.invertGlobalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.entity.globalMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.entity.globalPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = light.node3d.globalPosition;
+            renderAtomic.uniforms.u_lightPosition = light.entity.globalPosition;
             renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
             renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
 
@@ -239,7 +239,7 @@ export class ShadowRenderer
 
         const globalBounds: Box3 = castShadowsModels.reduce((pre: Box3, i) =>
         {
-            const box = i.node3d.boundingBox.globalBounds;
+            const box = i.entity.boundingBox.globalBounds;
             if (!pre)
             {
                 return box.clone();
@@ -263,14 +263,14 @@ export class ShadowRenderer
             near,
             far,
         });
-        const direction = light.node3d.globalMatrix.getAxisZ();
-        shadowCamera.node3d.position = center.addTo(direction.normalize(radius + near).negate());
-        shadowCamera.node3d.lookAt(center, Vector3.Y_AXIS);
+        const direction = light.entity.globalMatrix.getAxisZ();
+        shadowCamera.entity.position = center.addTo(direction.normalize(radius + near).negate());
+        shadowCamera.entity.lookAt(center, Vector3.Y_AXIS);
 
         // 保存生成阴影贴图时使用的VP矩阵
         light.shadowCameraNear = near;
         light.shadowCameraFar = far;
-        light.shadowCameraPosition = shadowCamera.node3d.globalPosition;
+        light.shadowCameraPosition = shadowCamera.entity.globalPosition;
         light._shadowCameraViewProjection = shadowCamera.viewProjection;
 
         const { webGLContext, framebuffers } = webGLRenderer;
@@ -289,12 +289,12 @@ export class ShadowRenderer
         //
         renderAtomic.uniforms.u_projectionMatrix = shadowCamera.projectionMatrix;
         renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.node3d.invertGlobalMatrix;
-        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.node3d.globalMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.node3d.globalPosition;
+        renderAtomic.uniforms.u_viewMatrix = shadowCamera.entity.invertGlobalMatrix;
+        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.entity.globalMatrix;
+        renderAtomic.uniforms.u_cameraPos = shadowCamera.entity.globalPosition;
         //
         renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = shadowCamera.node3d.globalPosition;
+        renderAtomic.uniforms.u_lightPosition = shadowCamera.entity.globalPosition;
         renderAtomic.uniforms.u_shadowCameraNear = shadowCamera.near;
         renderAtomic.uniforms.u_shadowCameraFar = shadowCamera.far;
         //

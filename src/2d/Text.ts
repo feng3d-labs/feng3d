@@ -74,13 +74,13 @@ export class Text extends Component2D
 
         if (this.autoSize)
         {
-            this.node2d.size.x = canvas.width;
-            this.node2d.size.y = canvas.height;
+            this.entity.size.x = canvas.width;
+            this.entity.size.y = canvas.height;
         }
 
         // 调整缩放使得更改尺寸时文字不被缩放。
-        this._uvRect.z = this.node2d.size.x / canvas.width;
-        this._uvRect.w = this.node2d.size.y / canvas.height;
+        this._uvRect.z = this.entity.size.x / canvas.width;
+        this._uvRect.w = this.entity.size.y / canvas.height;
 
         //
         renderAtomic.uniforms.s_texture = this._image;

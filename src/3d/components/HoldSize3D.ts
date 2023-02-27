@@ -30,13 +30,13 @@ export class HoldSize3D extends Component3D
     {
         watcher.watch(this as HoldSize3D, 'holdSize', this._invalidateGlobalTransform, this);
         watcher.watch(this as HoldSize3D, 'camera', this._onCameraChanged, this);
-        this.node3d.emitter.on('updateGlobalMatrix', this._onUpdateLocalToGlobalMatrix, this);
+        this.entity.emitter.on('updateGlobalMatrix', this._onUpdateLocalToGlobalMatrix, this);
     }
 
     dispose()
     {
         this.camera = null;
-        this.node3d.emitter.off('updateGlobalMatrix', this._onUpdateLocalToGlobalMatrix, this);
+        this.entity.emitter.off('updateGlobalMatrix', this._onUpdateLocalToGlobalMatrix, this);
         super.dispose();
     }
 
@@ -50,13 +50,13 @@ export class HoldSize3D extends Component3D
     private _invalidateGlobalTransform()
     {
         // @ts-ignore
-        this.node3d._invalidateGlobalMatrix();
+        this.entity._invalidateGlobalMatrix();
     }
 
     private _onUpdateLocalToGlobalMatrix()
     {
         // @ts-ignore
-        const _globalMatrix = this.node3d._globalMatrix;
+        const _globalMatrix = this.entity._globalMatrix;
         if (this.holdSize && this.camera && _globalMatrix)
         {
             const depthScale = this._getDepthScale(this.camera);
@@ -71,7 +71,7 @@ export class HoldSize3D extends Component3D
     private _getDepthScale(camera: Camera3D)
     {
         // 计算GPU空间坐标
-        const gpuP = camera.project(this.node3d.globalPosition);
+        const gpuP = camera.project(this.entity.globalPosition);
         // 根据GPU空间坐标深度值计算缩放
         const scale = camera.getScaleByDepth(gpuP.z);
 

@@ -109,9 +109,9 @@ export class Wireframe3DRenderer
         //
         uniforms.u_projectionMatrix = camera.projectionMatrix;
         uniforms.u_viewProjection = camera.viewProjection;
-        uniforms.u_viewMatrix = camera.node3d.invertGlobalMatrix;
-        uniforms.u_cameraMatrix = camera.node3d.globalMatrix;
-        uniforms.u_cameraPos = camera.node3d.globalPosition;
+        uniforms.u_viewMatrix = camera.entity.invertGlobalMatrix;
+        uniforms.u_cameraMatrix = camera.entity.globalMatrix;
+        uniforms.u_cameraPos = camera.entity.globalPosition;
         uniforms.u_skyBoxSize = camera.far / Math.sqrt(3);
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
 

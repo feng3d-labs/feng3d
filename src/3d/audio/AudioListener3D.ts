@@ -53,7 +53,7 @@ export class AudioListener3D extends Component3D
 
     private _onGlobalMatrixChanged()
     {
-        const globalMatrix = this.node3d.globalMatrix;
+        const globalMatrix = this.entity.globalMatrix;
         const position = globalMatrix.getPosition();
         const forward = globalMatrix.getAxisZ();
         const up = globalMatrix.getAxisY();

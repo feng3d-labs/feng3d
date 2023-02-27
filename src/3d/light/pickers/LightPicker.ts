@@ -98,7 +98,7 @@ export class LightPicker
 
         const tempVec3 = new Vector3();
 
-        const scene = model.node3d.scene;
+        const scene = model.entity.scene;
         if (scene)
         {
             pointLights = scene.getComponentsInChildren('PointLight3D').filter((pl) => pl.isVisibleAndEnabled);
@@ -116,7 +116,7 @@ export class LightPicker
         {
             if (!element.isVisibleAndEnabled) return;
 
-            const position = element.node3d.globalPosition;
+            const position = element.entity.globalPosition;
             const color = element.color;
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
@@ -168,8 +168,8 @@ export class LightPicker
         {
             if (!element.isVisibleAndEnabled) return;
 
-            const direction = element.node3d.globalMatrix.getAxisZ(tempVec3).normalize();
-            const position = element.node3d.globalPosition;
+            const direction = element.entity.globalMatrix.getAxisZ(tempVec3).normalize();
+            const position = element.entity.globalPosition;
             const color = element.color;
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
@@ -225,7 +225,7 @@ export class LightPicker
         {
             if (!element.isVisibleAndEnabled) return;
 
-            const direction = element.node3d.globalMatrix.getAxisZ(tempVec3).normalize();
+            const direction = element.entity.globalMatrix.getAxisZ(tempVec3).normalize();
             const color = element.color;
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)

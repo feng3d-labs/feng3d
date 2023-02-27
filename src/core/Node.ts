@@ -33,7 +33,7 @@ export interface NodeEventMap extends EntityEventMap
  */
 export class Node extends Entity
 {
-    declare emitter: EventEmitter<NodeEventMap>;
+    declare readonly emitter: EventEmitter<NodeEventMap>;
 
     protected _parent: Node;
     protected _children: Node[] = [];
