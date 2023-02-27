@@ -72,7 +72,7 @@ export class MouseRay3D extends Component3D
             else
             {
                 sphere.remove();
-                sphere.dispose();
+                sphere.destroy();
             }
         };
 

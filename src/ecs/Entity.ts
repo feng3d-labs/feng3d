@@ -337,7 +337,7 @@ export class Entity
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         for (let i = this._components.length - 1; i >= 0; i--)
         {

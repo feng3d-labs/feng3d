@@ -482,7 +482,7 @@ export class Node extends Entity
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         if (this.parent)
         {
@@ -491,11 +491,11 @@ export class Node extends Entity
         for (let i = this._children.length - 1; i >= 0; i--)
         {
             const child = this.removeChildAt(i);
-            child.dispose();
+            child.destroy();
         }
         this._parent = null;
         this._children = null;
-        super.dispose();
+        super.destroy();
     }
 
     /**
