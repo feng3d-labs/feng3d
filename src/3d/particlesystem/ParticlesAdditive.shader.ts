@@ -1,3 +1,4 @@
+import { AssetData } from '../../core/AssetData';
 import { Material, RegisterMaterial } from '../../core/Material';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
@@ -5,7 +6,6 @@ import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
 
 declare module '../../core/Material'
 {
@@ -51,7 +51,7 @@ export class ParticlesAdditiveUniforms
      */
     @SerializeProperty()
     @oav({ tooltip: '粒子贴图' })
-    _MainTex = Texture2D.defaultParticle;
+    _MainTex = AssetData.getDefaultAssetData('Default-ParticleTexture');
 
     /**
      * 粒子贴图使用的UV变换
@@ -68,4 +68,4 @@ export class ParticlesAdditiveUniforms
     _InvFade = 1.0;
 }
 
-Material.setDefault('Particle-Material', new ParticleMaterial());
+Material.setDefault('Particle-Material', () => new ParticleMaterial());

@@ -5,9 +5,8 @@ import { RegisterComponent } from '../ecs/Component';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Vec4 } from '../renderer/data/Uniforms';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { Texture2D } from '../textures/Texture2D';
+import { CanvasTexture2D } from '../textures/CanvasTexture2D';
 import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
@@ -49,7 +48,7 @@ export class Text extends Component2D
      */
     private _uvRect = new Vector4(0, 0, 1, 1);
 
-    private _image = new Texture2D();
+    private _image = new CanvasTexture2D();
     private _canvas: HTMLCanvasElement;
     private _invalid = true;
 
@@ -69,24 +68,23 @@ export class Text extends Component2D
         if (!this._canvas || this._invalid)
         {
             canvas = this._canvas = drawText(this._canvas, this.text, this.style);
-            this._image['_pixels'] = canvas; this._image.wrapS;
-            this._image.invalidate();
+            this._image.canvas = canvas;
             this._invalid = false;
         }
 
         if (this.autoSize)
         {
-            this.node2d.size.x = canvas.width;
-            this.node2d.size.y = canvas.height;
+            this.entity.size.x = canvas.width;
+            this.entity.size.y = canvas.height;
         }
 
         // 调整缩放使得更改尺寸时文字不被缩放。
-        this._uvRect.z = this.node2d.size.x / canvas.width;
-        this._uvRect.w = this.node2d.size.y / canvas.height;
+        this._uvRect.z = this.entity.size.x / canvas.width;
+        this._uvRect.w = this.entity.size.y / canvas.height;
 
         //
         renderAtomic.uniforms.s_texture = this._image;
-        renderAtomic.uniforms.u_uvRect = this._uvRect.toArray() as Vec4;
+        renderAtomic.uniforms.u_uvRect = this._uvRect;
     }
 
     invalidate()

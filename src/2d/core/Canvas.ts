@@ -71,10 +71,10 @@ export class Canvas extends Component2D
         if (width === 0) width = 100;
         if (height === 0) height = 100;
 
-        this.node2d.size.x = width;
-        this.node2d.size.y = height;
+        this.entity.size.x = width;
+        this.entity.size.y = height;
 
-        this.node2d.pivot.set(0, 0);
+        this.entity.pivot.set(0, 0);
 
         const near = this.near;
         const far = this.far;

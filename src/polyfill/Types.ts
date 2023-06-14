@@ -111,16 +111,16 @@ export type FunctionPropertyNames<T> = TypePropertyNames<T, Function>;
  */
 export type TypePropertys<T, KT> = Pick<T, TypePropertyNames<T, KT>>;
 
-export type Lazy<T> = T | (() => T);
+export type Lazy<T> = T | ((...args: any[]) => T);
 
 export type LazyObject<T> = { [P in keyof T]: Lazy<T[P]>; };
 
 export const lazy = {
-    getValue<T>(lazyItem: Lazy<T>): T
+    getValue<T>(lazyItem: Lazy<T>, ...args: any[]): T
     {
         if (typeof lazyItem === 'function')
         {
-            return (lazyItem as any)();
+            return (lazyItem as Function).apply(undefined, args);
         }
 
         return lazyItem;

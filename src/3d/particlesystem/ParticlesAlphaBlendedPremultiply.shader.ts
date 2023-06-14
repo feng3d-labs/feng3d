@@ -1,10 +1,10 @@
+import { AssetData } from '../../core/AssetData';
 import { Material, RegisterMaterial } from '../../core/Material';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
 
 declare module '../../core/Material'
 {
@@ -44,7 +44,7 @@ export class ParticlesAlphaBlendedPremultiplyUniforms
      */
     @SerializeProperty()
     @oav({ tooltip: '粒子贴图' })
-    _MainTex = Texture2D.defaultParticle;
+    _MainTex = AssetData.getDefaultAssetData('Default-ParticleTexture');
 
     /**
      * 粒子贴图使用的UV变换

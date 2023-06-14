@@ -1,7 +1,7 @@
 import { watcher } from '../watcher/watcher';
-import { Texture2D } from './Texture2D';
+import { SourceTexture2D } from './SourceTexture2D';
 
-export class VideoTexture2D extends Texture2D
+export class VideoTexture2D extends SourceTexture2D
 {
     video: HTMLVideoElement;
 

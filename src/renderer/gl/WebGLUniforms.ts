@@ -1,23 +1,28 @@
+import { lazy } from '../../polyfill/Types';
 import { WebGLUniformType } from '../const/WebGLUniformType';
-import { RenderAtomic } from '../data/RenderAtomic';
 import { WebGLRenderer } from '../WebGLRenderer';
+import { WebGLRenderAtomic } from './WebGLRenderAtomic';
 
 /**
- * WebGL渲染程序有效信息
+ * WebGL统一变量
  */
-export class WebGLUniform
+export interface WebGLUniform
 {
     /**
-     * uniform名称
+     * WebGL激活信息。
      */
-    name: string;
+    activeInfo: WebGLActiveInfo;
 
-    size: number;
-    type: keyof WebGLUniformType;
+    /**
+     * WebGL中Uniform类型
+     */
+    type: WebGLUniformType;
+
     /**
      * uniform地址
      */
     location: WebGLUniformLocation;
+
     /**
      * texture索引
      */
@@ -27,16 +32,6 @@ export class WebGLUniform
      * Uniform数组索引，当Uniform数据为数组数据时生效
      */
     paths: string[];
-
-    constructor(ps: { name: string, paths: string[], size: number, type: keyof WebGLUniformType, location: WebGLUniformLocation, textureID: number })
-    {
-        this.name = ps.name;
-        this.paths = ps.paths;
-        this.size = ps.size;
-        this.type = ps.type;
-        this.location = ps.location;
-        this.textureID = ps.textureID;
-    }
 }
 
 /**
@@ -47,16 +42,20 @@ export class WebGLUniforms
     /**
      * 激活常量
      */
-    activeUniforms(webGLRenderer: WebGLRenderer, renderAtomic: RenderAtomic, uniformInfos: { [name: string]: WebGLUniform })
+    activeUniforms(webGLRenderer: WebGLRenderer, renderAtomic: WebGLRenderAtomic, uniformInfos: { [name: string]: WebGLUniform })
     {
         for (const name in uniformInfos)
         {
             const activeInfo = uniformInfos[name];
             const paths = activeInfo.paths;
-            let uniformData = renderAtomic.getUniformByKey(paths[0]);
+            let uniformData = lazy.getValue(renderAtomic.uniforms[paths[0]], renderAtomic.uniforms);
             for (let i = 1; i < paths.length; i++)
             {
                 uniformData = uniformData[paths[i]];
+            }
+            if (uniformData === undefined)
+            {
+                console.error(`沒有找到Uniform ${name} 數據！`);
             }
             this.setContext3DUniform(webGLRenderer, activeInfo, uniformData);
         }
@@ -65,14 +64,14 @@ export class WebGLUniforms
     /**
      * 设置环境Uniform数据
      */
-    private setContext3DUniform(webGLRenderer: WebGLRenderer, activeInfo: WebGLUniform, data)
+    private setContext3DUniform(webGLRenderer: WebGLRenderer, webGLUniform: WebGLUniform, data)
     {
         const { textures, webGLContext } = webGLRenderer;
 
         let vec: number[] = data;
         if (data.toArray) vec = data.toArray();
-        const location = activeInfo.location;
-        switch (activeInfo.type)
+        const location = webGLUniform.location;
+        switch (webGLUniform.type)
         {
             case 'BOOL':
             case 'INT':
@@ -98,10 +97,10 @@ export class WebGLUniforms
                 break;
             case 'SAMPLER_2D':
             case 'SAMPLER_CUBE':
-                textures.active(data, activeInfo);
+                textures.active(data, webGLUniform);
                 break;
             default:
-                console.error(`无法识别的uniform类型 ${activeInfo.name} ${data}`);
+                console.error(`无法识别的uniform类型 ${webGLUniform.activeInfo.name} ${data}`);
         }
     }
 }

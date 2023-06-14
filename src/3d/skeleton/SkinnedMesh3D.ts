@@ -2,7 +2,6 @@ import { HideFlags } from '../../core/HideFlags';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Mat4 } from '../../renderer/data/Uniforms';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
@@ -22,7 +21,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 骨骼全局矩阵
          */
-        u_skeletonGlobalMatrices: Mat4[];
+        u_skeletonGlobalMatrices: Matrix4x4[];
     }
 }
 
@@ -44,8 +43,8 @@ export class SkinnedMesh3D extends Component3D
     {
         super.beforeRender(renderAtomic, scene, camera);
 
-        renderAtomic.uniforms.u_modelMatrix = () => this.node3d.globalMatrix.toArray() as Mat4;
-        renderAtomic.uniforms.u_ITModelMatrix = () => this.node3d.globalNormalMatrix.toArray() as Mat4;
+        renderAtomic.uniforms.u_modelMatrix = () => this.entity.globalMatrix;
+        renderAtomic.uniforms.u_ITModelMatrix = () => this.entity.globalNormalMatrix;
         //
         renderAtomic.uniforms.u_skeletonGlobalMatrices = this.u_skeletonGlobalMatrices;
 
@@ -57,10 +56,10 @@ export class SkinnedMesh3D extends Component3D
     {
         const skeletonComponent = this.getComponentInParent('Skeleton3D');
 
-        let skeletonGlobalMatrices: Mat4[] = [];
+        let skeletonGlobalMatrices: Matrix4x4[] = [];
         if (skeletonComponent)
         {
-            skeletonGlobalMatrices = skeletonComponent.globalMatrices.map((v) => v.elements);
+            skeletonGlobalMatrices = skeletonComponent.globalMatrices;
         }
         else
         {
@@ -71,9 +70,9 @@ export class SkinnedMesh3D extends Component3D
     }
 }
 
-const defaultSkeletonGlobalMatrices: Mat4[] = (() =>
+const defaultSkeletonGlobalMatrices: Matrix4x4[] = (() =>
 {
-    const v: Mat4[] = [new Matrix4x4().elements]; let i = 150; while (i-- > 1) v.push(v[0]);
+    const v = [new Matrix4x4()]; let i = 150; while (i-- > 1) v.push(v[0]);
 
     return v;
 })();

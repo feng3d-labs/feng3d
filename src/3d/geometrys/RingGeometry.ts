@@ -1,7 +1,6 @@
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -66,10 +65,9 @@ export class RingGeometry extends Geometry
     @oav()
     thetaLength = Math.PI * 2;
 
-    constructor(param?: gPartial<RingGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as RingGeometry, 'innerRadius', this.invalidateGeometry, this);
         watcher.watch(this as RingGeometry, 'outerRadius', this.invalidateGeometry, this);
         watcher.watch(this as RingGeometry, 'thetaSegments', this.invalidateGeometry, this);

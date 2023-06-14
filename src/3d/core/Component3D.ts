@@ -2,6 +2,12 @@ import { EventEmitter } from '@feng3d/event';
 import { NodeComponent } from '../../core/NodeComponent';
 import { Node3D, Node3DEventMap } from './Node3D';
 
+export interface Component3D
+{
+    readonly emitter: EventEmitter<Node3DEventMap>;
+    get entity(): Node3D;
+}
+
 /**
  * 3D組件
  *
@@ -9,13 +15,5 @@ import { Node3D, Node3DEventMap } from './Node3D';
  */
 export class Component3D extends NodeComponent
 {
-    declare emitter: EventEmitter<Node3DEventMap>;
-
-    /**
-     * 2D节点。
-     */
-    get node3d()
-    {
-        return this._entity as Node3D;
-    }
+    declare protected _entity: Node3D;
 }

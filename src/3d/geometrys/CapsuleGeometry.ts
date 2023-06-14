@@ -231,7 +231,7 @@ export class CapsuleGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Capsule', new CapsuleGeometry());
+Geometry.setDefault('Capsule', () => new CapsuleGeometry());
 
 Node3D.registerPrimitive('Capsule', (g) =>
 {

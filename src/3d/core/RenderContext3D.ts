@@ -145,7 +145,7 @@ export class RenderContext3D
         const max = s.clone().max(e);
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
-        let node3ds = this.scene.node3d.traverse((node3d: Node3D) =>
+        let node3ds = this.scene.entity.traverse((node3d: Node3D) =>
         {
             if (node3d === this.scene.entity) return;
 

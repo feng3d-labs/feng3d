@@ -91,12 +91,12 @@ export class MouseEvent3D extends Component3D
         this.emitter.on('beforeRender', this._onBeforeRender, this);
     }
 
-    dispose(): void
+    destroy(): void
     {
         this._mouseInput = null;
         this.emitter.off('beforeRender', this._onBeforeRender, this);
 
-        super.dispose();
+        super.destroy();
     }
 
     /**

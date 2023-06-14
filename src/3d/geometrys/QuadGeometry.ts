@@ -1,5 +1,5 @@
-import { Node3D } from '../core/Node3D';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
+import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';
 
@@ -40,7 +40,7 @@ export class QuadGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Quad', new QuadGeometry());
+Geometry.setDefault('Quad', () => new QuadGeometry());
 
 Node3D.registerPrimitive('Quad', (g) =>
 {

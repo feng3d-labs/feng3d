@@ -1,3 +1,9 @@
+import { RenderTargetTexture2D } from '../../textures/RenderTargetTexture2D';
+import { RenderTargetTextureCube } from '../../textures/RenderTargetTextureCube';
+import { SourceTexture2D } from '../../textures/SourceTexture2D';
+import { SourceTextureCube } from '../../textures/SourceTextureCube';
+import { TextureCube } from '../../textures/TextureCube';
+import { ImageUtil } from '../../utils/ImageUtil';
 import { Texture } from '../data/Texture';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { TextureMagFilter, TextureMinFilter, TextureWrap } from './WebGLEnums';
@@ -30,8 +36,7 @@ export class WebGLTextures
 
     active(data: Texture, activeInfo?: WebGLUniform)
     {
-        const { _webGLRenderer: webGLRenderer } = this;
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
         if (activeInfo)
         {
@@ -39,12 +44,12 @@ export class WebGLTextures
             webGLContext.activeTexture(activeInfo.textureID);
         }
 
-        const texture = this.getTexture(webGLRenderer, data);
+        const texture = this.get(data);
 
         // 绑定纹理
         webGLContext.bindTexture(data.textureTarget, texture);
 
-        this.setTextureParameters(webGLRenderer, data);
+        this.setTextureParameters(data);
 
         if (activeInfo)
         {
@@ -55,9 +60,9 @@ export class WebGLTextures
         return texture;
     }
 
-    private setTextureParameters(webGLRenderer: WebGLRenderer, texture: Texture)
+    private setTextureParameters(texture: Texture)
     {
-        const { webGLContext, extensions, capabilities, isWebGL2 } = webGLRenderer;
+        const { webGLContext, extensions, capabilities, isWebGL2 } = this._webGLRenderer;
         const { _texturesCache: textures } = this;
 
         const { textureTarget, type, minFilter, magFilter, wrapS, wrapT, anisotropy } = texture;
@@ -117,15 +122,15 @@ export class WebGLTextures
      * 获取顶点属性缓冲
      * @param data 数据
      */
-    private getTexture(webGLRenderer: WebGLRenderer, data: Texture)
+    get(data: Texture)
     {
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { _texturesCache: textures } = this;
 
         let cache = textures.get(data);
         if (cache && data.version !== cache.version)
         {
-            this.clear(webGLRenderer, data);
+            this.clear(data);
             cache = null;
         }
         if (!cache)
@@ -139,7 +144,7 @@ export class WebGLTextures
             webGLContext.bindTexture(data.textureTarget, texture);
 
             // 设置纹理图片
-            data.setTextureData(webGLRenderer);
+            this.setTextureData(data);
 
             if (data.generateMipmap)
             {
@@ -153,12 +158,40 @@ export class WebGLTextures
         return cache.texture;
     }
 
+    private setTextureData(data: Texture)
+    {
+        const { webGLContext } = this._webGLRenderer;
+
+        if (data instanceof SourceTexture2D)
+        {
+            webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.format, data.type, data.source || ImageUtil.get('white'));
+        }
+        else if (data instanceof SourceTextureCube)
+        {
+            TextureCube.faces.forEach((face) =>
+            {
+                webGLContext.texImage2D(face, 0, data.format, data.format, data.type, data.sources[face] || ImageUtil.get('white'));
+            });
+        }
+        else if (data instanceof RenderTargetTexture2D)
+        {
+            webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.width, data.height, 0, data.format, data.type, null);
+        }
+        else if (data instanceof RenderTargetTextureCube)
+        {
+            TextureCube.faces.forEach((face) =>
+            {
+                webGLContext.texImage2D(face, 0, data.format, data.width, data.height, 0, data.format, data.type, null);
+            });
+        }
+    }
+
     /**
      * 清除纹理
      */
-    private clear(webGLRenderer: WebGLRenderer, data: Texture)
+    private clear(data: Texture)
     {
-        const { webGLContext } = webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
         const { _texturesCache: textures } = this;
 
         const tex = textures.get(data);

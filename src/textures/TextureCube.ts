@@ -1,23 +1,20 @@
-import { AssetData } from '../core/AssetData';
-import { HideFlags } from '../core/HideFlags';
 import { oav } from '../objectview/ObjectView';
-import { RegisterTexture, Texture } from '../renderer/data/Texture';
+import { Texture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
-import { WebGLRenderer } from '../renderer/WebGLRenderer';
-import { $set } from '../serialization/Serialization';
-import { watcher } from '../watcher/watcher';
-import { imageDatas } from './Texture2D';
-
-export type TextureCubeImageName = 'positive_x_url' | 'positive_y_url' | 'positive_z_url' | 'negative_x_url' | 'negative_y_url' | 'negative_z_url';
 
 declare module '../renderer/data/Texture'
 {
     interface TextureMap extends TextureCubeMap { }
 }
 
-export interface TextureCubeMap
+export interface TextureCubeMap { }
+
+declare module '../renderer/data/Uniforms'
 {
-    TextureCube: TextureCube
+    interface UniformTypeMap
+    {
+        TextureCube: TextureCube;
+    }
 }
 
 /**
@@ -35,8 +32,7 @@ export type TextureCubeSources = {
 /**
  * 立方体纹理
  */
-@RegisterTexture('TextureCube')
-export class TextureCube extends Texture
+export abstract class TextureCube extends Texture
 {
     textureTarget: TextureTarget = 'TEXTURE_CUBE_MAP';
 
@@ -54,33 +50,5 @@ export class TextureCube extends Texture
     constructor()
     {
         super();
-        watcher.watch(this as TextureCube, 'sources', this.invalidate, this);
-    }
-
-    static default: TextureCube;
-
-    sources: TextureCubeSources;
-
-    setTextureData(webGLRenderer: WebGLRenderer)
-    {
-        const data = this;
-
-        const sources = data.sources || {
-            TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
-            TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
-            TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
-        };
-
-        TextureCube.faces.forEach((face) =>
-        {
-            webGLRenderer.webGLContext.texImage2D(face, 0, data.format, data.format, data.type, sources[face]);
-        });
     }
 }
-
-TextureCube.default = $set(new TextureCube(), { name: 'Default-TextureCube', hideFlags: HideFlags.NotEditable });
-
-AssetData.addAssetData('Default-TextureCube', TextureCube.default);

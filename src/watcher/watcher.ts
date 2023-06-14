@@ -140,6 +140,40 @@ export class Watcher
         }
     }
 
+    /**
+     * 监听对象属性的变化
+     *
+     * 注意：使用watch后获取该属性值的性能将会是原来的1/60，避免在运算密集处使用该函数。
+     *
+     * @param object 被监听对象
+     * @param property 被监听属性
+     * @param handler 变化回调函数 (newValue: V, oldValue: V, object: T, property: string) => void
+     * @param thisObject 变化回调函数 this值
+     */
+    watchs<T, K extends PropertyNames<T>, V extends T[K]>(object: T, propertys: K[], handler: (newValue: V, oldValue: V, object: T, property: string) => void, thisObject?: any)
+    {
+        propertys.forEach((v) =>
+        {
+            this.watch(object, v, handler, thisObject);
+        });
+    }
+
+    /**
+     * 取消监听对象属性的变化
+     *
+     * @param object 被监听对象
+     * @param property 被监听属性
+     * @param handler 变化回调函数 (newValue: V, oldValue: V, object: T, property: string) => void
+     * @param thisObject 变化回调函数 this值
+     */
+    unwatchs<T, K extends PropertyNames<T>, V extends T[K]>(object: T, propertys: K[], handler: (newValue: V, oldValue: V, object: T, property: string) => void, thisObject?: any)
+    {
+        propertys.forEach((v) =>
+        {
+            this.unwatch(object, v, handler, thisObject);
+        });
+    }
+
     private _binds: [any, string, () => void, any, string, () => void][] = [];
 
     /**

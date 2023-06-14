@@ -9,7 +9,7 @@ import { Node, NodeEventMap } from './Node';
  */
 export class NodeComponent extends Component
 {
-    declare emitter: EventEmitter<NodeEventMap>;
+    declare readonly emitter: EventEmitter<NodeEventMap>;
 
     /**
      * 2D节点。

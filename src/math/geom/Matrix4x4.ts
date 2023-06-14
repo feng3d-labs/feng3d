@@ -14,13 +14,6 @@ type Number16 = [
     number, number, number, number,
 ];
 
-export const identityMat4: Number16 = Object.freeze([
-    1, 0, 0, 0, //
-    0, 1, 0, 0, //
-    0, 0, 1, 0, //
-    0, 0, 0, 1, //
-]) as any;
-
 /**
  * Matrix4x4 类表示一个转换矩阵，该矩阵确定三维 (3D) 显示对象的位置和方向。
  * 该矩阵可以执行转换功能，包括平移（沿 x、y 和 z 轴重新定位）、旋转和缩放（调整大小）。

@@ -59,11 +59,11 @@ export class Animation extends NodeComponent
         if (this.isplaying) this.time += interval * this.playspeed;
     }
 
-    dispose()
+    destroy()
     {
         this.animation = null;
         this.animations = null;
-        super.dispose();
+        super.destroy();
     }
 
     private _updateAni()

@@ -93,7 +93,7 @@ export class FPSController3D extends Component3D
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         this.auto = false;
     }
@@ -135,7 +135,7 @@ export class FPSController3D extends Component3D
             offsetPoint.x *= 0.15;
             offsetPoint.y *= 0.15;
 
-            const matrix = this.node3d.globalMatrix;
+            const matrix = this.entity.globalMatrix;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -143,7 +143,7 @@ export class FPSController3D extends Component3D
                 up.scaleNumber(-1);
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-            this.node3d.globalMatrix = matrix;
+            this.entity.globalMatrix = matrix;
             //
             this.preMousePoint = this.mousePoint;
             this.mousePoint = null;
@@ -162,9 +162,9 @@ export class FPSController3D extends Component3D
         accelerationVec.scaleNumber(this.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = this.node3d.matrix.getAxisX();
-        const up = this.node3d.matrix.getAxisY();
-        const forward = this.node3d.matrix.getAxisZ();
+        const right = this.entity.matrix.getAxisX();
+        const up = this.entity.matrix.getAxisY();
+        const forward = this.entity.matrix.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);
@@ -172,9 +172,9 @@ export class FPSController3D extends Component3D
         const displacement = right.clone();
         displacement.add(up);
         displacement.add(forward);
-        this.node3d.x += displacement.x;
-        this.node3d.y += displacement.y;
-        this.node3d.z += displacement.z;
+        this.entity.x += displacement.x;
+        this.entity.y += displacement.y;
+        this.entity.z += displacement.z;
     }
     private mousePoint: Vector2 | null;
     /**

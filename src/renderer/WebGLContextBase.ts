@@ -914,6 +914,8 @@ export class WebGLContextBase
      * @param internalformat A GLenum specifying the internal format of the renderbuffer.
      * @param width A GLsizei specifying the width of the renderbuffer in pixels.
      * @param height A GLsizei specifying the height of the renderbuffer in pixels.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
      */
     renderbufferStorage(target: Renderbuffertarget, internalformat: RenderbufferInternalformat, width: GLsizei, height: GLsizei): void
     {

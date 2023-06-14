@@ -1,7 +1,8 @@
 import { loader } from '../filesystem/base/Loader';
 import { RegisterTexture } from '../renderer/data/Texture';
+import { ImageUtil } from '../utils/ImageUtil';
 import { watcher } from '../watcher/watcher';
-import { imageDatas } from './Texture2D';
+import { SourceTextureCube } from './SourceTextureCube';
 import { TextureCube, TextureCubeSources } from './TextureCube';
 
 declare module './TextureCube'
@@ -13,7 +14,7 @@ declare module './TextureCube'
 }
 
 @RegisterTexture('LoadImageTextureCube')
-export class LoadImageTextureCube extends TextureCube
+export class LoadImageTextureCube extends SourceTextureCube
 {
     declare __class__: 'LoadImageTexture2D';
 
@@ -22,24 +23,24 @@ export class LoadImageTextureCube extends TextureCube
      */
     defaultSources
         = {
-            TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
-            TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
-            TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
-            TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+            TEXTURE_CUBE_MAP_POSITIVE_X: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_POSITIVE_Y: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_POSITIVE_Z: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_NEGATIVE_X: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_NEGATIVE_Y: ImageUtil.get('white'),
+            TEXTURE_CUBE_MAP_NEGATIVE_Z: ImageUtil.get('white'),
         };
 
     /**
      * 加载中贴图
      */
     loadingSources = {
-        TEXTURE_CUBE_MAP_POSITIVE_X: imageDatas.white,
-        TEXTURE_CUBE_MAP_POSITIVE_Y: imageDatas.white,
-        TEXTURE_CUBE_MAP_POSITIVE_Z: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_X: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_Y: imageDatas.white,
-        TEXTURE_CUBE_MAP_NEGATIVE_Z: imageDatas.white,
+        TEXTURE_CUBE_MAP_POSITIVE_X: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_POSITIVE_Y: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_POSITIVE_Z: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_X: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_Y: ImageUtil.get('white'),
+        TEXTURE_CUBE_MAP_NEGATIVE_Z: ImageUtil.get('white'),
     };
 
     /**
@@ -66,7 +67,7 @@ export class LoadImageTextureCube extends TextureCube
         {
             this.sources = this.defaultSources;
 
-return;
+            return;
         }
 
         this.sources = this.loadingSources;

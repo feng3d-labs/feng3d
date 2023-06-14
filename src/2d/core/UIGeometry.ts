@@ -34,4 +34,4 @@ export class UIGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Default-UIGeometry', new UIGeometry());
+Geometry.setDefault('Default-UIGeometry', () => new UIGeometry());

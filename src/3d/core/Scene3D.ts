@@ -59,7 +59,7 @@ export class Scene3D extends Component3D
     init()
     {
         super.init();
-        this.node3d.hideFlags = this.node3d.hideFlags | HideFlags.DontTransform;
+        this.entity.hideFlags = this.entity.hideFlags | HideFlags.DontTransform;
 
         //
         this._entity['_scene'] = this;

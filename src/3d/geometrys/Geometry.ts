@@ -6,20 +6,25 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { Constructor, gPartial } from '../../polyfill/Types';
+import { Constructor, gPartial, Lazy } from '../../polyfill/Types';
 import { AttributeBuffer, AttributeBufferSourceTypes } from '../../renderer/data/AttributeBuffer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { CullFace } from '../../renderer/data/RenderParams';
 import { getInstance } from '../../serialization/getInstance';
 import { Serializable } from '../../serialization/Serializable';
-import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { geometryUtils } from './GeometryUtils';
 
 declare module '../../serialization/Serializable' { interface SerializableMap extends GeometryMap { } }
 
+declare module '../../core/AssetData' { interface DefaultAssetDataMap extends DefaultGeometryMap { } }
+
 export interface GeometryMap { }
+/**
+ * 默认几何体
+ */
+export interface DefaultGeometryMap { }
 
 /**
  * 几何体类型
@@ -411,12 +416,9 @@ export class Geometry
      * @param name 默认几何体名称
      * @param geometry 默认几何体
      */
-    static setDefault<K extends keyof DefaultGeometryMap>(name: K, geometry: DefaultGeometryMap[K], param?: gPartial<DefaultGeometryMap[K]>)
+    static setDefault<K extends keyof DefaultGeometryMap>(name: K, geometry: Lazy<DefaultGeometryMap[K]>)
     {
-        this._defaultGeometry[name] = geometry;
-        if (param) $set(geometry, param);
-        $set(geometry, { name, assetId: name });
-        AssetData.addAssetData(name, geometry);
+        AssetData.addDefaultAssetData(name, geometry as any);
     }
 
     /**
@@ -424,18 +426,10 @@ export class Geometry
      *
      * @param name 默认几何体名称
      */
-    static getDefault<K extends keyof DefaultGeometryMap>(name: K)
+    static getDefault<K extends keyof DefaultGeometryMap>(name: K): DefaultGeometryMap[K]
     {
-        return this._defaultGeometry[name];
+        return AssetData.getDefaultAssetData(name);
     }
-    private static _defaultGeometry: DefaultGeometryMap = <any>{};
-}
-
-/**
- * 默认几何体
- */
-export interface DefaultGeometryMap
-{
 }
 
 function cloneArrayLike<T extends AttributeBufferSourceTypes>(array: T)

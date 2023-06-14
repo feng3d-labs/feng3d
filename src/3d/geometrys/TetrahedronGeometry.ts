@@ -1,5 +1,4 @@
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -40,10 +39,9 @@ export class TetrahedronGeometry extends Geometry
     @oav()
     detail = 0;
 
-    constructor(param?: gPartial<TetrahedronGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as TetrahedronGeometry, 'radius', this.invalidateGeometry, this);
         watcher.watch(this as TetrahedronGeometry, 'detail', this.invalidateGeometry, this);
     }

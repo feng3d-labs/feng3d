@@ -68,7 +68,7 @@ export class Renderable3D extends Component3D implements IRenderable, IRayCastab
      */
     protected _updateGlobalBounds()
     {
-        this._globalBounds = this.localBounds.applyMatrixTo(this.node3d.globalMatrix);
+        this._globalBounds = this.localBounds.applyMatrixTo(this.entity.globalMatrix);
     }
 
     /**

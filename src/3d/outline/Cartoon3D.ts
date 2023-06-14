@@ -3,7 +3,6 @@ import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Vec4 } from '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
@@ -15,8 +14,8 @@ declare module '../../renderer/data/Uniforms'
 {
     interface Uniforms
     {
-        u_diffuseSegment: Vec4;
-        u_diffuseSegmentValue: Vec4;
+        u_diffuseSegment: Vector4;
+        u_diffuseSegmentValue: Vector4;
 
         u_specularSegment: number;
     }
@@ -73,12 +72,12 @@ export class Cartoon3D extends Component3D
 
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
-        renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment.toArray() as Vec4;
-        renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue.toArray() as Vec4;
+        renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
+        renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
         renderAtomic.uniforms.u_specularSegment = this.specularSegment;
         //
         renderAtomic.uniforms.u_outlineSize = this.outlineSize;
-        renderAtomic.uniforms.u_outlineColor = this.outlineColor.toArray() as Vec4;
+        renderAtomic.uniforms.u_outlineColor = this.outlineColor;
         renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
     }
 }

@@ -2,7 +2,6 @@ import { RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Vec4 } from '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
@@ -18,10 +17,12 @@ declare module '../../renderer/data/Uniforms'
          * 描边宽度
          */
         u_outlineSize: number;
+
         /**
          * 描边颜色
          */
-        u_outlineColor: Vec4;
+        u_outlineColor: Color4;
+
         /**
          * 描边形态因子
          * (0.0，1.0):0.0表示延法线方向，1.0表示延顶点方向
@@ -55,7 +56,7 @@ export class OutLine3D extends Component3D
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
         renderAtomic.uniforms.u_outlineSize = this.size;
-        renderAtomic.uniforms.u_outlineColor = this.color.toArray() as Vec4;
+        renderAtomic.uniforms.u_outlineColor = this.color;
         renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
     }
 }

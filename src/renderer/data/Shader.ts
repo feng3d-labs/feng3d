@@ -1,6 +1,3 @@
-import { gPartial } from '../../polyfill/Types';
-import { ShaderMacro } from '../shader/Macro';
-
 /**
  * shader
  */
@@ -12,11 +9,6 @@ export class Shader
     shaderName: string;
 
     /**
-     * shader 中的 宏
-     */
-    shaderMacro: ShaderMacro = {} as any;
-
-    /**
      * 顶点着色器代码
      */
     vertex: string;
@@ -25,9 +17,4 @@ export class Shader
      * 片段着色器代码
      */
     fragment: string;
-
-    constructor(source?: gPartial<Shader>)
-    {
-        Object.assign(this, source);
-    }
 }

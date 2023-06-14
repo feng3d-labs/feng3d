@@ -26,11 +26,11 @@ export class OrthographicCamera3D extends Camera3D
         watcher.watch(this as OrthographicCamera3D, 'size', this._invalidateProjectionMatrix, this);
     }
 
-    dispose(): void
+    destroy(): void
     {
         watcher.unwatch(this as OrthographicCamera3D, 'size', this._invalidateProjectionMatrix, this);
 
-        super.dispose();
+        super.destroy();
     }
 
     protected _updateProjectionMatrix()

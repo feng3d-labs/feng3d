@@ -3,13 +3,12 @@ import { Material } from '../../core/Material';
 import { RunEnvironment } from '../../core/RunEnvironment';
 import { RegisterComponent } from '../../ecs/Component';
 import { Matrix3x3 } from '../../math/geom/Matrix3x3';
-import { identityMat4, Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Mat3 } from '../../renderer/data/Uniforms';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera3D } from '../cameras/Camera3D';
@@ -67,7 +66,7 @@ declare module '../../renderer/data/Uniforms'
         /**
          * 粒子公告牌矩阵
          */
-        u_particle_billboardMatrix: Mat3;
+        u_particle_billboardMatrix: Matrix3x3;
     }
 }
 
@@ -386,7 +385,7 @@ export class ParticleSystem3D extends Component3D
         emitInfo.preGlobalPos.copy(emitInfo.currentGlobalPos);
 
         // 粒子系统位置
-        emitInfo.currentGlobalPos.copy(this.node3d.globalPosition);
+        emitInfo.currentGlobalPos.copy(this.entity.globalPosition);
 
         // 粒子系统位移
         emitInfo.moveVec.copy(emitInfo.currentGlobalPos).sub(emitInfo.preGlobalPos);
@@ -515,7 +514,7 @@ export class ParticleSystem3D extends Component3D
             this._awaked = true;
         }
 
-        renderAtomic.instanceCount = this._activeParticles.length;
+        renderAtomic.drawCall.instanceCount = this._activeParticles.length;
         //
         renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
 
@@ -526,13 +525,13 @@ export class ParticleSystem3D extends Component3D
         const billboardMatrix = new Matrix3x3();
         if (isBillboard)
         {
-            const cameraMatrix = camera.node3d.globalMatrix.clone();
+            const cameraMatrix = camera.entity.globalMatrix.clone();
             let localCameraForward = cameraMatrix.getAxisZ();
             let localCameraUp = cameraMatrix.getAxisY();
             if (this.main.simulationSpace === ParticleSystemSimulationSpace.Local)
             {
-                localCameraForward = this.node3d.globalRotationInvertMatrix.transformPoint3(localCameraForward);
-                localCameraUp = this.node3d.globalRotationInvertMatrix.transformPoint3(localCameraUp);
+                localCameraForward = this.entity.globalRotationInvertMatrix.transformPoint3(localCameraForward);
+                localCameraUp = this.entity.globalRotationInvertMatrix.transformPoint3(localCameraUp);
             }
             const matrix4x4 = new Matrix4x4();
             matrix4x4.lookAt(localCameraForward, localCameraUp);
@@ -595,12 +594,12 @@ export class ParticleSystem3D extends Component3D
         this._attributes.a_particle_flipUV.array = flipUVs;
 
         //
-        renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix.toArray() as Mat3;
+        renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
 
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.Global)
         {
-            renderAtomic.uniforms.u_modelMatrix = () => identityMat4;
-            renderAtomic.uniforms.u_ITModelMatrix = () => identityMat4;
+            renderAtomic.uniforms.u_modelMatrix = () => identityMatrix4x4;
+            renderAtomic.uniforms.u_ITModelMatrix = () => identityMatrix4x4;
         }
 
         for (const key in this._attributes)
@@ -879,7 +878,7 @@ export class ParticleSystem3D extends Component3D
 
         if (this._main.simulationSpace === ParticleSystemSimulationSpace.Local)
         {
-            const globalInvertMatrix = this.node3d.invertGlobalMatrix;
+            const globalInvertMatrix = this.entity.invertGlobalMatrix;
             this._activeParticles.forEach((p) =>
             {
                 globalInvertMatrix.transformPoint3(p.position, p.position);
@@ -889,7 +888,7 @@ export class ParticleSystem3D extends Component3D
         }
         else
         {
-            const globalMatrix = this.node3d.globalMatrix;
+            const globalMatrix = this.entity.globalMatrix;
             this._activeParticles.forEach((p) =>
             {
                 globalMatrix.transformPoint3(p.position, p.position);
@@ -919,11 +918,11 @@ export class ParticleSystem3D extends Component3D
         {
             if (space === ParticleSystemSimulationSpace.Global)
             {
-                this.node3d.invertGlobalMatrix.transformPoint3(position, position);
+                this.entity.invertGlobalMatrix.transformPoint3(position, position);
             }
             else
             {
-                this.node3d.globalMatrix.transformPoint3(position, position);
+                this.entity.globalMatrix.transformPoint3(position, position);
             }
         }
         //
@@ -949,11 +948,11 @@ export class ParticleSystem3D extends Component3D
             {
                 if (space === ParticleSystemSimulationSpace.Global)
                 {
-                    this.node3d.invertGlobalMatrix.transformPoint3(value, value);
+                    this.entity.invertGlobalMatrix.transformPoint3(value, value);
                 }
                 else
                 {
-                    this.node3d.globalMatrix.transformPoint3(value, value);
+                    this.entity.globalMatrix.transformPoint3(value, value);
                 }
             }
             //
@@ -981,11 +980,11 @@ export class ParticleSystem3D extends Component3D
         {
             if (space === ParticleSystemSimulationSpace.Global)
             {
-                this.node3d.invertGlobalMatrix.transformVector3(velocity, velocity);
+                this.entity.invertGlobalMatrix.transformVector3(velocity, velocity);
             }
             else
             {
-                this.node3d.globalMatrix.transformVector3(velocity, velocity);
+                this.entity.globalMatrix.transformVector3(velocity, velocity);
             }
         }
         //
@@ -1011,11 +1010,11 @@ export class ParticleSystem3D extends Component3D
             {
                 if (space === ParticleSystemSimulationSpace.Global)
                 {
-                    this.node3d.invertGlobalMatrix.transformVector3(value, value);
+                    this.entity.invertGlobalMatrix.transformVector3(value, value);
                 }
                 else
                 {
-                    this.node3d.globalMatrix.transformVector3(value, value);
+                    this.entity.globalMatrix.transformVector3(value, value);
                 }
             }
             //
@@ -1043,11 +1042,11 @@ export class ParticleSystem3D extends Component3D
         {
             if (space === ParticleSystemSimulationSpace.Global)
             {
-                this.node3d.invertGlobalMatrix.transformVector3(acceleration, acceleration);
+                this.entity.invertGlobalMatrix.transformVector3(acceleration, acceleration);
             }
             else
             {
-                this.node3d.globalMatrix.transformVector3(acceleration, acceleration);
+                this.entity.globalMatrix.transformVector3(acceleration, acceleration);
             }
         }
         //
@@ -1073,11 +1072,11 @@ export class ParticleSystem3D extends Component3D
             {
                 if (space === ParticleSystemSimulationSpace.Global)
                 {
-                    this.node3d.invertGlobalMatrix.transformVector3(value, value);
+                    this.entity.invertGlobalMatrix.transformVector3(value, value);
                 }
                 else
                 {
-                    this.node3d.globalMatrix.transformVector3(value, value);
+                    this.entity.globalMatrix.transformVector3(value, value);
                 }
             }
             //
@@ -1117,9 +1116,9 @@ export class ParticleSystem3D extends Component3D
             if (Math.random() > probability) return;
 
             // 粒子所在全局坐标
-            const particleWoldPos = this.node3d.globalMatrix.transformPoint3(particle.position);
+            const particleWoldPos = this.entity.globalMatrix.transformPoint3(particle.position);
             // 粒子在子粒子系统的坐标
-            const subEmitPos = subEmitter.node3d.invertGlobalMatrix.transformPoint3(particleWoldPos);
+            const subEmitPos = subEmitter.entity.invertGlobalMatrix.transformPoint3(particleWoldPos);
             if (!particle.subEmitInfo)
             {
                 const startDelay = this.main.startDelay.getValue(Math.random());
@@ -1230,7 +1229,7 @@ export interface ParticleSystemEmitInfo
     _isRateOverDistance: boolean;
 }
 
-Geometry.setDefault('Billboard-Geometry', new QuadGeometry());
+Geometry.setDefault('Billboard-Geometry', () => new QuadGeometry());
 
 Node3D.registerPrimitive('Particle System', (g) =>
 {
@@ -1248,3 +1247,7 @@ createNodeMenu.push(
     }
 );
 
+/**
+ * 单位矩阵。
+ */
+const identityMatrix4x4 = new Matrix4x4();
