@@ -1,6 +1,6 @@
+import { IEvent } from '@feng3d/event';
 import { RunEnvironment } from '../../core/RunEnvironment';
 import { RegisterComponent } from '../../ecs/Component';
-import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';

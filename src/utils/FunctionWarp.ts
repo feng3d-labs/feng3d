@@ -1,4 +1,4 @@
-import { anyEmitter } from '../event/AnyEmitter';
+import { anyEmitter } from '@feng3d/event';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { FunctionPropertyNames } from '../polyfill/Types';
 import { uuid } from './Uuid';

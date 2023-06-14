@@ -1,6 +1,6 @@
+import { IEvent } from '@feng3d/event';
 import { Material, MaterialMap } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
-import { IEvent } from '../../event/IEvent';
 import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';

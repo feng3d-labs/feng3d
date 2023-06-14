@@ -1,3 +1,4 @@
+import { EventEmitter, IEvent } from '@feng3d/event';
 import { Camera3D } from '../../3d/cameras/Camera3D';
 import { TransformLayout3D } from '../../3d/components/TransformLayout3D';
 import { Scene3D } from '../../3d/core/Scene3D';
@@ -5,8 +6,6 @@ import { HideFlags } from '../../core/HideFlags';
 import { Node, NodeEventMap } from '../../core/Node';
 import { Component } from '../../ecs/Component';
 import { Entity } from '../../ecs/Entity';
-import { EventEmitter } from '../../event/EventEmitter';
-import { IEvent } from '../../event/IEvent';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';

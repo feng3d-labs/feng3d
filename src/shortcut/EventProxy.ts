@@ -1,5 +1,4 @@
-import { EventEmitter } from '../event/EventEmitter';
-import { IEvent } from '../event/IEvent';
+import { EventEmitter, IEvent } from "@feng3d/event";
 
 /**
  * 代理 EventTarget, 处理js事件中this关键字问题

@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "0.7.12",
+  "version": "0.8.0",
   "description": "Web3D Engine",
   "standalone": true,
   "main": "src/index.ts",
@@ -48,6 +48,7 @@
     "vitest": "^0.26.2"
   },
   "dependencies": {
+    "@feng3d/event": "^0.8.0",
     "@feng3d/earcut": "^0.0.1",
     "@feng3d/path": "^0.0.3",
     "stats.js": "^0.17.0"

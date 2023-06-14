@@ -1,4 +1,4 @@
-import { EventEmitter } from '../event/EventEmitter';
+import { EventEmitter } from '@feng3d/event';
 import { oav } from '../objectview/ObjectView';
 import { Constructor, gPartial } from '../polyfill/Types';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';

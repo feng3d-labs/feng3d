@@ -1,4 +1,4 @@
-import { IEvent } from '../event/IEvent';
+import { IEvent } from '@feng3d/event';
 import { windowEventProxy } from '../shortcut/WindowEventProxy';
 import { MouseInput } from './MouseInput';
 

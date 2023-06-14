@@ -1,5 +1,5 @@
+import { EventEmitter } from '@feng3d/event';
 import { Component, ComponentMap } from '../ecs/Component';
-import { EventEmitter } from '../event/EventEmitter';
 import { Node, NodeEventMap } from './Node';
 
 /**

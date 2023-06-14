@@ -1,4 +1,4 @@
-import { EventEmitter } from '../../event/EventEmitter';
+import { EventEmitter } from '@feng3d/event';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Vec4 } from '../../renderer/data/Uniforms';

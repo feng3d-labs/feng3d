@@ -1,10 +1,10 @@
-import { ticker } from '../../utils/Ticker';
+import { IEvent } from '@feng3d/event';
 import { RegisterComponent } from '../../ecs/Component';
-import { IEvent } from '../../event/IEvent';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { ticker } from '../../utils/Ticker';
 import { watcher } from '../../watcher/watcher';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';

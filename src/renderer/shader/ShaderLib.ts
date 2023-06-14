@@ -1,4 +1,4 @@
-import { globalEmitter } from '../../event/GlobalEmitter';
+import { globalEmitter } from '@feng3d/event';
 import { shaderMacroUtils } from './ShaderMacroUtils';
 
 export const shaderConfig: ShaderConfig = { shaders: {}, modules: {} };
@@ -118,7 +118,7 @@ export class ShaderLib
  */
 export const shaderlib = new ShaderLib();
 
-declare module '../../event/GlobalEmitter'
+declare module '@feng3d/event'
 {
     interface GlobalEvents
     {

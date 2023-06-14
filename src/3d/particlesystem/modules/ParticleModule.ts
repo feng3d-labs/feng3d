@@ -1,4 +1,4 @@
-import { EventEmitter } from '../../../event/EventEmitter';
+import { EventEmitter } from '@feng3d/event';
 import { oav } from '../../../objectview/ObjectView';
 import { Constructor } from '../../../polyfill/Types';
 import { Serializable } from '../../../serialization/Serializable';

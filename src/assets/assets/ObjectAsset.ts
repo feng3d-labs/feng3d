@@ -1,4 +1,4 @@
-import { objectEmitter } from '../../event/ObjectEmitter';
+import { objectEmitter } from '@feng3d/event';
 import { oav } from '../../objectview/ObjectView';
 import { $serialize } from '../../serialization/Serialization';
 import { watcher } from '../../watcher/watcher';

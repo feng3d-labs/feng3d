@@ -1,5 +1,5 @@
+import { IEvent } from '@feng3d/event';
 import { RegisterComponent } from '../../ecs/Component';
-import { IEvent } from '../../event/IEvent';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';

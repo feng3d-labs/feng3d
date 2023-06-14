@@ -1,6 +1,6 @@
+import { EventEmitter } from '@feng3d/event';
 import { ComponentMap } from '../ecs/Component';
 import { Entity, EntityEventMap } from '../ecs/Entity';
-import { EventEmitter } from '../event/EventEmitter';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 
 export interface NodeEventMap extends EntityEventMap

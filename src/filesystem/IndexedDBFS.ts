@@ -1,10 +1,10 @@
-import { globalEmitter } from '../event/GlobalEmitter';
+import { globalEmitter } from '@feng3d/event';
 import { dataTransform } from '../polyfill/DataTransform';
-import { _indexedDB } from './base/_IndexedDB';
 import { FSType } from './FSType';
 import { IReadWriteFS } from './IReadWriteFS';
+import { _indexedDB } from './base/_IndexedDB';
 
-declare module '../event/GlobalEmitter'
+declare module '@feng3d/event'
 {
     interface GlobalEvents
     {

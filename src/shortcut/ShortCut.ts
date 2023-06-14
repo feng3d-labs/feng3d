@@ -1,4 +1,4 @@
-import { EventEmitter } from '../event/EventEmitter';
+import { EventEmitter } from '@feng3d/event';
 import { KeyCapture } from './handle/KeyCapture';
 import { KeyState } from './handle/KeyState';
 import { ShortCutCapture } from './handle/ShortCutCapture';

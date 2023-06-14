@@ -1,6 +1,6 @@
+import { EventEmitter } from '@feng3d/event';
 import { AssetType } from '../../assets/AssetType';
 import { AssetData } from '../../core/AssetData';
-import { EventEmitter } from '../../event/EventEmitter';
 import { Box3 } from '../../math/geom/Box3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';

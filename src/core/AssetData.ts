@@ -1,4 +1,3 @@
-import { EventEmitter } from '../event/EventEmitter';
 import { MapUtils } from '../polyfill/MapUtils';
 import { getClassName } from '../serialization/getClassName';
 import { getInstance } from '../serialization/getInstance';
@@ -7,6 +6,7 @@ import { __class__ } from '../serialization/SerializationConst';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 import { ReadRS } from '../assets/rs/ReadRS';
+import { EventEmitter } from '@feng3d/event';
 
 /**
  * 资源数据

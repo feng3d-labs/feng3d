@@ -1,10 +1,10 @@
+import { anyEmitter } from '@feng3d/event';
 import { path } from '@feng3d/path';
-import { ticker } from '../utils/Ticker';
-import { anyEmitter } from '../event/AnyEmitter';
 import { pathUtils } from '../filesystem/PathUtils';
 import { Constructor } from '../polyfill/Types';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
+import { ticker } from '../utils/Ticker';
 import { AssetMeta } from './AssetMeta';
 import { AssetType } from './AssetType';
 import { FolderAsset } from './FolderAsset';

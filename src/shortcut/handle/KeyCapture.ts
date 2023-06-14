@@ -1,4 +1,4 @@
-import { IEvent } from '../../event/IEvent';
+import { IEvent } from '@feng3d/event';
 import { KeyBoard } from '../Keyboard';
 import { ShortCut } from '../ShortCut';
 import { windowEventProxy } from '../WindowEventProxy';
