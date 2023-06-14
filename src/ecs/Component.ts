@@ -5,7 +5,7 @@ import { AddComponentMenu } from '../core/Menu';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
-import { Constructor } from '../polyfill/Types';
+import { Constructor, gPartial } from '../polyfill/Types';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { getConstructor } from '../serialization/getConstructor';
 import { Serializable } from '../serialization/Serializable';
@@ -145,9 +145,9 @@ export class Component
      * @param type 组件类定义。
      * @returns 被添加的组件。
      */
-    addComponent<K extends keyof ComponentMap>(type: K): ComponentMap[K]
+    addComponent<K extends keyof ComponentMap>(type: K, params?: gPartial<ComponentMap[K]>): ComponentMap[K]
     {
-        return this._entity.addComponent(type);
+        return this._entity.addComponent(type, params);
     }
 
     /**
@@ -186,7 +186,7 @@ export class Component
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         this.enabled = false;
         this._entity = <any>null;

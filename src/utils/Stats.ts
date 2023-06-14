@@ -73,7 +73,7 @@ export class Stats extends Component
         }
     }
 
-    dispose()
+    destroy()
     {
         if (this._handle)
         {
@@ -83,6 +83,6 @@ export class Stats extends Component
         document.body.removeChild(this._stats.dom);
         this._stats = null;
 
-        super.dispose();
+        super.destroy();
     }
 }

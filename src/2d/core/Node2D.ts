@@ -12,7 +12,6 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Vec4 } from '../../renderer/data/Uniforms';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
@@ -27,6 +26,8 @@ export interface Node2DEventMap extends NodeEventMap
 
 export interface Node2D
 {
+    readonly emitter: EventEmitter<Node2DEventMap>;
+
     /**
      * 父对象
      */
@@ -66,8 +67,6 @@ declare module '../../serialization/Serializable'
 @Serializable('Node2D')
 export class Node2D extends Node
 {
-    declare emitter: EventEmitter<Node2DEventMap>;
-
     get single() { return true; }
 
     transformLayout: TransformLayout3D;
@@ -241,7 +240,7 @@ export class Node2D extends Node
 
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {
-        renderAtomic.uniforms.u_rect = this.rect.toArray() as Vec4;
+        renderAtomic.uniforms.u_rect = this.rect;
     }
 
     /**

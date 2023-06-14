@@ -14,11 +14,11 @@ export class Renderer2D extends Component3D
         this.emitter.on('beforeRender', this._onBeforeRender, this);
     }
 
-    dispose(): void
+    destroy(): void
     {
         this.emitter.off('beforeRender', this._onBeforeRender, this);
 
-        super.dispose();
+        super.destroy();
     }
 
     private _onBeforeRender(event: IEvent<RenderContext3D>)
@@ -47,7 +47,7 @@ export class Renderer2D extends Component3D
                 // 绘制
                 const renderAtomic = renderable.renderAtomic;
 
-                renderAtomic.uniforms.u_viewProjection = canvas.projection.elements;
+                renderAtomic.uniforms.u_viewProjection = canvas.projection;
 
                 renderable.beforeRender(renderAtomic, null, null);
 

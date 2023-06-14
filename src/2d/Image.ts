@@ -1,11 +1,12 @@
 import { Camera3D } from '../3d/cameras/Camera3D';
 import { Scene3D } from '../3d/core/Scene3D';
+import { AssetData } from '../core/AssetData';
 import { createNodeMenu } from '../core/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
+import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Vec4 } from '../renderer/data/Uniforms';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Texture2D } from '../textures/Texture2D';
 import { Component2D } from './core/Component2D';
@@ -22,9 +23,9 @@ declare module '../renderer/data/Uniforms'
          */
         s_texture: Texture2D;
 
-        u_color: Vec4;
+        u_color: Color4;
 
-        u_uvRect: Vec4;
+        u_uvRect: Vector4;
     }
 }
 
@@ -43,7 +44,7 @@ export class Image extends Component2D
      */
     @oav()
     @SerializeProperty()
-    image = Texture2D.default;
+    image = AssetData.getDefaultAssetData('Default-Texture');
 
     /**
      * Tinting color for this Image.
@@ -60,8 +61,7 @@ export class Image extends Component2D
     @oav({ tooltip: '使图片显示实际尺寸', componentParam: { label: 'ReSize' } })
     setNativeSize()
     {
-        this.node2d.size.x = this.image.source.width;
-        this.node2d.size.y = this.image.source.height;
+        this.entity.size = this.image.getSize();
     }
 
     beforeRender(renderAtomic: RenderAtomic, scene: Scene3D, camera: Camera3D)
@@ -69,7 +69,7 @@ export class Image extends Component2D
         super.beforeRender(renderAtomic, scene, camera);
 
         renderAtomic.uniforms.s_texture = this.image;
-        renderAtomic.uniforms.u_color = this.color.toArray() as Vec4;
+        renderAtomic.uniforms.u_color = this.color;
     }
 }
 

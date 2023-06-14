@@ -1,10 +1,8 @@
 import { loader } from '../../filesystem/base/Loader';
 import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
-import { $set } from '../../serialization/Serialization';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
 import { ImageUtil } from '../../utils/ImageUtil';
 import { watcher } from '../../watcher/watcher';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
@@ -79,26 +77,15 @@ export class Terrain3DGeometry extends Geometry
     @oav()
     minElevation = 0;
 
-    /**
-     * 高度图路径
-     */
-    private _heightMap = new Texture2D();
-
     private _heightImageData: ImageData;
-
-    /**
-     * 是否正在加载。
-     */
-    isloading = false;
 
     /**
      * 创建高度地形 拥有segmentsW*segmentsH个顶点
      */
-    constructor(raw?: gPartial<Terrain3DGeometry>)
+    constructor()
     {
         super();
         this.name = 'terrain';
-        $set(this, raw);
         //
         watcher.watch(this as Terrain3DGeometry, 'heightMapUrl', this._onHeightMapUrlUrlChanged, this);
         watcher.watch(this as Terrain3DGeometry, 'width', this.invalidateGeometry, this);
@@ -110,26 +97,31 @@ export class Terrain3DGeometry extends Geometry
         watcher.watch(this as Terrain3DGeometry, 'minElevation', this.invalidateGeometry, this);
     }
 
+    beforeRender(renderAtomic: RenderAtomic): void
+    {
+        super.beforeRender(renderAtomic);
+        if (!this._heightImageData)
+        {
+            this._heightImageData = getDefaultHeightMap();
+            this.invalidateGeometry();
+        }
+    }
+
     private async _onHeightMapUrlUrlChanged()
     {
         const heightMapUrl = this.heightMapUrl;
         if (!heightMapUrl)
         {
             this._heightImageData = getDefaultHeightMap();
-            this._heightMap.source = this._heightImageData;
             this.invalidateGeometry();
-
-            this.isloading = false;
 
             return;
         }
-        this.isloading = true;
 
         const image = await loader.loadImage(heightMapUrl);
         if (heightMapUrl === this.heightMapUrl)
         {
             this._heightImageData = ImageUtil.fromImage(image).imageData;
-            this._heightMap.source = image;
             this.invalidateGeometry();
         }
     }
@@ -291,4 +283,4 @@ function getDefaultHeightMap()
 }
 let _defaultHeightMap: ImageData;
 
-Geometry.setDefault('Terrain-Geometry', new Terrain3DGeometry());
+Geometry.setDefault('Terrain-Geometry', () => new Terrain3DGeometry());

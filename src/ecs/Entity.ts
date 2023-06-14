@@ -238,7 +238,7 @@ export class Entity
         const component: Component = this._components.splice(index, 1)[0];
         // 派发移除组件事件
         this.emitter.emit('removeComponent', { component, entity: this as any }, true);
-        component.dispose();
+        component.destroy();
 
         return component;
     }
@@ -337,12 +337,12 @@ export class Entity
     /**
      * 销毁
      */
-    dispose()
+    destroy()
     {
         for (let i = this._components.length - 1; i >= 0; i--)
         {
             const compnent = this.removeComponentAt(i);
-            compnent.dispose();
+            compnent.destroy();
         }
         this._components = null;
     }

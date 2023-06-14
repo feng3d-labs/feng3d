@@ -1,8 +1,10 @@
-import { RenderAtomic } from '../data/RenderAtomic';
+import { WebGLUniformTypeUtils } from '../const/WebGLUniformType';
 import { Shader } from '../data/Shader';
+import { ShaderMacro } from '../shader/Macro';
 import { shaderlib } from '../shader/ShaderLib';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { ShaderType } from './WebGLEnums';
+import { WebGLRenderAtomic } from './WebGLRenderAtomic';
 import { WebGLUniform } from './WebGLUniforms';
 
 /**
@@ -19,14 +21,13 @@ export class WebGLShaders
         this._webGLRenderer = webGLRenderer;
     }
 
-    activeShader(renderAtomic: RenderAtomic)
+    activeShader(renderAtomic: WebGLRenderAtomic)
     {
         const { webGLContext } = this._webGLRenderer;
 
-        const shaderMacro = renderAtomic.getShaderMacro();
-        const shader = renderAtomic.getShader();
-        shader.shaderMacro = shaderMacro;
-        const shaderResult = this.activeShaderProgram(shader);
+        const shaderMacro = renderAtomic.shaderMacro;
+        const shader = renderAtomic.shader;
+        const shaderResult = this.activeShaderProgram(shader, shaderMacro);
         if (!shaderResult)
         {
             throw new Error(`缺少着色器，无法渲染!`);
@@ -40,11 +41,11 @@ export class WebGLShaders
     /**
      * 激活渲染程序
      */
-    activeShaderProgram(shader: Shader)
+    activeShaderProgram(shader: Shader, shaderMacro: ShaderMacro)
     {
         const { shaderName } = shader;
 
-        const { vertex, fragment } = this.updateShaderCode(shader);
+        const { vertex, fragment } = this.updateShaderCode(shader, shaderMacro);
 
         const shaderKey = vertex + fragment;
         let result = this.compileShaderResults[shaderKey];
@@ -123,9 +124,9 @@ export class WebGLShaders
     /**
      * 更新渲染代码
      */
-    private updateShaderCode(shader: Shader)
+    private updateShaderCode(shader: Shader, shaderMacro: ShaderMacro)
     {
-        const { shaderName, shaderMacro } = shader;
+        const { shaderName } = shader;
 
         if (!shaderName) return shader;
 
@@ -142,7 +143,7 @@ export class WebGLShaders
 
     private compileShaderProgram(vshader: string, fshader: string): CompileShaderResult
     {
-        const { webGLContext, webGLUniformType } = this._webGLRenderer;
+        const { webGLContext } = this._webGLRenderer;
 
         // 创建着色器程序
         // 编译顶点着色器
@@ -162,7 +163,7 @@ export class WebGLShaders
         {
             const activeInfo = webGLContext.getActiveAttrib(shaderProgram, i++);
             const location = webGLContext.getAttribLocation(shaderProgram, activeInfo.name);
-            attributes[activeInfo.name] = { name: activeInfo.name, size: activeInfo.size, type: activeInfo.type, location };
+            attributes[activeInfo.name] = { activeInfo, location };
         }
         // 获取uniform信息
         const numUniforms = webGLContext.getProgramParameter(shaderProgram, 'ACTIVE_UNIFORMS');
@@ -197,9 +198,9 @@ export class WebGLShaders
                     result = reg.exec(name);
                 }
                 const location = webGLContext.getUniformLocation(shaderProgram, name);
-                const type = webGLUniformType.getType(activeInfo.type);
-                const isTexture = webGLUniformType.isTexture(type);
-                uniforms[name] = new WebGLUniform({ name: paths[0], paths, size: activeInfo.size, type, location, textureID });
+                const type = WebGLUniformTypeUtils.getType(activeInfo.type);
+                const isTexture = WebGLUniformTypeUtils.isTexture(type);
+                uniforms[name] = { activeInfo, location, type, paths, textureID };
 
                 if (isTexture)
                 {
@@ -247,12 +248,9 @@ export interface CompileShaderResult
 export interface AttributeInfo
 {
     /**
-     * 名称
+     * WebGL激活信息。
      */
-    name: string;
-
-    size: number;
-    type: number;
+    activeInfo: WebGLActiveInfo;
 
     /**
      * 属性地址

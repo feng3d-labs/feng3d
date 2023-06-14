@@ -25,7 +25,7 @@ export class MouseRay3D extends Component3D
         this.emitter.on('beforeRender', this._onBeforeRender, this);
     }
 
-    dispose(): void
+    destroy(): void
     {
         this.emitter.on('beforeRender', this._onBeforeRender, this);
 
@@ -44,12 +44,12 @@ export class MouseRay3D extends Component3D
         this._needShoot = false;
 
         const globalRay = event.data.getMouseRay3D();
-        const localRay = this.node3d.invertGlobalMatrix.transformRay(globalRay);
+        const localRay = this.entity.invertGlobalMatrix.transformRay(globalRay);
 
         // 本地空间摄像机坐标
-        const cameraLP = this.node3d.invertGlobalMatrix.transformPoint3(localRay.origin);
+        const cameraLP = this.entity.invertGlobalMatrix.transformPoint3(localRay.origin);
         // 本地空间摄像机方向
-        const cameraLD = this.node3d.invertGlobalMatrix.transformVector3(localRay.direction);
+        const cameraLD = this.entity.invertGlobalMatrix.transformVector3(localRay.direction);
         cameraLD.normalize();
 
         const sphere = Node3D.createPrimitive('Sphere');
@@ -72,7 +72,7 @@ export class MouseRay3D extends Component3D
             else
             {
                 sphere.remove();
-                sphere.dispose();
+                sphere.destroy();
             }
         };
 

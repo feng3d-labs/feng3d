@@ -52,10 +52,9 @@ export class SphereGeometry extends Geometry
 
     name = 'Sphere';
 
-    constructor(param?: Partial<SphereGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as SphereGeometry, 'radius', this.invalidateGeometry, this);
         watcher.watch(this as SphereGeometry, 'segmentsW', this.invalidateGeometry, this);
         watcher.watch(this as SphereGeometry, 'segmentsH', this.invalidateGeometry, this);
@@ -237,7 +236,7 @@ export class SphereGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Sphere', new SphereGeometry());
+Geometry.setDefault('Sphere', () => new SphereGeometry());
 
 Node3D.registerPrimitive('Sphere', (g) =>
 {

@@ -88,7 +88,7 @@ export class Camera3D extends Component3D
         if (this._viewProjectionInvalid)
         {
             // 全局空间转摄像机空间
-            this._viewProjection.copy(this.node3d.invertGlobalMatrix);
+            this._viewProjection.copy(this.entity.invertGlobalMatrix);
             // +摄像机空间转投影空间 = 全局空间转投影空间
             this._viewProjection.append(this.projectionMatrix);
             this._viewProjectionInvalid = false;
@@ -154,7 +154,7 @@ export class Camera3D extends Component3D
     project(point3d: Vector3, v = new Vector3()): Vector3
     {
         // 全局坐标转换为摄像机空间坐标
-        const point3dInCamera = this.node3d.invertGlobalMatrix.transformPoint3(point3d);
+        const point3dInCamera = this.entity.invertGlobalMatrix.transformPoint3(point3d);
         // 摄像机空间坐标转换为GPU空间坐标
         const v4 = this.projectionMatrix.transformVector4(new Vector4().fromVector3(point3dInCamera, 1));
         // 透视投影结果中w!=1，需要标准化齐次坐标
@@ -182,7 +182,7 @@ export class Camera3D extends Component3D
         // 转换为 Vector3
         v.fromVector4(cameraP4);
         // 转换为全局空间坐标
-        this.node3d.globalMatrix.transformPoint3(v, v); // 摄像机空间转换为全局坐标
+        this.entity.globalMatrix.transformPoint3(v, v); // 摄像机空间转换为全局坐标
 
         return v;
     }

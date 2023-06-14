@@ -37,7 +37,7 @@ export class CanvasRenderer extends Mesh3D
             globalRay = canvas.mouseRay;
         }
 
-        const localRay = TransformUtils.rayGlobalToLocal(this.node3d, globalRay);
+        const localRay = TransformUtils.rayGlobalToLocal(this.entity, globalRay);
         // if (this.transform2D)
         // {
         //     const size = new Vector3(this.transform2D.size.x, this.transform2D.size.y, 1);

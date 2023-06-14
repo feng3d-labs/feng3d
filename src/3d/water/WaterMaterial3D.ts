@@ -1,3 +1,4 @@
+import { AssetData } from '../../core/AssetData';
 import { Material } from '../../core/Material';
 import { Color3 } from '../../math/Color3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
@@ -6,7 +7,6 @@ import { oav } from '../../objectview/ObjectView';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
 import waterFragment from './water_fragment_glsl';
 import waterVertex from './water_vertex_glsl';
 
@@ -62,14 +62,14 @@ export class Water3DUniforms
     @oav()
     @SerializeProperty()
     @oav({ tooltip: '水体法线图' })
-    s_normalSampler = Texture2D.default;
+    s_normalSampler = AssetData.getDefaultAssetData('Default-Texture');
 
     /**
      * 镜面反射贴图
      */
     @oav()
     // s_mirrorSampler = new RenderTargetTexture2D();
-    s_mirrorSampler = Texture2D.default;
+    s_mirrorSampler = AssetData.getDefaultAssetData('Default-Texture');
 
     u_textureMatrix = new Matrix4x4();
     u_sunColor = new Color3().fromUnit(0x7F7F7F);
@@ -81,4 +81,4 @@ shaderlib.shaderConfig.shaders.water = {
     fragment: waterFragment,
 };
 
-Material.setDefault('Water-Material', new Water3DMaterial());
+Material.setDefault('Water-Material', () => new Water3DMaterial());

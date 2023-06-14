@@ -1,6 +1,7 @@
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Scene3D } from '../core/Scene3D';
 import { Cartoon3D } from './Cartoon3D';
@@ -22,7 +23,7 @@ export class Outline3DRenderer
             renderParams.enableBlend = false;
             renderParams.cullFace = 'FRONT';
 
-            this.renderAtomic.shader = new Shader({ shaderName: 'outline' });
+            this.renderAtomic.shader = $set(new Shader(), { shaderName: 'outline' });
         }
     }
 

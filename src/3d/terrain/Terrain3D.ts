@@ -35,13 +35,13 @@ export class Terrain3D extends Component
         meshRenderer.geometry = Geometry.getDefault('Terrain-Geometry');
     }
 
-    dispose(): void
+    destroy(): void
     {
         const meshRenderer = this.getComponent('Mesh3D');
         meshRenderer.geometry = null;
         meshRenderer.material = null;
 
-        super.dispose();
+        super.destroy();
     }
 }
 

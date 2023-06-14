@@ -1,6 +1,6 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
+import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -60,10 +60,9 @@ export class PlaneGeometry extends Geometry
 
     name = 'Plane';
 
-    constructor(param?: gPartial<PlaneGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as PlaneGeometry, 'width', this.invalidateGeometry, this);
         watcher.watch(this as PlaneGeometry, 'height', this.invalidateGeometry, this);
         watcher.watch(this as PlaneGeometry, 'segmentsW', this.invalidateGeometry, this);
@@ -134,7 +133,7 @@ export class PlaneGeometry extends Geometry
     }
 }
 
-Geometry.setDefault('Plane', new PlaneGeometry(), { width: 10, height: 10 });
+Geometry.setDefault('Plane', () => $set(new PlaneGeometry(), { width: 10, height: 10 }));
 
 Node3D.registerPrimitive('Plane', (g) =>
 {

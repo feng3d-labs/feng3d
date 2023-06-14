@@ -23,7 +23,7 @@ export class PointMaterial extends Material
     {
         super();
         this.shader.shaderName = 'point';
-        this.renderParams.drawMode = 'POINTS';
+        this.drawMode = 'POINTS';
     }
 }
 

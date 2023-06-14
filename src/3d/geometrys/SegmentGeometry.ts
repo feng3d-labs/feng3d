@@ -3,7 +3,6 @@ import { Material } from '../../core/Material';
 import { Color4 } from '../../math/Color4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
@@ -35,19 +34,6 @@ export class SegmentGeometry extends Geometry
     {
         super();
         watcher.watch(this as SegmentGeometry, 'segments', this.invalidateGeometry, this);
-    }
-
-    /**
-     * 添加线段
-     *
-     * @param segment 线段
-     */
-    addSegment(segment: Partial<Segment>)
-    {
-        const s = new Segment();
-        $set(s, segment);
-        this.segments.push(s);
-        this.invalidateGeometry();
     }
 
     /**

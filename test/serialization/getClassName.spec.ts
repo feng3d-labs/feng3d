@@ -9,13 +9,13 @@ const { ok, equal } = assert;
 /**
  * 使用 @Serializable() 进行注册的类
  */
-@Serializable('RegisteredClass')
+@Serializable('RegisteredClass' as any)
 class RegisteredClass
 {
 
 }
 
-@Serializable('别名')
+@Serializable('别名' as any)
 class RegisteredClass别名
 {
 

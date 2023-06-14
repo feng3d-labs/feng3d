@@ -1,8 +1,8 @@
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
-import { Constructor, gPartial } from '../polyfill/Types';
+import { Constructor, gPartial, Lazy } from '../polyfill/Types';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { RenderParams } from '../renderer/data/RenderParams';
+import { DrawMode, RenderParams } from '../renderer/data/RenderParams';
 import { Shader } from '../renderer/data/Shader';
 import { Serializable } from '../serialization/Serializable';
 import { $set } from '../serialization/Serialization';
@@ -13,6 +13,13 @@ export interface MaterialMap { }
 export interface UniformsMap { }
 
 declare module '../serialization/Serializable' { interface SerializableMap extends MaterialMap, UniformsMap { } }
+
+declare module './AssetData' { interface DefaultAssetDataMap extends DefaultMaterialMap { } }
+
+/**
+ * 默认材质
+ */
+export interface DefaultMaterialMap { }
 
 /**
  * 注册材质
@@ -78,6 +85,24 @@ export abstract class Material extends EventEmitter
     @SerializeProperty()
     shader = new Shader();
 
+    /**
+     * 渲染模式，默认 TRIANGLES，每三个顶点绘制一个三角形。
+     *
+     * * POINTS 绘制单个点。
+     * * LINE_LOOP 绘制循环连线。
+     * * LINE_STRIP 绘制连线
+     * * LINES 每两个顶点绘制一条线段。
+     * * TRIANGLES 每三个顶点绘制一个三角形。
+     * * TRIANGLE_STRIP 绘制三角形条带。
+     * * TRIANGLE_FAN  绘制三角扇形。
+     *
+     * A GLenum specifying the type primitive to render. Possible values are:
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+     */
+    @SerializeProperty()
+    @oav({ component: 'OAVEnum', tooltip: '渲染模式，默认RenderMode.TRIANGLES', componentParam: { enumClass: ['POINTS', 'LINE_LOOP', 'LINE_STRIP', 'LINES', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'] } })
+    drawMode: DrawMode = 'TRIANGLES';
+
     constructor(param?: gPartial<Material>)
     {
         super();
@@ -91,7 +116,8 @@ export abstract class Material extends EventEmitter
 
         renderAtomic.shader = this.shader;
         renderAtomic.renderParams = this.renderParams;
-        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.drawMode === 'POINTS';
+        renderAtomic.drawCall.drawMode = this.drawMode;
+        renderAtomic.shaderMacro.IS_POINTS_MODE = this.drawMode === 'POINTS';
     }
 
     /**
@@ -102,11 +128,9 @@ export abstract class Material extends EventEmitter
      * @param name 材质名称
      * @param material 材质数据
      */
-    static setDefault<K extends keyof DefaultMaterialMap>(name: K, material: Material)
+    static setDefault<K extends keyof DefaultMaterialMap>(name: K, material: Lazy<DefaultMaterialMap[K]>)
     {
-        this._defaultMaterials[<any>name] = material;
-        material.name = name;
-        AssetData.addAssetData(name, material);
+        AssetData.addDefaultAssetData(name, material as any);
     }
 
     /**
@@ -114,17 +138,8 @@ export abstract class Material extends EventEmitter
      *
      * @param name 材质名称
      */
-    static getDefault<K extends keyof DefaultMaterialMap>(name: K)
+    static getDefault<K extends keyof DefaultMaterialMap>(name: K): DefaultMaterialMap[K]
     {
-        return this._defaultMaterials[name];
+        return AssetData.getDefaultAssetData(name);
     }
-    private static _defaultMaterials: DefaultMaterialMap = <any>{};
 }
-
-/**
- * 默认材质
- */
-export interface DefaultMaterialMap
-{
-}
-

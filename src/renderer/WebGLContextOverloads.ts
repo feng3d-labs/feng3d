@@ -1,4 +1,3 @@
-import { imageDatas } from '../textures/Texture2D';
 import { BufferTarget, BufferUsage, ReadPixelsFormat, ReadPixelsType, TexImage2DTarget, TextureDataType, TextureFormat } from './gl/WebGLEnums';
 import { WebGLContextBase } from './WebGLContextBase';
 
@@ -86,7 +85,7 @@ export class WebGLContextOverloads extends WebGLContextBase
             const internalformat: TextureFormat = args[2];
             const format: TextureFormat = args[3];
             const type: TextureDataType = args[4];
-            const source: TexImageSource = args[5] || imageDatas.white;
+            const source: TexImageSource = args[5];
 
             gl.texImage2D(gl[target], level, gl[internalformat], gl[format], gl[type], source);
         }

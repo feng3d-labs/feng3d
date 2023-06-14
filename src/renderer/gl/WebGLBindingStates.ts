@@ -1,13 +1,13 @@
 import { AttributeBuffer } from '../data/AttributeBuffer';
 import { ElementBuffer } from '../data/ElementBuffer';
-import { RenderAtomic } from '../data/RenderAtomic';
 import { WebGLRenderer } from '../WebGLRenderer';
+import { WebGLRenderAtomic } from './WebGLRenderAtomic';
 
 export class WebGLBindingStates
 {
     private currentState: BindingState;
     private defaultState: BindingState;
-    private bindingStates = new WeakMap<RenderAtomic, BindingState>();
+    private bindingStates = new WeakMap<WebGLRenderAtomic, BindingState>();
 
     private _webGLRenderer: WebGLRenderer;
     constructor(webGLRenderer: WebGLRenderer)
@@ -19,7 +19,7 @@ export class WebGLBindingStates
         this.currentState = this.defaultState;
     }
 
-    setup(renderAtomic: RenderAtomic)
+    setup(renderAtomic: WebGLRenderAtomic)
     {
         const { elementBuffers: indexedBufferRenderer, capabilities } = this._webGLRenderer;
 
@@ -48,7 +48,7 @@ export class WebGLBindingStates
         {
             this.setupVertexAttributes(renderAtomic);
 
-            const index = renderAtomic.getIndexBuffer();
+            const index = renderAtomic.index;
             indexedBufferRenderer.bindBuffer(index);
         }
     }
@@ -59,15 +59,14 @@ export class WebGLBindingStates
      * @param renderAtomic 渲染原子。
      * @returns 是否需要更新。
      */
-    private needsUpdate(renderAtomic: RenderAtomic)
+    private needsUpdate(renderAtomic: WebGLRenderAtomic)
     {
         const { currentState } = this;
         const { shaders } = this._webGLRenderer;
 
         const cachedAttributes = currentState.attributes;
 
-        const shader = renderAtomic.getShader();
-        const shaderResult = shaders.activeShaderProgram(shader);
+        const shaderResult = shaders.activeShader(renderAtomic);
         const attributeInfos = shaderResult.attributes;
 
         let attributesNum = 0;
@@ -79,7 +78,7 @@ export class WebGLBindingStates
             if (attributeInfo.location >= 0)
             {
                 const cachedAttribute = cachedAttributes[name];
-                const attribute = renderAtomic.getAttributeByKey(name);
+                const attribute = renderAtomic.attributes[name];
 
                 if (cachedAttribute === undefined) return true;
 
@@ -93,7 +92,7 @@ export class WebGLBindingStates
 
         if (currentState.attributesNum !== attributesNum) return true;
 
-        const index = renderAtomic.getIndexBuffer();
+        const index = renderAtomic.index;
         if (currentState.index !== index) return true;
 
         return false;
@@ -104,7 +103,7 @@ export class WebGLBindingStates
      *
      * @param renderAtomic 渲染原子。
      */
-    private saveCache(renderAtomic: RenderAtomic)
+    private saveCache(renderAtomic: WebGLRenderAtomic)
     {
         const { shaders } = this._webGLRenderer;
         const { currentState } = this;
@@ -112,8 +111,7 @@ export class WebGLBindingStates
         const cache: { [key: string]: { version: number, attribute: AttributeBuffer } } = {};
         let attributesNum = 0;
 
-        const shader = renderAtomic.getShader();
-        const shaderResult = shaders.activeShaderProgram(shader);
+        const shaderResult = shaders.activeShader(renderAtomic);
         const attributeInfos = shaderResult.attributes;
 
         for (const name in attributeInfos)
@@ -122,7 +120,7 @@ export class WebGLBindingStates
 
             if (programAttribute.location >= 0)
             {
-                const attribute = renderAtomic.getAttributeByKey(name);
+                const attribute = renderAtomic.attributes[name];
 
                 const data: { version: number, attribute: AttributeBuffer } = {} as any;
                 data.attribute = attribute;
@@ -137,7 +135,7 @@ export class WebGLBindingStates
         currentState.attributes = cache;
         currentState.attributesNum = attributesNum;
 
-        const index = renderAtomic.getIndexBuffer();
+        const index = renderAtomic.index;
         currentState.index = index;
     }
 
@@ -146,19 +144,13 @@ export class WebGLBindingStates
      *
      * @param renderAtomic 渲染原子。
      */
-    private setupVertexAttributes(renderAtomic: RenderAtomic)
+    private setupVertexAttributes(renderAtomic: WebGLRenderAtomic)
     {
-        const { attributeBuffers, isWebGL2, extensions, shaders } = this._webGLRenderer;
-
-        if (isWebGL2 === false && renderAtomic.getInstanceCount() > 0)
-        {
-            if (extensions.getExtension('ANGLE_instanced_arrays') === null) return;
-        }
+        const { attributeBuffers, shaders } = this._webGLRenderer;
 
         this.initAttributes();
 
-        const shader = renderAtomic.getShader();
-        const shaderResult = shaders.activeShaderProgram(shader);
+        const shaderResult = shaders.activeShader(renderAtomic);
 
         for (const name in shaderResult.attributes)
         {
@@ -170,7 +162,7 @@ export class WebGLBindingStates
                 continue;
             }
 
-            const attribute = renderAtomic.getAttributeByKey(name);
+            const attribute = renderAtomic.attributes[name];
 
             this.enableAttribute(location, attribute.divisor);
 
@@ -270,7 +262,7 @@ export class WebGLBindingStates
      * @param renderAtomic 渲染原子。
      * @returns 对应的绑定状态。
      */
-    private getBindingState(renderAtomic: RenderAtomic)
+    private getBindingState(renderAtomic: WebGLRenderAtomic)
     {
         let bindingState = this.bindingStates.get(renderAtomic);
         if (!bindingState)
@@ -316,7 +308,7 @@ export class WebGLBindingStates
  */
 class BindingState
 {
-    renderAtomic: RenderAtomic;
+    renderAtomic: WebGLRenderAtomic;
 
     /**
      * 最新启用的WebGL属性。

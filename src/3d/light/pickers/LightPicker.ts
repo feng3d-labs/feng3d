@@ -1,9 +1,10 @@
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Mat4 } from '../../../renderer/data/Uniforms';
 import { Texture2D } from '../../../textures/Texture2D';
 import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
+import { Light3D } from '../Light3D';
 import { PointLight3D } from '../PointLight3D';
 import { ShadowType } from '../shadow/ShadowType';
 import { SpotLight3D } from '../SpotLight3D';
@@ -25,7 +26,7 @@ declare module '../../../renderer/data/Uniforms'
         /**
          * 方向光源投影矩阵列表
          */
-        u_directionalShadowMatrices: Mat4[];
+        u_directionalShadowMatrices: Matrix4x4[];
 
         /**
          * 方向光源阴影图
@@ -42,7 +43,7 @@ declare module '../../../renderer/data/Uniforms'
          */
         u_castShadowSpotLights: UCastShadowSpotLight[]
 
-        u_spotShadowMatrix: Mat4[];
+        u_spotShadowMatrix: Matrix4x4[];
 
         /**
          * 点光源阴影图
@@ -78,17 +79,26 @@ declare module '../../../renderer/data/Uniforms'
     }
 }
 
+/**
+ * 光源拾取器。
+ *
+ * 用于收集照射到对象上的光源。
+ */
 export class LightPicker
 {
-    beforeRender(renderAtomic: RenderAtomic, model: Mesh3D)
+    private renderAtomic = new RenderAtomic();
+
+    beforeRender(model: Mesh3D)
     {
+        const renderAtomic = this.renderAtomic;
+
         let pointLights: PointLight3D[] = [];
         let directionalLights: DirectionalLight3D[] = [];
         let spotLights: SpotLight3D[] = [];
 
         const tempVec3 = new Vector3();
 
-        const scene = model.node3d.scene;
+        const scene = model.entity.scene;
         if (scene)
         {
             pointLights = scene.getComponentsInChildren('PointLight3D').filter((pl) => pl.isVisibleAndEnabled);
@@ -106,11 +116,17 @@ export class LightPicker
         {
             if (!element.isVisibleAndEnabled) return;
 
-            const position = element.node3d.globalPosition;
+            const position = element.entity.globalPosition;
             const color = element.color;
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
+                const shadowMap = Light3D.getShadowMap(element);
+                const shadowMapSize = shadowMap.getSize();
+
+                const vpWidth = shadowMapSize.x / 4;
+                const vpHeight = shadowMapSize.y / 2;
+
                 castShadowPointLights.push({
                     position: [position.x, position.y, position.z],
                     color: [color.r, color.g, color.b],
@@ -119,11 +135,12 @@ export class LightPicker
                     shadowType: element.shadowType,
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
-                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowMapSize: [vpWidth, vpHeight],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
-                pointShadowMaps.push(element.shadowMap);
+
+                pointShadowMaps.push(shadowMap);
             }
             else
             {
@@ -146,17 +163,20 @@ export class LightPicker
         const castShadowSpotLights: UCastShadowSpotLight[] = [];
         const unCastShadowSpotLights: USpotLight[] = [];
         const spotShadowMaps: Texture2D[] = [];
-        const spotShadowMatrix: Mat4[] = [];
+        const spotShadowMatrix: Matrix4x4[] = [];
         spotLights.forEach((element) =>
         {
             if (!element.isVisibleAndEnabled) return;
 
-            const direction = element.node3d.globalMatrix.getAxisZ(tempVec3).normalize();
-            const position = element.node3d.globalPosition;
+            const direction = element.entity.globalMatrix.getAxisZ(tempVec3).normalize();
+            const position = element.entity.globalPosition;
             const color = element.color;
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
+                const shadowMap = Light3D.getShadowMap(element);
+                const shadowMapSize = shadowMap.getSize();
+
                 castShadowSpotLights.push({
                     position: [position.x, position.y, position.z],
                     color: [color.r, color.g, color.b],
@@ -168,12 +188,12 @@ export class LightPicker
                     shadowType: element.shadowType,
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
-                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowMapSize: [shadowMapSize.x, shadowMapSize.y],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
-                spotShadowMatrix.push(element._shadowCameraViewProjection.toArray() as Mat4);
-                spotShadowMaps.push(element.shadowMap);
+                spotShadowMatrix.push(element._shadowCameraViewProjection);
+                spotShadowMaps.push(shadowMap);
             }
             else
             {
@@ -199,18 +219,20 @@ export class LightPicker
         // 设置方向光源数据
         const castShadowDirectionalLights: UCastShadowDirectionalLight[] = [];
         const unCastShadowDirectionalLights: UDirectionalLight[] = [];
-        const directionalShadowMatrix: Mat4[] = [];
+        const directionalShadowMatrix: Matrix4x4[] = [];
         const directionalShadowMaps: Texture2D[] = [];
         directionalLights.forEach((element) =>
         {
             if (!element.isVisibleAndEnabled) return;
 
-            const direction = element.node3d.globalMatrix.getAxisZ(tempVec3).normalize();
+            const direction = element.entity.globalMatrix.getAxisZ(tempVec3).normalize();
             const color = element.color;
 
             if (element.shadowType !== ShadowType.No_Shadows && model.receiveShadows)
             {
                 const shadowCameraPosition = element.shadowCameraPosition;
+                const shadowMap = Light3D.getShadowMap(element);
+                const shadowMapSize = shadowMap.getSize();
                 //
                 castShadowDirectionalLights.push({
                     direction: [direction.x, direction.y, direction.z],
@@ -219,13 +241,13 @@ export class LightPicker
                     shadowType: element.shadowType,
                     shadowBias: element.shadowBias,
                     shadowRadius: element.shadowRadius,
-                    shadowMapSize: [element.shadowMapSize.x, element.shadowMapSize.y],
+                    shadowMapSize: [shadowMapSize.x, shadowMapSize.y],
                     position: [shadowCameraPosition.x, shadowCameraPosition.y, shadowCameraPosition.z],
                     shadowCameraNear: element.shadowCameraNear,
                     shadowCameraFar: element.shadowCameraFar,
                 });
-                directionalShadowMatrix.push(element._shadowCameraViewProjection.toArray() as Mat4);
-                directionalShadowMaps.push(element.shadowMap);
+                directionalShadowMatrix.push(element._shadowCameraViewProjection);
+                directionalShadowMaps.push(shadowMap);
             }
             else
             {
@@ -244,6 +266,8 @@ export class LightPicker
         renderAtomic.uniforms.u_castShadowDirectionalLights = castShadowDirectionalLights;
         renderAtomic.uniforms.u_directionalShadowMatrices = directionalShadowMatrix;
         renderAtomic.uniforms.u_directionalShadowMaps = directionalShadowMaps;
+
+        return renderAtomic;
     }
 }
 

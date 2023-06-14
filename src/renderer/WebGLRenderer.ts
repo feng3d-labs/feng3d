@@ -1,5 +1,4 @@
 /* eslint-disable no-new */
-import { WebGLUniformType } from './const/WebGLUniformType';
 import { RenderAtomic } from './data/RenderAtomic';
 import { WebGLAttributeBuffers } from './gl/WebGLAttributeBuffers';
 import { WebGLBindingStates } from './gl/WebGLBindingStates';
@@ -8,6 +7,7 @@ import { WebGLElementBuffers } from './gl/WebGLElementBuffers';
 import { WebGLExtensions } from './gl/WebGLExtensions';
 import { WebGLFramebuffers } from './gl/WebGLFramebuffers';
 import { WebGLInfo } from './gl/WebGLInfo';
+import { WebGLRenderAtomic } from './gl/WebGLRenderAtomic';
 import { WebGLRenderbuffers } from './gl/WebGLRenderbuffers';
 import { WebGLRenderParams } from './gl/WebGLRenderParams';
 import { WebGLShaders } from './gl/WebGLShaders';
@@ -42,8 +42,6 @@ export class WebGLRenderer
     readonly extensions: WebGLExtensions;
 
     readonly webGLContext: WebGLContext;
-
-    readonly webGLUniformType: WebGLUniformType;
 
     /**
      * WEBGL支持功能
@@ -123,8 +121,6 @@ export class WebGLRenderer
             this.isWebGL2 = true;
         }
 
-        this.webGLUniformType = new WebGLUniformType(gl);
-
         this.webGLContext = new WebGLContext(this);
         this.extensions = new WebGLExtensions(this);
 
@@ -146,31 +142,24 @@ export class WebGLRenderer
      * 渲染一次。
      *
      * @param renderAtomic 渲染原子，包含渲染所需的所有数据。
-     * @param offset ToDO 合并到RenderAtomic中
-     * @param count ToDO 合并到RenderAtomic中
      */
-    render(renderAtomic: RenderAtomic, offset?: number, count?: number)
+    render(renderAtomic: RenderAtomic)
     {
         if (this._isContextLost === true) return;
 
+        const webGLRenderAtomic = new WebGLRenderAtomic(this, renderAtomic);
+
         const { bindingStates, renderParams, elementBuffers: elementBufferRenderer, uniforms, shaders } = this;
 
-        try
-        {
-            const shaderResult = shaders.activeShader(renderAtomic);
+        const shaderResult = shaders.activeShader(webGLRenderAtomic);
 
-            renderParams.updateRenderParams(renderAtomic.getRenderParams());
+        renderParams.updateRenderParams(webGLRenderAtomic.renderParams);
 
-            bindingStates.setup(renderAtomic);
+        bindingStates.setup(webGLRenderAtomic);
 
-            uniforms.activeUniforms(this, renderAtomic, shaderResult.uniforms);
+        uniforms.activeUniforms(this, webGLRenderAtomic, shaderResult.uniforms);
 
-            elementBufferRenderer.render(renderAtomic, offset, count);
-        }
-        catch (error)
-        {
-            console.warn(error);
-        }
+        elementBufferRenderer.render(webGLRenderAtomic);
     }
 
     private _isContextLost = false;

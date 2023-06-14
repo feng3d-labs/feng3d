@@ -87,7 +87,7 @@ export class Button extends Component2D
         const stateData = {};
         // 出现相同名称时，只保存第一个数据
         const childMap: { [name: string]: Node2D } = {};
-        this.node2d.children.forEach((child) =>
+        this.entity.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
             childMap[child.name] = child;
@@ -126,7 +126,7 @@ export class Button extends Component2D
         const statedata = this.allStateData[this.state];
         if (!statedata) return;
         const childMap: { [name: string]: Node2D } = {};
-        this.node2d.children.forEach((child) =>
+        this.entity.children.forEach((child) =>
         {
             if (childMap[child.name]) return;
             childMap[child.name] = child;

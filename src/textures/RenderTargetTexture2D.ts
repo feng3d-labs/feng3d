@@ -1,6 +1,6 @@
+import { Vector2 } from '../math/geom/Vector2';
 import { mathUtil } from '../polyfill/MathUtil';
 import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
-import { WebGLRenderer } from '../renderer/WebGLRenderer';
 import { watcher } from '../watcher/watcher';
 import { Texture2D } from './Texture2D';
 
@@ -9,9 +9,9 @@ import { Texture2D } from './Texture2D';
  */
 export class RenderTargetTexture2D extends Texture2D
 {
-    OFFSCREEN_WIDTH = 1024;
+    width = 1024;
 
-    OFFSCREEN_HEIGHT = 1024;
+    height = 1024;
 
     format: TextureFormat = 'RGBA';
 
@@ -24,11 +24,11 @@ export class RenderTargetTexture2D extends Texture2D
      */
     get isPowerOfTwo()
     {
-        if (this.OFFSCREEN_WIDTH === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_WIDTH))
+        if (this.width === 0 || !mathUtil.isPowerOfTwo(this.width))
         {
             return false;
         }
-        if (this.OFFSCREEN_HEIGHT === 0 || !mathUtil.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
+        if (this.height === 0 || !mathUtil.isPowerOfTwo(this.height))
         {
             return false;
         }
@@ -39,8 +39,8 @@ export class RenderTargetTexture2D extends Texture2D
     constructor()
     {
         super();
-        watcher.watch(this as RenderTargetTexture2D, 'OFFSCREEN_WIDTH', this.invalidate, this);
-        watcher.watch(this as RenderTargetTexture2D, 'OFFSCREEN_HEIGHT', this.invalidate, this);
+        watcher.watch(this as RenderTargetTexture2D, 'width', this.invalidate, this);
+        watcher.watch(this as RenderTargetTexture2D, 'height', this.invalidate, this);
     }
 
     /**
@@ -48,13 +48,6 @@ export class RenderTargetTexture2D extends Texture2D
      */
     getSize()
     {
-        return { x: this.OFFSCREEN_WIDTH, y: this.OFFSCREEN_HEIGHT };
-    }
-
-    setTextureData(webGLRenderer: WebGLRenderer)
-    {
-        const data = this;
-
-        webGLRenderer.webGLContext.texImage2D('TEXTURE_2D', 0, data.format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, data.format, data.type, null);
+        return new Vector2(this.width, this.height);
     }
 }

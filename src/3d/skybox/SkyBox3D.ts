@@ -1,3 +1,4 @@
+import { AssetData } from '../../core/AssetData';
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
@@ -37,7 +38,7 @@ export class SkyBox3D extends Component3D
 
     @SerializeProperty()
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
-    s_skyBoxTexture = TextureCube.default;
+    s_skyBoxTexture = AssetData.getDefaultAssetData('Default-TextureCube');
 
     beforeRender(renderAtomic: RenderAtomic, _scene: Scene3D, _camera: Camera3D)
     {

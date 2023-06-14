@@ -1,3 +1,4 @@
+import { AssetData } from '../../core/AssetData';
 import { Material, RegisterMaterial } from '../../core/Material';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
@@ -5,7 +6,6 @@ import { oav } from '../../objectview/ObjectView';
 import { shaderConfig } from '../../renderer/shader/ShaderLib';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D } from '../../textures/Texture2D';
 
 declare module '../../core/Material'
 {
@@ -54,7 +54,7 @@ export class UIUniforms
      */
     @oav()
     @SerializeProperty()
-    s_texture = Texture2D.default;
+    s_texture = AssetData.getDefaultAssetData('Default-Texture');
 
     /**
      * 控制图片的显示区域。
@@ -101,4 +101,4 @@ shaderConfig.shaders['ui'] = {
     `,
 };
 
-Material.setDefault('Default-UIMaterial', new UIMaterial());
+Material.setDefault('Default-UIMaterial', () => new UIMaterial());

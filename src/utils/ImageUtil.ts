@@ -1,4 +1,4 @@
-import { Color3 } from '../math/Color3';
+import { Color3, ColorKeywords } from '../math/Color3';
 import { Color4 } from '../math/Color4';
 import { AnimationCurve } from '../math/curve/AnimationCurve';
 import { Rectangle } from '../math/geom/Rectangle';
@@ -12,7 +12,34 @@ import { mathUtil } from '../polyfill/MathUtil';
  */
 export class ImageUtil
 {
-    imageData: ImageData;
+    /**
+     * 获取指定颜色的图片数据。
+     *
+     * @param color 颜色
+     */
+    static get(color: keyof typeof ColorKeywords)
+    {
+        return this._cache[color] ||= new ImageUtil(1, 1, new Color4().fromUnit24(ColorKeywords[color])).imageData;
+    }
+    private static _cache: { [key: string]: ImageData } = {};
+
+    /**
+     * 默认法线贴图数据。
+     */
+    static get defaultNormal()
+    {
+        return this._defaultNormal ||= new ImageUtil(1, 1, new Color4().fromUnit24(0x8080ff)).imageData;
+    }
+    private static _defaultNormal: ImageData;
+
+    /**
+     * 默认粒子贴图数据。
+     */
+    static get defaultParticle()
+    {
+        return this._defaultParticle ||= new ImageUtil().drawDefaultParticle().imageData;
+    }
+    private static _defaultParticle: ImageData;
 
     /**
      * 获取图片数据
@@ -22,6 +49,8 @@ export class ImageUtil
     {
         return new ImageUtil().fromImage(image);
     }
+
+    imageData: ImageData;
 
     /**
      * 创建ImageData

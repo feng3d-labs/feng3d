@@ -1,5 +1,4 @@
 import { Vector3 } from '../../math/geom/Vector3';
-import { gPartial } from '../../polyfill/Types';
 import { watcher } from '../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
@@ -31,10 +30,9 @@ export class TorusKnotGeometry extends Geometry
     p = 2;
     q = 3;
 
-    constructor(param?: gPartial<TorusKnotGeometry>)
+    constructor()
     {
         super();
-        Object.assign(this, param);
         watcher.watch(this as TorusKnotGeometry, 'radius', this.invalidateGeometry, this);
         watcher.watch(this as TorusKnotGeometry, 'tube', this.invalidateGeometry, this);
         watcher.watch(this as TorusKnotGeometry, 'tubularSegments', this.invalidateGeometry, this);

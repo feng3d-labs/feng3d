@@ -1,3 +1,4 @@
+import { AssetData } from '../../core/AssetData';
 import { Material } from '../../core/Material';
 import { Color3 } from '../../math/Color3';
 import { Color4 } from '../../math/Color4';
@@ -5,8 +6,7 @@ import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { Texture2D, Texture2DLike } from '../../textures/Texture2D';
-import { TextureCube } from '../../textures/TextureCube';
+import { Texture2DLike } from '../../textures/Texture2D';
 import { FogMode } from '../materials/standard/StandardMaterial';
 
 declare module '../../core/Material'
@@ -48,7 +48,7 @@ export class Terrain3DUniforms
      */
     @SerializeProperty()
     @oav({ block: 'diffuse' })
-    s_diffuse: Texture2DLike = Texture2D.default;
+    s_diffuse: Texture2DLike = AssetData.getDefaultAssetData('Default-Texture');
 
     /**
      * 基本颜色
@@ -69,14 +69,14 @@ export class Terrain3DUniforms
      */
     @SerializeProperty()
     @oav({ block: 'normalMethod' })
-    s_normal: Texture2DLike = Texture2D.defaultNormal;
+    s_normal: Texture2DLike = AssetData.getDefaultAssetData('Default-NormalTexture');
 
     /**
      * 镜面反射光泽图
      */
     @SerializeProperty()
     @oav({ block: 'specular' })
-    s_specular: Texture2DLike = Texture2D.default;
+    s_specular: Texture2DLike = AssetData.getDefaultAssetData('Default-Texture');
 
     /**
      * 镜面反射颜色
@@ -97,7 +97,7 @@ export class Terrain3DUniforms
      */
     @SerializeProperty()
     @oav({ block: 'ambient' })
-    s_ambient = Texture2D.default;
+    s_ambient = AssetData.getDefaultAssetData('Default-Texture');
 
     /**
      * 环境光颜色
@@ -111,7 +111,7 @@ export class Terrain3DUniforms
      */
     @SerializeProperty()
     @oav({ component: 'OAVPick', block: 'envMap', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
-    s_envMap = TextureCube.default;
+    s_envMap = AssetData.getDefaultAssetData('Default-TextureCube');
 
     /**
      * 反射率
@@ -157,23 +157,23 @@ export class Terrain3DUniforms
 
     @SerializeProperty()
     @oav({ block: 'terrain' })
-    s_splatTexture1: Texture2DLike = Texture2D.default;
+    s_splatTexture1: Texture2DLike = AssetData.getDefaultAssetData('Default-Texture');
 
     @SerializeProperty()
     @oav({ block: 'terrain' })
-    s_splatTexture2: Texture2DLike = Texture2D.default;
+    s_splatTexture2: Texture2DLike = AssetData.getDefaultAssetData('Default-Texture');
 
     @SerializeProperty()
     @oav({ block: 'terrain' })
-    s_splatTexture3: Texture2DLike = Texture2D.default;
+    s_splatTexture3: Texture2DLike = AssetData.getDefaultAssetData('Default-Texture');
 
     @SerializeProperty()
     @oav({ block: 'terrain' })
-    s_blendTexture: Texture2DLike = Texture2D.default;
+    s_blendTexture: Texture2DLike = AssetData.getDefaultAssetData('Default-Texture');
 
     @SerializeProperty()
     @oav({ block: 'terrain' })
     u_splatRepeats = new Vector4(1, 1, 1, 1);
 }
 
-Material.setDefault('Terrain-Material', new Terrain3DMaterial());
+Material.setDefault('Terrain-Material', () => new Terrain3DMaterial());
