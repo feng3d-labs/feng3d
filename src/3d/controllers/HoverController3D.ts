@@ -1,4 +1,4 @@
-import { mathUtil } from '../../polyfill/MathUtil';
+import { mathUtil } from '@feng3d/polyfill';
 import { Node3D } from '../core/Node3D';
 import { LookAtController3D } from './LookAtController3D';
 

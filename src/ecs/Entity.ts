@@ -1,10 +1,10 @@
 import { EventEmitter } from '@feng3d/event';
 import { oav } from '../objectview/ObjectView';
-import { Constructor, gPartial } from '../polyfill/Types';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { getConstructor } from '../serialization/getConstructor';
 import { getInstance } from '../serialization/getInstance';
 import { Component, ComponentMap } from './Component';
+import { gPartial, Constructor } from '@feng3d/polyfill';
 
 export interface EntityEventMap
 {

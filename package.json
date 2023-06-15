@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@feng3d/event": "^0.8.0",
+    "@feng3d/polyfill": "^0.8.0",
     "@feng3d/earcut": "^0.0.1",
     "@feng3d/path": "^0.0.3",
     "stats.js": "^0.17.0"

@@ -1,4 +1,4 @@
-import { Constructor } from '../polyfill/Types';
+import { Constructor } from '@feng3d/polyfill';
 
 /**
  * 标记objectview对象界面类

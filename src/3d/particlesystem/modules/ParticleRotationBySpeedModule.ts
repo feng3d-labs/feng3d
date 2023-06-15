@@ -1,8 +1,8 @@
+import { mathUtil } from '@feng3d/polyfill';
 import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
 import { Vector2 } from '../../../math/geom/Vector2';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { oav } from '../../../objectview/ObjectView';
-import { mathUtil } from '../../../polyfill/MathUtil';
 import { $set } from '../../../serialization/Serialization';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { Particle } from '../Particle';

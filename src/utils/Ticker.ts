@@ -1,5 +1,4 @@
-import { ArrayUtils } from '../polyfill/ArrayUtils';
-import { Lazy, lazy } from '../polyfill/Types';
+import { ArrayUtils, Lazy, lazy } from '@feng3d/polyfill';
 
 /**
  * 心跳计时器

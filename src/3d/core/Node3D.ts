@@ -1,4 +1,5 @@
 import { EventEmitter } from '@feng3d/event';
+import { gPartial, mathUtil } from '@feng3d/polyfill';
 import { AssetType } from '../../assets/AssetType';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { HideFlags } from '../../core/HideFlags';
@@ -8,8 +9,6 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Quaternion } from '../../math/geom/Quaternion';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { mathUtil } from '../../polyfill/MathUtil';
-import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';

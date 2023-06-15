@@ -1,5 +1,5 @@
+import { Constructor } from '@feng3d/polyfill';
 import { ComponentMap } from '../ecs/Component';
-import { Constructor } from '../polyfill/Types';
 
 /**
  * 添加组件菜单

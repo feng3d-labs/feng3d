@@ -1,4 +1,4 @@
-import { Constructor } from '../polyfill/Types';
+import { Constructor } from '@feng3d/polyfill';
 import { __class__ } from './SerializationConst';
 
 export const _definitionCache: any = {};

@@ -1,6 +1,6 @@
 import { EventEmitter } from '@feng3d/event';
+import { Constructor, gPartial, Lazy } from '@feng3d/polyfill';
 import { oav } from '../objectview/ObjectView';
-import { Constructor, gPartial, Lazy } from '../polyfill/Types';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { DrawMode, RenderParams } from '../renderer/data/RenderParams';
 import { Shader } from '../renderer/data/Shader';

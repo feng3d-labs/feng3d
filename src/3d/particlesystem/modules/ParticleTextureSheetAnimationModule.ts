@@ -1,13 +1,13 @@
+import { mathUtil } from '@feng3d/polyfill';
 import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
 import { MinMaxCurveMode } from '../../../math/curve/MinMaxCurveMode';
 import { Vector2 } from '../../../math/geom/Vector2';
 import { oav } from '../../../objectview/ObjectView';
-import { mathUtil } from '../../../polyfill/MathUtil';
 import { $set } from '../../../serialization/Serialization';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { Particle } from '../Particle';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
 import { UVChannelFlags } from '../enums/UVChannelFlags';
-import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
 declare module './ParticleModule' { interface ParticleModuleMap { ParticleTextureSheetAnimationModule: ParticleTextureSheetAnimationModule } }

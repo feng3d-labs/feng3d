@@ -1,5 +1,5 @@
+import { dataTransform } from '@feng3d/polyfill';
 import { RegisterComponent } from '../../ecs/Component';
-import { dataTransform } from '../../polyfill/DataTransform';
 import { Component3D } from '../core/Component3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { Graphics3D: Graphics3D; } }

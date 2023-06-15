@@ -1,3 +1,4 @@
+import { ArrayUtils } from '@feng3d/polyfill';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Material } from '../../core/Material';
 import { RunEnvironment } from '../../core/RunEnvironment';
@@ -6,7 +7,6 @@ import { Matrix3x3 } from '../../math/geom/Matrix3x3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '../../objectview/ObjectView';
-import { ArrayUtils } from '../../polyfill/ArrayUtils';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
@@ -17,6 +17,7 @@ import { Node3D } from '../core/Node3D';
 import { Scene3D } from '../core/Scene3D';
 import { Geometry } from '../geometrys/Geometry';
 import { QuadGeometry } from '../geometrys/QuadGeometry';
+import { Particle } from './Particle';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
@@ -35,7 +36,6 @@ import { ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifeti
 import { ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
 import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
-import { Particle } from './Particle';
 
 declare module '../../ecs/Component' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 

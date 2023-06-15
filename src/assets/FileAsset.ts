@@ -1,7 +1,7 @@
 import { anyEmitter } from '@feng3d/event';
 import { path } from '@feng3d/path';
+import { Constructor } from '@feng3d/polyfill';
 import { pathUtils } from '../filesystem/PathUtils';
-import { Constructor } from '../polyfill/Types';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { ticker } from '../utils/Ticker';

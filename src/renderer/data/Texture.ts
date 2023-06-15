@@ -1,10 +1,10 @@
+import { Constructor, gPartial } from '@feng3d/polyfill';
 import { HideFlags } from '../../core/HideFlags';
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
-import { Constructor, gPartial } from '../../polyfill/Types';
-import { getInstance } from '../../serialization/getInstance';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { getInstance } from '../../serialization/getInstance';
 import { watcher } from '../../watcher/watcher';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureTarget, TextureWrap } from '../gl/WebGLEnums';
 

@@ -1,4 +1,4 @@
-import { mathUtil } from '../../polyfill/MathUtil';
+import { mathUtil } from '@feng3d/polyfill';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AnimationCurve } from './AnimationCurve';

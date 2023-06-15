@@ -1,10 +1,8 @@
-import { ArrayUtils } from '../polyfill/ArrayUtils';
-import { ObjectUtils } from '../polyfill/ObjectUtils';
-import { gPartial } from '../polyfill/Types';
+import { ArrayUtils, ObjectUtils, gPartial } from '@feng3d/polyfill';
+import { Serializable } from './Serializable';
+import { __class__, _serialize__ } from './SerializationConst';
 import { getClassName } from './getClassName';
 import { getInstance } from './getInstance';
-import { Serializable } from './Serializable';
-import { _serialize__, __class__ } from './SerializationConst';
 
 /**
  * 序列化对象

@@ -1,9 +1,9 @@
+import { lazy } from '@feng3d/polyfill';
 import { Color4 } from '../../math/Color4';
-import { lazy } from '../../polyfill/Types';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
-import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { $set } from '../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Renderable3D } from '../core/Renderable3D';

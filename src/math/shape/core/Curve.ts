@@ -1,4 +1,4 @@
-import { mathUtil } from '../../../polyfill/MathUtil';
+import { mathUtil } from '@feng3d/polyfill';
 import { Matrix4x4 } from '../../geom/Matrix4x4';
 import { Vector } from '../../geom/Vector';
 import { Vector3 } from '../../geom/Vector3';

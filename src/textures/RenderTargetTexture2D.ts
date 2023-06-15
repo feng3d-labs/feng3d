@@ -1,5 +1,5 @@
+import { mathUtil } from '@feng3d/polyfill';
 import { Vector2 } from '../math/geom/Vector2';
-import { mathUtil } from '../polyfill/MathUtil';
 import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
 import { watcher } from '../watcher/watcher';
 import { Texture2D } from './Texture2D';

@@ -1,15 +1,15 @@
 import { EventEmitter } from '@feng3d/event';
+import { Constructor, gPartial } from '@feng3d/polyfill';
 import { Camera3D } from '../3d/cameras/Camera3D';
 import { Scene3D } from '../3d/core/Scene3D';
 import { HideFlags } from '../core/HideFlags';
 import { AddComponentMenu } from '../core/Menu';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { oav } from '../objectview/ObjectView';
-import { Constructor, gPartial } from '../polyfill/Types';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { getConstructor } from '../serialization/getConstructor';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';
+import { getConstructor } from '../serialization/getConstructor';
 import { Entity, EntityEventMap } from './Entity';
 
 declare module '../serialization/Serializable' { interface SerializableMap extends ComponentMap { } }

@@ -1,12 +1,12 @@
-import { MapUtils } from '../polyfill/MapUtils';
-import { getClassName } from '../serialization/getClassName';
-import { getInstance } from '../serialization/getInstance';
+import { EventEmitter } from '@feng3d/event';
+import { MapUtils } from '@feng3d/polyfill';
+import { AssetType } from '../assets/AssetType';
+import { ReadRS } from '../assets/rs/ReadRS';
 import { serialization } from '../serialization/Serialization';
 import { __class__ } from '../serialization/SerializationConst';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { AssetType } from '../assets/AssetType';
-import { ReadRS } from '../assets/rs/ReadRS';
-import { EventEmitter } from '@feng3d/event';
+import { getClassName } from '../serialization/getClassName';
+import { getInstance } from '../serialization/getInstance';
 
 /**
  * 资源数据

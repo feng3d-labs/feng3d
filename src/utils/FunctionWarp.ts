@@ -1,6 +1,5 @@
 import { anyEmitter } from '@feng3d/event';
-import { ArrayUtils } from '../polyfill/ArrayUtils';
-import { FunctionPropertyNames } from '../polyfill/Types';
+import { ArrayUtils, FunctionPropertyNames } from '@feng3d/polyfill';
 import { uuid } from './Uuid';
 
 type Wraps<T, K extends keyof T> = {
@@ -96,7 +95,7 @@ export class FunctionWrap
             const original = <any>object[funcName];
             functionwraps[funcName] = info = { space: object, funcName, oldPropertyDescriptor, original, funcs: [original] };
             //
-            object[funcName] = <any> function ()
+            object[funcName] = <any>function ()
             {
                 // eslint-disable-next-line prefer-rest-params
                 const args = arguments;

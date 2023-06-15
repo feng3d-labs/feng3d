@@ -1,4 +1,5 @@
 import { EventEmitter, IEvent } from '@feng3d/event';
+import { gPartial } from '@feng3d/polyfill';
 import { Camera3D } from '../../3d/cameras/Camera3D';
 import { TransformLayout3D } from '../../3d/components/TransformLayout3D';
 import { Scene3D } from '../../3d/core/Scene3D';
@@ -9,7 +10,6 @@ import { Entity } from '../../ecs/Entity';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
