@@ -95,7 +95,7 @@ export class FunctionWrap
             const original = <any>object[funcName];
             functionwraps[funcName] = info = { space: object, funcName, oldPropertyDescriptor, original, funcs: [original] };
             //
-            object[funcName] = <any>function ()
+            object[funcName] = <any> function ()
             {
                 // eslint-disable-next-line prefer-rest-params
                 const args = arguments;
