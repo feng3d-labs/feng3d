@@ -1025,7 +1025,7 @@ export class WebGLContextBase
         {
             paramV = gl2[paramV];
         }
-        gl2.texParameterf(gl2[target], gl2[pname], paramV);
+        gl2.texParameterf(gl2[target], gl2[pname as any], paramV);
     }
 
     /**

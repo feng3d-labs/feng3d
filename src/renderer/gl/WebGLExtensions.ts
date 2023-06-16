@@ -29,15 +29,7 @@ export class WebGLExtensions
             this.getExtension('OES_vertex_array_object');
             this.getExtension('ANGLE_instanced_arrays');
             //
-            const ext = this.getExtension('EXT_blend_minmax');
-
-            console.assert(gl.MIN === undefined);
-            console.assert(gl.MAX === undefined);
-
-            // @ts-ignore
-            gl.MIN = ext.MIN_EXT;
-            // @ts-ignore
-            gl.MAX = ext.MAX_EXT;
+            this.getExtension('EXT_blend_minmax');
         }
 
         this.getExtension('OES_texture_float_linear');
@@ -71,8 +63,6 @@ export class WebGLExtensions
             case 'EXT_texture_filter_anisotropic':
                 const ext = extension = webGLContext.getExtension('EXT_texture_filter_anisotropic') || webGLContext.getExtension('MOZ_EXT_texture_filter_anisotropic') || webGLContext.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
 
-                console.assert(gl.MAX_TEXTURE_MAX_ANISOTROPY_EXT === undefined);
-                console.assert(gl.TEXTURE_MAX_ANISOTROPY_EXT === undefined);
                 // @ts-ignore
                 gl.MAX_TEXTURE_MAX_ANISOTROPY_EXT = ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT;
                 // @ts-ignore
@@ -99,32 +89,6 @@ export class WebGLExtensions
         extensions[name] = extension;
 
         return extension;
-    }
-}
-
-declare global
-{
-    interface WebGLRenderingContextBase
-    {
-        /**
-         * EXT_texture_filter_anisotropic
-         */
-        readonly MAX_TEXTURE_MAX_ANISOTROPY_EXT: number;
-
-        /**
-         * EXT_texture_filter_anisotropic
-         */
-        readonly TEXTURE_MAX_ANISOTROPY_EXT: number;
-
-        /**
-         * EXT_blend_minmax
-         */
-        readonly MIN: GLenum;
-
-        /**
-         * EXT_blend_minmax
-         */
-        readonly MAX: GLenum;
     }
 }
 
