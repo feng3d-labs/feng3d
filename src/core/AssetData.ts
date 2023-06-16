@@ -1,4 +1,4 @@
-import { MapUtils } from '@feng3d//polyfill';
+import { MapUtils } from '@feng3d/polyfill';
 import { EventEmitter } from '@feng3d/event';
 import { lazy, Lazy } from '@feng3d/polyfill';
 import { AssetType } from '../assets/AssetType';

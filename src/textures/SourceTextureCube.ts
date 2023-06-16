@@ -59,7 +59,7 @@ export class SourceTextureCube extends TextureCube
 
     getSize()
     {
-        return new Vector2(this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.width, this.sources.TEXTURE_CUBE_MAP_POSITIVE_X.height);
+        return new Vector2(this.sources.TEXTURE_CUBE_MAP_POSITIVE_X['width'], this.sources.TEXTURE_CUBE_MAP_POSITIVE_X['height']);
     }
 }
 

@@ -62,7 +62,7 @@ export class WebGLExtensions
 
         let extension: any;
 
-        switch (name)
+        switch (name as any)
         {
             case 'WEBGL_depth_texture':
                 extension = webGLContext.getExtension('WEBGL_depth_texture') || webGLContext.getExtension('MOZ_WEBGL_depth_texture') || webGLContext.getExtension('WEBKIT_WEBGL_depth_texture');

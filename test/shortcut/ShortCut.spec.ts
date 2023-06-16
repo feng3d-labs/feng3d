@@ -1,4 +1,4 @@
-import { EventEmitter } from '../../src/event/EventEmitter';
+import { EventEmitter } from '@feng3d/event';
 import { shortcut } from '../../src/shortcut/ShortCut';
 
 import { assert, describe, it } from 'vitest';

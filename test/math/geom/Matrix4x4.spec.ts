@@ -1,11 +1,10 @@
+import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../../../src/math/enums/RotationOrder';
 import { Matrix4x4 } from '../../../src/math/geom/Matrix4x4';
-import { Quaternion } from '../../../src/math/geom/Quaternion';
 import { Vector3 } from '../../../src/math/geom/Vector3';
 import { Vector4 } from '../../../src/math/geom/Vector4';
-import { mathUtil } from '../../../src/polyfill/MathUtil';
 
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
 
 describe('Matrix4x4', () =>

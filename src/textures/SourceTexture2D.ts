@@ -43,7 +43,7 @@ export class SourceTexture2D extends Texture2D
 
     getSize()
     {
-        return new Vector2(this.source.width, this.source.height);
+        return new Vector2(this.source['width'], this.source['height']);
     }
 }
 
