@@ -1,3 +1,4 @@
+export * from '@feng3d/bezier';
 export * from '@feng3d/event';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
@@ -162,9 +163,6 @@ export * from './assets/assets/TextureAsset';
 export * from './assets/assets/TextureCubeAsset';
 export * from './assets/rs/ReadRS';
 export * from './assets/rs/ReadWriteRS';
-export * from './bezier/Bezier';
-export * from './bezier/EquationSolving';
-export * from './bezier/HighFunction';
 export * from './core/AssetData';
 export * from './core/CreateNodeMenu';
 export * from './core/HideFlags';
@@ -192,7 +190,6 @@ export * from './math/buildLineGeometry';
 export * from './math/curve/AnimationCurve';
 export * from './math/curve/AnimationCurveKeyframe';
 export * from './math/curve/AnimationCurveVector3';
-export * from './math/curve/BezierCurve';
 export * from './math/curve/MinMaxCurve';
 export * from './math/curve/MinMaxCurveMode';
 export * from './math/curve/MinMaxCurveVector3';
@@ -289,3 +286,4 @@ export * from './utils/TransformUtils';
 export * from './utils/Uuid';
 export * from './utils/debug';
 export * from './watcher/watcher';
+

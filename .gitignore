@@ -1,6 +1,8 @@
 node_modules
+yarn.lock
 dist
 lib
 public
 out
-.lib
+package-lock.json
+pnpm-lock.yaml

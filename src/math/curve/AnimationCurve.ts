@@ -1,8 +1,8 @@
+import { bezier } from '@feng3d/bezier';
 import { mathUtil } from '@feng3d/polyfill';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
-import { bezierCurve } from './BezierCurve';
 import { WrapMode } from './WrapMode';
 
 declare module '../../serialization/Serializable' { interface SerializableMap { AnimationCurve: AnimationCurve } }
@@ -177,11 +177,11 @@ export class AnimationCurve
                 {
                     const ct = (t - prekey.time) / (key.time - prekey.time);
                     const sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
-                    const fy = bezierCurve.getValue(ct, sys);
+                    const fy = bezier.getValue(ct, sys);
 
                     isfind = true;
                     value = fy;
-                    tangent = bezierCurve.getDerivative(ct, sys) / (xend - xstart);
+                    tangent = bezier.getDerivative(ct, sys) / (xend - xstart);
                     break;
                 }
                 else
