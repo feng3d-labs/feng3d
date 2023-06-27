@@ -7,7 +7,7 @@ import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { CanvasTexture2D } from '../textures/CanvasTexture2D';
-import { watcher } from '../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 import { drawText } from './text/drawText';

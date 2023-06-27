@@ -1,4 +1,4 @@
-import { watcher } from '../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { SourceTexture2D } from './SourceTexture2D';
 
 export class CanvasTexture2D extends SourceTexture2D

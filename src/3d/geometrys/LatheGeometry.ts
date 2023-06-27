@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';

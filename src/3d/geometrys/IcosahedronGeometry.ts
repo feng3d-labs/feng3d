@@ -1,6 +1,6 @@
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';

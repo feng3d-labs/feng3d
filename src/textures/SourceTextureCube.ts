@@ -1,12 +1,12 @@
+import { oav } from '@feng3d/objectview';
+import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { Vector2 } from '../math/geom/Vector2';
-import { oav } from '@feng3d/objectview';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
-import { watcher } from '../watcher/watcher';
 import { TextureCube } from './TextureCube';
 
 declare module '../renderer/data/Texture'

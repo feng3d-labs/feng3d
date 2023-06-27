@@ -1,7 +1,7 @@
 import { loader } from '../filesystem/base/Loader';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { ImageUtil } from '../utils/ImageUtil';
-import { watcher } from '../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { SourceTexture2D } from './SourceTexture2D';
 
 declare module './Texture2D'

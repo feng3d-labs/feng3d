@@ -1,7 +1,7 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from './Geometry';
 

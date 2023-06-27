@@ -3,7 +3,7 @@ import { Color4 } from '../../math/Color4';
 import { oav } from '@feng3d/objectview';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 
 /**
  * 文本上渐变方向。

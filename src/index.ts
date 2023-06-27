@@ -3,6 +3,7 @@ export * from '@feng3d/event';
 export * from '@feng3d/objectview';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
+export * from '@feng3d/watcher';
 
 //
 export * from './2d/Button';
@@ -281,10 +282,8 @@ export * from './utils/FunctionWarp';
 export * from './utils/ImageUtil';
 export * from './utils/RegExps';
 export * from './utils/Stats';
-export * from './utils/Task';
 export * from './utils/Ticker';
 export * from './utils/TransformUtils';
 export * from './utils/Uuid';
 export * from './utils/debug';
-export * from './watcher/watcher';
 

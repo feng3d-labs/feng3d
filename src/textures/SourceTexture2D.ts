@@ -6,7 +6,7 @@ import { Texture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
-import { watcher } from '../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Texture2D } from './Texture2D';
 
 declare module '../renderer/data/Texture'

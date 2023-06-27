@@ -1,6 +1,6 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '@feng3d/objectview';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 

@@ -1,4 +1,4 @@
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { AttributeBuffer, AttributeBufferSourceTypes, VertexAttributeTypes } from '../data/AttributeBuffer';
 import { WebGLRenderer } from '../WebGLRenderer';
 

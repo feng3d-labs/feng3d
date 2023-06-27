@@ -1,7 +1,7 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Camera3D } from './Camera3D';
 
 declare module '../../ecs/Component' { interface ComponentMap { PerspectiveCamera3D: PerspectiveCamera3D; } }

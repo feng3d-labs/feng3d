@@ -13,7 +13,7 @@ import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../cameras/Camera3D';
 import { Geometry } from '../geometrys/Geometry';
 import { BoundingBox3D } from './BoundingBox3D';

@@ -10,7 +10,7 @@ import { oav } from '@feng3d/objectview';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
-import { watcher } from '../../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';

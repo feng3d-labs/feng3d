@@ -2,7 +2,7 @@ import { NodeComponent } from '../core/NodeComponent';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../serialization/SerializeProperty';
-import { watcher } from '../watcher/watcher';
+import { watcher } from '@feng3d/watcher';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
