@@ -1,13 +1,13 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { Color3 } from '../Color3';
 import { Color4 } from '../Color4';
 import { GradientAlphaKey } from './GradientAlphaKey';
 import { GradientColorKey } from './GradientColorKey';
 import { GradientMode } from './GradientMode';
 
-declare module '../../serialization/Serializable' { interface SerializableMap { Gradient: Gradient } }
+declare module '@feng3d/serialization' { interface SerializableMap { Gradient: Gradient } }
 /**
  * 颜色渐变
  */

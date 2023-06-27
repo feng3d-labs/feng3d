@@ -11,9 +11,9 @@ import { Vector2 } from '../../math/geom/Vector2';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { $set } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 
 /**
@@ -53,7 +53,7 @@ export interface Node2D
     find(name: string): Node2D;
 }
 
-declare module '../../serialization/Serializable'
+declare module '@feng3d/serialization'
 {
     interface SerializableMap { Node2D: Node2D }
 }

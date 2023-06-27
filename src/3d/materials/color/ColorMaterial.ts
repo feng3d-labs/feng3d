@@ -1,9 +1,8 @@
+import { oav } from '@feng3d/objectview';
+import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { Material, RegisterMaterial } from '../../../core/Material';
 import { Color4 } from '../../../math/Color4';
-import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { Serializable } from '../../../serialization/Serializable';
-import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import colorFragment from './color_fragment_glsl';
 import colorVertex from './color_vertex_glsl';
 

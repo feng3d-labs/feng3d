@@ -5,7 +5,7 @@ import { RegisterComponent } from '../ecs/Component';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { CanvasTexture2D } from '../textures/CanvasTexture2D';
 import { watcher } from '@feng3d/watcher';
 import { Component2D } from './core/Component2D';

@@ -5,8 +5,8 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import waterFragment from './water_fragment_glsl';
 import waterVertex from './water_vertex_glsl';
 

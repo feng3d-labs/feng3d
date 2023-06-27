@@ -9,7 +9,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '@feng3d/objectview';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';

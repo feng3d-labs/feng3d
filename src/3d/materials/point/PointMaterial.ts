@@ -2,8 +2,8 @@ import { Material } from '../../../core/Material';
 import { Color4 } from '../../../math/Color4';
 import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { Serializable } from '../../../serialization/Serializable';
-import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import pointFragment from './point_fragment_glsl';
 import pointVertex from './point_vertex_glsl';
 

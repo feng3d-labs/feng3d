@@ -3,6 +3,7 @@ export * from '@feng3d/event';
 export * from '@feng3d/objectview';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
+export * from '@feng3d/serialization';
 export * from '@feng3d/watcher';
 
 //
@@ -258,11 +259,6 @@ export * from './renderer/gl/WebGLExtensions';
 export * from './renderer/shader/Macro';
 export * from './renderer/shader/ShaderLib';
 export * from './renderer/shader/ShaderMacroUtils';
-export * from './serialization/Serializable';
-export * from './serialization/Serialization';
-export * from './serialization/SerializeProperty';
-export * from './serialization/getClassName';
-export * from './serialization/getInstance';
 export * from './shortcut/EventProxy';
 export * from './shortcut/Keyboard';
 export * from './shortcut/ShortCut';

@@ -5,7 +5,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '@feng3d/objectview';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Component2D } from './Component2D';
 

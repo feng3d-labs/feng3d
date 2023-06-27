@@ -1,10 +1,10 @@
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { Color4 } from '../Color4';
 import { Gradient } from './Gradient';
 import { MinMaxGradientMode } from './MinMaxGradientMode';
 
-declare module '../../serialization/Serializable' { interface SerializableMap { MinMaxGradient: MinMaxGradient } }
+declare module '@feng3d/serialization' { interface SerializableMap { MinMaxGradient: MinMaxGradient } }
 /**
  * 最大最小颜色渐变
  */

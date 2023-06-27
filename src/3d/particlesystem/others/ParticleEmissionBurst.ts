@@ -1,10 +1,10 @@
 import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
 import { oav } from '@feng3d/objectview';
-import { Serializable } from '../../../serialization/Serializable';
-import { $set } from '../../../serialization/Serialization';
-import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { $set } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 
-declare module '../../../serialization/Serializable' { interface SerializableMap { ParticleEmissionBurst: ParticleEmissionBurst } }
+declare module '@feng3d/serialization' { interface SerializableMap { ParticleEmissionBurst: ParticleEmissionBurst } }
 
 @Serializable('ParticleEmissionBurst')
 export class ParticleEmissionBurst

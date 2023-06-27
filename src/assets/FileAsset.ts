@@ -2,8 +2,8 @@ import { anyEmitter } from '@feng3d/event';
 import { path } from '@feng3d/path';
 import { Constructor } from '@feng3d/polyfill';
 import { pathUtils } from '../filesystem/PathUtils';
-import { Serializable } from '../serialization/Serializable';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { ticker } from '../utils/Ticker';
 import { AssetMeta } from './AssetMeta';
 import { AssetType } from './AssetType';
@@ -32,7 +32,7 @@ export interface AssetMap { }
 
 const assetTypeClassMap = new Map();
 
-declare module '../serialization/Serializable'
+declare module '@feng3d/serialization'
 {
     interface SerializableMap extends AssetMap { }
 }

@@ -11,12 +11,12 @@ import { AttributeBuffer, AttributeBufferSourceTypes } from '../../renderer/data
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { CullFace } from '../../renderer/data/RenderParams';
-import { getInstance } from '../../serialization/getInstance';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { getInstance } from '@feng3d/serialization';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { geometryUtils } from './GeometryUtils';
 
-declare module '../../serialization/Serializable' { interface SerializableMap extends GeometryMap { } }
+declare module '@feng3d/serialization' { interface SerializableMap extends GeometryMap { } }
 
 declare module '../../core/AssetData' { interface DefaultAssetDataMap extends DefaultGeometryMap { } }
 

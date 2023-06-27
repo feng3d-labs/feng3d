@@ -4,7 +4,7 @@ import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
-import { $set } from '../../serialization/Serialization';
+import { $set } from '@feng3d/serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';

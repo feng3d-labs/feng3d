@@ -1,10 +1,10 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
 
-declare module '../../serialization/Serializable' { interface SerializableMap { MinMaxCurve: MinMaxCurve } }
+declare module '@feng3d/serialization' { interface SerializableMap { MinMaxCurve: MinMaxCurve } }
 
 /**
  * 最大最小曲线

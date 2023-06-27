@@ -54,6 +54,7 @@
     "@feng3d/objectview": "^0.8.0",
     "@feng3d/path": "^0.0.3",
     "@feng3d/polyfill": "^0.8.1",
+    "@feng3d/serialization": "^0.8.0",
     "@feng3d/watcher": "^0.8.0",
     "stats.js": "^0.17.0"
   }

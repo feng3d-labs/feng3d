@@ -3,7 +3,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Uniforms } from '../../renderer/data/Uniforms';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { TextureCube } from '../../textures/TextureCube';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';

@@ -1,13 +1,8 @@
-import { MapUtils } from '@feng3d/polyfill';
 import { EventEmitter } from '@feng3d/event';
-import { lazy, Lazy } from '@feng3d/polyfill';
+import { lazy, Lazy, MapUtils } from '@feng3d/polyfill';
+import { __class__, getClassName, getInstance, serialization, SerializeProperty } from '@feng3d/serialization';
 import { AssetType } from '../assets/AssetType';
 import { ReadRS } from '../assets/rs/ReadRS';
-import { getClassName } from '../serialization/getClassName';
-import { getInstance } from '../serialization/getInstance';
-import { serialization } from '../serialization/Serialization';
-import { __class__ } from '../serialization/SerializationConst';
-import { SerializeProperty } from '../serialization/SerializeProperty';
 
 export interface DefaultAssetDataMap
 {

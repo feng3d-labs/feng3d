@@ -9,7 +9,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { FrameBuffer } from '../../renderer/FrameBuffer';
-import { $set } from '../../serialization/Serialization';
+import { $set } from '@feng3d/serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Mesh3D } from '../core/Mesh3D';

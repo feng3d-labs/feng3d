@@ -5,7 +5,7 @@ import { HideFlags } from '../core/HideFlags';
 import { Vector2 } from '../math/geom/Vector2';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
-import { $set } from '../serialization/Serialization';
+import { $set } from '@feng3d/serialization';
 import { ImageUtil } from '../utils/ImageUtil';
 import { TextureCube } from './TextureCube';
 

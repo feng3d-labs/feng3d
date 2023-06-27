@@ -3,9 +3,9 @@ import { Material, RegisterMaterial } from '../../core/Material';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '@feng3d/objectview';
-import { Serializable } from '../../serialization/Serializable';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { $set } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 
 declare module '../../core/Material'
 {

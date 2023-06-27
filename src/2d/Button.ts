@@ -1,8 +1,8 @@
 import { createNodeMenu } from '../core/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '@feng3d/objectview';
-import { $serialize, $set, serialization } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { $serialize, $set, serialization } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';

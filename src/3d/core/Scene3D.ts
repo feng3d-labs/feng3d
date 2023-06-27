@@ -3,7 +3,7 @@ import { RunEnvironment } from '../../core/RunEnvironment';
 import { Component, RegisterComponent } from '../../ecs/Component';
 import { Color4 } from '../../math/Color4';
 import { oav } from '@feng3d/objectview';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
 

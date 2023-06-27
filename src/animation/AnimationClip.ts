@@ -1,6 +1,6 @@
 import { AssetType } from '../assets/AssetType';
 import { oav } from '@feng3d/objectview';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { PropertyClip } from './PropertyClip';
 
 export class AnimationClip

@@ -1,10 +1,10 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { oav } from '@feng3d/objectview';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { Vector } from './Vector';
 
-declare module '../../serialization/Serializable' { interface SerializableMap { Vector2: Vector2 } }
+declare module '@feng3d/serialization' { interface SerializableMap { Vector2: Vector2 } }
 
 /**
  * 二维向量和点的表示。

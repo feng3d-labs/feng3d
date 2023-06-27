@@ -1,6 +1,6 @@
 import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
 import { oav } from '@feng3d/objectview';
-import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';

@@ -1,9 +1,8 @@
+import { oav } from '@feng3d/objectview';
+import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';
-import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { Serializable } from '../../../serialization/Serializable';
-import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import skyboxFragment from './skybox_fragment_glsl';
 import skyboxVertex from './skybox_vertex_glsl';
 

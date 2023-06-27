@@ -1,12 +1,12 @@
+import { $set } from '@feng3d/serialization';
+import { watcher } from '@feng3d/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { Vector2 } from '../math/geom/Vector2';
 import { Texture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
-import { $set } from '../serialization/Serialization';
 import { ImageUtil } from '../utils/ImageUtil';
-import { watcher } from '@feng3d/watcher';
 import { Texture2D } from './Texture2D';
 
 declare module '../renderer/data/Texture'

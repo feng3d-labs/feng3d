@@ -1,11 +1,11 @@
 import { bezier } from '@feng3d/bezier';
 import { mathUtil } from '@feng3d/polyfill';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
 import { WrapMode } from './WrapMode';
 
-declare module '../../serialization/Serializable' { interface SerializableMap { AnimationCurve: AnimationCurve } }
+declare module '@feng3d/serialization' { interface SerializableMap { AnimationCurve: AnimationCurve } }
 
 /**
  * 动画曲线

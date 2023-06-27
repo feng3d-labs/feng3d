@@ -1,14 +1,14 @@
 import { EventEmitter } from '@feng3d/event';
 import { Constructor } from '@feng3d/polyfill';
 import { oav } from '@feng3d/objectview';
-import { Serializable } from '../../../serialization/Serializable';
-import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { Particle } from '../Particle';
 import { ParticleSystem3D } from '../ParticleSystem3D';
 
 export interface ParticleModuleMap { }
 
-declare module '../../../serialization/Serializable' { interface SerializableMap extends ParticleModuleMap { } }
+declare module '@feng3d/serialization' { interface SerializableMap extends ParticleModuleMap { } }
 
 /**
  * 注册粒子模块

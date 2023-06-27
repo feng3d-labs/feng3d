@@ -1,8 +1,8 @@
 import { oav } from '@feng3d/objectview';
-import { Serializable } from '../../serialization/Serializable';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 
-declare module '../../serialization/Serializable' { interface SerializableMap { RenderParams: RenderParams } }
+declare module '@feng3d/serialization' { interface SerializableMap { RenderParams: RenderParams } }
 
 /**
  * 渲染参数

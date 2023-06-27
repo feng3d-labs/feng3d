@@ -3,7 +3,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { ticker } from '../../utils/Ticker';
 import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../cameras/Camera3D';

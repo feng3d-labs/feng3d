@@ -4,7 +4,7 @@ import { Vector3 } from '../../math/geom/Vector3';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Shader } from '../../renderer/data/Shader';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
-import { $set } from '../../serialization/Serialization';
+import { $set } from '@feng3d/serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';

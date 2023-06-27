@@ -2,7 +2,7 @@ import { loader } from '../../filesystem/base/Loader';
 import { Color4 } from '../../math/Color4';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { SerializeProperty } from '@feng3d/serialization';
 import { ImageUtil } from '../../utils/ImageUtil';
 import { watcher } from '@feng3d/watcher';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';

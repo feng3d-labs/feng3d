@@ -7,12 +7,12 @@ import { AddComponentMenu } from '../core/Menu';
 import { RunEnvironment } from '../core/RunEnvironment';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { Serializable } from '../serialization/Serializable';
-import { SerializeProperty } from '../serialization/SerializeProperty';
-import { getConstructor } from '../serialization/getConstructor';
+import { Serializable } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
+import { getConstructor } from '@feng3d/serialization';
 import { Entity, EntityEventMap } from './Entity';
 
-declare module '../serialization/Serializable' { interface SerializableMap extends ComponentMap { } }
+declare module '@feng3d/serialization' { interface SerializableMap extends ComponentMap { } }
 
 /**
  * 组件名称与类定义映射，新建组件一般都需扩展该接口。

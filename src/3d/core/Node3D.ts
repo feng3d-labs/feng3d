@@ -10,9 +10,9 @@ import { Quaternion } from '../../math/geom/Quaternion';
 import { Vector3 } from '../../math/geom/Vector3';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '../../serialization/Serializable';
-import { $set } from '../../serialization/Serialization';
-import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { $set } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../cameras/Camera3D';
 import { Geometry } from '../geometrys/Geometry';
@@ -106,7 +106,7 @@ export interface Node3D
     addChild(child: Node3D): this;
 }
 
-declare module '../../serialization/Serializable'
+declare module '@feng3d/serialization'
 {
     interface SerializableMap { Node3D: Node3D }
 }

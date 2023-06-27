@@ -4,15 +4,15 @@ import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { DrawMode, RenderParams } from '../renderer/data/RenderParams';
 import { Shader } from '../renderer/data/Shader';
-import { Serializable } from '../serialization/Serializable';
-import { $set } from '../serialization/Serialization';
-import { SerializeProperty } from '../serialization/SerializeProperty';
+import { Serializable } from '@feng3d/serialization';
+import { $set } from '@feng3d/serialization';
+import { SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from './AssetData';
 
 export interface MaterialMap { }
 export interface UniformsMap { }
 
-declare module '../serialization/Serializable' { interface SerializableMap extends MaterialMap, UniformsMap { } }
+declare module '@feng3d/serialization' { interface SerializableMap extends MaterialMap, UniformsMap { } }
 
 declare module './AssetData' { interface DefaultAssetDataMap extends DefaultMaterialMap { } }
 
