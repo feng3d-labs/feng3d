@@ -1,6 +1,6 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { RegisterComponent } from '../../ecs/Component';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Node3D } from '../core/Node3D';
 import { Light3D } from './Light3D';

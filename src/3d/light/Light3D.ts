@@ -2,7 +2,7 @@ import { HideFlags } from '../../core/HideFlags';
 import { Color3 } from '../../math/Color3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { FrameBuffer } from '../../renderer/FrameBuffer';
 import { $set } from '../../serialization/Serialization';
 import { SerializeProperty } from '../../serialization/SerializeProperty';

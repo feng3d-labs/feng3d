@@ -1,6 +1,6 @@
-import { ObjectView } from './ObjectView';
+import { ObjectView } from '@feng3d/objectview';
 
-declare module './ObjectView'
+declare module '@feng3d/objectview'
 {
     interface OAVComponentParamMap
     {

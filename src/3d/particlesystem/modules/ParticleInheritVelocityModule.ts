@@ -1,5 +1,5 @@
 import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
-import { oav } from '../../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { $set } from '../../../serialization/Serialization';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { ParticleSystemInheritVelocityMode } from '../enums/ParticleSystemInheritVelocityMode';

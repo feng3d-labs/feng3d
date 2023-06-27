@@ -1,4 +1,4 @@
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { AssetType } from '../AssetType';
 import { FileAsset, RegisterAsset } from '../FileAsset';
 

@@ -1,7 +1,7 @@
+import { oav } from '@feng3d/objectview';
 import { Constructor, gPartial } from '@feng3d/polyfill';
 import { HideFlags } from '../../core/HideFlags';
 import { Vector2 } from '../../math/geom/Vector2';
-import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { getInstance } from '../../serialization/getInstance';

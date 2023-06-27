@@ -4,7 +4,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { Box3 } from '../../math/geom/Box3';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { TransformUtils } from '../../utils/TransformUtils';

@@ -3,7 +3,7 @@ import { RunEnvironment } from '../../core/RunEnvironment';
 import { RegisterComponent } from '../../ecs/Component';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { ticker } from '../../utils/Ticker';
 import { Component3D } from '../core/Component3D';

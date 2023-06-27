@@ -9,7 +9,7 @@ import { Component } from '../../ecs/Component';
 import { Entity } from '../../ecs/Entity';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector4 } from '../../math/geom/Vector4';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';

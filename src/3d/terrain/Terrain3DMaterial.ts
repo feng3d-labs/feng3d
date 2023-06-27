@@ -3,7 +3,7 @@ import { Material } from '../../core/Material';
 import { Color3 } from '../../math/Color3';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Texture2DLike } from '../../textures/Texture2D';

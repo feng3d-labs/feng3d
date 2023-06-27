@@ -1,8 +1,10 @@
 export * from '@feng3d/bezier';
 export * from '@feng3d/event';
+export * from '@feng3d/objectview';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
 
+//
 export * from './2d/Button';
 export * from './2d/Image';
 export * from './2d/Rect';
@@ -238,7 +240,6 @@ export * from './math/shape/curves/LineCurve3';
 export * from './math/shape/curves/QuadraticBezierCurve2';
 export * from './math/shape/curves/QuadraticBezierCurve3';
 export * from './math/shape/curves/SplineCurve2';
-export * from './objectview/ObjectView';
 export * from './objectview/ObjectViewDefinitions';
 export * from './renderer/FrameBuffer';
 export * from './renderer/RenderBuffer';

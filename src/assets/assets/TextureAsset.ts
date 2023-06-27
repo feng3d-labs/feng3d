@@ -1,5 +1,5 @@
 import { gPartial } from '@feng3d/polyfill';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { $serialize } from '../../serialization/Serialization';
 import { LoadImageTexture2D } from '../../textures/LoadImageTexture2D';
 import { Texture2D } from '../../textures/Texture2D';

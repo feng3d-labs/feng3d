@@ -2,7 +2,7 @@ import { AssetData } from '../../core/AssetData';
 import { Material, RegisterMaterial } from '../../core/Material';
 import { Color4 } from '../../math/Color4';
 import { Vector4 } from '../../math/geom/Vector4';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { shaderConfig } from '../../renderer/shader/ShaderLib';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';

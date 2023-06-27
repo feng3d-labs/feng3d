@@ -1,5 +1,5 @@
 import { Lazy } from '@feng3d/polyfill';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { DrawMode } from './RenderParams';
 

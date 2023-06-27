@@ -1,7 +1,7 @@
 import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
 import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { oav } from '../../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { $set } from '../../../serialization/Serialization';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';

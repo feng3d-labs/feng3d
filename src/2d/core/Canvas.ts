@@ -4,7 +4,7 @@ import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Component2D } from './Component2D';

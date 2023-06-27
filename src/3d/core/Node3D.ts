@@ -8,7 +8,7 @@ import { Euler } from '../../math/geom/Euler';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Quaternion } from '../../math/geom/Quaternion';
 import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Serializable } from '../../serialization/Serializable';
 import { $set } from '../../serialization/Serialization';

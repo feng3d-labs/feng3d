@@ -1,5 +1,5 @@
 import { RegisterComponent } from '../../ecs/Component';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Camera3D } from './Camera3D';

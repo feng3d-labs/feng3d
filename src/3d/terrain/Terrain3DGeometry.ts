@@ -1,6 +1,6 @@
 import { loader } from '../../filesystem/base/Loader';
 import { Color4 } from '../../math/Color4';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ImageUtil } from '../../utils/ImageUtil';

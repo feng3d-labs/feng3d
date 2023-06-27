@@ -1,5 +1,5 @@
 import { Vector3 } from '../../../math/geom/Vector3';
-import { oav } from '../../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';
 import { ParticleSystemShape } from './ParticleSystemShape';

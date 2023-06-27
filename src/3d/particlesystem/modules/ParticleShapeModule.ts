@@ -1,7 +1,7 @@
 import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
 import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
 import { Vector3 } from '../../../math/geom/Vector3';
-import { oav } from '../../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { $set } from '../../../serialization/Serialization';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { watcher } from '../../../watcher/watcher';

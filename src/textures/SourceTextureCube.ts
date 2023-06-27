@@ -1,7 +1,7 @@
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { Vector2 } from '../math/geom/Vector2';
-import { oav } from '../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { $set } from '../serialization/Serialization';

@@ -1,6 +1,6 @@
 import { RegisterComponent } from '../../ecs/Component';
 import { FS } from '../../filesystem/FS';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';

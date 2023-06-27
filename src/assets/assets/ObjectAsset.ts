@@ -1,5 +1,5 @@
 import { objectEmitter } from '@feng3d/event';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { $serialize } from '../../serialization/Serialization';
 import { watcher } from '../../watcher/watcher';
 import { FileAsset } from '../FileAsset';

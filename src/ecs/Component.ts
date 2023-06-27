@@ -5,7 +5,7 @@ import { Scene3D } from '../3d/core/Scene3D';
 import { HideFlags } from '../core/HideFlags';
 import { AddComponentMenu } from '../core/Menu';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { oav } from '../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Serializable } from '../serialization/Serializable';
 import { SerializeProperty } from '../serialization/SerializeProperty';

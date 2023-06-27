@@ -1,5 +1,5 @@
 import { EventEmitter } from '@feng3d/event';
-import { oav } from '../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { getConstructor } from '../serialization/getConstructor';
 import { getInstance } from '../serialization/getInstance';

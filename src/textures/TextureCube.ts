@@ -1,4 +1,4 @@
-import { oav } from '../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { Texture } from '../renderer/data/Texture';
 import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
 

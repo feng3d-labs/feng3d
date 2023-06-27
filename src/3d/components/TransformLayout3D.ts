@@ -1,7 +1,7 @@
 import { IEvent } from '@feng3d/event';
 import { RegisterComponent } from '../../ecs/Component';
 import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { ticker } from '../../utils/Ticker';

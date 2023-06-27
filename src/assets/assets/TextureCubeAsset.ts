@@ -1,4 +1,4 @@
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SourceTextureCube } from '../../textures/SourceTextureCube';
 import { TextureCube } from '../../textures/TextureCube';
 import { AssetType } from '../AssetType';

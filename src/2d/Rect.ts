@@ -3,7 +3,7 @@ import { Scene3D } from '../3d/core/Scene3D';
 import { createNodeMenu } from '../core/CreateNodeMenu';
 import { Component, RegisterComponent } from '../ecs/Component';
 import { Color4 } from '../math/Color4';
-import { oav } from '../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Node2D } from './core/Node2D';

@@ -6,7 +6,7 @@ import { RegisterComponent } from '../../ecs/Component';
 import { Matrix3x3 } from '../../math/geom/Matrix3x3';
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '../../serialization/SerializeProperty';

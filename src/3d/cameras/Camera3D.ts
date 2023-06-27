@@ -6,7 +6,7 @@ import { Ray3 } from '../../math/geom/Ray3';
 import { Vector2 } from '../../math/geom/Vector2';
 import { Vector3 } from '../../math/geom/Vector3';
 import { Vector4 } from '../../math/geom/Vector4';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { watcher } from '../../watcher/watcher';
 import { Component3D } from '../core/Component3D';

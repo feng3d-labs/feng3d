@@ -3,7 +3,7 @@ import { Geometry } from '../../3d/geometrys/Geometry';
 import { Material } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
 import { Ray3 } from '../../math/geom/Ray3';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { TransformUtils } from '../../utils/TransformUtils';
 
 declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: CanvasRenderer; } }

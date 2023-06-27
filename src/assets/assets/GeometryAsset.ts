@@ -1,6 +1,6 @@
 import { CubeGeometry } from '../../3d/geometrys/CubeGeometry';
 import { Geometry } from '../../3d/geometrys/Geometry';
-import { oav } from '../../objectview/ObjectView';
+import { oav } from '@feng3d/objectview';
 import { AssetType } from '../AssetType';
 import { RegisterAsset } from '../FileAsset';
 import { ObjectAsset } from './ObjectAsset';
