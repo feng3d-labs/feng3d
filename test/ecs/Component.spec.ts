@@ -1,8 +1,8 @@
 import { Component } from '../../src/ecs/Component';
 import { ComponentA, CustomComponent } from './common';
 
+import { getConstructor } from '@feng3d/serialization';
 import { assert, describe, it } from 'vitest';
-import { getConstructor } from '../../src/serialization/getConstructor';
 const { ok, equal, deepEqual, strictEqual } = assert;
 
 describe('Component', () =>
