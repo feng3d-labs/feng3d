@@ -1,4 +1,4 @@
-import { functionwrap } from './FunctionWarp';
+import { functionwrap } from '@feng3d/functionWarp';
 
 /**
  * 是否开启调试

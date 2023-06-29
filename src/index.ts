@@ -1,5 +1,6 @@
 export * from '@feng3d/bezier';
 export * from '@feng3d/event';
+export * from '@feng3d/functionWarp';
 export * from '@feng3d/objectview';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
@@ -274,14 +275,10 @@ export * from './textures/RenderTargetTexture2D';
 export * from './textures/Texture2D';
 export * from './textures/TextureCube';
 export * from './textures/VideoTexture2D';
-export * from './utils/FunctionWarp';
 export * from './utils/ImageUtil';
 export * from './utils/RegExps';
 export * from './utils/Stats';
 export * from './utils/Ticker';
 export * from './utils/TransformUtils';
-export * from './utils/Uuid';
 export * from './utils/debug';
-
-export * from './utils/Task';
 
