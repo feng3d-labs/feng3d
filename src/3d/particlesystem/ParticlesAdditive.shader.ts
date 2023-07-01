@@ -1,7 +1,7 @@
 import { AssetData } from '../../core/AssetData';
 import { Material, RegisterMaterial } from '../../core/Material';
-import { Color4 } from '../../math/Color4';
-import { Vector4 } from '../../math/geom/Vector4';
+import { Color4 } from '@feng3d/math';
+import { Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Serializable } from '@feng3d/serialization';
 import { $set } from '@feng3d/serialization';

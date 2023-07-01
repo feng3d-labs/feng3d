@@ -1,7 +1,7 @@
 import { Camera3D } from '../../3d/cameras/Camera3D';
-import { Rectangle } from '../../math/geom/Rectangle';
-import { Vector2 } from '../../math/geom/Vector2';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Rectangle } from '@feng3d/math';
+import { Vector2 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Node3D } from './Node3D';

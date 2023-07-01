@@ -1,9 +1,9 @@
+import { Vector2 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Constructor, gPartial } from '@feng3d/polyfill';
 import { Serializable, SerializeProperty, getInstance } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { HideFlags } from '../../core/HideFlags';
-import { Vector2 } from '../../math/geom/Vector2';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureTarget, TextureWrap } from '../gl/WebGLEnums';
 
 declare module '@feng3d/serialization'

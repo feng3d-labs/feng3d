@@ -2,7 +2,7 @@ import { Mesh3D } from '../../3d/core/Mesh3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
 import { Material } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
-import { Ray3 } from '../../math/geom/Ray3';
+import { Ray3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { TransformUtils } from '../../utils/TransformUtils';
 

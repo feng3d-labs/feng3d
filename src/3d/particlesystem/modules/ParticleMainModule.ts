@@ -1,13 +1,9 @@
-import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
-import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
-import { Vector3 } from '../../../math/geom/Vector3';
-import { MinMaxGradient } from '../../../math/gradient/MinMaxGradient';
+import { MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { $set } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
+import { $set, SerializeProperty } from '@feng3d/serialization';
+import { Particle } from '../Particle';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
-import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
 declare module './ParticleModule' { interface ParticleModuleMap { ParticleMainModule: ParticleMainModule } }

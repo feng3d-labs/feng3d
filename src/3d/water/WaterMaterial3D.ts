@@ -1,12 +1,9 @@
+import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
+import { oav } from '@feng3d/objectview';
+import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from '../../core/AssetData';
 import { Material } from '../../core/Material';
-import { Color3 } from '../../math/Color3';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Vector3 } from '../../math/geom/Vector3';
-import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
-import { Serializable } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
 import waterFragment from './water_fragment_glsl';
 import waterVertex from './water_vertex_glsl';
 

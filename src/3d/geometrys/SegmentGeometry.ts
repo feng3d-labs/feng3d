@@ -1,7 +1,7 @@
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Material } from '../../core/Material';
-import { Color4 } from '../../math/Color4';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Color4 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';

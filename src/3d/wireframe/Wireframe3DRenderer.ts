@@ -1,5 +1,5 @@
 import { lazy } from '@feng3d/polyfill';
-import { Color4 } from '../../math/Color4';
+import { Color4 } from '@feng3d/math';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { ElementBuffer } from '../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';

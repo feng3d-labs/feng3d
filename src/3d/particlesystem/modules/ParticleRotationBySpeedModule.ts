@@ -1,9 +1,9 @@
 import { oav } from '@feng3d/objectview';
 import { mathUtil } from '@feng3d/polyfill';
 import { $set, SerializeProperty } from '@feng3d/serialization';
-import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
-import { Vector2 } from '../../../math/geom/Vector2';
-import { Vector3 } from '../../../math/geom/Vector3';
+import { MinMaxCurveVector3 } from '@feng3d/math';
+import { Vector2 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 

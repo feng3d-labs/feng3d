@@ -1,5 +1,5 @@
-import { Vector2 } from '../../math/geom/Vector2';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Vector2 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';

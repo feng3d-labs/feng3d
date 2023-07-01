@@ -1,5 +1,5 @@
 import { EventEmitter } from '@feng3d/event';
-import { Color4 } from '../../math/Color4';
+import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Serializable } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';

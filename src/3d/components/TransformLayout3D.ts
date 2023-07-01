@@ -1,6 +1,6 @@
 import { IEvent } from '@feng3d/event';
 import { RegisterComponent } from '../../ecs/Component';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';

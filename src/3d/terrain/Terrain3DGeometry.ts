@@ -1,5 +1,5 @@
 import { loader } from '../../filesystem/base/Loader';
-import { Color4 } from '../../math/Color4';
+import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';

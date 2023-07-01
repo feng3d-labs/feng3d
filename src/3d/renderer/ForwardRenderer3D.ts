@@ -1,8 +1,8 @@
 import { lazy, LazyObject, mathUtil } from '@feng3d/polyfill';
-import { Color4 } from '../../math/Color4';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Vector3 } from '../../math/geom/Vector3';
-import { Vector4 } from '../../math/geom/Vector4';
+import { Color4 } from '@feng3d/math';
+import { Matrix4x4 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
+import { Vector4 } from '@feng3d/math';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Uniforms } from '../../renderer/data/Uniforms';
 import { WebGLRenderer } from '../../renderer/WebGLRenderer';

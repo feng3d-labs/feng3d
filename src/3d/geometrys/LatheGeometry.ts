@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Vector2 } from '../../math/geom/Vector2';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Vector2 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { watcher } from '@feng3d/watcher';
 import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';

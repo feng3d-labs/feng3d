@@ -1,15 +1,12 @@
+import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
+import { $set } from '@feng3d/serialization';
 import { Node3D } from '../../3d/core/Node3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Material } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Plane } from '../../math/geom/Plane';
-import { Vector3 } from '../../math/geom/Vector3';
-import { Vector4 } from '../../math/geom/Vector4';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { FrameBuffer } from '../../renderer/FrameBuffer';
-import { $set } from '@feng3d/serialization';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Mesh3D } from '../core/Mesh3D';

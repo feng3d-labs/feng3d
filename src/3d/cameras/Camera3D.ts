@@ -1,14 +1,9 @@
-import { createNodeMenu } from '../../core/CreateNodeMenu';
-import { RegisterComponent } from '../../ecs/Component';
-import { Frustum } from '../../math/geom/Frustum';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Ray3 } from '../../math/geom/Ray3';
-import { Vector2 } from '../../math/geom/Vector2';
-import { Vector3 } from '../../math/geom/Vector3';
-import { Vector4 } from '../../math/geom/Vector4';
+import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
+import { RegisterComponent } from '../../ecs/Component';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
 

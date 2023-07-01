@@ -1,4 +1,4 @@
-import { Vector3 } from '../../math/geom/Vector3';
+import { Vector3 } from '@feng3d/math';
 import { Geometry, RegisterGeometry } from './Geometry';
 import { geometryUtils } from './GeometryUtils';
 

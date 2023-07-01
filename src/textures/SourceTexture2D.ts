@@ -3,7 +3,7 @@ import { watcher } from '@feng3d/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { Vector2 } from '../math/geom/Vector2';
+import { Vector2 } from '@feng3d/math';
 import { Texture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { ImageUtil } from '../utils/ImageUtil';

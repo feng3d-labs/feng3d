@@ -2,7 +2,7 @@ import { Camera3D } from '../3d/cameras/Camera3D';
 import { Scene3D } from '../3d/core/Scene3D';
 import { createNodeMenu } from '../core/CreateNodeMenu';
 import { Component, RegisterComponent } from '../ecs/Component';
-import { Color4 } from '../math/Color4';
+import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';

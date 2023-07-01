@@ -1,5 +1,5 @@
-import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { Vector3 } from '../../../math/geom/Vector3';
+import { Matrix4x4 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Texture2D } from '../../../textures/Texture2D';
 import { Mesh3D } from '../../core/Mesh3D';

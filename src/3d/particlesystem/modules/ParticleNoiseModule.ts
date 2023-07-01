@@ -1,13 +1,8 @@
-import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
-import { MinMaxCurveMode } from '../../../math/curve/MinMaxCurveMode';
-import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
-import { Vector3 } from '../../../math/geom/Vector3';
-import { noise } from '../../../math/Noise';
+import { MinMaxCurve, MinMaxCurveMode, MinMaxCurveVector3, Vector3, noise } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { $set } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
-import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';
+import { $set, SerializeProperty } from '@feng3d/serialization';
 import { Particle } from '../Particle';
+import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 
 declare module './ParticleModule' { interface ParticleModuleMap { ParticleNoiseModule: ParticleNoiseModule } }

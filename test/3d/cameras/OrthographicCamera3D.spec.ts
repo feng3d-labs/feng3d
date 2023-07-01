@@ -1,4 +1,4 @@
-import { mathUtil, Node3D, OrthographicCamera3D, Vector3 } from '../../../src';
+import { Node3D, OrthographicCamera3D, Vector3, mathUtil } from '../../../src';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

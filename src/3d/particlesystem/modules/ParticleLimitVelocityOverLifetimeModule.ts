@@ -1,6 +1,6 @@
-import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
-import { MinMaxCurveVector3 } from '../../../math/curve/MinMaxCurveVector3';
-import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { MinMaxCurve } from '@feng3d/math';
+import { MinMaxCurveVector3 } from '@feng3d/math';
+import { Matrix4x4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { $set } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';

@@ -1,4 +1,4 @@
-import { Vector3 } from '../../math/geom/Vector3';
+import { Vector3 } from '@feng3d/math';
 import { Node3D } from '../core/Node3D';
 import { Controller3D } from './Controller3D';
 

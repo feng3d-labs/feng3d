@@ -1,6 +1,6 @@
 import { HideFlags } from '../../core/HideFlags';
 import { RegisterComponent } from '../../ecs/Component';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Matrix4x4 } from '@feng3d/math';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';

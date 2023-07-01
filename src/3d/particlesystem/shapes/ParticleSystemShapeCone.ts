@@ -1,5 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Particle } from '../Particle';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';

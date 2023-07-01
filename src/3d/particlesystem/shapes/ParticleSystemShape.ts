@@ -1,4 +1,4 @@
-import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector3 } from '@feng3d/math';
 import { ParticleShapeModule } from '../modules/ParticleShapeModule';
 import { Particle } from '../Particle';
 

@@ -1,5 +1,5 @@
 import { Material } from '../../../core/Material';
-import { Color4 } from '../../../math/Color4';
+import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '@feng3d/serialization';

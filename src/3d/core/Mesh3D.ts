@@ -1,9 +1,9 @@
 import { IEvent } from '@feng3d/event';
 import { Material, MaterialMap } from '../../core/Material';
 import { RegisterComponent } from '../../ecs/Component';
-import { Box3 } from '../../math/geom/Box3';
-import { Ray3 } from '../../math/geom/Ray3';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Box3 } from '@feng3d/math';
+import { Ray3 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';

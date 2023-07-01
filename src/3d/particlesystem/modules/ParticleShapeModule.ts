@@ -1,10 +1,7 @@
+import { Matrix4x4, MinMaxCurve, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
+import { $set, SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { MinMaxCurve } from '../../../math/curve/MinMaxCurve';
-import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
-import { Vector3 } from '../../../math/geom/Vector3';
-import { $set } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
 import { Geometry } from '../../geometrys/Geometry';
 import { Particle } from '../Particle';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';

@@ -1,4 +1,4 @@
-import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { Particle } from '../Particle';

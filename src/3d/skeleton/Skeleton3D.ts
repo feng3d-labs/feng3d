@@ -1,5 +1,5 @@
 import { RegisterComponent } from '../../ecs/Component';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Matrix4x4 } from '@feng3d/math';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
 

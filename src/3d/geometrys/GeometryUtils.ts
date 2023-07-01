@@ -1,8 +1,8 @@
-import { Box3 } from '../../math/geom/Box3';
-import { Matrix4x4 } from '../../math/geom/Matrix4x4';
-import { Ray3 } from '../../math/geom/Ray3';
-import { Vector2 } from '../../math/geom/Vector2';
-import { Vector3 } from '../../math/geom/Vector3';
+import { Box3 } from '@feng3d/math';
+import { Matrix4x4 } from '@feng3d/math';
+import { Ray3 } from '@feng3d/math';
+import { Vector2 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { AttributeBufferSourceTypes } from '../../renderer/data/AttributeBuffer';
 import { CullFace } from '../../renderer/data/RenderParams';
 

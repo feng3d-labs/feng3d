@@ -1,10 +1,9 @@
+import { Color4 } from '@feng3d/math';
+import { oav } from '@feng3d/objectview';
+import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';
-import { Color4 } from '../../../math/Color4';
-import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { Serializable } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
 import { Texture2DLike } from '../../../textures/Texture2D';
 import textureFragment from './texture_fragment_glsl';
 import textureVertex from './texture_vertex_glsl';

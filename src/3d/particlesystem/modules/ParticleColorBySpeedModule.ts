@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Vector2 } from '../../../math/geom/Vector2';
-import { MinMaxGradient } from '../../../math/gradient/MinMaxGradient';
+import { Vector2 } from '@feng3d/math';
+import { MinMaxGradient } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { Particle } from '../Particle';
