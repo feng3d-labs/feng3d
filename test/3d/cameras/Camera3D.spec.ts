@@ -1,5 +1,6 @@
-import { Camera3D, mathUtil, Node3D, OrthographicCamera3D, Vector2, Vector3 } from '../../../src';
+import { Vector2, Vector3 } from '@feng3d/math';
 import { assert, describe, it } from 'vitest';
+import { Camera3D, mathUtil, Node3D } from '../../../src';
 
 const { ok, equal, deepEqual } = assert;
 
