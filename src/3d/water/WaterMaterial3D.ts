@@ -4,8 +4,8 @@ import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from '../../core/AssetData';
 import { Material } from '../../core/Material';
 import { shaderlib } from '../../renderer/shader/ShaderLib';
-import waterFragment from './water_fragment_glsl';
-import waterVertex from './water_vertex_glsl';
+import waterFragment from './water.fragment.glsl';
+import waterVertex from './water.vertex.glsl';
 
 declare module '../../core/Material'
 {

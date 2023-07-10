@@ -4,8 +4,8 @@ import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';
-import segmentFragment from './segment_fragment_glsl';
-import segmentVertex from './segment_vertex_glsl';
+import segmentFragment from './segment.fragment.glsl';
+import segmentVertex from './segment.vertex.glsl';
 
 declare module '../../../core/Material'
 {

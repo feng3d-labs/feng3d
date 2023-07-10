@@ -4,8 +4,8 @@ import { oav } from '@feng3d/objectview';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';
-import pointFragment from './point_fragment_glsl';
-import pointVertex from './point_vertex_glsl';
+import pointFragment from './point.fragment.glsl';
+import pointVertex from './point.vertex.glsl';
 
 declare module '../../../core/Material' {
     interface MaterialMap { PointMaterial: PointMaterial }

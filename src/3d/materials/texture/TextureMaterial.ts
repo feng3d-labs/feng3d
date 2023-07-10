@@ -5,8 +5,8 @@ import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Texture2DLike } from '../../../textures/Texture2D';
-import textureFragment from './texture_fragment_glsl';
-import textureVertex from './texture_vertex_glsl';
+import textureFragment from './texture.fragment.glsl';
+import textureVertex from './texture.vertex.glsl';
 
 declare module '../../../core/Material' {
     interface MaterialMap { TextureMaterial: TextureMaterial }

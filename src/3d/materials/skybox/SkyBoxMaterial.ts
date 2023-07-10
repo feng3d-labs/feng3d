@@ -3,8 +3,8 @@ import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import skyboxFragment from './skybox_fragment_glsl';
-import skyboxVertex from './skybox_vertex_glsl';
+import skyboxFragment from './skybox.fragment.glsl';
+import skyboxVertex from './skybox.vertex.glsl';
 
 declare module '../../../core/Material' {
     interface MaterialMap { SkyBoxMaterial: SkyBoxMaterial }

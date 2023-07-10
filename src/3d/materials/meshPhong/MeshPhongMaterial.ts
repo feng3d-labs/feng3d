@@ -2,8 +2,8 @@ import { AssetData } from '../../../core/AssetData';
 import { Material, RegisterMaterial } from '../../../core/Material';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Serializable } from '@feng3d/serialization';
-import meshPhongFragment from './meshPhong_fragment_glsl';
-import meshPhongVertex from './meshPhong_vertex_glsl';
+import meshPhongFragment from './meshPhong.fragment.glsl';
+import meshPhongVertex from './meshPhong.vertex.glsl';
 
 declare module '../../../core/Material' {
     interface MaterialMap { MeshPhongMaterial: MeshPhongMaterial }

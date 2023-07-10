@@ -5,8 +5,8 @@ import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';
 import { shaderlib } from '../../../renderer/shader/ShaderLib';
 import { Texture2DLike } from '../../../textures/Texture2D';
-import standardFragment from './standard_fragment_glsl';
-import standardVertex from './standard_vertex_glsl';
+import standardFragment from './standard.fragment.glsl';
+import standardVertex from './standard.vertex.glsl';
 
 declare module '../../../core/Material'
 {
