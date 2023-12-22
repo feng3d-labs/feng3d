@@ -1,12 +1,12 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { FS } from '@feng3d/filesystem';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { RegisterComponent } from '../../ecs/Component';
 import { Component3D } from '../core/Component3D';
 import { audioCtx, gainNode } from './AudioListener3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { AudioSource3D: AudioSource3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { AudioSource3D: AudioSource3D; } }
 
 /**
  * 音量与距离算法

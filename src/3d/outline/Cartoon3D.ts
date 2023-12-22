@@ -1,14 +1,13 @@
-import { RegisterComponent } from '../../ecs/Component';
-import { Color4 } from '@feng3d/math';
-import { Vector4 } from '@feng3d/math';
+import { RegisterComponent } from '@feng3d/ecs';
+import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { Cartoon3D: Cartoon3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { Cartoon3D: Cartoon3D; } }
 
 declare module '../../renderer/data/Uniforms'
 {

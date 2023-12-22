@@ -1,20 +1,16 @@
+import { Component, Entity } from '@feng3d/ecs';
 import { EventEmitter, IEvent } from '@feng3d/event';
+import { Vector2, Vector4 } from '@feng3d/math';
+import { oav } from '@feng3d/objectview';
 import { gPartial } from '@feng3d/polyfill';
+import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
+import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../../3d/cameras/Camera3D';
 import { TransformLayout3D } from '../../3d/components/TransformLayout3D';
 import { Scene3D } from '../../3d/core/Scene3D';
 import { HideFlags } from '../../core/HideFlags';
 import { Node, NodeEventMap } from '../../core/Node';
-import { Component } from '../../ecs/Component';
-import { Entity } from '../../ecs/Entity';
-import { Vector2 } from '@feng3d/math';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Serializable } from '@feng3d/serialization';
-import { $set } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 
 /**
  * 2D结点事件映射

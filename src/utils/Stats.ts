@@ -1,7 +1,7 @@
+import { Component, RegisterComponent } from '@feng3d/ecs';
 import Stats1 from 'stats.js';
-import { Component, RegisterComponent } from '../ecs/Component';
 
-declare module '../ecs/Component'
+declare module '@feng3d/ecs'
 {
     interface ComponentMap { Stats: Stats; }
 }

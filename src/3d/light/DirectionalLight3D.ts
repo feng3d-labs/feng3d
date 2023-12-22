@@ -1,10 +1,10 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
-import { RegisterComponent } from '../../ecs/Component';
 import { Node3D } from '../core/Node3D';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component' { interface ComponentMap { DirectionalLight3D: DirectionalLight3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { DirectionalLight3D: DirectionalLight3D; } }
 
 declare module '../core/Node3D' { interface PrimitiveNode3D { 'Directional light': Node3D; } }
 

@@ -1,11 +1,11 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
-import { RegisterComponent } from '../../ecs/Component';
 import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';
-import { ticker } from '../../utils/Ticker';
 import { watcher } from '@feng3d/watcher';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { ticker } from '../../utils/Ticker';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
@@ -28,7 +28,7 @@ declare module '../core/Node3D'
 
 }
 
-declare module '../../ecs/Component' { interface ComponentMap { TransformLayout3D: TransformLayout3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { TransformLayout3D: TransformLayout3D; } }
 
 /**
  * 变换布局

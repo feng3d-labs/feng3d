@@ -1,12 +1,12 @@
-import { HideFlags } from '../../core/HideFlags';
-import { RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix4x4 } from '@feng3d/math';
+import { HideFlags } from '../../core/HideFlags';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
 
-declare module '../../ecs/Component'
+declare module '@feng3d/ecs'
 {
     interface ComponentMap
     {

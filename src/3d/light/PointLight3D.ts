@@ -1,12 +1,12 @@
-import { createNodeMenu } from '../../core/CreateNodeMenu';
-import { RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '@feng3d/ecs';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Node3D } from '../core/Node3D';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component' { interface ComponentMap { PointLight3D: PointLight3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { PointLight3D: PointLight3D; } }
 
 declare module '../core/Node3D' { interface PrimitiveNode3D { 'Point Light': Node3D; } }
 

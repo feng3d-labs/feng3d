@@ -1,9 +1,9 @@
-import { HideFlags } from '../../core/HideFlags';
-import { RunEnvironment } from '../../core/RunEnvironment';
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Component, RegisterComponent } from '@feng3d/ecs';
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
+import { HideFlags } from '../../core/HideFlags';
+import { RunEnvironment } from '../../core/RunEnvironment';
 import { Component3D } from './Component3D';
 import { Node3D } from './Node3D';
 
@@ -20,7 +20,7 @@ declare module './Node3D'
     }
 }
 
-declare module '../../ecs/Component'
+declare module '@feng3d/ecs'
 {
     interface ComponentMap { Scene3D: Scene3D; }
 }

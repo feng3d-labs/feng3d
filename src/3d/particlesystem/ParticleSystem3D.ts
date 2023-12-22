@@ -1,3 +1,4 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ArrayUtils } from '@feng3d/polyfill';
@@ -6,7 +7,6 @@ import { watcher } from '@feng3d/watcher';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Material } from '../../core/Material';
 import { RunEnvironment } from '../../core/RunEnvironment';
-import { RegisterComponent } from '../../ecs/Component';
 import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
@@ -35,7 +35,7 @@ import { ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
 import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 
-declare module '../../ecs/Component' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
+declare module '@feng3d/ecs' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 
 declare module '../geometrys/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
 

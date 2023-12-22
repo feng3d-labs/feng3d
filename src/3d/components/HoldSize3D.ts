@@ -1,10 +1,10 @@
-import { RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '@feng3d/ecs';
 import { oav } from '@feng3d/objectview';
 import { watcher } from '@feng3d/watcher';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { HoldSize3D: HoldSize3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { HoldSize3D: HoldSize3D; } }
 
 /**
  * 保持固定缩放尺寸。

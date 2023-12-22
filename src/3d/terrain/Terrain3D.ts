@@ -1,11 +1,11 @@
-import { Material } from '../../core/Material';
+import { Component, RegisterComponent } from '@feng3d/ecs';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
-import { Component, RegisterComponent } from '../../ecs/Component';
+import { Material } from '../../core/Material';
 import { Node3D } from '../core/Node3D';
 import { Geometry } from '../geometrys/Geometry';
 import { TerrainData } from './Terrain3DData';
 
-declare module '../../ecs/Component' { interface ComponentMap { Terrain: Terrain3D } }
+declare module '@feng3d/ecs' { interface ComponentMap { Terrain: Terrain3D } }
 
 declare module '../core/Node3D' { interface PrimitiveNode3D { Terrain: Node3D; } }
 

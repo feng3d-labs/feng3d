@@ -1,13 +1,13 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { createNodeMenu } from '../../core/CreateNodeMenu';
-import { RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '@feng3d/ecs';
 import { oav } from '@feng3d/objectview';
+import { mathUtil } from '@feng3d/polyfill';
 import { SerializeProperty } from '@feng3d/serialization';
+import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Node3D } from '../core/Node3D';
 import { Light3D } from './Light3D';
 import { LightType } from './LightType';
 
-declare module '../../ecs/Component' { interface ComponentMap { SpotLight3D: SpotLight3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { SpotLight3D: SpotLight3D; } }
 declare module '../core/Node3D' { interface PrimitiveNode3D { 'Spot Light': Node3D; } }
 
 /**

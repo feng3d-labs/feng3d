@@ -1,14 +1,13 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
-import { RunEnvironment } from '../../core/RunEnvironment';
-import { RegisterComponent } from '../../ecs/Component';
-import { Vector2 } from '@feng3d/math';
-import { Vector3 } from '@feng3d/math';
+import { Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
+import { RunEnvironment } from '../../core/RunEnvironment';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { ticker } from '../../utils/Ticker';
 import { Component3D } from '../core/Component3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { FPSController3D: FPSController3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { FPSController3D: FPSController3D; } }
 
 /**
  * FPS模式控制器

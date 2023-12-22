@@ -61,6 +61,7 @@
     "@feng3d/task": "^0.8.2",
     "@feng3d/watcher": "^0.8.2",
     "@feng3d/filesystem": "^0.8.0",
+    "@feng3d/ecs": "^0.8.0",
     "stats.js": "^0.17.0"
   }
 }

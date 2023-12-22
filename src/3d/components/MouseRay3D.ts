@@ -1,11 +1,11 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
-import { RegisterComponent } from '../../ecs/Component';
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
 import { RenderContext3D } from '../core/RenderContext3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { MouseRay3D: MouseRay3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { MouseRay3D: MouseRay3D; } }
 
 /**
  * 当鼠标按下时发射一个球，用于验证发射射线的正确性。

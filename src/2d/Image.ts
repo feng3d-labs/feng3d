@@ -1,18 +1,17 @@
+import { RegisterComponent } from '@feng3d/ecs';
+import { Color4, Vector4 } from '@feng3d/math';
+import { oav } from '@feng3d/objectview';
+import { SerializeProperty } from '@feng3d/serialization';
 import { Camera3D } from '../3d/cameras/Camera3D';
 import { Scene3D } from '../3d/core/Scene3D';
 import { AssetData } from '../core/AssetData';
 import { createNodeMenu } from '../core/CreateNodeMenu';
-import { RegisterComponent } from '../ecs/Component';
-import { Color4 } from '@feng3d/math';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { SerializeProperty } from '@feng3d/serialization';
 import { Texture2D } from '../textures/Texture2D';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 
-declare module '../ecs/Component' { interface ComponentMap { Image: Image } }
+declare module '@feng3d/ecs' { interface ComponentMap { Image: Image } }
 
 declare module '../renderer/data/Uniforms'
 {

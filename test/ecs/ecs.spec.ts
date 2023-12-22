@@ -1,7 +1,7 @@
+import { Entity } from '@feng3d/ecs';
+import { IEvent } from '@feng3d/event';
 import { assert, describe, it } from 'vitest';
 import { Node } from '../../src/core/Node';
-import { Entity } from '../../src/ecs/Entity';
-import { IEvent } from '@feng3d/event';
 const { ok, equal, deepEqual, strictEqual } = assert;
 
 describe('ECS中事件系统', () =>

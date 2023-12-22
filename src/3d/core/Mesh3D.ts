@@ -1,12 +1,10 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
-import { Material, MaterialMap } from '../../core/Material';
-import { RegisterComponent } from '../../ecs/Component';
-import { Box3 } from '@feng3d/math';
-import { Ray3 } from '@feng3d/math';
-import { Vector3 } from '@feng3d/math';
+import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';
+import { Material, MaterialMap } from '../../core/Material';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { TransformUtils } from '../../utils/TransformUtils';
 import { Camera3D } from '../cameras/Camera3D';
 import { Geometry, GeometryLike } from '../geometrys/Geometry';
@@ -14,7 +12,7 @@ import { PickingCollisionVO } from '../raycast/rayCast3D';
 import { Renderable3D } from './Renderable3D';
 import { Scene3D } from './Scene3D';
 
-declare module '../../ecs/Component'
+declare module '@feng3d/ecs'
 {
     interface ComponentMap { Mesh3D: Mesh3D }
 }

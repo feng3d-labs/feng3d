@@ -1,10 +1,10 @@
-import { RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '@feng3d/ecs';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera3D } from './Camera3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { PerspectiveCamera3D: PerspectiveCamera3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { PerspectiveCamera3D: PerspectiveCamera3D; } }
 
 /**
  * 透视摄像机

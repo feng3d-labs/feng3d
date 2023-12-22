@@ -1,9 +1,9 @@
+import { RegisterComponent } from '@feng3d/ecs';
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { RegisterComponent } from '../../ecs/Component';
 import { Component3D } from '../core/Component3D';
 
-declare module '../../ecs/Component' { interface ComponentMap { Wireframe3D: Wireframe3D; } }
+declare module '@feng3d/ecs' { interface ComponentMap { Wireframe3D: Wireframe3D; } }
 
 /**
  * 线框组件，将会对拥有该组件的对象绘制线框

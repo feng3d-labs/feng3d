@@ -1,15 +1,12 @@
-import { Node3D } from '../../3d/core/Node3D';
-import { RegisterComponent } from '../../ecs/Component';
-import { Matrix4x4 } from '@feng3d/math';
-import { Ray3 } from '@feng3d/math';
-import { Vector2 } from '@feng3d/math';
-import { Vector3 } from '@feng3d/math';
+import { RegisterComponent } from '@feng3d/ecs';
+import { Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
+import { Node3D } from '../../3d/core/Node3D';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Component2D } from './Component2D';
 
-declare module '../../ecs/Component' { interface ComponentMap { Canvas: Canvas } }
+declare module '@feng3d/ecs' { interface ComponentMap { Canvas: Canvas } }
 
 declare module '../../3d/core/Node3D' { interface PrimitiveNode3D { Canvas: Node3D; } }
 

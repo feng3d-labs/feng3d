@@ -1,9 +1,9 @@
-import { RegisterComponent } from '../../ecs/Component';
+import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix4x4 } from '@feng3d/math';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
 
-declare module '../../ecs/Component'
+declare module '@feng3d/ecs'
 {
     interface ComponentMap
     {
