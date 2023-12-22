@@ -1,7 +1,6 @@
 import { anyEmitter } from '@feng3d/event';
 import { path } from '@feng3d/path';
 import { Constructor } from '@feng3d/polyfill';
-import { pathUtils } from '../filesystem/PathUtils';
 import { Serializable } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';
 import { ticker } from '../utils/Ticker';
@@ -9,6 +8,7 @@ import { AssetMeta } from './AssetMeta';
 import { AssetType } from './AssetType';
 import { FolderAsset } from './FolderAsset';
 import { ReadWriteRS } from './rs/ReadWriteRS';
+import { pathUtils } from '@feng3d/filesystem';
 
 /**
  * 注册Asset

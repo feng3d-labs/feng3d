@@ -1,10 +1,8 @@
-import { path as fengpath } from '@feng3d/path';
+import { FS, ReadFS, pathUtils } from '@feng3d/filesystem';
+import { path } from '@feng3d/path';
 import { ArrayUtils, Constructor, ObjectUtils, gPartial, mathUtil } from '@feng3d/polyfill';
 import { $deserialize, $set, __class__, getInstance } from '@feng3d/serialization';
 import { AssetData } from '../../core/AssetData';
-import { FS } from '../../filesystem/FS';
-import { pathUtils } from '../../filesystem/PathUtils';
-import { ReadFS } from '../../filesystem/ReadFS';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';
 
@@ -115,7 +113,7 @@ export class ReadRS
         AssetData.addAssetData(asset.assetId, asset.data);
 
         // 计算扩展名
-        let extenson = fengpath.extname(fileName);
+        let extenson = path.extname(fileName);
         if (extenson === '') extenson = Cls['extenson'];
         console.assert(extenson !== undefined, `对象 ${Cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
 
@@ -263,11 +261,11 @@ export class ReadRS
      *
      * @param path 路径
      */
-    getChildrenPathsByPath(path: string)
+    getChildrenPathsByPath(p: string)
     {
         const paths = this.getAllPaths();
         const childrenPaths = paths.filter((v) =>
-            fengpath.dirname(v) === path);
+            path.dirname(v) === p);
 
         return childrenPaths;
     }

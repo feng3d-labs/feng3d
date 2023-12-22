@@ -1,8 +1,8 @@
-import { RegisterComponent } from '../../ecs/Component';
-import { FS } from '../../filesystem/FS';
+import { FS } from '@feng3d/filesystem';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+import { RegisterComponent } from '../../ecs/Component';
 import { Component3D } from '../core/Component3D';
 import { audioCtx, gainNode } from './AudioListener3D';
 

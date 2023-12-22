@@ -1,10 +1,10 @@
-import { loader } from '../../filesystem/base/Loader';
+import { loader } from '@feng3d/filesystem';
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { SerializeProperty } from '@feng3d/serialization';
-import { ImageUtil } from '../../utils/ImageUtil';
 import { watcher } from '@feng3d/watcher';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { ImageUtil } from '../../utils/ImageUtil';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';
 
