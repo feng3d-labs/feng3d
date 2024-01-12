@@ -1,3 +1,4 @@
+import { ComponentMap } from '@feng3d/ecs';
 import { EventEmitter } from '@feng3d/event';
 import { Euler, Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
@@ -104,6 +105,12 @@ export interface Node3D
 declare module '@feng3d/serialization'
 {
     interface SerializableMap { Node3D: Node3D }
+}
+
+export interface Node3D
+{
+    get components(): ComponentMap[keyof ComponentMap][];
+    set components(v);
 }
 
 /**

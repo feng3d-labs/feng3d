@@ -1,4 +1,4 @@
-import { RegisterComponent } from '@feng3d/ecs';
+import { ComponentMap, RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
