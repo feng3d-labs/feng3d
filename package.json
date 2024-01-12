@@ -3,11 +3,18 @@
   "version": "0.8.0",
   "description": "Web3D Engine",
   "standalone": true,
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "module": "src/index.ts",
   "author": "feng",
   "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "module": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
+    }
+  },
   "scripts": {
     "clean": "rimraf \"{lib,dist,public}\"",
     "build": "vite build",
@@ -49,16 +56,16 @@
     "vitest": "^0.32.2"
   },
   "dependencies": {
-    "@feng3d/bezier": "^0.8.1",
-    "@feng3d/earcut": "^0.0.2",
-    "@feng3d/event": "^0.8.3",
-    "@feng3d/functionwrap": "^0.8.3",
+    "@feng3d/bezier": "^0.8.2",
+    "@feng3d/earcut": "^0.0.3",
+    "@feng3d/event": "^0.8.4",
+    "@feng3d/functionwrap": "^0.8.4",
     "@feng3d/math": "^0.8.3",
     "@feng3d/objectview": "^0.8.1",
     "@feng3d/path": "^0.0.7",
-    "@feng3d/polyfill": "^0.8.3",
-    "@feng3d/serialization": "^0.8.2",
-    "@feng3d/task": "^0.8.2",
+    "@feng3d/polyfill": "^0.8.4",
+    "@feng3d/serialization": "^0.8.3",
+    "@feng3d/task": "^0.8.3",
     "@feng3d/watcher": "^0.8.2",
     "@feng3d/filesystem": "^0.8.0",
     "@feng3d/ecs": "^0.8.0",
