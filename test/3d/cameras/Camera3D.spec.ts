@@ -1,8 +1,8 @@
 import { Vector2, Vector3 } from '@feng3d/math';
 import { mathUtil } from '@feng3d/polyfill';
 import { assert, describe, it } from 'vitest';
-import { Camera3D } from '../../../src/3d/cameras/Camera3D';
-import { Node3D } from '../../../src/3d/core/Node3D';
+
+import { Camera3D, Node3D } from '../../../src';
 
 const { ok, equal, deepEqual } = assert;
 
@@ -16,7 +16,7 @@ describe('Camera3D', () =>
         const aspect = Math.random();
         const fov = 60; // Camera3D 默认为fov为60度的视野。
 
-        const camera3D: Camera3D = new Node3D().addComponent('Camera3D', {
+        const camera3D = new Node3D().addComponent('Camera3D', {
             aspect,
             near,
             far,

@@ -1,6 +1,7 @@
 import { Vector3 } from '@feng3d/math';
 import { mathUtil } from '@feng3d/polyfill';
-import { Node3D, OrthographicCamera3D } from '../../../src';
+
+import { Node3D } from '../../../src';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
@@ -16,7 +17,7 @@ describe('OrthographicCamera3D', () =>
         const near = Math.random();
         const far = Math.random() + near;
 
-        const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
+        const orthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
             size,
             near,
             far,
@@ -62,7 +63,7 @@ describe('OrthographicCamera3D', () =>
         const near = Math.random();
         const far = Math.random() + near;
 
-        const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
+        const orthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
             size,
             aspect: 1,
             near,
@@ -109,7 +110,7 @@ describe('OrthographicCamera3D', () =>
         const near = Math.random();
         const far = Math.random() + near;
 
-        const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
+        const orthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
             size,
             aspect: 1,
             near,
