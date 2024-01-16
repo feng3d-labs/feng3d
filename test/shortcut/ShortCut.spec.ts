@@ -1,5 +1,5 @@
 import { EventEmitter } from '@feng3d/event';
-import { shortcut } from '../../src/shortcut/ShortCut';
+import { shortcut } from '../../src';
 
 import { assert, describe, it } from 'vitest';
 const { ok } = assert;
