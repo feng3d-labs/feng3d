@@ -173,6 +173,7 @@ export * from './core/AssetData';
 export * from './core/CreateNodeMenu';
 export * from './core/HideFlags';
 export * from './core/Material';
+export * from './core/Node';
 export * from './core/RunEnvironment';
 export * from './core/polyfills/Component';
 export * from './objectview/ObjectViewDefinitions';
