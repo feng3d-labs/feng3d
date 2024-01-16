@@ -1,7 +1,6 @@
 export * from '@feng3d/bezier';
 export * from '@feng3d/event';
 export * from '@feng3d/filesystem';
-export * from '@feng3d/functionWrap';
 export * from '@feng3d/math';
 export * from '@feng3d/objectview';
 export * from '@feng3d/path';
