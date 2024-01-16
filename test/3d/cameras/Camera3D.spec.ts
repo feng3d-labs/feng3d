@@ -1,6 +1,8 @@
 import { Vector2, Vector3 } from '@feng3d/math';
+import { mathUtil } from '@feng3d/polyfill';
 import { assert, describe, it } from 'vitest';
-import { Camera3D, mathUtil, Node3D } from '../../../src';
+import { Camera3D } from '../../../src/3d/cameras/Camera3D';
+import { Node3D } from '../../../src/3d/core/Node3D';
 
 const { ok, equal, deepEqual } = assert;
 
