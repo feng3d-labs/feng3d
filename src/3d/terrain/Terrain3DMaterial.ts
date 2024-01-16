@@ -6,7 +6,7 @@ import { Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Serializable } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';
-import { Texture2DLike } from '../../textures/Texture2D';
+import { Texture2DLike } from '@feng3d/renderer/src/textures/Texture2D';
 import { FogMode } from '../materials/standard/StandardMaterial';
 
 declare module '../../core/Material'

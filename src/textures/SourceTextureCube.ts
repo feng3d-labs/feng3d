@@ -6,7 +6,7 @@ import { Vector2 } from '@feng3d/math';
 import { RegisterTexture } from '../renderer/data/Texture';
 import { TextureTarget } from '../renderer/gl/WebGLEnums';
 import { $set } from '@feng3d/serialization';
-import { ImageUtil } from '../utils/ImageUtil';
+import { ImageUtil } from '@feng3d/renderer/src/utils/ImageUtil';
 import { TextureCube } from './TextureCube';
 
 declare module '../renderer/data/Texture'

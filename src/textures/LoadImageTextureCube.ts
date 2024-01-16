@@ -1,5 +1,5 @@
 import { RegisterTexture } from '../renderer/data/Texture';
-import { ImageUtil } from '../utils/ImageUtil';
+import { ImageUtil } from '@feng3d/renderer/src/utils/ImageUtil';
 import { watcher } from '@feng3d/watcher';
 import { SourceTextureCube } from './SourceTextureCube';
 import { TextureCube, TextureCubeSources } from './TextureCube';

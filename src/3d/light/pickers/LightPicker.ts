@@ -1,7 +1,7 @@
 import { Matrix4x4 } from '@feng3d/math';
 import { Vector3 } from '@feng3d/math';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Texture2D } from '../../../textures/Texture2D';
+import { Texture2D } from '@feng3d/renderer/src/textures/Texture2D';
 import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
 import { Light3D } from '../Light3D';
