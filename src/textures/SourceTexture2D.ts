@@ -7,10 +7,10 @@ import { watcher } from '@feng3d/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { Texture } from '../renderer/data/Texture';
-import { TextureTarget } from '../renderer/gl/WebGLEnums';
+import { Texture } from '@feng3d/renderer';
+import { TextureTarget } from '@feng3d/renderer';
 
-declare module '../renderer/data/Texture'
+declare module '@feng3d/renderer'
 {
     interface TextureMap extends Texture2DMap { }
 }
