@@ -1,7 +1,6 @@
 import { Vector2 } from '@feng3d/math';
-import { ImageUtil, Texture, Texture2D, TextureTarget, WebGLContext } from '@feng3d/renderer';
+import { ImageUtil, Texture2D, WebGLContext } from '@feng3d/renderer';
 import { $set } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
@@ -23,20 +22,7 @@ export type Texture2DLike = Texture2DMap[keyof Texture2DMap];
  */
 export class SourceTexture2D extends Texture2D
 {
-    textureTarget: TextureTarget = 'TEXTURE_2D';
-
-    /**
-     * One of the following objects can be used as a pixel source for the texture.
-     */
-    source: TexImageSource;
-
     assetType = AssetType.texture;
-
-    constructor()
-    {
-        super();
-        watcher.watch(this as SourceTexture2D, 'source', this.invalidate, this);
-    }
 
     setTextureData(webGLContext: WebGLContext)
     {
