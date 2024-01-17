@@ -1,7 +1,6 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
-import { RenderAtomic } from '@feng3d/renderer';
-import { FrameBuffer } from '@feng3d/renderer/src/FrameBuffer';
+import { FrameBuffer, RenderAtomic } from '@feng3d/renderer';
 import { $set } from '@feng3d/serialization';
 
 import { Node3D } from '../../3d/core/Node3D';

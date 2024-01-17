@@ -1,6 +1,5 @@
 import { Matrix4x4, Vector3 } from '@feng3d/math';
-import { RenderAtomic } from '@feng3d/renderer';
-import { Texture2D } from '@feng3d/renderer/src/textures/Texture2D';
+import { RenderAtomic, Texture2D } from '@feng3d/renderer';
 import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
 import { Light3D } from '../Light3D';

@@ -5,12 +5,11 @@ export * from '@feng3d/math';
 export * from '@feng3d/objectview';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
+export * from '@feng3d/renderer';
 export * from '@feng3d/serialization';
 export * from '@feng3d/watcher';
 
 //
-export * from '@feng3d/renderer/src/textures/Texture2D';
-export * from '@feng3d/renderer/src/utils/ImageUtil';
 export * from './2d/Button';
 export * from './2d/Image';
 export * from './2d/Rect';

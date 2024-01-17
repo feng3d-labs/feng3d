@@ -1,14 +1,10 @@
 import { Vector2 } from '@feng3d/math';
-import { WebGLContext } from '@feng3d/renderer/src/WebGLContext';
-import { Texture2D } from '@feng3d/renderer/src/textures/Texture2D';
-import { ImageUtil } from '@feng3d/renderer/src/utils/ImageUtil';
+import { ImageUtil, Texture, Texture2D, TextureTarget, WebGLContext } from '@feng3d/renderer';
 import { $set } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { Texture } from '@feng3d/renderer';
-import { TextureTarget } from '@feng3d/renderer';
 
 declare module '@feng3d/renderer'
 {

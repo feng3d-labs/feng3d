@@ -1,8 +1,8 @@
-import { gPartial } from '@feng3d/polyfill';
 import { oav } from '@feng3d/objectview';
+import { gPartial } from '@feng3d/polyfill';
+import { Texture2D } from '@feng3d/renderer';
 import { $serialize } from '@feng3d/serialization';
 import { LoadImageTexture2D } from '../../textures/LoadImageTexture2D';
-import { Texture2D } from '@feng3d/renderer/src/textures/Texture2D';
 import { AssetMeta } from '../AssetMeta';
 import { AssetType } from '../AssetType';
 import { FileAsset, RegisterAsset } from '../FileAsset';
