@@ -1,15 +1,12 @@
+import { Vector2 } from '@feng3d/math';
+import { ImageUtil, Texture, Texture2D, TextureTarget, WebGLContext } from '@feng3d/renderer';
 import { $set } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { Vector2 } from '@feng3d/math';
-import { Texture } from '../renderer/data/Texture';
-import { TextureTarget } from '../renderer/gl/WebGLEnums';
-import { ImageUtil } from '../utils/ImageUtil';
-import { Texture2D } from './Texture2D';
 
-declare module '../renderer/data/Texture'
+declare module '@feng3d/renderer'
 {
     interface TextureMap extends Texture2DMap { }
 }
@@ -39,6 +36,11 @@ export class SourceTexture2D extends Texture2D
     {
         super();
         watcher.watch(this as SourceTexture2D, 'source', this.invalidate, this);
+    }
+
+    setTextureData(webGLContext: WebGLContext)
+    {
+        webGLContext.texImage2D('TEXTURE_2D', 0, this.format, this.format, this.type, this.source || ImageUtil.get('white'));
     }
 
     getSize()

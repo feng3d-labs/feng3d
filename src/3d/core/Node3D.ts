@@ -3,19 +3,20 @@ import { EventEmitter } from '@feng3d/event';
 import { Euler, Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { gPartial, mathUtil } from '@feng3d/polyfill';
+import { RenderAtomic } from '@feng3d/renderer';
 import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+
 import { AssetType } from '../../assets/AssetType';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { HideFlags } from '../../core/HideFlags';
 import { Node, NodeEventMap } from '../../core/Node';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
 import { Geometry } from '../geometrys/Geometry';
 import { BoundingBox3D } from './BoundingBox3D';
 import { Scene3D } from './Scene3D';
 
-declare module '../../renderer/data/Uniforms'
+declare module '@feng3d/renderer'
 {
     interface Uniforms
     {

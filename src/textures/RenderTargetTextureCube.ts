@@ -1,6 +1,6 @@
-import { mathUtil } from '@feng3d/polyfill';
 import { Vector2 } from '@feng3d/math';
-import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../renderer/gl/WebGLEnums';
+import { mathUtil } from '@feng3d/polyfill';
+import { TextureFormat, TextureMagFilter, TextureMinFilter, WebGLContext } from '@feng3d/renderer';
 import { watcher } from '@feng3d/watcher';
 import { TextureCube } from './TextureCube';
 
@@ -46,5 +46,13 @@ export class RenderTargetTextureCube extends TextureCube
     getSize()
     {
         return new Vector2(this.width, this.height);
+    }
+
+    setTextureData(webGLContext: WebGLContext): void
+    {
+        TextureCube.faces.forEach((face) =>
+        {
+            webGLContext.texImage2D(face, 0, this.format, this.width, this.height, 0, this.format, this.type, null);
+        });
     }
 }

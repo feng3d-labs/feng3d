@@ -1,7 +1,7 @@
+import { shaderlib } from '@feng3d/renderer';
+import { Serializable } from '@feng3d/serialization';
 import { AssetData } from '../../../core/AssetData';
 import { Material, RegisterMaterial } from '../../../core/Material';
-import { shaderlib } from '../../../renderer/shader/ShaderLib';
-import { Serializable } from '@feng3d/serialization';
 import meshPhongFragment from './meshPhong.fragment.glsl';
 import meshPhongVertex from './meshPhong.vertex.glsl';
 

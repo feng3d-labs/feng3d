@@ -1,9 +1,9 @@
-import { RegisterTexture } from '../renderer/data/Texture';
-import { ImageUtil } from '../utils/ImageUtil';
+import { loader } from '@feng3d/filesystem';
+import { ImageUtil, RegisterTexture } from '@feng3d/renderer';
 import { watcher } from '@feng3d/watcher';
+
 import { SourceTextureCube } from './SourceTextureCube';
 import { TextureCube, TextureCubeSources } from './TextureCube';
-import { loader } from '@feng3d/filesystem';
 
 declare module './TextureCube'
 {

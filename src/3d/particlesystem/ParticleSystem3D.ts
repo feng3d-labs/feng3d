@@ -2,13 +2,13 @@ import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ArrayUtils } from '@feng3d/polyfill';
+import { AttributeBuffer, RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Material } from '../../core/Material';
 import { RunEnvironment } from '../../core/RunEnvironment';
-import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
@@ -57,7 +57,7 @@ declare module '../core/Node3D'
     }
 }
 
-declare module '../../renderer/data/Uniforms'
+declare module '@feng3d/renderer'
 {
     interface Uniforms
     {

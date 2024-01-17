@@ -1,12 +1,9 @@
+import { Color3, Color4, Vector4 } from '@feng3d/math';
+import { oav } from '@feng3d/objectview';
+import { Texture2DLike } from '@feng3d/renderer';
+import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from '../../core/AssetData';
 import { Material } from '../../core/Material';
-import { Color3 } from '@feng3d/math';
-import { Color4 } from '@feng3d/math';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { Serializable } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
-import { Texture2DLike } from '../../textures/Texture2D';
 import { FogMode } from '../materials/standard/StandardMaterial';
 
 declare module '../../core/Material'

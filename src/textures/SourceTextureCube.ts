@@ -1,15 +1,13 @@
+import { Vector2 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
+import { ImageUtil, RegisterTexture, TextureTarget, WebGLContext } from '@feng3d/renderer';
+import { $set } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
-import { Vector2 } from '@feng3d/math';
-import { RegisterTexture } from '../renderer/data/Texture';
-import { TextureTarget } from '../renderer/gl/WebGLEnums';
-import { $set } from '@feng3d/serialization';
-import { ImageUtil } from '../utils/ImageUtil';
 import { TextureCube } from './TextureCube';
 
-declare module '../renderer/data/Texture'
+declare module '@feng3d/renderer'
 {
     interface TextureMap extends TextureCubeMap { }
 }
@@ -60,6 +58,14 @@ export class SourceTextureCube extends TextureCube
     getSize()
     {
         return new Vector2(this.sources.TEXTURE_CUBE_MAP_POSITIVE_X['width'], this.sources.TEXTURE_CUBE_MAP_POSITIVE_X['height']);
+    }
+
+    setTextureData(webGLContext: WebGLContext): void
+    {
+        TextureCube.faces.forEach((face) =>
+        {
+            webGLContext.texImage2D(face, 0, this.format, this.format, this.type, this.sources[face] || ImageUtil.get('white'));
+        });
     }
 }
 

@@ -1,11 +1,9 @@
+import { Color4, Vector4 } from '@feng3d/math';
+import { oav } from '@feng3d/objectview';
+import { shaderConfig } from '@feng3d/renderer';
+import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetData } from '../../core/AssetData';
 import { Material, RegisterMaterial } from '../../core/Material';
-import { Color4 } from '@feng3d/math';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { shaderConfig } from '../../renderer/shader/ShaderLib';
-import { Serializable } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
 
 declare module '../../core/Material'
 {

@@ -1,12 +1,9 @@
 import { EventEmitter } from '@feng3d/event';
-import { Constructor, gPartial, Lazy } from '@feng3d/polyfill';
 import { oav } from '@feng3d/objectview';
-import { RenderAtomic } from '../renderer/data/RenderAtomic';
-import { DrawMode, RenderParams } from '../renderer/data/RenderParams';
-import { Shader } from '../renderer/data/Shader';
-import { Serializable } from '@feng3d/serialization';
-import { $set } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
+import { Constructor, gPartial, Lazy } from '@feng3d/polyfill';
+import { DrawMode, RenderAtomic, RenderParams, Shader } from '@feng3d/renderer';
+import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
+
 import { AssetData } from './AssetData';
 
 export interface MaterialMap { }

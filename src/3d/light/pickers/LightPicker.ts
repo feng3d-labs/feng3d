@@ -1,15 +1,13 @@
-import { Matrix4x4 } from '@feng3d/math';
-import { Vector3 } from '@feng3d/math';
-import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { Texture2D } from '../../../textures/Texture2D';
+import { Matrix4x4, Vector3 } from '@feng3d/math';
+import { RenderAtomic, Texture2D } from '@feng3d/renderer';
 import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
 import { Light3D } from '../Light3D';
 import { PointLight3D } from '../PointLight3D';
-import { ShadowType } from '../shadow/ShadowType';
 import { SpotLight3D } from '../SpotLight3D';
+import { ShadowType } from '../shadow/ShadowType';
 
-declare module '../../../renderer/data/Uniforms'
+declare module '@feng3d/renderer'
 {
     interface Uniforms
     {

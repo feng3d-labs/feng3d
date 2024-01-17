@@ -1,10 +1,5 @@
-import { Box3 } from '@feng3d/math';
-import { Matrix4x4 } from '@feng3d/math';
-import { Ray3 } from '@feng3d/math';
-import { Vector2 } from '@feng3d/math';
-import { Vector3 } from '@feng3d/math';
-import { AttributeBufferSourceTypes } from '../../renderer/data/AttributeBuffer';
-import { CullFace } from '../../renderer/data/RenderParams';
+import { Box3, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
+import { AttributeBufferSourceTypes, CullFace } from '@feng3d/renderer';
 
 export class GeometryUtils
 {

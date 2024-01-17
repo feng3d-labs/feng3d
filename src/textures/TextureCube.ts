@@ -1,21 +1,17 @@
 import { oav } from '@feng3d/objectview';
-import { Texture } from '../renderer/data/Texture';
-import { TexImage2DTarget, TextureTarget } from '../renderer/gl/WebGLEnums';
+import { TexImage2DTarget, Texture, TextureTarget } from '@feng3d/renderer';
 
-declare module '../renderer/data/Texture'
+declare module '@feng3d/renderer'
 {
     interface TextureMap extends TextureCubeMap { }
-}
 
-export interface TextureCubeMap { }
-
-declare module '../renderer/data/Uniforms'
-{
     interface UniformTypeMap
     {
         TextureCube: TextureCube;
     }
 }
+
+export interface TextureCubeMap { }
 
 /**
  * 立方体纹理贴图
