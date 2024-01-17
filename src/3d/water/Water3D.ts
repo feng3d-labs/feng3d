@@ -1,12 +1,13 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
+import { RenderAtomic } from '@feng3d/renderer';
+import { FrameBuffer } from '@feng3d/renderer/src/FrameBuffer';
 import { $set } from '@feng3d/serialization';
+
 import { Node3D } from '../../3d/core/Node3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Material } from '../../core/Material';
-import { FrameBuffer } from '../../renderer/FrameBuffer';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Mesh3D } from '../core/Mesh3D';

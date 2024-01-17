@@ -1,6 +1,6 @@
-import { AttributeBuffer } from '../../renderer/data/AttributeBuffer';
-import { ElementBuffer } from '../../renderer/data/ElementBuffer';
+import { AttributeBuffer, ElementBuffer } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
+
 import { Geometry, RegisterGeometry } from './Geometry';
 
 declare module './Geometry' { interface GeometryMap { CustomGeometry: CustomGeometry } }

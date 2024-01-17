@@ -1,6 +1,4 @@
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Shader } from '../../renderer/data/Shader';
-import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
 import { $set } from '@feng3d/serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Scene3D } from '../core/Scene3D';

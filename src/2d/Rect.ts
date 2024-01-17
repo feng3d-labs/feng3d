@@ -1,11 +1,11 @@
 import { Component, RegisterComponent } from '@feng3d/ecs';
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
+import { RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { Camera3D } from '../3d/cameras/Camera3D';
 import { Scene3D } from '../3d/core/Scene3D';
 import { createNodeMenu } from '../core/CreateNodeMenu';
-import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Node2D } from './core/Node2D';
 
 declare module '@feng3d/ecs' { interface ComponentMap { Rect: Rect; } }

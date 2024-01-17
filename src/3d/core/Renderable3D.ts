@@ -1,7 +1,6 @@
+import { Box3, Ray3 } from '@feng3d/math';
+import { RenderAtomic } from '@feng3d/renderer';
 import { IRenderable } from '../../core/IRenderable';
-import { Box3 } from '@feng3d/math';
-import { Ray3 } from '@feng3d/math';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { PickingCollisionVO } from '../raycast/rayCast3D';
 import { Component3D } from './Component3D';
 import { IRayCastable3D } from './IRayCastable3D';

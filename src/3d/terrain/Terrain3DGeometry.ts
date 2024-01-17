@@ -3,10 +3,10 @@ import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { ImageUtil } from '@feng3d/renderer/src/utils/ImageUtil';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';
+import { RenderAtomic } from '@feng3d/renderer';
 
 declare module '../geometrys/Geometry'
 {

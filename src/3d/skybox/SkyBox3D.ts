@@ -1,9 +1,9 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { oav } from '@feng3d/objectview';
+import { RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
+
 import { AssetData } from '../../core/AssetData';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Uniforms } from '../../renderer/data/Uniforms';
 import { TextureCube } from '../../textures/TextureCube';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
@@ -11,7 +11,7 @@ import { Scene3D } from '../core/Scene3D';
 
 declare module '@feng3d/ecs' { interface ComponentMap { SkyBox: SkyBox3D; } }
 
-declare module '../../renderer/data/Uniforms'
+declare module '@feng3d/renderer'
 {
     interface Uniforms
     {

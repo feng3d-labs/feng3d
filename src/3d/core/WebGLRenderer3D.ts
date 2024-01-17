@@ -1,5 +1,5 @@
 import { RegisterComponent } from '@feng3d/ecs';
-import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { WebGLRenderer } from '@feng3d/renderer';
 import { ticker } from '../../utils/Ticker';
 import { Camera3D } from '../cameras/Camera3D';
 import { outlineRenderer } from '../outline/Outline3DRenderer';

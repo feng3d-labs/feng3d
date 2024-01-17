@@ -1,13 +1,12 @@
 import { EventEmitter } from '@feng3d/event';
 import { Rectangle } from '@feng3d/math';
-import { RenderAtomic } from '../../renderer/data/RenderAtomic';
-import { Uniforms } from '../../renderer/data/Uniforms';
-import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { RenderAtomic, WebGLRenderer } from '@feng3d/renderer';
+
 import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 
-declare module '../../renderer/data/Uniforms'
+declare module '@feng3d/renderer'
 {
     interface Uniforms
     {
@@ -28,9 +27,9 @@ export class MouseRenderer extends EventEmitter
     /**
      * 渲染
      */
-    draw(WebGLRenderer: WebGLRenderer, viewRect: Rectangle)
+    draw(webGLRenderer: WebGLRenderer, viewRect: Rectangle)
     {
-        const { webGLContext } = WebGLRenderer;
+        const { webGLContext } = webGLRenderer;
 
         const mouseX = windowEventProxy.clientX;
         const mouseY = windowEventProxy.clientY;
