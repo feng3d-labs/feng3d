@@ -1,7 +1,6 @@
-import { Node3D } from '../../3d/core/Node3D';
+import { AssetType, Node3D } from '@feng3d/core';
 import { oav } from '@feng3d/objectview';
 import { $clone } from '@feng3d/serialization';
-import { AssetType } from '../AssetType';
 import { RegisterAsset } from '../FileAsset';
 import { ObjectAsset } from './ObjectAsset';
 

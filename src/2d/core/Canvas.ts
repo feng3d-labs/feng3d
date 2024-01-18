@@ -1,14 +1,14 @@
+import { Node3D } from '@feng3d/core';
 import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { SerializeProperty } from '@feng3d/serialization';
-import { Node3D } from '../../3d/core/Node3D';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Component2D } from './Component2D';
 
 declare module '@feng3d/ecs' { interface ComponentMap { Canvas: Canvas } }
 
-declare module '../../3d/core/Node3D' { interface PrimitiveNode3D { Canvas: Node3D; } }
+declare module '@feng3d/core' { interface PrimitiveNode3D { Canvas: Node3D; } }
 
 /**
  * Element that can be used for screen rendering.

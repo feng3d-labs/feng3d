@@ -1,4 +1,4 @@
-import { AssetType } from '../AssetType';
+import { AssetType } from '@feng3d/core';
 import { RegisterAsset } from '../FileAsset';
 import { TextAsset } from './TextAsset';
 

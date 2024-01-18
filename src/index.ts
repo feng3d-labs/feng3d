@@ -1,4 +1,5 @@
 export * from '@feng3d/bezier';
+export * from '@feng3d/core';
 export * from '@feng3d/event';
 export * from '@feng3d/filesystem';
 export * from '@feng3d/math';
@@ -27,7 +28,6 @@ export * from './2d/text/TextStyle';
 export * from './2d/text/drawText';
 //
 export * from './assets/AssetMeta';
-export * from './assets/AssetType';
 export * from './assets/FileAsset';
 export * from './assets/FolderAsset';
 export * from './assets/assets/ArrayBufferAsset';

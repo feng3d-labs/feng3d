@@ -1,6 +1,5 @@
+import { Component3D, RenderContext3D } from '@feng3d/core';
 import { IEvent } from '@feng3d/event';
-import { Component3D } from '../../3d/core/Component3D';
-import { RenderContext3D } from '../../3d/core/RenderContext3D';
 
 /**
  * 2D渲染器

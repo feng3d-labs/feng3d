@@ -1,8 +1,8 @@
+import { AssetData } from '@feng3d/core';
 import { FS, ReadFS, pathUtils } from '@feng3d/filesystem';
 import { path } from '@feng3d/path';
 import { ArrayUtils, Constructor, ObjectUtils, gPartial, mathUtil } from '@feng3d/polyfill';
 import { $deserialize, $set, __class__, getInstance } from '@feng3d/serialization';
-import { AssetData } from '../../core/AssetData';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';
 

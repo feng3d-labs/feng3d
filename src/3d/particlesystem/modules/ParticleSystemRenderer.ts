@@ -1,6 +1,5 @@
-import { Material } from '../../../core/Material';
+import { Geometry, Material } from '@feng3d/core';
 import { Vector3 } from '@feng3d/math';
-import { Geometry } from '../../geometrys/Geometry';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
 import { ParticleSystemRenderSpace } from '../enums/ParticleSystemRenderSpace';
 import { ParticleSystemSortMode } from '../enums/ParticleSystemSortMode';

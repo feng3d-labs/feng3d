@@ -1,7 +1,5 @@
+import { AssetType, SourceTextureCube, TextureCube } from '@feng3d/core';
 import { oav } from '@feng3d/objectview';
-import { SourceTextureCube } from '../../textures/SourceTextureCube';
-import { TextureCube } from '../../textures/TextureCube';
-import { AssetType } from '../AssetType';
 import { RegisterAsset } from '../FileAsset';
 import { ObjectAsset } from './ObjectAsset';
 

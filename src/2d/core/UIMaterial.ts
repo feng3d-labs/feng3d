@@ -1,11 +1,10 @@
+import { AssetData, Material, RegisterMaterial } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { shaderConfig } from '@feng3d/renderer';
 import { Serializable, SerializeProperty } from '@feng3d/serialization';
-import { AssetData } from '../../core/AssetData';
-import { Material, RegisterMaterial } from '../../core/Material';
 
-declare module '../../core/Material'
+declare module '@feng3d/core'
 {
     interface MaterialMap { UIMaterial: UIMaterial }
     interface UniformsMap { UIUniforms: UIUniforms }

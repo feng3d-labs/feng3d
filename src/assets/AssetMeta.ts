@@ -1,4 +1,4 @@
-import { AssetType } from './AssetType';
+import { AssetType } from '@feng3d/core';
 
 /**
  * 资源元标签

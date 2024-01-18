@@ -1,13 +1,10 @@
+import { Camera3D, CanvasTexture2D, Scene3D, createNodeMenu } from '@feng3d/core';
 import { RegisterComponent } from '@feng3d/ecs';
 import { Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-import { Camera3D } from '../3d/cameras/Camera3D';
-import { Scene3D } from '../3d/core/Scene3D';
-import { createNodeMenu } from '../core/CreateNodeMenu';
-import { CanvasTexture2D } from '../textures/CanvasTexture2D';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 import { TextStyle } from './text/TextStyle';

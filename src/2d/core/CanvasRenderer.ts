@@ -1,10 +1,7 @@
+import { Geometry, Material, Mesh3D, TransformUtils } from '@feng3d/core';
 import { RegisterComponent } from '@feng3d/ecs';
 import { Ray3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { Mesh3D } from '../../3d/core/Mesh3D';
-import { Geometry } from '../../3d/geometrys/Geometry';
-import { Material } from '../../core/Material';
-import { TransformUtils } from '../../utils/TransformUtils';
 
 declare module '@feng3d/ecs' { interface ComponentMap { CanvasRenderer: CanvasRenderer; } }
 

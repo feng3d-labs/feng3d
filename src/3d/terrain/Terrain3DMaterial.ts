@@ -1,12 +1,10 @@
+import { AssetData, FogMode, Material } from '@feng3d/core';
 import { Color3, Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Texture2DLike } from '@feng3d/renderer';
 import { Serializable, SerializeProperty } from '@feng3d/serialization';
-import { AssetData } from '../../core/AssetData';
-import { Material } from '../../core/Material';
-import { FogMode } from '../materials/standard/StandardMaterial';
 
-declare module '../../core/Material'
+declare module '@feng3d/core'
 {
     interface MaterialMap { Terrain3DMaterial: Terrain3DMaterial }
     interface UniformsMap { Terrain3DUniforms: Terrain3DUniforms }

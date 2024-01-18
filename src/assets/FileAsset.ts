@@ -1,14 +1,12 @@
+import { AssetType, ticker } from '@feng3d/core';
 import { anyEmitter } from '@feng3d/event';
+import { pathUtils } from '@feng3d/filesystem';
 import { path } from '@feng3d/path';
 import { Constructor } from '@feng3d/polyfill';
-import { Serializable } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
-import { ticker } from '../utils/Ticker';
+import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetMeta } from './AssetMeta';
-import { AssetType } from './AssetType';
 import { FolderAsset } from './FolderAsset';
 import { ReadWriteRS } from './rs/ReadWriteRS';
-import { pathUtils } from '@feng3d/filesystem';
 
 /**
  * 注册Asset

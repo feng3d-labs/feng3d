@@ -1,5 +1,5 @@
+import { NodeComponent } from '@feng3d/core';
 import { EventEmitter } from '@feng3d/event';
-import { NodeComponent } from '../../core/NodeComponent';
 import { Node2D, Node2DEventMap } from './Node2D';
 
 export interface Component2D

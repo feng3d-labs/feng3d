@@ -1,3 +1,4 @@
+import { Camera3D, Component3D, Geometry, Material, Node3D, QuadGeometry, RunEnvironment, Scene3D, createNodeMenu } from '@feng3d/core';
 import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
@@ -5,16 +6,6 @@ import { ArrayUtils } from '@feng3d/polyfill';
 import { AttributeBuffer, RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
-
-import { createNodeMenu } from '../../core/CreateNodeMenu';
-import { Material } from '../../core/Material';
-import { RunEnvironment } from '../../core/RunEnvironment';
-import { Camera3D } from '../cameras/Camera3D';
-import { Component3D } from '../core/Component3D';
-import { Node3D } from '../core/Node3D';
-import { Scene3D } from '../core/Scene3D';
-import { Geometry } from '../geometrys/Geometry';
-import { QuadGeometry } from '../geometrys/QuadGeometry';
 import { Particle } from './Particle';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
@@ -37,11 +28,11 @@ import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOv
 
 declare module '@feng3d/ecs' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 
-declare module '../geometrys/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
+declare module '@feng3d/core' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
 
-declare module '../core/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
+declare module '@feng3d/core' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
 
-declare module '../core/Node3D'
+declare module '@feng3d/core'
 {
     interface Node3DEventMap
     {

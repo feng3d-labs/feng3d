@@ -1,5 +1,5 @@
+import { AssetType } from '@feng3d/core';
 import { oav } from '@feng3d/objectview';
-import { AssetType } from '../AssetType';
 import { FileAsset, RegisterAsset } from '../FileAsset';
 
 declare module '../FileAsset' { interface AssetMap { TextAsset: TextAsset; } }

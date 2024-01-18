@@ -1,7 +1,6 @@
-import { Geometry, RegisterGeometry } from '../../3d/geometrys/Geometry';
-import { geometryUtils } from '../../3d/geometrys/GeometryUtils';
+import { Geometry, RegisterGeometry, geometryUtils } from '@feng3d/core';
 
-declare module '../../3d/geometrys/Geometry'
+declare module '@feng3d/core'
 {
     interface GeometryMap { UIGeometry: UIGeometry }
     interface DefaultGeometryMap { 'Default-UIGeometry': UIGeometry; }

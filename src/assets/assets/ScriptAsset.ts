@@ -1,6 +1,5 @@
-import { regExps } from '../../utils/RegExps';
+import { AssetType, regExps } from '@feng3d/core';
 import { watcher } from '@feng3d/watcher';
-import { AssetType } from '../AssetType';
 import { RegisterAsset } from '../FileAsset';
 import { TextAsset } from './TextAsset';
 

@@ -4,10 +4,7 @@ import { oav } from '@feng3d/objectview';
 import { RenderAtomic, Texture2D } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 
-import { Camera3D } from '../3d/cameras/Camera3D';
-import { Scene3D } from '../3d/core/Scene3D';
-import { AssetData } from '../core/AssetData';
-import { createNodeMenu } from '../core/CreateNodeMenu';
+import { AssetData, Camera3D, Scene3D, createNodeMenu } from '@feng3d/core';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 
