@@ -1,9 +1,9 @@
-import { ComponentMap, RegisterComponent } from '@feng3d/ecs';
+import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
+import { windowEventProxy } from '@feng3d/shortcut';
 import { RunEnvironment } from '../../core/RunEnvironment';
-import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { ticker } from '../../utils/Ticker';
 import { Component3D } from '../core/Component3D';
 

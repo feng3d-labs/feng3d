@@ -1,5 +1,5 @@
 import { IEvent } from '@feng3d/event';
-import { windowEventProxy } from '../shortcut/WindowEventProxy';
+import { windowEventProxy } from '@feng3d/shortcut';
 import { MouseInput } from './MouseInput';
 
 /**

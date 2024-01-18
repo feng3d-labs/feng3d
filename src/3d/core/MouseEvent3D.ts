@@ -1,9 +1,9 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
+import { windowEventProxy } from '@feng3d/shortcut';
 import { PickingCollisionVO, rayCast3D } from '../../3d/raycast/rayCast3D';
 import { MouseEventMap, MouseInput } from '../../core/MouseInput';
 import { WindowMouseInput } from '../../core/WindowMouseInput';
-import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { Component3D } from './Component3D';
 import { Mesh3D } from './Mesh3D';
 import { RenderContext3D } from './RenderContext3D';

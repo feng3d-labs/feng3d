@@ -7,6 +7,7 @@ export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
 export * from '@feng3d/renderer';
 export * from '@feng3d/serialization';
+export * from '@feng3d/shortcut';
 export * from '@feng3d/watcher';
 
 //
@@ -178,12 +179,6 @@ export * from './core/Node';
 export * from './core/RunEnvironment';
 export * from './core/polyfills/Component';
 export * from './objectview/ObjectViewDefinitions';
-export * from './shortcut/EventProxy';
-export * from './shortcut/Keyboard';
-export * from './shortcut/ShortCut';
-export * from './shortcut/WindowEventProxy';
-export * from './shortcut/handle/KeyState';
-export * from './shortcut/handle/ShortCutCapture';
 export * from './textures/CanvasTexture2D';
 export * from './textures/ImageDataTexture2D';
 export * from './textures/ImageTexture2D';

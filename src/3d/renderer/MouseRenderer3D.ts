@@ -2,7 +2,7 @@ import { EventEmitter } from '@feng3d/event';
 import { Rectangle } from '@feng3d/math';
 import { RenderAtomic, WebGLRenderer } from '@feng3d/renderer';
 
-import { windowEventProxy } from '../../shortcut/WindowEventProxy';
+import { windowEventProxy } from '@feng3d/shortcut';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 
