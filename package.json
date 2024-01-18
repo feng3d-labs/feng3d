@@ -71,6 +71,7 @@
     "@feng3d/ecs": "^0.8.0",
     "@feng3d/shortcut": "^0.8.0",
     "@feng3d/renderer": "^0.8.0",
+    "@feng3d/terrain": "^0.8.0",
     "@feng3d/core": "^0.8.0"
   }
 }
