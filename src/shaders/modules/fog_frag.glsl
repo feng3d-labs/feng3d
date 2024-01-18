@@ -1,1 +1,0 @@
-finalColor = fogMethod(finalColor);
