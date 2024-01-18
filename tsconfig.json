@@ -16,5 +16,5 @@
     },
     "include": [
         "src/**/*.ts"
-, "../renderer/src/utils/ImageUtil.ts", "../renderer/src/textures/Texture2D.ts"    ]
+    ]
 }
