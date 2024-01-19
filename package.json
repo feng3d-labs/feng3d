@@ -72,6 +72,7 @@
     "@feng3d/shortcut": "^0.8.0",
     "@feng3d/renderer": "^0.8.0",
     "@feng3d/terrain": "^0.8.0",
+    "@feng3d/particlesystem": "^0.8.0",
     "@feng3d/core": "^0.8.0"
   }
 }
