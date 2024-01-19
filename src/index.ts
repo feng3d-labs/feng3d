@@ -14,21 +14,6 @@ export * from '@feng3d/terrain';
 export * from '@feng3d/watcher';
 
 //
-export * from './2d/Button';
-export * from './2d/Image';
-export * from './2d/Rect';
-export * from './2d/Text';
-export * from './2d/core/Canvas';
-export * from './2d/core/CanvasRenderer';
-export * from './2d/core/Node2D';
-export * from './2d/core/Renderer2D';
-export * from './2d/core/UIGeometry';
-export * from './2d/core/UIMaterial';
-export * from './2d/enums/UIRenderMode';
-export * from './2d/text/TextMetrics';
-export * from './2d/text/TextStyle';
-export * from './2d/text/drawText';
-//
 export * from './assets/AssetMeta';
 export * from './assets/FileAsset';
 export * from './assets/FolderAsset';
