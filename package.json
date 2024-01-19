@@ -74,6 +74,7 @@
     "@feng3d/terrain": "^0.8.0",
     "@feng3d/particlesystem": "^0.8.0",
     "@feng3d/ui": "^0.8.0",
+    "@feng3d/assets": "^0.8.0",
     "@feng3d/core": "^0.8.0"
   }
 }
