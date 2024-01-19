@@ -9,6 +9,7 @@ export * from '@feng3d/polyfill';
 export * from '@feng3d/renderer';
 export * from '@feng3d/serialization';
 export * from '@feng3d/shortcut';
+export * from '@feng3d/terrain';
 export * from '@feng3d/watcher';
 
 //
@@ -93,9 +94,4 @@ export * from './3d/particlesystem/shapes/ParticleSystemShapeCone';
 export * from './3d/particlesystem/shapes/ParticleSystemShapeEdge';
 export * from './3d/particlesystem/shapes/ParticleSystemShapeHemisphere';
 export * from './3d/particlesystem/shapes/ParticleSystemShapeSphere';
-//
-export * from './3d/terrain/Terrain3D';
-export * from './3d/terrain/Terrain3DData';
-export * from './3d/terrain/Terrain3DGeometry';
-export * from './3d/terrain/Terrain3DMaterial';
 //
