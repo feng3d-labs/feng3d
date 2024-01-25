@@ -1,1 +1,0 @@
-attribute vec3 a_tangent;
