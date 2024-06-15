@@ -22,10 +22,11 @@
     "test:ui": "vitest --ui",
     "types": "tsc",
     "watch": "tsc -w",
+    "build:dts-bundle": "dts-bundle-generator --config dts.config.cjs",
     "lint": "eslint --ext .js --ext .ts src test --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc",
-    "release": "npm run clean && npm run lint && npm run build && npm run docs && npm run types && npm publish",
+    "release": "npm run clean && npm run lint && npm run build && npm run types && npm run build:dts-bundle && npm publish",
     "prepublishOnly": "node scripts/prepublish.js",
     "postpublish": "node scripts/postpublish.js"
   },
@@ -52,6 +53,7 @@
     "tslib": "^2.4.0",
     "typedoc": "^0.24.8",
     "typescript": "5.1.3",
+    "dts-bundle-generator": "^9.3.1",
     "vite": "^4.3.9",
     "vitest": "^0.32.2"
   },
