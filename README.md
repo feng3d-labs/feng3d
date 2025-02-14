@@ -2,11 +2,40 @@
 
 > feng3d是使用TypeScript进行编写基于WebGL的3D游戏引擎，致力于打造一个优秀的3d游戏引擎以及易用且可以快速开发项目的配套编辑器。
 
-## 源代码
-feng3d源码可在 https://gitlab.com/feng3d/feng3d.git 上找到。
-
 ## 示例
-https://feng3d.gitlab.io/examples
+https://feng3d.com/feng3d
+
+## 安装
+```
+npm install feng3d
+```
+
+## 快速开始
+```
+import { Color4, Node3D, ticker } from 'feng3d';
+
+// 创建根结点
+const root = new Node3D();
+
+root.addComponent('WebGLRenderer3D');
+
+const scene = root.addComponent('Scene3D');
+scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+
+const camera = new Node3D().addComponent('Camera3D');
+scene.entity.addChild(camera.entity);
+
+const cube = Node3D.createPrimitive('Cube');
+cube.y = -1;
+cube.z = 3;
+scene.entity.addChild(cube);
+
+ticker.onFrame(() =>
+{
+    cube.ry++;
+});
+
+```
 
 ## 模块
 
