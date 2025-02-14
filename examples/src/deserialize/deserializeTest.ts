@@ -1,0 +1,314 @@
+import { $deserialize, Node3D } from 'feng3d';
+
+const root = new Node3D();
+root.addComponent('WebGLRenderer3D');
+const sceneobject = $deserialize<Node3D>({
+    __class__: 'Node3D',
+    name: 'Untitled',
+    children: [
+        {
+            __class__: 'Node3D',
+            name: 'Main Camera',
+            y: 1,
+            z: -10,
+            components: [
+                {
+                    __class__: 'PerspectiveCamera3D',
+                    aspect: 1.1085714285714285
+                },
+                {
+                    __class__: 'FPSController3D'
+                }
+            ]
+        },
+        {
+            __class__: 'Node3D',
+            name: 'DirectionalLight',
+            y: 3,
+            rx: 50,
+            ry: -30,
+            children: [],
+            components: [
+                {
+                    __class__: 'DirectionalLight3D',
+                    lightType: 1
+                },
+                null
+            ]
+        },
+        {
+            __class__: 'Node3D',
+            name: 'RotationToolModel',
+            children: [
+                {
+                    __class__: 'Node3D',
+                    name: 'arrowsX',
+                    x: 19,
+                    rz: 90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'ConeGeometry',
+                                bottomRadius: 7,
+                                height: 21
+                            },
+                            material: {
+                                __class__: 'StandardMaterial',
+                                uniforms: {
+                                    __class__: 'StandardUniforms',
+                                    u_diffuse: {
+                                        g: 0,
+                                        b: 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'arrowsNX',
+                    x: -19,
+                    rz: -90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'ConeGeometry',
+                                bottomRadius: 7,
+                                height: 21
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'arrowsY',
+                    y: 19,
+                    rz: 180,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'ConeGeometry',
+                                bottomRadius: 7,
+                                height: 21
+                            },
+                            material: {
+                                __class__: 'StandardMaterial',
+                                uniforms: {
+                                    __class__: 'StandardUniforms',
+                                    u_diffuse: {
+                                        r: 0,
+                                        b: 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'arrowsNY',
+                    y: -19,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'ConeGeometry',
+                                bottomRadius: 7,
+                                height: 21
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'arrowsZ',
+                    z: 19,
+                    rx: -90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'ConeGeometry',
+                                bottomRadius: 7,
+                                height: 21
+                            },
+                            material: {
+                                __class__: 'StandardMaterial',
+                                uniforms: {
+                                    __class__: 'StandardUniforms',
+                                    u_diffuse: {
+                                        r: 0,
+                                        g: 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'arrowsNZ',
+                    z: -19,
+                    rx: 90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'ConeGeometry',
+                                bottomRadius: 7,
+                                height: 21
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'planeX',
+                    x: 7,
+                    rz: -90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'PlaneGeometry',
+                                width: 14,
+                                height: 14
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'planeNX',
+                    x: -7,
+                    rz: 90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'PlaneGeometry',
+                                width: 14,
+                                height: 14
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'planeY',
+                    y: 7,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'PlaneGeometry',
+                                width: 14,
+                                height: 14
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'planeNY',
+                    y: -7,
+                    rz: 180,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'PlaneGeometry',
+                                width: 14,
+                                height: 14
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'planeZ',
+                    z: 7,
+                    rx: 90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'PlaneGeometry',
+                                width: 14,
+                                height: 14
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                },
+                {
+                    __class__: 'Node3D',
+                    name: 'planeNZ',
+                    z: -7,
+                    rx: -90,
+                    components: [
+                        {
+                            __class__: 'Mesh3D',
+                            geometry: {
+                                __class__: 'PlaneGeometry',
+                                width: 14,
+                                height: 14
+                            },
+                            material: {
+                                __class__: 'StandardMaterial'
+                            }
+                        }
+                    ]
+                }
+            ],
+            sx: 0.1,
+            sy: 0.1,
+            sz: 0.1,
+            components: []
+        }
+    ],
+    components: [
+        {
+            __class__: 'Scene3D',
+            background: {
+                r: 0.408,
+                g: 0.38,
+                b: 0.357
+            },
+            ambientColor: {
+                r: 0.4,
+                g: 0.4,
+                b: 0.4
+            }
+        }
+    ]
+});
+
+root.addChild(sceneobject);

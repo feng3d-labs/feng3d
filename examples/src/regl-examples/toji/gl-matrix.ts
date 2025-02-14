@@ -1,0 +1,10 @@
+export * as glMatrix from './gl-matrix/common';
+export * as mat2 from './gl-matrix/mat2';
+export * as mat2d from './gl-matrix/mat2d';
+export * as mat3 from './gl-matrix/mat3';
+export * as mat4 from './gl-matrix/mat4';
+export * as quat from './gl-matrix/quat';
+export * as quat2 from './gl-matrix/quat2';
+export * as vec2 from './gl-matrix/vec2';
+export * as vec3 from './gl-matrix/vec3';
+export * as vec4 from './gl-matrix/vec4';
