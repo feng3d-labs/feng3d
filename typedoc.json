@@ -4,6 +4,12 @@
     "entryPoints": [
         "src/index.ts"
     ],
-    "sourceLinkTemplate": "https://git.com/feng3d/feng3d/tree/master/{path}#L{line}",
-    "out": "public/docs"
+    "sourceLinkTemplate": "https://gitee.com/feng3d/feng3d/tree/master/{path}#L{line}",
+    "out": "public/docs",
+    "visibilityFilters": {
+        "protected": false,
+        "private": false,
+        "inherited": true,
+        "external": true
+    }
 }

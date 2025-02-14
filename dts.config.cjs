@@ -1,6 +1,7 @@
+const pkg = require('./package.json');
+
 const libraries = {
-    inlinedLibraries: [
-    ],
+    inlinedLibraries: Object.keys(pkg.dependencies),
 };
 
 const output = {
