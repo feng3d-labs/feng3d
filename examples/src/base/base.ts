@@ -1,6 +1,4 @@
-import * as feng3d from 'feng3d';
-
-const { Color4, Node3D, ticker } = feng3d;
+import { Color4, Node3D, ticker } from 'feng3d';
 
 // 创建根结点
 const root = new Node3D();

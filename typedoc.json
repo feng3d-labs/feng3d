@@ -4,6 +4,6 @@
     "entryPoints": [
         "src/index.ts"
     ],
-    "sourceLinkTemplate": "https://gitlab.com/feng3d/feng3d/tree/master/{path}#L{line}",
-    "out": "public"
+    "sourceLinkTemplate": "https://git.com/feng3d/feng3d/tree/master/{path}#L{line}",
+    "out": "public/docs"
 }
