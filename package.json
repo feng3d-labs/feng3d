@@ -27,6 +27,7 @@
     "lint": "eslint --ext .js --ext .ts src test examples/src --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc && cd examples && vite build --outDir ../public",
+    "upload_oss": "npm run docs && feng3d oss_upload_dir ./public feng3d",
     "release": "npm run clean && npm run lint && npm run build && npm run types && npm run build:dts-bundle && npm publish",
     "prepublishOnly": "node scripts/prepublish.js",
     "postpublish": "node scripts/postpublish.js"
@@ -49,6 +50,7 @@
     "tsconfig.json"
   ],
   "devDependencies": {
+    "@feng3d/cli": "^0.0.14",
     "@typescript-eslint/eslint-plugin": "5.17.0",
     "@typescript-eslint/parser": "5.17.0",
     "@vitest/ui": "^0.32.2",
