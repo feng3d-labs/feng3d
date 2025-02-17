@@ -1,7 +1,8 @@
 {
   "name": "feng3d",
   "version": "0.8.1",
-  "description": "Web3D Engine",
+  "description": "Web3D引擎",
+  "homepage": "https://feng3d.com/feng3d/",
   "standalone": true,
   "author": "feng",
   "license": "MIT",
@@ -50,7 +51,7 @@
     "tsconfig.json"
   ],
   "devDependencies": {
-    "@feng3d/cli": "^0.0.14",
+    "@feng3d/cli": "^0.0.18",
     "@typescript-eslint/eslint-plugin": "5.17.0",
     "@typescript-eslint/parser": "5.17.0",
     "@vitest/ui": "^0.32.2",
