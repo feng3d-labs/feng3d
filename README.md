@@ -42,10 +42,10 @@ ticker.onFrame(() =>
 
 ## 模块
 
-1. [@feng3d/event](https://gitee.com/feng3d/event.git)
-2. [@feng3d/bezier](https://gitee.com/feng3d/bezier.git)
-3. [@feng3d/objectview](https://gitee.com/feng3d/objectview.git)
-4. [@feng3d/polyfill](https://gitee.com/feng3d/polyfill.git)
+1. [@feng3d/event](https://gitee.com/feng3d/event.git) 基于TypeScript实现的事件系统。
+2. [@feng3d/bezier](https://gitee.com/feng3d/bezier.git) 解决n次Bézier曲线拟合与求解问题。
+3. [@feng3d/objectview](https://gitee.com/feng3d/objectview.git) 实现由数据对象自动生成界面的一套框架。
+4. [@feng3d/polyfill](https://gitee.com/feng3d/polyfill.git) 基础工具。
 5. [@feng3d/task](https://gitlab.com/feng3d/task.git)
 6. [@feng3d/watcher](https://gitlab.com/feng3d/watcher.git)
 7. [@feng3d/serialization](https://gitlab.com/feng3d/serialization.git)
