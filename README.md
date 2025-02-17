@@ -45,7 +45,7 @@ ticker.onFrame(() =>
 1. [@feng3d/event](https://gitee.com/feng3d/event.git)
 2. [@feng3d/bezier](https://gitee.com/feng3d/bezier.git)
 3. [@feng3d/objectview](https://gitee.com/feng3d/objectview.git)
-4. [@feng3d/polyfill](https://gitlab.com/feng3d/polyfill.git)
+4. [@feng3d/polyfill](https://gitee.com/feng3d/polyfill.git)
 5. [@feng3d/task](https://gitlab.com/feng3d/task.git)
 6. [@feng3d/watcher](https://gitlab.com/feng3d/watcher.git)
 7. [@feng3d/serialization](https://gitlab.com/feng3d/serialization.git)
