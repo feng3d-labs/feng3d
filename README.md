@@ -46,19 +46,19 @@ ticker.onFrame(() =>
 2. [@feng3d/bezier](https://gitee.com/feng3d/bezier.git) 解决n次Bézier曲线拟合与求解问题。
 3. [@feng3d/objectview](https://gitee.com/feng3d/objectview.git) 实现由数据对象自动生成界面的一套框架。
 4. [@feng3d/polyfill](https://gitee.com/feng3d/polyfill.git) 基础工具。
-5. [@feng3d/task](https://gitlab.com/feng3d/task.git)
-6. [@feng3d/watcher](https://gitlab.com/feng3d/watcher.git)
-7. [@feng3d/serialization](https://gitlab.com/feng3d/serialization.git)
-8. [@feng3d/math](https://gitlab.com/feng3d/math.git)
-9. [@feng3d/filesystem](https://gitlab.com/feng3d/filesystem.git)
-10. [@feng3d/shortcut](https://gitlab.com/feng3d/shortcut.git)
-11. [@feng3d/renderer](https://gitlab.com/feng3d/renderer.git)
-12. [@feng3d/core](https://gitlab.com/feng3d/core.git)
-13. [@feng3d/terrain](https://gitlab.com/feng3d/terrain.git)
-14. [@feng3d/particlesystem](https://gitlab.com/feng3d/particlesystem.git)
-15. [@feng3d/assets](https://gitlab.com/feng3d/assets.git)
-16. [@feng3d/parsers](https://gitlab.com/feng3d/parsers.git)
-17. [@feng3d/ui](https://gitlab.com/feng3d/ui.git)
+5. [@feng3d/task](https://gitee.com/feng3d/task.git) 用于处理同步或者异步任务。
+6. [@feng3d/watcher](https://gitee.com/feng3d/watcher.git) 用于监听对象属性的变化以及同步两个对象的属性值。
+7. [@feng3d/serialization](https://gitee.com/feng3d/serialization.git) 任意对象序列化反序列化。
+8. [@feng3d/math](https://gitee.com/feng3d/math.git) 数学库。
+9. [@feng3d/filesystem](https://gitee.com/feng3d/filesystem.git) 文件系统。
+10. [@feng3d/shortcut](https://gitee.com/feng3d/shortcut.git) 快捷键系统。
+11. [@feng3d/renderer](https://gitee.com/feng3d/renderer.git) 渲染库。
+12. [@feng3d/core](https://gitee.com/feng3d/core.git) 核心库。
+13. [@feng3d/terrain](https://gitee.com/feng3d/terrain.git) 地形库。
+14. [@feng3d/particlesystem](https://gitee.com/feng3d/particlesystem.git) 粒子系统。
+15. [@feng3d/assets](https://gitee.com/feng3d/assets.git) 资源管理库。
+16. [@feng3d/parsers](https://gitlab.com/feng3d/parsers.git) 解析器。
+17. [@feng3d/ui](https://gitlab.com/feng3d/ui.git) UI库。
 
 ## 特性
 
