@@ -45,10 +45,10 @@
     "tsconfig.json"
   ],
   "dependencies": {
-    "@feng3d/event": "0.9.0",
-    "@feng3d/objectview": "0.9.0",
-    "@feng3d/polyfill": "0.9.0",
-    "@feng3d/serialization": "0.9.0"
+    "@feng3d/event": "workspace:^",
+    "@feng3d/objectview": "workspace:^",
+    "@feng3d/polyfill": "workspace:^",
+    "@feng3d/serialization": "workspace:^"
   },
   "devDependencies": {
     "@feng3d/cli": "^0.0.19",

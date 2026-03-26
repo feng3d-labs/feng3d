@@ -60,10 +60,10 @@
     "vitest": "^0.32.2"
   },
   "dependencies": {
-    "@feng3d/bezier": "0.9.0",
-    "@feng3d/objectview": "0.9.0",
-    "@feng3d/polyfill": "0.9.0",
-    "@feng3d/serialization": "0.9.0",
+    "@feng3d/bezier": "workspace:^",
+    "@feng3d/objectview": "workspace:^",
+    "@feng3d/polyfill": "workspace:^",
+    "@feng3d/serialization": "workspace:^",
     "earcut": "^3.0.1"
   }
 }

@@ -59,11 +59,11 @@
     "vitest": "^0.32.2"
   },
   "dependencies": {
-    "@feng3d/event": "0.9.0",
-    "@feng3d/objectview": "0.9.0",
-    "@feng3d/polyfill": "0.9.0",
-    "@feng3d/serialization": "0.9.0",
-    "@feng3d/math": "0.9.0",
-    "@feng3d/watcher": "0.9.0"
+    "@feng3d/event": "workspace:^",
+    "@feng3d/objectview": "workspace:^",
+    "@feng3d/polyfill": "workspace:^",
+    "@feng3d/serialization": "workspace:^",
+    "@feng3d/math": "workspace:^",
+    "@feng3d/watcher": "workspace:^"
   }
 }

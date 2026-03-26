@@ -55,8 +55,8 @@
     "vitest": "^0.32.2"
   },
   "dependencies": {
-    "@feng3d/polyfill": "0.9.0",
-    "@feng3d/event": "0.9.0",
-    "@feng3d/task": "0.9.0"
+    "@feng3d/polyfill": "workspace:^",
+    "@feng3d/event": "workspace:^",
+    "@feng3d/task": "workspace:^"
   }
 }
