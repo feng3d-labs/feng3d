@@ -1,0 +1,9 @@
+{
+    "name": "@feng3d/functionwrap",
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "src/index.ts"
+    ],
+    "sourceLinkTemplate": "https://gitlab.com/feng3d/functionwrap/tree/master/{path}#L{line}",
+    "out": "public"
+}

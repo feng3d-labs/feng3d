@@ -1,0 +1,107 @@
+/* App 组件样式 */
+
+.app {
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.inspector-panel {
+    width: 340px;
+    background: var(--inspector-bg);
+    border: 1px solid var(--inspector-border);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: linear-gradient(135deg, #4a4a4a, #3a3a3a);
+    border-bottom: 1px solid var(--inspector-border);
+    gap: 10px;
+}
+
+.header-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #5a8dd6, #4178c4);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.header-icon .material-symbols-outlined {
+    font-size: 22px;
+}
+
+.header-info {
+    flex: 1;
+}
+
+.header-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--inspector-text-light);
+}
+
+.header-subtitle {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.header-btn {
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--inspector-text-light);
+}
+
+.inspector-content {
+    /* ObjectView 内容 */
+}
+
+.add-component-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #4a4a4a, #3f3f3f);
+    border: 1px solid #555;
+    color: var(--inspector-text);
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.add-component-btn:hover {
+    background: linear-gradient(135deg, #555, #4a4a4a);
+    color: var(--inspector-text-light);
+    border-color: #666;
+}
+
+.add-component-btn .material-symbols-outlined {
+    font-size: 16px;
+}
+

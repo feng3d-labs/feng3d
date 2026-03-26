@@ -1,0 +1,10 @@
+// 该文件存在目的为了清除 ClassUtils.spec.ts 文件中 @decoratorRegisterClass() 带来的警告。
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "noEmit": true
+    },
+    "include": [
+        "**/*.ts"
+    ]
+}

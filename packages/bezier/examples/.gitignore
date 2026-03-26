@@ -1,0 +1,7 @@
+node_modules
+dist
+lib
+public
+out
+.lib
+pnpm-lock.yaml

@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Web3D引擎",
   "homepage": "https://feng3d.com/feng3d",
   "standalone": true,
@@ -39,7 +39,8 @@
   },
   "workspaces": [
     ".",
-    "./examples"
+    "./examples",
+    "./packages/*"
   ],
   "publishConfig": {
     "access": "public"
@@ -66,24 +67,24 @@
     "vitest": "^0.32.2"
   },
   "dependencies": {
-    "@feng3d/bezier": "^0.8.2",
-    "@feng3d/event": "^0.8.4",
-    "@feng3d/functionwrap": "^0.8.5",
-    "@feng3d/math": "^0.8.4",
-    "@feng3d/objectview": "^0.8.2",
-    "@feng3d/path": "^0.0.8",
-    "@feng3d/polyfill": "^0.8.4",
-    "@feng3d/serialization": "^0.8.3",
-    "@feng3d/task": "^0.8.3",
-    "@feng3d/watcher": "^0.8.8",
-    "@feng3d/filesystem": "^0.8.3",
-    "@feng3d/ecs": "^0.8.0",
-    "@feng3d/shortcut": "^0.8.0",
-    "@feng3d/renderer": "^0.8.0",
-    "@feng3d/terrain": "^0.8.0",
-    "@feng3d/particlesystem": "^0.8.0",
-    "@feng3d/ui": "^0.8.0",
-    "@feng3d/assets": "^0.8.0",
-    "@feng3d/core": "^0.8.0"
+    "@feng3d/bezier": "0.9.0",
+    "@feng3d/event": "0.9.0",
+    "@feng3d/functionwrap": "0.9.0",
+    "@feng3d/math": "0.9.0",
+    "@feng3d/objectview": "0.9.0",
+    "@feng3d/path": "0.9.0",
+    "@feng3d/polyfill": "0.9.0",
+    "@feng3d/serialization": "0.9.0",
+    "@feng3d/task": "0.9.0",
+    "@feng3d/watcher": "0.9.0",
+    "@feng3d/filesystem": "0.9.0",
+    "@feng3d/ecs": "0.9.0",
+    "@feng3d/shortcut": "0.9.0",
+    "@feng3d/renderer": "0.9.0",
+    "@feng3d/terrain": "0.9.0",
+    "@feng3d/particlesystem": "0.9.0",
+    "@feng3d/ui": "0.9.0",
+    "@feng3d/assets": "0.9.0",
+    "@feng3d/core": "0.9.0"
   }
 }

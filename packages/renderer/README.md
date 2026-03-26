@@ -1,0 +1,70 @@
+# @feng3d/renderer
+
+feng3d渲染器。
+
+源码：https://gitee.com/feng3d/renderer
+
+文档：https://feng3d.com/renderer
+
+## 安装
+
+```
+npm install @feng3d/renderer
+```
+
+## 快速开始
+
+```html
+<script type="module">
+    import { $set } from '@feng3d/serialization';
+    import { RenderAtomic, WebGLRenderer } from '@feng3d/renderer';
+
+    const webglcanvas = document.createElement('canvas');
+    webglcanvas.id = 'glcanvas';
+    webglcanvas.style.position = 'fixed';
+    webglcanvas.style.left = '0px';
+    webglcanvas.style.top = '0px';
+    webglcanvas.style.width = '100%';
+    webglcanvas.style.height = '100%';
+    document.body.appendChild(webglcanvas);
+
+    const webglRenderer = new WebGLRenderer(webglcanvas);
+
+    const renderAtomic = $set(new RenderAtomic(), {
+        attributes: {
+            position: {
+                array: [
+                    -1, 0,
+                    0, -1,
+                    1, 1
+                ], itemSize: 2
+            },
+        },
+        uniforms: { color: [1, 0, 0, 1] },
+        renderParams: { cullFace: 'NONE', enableBlend: true },
+        shader: {
+            vertex: `
+                    precision mediump float;
+                    attribute vec2 position;
+                    void main () {
+                      gl_Position = vec4(position, 0, 1);
+                    }
+            `,
+            fragment: `
+            precision mediump float;
+            uniform vec4 color;
+            void main () {
+              gl_FragColor = color;
+            }
+            ` }
+    });
+
+    function draw() {
+        webglcanvas.width = webglcanvas.clientWidth;
+        webglcanvas.height = webglcanvas.clientHeight;
+        webglRenderer.render(renderAtomic);
+        requestAnimationFrame(draw);
+    }
+    draw();
+</script>
+```

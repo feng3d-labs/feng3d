@@ -1,0 +1,11 @@
+{
+	"bezier": [
+		"BezierCurve",
+		"BezierCurveAnimation",
+		"BezierCurveTo",
+		"BezierEditor",
+		"CubicBezierSequenceEditor",
+		"TimeLineCubicBezierSequenceEditor",
+		""
+	]
+}
