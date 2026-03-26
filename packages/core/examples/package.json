@@ -1,5 +1,5 @@
 {
-  "name": "feng3d-examples",
+  "name": "feng3d-core-examples",
   "private": true,
   "scripts": {
     "dev": "vite",

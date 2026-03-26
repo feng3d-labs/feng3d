@@ -6,16 +6,18 @@
   "author": "feng",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "clean": "npm run clean --workspaces --if-present"
+    "dev": "pnpm -r --filter './packages/**' run dev --if-present",
+    "build": "pnpm -r --filter './packages/**' run build --if-present",
+    "test": "pnpm -r --filter './packages/**' run test --if-present",
+    "lint": "pnpm -r --filter './packages/**' run lint --if-present",
+    "clean": "pnpm -r --filter './packages/**' run clean --if-present"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/feng3d/feng3d.git"
+  },
   "devDependencies": {
     "@feng3d/cli": "^0.0.19"
-  }
+  },
+  "packageManager": "pnpm@9.0.0"
 }
