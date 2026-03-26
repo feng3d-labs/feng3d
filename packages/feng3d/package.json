@@ -17,7 +17,7 @@
     }
   },
   "scripts": {
-    "dev": "cd ../../examples && npm run dev",
+    "dev": "cd examples && npm run dev",
     "clean": "rimraf \"{lib,dist,public}\"",
     "build": "vite build",
     "test": "vitest",
@@ -25,9 +25,9 @@
     "types": "tsc",
     "watch": "tsc -w",
     "build:dts-bundle": "dts-bundle-generator --config dts.config.cjs",
-    "lint": "eslint --ext .js --ext .ts src test --ignore-path ../../.gitignore --max-warnings 0",
+    "lint": "eslint --ext .js --ext .ts src test --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
-    "docs": "typedoc && cd ../../examples && vite build --outDir ../../public",
+    "docs": "typedoc && cd examples && vite build --outDir ../../public",
     "upload_oss": "npm run docs && feng3d-cli oss_upload_dir",
     "release": "npm run clean && npm run lint && npm run build && npm run types && npm run build:dts-bundle && npm publish",
     "prepublishOnly": "node scripts/prepublish.js",
