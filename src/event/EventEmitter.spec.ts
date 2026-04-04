@@ -1,4 +1,5 @@
-import { EventEmitter, IEventTarget } from '../src';
+import { EventEmitter } from './EventEmitter';
+import { IEventTarget } from './IEventTarget';
 
 import { assert, it } from 'vitest';
 const { deepEqual } = assert;

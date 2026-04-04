@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 /* eslint-disable func-style */
-import { anyEmitter, IEvent } from '../src';
 
 import { assert, it } from 'vitest';
-const { ok, strictEqual } = assert;
+import { anyEmitter } from './AnyEmitter';
+import { IEvent } from './IEvent';
 
 it('可针对任意对象派发事件', () =>
 {
@@ -26,7 +26,7 @@ it('可针对任意对象派发事件', () =>
     anyEmitter.emit('string', 'print');
     anyEmitter.emit(obj, 'print');
 
-    strictEqual(result0.join('-'), result.join('-'));
+    assert.strictEqual(result0.join('-'), result.join('-'));
 });
 
 it('on', () =>
@@ -46,14 +46,14 @@ it('on', () =>
     anyEmitter.emit(s, 's');
     anyEmitter.emit(o, 'o');
     // 监听回调被正常调用
-    ok(out === 'nso');
+    assert.ok(out === 'nso');
 
     // 再次派发事件
     anyEmitter.emit(o, 'o');
     anyEmitter.emit(s, 's');
     anyEmitter.emit(n, 'n');
     // 监听回调被正常调用
-    strictEqual(out, 'nsoosn');
+    assert.strictEqual(out, 'nsoosn');
 
     out = '';
     // 使用obj作为回调函数的上下文
@@ -63,7 +63,7 @@ it('on', () =>
     // 重复监听一次派发事件仅会被调用一次
     anyEmitter.on(obj, 'click', obj.fn, obj);
     anyEmitter.emit(obj, 'click');
-    ok(out === 'click1');
+    assert.ok(out === 'click1');
 
     out = '';
     // 相同事件类似的监听器优先级越高越优先被调用
@@ -72,7 +72,7 @@ it('on', () =>
     anyEmitter.on(1, 'pevent', () => { out += 'p0'; }, null, 0);
     anyEmitter.on(1, 'pevent', () => { out += 'p2'; }, null, 2);
     anyEmitter.emit(1, 'pevent');
-    ok(out === 'p2p1p0');
+    assert.ok(out === 'p2p1p0');
 });
 
 it('off', () =>
@@ -83,12 +83,12 @@ it('off', () =>
 
     anyEmitter.on(1, 'a', fn);
     anyEmitter.emit(1, 'a');
-    ok(out === '1');
+    assert.ok(out === '1');
 
     // 移除监听后再次派发事件后并未触发监听回调。
     anyEmitter.off(1, 'a', fn);
     anyEmitter.emit(1, 'a');
-    ok(out === '1');
+    assert.ok(out === '1');
 
     out = '';
     fn = () => { out += '1'; };
@@ -99,8 +99,8 @@ it('off', () =>
     // off缺省监听回调时移除指定事件类型所有监听。
     anyEmitter.off(1, 'b');
     anyEmitter.emit(1, 'b');
-    ok(!anyEmitter.has(1, 'b'));
-    ok(out === '');
+    assert.ok(!anyEmitter.has(1, 'b'));
+    assert.ok(out === '');
 
     out = '';
     fn = () => { out += '1'; };
@@ -113,9 +113,9 @@ it('off', () =>
     anyEmitter.off(1);
     anyEmitter.emit(1, 'c');
     anyEmitter.emit(1, 'd');
-    ok(!anyEmitter.has(1, 'c'));
-    ok(!anyEmitter.has(1, 'd'));
-    ok(out === '');
+    assert.ok(!anyEmitter.has(1, 'c'));
+    assert.ok(!anyEmitter.has(1, 'd'));
+    assert.ok(out === '');
 });
 
 it('once', () =>
@@ -125,11 +125,11 @@ it('once', () =>
 
     anyEmitter.once(1, 'a', () => { out += '1'; });
     anyEmitter.emit(1, 'a');
-    ok(out === '1');
+    assert.ok(out === '1');
 
     // 已经被移除，再次派发事件并不会被触发监听回调。
     anyEmitter.emit(1, 'a');
-    ok(out === '1');
+    assert.ok(out === '1');
 });
 
 it('has', () =>
@@ -138,20 +138,20 @@ it('has', () =>
     let out = '';
 
     anyEmitter.on(1, 'a', () => { out += '1'; });
-    ok(anyEmitter.has(1, 'a'));
+    assert.ok(anyEmitter.has(1, 'a'));
 
     // 移除监听后，未检测到拥有该监听。
     anyEmitter.off(1, 'a');
-    ok(!anyEmitter.has(1, 'a'));
+    assert.ok(!anyEmitter.has(1, 'a'));
 
     // 新增once监听，has检测到拥有该监听。
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     anyEmitter.once(2, '2', () => { out += '2'; });
-    ok(anyEmitter.has(2, '2'));
+    assert.ok(anyEmitter.has(2, '2'));
 
     // once被触发后自动被移除，未检测到该监听。
     anyEmitter.emit(2, '2');
-    ok(!anyEmitter.has(2, '2'));
+    assert.ok(!anyEmitter.has(2, '2'));
 });
 
 it('onAny offAny', () =>
@@ -166,14 +166,14 @@ it('onAny offAny', () =>
     anyEmitter.emit(1, 'a');
     anyEmitter.emit(1, 'b');
     anyEmitter.emit(1, 'c');
-    ok(out === 'abc');
+    assert.ok(out === 'abc');
 
     // 移除后并不会再次被触发。
     anyEmitter.offAny(1, fn);
     anyEmitter.emit(1, 'a');
     anyEmitter.emit(1, 'b');
     anyEmitter.emit(1, 'c');
-    strictEqual(out, 'abc');
+    assert.strictEqual(out, 'abc');
 });
 
 it('emit bubbles', () =>
@@ -187,14 +187,14 @@ it('emit bubbles', () =>
 
     anyEmitter.on(parent, 'b', (e) => { out = e; });
     anyEmitter.emit(child, 'b', data, true);
-    ok(out.data === data);
+    assert.ok(out.data === data);
     // 派发事件的对象
-    ok(out.target === child);
+    assert.ok(out.target === child);
     // 当前处理事件的对象
-    ok(out.currentTarget === parent);
+    assert.ok(out.currentTarget === parent);
     // 事件冒泡流向
-    ok(out.targets[0] === child);
-    ok(out.targets[1] === parent);
+    assert.ok(out.targets[0] === child);
+    assert.ok(out.targets[1] === parent);
 
     // 处理停止事件的冒泡
     parent = { v: 0 };
@@ -206,7 +206,7 @@ it('emit bubbles', () =>
     anyEmitter.on(child, 'b1', () => { outstr += 'child-1'; }, null, -2); // 该监听器将会被触发。
     anyEmitter.on(parent, 'b1', () => { outstr += 'parent'; }); // 冒泡被终止，该监听器不会被触发。
     anyEmitter.emit(child, 'b1', null, true);
-    strictEqual(outstr, 'child0child-1');
+    assert.strictEqual(outstr, 'child0child-1');
 
     // 处理停止事件
     parent = { v: 0 };
@@ -218,5 +218,5 @@ it('emit bubbles', () =>
     anyEmitter.on(child, 'b2', () => { outstr += 'child-1'; }, null, -2); // 事件被终止，该监听器优先级较低将不会被触发。
     anyEmitter.on(parent, 'b2', () => { outstr += 'parent'; }); // 事件被终止，该监听器不会被触发。
     anyEmitter.emit(child, 'b2', null, true);
-    strictEqual(outstr, 'child0');
+    assert.strictEqual(outstr, 'child0');
 });

@@ -1,4 +1,4 @@
-import { SerializeProperty } from '@feng3d/serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Vector3 } from '../geom/Vector3';
 import { AnimationCurve } from './AnimationCurve';
 

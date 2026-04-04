@@ -1,6 +1,8 @@
-import { anyEmitter, EventEmitter, IEventTarget } from '../src';
 
 import { assert, it } from 'vitest';
+import { anyEmitter } from './AnyEmitter';
+import { EventEmitter } from './EventEmitter';
+import { IEventTarget } from './IEventTarget';
 const { deepEqual } = assert;
 
 // `Entity`与`Component`均继承`IEventTarget`或者实现EventEmitter，相互之间进行传递事件

@@ -1,6 +1,5 @@
-import { EventEmitter } from '../src';
-
 import { assert, it } from 'vitest';
+import { EventEmitter } from './EventEmitter';
 
 interface DisplayObjectEventMap
 {

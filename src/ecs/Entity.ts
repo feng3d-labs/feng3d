@@ -1,8 +1,20 @@
-import { EventEmitter } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
-import { Constructor, gPartial } from '@feng3d/polyfill';
-import { SerializeProperty, getConstructor, getInstance } from '@feng3d/serialization';
+import { EventEmitter } from '../event/EventEmitter';
+import { oav } from '../objectview/ObjectView';
+import { gPartial } from '../polyfill/Types';
+import { getConstructor } from '../serialization/getConstructor';
+import { getInstance } from '../serialization/getInstance';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Component, ComponentMap } from './Component';
+
+declare module '../objectview/ObjectView'
+{
+    interface OAVComponentParamMap
+    {
+        OAVComponentList: { component: 'OAVComponentList', componentParam: Object };
+        OAVEntityName: { component: 'OAVEntityName', componentParam: Object };
+    }
+}
+
 
 export interface EntityEventMap
 {

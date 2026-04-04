@@ -1,11 +1,13 @@
-import { EventEmitter } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
-import { Constructor, gPartial } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty, getConstructor } from '@feng3d/serialization';
+import { EventEmitter } from '../event/EventEmitter';
+import { oav } from '../objectview/ObjectView';
+import { Constructor, gPartial } from '../polyfill/Types';
+import { getConstructor } from '../serialization/getConstructor';
+import { Serializable } from '../serialization/Serializable';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { AddComponentMenu } from './ComponentMenu';
 import { Entity, EntityEventMap } from './Entity';
 
-declare module '@feng3d/serialization' { interface SerializableMap extends ComponentMap { } }
+declare module '../serialization/Serializable' { interface SerializableMap extends ComponentMap { } }
 
 /**
  * 组件名称与类定义映射，新建组件一般都需扩展该接口。

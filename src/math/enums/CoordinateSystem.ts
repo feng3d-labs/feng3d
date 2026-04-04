@@ -1,6 +1,6 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../../polyfill/MathUtil';
 
-declare module '@feng3d/polyfill'
+declare module '../../polyfill/MathUtil'
 {
     interface MathUtil
     {

@@ -1,9 +1,7 @@
-import { task } from '@feng3d/task';
-import { __functionwrap__, functionwrap } from '../src';
-
 import { assert, describe, it } from 'vitest';
-import { mathUtil } from '@feng3d/polyfill';
-const { ok, equal, deepEqual } = assert;
+import { mathUtil } from '../polyfill/MathUtil';
+import { task } from '../task/Task';
+import { functionwrap, __functionwrap__ } from './FunctionWrap';
 
 describe('FunctionWrap', () =>
 {
@@ -33,7 +31,7 @@ describe('FunctionWrap', () =>
             return ['polyfill', this.a, r].join('-');
         });
         // 验证 被扩展的a.f方法是否等价于 a.extendF
-        ok(a.f() === a.extendF()); // true
+        assert.ok(a.f() === a.extendF()); // true
     });
 
     it('wrap & unwrap ', () =>
@@ -54,23 +52,23 @@ describe('FunctionWrap', () =>
         functionwrap.wrap(o, 'f', wrapFunc);
         let v = Math.random();
         o.f(v);
-        ok(o.v === v);
+        assert.ok(o.v === v);
 
         // 添加函数在指定函数之后执行
         functionwrap.wrap(o, 'f', undefined, wrapFunc);
         v = Math.random();
         o.f(v);
-        ok(o.v === 0);
+        assert.ok(o.v === 0);
 
-        ok(o[__functionwrap__]);
+        assert.ok(o[__functionwrap__]);
 
         functionwrap.unwrap(o, 'f', wrapFunc);
-        ok(!o[__functionwrap__]);
+        assert.ok(!o[__functionwrap__]);
 
         o.v = 0;
         v = Math.random();
         o.f(v);
-        ok(o.v === v);
+        assert.ok(o.v === v);
 
         const vec2 = new Vector2();
 
@@ -82,13 +80,13 @@ describe('FunctionWrap', () =>
 
             return v;
         });
-        ok(vec2[__functionwrap__]);
+        assert.ok(vec2[__functionwrap__]);
 
         functionwrap.unwrap(vec2, 'sub');
-        ok(!vec2[__functionwrap__]);
+        assert.ok(!vec2[__functionwrap__]);
 
         const propertyDescriptor1 = Object.getOwnPropertyDescriptor(vec2, 'sub');
-        deepEqual(propertyDescriptor, propertyDescriptor1);
+        assert.deepEqual(propertyDescriptor, propertyDescriptor1);
     });
 
     it('wrapAsyncFunc', (done) =>
@@ -127,9 +125,9 @@ describe('FunctionWrap', () =>
             task.parallel(fns)(() =>
             {
                 // af 函数 执行5次
-                equal(executions, 5);
+                assert.equal(executions, 5);
                 // 回调执行5次
-                equal(callbackTime, 5);
+                assert.equal(callbackTime, 5);
                 callback();
             });
         }
@@ -148,9 +146,9 @@ describe('FunctionWrap', () =>
             task.parallel(fns)(() =>
             {
                 // af 函数 执行1次
-                equal(executions, 1);
+                assert.equal(executions, 1);
                 // 回调执行5次
-                equal(callbackTime, 5);
+                assert.equal(callbackTime, 5);
                 callback();
             });
         }
@@ -158,7 +156,7 @@ describe('FunctionWrap', () =>
         // 串联（依次）执行两个测试函数
         task.series([testAfs, testWrapFuncs])(() =>
         {
-            ok(true);
+            assert.ok(true);
         });
     });
 });

@@ -1,6 +1,14 @@
 import { assert, describe, it } from 'vitest';
 
-import * as terrain from '../src/index';
+import { describe } from 'vitest';
+
+describe('test', () =>
+{
+    it('test', () =>
+    {
+        // terrain module test
+    });
+});
 
 describe('test', () =>
 {

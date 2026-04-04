@@ -1,9 +1,11 @@
-import { AssetType, ticker } from '@feng3d/core';
-import { anyEmitter } from '@feng3d/event';
-import { pathUtils } from '@feng3d/filesystem';
-import { path } from '@feng3d/path';
-import { Constructor } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import path = require('path');
+import { AssetType } from '../core/assets/AssetType';
+import { ticker } from '../core/utils/Ticker';
+import { anyEmitter } from '../event/AnyEmitter';
+import { pathUtils } from '../filesystem/PathUtils';
+import { Constructor } from '../polyfill/Types';
+import { Serializable } from '../serialization/Serializable';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { AssetMeta } from './AssetMeta';
 import { FolderAsset } from './FolderAsset';
 import { ReadWriteRS } from './rs/ReadWriteRS';

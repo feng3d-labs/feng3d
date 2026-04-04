@@ -1,8 +1,8 @@
-import { Component } from '../src/Component';
+import { getConstructor } from '../serialization/getConstructor';
 import { ComponentA, CustomComponent } from './common';
 
-import { getConstructor } from '@feng3d/serialization';
 import { assert, describe, it } from 'vitest';
+import { Component } from './Component';
 
 describe('Component', () =>
 {

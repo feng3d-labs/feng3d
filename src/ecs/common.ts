@@ -1,6 +1,6 @@
-import { Component, RegisterComponent } from '../src/Component';
+import { Component, RegisterComponent } from "./Component"
 
-declare module '../src/Component'
+declare module './Component'
 {
     /**
      * 组件映射

@@ -1,7 +1,7 @@
-import { Entity } from '../src/Entity';
 import { ComponentA } from './common';
 
 import { assert, describe, it } from 'vitest';
+import { Entity } from './Entity';
 
 describe('Entity', () =>
 {
