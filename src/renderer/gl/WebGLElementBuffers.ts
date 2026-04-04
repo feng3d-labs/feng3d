@@ -1,4 +1,4 @@
-import { lazy } from '@feng3d/polyfill';
+import { lazy } from '../../polyfill/Types';
 import { watcher } from '@feng3d/watcher';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { DrawElementType, ElementBuffer, ElementBufferSourceTypes } from '../data/ElementBuffer';

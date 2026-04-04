@@ -1,5 +1,5 @@
 import { EventEmitter } from '@feng3d/event';
-import { Constructor } from '@feng3d/polyfill';
+import { Constructor } from '../../../polyfill/Types';
 import { oav } from '@feng3d/objectview';
 import { Serializable } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';

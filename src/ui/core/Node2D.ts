@@ -3,7 +3,7 @@ import { Component, Entity } from '@feng3d/ecs';
 import { EventEmitter, IEvent } from '@feng3d/event';
 import { Vector2, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { gPartial } from '@feng3d/polyfill';
+import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '@feng3d/renderer';
 import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';

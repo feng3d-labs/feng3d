@@ -1,5 +1,6 @@
 import { EventEmitter } from '@feng3d/event';
-import { lazy, Lazy, MapUtils } from '@feng3d/polyfill';
+import { Lazy, lazy } from '../../polyfill/Types';
+import { MapUtils } from '../../polyfill/MapUtils';
 import { __class__, getClassName, getInstance, serialization, SerializeProperty } from '@feng3d/serialization';
 import { AssetType } from '../assets/AssetType';
 

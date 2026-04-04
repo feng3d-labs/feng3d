@@ -2,7 +2,7 @@ import { Camera3D, Component3D, Geometry, Material, Node3D, QuadGeometry, RunEnv
 import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { ArrayUtils } from '@feng3d/polyfill';
+import { ArrayUtils } from '../polyfill/ArrayUtils';
 import { AttributeBuffer, RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';

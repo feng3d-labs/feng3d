@@ -1,5 +1,5 @@
 import { globalEmitter } from '@feng3d/event';
-import { dataTransform } from '@feng3d/polyfill';
+import { dataTransform } from '../polyfill/DataTransform';
 import { FSType } from './FSType';
 import { IReadWriteFS } from './IReadWriteFS';
 import { _indexedDB } from './base/_IndexedDB';

@@ -1,6 +1,6 @@
 import { Vector2 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { Constructor, gPartial } from '@feng3d/polyfill';
+import { Constructor, gPartial } from '../../polyfill/Types';
 import { Serializable, SerializeProperty, getInstance } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { WebGLContext } from '../WebGLContext';

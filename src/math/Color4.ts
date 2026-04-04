@@ -1,5 +1,5 @@
 import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../polyfill/MathUtil';
 import { Serializable, SerializeProperty } from '@feng3d/serialization';
 import { Color3 } from './Color3';
 import { Vector4 } from './geom/Vector4';

@@ -1,5 +1,5 @@
 import { Color4 } from '@feng3d/math';
-import { lazy } from '@feng3d/polyfill';
+import { lazy } from '../../../polyfill/Types';
 import { ElementBuffer, RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
 import { $set } from '@feng3d/serialization';
 

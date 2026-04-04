@@ -1,7 +1,7 @@
 import { EventEmitter } from '@feng3d/event';
 import { Box3, Matrix4x4, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { Constructor, gPartial, Lazy } from '@feng3d/polyfill';
+import { Constructor, gPartial, Lazy } from '../../../polyfill/Types';
 import { AttributeBuffer, AttributeBufferSourceTypes, CullFace, ElementBuffer, RenderAtomic } from '@feng3d/renderer';
 import { getInstance, Serializable, SerializeProperty } from '@feng3d/serialization';
 import { AssetType } from '../../assets/AssetType';

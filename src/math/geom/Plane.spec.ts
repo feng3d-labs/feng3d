@@ -1,7 +1,7 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { Line3 } from '../../src/geom/Line3';
-import { Plane } from '../../src/geom/Plane';
-import { Vector3 } from '../../src/geom/Vector3';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { Line3 } from './Line3';
+import { Plane } from './Plane';
+import { Vector3 } from './Vector3';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

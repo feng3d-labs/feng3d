@@ -1,5 +1,6 @@
 import { Color4, Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
-import { LazyObject, lazy, mathUtil } from '@feng3d/polyfill';
+import { LazyObject, lazy } from '../../../polyfill/Types';
+import { mathUtil } from '../../../polyfill/MathUtil';
 import { RenderAtomic, Uniforms, WebGLRenderer } from '@feng3d/renderer';
 
 import { Camera3D } from '../cameras/Camera3D';

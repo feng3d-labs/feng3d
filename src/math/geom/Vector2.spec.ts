@@ -1,4 +1,4 @@
-import { Vector2 } from '../../src/geom/Vector2';
+import { Vector2 } from './Vector2';
 
 import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

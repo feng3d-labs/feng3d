@@ -1,4 +1,4 @@
-import { lazy } from '@feng3d/polyfill';
+import { lazy } from '../../polyfill/Types';
 import { WebGLRenderer } from '../WebGLRenderer';
 import { WebGLUniformType } from '../const/WebGLUniformType';
 import { WebGLRenderAtomic } from './WebGLRenderAtomic';

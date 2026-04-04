@@ -1,5 +1,5 @@
 import { Vector2, Vector3 } from '@feng3d/math';
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../../../../polyfill/MathUtil';
 import { assert, describe, it } from 'vitest';
 import { Camera3D, Node3D } from '../../../src';
 

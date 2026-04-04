@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../../../polyfill/MathUtil';
 import { Vector2 } from '@feng3d/math';
 import { MinMaxGradient } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';

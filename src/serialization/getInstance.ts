@@ -1,4 +1,4 @@
-import { Constructor, gPartial } from '@feng3d/polyfill';
+import { Constructor, gPartial } from '../polyfill/Types';
 import { SerializableMap, _definitionCache } from './Serializable';
 import { $set } from './Serialization';
 

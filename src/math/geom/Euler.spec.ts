@@ -1,9 +1,9 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { RotationOrder } from '../../src/enums/RotationOrder';
-import { Euler } from '../../src/geom/Euler';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
-import { Quaternion } from '../../src/geom/Quaternion';
-import { Vector3 } from '../../src/geom/Vector3';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { RotationOrder } from '../enums/RotationOrder';
+import { Euler } from './Euler';
+import { Matrix4x4 } from './Matrix4x4';
+import { Quaternion } from './Quaternion';
+import { Vector3 } from './Vector3';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

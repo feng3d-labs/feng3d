@@ -1,4 +1,6 @@
-import { ArrayUtils, ObjectUtils, gPartial } from '@feng3d/polyfill';
+import { ArrayUtils } from '../polyfill/ArrayUtils';
+import { ObjectUtils } from '../polyfill/ObjectUtils';
+import { gPartial } from '../polyfill/Types';
 import { Serializable } from './Serializable';
 import { __class__, _serialize__ } from './SerializationConst';
 import { getClassName } from './getClassName';

@@ -1,6 +1,6 @@
-import { Matrix3x3 } from '../../src/geom/Matrix3x3';
-import { Quaternion } from '../../src/geom/Quaternion';
-import { Vector3 } from '../../src/geom/Vector3';
+import { Matrix3x3 } from './Matrix3x3';
+import { Quaternion } from './Quaternion';
+import { Vector3 } from './Vector3';
 
 import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

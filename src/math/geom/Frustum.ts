@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../../polyfill/MathUtil';
 import { Box3 } from './Box3';
 import { Matrix4x4 } from './Matrix4x4';
 import { Plane } from './Plane';

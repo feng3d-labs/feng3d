@@ -1,7 +1,7 @@
-import { Line3 } from '../../src/geom/Line3';
-import { Vector3 } from '../../src/geom/Vector3';
+import { Line3 } from './Line3';
+import { Vector3 } from './Vector3';
 
-import { Plane } from '../../src/geom/Plane';
+import { Plane } from './Plane';
 Plane;
 
 import { assert, describe, it } from 'vitest';

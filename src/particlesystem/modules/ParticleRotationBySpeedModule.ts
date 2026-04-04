@@ -1,5 +1,5 @@
 import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtil } from '../../../polyfill/MathUtil';
 import { $set, SerializeProperty } from '@feng3d/serialization';
 import { MinMaxCurveVector3 } from '@feng3d/math';
 import { Vector2 } from '@feng3d/math';

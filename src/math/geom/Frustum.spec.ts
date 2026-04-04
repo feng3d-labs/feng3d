@@ -2,12 +2,12 @@
  * @author bhouston / http://exocortex.com
  * @author TristanVALCKE / https://github.com/Itee
  */
-import { Box3 } from '../../src/geom/Box3';
-import { Frustum } from '../../src/geom/Frustum';
-import { Matrix4x4 } from '../../src/geom/Matrix4x4';
-import { Plane } from '../../src/geom/Plane';
-import { Sphere } from '../../src/geom/Sphere';
-import { Vector3 } from '../../src/geom/Vector3';
+import { Box3 } from './Box3';
+import { Frustum } from './Frustum';
+import { Matrix4x4 } from './Matrix4x4';
+import { Plane } from './Plane';
+import { Sphere } from './Sphere';
+import { Vector3 } from './Vector3';
 
 import { assert, describe, expect, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;
