@@ -1,6 +1,11 @@
-import { MinMaxCurve, MinMaxCurveMode, MinMaxCurveVector3, Vector3, noise } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
-import { $set, SerializeProperty } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
+import { MinMaxCurveMode } from '../../math/curve/MinMaxCurveMode';
+import { Vector3 } from '../../math/geom/Vector3';
+import { noise } from '../../math/Noise';
 import { Particle } from '../Particle';
 import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';

@@ -1,24 +1,22 @@
-import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
-
-import { ArrayUtils } from '../src';
+import { assert, describe, it } from 'vitest';
+import { ArrayUtils } from './ArrayUtils';
 
 describe('Array', () =>
 {
     it('equal', () =>
     {
-        ok(ArrayUtils.equal([1, 2, 3], [1, 2, 3]));
+        assert.assert.ok(ArrayUtils..equal([1, 2, 3], [1, 2, 3]));
 
-        ok(!ArrayUtils.equal([{}, 2, 3], [{}, 2, 3]));
+        assert.assert.ok(!ArrayUtils..equal([{}, 2, 3], [{}, 2, 3]));
 
         const obj = {};
-        ok(ArrayUtils.equal([obj, 2, 3], [obj, 2, 3]));
+        assert.assert.ok(ArrayUtils..equal([obj, 2, 3], [obj, 2, 3]));
     });
 
     it('isUnique', () =>
     {
-        deepEqual(ArrayUtils.isUnique([1, 2, 3]), true);
-        deepEqual(ArrayUtils.isUnique([1, 2, 2]), false);
+        assert.deepEqual(ArrayUtils.isUnique([1, 2, 3]), true);
+        assert.deepEqual(ArrayUtils.isUnique([1, 2, 2]), false);
     });
 
     it('concatToSelf', () =>
@@ -28,40 +26,40 @@ describe('Array', () =>
 
         const arr1 = Array(10).fill(0).map((_v, i) => i);
 
-        ok(ArrayUtils.equal(arr, arr1));
+        assert.ok(ArrayUtils.equal(arr, arr1));
     });
 
     it('unique', () =>
     {
         const arr1 = Array(10000).fill(0).map((_v, _i) => (Math.random() < 0.1 ? null : Math.floor(10 * Math.random())));
         ArrayUtils.unique(arr1);
-        ok(arr1.length === 11);
+        assert.ok(arr1.length === 11);
 
         const arrObj = Array(10).fill(0).map((_v) => ({}));
         const arr2 = Array(10000).fill(0).map((_v, _i) => (arrObj[Math.floor(10 * Math.random())]));
         ArrayUtils.unique(arr2);
-        ok(arr2.length === 10);
+        assert.ok(arr2.length === 10);
     });
 
     it('delete', () =>
     {
         const arr1 = Array(10).fill(0).map((_v, i) => i);
         ArrayUtils.deleteItem(arr1, arr1[Math.floor(10 * Math.random())]);
-        ok(arr1.length === 9);
+        assert.ok(arr1.length === 9);
 
         const arr2 = Array(10).fill(0).map((_v) => ({}));
         ArrayUtils.deleteItem(arr2, arr2[Math.floor(10 * Math.random())]);
-        ok(arr2.length === 9);
+        assert.ok(arr2.length === 9);
     });
 
     it('replace', () =>
     {
         const arr1 = Array(10).fill(0).map((_v, i) => i);
         ArrayUtils.replace(arr1, 5, 50);
-        ok(arr1[5] === 50);
+        assert.ok(arr1[5] === 50);
 
         ArrayUtils.replace(arr1, 555, 999);
-        ok(arr1[arr1.length - 1] === 999);
+        assert.ok(arr1[arr1.length - 1] === 999);
     });
 
     it('create', () =>
@@ -69,7 +67,7 @@ describe('Array', () =>
         const arr = ArrayUtils.create(100, (i) => i);
         for (let i = 0; i < arr.length; i++)
         {
-            deepEqual(i, arr[i]);
+            assert.deepEqual(i, arr[i]);
         }
     });
 
@@ -80,19 +78,19 @@ describe('Array', () =>
         arr.sort(compareFn);
         const index = Math.floor(arr.length * Math.random());
         const find = ArrayUtils.binarySearch(arr, arr[index], compareFn);
-        deepEqual(find <= index, true);
+        assert.deepEqual(find <= index, true);
 
-        deepEqual(arr[index], arr[find]);
+        assert.deepEqual(arr[index], arr[find]);
         if (find > 0)
         {
-            equal(arr[find] - arr[find - 1] > 0, true);
+            assert.equal(arr[find] - arr[find - 1] > 0, true);
         }
         if (find < arr.length - 1)
         {
-            equal(arr[find] - arr[find + 1] <= 0, true);
+            assert.equal(arr[find] - arr[find + 1] <= 0, true);
         }
 
-        deepEqual(-1, ArrayUtils.binarySearch(arr, -1, compareFn));
+        assert.deepEqual(-1, ArrayUtils.binarySearch(arr, -1, compareFn));
     });
 
     it('binarySearchInsert', () =>
@@ -103,10 +101,10 @@ describe('Array', () =>
 
         const index = Math.floor(arr.length * Math.random());
         const find = ArrayUtils.binarySearchInsert(arr, arr[index], compareFn);
-        deepEqual(find <= index, true);
+        assert.deepEqual(find <= index, true);
 
-        deepEqual(0, ArrayUtils.binarySearchInsert(arr, -1, compareFn));
+        assert.deepEqual(0, ArrayUtils.binarySearchInsert(arr, -1, compareFn));
 
-        deepEqual(100, ArrayUtils.binarySearchInsert(arr, 10000, compareFn));
+        assert.deepEqual(100, ArrayUtils.binarySearchInsert(arr, 10000, compareFn));
     });
 });

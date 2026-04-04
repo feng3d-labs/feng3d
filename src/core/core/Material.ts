@@ -4,7 +4,8 @@ import { Constructor, gPartial, Lazy } from '../../polyfill/Types';
 import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { DrawMode, RenderParams } from '../../renderer/data/RenderParams';
 import { Shader } from '../../renderer/data/Shader';
-import { $set, Serializable } from '../../serialization/Serializable';
+import { $set } from '../../serialization/Serialization';
+import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 import { AssetData } from './AssetData';

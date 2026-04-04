@@ -1,7 +1,8 @@
 import { Color4 } from '../../../../math/Color4';
 import { oav } from '../../../../objectview/ObjectView';
 import { Texture2DLike, shaderlib } from '../../../../renderer/shader/ShaderLib';
-import { Serializable, SerializeProperty } from '../../../../serialization/SerializeProperty';
+import { Serializable } from '../../../../serialization/Serializable';
+import { SerializeProperty } from '../../../../serialization/SerializeProperty';
 import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';
 import textureFragment from './texture.fragment.glsl';

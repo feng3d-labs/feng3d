@@ -1,8 +1,11 @@
-import { Geometry } from '@feng3d/core';
-import { Matrix4x4, MinMaxCurve, Vector3 } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
-import { $set, SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { oav } from '../../objectview/ObjectView';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
+import { Geometry } from '../../core/3d/geometrys/Geometry';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { Vector3 } from '../../math/geom/Vector3';
 import { Particle } from '../Particle';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';

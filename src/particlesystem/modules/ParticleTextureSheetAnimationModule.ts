@@ -1,7 +1,10 @@
-import { MinMaxCurve, MinMaxCurveMode, Vector2 } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
-import { mathUtil } from '../../../polyfill/MathUtil';
-import { $set, SerializeProperty } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { MinMaxCurveMode } from '../../math/curve/MinMaxCurveMode';
+import { Vector2 } from '../../math/geom/Vector2';
 import { Particle } from '../Particle';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
 import { UVChannelFlags } from '../enums/UVChannelFlags';

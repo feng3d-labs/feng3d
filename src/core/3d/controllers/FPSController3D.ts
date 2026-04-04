@@ -1,9 +1,9 @@
 import { RegisterComponent } from '../../../ecs/Component';
-import { IEvent } from '../../../event/Event';
+import { IEvent } from '../../../event/IEvent';
 import { Vector2 } from '../../../math/geom/Vector2';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { oav } from '../../../objectview/ObjectView';
-import { windowEventProxy } from '../../../shortcut/shortcut';
+import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
 import { RunEnvironment } from '../../core/RunEnvironment';
 import { ticker } from '../../utils/Ticker';
 import { Component3D } from '../core/Component3D';

@@ -1,4 +1,4 @@
-import { watcher } from '@feng3d/watcher';
+import { watcher } from '../watcher/watcher';
 import { RenderBuffer } from './RenderBuffer';
 import { RenderTargetTexture2D } from './textures/RenderTargetTexture2D';
 

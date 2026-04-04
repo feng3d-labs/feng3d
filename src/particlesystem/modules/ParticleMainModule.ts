@@ -1,6 +1,10 @@
-import { MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, Vector3 } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
-import { $set, SerializeProperty } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { $set } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
+import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
+import { Vector3 } from '../../math/geom/Vector3';
 import { Particle } from '../Particle';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';

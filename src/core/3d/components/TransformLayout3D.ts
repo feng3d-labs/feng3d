@@ -1,5 +1,5 @@
 import { RegisterComponent } from '../../../ecs/Component';
-import { IEvent } from '../../../event/Event';
+import { IEvent } from '../../../event/IEvent';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { oav } from '../../../objectview/ObjectView';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';

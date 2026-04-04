@@ -8,7 +8,7 @@ import { RunEnvironment } from '../RunEnvironment';
 
 export { };
 
-declare module '@feng3d/ecs'
+declare module '../../../ecs/Component'
 {
     interface Component
     {

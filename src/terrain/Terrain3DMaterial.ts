@@ -1,12 +1,15 @@
-import { AssetData, FogMode, Material } from '../core/core';
+import { FogMode } from '../core/3d/materials/standard/StandardMaterial';
+import { AssetData } from '../core/core/AssetData';
+import { Material } from '../core/core/Material';
 import { Color3 } from '../math/Color3';
 import { Color4 } from '../math/Color4';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
-import { Texture2DLike } from '../renderer/data/Texture';
-import { Serializable, SerializeProperty } from '../serialization/SerializeProperty';
+import { Texture2DLike } from '../renderer/textures/Texture2D';
+import { Serializable } from '../serialization/Serializable';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 
-declare module '../core/core'
+declare module '../core/core/Material'
 {
     interface MaterialMap { Terrain3DMaterial: Terrain3DMaterial }
     interface UniformsMap { Terrain3DUniforms: Terrain3DUniforms }

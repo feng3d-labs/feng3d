@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest';
-
-import { task } from '../src';
+import { task } from './Task';
 
 describe('task', () =>
 {

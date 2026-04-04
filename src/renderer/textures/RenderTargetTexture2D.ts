@@ -1,6 +1,6 @@
-import { Vector2 } from '@feng3d/math';
+import { Vector2 } from '../../math/geom/Vector2';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { watcher } from '@feng3d/watcher';
+import { watcher } from '../../watcher/watcher';
 import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../gl/WebGLEnums';
 import { WebGLContext } from '../WebGLContext';
 import { Texture2D } from './Texture2D';

@@ -1,4 +1,4 @@
-import { IEvent } from '@feng3d/event';
+import { IEvent } from '../../event/IEvent';
 import { ShortCut } from '../ShortCut';
 import { KeyState } from './KeyState';
 

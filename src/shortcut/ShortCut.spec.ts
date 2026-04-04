@@ -1,7 +1,7 @@
-import { EventEmitter } from '@feng3d/event';
-import { shortcut } from '../src';
+import { EventEmitter } from '../event/EventEmitter';
 
 import { assert, describe, it } from 'vitest';
+import { shortcut } from './ShortCut';
 
 describe('test', () =>
 {
@@ -20,28 +20,28 @@ describe('test', () =>
         // 添加快捷键
         shortcut.addShortCuts(shortcuts);
 
-        let commandStr = "";
+        let commandStr = '';
         // 监听命令
         shortcut.on('click_command', function (e): void
         {
-            commandStr += "click_command";
+            commandStr += 'click_command';
         });
         shortcut.on('command_d', function (e): void
         {
-            commandStr += "command_d";
+            commandStr += 'command_d';
         });
         shortcut.on('command_e', function (e): void
         {
-            commandStr += "command_e";
+            commandStr += 'command_e';
         });
 
-        commandStr = "";
+        commandStr = '';
         // @ts-ignore
-        shortcut.keyCapture.onMouseOnce({ type: 'click', data: { type: "click", button: 0 } }); // 模拟单击事件，触发click_command
-        assert.ok(commandStr === "click_command"); // click_command
+        shortcut.keyCapture.onMouseOnce({ type: 'click', data: { type: 'click', button: 0 } }); // 模拟单击事件，触发click_command
+        assert.ok(commandStr === 'click_command'); // click_command
 
         //
-        commandStr = "";
+        commandStr = '';
         // @ts-ignore
         shortcut.keyCapture.onKeydown({ type: 'keydown', data: { key: 'a' } }); // 模拟按下a键，激活state_a
         // @ts-ignore
@@ -54,10 +54,10 @@ describe('test', () =>
         shortcut.keyCapture.onKeydown({ type: 'keydown', data: { key: 'd' } }); // 模拟按下d键，此时按下了e键，不满足when条件，不触发command_d,command_e，所以commandStr为空
         // @ts-ignore
         shortcut.keyCapture.onKeyup({ type: 'keydown', data: { key: 'd' } }); // 模拟弹起d键
-        assert.ok(commandStr === ""); // 按下e键，不满足when条件，不触发command_d,command_e，所以commandStr为空
+        assert.ok(commandStr === ''); // 按下e键，不满足when条件，不触发command_d,command_e，所以commandStr为空
 
         //
-        commandStr = "";
+        commandStr = '';
         // @ts-ignore
         shortcut.keyCapture.onKeyup({ type: 'keydown', data: { key: 'e' } }); // 模拟弹起e键
 
@@ -65,14 +65,14 @@ describe('test', () =>
         shortcut.keyCapture.onKeydown({ type: 'keydown', data: { key: 'd' } }); // 模拟按下d键，此时state_a激活，state_b不激活，满足when条件，触发command_d,command_e,更改state_a为不激活状态，state_b为激活状态。
         // @ts-ignore
         shortcut.keyCapture.onKeyup({ type: 'keydown', data: { key: 'd' } }); // 模拟弹起d键
-        assert.ok(commandStr === "command_dcommand_e"); // command_dcommand_e
+        assert.ok(commandStr === 'command_dcommand_e'); // command_dcommand_e
 
         //
-        commandStr = "";
+        commandStr = '';
         // @ts-ignore
-        shortcut.keyCapture.onKeydown({ type: 'keydown', data: { key: 'd' } }); // 模拟按下d键,此时state_a不激活，state_b激活，不满足when条件，不触发command_d,command_e，所以commandStr为空    
+        shortcut.keyCapture.onKeydown({ type: 'keydown', data: { key: 'd' } }); // 模拟按下d键,此时state_a不激活，state_b激活，不满足when条件，不触发command_d,command_e，所以commandStr为空
         // @ts-ignore
         shortcut.keyCapture.onKeyup({ type: 'keydown', data: { key: 'd' } }); // 模拟弹起d键
-        assert.ok(commandStr === ""); // 状态不满足when条件，不触发command_d,command_e，所以commandStr为空
+        assert.ok(commandStr === ''); // 状态不满足when条件，不触发command_d,command_e，所以commandStr为空
     });
 });

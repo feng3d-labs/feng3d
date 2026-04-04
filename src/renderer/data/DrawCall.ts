@@ -1,6 +1,6 @@
 import { Lazy } from '../../polyfill/Types';
 import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '@feng3d/serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { DrawMode } from './RenderParams';
 
 export class DrawCall

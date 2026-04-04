@@ -1,12 +1,22 @@
-import { Camera3D, HideFlags, Node, NodeEventMap, Scene3D, TransformLayout3D } from '@feng3d/core';
-import { Component, Entity } from '@feng3d/ecs';
-import { EventEmitter, IEvent } from '@feng3d/event';
-import { Vector2, Vector4 } from '@feng3d/math';
+import { Camera3D } from '../../core/3d/cameras/Camera3D';
+import { HideFlags } from '../../core/core/HideFlags';
+import { Node } from '../../core/core/Node';
+import { NodeEventMap } from '../../core/core/Node';
+import { Scene3D } from '../../core/3d/core/Scene3D';
+import { TransformLayout3D } from '../../core/3d/components/TransformLayout3D';
+import { Component } from '../../ecs/Component';
+import { Entity } from '../../ecs/Entity';
+import { EventEmitter } from '../../event/EventEmitter';
+import { IEvent } from '../../event/IEvent';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
-import { RenderAtomic } from '@feng3d/renderer';
-import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { $set } from '../../serialization/Serialization';
+import { Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
 
 /**
  * 2D结点事件映射
@@ -45,7 +55,7 @@ export interface Node2D
     find(name: string): Node2D;
 }
 
-declare module '../../../serialization/Serializable'
+declare module '../../serialization/Serializable'
 {
     interface SerializableMap { Node2D: Node2D }
 }

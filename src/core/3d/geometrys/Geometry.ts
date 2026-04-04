@@ -10,7 +10,8 @@ import { AttributeBufferSourceTypes } from '../../../renderer/data/AttributeBuff
 import { CullFace } from '../../../renderer/gl/WebGLEnums';
 import { ElementBuffer } from '../../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
-import { getInstance, Serializable } from '../../../serialization/Serializable';
+import { getInstance } from '../../../serialization/getInstance';
+import { Serializable } from '../../../serialization/Serializable';
 import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { AssetType } from '../../assets/AssetType';
 import { AssetData } from '../../core/AssetData';

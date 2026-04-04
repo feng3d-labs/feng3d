@@ -1,14 +1,17 @@
 import { AssetData } from '../../core/core/AssetData';
-import { FS, ReadFS } from '../../filesystem/FS';
+import { FS } from '../../filesystem/FS';
 import { pathUtils } from '../../filesystem/PathUtils';
+import { ReadFS } from '../../filesystem/ReadFS';
+import { path } from '../../path/Path';
 import { ArrayUtils } from '../../polyfill/ArrayUtils';
-import { Constructor, gPartial } from '../../polyfill/Types';
-import { ObjectUtils } from '../../polyfill/ObjectUtils';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { $deserialize, $set, __class__, getInstance } from '../../serialization/Serialization';
+import { ObjectUtils } from '../../polyfill/ObjectUtils';
+import { Constructor, gPartial } from '../../polyfill/Types';
+import { getInstance } from '../../serialization/getInstance';
+import { $deserialize, $set } from '../../serialization/Serialization';
+import { __class__ } from '../../serialization/SerializationConst';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';
-import { path } from '../../path/Path';
 
 /**
  * 可读资源系统

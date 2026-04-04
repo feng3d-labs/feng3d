@@ -1,7 +1,8 @@
 import { Color4 } from '../../../../math/Color4';
 import { oav } from '../../../../objectview/ObjectView';
 import { shaderlib } from '../../../../renderer/shader/ShaderLib';
-import { Serializable, SerializeProperty } from '../../../../serialization/SerializeProperty';
+import { Serializable } from '../../../../serialization/Serializable';
+import { SerializeProperty } from '../../../../serialization/SerializeProperty';
 import { Material } from '../../../core/Material';
 import segmentFragment from './segment.fragment.glsl';
 import segmentVertex from './segment.vertex.glsl';

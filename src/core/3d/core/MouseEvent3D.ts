@@ -1,6 +1,6 @@
 import { RegisterComponent } from '../../../ecs/Component';
-import { IEvent } from '../../../event/Event';
-import { windowEventProxy } from '../../../shortcut/shortcut';
+import { IEvent } from '../../../event/IEvent';
+import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
 import { PickingCollisionVO, rayCast3D } from '../../3d/raycast/rayCast3D';
 import { MouseEventMap, MouseInput } from '../../core/MouseInput';
 import { WindowMouseInput } from '../../core/WindowMouseInput';

@@ -1,10 +1,13 @@
-import { AssetData, Material, RegisterMaterial } from '@feng3d/core';
-import { Color4, Vector4 } from '@feng3d/math';
+import { AssetData } from '../../core/core/AssetData';
+import { Material, RegisterMaterial } from '../../core/core/Material';
+import { Color4 } from '../../math/Color4';
+import { Vector4 } from '../../math/geom/Vector4';
 import { oav } from '../../objectview/ObjectView';
-import { shaderConfig } from '@feng3d/renderer';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { shaderConfig } from '../../renderer/shader/ShaderLib';
+import { Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 
-declare module '@feng3d/core'
+declare module '../../core/core/Material'
 {
     interface MaterialMap { UIMaterial: UIMaterial }
     interface UniformsMap { UIUniforms: UIUniforms }

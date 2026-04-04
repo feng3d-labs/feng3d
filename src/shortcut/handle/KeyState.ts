@@ -1,4 +1,4 @@
-import { EventEmitter } from '@feng3d/event';
+import { EventEmitter } from '../../event/EventEmitter';
 
 // 兼容 nodejs 环境
 if(typeof MouseEvent === 'undefined')

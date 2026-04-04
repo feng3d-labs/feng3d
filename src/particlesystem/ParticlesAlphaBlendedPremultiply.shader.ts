@@ -3,7 +3,9 @@ import { Material } from '../core/core/Material';
 import { RegisterMaterial } from '../core/core/Material';
 import { Vector4 } from '../math/geom/Vector4';
 import { oav } from '../objectview/ObjectView';
-import { $set, Serializable, SerializeProperty } from '../serialization/Serialization';
+import { $set } from '../serialization/Serialization';
+import { Serializable } from '../serialization/Serializable';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 
 declare module '../core/core/Material'
 {

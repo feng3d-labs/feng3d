@@ -2,7 +2,7 @@ import { Rectangle } from '../../../math/geom/Rectangle';
 import { Vector2 } from '../../../math/geom/Vector2';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
-import { windowEventProxy } from '../../../shortcut/shortcut';
+import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
 import { Camera3D } from '../../3d/cameras/Camera3D';
 import { Node3D } from './Node3D';
 import { Scene3D } from './Scene3D';

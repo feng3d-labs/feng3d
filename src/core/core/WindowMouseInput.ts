@@ -1,5 +1,5 @@
-import { IEvent } from '../../../event/IEvent';
-import { windowEventProxy } from '../../../shortcut/shortcut';
+import { IEvent } from '../../event/IEvent';
+import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { MouseInput } from './MouseInput';
 
 /**

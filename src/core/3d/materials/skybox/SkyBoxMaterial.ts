@@ -1,6 +1,7 @@
 import { oav } from '../../../../objectview/ObjectView';
 import { shaderlib } from '../../../../renderer/shader/ShaderLib';
-import { Serializable, SerializeProperty } from '../../../../serialization/SerializeProperty';
+import { Serializable } from '../../../../serialization/Serializable';
+import { SerializeProperty } from '../../../../serialization/SerializeProperty';
 
 import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';

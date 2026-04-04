@@ -1,9 +1,12 @@
-import { Geometry, Material, Mesh3D, TransformUtils } from '@feng3d/core';
-import { RegisterComponent } from '@feng3d/ecs';
-import { Ray3 } from '@feng3d/math';
+import { Geometry } from '../../core/3d/geometrys/Geometry';
+import { Material } from '../../core/core/Material';
+import { Mesh3D } from '../../core/3d/core/Mesh3D';
+import { TransformUtils } from '../../core/utils/TransformUtils';
+import { RegisterComponent } from '../../ecs/Component';
+import { Ray3 } from '../../math/geom/Ray3';
 import { oav } from '../../objectview/ObjectView';
 
-declare module '@feng3d/ecs' { interface ComponentMap { CanvasRenderer: CanvasRenderer; } }
+declare module '../../ecs/Component' { interface ComponentMap { CanvasRenderer: CanvasRenderer; } }
 
 /**
  * 可在画布上渲染组件，使得拥有该组件的Object3D可以在画布上渲染。

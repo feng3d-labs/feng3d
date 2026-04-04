@@ -1,5 +1,5 @@
-import { Vector2 } from '@feng3d/math';
-import { watcher } from '@feng3d/watcher';
+import { Vector2 } from '../../math/geom/Vector2';
+import { watcher } from '../../watcher/watcher';
 import { Texture } from '../data/Texture';
 import { TextureTarget } from '../gl/WebGLEnums';
 import { WebGLContext } from '../WebGLContext';

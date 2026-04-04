@@ -1,8 +1,10 @@
 import { Color3 } from '../../../math/Color3';
-import { Matrix4x4, Vector3 } from '../../../math/geom';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Vector3 } from '../../../math/geom/Vector3';
 import { oav } from '../../../objectview/ObjectView';
 import { FrameBuffer } from '../../../renderer/FrameBuffer';
-import { $set, SerializeProperty } from '../../../serialization/Serialization';
+import { $set } from '../../../serialization/Serialization';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { HideFlags } from '../../core/HideFlags';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';

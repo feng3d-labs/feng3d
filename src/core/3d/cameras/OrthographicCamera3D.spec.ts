@@ -1,8 +1,6 @@
-import { Vector3 } from '@feng3d/math';
-import { mathUtil } from '../../../../polyfill/MathUtil';
-
+import { Vector3 } from '../../../math/geom/Vector3';
+import { mathUtil } from '../../../polyfill/MathUtil';
 import { Node3D, OrthographicCamera3D } from '../../../src';
-
 import { assert, describe, it } from 'vitest';
 
 const NUM = 10;

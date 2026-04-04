@@ -1,6 +1,6 @@
-import { MinMaxGradient } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
-import { SerializeProperty } from '@feng3d/serialization';
+import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
+import { oav } from '../../objectview/ObjectView';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
 

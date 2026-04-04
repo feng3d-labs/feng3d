@@ -1,7 +1,8 @@
-import { Vector2 } from '@feng3d/math';
+import { Vector2 } from '../../math/geom/Vector2';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { TextureFormat, TextureMagFilter, TextureMinFilter, WebGLContext } from '@feng3d/renderer';
-import { watcher } from '@feng3d/watcher';
+import { TextureFormat, TextureMagFilter, TextureMinFilter } from '../../renderer/gl/WebGLEnums';
+import { WebGLContext } from '../../renderer/WebGLContext';
+import { watcher } from '../../watcher/watcher';
 import { TextureCube } from './TextureCube';
 
 /**

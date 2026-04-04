@@ -1,7 +1,8 @@
 import { createNodeMenu } from '../core/core/CreateNodeMenu';
 import { RegisterComponent } from '../ecs/Component';
 import { oav } from '../objectview/ObjectView';
-import { $serialize, $set, SerializeProperty, serialization } from '../serialization/Serialization';
+import { $serialize, $set, serialization } from '../serialization/Serialization';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';

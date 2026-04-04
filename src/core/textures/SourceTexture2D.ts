@@ -1,8 +1,8 @@
-import { Vector2 } from '../../../math/geom/Vector2';
-import { ImageUtil } from '../../../renderer/utils/ImageUtil';
-import { Texture2D } from '../../../renderer/textures/Texture2D';
-import { WebGLContext } from '../../../renderer/WebGLContext';
-import { $set } from '../../../serialization/$set';
+import { Vector2 } from '../../math/geom/Vector2';
+import { ImageUtil } from '../../renderer/utils/ImageUtil';
+import { Texture2D } from '../../renderer/textures/Texture2D';
+import { WebGLContext } from '../../renderer/WebGLContext';
+import { $set } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';

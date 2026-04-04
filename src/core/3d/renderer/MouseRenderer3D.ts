@@ -3,7 +3,7 @@ import { Rectangle } from '../../../math/geom/Rectangle';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 
-import { windowEventProxy } from '../../../shortcut/shortcut';
+import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 

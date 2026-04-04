@@ -1,15 +1,17 @@
 {
     "compilerOptions": {
-        "target": "ES5",
-        "module": "CommonJS",
+        "target": "ES2020",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "noImplicitAny": false,
         "sourceMap": true,
         "declarationMap": true,
         "declaration": true,
         "experimentalDecorators": true,
         "emitDeclarationOnly": true,
+        "skipLibCheck": true,
         "lib": [
-            "ES2015",
+            "ES2022",
             "DOM",
         ],
         "outDir": "lib"
