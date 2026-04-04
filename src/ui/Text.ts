@@ -15,7 +15,7 @@ import { drawText } from './text/drawText';
 
 declare module '../ecs/Component' { interface ComponentMap { Text: Text; } }
 
-declare module './core/Node2D' { export interface PrimitiveNode2D { Text: Node2D; } }
+declare module './core/Node2D' { interface PrimitiveNode2D { Text: Node2D; } }
 
 /**
  * 文本组件

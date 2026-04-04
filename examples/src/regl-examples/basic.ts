@@ -1,5 +1,4 @@
-import { RenderAtomic, WebGLRenderer } from '@feng3d/renderer';
-import { $set } from '@feng3d/serialization';
+import { $set, RenderAtomic, WebGLRenderer } from 'feng3d';
 
 const webglcanvas = document.createElement('canvas');
 webglcanvas.id = 'glcanvas';

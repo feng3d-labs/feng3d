@@ -7,7 +7,7 @@ import { oav } from '../../../objectview/ObjectView';
 import { Constructor, gPartial, Lazy } from '../../../polyfill/Types';
 import { AttributeBuffer } from '../../../renderer/data/AttributeBuffer';
 import { AttributeBufferSourceTypes } from '../../../renderer/data/AttributeBuffer';
-import { CullFace } from '../../../renderer/gl/WebGLEnums';
+import { CullFace } from '../../../renderer/data/RenderParams';
 import { ElementBuffer } from '../../../renderer/data/ElementBuffer';
 import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { getInstance } from '../../../serialization/getInstance';

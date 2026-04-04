@@ -1,11 +1,14 @@
 import { oav } from '../../objectview/ObjectView';
 import { Texture } from '../../renderer/data/Texture';
-import { TextureTarget } from '../../renderer/gl/WebGLEnums';
+import { TexImage2DTarget, TextureTarget } from '../../renderer/gl/WebGLEnums';
 
 declare module '../../renderer/data/Texture'
 {
     interface TextureMap extends TextureCubeMap { }
+}
 
+declare module '../../renderer/data/Uniforms'
+{
     interface UniformTypeMap
     {
         TextureCube: TextureCube;

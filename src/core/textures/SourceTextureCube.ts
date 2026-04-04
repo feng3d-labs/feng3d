@@ -1,12 +1,14 @@
 import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { ImageUtil } from '../../renderer/utils/ImageUtil';
-import { RegisterTexture, TextureTarget, WebGLContext } from '../../renderer/data/Texture';
+import { RegisterTexture } from '../../renderer/data/Texture';
 import { $set } from '../../serialization/Serialization';
 import { watcher } from '../../watcher/watcher';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 import { TextureCube, TextureCubeSources } from './TextureCube';
+import { TextureTarget } from '../../renderer/gl/WebGLEnums';
+import { WebGLContext } from '../../renderer/WebGLContext';
 
 declare module './TextureCube'
 {

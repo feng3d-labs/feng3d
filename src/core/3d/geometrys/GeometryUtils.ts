@@ -4,7 +4,7 @@ import { Ray3 } from '../../../math/geom/Ray3';
 import { Vector2 } from '../../../math/geom/Vector2';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { AttributeBufferSourceTypes } from '../../../renderer/data/AttributeBuffer';
-import { CullFace } from '../../../renderer/gl/WebGLEnums';
+import { CullFace } from '../../../renderer/data/RenderParams';
 
 export class GeometryUtils
 {

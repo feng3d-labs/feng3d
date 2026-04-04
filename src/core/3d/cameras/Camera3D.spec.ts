@@ -2,7 +2,8 @@ import { Vector2 } from '../../../math/geom/Vector2';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { mathUtil } from '../../../polyfill/MathUtil';
 import { assert, describe, it } from 'vitest';
-import { Camera3D, Node3D } from '../../../src';
+import { Node3D } from '../core/Node3D';
+import { Camera3D } from './Camera3D';
 
 describe('Camera3D', () =>
 {

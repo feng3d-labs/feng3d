@@ -8,8 +8,7 @@
         "declarationMap": true,
         "declaration": true,
         "experimentalDecorators": true,
-        "emitDeclarationOnly": true,
-        "skipLibCheck": true,
+                "skipLibCheck": true,
         "lib": [
             "ES2022",
             "DOM",

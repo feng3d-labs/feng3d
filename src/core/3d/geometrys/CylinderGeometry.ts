@@ -12,7 +12,7 @@ declare module './Geometry'
     export interface DefaultGeometryMap { Cylinder: CylinderGeometry; }
 }
 
-declare module '../core/Node3D' { export interface PrimitiveNode3D { Cylinder: Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { Cylinder: Node3D; } }
 
 export interface ICylinderGeometry
 {

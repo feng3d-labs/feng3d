@@ -13,7 +13,7 @@ import { Scene3D } from '../core/Scene3D';
 
 declare module '../core/Node3D'
 {
-    export interface Node3DEventMap
+    interface Node3DEventMap
     {
         /**
          * 尺寸变化事件

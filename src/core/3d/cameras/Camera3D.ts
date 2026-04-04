@@ -16,9 +16,9 @@ declare module '../../../ecs/Component' { interface ComponentMap { Camera3D: Cam
 
 declare module '../core/Node3D'
 {
-    export interface Node3DEventMap { lensChanged: Camera3D; }
+    interface Node3DEventMap { lensChanged: Camera3D; }
 
-    export interface PrimitiveNode3D { Camera3D: Node3D; }
+    interface PrimitiveNode3D { Camera3D: Node3D; }
 }
 
 /**

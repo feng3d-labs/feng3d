@@ -1,7 +1,8 @@
+import { assert, describe, it } from 'vitest';
 import { Vector3 } from '../../../math/geom/Vector3';
 import { mathUtil } from '../../../polyfill/MathUtil';
-import { Node3D, OrthographicCamera3D } from '../../../src';
-import { assert, describe, it } from 'vitest';
+import { Node3D } from '../core/Node3D';
+import { OrthographicCamera3D } from './OrthographicCamera3D';
 
 const NUM = 10;
 
@@ -14,7 +15,7 @@ describe('OrthographicCamera3D', () =>
         const near = Math.random();
         const far = Math.random() + near;
 
-        new Node3D().components
+        new Node3D().components;
         const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
             size,
             near,

@@ -19,7 +19,7 @@ import { Water3DUniforms } from './WaterMaterial3D';
 
 declare module '../../../ecs/Component' { interface ComponentMap { Water3D: Water3D } }
 
-declare module '../../3d/core/Node3D' { export interface PrimitiveNode3D { Water3D: Node3D; } }
+declare module '../core/Node3D' { interface PrimitiveNode3D { Water3D: Node3D; } }
 
 /**
  * The Water component renders the terrain.

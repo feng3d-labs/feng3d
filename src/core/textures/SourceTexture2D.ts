@@ -7,7 +7,7 @@ import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 
-declare module '../../../renderer/textures/Texture2D'
+declare module '../../renderer/textures/Texture2D'
 {
     interface TextureMap extends Texture2DMap { }
 }
