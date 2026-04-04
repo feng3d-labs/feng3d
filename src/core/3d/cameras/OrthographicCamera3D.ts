@@ -1,10 +1,10 @@
-import { RegisterComponent } from '@feng3d/ecs';
-import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { RegisterComponent } from '../../../ecs/Component';
+import { oav } from '../../../objectview/ObjectView';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { watcher } from '../../../watcher/watcher';
 import { Camera3D } from './Camera3D';
 
-declare module '@feng3d/ecs' { interface ComponentMap { OrthographicCamera3D: OrthographicCamera3D; } }
+declare module '../../../ecs/Component' { interface ComponentMap { OrthographicCamera3D: OrthographicCamera3D; } }
 
 /**
  * 正射投影相机。

@@ -1,7 +1,7 @@
-import { Component, RegisterComponent } from '@feng3d/ecs';
-import { Color4 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '@feng3d/serialization';
+import { Component, RegisterComponent } from '../../../ecs/Component';
+import { Color4 } from '../../../math/Color4';
+import { oav } from '../../../objectview/ObjectView';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { HideFlags } from '../../core/HideFlags';
 import { RunEnvironment } from '../../core/RunEnvironment';
 import { Component3D } from './Component3D';
@@ -20,7 +20,7 @@ declare module './Node3D'
     }
 }
 
-declare module '@feng3d/ecs'
+declare module '../../../ecs/Component'
 {
     interface ComponentMap { Scene3D: Scene3D; }
 }

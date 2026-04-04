@@ -1,6 +1,6 @@
-import { oav } from '../../objectview/ObjectView';
-import { shaderlib } from '@feng3d/renderer';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { oav } from '../../../../objectview/ObjectView';
+import { shaderlib } from '../../../../renderer/shader/ShaderLib';
+import { Serializable, SerializeProperty } from '../../../../serialization/SerializeProperty';
 
 import { AssetData } from '../../../core/AssetData';
 import { Material } from '../../../core/Material';

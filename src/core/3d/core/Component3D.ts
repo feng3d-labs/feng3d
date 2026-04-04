@@ -1,4 +1,4 @@
-import { EventEmitter } from '@feng3d/event';
+import { EventEmitter } from '../../../event/EventEmitter';
 import { NodeComponent } from '../../core/NodeComponent';
 import { Node3D, Node3DEventMap } from './Node3D';
 

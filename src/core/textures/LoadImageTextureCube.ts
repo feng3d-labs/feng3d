@@ -1,6 +1,7 @@
-import { loader } from '@feng3d/filesystem';
-import { ImageUtil, RegisterTexture } from '@feng3d/renderer';
-import { watcher } from '@feng3d/watcher';
+import { loader } from '../../filesystem/base/Loader';
+import { ImageUtil } from '../../renderer/utils/ImageUtil';
+import { RegisterTexture } from '../../renderer/data/Texture';
+import { watcher } from '../../watcher/watcher';
 
 import { SourceTextureCube } from './SourceTextureCube';
 import { TextureCube, TextureCubeSources } from './TextureCube';

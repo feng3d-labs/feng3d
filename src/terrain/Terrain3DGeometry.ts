@@ -1,12 +1,14 @@
-import { Geometry, RegisterGeometry, geometryUtils } from '@feng3d/core';
-import { loader } from '@feng3d/filesystem';
-import { Color4 } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
-import { ImageUtil, RenderAtomic } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Geometry, RegisterGeometry } from '../core/3d/geometrys/Geometry';
+import { geometryUtils } from '../core/3d/geometrys/GeometryUtils';
+import { loader } from '../filesystem/base/Loader';
+import { Color4 } from '../math/Color4';
+import { oav } from '../objectview/ObjectView';
+import { ImageUtil } from '../renderer/utils/ImageUtil';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { watcher } from '../watcher/watcher';
 
-declare module '@feng3d/core'
+declare module '../core/3d/geometrys/Geometry'
 {
     export interface GeometryMap { TerrainGeometry: Terrain3DGeometry }
 

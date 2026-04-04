@@ -1,6 +1,10 @@
-import { Box3, Rectangle, Vector3 } from '@feng3d/math';
-import { RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
-import { $set } from '@feng3d/serialization';
+import { Box3 } from '../../../math/geom/Box3';
+import { Rectangle } from '../../../math/geom/Rectangle';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Shader } from '../../../renderer/data/Shader';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
+import { $set } from '../../../serialization/Serialization';
 import { Camera3D } from '../cameras/Camera3D';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
@@ -12,7 +16,7 @@ import { PointLight3D } from '../light/PointLight3D';
 import { SpotLight3D } from '../light/SpotLight3D';
 import { ShadowType } from '../light/shadow/ShadowType';
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/data/RenderAtomic'
 {
     interface RenderAtomic
     {

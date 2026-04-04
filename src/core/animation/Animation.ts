@@ -1,12 +1,12 @@
-import { RegisterComponent } from '@feng3d/ecs';
+import { RegisterComponent } from '../../ecs/Component';
 import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
 import { NodeComponent } from '../core/NodeComponent';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip, PropertyClipPathItemType } from './PropertyClip';
 
-declare module '@feng3d/ecs'
+declare module '../../ecs/Component'
 {
     interface ComponentMap { Animation: Animation; }
 }

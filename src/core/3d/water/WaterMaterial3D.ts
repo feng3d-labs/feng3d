@@ -1,7 +1,10 @@
-import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { shaderlib } from '@feng3d/renderer';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { Color3 } from '../../../math/Color3';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { oav } from '../../../objectview/ObjectView';
+import { shaderlib } from '../../../renderer/shader/ShaderLib';
+import { Serializable } from '../../../serialization/Serializable';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 
 import { AssetData } from '../../core/AssetData';
 import { Material } from '../../core/Material';

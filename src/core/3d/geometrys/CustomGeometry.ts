@@ -1,5 +1,6 @@
-import { AttributeBuffer, ElementBuffer } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
+import { AttributeBuffer } from '../../../renderer/data/AttributeBuffer';
+import { ElementBuffer } from '../../../renderer/data/ElementBuffer';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 
 import { Geometry, RegisterGeometry } from './Geometry';
 

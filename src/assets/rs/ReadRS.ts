@@ -1,13 +1,14 @@
-import { AssetData } from '@feng3d/core';
-import { FS, ReadFS, pathUtils } from '@feng3d/filesystem';
-import { path } from '@feng3d/path';
-import { ArrayUtils } from '../../../polyfill/ArrayUtils';
-import { Constructor, gPartial } from '../../../polyfill/Types';
-import { ObjectUtils } from '../../../polyfill/ObjectUtils';
-import { mathUtil } from '../../../polyfill/MathUtil';
-import { $deserialize, $set, __class__, getInstance } from '@feng3d/serialization';
+import { AssetData } from '../../core/core/AssetData';
+import { FS, ReadFS } from '../../filesystem/FS';
+import { pathUtils } from '../../filesystem/PathUtils';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { Constructor, gPartial } from '../../polyfill/Types';
+import { ObjectUtils } from '../../polyfill/ObjectUtils';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { $deserialize, $set, __class__, getInstance } from '../../serialization/Serialization';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';
+import { path } from '../../path/Path';
 
 /**
  * 可读资源系统

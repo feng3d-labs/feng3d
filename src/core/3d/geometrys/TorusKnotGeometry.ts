@@ -1,5 +1,5 @@
-import { Vector3 } from '@feng3d/math';
-import { watcher } from '@feng3d/watcher';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { watcher } from '../../../watcher/watcher';
 import { Node3D } from '../core/Node3D';
 import { Geometry, RegisterGeometry } from '../geometrys/Geometry';
 import { geometryUtils } from '../geometrys/GeometryUtils';

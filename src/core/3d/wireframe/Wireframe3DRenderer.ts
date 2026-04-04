@@ -1,14 +1,17 @@
-import { Color4 } from '@feng3d/math';
+import { Color4 } from '../../../math/Color4';
 import { lazy } from '../../../polyfill/Types';
-import { ElementBuffer, RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
-import { $set } from '@feng3d/serialization';
+import { ElementBuffer } from '../../../renderer/data/ElementBuffer';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Shader } from '../../../renderer/data/Shader';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
+import { $set } from '../../../serialization/Serialization';
 
 import { Camera3D } from '../cameras/Camera3D';
 import { Renderable3D } from '../core/Renderable3D';
 import { Scene3D } from '../core/Scene3D';
 import { Wireframe3D } from './Wireframe3D';
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/data/RenderAtomic'
 {
     interface RenderAtomic
     {

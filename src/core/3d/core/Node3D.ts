@@ -1,12 +1,17 @@
-import { ComponentMap } from '@feng3d/ecs';
-import { EventEmitter } from '@feng3d/event';
-import { Euler, Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { gPartial } from '../../../polyfill/Types';
+import { ComponentMap } from '../../../ecs/Component';
+import { EventEmitter } from '../../../event/EventEmitter';
+import { Euler } from '../../../math/geom/Euler';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Quaternion } from '../../../math/geom/Quaternion';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { oav } from '../../../objectview/ObjectView';
 import { mathUtil } from '../../../polyfill/MathUtil';
-import { RenderAtomic } from '@feng3d/renderer';
-import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { gPartial } from '../../../polyfill/Types';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Serializable } from '../../../serialization/Serializable';
+import { $set } from '../../../serialization/Serialization';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { watcher } from '../../../watcher/watcher';
 
 import { AssetType } from '../../assets/AssetType';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
@@ -17,7 +22,7 @@ import { Geometry } from '../geometrys/Geometry';
 import { BoundingBox3D } from './BoundingBox3D';
 import { Scene3D } from './Scene3D';
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/data/Uniforms'
 {
     interface Uniforms
     {

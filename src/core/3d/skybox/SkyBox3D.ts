@@ -1,7 +1,7 @@
-import { RegisterComponent } from '@feng3d/ecs';
-import { oav } from '../../objectview/ObjectView';
-import { RenderAtomic } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
+import { RegisterComponent } from '../../../ecs/Component';
+import { oav } from '../../../objectview/ObjectView';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 
 import { AssetData } from '../../core/AssetData';
 import { TextureCube } from '../../textures/TextureCube';
@@ -9,9 +9,9 @@ import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';
 import { Scene3D } from '../core/Scene3D';
 
-declare module '@feng3d/ecs' { interface ComponentMap { SkyBox: SkyBox3D; } }
+declare module '../../../ecs/Component' { interface ComponentMap { SkyBox: SkyBox3D; } }
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/data/Uniforms'
 {
     interface Uniforms
     {

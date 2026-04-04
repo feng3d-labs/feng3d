@@ -1,14 +1,19 @@
-import { Color4, Matrix4x4, Vector3, Vector4 } from '@feng3d/math';
+import { Color4 } from '../../../math/Color4';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector4 } from '../../../math/geom/Vector4';
 import { LazyObject, lazy } from '../../../polyfill/Types';
 import { mathUtil } from '../../../polyfill/MathUtil';
-import { RenderAtomic, Uniforms, WebGLRenderer } from '@feng3d/renderer';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Uniforms } from '../../../renderer/data/Uniforms';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 
 import { Camera3D } from '../cameras/Camera3D';
 import { Mesh3D } from '../core/Mesh3D';
 import { Scene3D } from '../core/Scene3D';
 import { LightPicker } from '../light/pickers/LightPicker';
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/data/Uniforms'
 {
     interface Uniforms
     {

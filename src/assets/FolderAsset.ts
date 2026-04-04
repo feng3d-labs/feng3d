@@ -1,5 +1,5 @@
-import { AssetType } from '@feng3d/core';
-import { ov } from '../../objectview/ObjectView';
+import { AssetType } from '../core/assets/AssetType';
+import { ov } from '../objectview/ObjectView';
 import { FileAsset, RegisterAsset } from './FileAsset';
 
 declare module './FileAsset'

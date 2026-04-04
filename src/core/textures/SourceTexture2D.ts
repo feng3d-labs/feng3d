@@ -1,11 +1,13 @@
-import { Vector2 } from '@feng3d/math';
-import { ImageUtil, Texture2D, WebGLContext } from '@feng3d/renderer';
-import { $set } from '@feng3d/serialization';
+import { Vector2 } from '../../../math/geom/Vector2';
+import { ImageUtil } from '../../../renderer/utils/ImageUtil';
+import { Texture2D } from '../../../renderer/textures/Texture2D';
+import { WebGLContext } from '../../../renderer/WebGLContext';
+import { $set } from '../../../serialization/$set';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/textures/Texture2D'
 {
     interface TextureMap extends Texture2DMap { }
 }

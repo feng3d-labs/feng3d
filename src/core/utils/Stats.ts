@@ -1,7 +1,7 @@
-import { Component, RegisterComponent } from '@feng3d/ecs';
+import { Component, RegisterComponent } from '../../ecs/Component';
 import { ticker } from './Ticker';
 
-declare module '@feng3d/ecs'
+declare module '../../ecs/Component'
 {
     interface ComponentMap { Stats: Stats; }
 }

@@ -1,5 +1,7 @@
-import { Matrix4x4, Vector3 } from '@feng3d/math';
-import { RenderAtomic, Texture2D } from '@feng3d/renderer';
+import { Matrix4x4 } from '../../../../math/geom/Matrix4x4';
+import { Vector3 } from '../../../../math/geom/Vector3';
+import { RenderAtomic } from '../../../../renderer/data/RenderAtomic';
+import { Texture2D } from '../../../../renderer/textures/Texture2D';
 import { Mesh3D } from '../../core/Mesh3D';
 import { DirectionalLight3D } from '../DirectionalLight3D';
 import { Light3D } from '../Light3D';
@@ -7,7 +9,7 @@ import { PointLight3D } from '../PointLight3D';
 import { SpotLight3D } from '../SpotLight3D';
 import { ShadowType } from '../shadow/ShadowType';
 
-declare module '@feng3d/renderer'
+declare module '../../../../renderer/data/Uniforms'
 {
     interface Uniforms
     {

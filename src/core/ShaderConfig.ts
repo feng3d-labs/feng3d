@@ -1,5 +1,5 @@
-import { shaderlib } from '@feng3d/renderer';
-import { $set } from '@feng3d/serialization';
+import { shaderlib } from '../renderer/shader/ShaderLib';
+import { $set } from '../serialization/Serialization';
 import particlesAdditiveFragment from './shaders/Particles_Additive.fragment.glsl';
 import particlesAdditiveVertex from './shaders/Particles_Additive.vertex.glsl';
 import particlesAlphaBlendedPremultiplyFragment from './shaders/Particles_AlphaBlendedPremultiply.fragment.glsl';

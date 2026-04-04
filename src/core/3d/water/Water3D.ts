@@ -1,7 +1,11 @@
-import { RegisterComponent } from '@feng3d/ecs';
-import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
-import { FrameBuffer, RenderAtomic } from '@feng3d/renderer';
-import { $set } from '@feng3d/serialization';
+import { RegisterComponent } from '../../../ecs/Component';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Plane } from '../../../math/geom/Plane';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector4 } from '../../../math/geom/Vector4';
+import { FrameBuffer } from '../../../renderer/FrameBuffer';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { $set } from '../../../serialization/Serialization';
 
 import { Node3D } from '../../3d/core/Node3D';
 import { Geometry } from '../../3d/geometrys/Geometry';
@@ -13,7 +17,7 @@ import { Mesh3D } from '../core/Mesh3D';
 import { Scene3D } from '../core/Scene3D';
 import { Water3DUniforms } from './WaterMaterial3D';
 
-declare module '@feng3d/ecs' { interface ComponentMap { Water3D: Water3D } }
+declare module '../../../ecs/Component' { interface ComponentMap { Water3D: Water3D } }
 
 declare module '../../3d/core/Node3D' { export interface PrimitiveNode3D { Water3D: Node3D; } }
 

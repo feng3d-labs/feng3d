@@ -1,7 +1,8 @@
 import { oav } from '../../objectview/ObjectView';
-import { TexImage2DTarget, Texture, TextureTarget } from '@feng3d/renderer';
+import { Texture } from '../../renderer/data/Texture';
+import { TextureTarget } from '../../renderer/gl/WebGLEnums';
 
-declare module '@feng3d/renderer'
+declare module '../../renderer/data/Texture'
 {
     interface TextureMap extends TextureCubeMap { }
 

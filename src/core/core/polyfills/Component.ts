@@ -1,6 +1,6 @@
-import { Component } from '@feng3d/ecs';
-import { RenderAtomic } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
+import { Component } from '../../../ecs/Component';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { Camera3D } from '../../3d/cameras/Camera3D';
 import { Scene3D } from '../../3d/core/Scene3D';
 import { HideFlags } from '../HideFlags';

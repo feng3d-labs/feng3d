@@ -1,11 +1,19 @@
-import { Camera3D, Component3D, Geometry, Material, Node3D, QuadGeometry, RunEnvironment, Scene3D, createNodeMenu } from '@feng3d/core';
-import { RegisterComponent } from '@feng3d/ecs';
-import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
+import { Camera3D } from '../core/3d/cameras/Camera3D';
+import { Component3D } from '../core/3d/core/Component3D';
+import { Geometry } from '../core/3d/geometrys/Geometry';
+import { Material } from '../core/core/Material';
+import { Node3D } from '../core/3d/core/Node3D';
+import { QuadGeometry } from '../core/3d/geometrys/QuadGeometry';
+import { RunEnvironment } from '../core/core/RunEnvironment';
+import { Scene3D } from '../core/3d/core/Scene3D';
+import { createNodeMenu } from '../core/core/CreateNodeMenu';
+import { RegisterComponent } from '../ecs/Component';
+import { Matrix3x3 } from '../math/geom/Matrix3x3';
+import { Matrix4x4 } from '../math/geom/Matrix4x4';
+import { Vector3 } from '../math/geom/Vector3';
 import { ArrayUtils } from '../polyfill/ArrayUtils';
-import { AttributeBuffer, RenderAtomic } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { AttributeBuffer } from '../renderer/data/AttributeBuffer';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
 import { Particle } from './Particle';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
@@ -25,6 +33,9 @@ import { ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifeti
 import { ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
 import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
 import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
+import { oav } from '../objectview/ObjectView';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { watcher } from '../watcher/watcher';
 
 declare module '@feng3d/ecs' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 

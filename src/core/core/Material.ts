@@ -1,7 +1,9 @@
-import { EventEmitter } from '@feng3d/event';
+import { EventEmitter } from '../../event/EventEmitter';
 import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial, Lazy } from '../../polyfill/Types';
-import { DrawMode, RenderAtomic, RenderParams, Shader } from '@feng3d/renderer';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { DrawMode, RenderParams } from '../../renderer/data/RenderParams';
+import { Shader } from '../../renderer/data/Shader';
 import { $set, Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 

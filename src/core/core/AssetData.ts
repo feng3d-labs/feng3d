@@ -1,7 +1,11 @@
-import { EventEmitter } from '@feng3d/event';
+import { EventEmitter } from '../../event/EventEmitter';
 import { Lazy, lazy } from '../../polyfill/Types';
 import { MapUtils } from '../../polyfill/MapUtils';
-import { __class__, getClassName, getInstance, serialization, SerializeProperty } from '@feng3d/serialization';
+import { __class__ } from '../../serialization/SerializationConst';
+import { getClassName } from '../../serialization/getClassName';
+import { getInstance } from '../../serialization/getInstance';
+import { serialization } from '../../serialization/Serialization';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { AssetType } from '../assets/AssetType';
 
 export interface DefaultAssetDataMap

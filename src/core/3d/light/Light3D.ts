@@ -1,7 +1,8 @@
-import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { FrameBuffer } from '@feng3d/renderer';
-import { $set, SerializeProperty } from '@feng3d/serialization';
+import { Color3 } from '../../../math/Color3';
+import { Matrix4x4, Vector3 } from '../../../math/geom';
+import { oav } from '../../../objectview/ObjectView';
+import { FrameBuffer } from '../../../renderer/FrameBuffer';
+import { $set, SerializeProperty } from '../../../serialization/Serialization';
 import { HideFlags } from '../../core/HideFlags';
 import { Camera3D } from '../cameras/Camera3D';
 import { Component3D } from '../core/Component3D';

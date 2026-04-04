@@ -1,16 +1,21 @@
-import { RegisterComponent } from '@feng3d/ecs';
-import { Color4, Vector4 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { RenderAtomic, Texture2D } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
+import { RegisterComponent } from '../ecs/Component';
+import { Color4 } from '../math/Color4';
+import { Vector4 } from '../math/geom/Vector4';
+import { oav } from '../objectview/ObjectView';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { Texture2D } from '../renderer/textures/Texture2D';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 
-import { AssetData, Camera3D, Scene3D, createNodeMenu } from '@feng3d/core';
+import { AssetData } from '../core/core/AssetData';
+import { Camera3D } from '../core/3d/cameras/Camera3D';
+import { Scene3D } from '../core/3d/core/Scene3D';
+import { createNodeMenu } from '../core/core/CreateNodeMenu';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 
-declare module '@feng3d/ecs' { interface ComponentMap { Image: Image } }
+declare module '../ecs/Component' { interface ComponentMap { Image: Image } }
 
-declare module '@feng3d/renderer'
+declare module '../renderer/data/Uniforms'
 {
     interface Uniforms
     {

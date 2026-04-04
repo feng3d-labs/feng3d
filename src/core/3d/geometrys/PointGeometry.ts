@@ -1,9 +1,9 @@
-import { Color4 } from '@feng3d/math';
-import { Vector2 } from '@feng3d/math';
-import { Vector3 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Color4 } from '../../../math/Color4';
+import { Vector2 } from '../../../math/geom/Vector2';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { oav } from '../../../objectview/ObjectView';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { watcher } from '../../../watcher/watcher';
 import { Geometry, RegisterGeometry } from './Geometry';
 
 declare module './Geometry' { interface GeometryMap { PointGeometry: PointGeometry } }

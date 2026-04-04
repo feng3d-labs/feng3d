@@ -1,7 +1,8 @@
-import { AssetData, ticker } from '@feng3d/core';
-import { ReadWriteFS } from '@feng3d/filesystem';
-import { gPartial } from '../../../polyfill/Types';
-import { $serialize } from '@feng3d/serialization';
+import { AssetData } from '../../core/core/AssetData';
+import { ticker } from '../../core/utils/Ticker';
+import { ReadWriteFS } from '../../filesystem/ReadWriteFS';
+import { gPartial } from '../../polyfill/Types';
+import { $serialize } from '../../serialization/Serialization';
 import { FileAsset } from '../FileAsset';
 import { FolderAsset } from '../FolderAsset';
 import { ReadRS } from './ReadRS';

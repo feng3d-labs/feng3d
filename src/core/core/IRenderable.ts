@@ -1,4 +1,4 @@
-import { RenderAtomic } from '@feng3d/renderer';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 
 /**
  * 可渲染接口

@@ -1,12 +1,13 @@
-import { EventEmitter } from '@feng3d/event';
-import { Rectangle } from '@feng3d/math';
-import { RenderAtomic, WebGLRenderer } from '@feng3d/renderer';
+import { EventEmitter } from '../../../event/EventEmitter';
+import { Rectangle } from '../../../math/geom/Rectangle';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 
-import { windowEventProxy } from '@feng3d/shortcut';
+import { windowEventProxy } from '../../../shortcut/shortcut';
 import { Node3D } from '../core/Node3D';
 import { Renderable3D } from '../core/Renderable3D';
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/data/Uniforms'
 {
     interface Uniforms
     {

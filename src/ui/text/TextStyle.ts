@@ -1,9 +1,9 @@
-import { EventEmitter } from '@feng3d/event';
-import { Color4 } from '@feng3d/math';
+import { EventEmitter } from '../../event/EventEmitter';
+import { Color4 } from '../../math/Color4';
 import { oav } from '../../objectview/ObjectView';
-import { Serializable } from '@feng3d/serialization';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { watcher } from '../../watcher/watcher';
 
 /**
  * 文本上渐变方向。
@@ -119,7 +119,7 @@ export interface TextStyleEventMap
     changed
 }
 
-declare module '../../../serialization/Serializable' { interface SerializableMap { TextStyle: TextStyle } }
+declare module '../../serialization/Serializable' { interface SerializableMap { TextStyle: TextStyle } }
 
 /**
  * 文本样式

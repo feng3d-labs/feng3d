@@ -1,9 +1,10 @@
-import { loader } from '@feng3d/filesystem';
-import { ImageUtil, RegisterTexture } from '@feng3d/renderer';
-import { watcher } from '@feng3d/watcher';
+import { loader } from '../../filesystem/base/Loader';
+import { ImageUtil } from '../../renderer/utils/ImageUtil';
+import { RegisterTexture } from '../../renderer/data/Texture';
+import { watcher } from '../../watcher/watcher';
 import { SourceTexture2D } from './SourceTexture2D';
 
-declare module '@feng3d/renderer'
+declare module '../../renderer/data/Texture'
 {
     interface Texture2DMap { LoadImageTexture2D: LoadImageTexture2D }
 }

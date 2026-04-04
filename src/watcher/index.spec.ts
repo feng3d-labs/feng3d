@@ -1,4 +1,4 @@
-import { watcher } from '../src/watcher';
+import { watcher } from './watcher';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

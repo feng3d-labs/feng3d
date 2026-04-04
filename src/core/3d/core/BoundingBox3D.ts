@@ -1,5 +1,6 @@
-import { Component } from '@feng3d/ecs';
-import { Box3, Vector3 } from '@feng3d/math';
+import { Component } from '../../../ecs/Component';
+import { Box3 } from '../../../math/geom/Box3';
+import { Vector3 } from '../../../math/geom/Vector3';
 import { Node3D } from './Node3D';
 
 declare module './Node3D'

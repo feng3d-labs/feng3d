@@ -1,13 +1,18 @@
-import { RegisterComponent } from '@feng3d/ecs';
-import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { RegisterComponent } from '../../../ecs/Component';
+import { Frustum } from '../../../math/geom/Frustum';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { Ray3 } from '../../../math/geom/Ray3';
+import { Vector2 } from '../../../math/geom/Vector2';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { Vector4 } from '../../../math/geom/Vector4';
+import { oav } from '../../../objectview/ObjectView';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
+import { watcher } from '../../../watcher/watcher';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { Component3D } from '../core/Component3D';
 import { Node3D } from '../core/Node3D';
 
-declare module '@feng3d/ecs' { interface ComponentMap { Camera3D: Camera3D; } }
+declare module '../../../ecs/Component' { interface ComponentMap { Camera3D: Camera3D; } }
 
 declare module '../core/Node3D'
 {

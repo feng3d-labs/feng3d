@@ -1,6 +1,7 @@
-import { EventEmitter } from '@feng3d/event';
+import { EventEmitter } from '../../event/EventEmitter';
 import { Node, NodeEventMap } from './Node';
-import { Component, ComponentMap } from '@feng3d/ecs';
+import { Component } from '../../ecs/Component';
+import { ComponentMap } from '../../ecs/Component';
 
 /**
  * 結點組件

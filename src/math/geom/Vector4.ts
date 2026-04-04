@@ -1,4 +1,4 @@
-import { oav } from '../objectview/ObjectView';
+import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';

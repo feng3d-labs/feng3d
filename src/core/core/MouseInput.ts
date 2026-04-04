@@ -1,4 +1,5 @@
-import { EventEmitter, IEvent } from '@feng3d/event';
+import { EventEmitter } from '../../../event/EventEmitter';
+import { IEvent } from '../../../event/IEvent';
 
 export interface MouseEventMap
 {

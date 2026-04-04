@@ -1,4 +1,4 @@
-import { globalEmitter } from '@feng3d/event';
+import { globalEmitter } from '../event/GlobalEmitter';
 import { dataTransform } from '../polyfill/DataTransform';
 import { FSType } from './FSType';
 import { IReadWriteFS } from './IReadWriteFS';

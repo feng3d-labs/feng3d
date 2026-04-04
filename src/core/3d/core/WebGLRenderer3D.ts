@@ -1,5 +1,5 @@
-import { RegisterComponent } from '@feng3d/ecs';
-import { WebGLRenderer } from '@feng3d/renderer';
+import { RegisterComponent } from '../../../ecs/Component';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { ticker } from '../../utils/Ticker';
 import { Camera3D } from '../cameras/Camera3D';
 import { outlineRenderer } from '../outline/Outline3DRenderer';
@@ -30,7 +30,7 @@ declare module './Node3D'
     }
 }
 
-declare module '@feng3d/ecs' { interface ComponentMap { WebGLRenderer3D: WebGLRenderer3D; } }
+declare module '../../../ecs/Component' { interface ComponentMap { WebGLRenderer3D: WebGLRenderer3D; } }
 
 /**
  * 3D渲染器。

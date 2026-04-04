@@ -1,8 +1,8 @@
-import { Texture } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
+import { Texture } from '../../renderer/data/Texture';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { HideFlags } from '../core/HideFlags';
 
-declare module '@feng3d/renderer'
+declare module '../../../renderer/data/Texture'
 {
     interface Texture
     {

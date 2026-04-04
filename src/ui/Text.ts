@@ -1,16 +1,19 @@
-import { Camera3D, CanvasTexture2D, Scene3D, createNodeMenu } from '@feng3d/core';
-import { RegisterComponent } from '@feng3d/ecs';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { RenderAtomic } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Camera3D } from '../core/3d/cameras/Camera3D';
+import { CanvasTexture2D } from '../core/textures/CanvasTexture2D';
+import { Scene3D } from '../core/3d/core/Scene3D';
+import { createNodeMenu } from '../core/core/CreateNodeMenu';
+import { RegisterComponent } from '../ecs/Component';
+import { Vector4 } from '../math/geom/Vector4';
+import { oav } from '../objectview/ObjectView';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 import { TextStyle } from './text/TextStyle';
 import { drawText } from './text/drawText';
 
-declare module '@feng3d/ecs' { interface ComponentMap { Text: Text; } }
+declare module '../ecs/Component' { interface ComponentMap { Text: Text; } }
 
 declare module './core/Node2D' { export interface PrimitiveNode2D { Text: Node2D; } }
 

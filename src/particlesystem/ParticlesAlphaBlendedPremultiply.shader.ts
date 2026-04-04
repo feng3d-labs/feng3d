@@ -1,9 +1,11 @@
-import { AssetData, Material, RegisterMaterial } from '@feng3d/core';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '../../../objectview/ObjectView';
-import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
+import { AssetData } from '../core/core/AssetData';
+import { Material } from '../core/core/Material';
+import { RegisterMaterial } from '../core/core/Material';
+import { Vector4 } from '../math/geom/Vector4';
+import { oav } from '../objectview/ObjectView';
+import { $set, Serializable, SerializeProperty } from '../serialization/Serialization';
 
-declare module '@feng3d/core'
+declare module '../core/core/Material'
 {
     interface MaterialMap { ParticlesAlphaBlendedPremultiplyMaterial: ParticlesAlphaBlendedPremultiplyMaterial }
     interface UniformsMap { ParticlesAlphaBlendedPremultiplyUniforms: ParticlesAlphaBlendedPremultiplyUniforms }

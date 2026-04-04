@@ -1,6 +1,6 @@
-import { RegisterComponent } from '@feng3d/ecs';
-import { IEvent } from '@feng3d/event';
-import { windowEventProxy } from '@feng3d/shortcut';
+import { RegisterComponent } from '../../../ecs/Component';
+import { IEvent } from '../../../event/Event';
+import { windowEventProxy } from '../../../shortcut/shortcut';
 import { PickingCollisionVO, rayCast3D } from '../../3d/raycast/rayCast3D';
 import { MouseEventMap, MouseInput } from '../../core/MouseInput';
 import { WindowMouseInput } from '../../core/WindowMouseInput';
@@ -71,7 +71,7 @@ declare module './Node3D'
     }
 }
 
-declare module '@feng3d/ecs'
+declare module '../../../ecs/Component'
 {
     interface ComponentMap { MouseEvent3D: MouseEvent3D; }
 }

@@ -1,12 +1,14 @@
-import { Camera3D, Scene3D, createNodeMenu } from '@feng3d/core';
-import { Component, RegisterComponent } from '@feng3d/ecs';
-import { Color4 } from '@feng3d/math';
-import { oav } from '../../objectview/ObjectView';
-import { RenderAtomic } from '@feng3d/renderer';
-import { SerializeProperty } from '@feng3d/serialization';
+import { Camera3D } from '../core/3d/cameras/Camera3D';
+import { Scene3D } from '../core/3d/core/Scene3D';
+import { createNodeMenu } from '../core/core/CreateNodeMenu';
+import { RegisterComponent } from '../ecs/Component';
+import { Color4 } from '../math/Color4';
+import { oav } from '../objectview/ObjectView';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import { Node2D } from './core/Node2D';
 
-declare module '@feng3d/ecs' { interface ComponentMap { Rect: Rect; } }
+declare module '../ecs/Component' { interface ComponentMap { Rect: Rect; } }
 
 declare module './core/Node2D' { interface PrimitiveNode2D { Rect: Node2D; } }
 

@@ -1,10 +1,10 @@
-import { Vector2 } from '@feng3d/math';
+import { Vector2 } from '../../math/geom/Vector2';
 import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial } from '../../polyfill/Types';
 import { Serializable } from '../../serialization/Serializable';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { getInstance } from '../../serialization/getInstance';
-import { watcher } from '@feng3d/watcher';
+import { watcher } from '../../watcher/watcher';
 import { WebGLContext } from '../WebGLContext';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureTarget, TextureWrap } from '../gl/WebGLEnums';
 

@@ -1,12 +1,12 @@
-import { createNodeMenu } from '@feng3d/core';
-import { RegisterComponent } from '@feng3d/ecs';
-import { oav } from '../../objectview/ObjectView';
-import { $serialize, $set, SerializeProperty, serialization } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { createNodeMenu } from '../core/core/CreateNodeMenu';
+import { RegisterComponent } from '../ecs/Component';
+import { oav } from '../objectview/ObjectView';
+import { $serialize, $set, SerializeProperty, serialization } from '../serialization/Serialization';
+import { watcher } from '../watcher/watcher';
 import { Component2D } from './core/Component2D';
 import { Node2D } from './core/Node2D';
 
-declare module '@feng3d/ecs' { interface ComponentMap { Button: Button; } }
+declare module '../ecs/Component' { interface ComponentMap { Button: Button; } }
 
 declare module './core/Node2D'
 {
