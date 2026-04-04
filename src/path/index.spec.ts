@@ -1,7 +1,6 @@
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, it } from 'vitest';
+import { FormatInputPathObject, path, Path } from './Path';
 const { ok, equal, deepEqual } = assert;
-
-import { FormatInputPathObject, Path, path } from '../src';
 
 describe('path', () =>
 {
@@ -719,7 +718,7 @@ describe('path', () =>
                 equal(typeof output.name, 'string');
                 equal(path.format(output), element);
                 equal(output.root, root);
-                ok(output.dir.startsWith(output.root));
+                assert.ok(output.dir.startsWith(output.root));
                 equal(output.dir, output.dir ? path.dirname(element) : '');
                 equal(output.base, path.basename(element));
                 equal(output.ext, path.extname(element));

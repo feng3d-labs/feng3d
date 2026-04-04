@@ -5,12 +5,12 @@ describe('Array', () =>
 {
     it('equal', () =>
     {
-        assert.assert.ok(ArrayUtils..equal([1, 2, 3], [1, 2, 3]));
+        assert.ok(ArrayUtils.equal([1, 2, 3], [1, 2, 3]));
 
-        assert.assert.ok(!ArrayUtils..equal([{}, 2, 3], [{}, 2, 3]));
+        assert.ok(!ArrayUtils.equal([{}, 2, 3], [{}, 2, 3]));
 
         const obj = {};
-        assert.assert.ok(ArrayUtils..equal([obj, 2, 3], [obj, 2, 3]));
+        assert.ok(ArrayUtils.equal([obj, 2, 3], [obj, 2, 3]));
     });
 
     it('isUnique', () =>

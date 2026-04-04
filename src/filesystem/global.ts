@@ -1,6 +1,6 @@
 export { };
 
-declare module '@feng3d/event'
+declare module '../event/globalEmitter'
 {
     interface GlobalEvents
     {

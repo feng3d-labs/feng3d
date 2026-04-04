@@ -37,13 +37,13 @@ import { oav } from '../objectview/ObjectView';
 import { SerializeProperty } from '../serialization/SerializeProperty';
 import { watcher } from '../watcher/watcher';
 
-declare module '@feng3d/ecs' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
+declare module '../ecs/Component' { interface ComponentMap { ParticleSystem3D: ParticleSystem3D } }
 
-declare module '@feng3d/core' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
+declare module '../core/3d/geometrys/Geometry' { interface DefaultGeometryMap { 'Billboard-Geometry': QuadGeometry; } }
 
-declare module '@feng3d/core' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
+declare module '../core/3d/core/Node3D' { interface PrimitiveNode3D { 'Particle System': Node3D; } }
 
-declare module '@feng3d/core'
+declare module '../core/3d/core/Node3D'
 {
     interface Node3DEventMap
     {
@@ -59,7 +59,7 @@ declare module '@feng3d/core'
     }
 }
 
-declare module '@feng3d/renderer'
+declare module '../renderer/data/Uniforms'
 {
     interface Uniforms
     {
