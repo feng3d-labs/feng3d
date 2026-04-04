@@ -1,7 +1,7 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { RunEnvironment } from '../../core/RunEnvironment';
 import { ticker } from '../../utils/Ticker';

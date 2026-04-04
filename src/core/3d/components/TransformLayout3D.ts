@@ -1,7 +1,7 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { IEvent } from '@feng3d/event';
 import { Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';

@@ -1,12 +1,14 @@
 import { Vector2 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial } from '../../polyfill/Types';
-import { Serializable, SerializeProperty, getInstance } from '@feng3d/serialization';
+import { Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
+import { getInstance } from '../../serialization/getInstance';
 import { watcher } from '@feng3d/watcher';
 import { WebGLContext } from '../WebGLContext';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureTarget, TextureWrap } from '../gl/WebGLEnums';
 
-declare module '@feng3d/serialization'
+declare module '../../serialization/Serializable'
 {
     interface SerializableMap extends TextureMap { }
 }

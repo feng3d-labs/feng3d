@@ -4,7 +4,6 @@ import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
 
 import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
 
 describe('Quaternion', () =>
 {
@@ -22,7 +21,7 @@ describe('Quaternion', () =>
         const matrix1 = new Matrix4x4();
         matrix1.fromQuaternion(quaternion1);
 
-        deepEqual(matrix0, matrix1);
+        assert.deepEqual(matrix0, matrix1);
     });
 
     it('rotatePoint', () =>
@@ -58,10 +57,10 @@ describe('Quaternion', () =>
     it('creation', () =>
     {
         const q = new Quaternion(1, 2, 3, 4);
-        equal(q.x, 1, 'Creating should set the first parameter to the x value');
-        equal(q.y, 2, 'Creating should set the second parameter to the y value');
-        equal(q.z, 3, 'Creating should set the third parameter to the z value');
-        equal(q.w, 4, 'Creating should set the third parameter to the z value');
+        assert.equal(q.x, 1, 'Creating should set the first parameter to the x value');
+        assert.equal(q.y, 2, 'Creating should set the second parameter to the y value');
+        assert.equal(q.z, 3, 'Creating should set the third parameter to the z value');
+        assert.equal(q.w, 4, 'Creating should set the third parameter to the z value');
     });
 
     it('fromMatrix', () =>
@@ -76,7 +75,7 @@ describe('Quaternion', () =>
         const quaternion1 = new Quaternion();
         quaternion1.fromMatrix(matrix);
 
-        deepEqual(quaternion.equals(quaternion1), true);
+        assert.deepEqual(quaternion.equals(quaternion1), true);
     });
 
     it('fromEuler', () =>
@@ -91,7 +90,7 @@ describe('Quaternion', () =>
         const quaternion1 = new Quaternion();
         quaternion1.fromMatrix(matrix);
 
-        deepEqual(quaternion.equals(quaternion1), true);
+        assert.deepEqual(quaternion.equals(quaternion1), true);
     });
 
     it('setFromVectors', () =>
@@ -125,11 +124,11 @@ describe('Quaternion', () =>
         const qa = new Quaternion();
         const qb = new Quaternion();
         qa.slerpTo(qb, 0.5, qb);
-        deepEqual(qa, qb);
+        assert.deepEqual(qa, qb);
 
         qa.fromAxisAngle(new Vector3(0, 0, 1), Math.PI / 4);
         qb.fromAxisAngle(new Vector3(0, 0, 1), -Math.PI / 4);
         qa.slerpTo(qb, 0.5, qb);
-        deepEqual(qb, new Quaternion());
+        assert.deepEqual(qb, new Quaternion());
     });
 });

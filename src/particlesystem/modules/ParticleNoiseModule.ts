@@ -1,5 +1,5 @@
 import { MinMaxCurve, MinMaxCurveMode, MinMaxCurveVector3, Vector3, noise } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../../objectview/ObjectView';
 import { $set, SerializeProperty } from '@feng3d/serialization';
 import { Particle } from '../Particle';
 import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';

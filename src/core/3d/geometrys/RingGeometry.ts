@@ -1,6 +1,6 @@
 import { Vector2 } from '@feng3d/math';
 import { Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Node3D } from '../core/Node3D';

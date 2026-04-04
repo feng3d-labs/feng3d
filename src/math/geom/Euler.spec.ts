@@ -6,7 +6,6 @@ import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
 
 describe('Euler', () =>
 {
@@ -14,22 +13,22 @@ describe('Euler', () =>
     {
         const euler = new Euler();
 
-        deepEqual(euler.x, 0);
-        deepEqual(euler.y, 0);
-        deepEqual(euler.z, 0);
+        assert.deepEqual(euler.x, 0);
+        assert.deepEqual(euler.y, 0);
+        assert.deepEqual(euler.z, 0);
 
-        deepEqual(euler.order, mathUtil.DefaultRotationOrder);
+        assert.deepEqual(euler.order, mathUtil.DefaultRotationOrder);
     });
 
     it('random', () =>
     {
         const euler = new Euler().random();
 
-        deepEqual(euler.x !== 0, true);
-        deepEqual(euler.y !== 0, true);
-        deepEqual(euler.z !== 0, true);
+        assert.deepEqual(euler.x !== 0, true);
+        assert.deepEqual(euler.y !== 0, true);
+        assert.deepEqual(euler.z !== 0, true);
 
-        deepEqual(0 <= euler.order && euler.order <= 5, true);
+        assert.deepEqual(0 <= euler.order && euler.order <= 5, true);
     });
 
     it('set', () =>
@@ -40,18 +39,18 @@ describe('Euler', () =>
 
         euler.set(eulerV.x, eulerV.y, eulerV.z, eulerV.order);
 
-        deepEqual(euler, eulerV);
+        assert.deepEqual(euler, eulerV);
 
         const oldOrder = euler.order;
         euler.set(Math.random(), Math.random(), Math.random());
-        deepEqual(oldOrder, euler.order);
+        assert.deepEqual(oldOrder, euler.order);
     });
 
     it('clone', () =>
     {
         const euler = new Euler().random();
         const clone = euler.clone();
-        deepEqual(euler, clone);
+        assert.deepEqual(euler, clone);
     });
 
     it('fromRotationMatrix', () =>
@@ -63,7 +62,7 @@ describe('Euler', () =>
 
         const angles = matrix.getRotation(undefined, euler.order);
 
-        deepEqual(angles.equals(euler), true);
+        assert.deepEqual(angles.equals(euler), true);
     });
 
     it('fromQuaternion', () =>
@@ -76,7 +75,7 @@ describe('Euler', () =>
         const newQuaternion = new Quaternion();
         newQuaternion.fromEuler(euler.x, euler.y, euler.z, euler.order);
 
-        deepEqual(quaternion.equals(newQuaternion), true);
+        assert.deepEqual(quaternion.equals(newQuaternion), true);
     });
 
     it('fromVector3', () =>
@@ -89,10 +88,10 @@ describe('Euler', () =>
 
         euler.fromVector3(vector3);
 
-        deepEqual(euler.x, vector3.x);
-        deepEqual(euler.y, vector3.y);
-        deepEqual(euler.z, vector3.z);
-        deepEqual(oldOrder, euler.order);
+        assert.deepEqual(euler.x, vector3.x);
+        assert.deepEqual(euler.y, vector3.y);
+        assert.deepEqual(euler.z, vector3.z);
+        assert.deepEqual(oldOrder, euler.order);
     });
 
     it('reorder', () =>
@@ -104,12 +103,12 @@ describe('Euler', () =>
         const euler1 = euler.clone();
         euler1.reorder(RotationOrder.ZXY);
 
-        deepEqual(euler.order !== euler1.order, true);
+        assert.deepEqual(euler.order !== euler1.order, true);
 
         const quaternion = new Quaternion().fromEuler(euler.x, euler.y, euler.z, euler.order);
         const quaternion1 = new Quaternion().fromEuler(euler1.x, euler1.y, euler1.z, euler1.order);
 
-        deepEqual(quaternion.equals(quaternion1), true);
+        assert.deepEqual(quaternion.equals(quaternion1), true);
     });
 
     it('equals', () =>
@@ -117,7 +116,7 @@ describe('Euler', () =>
         const euler = new Euler().random();
         const euler1 = euler.clone();
 
-        deepEqual(euler.equals(euler1), true);
+        assert.deepEqual(euler.equals(euler1), true);
     });
 
     it('fromArray', () =>
@@ -125,10 +124,10 @@ describe('Euler', () =>
         const array = [Math.random(), Math.random(), Math.random(), Math.random()];
         const euler = new Euler().fromArray(array);
 
-        deepEqual(array[0], euler.x);
-        deepEqual(array[1], euler.y);
-        deepEqual(array[2], euler.z);
-        deepEqual(array[3], euler.order);
+        assert.deepEqual(array[0], euler.x);
+        assert.deepEqual(array[1], euler.y);
+        assert.deepEqual(array[2], euler.z);
+        assert.deepEqual(array[3], euler.order);
     });
 
     it('fromArray', () =>
@@ -137,10 +136,10 @@ describe('Euler', () =>
         const array: number[] = [];
         euler.toArray(array);
 
-        deepEqual(array[0], euler.x);
-        deepEqual(array[1], euler.y);
-        deepEqual(array[2], euler.z);
-        deepEqual(array[3], euler.order);
+        assert.deepEqual(array[0], euler.x);
+        assert.deepEqual(array[1], euler.y);
+        assert.deepEqual(array[2], euler.z);
+        assert.deepEqual(array[3], euler.order);
     });
 
     // it('toVector3', () =>
@@ -149,8 +148,8 @@ describe('Euler', () =>
     //     const vector3 = new Vector3();
     //     euler.toVector3(vector3);
 
-    //     deepEqual(vector3.x, euler.x);
-    //     deepEqual(vector3.y, euler.y);
-    //     deepEqual(vector3.z, euler.z);
+    //     assert.deepEqual(vector3.x, euler.x);
+    //     assert.deepEqual(vector3.y, euler.y);
+    //     assert.deepEqual(vector3.z, euler.z);
     // });
 });

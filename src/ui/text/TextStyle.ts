@@ -1,6 +1,6 @@
 import { EventEmitter } from '@feng3d/event';
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { Serializable } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
@@ -119,7 +119,7 @@ export interface TextStyleEventMap
     changed
 }
 
-declare module '@feng3d/serialization' { interface SerializableMap { TextStyle: TextStyle } }
+declare module '../../../serialization/Serializable' { interface SerializableMap { TextStyle: TextStyle } }
 
 /**
  * 文本样式

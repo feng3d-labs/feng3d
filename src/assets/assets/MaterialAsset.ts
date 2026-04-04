@@ -1,5 +1,5 @@
 import { AssetType, Material, StandardMaterial } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { RegisterAsset } from '../FileAsset';
 import { ObjectAsset } from './ObjectAsset';
 

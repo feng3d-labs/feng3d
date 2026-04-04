@@ -1,6 +1,6 @@
 import { MinMaxCurveVector3 } from '@feng3d/math';
 import { Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../../objectview/ObjectView';
 import { $set } from '@feng3d/serialization';
 import { SerializeProperty } from '@feng3d/serialization';
 import { Particle } from '../Particle';

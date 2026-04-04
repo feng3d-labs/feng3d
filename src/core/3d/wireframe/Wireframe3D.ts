@@ -1,6 +1,6 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { Component3D } from '../core/Component3D';
 
 declare module '@feng3d/ecs' { interface ComponentMap { Wireframe3D: Wireframe3D; } }

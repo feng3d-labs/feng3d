@@ -1,7 +1,7 @@
 import { ComponentMap } from '@feng3d/ecs';
 import { EventEmitter } from '@feng3d/event';
 import { Euler, Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../../polyfill/Types';
 import { mathUtil } from '../../../polyfill/MathUtil';
 import { RenderAtomic } from '@feng3d/renderer';
@@ -104,7 +104,7 @@ export interface Node3D
     addChild(child: Node3D): this;
 }
 
-declare module '@feng3d/serialization'
+declare module '../../../serialization/Serializable'
 {
     interface SerializableMap { Node3D: Node3D }
 }

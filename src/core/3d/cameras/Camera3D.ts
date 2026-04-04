@@ -1,6 +1,6 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { createNodeMenu } from '../../core/CreateNodeMenu';

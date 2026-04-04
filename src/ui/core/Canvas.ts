@@ -1,7 +1,7 @@
 import { Node3D } from '@feng3d/core';
 import { RegisterComponent } from '@feng3d/ecs';
 import { Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '@feng3d/serialization';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Component2D } from './Component2D';

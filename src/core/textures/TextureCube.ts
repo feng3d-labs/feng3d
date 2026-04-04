@@ -1,4 +1,4 @@
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { TexImage2DTarget, Texture, TextureTarget } from '@feng3d/renderer';
 
 declare module '@feng3d/renderer'

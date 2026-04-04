@@ -1,5 +1,5 @@
 import { Vector2 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { ImageUtil, RegisterTexture, TextureTarget, WebGLContext } from '@feng3d/renderer';
 import { $set } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';

@@ -1,7 +1,7 @@
 import { Camera3D, Scene3D, createNodeMenu } from '@feng3d/core';
 import { Component, RegisterComponent } from '@feng3d/ecs';
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { Node2D } from './core/Node2D';

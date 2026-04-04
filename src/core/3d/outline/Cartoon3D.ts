@@ -1,6 +1,6 @@
 import { RegisterComponent } from '@feng3d/ecs';
 import { Color4, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 

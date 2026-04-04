@@ -3,7 +3,6 @@ import { Triangle3 } from './Triangle3';
 import { Vector3 } from './Vector3';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
 
 describe('Box3', () =>
 {
@@ -20,7 +19,7 @@ describe('Box3', () =>
         const b = new Box3();
         a.max.set(1, 2, 3);
         b.copy(a);
-        deepEqual(a, b);
+        assert.deepEqual(a, b);
     });
 
     it('clone', () =>
@@ -28,9 +27,9 @@ describe('Box3', () =>
         const a = new Box3(new Vector3(-1, -2, -3), new Vector3(1, 2, 3));
         const b = a.clone();
 
-        deepEqual(a, b);
+        assert.deepEqual(a, b);
 
-        equal(a === b, false);
+        assert.equal(a === b, false);
     });
 
     it('extend', () =>
@@ -38,19 +37,19 @@ describe('Box3', () =>
         let a = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
         let b = new Box3(new Vector3(-2, -2, -2), new Vector3(2, 2, 2));
         a.union(b);
-        deepEqual(a, b);
+        assert.deepEqual(a, b);
 
         a = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
         b = new Box3(new Vector3(-2, -2, -2), new Vector3(2, 2, 2));
         b.union(a);
-        deepEqual(b.min, new Vector3(-2, -2, -2));
-        deepEqual(b.max, new Vector3(2, 2, 2));
+        assert.deepEqual(b.min, new Vector3(-2, -2, -2));
+        assert.deepEqual(b.max, new Vector3(2, 2, 2));
 
         a = new Box3(new Vector3(-2, -1, -1), new Vector3(2, 1, 1));
         b = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
         b.union(a);
-        deepEqual(a.min, new Vector3(-2, -1, -1));
-        deepEqual(a.max, new Vector3(2, 1, 1));
+        assert.deepEqual(a.min, new Vector3(-2, -1, -1));
+        assert.deepEqual(a.max, new Vector3(2, 1, 1));
     });
 
     it('extend', () =>
@@ -108,14 +107,14 @@ describe('Box3', () =>
         b.min.set(-3, -3, -3);
         b.max.set(3, 3, 3);
 
-        equal(a.contains(b), false);
+        assert.equal(a.contains(b), false);
 
         a.min.set(0, 0, 0);
         a.max.set(2, 2, 2);
         b.min.set(-1, -1, -1);
         b.max.set(1, 1, 1);
 
-        equal(a.contains(b), false);
+        assert.equal(a.contains(b), false);
     });
 
     it('intersectsTriangle', () =>

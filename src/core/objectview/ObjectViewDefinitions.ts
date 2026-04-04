@@ -1,4 +1,4 @@
-import { ObjectView } from '@feng3d/objectview';
+import { ObjectView } from '../../objectview/ObjectView';
 
 declare module '@feng3d/objectview'
 {

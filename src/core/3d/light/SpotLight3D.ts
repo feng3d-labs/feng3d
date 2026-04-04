@@ -1,5 +1,5 @@
 import { RegisterComponent } from '@feng3d/ecs';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { mathUtil } from '../../../polyfill/MathUtil';
 import { SerializeProperty } from '@feng3d/serialization';
 import { createNodeMenu } from '../../core/CreateNodeMenu';

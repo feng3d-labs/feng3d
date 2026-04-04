@@ -2,7 +2,7 @@ import { Camera3D, HideFlags, Node, NodeEventMap, Scene3D, TransformLayout3D } f
 import { Component, Entity } from '@feng3d/ecs';
 import { EventEmitter, IEvent } from '@feng3d/event';
 import { Vector2, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { gPartial } from '../../polyfill/Types';
 import { RenderAtomic } from '@feng3d/renderer';
 import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
@@ -45,7 +45,7 @@ export interface Node2D
     find(name: string): Node2D;
 }
 
-declare module '@feng3d/serialization'
+declare module '../../../serialization/Serializable'
 {
     interface SerializableMap { Node2D: Node2D }
 }

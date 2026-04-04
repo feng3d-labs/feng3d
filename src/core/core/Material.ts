@@ -1,15 +1,16 @@
 import { EventEmitter } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial, Lazy } from '../../polyfill/Types';
 import { DrawMode, RenderAtomic, RenderParams, Shader } from '@feng3d/renderer';
-import { $set, Serializable, SerializeProperty } from '@feng3d/serialization';
+import { $set, Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 
 import { AssetData } from './AssetData';
 
 export interface MaterialMap { }
 export interface UniformsMap { }
 
-declare module '@feng3d/serialization' { interface SerializableMap extends MaterialMap, UniformsMap { } }
+declare module '../../serialization/Serializable' { interface SerializableMap extends MaterialMap, UniformsMap { } }
 
 declare module './AssetData' { interface DefaultAssetDataMap extends DefaultMaterialMap { } }
 

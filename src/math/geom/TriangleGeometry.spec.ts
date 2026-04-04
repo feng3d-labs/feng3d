@@ -5,7 +5,6 @@ import { TriangleGeometry } from './TriangleGeometry';
 import { Vector3 } from './Vector3';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
 
 describe('TriangleGeometry', () =>
 {

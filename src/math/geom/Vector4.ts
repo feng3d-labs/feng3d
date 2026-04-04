@@ -1,10 +1,11 @@
-import { oav } from '@feng3d/objectview';
+import { oav } from '../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
 
-declare module '@feng3d/serialization' { interface SerializableMap { Vector4: Vector4 } }
+declare module '../../serialization/Serializable' { interface SerializableMap { Vector4: Vector4 } }
 
 /**
  * 四维向量

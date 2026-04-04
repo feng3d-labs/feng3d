@@ -5,7 +5,6 @@ import { Triangle3 } from './Triangle3';
 import { Vector3 } from './Vector3';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
 
 describe('Triangle3', () =>
 {

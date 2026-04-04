@@ -1,6 +1,6 @@
 import { Component, RegisterComponent } from '@feng3d/ecs';
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { SerializeProperty } from '@feng3d/serialization';
 import { HideFlags } from '../../core/HideFlags';
 import { RunEnvironment } from '../../core/RunEnvironment';

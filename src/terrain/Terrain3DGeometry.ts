@@ -1,7 +1,7 @@
 import { Geometry, RegisterGeometry, geometryUtils } from '@feng3d/core';
 import { loader } from '@feng3d/filesystem';
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../../objectview/ObjectView';
 import { ImageUtil, RenderAtomic } from '@feng3d/renderer';
 import { SerializeProperty } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';

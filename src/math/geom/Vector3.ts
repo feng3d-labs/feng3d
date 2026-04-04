@@ -1,6 +1,7 @@
-import { oav } from '@feng3d/objectview';
+import { oav } from '../objectview/ObjectView';
 import { mathUtil } from '../../polyfill/MathUtil';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { Serializable } from '../../serialization/Serializable';
+import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { Matrix3x3 } from './Matrix3x3';
 import { Matrix4x4 } from './Matrix4x4';
 import { Quaternion } from './Quaternion';
@@ -15,7 +16,7 @@ export interface Vector3Like
     z: number;
 }
 
-declare module '@feng3d/serialization' { interface SerializableMap { Vector3: Vector3 } }
+declare module '../../serialization/Serializable' { interface SerializableMap { Vector3: Vector3 } }
 
 /**
  * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置

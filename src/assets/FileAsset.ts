@@ -32,7 +32,7 @@ export interface AssetMap { }
 
 const assetTypeClassMap = new Map();
 
-declare module '@feng3d/serialization'
+declare module '../serialization/Serializable'
 {
     interface SerializableMap extends AssetMap { }
 }

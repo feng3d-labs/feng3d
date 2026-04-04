@@ -1,6 +1,6 @@
 import { AssetData, FogMode, Material } from '@feng3d/core';
 import { Color3, Color4, Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../../objectview/ObjectView';
 import { Texture2DLike } from '@feng3d/renderer';
 import { Serializable, SerializeProperty } from '@feng3d/serialization';
 

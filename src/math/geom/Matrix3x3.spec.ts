@@ -3,7 +3,6 @@ import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
 
 import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
 
 describe('Matrix3x3', () =>
 {
@@ -17,7 +16,7 @@ describe('Matrix3x3', () =>
         {
             for (let r = 0; r < 3; r++)
             {
-                equal(m.getElement(r, c), (r === c) ? 1 : 0, `cellule ( row : ${r} column : ${c} )  should be ${c === r ? '1' : '0'}`);
+                assert.equal(m.getElement(r, c), (r === c) ? 1 : 0, `cellule ( row : ${r} column : ${c} )  should be ${c === r ? '1' : '0'}`);
             }
         }
     });
@@ -211,7 +210,7 @@ describe('Matrix3x3', () =>
             4, 5, 6,
             7, 8, 9]);
         const Mt = M.transposeTo();
-        deepEqual(Mt.elements, [1, 4, 7,
+        assert.deepEqual(Mt.elements, [1, 4, 7,
             2, 5, 8,
             3, 6, 9]);
     });
@@ -222,7 +221,7 @@ describe('Matrix3x3', () =>
             1, 1, 1,
             1, 1, 1]);
         const Mt = M.scale(new Vector3(1, 2, 3));
-        deepEqual(Mt.elements, [1, 2, 3,
+        assert.deepEqual(Mt.elements, [1, 2, 3,
             1, 2, 3,
             1, 2, 3]);
     });

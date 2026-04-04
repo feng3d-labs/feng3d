@@ -1,14 +1,15 @@
 import { EventEmitter } from '@feng3d/event';
 import { Box3, Matrix4x4, Ray3, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../objectview/ObjectView';
 import { Constructor, gPartial, Lazy } from '../../../polyfill/Types';
 import { AttributeBuffer, AttributeBufferSourceTypes, CullFace, ElementBuffer, RenderAtomic } from '@feng3d/renderer';
-import { getInstance, Serializable, SerializeProperty } from '@feng3d/serialization';
+import { getInstance, Serializable } from '../../../serialization/Serializable';
+import { SerializeProperty } from '../../../serialization/SerializeProperty';
 import { AssetType } from '../../assets/AssetType';
 import { AssetData } from '../../core/AssetData';
 import { geometryUtils } from './GeometryUtils';
 
-declare module '@feng3d/serialization' { interface SerializableMap extends GeometryMap { } }
+declare module '../../../serialization/Serializable' { interface SerializableMap extends GeometryMap { } }
 
 declare module '../../core/AssetData' { interface DefaultAssetDataMap extends DefaultGeometryMap { } }
 

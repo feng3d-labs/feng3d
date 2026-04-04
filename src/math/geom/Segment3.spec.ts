@@ -5,7 +5,6 @@ import { assert, describe, expect, it } from 'vitest';
 import { Plane } from './Plane';
 Plane;
 
-const { ok, equal, deepEqual } = assert;
 
 describe('Segment3D', () =>
 {

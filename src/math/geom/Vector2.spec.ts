@@ -1,15 +1,14 @@
 import { Vector2 } from './Vector2';
 
-import { assert, describe, expect, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
+import { assert, describe, it } from 'vitest';
 
 describe('Vector3', () =>
 {
     it('creation', () =>
     {
         const v = new Vector2(1, 2);
-        equal(v.x, 1);
-        equal(v.y, 2);
+        assert.equal(v.x, 1);
+        assert.equal(v.y, 2);
     });
 
     it('dot', () =>
@@ -20,21 +19,21 @@ describe('Vector3', () =>
 
             const result = v1.dot(v2);
 
-            equal(result, v1.x * v2.x + v1.y * v2.y);
+            assert.equal(result, v1.x * v2.x + v1.y * v2.y);
         }
 
         {
             const v1 = new Vector2(1, 0);
             const v2 = new Vector2(1, 0);
 
-            equal(v1.dot(v2), 1);
+            assert.equal(v1.dot(v2), 1);
         }
 
         {
             const v1 = new Vector2(1, 0);
             const v2 = new Vector2(0, 1);
 
-            equal(v1.dot(v2), 0);
+            assert.equal(v1.dot(v2), 0);
         }
     });
 
@@ -46,21 +45,21 @@ describe('Vector3', () =>
 
             const result = v1.cross(v2);
 
-            equal(result, v1.x * v2.y - v1.y * v2.x);
+            assert.equal(result, v1.x * v2.y - v1.y * v2.x);
         }
 
         {
             const v1 = new Vector2(1, 0);
             const v2 = new Vector2(1, 0);
 
-            equal(v1.cross(v2), 0);
+            assert.equal(v1.cross(v2), 0);
         }
 
         {
             const v1 = new Vector2(1, 0);
             const v2 = new Vector2(0, 1);
 
-            equal(v1.cross(v2), 1);
+            assert.equal(v1.cross(v2), 1);
         }
     });
 });

@@ -1,10 +1,11 @@
-import { oav } from '@feng3d/objectview';
+import { oav } from '../objectview/ObjectView';
 import { mathUtil } from '../polyfill/MathUtil';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { Serializable } from '../serialization/Serializable';
+import { SerializeProperty } from '../serialization/SerializeProperty';
 import type { Color4 } from './Color4';
 import { Vector3 } from './geom/Vector3';
 
-declare module '@feng3d/serialization' { interface SerializableMap { Color3: Color3 } }
+declare module '../serialization/Serializable' { interface SerializableMap { Color3: Color3 } }
 
 /**
  * 颜色

@@ -5,7 +5,6 @@ import { Vector3 } from './Vector3';
 import { Vector4 } from './Vector4';
 
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual } = assert;
 
 describe('Matrix4x4', () =>
 {
@@ -158,49 +157,49 @@ describe('Matrix4x4', () =>
         // 测试可视空间的8个顶点是否被正确投影
         const lbn = new Vector4(-tan * near * aspect, -tan * near, near, 1);
         let tv = mat.transformVector4(lbn);
-        equal(tv.w, lbn.z);
+        assert.equal(tv.w, lbn.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(-1, -1, -1, 1).equals(tv));
 
         const lbf = new Vector4(-tan * far * aspect, -tan * far, far, 1);
         tv = mat.transformVector4(lbf);
-        equal(tv.w, lbf.z);
+        assert.equal(tv.w, lbf.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(-1, -1, 1, 1).equals(tv));
 
         const ltn = new Vector4(-tan * near * aspect, tan * near, near, 1);
         tv = mat.transformVector4(ltn);
-        equal(tv.w, ltn.z);
+        assert.equal(tv.w, ltn.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(-1, 1, -1, 1).equals(tv));
 
         const ltf = new Vector4(-tan * far * aspect, tan * far, far, 1);
         tv = mat.transformVector4(ltf);
-        equal(tv.w, ltf.z);
+        assert.equal(tv.w, ltf.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(-1, 1, 1, 1).equals(tv));
 
         const rbn = new Vector4(tan * near * aspect, -tan * near, near, 1);
         tv = mat.transformVector4(rbn);
-        equal(tv.w, rbn.z);
+        assert.equal(tv.w, rbn.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(1, -1, -1, 1).equals(tv));
 
         const rbf = new Vector4(tan * far * aspect, -tan * far, far, 1);
         tv = mat.transformVector4(rbf);
-        equal(tv.w, rbf.z);
+        assert.equal(tv.w, rbf.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(1, -1, 1, 1).equals(tv));
 
         const rtn = new Vector4(tan * near * aspect, tan * near, near, 1);
         tv = mat.transformVector4(rtn);
-        equal(tv.w, rtn.z);
+        assert.equal(tv.w, rtn.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(1, 1, -1, 1).equals(tv));
 
         const rtf = new Vector4(tan * far * aspect, tan * far, far, 1);
         tv = mat.transformVector4(rtf);
-        equal(tv.w, rtf.z);
+        assert.equal(tv.w, rtf.z);
         tv.scaleNumber(1 / tv.w);
         assert.ok(new Vector4(1, 1, 1, 1).equals(tv));
     });

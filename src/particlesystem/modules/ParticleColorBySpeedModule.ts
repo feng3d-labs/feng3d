@@ -1,7 +1,7 @@
 import { mathUtil } from '../../../polyfill/MathUtil';
 import { Vector2 } from '@feng3d/math';
 import { MinMaxGradient } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { oav } from '../../../objectview/ObjectView';
 import { SerializeProperty } from '@feng3d/serialization';
 import { Particle } from '../Particle';
 import { ParticleModule, RegisterParticleModule } from './ParticleModule';
