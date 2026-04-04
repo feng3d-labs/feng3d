@@ -1,6 +1,6 @@
 import { EventEmitter } from '../event/EventEmitter';
 import { oav } from '../objectview/ObjectView';
-import { gPartial } from '../polyfill/Types';
+import { Constructor, gPartial } from '../polyfill/Types';
 import { getConstructor } from '../serialization/getConstructor';
 import { getInstance } from '../serialization/getInstance';
 import { SerializeProperty } from '../serialization/SerializeProperty';
@@ -14,7 +14,6 @@ declare module '../objectview/ObjectView'
         OAVEntityName: { component: 'OAVEntityName', componentParam: Object };
     }
 }
-
 
 export interface EntityEventMap
 {

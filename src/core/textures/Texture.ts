@@ -2,7 +2,7 @@ import { Texture } from '../../renderer/data/Texture';
 import { SerializeProperty } from '../../serialization/SerializeProperty';
 import { HideFlags } from '../core/HideFlags';
 
-declare module '../../../renderer/data/Texture'
+declare module '../../renderer/data/Texture'
 {
     interface Texture
     {
