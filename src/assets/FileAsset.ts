@@ -1,4 +1,4 @@
-import path = require('path');
+import * as path from 'path';
 import { AssetType } from '../core/assets/AssetType';
 import { ticker } from '../core/utils/Ticker';
 import { anyEmitter } from '../event/AnyEmitter';
