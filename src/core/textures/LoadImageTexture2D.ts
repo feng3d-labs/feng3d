@@ -1,15 +1,13 @@
 import { loader } from '../../filesystem/base/Loader';
 import { ImageUtil } from '../../renderer/utils/ImageUtil';
-import { RegisterTexture } from '../../renderer/data/Texture';
 import { watcher } from '../../watcher/watcher';
 import { SourceTexture2D } from './SourceTexture2D';
 
-declare module '../../renderer/data/Texture'
+declare module '../../renderer/textures/Texture2D'
 {
     interface Texture2DMap { LoadImageTexture2D: LoadImageTexture2D }
 }
 
-@RegisterTexture('LoadImageTexture2D')
 export class LoadImageTexture2D extends SourceTexture2D
 {
     declare __class__: 'LoadImageTexture2D';

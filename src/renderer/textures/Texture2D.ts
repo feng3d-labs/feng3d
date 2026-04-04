@@ -4,17 +4,17 @@ import { Texture } from '../data/Texture';
 import { TextureTarget } from '../gl/WebGLEnums';
 import { WebGLContext } from '../WebGLContext';
 
-declare module '../data/Texture'
-{
-    interface TextureMap extends Texture2DMap { }
-}
-
 export interface Texture2DMap
 {
     Texture2D: Texture2D;
 }
 
 export type Texture2DLike = Texture2DMap[keyof Texture2DMap];
+
+declare module '../data/Texture'
+{
+    interface TextureMap extends Texture2DMap { }
+}
 
 declare module '../data/Uniforms'
 {

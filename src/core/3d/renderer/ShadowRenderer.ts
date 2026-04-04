@@ -22,6 +22,10 @@ declare module '../../../renderer/data/RenderAtomic'
     {
         shadowShader: Shader;
     }
+}
+
+declare module '../../../renderer/data/Uniforms'
+{
     interface Uniforms
     {
         u_lightType: LightType;

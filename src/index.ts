@@ -26,6 +26,16 @@ export * from './bezier/EquationSolving';
 export * from './bezier/HighFunction';
 
 // core
+export * from './core/assets/AssetType';
+export * from './core/core/AssetData';
+export * from './core/core/CreateNodeMenu';
+export * from './core/core/HideFlags';
+export * from './core/core/Material';
+export * from './core/core/Node';
+export * from './core/core/NodeComponent';
+export * from './core/core/RunEnvironment';
+export * from './core/core/polyfills/Component';
+
 export * from './core/3d/audio/AudioListener3D';
 export * from './core/3d/audio/AudioSource3D';
 export * from './core/3d/cameras/Camera3D';
@@ -291,6 +301,8 @@ export * from './renderer/data/ElementBuffer';
 export * from './renderer/data/RenderAtomic';
 export * from './renderer/data/RenderParams';
 export * from './renderer/data/Shader';
+export * from './renderer/textures/RenderTargetTexture2D';
+export * from './renderer/textures/Texture2D';
 export * from './renderer/data/Texture';
 export * from './renderer/data/Uniforms';
 export * from './renderer/gl/WebGLCapabilities';
@@ -300,8 +312,6 @@ export * from './renderer/gl/WebGLUniforms';
 export * from './renderer/shader/Macro';
 export * from './renderer/shader/ShaderLib';
 export * from './renderer/shader/ShaderMacroUtils';
-export * from './renderer/textures/RenderTargetTexture2D';
-export * from './renderer/textures/Texture2D';
 export * from './renderer/utils/ImageUtil';
 
 // serialization

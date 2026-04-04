@@ -1,6 +1,6 @@
 import { Vector2 } from '../../math/geom/Vector2';
 import { ImageUtil } from '../../renderer/utils/ImageUtil';
-import { Texture2D } from '../../renderer/textures/Texture2D';
+import { Texture2D, type Texture2DMap } from '../../renderer/textures/Texture2D';
 import { WebGLContext } from '../../renderer/WebGLContext';
 import { $set } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
@@ -9,15 +9,11 @@ import { HideFlags } from '../core/HideFlags';
 
 declare module '../../renderer/textures/Texture2D'
 {
-    interface TextureMap extends Texture2DMap { }
+    interface Texture2DMap
+    {
+        SourceTexture2D: SourceTexture2D;
+    }
 }
-
-export interface Texture2DMap
-{
-    SourceTexture2D: SourceTexture2D;
-}
-
-export type Texture2DLike = Texture2DMap[keyof Texture2DMap];
 
 /**
  * 提供数据源的2D纹理

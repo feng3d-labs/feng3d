@@ -22,7 +22,10 @@ declare module '../../../renderer/data/RenderAtomic'
 
         wireframeShader: Shader;
     }
+}
 
+declare module '../../../renderer/data/Uniforms'
+{
     interface Uniforms
     {
         /**
