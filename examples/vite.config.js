@@ -2,6 +2,7 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import fg from 'fast-glob';
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
     publicDir: 'resources',
@@ -14,6 +15,7 @@ export default defineConfig({
     },
     base: './',
     plugins: [
+        vue(),
         shaderToString(),
     ]
 });
