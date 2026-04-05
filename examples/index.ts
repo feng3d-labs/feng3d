@@ -44,6 +44,14 @@ const files = {
         'Basic',
         'DashedLine',
     ],
+    bezier: [
+        'BezierCurve',
+        'BezierCurveAnimation',
+        'BezierCurveTo',
+        'BezierEditor',
+        'CubicBezierSequenceEditor',
+        'TimeLineCubicBezierSequenceEditor',
+    ],
     'regl-examples': [
         'basic',
         'batch',

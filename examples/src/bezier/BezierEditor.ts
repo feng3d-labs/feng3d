@@ -1,5 +1,5 @@
-import { bezier } from '@feng3d/bezier';
-import { clearCanvas, createCanvas, drawPoints, drawPointsCurve } from '../../common/Common';
+import { bezier } from 'feng3d';
+import { clearCanvas, createCanvas, drawPoints, drawPointsCurve } from './Common';
 
 (() =>
 {

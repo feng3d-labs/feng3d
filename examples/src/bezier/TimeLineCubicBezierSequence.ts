@@ -1,4 +1,4 @@
-import { bezier } from '@feng3d/bezier';
+import { bezier } from 'feng3d';
 
 export interface TimeLineCubicBezierKey
 {
