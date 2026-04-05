@@ -1,4 +1,4 @@
-import type { AttributeViewInfo } from '@feng3d/objectview';
+import type { AttributeViewInfo } from 'feng3d';
 import { ref, computed } from 'vue';
 
 /**

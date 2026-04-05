@@ -1,4 +1,4 @@
-import { oav, ov } from '@feng3d/objectview';
+import { oav, ov } from 'feng3d';
 
 /**
  * Vector3 数据类

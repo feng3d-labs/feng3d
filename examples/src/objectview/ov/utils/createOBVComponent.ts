@@ -1,4 +1,4 @@
-import { OBVComponent, type BlockViewInfo } from '@feng3d/objectview';
+import { OBVComponent, type BlockViewInfo } from 'feng3d';
 import { createVNode, render, type Component } from 'vue';
 
 /**

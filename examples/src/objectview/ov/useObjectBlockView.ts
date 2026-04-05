@@ -1,4 +1,4 @@
-import { objectview, type BlockViewInfo } from '@feng3d/objectview';
+import { objectview, type BlockViewInfo } from 'feng3d';
 import { onMounted, onUnmounted, ref } from 'vue';
 
 /**

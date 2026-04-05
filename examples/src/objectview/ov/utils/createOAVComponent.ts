@@ -1,4 +1,4 @@
-import { OAVComponent, type AttributeViewInfo } from '@feng3d/objectview';
+import { OAVComponent, type AttributeViewInfo } from 'feng3d';
 import { createVNode, render, type Component } from 'vue';
 
 /**

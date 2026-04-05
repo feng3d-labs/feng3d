@@ -1,4 +1,4 @@
-import { objectview } from '@feng3d/objectview';
+import { objectview } from 'feng3d';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { createOAVComponent } from './utils/createOAVComponent';
 import { createOBVComponent } from './utils/createOBVComponent';
