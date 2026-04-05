@@ -16,7 +16,7 @@ import { AssetType } from '../../assets/AssetType';
 import { createNodeMenu } from '../../core/CreateNodeMenu';
 import { HideFlags } from '../../core/HideFlags';
 import { Node, NodeEventMap } from '../../core/Node';
-import type { Camera3D } from '../cameras/Camera3D';
+import { Camera3D } from '../cameras/Camera3D';
 import { Geometry } from '../geometrys/Geometry';
 import { BoundingBox3D } from './BoundingBox3D';
 import { Scene3D } from './Scene3D';

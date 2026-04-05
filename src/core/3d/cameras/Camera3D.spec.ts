@@ -15,6 +15,7 @@ describe('Camera3D', () =>
         const aspect = Math.random();
         const fov = 60; // Camera3D 默认为fov为60度的视野。
 
+        Camera3D;
         const camera3D: Camera3D = new Node3D().addComponent('Camera3D', {
             aspect,
             near,

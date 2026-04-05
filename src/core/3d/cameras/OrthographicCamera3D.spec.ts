@@ -16,6 +16,7 @@ describe('OrthographicCamera3D', () =>
         const far = Math.random() + near;
 
         new Node3D().components;
+        OrthographicCamera3D;
         const orthographicCamera3D: OrthographicCamera3D = new Node3D().addComponent('OrthographicCamera3D', {
             size,
             near,
