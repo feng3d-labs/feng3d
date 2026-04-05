@@ -52,6 +52,9 @@ const files = {
         'CubicBezierSequenceEditor',
         'TimeLineCubicBezierSequenceEditor',
     ],
+    objectview: [
+        'ObjectView',
+    ],
     'regl-examples': [
         'basic',
         'batch',
