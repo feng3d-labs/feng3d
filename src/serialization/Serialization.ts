@@ -1,3 +1,8 @@
+import { ArrayUtils } from "../polyfill/ArrayUtils";
+import { __class__, classUtils } from "../polyfill/ClassUtils";
+import { ObjectUtils } from "../polyfill/ObjectUtils";
+import { gPartial } from "../polyfill/Types";
+
 /**
  * 序列化装饰器
  *

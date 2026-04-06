@@ -1,3 +1,9 @@
+import { Color4 } from '../../math/Color4';
+import { Ray3 } from '../../math/geom/Ray3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { RenderMode } from '../../renderer/gl/enums/RenderMode';
+import { serialize } from '../../serialization/Serialization';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';

@@ -1,3 +1,9 @@
+import { Attribute } from '../../renderer/data/Attribute';
+import { Index } from '../../renderer/data/Index';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { Shader } from '../../renderer/data/Shader';
+import { CullFace } from '../../renderer/gl/enums/CullFace';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';

@@ -1,3 +1,5 @@
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
 import { Particle } from '../Particle';
 import { ParticleSystemShape } from './ParticleSystemShape';
 

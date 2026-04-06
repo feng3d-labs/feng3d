@@ -1,3 +1,5 @@
+import { compile } from '../../c-preprocessor';
+import { gPartial } from '../../polyfill/Types';
 import { GL } from '../gl/GL';
 import { ShaderMacro } from '../shader/Macro';
 import { shaderlib } from '../shader/ShaderLib';

@@ -1,3 +1,4 @@
+import { serialize } from '../../serialization/Serialization';
 import { Vector3 } from '../geom/Vector3';
 import { AnimationCurve } from './AnimationCurve';
 

@@ -1,3 +1,5 @@
+import { path as fengpath } from '../path/Path';
+
 /**
  * 路径工具
  */

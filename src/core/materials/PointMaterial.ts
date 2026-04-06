@@ -1,3 +1,8 @@
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { shaderlib } from '../../renderer/shader/ShaderLib';
+import { serialize } from '../../serialization/Serialization';
 import pointFragment from '../shaders/point.fragment.glsl';
 import pointVertex from '../shaders/point.vertex.glsl';
 

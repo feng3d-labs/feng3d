@@ -1,3 +1,9 @@
+import { FrameBuffer } from '../../renderer/data/FrameBuffer';
+import { Texture } from '../../renderer/data/Texture';
+import { GL } from '../../renderer/gl/GL';
+import { RenderBuffer } from '../../renderer/RenderBuffer';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { watcher } from '../../watcher/watcher';
 import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
 
 declare global

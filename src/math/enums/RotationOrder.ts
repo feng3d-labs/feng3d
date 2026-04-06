@@ -1,3 +1,5 @@
+import { mathUtil } from "../../polyfill/MathUtil";
+
 declare global
 {
     interface MixinsMathUtil

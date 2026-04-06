@@ -1,3 +1,13 @@
+import { Texture2D } from "../core/textures/Texture2D";
+import { Vector4 } from "../math/geom/Vector4";
+import { oav } from "../objectview/ObjectView";
+import { decoratorRegisterClass } from "../polyfill/ClassUtils";
+import { BlendFactor } from "../renderer/gl/enums/BlendFactor";
+import { ColorMask } from "../renderer/gl/enums/ColorMask";
+import { CullFace } from "../renderer/gl/enums/CullFace";
+import { shaderConfig } from "../renderer/shader/ShaderLib";
+import { serialize } from "../serialization/Serialization";
+
 /**
  * UnityShader "Particles/Alpha Blended Premultiply"
  */

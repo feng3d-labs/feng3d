@@ -1,3 +1,5 @@
+import { globalEmitter } from '../event/GlobalEmitter';
+import { dataTransform } from '../polyfill/DataTransform';
 import { _indexedDB } from './base/_IndexedDB';
 import { FSType } from './FSType';
 import { IReadWriteFS } from './IReadWriteFS';

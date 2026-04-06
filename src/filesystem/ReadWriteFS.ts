@@ -1,5 +1,7 @@
 import { IReadWriteFS } from './IReadWriteFS';
 import { ReadFS } from './ReadFS';
+import { path as fengpath } from '../path/Path';
+import { dataTransform } from '../polyfill/DataTransform';
 
 export interface ReadWriteFS
 {

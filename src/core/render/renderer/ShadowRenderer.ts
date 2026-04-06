@@ -1,3 +1,8 @@
+import { Rectangle } from '../../../math/geom/Rectangle';
+import { Vector3 } from '../../../math/geom/Vector3';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Shader } from '../../../renderer/data/Shader';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
 import { DirectionalLight } from '../../light/DirectionalLight';

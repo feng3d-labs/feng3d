@@ -1,3 +1,7 @@
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { serialize } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';

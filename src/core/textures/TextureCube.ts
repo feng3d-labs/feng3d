@@ -1,3 +1,10 @@
+import { FS } from '../../filesystem/FS';
+import { oav } from '../../objectview/ObjectView';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { TextureType } from '../../renderer/gl/enums/TextureType';
+import { serialize, serialization } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';

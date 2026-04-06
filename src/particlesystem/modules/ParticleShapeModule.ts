@@ -1,3 +1,11 @@
+import { Geometry } from '../../core/geometry/Geometry';
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';

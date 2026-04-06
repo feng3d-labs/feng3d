@@ -1,3 +1,8 @@
+import { Vector4 } from '../../../math/geom/Vector4';
+import { mathUtil } from '../../../polyfill/MathUtil';
+import { LazyObject, lazy } from '../../../polyfill/Types';
+import { Uniforms } from '../../../renderer/data/Uniform';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { Scene } from '../../scene/Scene';
 

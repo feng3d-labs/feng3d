@@ -1,3 +1,7 @@
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize } from '../../serialization/Serialization';
 import { Mathf } from '../MathF';
 import { Time } from '../Time';
 import { Matrix3x3 } from './Matrix3x3';

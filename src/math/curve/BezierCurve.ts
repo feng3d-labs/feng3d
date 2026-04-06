@@ -1,3 +1,5 @@
+import { equationSolving } from "../../bezier/EquationSolving";
+
 /**
  * Bézier曲线
  * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve

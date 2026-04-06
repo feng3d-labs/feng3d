@@ -4,6 +4,12 @@ import { Material } from './Material';
 
 import standardFragment from '../shaders/standard.fragment.glsl';
 import standardVertex from '../shaders/standard.vertex.glsl';
+import { Color3 } from '../../math/Color3';
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { shaderlib } from '../../renderer/shader/ShaderLib';
+import { serialize } from '../../serialization/Serialization';
 
 declare global
 {

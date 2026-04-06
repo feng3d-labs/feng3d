@@ -1,3 +1,4 @@
+import { EventEmitter } from '../event/EventEmitter';
 import { KeyCapture } from './handle/KeyCapture';
 import { KeyState } from './handle/KeyState';
 import { ShortCutCapture } from './handle/ShortCutCapture';

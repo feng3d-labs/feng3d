@@ -1,3 +1,11 @@
+
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Plane } from '../../math/geom/Plane';
+import { Vector3 } from '../../math/geom/Vector3';
+import { Vector4 } from '../../math/geom/Vector4';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { GameObject } from '../core/GameObject';

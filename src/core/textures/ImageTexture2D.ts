@@ -1,3 +1,4 @@
+import { watcher } from '../../watcher/watcher';
 import { Texture2D } from './Texture2D';
 
 /**

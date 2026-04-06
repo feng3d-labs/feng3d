@@ -1,3 +1,6 @@
+import { ArrayUtils } from "../../polyfill/ArrayUtils";
+import { Lazy, lazy } from "../../polyfill/Types";
+
 /**
  * 心跳计时器
  */

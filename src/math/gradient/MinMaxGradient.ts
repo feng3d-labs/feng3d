@@ -1,3 +1,5 @@
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Color4 } from '../Color4';
 import { Gradient } from './Gradient';
 import { MinMaxGradientMode } from './MinMaxGradientMode';

@@ -1,3 +1,11 @@
+import { loader } from '../../filesystem/base/Loader';
+import { ColorKeywords } from '../../math/Color3';
+import { Color4 } from '../../math/Color4';
+import { ArrayUtils } from '../../polyfill/ArrayUtils';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { TextureFormat } from '../../renderer/gl/enums/TextureFormat';
+import { TextureType } from '../../renderer/gl/enums/TextureType';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';

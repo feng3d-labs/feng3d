@@ -1,3 +1,5 @@
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
 import { Renderable } from '../../core/Renderable';
 import { Texture2D } from '../../textures/Texture2D';
 import { DirectionalLight } from '../DirectionalLight';

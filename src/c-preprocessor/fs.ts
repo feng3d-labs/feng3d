@@ -1,4 +1,5 @@
 declare let require: any;
+declare let __dirname: string;
 
 export interface IFS
 {

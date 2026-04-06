@@ -1,3 +1,10 @@
+import { Color3 } from '../../math/Color3';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { shaderlib } from '../../renderer/shader/ShaderLib';
+import { serialize } from '../../serialization/Serialization';
 import { Material } from '../materials/Material';
 import waterFragment from '../shaders/water.fragment.glsl';
 import waterVertex from '../shaders/water.vertex.glsl';

@@ -1,3 +1,6 @@
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize } from '../../serialization/Serialization';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
 import { bezierCurve } from './BezierCurve';
 import { WrapMode } from './WrapMode';

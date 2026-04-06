@@ -1,3 +1,16 @@
+import { Vector2 } from '../../../math/geom/Vector2';
+import { oav } from '../../../objectview/ObjectView';
+import { dataTransform } from '../../../polyfill/DataTransform';
+import { mathUtil } from '../../../polyfill/MathUtil';
+import { Texture } from '../../../renderer/data/Texture';
+import { TextureDataType } from '../../../renderer/gl/enums/TextureDataType';
+import { TextureFormat } from '../../../renderer/gl/enums/TextureFormat';
+import { TextureMagFilter } from '../../../renderer/gl/enums/TextureMagFilter';
+import { TextureMinFilter } from '../../../renderer/gl/enums/TextureMinFilter';
+import { TextureType } from '../../../renderer/gl/enums/TextureType';
+import { TextureWrap } from '../../../renderer/gl/enums/TextureWrap';
+import { serialize } from '../../../serialization/Serialization';
+import { watcher } from '../../../watcher/watcher';
 import { Feng3dObject, Feng3dObjectEventMap } from '../../core/Feng3dObject';
 import { imageDatas } from '../../textures/Texture2D';
 

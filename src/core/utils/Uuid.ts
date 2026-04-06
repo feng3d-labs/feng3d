@@ -1,3 +1,6 @@
+import { mathUtil } from "../../polyfill/MathUtil";
+import { ObjectUtils } from "../../polyfill/ObjectUtils";
+
 /**
  * 通用唯一标识符（Universally Unique Identifier）
  *

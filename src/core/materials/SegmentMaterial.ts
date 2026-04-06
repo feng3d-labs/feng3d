@@ -1,3 +1,9 @@
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { RenderMode } from '../../renderer/gl/enums/RenderMode';
+import { shaderlib } from '../../renderer/shader/ShaderLib';
+import { serialize } from '../../serialization/Serialization';
 import segmentFragment from '../shaders/segment.fragment.glsl';
 import segmentVertex from '../shaders/segment.vertex.glsl';
 import { Material } from './Material';

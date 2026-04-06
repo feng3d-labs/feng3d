@@ -1,3 +1,4 @@
+import { earcut } from '../../earcut/earcut';
 import { Vector2 } from '../geom/Vector2';
 
 export class ShapeUtils

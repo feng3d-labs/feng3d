@@ -9,7 +9,7 @@
         "experimentalDecorators": true,
         "skipLibCheck": true,
         "lib": [
-            "ES2015",
+            "es2019",
             "DOM",
         ],
         "types": [],

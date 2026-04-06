@@ -1,3 +1,11 @@
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { MinMaxCurveMode } from '../../math/curve/MinMaxCurveMode';
+import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
+import { Vector3 } from '../../math/geom/Vector3';
+import { noise } from '../../math/Noise';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';

@@ -1,3 +1,7 @@
+import { EventEmitter } from '../../event/EventEmitter';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Particle } from '../Particle';
 import { ParticleSystem } from '../ParticleSystem';
 

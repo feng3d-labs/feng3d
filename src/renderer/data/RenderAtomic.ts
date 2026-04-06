@@ -1,3 +1,4 @@
+import { Lazy, gPartial, lazy } from '../../polyfill/Types';
 import { ShaderMacro } from '../shader/Macro';
 import { Attribute } from './Attribute';
 import { Attributes } from './Attributes';

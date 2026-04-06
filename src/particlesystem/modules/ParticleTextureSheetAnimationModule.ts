@@ -1,3 +1,10 @@
+import { MinMaxCurve } from '../../math/curve/MinMaxCurve';
+import { MinMaxCurveMode } from '../../math/curve/MinMaxCurveMode';
+import { Vector2 } from '../../math/geom/Vector2';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
 import { UVChannelFlags } from '../enums/UVChannelFlags';
 import { Particle } from '../Particle';

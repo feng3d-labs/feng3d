@@ -1,3 +1,5 @@
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize } from '../../serialization/Serialization';
 import { RotationOrder } from '../enums/RotationOrder';
 import { Matrix3x3 } from './Matrix3x3';
 import { Plane } from './Plane';

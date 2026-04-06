@@ -1,3 +1,8 @@
+import { EventEmitter } from '../../../event/EventEmitter';
+import { Rectangle } from '../../../math/geom/Rectangle';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { GL } from '../../../renderer/gl/GL';
+import { windowEventProxy } from '../../../shortcut/WindowEventProxy';
 import { GameObject } from '../../core/GameObject';
 import { Renderable } from '../../core/Renderable';
 

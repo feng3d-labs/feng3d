@@ -1,3 +1,9 @@
+import { Vector2 } from '../../math/geom/Vector2';
+import { MinMaxGradient } from '../../math/gradient/MinMaxGradient';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize } from '../../serialization/Serialization';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
 

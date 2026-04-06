@@ -1,3 +1,5 @@
+import { Constructor } from "../../polyfill/Types";
+
 /**
  * 对象池
  *

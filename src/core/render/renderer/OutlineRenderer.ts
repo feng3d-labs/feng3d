@@ -1,3 +1,7 @@
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Shader } from '../../../renderer/data/Shader';
+import { CullFace } from '../../../renderer/gl/enums/CullFace';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';

@@ -1,3 +1,4 @@
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';

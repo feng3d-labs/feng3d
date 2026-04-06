@@ -1,3 +1,8 @@
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { shaderlib } from '../../renderer/shader/ShaderLib';
+import { serialize } from '../../serialization/Serialization';
 import textureFragment from '../shaders/texture.fragment.glsl';
 import textureVertex from '../shaders/texture.vertex.glsl';
 import { Texture2D } from '../textures/Texture2D';

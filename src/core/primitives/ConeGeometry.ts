@@ -1,3 +1,4 @@
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { GameObject } from '../core/GameObject';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';

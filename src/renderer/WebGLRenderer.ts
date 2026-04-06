@@ -1,5 +1,6 @@
 /* eslint-disable no-new */
 
+import { lazy } from '../polyfill/Types';
 import { Attribute } from './data/Attribute';
 import { RenderAtomic, RenderAtomicData } from './data/RenderAtomic';
 import { AttributeInfo, UniformInfo } from './data/Shader';

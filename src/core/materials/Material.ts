@@ -1,3 +1,14 @@
+import { globalEmitter } from '../../event/GlobalEmitter';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { gPartial } from '../../polyfill/Types';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { RenderParams } from '../../renderer/data/RenderParams';
+import { Shader } from '../../renderer/data/Shader';
+import { RenderMode } from '../../renderer/gl/enums/RenderMode';
+import { shaderlib } from '../../renderer/shader/ShaderLib';
+import { serialization, serialize } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';

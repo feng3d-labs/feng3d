@@ -1,3 +1,5 @@
+import { LazyObject } from "../../polyfill/Types";
+
 declare global
 {
     interface MixinsUniforms { }

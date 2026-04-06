@@ -1,3 +1,10 @@
+import { MinMaxCurveVector3 } from '../../math/curve/MinMaxCurveVector3';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
 

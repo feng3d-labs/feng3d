@@ -1,3 +1,7 @@
+import { GeometryLike } from '../../core/geometry/Geometry';
+import { Material } from '../../core/materials/Material';
+import { Vector3 } from '../../math/geom/Vector3';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
 import { ParticleSystemRenderSpace } from '../enums/ParticleSystemRenderSpace';
 import { ParticleSystemSortMode } from '../enums/ParticleSystemSortMode';

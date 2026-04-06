@@ -1,3 +1,10 @@
+import { Color4 } from '../../../math/Color4';
+import { lazy } from '../../../polyfill/Types';
+import { Index } from '../../../renderer/data/Index';
+import { RenderAtomic } from '../../../renderer/data/RenderAtomic';
+import { Shader } from '../../../renderer/data/Shader';
+import { RenderMode } from '../../../renderer/gl/enums/RenderMode';
+import { WebGLRenderer } from '../../../renderer/WebGLRenderer';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable } from '../../core/Renderable';

@@ -1,3 +1,5 @@
+import { Vector3 } from '../../math/geom/Vector3';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 

@@ -1,3 +1,4 @@
+import { mathUtil } from '../../polyfill/MathUtil';
 import { Line3 } from './Line3';
 import { Vector3 } from './Vector3';
 

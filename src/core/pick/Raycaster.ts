@@ -1,3 +1,7 @@
+import { Ray3 } from '../../math/geom/Ray3';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { CullFace } from '../../renderer/gl/enums/CullFace';
 import { GameObject } from '../core/GameObject';
 import { RayCastable } from '../core/RayCastable';
 import { Geometry } from '../geometry/Geometry';

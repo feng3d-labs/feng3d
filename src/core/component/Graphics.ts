@@ -1,4 +1,5 @@
 import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { dataTransform } from '../../polyfill/DataTransform';
 import { Component } from './Component';
 
 /**
