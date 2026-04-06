@@ -32,7 +32,7 @@ ticker.onframe(() =>
 
     num++;
 
-    if (num % 60 == 0)
+    if (num % 60 === 0)
     {
         (<ColorUniforms>colorMaterial.uniforms).u_diffuseInput.fromUnit(Math.random() * (1 << 32 - 1));
     }
