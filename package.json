@@ -66,6 +66,7 @@
     "earcut": "^3.0.2"
   },
   "workspaces": [
+    ".",
     "examples"
   ]
 }

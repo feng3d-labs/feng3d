@@ -1,3 +1,4 @@
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { Box3 } from '../../math/geom/Box3';
 import { Vector3 } from '../../math/geom/Vector3';
 import { serialization } from '../../serialization/Serialization';
@@ -100,9 +101,4 @@ createNodeMenu.push(
             GameObject.createPrimitive('Directional light')
     }
 );
-
-function decoratorRegisterClass(): (target: typeof DirectionalLight) => void | typeof DirectionalLight
-{
-    throw new Error('Function not implemented.');
-}
 
