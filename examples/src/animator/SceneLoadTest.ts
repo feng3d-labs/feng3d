@@ -1,13 +1,12 @@
-namespace examples
+import { GameObject, Scene, View, loader, serialization } from 'feng3d';
+
+const view3D = new View();
+
+loader.loadText('../../resources/scene/Untitled.scene.json').then((content) =>
 {
-    var view3D = new feng3d.View();
+    const json = JSON.parse(content);
+    const sceneobject: GameObject = serialization.deserialize(json);
+    const scene = sceneobject.getComponent(Scene);
 
-    feng3d.loader.loadText('resources/scene/Untitled.scene.json').then((content) =>
-    {
-        const json = JSON.parse(content);
-        const sceneobject: feng3d.GameObject = feng3d.serialization.deserialize(json);
-        const scene = sceneobject.getComponent(feng3d.Scene);
-
-        view3D.scene = scene;
-    });
-}
+    view3D.scene = scene;
+});

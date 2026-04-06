@@ -13,6 +13,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "feng3d": "0.6.0"
+    "feng3d": "0.6.0",
+    "opentype": "^0.1.2"
   }
 }

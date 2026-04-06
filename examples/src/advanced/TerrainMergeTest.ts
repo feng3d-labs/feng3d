@@ -1,26 +1,26 @@
-namespace examples
-{
-    var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: 'Untitled' }).addComponent(feng3d.Scene);
-    scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
+import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, FPSController, Renderable, TerrainGeometry, Material, PointLight, Color3, ticker } from 'feng3d';
 
-    var camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: 'Main Camera' }).addComponent(feng3d.Camera);
-    camera.transform.position = new feng3d.Vector3(0, 1, -10);
+    const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
+    scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+
+    const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
+    camera.transform.position = new Vector3(0, 1, -10);
     scene.gameObject.addChild(camera.gameObject);
 
-    var engine = new feng3d.View(null, scene, camera);
+    const engine = new View(null, scene, camera);
 
     //
     camera.transform.z = -5;
     camera.transform.y = 2;
-    camera.transform.lookAt(new feng3d.Vector3());
-    camera.gameObject.addComponent(feng3d.FPSController);
+    camera.transform.lookAt(new Vector3());
+    camera.gameObject.addComponent(FPSController);
 
-    var root = 'resources/terrain/';
+    const root = '../../resources/terrain/';
     //
-    var terrain = feng3d.serialization.setValue(new feng3d.GameObject(), { name: 'terrain' });
-    var model = terrain.addComponent(feng3d.Renderable);
-    model.geometry = new feng3d.TerrainGeometry({ heightMap: { __class__: 'Texture2D', source: { url: `${root}terrain_heights.jpg` } } });
-    var material = feng3d.serialization.setValue(new feng3d.Material(), {
+    const terrain = serialization.setValue(new GameObject(), { name: 'terrain' });
+    const model = terrain.addComponent(Renderable);
+    model.geometry = new TerrainGeometry({ heightMap: { __class__: 'Texture2D', source: { url: `${root}terrain_heights.jpg` } } });
+    const material = serialization.setValue(new Material(), {
         shaderName: 'standard', uniforms: {
             s_diffuse: { __class__: 'Texture2D', source: { url: `${root}terrain_diffuse.jpg` } },
             s_normal: { __class__: 'Texture2D', source: { url: `${root}terrain_normals.jpg` } },
@@ -33,15 +33,15 @@ namespace examples
     scene.gameObject.addChild(terrain);
 
     // 初始化光源
-    var light1 = new feng3d.GameObject();
-    var pointLight1 = light1.addComponent(feng3d.PointLight);
+    const light1 = new GameObject();
+    const pointLight1 = light1.addComponent(PointLight);
     // pointLight1.range = 1000;
-    pointLight1.color = new feng3d.Color3(1, 1, 0);
+    pointLight1.color = new Color3(1, 1, 0);
     light1.transform.y = 3;
     // scene.transform.addChild(light1);
 
     //
-    feng3d.ticker.onframe(() =>
+    ticker.onframe(() =>
     {
         const time = new Date().getTime();
         const angle = time / 1000;
@@ -49,4 +49,3 @@ namespace examples
         light1.transform.z = Math.cos(angle) * 3;
     });
 
-}

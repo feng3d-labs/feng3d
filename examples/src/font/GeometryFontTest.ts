@@ -1,64 +1,62 @@
-// / <reference path="../../libs/opentype.d.ts" />
+import { serialization, GameObject, Scene, Color4, Camera, Vector3, View, FPSController, Font, CustomGeometry, Renderable, Material, FrontFace, CullFace } from 'feng3d';
 
-namespace examples
+const scene = serialization.setValue(new GameObject(), { name: 'Untitled' }).addComponent(Scene);
+scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
+
+const camera = serialization.setValue(new GameObject(), { name: 'Main Camera' }).addComponent(Camera);
+camera.transform.position = new Vector3(0, 1, -10);
+scene.gameObject.addChild(camera.gameObject);
+
+const engine = new View(null, scene, camera);
+
+camera.gameObject.addComponent(FPSController);
+
+const script = document.createElement('script');
+script.onload = (ev) =>
 {
-    var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: 'Untitled' }).addComponent(feng3d.Scene);
-    scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
-
-    var camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: 'Main Camera' }).addComponent(feng3d.Camera);
-    camera.transform.position = new feng3d.Vector3(0, 1, -10);
-    scene.gameObject.addChild(camera.gameObject);
-
-    var engine = new feng3d.View(null, scene, camera);
-
-    camera.gameObject.addComponent(feng3d.FPSController);
-
-    var script = document.createElement('script');
-    script.onload = (ev) =>
+    // opentype.load('./resources/fonts/NotoSansCJKsc_Regular.otf', function (err, font)
+    // @ts-ignore
+    opentype.load('../../resources/fonts/simfang.ttf', function (err, font)
     {
-        // opentype.load('./resources/fonts/NotoSansCJKsc_Regular.otf', function (err, font)
-        opentype.load('./resources/fonts/simfang.ttf', function (err, font)
+        if (err)
         {
-            if (err)
-            {
-                alert(`Font could not be loaded: ${err}`);
-            }
- else
-            {
-                const fontData = extractFontData(font);
-                const contoursInfo = convert(fontData);
-                const font1 = new feng3d.Font(contoursInfo);
-                // font1.isCCW = !!font['isCIDFont'];
+            alert(`Font could not be loaded: ${err}`);
+        }
+        else
+        {
+            const fontData = extractFontData(font);
+            const contoursInfo = convert(fontData);
+            const font1 = new Font(contoursInfo);
+            // font1.isCCW = !!font['isCIDFont'];
 
-                // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图', 1);
-                // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
-                const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
+            // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图', 1);
+            // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
+            const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
 
-                const geometry = new feng3d.CustomGeometry();
+            const geometry = new CustomGeometry();
 
-                geometry.positions = Array.from(vertices);
-                geometry.normals = Array.from(normals);
-                geometry.uvs = Array.from(uvs);
-                geometry.indices = Array.from(indices);
+            geometry.positions = Array.from(vertices);
+            geometry.normals = Array.from(normals);
+            geometry.uvs = Array.from(uvs);
+            geometry.indices = Array.from(indices);
 
-                const cube = new feng3d.GameObject().addComponent(feng3d.Renderable);
-                cube.transform.x = -7;
-                cube.transform.y = 7;
-                cube.transform.rx = 180;
-                scene.gameObject.addChild(cube.gameObject);
+            const cube = new GameObject().addComponent(Renderable);
+            cube.transform.x = -7;
+            cube.transform.y = 7;
+            cube.transform.rx = 180;
+            scene.gameObject.addChild(cube.gameObject);
 
-                // 材质
-                const material = cube.material = new feng3d.Material();
-                material.renderParams.frontFace = feng3d.FrontFace.CCW;
-                material.renderParams.cullFace = feng3d.CullFace.NONE;
+            // 材质
+            const material = cube.material = new Material();
+            material.renderParams.frontFace = FrontFace.CCW;
+            material.renderParams.cullFace = CullFace.NONE;
 
-                cube.geometry = geometry;
-            }
-        });
-    };
-    script.src = './libs/opentype.min.js';
-    document.head.appendChild(script);
-}
+            cube.geometry = geometry;
+        }
+    });
+};
+script.src = '../../libs/opentype.min.js';
+document.head.appendChild(script);
 
 function extractFontData(fontAll: opentype.Font)
 {
@@ -94,7 +92,7 @@ function extractFontData(fontAll: opentype.Font)
         }
     }
 
-return fontData;
+    return fontData;
 }
 
 function convert(font, restrict?: string)
@@ -140,7 +138,7 @@ function convert(font, restrict?: string)
             }
         }
     }
- else if (restriction.set)
+    else if (restriction.set)
     { // use quit a lot
         for (const char of restriction.set)
         {
@@ -150,13 +148,13 @@ function convert(font, restrict?: string)
             {
                 result.glyphs[char] = fetchToken(glyph);
             }
- else
+            else
             {
                 console.warn(`char: ${char}, charCode: ${charCode}`);
             }
         }
     }
- else
+    else
     { // get all characters
         for (let i = 0; i < font.glyphs.length; i++)
         {
@@ -222,7 +220,7 @@ function fetchToken(glyph)
         }
     });
 
-return token;
+    return token;
 }
 const text1 = `
 道可道，非常道。
