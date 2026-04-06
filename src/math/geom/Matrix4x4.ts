@@ -489,7 +489,7 @@ export class Matrix4x4
         this.elements[15] = (m141 * m214) + (m142 * m224) + (m143 * m234) + (m144 * m244);
 
         // eslint-disable-next-line use-isnan
-        console.assert((this.elements[0] !== NaN) && (this.elements[4] !== NaN) && (this.elements[8] !== NaN) && (this.elements[12] !== NaN));
+        console.assert(!Number.isNaN(this.elements[0]) && !Number.isNaN(this.elements[4]) && !Number.isNaN(this.elements[8]) && !Number.isNaN(this.elements[12]));
 
         return this;
     }
