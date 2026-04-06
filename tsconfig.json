@@ -4,8 +4,8 @@
         "module": "CommonJS",
         "noImplicitAny": false,
         "sourceMap": true,
-        "declarationMap": false,
-        "declaration": false,
+        "declarationMap": true,
+        "declaration": true,
         "experimentalDecorators": true,
         "skipLibCheck": true,
         "lib": [
@@ -18,11 +18,5 @@
     },
     "include": [
         "src/**/*.ts"
-    ],
-    "ts-node": {
-        "files": true,
-        "compilerOptions": {
-            "esModuleInterop": true
-        }
-    }
+    ]
 }

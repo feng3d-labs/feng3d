@@ -4,7 +4,12 @@
     "entryPoints": [
         "src/index.ts"
     ],
-    "disableSources": true,
-    "sourcefile-url-prefix": "https://gitlab.com/feng3d/feng3d/tree/master/src/",
-    "out": "public"
+    "sourceLinkTemplate": "https://github.com/feng3d-labs/feng3d/tree/master/{path}#L{line}",
+    "out": "public/docs",
+    "visibilityFilters": {
+        "protected": false,
+        "private": false,
+        "inherited": true,
+        "external": true
+    }
 }

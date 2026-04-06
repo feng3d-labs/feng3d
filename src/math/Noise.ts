@@ -5,7 +5,6 @@
  *
  * @see http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
  * @see https://mrl.nyu.edu/~perlin/noise/
- * @see https://gitee.com/feng3d_admin/noise
  */
 export class Noise
 {
