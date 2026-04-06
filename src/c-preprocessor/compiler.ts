@@ -1,9 +1,6 @@
-import { EventEmitter } from '@feng3d/event';
-import * as jsbeautifier1 from 'js-beautify';
 import { defaultFS, IFS } from './fs';
 import { Processor } from './processor';
-
-const jsbeautifier: typeof jsbeautifier1 = jsbeautifier1['default'] || jsbeautifier1;
+import { EventEmitter } from '../event/EventEmitter';
 
 declare global
 {
@@ -150,7 +147,6 @@ export class Compiler extends EventEmitter
 	 */
 	success(code: string)
 	{
-		code = jsbeautifier(code).replace(/\$([\w]+)\$/g, '#$1').replace(/\n\n+/g, '\n');
 		this.emit('success', code);
 	}
 }

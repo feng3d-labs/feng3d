@@ -1,5 +1,5 @@
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { serialize } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { PropertyClip } from './PropertyClip';

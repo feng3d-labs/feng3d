@@ -1,7 +1,11 @@
-import { AssetMeta, AssetType, FileAsset, Texture2D } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
-import { serialization } from '@feng3d/serialization';
+import { AssetMeta } from "../../core/assets/AssetMeta";
+import { AssetType } from "../../core/assets/AssetType";
+import { FileAsset } from "../../core/assets/FileAsset";
+import { Texture2D } from "../../core/textures/Texture2D";
+import { oav } from "../../objectview/ObjectView";
+import { decoratorRegisterClass } from "../../polyfill/ClassUtils";
+import { gPartial } from "../../polyfill/Types";
+import { serialization } from "../../serialization/Serialization";
 
 /**
  * 纹理文件

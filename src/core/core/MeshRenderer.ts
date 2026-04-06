@@ -1,4 +1,4 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { RegisterComponent } from '../component/Component';
 import { Renderable } from './Renderable';
 

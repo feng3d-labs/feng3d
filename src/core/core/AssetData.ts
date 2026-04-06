@@ -1,5 +1,6 @@
-import { classUtils, MapUtils, __class__ } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
+import { __class__, classUtils } from '../../polyfill/ClassUtils';
+import { MapUtils } from '../../polyfill/MapUtils';
+import { serialization, serialize } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
 import { ReadRS } from '../assets/rs/ReadRS';
 import { Feng3dObject } from './Feng3dObject';

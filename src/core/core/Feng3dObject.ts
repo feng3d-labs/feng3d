@@ -1,6 +1,7 @@
-import { EventEmitter } from '@feng3d/event';
-import { Constructor, IDisposable, mathUtil } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
+import { EventEmitter } from '../../event/EventEmitter';
+import { mathUtil } from '../../polyfill/MathUtil';
+import { IDisposable, Constructor } from '../../polyfill/Types';
+import { serialization, serialize } from '../../serialization/Serialization';
 import { HideFlags } from './HideFlags';
 
 export interface Feng3dObjectEventMap

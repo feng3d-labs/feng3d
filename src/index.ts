@@ -255,7 +255,6 @@ export * from './particlesystem/shapes/ParticleSystemShapeEdge';
 export * from './particlesystem/shapes/ParticleSystemShapeHemisphere';
 export * from './particlesystem/shapes/ParticleSystemShapeSphere';
 
-
 export * from './path/Path';
 
 export * from './polyfill/Array';
@@ -331,7 +330,6 @@ export * from './ui/Text';
 export * from './ui/text/drawText';
 export * from './ui/text/TextMetrics';
 export * from './ui/text/TextStyle';
-
 
 /**
  * 版本号

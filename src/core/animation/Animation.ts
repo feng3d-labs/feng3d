@@ -1,6 +1,6 @@
-import { oav } from '@feng3d/objectview';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { oav } from '../../objectview/ObjectView';
+import { serialize } from '../../serialization/Serialization';
+import { watcher } from '../../watcher/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { getComponentType, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';

@@ -1,7 +1,10 @@
-import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
-import { WebGLRenderer } from '@feng3d/renderer';
-import { serialization } from '@feng3d/serialization';
-import { windowEventProxy } from '@feng3d/shortcut';
+import { Ray3 } from '../../math/geom/Ray3';
+import { Rectangle } from '../../math/geom/Rectangle';
+import { Vector2 } from '../../math/geom/Vector2';
+import { Vector3 } from '../../math/geom/Vector3';
+import { WebGLRenderer } from '../../renderer/WebGLRenderer';
+import { serialization } from '../../serialization/Serialization';
+import { windowEventProxy } from '../../shortcut/WindowEventProxy';
 import { AudioListener } from '../audio/AudioListener';
 import { Camera } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';

@@ -1,6 +1,8 @@
-import { AssetType, Material, setAssetTypeClass } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { AssetType } from '../../core/assets/AssetType';
+import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { Material } from '../../core/materials/Material';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { ObjectAsset } from '../ObjectAsset';
 
 declare global

@@ -66,9 +66,8 @@ import uv_pars_vert from './shaders/modules/uv_pars_vert.glsl';
 import uv_vert from './shaders/modules/uv_vert.glsl';
 import worldposition_pars_vert from './shaders/modules/worldposition_pars_vert.glsl';
 import worldposition_vert from './shaders/modules/worldposition_vert.glsl';
-
-import { shaderlib } from '@feng3d/renderer';
-import { serialization } from '@feng3d/serialization';
+import { shaderlib } from '../renderer/shader/ShaderLib';
+import { serialization } from '../serialization/Serialization';
 
 export { };
 

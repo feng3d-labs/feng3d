@@ -1,5 +1,5 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { serialize } from 'v8';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { Geometry } from './Geometry';
 
 declare global

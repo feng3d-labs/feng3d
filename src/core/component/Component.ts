@@ -1,6 +1,6 @@
-import { IEvent } from '@feng3d/event';
-import { Constructor, IDisposable } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
+import { IEvent } from '../../event/IEvent';
+import { Constructor, IDisposable } from '../../polyfill/Types';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
 import { Camera } from '../cameras/Camera';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { GameObject, GameObjectEventMap } from '../core/GameObject';

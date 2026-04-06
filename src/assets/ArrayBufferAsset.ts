@@ -1,5 +1,5 @@
-import { FileAsset } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { FileAsset } from '../core/assets/FileAsset';
+import { decoratorRegisterClass } from '../polyfill/ClassUtils';
 
 /**
  * 二进制 资源

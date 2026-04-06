@@ -1,4 +1,4 @@
-import { path } from '@feng3d/path';
+import { path } from '../path/Path';
 import { Compiler } from './compiler';
 
 declare global

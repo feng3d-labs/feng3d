@@ -1,5 +1,6 @@
-import { AssetType, setAssetTypeClass } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { AssetType } from '../../core/assets/AssetType';
+import { setAssetTypeClass } from '../../core/assets/FileAsset';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { ScriptAsset } from './ScriptAsset';
 
 declare global

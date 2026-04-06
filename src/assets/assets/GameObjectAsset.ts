@@ -1,7 +1,8 @@
-import { AssetType, GameObject } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization } from '@feng3d/serialization';
+import { AssetType } from '../../core/assets/AssetType';
+import { GameObject } from '../../core/core/GameObject';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { serialization } from '../../serialization/Serialization';
 import { ObjectAsset } from '../ObjectAsset';
 
 export interface GameObjectAsset

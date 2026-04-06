@@ -1,6 +1,6 @@
-import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { Color4 } from '../../math/Color4';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 import { RegisterComponent, Component } from './Component';
 
 declare global

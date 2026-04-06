@@ -1,6 +1,7 @@
-import { oav } from '@feng3d/objectview';
-import { Constructor, decoratorRegisterClass, gPartial, IDisposable } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { IDisposable, Constructor, gPartial } from '../../polyfill/Types';
+import { serialization, serialize } from '../../serialization/Serialization';
 import { AssetType } from '../assets/AssetType';
 import { Component, Components } from '../component/Component';
 import { Geometry } from '../geometry/Geometry';

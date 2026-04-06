@@ -1,5 +1,5 @@
-import { Matrix4x4 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { Matrix4x4 } from '../../../math/geom/Matrix4x4';
+import { decoratorRegisterClass } from '../../../polyfill/ClassUtils';
 import { Component, RegisterComponent } from '../../component/Component';
 
 declare global

@@ -1,9 +1,12 @@
-import { IEvent } from '@feng3d/event';
-import { Box3, Ray3, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { CullFace, RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { serialize } from 'v8';
+import { IEvent } from '../../event/IEvent';
+import { Box3 } from '../../math/geom/Box3';
+import { Ray3 } from '../../math/geom/Ray3';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { CullFace } from '../../renderer/gl/enums/CullFace';
+import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { Geometry, GeometryLike } from '../geometry/Geometry';

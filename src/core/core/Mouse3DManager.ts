@@ -1,8 +1,9 @@
-import { EventEmitter, IEvent } from '@feng3d/event';
-import { Rectangle } from '@feng3d/math';
-import { Lazy, lazy } from '@feng3d/polyfill';
-import { windowEventProxy } from '@feng3d/shortcut';
-import { watcher } from '@feng3d/watcher';
+import { EventEmitter } from '../../event/EventEmitter';
+import { IEvent } from '../../event/IEvent';
+import { Rectangle } from '../../math/geom/Rectangle';
+import { Lazy, lazy } from '../../polyfill/Types';
+import { windowEventProxy } from '../../shortcut/WindowEventProxy';
+import { watcher } from '../../watcher/watcher';
 import { Camera } from '../cameras/Camera';
 import { raycaster } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
