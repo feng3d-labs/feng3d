@@ -1,60 +1,60 @@
-namespace feng3d
+import { ov } from '../objectview/ObjectView';
+import { AssetType } from './AssetType';
+import { FileAsset, RegisterAsset } from './FileAsset';
+
+declare module './FileAsset'
 {
+    interface AssetMap
+    {
+        FolderAsset: FolderAsset;
+    }
+}
+
+/**
+ * 文件夹资源
+ */
+@ov({ component: 'OVFolderAsset' })
+@RegisterAsset('FolderAsset')
+export class FolderAsset extends FileAsset
+{
+    static extenson = '';
+
+    assetType = AssetType.folder;
+
     /**
-     * 文件夹资源
+     * 子资源列表
      */
-    @ov({ component: "OVFolderAsset" })
-    export class FolderAsset extends FileAsset
+    get childrenAssets()
     {
-        static extenson = "";
+        const children = this.rs.getChildrenAssetByPath(this.assetPath);
 
-        assetType = AssetType.folder;
-
-        /**
-         * 子资源列表
-         */
-        get childrenAssets()
-        {
-            var children = this.rs.getChildrenAssetByPath(this.assetPath);
-            return children;
-        }
-
-        initAsset()
-        {
-        }
-
-        /**
-         * 删除资源
-         * 
-         * @param callback 完成回调
-         */
-        delete(callback?: (err: Error) => void)
-        {
-            super.delete(callback);
-        }
-
-        /**
-         * 保存文件
-         * @param callback 完成回调
-         */
-        saveFile(callback?: (err: Error) => void)
-        {
-            this.rs.fs.mkdir(this.assetPath, callback);
-        }
-
-        /**
-         * 读取文件
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void)
-        {
-            callback && callback(null);
-        }
+        return children;
     }
 
-    export interface AssetTypeClassMap
+    initAsset()
     {
-        "folder": new () => FolderAsset;
     }
-    setAssetTypeClass("folder", FolderAsset);
+
+    /**
+     * 删除资源
+     */
+    async delete()
+    {
+        await super.delete();
+    }
+
+    /**
+     * 保存文件
+     */
+    async saveFile()
+    {
+        await this.rs.fs.mkdir(this.assetPath);
+    }
+
+    /**
+     * 读取文件
+     */
+    async readFile()
+    {
+    }
 }

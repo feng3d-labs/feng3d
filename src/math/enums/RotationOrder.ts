@@ -1,55 +1,57 @@
-namespace feng3d
-{
+import { mathUtil } from '../../polyfill/MathUtil';
 
-    /**
-     * 欧拉角的旋转顺序。
-     *
-     * 如果顺序为XYZ，则依次按 ZYZ 轴旋转。为什么循序与定义相反？因为three.js中都这么定义，他们为什么这么定义就不清楚了。
-     */
-    export enum RotationOrder
+declare module '../../polyfill/MathUtil'
+{
+    interface MathUtil
     {
         /**
-         * 依次按 ZYX 轴旋转。
+         * 引擎中使用的旋转顺序。
          *
-         * three.js默认旋转顺序。
+         * unity YXZ
+         * playcanvas ZYX
+         * three.js XYZ
          */
-        XYZ = 0,
-        /**
-         * 依次按 YXZ 轴旋转。
-         */
-        ZXY = 1,
-        /**
-         * 依次按 XYZ 轴旋转。
-         *
-         * playcanvas默认旋转顺序。
-         */
-        ZYX = 2,
-        /**
-         * 依次按 ZXY 轴旋转。
-         *
-         * unity默认旋转顺序。
-         */
-        YXZ = 3,
-        /**
-         * 依次按 XZY 轴旋转。
-         */
-        YZX = 4,
-        /**
-         * 依次按 YZX 轴旋转。
-         */
-        XZY = 5,
+        DefaultRotationOrder: RotationOrder;
     }
-
-    mathUtil.DefaultRotationOrder = RotationOrder.YXZ;
 }
-interface MixinsMathUtil
+
+/**
+ * 欧拉角的旋转顺序。
+ *
+ * 如果顺序为XYZ，则依次按 ZYZ 轴旋转。为什么循序与定义相反？因为three.js中都这么定义，他们为什么这么定义就不清楚了。
+ */
+export enum RotationOrder
 {
     /**
-     * 引擎中使用的旋转顺序。
+     * 依次按 ZYX 轴旋转。
      *
-     * unity YXZ
-     * playcanvas ZYX
-     * three.js XYZ
+     * three.js默认旋转顺序。
      */
-    DefaultRotationOrder: feng3d.RotationOrder;
+    XYZ = 0,
+    /**
+     * 依次按 YXZ 轴旋转。
+     */
+    ZXY = 1,
+    /**
+     * 依次按 XYZ 轴旋转。
+     *
+     * playcanvas默认旋转顺序。
+     */
+    ZYX = 2,
+    /**
+     * 依次按 ZXY 轴旋转。
+     *
+     * unity默认旋转顺序。
+     */
+    YXZ = 3,
+    /**
+     * 依次按 XZY 轴旋转。
+     */
+    YZX = 4,
+    /**
+     * 依次按 YZX 轴旋转。
+     */
+    XZY = 5,
 }
+
+mathUtil.DefaultRotationOrder = RotationOrder.YXZ;

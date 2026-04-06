@@ -1,37 +1,60 @@
 {
   "name": "feng3d",
-  "version": "0.1.3",
-  "description": "webgl 3d engine",
-  "main": "out/feng3d.js",
-  "types": "out/feng3d.d.ts",
+  "version": "0.7.11",
+  "description": "Web3D Engine",
+  "standalone": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "module": "src/index.ts",
+  "dts": "dist/index.d.ts",
+  "author": "feng",
+  "license": "MIT",
   "scripts": {
-    "build": "tsc && npm run shaderpack",
+    "clean": "rimraf \"{lib,dist,public}\"",
+    "build": "vite build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "types": "tsc && rollup -c && node scripts/indexdts.js",
     "watch": "tsc -w",
-    "build:test": "tsc -p test",
-    "watch:test": "tsc -w -p test",
-    "shaderpack": "node shaderpack.js",
-    "shaderpack:w": "node shaderpack.js -w"
+    "lint": "eslint --ext .js --ext .ts src test rollup.config.js --ignore-path .gitignore --max-warnings 0",
+    "lintfix": "npm run lint -- --fix",
+    "docs": "typedoc",
+    "release": "npm run clean && npm run lint && npm run docs && npm run build && npm run types && npm publish",
+    "prepublishOnly": "node scripts/prepublish.js",
+    "postpublish": "node scripts/postpublish.js"
   },
-  "files": [
-    "out",
-    "src"
-  ],
   "repository": {
     "type": "git",
     "url": "https://gitlab.com/feng3d/feng3d.git"
   },
-  "keywords": [
-    "feng3d",
-    "webgl",
-    "3d engine"
-  ],
-  "author": "feng",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/feng3d/feng3d/issues"
+  "publishConfig": {
+    "access": "public"
   },
-  "homepage": "https://gitlab.com/feng3d/feng3d#readme",
+  "files": [
+    "dist/",
+    "lib",
+    "src"
+  ],
   "devDependencies": {
-    "typescript": "^4.7.4"
+    "@typescript-eslint/eslint-plugin": "5.17.0",
+    "@typescript-eslint/parser": "5.17.0",
+    "@vitest/ui": "^0.26.2",
+    "cross-env": "7.0.3",
+    "eslint": "8.12.0",
+    "rimraf": "3.0.2",
+    "rollup": "2.70.1",
+    "rollup-plugin-dts": "4.2.0",
+    "rollup-plugin-json": "4.0.0",
+    "rollup-plugin-typescript": "1.0.1",
+    "tslib": "^2.4.0",
+    "typedoc": "0.23.23",
+    "typescript": "4.8.4",
+    "vite": "^3.0.7",
+    "vitest": "^0.26.2"
+  },
+  "dependencies": {
+    "@feng3d/earcut": "^0.0.1",
+    "@feng3d/path": "^0.0.3",
+    "stats.js": "^0.17.0"
   }
 }

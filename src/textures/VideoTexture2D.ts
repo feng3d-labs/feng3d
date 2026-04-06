@@ -1,14 +1,19 @@
-namespace feng3d
-{
-    export class VideoTexture2D extends Texture2D
-    {
-        @watch("_videoChanged")
-        video: HTMLVideoElement;
+import { watcher } from '../watcher/watcher';
+import { Texture2D } from './Texture2D';
 
-        private _videoChanged()
-        {
-            this._pixels = this.video;
-            this.invalidate();
-        }
+export class VideoTexture2D extends Texture2D
+{
+    video: HTMLVideoElement;
+
+    constructor()
+    {
+        super();
+        watcher.watch(this as VideoTexture2D, 'video', this._videoChanged, this);
+    }
+
+    private _videoChanged()
+    {
+        this._pixels = this.video;
+        this.invalidate();
     }
 }
