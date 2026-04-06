@@ -1,4 +1,3 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { ParticleSystemSubEmitterProperties } from '../enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../enums/ParticleSystemSubEmitterType';
 import { Particle } from '../Particle';

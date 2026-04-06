@@ -1,9 +1,3 @@
-import { Vector2 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { dataTransform, mathUtil } from '@feng3d/polyfill';
-import { Texture, TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { Feng3dObject, Feng3dObjectEventMap } from '../../core/Feng3dObject';
 import { imageDatas } from '../../textures/Texture2D';
 

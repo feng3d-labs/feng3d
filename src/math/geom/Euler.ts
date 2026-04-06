@@ -1,4 +1,3 @@
-import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
 import { Matrix4x4 } from './Matrix4x4';
 import { Quaternion } from './Quaternion';

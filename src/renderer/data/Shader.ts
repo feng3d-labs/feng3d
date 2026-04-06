@@ -1,5 +1,3 @@
-import { compile } from '@feng3d/c-preprocessor';
-import { gPartial } from '@feng3d/polyfill';
 import { GL } from '../gl/GL';
 import { ShaderMacro } from '../shader/Macro';
 import { shaderlib } from '../shader/ShaderLib';

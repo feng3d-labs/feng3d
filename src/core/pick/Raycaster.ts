@@ -1,5 +1,3 @@
-import { Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { CullFace } from '@feng3d/renderer';
 import { GameObject } from '../core/GameObject';
 import { RayCastable } from '../core/RayCastable';
 import { Geometry } from '../geometry/Geometry';

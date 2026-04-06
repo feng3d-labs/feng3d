@@ -1,5 +1,3 @@
-import { equationSolving } from '@feng3d/bezier';
-
 /**
  * Bézier曲线
  * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve

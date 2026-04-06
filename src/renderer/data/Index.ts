@@ -1,4 +1,3 @@
-import { gPartial } from '@feng3d/polyfill';
 import { GLArrayType } from '../gl/enums/GLArrayType';
 import { GL } from '../gl/GL';
 import { WebGLRenderer } from '../WebGLRenderer';

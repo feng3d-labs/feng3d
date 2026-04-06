@@ -1,4 +1,3 @@
-import { CullFace, RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';

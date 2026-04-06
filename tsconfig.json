@@ -12,6 +12,8 @@
             "ES2015",
             "DOM",
         ],
+        "types": [],
+        "baseUrl": ".",
         "outDir": "lib"
     },
     "include": [

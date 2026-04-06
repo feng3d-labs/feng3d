@@ -1,5 +1,3 @@
-import { mathUtil } from '@feng3d/polyfill';
-
 declare global
 {
     interface MixinsMathUtil

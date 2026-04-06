@@ -1,7 +1,7 @@
-import { Color3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { BlendFactor } from '@feng3d/renderer';
-import { serialize, serialization } from '@feng3d/serialization';
+import { Color3 } from '../../math/Color3';
+import { oav } from '../../objectview/ObjectView';
+import { BlendFactor } from '../../renderer/gl/enums/BlendFactor';
+import { serialize, serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';

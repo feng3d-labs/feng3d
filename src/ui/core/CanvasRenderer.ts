@@ -1,8 +1,16 @@
-import { AddComponentMenu, Geometry, Material, RegisterComponent, Renderable, TransformLayout, View } from '@feng3d/core';
-import { Ray3, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { CullFace, RenderAtomic } from '@feng3d/renderer';
+import { RegisterComponent } from '../../core/component/Component';
+import { Renderable } from '../../core/core/Renderable';
+import { TransformLayout } from '../../core/core/TransformLayout';
+import { View } from '../../core/core/View';
+import { Geometry } from '../../core/geometry/Geometry';
+import { Material } from '../../core/materials/Material';
+import { AddComponentMenu } from '../../core/Menu';
+import { Ray3 } from '../../math/geom/Ray3';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { RenderAtomic } from '../../renderer/data/RenderAtomic';
+import { CullFace } from '../../renderer/gl/enums/CullFace';
 import { Canvas } from './Canvas';
 
 declare global

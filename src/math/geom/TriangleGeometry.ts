@@ -1,4 +1,3 @@
-import { ArrayUtils } from '@feng3d/polyfill';
 import { Box3 } from './Box3';
 import { Line3 } from './Line3';
 import { Segment3 } from './Segment3';

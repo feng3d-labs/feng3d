@@ -1,9 +1,3 @@
-import { FS } from '@feng3d/filesystem';
-import { oav } from '@feng3d/objectview';
-import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
-import { TextureType } from '@feng3d/renderer';
-import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { HideFlags } from '../core/HideFlags';

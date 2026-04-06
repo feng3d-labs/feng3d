@@ -1,8 +1,13 @@
-import { Behaviour, GameObject, RegisterComponent, View } from '@feng3d/core';
-import { Matrix4x4, Ray3, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
+import { Behaviour } from '../../core/component/Behaviour';
+import { RegisterComponent } from '../../core/component/Component';
+import { GameObject } from '../../core/core/GameObject';
+import { View } from '../../core/core/View';
+import { Matrix4x4 } from '../../math/geom/Matrix4x4';
+import { Ray3 } from '../../math/geom/Ray3';
+import { Vector3 } from '../../math/geom/Vector3';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { UIRenderMode } from '../enums/UIRenderMode';
 import { Transform2D } from './Transform2D';
 

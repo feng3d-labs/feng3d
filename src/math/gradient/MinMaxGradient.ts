@@ -1,5 +1,3 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { Color4 } from '../Color4';
 import { Gradient } from './Gradient';
 import { MinMaxGradientMode } from './MinMaxGradientMode';

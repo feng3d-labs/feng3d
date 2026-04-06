@@ -1,4 +1,3 @@
-import { Vector3, Color4, Vector4, Vector2 } from '@feng3d/math';
 import { ParticleSystemEmitInfo } from './ParticleSystem';
 
 /**

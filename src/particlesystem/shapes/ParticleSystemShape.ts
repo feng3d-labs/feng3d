@@ -1,4 +1,3 @@
-import { Vector3 } from '@feng3d/math';
 import { ParticleShapeModule } from '../modules/ParticleShapeModule';
 import { Particle } from '../Particle';
 

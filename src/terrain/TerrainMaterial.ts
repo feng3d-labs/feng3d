@@ -1,9 +1,11 @@
-import { Material, StandardUniforms, Texture2D } from '@feng3d/core';
-import { Vector4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderConfig } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
+import { Material } from '../core/materials/Material';
+import { StandardUniforms } from '../core/materials/StandardMaterial';
+import { Texture2D } from '../core/textures/Texture2D';
+import { Vector4 } from '../math/geom/Vector4';
+import { oav } from '../objectview/ObjectView';
+import { decoratorRegisterClass } from '../polyfill/ClassUtils';
+import { shaderConfig } from '../renderer/shader/ShaderLib';
+import { serialize } from '../serialization/Serialization';
 
 declare global
 {

@@ -1,7 +1,3 @@
-import { MinMaxCurve, MinMaxCurveMode, Vector2 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
 import { ParticleSystemAnimationType } from '../enums/ParticleSystemAnimationType';
 import { UVChannelFlags } from '../enums/UVChannelFlags';
 import { Particle } from '../Particle';

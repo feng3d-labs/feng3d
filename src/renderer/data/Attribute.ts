@@ -1,4 +1,3 @@
-import { gPartial } from '@feng3d/polyfill';
 import { AttributeUsage } from '../gl/enums/AttributeUsage';
 import { GLArrayType } from '../gl/enums/GLArrayType';
 import { GL } from '../gl/GL';

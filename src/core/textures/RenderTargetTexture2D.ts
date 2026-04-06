@@ -1,5 +1,3 @@
-import { TextureFormat, TextureMagFilter, TextureMinFilter } from '@feng3d/renderer';
-import { watcher } from '@feng3d/watcher';
 import { Texture2D } from './Texture2D';
 
 /**

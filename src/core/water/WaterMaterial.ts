@@ -1,12 +1,7 @@
-import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
 import { Material } from '../materials/Material';
-import { Texture2D } from '../textures/Texture2D';
-import waterVertex from '../shaders/water.vertex.glsl';
 import waterFragment from '../shaders/water.fragment.glsl';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import waterVertex from '../shaders/water.vertex.glsl';
+import { Texture2D } from '../textures/Texture2D';
 
 declare global
 {

@@ -1,9 +1,5 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
-import { RegisterComponent, Component } from '../component/Component';
+import { Component, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { TextureCube } from '../textures/TextureCube';

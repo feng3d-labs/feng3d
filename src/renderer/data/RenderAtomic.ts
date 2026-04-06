@@ -1,4 +1,3 @@
-import { gPartial, Lazy, lazy } from '@feng3d/polyfill';
 import { ShaderMacro } from '../shader/Macro';
 import { Attribute } from './Attribute';
 import { Attributes } from './Attributes';

@@ -1,8 +1,3 @@
-import { Color4, Ray3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderMode } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';

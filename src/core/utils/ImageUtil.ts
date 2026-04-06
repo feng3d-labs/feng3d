@@ -1,6 +1,3 @@
-import { AnimationCurve, Color3, Color4, Gradient, Rectangle, Vector2 } from '@feng3d/math';
-import { dataTransform, mathUtil } from '@feng3d/polyfill';
-
 /**
  * 图片相关工具
  */

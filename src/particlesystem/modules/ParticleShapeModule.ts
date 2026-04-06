@@ -1,9 +1,3 @@
-import { Geometry } from '@feng3d/core';
-import { Matrix4x4, MinMaxCurve, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';
 import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';

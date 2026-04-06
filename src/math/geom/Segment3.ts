@@ -1,4 +1,3 @@
-import { mathUtil } from '@feng3d/polyfill';
 import { Line3 } from './Line3';
 import { Vector3 } from './Vector3';
 

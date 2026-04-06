@@ -1,7 +1,7 @@
-import { AssetType } from "../../core/assets/AssetType";
-import { FileAsset, setAssetTypeClass } from "../../core/assets/FileAsset";
-import { oav } from "../../objectview/ObjectView";
-import { decoratorRegisterClass } from "../../polyfill/ClassUtils";
+import { AssetType } from '../../core/assets/AssetType';
+import { FileAsset, setAssetTypeClass } from '../../core/assets/FileAsset';
+import { oav } from '../../objectview/ObjectView';
+import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
 
 declare global
 {

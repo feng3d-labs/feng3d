@@ -1,6 +1,3 @@
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
 import { Mathf } from '../MathF';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';

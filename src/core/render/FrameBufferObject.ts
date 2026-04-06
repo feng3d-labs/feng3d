@@ -1,5 +1,3 @@
-import { FrameBuffer, GL, RenderBuffer, Texture, WebGLRenderer } from '@feng3d/renderer';
-import { watcher } from '@feng3d/watcher';
 import { RenderTargetTexture2D } from '../textures/RenderTargetTexture2D';
 
 declare global

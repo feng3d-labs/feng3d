@@ -1,6 +1,3 @@
-import { Color4 } from '@feng3d/math';
-import { lazy } from '@feng3d/polyfill';
-import { Index, RenderAtomic, RenderMode, Shader, WebGLRenderer } from '@feng3d/renderer';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable } from '../../core/Renderable';

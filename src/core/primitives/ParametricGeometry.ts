@@ -1,5 +1,3 @@
-import { Vector3 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { Geometry } from '../geometry/Geometry';
 import { geometryUtils } from '../geometry/GeometryUtils';
 

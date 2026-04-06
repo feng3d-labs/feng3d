@@ -1,6 +1,3 @@
-import { GeometryLike, Material } from '@feng3d/core';
-import { Vector3 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { ParticleSystemRenderMode } from '../enums/ParticleSystemRenderMode';
 import { ParticleSystemRenderSpace } from '../enums/ParticleSystemRenderSpace';
 import { ParticleSystemSortMode } from '../enums/ParticleSystemSortMode';

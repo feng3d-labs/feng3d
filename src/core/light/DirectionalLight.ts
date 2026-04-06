@@ -1,6 +1,6 @@
-import { Box3, Vector3 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization } from '@feng3d/serialization';
+import { Box3 } from '../../math/geom/Box3';
+import { Vector3 } from '../../math/geom/Vector3';
+import { serialization } from '../../serialization/Serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../component/Component';
@@ -100,4 +100,9 @@ createNodeMenu.push(
             GameObject.createPrimitive('Directional light')
     }
 );
+
+function decoratorRegisterClass(): (target: typeof DirectionalLight) => void | typeof DirectionalLight
+{
+    throw new Error('Function not implemented.');
+}
 

@@ -1,5 +1,3 @@
-import { ObjectUtils, mathUtil } from '@feng3d/polyfill';
-
 /**
  * 通用唯一标识符（Universally Unique Identifier）
  *

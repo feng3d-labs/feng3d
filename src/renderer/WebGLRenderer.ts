@@ -1,5 +1,5 @@
 /* eslint-disable no-new */
-import { lazy } from '@feng3d/polyfill';
+
 import { Attribute } from './data/Attribute';
 import { RenderAtomic, RenderAtomicData } from './data/RenderAtomic';
 import { AttributeInfo, UniformInfo } from './data/Shader';

@@ -1,4 +1,3 @@
-import { Attribute, CullFace, Index, RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';

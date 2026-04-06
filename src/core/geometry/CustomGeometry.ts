@@ -1,5 +1,5 @@
-import { serialize } from 'v8';
 import { decoratorRegisterClass } from '../../polyfill/ClassUtils';
+import { serialize } from '../../serialization/Serialization';
 import { Geometry } from './Geometry';
 
 declare global

@@ -1,6 +1,3 @@
-import { Vector4 } from '@feng3d/math';
-import { LazyObject, lazy, mathUtil } from '@feng3d/polyfill';
-import { WebGLRenderer, Uniforms } from '@feng3d/renderer';
 import { Camera } from '../../cameras/Camera';
 import { Scene } from '../../scene/Scene';
 

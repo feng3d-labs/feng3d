@@ -1,7 +1,3 @@
-import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
-import { serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { GameObject } from '../core/GameObject';

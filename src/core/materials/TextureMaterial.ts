@@ -1,8 +1,3 @@
-import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
 import textureFragment from '../shaders/texture.fragment.glsl';
 import textureVertex from '../shaders/texture.vertex.glsl';
 import { Texture2D } from '../textures/Texture2D';

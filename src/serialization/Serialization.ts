@@ -1,5 +1,3 @@
-import { gPartial, ObjectUtils, __class__, ArrayUtils, classUtils } from '@feng3d/polyfill';
-
 /**
  * 序列化装饰器
  *

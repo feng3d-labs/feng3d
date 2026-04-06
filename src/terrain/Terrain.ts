@@ -1,5 +1,10 @@
-import { RegisterComponent, Renderable, Geometry, Material, GameObject, createNodeMenu } from '@feng3d/core';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { RegisterComponent } from '../core/component/Component';
+import { GameObject } from '../core/core/GameObject';
+import { Renderable } from '../core/core/Renderable';
+import { Geometry } from '../core/geometry/Geometry';
+import { Material } from '../core/materials/Material';
+import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { decoratorRegisterClass } from '../polyfill/ClassUtils';
 import { TerrainData } from './TerrainData';
 
 declare global

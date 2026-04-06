@@ -1,5 +1,3 @@
-import { LazyObject } from '@feng3d/polyfill';
-
 declare global
 {
     interface MixinsUniforms { }

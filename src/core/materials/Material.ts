@@ -1,9 +1,3 @@
-import { globalEmitter } from '@feng3d/event';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
-import { RenderAtomic, RenderMode, RenderParams, Shader, shaderlib } from '@feng3d/renderer';
-import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';

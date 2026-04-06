@@ -1,10 +1,6 @@
-import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
-import { TextureCube } from '../textures/TextureCube';
-import skyboxVertex from '../shaders/skybox.vertex.glsl';
 import skyboxFragment from '../shaders/skybox.fragment.glsl';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
+import skyboxVertex from '../shaders/skybox.vertex.glsl';
+import { TextureCube } from '../textures/TextureCube';
 
 declare global
 {

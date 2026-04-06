@@ -1,5 +1,4 @@
 import { Vector2 } from '../geom/Vector2';
-import { earcut } from '@feng3d/earcut';
 
 export class ShapeUtils
 {

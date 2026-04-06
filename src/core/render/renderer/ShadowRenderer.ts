@@ -1,5 +1,3 @@
-import { Rectangle, Vector3 } from '@feng3d/math';
-import { RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
 import { DirectionalLight } from '../../light/DirectionalLight';

@@ -1,7 +1,11 @@
-import { Texture2D } from '@feng3d/core';
-import { EventEmitter } from '@feng3d/event';
-import { Vector2, Vector4 } from '@feng3d/math';
-import { RenderAtomic, TextureMagFilter, TextureMinFilter, TextureWrap } from '@feng3d/renderer';
+import { Texture2D } from '../core/textures/Texture2D';
+import { EventEmitter } from '../event/EventEmitter';
+import { Vector2 } from '../math/geom/Vector2';
+import { Vector4 } from '../math/geom/Vector4';
+import { RenderAtomic } from '../renderer/data/RenderAtomic';
+import { TextureMagFilter } from '../renderer/gl/enums/TextureMagFilter';
+import { TextureMinFilter } from '../renderer/gl/enums/TextureMinFilter';
+import { TextureWrap } from '../renderer/gl/enums/TextureWrap';
 
 /**
  * 地形材质

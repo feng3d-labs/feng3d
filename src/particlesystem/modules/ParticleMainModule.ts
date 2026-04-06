@@ -1,7 +1,3 @@
-import { MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
 import { ParticleSystemScalingMode } from '../enums/ParticleSystemScalingMode';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import { Particle } from '../Particle';

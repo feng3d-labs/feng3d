@@ -1,10 +1,3 @@
-import { AddComponentMenu, Camera, createNodeMenu, GameObject, Geometry, Material, QuadGeometry, RegisterComponent, Renderable, RunEnvironment, Scene, Transform } from '@feng3d/core';
-import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
-import { Attribute, RenderAtomic } from '@feng3d/renderer';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';

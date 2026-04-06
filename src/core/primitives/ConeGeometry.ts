@@ -1,4 +1,3 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { GameObject } from '../core/GameObject';
 import { MeshRenderer } from '../core/MeshRenderer';
 import { Geometry } from '../geometry/Geometry';

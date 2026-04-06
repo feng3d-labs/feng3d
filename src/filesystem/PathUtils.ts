@@ -1,5 +1,3 @@
-import { path as fengpath } from '@feng3d/path';
-
 /**
  * 路径工具
  */

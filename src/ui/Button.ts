@@ -1,8 +1,12 @@
-import { AddComponentMenu, Behaviour, createNodeMenu, GameObject, RegisterComponent } from '@feng3d/core';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { Behaviour } from '../core/component/Behaviour';
+import { RegisterComponent } from '../core/component/Component';
+import { GameObject } from '../core/core/GameObject';
+import { AddComponentMenu } from '../core/Menu';
+import { createNodeMenu } from '../core/menu/CreateNodeMenu';
+import { oav } from '../objectview/ObjectView';
+import { decoratorRegisterClass } from '../polyfill/ClassUtils';
+import { serialize, serialization } from '../serialization/Serialization';
+import { watcher } from '../watcher/watcher';
 import { Transform2D } from './core/Transform2D';
 
 declare global
