@@ -1,27 +1,24 @@
-namespace feng3d
+export class MapUtils
 {
-    export class MapUtils
+    static getKeys<K, V>(map: Map<K, V>): K[]
     {
-        static getKeys<K, V>(map: Map<K, V>): K[]
+        const keys: any[] = [];
+        map.forEach((_v, k) =>
         {
-            const keys: any[] = [];
-            map.forEach((_v, k) =>
-            {
-                keys.push(k);
-            });
+            keys.push(k);
+        });
 
-            return keys;
-        }
+        return keys;
+    }
 
-        static getValues<K, V>(map: Map<K, V>): V[]
+    static getValues<K, V>(map: Map<K, V>): V[]
+    {
+        const values: any[] = [];
+        map.forEach((v, _k) =>
         {
-            const values: any[] = [];
-            map.forEach((v, _k) =>
-            {
-                values.push(v);
-            });
+            values.push(v);
+        });
 
-            return values;
-        }
+        return values;
     }
 }

@@ -1,27 +1,19 @@
 {
     "compilerOptions": {
         "target": "ES5",
+        "module": "CommonJS",
         "noImplicitAny": false,
         "sourceMap": true,
-        // "declaration": true,
-        // "strict": true,
+        "declarationMap": true,
+        "declaration": true,
         "experimentalDecorators": true,
+        "noEmit": true,
         "lib": [
             "ES2015",
-            "dom"
+            "DOM",
         ],
-        // "outDir": "./debug"
-        "outFile": "./out/tests.js"
     },
-    "references": [
-        {
-            "path": "..",
-        },
-    ],
     "include": [
-        //
-        "libs/qunit/qunit.d.ts",
-        //
-        "src/**/*.ts"
-    ]
+        "**/*.ts"
+    ],
 }
