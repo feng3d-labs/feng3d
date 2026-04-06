@@ -1,4 +1,4 @@
-import { equationSolving } from './src/EquationSolving';
+import { equationSolving } from './EquationSolving';
 
 /**
  * Bézier曲线

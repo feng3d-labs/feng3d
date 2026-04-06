@@ -4,9 +4,10 @@
         "module": "CommonJS",
         "noImplicitAny": false,
         "sourceMap": true,
-        "declarationMap": true,
-        "declaration": true,
+        "declarationMap": false,
+        "declaration": false,
         "experimentalDecorators": true,
+        "skipLibCheck": true,
         "lib": [
             "ES2015",
             "DOM",
