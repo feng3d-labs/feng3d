@@ -1,0 +1,19 @@
+{
+  "name": "@feng3d-editor/native",
+  "version": "0.6.0",
+  "description": "Node.js native modules for feng3d-editor",
+  "main": "index.js",
+  "type": "commonjs",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "fs-extra": "^10.1.0",
+    "websocket": "^1.0.34"
+  },
+  "devDependencies": {
+    "@types/node": "^16.18.0"
+  }
+}
+

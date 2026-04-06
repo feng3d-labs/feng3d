@@ -1,0 +1,8 @@
+{
+  "name": "@feng3d-editor/codeeditor",
+  "version": "0.6.0",
+  "description": "Monaco Editor based code editor for feng3d-editor",
+  "private": true,
+  "type": "module"
+}
+

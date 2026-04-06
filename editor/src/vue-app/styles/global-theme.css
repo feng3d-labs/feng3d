@@ -1,0 +1,205 @@
+/**
+ * 全局主题样式
+ * 使用 VSCode 主题语义化颜色变量
+ * 主题切换时只改变 CSS 变量的值，样式规则保持不变
+ */
+
+/* 全局基础样式 */
+* {
+  box-sizing: border-box;
+}
+
+/* 全局样式 */
+html,
+body {
+  background-color: var(--editor-background);
+  color: var(--editor-foreground);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sideBar-background);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbarSlider-background);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbarSlider-hoverBackground);
+}
+
+/* 选择文本样式 */
+::selection {
+  background-color: var(--button-background);
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: var(--button-background);
+  color: #ffffff;
+}
+
+/* 链接样式 */
+a {
+  color: var(--textLink-foreground);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--textLink-foreground);
+  text-decoration: underline;
+}
+
+/* 输入框、文本域等表单元素默认样式 */
+input,
+textarea,
+select {
+  background-color: var(--input-background);
+  color: var(--input-foreground);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  transition: all 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--button-background);
+  box-shadow: 0 0 0 2px var(--list-activeSelectionBackground);
+}
+
+/* 按钮样式 */
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--list-hoverBackground);
+}
+
+button:active:not(:disabled) {
+  background-color: var(--list-activeSelectionBackground);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 卡片/面板样式 */
+.card,
+.panel {
+  background-color: var(--panel-background);
+  border: 1px solid var(--sideBar-border);
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+/* 确保所有容器默认使用主题背景 */
+#vue-app,
+#vue-app-container {
+  background-color: var(--editor-background);
+  color: var(--editor-foreground);
+}
+
+/* ==============================
+   全局树形列表样式 (Tree Component)
+   用于层级视图、项目视图等
+   使用 VSCode 主题变量
+   ============================== */
+
+/* Element Plus Tree 基础样式 */
+.el-tree,
+.hierarchy-view .el-tree,
+.project-view .el-tree {
+  background-color: transparent !important;
+  color: var(--list-foreground, #9ea992) !important;
+}
+
+/* 树节点内容 */
+.el-tree-node__content,
+.hierarchy-view .el-tree-node__content,
+.project-view .el-tree-node__content {
+  color: var(--list-foreground, #9ea992) !important;
+  height: 24px;
+  border-radius: 3px;
+  margin: 2px 0;
+}
+
+/* 鼠标悬浮状态 */
+.el-tree-node__content:hover,
+.hierarchy-view .el-tree-node__content:hover,
+.project-view .el-tree-node__content:hover {
+  background-color: var(--list-hoverBackground, #2a2d2e) !important;
+}
+
+/* 选中状态 */
+.el-tree-node.is-current > .el-tree-node__content,
+.hierarchy-view .el-tree-node.is-current > .el-tree-node__content,
+.project-view .el-tree-node.is-current > .el-tree-node__content {
+  background-color: var(--list-activeSelectionBackground, #04395e) !important;
+  color: var(--list-activeSelectionForeground, #b1e1e2) !important;
+  border: 1px solid var(--button-background, #0077d2);
+}
+
+/* 展开图标样式 */
+.el-tree-node__expand-icon,
+.hierarchy-view .el-tree-node__expand-icon,
+.project-view .el-tree-node__expand-icon {
+  color: var(--descriptionForeground, #9ea992) !important;
+  font-size: 12px;
+}
+
+/* 鼠标悬浮时的展开图标 */
+.el-tree-node__content:hover .el-tree-node__expand-icon,
+.hierarchy-view .el-tree-node__content:hover .el-tree-node__expand-icon,
+.project-view .el-tree-node__content:hover .el-tree-node__expand-icon {
+  color: var(--editor-foreground, #ffffff) !important;
+}
+
+/* 选中状态下的展开图标 */
+.el-tree-node.is-current > .el-tree-node__content .el-tree-node__expand-icon,
+.hierarchy-view .el-tree-node.is-current > .el-tree-node__content .el-tree-node__expand-icon,
+.project-view .el-tree-node.is-current > .el-tree-node__content .el-tree-node__expand-icon {
+  color: var(--editor-foreground, #ffffff) !important;
+}
+
+/* 树节点标签文字 */
+.el-tree-node__label,
+.hierarchy-view .el-tree-node__label,
+.project-view .el-tree-node__label {
+  color: inherit;
+  font-size: 13px;
+}

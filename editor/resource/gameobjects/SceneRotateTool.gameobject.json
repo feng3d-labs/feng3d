@@ -1,0 +1,304 @@
+{
+    "__class__": "GameObject",
+    "name": "SceneRotateTool",
+    "children": [
+        {
+            "__class__": "GameObject",
+            "name": "arrowsX",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "x": 19,
+                    "rz": 90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 7,
+                        "height": 21
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "uniforms": {
+                            "u_diffuse": {
+                                "g": 0,
+                                "b": 0
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "arrowsNX",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "x": -19,
+                    "rz": -90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 7,
+                        "height": 21
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "arrowsY",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "y": 19,
+                    "rz": 180
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 7,
+                        "height": 21
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "uniforms": {
+                            "u_diffuse": {
+                                "r": 0,
+                                "b": 0
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "arrowsNY",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "y": -19
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 7,
+                        "height": 21
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "arrowsZ",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "z": 19,
+                    "rx": -90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 7,
+                        "height": 21
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "uniforms": {
+                            "u_diffuse": {
+                                "r": 0,
+                                "g": 0
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "arrowsNZ",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "z": -19,
+                    "rx": 90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 7,
+                        "height": 21
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "planeX",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "x": 7,
+                    "rz": -90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "PlaneGeometry",
+                        "width": 14,
+                        "height": 14
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "planeNX",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "x": -7,
+                    "rz": 90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "PlaneGeometry",
+                        "width": 14,
+                        "height": 14
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "planeY",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "y": 7
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "PlaneGeometry",
+                        "width": 14,
+                        "height": 14
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "planeNY",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "y": -7,
+                    "rz": 180
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "PlaneGeometry",
+                        "width": 14,
+                        "height": 14
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "planeZ",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "z": 7,
+                    "rx": 90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "PlaneGeometry",
+                        "width": 14,
+                        "height": 14
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "planeNZ",
+            "components": [
+                null,
+                {
+                    "__class__": "Transform",
+                    "z": -7,
+                    "rx": -90
+                },
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "PlaneGeometry",
+                        "width": 14,
+                        "height": 14
+                    },
+                    "material": {
+                        "__class__": "Material"
+                    }
+                }
+            ]
+        }
+    ],
+    "components": [
+        null,
+        {
+            "__class__": "Transform"
+        }
+    ]
+}
