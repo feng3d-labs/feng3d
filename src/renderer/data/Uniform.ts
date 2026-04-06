@@ -1,4 +1,4 @@
-import { LazyObject } from "../../polyfill/Types";
+import { LazyObject } from '../../polyfill/Types';
 
 declare global
 {

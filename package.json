@@ -25,7 +25,7 @@
     "types": "tsc",
     "watch": "tsc -w",
     "build:dts-bundle": "dts-bundle-generator --config dts.config.cjs",
-    "lint": "eslint --ext .js --ext .ts src test --ignore-path .gitignore --max-warnings 0",
+    "lint": "eslint --ext .js --ext .ts src examples --ignore-path .gitignore --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "docs": "typedoc && cd examples && vite build --outDir ../../public",
     "upload_oss": "npm run docs && feng3d-cli oss_upload_dir",

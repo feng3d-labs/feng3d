@@ -1,0 +1,56 @@
+{
+	"compilerOptions": {
+		"target": "ES5",
+		"noImplicitAny": false,
+		"sourceMap": true,
+		"experimentalDecorators": true,
+		"declaration": true,
+		"skipLibCheck": true,
+		"lib": [
+			"ES2015",
+			"dom"
+		],
+		"outDir": "out"
+		// "outFile": "out/examples.js"
+	},
+	"files": [
+		"node_modules/feng3d/dist/index.d.ts",
+		//
+		"src/advanced/TerrainMergeTest.ts",
+		"src/advanced/TerrainTest.ts",
+		//
+		"src/animator/SceneLoadTest.ts",
+		//
+		"src/away3d/Basic_Shading.ts",
+		"src/away3d/Basic_SkyBox.ts",
+		"src/away3d/Basic_View.ts",
+		//
+		"src/base/BillboardTest.ts",
+		"src/base/Container3DTest.ts",
+		"src/base/FogTest.ts",
+		"src/base/FPSControllerTest.ts",
+		"src/base/MousePickTest.ts",
+		"src/base/ScriptTest.ts",
+		"src/base/SkyBoxTest.ts",
+		//
+		"src/geometry/GeometryTest.ts",
+		"src/geometry/PrimitiveTest.ts",
+		//
+		"src/lights/PointLightTest.ts",
+		//
+		"src/material/ColorMaterialTest.ts",
+		"src/material/PointMaterialTest.ts",
+		"src/material/SegmentMaterialTest.ts",
+		"src/material/StandardMaterialTest.ts",
+		"src/material/TextureMaterialTest.ts",
+		//
+		// "src/vr/Clock.ts",
+		// "src/vr/webvr_cubes.ts",
+		// "src/vr/WebVR.ts",
+		//
+		"src/font/GeometryFontTest.ts",
+		//
+		"src/renderer/Basic.ts",
+		"src/renderer/DashedLine.ts",
+	]
+}

@@ -1,4 +1,3 @@
-
 import { Matrix4x4 } from '../../math/geom/Matrix4x4';
 import { Plane } from '../../math/geom/Plane';
 import { Vector3 } from '../../math/geom/Vector3';
