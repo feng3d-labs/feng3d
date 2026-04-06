@@ -1,45 +1,40 @@
-namespace feng3d
+import { oav } from '../../objectview/ObjectView';
+import { AssetType } from '../AssetType';
+import { FileAsset, RegisterAsset } from '../FileAsset';
+
+declare module '../FileAsset' { interface AssetMap { TextAsset: TextAsset; } }
+
+/**
+ * 文本 资源
+ */
+@RegisterAsset('TextAsset')
+export class TextAsset extends FileAsset
 {
+    static extenson = '.txt';
+
+    assetType = AssetType.txt;
+
+    @oav({ component: 'OAVMultiText' })
+    textContent: string;
+
+    initAsset()
+    {
+        this.textContent = this.textContent || '';
+    }
+
+    async saveFile()
+    {
+        await this.rs.fs.writeString(this.assetPath, this.textContent);
+    }
+
     /**
-     * 文本 资源
+     * 读取文件
      */
-    export class TextAsset extends FileAsset
+    async readFile()
     {
-        static extenson = ".txt";
+        const data = await this.rs.fs.readString(this.assetPath);
 
-        assetType = AssetType.txt;
-
-        @oav({ component: "OAVMultiText" })
-        textContent: string;
-
-        initAsset()
-        {
-            this.textContent = this.textContent || "";
-        }
-
-        saveFile(callback?: (err: Error) => void)
-        {
-            this.rs.fs.writeString(this.assetPath, this.textContent, callback);
-        }
-
-        /**
-         * 读取文件
-         * 
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void)
-        {
-            this.rs.fs.readString(this.assetPath, (err, data) =>
-            {
-                this.textContent = data;
-                callback && callback(err);
-            });
-        }
+        this.textContent = data as any;
     }
-
-    export interface AssetTypeClassMap
-    {
-        "txt": new () => TextAsset;
-    }
-    setAssetTypeClass("txt", TextAsset);
 }
+

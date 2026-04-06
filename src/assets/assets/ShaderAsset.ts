@@ -1,18 +1,17 @@
-namespace feng3d
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { ScriptAsset } from './ScriptAsset';
+
+declare module '../FileAsset' { interface AssetMap { ShaderAsset: ShaderAsset; } }
+
+/**
+ * 着色器 资源
+ */
+@RegisterAsset('ShaderAsset')
+export class ShaderAsset extends ScriptAsset
 {
-    /**
-     * 着色器 资源
-     */
-    export class ShaderAsset extends ScriptAsset
-    {
-        static extenson = ".ts";
+    static extenson = '.ts';
 
-        assetType = AssetType.shader;
-    }
-
-    export interface AssetTypeClassMap
-    {
-        "shader": new () => ShaderAsset;
-    }
-    setAssetTypeClass("shader", ShaderAsset);
+    assetType = AssetType.shader;
 }
+

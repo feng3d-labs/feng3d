@@ -1,25 +1,23 @@
-namespace feng3d
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { TextAsset } from './TextAsset';
+
+declare module '../FileAsset' { interface AssetMap { JSAsset: JSAsset; } }
+
+/**
+ * JS资源
+ */
+@RegisterAsset('JSAsset')
+export class JSAsset extends TextAsset
 {
-    /**
-     * JS资源
-     */
-    export class JSAsset extends TextAsset
+    static extenson = '.js';
+
+    assetType = AssetType.js;
+
+    declare textContent: string;
+
+    initAsset()
     {
-        static extenson = ".js";
-
-        assetType = AssetType.js;
-
-        textContent: string;
-
-        initAsset()
-        {
-            this.textContent = this.textContent || "";
-        }
+        this.textContent = this.textContent || '';
     }
-
-    export interface AssetTypeClassMap
-    {
-        "js": new () => JSAsset;
-    }
-    setAssetTypeClass("js", JSAsset);
 }

@@ -1,15 +1,13 @@
-namespace feng3d
+import { EventEmitter } from './EventEmitter';
+
+/**
+ * 全局事件列表
+ */
+export interface GlobalEvents
 {
-
-    /**
-     * 全局事件发射器。
-     */
-    export const globalEmitter = new EventEmitter<MixinsGlobalEvents>();
-
-    /**
-     * 事件列表
-     */
-    export interface MixinsGlobalEvents
-    {
-    }
 }
+
+/**
+ * 全局事件发射器。
+ */
+export const globalEmitter = new EventEmitter<GlobalEvents>();

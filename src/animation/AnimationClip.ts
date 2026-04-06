@@ -1,23 +1,25 @@
-namespace feng3d
+import { AssetType } from '../assets/AssetType';
+import { oav } from '../objectview/ObjectView';
+import { SerializeProperty } from '../serialization/SerializeProperty';
+import { PropertyClip } from './PropertyClip';
+
+export class AnimationClip
 {
-    export class AnimationClip extends Feng3dObject
-    {
-        readonly assetType = AssetType.anim;
+    readonly assetType = AssetType.anim;
 
-        @oav()
-        @serialize
-        name: string;
-        /**
-         * 动画时长，单位ms
-         */
-        @serialize
-        length: number;
+    @oav()
+    @SerializeProperty()
+    declare name: string;
+    /**
+     * 动画时长，单位ms
+     */
+    @SerializeProperty()
+    length: number;
 
-        @oav()
-        @serialize
-        loop = true;
+    @oav()
+    @SerializeProperty()
+    loop = true;
 
-        @serialize
-        propertyClips: PropertyClip[];
-    }
+    @SerializeProperty()
+    propertyClips: PropertyClip[];
 }

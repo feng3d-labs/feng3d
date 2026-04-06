@@ -1,25 +1,24 @@
-namespace feng3d
+import { AssetType } from '../AssetType';
+import { RegisterAsset } from '../FileAsset';
+import { TextAsset } from './TextAsset';
+
+declare module '../FileAsset' { interface AssetMap { JsonAsset: JsonAsset; } }
+
+/**
+ * JSON 资源
+ */
+@RegisterAsset('JsonAsset')
+export class JsonAsset extends TextAsset
 {
-    /**
-     * JSON 资源
-     */
-    export class JsonAsset extends TextAsset
+    static extenson = '.json';
+
+    assetType = AssetType.json;
+
+    declare textContent: string;
+
+    initAsset()
     {
-        static extenson = ".json";
-
-        assetType = AssetType.json;
-
-        textContent: string;
-
-        initAsset()
-        {
-            this.textContent = this.textContent || "{}";
-        }
+        this.textContent = this.textContent || '{}';
     }
-
-    export interface AssetTypeClassMap
-    {
-        "json": new () => JsonAsset;
-    }
-    setAssetTypeClass("json", JsonAsset);
 }
+

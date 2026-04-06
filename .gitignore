@@ -1,7 +1,6 @@
-/debug
-**/node_modules
-/package-lock.json
-/api
-*.tsbuildinfo
-/out
-/test/out
+node_modules
+dist
+lib
+public
+out
+.lib

@@ -1,90 +1,81 @@
-namespace feng3d
+import { oav } from '../../objectview/ObjectView';
+import { gPartial } from '../../polyfill/Types';
+import { $serialize } from '../../serialization/Serialization';
+import { Texture2D } from '../../textures/Texture2D';
+import { AssetMeta } from '../AssetMeta';
+import { AssetType } from '../AssetType';
+import { FileAsset, RegisterAsset } from '../FileAsset';
+
+declare module '../FileAsset' { interface AssetMap { TextureAsset: TextureAsset; } }
+
+/**
+ * 纹理文件
+ */
+@RegisterAsset('TextureAsset')
+export class TextureAsset extends FileAsset
 {
+    static extenson: '.jpg' | '.png' | '.jpeg' | '.gif' = '.png';
+
     /**
-     * 纹理文件
+     * 材质
      */
-    export class TextureAsset extends FileAsset
+    @oav({ component: 'OAVObjectView' })
+    declare data: Texture2D;
+
+    /**
+     * 图片
+     */
+    get image() { return this.data['_pixels'] as any; }
+    set image(v: HTMLImageElement)
     {
-        static extenson: ".jpg" | ".png" | ".jpeg" | ".gif" = ".png";
-
-        /**
-         * 材质
-         */
-        @oav({ component: "OAVObjectView" })
-        data: Texture2D;
-
-        /**
-         * 图片
-         */
-        get image() { return <any>this.data["_pixels"]; }
-        set image(v: HTMLImageElement)
-        {
-            this.data["_pixels"] = v;
-            this.saveFile();
-        }
-
-        meta: TextureAssetMeta;
-
-        assetType = AssetType.texture;
-
-        initAsset()
-        {
-            this.data = this.data || new Texture2D();
-        }
-
-        saveFile(callback?: (err: Error) => void)
-        {
-            this.rs.fs.writeImage(this.assetPath, this.image, (err) =>
-            {
-                callback && callback(err);
-            });
-        }
-
-        /**
-         * 读取文件
-         * 
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void)
-        {
-            this.rs.fs.readImage(this.assetPath, (err, img: HTMLImageElement) =>
-            {
-                this.data["_pixels"] = img;
-                callback && callback(err);
-            });
-        }
-
-        /**
-         * 读取元标签
-         * 
-         * @param callback 完成回调 
-         */
-        protected readMeta(callback?: (err?: Error) => void)
-        {
-            super.readMeta((err) =>
-            {
-                this.rs.deserializeWithAssets(this.meta.texture, (result) =>
-                {
-                    this.data = result;
-                    callback && callback(err);
-                });
-            });
-        }
-
-        /**
-         * 写元标签
-         * 
-         * @param callback 完成回调
-         */
-        protected writeMeta(callback?: (err: Error) => void)
-        {
-            this.meta.texture = serialization.serialize(this.data);
-            super.writeMeta(callback);
-        }
+        this.data['_pixels'] = v;
+        this.saveFile();
     }
 
-    export interface TextureAssetMeta extends AssetMeta
+    declare meta: TextureAssetMeta;
+
+    assetType = AssetType.texture;
+
+    initAsset()
     {
-        texture: gPartial<Texture2D>;
+        this.data = this.data || new Texture2D();
     }
+
+    async saveFile()
+    {
+        await this.rs.fs.writeImage(this.assetPath, this.image);
+    }
+
+    /**
+     * 读取文件
+     */
+    async readFile()
+    {
+        const img = await this.rs.fs.readImage(this.assetPath);
+        this.data['_pixels'] = img;
+    }
+
+    /**
+     * 读取元标签
+     */
+    protected async readMeta()
+    {
+        await super.readMeta();
+        const result: any = await this.rs.deserializeWithAssets(this.meta.texture);
+        this.data = result;
+    }
+
+    /**
+     * 写元标签
+     */
+    protected async writeMeta()
+    {
+        this.meta.texture = $serialize(this.data);
+        await super.writeMeta();
+    }
+}
+
+export interface TextureAssetMeta extends AssetMeta
+{
+    texture: gPartial<Texture2D>;
 }

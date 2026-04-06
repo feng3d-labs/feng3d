@@ -1,131 +1,132 @@
-namespace feng3d
+import { IEvent } from '../../event/IEvent';
+import { KeyBoard } from '../Keyboard';
+import { ShortCut } from '../ShortCut';
+import { windowEventProxy } from '../WindowEventProxy';
+import { KeyState } from './KeyState';
+
+/**
+ * 按键捕获
+ */
+export class KeyCapture
 {
+    /**
+     * 捕获的按键字典
+     */
+    private _mouseKeyDic = {};
 
     /**
-     * 按键捕获
+     * 按键状态
      */
-    export class KeyCapture
+    private _keyState: KeyState;
+    private shortcut: ShortCut;
+
+    /**
+     * 构建
+     * @param stage 舞台
+     */
+    constructor(shortcut: ShortCut)
     {
-        /**
-         * 捕获的按键字典
-         */
-        private _mouseKeyDic = {};
-
-        /**
-         * 按键状态
-         */
-        private _keyState: KeyState;
-        private shortcut: ShortCut;
-
-        /**
-         * 构建
-         * @param stage 舞台
-         */
-        constructor(shortcut: ShortCut)
+        this.shortcut = shortcut;
+        this._keyState = shortcut.keyState;
+        //
+        if (!windowEventProxy)
         {
-            this.shortcut = shortcut;
-            this._keyState = shortcut.keyState;
-            //
-            if (!windowEventProxy)
-            {
-                return;
-            }
-            windowEventProxy.on('keydown', this.onKeydown, this);
-            windowEventProxy.on('keyup', this.onKeyup, this);
-
-            // 监听鼠标事件
-            const mouseEvents = [ //
-                'dblclick', //
-                'click', //
-                'mousedown',
-                'mouseup',
-                'mousemove',
-                'mouseover',
-                'mouseout',
-            ];
-
-            for (let i = 0; i < mouseEvents.length; i++)
-            {
-                windowEventProxy.on(mouseEvents[i] as any, this.onMouseOnce, this);
-            }
-            windowEventProxy.on('wheel', this.onMousewheel, this);
+            return;
         }
+        windowEventProxy.on('keydown', this.onKeydown, this);
+        windowEventProxy.on('keyup', this.onKeyup, this);
 
-        /**
-         * 鼠标事件
-         */
-        private onMouseOnce(event: IEvent<MouseEvent>): void
+        // 监听鼠标事件
+        const mouseEvents = [ //
+            'dblclick', //
+            'click', //
+            'mousedown',
+            'mouseup',
+            'mousemove',
+            'mouseover',
+            'mouseout',
+        ];
+
+        for (let i = 0; i < mouseEvents.length; i++)
         {
-            if (!this.shortcut.enable)
-            {
-                return;
-            }
-            const mouseKey: string = event.type;
-
-            this._keyState.pressKey(mouseKey, event.data);
-            this._keyState.releaseKey(mouseKey, event.data);
+            windowEventProxy.on(mouseEvents[i] as any, this.onMouseOnce, this);
         }
+        windowEventProxy.on('wheel', this.onMousewheel, this);
+    }
 
-        /**
-         * 鼠标事件
-         */
-        private onMousewheel(event: IEvent<WheelEvent>): void
+    /**
+     * 鼠标事件
+     */
+    private onMouseOnce(event: IEvent<MouseEvent>): void
+    {
+        if (!this.shortcut.enable)
         {
-            if (!this.shortcut.enable)
-            {
-                return;
-            }
-            const mouseKey: string = event.type;
-
-            this._keyState.pressKey(mouseKey, event.data);
-            this._keyState.releaseKey(mouseKey, event.data);
+            return;
         }
+        const mouseKey: string = event.type;
 
-        /**
-         * 键盘按下事件
-         */
-        private onKeydown(event: IEvent<KeyboardEvent>): void
+        this._keyState.pressKey(mouseKey, event.data);
+        this._keyState.releaseKey(mouseKey, event.data);
+    }
+
+    /**
+     * 鼠标事件
+     */
+    private onMousewheel(event: IEvent<WheelEvent>): void
+    {
+        if (!this.shortcut.enable)
         {
-            if (!this.shortcut.enable)
-            {
-                return;
-            }
-            let boardKey: string = KeyBoard.getKey(event.data.keyCode);
-
-            boardKey = boardKey || event.data.key;
-            if (boardKey)
-            {
-                boardKey = boardKey.toLocaleLowerCase();
-                this._keyState.pressKey(boardKey, event.data);
-            }
-            else
-            {
-                console.error(`无法识别按钮 ${event.data.key}`);
-            }
+            return;
         }
+        const mouseKey: string = event.type;
 
-        /**
-         * 键盘弹起事件
-         */
-        private onKeyup(event: IEvent<KeyboardEvent>): void
+        this._keyState.pressKey(mouseKey, event.data);
+        this._keyState.releaseKey(mouseKey, event.data);
+    }
+
+    /**
+     * 键盘按下事件
+     */
+    private onKeydown(event: IEvent<KeyboardEvent>): void
+    {
+        if (!this.shortcut.enable)
         {
-            if (!this.shortcut.enable)
-            {
-                return;
-            }
-            let boardKey: string = KeyBoard.getKey(event.data.keyCode);
+            return;
+        }
+        let boardKey: string = KeyBoard.getKey(event.data.keyCode);
 
-            boardKey = boardKey || event.data.key;
-            if (boardKey)
-            {
-                boardKey = boardKey.toLocaleLowerCase();
-                this._keyState.releaseKey(boardKey, event.data);
-            }
-            else
-            {
-                console.error(`无法识别按钮 ${event.data.key}`);
-            }
+        boardKey = boardKey || event.data.key;
+        if (boardKey)
+        {
+            boardKey = boardKey.toLocaleLowerCase();
+            this._keyState.pressKey(boardKey, event.data);
+        }
+        else
+        {
+            console.error(`无法识别按钮 ${event.data.key}`);
         }
     }
 
+    /**
+     * 键盘弹起事件
+     */
+    private onKeyup(event: IEvent<KeyboardEvent>): void
+    {
+        if (!this.shortcut.enable)
+        {
+            return;
+        }
+        let boardKey: string = KeyBoard.getKey(event.data.keyCode);
+
+        boardKey = boardKey || event.data.key;
+        if (boardKey)
+        {
+            boardKey = boardKey.toLocaleLowerCase();
+            this._keyState.releaseKey(boardKey, event.data);
+        }
+        else
+        {
+            console.error(`无法识别按钮 ${event.data.key}`);
+        }
+    }
 }
