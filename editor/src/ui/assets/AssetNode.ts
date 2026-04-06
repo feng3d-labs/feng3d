@@ -1,8 +1,8 @@
-import { saveAs } from '@feng3d/filesaver';
 import { AssetType, dataTransform, FileAsset, FolderAsset, GameObjectAsset, GeometryAsset, MaterialAsset, serialize, TextureAsset, TextureCubeAsset } from 'feng3d';
 import JSZip from 'jszip';
 import { editorRS } from '../../assets/EditorRS';
 import { Feng3dScreenShot } from '../../feng3d/Feng3dScreenShot';
+import { saveAs } from '../../utils/FileSaver';
 import { TreeNode, TreeNodeMap } from '../components/TreeNode';
 import { DragData } from '../drag/Drag';
 import { editorAsset } from './EditorAsset';

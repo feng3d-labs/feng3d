@@ -1,9 +1,9 @@
-import { saveAs } from '@feng3d/filesaver';
 import { FS, indexedDBFS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
 import JSZip from 'jszip';
 import { editorcache } from '../caches/Editorcache';
 import { nativeFS } from './NativeFS';
 import { supportNative } from './NativeRequire';
+import { saveAs } from '../utils/FileSaver';
 
 // 使用相对路径，与 index.html 处于同一层级
 const templateurls = [
