@@ -28,6 +28,11 @@ export async function readPixels(device: GPUDevice, params: {
     const bytesPerPixel = Texture.getTextureBytesPerPixel(texture.format);
     const DataConstructor = Texture.getTextureDataConstructor(texture.format);
 
+    if (!DataConstructor)
+    {
+        throw new Error(`Unsupported texture format: ${texture.format}`);
+    }
+
     // WebGPU 要求 bytesPerRow 必须是 256 的倍数
     const unalignedBytesPerRow = width * bytesPerPixel;
     const alignedBytesPerRow = Math.ceil(unalignedBytesPerRow / 256) * 256;

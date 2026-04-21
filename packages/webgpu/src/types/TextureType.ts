@@ -1,24 +1,26 @@
 /**
  * 纹理维度。
  */
-const TextureDimensionality = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const TextureDimensionalityValues = {
     '1D': '1D',
     '2D': '2D',
     '3D': '3D',
     Cube: 'Cube',
 };
 
-type TextureDimensionality = keyof typeof TextureDimensionality;
+type TextureDimensionality = keyof typeof TextureDimensionalityValues;
 
 /**
  * 纹理为是否数组。
  */
-const TextureArrayed = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const TextureArrayedValues = {
     No: false,
     Yes: true,
 };
 
-type TextureArrayed = keyof typeof TextureArrayed;
+type TextureArrayed = keyof typeof TextureArrayedValues;
 
 /**
  * 纹理第二类型，描述纹理维度以及是否为数组。
@@ -45,7 +47,7 @@ export const SampledTextureType: {
     texture_cube: ['Cube', 'No', 'cube'],
     texture_cube_array: ['Cube', 'Yes', 'cube-array'],
 };
-export type SampledTextureType = keyof typeof SampledTextureType;
+export type SampledTextureTypeKey = keyof typeof SampledTextureType;
 
 /**
  * 多重采样纹理类型。
@@ -59,7 +61,7 @@ export const MultisampledTextureType: {
     texture_multisampled_2d: ['2D', 'No', '2d'],
     texture_depth_multisampled_2d: ['2D', 'No', '2d-array'],
 };
-export type MultisampledTextureType = keyof typeof MultisampledTextureType;
+export type MultisampledTextureTypeKey = keyof typeof MultisampledTextureType;
 
 /**
  * 外部纹理类型。
@@ -71,7 +73,7 @@ export const ExternalSampledTextureType: {
 } = {
     texture_external: ['2D', 'No', '2d'],
 };
-export type ExternalSampledTextureType = keyof typeof ExternalSampledTextureType;
+export type ExternalSampledTextureTypeKey = keyof typeof ExternalSampledTextureType;
 
 /**
  * 存储纹理类型。
@@ -89,7 +91,7 @@ export const StorageTextureType: {
     texture_storage_2d_array: ['2D', 'Yes', '2d-array'],
     texture_storage_3d: ['3D', 'No', '3d'],
 };
-export type StorageTextureType = keyof typeof StorageTextureType;
+export type StorageTextureTypeKey = keyof typeof StorageTextureType;
 
 /**
  * 深度纹理类型。
@@ -116,4 +118,4 @@ export const TextureType = {
     ...StorageTextureType,
     ...DepthTextureType,
 };
-export type TextureType = keyof typeof TextureType;
+export type TextureTypeKey = keyof typeof TextureType;

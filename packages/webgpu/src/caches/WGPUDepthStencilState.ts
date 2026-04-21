@@ -12,18 +12,22 @@ export class WGPUDepthStencilState extends ReactiveObject
     }
 
     private _computedGpuDepthStencilState: Computed<GPUDepthStencilState>;
+    private _key: [DepthStencilState, GPUTextureFormat];
 
     constructor(depthStencil: DepthStencilState, depthStencilFormat: GPUTextureFormat)
     {
         super();
 
+        // 规范化 key，将 undefined 转换为 null 以保持一致性
+        this._key = [depthStencil || (null as any), depthStencilFormat];
+
         this._onCreate(depthStencil, depthStencilFormat);
 
         //
-        WGPUDepthStencilState.map.set([depthStencil, depthStencilFormat], this);
+        WGPUDepthStencilState.map.set(this._key, this);
         this.destroyCall(() =>
         {
-            WGPUDepthStencilState.map.delete([depthStencil, depthStencilFormat]);
+            WGPUDepthStencilState.map.delete(this._key);
         });
     }
 
@@ -118,7 +122,8 @@ export class WGPUDepthStencilState extends ReactiveObject
     {
         if (!depthStencilFormat) return undefined;
 
-        return WGPUDepthStencilState.map.get([depthStencil, depthStencilFormat]) || new WGPUDepthStencilState(depthStencil, depthStencilFormat);
+        const key: [DepthStencilState, GPUTextureFormat] = [depthStencil || (null as any), depthStencilFormat];
+        return WGPUDepthStencilState.map.get(key) || new WGPUDepthStencilState(depthStencil || (null as any), depthStencilFormat);
     }
 
     static readonly map = new ChainMap<[DepthStencilState, GPUTextureFormat], WGPUDepthStencilState>();

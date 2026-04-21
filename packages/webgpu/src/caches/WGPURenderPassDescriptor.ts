@@ -147,7 +147,6 @@ export class WGPURenderPassDescriptor extends ReactiveObject
         this._computedRenderPassFormat = computed(() =>
         {
             let sampleCount: number = r_descriptor.sampleCount;
-            const gpuRenderPassDescriptor = this._computedGpuRenderPassDescriptor.value;
 
             const colorFormats: GPUTextureFormat[] = [];
 
@@ -161,12 +160,30 @@ export class WGPURenderPassDescriptor extends ReactiveObject
                 if (format) colorFormats.push(format);
             }
 
-            const depthStencilFormat: GPUTextureFormat = gpuRenderPassDescriptor.depthStencilAttachment?.view?.texture.format;
+            // 获取深度模板格式
+            let depthStencilFormat: GPUTextureFormat | undefined;
+            if (descriptor.depthStencilAttachment)
+            {
+                if (descriptor.depthStencilAttachment.view)
+                {
+                    const texture = descriptor.depthStencilAttachment.view.texture;
+                    if (texture)
+                    {
+                        const wGPUTextureLike = WGPUTextureLike.getInstance(device, texture);
+                        depthStencilFormat = wGPUTextureLike.gpuTexture.format;
+                    }
+                }
+                else
+                {
+                    // 如果没有 view，使用默认深度格式 'depth24plus'
+                    depthStencilFormat = 'depth24plus';
+                }
+            }
 
             // 构建渲染通道格式对象
             let renderPassFormat: RenderPassFormat
 
-            const renderPassFormatKey = [...colorFormats, depthStencilFormat, sampleCount].join(',');
+            const renderPassFormatKey = [...colorFormats, depthStencilFormat ?? '', sampleCount].join(',');
 
             if (renderPassFormatCache[renderPassFormatKey])
             {
@@ -176,7 +193,7 @@ export class WGPURenderPassDescriptor extends ReactiveObject
             {
                 renderPassFormat = {
                     colorFormats: colorFormats,
-                    depthStencilFormat: depthStencilFormat,
+                    ...(depthStencilFormat && { depthStencilFormat }),
                     sampleCount: sampleCount as 4,
                 };
                 renderPassFormatCache[renderPassFormatKey] = renderPassFormat;

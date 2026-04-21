@@ -37,7 +37,7 @@ export class WGPURenderBundle extends ReactiveObject
         {
             // 执行
             r_renderPassFormat.colorFormats.concat();
-            const descriptor: GPURenderBundleEncoderDescriptor = { colorFormats: renderPassFormat.colorFormats };
+            const descriptor: GPURenderBundleEncoderDescriptor = { colorFormats: [...renderPassFormat.colorFormats] };
 
             if (r_renderPassFormat.depthStencilFormat)
             {

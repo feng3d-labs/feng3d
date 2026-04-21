@@ -23,28 +23,27 @@ export async function getGPUDevice(options?: GPURequestAdapterOptions, descripto
                 requiredFeatures.splice(i, 1);
             }
         }
-        descriptor.requiredFeatures = requiredFeatures;
     }
     // 默认开启当前本机支持的所有WebGPU特性。
-    descriptor = descriptor || {};
-    descriptor.requiredFeatures = (descriptor.requiredFeatures || features) as any;
+    const finalDescriptor: GPUDeviceDescriptor = descriptor || {};
+    finalDescriptor.requiredFeatures = (finalDescriptor.requiredFeatures || requiredFeatures.length > 0 ? requiredFeatures : features) as any;
 
     // 设置更高的限制以支持更多的 storage buffer
     if (adapter)
     {
         const adapterLimits = adapter.limits;
 
-        descriptor.requiredLimits = descriptor.requiredLimits || {};
+        finalDescriptor.requiredLimits = finalDescriptor.requiredLimits || {};
         // 请求适配器支持的最大 storage buffer 数量
         if (adapterLimits.maxStorageBuffersPerShaderStage > 8)
         {
-            descriptor.requiredLimits.maxStorageBuffersPerShaderStage = adapterLimits.maxStorageBuffersPerShaderStage;
+            finalDescriptor.requiredLimits.maxStorageBuffersPerShaderStage = adapterLimits.maxStorageBuffersPerShaderStage;
         }
     }
     //
-    const device = await adapter?.requestDevice(descriptor);
+    const device = await adapter?.requestDevice(finalDescriptor);
 
-    quitIfWebGPUNotAvailable(adapter, device);
+    quitIfWebGPUNotAvailable(adapter, device || null);
 
-    return device;
+    return device!;
 }

@@ -48,7 +48,6 @@ export class WGPUCanvasTexture extends ReactiveObject
 
     private _onCreate(device: GPUDevice, canvasTexture: CanvasTexture)
     {
-        const r_this = reactive(this);
         const r_canvasTexture = reactive(canvasTexture);
 
         let oldGpuTexture: GPUTexture;

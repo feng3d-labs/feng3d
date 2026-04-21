@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ES2015",
+        "module": "CommonJS",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+        "experimentalDecorators": true,
+        "emitDeclarationOnly": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "lib": [
+            "ES2015",
+            "ES2017",
+            "ES2023",
+            "DOM",
+        ],
+        "outDir": "lib"
+    },
+    "include": [
+        "**/*.ts", "../src/ReactiveObject.ts",
+    ]
+}

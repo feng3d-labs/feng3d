@@ -44,3 +44,10 @@ coverage/
 *.tmp
 .temp/
 .cache/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Debug screenshots (root level only)
+/*.png
+/screenshot*.png

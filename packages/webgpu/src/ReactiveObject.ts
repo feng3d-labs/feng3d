@@ -38,7 +38,7 @@ export class ReactiveObject
      *
      * 私有属性，外部无法直接访问，只能通过 effect() 方法使用
      */
-    private _effectScope = new EffectScope();
+    private _effectScope: EffectScope | null = new EffectScope();
 
     /**
      * 销毁时需要执行的函数
@@ -130,5 +130,3 @@ export class ReactiveObject
         this._effectScope = null;
     }
 }
-
-const map: { [key: string]: number } = {};

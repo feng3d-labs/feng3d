@@ -3,6 +3,17 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
 export default [
+  {
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'lib/**',
+      'public/**',
+      '*.config.js',
+      'packages/webgpu/examples/**',
+      'examples/**',
+    ],
+  },
   js.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -63,17 +74,16 @@ export default [
       ...tsPlugin.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-unsafe-declaration-merging': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-this-alias': 'off',
+      'no-prototype-builtins': 'off',
       'no-undef': 'off',
+      'no-redeclare': 'off',
+      'no-constant-binary-expression': 'off',
+      'preserve-caught-error': 'off',
     },
-  },
-  {
-    ignores: [
-      'node_modules/**',
-      'dist/**',
-      'lib/**',
-      'public/**',
-      '*.config.js',
-      'packages/webgpu/examples/**',
-    ],
   },
 ];

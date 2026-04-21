@@ -53,7 +53,7 @@ export class WebGPU
         return this;
     }
 
-    readonly device: GPUDevice;
+    device!: GPUDevice;
 
     private _canvasContext: CanvasContext;
     private _canvasTextureView: any;
@@ -62,7 +62,7 @@ export class WebGPU
     {
         renderState.isRunWebGPU = true;
         //
-        this._canvasContext = options;
+        this._canvasContext = options as CanvasContext;
         this._canvasTextureView = {
             texture: {
                 context: this._canvasContext,
@@ -74,7 +74,7 @@ export class WebGPU
     {
         const r_this = reactive(this);
 
-        r_this.device = null;
+        r_this.device = null as any;
     }
 
     submit(submit: Submit)
@@ -152,12 +152,13 @@ export class WebGPU
         const source = WGPUBuffer.getInstance(this.device, buffer0).gpuBuffer;
 
         // 创建临时缓冲区，用于读取GPU缓冲区数据
-        const destination = this.device.createBuffer({ size: byteLength, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+        const size = byteLength ?? buffer.byteLength;
+        const destination = this.device.createBuffer({ size, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
 
-        byteOffset = byteOffset ?? buffer.byteOffset;
-        byteLength = byteLength ?? buffer.byteLength;
+        const actualOffset = byteOffset ?? buffer.byteOffset;
+        const actualLength = byteLength ?? buffer.byteLength;
 
-        commandEncoder.copyBufferToBuffer(source, byteOffset, destination, 0, byteLength);
+        commandEncoder.copyBufferToBuffer(source, actualOffset, destination, 0, actualLength);
 
         this.device.queue.submit([commandEncoder.finish()]);
 
