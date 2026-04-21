@@ -1,0 +1,46 @@
+{
+  "name": "@feng3d/gpu-driven-rendering",
+  "version": "0.1.0",
+  "description": "WebGPU 全GPU驱动渲染系统",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "vite",
+    "test": "vitest",
+    "lint": "eslint src",
+    "types": "tsc --noEmit"
+  },
+  "keywords": [
+    "webgpu",
+    "gpu-driven",
+    "rendering",
+    "indirect-drawing",
+    "compute-shader"
+  ],
+  "author": "feng3d",
+  "license": "MIT",
+  "dependencies": {
+    "@feng3d/reactivity": "workspace:*",
+    "@feng3d/webgpu": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@webgpu/types": "^0.1.7",
+    "typescript": "^6.0.0",
+    "vite": "^6.0.0",
+    "vitest": "^2.0.0",
+    "eslint": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
