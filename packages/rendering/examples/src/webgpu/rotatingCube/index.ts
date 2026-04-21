@@ -1,3 +1,4 @@
+import { reactive } from '@feng3d/reactivity';
 import { renderRotatingCube } from '@feng3d/rendering';
 
 import {
@@ -25,4 +26,17 @@ renderRotatingCube(canvas, {
         uv: { data: cubeVertexArray, format: 'float32x2', offset: cubeUVOffset, arrayStride: cubeVertexSize },
     },
     vertexCount: cubeVertexCount,
+}).then((controller) =>
+{
+    // 每秒更新一次旋转角度，触发渲染
+    let lastTime = Date.now();
+    setInterval(() =>
+    {
+        const now = Date.now();
+        const deltaTime = (now - lastTime) / 1000;
+        lastTime = now;
+
+        // 修改状态会自动触发渲染
+        reactive(controller.state).rotation += deltaTime;
+    }, 16); // 约60fps
 });
