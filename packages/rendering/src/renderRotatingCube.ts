@@ -1,4 +1,4 @@
-import { reactive } from '@feng3d/reactivity';
+import { computed, reactive, type Computed } from '@feng3d/reactivity';
 import { type BufferBinding, type RenderObject, type RenderPassDescriptor, type RenderPipeline, type Submit, type VertexAttributes, WebGPU } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
@@ -7,11 +7,12 @@ import { mat4, vec3 } from 'wgpu-matrix';
  *
  * @param canvas - Canvas 元素
  * @param options - 配置选项
+ * @returns 渲染控制器
  */
 export async function renderRotatingCube(
     canvas: HTMLCanvasElement,
     options: RenderRotatingCubeOptions,
-): Promise<void>
+): Promise<RenderRotatingCubeController>
 {
     const devicePixelRatio = window.devicePixelRatio || 1;
 
@@ -57,47 +58,80 @@ export async function renderRotatingCube(
     );
     const modelViewProjectionMatrix = mat4.create();
 
-    function getTransformationMatrix()
-    {
+    // 响应式状态
+    const state = reactive({
+        rotation: 0,
+    });
+
+    // 计算属性：当状态变化时自动更新
+    const submit: Computed<Submit> = computed(() => {
         const viewMatrix = mat4.identity();
-
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-        const now = Date.now() / 1000;
-
-        mat4.rotate(
-            viewMatrix,
-            vec3.fromValues(Math.sin(now), Math.cos(now), 0),
-            1,
-            viewMatrix,
-        );
-
+        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(state.rotation), Math.cos(state.rotation), 0), 1, viewMatrix);
         mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
 
-        return modelViewProjectionMatrix as Float32Array;
-    }
+        // 更新 uniforms
+        reactive(uniforms.value!).modelViewProjectionMatrix = modelViewProjectionMatrix.subarray();
 
-    const data: Submit = {
-        commandEncoders: [
-            {
-                passEncoders: [
-                    { descriptor: renderPass, renderPassObjects: [renderObject] },
-                ],
-            },
-        ],
-    };
+        return {
+            commandEncoders: [
+                {
+                    passEncoders: [
+                        { descriptor: renderPass, renderPassObjects: [renderObject] },
+                    ],
+                },
+            ],
+        };
+    });
 
-    function frame()
+    // 动画循环
+    let animationFrameId: number | null = null;
+    let lastTime = Date.now();
+
+    function animate()
     {
-        const transformationMatrix = getTransformationMatrix();
+        const now = Date.now();
+        const deltaTime = (now - lastTime) / 1000;
+        lastTime = now;
 
-        // 更新uniforms
-        reactive(uniforms.value!).modelViewProjectionMatrix = transformationMatrix.subarray();
+        // 更新旋转角度（触发 computed 重新计算）
+        reactive(state).rotation += deltaTime;
 
-        webgpu.submit(data);
+        // 渲染
+        webgpu.submit(submit.value);
 
-        requestAnimationFrame(frame);
+        animationFrameId = requestAnimationFrame(animate);
     }
-    requestAnimationFrame(frame);
+
+    animate();
+
+    return {
+        /**
+         * 停止动画
+         */
+        stop: () =>
+        {
+            if (animationFrameId !== null)
+            {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        },
+        /**
+         * 手动触发渲染一帧
+         */
+        render: () =>
+        {
+            webgpu.submit(submit.value);
+        },
+        /**
+         * 获取当前状态
+         */
+        get state()
+        {
+            return state;
+        },
+    };
 }
 
 /**
@@ -113,4 +147,17 @@ export interface RenderRotatingCubeOptions
     vertexCount: number;
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
+}
+
+/**
+ * 渲染控制器
+ */
+export interface RenderRotatingCubeController
+{
+    /** 停止动画 */
+    stop(): void;
+    /** 手动触发渲染一帧 */
+    render(): void;
+    /** 获取当前状态 */
+    get state(): { rotation: number };
 }

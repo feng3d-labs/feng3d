@@ -7,4 +7,4 @@
 
 // 导出渲染函数
 export { renderRotatingCube } from './renderRotatingCube.js';
-export type { RenderRotatingCubeOptions } from './renderRotatingCube.js';
+export type { RenderRotatingCubeOptions, RenderRotatingCubeController } from './renderRotatingCube.js';
