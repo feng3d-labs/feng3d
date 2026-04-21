@@ -31,9 +31,9 @@ export class WGPUQuerySet extends ReactiveObject
         const r_renderPass = reactive(renderPass);
 
         let occlusionQuerys: OcclusionQuery[];
-        let occlusionQuerySet: GPUQuerySet
+        let occlusionQuerySet: GPUQuerySet;
         let resultBuf: GPUBuffer;
-        let resolveBuf: GPUBuffer
+        let resolveBuf: GPUBuffer;
 
         let needQueryResult = false;
 

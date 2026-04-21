@@ -81,7 +81,7 @@ export class WGPUTextureView extends ReactiveObject
         this._computedTextureView = computed(() =>
         {
             // 获取底层纹理的WebGPU纹理实例
-            r_view.texture
+            r_view.texture;
             const wgpuTexture = WGPUTextureLike.getInstance(device, view.texture);
             const gpuTexture = wgpuTexture.gpuTexture;
 
@@ -178,5 +178,5 @@ declare global
         textureView.texture = this;
 
         return textureView;
-    }
+    };
 })(GPUTexture.prototype.createView);

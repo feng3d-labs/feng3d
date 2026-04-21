@@ -70,7 +70,7 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
         this.destroyCall(() =>
         {
             WGPURenderPassDepthStencilAttachment.map.delete([device, descriptor]);
-        })
+        });
     }
 
     /**

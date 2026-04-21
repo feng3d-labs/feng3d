@@ -18,7 +18,7 @@ export function runComputePass(device: GPUDevice, commandEncoder: GPUCommandEnco
     computePass.computeObjects.forEach((computeObject) =>
     {
         runComputeObject(computeObject, device, passEncoder);
-    })
+    });
 
     passEncoder.end();
 

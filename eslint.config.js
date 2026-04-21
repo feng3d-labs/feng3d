@@ -72,6 +72,7 @@ export default [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
+      'semi': ['error', 'always'],
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',

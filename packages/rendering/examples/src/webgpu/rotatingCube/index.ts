@@ -30,10 +30,10 @@ const input: RenderRotatingCubeInput = {
     rotation: 0,
 };
 
-renderRotatingCube(input)
+renderRotatingCube(input);
 
 // 使用 requestAnimationFrame 更新旋转角度
-let lastTime = performance.now();
+let lastTime = performance.now()
 
 const r_input = reactive(input);
 function animate(currentTime: number) {

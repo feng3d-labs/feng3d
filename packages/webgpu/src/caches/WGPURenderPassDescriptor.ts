@@ -30,7 +30,7 @@ export class WGPURenderPassDescriptor extends ReactiveObject
     {
         super();
 
-        this._onCreate(device, descriptor, canvasContext)
+        this._onCreate(device, descriptor, canvasContext);
         //
         WGPURenderPassDescriptor.map.set([device, descriptor, canvasContext], this);
         this.destroyCall(() =>
@@ -142,7 +142,7 @@ export class WGPURenderPassDescriptor extends ReactiveObject
 
                 return gpuTexture.format;
             }).value;
-        }
+        };
 
         this._computedRenderPassFormat = computed(() =>
         {
@@ -181,7 +181,7 @@ export class WGPURenderPassDescriptor extends ReactiveObject
             }
 
             // 构建渲染通道格式对象
-            let renderPassFormat: RenderPassFormat
+            let renderPassFormat: RenderPassFormat;
 
             const renderPassFormatKey = [...colorFormats, depthStencilFormat ?? '', sampleCount].join(',');
 
@@ -211,4 +211,4 @@ export class WGPURenderPassDescriptor extends ReactiveObject
     private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext], WGPURenderPassDescriptor>();
 }
 
-const renderPassFormatCache: { [key: string]: RenderPassFormat } = {}
+const renderPassFormatCache: { [key: string]: RenderPassFormat } = {};

@@ -72,7 +72,7 @@ export class WGPURenderPassColorAttachment extends ReactiveObject
         this.destroyCall(() =>
         {
             WGPURenderPassColorAttachment.map.delete([device, colorAttachment, descriptor, canvasContext]);
-        })
+        });
     }
 
     /**
