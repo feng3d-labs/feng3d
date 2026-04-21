@@ -14,8 +14,13 @@
     "install:packages": "npm install --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
+    "build:watch": "npm run build:watch --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "lintfix": "npm run lintfix --workspaces --if-present",
+    "docs": "npm run docs --workspaces --if-present",
+    "release": "npm run release --workspaces --if-present",
+    "release:webgpu": "npm run release -w @feng3d/webgpu"
   },
   "repository": {
     "type": "git",
