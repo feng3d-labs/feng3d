@@ -1,6 +1,5 @@
 import { CanvasContext } from '../data/CanvasContext';
 import { RenderPass } from '../data/RenderPass';
-import { RenderPassDescriptor } from '../data/RenderPassDescriptor';
 import { WGPUQuerySet } from '../caches/WGPUQuerySet';
 import { WGPURenderPass } from '../caches/WGPURenderPass';
 import { WGPURenderPassDescriptor } from '../caches/WGPURenderPassDescriptor';

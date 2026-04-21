@@ -2,7 +2,6 @@ import { OcclusionQuery } from './OcclusionQuery';
 import { RenderObject } from './RenderObject';
 import { RenderPassDescriptor } from './RenderPassDescriptor';
 import { RenderBundle } from './RenderBundle';
-import { TimestampQuery } from './TimestampQuery';
 
 /**
  * 渲染通道

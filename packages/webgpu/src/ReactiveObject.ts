@@ -130,5 +130,3 @@ export class ReactiveObject
         this._effectScope = null;
     }
 }
-
-const map: { [key: string]: number } = {};

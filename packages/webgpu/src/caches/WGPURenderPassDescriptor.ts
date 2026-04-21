@@ -147,7 +147,6 @@ export class WGPURenderPassDescriptor extends ReactiveObject
         this._computedRenderPassFormat = computed(() =>
         {
             let sampleCount: number = r_descriptor.sampleCount;
-            const gpuRenderPassDescriptor = this._computedGpuRenderPassDescriptor.value;
 
             const colorFormats: GPUTextureFormat[] = [];
 

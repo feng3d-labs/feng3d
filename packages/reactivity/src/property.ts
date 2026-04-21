@@ -131,7 +131,7 @@ export class PropertyReactivity<T, K extends keyof T> extends Reactivity<T>
      * @param oldValue 旧值。
      * @returns
      */
-    static trigger(target: object, type: TriggerOpTypes, key?: unknown, newValue?: unknown, oldValue?: unknown): void
+    static trigger(target: object, type: TriggerOpTypes, key?: unknown, newValue?: unknown, _oldValue?: unknown): void
     {
         const depsMap = this._targetMap.get(target);
 

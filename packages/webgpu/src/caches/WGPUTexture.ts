@@ -86,7 +86,6 @@ export class WGPUTexture extends ReactiveObject
      */
     private _onCreate(device: GPUDevice, texture: Texture)
     {
-        const r_this = reactive(this);
         const r_texture = reactive(texture);
 
         let gpuTexture: GPUTexture;
