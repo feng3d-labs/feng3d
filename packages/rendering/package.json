@@ -2,21 +2,33 @@
   "name": "@feng3d/rendering",
   "version": "0.1.0",
   "description": "WebGPU GPU 驱动渲染系统",
+  "homepage": "https://feng3d.com/rendering/",
+  "author": "feng",
+  "license": "MIT",
   "type": "module",
   "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "types": "./src/index.ts"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     }
   },
   "scripts": {
+    "clean": "rimraf lib dist",
     "build": "tsc",
-    "dev": "vite",
+    "watch": "tsc -w",
     "test": "vitest",
-    "lint": "eslint src",
-    "types": "tsc --noEmit"
+    "types": "tsc"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/feng3d/feng3d.git"
+  },
+  "files": [
+    "src",
+    "lib"
+  ],
   "keywords": [
     "webgpu",
     "gpu-driven",
@@ -24,23 +36,11 @@
     "indirect-drawing",
     "compute-shader"
   ],
-  "author": "feng3d",
-  "license": "MIT",
   "dependencies": {
-    "@feng3d/reactivity": "workspace:*",
-    "@feng3d/webgpu": "workspace:*"
+    "@feng3d/reactivity": "*",
+    "@feng3d/webgpu": "*"
   },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@webgpu/types": "^0.1.7",
-    "typescript": "^6.0.0",
-    "vite": "^6.0.0",
-    "vitest": "^2.0.0",
-    "eslint": "^9.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+  "publishConfig": {
+    "access": "public"
   }
 }

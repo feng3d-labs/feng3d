@@ -6,6 +6,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "rootDir": "src",
     "outDir": "lib",
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
@@ -19,7 +20,8 @@
     "strictNullChecks": false,
     "noImplicitReturns": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "types": ["@webgpu/types"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "lib", "public", "examples"]

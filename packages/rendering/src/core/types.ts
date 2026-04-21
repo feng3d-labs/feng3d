@@ -275,8 +275,8 @@ export interface RenderResult
     /**
      * 命令缓冲区（用于调试）
      */
-    readonly commandBuffers?: readonly {
+    readonly commandBuffers?: Readonly<{
         readonly opaque: readonly ArrayBuffer[];
         readonly transparent: readonly ArrayBuffer[];
-    };
+    }>;
 }

@@ -1,81 +1,152 @@
-import type { Camera, Material, ObjectData, GPUDrivenRendererOptions, RenderResult, RenderStats } from './types.js';
-import { ObjectBuffer } from './ObjectBuffer.js';
-import { MaterialBuffer } from './MaterialBuffer.js';
-import { IndirectBuffer } from './IndirectBuffer.js';
+import { reactive, computed, type Computed } from '@feng3d/reactivity';
+import type { Camera, Material, ObjectData, GPUDrivenRendererOptions } from './types.js';
+import type {
+    Submit,
+    Buffer as WGPUBufferInterface,
+    RenderPipeline,
+    RenderPass,
+    RenderPassColorAttachment,
+    RenderPassDepthStencilAttachment,
+    RenderObject,
+} from '@feng3d/webgpu';
+import { WGPUBuffer } from '@feng3d/webgpu';
 import { code as commandGeneratorShaderCode } from '../compute/CommandGenerator.wgsl.js';
 
 // 导入着色器内容
 const COMMAND_GENERATOR_SHADER = commandGeneratorShaderCode;
 
 /**
+ * GPU驱动渲染器状态
+ */
+interface GPUDrivenRendererState
+{
+    /** 相机数据 */
+    camera: Camera | null;
+    /** 物体数据列表 */
+    objects: readonly ObjectData[];
+    /** 材质数据列表 */
+    materials: readonly Material[];
+    /** 渲染管线 */
+    renderPipeline: RenderPipeline | null;
+    /** 颜色附件 */
+    colorAttachment: RenderPassColorAttachment | null;
+    /** 深度模板附件 */
+    depthStencilAttachment: RenderPassDepthStencilAttachment | null;
+}
+
+/**
  * GPU驱动渲染器
  *
- * 实现全GPU驱动的渲染流程：
- * 1. GPU生成绘制命令
- * 2. CPU仅触发间接绘制
- * 3. 支持不透明/透明物体分类渲染
+ * 使用声明式 Buffer 接口，通过 @feng3d/webgpu 的 WGPUBuffer 自动管理资源。
+ * 数据变化时，Submit 结构自动响应更新。
  */
 export class GPUDrivenRenderer
 {
     /**
-     * GPU设备
+     * GPU 设备（用于创建 WGPUBuffer）
      */
-    readonly device: GPUDevice;
+    private readonly device: GPUDevice;
+
+    /**
+     * GPU 队列
+     */
+    private readonly queue: GPUQueue;
 
     /**
      * 渲染器配置
      */
     readonly options: Readonly<GPUDrivenRendererOptions>;
 
-    /**
-     * 物体缓冲管理器
-     */
-    readonly objectBuffer: ObjectBuffer;
+    // ==================== 声明式 Buffer 接口 ====================
 
     /**
-     * 材质缓冲管理器
+     * 物体缓冲区描述（声明式）
      */
-    readonly materialBuffer: MaterialBuffer;
+    private readonly objectBufferDesc: WGPUBufferInterface;
 
     /**
-     * 间接绘制缓冲管理器
+     * 材质缓冲区描述（声明式）
      */
-    readonly indirectBuffer: IndirectBuffer;
+    private readonly materialBufferDesc: WGPUBufferInterface;
 
     /**
-     * 命令生成计算管线
+     * 相机缓冲区描述（声明式）
      */
-    private commandGeneratorPipeline: GPUComputePipeline;
+    private readonly cameraBufferDesc: WGPUBufferInterface;
 
     /**
-     * 相机数据缓冲区
+     * 视锥体缓冲区描述（声明式）
      */
-    private cameraBuffer: GPUBuffer;
+    private readonly frustumBufferDesc: WGPUBufferInterface;
 
     /**
-     * 视锥体数据缓冲区
+     * 物体计数缓冲区描述（声明式）
      */
-    private frustumBuffer: GPUBuffer;
+    private readonly objectCountBufferDesc: WGPUBufferInterface;
+
+    /**
+     * 间接绘制缓冲区描述数组（声明式）
+     */
+    private readonly indirectBufferDescs: WGPUBufferInterface[];
+
+    // ==================== WGPUBuffer 实例（由 @feng3d/webgpu 管理） ====================
+
+    /**
+     * 物体缓冲区
+     */
+    readonly objectBuffer: WGPUBuffer;
+
+    /**
+     * 材质缓冲区
+     */
+    readonly materialBuffer: WGPUBuffer;
+
+    /**
+     * 相机缓冲区
+     */
+    readonly cameraBuffer: WGPUBuffer;
+
+    /**
+     * 视锥体缓冲区
+     */
+    readonly frustumBuffer: WGPUBuffer;
 
     /**
      * 物体计数缓冲区
      */
-    private objectCountBuffer: GPUBuffer;
+    readonly objectCountBuffer: WGPUBuffer;
 
     /**
-     * 绑定组布局
+     * 间接绘制缓冲区数组
      */
-    private bindGroupLayout: GPUBindGroupLayout;
+    readonly indirectBuffers: WGPUBuffer[];
+
+    // ==================== 其他状态 ====================
 
     /**
-     * 当前绑定组
+     * 最大材质数量
      */
-    private bindGroup: GPUBindGroup | null;
+    readonly maxMaterials: number;
 
     /**
-     * 是否支持 MultiDraw 优化
+     * 最大透明物体数量
      */
-    readonly supportsMultiDraw: boolean;
+    readonly maxTransparentObjects: number;
+
+    /**
+     * 每个材质的最大绘制命令数
+     */
+    readonly maxDrawsPerMaterial: number;
+
+    /**
+     * 响应式状态
+     */
+    private readonly state: GPUDrivenRendererState;
+
+    /**
+     * 计算属性：Submit 结构
+     */
+    readonly submit: Computed<Submit>;
 
     /**
      * 调试模式
@@ -85,6 +156,7 @@ export class GPUDrivenRenderer
     constructor(device: GPUDevice, options: GPUDrivenRendererOptions = {})
     {
         this.device = device;
+        this.queue = device.queue;
         this.debug = options.debug ?? false;
 
         // 默认配置
@@ -99,348 +171,376 @@ export class GPUDrivenRenderer
         };
 
         this.options = { ...defaultOptions, ...options };
+        this.maxMaterials = this.options.maxMaterials;
+        this.maxTransparentObjects = this.options.maxTransparentObjects;
+        this.maxDrawsPerMaterial = Math.ceil(this.options.maxObjects / this.options.maxMaterials);
 
-        // 检测 MultiDraw 支持
-        this.supportsMultiDraw = this.options.useMultiDraw &&
-            device.features.has('indirect-first-instance');
+        // 创建响应式状态
+        this.state = reactive<GPUDrivenRendererState>({
+            camera: null,
+            objects: [],
+            materials: [],
+            renderPipeline: null,
+            colorAttachment: null,
+            depthStencilAttachment: null,
+        });
 
-        // 创建缓冲区管理器
-        this.objectBuffer = new ObjectBuffer(device, {
-            maxObjects: this.options.maxObjects,
+        // 创建声明式 Buffer 接口
+        this.objectBufferDesc = {
             label: `${this.options.label}-ObjectBuffer`,
-        });
+            size: this.options.maxObjects * 128, // STRIDE = 128
+        };
 
-        this.materialBuffer = new MaterialBuffer(device, {
-            maxMaterials: this.options.maxMaterials,
+        this.materialBufferDesc = {
             label: `${this.options.label}-MaterialBuffer`,
-        });
+            size: this.options.maxMaterials * 48, // STRIDE = 48
+        };
 
-        this.indirectBuffer = new IndirectBuffer(device, {
-            maxMaterials: this.options.maxMaterials,
-            maxTransparentObjects: this.options.maxTransparentObjects,
-            maxDrawsPerMaterial: Math.ceil(this.options.maxObjects / this.options.maxMaterials),
-            label: `${this.options.label}-IndirectBuffer`,
-        });
-
-        // 创建相机和视锥体缓冲区
-        this.cameraBuffer = device.createBuffer({
+        this.cameraBufferDesc = {
             label: `${this.options.label}-CameraBuffer`,
-            size: 144, // mat4x4 * 3 + vec3 + f32 * 2 + padding
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
+            size: 144,
+        };
 
-        this.frustumBuffer = device.createBuffer({
+        this.frustumBufferDesc = {
             label: `${this.options.label}-FrustumBuffer`,
-            size: 96, // 6 planes * 4 components * 4 bytes
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
+            size: 96,
+        };
 
-        this.objectCountBuffer = device.createBuffer({
+        this.objectCountBufferDesc = {
             label: `${this.options.label}-ObjectCountBuffer`,
             size: 4,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        };
+
+        // 创建间接绘制缓冲区描述
+        this.indirectBufferDescs = [];
+        for (let i = 0; i < this.maxMaterials; i++)
+        {
+            this.indirectBufferDescs.push({
+                label: `${this.options.label}-IndirectBuffer-opaque-${i}`,
+                size: this.maxDrawsPerMaterial * 20, // DRAW_INDEXED_INDIRECT_SIZE = 20
+            });
+        }
+        this.indirectBufferDescs.push({
+            label: `${this.options.label}-IndirectBuffer-transparent`,
+            size: this.maxTransparentObjects * 20,
         });
 
-        // 创建计算管线
-        this.commandGeneratorPipeline = device.createComputePipeline({
-            label: `${this.options.label}-CommandGeneratorPipeline`,
-            compute: {
-                module: device.createShaderModule({
-                    label: `${this.options.label}-CommandGeneratorShader`,
-                    code: COMMAND_GENERATOR_SHADER,
-                }),
-                entryPoint: 'main',
-            },
-            layout: 'auto',
-        });
+        // 使用 WGPUBuffer 包装（由 @feng3d/webgpu 管理实际 GPU 资源）
+        this.objectBuffer = new WGPUBuffer(this.device, reactive(this.objectBufferDesc));
+        this.materialBuffer = new WGPUBuffer(this.device, reactive(this.materialBufferDesc));
+        this.cameraBuffer = new WGPUBuffer(this.device, reactive(this.cameraBufferDesc));
+        this.frustumBuffer = new WGPUBuffer(this.device, reactive(this.frustumBufferDesc));
+        this.objectCountBuffer = new WGPUBuffer(this.device, reactive(this.objectCountBufferDesc));
 
-        // 获取绑定组布局
-        this.bindGroupLayout = this.commandGeneratorPipeline.getBindGroupLayout(0);
-        this.bindGroup = null;
+        this.indirectBuffers = this.indirectBufferDescs.map(desc =>
+            new WGPUBuffer(this.device, reactive(desc)),
+        );
+
+        // 创建计算属性：自动响应状态变化的 Submit
+        this.submit = computed(() => this._buildSubmit());
+
+        // 监听状态变化，自动更新 Buffer 数据
+        this._setupWatchers();
 
         if (this.debug)
         {
             console.info('[GPUDrivenRenderer] Initialized with options:', this.options);
-            console.info('[GPUDrivenRenderer] MultiDraw support:', this.supportsMultiDraw);
         }
-    }
-
-    /**
-     * 更新物体数据
-     *
-     * @param objects 物体数据数组
-     */
-    updateObjects(objects: readonly ObjectData[]): void
-    {
-        this.objectBuffer.updateObjects(this.device.queue, 0, objects);
-
-        // 更新物体计数
-        const countData = new Uint32Array([objects.length]);
-        this.device.queue.writeBuffer(this.objectCountBuffer, 0, countData);
-
-        // 重新创建绑定组
-        this._createBindGroup();
-    }
-
-    /**
-     * 更新单个物体数据
-     *
-     * @param index 物体索引
-     * @param object 物体数据
-     */
-    updateObject(index: number, object: ObjectData): void
-    {
-        this.objectBuffer.updateObject(this.device.queue, index, object);
-    }
-
-    /**
-     * 添加材质
-     *
-     * @param material 材质数据
-     * @returns 材质索引
-     */
-    addMaterial(material: Material): number
-    {
-        const index = this.materialBuffer.addMaterial(this.device.queue, material);
-
-        // 重新创建绑定组
-        this._createBindGroup();
-
-        return index;
     }
 
     /**
      * 更新相机数据
-     *
-     * @param camera 相机数据
      */
-    updateCamera(camera: Camera): void
+    setCamera(camera: Camera): void
     {
-        // 提取视锥体平面
-        const frustumPlanes = this.extractFrustumPlanes(camera);
-
-        // 写入相机缓冲区
-        this.device.queue.writeBuffer(this.cameraBuffer, 0, this.serializeCamera(camera));
-
-        // 写入视锥体缓冲区
-        this.device.queue.writeBuffer(this.frustumBuffer, 0, frustumPlanes);
+        this.state.camera = camera;
     }
 
     /**
-     * 渲染一帧
-     *
-     * @param colorAttachment 颜色附件
-     * @param depthStencilAttachment 深度模板附件
-     * @param renderPipeline 渲染管线
-     * @returns 渲染结果
+     * 更新物体数据
      */
-    render(
-        colorAttachment: GPURenderPassColorAttachment,
-        depthStencilAttachment: GPURenderPassDepthStencilAttachment,
-        renderPipeline: GPURenderPipeline,
-    ): RenderResult
+    setObjects(objects: readonly ObjectData[]): void
     {
-        const startTime = performance.now();
-
-        const encoder = this.device.createCommandEncoder({
-            label: `${this.options.label}-CommandEncoder`,
-        });
-
-        // 1. 生成绘制命令（计算着色器）
-        this.generateCommands(encoder);
-
-        // 2. 渲染
-        const stats = this.renderPass(
-            encoder,
-            colorAttachment,
-            depthStencilAttachment,
-            renderPipeline,
-        );
-
-        // 提交命令
-        this.device.queue.submit([encoder.finish()]);
-
-        const gpuTime = performance.now() - startTime;
-
-        return { stats: { ...stats, gpuTime } };
+        this.state.objects = objects;
     }
 
     /**
-     * 生成绘制命令（计算着色器）
+     * 更新材质数据
      */
-    private generateCommands(encoder: GPUCommandEncoder): void
+    setMaterials(materials: readonly Material[]): void
     {
-        // 重置计数器
-        this.indirectBuffer.resetCounters(this.device.queue);
-
-        const computePass = encoder.beginComputePass({
-            label: `${this.options.label}-CommandGeneratorPass`,
-        });
-
-        computePass.setPipeline(this.commandGeneratorPipeline);
-        computePass.setBindGroup(0, this._getBindGroup());
-
-        // 调度计算着色器
-        const workgroupCount = Math.ceil(this.objectBuffer.objectCount / 64);
-        computePass.dispatchWorkgroups(workgroupCount);
-
-        computePass.end();
+        this.state.materials = materials;
     }
 
     /**
-     * 渲染通道
+     * 设置渲染管线
      */
-    private renderPass(
-        encoder: GPUCommandEncoder,
-        colorAttachment: GPURenderPassColorAttachment,
-        depthStencilAttachment: GPURenderPassDepthStencilAttachment,
-        renderPipeline: GPURenderPipeline,
-    ): RenderStats
+    setRenderPipeline(pipeline: RenderPipeline): void
     {
-        const renderPass = encoder.beginRenderPass({
-            label: `${this.options.label}-RenderPass`,
-            colorAttachments: [colorAttachment],
-            depthStencilAttachment,
+        this.state.renderPipeline = pipeline;
+    }
+
+    /**
+     * 设置颜色附件
+     */
+    setColorAttachment(attachment: RenderPassColorAttachment): void
+    {
+        this.state.colorAttachment = attachment;
+    }
+
+    /**
+     * 设置深度模板附件
+     */
+    setDepthStencilAttachment(attachment: RenderPassDepthStencilAttachment): void
+    {
+        this.state.depthStencilAttachment = attachment;
+    }
+
+    /**
+     * 设置监听器，自动更新 Buffer 数据
+     */
+    private _setupWatchers(): void
+    {
+        // 监听相机变化
+        computed(() => {
+            const camera = this.state.camera;
+            if (camera)
+            {
+                // 更新相机缓冲区数据
+                (this.cameraBufferDesc as any).data = this.serializeCamera(camera);
+                // 更新视锥体数据
+                (this.frustumBufferDesc as any).data = this.extractFrustumPlanes(camera);
+            }
         });
 
-        renderPass.setPipeline(renderPipeline);
+        // 监听物体变化
+        computed(() => {
+            const objects = this.state.objects;
+            // 序列化物体数据
+            const data = this.serializeObjects(objects);
+            // 更新物体缓冲区数据
+            (this.objectBufferDesc as any).data = data;
+            // 更新物体计数
+            (this.objectCountBufferDesc as any).data = new Uint32Array([objects.length]);
+        });
 
-        // TODO: 设置顶点缓冲区、索引缓冲区等
-        // renderPass.setVertexBuffer(0, vertexBuffer);
-        // renderPass.setIndexBuffer(indexBuffer, 'uint32');
-        // renderPass.setBindGroup(0, renderBindGroup);
+        // 监听材质变化
+        computed(() => {
+            const materials = this.state.materials;
+            // 序列化材质数据
+            const data = this.serializeMaterials(materials);
+            // 更新材质缓冲区数据
+            (this.materialBufferDesc as any).data = data;
+        });
+    }
 
-        // 不透明物体渲染
-        const opaqueDrawCalls = this.renderOpaque(renderPass);
+    /**
+     * 构建 Submit 结构
+     */
+    private _buildSubmit(): Submit
+    {
+        const pipeline = this.state.renderPipeline;
+        const colorAttachment = this.state.colorAttachment;
+        const depthStencilAttachment = this.state.depthStencilAttachment;
 
-        // 透明物体渲染
-        const transparentDrawCalls = this.renderTransparent(renderPass);
-
-        renderPass.end();
+        if (!pipeline || !colorAttachment || !depthStencilAttachment)
+        {
+            return { commandEncoders: [] };
+        }
 
         return {
-            objectCount: this.objectBuffer.objectCount,
-            drawCalls: opaqueDrawCalls + transparentDrawCalls,
-            triangleCount: 0, // TODO: 统计三角形数量
-            gpuTime: 0,
+            commandEncoders: [
+                {
+                    passEncoders: [
+                        this._buildComputePass(),
+                        this._buildRenderPass(pipeline, colorAttachment, depthStencilAttachment),
+                    ],
+                },
+            ],
         };
     }
 
     /**
-     * 渲染不透明物体
+     * 构建计算着色器通道
      */
-    private renderOpaque(renderPass: GPURenderPass): number
+    private _buildComputePass(): import('@feng3d/webgpu').ComputePass
     {
-        let drawCalls = 0;
-
-        if (this.supportsMultiDraw)
-        {
-            // 使用 MultiDraw 优化（需要 WebGL 扩展或 WebGPU 特性支持）
-            // 注意：WebGPU 的 multiDrawIndexedIndirect 需要特定特性
-            // 这里简化实现，使用循环
-            for (let i = 0; i < this.indirectBuffer.maxMaterials; i++)
-            {
-                renderPass.drawIndexedIndirect(
-                    this.indirectBuffer.opaqueBuffers[i],
-                    0,
-                );
-                drawCalls++;
-            }
-        }
-        else
-        {
-            // Fallback: 循环绘制
-            for (let i = 0; i < this.indirectBuffer.maxMaterials; i++)
-            {
-                renderPass.drawIndexedIndirect(
-                    this.indirectBuffer.opaqueBuffers[i],
-                    0,
-                );
-                drawCalls++;
-            }
-        }
-
-        return drawCalls;
-    }
-
-    /**
-     * 渲染透明物体
-     */
-    private renderTransparent(renderPass: GPURenderPass): number
-    {
-        // TODO: 先排序透明物体，然后绘制
-        renderPass.drawIndexedIndirect(this.indirectBuffer.transparentBuffer, 0);
-        return 1;
-    }
-
-    /**
-     * 创建绑定组
-     */
-    private _createBindGroup(): void
-    {
-        this.bindGroup = this.device.createBindGroup({
-            label: `${this.options.label}-BindGroup`,
-            layout: this.bindGroupLayout,
-            entries: [
-                // 物体缓冲区
+        return {
+            __type__: 'ComputePass',
+            computeObjects: [
                 {
-                    binding: 0,
-                    resource: { buffer: this.objectBuffer.buffer },
-                },
-                // 材质缓冲区
-                {
-                    binding: 1,
-                    resource: { buffer: this.materialBuffer.buffer },
-                },
-                // 相机缓冲区
-                {
-                    binding: 2,
-                    resource: { buffer: this.cameraBuffer },
-                },
-                // 视锥体缓冲区
-                {
-                    binding: 3,
-                    resource: { buffer: this.frustumBuffer },
-                },
-                // 物体计数缓冲区
-                {
-                    binding: 4,
-                    resource: { buffer: this.objectCountBuffer },
-                },
-                // 不透明命令缓冲区
-                {
-                    binding: 5,
-                    resource: { buffer: this.indirectBuffer.opaqueBuffers[0] },
-                },
-                // 不透明计数器
-                {
-                    binding: 6,
-                    resource: { buffer: this.indirectBuffer.opaqueCounters[0] },
-                },
-                // 透明命令缓冲区
-                {
-                    binding: 7,
-                    resource: { buffer: this.indirectBuffer.transparentBuffer },
-                },
-                // 透明计数器
-                {
-                    binding: 8,
-                    resource: { buffer: this.indirectBuffer.transparentCounter },
+                    pipeline: {
+                        compute: {
+                            code: COMMAND_GENERATOR_SHADER,
+                            entryPoint: 'main',
+                        },
+                    },
+                    bindingResources: {
+                        objectBuffer: this.objectBuffer.gpuBuffer,
+                        materialBuffer: this.materialBuffer.gpuBuffer,
+                        cameraBuffer: this.cameraBuffer.gpuBuffer,
+                        frustumBuffer: this.frustumBuffer.gpuBuffer,
+                        objectCountBuffer: this.objectCountBuffer.gpuBuffer,
+                        opaqueCommandBuffer: this.indirectBuffers[0].gpuBuffer,
+                        opaqueCounter: this.indirectBuffers[this.maxMaterials].gpuBuffer,
+                        transparentCommandBuffer: this.indirectBuffers[this.maxMaterials * 2].gpuBuffer,
+                        transparentCounter: this.indirectBuffers[this.maxMaterials * 2 + 1].gpuBuffer,
+                    },
+                    workgroups: {
+                        workgroupCountX: Math.ceil((this.state.objects.length || 0) / 64),
+                        workgroupCountY: 1,
+                        workgroupCountZ: 1,
+                    },
                 },
             ],
-        });
+        };
     }
 
     /**
-     * 获取绑定组
+     * 构建渲染通道
      */
-    private _getBindGroup(): GPUBindGroup
+    private _buildRenderPass(
+        pipeline: RenderPipeline,
+        colorAttachment: RenderPassColorAttachment,
+        depthStencilAttachment: RenderPassDepthStencilAttachment,
+    ): RenderPass
     {
-        if (!this.bindGroup)
+        return {
+            __type__: 'RenderPass',
+            descriptor: {
+                colorAttachments: [
+                    {
+                        ...colorAttachment,
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                        clearValue: [0, 0, 0, 1],
+                    },
+                ],
+                depthStencilAttachment,
+            },
+            renderPassObjects: this._buildRenderObjects(pipeline),
+        };
+    }
+
+    /**
+     * 构建渲染对象列表
+     */
+    private _buildRenderObjects(pipeline: RenderPipeline): RenderObject[]
+    {
+        const objects: RenderObject[] = [];
+
+        // 不透明物体（按材质分组）
+        for (let i = 0; i < this.maxMaterials; i++)
         {
-            this._createBindGroup();
+            objects.push({
+                __type__: 'RenderObject',
+                pipeline,
+                draw: {
+                    __type__: 'DrawIndexedIndirect',
+                    buffer: this.indirectBuffers[i].gpuBuffer,
+                    offset: 0,
+                } as any, // TODO: 等待 @feng3d/webgpu 添加间接绘制类型
+            });
         }
-        return this.bindGroup!;
+
+        // 透明物体
+        objects.push({
+            __type__: 'RenderObject',
+            pipeline,
+            draw: {
+                __type__: 'DrawIndexedIndirect',
+                buffer: this.indirectBuffers[this.maxMaterials].gpuBuffer,
+                offset: 0,
+            } as any, // TODO: 等待 @feng3d/webgpu 添加间接绘制类型
+        });
+
+        return objects;
+    }
+
+    /**
+     * 序列化物体数据
+     */
+    private serializeObjects(objects: readonly ObjectData[]): ArrayBuffer
+    {
+        const STRIDE = 128;
+        const buffer = new ArrayBuffer(objects.length * STRIDE);
+        const view = new DataView(buffer);
+        const float32 = new Float32Array(buffer);
+        const uint32 = new Uint32Array(buffer);
+
+        for (let i = 0; i < objects.length; i++)
+        {
+            const obj = objects[i];
+            const offset = i * STRIDE;
+
+            // worldMatrix (16 floats)
+            for (let j = 0; j < 16; j++)
+            {
+                float32[offset / 4 + j] = obj.worldMatrix[j] ?? 0;
+            }
+
+            // boundsCenter (3 floats)
+            view.setFloat32(offset + 64, obj.boundsCenter[0], true);
+            view.setFloat32(offset + 68, obj.boundsCenter[1], true);
+            view.setFloat32(offset + 72, obj.boundsCenter[2], true);
+
+            // boundsRadius (1 float)
+            view.setFloat32(offset + 76, obj.boundsRadius, true);
+
+            // materialId (1 uint)
+            uint32[offset / 4 + 20] = obj.materialId;
+
+            // isTransparent (1 uint)
+            uint32[offset / 4 + 21] = obj.isTransparent ? 1 : 0;
+
+            // LODs (4 levels)
+            for (let j = 0; j < 4; j++)
+            {
+                const lod = obj.lods[j] || { indexCount: 0, indexOffset: 0 };
+                uint32[offset / 4 + 24 + j * 2] = lod.indexCount;
+                uint32[offset / 4 + 25 + j * 2] = lod.indexOffset;
+            }
+        }
+
+        return buffer;
+    }
+
+    /**
+     * 序列化材质数据
+     */
+    private serializeMaterials(materials: readonly Material[]): ArrayBuffer
+    {
+        const STRIDE = 48;
+        const buffer = new ArrayBuffer(materials.length * STRIDE);
+        const view = new DataView(buffer);
+
+        for (let i = 0; i < materials.length; i++)
+        {
+            const mat = materials[i];
+            const offset = i * STRIDE;
+
+            // baseColor (4 floats)
+            view.setFloat32(offset, mat.baseColor[0], true);
+            view.setFloat32(offset + 4, mat.baseColor[1], true);
+            view.setFloat32(offset + 8, mat.baseColor[2], true);
+            view.setFloat32(offset + 12, mat.baseColor[3], true);
+
+            // metallic (1 float)
+            view.setFloat32(offset + 16, mat.metallic, true);
+
+            // roughness (1 float)
+            view.setFloat32(offset + 20, mat.roughness, true);
+
+            // emissive (3 floats)
+            view.setFloat32(offset + 24, mat.emissive[0], true);
+            view.setFloat32(offset + 28, mat.emissive[1], true);
+            view.setFloat32(offset + 32, mat.emissive[2], true);
+
+            // type (1 uint)
+            new Uint32Array(buffer, offset + 36, 1)[0] = mat.type;
+        }
+
+        return buffer;
     }
 
     /**
@@ -449,45 +549,38 @@ export class GPUDrivenRenderer
     private extractFrustumPlanes(camera: Camera): Float32Array
     {
         const viewProj = camera.viewProjectionMatrix as number[];
-        const planes = new Float32Array(24); // 6 planes * 4 components
+        const planes = new Float32Array(24);
 
-        // Left plane: row3 + row0
         planes[0] = viewProj[3] + viewProj[0];
         planes[1] = viewProj[7] + viewProj[4];
         planes[2] = viewProj[11] + viewProj[8];
         planes[3] = viewProj[15] + viewProj[12];
 
-        // Right plane: row3 - row0
         planes[4] = viewProj[3] - viewProj[0];
         planes[5] = viewProj[7] - viewProj[4];
         planes[6] = viewProj[11] - viewProj[8];
         planes[7] = viewProj[15] - viewProj[12];
 
-        // Top plane: row3 - row1
         planes[8] = viewProj[3] - viewProj[1];
         planes[9] = viewProj[7] - viewProj[5];
         planes[10] = viewProj[11] - viewProj[9];
         planes[11] = viewProj[15] - viewProj[13];
 
-        // Bottom plane: row3 + row1
         planes[12] = viewProj[3] + viewProj[1];
         planes[13] = viewProj[7] + viewProj[5];
         planes[14] = viewProj[11] + viewProj[9];
         planes[15] = viewProj[15] + viewProj[13];
 
-        // Near plane: row3 + row2
         planes[16] = viewProj[3] + viewProj[2];
         planes[17] = viewProj[7] + viewProj[6];
         planes[18] = viewProj[11] + viewProj[10];
         planes[19] = viewProj[15] + viewProj[14];
 
-        // Far plane: row3 - row2
         planes[20] = viewProj[3] - viewProj[2];
         planes[21] = viewProj[7] - viewProj[6];
         planes[22] = viewProj[11] - viewProj[10];
         planes[23] = viewProj[15] - viewProj[14];
 
-        // 归一化平面方程
         for (let i = 0; i < 6; i++)
         {
             const offset = i * 4;
@@ -513,19 +606,16 @@ export class GPUDrivenRenderer
         const buffer = new ArrayBuffer(144);
         const float32 = new Float32Array(buffer);
 
-        // viewMatrix (16 floats)
         for (let i = 0; i < 16; i++)
         {
             float32[i] = camera.viewMatrix[i] ?? 0;
         }
 
-        // projectionMatrix (16 floats)
         for (let i = 0; i < 16; i++)
         {
             float32[16 + i] = camera.projectionMatrix[i] ?? 0;
         }
 
-        // viewProjectionMatrix (16 floats)
         for (let i = 0; i < 16; i++)
         {
             float32[32 + i] = camera.viewProjectionMatrix[i] ?? 0;
@@ -541,9 +631,12 @@ export class GPUDrivenRenderer
     {
         this.objectBuffer.destroy();
         this.materialBuffer.destroy();
-        this.indirectBuffer.destroy();
         this.cameraBuffer.destroy();
         this.frustumBuffer.destroy();
         this.objectCountBuffer.destroy();
+        for (const buffer of this.indirectBuffers)
+        {
+            buffer.destroy();
+        }
     }
 }
