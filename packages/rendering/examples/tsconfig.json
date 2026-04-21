@@ -1,28 +1,9 @@
 {
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "esNext",
-    "moduleResolution": "bundler",
-    "noImplicitAny": false,
-    "sourceMap": true,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
+    "composite": true,
     "noEmit": true,
-    "lib": [
-      "ES2015",
-      "es2020",
-      "dom"
-    ],
-    "types": [
-      "@webgpu/types",
-      "vite/client"
-    ]
+    "types": ["@webgpu/types", "vite/client"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts"
-  ]
+  "include": ["index.ts", "src/**/*.ts", "src/**/*.d.ts"]
 }

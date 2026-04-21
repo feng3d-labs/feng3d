@@ -182,7 +182,7 @@ export class GPUDrivenRenderer
         // 材质缓冲区
         this.materialsBuffer = {
             bufferView: new Uint8Array(this.maxMaterials * MATERIAL_DATA_SIZE),
-            value: { albedo: undefined, metallic: undefined, roughness: undefined, normalScale: undefined, occlusionStrength: undefined, emissive: undefined, type: undefined },
+            value: { albedo: undefined, metallic: undefined, roughness: undefined, normalScale: undefined, occlusionStrength: undefined, emissive: undefined, type: undefined } as any,
         };
 
         // 相机缓冲区
