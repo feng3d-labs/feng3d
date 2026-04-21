@@ -1,5 +1,21 @@
 import { reactive, computed, type Computed } from '@feng3d/reactivity';
-import type { Camera, Material, ObjectData, GPUDrivenRendererOptions } from './types.js';
+import {
+    Camera,
+    Material,
+    ObjectData,
+    GPUDrivenRendererOptions,
+    OBJECT_DATA_SIZE,
+    MATERIAL_DATA_SIZE,
+    CAMERA_DATA_SIZE,
+    FRUSTUM_DATA_SIZE,
+    DRAW_INDEXED_INDIRECT_SIZE,
+} from './types.js';
+import {
+    serializeCameraData,
+    serializeFrustumData,
+    serializeObjectTransform,
+    serializeMaterialData,
+} from './serialization.js';
 import type {
     Submit,
     Buffer as WGPUBufferInterface,
@@ -188,22 +204,22 @@ export class GPUDrivenRenderer
         // 创建声明式 Buffer 接口
         this.objectBufferDesc = {
             label: `${this.options.label}-ObjectBuffer`,
-            size: this.options.maxObjects * 128, // STRIDE = 128
+            size: this.options.maxObjects * OBJECT_DATA_SIZE,
         };
 
         this.materialBufferDesc = {
             label: `${this.options.label}-MaterialBuffer`,
-            size: this.options.maxMaterials * 48, // STRIDE = 48
+            size: this.options.maxMaterials * MATERIAL_DATA_SIZE,
         };
 
         this.cameraBufferDesc = {
             label: `${this.options.label}-CameraBuffer`,
-            size: 144,
+            size: CAMERA_DATA_SIZE,
         };
 
         this.frustumBufferDesc = {
             label: `${this.options.label}-FrustumBuffer`,
-            size: 96,
+            size: FRUSTUM_DATA_SIZE,
         };
 
         this.objectCountBufferDesc = {
@@ -217,12 +233,12 @@ export class GPUDrivenRenderer
         {
             this.indirectBufferDescs.push({
                 label: `${this.options.label}-IndirectBuffer-opaque-${i}`,
-                size: this.maxDrawsPerMaterial * 20, // DRAW_INDEXED_INDIRECT_SIZE = 20
+                size: this.maxDrawsPerMaterial * DRAW_INDEXED_INDIRECT_SIZE,
             });
         }
         this.indirectBufferDescs.push({
             label: `${this.options.label}-IndirectBuffer-transparent`,
-            size: this.maxTransparentObjects * 20,
+            size: this.maxTransparentObjects * DRAW_INDEXED_INDIRECT_SIZE,
         });
 
         // 使用 WGPUBuffer 包装（由 @feng3d/webgpu 管理实际 GPU 资源）
@@ -298,37 +314,55 @@ export class GPUDrivenRenderer
 
     /**
      * 设置监听器，自动更新 Buffer 数据
+     *
+     * 使用响应式系统，当输入数据变化时自动序列化并更新 GPU Buffer。
      */
     private _setupWatchers(): void
     {
-        // 监听相机变化
+        // 监听相机变化 - 自动序列化
         computed(() => {
             const camera = this.state.camera;
             if (camera)
             {
-                // 更新相机缓冲区数据
-                (this.cameraBufferDesc as any).data = this.serializeCamera(camera);
-                // 更新视锥体数据
-                (this.frustumBufferDesc as any).data = this.extractFrustumPlanes(camera);
+                // 响应式自动序列化相机数据
+                (this.cameraBufferDesc as any).data = serializeCameraData(camera.data);
+                // 响应式自动序列化视锥体数据
+                (this.frustumBufferDesc as any).data = serializeFrustumData(camera.frustum);
             }
         });
 
-        // 监听物体变化
+        // 监听物体变化 - 自动序列化
         computed(() => {
             const objects = this.state.objects;
-            // 序列化物体数据
-            const data = this.serializeObjects(objects);
+            const data = new ArrayBuffer(objects.length * OBJECT_DATA_SIZE);
+            const view = new Uint8Array(data);
+            for (let i = 0; i < objects.length; i++)
+            {
+                // 响应式自动序列化物体变换数据
+                const objectData = serializeObjectTransform(objects[i].transform);
+                // 写入材质ID到偏移 19 处（4字节）
+                const materialIdView = new Uint32Array(objectData, 19 * 4, 1);
+                materialIdView[0] = objects[i].materialId;
+                // 合并到缓冲区
+                view.set(new Uint8Array(objectData), i * OBJECT_DATA_SIZE);
+            }
             // 更新物体缓冲区数据
             (this.objectBufferDesc as any).data = data;
             // 更新物体计数
             (this.objectCountBufferDesc as any).data = new Uint32Array([objects.length]);
         });
 
-        // 监听材质变化
+        // 监听材质变化 - 自动序列化
         computed(() => {
             const materials = this.state.materials;
-            // 序列化材质数据
-            const data = this.serializeMaterials(materials);
+            const data = new ArrayBuffer(materials.length * MATERIAL_DATA_SIZE);
+            const view = new Uint8Array(data);
+            for (let i = 0; i < materials.length; i++)
+            {
+                // 响应式自动序列化材质数据
+                const materialData = serializeMaterialData(materials[i].data);
+                view.set(new Uint8Array(materialData), i * MATERIAL_DATA_SIZE);
+            }
             // 更新材质缓冲区数据
             (this.materialBufferDesc as any).data = data;
         });
@@ -455,173 +489,6 @@ export class GPUDrivenRenderer
         });
 
         return objects;
-    }
-
-    /**
-     * 序列化物体数据
-     */
-    private serializeObjects(objects: readonly ObjectData[]): ArrayBuffer
-    {
-        const STRIDE = 128;
-        const buffer = new ArrayBuffer(objects.length * STRIDE);
-        const view = new DataView(buffer);
-        const float32 = new Float32Array(buffer);
-        const uint32 = new Uint32Array(buffer);
-
-        for (let i = 0; i < objects.length; i++)
-        {
-            const obj = objects[i];
-            const offset = i * STRIDE;
-
-            // worldMatrix (16 floats)
-            for (let j = 0; j < 16; j++)
-            {
-                float32[offset / 4 + j] = obj.worldMatrix[j] ?? 0;
-            }
-
-            // boundsCenter (3 floats)
-            view.setFloat32(offset + 64, obj.boundsCenter[0], true);
-            view.setFloat32(offset + 68, obj.boundsCenter[1], true);
-            view.setFloat32(offset + 72, obj.boundsCenter[2], true);
-
-            // boundsRadius (1 float)
-            view.setFloat32(offset + 76, obj.boundsRadius, true);
-
-            // materialId (1 uint)
-            uint32[offset / 4 + 20] = obj.materialId;
-
-            // isTransparent (1 uint)
-            uint32[offset / 4 + 21] = obj.isTransparent ? 1 : 0;
-
-            // LODs (4 levels)
-            for (let j = 0; j < 4; j++)
-            {
-                const lod = obj.lods[j] || { indexCount: 0, indexOffset: 0 };
-                uint32[offset / 4 + 24 + j * 2] = lod.indexCount;
-                uint32[offset / 4 + 25 + j * 2] = lod.indexOffset;
-            }
-        }
-
-        return buffer;
-    }
-
-    /**
-     * 序列化材质数据
-     */
-    private serializeMaterials(materials: readonly Material[]): ArrayBuffer
-    {
-        const STRIDE = 48;
-        const buffer = new ArrayBuffer(materials.length * STRIDE);
-        const view = new DataView(buffer);
-
-        for (let i = 0; i < materials.length; i++)
-        {
-            const mat = materials[i];
-            const offset = i * STRIDE;
-
-            // baseColor (4 floats)
-            view.setFloat32(offset, mat.baseColor[0], true);
-            view.setFloat32(offset + 4, mat.baseColor[1], true);
-            view.setFloat32(offset + 8, mat.baseColor[2], true);
-            view.setFloat32(offset + 12, mat.baseColor[3], true);
-
-            // metallic (1 float)
-            view.setFloat32(offset + 16, mat.metallic, true);
-
-            // roughness (1 float)
-            view.setFloat32(offset + 20, mat.roughness, true);
-
-            // emissive (3 floats)
-            view.setFloat32(offset + 24, mat.emissive[0], true);
-            view.setFloat32(offset + 28, mat.emissive[1], true);
-            view.setFloat32(offset + 32, mat.emissive[2], true);
-
-            // type (1 uint)
-            new Uint32Array(buffer, offset + 36, 1)[0] = mat.type;
-        }
-
-        return buffer;
-    }
-
-    /**
-     * 从相机矩阵提取视锥体平面
-     */
-    private extractFrustumPlanes(camera: Camera): Float32Array
-    {
-        const viewProj = camera.viewProjectionMatrix as number[];
-        const planes = new Float32Array(24);
-
-        planes[0] = viewProj[3] + viewProj[0];
-        planes[1] = viewProj[7] + viewProj[4];
-        planes[2] = viewProj[11] + viewProj[8];
-        planes[3] = viewProj[15] + viewProj[12];
-
-        planes[4] = viewProj[3] - viewProj[0];
-        planes[5] = viewProj[7] - viewProj[4];
-        planes[6] = viewProj[11] - viewProj[8];
-        planes[7] = viewProj[15] - viewProj[12];
-
-        planes[8] = viewProj[3] - viewProj[1];
-        planes[9] = viewProj[7] - viewProj[5];
-        planes[10] = viewProj[11] - viewProj[9];
-        planes[11] = viewProj[15] - viewProj[13];
-
-        planes[12] = viewProj[3] + viewProj[1];
-        planes[13] = viewProj[7] + viewProj[5];
-        planes[14] = viewProj[11] + viewProj[9];
-        planes[15] = viewProj[15] + viewProj[13];
-
-        planes[16] = viewProj[3] + viewProj[2];
-        planes[17] = viewProj[7] + viewProj[6];
-        planes[18] = viewProj[11] + viewProj[10];
-        planes[19] = viewProj[15] + viewProj[14];
-
-        planes[20] = viewProj[3] - viewProj[2];
-        planes[21] = viewProj[7] - viewProj[6];
-        planes[22] = viewProj[11] - viewProj[10];
-        planes[23] = viewProj[15] - viewProj[14];
-
-        for (let i = 0; i < 6; i++)
-        {
-            const offset = i * 4;
-            const len = Math.sqrt(
-                planes[offset] ** 2 +
-                planes[offset + 1] ** 2 +
-                planes[offset + 2] ** 2,
-            );
-            planes[offset] /= len;
-            planes[offset + 1] /= len;
-            planes[offset + 2] /= len;
-            planes[offset + 3] /= len;
-        }
-
-        return planes;
-    }
-
-    /**
-     * 序列化相机数据
-     */
-    private serializeCamera(camera: Camera): ArrayBuffer
-    {
-        const buffer = new ArrayBuffer(144);
-        const float32 = new Float32Array(buffer);
-
-        for (let i = 0; i < 16; i++)
-        {
-            float32[i] = camera.viewMatrix[i] ?? 0;
-        }
-
-        for (let i = 0; i < 16; i++)
-        {
-            float32[16 + i] = camera.projectionMatrix[i] ?? 0;
-        }
-
-        for (let i = 0; i < 16; i++)
-        {
-            float32[32 + i] = camera.viewProjectionMatrix[i] ?? 0;
-        }
-
-        return buffer;
     }
 
     /**

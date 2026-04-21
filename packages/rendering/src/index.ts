@@ -74,13 +74,35 @@ export type {
     Material,
     Camera,
     GPUDrivenRendererOptions,
+    CameraData,
+    FrustumData,
+    ObjectTransform,
+    MaterialData,
 } from './core/types.js';
 
 // 枚举（作为值导出，类型自动导出）
 export { MaterialType } from './core/types.js';
 
 // 常量
-export { DRAW_INDEXED_INDIRECT_SIZE } from './core/types.js';
+export {
+    DRAW_INDEXED_INDIRECT_SIZE,
+    OBJECT_DATA_SIZE,
+    MATERIAL_DATA_SIZE,
+    CAMERA_DATA_SIZE,
+    FRUSTUM_DATA_SIZE,
+} from './core/types.js';
+
+// 序列化工具函数
+export {
+    serializeCameraData,
+    deserializeCameraData,
+    serializeFrustumData,
+    deserializeFrustumData,
+    serializeObjectTransform,
+    deserializeObjectTransform,
+    serializeMaterialData,
+    deserializeMaterialData,
+} from './core/serialization.js';
 
 // WGSL 着色器代码（供外部使用）
 export { OBJECT_DATA_WGSL } from './core/ObjectBuffer.js';

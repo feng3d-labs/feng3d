@@ -4,6 +4,119 @@
  * 定义了物体数据、材质、间接绘制命令等核心类型。
  */
 
+// ==================== GPU 数据布局常量 ====================
+
+/**
+ * 物体数据字节大小（128 字节）
+ *
+ * 数据布局：
+ * - modelMatrix (4x4 matrix): 64 bytes
+ * - worldPosition: 12 bytes
+ * - materialId: 4 bytes
+ * - LOD level: 4 bytes
+ * - padding: 44 bytes
+ */
+export const OBJECT_DATA_SIZE = 128;
+
+/**
+ * 材质数据字节大小（48 字节）
+ *
+ * 数据布局：
+ * - albedo: 16 bytes (vec4 + factor)
+ * - metallic: 4 bytes
+ * - roughness: 4 bytes
+ * - normalScale: 4 bytes
+ * - occlusionStrength: 4 bytes
+ * - emissive: 16 bytes (vec3 + factor)
+ * - padding: 8 bytes
+ */
+export const MATERIAL_DATA_SIZE = 48;
+
+/**
+ * 相机数据字节大小（144 字节）
+ *
+ * 数据布局：
+ * - viewMatrix (4x4 matrix): 64 bytes
+ * - projectionMatrix (4x4 matrix): 64 bytes
+ * - padding: 16 bytes
+ */
+export const CAMERA_DATA_SIZE = 144;
+
+/**
+ * 视锥体数据字节大小（96 字节）
+ *
+ * 数据布局：
+ * - 6个平面，每个平面 16 bytes (nx, ny, nz, d)
+ */
+export const FRUSTUM_DATA_SIZE = 96;
+
+// ==================== 结构化数据类型（序列化前） ====================
+
+/**
+ * 相机数据结构
+ *
+ * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
+ */
+export interface CameraData
+{
+    /**
+     * 视图矩阵（4x4，列主序）
+     */
+    readonly viewMatrix: Readonly<Float32Array>;
+
+    /**
+     * 投影矩阵（4x4，列主序）
+     */
+    readonly projectionMatrix: Readonly<Float32Array>;
+}
+
+/**
+ * 视锥体平面数据
+ *
+ * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
+ */
+export interface FrustumData
+{
+    /**
+     * 6个视锥体平面，每个平面包含 [nx, ny, nz, d]
+     *
+     * 平面顺序：左、右、上、下、近、远
+     */
+    readonly planes: readonly [
+        readonly [number, number, number, number], // left
+        readonly [number, number, number, number], // right
+        readonly [number, number, number, number], // top
+        readonly [number, number, number, number], // bottom
+        readonly [number, number, number, number], // near
+        readonly [number, number, number, number], // far
+    ];
+}
+
+/**
+ * 物体数据结构
+ *
+ * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
+ */
+export interface ObjectTransform
+{
+    /**
+     * 模型矩阵（4x4，列主序）
+     */
+    readonly modelMatrix: Readonly<Float32Array>;
+
+    /**
+     * 世界位置
+     */
+    readonly worldPosition: readonly [number, number, number];
+
+    /**
+     * LOD 级别
+     */
+    readonly lodLevel: number;
+}
+
+// ==================== 间接绘制命令 ====================
+
 /**
  * 间接绘制命令结构（WebGPU标准）
  *
@@ -61,24 +174,14 @@ export interface LODLevel
 /**
  * 物体数据结构
  *
- * 存储在GPU缓冲区中的物体信息。
+ * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
  */
 export interface ObjectData
 {
     /**
-     * 物体世界矩阵（4x4，16个float）
+     * 物体变换数据
      */
-    readonly worldMatrix: readonly number[];
-
-    /**
-     * 物体边界球中心（xyz）
-     */
-    readonly boundsCenter: readonly [number, number, number];
-
-    /**
-     * 物体边界球半径
-     */
-    readonly boundsRadius: number;
+    readonly transform: ObjectTransform;
 
     /**
      * 材质ID
@@ -91,12 +194,7 @@ export interface ObjectData
     readonly isTransparent: boolean;
 
     /**
-     * LOD级别数据数组
-     */
-    readonly lods: readonly LODLevel[];
-
-    /**
-     * 可见性标志（由GPU剔除系统更新）
+     * 可见性标志
      */
     readonly visible: boolean;
 }
@@ -118,7 +216,70 @@ export enum MaterialType
 }
 
 /**
+ * 材质数据结构
+ *
+ * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
+ */
+export interface MaterialData
+{
+    /**
+     * 反照率颜色 [r, g, b, a]
+     */
+    readonly albedo: readonly [number, number, number, number];
+
+    /**
+     * 金属性（0-1）
+     */
+    readonly metallic: number;
+
+    /**
+     * 粗糙度（0-1）
+     */
+    readonly roughness: number;
+
+    /**
+     * 法线缩放
+     */
+    readonly normalScale: number;
+
+    /**
+     * 遮挡强度
+     */
+    readonly occlusionStrength: number;
+
+    /**
+     * 自发光颜色 [r, g, b, intensity]
+     */
+    readonly emissive: readonly [number, number, number, number];
+}
+
+/**
+ * 相机数据
+ *
+ * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
+ */
+export interface Camera
+{
+    /**
+     * 相机数据
+     */
+    readonly data: CameraData;
+
+    /**
+     * 视锥体数据
+     */
+    readonly frustum: FrustumData;
+
+    /**
+     * 物体数量
+     */
+    readonly objectCount: number;
+}
+
+/**
  * 材质数据
+ *
+ * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
  */
 export interface Material
 {
@@ -128,65 +289,9 @@ export interface Material
     readonly id: number;
 
     /**
-     * 材质类型
+     * 材质数据
      */
-    readonly type: MaterialType;
-
-    /**
-     * 基础颜色 (rgba)
-     */
-    readonly baseColor: readonly [number, number, number, number];
-
-    /**
-     * 金属度 (0-1)
-     */
-    readonly metallic: number;
-
-    /**
-     * 粗糙度 (0-1)
-     */
-    readonly roughness: number;
-
-    /**
-     * 自发光颜色
-     */
-    readonly emissive: readonly [number, number, number];
-}
-
-/**
- * 相机数据
- */
-export interface Camera
-{
-    /**
-     * 视图矩阵（4x4）
-     */
-    readonly viewMatrix: readonly number[];
-
-    /**
-     * 投影矩阵（4x4）
-     */
-    readonly projectionMatrix: readonly number[];
-
-    /**
-     * 视图投影矩阵（4x4）
-     */
-    readonly viewProjectionMatrix: readonly number[];
-
-    /**
-     * 相机世界位置
-     */
-    readonly position: readonly [number, number, number];
-
-    /**
-     * 近裁剪面距离
-     */
-    readonly near: number;
-
-    /**
-     * 远裁剪面距离
-     */
-    readonly far: number;
+    readonly data: MaterialData;
 }
 
 /**
