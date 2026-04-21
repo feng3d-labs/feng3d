@@ -188,9 +188,7 @@ export class GPUDrivenRenderer
         };
 
         // 物体计数缓冲区
-        this.objectCountBuffer = {
-            bufferView: new Uint32Array(1),
-        };
+        this.objectCountBuffer = {};
 
         // 不透明命令缓冲区
         this.opaqueCmdsBuffer = {
@@ -217,10 +215,7 @@ export class GPUDrivenRenderer
         };
 
         // 透明计数器缓冲区
-        this.transparentCounterBuffer = {
-            bufferView: new Uint32Array(1),
-            value: { count: undefined },
-        };
+        this.transparentCounterBuffer = {};
 
         // 创建计算属性：自动响应状态变化的 Submit
         this.submit = computed(() => this._buildSubmit());
