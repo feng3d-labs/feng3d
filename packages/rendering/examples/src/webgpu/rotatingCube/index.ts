@@ -1,4 +1,4 @@
-import { renderRotatingCube } from '@feng3d/rendering';
+import { renderRotatingCube, RenderRotatingCubeInput } from '@feng3d/rendering';
 
 import {
     cubePositionOffset,
@@ -9,10 +9,11 @@ import {
 } from './meshes/cube.js';
 import { basicVertWGSL } from './shaders/basic.vert.wgsl.js';
 import { vertexPositionColorFragWGSL } from './shaders/vertexPositionColor.frag.wgsl.js';
+import { reactive } from '@feng3d/reactivity';
 
 const canvas = document.getElementById('webgpu') as HTMLCanvasElement;
 
-renderRotatingCube({
+const input: RenderRotatingCubeInput = {
     canvas,
     pipeline: {
         vertex: { code: basicVertWGSL },
@@ -27,23 +28,21 @@ renderRotatingCube({
     },
     vertexCount: cubeVertexCount,
     rotation: 0,
-}).then((controller) =>
-{
-    // 使用 requestAnimationFrame 更新旋转角度
-    let lastTime = performance.now();
-    let rotation = 0;
+};
 
-    function animate(currentTime: number)
-    {
-        const deltaTime = (currentTime - lastTime) / 1000;
-        lastTime = currentTime;
+renderRotatingCube(input)
 
-        rotation += deltaTime;
-        // 使用 setRotation 触发渲染
-        controller.setRotation(rotation);
+// 使用 requestAnimationFrame 更新旋转角度
+let lastTime = performance.now();
 
-        requestAnimationFrame(animate);
-    }
+const r_input = reactive(input);
+function animate(currentTime: number) {
+    const deltaTime = (currentTime - lastTime) / 1000;
+    lastTime = currentTime;
+
+    r_input.rotation += deltaTime;
 
     requestAnimationFrame(animate);
-});
+}
+
+requestAnimationFrame(animate);

@@ -1,5 +1,5 @@
 import { computed, effect, reactive, type Computed } from '@feng3d/reactivity';
-import { type BufferBinding, type RenderObject, type RenderPassDescriptor, type RenderPipeline, type Submit, type VertexAttributes, WebGPU } from '@feng3d/webgpu';
+import { WebGPU, type BufferBinding, type RenderObject, type RenderPassDescriptor, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 /**
@@ -10,8 +10,7 @@ import { mat4, vec3 } from 'wgpu-matrix';
  */
 export async function renderRotatingCube(
     input: RenderRotatingCubeInput,
-): Promise<RenderRotatingCubeController>
-{
+) {
     const { canvas, pipeline, vertices, vertexCount, bindingResources = {} } = input;
     const devicePixelRatio = window.devicePixelRatio || 1;
 
@@ -57,14 +56,10 @@ export async function renderRotatingCube(
     );
     const modelViewProjectionMatrix = mat4.create();
 
-    // 内部创建响应式状态
-    const r_state = reactive({
-        rotation: input.rotation ?? 0,
-    });
-
+    const r_input = reactive(input);
     // 计算属性：当 r_state.rotation 变化时自动更新
     const submit: Computed<Submit> = computed(() => {
-        const rotation = r_state.rotation;
+        const rotation = r_input.rotation;
 
         const viewMatrix = mat4.identity();
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
@@ -91,42 +86,30 @@ export async function renderRotatingCube(
     /**
      * 调度一帧渲染（如果当前没有已调度的帧）
      */
-    function scheduleFrame(): void
-    {
+    function scheduleFrame(): void {
         if (frameScheduled) return; // 已经调度了，无需重复调度
 
         frameScheduled = true;
-        requestAnimationFrame(() =>
-        {
+        requestAnimationFrame(() => {
             frameScheduled = false;
             webgpu.submit(submit.value);
         });
     }
 
     // 监听 r_state.rotation 变化，自动调度渲染
-    effect(() =>
-    {
-        r_state.rotation;
+    effect(() => {
+        r_input.rotation;
         scheduleFrame();
     });
 
     // 首次渲染
     scheduleFrame();
-
-    // 返回控制器
-    return {
-        setRotation: (rotation: number) =>
-        {
-            reactive(r_state).rotation = rotation;
-        },
-    };
 }
 
 /**
  * 渲染旋转立方体输入
  */
-export interface RenderRotatingCubeInput
-{
+export interface RenderRotatingCubeInput {
     /** Canvas 元素 */
     canvas: HTMLCanvasElement;
     /** 渲染管线 */
@@ -139,13 +122,4 @@ export interface RenderRotatingCubeInput
     rotation?: number;
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
-}
-
-/**
- * 渲染控制器
- */
-export interface RenderRotatingCubeController
-{
-    /** 设置旋转角度 */
-    setRotation(rotation: number): void;
 }
