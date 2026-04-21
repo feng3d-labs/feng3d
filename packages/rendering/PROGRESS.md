@@ -99,53 +99,54 @@
 
 **目标**：GPU生成绘制命令，CPU仅触发渲染，支持不透明物体批量渲染
 
+**开发策略**：渐进式开发 - 从简单可运行示例开始，逐步添加功能
+
 **相关文档**：[01-全GPU渲染核心](./docs/01-gpu-rendering-core.md)
 
 **任务清单**：
 
 | 任务 | 子任务 | 状态 | 代码位置 |
 |------|--------|------|----------|
-| **1.1 数据结构** | | | |
-| | ObjectData, Camera, Material 接口 | ✅ | src/core/types.ts |
-| | 结构化数据类型（CameraData, MaterialData 等） | ✅ | src/core/types.ts |
-| | 序列化/反序列化工具 | ✅ | src/core/serialization.ts |
-| | DrawIndexedIndirect 结构 | ✅ | src/core/types.ts |
-| **1.2 全局资源** | | | |
-| | 物体缓冲 | ✅ | src/core/ObjectBuffer.ts |
-| | 材质缓冲 | ✅ | src/core/MaterialBuffer.ts |
-| | 相机缓冲 | ✅ | src/core/GPUDrivenRenderer.ts |
-| | 视锥体缓冲 | ✅ | src/core/GPUDrivenRenderer.ts |
-| **1.3 计算着色器** | | | |
-| | 命令生成计算着色器 | ✅ | src/compute/CommandGenerator.wgsl.ts |
-| | Workgroup 配置 | ✅ | src/core/GPUDrivenRenderer.ts |
-| **1.4 间接绘制** | | | |
-| | Indirect Buffer 管理 | ✅ | src/core/IndirectBuffer.ts |
-| | 按材质分组的命令缓冲 | ✅ | src/core/GPUDrivenRenderer.ts |
-| **1.5 渲染管线** | | | |
-| | GPUDrivenRenderer 主类 | ⏳ | src/core/GPUDrivenRenderer.ts |
-| | 响应式数据流 | ✅ | src/core/GPUDrivenRenderer.ts |
-| | Submit 结构构建 | ✅ | src/core/GPUDrivenRenderer.ts |
-| **1.6 CPU渲染流程** | | | |
-| | 响应式自动序列化 | ✅ | src/core/GPUDrivenRenderer.ts |
-| | 计算着色器调度 | ✅ | src/core/GPUDrivenRenderer.ts |
-| | 渲染通道构建 | ✅ | src/core/GPUDrivenRenderer.ts |
-| **1.7 示例与测试** | | | |
+| **1.0 基础示例** | | | |
+| | 移除过度设计的旧代码 | ✅ | - |
+| | 创建基础旋转立方体示例 | ✅ | examples/src/webgpu/rotatingCube/ |
+| | 验证基础渲染流程 | ✅ | src/ |
+| **1.1 多物体渲染** | | | |
+| | 添加第二个立方体 | ⬜ | examples/ |
+| | 添加第三个立方体 | ⬜ | examples/ |
+| | 统一 mesh 复用 | ⬜ | src/ |
+| **1.2 间接绘制基础** | | | |
+| | DrawIndexedIndirect 结构 | ⬜ | src/core/types.ts |
+| | 单个间接绘制命令 | ⬜ | examples/ |
+| **1.3 计算着色器命令生成** | | | |
+| | 命令生成计算着色器 | ⬜ | src/compute/ |
+| | GPU 生成绘制命令 | ⬜ | examples/ |
+| **1.4 批量渲染优化** | | | |
+| | 多物体间接绘制 | ⬜ | examples/ |
+| | 按材质分组 | ⬜ | - |
+| **1.5 示例与测试** | | | |
 | | 使用示例 | ⬜ | examples/ |
 | | 单元测试 | ⬜ | test/ |
 
-**架构亮点**：
-- ✅ 使用 @feng3d/reactivity 实现响应式数据流
-- ✅ 使用 @feng3d/webgpu 声明式接口
-- ✅ 结构化数据类型，外部使用简单
-- ✅ 自动序列化/反序列化
+**当前代码结构**：
+```
+src/
+├── meshes/
+│   └── cube.ts          # 立方体顶点数据
+├── shaders/
+│   ├── basic.vert.wgsl.ts   # 基础顶点着色器
+│   └── vertexPositionColor.frag.wgsl.ts  # 片段着色器
+└── index.ts             # 入口导出
+```
 
 **验收标准**：
-- [x] CPU端无物体遍历逻辑
-- [x] 所有绘制命令由GPU生成
-- [ ] 使用multiDrawIndexedIndirect批量渲染（待 @feng3d/webgpu 支持）
-- [ ] 能够正确渲染多个不透明物体（待示例验证）
+- [x] 基础示例可运行
+- [ ] 渲染多个立方体
+- [ ] 使用间接绘制
+- [ ] GPU 生成绘制命令
+- [ ] 使用 multiDrawIndexedIndirect 批量渲染（待 @feng3d/webgpu 支持）
 
-**预计工作量**：4-6天（已完成约60%）
+**预计工作量**：重新规划中
 
 ---
 
