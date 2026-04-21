@@ -36,9 +36,7 @@ const init = async (canvas: HTMLCanvasElement) =>
         },
     };
 
-    const uniformsList: Array<{ value: { modelViewProjectionMatrix: Float32Array } }> = [];
-
-    const renderObjectBase: RenderObject = {
+    const renderObjectBase: Omit<RenderObject, 'bindingResources' | 'draw'> = {
         pipeline: {
             vertex: { code: basicVertWGSL },
             fragment: { code: vertexPositionColorWGSL },
@@ -74,7 +72,6 @@ const init = async (canvas: HTMLCanvasElement) =>
     function getTransformationMatrix(offsetX: number, offsetY: number)
     {
         const viewMatrix = mat4.identity();
-
         mat4.translate(viewMatrix, vec3.fromValues(offsetX, offsetY, -6), viewMatrix);
 
         const now = Date.now() / 1000;
@@ -91,78 +88,67 @@ const init = async (canvas: HTMLCanvasElement) =>
     }
 
     // 创建间接绘制缓冲区
-    // 每个绘制命令包含 5 个 32 位值：
-    // indexCount, instanceCount, firstIndex, baseVertex, firstInstance
     const drawCount = 3;
     const indirectBuffer = webgpu.device.createBuffer({
-        size: drawCount * 20, // 每个命令 20 字节
+        size: drawCount * 20,
         usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST,
     });
 
-    // 设置间接绘制命令
     const indirectData = new Uint32Array([
-        // 第一个立方体 (left)
-        cubeVertexCount,  // indexCount
-        1,                // instanceCount
-        0,                // firstIndex
-        0,                // baseVertex
-        0,                // firstInstance
-        // 第二个立方体 (center)
-        cubeVertexCount,
-        1,
-        0,
-        0,
-        0,
-        // 第三个立方体 (right)
-        cubeVertexCount,
-        1,
-        0,
-        0,
-        0,
+        cubeVertexCount, 1, 0, 0, 0,
+        cubeVertexCount, 1, 0, 0, 0,
+        cubeVertexCount, 1, 0, 0, 0,
     ]);
     webgpu.device.queue.writeBuffer(indirectBuffer, 0, indirectData);
 
-    // 创建多个渲染对象，每个使用不同的间接缓冲区偏移
+    // 为每个立方体创建渲染对象
     const positions = [
         { x: -2, y: 0 },
         { x: 0, y: 0 },
         { x: 2, y: 0 },
     ];
 
+    const uniformsList: Array<{ value: { modelViewProjectionMatrix: Float32Array } }> = [];
+    const renderObjects: RenderObject[] = [];
+
+    for (let i = 0; i < drawCount; i++)
+    {
+        const uniforms = { value: { modelViewProjectionMatrix: new Float32Array(16) } };
+        uniformsList.push(uniforms);
+
+        const renderObj: RenderObject = {
+            ...renderObjectBase,
+            bindingResources: { uniforms },
+            draw: {
+                __type__: 'DrawIndexedIndirect',
+                buffer: indirectBuffer,
+                offset: i * 20,
+            },
+        };
+        renderObjects.push(reactive(renderObj));
+    }
+
+    const data: Submit = {
+        commandEncoders: [
+            {
+                passEncoders: [
+                    {
+                        __type__: 'RenderPass',
+                        descriptor: renderPass,
+                        renderPassObjects: renderObjects,
+                    },
+                ],
+            },
+        ],
+    };
+
     function frame()
     {
-        const renderObjects: RenderObject[] = [];
-
-        for (let i = 0; i < drawCount; i++)
+        for (let i = 0; i < positions.length; i++)
         {
-            const uniforms = { value: { modelViewProjectionMatrix: getTransformationMatrix(positions[i].x, positions[i].y) } };
-            uniformsList.push(uniforms);
-
-            const renderObj: RenderObject = {
-                ...renderObjectBase,
-                bindingResources: { uniforms },
-                draw: {
-                    __type__: 'DrawIndexedIndirect',
-                    buffer: indirectBuffer,
-                    offset: i * 20, // 每个命令 20 字节
-                },
-            };
-            renderObjects.push(reactive(renderObj));
+            const mvp = getTransformationMatrix(positions[i].x, positions[i].y);
+            reactive(uniformsList[i].value).modelViewProjectionMatrix = mvp.subarray();
         }
-
-        const data: Submit = {
-            commandEncoders: [
-                {
-                    passEncoders: [
-                        {
-                            __type__: 'RenderPass',
-                            descriptor: renderPass,
-                            renderPassObjects: renderObjects,
-                        },
-                    ],
-                },
-            ],
-        };
 
         webgpu.submit(data);
 
