@@ -1,4 +1,4 @@
-import { render, RenderInput } from '@feng3d/rendering';
+import { render, RenderInput, RenderMode } from '@feng3d/rendering';
 
 import {
     cubePositionOffset,
@@ -29,6 +29,7 @@ const input: RenderInput = {
     },
     vertexCount: cubeVertexCount,
     rotation: 0,
+    renderMode: 'on-demand',
 };
 
 // 启动渲染
@@ -49,15 +50,43 @@ function animate(currentTime: number) {
 
 requestAnimationFrame(animate);
 
-// 切换画布
-let currentCanvas = 1;
-const button = document.getElementById('switchCanvas') as HTMLButtonElement;
-button.addEventListener('click', () => {
-    currentCanvas = currentCanvas === 1 ? 2 : 1;
-    r_input.canvas = currentCanvas === 1 ? canvas1 : canvas2;
+// 当前画布状态
+let currentCanvasIndex = 1;
 
-    // 更新按钮文本和画布透明度
-    button.textContent = `切换画布 (当前: 画布${currentCanvas})`;
-    canvas1.classList.toggle('inactive', currentCanvas !== 1);
-    canvas2.classList.toggle('inactive', currentCanvas !== 2);
-});
+// GUI 控制
+const GUI = (window as any).dat.GUI;
+const gui = new GUI();
+const folder = gui.addFolder('渲染设置');
+
+// 渲染模式控制（dat.gui 需要直接传入响应式对象）
+// eslint-disable-next-line feng3d/no-reactive-argument
+folder.add(r_input, 'renderMode', ['on-demand', 'always', 'never'] as RenderMode[])
+    .name('渲染模式');
+
+// 画布控制参数
+const params = {
+    currentCanvas: 1,
+    showCanvas2: true,
+};
+
+// 切换画布控制
+folder.add(params, 'currentCanvas', [1, 2])
+    .name('当前画布')
+    .onChange((value: number) => {
+        const numValue = Number(value);
+        if (numValue !== currentCanvasIndex) {
+            currentCanvasIndex = numValue;
+            const targetCanvas = numValue === 1 ? canvas1 : canvas2;
+            // 直接赋值给响应式对象
+            r_input.canvas = targetCanvas;
+        }
+    });
+
+// 画布2显示控制
+folder.add(params, 'showCanvas2')
+    .name('显示画布2')
+    .onChange((value: boolean) => {
+        canvas2.classList.toggle('hidden', !value);
+    });
+
+folder.open();

@@ -1,6 +1,11 @@
 import { computed, effect, reactive, toRaw } from '@feng3d/reactivity';
-import { WebGPU, type BufferBinding, type CanvasTexture, type RenderObject, type RenderPass as RenderPassType, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
+import { WebGPU, type BufferBinding, type RenderObject, type RenderPass as RenderPassType, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
+
+/**
+ * 渲染模式
+ */
+export type RenderMode = 'always' | 'on-demand' | 'never';
 
 /**
  * 渲染入口函数
@@ -90,21 +95,36 @@ export async function render(
     // 监听 canvas 变化，更新 canvas 大小和 canvasId
     effect(() => {
         if (disposed) return;
-        const canvas = toRaw(r_input.canvas);
-        if (currentCanvasId !== canvas.id) {
-            currentCanvasId = canvas.id;
+        // 先访问响应式对象触发追踪，然后获取原始值
+        const canvas = r_input.canvas;
+        const rawCanvas = toRaw(canvas);
+        if (currentCanvasId !== rawCanvas.id) {
+            currentCanvasId = rawCanvas.id;
 
             // 设置 canvas 大小
-            canvas.width = canvas.clientWidth * devicePixelRatio;
-            canvas.height = canvas.clientHeight * devicePixelRatio;
+            rawCanvas.width = rawCanvas.clientWidth * devicePixelRatio;
+            rawCanvas.height = rawCanvas.clientHeight * devicePixelRatio;
 
-            // 精确更新 canvasId（使用 reactive 使响应式系统追踪变化）
-            reactive((renderPass.descriptor.colorAttachments[0]!.view.texture as CanvasTexture).context).canvasId = canvas.id;
+            // 替换整个 descriptor，触发深度纹理重新创建
+            reactive(renderPass).descriptor = {
+                colorAttachments: [
+                    {
+                        view: { texture: { context: { canvasId: rawCanvas.id } } },
+                        clearValue: [0.5, 0.5, 0.5, 1.0],
+                    },
+                ],
+                depthStencilAttachment: {
+                    depthClearValue: 1,
+                    depthLoadOp: 'clear',
+                    depthStoreOp: 'store',
+                },
+            };
         }
     });
 
     // 计算属性：依赖 canvas 宽高，自动计算投影矩阵
     const computedProjection = computed(() => {
+        // 先访问响应式对象触发追踪，然后获取原始值
         const canvas = toRaw(r_input.canvas);
         return mat4.perspective(
             (2 * Math.PI) / 5,
@@ -129,22 +149,57 @@ export async function render(
         return mvpMatrix.slice() as Float32Array; // 返回一个新的 Float32Array 视图，确保响应式系统能正确追踪变化
     });
 
-    // 监听矩阵变化，更新 uniforms 并触发渲染
+    // 监听矩阵变化，更新 uniforms
     effect(() => {
         if (disposed) return;
 
         // 赋值触发响应式更新
         reactive(uniforms.value!).modelViewProjectionMatrix = computedMatrix.value;
 
-        scheduleFrame();
+        // on-demand 模式下才调度渲染
+        if (r_input.renderMode !== 'always') {
+            scheduleFrame();
+        }
     });
 
-    // 首次渲染
-    scheduleFrame();
+    // 始终渲染模式：持续调度渲染
+    let rafId: number | undefined;
+    function renderLoop(): void {
+        if (disposed) return;
+        if (r_input.renderMode === 'always') {
+            webgpu.submit(submit);
+            rafId = requestAnimationFrame(renderLoop);
+        }
+    }
+
+    // 监听渲染模式变化
+    effect(() => {
+        if (disposed) return;
+        const mode = r_input.renderMode;
+
+        // 停止之前的循环
+        if (rafId !== undefined) {
+            cancelAnimationFrame(rafId);
+            rafId = undefined;
+        }
+
+        // 始终渲染模式
+        if (mode === 'always') {
+            renderLoop();
+        }
+        // on-demand 模式：首次渲染
+        else if (mode === undefined || mode === 'on-demand') {
+            scheduleFrame();
+        }
+        // never 模式：不渲染
+    });
 
     // 返回销毁函数
     return () => {
         disposed = true;
+        if (rafId !== undefined) {
+            cancelAnimationFrame(rafId);
+        }
     };
 }
 
@@ -164,4 +219,11 @@ export interface RenderInput {
     rotation: number;
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
+    /**
+     * 渲染模式
+     * - `always`: 始终每帧渲染
+     * - `on-demand`: 有变化时触发渲染（默认）
+     * - `never`: 始终不渲染
+     */
+    renderMode?: RenderMode;
 }

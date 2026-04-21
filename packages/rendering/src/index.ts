@@ -7,4 +7,4 @@
 
 // 导出渲染函数
 export { render } from './render.js';
-export type { RenderInput } from './render.js';
+export type { RenderInput, RenderMode } from './render.js';
