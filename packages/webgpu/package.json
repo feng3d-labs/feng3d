@@ -17,7 +17,6 @@
   },
   "scripts": {
     "examples:dev": "cd examples && npm run dev",
-    "test_web": "cd test_web && npm run dev",
     "clean": "rimraf lib dist public",
     "build": "vite build && tsc",
     "watch": "concurrently \"vite build --watch\" \"tsc -w\" \"vitest\"",
@@ -35,34 +34,10 @@
     "dist",
     "lib"
   ],
-  "devDependencies": {
-    "@eslint/js": "9.0.0",
-    "@typescript-eslint/eslint-plugin": "8.32.1",
-    "@typescript-eslint/parser": "8.32.1",
-    "cross-env": "7.0.3",
-    "eslint": "9.26.0",
-    "fast-glob": "^3.3.3",
-    "globals": "14.0.0",
-    "rimraf": "6.0.1",
-    "tslib": "2.8.1",
-    "typedoc": "0.28.4",
-    "typescript": "5.8.3",
-    "typescript-eslint": "8.32.1",
-    "vite": "6.3.5",
-    "vitest": "3.1.3",
-    "concurrently": "9.1.2",
-    "husky": "9.1.7",
-    "lint-staged": "15.2.10"
-  },
   "dependencies": {
     "@feng3d/reactivity": "1.0.12",
     "@feng3d/watcher": "^0.8.14",
     "@webgpu/types": "0.1.60",
     "wgsl_reflect": "^1.2.1"
-  },
-  "lint-staged": {
-    "*.{js,ts}": [
-      "eslint --fix --max-warnings 0"
-    ]
   }
 }
