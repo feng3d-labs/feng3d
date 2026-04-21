@@ -72,6 +72,12 @@ struct Frustum {
     planes: array<vec4f, 6>,  // 每个平面: (normal, distance)
 };
 
+// 相机统一数据（包含相机数据和视锥体数据）
+struct CameraUniform {
+    data: CameraData,
+    frustum: Frustum,
+};
+
 // ============================================================================
 // 资源绑定
 // ============================================================================
@@ -79,17 +85,16 @@ struct Frustum {
 // 输入资源
 @group(0) @binding(0) var<storage, read> objects: array<ObjectData>;
 @group(0) @binding(1) var<storage, read> materials: array<MaterialData>;
-@group(0) @binding(2) var<uniform> camera: CameraData;
-@group(0) @binding(3) var<uniform> frustum: Frustum;
-@group(0) @binding(4) var<uniform> objectCount: u32;
+@group(0) @binding(2) var<uniform> cameraUniform: CameraUniform;
+@group(0) @binding(3) var<uniform> objectCount: u32;
 
 // 输出资源 - 不透明物体（按材质分组，假设最多128种材质）
-@group(0) @binding(5) var<storage, read_write> opaqueCmds: array<DrawIndexedIndirect>;
-@group(0) @binding(6) var<storage, read_write> opaqueCounters: array<atomic<u32>>;
+@group(0) @binding(4) var<storage, read_write> opaqueCmds: array<DrawIndexedIndirect>;
+@group(0) @binding(5) var<storage, read_write> opaqueCounters: array<atomic<u32>>;
 
 // 输出资源 - 透明物体
-@group(0) @binding(7) var<storage, read_write> transparentCmds: array<DrawIndexedIndirect>;
-@group(0) @binding(8) var<storage, read_write> transparentCounter: atomic<u32>;
+@group(0) @binding(6) var<storage, read_write> transparentCmds: array<DrawIndexedIndirect>;
+@group(0) @binding(7) var<storage, read_write> transparentCounter: atomic<u32>;
 
 // ============================================================================
 // 视锥剔除
@@ -107,7 +112,7 @@ fn frustumIntersectSphere(boundsCenter: vec3f, boundsRadius: f32) -> bool
     // 检查球心到每个平面的距离
     for (var i: u32 = 0u; i < 6u; i++)
     {
-        let dist = pointPlaneDistance(boundsCenter, frustum.planes[i]);
+        let dist = pointPlaneDistance(boundsCenter, cameraUniform.frustum.planes[i]);
         if (dist < -boundsRadius)
         {
             // 球体在平面外侧，完全不可见
@@ -126,7 +131,7 @@ fn distanceToCamera(boundsCenter: vec3f) -> f32
 {
     // 从 viewMatrix 中提取相机位置
     // viewMatrix 的第 4 列是 -camera_position（在 view space 中）
-    let cameraPos = -vec3f(camera.viewMatrix[3].xyz);
+    let cameraPos = -vec3f(cameraUniform.data.viewMatrix[3].xyz);
     return length(boundsCenter - cameraPos);
 }
 

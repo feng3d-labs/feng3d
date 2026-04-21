@@ -93,6 +93,47 @@ export interface FrustumData
 }
 
 /**
+ * 相机统一数据结构
+ *
+ * 与 Camera 结构一致，用于着色器 uniform 绑定。
+ */
+export interface CameraUniformData
+{
+    /**
+     * 相机数据
+     */
+    readonly data: CameraData;
+
+    /**
+     * 视锥体数据
+     */
+    readonly frustum: FrustumData;
+}
+
+/**
+ * 相机接口
+ *
+ * 包含相机数据和视锥体数据。
+ */
+export interface Camera
+{
+    /**
+     * 相机数据
+     */
+    readonly data: CameraData;
+
+    /**
+     * 视锥体数据
+     */
+    readonly frustum: FrustumData;
+
+    /**
+     * 物体数量
+     */
+    readonly objectCount: number;
+}
+
+/**
  * 物体数据结构
  *
  * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
@@ -256,29 +297,6 @@ export interface MaterialData
      * 材质类型
      */
     readonly type?: number;
-}
-
-/**
- * 相机数据
- *
- * 由 @feng3d/core 提供，@feng3d/rendering 通过响应式系统自动序列化。
- */
-export interface Camera
-{
-    /**
-     * 相机数据
-     */
-    readonly data: CameraData;
-
-    /**
-     * 视锥体数据
-     */
-    readonly frustum: FrustumData;
-
-    /**
-     * 物体数量
-     */
-    readonly objectCount: number;
 }
 
 /**

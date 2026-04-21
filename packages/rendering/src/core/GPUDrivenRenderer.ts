@@ -1,7 +1,7 @@
 import { computed, reactive, type Computed } from '@feng3d/reactivity';
 import type {
     Camera,
-    CameraData,
+    CameraUniformData,
     DrawIndexedIndirect as DrawIndexedIndirectData,
     Material,
     ObjectData,
@@ -60,14 +60,9 @@ export class GPUDrivenRenderer
     readonly materialsBuffer: BufferBinding<readonly Material[]>;
 
     /**
-     * 相机缓冲区绑定
+     * 相机统一缓冲区绑定（包含相机数据和视锥体数据）
      */
-    readonly cameraBuffer: BufferBinding<CameraData>;
-
-    /**
-     * 视锥体缓冲区绑定
-     */
-    readonly frustumBuffer: BufferBinding<{ planes: readonly (readonly number[])[] }>;
+    readonly cameraUniformBuffer: BufferBinding<CameraUniformData>;
 
     /**
      * 物体计数缓冲区绑定
@@ -186,22 +181,15 @@ export class GPUDrivenRenderer
             bufferView: new Uint8Array(this.maxMaterials * MATERIAL_DATA_SIZE),
         };
 
-        // 相机缓冲区
-        this.cameraBuffer = {
-            bufferView: new Uint8Array(CAMERA_DATA_SIZE),
-            value: { viewMatrix: undefined, projectionMatrix: undefined },
-        };
-
-        // 视锥体缓冲区
-        this.frustumBuffer = {
-            bufferView: new Uint8Array(FRUSTUM_DATA_SIZE),
-            value: { planes: undefined },
+        // 相机统一缓冲区（包含相机数据和视锥体数据）
+        const cameraUniformSize = CAMERA_DATA_SIZE + FRUSTUM_DATA_SIZE;
+        this.cameraUniformBuffer = {
+            bufferView: new Uint8Array(cameraUniformSize),
         };
 
         // 物体计数缓冲区
         this.objectCountBuffer = {
             bufferView: new Uint32Array(1),
-            value: { count: undefined },
         };
 
         // 不透明命令缓冲区
@@ -251,8 +239,7 @@ export class GPUDrivenRenderer
     setCamera(camera: Camera): void
     {
         // 通过响应式系统更新 value
-        reactive(this.cameraBuffer).value = camera.data;
-        reactive(this.frustumBuffer).value = camera.frustum;
+        reactive(this.cameraUniformBuffer).value = camera;
     }
 
     /**
@@ -403,8 +390,7 @@ export class GPUDrivenRenderer
         // 访问 bufferView 以建立响应式依赖
         this.objectsBuffer.bufferView;
         this.materialsBuffer.bufferView;
-        this.cameraBuffer.bufferView;
-        this.frustumBuffer.bufferView;
+        this.cameraUniformBuffer.bufferView;
         this.objectCountBuffer.bufferView;
         this.opaqueCountersBuffer.bufferView;
         this.transparentCounterBuffer.bufferView;
@@ -445,8 +431,7 @@ export class GPUDrivenRenderer
                         // 输入资源（名称必须与着色器中的变量名一致）
                         objects: this.objectsBuffer,
                         materials: this.materialsBuffer,
-                        camera: this.cameraBuffer,
-                        frustum: this.frustumBuffer,
+                        cameraUniform: this.cameraUniformBuffer,
                         objectCount: this.objectCountBuffer,
                         // 输出资源
                         opaqueCmds: this.opaqueCmdsBuffer,
