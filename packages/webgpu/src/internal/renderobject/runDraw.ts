@@ -25,7 +25,8 @@ export function runDraw(renderObject: RenderObject, passEncoder: WGPURenderPassE
     }
     else if (draw.__type__ === 'DrawIndexedIndirect')
     {
-        const dii = draw as DrawIndexedIndirect;
+        // DrawIndexedIndirect 的 buffer 不能是响应式包装的 GPUBuffer
+        const dii = renderObject.draw as DrawIndexedIndirect;
         passEncoder.drawIndexedIndirect(dii.buffer, dii.offset);
     }
 }

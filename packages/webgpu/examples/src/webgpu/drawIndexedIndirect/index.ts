@@ -4,9 +4,9 @@
  * 演示如何使用间接绘制命令从 GPU 缓冲区读取绘制参数
  */
 
-import { reactive } from '@feng3d/reactivity';
 import { RenderObject, RenderPassDescriptor, Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
+import { reactive } from '@feng3d/reactivity';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
@@ -36,6 +36,13 @@ const init = async (canvas: HTMLCanvasElement) =>
         },
     };
 
+    // 创建索引数据（0 到 35）
+    const indexData = new Uint16Array(cubeVertexCount);
+    for (let i = 0; i < cubeVertexCount; i++)
+    {
+        indexData[i] = i;
+    }
+
     const renderObjectBase: Omit<RenderObject, 'bindingResources' | 'draw'> = {
         pipeline: {
             vertex: { code: basicVertWGSL },
@@ -58,6 +65,7 @@ const init = async (canvas: HTMLCanvasElement) =>
                 arrayStride: cubeVertexSize,
             },
         },
+        indices: indexData,
     };
 
     const aspect = canvas.width / canvas.height;
@@ -125,7 +133,7 @@ const init = async (canvas: HTMLCanvasElement) =>
                 offset: i * 20,
             },
         };
-        renderObjects.push(reactive(renderObj));
+        renderObjects.push(renderObj);
     }
 
     const data: Submit = {
@@ -147,7 +155,7 @@ const init = async (canvas: HTMLCanvasElement) =>
         for (let i = 0; i < positions.length; i++)
         {
             const mvp = getTransformationMatrix(positions[i].x, positions[i].y);
-            reactive(uniformsList[i].value).modelViewProjectionMatrix = mvp.subarray();
+            reactive(uniformsList[i].value).modelViewProjectionMatrix = new Float32Array(mvp);
         }
 
         webgpu.submit(data);
