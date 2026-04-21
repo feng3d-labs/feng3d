@@ -7,8 +7,7 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "packages/*/examples"
+    "packages/*"
   ],
   "scripts": {
     "clean": "npm run clean --workspaces --if-present",
