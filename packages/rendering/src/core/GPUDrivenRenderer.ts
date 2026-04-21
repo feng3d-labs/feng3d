@@ -1,6 +1,8 @@
 import { computed, type Computed } from '@feng3d/reactivity';
 import type {
     Camera,
+    CameraData,
+    DrawIndexedIndirect as DrawIndexedIndirectData,
     Material,
     ObjectData,
     GPUDrivenRendererOptions,
@@ -24,6 +26,7 @@ import type {
     DrawIndexedIndirect,
     VertexAttributes,
     IndicesDataTypes,
+    ComputePass,
 } from '@feng3d/webgpu';
 import { Buffer as BufferClass } from '@feng3d/webgpu';
 import { code as commandGeneratorShaderCode } from '../compute/CommandGenerator.wgsl.js';
@@ -49,7 +52,7 @@ export class GPUDrivenRenderer
     /**
      * 物体缓冲区绑定
      */
-    readonly objectsBuffer: BufferBinding;
+    readonly objectsBuffer: BufferBinding<readonly ObjectData[]>;
 
     /**
      * 材质缓冲区绑定
@@ -59,37 +62,37 @@ export class GPUDrivenRenderer
     /**
      * 相机缓冲区绑定
      */
-    readonly cameraBuffer: BufferBinding;
+    readonly cameraBuffer: BufferBinding<CameraData>;
 
     /**
      * 视锥体缓冲区绑定
      */
-    readonly frustumBuffer: BufferBinding;
+    readonly frustumBuffer: BufferBinding<{ planes: readonly (readonly number[])[] }>;
 
     /**
      * 物体计数缓冲区绑定
      */
-    readonly objectCountBuffer: BufferBinding;
+    readonly objectCountBuffer: BufferBinding<{ count: number }>;
 
     /**
      * 不透明命令缓冲区
      */
-    readonly opaqueCmdsBuffer: BufferBinding;
+    readonly opaqueCmdsBuffer: BufferBinding<readonly DrawIndexedIndirectData[]>;
 
     /**
      * 不透明计数器缓冲区绑定
      */
-    readonly opaqueCountersBuffer: BufferBinding;
+    readonly opaqueCountersBuffer: BufferBinding<readonly number[]>;
 
     /**
      * 透明命令缓冲区
      */
-    readonly transparentCmdsBuffer: BufferBinding;
+    readonly transparentCmdsBuffer: BufferBinding<readonly DrawIndexedIndirectData[]>;
 
     /**
      * 透明计数器缓冲区绑定
      */
-    readonly transparentCounterBuffer: BufferBinding;
+    readonly transparentCounterBuffer: BufferBinding<{ count: number }>;
 
     // ==================== 其他状态 ====================
 
@@ -176,13 +179,11 @@ export class GPUDrivenRenderer
         // 物体缓冲区
         this.objectsBuffer = {
             bufferView: new Uint8Array(this.options.maxObjects * OBJECT_DATA_SIZE),
-            value: { transform: undefined, materialId: undefined, visible: undefined, isTransparent: undefined, worldPosition: undefined, lodLevel: undefined },
         };
 
         // 材质缓冲区
         this.materialsBuffer = {
             bufferView: new Uint8Array(this.maxMaterials * MATERIAL_DATA_SIZE),
-            value: { albedo: undefined, metallic: undefined, roughness: undefined, normalScale: undefined, occlusionStrength: undefined, emissive: undefined, type: undefined } as any,
         };
 
         // 相机缓冲区
@@ -206,7 +207,6 @@ export class GPUDrivenRenderer
         // 不透明命令缓冲区
         this.opaqueCmdsBuffer = {
             bufferView: new Uint8Array(this.maxOpaqueObjects * DRAW_INDEXED_INDIRECT_SIZE),
-            value: { commands: undefined },
         };
         if (this.debug)
         {
@@ -221,13 +221,11 @@ export class GPUDrivenRenderer
         // 不透明计数器缓冲区
         this.opaqueCountersBuffer = {
             bufferView: new Uint32Array(this.maxMaterials),
-            value: { counters: undefined },
         };
 
         // 透明命令缓冲区
         this.transparentCmdsBuffer = {
             bufferView: new Uint8Array(this.maxTransparentObjects * DRAW_INDEXED_INDIRECT_SIZE),
-            value: { commands: undefined },
         };
 
         // 透明计数器缓冲区
@@ -438,7 +436,7 @@ export class GPUDrivenRenderer
     /**
      * 构建计算着色器通道
      */
-    private _buildComputePass(): import('@feng3d/webgpu').ComputePass
+    private _buildComputePass(): ComputePass
     {
         return {
             __type__: 'ComputePass',
