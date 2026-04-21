@@ -60,8 +60,8 @@ button.addEventListener('click', () => {
     currentCanvas = currentCanvas === 1 ? 2 : 1;
     r_input.canvas = currentCanvas === 1 ? canvas1 : canvas2;
 
-    // 更新按钮文本和画布显示
+    // 更新按钮文本和画布透明度
     button.textContent = `切换画布 (当前: 画布${currentCanvas})`;
-    canvas1.classList.toggle('active', currentCanvas === 1);
-    canvas2.classList.toggle('active', currentCanvas === 2);
+    canvas1.classList.toggle('inactive', currentCanvas !== 1);
+    canvas2.classList.toggle('inactive', currentCanvas !== 2);
 });
