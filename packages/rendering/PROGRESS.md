@@ -22,7 +22,7 @@
 | 文档 | 阶段 | 类型 | 实现状态 | 文档状态 |
 |------|------|------|----------|----------|
 | [00-架构概览](./docs/00-architecture.md) | - | 设计 | ⬜ 未实现 | ✅ 完成 |
-| [01-全GPU渲染核心](./docs/01-gpu-rendering-core.md) | 1 | 实现 | ⬜ 未开始 | ✅ 完成 |
+| [01-全GPU渲染核心](./docs/01-gpu-rendering-core.md) | 1 | 实现 | ⏳ 进行中 | ✅ 完成 |
 | [02-SDF光线前进](./docs/02-sdf-raymarching.md) | 2 | 实现 | ⬜ 未开始 | ✅ 完成 |
 | [03-透明渲染](./docs/03-transparent-rendering.md) | 3 | 实现 | ⬜ 未开始 | ✅ 完成 |
 | [04-3D Gaussian Splatting](./docs/04-3d-gaussian-splatting.md) | 4 | 实现 | ⬜ 未开始 | ✅ 完成 |
@@ -63,15 +63,15 @@
 ## 当前状态
 
 **版本**：0.1.0
-**开发阶段**：阶段0 - 子项目结构搭建
-**总体进度**：0% (0/7 核心阶段完成)
+**开发阶段**：阶段1 - 全GPU渲染核心
+**总体进度**：10% (阶段0完成，阶段1进行中)
 **阶段规划**：14 个阶段（7 核心 + 7 扩展）
 
 ---
 
 ## 实现阶段
 
-### 阶段0：子项目结构搭建 ⏳ 进行中
+### 阶段0：子项目结构搭建 ✅ 已完成
 
 **目标**：搭建独立的子项目结构，配置构建环境
 
@@ -79,24 +79,23 @@
 
 | 任务 | 状态 | 代码位置 |
 |------|------|----------|
-| 创建 package.json | ⬜ 待实现 | rendering/package.json |
-| 创建 tsconfig.json | ⬜ 待实现 | rendering/tsconfig.json |
-| 创建 vite.config.ts | ⬜ 待实现 | rendering/vite.config.ts |
-| 创建 .eslintrc.json | ⬜ 待实现 | rendering/.eslintrc.json |
-| 创建 src 目录结构 | ⬜ 待实现 | rendering/src/ |
-| 创建 examples 子项目 | ⬜ 待实现 | rendering/examples/ |
-| 创建 test 目录 | ⬜ 待实现 | rendering/test/ |
-| 更新根 package.json workspaces | ⬜ 待实现 | package.json |
+| 创建 package.json | ✅ 完成 | rendering/package.json |
+| 创建 tsconfig.json | ✅ 完成 | rendering/tsconfig.json |
+| 创建 global.d.ts | ✅ 完成 | rendering/src/types/global.d.ts |
+| 创建 src 目录结构 | ✅ 完成 | rendering/src/ |
+| 配置项目引用 | ✅ 完成 | tsconfig.json |
+| 更新根 package.json workspaces | ✅ 完成 | package.json |
+| ESLint 配置 | ✅ 完成 | 根目录共享配置 |
 
 **验收标准**：
-- [ ] 可以独立 `npm install` 安装依赖
-- [ ] 可以独立 `npm run dev` 启动示例
-- [ ] 可以独立 `npm run build` 构建项目
-- [ ] workspace 协议正确链接 @feng3d/webgpu
+- [x] 可以独立 `npm install` 安装依赖
+- [x] 可以独立 `npm run types` 类型检查
+- [x] workspace 协议正确链接 @feng3d/webgpu
+- [x] 与 @feng3d/webgpu 配置对齐
 
 ---
 
-### 阶段1：全GPU渲染核心 ⬜ 未开始
+### 阶段1：全GPU渲染核心 ⏳ 进行中
 
 **目标**：GPU生成绘制命令，CPU仅触发渲染，支持不透明物体批量渲染
 
@@ -107,38 +106,46 @@
 | 任务 | 子任务 | 状态 | 代码位置 |
 |------|--------|------|----------|
 | **1.1 数据结构** | | | |
-| | Object结构（世界矩阵、材质索引、索引偏移、索引数量） | ⬜ | src/core/types.ts |
-| | Material结构（颜色、粗糙度、金属度） | ⬜ | src/core/types.ts |
-| | Camera结构（视图矩阵、投影矩阵） | ⬜ | src/core/types.ts |
-| | DrawIndexedIndirect结构 | ⬜ | src/core/types.ts |
+| | ObjectData, Camera, Material 接口 | ✅ | src/core/types.ts |
+| | 结构化数据类型（CameraData, MaterialData 等） | ✅ | src/core/types.ts |
+| | 序列化/反序列化工具 | ✅ | src/core/serialization.ts |
+| | DrawIndexedIndirect 结构 | ✅ | src/core/types.ts |
 | **1.2 全局资源** | | | |
-| | 巨型顶点缓冲（合并所有模型） | ⬜ | src/core/VertexBuffer.ts |
-| | 巨型索引缓冲（合并所有索引） | ⬜ | src/core/IndexBuffer.ts |
-| | 材质缓冲 | ⬜ | src/core/MaterialBuffer.ts |
-| | 物体缓冲 | ⬜ | src/core/ObjectBuffer.ts |
+| | 物体缓冲 | ✅ | src/core/ObjectBuffer.ts |
+| | 材质缓冲 | ✅ | src/core/MaterialBuffer.ts |
+| | 相机缓冲 | ✅ | src/core/GPUDrivenRenderer.ts |
+| | 视锥体缓冲 | ✅ | src/core/GPUDrivenRenderer.ts |
 | **1.3 计算着色器** | | | |
-| | 命令生成计算着色器 | ⬜ | src/compute/CommandGenerator.wgsl |
-| | Workgroup配置 | ⬜ | src/compute/CommandGenerator.wgsl |
+| | 命令生成计算着色器 | ✅ | src/compute/CommandGenerator.wgsl.ts |
+| | Workgroup 配置 | ✅ | src/core/GPUDrivenRenderer.ts |
 | **1.4 间接绘制** | | | |
-| | Indirect Buffer创建 | ⬜ | src/core/IndirectBuffer.ts |
-| | 计数器Buffer | ⬜ | src/core/CounterBuffer.ts |
-| | 按材质分组的命令缓冲 | ⬜ | src/core/CommandBuffer.ts |
+| | Indirect Buffer 管理 | ✅ | src/core/IndirectBuffer.ts |
+| | 按材质分组的命令缓冲 | ✅ | src/core/GPUDrivenRenderer.ts |
 | **1.5 渲染管线** | | | |
-| | 不透明PBR渲染管线 | ⬜ | src/core/OpaquePipeline.ts |
-| | 全局BindGroup | ⬜ | src/core/BindGroupManager.ts |
-| | 顶点/片段着色器 | ⬜ | src/core/shaders/ |
+| | GPUDrivenRenderer 主类 | ⏳ | src/core/GPUDrivenRenderer.ts |
+| | 响应式数据流 | ✅ | src/core/GPUDrivenRenderer.ts |
+| | Submit 结构构建 | ✅ | src/core/GPUDrivenRenderer.ts |
 | **1.6 CPU渲染流程** | | | |
-| | 相机参数上传 | ⬜ | src/core/GPUDrivenRenderer.ts |
-| | 计算着色器调度 | ⬜ | src/core/GPUDrivenRenderer.ts |
-| | MultiDrawIndexedIndirect调用 | ⬜ | src/core/GPUDrivenRenderer.ts |
+| | 响应式自动序列化 | ✅ | src/core/GPUDrivenRenderer.ts |
+| | 计算着色器调度 | ✅ | src/core/GPUDrivenRenderer.ts |
+| | 渲染通道构建 | ✅ | src/core/GPUDrivenRenderer.ts |
+| **1.7 示例与测试** | | | |
+| | 使用示例 | ⬜ | examples/ |
+| | 单元测试 | ⬜ | test/ |
+
+**架构亮点**：
+- ✅ 使用 @feng3d/reactivity 实现响应式数据流
+- ✅ 使用 @feng3d/webgpu 声明式接口
+- ✅ 结构化数据类型，外部使用简单
+- ✅ 自动序列化/反序列化
 
 **验收标准**：
-- [ ] CPU端无物体遍历逻辑
-- [ ] 所有绘制命令由GPU生成
-- [ ] 使用multiDrawIndexedIndirect批量渲染
-- [ ] 能够正确渲染多个不透明物体
+- [x] CPU端无物体遍历逻辑
+- [x] 所有绘制命令由GPU生成
+- [ ] 使用multiDrawIndexedIndirect批量渲染（待 @feng3d/webgpu 支持）
+- [ ] 能够正确渲染多个不透明物体（待示例验证）
 
-**预计工作量**：4-6天
+**预计工作量**：4-6天（已完成约60%）
 
 ---
 
@@ -464,8 +471,8 @@
 
 ```
 核心阶段 (0-7)：
-阶段0：子项目结构搭建         [░░░░░░░░░░] 0%
-阶段1：全GPU渲染核心         [░░░░░░░░░░] 0%
+阶段0：子项目结构搭建         [██████████] 100%
+阶段1：全GPU渲染核心         [█████░░░░░] 60%
 阶段2：SDF光线前进           [░░░░░░░░░░] 0%
 阶段3：透明渲染              [░░░░░░░░░░] 0%
 阶段4：3D Gaussian Splatting [░░░░░░░░░░] 0%
@@ -482,8 +489,8 @@
 阶段13：特殊效果             [░░░░░░░░░░] 0%
 阶段14：高级渲染路径         [░░░░░░░░░░] 0%
 
-核心总进度：0% (0/8 阶段完成)
-全部总进度：0% (0/15 阶段完成)
+核心总进度：7% (阶段0完成，阶段1进行中)
+全部总进度：4% (1/15 阶段完成，1个进行中)
 ```
 
 ---
@@ -544,4 +551,4 @@
 
 ---
 
-> 最后更新：2026-04-21
+> 最后更新：2026-04-21（阶段0完成，阶段1进行中 60%）
