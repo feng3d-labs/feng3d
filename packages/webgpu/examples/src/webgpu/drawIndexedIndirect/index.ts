@@ -36,11 +36,9 @@ const init = async (canvas: HTMLCanvasElement) =>
         },
     };
 
-    const uniforms = {
-        value: { modelViewProjectionMatrix: new Float32Array(16) as Float32Array },
-    };
+    const uniformsList: Array<{ value: { modelViewProjectionMatrix: Float32Array } }> = [];
 
-    const renderObject: RenderObject = {
+    const renderObjectBase: RenderObject = {
         pipeline: {
             vertex: { code: basicVertWGSL },
             fragment: { code: vertexPositionColorWGSL },
@@ -61,9 +59,6 @@ const init = async (canvas: HTMLCanvasElement) =>
                 offset: cubeUVOffset,
                 arrayStride: cubeVertexSize,
             },
-        },
-        bindingResources: {
-            uniforms,
         },
     };
 
@@ -137,9 +132,36 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     for (let i = 0; i < drawCount; i++)
     {
-        const renderObj = { ...renderObject };
+        const uniforms = { value: { modelViewProjectionMatrix: new Float32Array(16) } };
+        uniformsList.push(uniforms);
+
+        const renderObj: RenderObject = {
+            ...renderObjectBase,
+            bindingResources: { uniforms },
+        };
         renderObjects.push(reactive(renderObj));
     }
+
+    const data: Submit = {
+        commandEncoders: [
+            {
+                passEncoders: [
+                    {
+                        __type__: 'RenderPass',
+                        descriptor: renderPass,
+                        renderPassObjects: renderObjects.map((ro, index) => ({
+                            ...ro,
+                            draw: {
+                                __type__: 'DrawIndexedIndirect',
+                                buffer: indirectBuffer,
+                                offset: index * 20, // 每个命令 20 字节
+                            },
+                        })),
+                    },
+                ],
+            },
+        ],
+    };
 
     function frame()
     {
@@ -147,37 +169,16 @@ const init = async (canvas: HTMLCanvasElement) =>
         for (let i = 0; i < renderObjects.length; i++)
         {
             const mvp = getTransformationMatrix(positions[i].x, positions[i].y);
-            reactive(renderObjects[i].bindingResources!.uniforms).value.modelViewProjectionMatrix = mvp;
+            uniformsList[i].value.modelViewProjectionMatrix = mvp;
         }
 
-        // 构建 Submit，每个物体使用间接绘制
-        const submit: Submit = {
-            commandEncoders: [
-                {
-                    passEncoders: [
-                        {
-                            __type__: 'RenderPass',
-                            descriptor: renderPass,
-                            renderPassObjects: renderObjects.map((ro, index) => ({
-                                ...ro,
-                                draw: {
-                                    __type__: 'DrawIndexedIndirect',
-                                    buffer: indirectBuffer,
-                                    offset: index * 20, // 每个命令 20 字节
-                                },
-                            })),
-                        },
-                    ],
-                },
-            ],
-        };
-
-        webgpu.submit(submit);
+        webgpu.submit(data);
 
         requestAnimationFrame(frame);
     }
-
-    frame();
+    requestAnimationFrame(frame);
 };
 
-export default init;
+const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+
+init(webgpuCanvas);
