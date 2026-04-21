@@ -1,4 +1,4 @@
-import { computed, reactive, type Computed } from '@feng3d/reactivity';
+import { computed, effect, reactive, type Computed } from '@feng3d/reactivity';
 import { type BufferBinding, type RenderObject, type RenderPassDescriptor, type RenderPipeline, type Submit, type VertexAttributes, WebGPU } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
@@ -84,39 +84,36 @@ export async function renderRotatingCube(
         };
     });
 
-    // 动画循环
-    let animationFrameId: number | null = null;
-    let lastTime = Date.now();
+    // 渲染调度标志：确保每帧最多调度一次
+    let frameScheduled = false;
 
-    function animate()
+    /**
+     * 调度一帧渲染（如果当前没有已调度的帧）
+     */
+    function scheduleFrame(): void
     {
-        const now = Date.now();
-        const deltaTime = (now - lastTime) / 1000;
-        lastTime = now;
+        if (frameScheduled) return; // 已经调度了，无需重复调度
 
-        // 更新旋转角度（触发 computed 重新计算）
-        reactive(state).rotation += deltaTime;
-
-        // 渲染
-        webgpu.submit(submit.value);
-
-        animationFrameId = requestAnimationFrame(animate);
+        frameScheduled = true;
+        requestAnimationFrame(() =>
+        {
+            frameScheduled = false;
+            webgpu.submit(submit.value);
+        });
     }
 
-    animate();
+    // 监听状态变化，自动调度渲染
+    effect(() =>
+    {
+        // 访问 state.rotation 以建立依赖
+        state.rotation;
+        scheduleFrame();
+    });
+
+    // 首次渲染
+    scheduleFrame();
 
     return {
-        /**
-         * 停止动画
-         */
-        stop: () =>
-        {
-            if (animationFrameId !== null)
-            {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-        },
         /**
          * 手动触发渲染一帧
          */
@@ -154,8 +151,6 @@ export interface RenderRotatingCubeOptions
  */
 export interface RenderRotatingCubeController
 {
-    /** 停止动画 */
-    stop(): void;
     /** 手动触发渲染一帧 */
     render(): void;
     /** 获取当前状态 */
