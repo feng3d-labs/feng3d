@@ -12,8 +12,8 @@ struct MaterialData {
     metallic: f32,          // 4 bytes
     roughness: f32,         // 4 bytes
     emissive: vec3f,        // 12 bytes
-    type: u32,              // 4 bytes
-    __padding: u32,         // 4 bytes (padding)
+    materialType: u32,      // 4 bytes
+    _padding: u32,         // 4 bytes (padding)
 };
 
 // 材质缓冲
@@ -26,6 +26,6 @@ fn getMaterial(materialId: u32) -> MaterialData {
 
 // 判断是否为透明材质
 fn isTransparent(material: MaterialData) -> bool {
-    return material.type == MATERIAL_TYPE_TRANSPARENT;
+    return material.materialType == MATERIAL_TYPE_TRANSPARENT;
 }
 `;

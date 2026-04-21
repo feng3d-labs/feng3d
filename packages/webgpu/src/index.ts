@@ -68,6 +68,3 @@ export * from './utils/unreadonly';
 
 // 渲染状态
 export { renderState } from './utils/renderState';
-
-// 缓存导出（选择性导出常用缓存类）
-export { WGPUBuffer } from './caches/WGPUBuffer';

@@ -9,7 +9,7 @@ struct ObjectData {
     boundsRadius: f32,              // 4 bytes
     materialId: u32,                // 4 bytes
     isTransparent: u32,             // 4 bytes
-    __padding: vec2u,               // 8 bytes (padding)
+    _padding: vec2u,               // 8 bytes (padding)
     lods: array<LODLevel, 4>,       // 32 bytes (4 levels * 8 bytes)
 };
 

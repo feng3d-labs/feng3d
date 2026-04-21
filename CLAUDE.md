@@ -32,6 +32,18 @@
 - 修改数据需要使用 `@feng3d/reactivity` 提供的响应式 API
 - ReactiveObject 类用于创建响应式对象
 
+#### 响应式对象使用规则
+1. **监听与使用分离**: 监听时使用响应式对象（用于建立依赖），使用时使用原始对象
+   - 例如：`const r_obj = reactive(obj);` 用于监听，`obj.prop` 用于使用
+2. **命名规范**: 所有响应式对象（属性/变量）名称必须使用 `r_` 前缀
+   - 例如：`const r_bufferBinding = reactive(bufferBinding);`
+3. **函数参数**: 函数不应该接收响应式对象作为参数
+   - 函数内部应自行创建响应式对象用于监听
+   - 在需要传入对象给外部函数时，使用 `toRaw()` 获取原始对象
+4. **TypedArray 访问**: 访问 TypedArray 的属性（如 `buffer`、`byteOffset`）时，确保使用原始对象
+   - 如果 TypedArray 可能被响应式包装，使用 `toRaw()` 获取原始对象
+   - 示例（见 `WGPUBindGroupEntry.ts`）：`WGPUBufferBinding.getInstance(device, toRaw(bufferBinding), type);`
+
 ### 调试和测试
 - 示例位于 `packages/webgpu/examples/`
 - 使用 `npm run dev` 启动开发服务器

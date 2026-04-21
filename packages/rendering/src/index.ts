@@ -37,7 +37,7 @@
  * await webgpu.init();
  *
  * // 2. 创建渲染器
- * const renderer = new GPUDrivenRenderer(webgpu.device, { maxObjects: 10000 });
+ * const renderer = new GPUDrivenRenderer({ maxObjects: 10000 });
  *
  * // 3. 设置数据（响应式，自动更新 Submit）
  * renderer.setCamera(cameraData);
@@ -91,18 +91,6 @@ export {
     CAMERA_DATA_SIZE,
     FRUSTUM_DATA_SIZE,
 } from './core/types.js';
-
-// 序列化工具函数
-export {
-    serializeCameraData,
-    deserializeCameraData,
-    serializeFrustumData,
-    deserializeFrustumData,
-    serializeObjectTransform,
-    deserializeObjectTransform,
-    serializeMaterialData,
-    deserializeMaterialData,
-} from './core/serialization.js';
 
 // WGSL 着色器代码（供外部使用）
 export { OBJECT_DATA_WGSL } from './core/ObjectBuffer.js';

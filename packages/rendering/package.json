@@ -19,7 +19,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "vitest",
-    "types": "tsc"
+    "types": "tsc",
+    "dev": "npm run dev --workspace=examples",
+    "dev:examples": "vite --config examples/vite.config.ts"
   },
   "repository": {
     "type": "git",

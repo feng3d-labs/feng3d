@@ -37,7 +37,7 @@ struct ObjectData {
     boundsRadius: f32,              // 4 bytes
     materialId: u32,                // 4 bytes
     isTransparent: u32,             // 4 bytes
-    __padding: vec2u,               // 8 bytes (padding)
+    _padding: vec2u,               // 8 bytes (padding)
     lods: array<LODLevel, 4>,       // 32 bytes (4 levels * 8 bytes)
 };
 
@@ -47,8 +47,8 @@ struct MaterialData {
     metallic: f32,          // 4 bytes
     roughness: f32,         // 4 bytes
     emissive: vec3f,        // 12 bytes
-    type: u32,              // 4 bytes
-    __padding: u32,         // 4 bytes (padding)
+    materialType: u32,      // 4 bytes
+    _padding: u32,         // 4 bytes (padding)
 };
 
 // 间接绘制命令结构（20字节）
@@ -60,15 +60,11 @@ struct DrawIndexedIndirect {
     baseInstance: u32,
 };
 
-// 相机数据
+// 相机数据（144 字节）
 struct CameraData {
-    viewMatrix: mat4x4f,
-    projectionMatrix: mat4x4f,
-    viewProjectionMatrix: mat4x4f,
-    position: vec3f,
-    near: f32,
-    far: f32,
-    __padding: u32,
+    viewMatrix: mat4x4f,          // 64 bytes
+    projectionMatrix: mat4x4f,    // 64 bytes
+    _padding: vec4f,              // 16 bytes (padding to align to 16 bytes)
 };
 
 // 视锥体数据（6个平面）
@@ -128,7 +124,10 @@ fn frustumIntersectSphere(boundsCenter: vec3f, boundsRadius: f32) -> bool
 // 计算物体到相机的距离
 fn distanceToCamera(boundsCenter: vec3f) -> f32
 {
-    return length(boundsCenter - camera.position);
+    // 从 viewMatrix 中提取相机位置
+    // viewMatrix 的第 4 列是 -camera_position（在 view space 中）
+    let cameraPos = -vec3f(camera.viewMatrix[3].xyz);
+    return length(boundsCenter - cameraPos);
 }
 
 // 根据距离选择LOD级别
@@ -207,7 +206,7 @@ fn main(@builtin(global_invocation_id) globalId: vec3u)
     // 根据材质类型写入对应缓冲区
     let material = materials[obj.materialId];
 
-    if (material.type == MATERIAL_TYPE_TRANSPARENT)
+    if (material.materialType == MATERIAL_TYPE_TRANSPARENT)
     {
         // 透明物体：写入透明命令缓冲区
         let idx = atomicAdd(&transparentCounter, 1u);
