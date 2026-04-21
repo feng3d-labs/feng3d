@@ -57,11 +57,16 @@ export async function renderRotatingCube(
     );
     const modelViewProjectionMatrix = mat4.create();
 
-    // 计算属性：当 input.rotation 变化时自动更新
+    // 内部响应式状态
+    const state = reactive({
+        rotation: input.rotation ?? 0,
+    });
+
+    // 计算属性：当 state.rotation 变化时自动更新
     const submit: Computed<Submit> = computed(() => {
         const viewMatrix = mat4.identity();
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(input.rotation), Math.cos(input.rotation), 0), 1, viewMatrix);
+        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(state.rotation), Math.cos(state.rotation), 0), 1, viewMatrix);
         mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
 
         // 更新 uniforms
@@ -96,11 +101,11 @@ export async function renderRotatingCube(
         });
     }
 
-    // 监听 input.rotation 变化，自动调度渲染
+    // 监听 state.rotation 变化，自动调度渲染
     effect(() =>
     {
-        // 访问 input.rotation 以建立依赖
-        input.rotation;
+        // 访问 state.rotation 以建立依赖
+        state.rotation;
         scheduleFrame();
     });
 
@@ -108,6 +113,13 @@ export async function renderRotatingCube(
     scheduleFrame();
 
     return {
+        /**
+         * 设置旋转角度
+         */
+        setRotation: (rotation: number) =>
+        {
+            reactive(state).rotation = rotation;
+        },
         /**
          * 手动触发渲染一帧
          */
@@ -131,8 +143,8 @@ export interface RenderRotatingCubeInput
     vertices: VertexAttributes;
     /** 顶点数量 */
     vertexCount: number;
-    /** 旋转角度 */
-    rotation: number;
+    /** 初始旋转角度 */
+    rotation?: number;
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
 }
@@ -142,6 +154,8 @@ export interface RenderRotatingCubeInput
  */
 export interface RenderRotatingCubeController
 {
+    /** 设置旋转角度 */
+    setRotation(rotation: number): void;
     /** 手动触发渲染一帧 */
     render(): void;
 }
