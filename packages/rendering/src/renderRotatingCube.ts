@@ -1,5 +1,5 @@
 import { reactive } from '@feng3d/reactivity';
-import { type BufferBinding, type RenderObject, type RenderPassDescriptor, type Submit, type VertexAttributes, WebGPU } from '@feng3d/webgpu';
+import { type BufferBinding, type RenderObject, type RenderPassDescriptor, type RenderPipeline, type Submit, type VertexAttributes, WebGPU } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 /**
@@ -106,7 +106,7 @@ export async function renderRotatingCube(
 export interface RenderRotatingCubeOptions
 {
     /** 渲染管线 */
-    pipeline: RenderObject['pipeline'];
+    pipeline: RenderPipeline;
     /** 顶点属性 */
     vertices: VertexAttributes;
     /** 顶点数量 */
