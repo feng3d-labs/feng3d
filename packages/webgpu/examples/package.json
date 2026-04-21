@@ -1,5 +1,5 @@
 {
-  "name": "webgpu-examples",
+  "name": "@feng3d/webgpu-examples",
   "version": "0.0.1",
   "private": true,
   "description": "feng3d实现webgpu示例 https://github.com/webgpu/webgpu-samples",
