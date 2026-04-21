@@ -22,7 +22,6 @@
     "lintfix": "eslint . --ext .js,.ts --fix",
     "docs": "typedoc",
     "release": "npm run clean && npm run lint && npm run test && npm run build && npm run docs",
-    "release:webgpu": "npm run release -w @feng3d/webgpu",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish"

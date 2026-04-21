@@ -17,7 +17,7 @@
   },
   "scripts": {
     "clean": "rimraf lib dist public",
-    "build": "vite build && tsc",
+    "build": "tsc && vite build",
     "watch": "tsc --watch",
     "test": "vitest"
   },
