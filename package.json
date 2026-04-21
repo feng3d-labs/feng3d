@@ -10,8 +10,6 @@
     "packages/*"
   ],
   "scripts": {
-    "install:all": "npm install && npm run install:packages",
-    "install:packages": "npm install --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "build:watch": "npm run build:watch --workspaces --if-present",
