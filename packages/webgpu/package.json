@@ -36,7 +36,6 @@
   "dependencies": {
     "@feng3d/reactivity": "1.0.12",
     "@feng3d/watcher": "^0.8.14",
-    "@webgpu/types": "0.1.60",
     "wgsl_reflect": "^1.2.1"
   }
 }

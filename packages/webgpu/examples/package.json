@@ -13,15 +13,14 @@
   },
   "devDependencies": {
     "@types/dat.gui": "^0.7.9",
-    "@types/stats.js": "^0.17.0",
-    "@webgpu/types": "0.1.60",
-    "stats.js": "^0.17.0"
+    "@types/stats.js": "^0.17.0"
   },
   "dependencies": {
     "@feng3d/reactivity": "1.0.12",
     "@feng3d/webgpu": "*",
     "dat.gui": "^0.7.9",
     "gl-matrix": "^3.4.3",
+    "stats.js": "^0.17.0",
     "teapot": "^1.0.0",
     "wgpu-matrix": "^3.4.0"
   }
