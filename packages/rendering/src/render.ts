@@ -96,20 +96,22 @@ export async function render(
     effect(() => {
         if (disposed) return;
         // 先访问响应式对象触发追踪，然后获取原始值
-        const canvas = r_input.canvas;
-        const rawCanvas = toRaw(canvas);
-        if (currentCanvasId !== rawCanvas.id) {
-            currentCanvasId = rawCanvas.id;
+        r_input.canvas;
+
+        // 直接访问原始值，避免重复追踪
+        const canvas = input.canvas;
+        if (currentCanvasId !== canvas.id) {
+            currentCanvasId = canvas.id;
 
             // 设置 canvas 大小
-            rawCanvas.width = rawCanvas.clientWidth * devicePixelRatio;
-            rawCanvas.height = rawCanvas.clientHeight * devicePixelRatio;
+            canvas.width = canvas.clientWidth * devicePixelRatio;
+            canvas.height = canvas.clientHeight * devicePixelRatio;
 
             // 替换整个 descriptor，触发深度纹理重新创建
             reactive(renderPass).descriptor = {
                 colorAttachments: [
                     {
-                        view: { texture: { context: { canvasId: rawCanvas.id } } },
+                        view: { texture: { context: { canvasId: canvas.id } } },
                         clearValue: [0.5, 0.5, 0.5, 1.0],
                     },
                 ],
