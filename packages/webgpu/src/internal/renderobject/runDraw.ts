@@ -1,6 +1,8 @@
 import { reactive } from '@feng3d/reactivity';
 import { RenderObject } from '../../data/RenderObject';
+import { Buffer } from '../../data/Buffer';
 import { WGPURenderPassEncoder } from '../../caches/WGPURenderPassEncoder';
+import { WGPUBuffer } from '../../caches/WGPUBuffer';
 import type { DrawVertex } from '../../data/DrawVertex';
 import type { DrawIndexed } from '../../data/DrawIndexed';
 import type { DrawIndexedIndirect } from '../../data/DrawIndexedIndirect';
@@ -25,8 +27,8 @@ export function runDraw(renderObject: RenderObject, passEncoder: WGPURenderPassE
     }
     else if (draw.__type__ === 'DrawIndexedIndirect')
     {
-        // DrawIndexedIndirect 的 buffer 不能是响应式包装的 GPUBuffer
         const dii = renderObject.draw as DrawIndexedIndirect;
-        passEncoder.drawIndexedIndirect(dii.buffer, dii.offset);
+        const gpuBuffer = WGPUBuffer.getInstance(passEncoder.device, dii.buffer as Buffer).gpuBuffer;
+        passEncoder.drawIndexedIndirect(gpuBuffer, dii.offset || 0);
     }
 }

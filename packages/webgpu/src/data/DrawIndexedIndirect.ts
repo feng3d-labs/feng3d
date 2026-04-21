@@ -1,3 +1,5 @@
+import { Buffer } from './Buffer';
+
 /**
  * 根据间接绘制缓冲区中的数据绘制图元。
  *
@@ -20,7 +22,7 @@ export interface DrawIndexedIndirect
      * - baseVertex: number（顶点偏移）
      * - firstInstance: number（起始实例）
      */
-    readonly buffer: GPUBuffer;
+    readonly buffer: Buffer;
 
     /**
      * 间接缓冲区中的偏移量（字节）。

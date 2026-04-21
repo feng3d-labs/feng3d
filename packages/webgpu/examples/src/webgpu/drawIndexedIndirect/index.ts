@@ -4,7 +4,7 @@
  * 演示如何使用间接绘制命令从 GPU 缓冲区读取绘制参数
  */
 
-import { RenderObject, RenderPassDescriptor, Submit } from '@feng3d/webgpu';
+import { RenderObject, RenderPassDescriptor, Submit, Buffer } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
 import { reactive } from '@feng3d/reactivity';
 import { mat4, vec3 } from 'wgpu-matrix';
@@ -97,17 +97,16 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     // 创建间接绘制缓冲区
     const drawCount = 3;
-    const indirectBuffer = webgpu.device.createBuffer({
-        size: drawCount * 20,
-        usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST,
-    });
-
-    const indirectData = new Uint32Array([
+    const indirectBufferData = new Uint32Array([
         cubeVertexCount, 1, 0, 0, 0,
         cubeVertexCount, 1, 0, 0, 0,
         cubeVertexCount, 1, 0, 0, 0,
     ]);
-    webgpu.device.queue.writeBuffer(indirectBuffer, 0, indirectData);
+
+    const indirectBuffer: Buffer = {
+        size: drawCount * 20,
+        data: indirectBufferData.buffer,
+    };
 
     // 为每个立方体创建渲染对象
     const positions = [
