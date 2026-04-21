@@ -123,54 +123,46 @@ const init = async (canvas: HTMLCanvasElement) =>
     webgpu.device.queue.writeBuffer(indirectBuffer, 0, indirectData);
 
     // 创建多个渲染对象，每个使用不同的间接缓冲区偏移
-    const renderObjects: RenderObject[] = [];
     const positions = [
         { x: -2, y: 0 },
         { x: 0, y: 0 },
         { x: 2, y: 0 },
     ];
 
-    for (let i = 0; i < drawCount; i++)
-    {
-        const uniforms = { value: { modelViewProjectionMatrix: new Float32Array(16) } };
-        uniformsList.push(uniforms);
-
-        const renderObj: RenderObject = {
-            ...renderObjectBase,
-            bindingResources: { uniforms },
-        };
-        renderObjects.push(reactive(renderObj));
-    }
-
-    const data: Submit = {
-        commandEncoders: [
-            {
-                passEncoders: [
-                    {
-                        __type__: 'RenderPass',
-                        descriptor: renderPass,
-                        renderPassObjects: renderObjects.map((ro, index) => ({
-                            ...ro,
-                            draw: {
-                                __type__: 'DrawIndexedIndirect',
-                                buffer: indirectBuffer,
-                                offset: index * 20, // 每个命令 20 字节
-                            },
-                        })),
-                    },
-                ],
-            },
-        ],
-    };
-
     function frame()
     {
-        // 更新每个物体的变换矩阵
-        for (let i = 0; i < renderObjects.length; i++)
+        const renderObjects: RenderObject[] = [];
+
+        for (let i = 0; i < drawCount; i++)
         {
-            const mvp = getTransformationMatrix(positions[i].x, positions[i].y);
-            uniformsList[i].value.modelViewProjectionMatrix = mvp;
+            const uniforms = { value: { modelViewProjectionMatrix: getTransformationMatrix(positions[i].x, positions[i].y) } };
+            uniformsList.push(uniforms);
+
+            const renderObj: RenderObject = {
+                ...renderObjectBase,
+                bindingResources: { uniforms },
+                draw: {
+                    __type__: 'DrawIndexedIndirect',
+                    buffer: indirectBuffer,
+                    offset: i * 20, // 每个命令 20 字节
+                },
+            };
+            renderObjects.push(reactive(renderObj));
         }
+
+        const data: Submit = {
+            commandEncoders: [
+                {
+                    passEncoders: [
+                        {
+                            __type__: 'RenderPass',
+                            descriptor: renderPass,
+                            renderPassObjects: renderObjects,
+                        },
+                    ],
+                },
+            ],
+        };
 
         webgpu.submit(data);
 
