@@ -163,13 +163,21 @@ export class WGPURenderPassDescriptor extends ReactiveObject
 
             // 获取深度模板格式
             let depthStencilFormat: GPUTextureFormat | undefined;
-            if (descriptor.depthStencilAttachment?.view)
+            if (descriptor.depthStencilAttachment)
             {
-                const texture = descriptor.depthStencilAttachment.view.texture;
-                if (texture)
+                if (descriptor.depthStencilAttachment.view)
                 {
-                    const wGPUTextureLike = WGPUTextureLike.getInstance(device, texture);
-                    depthStencilFormat = wGPUTextureLike.gpuTexture.format;
+                    const texture = descriptor.depthStencilAttachment.view.texture;
+                    if (texture)
+                    {
+                        const wGPUTextureLike = WGPUTextureLike.getInstance(device, texture);
+                        depthStencilFormat = wGPUTextureLike.gpuTexture.format;
+                    }
+                }
+                else
+                {
+                    // 如果没有 view，使用默认深度格式 'depth24plus'
+                    depthStencilFormat = 'depth24plus';
                 }
             }
 
