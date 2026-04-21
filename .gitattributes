@@ -1,0 +1,13 @@
+# 默认使用 LF
+* text=auto eol=lf
+
+# Windows 批处理文件使用 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Shell 脚本必须使用 LF
+*.sh text eol=lf
+.husky/* text eol=lf
+
+# 项目特定规则
+packages/*/src/** text=auto eol=lf
