@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-const { ok, equal, deepEqual, strictEqual } = assert;
+const { equal } = assert;
 
 import { ChainMap } from '../../src/utils/ChainMap';
 import { ChainMap3 } from './ChainMap3';

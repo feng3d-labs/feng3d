@@ -8,8 +8,9 @@ describe('Watcher.watch', () =>
     {
         //
         const o = { a: 1 };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 用于测试
         let out = '';
-        const f = (_h, _p, _o) => { out += 'f'; };
+        const f = (_h: any, _p: any, _o: any) => { out += 'f'; };
 
         //
         let warn: any;

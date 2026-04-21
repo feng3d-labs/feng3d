@@ -619,7 +619,7 @@ describe('响应式/reactive/数组', () =>
         test.skipIf(!Array.prototype.toSpliced)('toSpliced', () =>
         {
             const array = reactive([1, 2, 3]);
-            // @ts-expect-error
+            // @ts-expect-error tests are not limited to es2016, toSpliced is newer
             const result = computed(() => array.toSpliced(1, 1, -2));
 
             expect(result.value).toStrictEqual([1, -2, 3]);
@@ -632,7 +632,7 @@ describe('响应式/reactive/数组', () =>
         {
             class Collection extends Array
             {
-                // @ts-expect-error
+                // @ts-expect-error testing extended method with custom signature
                 every(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
@@ -642,7 +642,7 @@ describe('响应式/reactive/数组', () =>
                     return super.every((obj) => obj.id === foo);
                 }
 
-                // @ts-expect-error
+                // @ts-expect-error testing extended method with custom signature
                 filter(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
@@ -652,7 +652,7 @@ describe('响应式/reactive/数组', () =>
                     return super.filter((obj) => obj.id === foo);
                 }
 
-                // @ts-expect-error
+                // @ts-expect-error testing extended method with custom signature
                 find(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
@@ -662,7 +662,7 @@ describe('响应式/reactive/数组', () =>
                     return super.find((obj) => obj.id === foo);
                 }
 
-                // @ts-expect-error
+                // @ts-expect-error testing extended method with custom signature
                 findIndex(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
@@ -691,7 +691,7 @@ describe('响应式/reactive/数组', () =>
                     return super.findIndex((obj) => obj.id === bar);
                 }
 
-                // @ts-expect-error
+                // @ts-expect-error testing extended method with custom signature
                 forEach(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
@@ -699,7 +699,7 @@ describe('响应式/reactive/数组', () =>
                     expect(baz).toBe('baz');
                 }
 
-                // @ts-expect-error
+                // @ts-expect-error testing extended method with custom signature
                 map(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
@@ -709,7 +709,7 @@ describe('响应式/reactive/数组', () =>
                     return super.map((obj) => obj.value);
                 }
 
-                // @ts-expect-error
+                // @ts-expect-error testing extended method with custom signature
                 some(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
@@ -762,7 +762,7 @@ describe('响应式/reactive/数组', () =>
                 }
 
                 const state = reactive({
-                    // @ts-expect-error
+                    // @ts-expect-error Collection constructor expects array-like but receives object
                     things: new Collection({ foo: '' }),
                 });
 

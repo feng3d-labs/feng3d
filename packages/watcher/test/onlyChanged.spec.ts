@@ -30,6 +30,7 @@ describe('watch', () =>
             const obj = { a: { b: Math.random() }, d: Math.random() };
             let result = false;
             watcher.watch(obj, 'd', () => { result = true; });
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.d = obj.d;
             assert.equal(result, false);
         }
@@ -39,6 +40,7 @@ describe('watch', () =>
             const onlyChanged = true;
             let result = false;
             watcher.watch(obj, 'd', () => { result = true; }, undefined, onlyChanged);
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.d = obj.d;
             assert.equal(result, false);
         }
@@ -48,6 +50,7 @@ describe('watch', () =>
             const onlyChanged = false;
             let result = false;
             watcher.watch(obj, 'd', () => { result = true; }, undefined, onlyChanged);
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.d = obj.d;
             assert.equal(result, true);
         }
@@ -59,6 +62,7 @@ describe('watch', () =>
             const obj = { a: { b: Math.random() }, d: Math.random() };
             let result = false;
             watcher.watchchain(obj, 'a.b', () => { result = true; });
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.a.b = obj.a.b;
             assert.equal(result, false);
         }
@@ -68,6 +72,7 @@ describe('watch', () =>
             const onlyChanged = true;
             let result = false;
             watcher.watchchain(obj, 'a.b', () => { result = true; }, undefined, onlyChanged);
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.a.b = obj.a.b;
             assert.equal(result, false);
         }
@@ -78,6 +83,7 @@ describe('watch', () =>
             let result = false;
             const handler = () => { result = true; };
             watcher.watchchain(obj, 'a.b', handler, undefined, onlyChanged);
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.a.b = obj.a.b;
             assert.equal(result, true);
 
@@ -88,6 +94,7 @@ describe('watch', () =>
 
             //
             result = false;
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.a.b = obj.a.b;
             assert.equal(result, true);
 
@@ -104,6 +111,7 @@ describe('watch', () =>
             const obj = { a: { b: Math.random() }, d: Math.random() };
             let result = false;
             watcher.watchobject(obj, { a: { b: undefined } }, () => { result = true; });
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.a.b = obj.a.b;
             assert.equal(result, false);
         }
@@ -113,6 +121,7 @@ describe('watch', () =>
             const onlyChanged = true;
             let result = false;
             watcher.watchobject(obj, { a: { b: undefined } }, () => { result = true; }, undefined, onlyChanged);
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.a.b = obj.a.b;
             assert.equal(result, false);
         }
@@ -122,6 +131,7 @@ describe('watch', () =>
             const onlyChanged = false;
             let result = false;
             watcher.watchobject(obj, { a: { b: undefined } }, () => { result = true; }, undefined, onlyChanged);
+            // eslint-disable-next-line no-self-assign -- 测试 onlyChanged 功能
             obj.a.b = obj.a.b;
             assert.equal(result, true);
         }

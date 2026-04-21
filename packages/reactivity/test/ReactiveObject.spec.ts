@@ -284,6 +284,7 @@ describe('ReactiveObject', () =>
     });
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- 用于测试
 const map: { [key: string]: number } = {};
 
 class TestClass extends ReactiveObject

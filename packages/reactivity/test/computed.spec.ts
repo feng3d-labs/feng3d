@@ -243,12 +243,15 @@ describe('响应式/computed', () =>
             return 'The items are not loaded';
         });
 
+        // eslint-disable-next-line no-useless-assignment -- 触发 computed getter
         _msg = msg.value;
         items.value = [1, 2, 3];
         // 触发 computed getter
         isLoaded.value;
+        // eslint-disable-next-line no-useless-assignment -- 触发 computed getter
         _msg = msg.value;
         items.value = undefined as any;
+         
         _msg = msg.value;
 
         expect(_msg).toBe('The items are not loaded');

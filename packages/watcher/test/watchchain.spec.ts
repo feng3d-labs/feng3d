@@ -5,11 +5,18 @@ import { assert, describe, it } from 'vitest';
 const __watchs__ = '__watchs__';
 const __watchchains__ = '__watchchains__';
 
-describe('watchchain', () =>
-{
-    it('watchchain', () =>
-    {
-        const obj = { a: { b: 1 } };
+describe('watchchain', () => {
+    it('watchchain', () => {
+        const obj: {
+            __watchs__?: any;
+            __watchchains__?: any;
+            a: {
+                __watchs__?: any;
+                __watchchains__?: any;
+                b: number;
+            };
+        } = { a: { b: 1 } };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 用于测试
         let result = false;
         const handler = () => { result = true; };
         watcher.watchchain(obj, 'a.b', handler);
@@ -24,11 +31,28 @@ describe('watchchain', () =>
         assert.equal(!!obj[__watchchains__], false);
     });
 
-    it('watchchain 相同子对象', () =>
-    {
-        const obj = { a: { b: 1 } };
-        const obj1 = { a: obj.a };
+    it('watchchain 相同子对象', () => {
+        const obj: {
+            __watchs__?: any;
+            __watchchains__?: any;
+            a: {
+                __watchs__?: any;
+                __watchchains__?: any;
+                b: number;
+            };
+        } = { a: { b: 1 } };
+        const obj1: {
+            __watchs__?: any;
+            __watchchains__?: any;
+            a: {
+                __watchs__?: any;
+                __watchchains__?: any;
+                b: number;
+            };
+        } = { a: obj.a };
+        // eslint-disable-next-line no-useless-assignment -- 变量在后续代码中使用
         let result = false;
+        // eslint-disable-next-line no-useless-assignment -- 变量在后续代码中使用
         let result1 = false;
         const handler = () => { result = true; };
         watcher.watchchain(obj, 'a.b', handler);
@@ -80,11 +104,28 @@ describe('watchchain', () =>
         assert.equal(!!obj1[__watchchains__], false);
     });
 
-    it('watchchain 相同子对象1', () =>
-    {
-        const obj = { a: { b: 1 } };
-        const obj1 = { a: obj.a };
+    it('watchchain 相同子对象1', () => {
+        const obj: {
+            __watchs__?: any;
+            __watchchains__?: any;
+            a: {
+                __watchs__?: any;
+                __watchchains__?: any;
+                b: number;
+            };
+        } = { a: { b: 1 } };
+        const obj1: {
+            __watchs__?: any;
+            __watchchains__?: any;
+            a: {
+                __watchs__?: any;
+                __watchchains__?: any;
+                b: number;
+            };
+        } = { a: obj.a };
+        // eslint-disable-next-line no-useless-assignment -- 变量在后续代码中使用
         let result = false;
+        // eslint-disable-next-line no-useless-assignment -- 变量在后续代码中使用
         let result1 = false;
         const handler = () => { result = true; };
         watcher.watchchain(obj, 'a.b', handler);

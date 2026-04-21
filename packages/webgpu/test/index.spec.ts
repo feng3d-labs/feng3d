@@ -14,7 +14,7 @@ describe('test', () =>
             reactiveObj.a;
             reactiveObj.b;
             callCount++;
-        })
+        });
 
         assert.strictEqual(callCount, 1);
 

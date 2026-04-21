@@ -20,8 +20,8 @@
     "test:ui": "vitest --ui",
     "types": "tsc --build",
     "types:watch": "tsc --build --watch",
-    "lint": "eslint \"packages/*/src/**/*.ts\"",
-    "lintfix": "eslint \"packages/*/src/**/*.ts\" --fix",
+    "lint": "eslint \"packages/**/*.ts\"",
+    "lintfix": "eslint \"packages/**/*.ts\" --fix",
     "docs": "typedoc",
     "release": "npm run clean && npm run lint && npm run test && npm run build && npm run docs",
     "prepare": "husky"

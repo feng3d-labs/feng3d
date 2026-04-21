@@ -10,8 +10,8 @@ describe('WatchSession', () =>
         //
         const o = { a: 1 };
         let out = '';
-        const f = (_h, _p, _o) => { out += 'f'; };
-        const f1 = (_h, _p, _o) => { out += 'f1'; };
+        const f = (_h: any, _p: any, _o: any) => { out += 'f'; };
+        const f1 = (_h: any, _p: any, _o: any) => { out += 'f1'; };
         watchSession.watch(o, 'a', f);
         watchSession.watch(o, 'a', f1);
         out = '';

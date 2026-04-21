@@ -1,6 +1,6 @@
-import { describe, expect, it, test, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { effect, effectScope, EffectScope, getCurrentScope, onScopeDispose, reactive, ref } from '../src';
+import { effect, effectScope, EffectScope, getCurrentScope, onScopeDispose, reactive } from '../src';
 import { nextTick } from './nextTick';
 
 describe('响应式/effect/作用域', () =>

@@ -26,6 +26,7 @@ describe('响应式/reactive', () =>
 
         expect(isReactive(reactiveObj)).toBe(true);
         // 读取 reactiveObject 的属性会使 reactiveObj[prop] 变为响应式
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 测试原型访问
         const prototype = reactiveObj['__proto__'];
         const otherObj = { data: ['a'] };
 
@@ -317,12 +318,12 @@ describe('响应式/reactive', () =>
 
         effect(() =>
         {
-            // @ts-expect-error
+            // @ts-expect-error testing hasOwnProperty access on reactive object
             dummy = obj.hasOwnProperty(key);
         });
         expect(dummy).toBe(true);
 
-        // @ts-expect-error
+        // @ts-expect-error testing delete operation on reactive object
         delete obj[key];
         expect(dummy).toBe(false);
     });
