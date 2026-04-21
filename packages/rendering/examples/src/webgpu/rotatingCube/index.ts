@@ -31,7 +31,12 @@ const input: RenderInput = {
     rotation: 0,
 };
 
-render(input);
+// 等待渲染初始化
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- 示例代码暂不使用销毁函数
+let dispose: (() => void) | undefined;
+render(input).then((fn) => {
+    dispose = fn;
+});
 
 // 使用 requestAnimationFrame 更新旋转角度
 let lastTime = performance.now();
