@@ -1,4 +1,4 @@
-/* eslint-disable no-var */
+ 
 import { ReactiveFlags, TargetType } from './constants';
 
 export { };

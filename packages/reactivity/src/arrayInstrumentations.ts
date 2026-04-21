@@ -1,4 +1,4 @@
-/* eslint-disable prefer-rest-params */
+ 
 
 import { batchRun } from './batch';
 import { noTrack } from './Reactivity';

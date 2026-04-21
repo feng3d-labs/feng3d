@@ -3,7 +3,7 @@
  *
  * @private
  */
-export interface RenderPassFormat extends GPURenderPassLayout
+export interface RenderPassFormat
 {
     readonly colorFormats: readonly GPUTextureFormat[],
     readonly depthStencilFormat: GPUTextureFormat,

@@ -322,7 +322,7 @@ export function writeImageWithFallback(
     // 设置纹理目标信息
     const gpuDestination: GPUTexelCopyTextureInfo = {
         mipLevel: mipLevel ?? 0,
-        origin: textureOrigin,
+        origin: textureOrigin as GPUOrigin3D,
         aspect,
         texture: gpuTexture,
     };
@@ -339,7 +339,7 @@ export function writeImageWithFallback(
         gpuDestination,
         targetData as BufferSource,
         gpuDataLayout,
-        copySize,
+        copySize as unknown as GPUExtent3D,
     );
 }
 

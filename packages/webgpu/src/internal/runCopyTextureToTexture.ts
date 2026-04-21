@@ -26,11 +26,13 @@ export function runCopyTextureToTexture(device: GPUDevice, commandEncoder: GPUCo
     const source: GPUTexelCopyTextureInfo = {
         ...copyTextureToTexture.source,
         texture: gpuSourceTexture,
+        origin: copyTextureToTexture.source.origin ? [...copyTextureToTexture.source.origin] as GPUTexelCopyTextureInfo['origin'] : undefined,
     };
 
     const destination: GPUTexelCopyTextureInfo = {
         ...copyTextureToTexture.destination,
         texture: gpuDestinationTexture,
+        origin: copyTextureToTexture.destination.origin ? [...copyTextureToTexture.destination.origin] as GPUTexelCopyTextureInfo['origin'] : undefined,
     };
 
     commandEncoder.copyTextureToTexture(source, destination, copyTextureToTexture.copySize);

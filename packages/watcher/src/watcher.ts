@@ -625,7 +625,7 @@ function objectIsEmpty(obj: any)
  * @param object 对象
  * @param property 属性名称，可以是 "a" 或者 "a.b" 或者 ["a","b"]
  */
-function getObjectPropertyValue(object: Object, property: string | string[])
+function getObjectPropertyValue(object: object, property: string | string[])
 {
     if (typeof property === 'string') property = property.split('.');
     let value = object;
@@ -645,7 +645,7 @@ function getObjectPropertyValue(object: Object, property: string | string[])
  *
  * @param object 对象
  */
-function getObjectPropertyChains(object: Object): string[]
+function getObjectPropertyChains(object: object): string[]
 {
     const result: string[] = [];
     // 属性名称列表
@@ -678,7 +678,7 @@ function getObjectPropertyChains(object: Object): string[]
         else
         {
             // 处理中间属性
-            // eslint-disable-next-line no-loop-func
+             
             vks.forEach((k) =>
             {
                 propertys.push(k);

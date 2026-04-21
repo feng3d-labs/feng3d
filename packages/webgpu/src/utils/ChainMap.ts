@@ -22,7 +22,7 @@ export class ChainMap<K extends Array<any>, V>
      * @param keys 键。
      * @returns 值。
      */
-    get(keys: K): V
+    get(keys: K): V | undefined
     {
         const keysLength = keys.length;
         let map = this._map;

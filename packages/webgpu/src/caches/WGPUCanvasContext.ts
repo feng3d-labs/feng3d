@@ -205,6 +205,7 @@ export class WGPUCanvasContext extends ReactiveObject
                 device: device,
                 usage,
                 format,
+                viewFormats: configuration?.viewFormats ? [...configuration.viewFormats] : undefined,
             };
 
             // 配置GPU画布上下文

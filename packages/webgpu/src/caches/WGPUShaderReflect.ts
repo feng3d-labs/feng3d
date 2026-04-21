@@ -1,5 +1,5 @@
 import { ResourceType, TemplateInfo, VariableInfo, WgslReflect } from 'wgsl_reflect';
-import { DepthTextureType, ExternalSampledTextureType, MultisampledTextureType, TextureType } from '../types/TextureType';
+import { DepthTextureType, ExternalSampledTextureType, MultisampledTextureType, TextureType, type TextureTypeKey } from '../types/TextureType';
 
 /**
  * 全局类型声明
@@ -211,7 +211,7 @@ export class WGPUShaderReflect
                 // 处理storage纹理
                 const textureSecondType = (storage.type as TemplateInfo)?.format?.name as GPUTextureFormat;
 
-                const textureType = storage.type.name as TextureType;
+                const textureType = storage.type.name as TextureTypeKey;
 
                 const viewDimension = TextureType[textureType][2];
 
@@ -244,7 +244,7 @@ export class WGPUShaderReflect
         {
             const { group, binding, name } = texture;
 
-            const textureType = texture.type.name as TextureType;
+            const textureType = texture.type.name as TextureTypeKey;
 
             const viewDimension = TextureType[textureType][2];
 

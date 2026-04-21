@@ -143,13 +143,13 @@ export class WGPUTexture extends ReactiveObject
             // 创建GPU纹理描述符
             const gpuTextureDescriptor: GPUTextureDescriptor = {
                 label,
-                size,
+                size: [...size] as unknown as GPUExtent3D,
                 mipLevelCount,
                 sampleCount,
                 dimension,
                 format: format as GPUTextureFormat,
                 usage,
-                viewFormats: viewFormats as Iterable<GPUTextureFormat> | undefined,
+                ...(viewFormats && { viewFormats: [...viewFormats] as any }),
             };
 
             // 检查bgra8unorm格式的设备支持
@@ -282,7 +282,7 @@ export class WGPUTexture extends ReactiveObject
                 // 设置图片源信息
                 const gpuSource: GPUCopyExternalImageSourceInfo = {
                     source: image,
-                    origin: imageOrigin,
+                    origin: [imageOrigin[0], imageOrigin[1]],
                     flipY,
                 };
 
@@ -291,7 +291,7 @@ export class WGPUTexture extends ReactiveObject
                     colorSpace,
                     premultipliedAlpha,
                     mipLevel,
-                    origin: textureOrigin,
+                    origin: textureOrigin ? [textureOrigin[0], textureOrigin[1], textureOrigin[2]] as GPUOrigin3D : undefined,
                     aspect,
                     texture: gpuTexture,
                 };
@@ -313,7 +313,7 @@ export class WGPUTexture extends ReactiveObject
             // 设置纹理目标信息
             const gpuDestination: GPUTexelCopyTextureInfo = {
                 mipLevel,
-                origin: textureOrigin,
+                origin: textureOrigin ? [textureOrigin[0], textureOrigin[1], textureOrigin[2]] as GPUOrigin3D : undefined,
                 aspect,
                 texture: gpuTexture,
             };
