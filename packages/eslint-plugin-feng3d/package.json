@@ -1,0 +1,30 @@
+{
+  "name": "eslint-plugin-feng3d",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "ESLint plugin for Feng3D project conventions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "lint": "echo 'no lint'"
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "feng3d"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/eslint": "^9.6.0",
+    "@typescript-eslint/parser": "^8.59.0",
+    "eslint": "^10.2.1",
+    "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "eslint": ">=8.0.0"
+  }
+}

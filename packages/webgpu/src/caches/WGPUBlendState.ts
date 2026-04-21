@@ -50,9 +50,12 @@ export class WGPUBlendState extends ReactiveObject
 
         this._computedGpuBlendState = computed(() =>
         {
-            const color = WGPUBlendState.getGPUBlendComponent(r_blend.color);
+            // 先访问属性建立依赖，再传给纯函数
+            const blendColor = r_blend.color;
+            const blendAlpha = r_blend.alpha;
+            const color = WGPUBlendState.getGPUBlendComponent(blendColor);
             // alpha 继承 color 的设置
-            const alpha = WGPUBlendState.getGPUBlendComponent(r_blend.alpha, color);
+            const alpha = WGPUBlendState.getGPUBlendComponent(blendAlpha, color);
 
             // 构建WebGPU混合状态对象
             const gpuBlend: GPUBlendState = {
