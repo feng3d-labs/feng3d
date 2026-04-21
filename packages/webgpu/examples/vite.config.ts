@@ -1,7 +1,10 @@
-// vite.config.js
+// vite.config.ts
 import fg from 'fast-glob';
-import { resolve } from 'path';
-import { defineConfig } from 'vite';
+import { resolve, dirname } from 'path';
+import { defineConfig, Plugin } from 'vite';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
     define: {
@@ -21,18 +24,18 @@ export default defineConfig({
     plugins: [
         shaderToString(),
     ],
-    worker: () => ({
-        plugins: [
+    worker: {
+        plugins: () => [
             shaderToString(),
         ],
-    }),
+    },
 });
 
-function getHtmlNamesObject()
+function getHtmlNamesObject(): Record<string, string>
 {
     const entries = fg.sync(['index.html', 'src/**/*.html'], { dot: true });
 
-    const obj = entries.reduce((pv, cv) =>
+    const obj = entries.reduce<Record<string, string>>((pv, cv) =>
     {
         const ps = cv.split('.');
 
@@ -47,13 +50,14 @@ function getHtmlNamesObject()
     return obj;
 }
 
-function shaderToString()
+function shaderToString(): Plugin
 {
     return {
         name: 'vite-plugin-string',
-        async transform(source, id)
+        async transform(source: string, id: string)
         {
-            if (!['glsl', 'wgsl', 'vert', 'frag', 'vs', 'fs'].includes(id.split('.').pop())) return;
+            const ext = id.split('.').pop();
+            if (!ext || !['glsl', 'wgsl', 'vert', 'frag', 'vs', 'fs'].includes(ext)) return;
 
             const esm = `export default \`${source}\`;`;
 

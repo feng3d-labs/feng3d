@@ -2,6 +2,7 @@
   "name": "@feng3d/webgpu-examples",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "feng3d实现webgpu示例 https://github.com/webgpu/webgpu-samples",
   "main": "public/index.html",
   "scripts": {
