@@ -23,6 +23,7 @@ export async function render(
     let currentRenderPass: RenderPassDescriptor;
     let currentProjectionMatrix: Float32Array;
     let currentAspect: number;
+    let currentCanvasId: string | undefined;
 
     // 初始化 renderPass 和 projectionMatrix
     function updateCanvas(canvas: HTMLCanvasElement): void {
@@ -53,6 +54,9 @@ export async function render(
                 depthStoreOp: 'store',
             },
         };
+
+        // 追踪当前 canvas ID
+        currentCanvasId = canvas.id;
     }
 
     // 初始化
@@ -72,8 +76,8 @@ export async function render(
         const canvas = toRaw(r_input.canvas);
         const rotation = r_input.rotation;
 
-        // 检查 canvas 是否变化
-        if (canvas.width !== canvas.clientWidth * devicePixelRatio || canvas.height !== canvas.clientHeight * devicePixelRatio) {
+        // 检查 canvas 是否变化（通过 ID 比较）
+        if (currentCanvasId !== canvas.id) {
             updateCanvas(canvas);
         }
 
