@@ -13,7 +13,8 @@ import { vertexPositionColorFragWGSL } from './shaders/vertexPositionColor.frag.
 
 const canvas = document.getElementById('webgpu') as HTMLCanvasElement;
 
-renderRotatingCube(canvas, {
+renderRotatingCube({
+    canvas,
     pipeline: {
         vertex: { code: basicVertWGSL },
         fragment: { code: vertexPositionColorFragWGSL },

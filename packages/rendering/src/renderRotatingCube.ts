@@ -5,15 +5,14 @@ import { mat4, vec3 } from 'wgpu-matrix';
 /**
  * 渲染旋转立方体
  *
- * @param canvas - Canvas 元素
- * @param options - 配置选项
+ * @param input - 输入配置
  * @returns 渲染控制器
  */
 export async function renderRotatingCube(
-    canvas: HTMLCanvasElement,
-    options: RenderRotatingCubeOptions,
+    input: RenderRotatingCubeInput,
 ): Promise<RenderRotatingCubeController>
 {
+    const { canvas, pipeline, vertices, vertexCount, bindingResources = {} } = input;
     const devicePixelRatio = window.devicePixelRatio || 1;
 
     canvas.width = canvas.clientWidth * devicePixelRatio;
@@ -40,11 +39,11 @@ export async function renderRotatingCube(
     };
 
     const renderObject: RenderObject = {
-        pipeline: options.pipeline,
-        vertices: options.vertices,
-        draw: { __type__: 'DrawVertex', vertexCount: options.vertexCount },
+        pipeline,
+        vertices,
+        draw: { __type__: 'DrawVertex', vertexCount },
         bindingResources: {
-            ...options.bindingResources,
+            ...bindingResources,
             uniforms,
         },
     };
@@ -132,10 +131,12 @@ export async function renderRotatingCube(
 }
 
 /**
- * 渲染旋转立方体配置选项
+ * 渲染旋转立方体输入
  */
-export interface RenderRotatingCubeOptions
+export interface RenderRotatingCubeInput
 {
+    /** Canvas 元素 */
+    canvas: HTMLCanvasElement;
     /** 渲染管线 */
     pipeline: RenderPipeline;
     /** 顶点属性 */
