@@ -249,41 +249,8 @@ export class GPUDrivenRenderer
      */
     setObjects(objects: readonly ObjectData[]): void
     {
-        // 创建序列化后的数据数组
-        const data = new Float32Array(this.options.maxObjects * OBJECT_DATA_SIZE / 4);
-        const uintView = new Uint32Array(data.buffer);
-
-        for (let i = 0; i < objects.length; i++)
-        {
-            const obj = objects[i];
-            const transform = obj.transform;
-            const offset = i * (OBJECT_DATA_SIZE / 4);
-
-            // worldMatrix (64 bytes, 16 floats)
-            data.set(transform.modelMatrix, offset);
-
-            // boundsCenter (12 bytes, 3 floats, 从偏移 16 开始)
-            data[offset + 16] = transform.worldPosition[0];
-            data[offset + 17] = transform.worldPosition[1];
-            data[offset + 18] = transform.worldPosition[2];
-
-            // boundsRadius (4 bytes, 1 float, 从偏移 19 开始)
-            data[offset + 19] = 1.0;
-
-            // materialId (4 bytes, 1 uint, 从偏移 20 开始)
-            uintView[offset + 20] = obj.materialId;
-
-            // isTransparent (4 bytes, 1 uint, 从偏移 21 开始)
-            uintView[offset + 21] = obj.isTransparent ? 1 : 0;
-
-            // lodLevel (4 bytes, 写入 lods[0].indexCount 位置，偏移 24)
-            uintView[offset + 24] = 36;
-            // lods[0].indexOffset (偏移 25)
-            uintView[offset + 25] = 0;
-        }
-
         // 通过响应式系统更新 value
-        reactive(this.objectsBuffer).value = data as any;
+        reactive(this.objectsBuffer).value = objects;
 
         // 更新物体计数
         reactive(this.objectCountBuffer).value = { count: objects.length };
@@ -296,38 +263,8 @@ export class GPUDrivenRenderer
      */
     setMaterials(materials: readonly Material[]): void
     {
-        // 创建序列化后的数据数组
-        const data = new Float32Array(this.maxMaterials * MATERIAL_DATA_SIZE / 4);
-        const uintView = new Uint32Array(data.buffer);
-
-        for (let i = 0; i < materials.length; i++)
-        {
-            const materialData = materials[i].data;
-            const offset = i * (MATERIAL_DATA_SIZE / 4);
-
-            // baseColor (16 bytes, 4 floats)
-            data[offset + 0] = materialData.albedo[0];
-            data[offset + 1] = materialData.albedo[1];
-            data[offset + 2] = materialData.albedo[2];
-            data[offset + 3] = materialData.albedo[3];
-
-            // metallic (4 bytes, offset 4)
-            data[offset + 4] = materialData.metallic;
-
-            // roughness (4 bytes, offset 5)
-            data[offset + 5] = materialData.roughness;
-
-            // emissive (12 bytes, 3 floats, offset 6-8)
-            data[offset + 6] = materialData.emissive[0];
-            data[offset + 7] = materialData.emissive[1];
-            data[offset + 8] = materialData.emissive[2];
-
-            // materialType (4 bytes, 1 uint, offset 9)
-            uintView[offset + 9] = materialData.type ?? 0;
-        }
-
         // 通过响应式系统更新 value
-        reactive(this.materialsBuffer).value = data as any;
+        reactive(this.materialsBuffer).value = materials;
     }
 
     /**
