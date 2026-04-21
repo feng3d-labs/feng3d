@@ -1,4 +1,4 @@
-import { computed, effect, reactive, type Computed } from '@feng3d/reactivity';
+import { computed, effect, reactive, toRaw, type Computed } from '@feng3d/reactivity';
 import { WebGPU, type BufferBinding, type RenderObject, type RenderPassDescriptor, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
@@ -56,8 +56,8 @@ export async function render(
     }
 
     // 初始化
-    // 先访问属性建立依赖，再传给函数
-    const initialCanvas = r_input.canvas;
+    // 先访问属性建立依赖，再使用原始对象
+    const initialCanvas = toRaw(r_input.canvas);
     updateCanvas(initialCanvas);
 
     const uniforms: BufferBinding<{ modelViewProjectionMatrix: Float32Array }> = {
@@ -68,8 +68,8 @@ export async function render(
 
     // 计算属性：当 r_input.rotation 或 r_input.canvas 变化时自动更新
     const submit: Computed<Submit> = computed(() => {
-        // 访问 canvas 以建立依赖
-        const canvas = r_input.canvas;
+        // 访问 canvas 以建立依赖，然后使用原始对象
+        const canvas = toRaw(r_input.canvas);
         const rotation = r_input.rotation;
 
         // 检查 canvas 是否变化
