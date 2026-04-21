@@ -14,7 +14,8 @@
   },
   "devDependencies": {
     "@types/dat.gui": "^0.7.9",
-    "@types/stats.js": "^0.17.0"
+    "@types/stats.js": "^0.17.0",
+    "fast-glob": "^3.3.3"
   },
   "dependencies": {
     "@feng3d/reactivity": "1.0.12",
