@@ -28,15 +28,19 @@ renderRotatingCube(canvas, {
     vertexCount: cubeVertexCount,
 }).then((controller) =>
 {
-    // 每秒更新一次旋转角度，触发渲染
-    let lastTime = Date.now();
-    setInterval(() =>
+    // 使用 requestAnimationFrame 更新旋转角度
+    let lastTime = performance.now();
+
+    function animate(currentTime: number)
     {
-        const now = Date.now();
-        const deltaTime = (now - lastTime) / 1000;
-        lastTime = now;
+        const deltaTime = (currentTime - lastTime) / 1000;
+        lastTime = currentTime;
 
         // 修改状态会自动触发渲染
         reactive(controller.state).rotation += deltaTime;
-    }, 16); // 约60fps
+
+        requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
 });
