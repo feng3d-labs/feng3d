@@ -1,0 +1,27 @@
+{
+  "name": "webgpu-examples",
+  "version": "0.0.1",
+  "description": "feng3d实现webgpu示例 https://github.com/webgpu/webgpu-samples",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rimraf \"{lib,dist,public}\"",
+    "types": "tsc",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.9",
+    "@types/stats.js": "^0.17.0"
+  },
+  "dependencies": {
+    "@feng3d/reactivity": "1.0.12",
+    "@feng3d/webgpu": "*",
+    "dat.gui": "^0.7.9",
+    "gl-matrix": "^3.4.3",
+    "stats.js": "^0.17.0",
+    "teapot": "^1.0.0",
+    "wgpu-matrix": "^3.4.0"
+  }
+}

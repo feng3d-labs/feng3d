@@ -19,9 +19,7 @@
     "clean": "rimraf lib dist public",
     "build": "tsc && vite build",
     "watch": "tsc --watch",
-    "test": "vitest",
-    "examples:dev": "vite --config examples/vite.config.js",
-    "examples:build": "vite build --config examples/vite.config.js"
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
