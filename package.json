@@ -1,27 +1,21 @@
 {
   "name": "feng3d-mono",
   "version": "0.0.1",
-  "description": "Web3D引擎",
-  "homepage": "https://feng3d.com/feng3d",
+  "description": "Feng3D Web3D Engine Monorepo",
+  "homepage": "https://feng3d.com",
   "author": "feng",
   "license": "MIT",
-  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "cd examples && npm run dev",
-    "clean": "rimraf \"{lib,dist,public}\"",
-    "build": "vite build",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "types": "tsc",
-    "watch": "tsc -w",
-    "build:dts-bundle": "dts-bundle-generator --config dts.config.cjs",
-    "lint": "eslint --ext .js --ext .ts src test --ignore-path .gitignore --max-warnings 0",
-    "lintfix": "npm run lint -- --fix",
-    "docs": "typedoc && cd examples && vite build --outDir ../../public",
-    "upload_oss": "npm run docs && feng3d-cli oss_upload_dir",
-    "release": "npm run clean && npm run lint && npm run build && npm run types && npm run build:dts-bundle && npm publish",
-    "prepublishOnly": "node scripts/prepublish.js",
-    "postpublish": "node scripts/postpublish.js"
+    "install:all": "npm install && npm run install:packages",
+    "install:packages": "npm install --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
   },
   "repository": {
     "type": "git",
