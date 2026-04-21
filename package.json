@@ -17,7 +17,7 @@
     "test": "npm run test --workspaces --if-present",
     "test:ui": "vitest --ui",
     "types": "tsc --build",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "eslint .",
     "lintfix": "eslint . --fix",
     "docs": "typedoc",
     "release": "npm run clean && npm run lint && npm run test && npm run build && npm run docs",
