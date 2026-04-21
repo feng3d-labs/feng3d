@@ -18,6 +18,7 @@
     "test": "npm run test --workspaces --if-present",
     "test:ui": "vitest --ui",
     "types": "tsc --build",
+    "types:watch": "tsc --build --watch",
     "lint": "eslint \"packages/*/src/**/*.ts\"",
     "lintfix": "eslint \"packages/*/src/**/*.ts\" --fix",
     "docs": "typedoc",
