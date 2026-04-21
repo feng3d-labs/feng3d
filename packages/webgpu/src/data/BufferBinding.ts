@@ -5,12 +5,18 @@ import { TypedArray } from '../types/TypedArray';
  *
  * @see GPUBufferBinding
  */
-export interface BufferBinding
+export interface BufferBinding<T extends BufferBindingItem = BufferBindingItem>
 {
-    readonly value?: BufferBindingItem;
+    /**
+     * 用于声明数据结构及更新数据，引擎将自动处理数据与着色器中的映射关系。
+     * 推荐使用 value 来更新数据，value 与 bufferView 可以共存。
+     */
+    readonly value?: T;
 
     /**
-     * 如果未设置引擎将自动生成。
+     * 用于创建 GPUBuffer，如果不存在将自动创建。
+     * 一般不需要直接使用，仅在需要多个 BufferBinding 共享一个大的 buffer 时设置，
+     * 通过 bufferView.buffer 来对应同一个 GPUBuffer。
      */
     readonly bufferView?: TypedArray;
 }
