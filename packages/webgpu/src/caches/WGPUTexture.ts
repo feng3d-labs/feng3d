@@ -282,7 +282,7 @@ export class WGPUTexture extends ReactiveObject
                 // 设置图片源信息
                 const gpuSource: GPUCopyExternalImageSourceInfo = {
                     source: image,
-                    origin: [imageOrigin[0], imageOrigin[1]],
+                    origin: imageOrigin ? [imageOrigin[0], imageOrigin[1]] : [0, 0],
                     flipY,
                 };
 
