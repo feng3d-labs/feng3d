@@ -251,6 +251,11 @@ export interface MaterialData
      * 自发光颜色 [r, g, b, intensity]
      */
     readonly emissive: readonly [number, number, number, number];
+
+    /**
+     * 材质类型
+     */
+    readonly type?: number;
 }
 
 /**

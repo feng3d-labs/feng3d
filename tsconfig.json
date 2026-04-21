@@ -4,6 +4,8 @@
     { "path": "./packages/watcher" },
     { "path": "./packages/reactivity" },
     { "path": "./packages/webgpu" },
-    { "path": "./packages/rendering" }
+    { "path": "./packages/rendering" },
+    { "path": "./packages/webgpu/examples" },
+    { "path": "./packages/rendering/examples" }
   ]
 }

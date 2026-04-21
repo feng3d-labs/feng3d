@@ -54,7 +54,7 @@ export class GPUDrivenRenderer
     /**
      * 材质缓冲区绑定
      */
-    readonly materialsBuffer: BufferBinding;
+    readonly materialsBuffer: BufferBinding<readonly Material[]>;
 
     /**
      * 相机缓冲区绑定
