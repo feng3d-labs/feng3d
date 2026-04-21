@@ -15,10 +15,7 @@
     "@types/dat.gui": "^0.7.9",
     "@types/stats.js": "^0.17.0",
     "@webgpu/types": "0.1.60",
-    "rimraf": "6.0.1",
-    "stats.js": "^0.17.0",
-    "typescript": "5.8.3",
-    "vite": "5.4.11"
+    "stats.js": "^0.17.0"
   },
   "dependencies": {
     "@feng3d/reactivity": "1.0.12",
