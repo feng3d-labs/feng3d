@@ -23,11 +23,6 @@ export async function render(
 
     const r_input = reactive(input);
 
-    // 初始化
-    const initialCanvas = toRaw(r_input.canvas);
-    initialCanvas.width = initialCanvas.clientWidth * devicePixelRatio;
-    initialCanvas.height = initialCanvas.clientHeight * devicePixelRatio;
-
     const uniforms: BufferBinding<{ modelViewProjectionMatrix: Float32Array }> = {
         value: { modelViewProjectionMatrix: new Float32Array(16) as Float32Array },
     };

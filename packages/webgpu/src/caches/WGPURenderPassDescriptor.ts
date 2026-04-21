@@ -43,9 +43,15 @@ export class WGPURenderPassDescriptor extends ReactiveObject
     {
         const r_descriptor = reactive(descriptor);
 
-        // 如果渲染通道描述符没有设置附件尺寸，自动从纹理中获取
-        if (!descriptor.attachmentSize)
-        {
+        // 动态计算附件尺寸的 computed，监听 canvasContext 变化
+        const computedAttachmentSize = computed(() => {
+            // 监听 canvasContext 变化
+            if (canvasContext)
+            {
+                (reactive(canvasContext) as CanvasContext).canvasId;
+            }
+
+            // 从第一个颜色附件的纹理获取尺寸
             for (const colorAttachment of descriptor.colorAttachments)
             {
                 const view = colorAttachment.view || (canvasContext && descriptor.colorAttachments[0] === colorAttachment ? { texture: { context: canvasContext } } : undefined);
@@ -55,21 +61,39 @@ export class WGPURenderPassDescriptor extends ReactiveObject
                     const gpuTextureLike = WGPUTextureLike.getInstance(device, view.texture);
                     const gpuTexture = gpuTextureLike.gpuTexture;
 
-                    r_descriptor.attachmentSize = { width: gpuTexture.width, height: gpuTexture.height };
-                    break;
+                    // 每次都创建新对象，确保变化时触发更新
+                    const size = { width: gpuTexture.width, height: gpuTexture.height };
+                    r_descriptor.attachmentSize = size;
+                    return size;
                 }
             }
-            if (!descriptor.attachmentSize && descriptor.depthStencilAttachment?.view?.texture)
+
+            // 从深度模板附件的纹理获取尺寸
+            if (descriptor.depthStencilAttachment?.view?.texture)
             {
                 const gpuTextureLike = WGPUTextureLike.getInstance(device, descriptor.depthStencilAttachment.view.texture);
                 const gpuTexture = gpuTextureLike.gpuTexture;
 
-                r_descriptor.attachmentSize = { width: gpuTexture.width, height: gpuTexture.height };
+                const size = { width: gpuTexture.width, height: gpuTexture.height };
+                r_descriptor.attachmentSize = size;
+                return size;
             }
-        }
+
+            // 如果已手动设置 attachmentSize，使用它
+            if (descriptor.attachmentSize)
+            {
+                r_descriptor.attachmentSize;
+                return descriptor.attachmentSize;
+            }
+
+            return descriptor.attachmentSize;
+        });
 
         this._computedGpuRenderPassDescriptor = computed(() =>
         {
+            // 触发 attachmentSize 计算
+            computedAttachmentSize.value;
+
             //
             const label = r_descriptor.label;
 
@@ -105,7 +129,7 @@ export class WGPURenderPassDescriptor extends ReactiveObject
             }
 
             //
-            const wGPURenderPassDepthStencilAttachment = WGPURenderPassDepthStencilAttachment.getInstance(device, descriptor);
+            const wGPURenderPassDepthStencilAttachment = WGPURenderPassDepthStencilAttachment.getInstance(device, descriptor, canvasContext);
 
             if (wGPURenderPassDepthStencilAttachment.gpuRenderPassDepthStencilAttachment)
             {
