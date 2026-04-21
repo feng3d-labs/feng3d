@@ -57,16 +57,11 @@ export async function renderRotatingCube(
     );
     const modelViewProjectionMatrix = mat4.create();
 
-    // 响应式状态
-    const state = reactive({
-        rotation: 0,
-    });
-
-    // 计算属性：当状态变化时自动更新
+    // 计算属性：当 input.rotation 变化时自动更新
     const submit: Computed<Submit> = computed(() => {
         const viewMatrix = mat4.identity();
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(state.rotation), Math.cos(state.rotation), 0), 1, viewMatrix);
+        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(input.rotation), Math.cos(input.rotation), 0), 1, viewMatrix);
         mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
 
         // 更新 uniforms
@@ -101,11 +96,11 @@ export async function renderRotatingCube(
         });
     }
 
-    // 监听状态变化，自动调度渲染
+    // 监听 input.rotation 变化，自动调度渲染
     effect(() =>
     {
-        // 访问 state.rotation 以建立依赖
-        state.rotation;
+        // 访问 input.rotation 以建立依赖
+        input.rotation;
         scheduleFrame();
     });
 
@@ -119,13 +114,6 @@ export async function renderRotatingCube(
         render: () =>
         {
             webgpu.submit(submit.value);
-        },
-        /**
-         * 获取当前状态
-         */
-        get state()
-        {
-            return state;
         },
     };
 }
@@ -143,6 +131,8 @@ export interface RenderRotatingCubeInput
     vertices: VertexAttributes;
     /** 顶点数量 */
     vertexCount: number;
+    /** 旋转角度 */
+    rotation: number;
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
 }
@@ -154,6 +144,4 @@ export interface RenderRotatingCubeController
 {
     /** 手动触发渲染一帧 */
     render(): void;
-    /** 获取当前状态 */
-    get state(): { rotation: number };
 }
