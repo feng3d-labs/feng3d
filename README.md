@@ -12,14 +12,15 @@ Feng3D 是一个基于 WebGPU 的 Web 3D 引擎 monorepo，统一管理所有 @f
 |------|------|------|------|
 | [@feng3d/webgpu](packages/webgpu/) | WebGPU 渲染后端 | ✅ 稳定 | 0.1.0 |
 | [@feng3d/webgpu-examples](packages/webgpu/examples/) | WebGPU 示例集合 | ✅ 稳定 | 0.0.1 |
+| [@feng3d/watcher](packages/watcher/) | 对象属性监听器 | ✅ 稳定 | 0.8.14 |
+| [@feng3d/reactivity](packages/reactivity/) | 响应式系统 | ✅ 稳定 | 1.0.12 |
 | [gpu-driven-rendering](packages/gpu-driven-rendering/) | GPU 驱动渲染文档 | 📄 文档 | - |
 
 ### 待迁移
 
 | 包名 | 描述 | 优先级 | 源仓库 | 状态 |
 |------|------|--------|--------|------|
-| @feng3d/watcher | 观察者模式/响应式依赖追踪 | 🔴 高 | [feng3d/watcher](https://gitee.com/feng3d/watcher) | 🔄 迁移中 |
-| @feng3d/reactivity | 响应式系统 | 🔴 高 | [feng3d/reactivity](https://gitee.com/feng3d/reactivity) | ⏳ 待迁移 |
+| @feng3d/event | 事件系统 | 🟡 中 | ? | ⏳ 待迁移 |
 | @feng3d/event | 事件系统 | 🟡 中 | ? | ⏳ 待迁移 |
 | @feng3d/math | 数学库（向量、矩阵等） | 🟡 中 | ? | ⏳ 待迁移 |
 | @feng3d/core | 核心库 | 🟡 中 | ? | ⏳ 待迁移 |
@@ -187,8 +188,8 @@ feng3d/
 |------|------|------|------|
 | 2024-04 | webgpu | ✅ 已集成 | 初始 monorepo |
 | 2024-04 | webgpu-examples | ✅ 已集成 | 从 webgpu 分离 |
-| - | watcher | 🔄 进行中 | - |
-| - | reactivity | ⏳ 计划中 | - |
+| 2026-04-21 | watcher | ✅ 已集成 | 从 gitee 迁移 v0.8.14 |
+| 2026-04-21 | reactivity | ✅ 已集成 | 从 github 迁移 v1.0.12 |
 
 详细迁移计划见 [MIGRATION_PLAN.md](MIGRATION_PLAN.md)
 
