@@ -1,4 +1,4 @@
-import { computed, type Computed } from '@feng3d/reactivity';
+import { computed, reactive, type Computed } from '@feng3d/reactivity';
 import type {
     Camera,
     CameraData,
@@ -246,38 +246,31 @@ export class GPUDrivenRenderer
     /**
      * 更新相机数据
      *
-     * 直接设置 bufferView 数据，WGPUBufferBinding 会根据类型信息自动处理。
+     * 使用 value 更新数据，引擎自动处理与着色器的映射。
      */
     setCamera(camera: Camera): void
     {
-        const cameraView = new Float32Array(this.cameraBuffer.bufferView.buffer, this.cameraBuffer.bufferView.byteOffset, CAMERA_DATA_SIZE / 4);
-        const frustumView = new Float32Array(this.frustumBuffer.bufferView.buffer, this.frustumBuffer.bufferView.byteOffset, FRUSTUM_DATA_SIZE / 4);
+        // 通过响应式系统更新 value
+        reactive(this.cameraBuffer).value = {
+            viewMatrix: camera.data.viewMatrix,
+            projectionMatrix: camera.data.projectionMatrix,
+        };
 
-        // viewMatrix (64 bytes, 从偏移 0 开始)
-        cameraView.set(camera.data.viewMatrix, 0);
-        // projectionMatrix (64 bytes, 从偏移 16 开始)
-        cameraView.set(camera.data.projectionMatrix, 16);
-
-        // 视锥体 6 个平面
-        for (let i = 0; i < 6; i++)
-        {
-            const plane = camera.frustum.planes[i];
-            frustumView[i * 4 + 0] = plane[0]; // nx
-            frustumView[i * 4 + 1] = plane[1]; // ny
-            frustumView[i * 4 + 2] = plane[2]; // nz
-            frustumView[i * 4 + 3] = plane[3]; // d
-        }
+        reactive(this.frustumBuffer).value = {
+            planes: camera.frustum.planes,
+        };
     }
 
     /**
      * 更新物体数据
      *
-     * 直接设置 bufferView 数据，WGPUBufferBinding 会根据类型信息自动处理。
+     * 使用 value 更新数据，引擎自动处理与着色器的映射。
      */
     setObjects(objects: readonly ObjectData[]): void
     {
-        const bufferView = new Float32Array(this.objectsBuffer.bufferView.buffer, this.objectsBuffer.bufferView.byteOffset);
-        const uintView = new Uint32Array(this.objectsBuffer.bufferView.buffer, this.objectsBuffer.bufferView.byteOffset);
+        // 创建序列化后的数据数组
+        const data = new Float32Array(this.options.maxObjects * OBJECT_DATA_SIZE / 4);
+        const uintView = new Uint32Array(data.buffer);
 
         for (let i = 0; i < objects.length; i++)
         {
@@ -285,16 +278,16 @@ export class GPUDrivenRenderer
             const transform = obj.transform;
             const offset = i * (OBJECT_DATA_SIZE / 4);
 
-            // worldMatrix (64 bytes, 16 floats) - 对应着色器中的 worldMatrix
-            bufferView.set(transform.modelMatrix, offset);
+            // worldMatrix (64 bytes, 16 floats)
+            data.set(transform.modelMatrix, offset);
 
             // boundsCenter (12 bytes, 3 floats, 从偏移 16 开始)
-            bufferView[offset + 16] = transform.worldPosition[0];
-            bufferView[offset + 17] = transform.worldPosition[1];
-            bufferView[offset + 18] = transform.worldPosition[2];
+            data[offset + 16] = transform.worldPosition[0];
+            data[offset + 17] = transform.worldPosition[1];
+            data[offset + 18] = transform.worldPosition[2];
 
-            // boundsRadius (4 bytes, 1 float, 从偏移 19 开始) - 设置为 1 以确保物体不被剔除
-            bufferView[offset + 19] = 1.0;
+            // boundsRadius (4 bytes, 1 float, 从偏移 19 开始)
+            data[offset + 19] = 1.0;
 
             // materialId (4 bytes, 1 uint, 从偏移 20 开始)
             uintView[offset + 20] = obj.materialId;
@@ -303,51 +296,57 @@ export class GPUDrivenRenderer
             uintView[offset + 21] = obj.isTransparent ? 1 : 0;
 
             // lodLevel (4 bytes, 写入 lods[0].indexCount 位置，偏移 24)
-            uintView[offset + 24] = 36; // 立方体有 36 个索引（12 个三角形 * 3）
+            uintView[offset + 24] = 36;
             // lods[0].indexOffset (偏移 25)
             uintView[offset + 25] = 0;
         }
 
+        // 通过响应式系统更新 value
+        reactive(this.objectsBuffer).value = data as any;
+
         // 更新物体计数
-        (this.objectCountBuffer.bufferView as Uint32Array)[0] = objects.length;
+        reactive(this.objectCountBuffer).value = { count: objects.length };
     }
 
     /**
      * 更新材质数据
      *
-     * 直接设置 bufferView 数据，WGPUBufferBinding 会根据类型信息自动处理。
-     * 注意：着色器中的 MaterialData 结构与 types.ts 中的略有不同
+     * 使用 value 更新数据，引擎自动处理与着色器的映射。
      */
     setMaterials(materials: readonly Material[]): void
     {
-        const bufferView = new Float32Array(this.materialsBuffer.bufferView.buffer, this.materialsBuffer.bufferView.byteOffset);
-        const uintView = new Uint32Array(this.materialsBuffer.bufferView.buffer, this.materialsBuffer.bufferView.byteOffset);
+        // 创建序列化后的数据数组
+        const data = new Float32Array(this.maxMaterials * MATERIAL_DATA_SIZE / 4);
+        const uintView = new Uint32Array(data.buffer);
 
         for (let i = 0; i < materials.length; i++)
         {
-            const data = materials[i].data;
+            const materialData = materials[i].data;
             const offset = i * (MATERIAL_DATA_SIZE / 4);
 
-            // baseColor (16 bytes, 4 floats) - 对应着色器中的 baseColor
-            bufferView[offset + 0] = data.albedo[0];
-            bufferView[offset + 1] = data.albedo[1];
-            bufferView[offset + 2] = data.albedo[2];
-            bufferView[offset + 3] = data.albedo[3];
+            // baseColor (16 bytes, 4 floats)
+            data[offset + 0] = materialData.albedo[0];
+            data[offset + 1] = materialData.albedo[1];
+            data[offset + 2] = materialData.albedo[2];
+            data[offset + 3] = materialData.albedo[3];
 
             // metallic (4 bytes, offset 4)
-            bufferView[offset + 4] = data.metallic;
+            data[offset + 4] = materialData.metallic;
 
             // roughness (4 bytes, offset 5)
-            bufferView[offset + 5] = data.roughness;
+            data[offset + 5] = materialData.roughness;
 
-            // emissive (12 bytes, 3 floats, offset 6-8) - 着色器中是 vec3f
-            bufferView[offset + 6] = data.emissive[0];
-            bufferView[offset + 7] = data.emissive[1];
-            bufferView[offset + 8] = data.emissive[2];
+            // emissive (12 bytes, 3 floats, offset 6-8)
+            data[offset + 6] = materialData.emissive[0];
+            data[offset + 7] = materialData.emissive[1];
+            data[offset + 8] = materialData.emissive[2];
 
-            // materialType (4 bytes, 1 uint, offset 9) - 对应着色器中的 materialType
-            uintView[offset + 9] = data.type;
+            // materialType (4 bytes, 1 uint, offset 9)
+            uintView[offset + 9] = materialData.type ?? 0;
         }
+
+        // 通过响应式系统更新 value
+        reactive(this.materialsBuffer).value = data as any;
     }
 
     /**
