@@ -6,11 +6,12 @@ import { mat4, vec3 } from 'wgpu-matrix';
  * 渲染旋转立方体
  *
  * @param input - 输入配置
- * @returns 设置旋转角度的函数
+ * @returns 销毁函数
  */
 export async function renderRotatingCube(
     input: RenderRotatingCubeInput,
-) {
+): Promise<() => void>
+{
     const { canvas, pipeline, vertices, vertexCount, bindingResources = {} } = input;
     const devicePixelRatio = window.devicePixelRatio || 1;
 
@@ -57,7 +58,7 @@ export async function renderRotatingCube(
     const modelViewProjectionMatrix = mat4.create();
 
     const r_input = reactive(input);
-    // 计算属性：当 r_state.rotation 变化时自动更新
+    // 计算属性：当 r_input.rotation 变化时自动更新
     const submit: Computed<Submit> = computed(() => {
         const rotation = r_input.rotation;
 
@@ -82,28 +83,36 @@ export async function renderRotatingCube(
 
     // 渲染调度标志：确保每帧最多调度一次
     let frameScheduled = false;
+    let disposed = false;
 
     /**
      * 调度一帧渲染（如果当前没有已调度的帧）
      */
     function scheduleFrame(): void {
-        if (frameScheduled) return; // 已经调度了，无需重复调度
+        if (disposed || frameScheduled) return; // 已经调度了，无需重复调度
 
         frameScheduled = true;
         requestAnimationFrame(() => {
+            if (disposed) return;
             frameScheduled = false;
             webgpu.submit(submit.value);
         });
     }
 
-    // 监听 r_state.rotation 变化，自动调度渲染
+    // 监听 r_input.rotation 变化，自动调度渲染
     effect(() => {
+        if (disposed) return;
         r_input.rotation;
         scheduleFrame();
     });
 
     // 首次渲染
     scheduleFrame();
+
+    // 返回销毁函数
+    return () => {
+        disposed = true;
+    };
 }
 
 /**
@@ -118,8 +127,8 @@ export interface RenderRotatingCubeInput {
     vertices: VertexAttributes;
     /** 顶点数量 */
     vertexCount: number;
-    /** 初始旋转角度 */
-    rotation?: number;
+    /** 旋转角度 */
+    rotation: number;
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
 }
