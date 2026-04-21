@@ -6,10 +6,11 @@ import { mat4, vec3 } from 'wgpu-matrix';
  * 渲染旋转立方体
  *
  * @param input - 输入配置
+ * @returns 设置旋转角度的函数
  */
 export async function renderRotatingCube(
     input: RenderRotatingCubeInput,
-): Promise<void>
+): Promise<RenderRotatingCubeController>
 {
     const { canvas, pipeline, vertices, vertexCount, bindingResources = {} } = input;
     const devicePixelRatio = window.devicePixelRatio || 1;
@@ -38,7 +39,7 @@ export async function renderRotatingCube(
     };
 
     const renderObject: RenderObject = {
-        pipeline,
+        pipeline: pipeline as RenderPipeline,
         vertices,
         draw: { __type__: 'DrawVertex', vertexCount },
         bindingResources: {
@@ -56,14 +57,14 @@ export async function renderRotatingCube(
     );
     const modelViewProjectionMatrix = mat4.create();
 
-    // 内部响应式状态
-    const state = reactive({
-        rotation: 0,
+    // 内部创建响应式状态
+    const r_state = reactive({
+        rotation: input.rotation ?? 0,
     });
 
-    // 计算属性：当 state.rotation 变化时自动更新
+    // 计算属性：当 r_state.rotation 变化时自动更新
     const submit: Computed<Submit> = computed(() => {
-        const rotation = state.rotation;
+        const rotation = r_state.rotation;
 
         const viewMatrix = mat4.identity();
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
@@ -102,22 +103,23 @@ export async function renderRotatingCube(
         });
     }
 
-    // 监听 state.rotation 变化，自动调度渲染
+    // 监听 r_state.rotation 变化，自动调度渲染
     effect(() =>
     {
-        state.rotation;
+        r_state.rotation;
         scheduleFrame();
-    });
-
-    // 监听 input.rotation 变化，同步到内部 state
-    effect(() =>
-    {
-        const rotation = typeof input.rotation === 'function' ? input.rotation() : (input.rotation ?? 0);
-        reactive(state).rotation = rotation;
     });
 
     // 首次渲染
     scheduleFrame();
+
+    // 返回控制器
+    return {
+        setRotation: (rotation: number) =>
+        {
+            reactive(r_state).rotation = rotation;
+        },
+    };
 }
 
 /**
@@ -133,8 +135,17 @@ export interface RenderRotatingCubeInput
     vertices: VertexAttributes;
     /** 顶点数量 */
     vertexCount: number;
-    /** 旋转角度或获取旋转角度的函数 */
-    rotation?: number | (() => number);
+    /** 初始旋转角度 */
+    rotation?: number;
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
+}
+
+/**
+ * 渲染控制器
+ */
+export interface RenderRotatingCubeController
+{
+    /** 设置旋转角度 */
+    setRotation(rotation: number): void;
 }

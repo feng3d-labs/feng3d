@@ -12,9 +12,6 @@ import { vertexPositionColorFragWGSL } from './shaders/vertexPositionColor.frag.
 
 const canvas = document.getElementById('webgpu') as HTMLCanvasElement;
 
-// 外部状态
-let rotation = 0;
-
 renderRotatingCube({
     canvas,
     pipeline: {
@@ -29,14 +26,12 @@ renderRotatingCube({
         uv: { data: cubeVertexArray, format: 'float32x2', offset: cubeUVOffset, arrayStride: cubeVertexSize },
     },
     vertexCount: cubeVertexCount,
-    get rotation()
-    {
-        return rotation;
-    },
-}).then(() =>
+    rotation: 0,
+}).then((controller) =>
 {
     // 使用 requestAnimationFrame 更新旋转角度
     let lastTime = performance.now();
+    let rotation = 0;
 
     function animate(currentTime: number)
     {
@@ -44,6 +39,8 @@ renderRotatingCube({
         lastTime = currentTime;
 
         rotation += deltaTime;
+        // 使用 setRotation 触发渲染
+        controller.setRotation(rotation);
 
         requestAnimationFrame(animate);
     }
