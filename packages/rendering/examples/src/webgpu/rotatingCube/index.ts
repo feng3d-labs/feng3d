@@ -1,4 +1,4 @@
-import { renderRotatingCube, RenderRotatingCubeInput } from '@feng3d/rendering';
+import { render, RenderInput } from '@feng3d/rendering';
 
 import {
     cubePositionOffset,
@@ -13,7 +13,7 @@ import { reactive } from '@feng3d/reactivity';
 
 const canvas = document.getElementById('webgpu') as HTMLCanvasElement;
 
-const input: RenderRotatingCubeInput = {
+const input: RenderInput = {
     canvas,
     pipeline: {
         vertex: { code: basicVertWGSL },
@@ -30,7 +30,7 @@ const input: RenderRotatingCubeInput = {
     rotation: 0,
 };
 
-renderRotatingCube(input);
+render(input);
 
 // 使用 requestAnimationFrame 更新旋转角度
 let lastTime = performance.now();

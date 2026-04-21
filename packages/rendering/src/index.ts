@@ -6,5 +6,5 @@
  */
 
 // 导出渲染函数
-export { renderRotatingCube } from './renderRotatingCube.js';
-export type { RenderRotatingCubeInput } from './renderRotatingCube.js';
+export { render } from './render.js';
+export type { RenderInput } from './render.js';

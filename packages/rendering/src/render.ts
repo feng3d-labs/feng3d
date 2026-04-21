@@ -3,13 +3,13 @@ import { WebGPU, type BufferBinding, type RenderObject, type RenderPassDescripto
 import { mat4, vec3 } from 'wgpu-matrix';
 
 /**
- * 渲染旋转立方体
+ * 渲染入口函数
  *
  * @param input - 输入配置
  * @returns 销毁函数
  */
-export async function renderRotatingCube(
-    input: RenderRotatingCubeInput,
+export async function render(
+    input: RenderInput,
 ): Promise<() => void>
 {
     const { canvas, pipeline, vertices, vertexCount, bindingResources = {} } = input;
@@ -116,9 +116,9 @@ export async function renderRotatingCube(
 }
 
 /**
- * 渲染旋转立方体输入
+ * 渲染输入
  */
-export interface RenderRotatingCubeInput {
+export interface RenderInput {
     /** Canvas 元素 */
     canvas: HTMLCanvasElement;
     /** 渲染管线 */
