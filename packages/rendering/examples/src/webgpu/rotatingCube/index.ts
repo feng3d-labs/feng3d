@@ -43,7 +43,7 @@ renderRotatingCube({
         const deltaTime = (currentTime - lastTime) / 1000;
         lastTime = currentTime;
 
-        input.rotation += deltaTime;
+        rotation += deltaTime;
 
         requestAnimationFrame(animate);
     }
