@@ -18,8 +18,8 @@
   "scripts": {
     "clean": "rimraf lib dist public",
     "build": "vite build && tsc",
-    "watch": "concurrently \"vite build --watch\" \"tsc -w\" \"vitest\"",
-    "test": "vitest run"
+    "watch": "tsc --watch",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
