@@ -1,5 +1,5 @@
-import { computed, effect, reactive, toRaw, type Computed } from '@feng3d/reactivity';
-import { WebGPU, type BufferBinding, type RenderObject, type RenderPassDescriptor, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
+import { computed, effect, reactive, toRaw } from '@feng3d/reactivity';
+import { WebGPU, type BufferBinding, type CanvasTexture, type RenderObject, type RenderPass as RenderPassType, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 /**
@@ -10,8 +10,7 @@ import { mat4, vec3 } from 'wgpu-matrix';
  */
 export async function render(
     input: RenderInput,
-): Promise<() => void>
-{
+): Promise<() => void> {
     const { pipeline, vertices, vertexCount, bindingResources = {} } = input;
     const devicePixelRatio = window.devicePixelRatio || 1;
 
@@ -19,32 +18,36 @@ export async function render(
 
     const r_input = reactive(input);
 
-    // 响应式 renderPass 和 projectionMatrix
-    let currentRenderPass: RenderPassDescriptor;
-    let currentProjectionMatrix: Float32Array;
-    let currentAspect: number;
+    // 响应式状态
     let currentCanvasId: string | undefined;
 
-    // 初始化 renderPass 和 projectionMatrix
-    function updateCanvas(canvas: HTMLCanvasElement): void {
-        // 设置 canvas 大小
-        canvas.width = canvas.clientWidth * devicePixelRatio;
-        canvas.height = canvas.clientHeight * devicePixelRatio;
+    // 初始化
+    const initialCanvas = toRaw(r_input.canvas);
+    currentCanvasId = initialCanvas.id;
+    initialCanvas.width = initialCanvas.clientWidth * devicePixelRatio;
+    initialCanvas.height = initialCanvas.clientHeight * devicePixelRatio;
 
-        // 更新 aspect
-        currentAspect = canvas.width / canvas.height;
-        currentProjectionMatrix = mat4.perspective(
-            (2 * Math.PI) / 5,
-            currentAspect,
-            1,
-            100.0,
-        );
+    const uniforms: BufferBinding<{ modelViewProjectionMatrix: Float32Array }> = {
+        value: { modelViewProjectionMatrix: new Float32Array(16) as Float32Array },
+    };
 
-        // 更新 renderPass
-        currentRenderPass = {
+    // 稳定的 RenderObject
+    const renderObject: RenderObject = {
+        pipeline: pipeline as RenderPipeline,
+        vertices,
+        draw: { __type__: 'DrawVertex', vertexCount },
+        bindingResources: {
+            ...bindingResources,
+            uniforms,
+        },
+    };
+
+    // 稳定的 RenderPass 结构（只创建一次）
+    const renderPass: RenderPassType = {
+        descriptor: {
             colorAttachments: [
                 {
-                    view: { texture: { context: { canvasId: canvas.id } } },
+                    view: { texture: { context: { canvasId: initialCanvas.id } } },
                     clearValue: [0.5, 0.5, 0.5, 1.0],
                 },
             ],
@@ -53,64 +56,9 @@ export async function render(
                 depthLoadOp: 'clear',
                 depthStoreOp: 'store',
             },
-        };
-
-        // 追踪当前 canvas ID
-        currentCanvasId = canvas.id;
-    }
-
-    // 初始化
-    // 先访问属性建立依赖，再使用原始对象
-    const initialCanvas = toRaw(r_input.canvas);
-    updateCanvas(initialCanvas);
-
-    const uniforms: BufferBinding<{ modelViewProjectionMatrix: Float32Array }> = {
-        value: { modelViewProjectionMatrix: new Float32Array(16) as Float32Array },
+        },
+        renderPassObjects: [renderObject],
     };
-
-    const modelViewProjectionMatrix = mat4.create();
-
-    // 计算属性：当 r_input.rotation 或 r_input.canvas 变化时自动更新
-    const submit: Computed<Submit> = computed(() => {
-        // 访问 canvas 以建立依赖，然后使用原始对象
-        const canvas = toRaw(r_input.canvas);
-        const rotation = r_input.rotation;
-
-        // 检查 canvas 是否变化（通过 ID 比较）
-        if (currentCanvasId !== canvas.id) {
-            updateCanvas(canvas);
-        }
-
-        const viewMatrix = mat4.identity();
-        mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(rotation), Math.cos(rotation), 0), 1, viewMatrix);
-        mat4.multiply(currentProjectionMatrix, viewMatrix, modelViewProjectionMatrix);
-
-        // 更新 uniforms
-        reactive(uniforms.value!).modelViewProjectionMatrix = modelViewProjectionMatrix.subarray();
-
-        return {
-            commandEncoders: [
-                {
-                    passEncoders: [
-                        { descriptor: currentRenderPass, renderPassObjects: [getRenderObject()] },
-                    ],
-                },
-            ],
-        };
-    });
-
-    function getRenderObject(): RenderObject {
-        return {
-            pipeline: pipeline as RenderPipeline,
-            vertices,
-            draw: { __type__: 'DrawVertex', vertexCount },
-            bindingResources: {
-                ...bindingResources,
-                uniforms,
-            },
-        };
-    }
 
     // 渲染调度标志：确保每帧最多调度一次
     let frameScheduled = false;
@@ -120,21 +68,74 @@ export async function render(
      * 调度一帧渲染（如果当前没有已调度的帧）
      */
     function scheduleFrame(): void {
-        if (disposed || frameScheduled) return; // 已经调度了，无需重复调度
+        if (disposed || frameScheduled) return;
 
         frameScheduled = true;
         requestAnimationFrame(() => {
             if (disposed) return;
             frameScheduled = false;
-            webgpu.submit(submit.value);
+            webgpu.submit(submit);
         });
     }
 
-    // 监听 r_input.rotation 和 r_input.canvas 变化，自动调度渲染
+    // 稳定的 Submit 结构（只创建一次）
+    const submit: Submit = {
+        commandEncoders: [
+            {
+                passEncoders: [renderPass],
+            },
+        ],
+    };
+
+    // 监听 canvas 变化，更新 canvas 大小和 canvasId
     effect(() => {
         if (disposed) return;
-        r_input.rotation;
-        r_input.canvas;
+        const canvas = toRaw(r_input.canvas);
+        if (currentCanvasId !== canvas.id) {
+            currentCanvasId = canvas.id;
+
+            // 设置 canvas 大小
+            canvas.width = canvas.clientWidth * devicePixelRatio;
+            canvas.height = canvas.clientHeight * devicePixelRatio;
+
+            // 精确更新 canvasId（使用 reactive 使响应式系统追踪变化）
+            reactive((renderPass.descriptor.colorAttachments[0]!.view.texture as CanvasTexture).context).canvasId = canvas.id;
+        }
+    });
+
+    // 计算属性：依赖 canvas 宽高，自动计算投影矩阵
+    const computedProjection = computed(() => {
+        const canvas = toRaw(r_input.canvas);
+        return mat4.perspective(
+            (2 * Math.PI) / 5,
+            canvas.width / canvas.height,
+            1,
+            100.0,
+        );
+    });
+
+    // 计算属性：纯函数，返回计算后的矩阵数据
+    const computedMatrix = computed(() => {
+        const rotation = r_input.rotation;
+        const projection = computedProjection.value;
+
+        const viewMatrix = mat4.identity();
+        mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
+        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(rotation), Math.cos(rotation), 0), 1, viewMatrix);
+
+        const mvpMatrix = mat4.create();
+        mat4.multiply(projection, viewMatrix, mvpMatrix);
+
+        return mvpMatrix.slice() as Float32Array; // 返回一个新的 Float32Array 视图，确保响应式系统能正确追踪变化
+    });
+
+    // 监听矩阵变化，更新 uniforms 并触发渲染
+    effect(() => {
+        if (disposed) return;
+
+        // 赋值触发响应式更新
+        reactive(uniforms.value!).modelViewProjectionMatrix = computedMatrix.value;
+
         scheduleFrame();
     });
 
