@@ -21,11 +21,7 @@
     "clean": "rimraf lib dist public",
     "build": "vite build && tsc",
     "watch": "concurrently \"vite build --watch\" \"tsc -w\" \"vitest\"",
-    "test": "vitest run",
-    "prepublishOnly": "node scripts/prepublish.js",
-    "release": "npm run clean && npm run lint && npm test && npm run build && npm run docs && npm publish",
-    "postpublish": "node scripts/postpublish.js",
-    "prepare": "husky"
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
