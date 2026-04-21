@@ -1,0 +1,3 @@
+[submodule "packages/tsl"]
+	path = packages/tsl
+	url = https://github.com/feng3d-labs/tsl.git

@@ -1,0 +1,100 @@
+# 上传文档到 OSS
+# 在 npm 发布成功后自动执行，也可手动触发
+name: Upload to OSS
+
+on:
+  # npm 发布成功后自动触发
+  workflow_run:
+    workflows: ["Publish to NPM"]
+    types:
+      - completed
+
+  # 支持手动触发
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    # 仅在 publish 成功后执行，或手动触发时执行
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build docs
+        run: npm run docs
+
+      - name: Check OSS config
+        id: check_oss
+        run: |
+          if [ -z "${{ secrets.OSS_ACCESS_KEY_ID }}" ]; then
+            echo "OSS 未配置，跳过上传"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload to OSS
+        if: steps.check_oss.outputs.skip != 'true'
+        env:
+          OSS_REGION: ${{ secrets.OSS_REGION }}
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+          OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+        run: |
+          # 检查 public 目录是否存在
+          if [ ! -d "public" ]; then
+            echo "public 目录不存在，跳过 OSS 上传"
+            exit 0
+          fi
+
+          # 获取仓库名作为 OSS 目录
+          REPO_NAME=$(node -p "require('./package.json').name.replace(/^@[^/]+\//, '')")
+          echo "上传目录: $REPO_NAME"
+
+          # 安装 ali-oss
+          npm install ali-oss --no-save
+
+          # 执行上传
+          node -e "
+            const OSS = require('ali-oss');
+            const fs = require('fs');
+            const path = require('path');
+
+            const client = new OSS({
+              region: process.env.OSS_REGION,
+              accessKeyId: process.env.OSS_ACCESS_KEY_ID,
+              accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
+              bucket: process.env.OSS_BUCKET,
+            });
+
+            const localDir = 'public';
+            const ossDir = '$REPO_NAME';
+
+            async function uploadDir(dir, ossPath) {
+              const items = fs.readdirSync(dir);
+              for (const item of items) {
+                const localPath = path.join(dir, item);
+                const remotePath = ossPath + '/' + item;
+                if (fs.statSync(localPath).isDirectory()) {
+                  await uploadDir(localPath, remotePath);
+                } else {
+                  await client.put(remotePath, localPath);
+                  console.log('上传: ' + remotePath);
+                }
+              }
+            }
+
+            uploadDir(localDir, ossDir)
+              .then(() => console.log('OSS 上传完成'))
+              .catch(err => { console.error('OSS 上传失败:', err); process.exit(1); });
+          "
+

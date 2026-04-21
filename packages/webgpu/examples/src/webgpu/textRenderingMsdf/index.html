@@ -1,0 +1,53 @@
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <title>Text Rendering - MSDF</title>
+  <meta name='apple-mobile-web-app-capable' content='yes' />
+  <meta name='full-screen' content='true' />
+  <meta name='screen-orientation' content='portrait' />
+  <meta name='x5-fullscreen' content='true' />
+  <meta name='360-fullscreen' content='true' />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    html,
+    body {
+      margin: 0;
+      /* remove default margin */
+      height: 100%;
+      /* make body fill the browser window */
+      display: flex;
+      place-content: center center;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <p id="description" style="width: 600px;">
+      This example uses multichannel signed distance fields (MSDF) to render text. MSDF
+      fonts are more complex to implement than using Canvas 2D to generate text, but the resulting
+      text looks smoother while using less memory than the Canvas 2D approach, especially at high
+      zoom levels. They can be used to render larger amounts of text efficiently.
+
+      The font texture is generated using [Don McCurdy's MSDF font generation
+      tool](https://msdf-bmfont.donmccurdy.com/),
+      which is built on [Viktor Chlumský's msdfgen library](https://github.com/Chlumsky/msdfgen).
+    </p>
+    <canvas id="webgpu" style="width: 600px; height: 600px;"></canvas>
+  </div>
+
+  <script type="module" src="./index.ts"></script>
+</body>
+
+</html>
