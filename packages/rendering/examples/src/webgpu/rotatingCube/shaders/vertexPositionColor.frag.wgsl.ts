@@ -1,4 +1,4 @@
-export const code = `
+export const vertexPositionColorFragWGSL = `
 @fragment
 fn main(
     @location(0) fragUV: vec2<f32>,

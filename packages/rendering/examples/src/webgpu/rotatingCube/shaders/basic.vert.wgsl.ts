@@ -1,4 +1,4 @@
-export const code = `
+export const basicVertWGSL = `
 struct Uniforms {
   modelViewProjectionMatrix: mat4x4<f32>,
 }
