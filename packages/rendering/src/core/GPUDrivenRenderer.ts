@@ -24,6 +24,7 @@ import type {
     RenderPassColorAttachment,
     RenderPassDepthStencilAttachment,
     RenderObject,
+    DrawIndexedIndirect,
 } from '@feng3d/webgpu';
 import { WGPUBuffer } from '@feng3d/webgpu';
 import { code as commandGeneratorShaderCode } from '../compute/CommandGenerator.wgsl.js';
@@ -466,26 +467,28 @@ export class GPUDrivenRenderer
         // 不透明物体（按材质分组）
         for (let i = 0; i < this.maxMaterials; i++)
         {
+            const indirectDraw: DrawIndexedIndirect = {
+                __type__: 'DrawIndexedIndirect',
+                buffer: this.indirectBuffers[i].gpuBuffer,
+                offset: 0,
+            };
             objects.push({
                 __type__: 'RenderObject',
                 pipeline,
-                draw: {
-                    __type__: 'DrawIndexedIndirect',
-                    buffer: this.indirectBuffers[i].gpuBuffer,
-                    offset: 0,
-                } as any, // TODO: 等待 @feng3d/webgpu 添加间接绘制类型
+                draw: indirectDraw,
             });
         }
 
         // 透明物体
+        const transparentDraw: DrawIndexedIndirect = {
+            __type__: 'DrawIndexedIndirect',
+            buffer: this.indirectBuffers[this.maxMaterials].gpuBuffer,
+            offset: 0,
+        };
         objects.push({
             __type__: 'RenderObject',
             pipeline,
-            draw: {
-                __type__: 'DrawIndexedIndirect',
-                buffer: this.indirectBuffers[this.maxMaterials].gpuBuffer,
-                offset: 0,
-            } as any, // TODO: 等待 @feng3d/webgpu 添加间接绘制类型
+            draw: transparentDraw,
         });
 
         return objects;
