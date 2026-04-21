@@ -1,5 +1,5 @@
 import { computed, effect, reactive, toRaw } from '@feng3d/reactivity';
-import { WebGPU, type BufferBinding, type RenderObject, type RenderPass as RenderPassType, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
+import { CanvasContext, WebGPU, type BufferBinding, type RenderObject, type RenderPass as RenderPassType, type RenderPipeline, type Submit, type VertexAttributes } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 /**
@@ -23,12 +23,8 @@ export async function render(
 
     const r_input = reactive(input);
 
-    // 响应式状态
-    let currentCanvasId: string | undefined;
-
     // 初始化
     const initialCanvas = toRaw(r_input.canvas);
-    currentCanvasId = initialCanvas.id;
     initialCanvas.width = initialCanvas.clientWidth * devicePixelRatio;
     initialCanvas.height = initialCanvas.clientHeight * devicePixelRatio;
 
@@ -47,12 +43,27 @@ export async function render(
         },
     };
 
+    const canvasId = computed(() => {
+        r_input.canvas;
+
+        // 直接访问原始值，避免重复追踪
+        const canvas = input.canvas;
+
+        // 设置 canvas 大小
+        canvas.width = canvas.clientWidth * devicePixelRatio;
+        canvas.height = canvas.clientHeight * devicePixelRatio;
+
+        return canvas.id;
+    });
+
+    const canvasContext: CanvasContext = { canvasId: canvasId.value };
+
     // 稳定的 RenderPass 结构（只创建一次）
     const renderPass: RenderPassType = {
         descriptor: {
             colorAttachments: [
                 {
-                    view: { texture: { context: { canvasId: initialCanvas.id } } },
+                    view: { texture: { context: canvasContext } },
                     clearValue: [0.5, 0.5, 0.5, 1.0],
                 },
             ],
@@ -95,33 +106,9 @@ export async function render(
     // 监听 canvas 变化，更新 canvas 大小和 canvasId
     effect(() => {
         if (disposed) return;
-        // 先访问响应式对象触发追踪，然后获取原始值
-        r_input.canvas;
 
-        // 直接访问原始值，避免重复追踪
-        const canvas = input.canvas;
-        if (currentCanvasId !== canvas.id) {
-            currentCanvasId = canvas.id;
-
-            // 设置 canvas 大小
-            canvas.width = canvas.clientWidth * devicePixelRatio;
-            canvas.height = canvas.clientHeight * devicePixelRatio;
-
-            // 替换整个 descriptor，触发深度纹理重新创建
-            reactive(renderPass).descriptor = {
-                colorAttachments: [
-                    {
-                        view: { texture: { context: { canvasId: canvas.id } } },
-                        clearValue: [0.5, 0.5, 0.5, 1.0],
-                    },
-                ],
-                depthStencilAttachment: {
-                    depthClearValue: 1,
-                    depthLoadOp: 'clear',
-                    depthStoreOp: 'store',
-                },
-            };
-        }
+        // 精准替换 canvasId
+        reactive(canvasContext).canvasId = canvasId.value;
     });
 
     // 计算属性：依赖 canvas 宽高，自动计算投影矩阵
