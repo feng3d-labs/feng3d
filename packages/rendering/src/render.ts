@@ -12,60 +12,75 @@ export async function render(
     input: RenderInput,
 ): Promise<() => void>
 {
-    const { canvas, pipeline, vertices, vertexCount, bindingResources = {} } = input;
+    const { pipeline, vertices, vertexCount, bindingResources = {} } = input;
     const devicePixelRatio = window.devicePixelRatio || 1;
-
-    canvas.width = canvas.clientWidth * devicePixelRatio;
-    canvas.height = canvas.clientHeight * devicePixelRatio;
 
     const webgpu = await new WebGPU().init();
 
-    const renderPass: RenderPassDescriptor = {
-        colorAttachments: [
-            {
-                view: { texture: { context: { canvasId: canvas.id } } },
-                clearValue: [0.5, 0.5, 0.5, 1.0],
+    const r_input = reactive(input);
+
+    // 响应式 renderPass 和 projectionMatrix
+    let currentRenderPass: RenderPassDescriptor;
+    let currentProjectionMatrix: Float32Array;
+    let currentAspect: number;
+
+    // 初始化 renderPass 和 projectionMatrix
+    function updateCanvas(canvas: HTMLCanvasElement): void {
+        // 设置 canvas 大小
+        canvas.width = canvas.clientWidth * devicePixelRatio;
+        canvas.height = canvas.clientHeight * devicePixelRatio;
+
+        // 更新 aspect
+        currentAspect = canvas.width / canvas.height;
+        currentProjectionMatrix = mat4.perspective(
+            (2 * Math.PI) / 5,
+            currentAspect,
+            1,
+            100.0,
+        );
+
+        // 更新 renderPass
+        currentRenderPass = {
+            colorAttachments: [
+                {
+                    view: { texture: { context: { canvasId: canvas.id } } },
+                    clearValue: [0.5, 0.5, 0.5, 1.0],
+                },
+            ],
+            depthStencilAttachment: {
+                depthClearValue: 1,
+                depthLoadOp: 'clear',
+                depthStoreOp: 'store',
             },
-        ],
-        depthStencilAttachment: {
-            depthClearValue: 1,
-            depthLoadOp: 'clear',
-            depthStoreOp: 'store',
-        },
-    };
+        };
+    }
+
+    // 初始化
+    // 先访问属性建立依赖，再传给函数
+    const initialCanvas = r_input.canvas;
+    updateCanvas(initialCanvas);
 
     const uniforms: BufferBinding<{ modelViewProjectionMatrix: Float32Array }> = {
         value: { modelViewProjectionMatrix: new Float32Array(16) as Float32Array },
     };
 
-    const renderObject: RenderObject = {
-        pipeline: pipeline as RenderPipeline,
-        vertices,
-        draw: { __type__: 'DrawVertex', vertexCount },
-        bindingResources: {
-            ...bindingResources,
-            uniforms,
-        },
-    };
-
-    const aspect = canvas.width / canvas.height;
-    const projectionMatrix = mat4.perspective(
-        (2 * Math.PI) / 5,
-        aspect,
-        1,
-        100.0,
-    );
     const modelViewProjectionMatrix = mat4.create();
 
-    const r_input = reactive(input);
-    // 计算属性：当 r_input.rotation 变化时自动更新
+    // 计算属性：当 r_input.rotation 或 r_input.canvas 变化时自动更新
     const submit: Computed<Submit> = computed(() => {
+        // 访问 canvas 以建立依赖
+        const canvas = r_input.canvas;
         const rotation = r_input.rotation;
+
+        // 检查 canvas 是否变化
+        if (canvas.width !== canvas.clientWidth * devicePixelRatio || canvas.height !== canvas.clientHeight * devicePixelRatio) {
+            updateCanvas(canvas);
+        }
 
         const viewMatrix = mat4.identity();
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
         mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(rotation), Math.cos(rotation), 0), 1, viewMatrix);
-        mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
+        mat4.multiply(currentProjectionMatrix, viewMatrix, modelViewProjectionMatrix);
 
         // 更新 uniforms
         reactive(uniforms.value!).modelViewProjectionMatrix = modelViewProjectionMatrix.subarray();
@@ -74,12 +89,24 @@ export async function render(
             commandEncoders: [
                 {
                     passEncoders: [
-                        { descriptor: renderPass, renderPassObjects: [renderObject] },
+                        { descriptor: currentRenderPass, renderPassObjects: [getRenderObject()] },
                     ],
                 },
             ],
         };
     });
+
+    function getRenderObject(): RenderObject {
+        return {
+            pipeline: pipeline as RenderPipeline,
+            vertices,
+            draw: { __type__: 'DrawVertex', vertexCount },
+            bindingResources: {
+                ...bindingResources,
+                uniforms,
+            },
+        };
+    }
 
     // 渲染调度标志：确保每帧最多调度一次
     let frameScheduled = false;
@@ -99,10 +126,11 @@ export async function render(
         });
     }
 
-    // 监听 r_input.rotation 变化，自动调度渲染
+    // 监听 r_input.rotation 和 r_input.canvas 变化，自动调度渲染
     effect(() => {
         if (disposed) return;
         r_input.rotation;
+        r_input.canvas;
         scheduleFrame();
     });
 
