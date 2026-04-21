@@ -21,15 +21,12 @@
     "lintfix": "eslint . --ext .js,.ts --fix",
     "docs": "typedoc",
     "release": "npm run clean && npm run lint && npm run test && npm run build && npm run docs",
-    "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "9.0.0",
     "@typescript-eslint/eslint-plugin": "8.32.1",
     "@typescript-eslint/parser": "8.32.1",
-    "concurrently": "9.1.2",
     "cross-env": "7.0.3",
     "eslint": "9.26.0",
     "fast-glob": "^3.3.3",
