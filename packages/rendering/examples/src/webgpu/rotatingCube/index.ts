@@ -35,12 +35,12 @@ renderRotatingCube(input);
 // 使用 requestAnimationFrame 更新旋转角度
 let lastTime = performance.now();
 
-const r_input = reactive(input);
+const r_ainput = reactive(input);
 function animate(currentTime: number) {
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
-    r_input.rotation += deltaTime;
+    r_ainput.rotation += deltaTime;
 
     requestAnimationFrame(animate);
 }

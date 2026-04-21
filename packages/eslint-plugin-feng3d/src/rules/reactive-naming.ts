@@ -11,10 +11,12 @@ const rule: Rule.RuleModule = {
             missingPrefix: '响应式对象 "{{name}}" 必须使用 r_ 前缀，例如: r_{{name}}',
         },
         schema: [],
+        fixable: 'code',
     },
     create(context) {
-        // 追踪响应式对象变量名
-        const reactiveVariables = new Set<string>();
+        const sourceCode = context.sourceCode;
+        // 追踪需要修复的变量声明节点
+        const fixDeclarators = new Set<Rule.Node>();
 
         return {
             // 检测: const xxx = reactive(...)
@@ -26,17 +28,35 @@ const rule: Rule.RuleModule = {
                             'name' in node.init.callee.property &&
                             node.init.callee.property.name === 'reactive'))
                 ) {
-                    const variable = (node.id as any)?.name;
-                    if (variable && typeof variable === 'string') {
+                    const idNode = node.id;
+                    if (idNode?.type === 'Identifier') {
+                        const oldName = idNode.name;
                         // 检查是否有 r_ 前缀
-                        if (!variable.startsWith('r_')) {
+                        if (!oldName.startsWith('r_')) {
+                            const newName = `r_${oldName}`;
+                            fixDeclarators.add(node);
+
                             context.report({
-                                node,
+                                node: idNode,
                                 messageId: 'missingPrefix',
-                                data: { name: variable },
+                                data: { name: oldName },
+                                *fix(fixer) {
+                                    yield fixer.replaceText(idNode, newName);
+                                    // 修复文件中所有引用
+                                    const scope = sourceCode.getScope(node);
+                                    const variable = scope.variables.find((v: any) => v.name === oldName);
+                                    if (variable) {
+                                        for (const ref of variable.references) {
+                                            const refId = ref.identifier;
+                                            // 跳过声明本身
+                                            if (refId !== idNode) {
+                                                yield fixer.replaceText(refId, newName);
+                                            }
+                                        }
+                                    }
+                                },
                             });
                         }
-                        reactiveVariables.add(variable);
                     }
                 }
             },

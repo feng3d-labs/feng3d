@@ -601,7 +601,6 @@ describe('响应式/reactive/数组', () =>
         });
 
         // Node 20+
-        // @ts-expect-error tests are not limited to es2016
         test.skipIf(!Array.prototype.toReversed)('toReversed', () =>
         {
             const array = reactive([1, { val: 2 }]);
@@ -615,11 +614,9 @@ describe('响应式/reactive/数组', () =>
         });
 
         // Node 20+
-        // @ts-expect-error tests are not limited to es2016
         test.skipIf(!Array.prototype.toSpliced)('toSpliced', () =>
         {
             const array = reactive([1, 2, 3]);
-            // @ts-expect-error tests are not limited to es2016, toSpliced is newer
             const result = computed(() => array.toSpliced(1, 1, -2));
 
             expect(result.value).toStrictEqual([1, -2, 3]);
@@ -672,16 +669,17 @@ describe('响应式/reactive/数组', () =>
                     return super.findIndex((obj) => obj.id === bar);
                 }
 
+                // @ts-expect-error testing extended method with custom signature
                 findLast(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');
                     expect(bar).toBe('bar');
                     expect(baz).toBe('baz');
-                    // @ts-expect-error our code is limited to es2016 but user code is not
 
                     return super.findLast((obj) => obj.id === bar);
                 }
 
+                // @ts-expect-error testing extended method with custom signature
                 findLastIndex(foo: any, bar: any, baz: any)
                 {
                     expect(foo).toBe('foo');

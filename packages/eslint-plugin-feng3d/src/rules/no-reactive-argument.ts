@@ -23,16 +23,19 @@ const rule: Rule.RuleModule = {
                 additionalProperties: false,
             },
         ],
+        fixable: 'code',
     },
     create(context) {
         const options = context.options[0] || {};
         const allowFunctions = new Set(options.allowFunctions || ['toRaw', 'computed', 'effect']);
 
-        // 追踪响应式对象变量名
+        // 追踪响应式对象及其原始对象: r_xxx -> xxx
+        const reactiveToOriginal = new Map<string, string>();
+        // 追踪所有响应式对象变量（包括没有原始对象的）
         const reactiveVariables = new Set<string>();
 
         return {
-            // 检测: const xxx = reactive(...)
+            // 检测: const r_xxx = reactive(yyy)
             VariableDeclarator(node) {
                 if (
                     node.init?.type === 'CallExpression' &&
@@ -41,9 +44,17 @@ const rule: Rule.RuleModule = {
                             'name' in node.init.callee.property &&
                             node.init.callee.property.name === 'reactive'))
                 ) {
-                    const variable = (node.id as any)?.name;
-                    if (variable && typeof variable === 'string') {
-                        reactiveVariables.add(variable);
+                    const idNode = node.id;
+                    if (idNode?.type === 'Identifier') {
+                        const reactiveName = idNode.name;
+                        reactiveVariables.add(reactiveName);
+
+                        // 尝试找到原始对象
+                        const arg = (node.init as any).arguments[0];
+                        if (arg?.type === 'Identifier') {
+                            // reactive(obj) -> r_obj -> obj
+                            reactiveToOriginal.set(reactiveName, arg.name);
+                        }
                     }
                 }
             },
@@ -81,10 +92,19 @@ const rule: Rule.RuleModule = {
                     }
 
                     if (argName && reactiveVariables.has(argName)) {
+                        const originalName = reactiveToOriginal.get(argName);
                         context.report({
                             node: arg,
                             messageId: 'noReactiveArgument',
                             data: { name: argName },
+                            fix: (fixer) => {
+                                // 如果有原始对象，替换为原始对象
+                                if (originalName) {
+                                    return fixer.replaceText(arg, originalName);
+                                }
+                                // 否则无法自动修复
+                                return null;
+                            },
                         });
                     }
                 }
