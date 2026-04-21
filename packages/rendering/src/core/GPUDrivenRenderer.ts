@@ -251,14 +251,8 @@ export class GPUDrivenRenderer
     setCamera(camera: Camera): void
     {
         // 通过响应式系统更新 value
-        reactive(this.cameraBuffer).value = {
-            viewMatrix: camera.data.viewMatrix,
-            projectionMatrix: camera.data.projectionMatrix,
-        };
-
-        reactive(this.frustumBuffer).value = {
-            planes: camera.frustum.planes,
-        };
+        reactive(this.cameraBuffer).value = camera.data;
+        reactive(this.frustumBuffer).value = camera.frustum;
     }
 
     /**
