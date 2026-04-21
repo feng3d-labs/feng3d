@@ -16,7 +16,6 @@
     }
   },
   "scripts": {
-    "examples:dev": "cd examples && npm run dev",
     "clean": "rimraf lib dist public",
     "build": "vite build && tsc",
     "watch": "concurrently \"vite build --watch\" \"tsc -w\" \"vitest\"",
