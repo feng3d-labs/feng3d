@@ -18,8 +18,8 @@
     "test": "npm run test --workspaces --if-present",
     "test:ui": "vitest --ui",
     "types": "tsc --build",
-    "lint": "eslint .",
-    "lintfix": "eslint . --fix",
+    "lint": "eslint \"packages/*/src/**/*.ts\"",
+    "lintfix": "eslint \"packages/*/src/**/*.ts\" --fix",
     "docs": "typedoc",
     "release": "npm run clean && npm run lint && npm run test && npm run build && npm run docs",
     "prepare": "husky"
