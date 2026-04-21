@@ -186,7 +186,7 @@ export class WGPURenderPassDescriptor extends ReactiveObject
             {
                 renderPassFormat = {
                     colorFormats: colorFormats,
-                    depthStencilFormat: depthStencilFormat ?? 'depth24plus' as GPUTextureFormat,
+                    ...(depthStencilFormat && { depthStencilFormat }),
                     sampleCount: sampleCount as 4,
                 };
                 renderPassFormatCache[renderPassFormatKey] = renderPassFormat;
