@@ -1,7 +1,7 @@
 {
-  "name": "@feng3d/gpu-driven-rendering",
+  "name": "@feng3d/rendering",
   "version": "0.1.0",
-  "description": "WebGPU 全GPU驱动渲染系统",
+  "description": "WebGPU GPU 驱动渲染系统",
   "type": "module",
   "main": "./src/index.ts",
   "exports": {

@@ -1,7 +1,7 @@
 /**
- * @feng3d/gpu-driven-rendering
+ * @feng3d/rendering
  *
- * WebGPU 全GPU驱动渲染系统
+ * WebGPU GPU 驱动渲染系统
  *
  * 提供高性能的 GPU 自治渲染解决方案，支持：
  * - GPU生成绘制命令

@@ -1,6 +1,6 @@
 # 开发进度跟踪
 
-本文档跟踪 `@feng3d/gpu-driven-rendering` 子包的开发进度。
+本文档跟踪 `@feng3d/rendering` 子包的开发进度。
 
 ---
 
@@ -79,13 +79,13 @@
 
 | 任务 | 状态 | 代码位置 |
 |------|------|----------|
-| 创建 package.json | ⬜ 待实现 | gpu-driven-rendering/package.json |
-| 创建 tsconfig.json | ⬜ 待实现 | gpu-driven-rendering/tsconfig.json |
-| 创建 vite.config.ts | ⬜ 待实现 | gpu-driven-rendering/vite.config.ts |
-| 创建 .eslintrc.json | ⬜ 待实现 | gpu-driven-rendering/.eslintrc.json |
-| 创建 src 目录结构 | ⬜ 待实现 | gpu-driven-rendering/src/ |
-| 创建 examples 子项目 | ⬜ 待实现 | gpu-driven-rendering/examples/ |
-| 创建 test 目录 | ⬜ 待实现 | gpu-driven-rendering/test/ |
+| 创建 package.json | ⬜ 待实现 | rendering/package.json |
+| 创建 tsconfig.json | ⬜ 待实现 | rendering/tsconfig.json |
+| 创建 vite.config.ts | ⬜ 待实现 | rendering/vite.config.ts |
+| 创建 .eslintrc.json | ⬜ 待实现 | rendering/.eslintrc.json |
+| 创建 src 目录结构 | ⬜ 待实现 | rendering/src/ |
+| 创建 examples 子项目 | ⬜ 待实现 | rendering/examples/ |
+| 创建 test 目录 | ⬜ 待实现 | rendering/test/ |
 | 更新根 package.json workspaces | ⬜ 待实现 | package.json |
 
 **验收标准**：

@@ -120,7 +120,7 @@ http://localhost:5173/#/instancedCube
 
 ### 练习 2：理解间接绘制 (10 分钟)
 
-阅读 [01-全GPU渲染核心](./gpu-driven-rendering/01-gpu-rendering-core.md)
+阅读 [01-全GPU渲染核心](./rendering/01-gpu-rendering-core.md)
 
 **关键点**：
 - Indirect Buffer 的作用
@@ -157,11 +157,11 @@ open examples/src/webgpu/timestampQuery/
 
 | 你的目标 | 推荐阅读 |
 |---------|---------|
-| 理解整体架构 | [00-架构概览](./gpu-driven-rendering/00-architecture.md) |
-| 开始实现功能 | [01-全GPU渲染核心](./gpu-driven-rendering/01-gpu-rendering-core.md) |
-| 查看代码示例 | [08-代码示例](./gpu-driven-rendering/08-examples.md) |
-| 了解 API | [07-API参考](./gpu-driven-rendering/07-api-reference.md) |
-| 排查问题 | [06-常见问题](./gpu-driven-rendering/06-troubleshooting.md) |
+| 理解整体架构 | [00-架构概览](./rendering/00-architecture.md) |
+| 开始实现功能 | [01-全GPU渲染核心](./rendering/01-gpu-rendering-core.md) |
+| 查看代码示例 | [08-代码示例](./rendering/08-examples.md) |
+| 了解 API | [07-API参考](./rendering/07-api-reference.md) |
+| 排查问题 | [06-常见问题](./rendering/06-troubleshooting.md) |
 
 ---
 
@@ -178,6 +178,6 @@ A: 确认 workgroup 数量计算正确
 
 ---
 
-> 需要帮助？查看 [06-常见问题](./gpu-driven-rendering/06-troubleshooting.md) 或提交 Issue
+> 需要帮助？查看 [06-常见问题](./rendering/06-troubleshooting.md) 或提交 Issue
 
 > 最后更新：2026-04-20

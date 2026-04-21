@@ -1,6 +1,6 @@
-# @feng3d/gpu-driven-rendering
+# @feng3d/rendering
 
-WebGPU 全GPU驱动渲染系统，提供高性能的 GPU 自治渲染解决方案。
+WebGPU GPU 驱动渲染系统，提供高性能的 GPU 自治渲染解决方案。
 
 ---
 
@@ -104,7 +104,7 @@ Draw Calls: ~50次（按材质批次）
 ## 项目结构
 
 ```
-gpu-driven-rendering/              # 独立子项目
+rendering/              # 独立子项目
 ├── package.json                   # 包配置
 ├── tsconfig.json                  # TypeScript 配置
 ├── vite.config.ts                 # Vite 构建配置
@@ -178,7 +178,7 @@ gpu-driven-rendering/              # 独立子项目
                          │ workspace: "*"
                          │
 ┌────────────────────────▼────────────────────────────────┐
-│            @feng3d/gpu-driven-rendering                 │
+│            @feng3d/rendering                 │
 │                     (本包)                              │
 ├─────────────────────────────────────────────────────────┤
 │  ┌─────────┐  ┌──────────┐  ┌──────┐  ┌──────┐       │
@@ -195,7 +195,7 @@ gpu-driven-rendering/              # 独立子项目
                          │ workspace: "*"
                          │
 ┌────────────────────────▼────────────────────────────────┐
-│          gpu-driven-rendering/examples                   │
+│          rendering/examples                   │
 │                  (示例项目)                              │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -208,7 +208,7 @@ gpu-driven-rendering/              # 独立子项目
 
 ```bash
 # 在主项目目录
-cd gpu-driven-rendering
+cd rendering
 npm install           # 安装依赖（自动链接 @feng3d/webgpu:*）
 npm run dev           # 启动示例开发服务器
 npm run build         # 构建子包
@@ -220,8 +220,8 @@ npm run lint          # 代码检查
 
 ```bash
 # 克隆独立仓库后
-git clone https://github.com/feng3d-labs/gpu-driven-rendering.git
-cd gpu-driven-rendering
+git clone https://github.com/feng3d-labs/rendering.git
+cd rendering
 
 # 修改 package.json 中的依赖
 # "@feng3d/webgpu": "*" → "@feng3d/webgpu": "^0.1.0"
@@ -236,13 +236,13 @@ npm run dev
 
 ```typescript
 // 主入口 - 核心渲染
-import { GPUDrivenRenderer } from '@feng3d/gpu-driven-rendering';
-import type { ObjectData, Camera, Material } from '@feng3d/gpu-driven-rendering';
+import { GPUDrivenRenderer } from '@feng3d/rendering';
+import type { ObjectData, Camera, Material } from '@feng3d/rendering';
 
 // 子路径导出 - 可选功能
-import { FrustumCulling } from '@feng3d/gpu-driven-rendering/culling';
-import { LODSelector } from '@feng3d/gpu-driven-rendering/lod';
-import { DepthClusteredSort } from '@feng3d/gpu-driven-rendering/transparent';
+import { FrustumCulling } from '@feng3d/rendering/culling';
+import { LODSelector } from '@feng3d/rendering/lod';
+import { DepthClusteredSort } from '@feng3d/rendering/transparent';
 ```
 
 ---
