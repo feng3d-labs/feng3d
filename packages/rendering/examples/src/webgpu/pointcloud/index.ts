@@ -3,7 +3,8 @@ import { reactive } from '@feng3d/reactivity';
 import { pointcloudVertWGSL } from './shaders/pointcloud.vert.wgsl.js';
 import { pointcloudFragWGSL } from './shaders/pointcloud.frag.wgsl.js';
 
-interface Point {
+interface Point
+{
     x: number;
     y: number;
     z: number;
@@ -113,41 +114,11 @@ async function main()
     const gui = new GUI();
     const folder = gui.addFolder('点云控制');
 
-    const params = {
-        rotation: 0,
-        posX: 0,
-        posY: 0,
-        posZ: 0,
-    };
+    folder.add(r_input, 'rotation', 0, Math.PI * 2).name('旋转角度');
 
-    folder.add(params, 'rotation', 0, Math.PI * 2)
-        .name('旋转角度')
-        .onChange((value: number) =>
-        {
-            r_input.rotation = value;
-        });
-
-    folder.add(params, 'posX', -2, 2)
-        .name('X 位置')
-        .onChange((value: number) =>
-        {
-            r_input.position = { ...r_input.position, x: value };
-        });
-
-    folder.add(params, 'posY', -2, 2)
-        .name('Y 位置')
-        .onChange((value: number) =>
-        {
-            r_input.position = { ...r_input.position, y: value };
-        });
-
-    folder.add(params, 'posZ', -2, 2)
-        .name('Z 位置')
-        .onChange((value: number) =>
-        {
-            r_input.position = { ...r_input.position, z: value };
-        });
-
+    folder.add(r_input.position, 'x', -2, 2).name('X 位置');
+    folder.add(r_input.position, 'y', -2, 2).name('Y 位置');
+    folder.add(r_input.position, 'z', -2, 2).name('Z 位置');
     folder.open();
 }
 
