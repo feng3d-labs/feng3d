@@ -1,6 +1,7 @@
 import { render, RenderInput, RenderMode } from '@feng3d/rendering';
 
-import {
+import
+{
     cubePositionOffset,
     cubeUVOffset,
     cubeVertexArray,
@@ -28,7 +29,7 @@ const input: RenderInput = {
         uv: { data: cubeVertexArray, format: 'float32x2', offset: cubeUVOffset, arrayStride: cubeVertexSize },
     },
     vertexCount: cubeVertexCount,
-    rotation: 0,
+    rotation: { x: 0, y: 0, z: 0 },
     renderMode: 'on-demand',
 };
 
@@ -39,11 +40,12 @@ render(input);
 let lastTime = performance.now();
 
 const r_input = reactive(input);
-function animate(currentTime: number) {
+function animate(currentTime: number)
+{
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
-    r_input.rotation += deltaTime;
+    r_input.rotation.y += deltaTime;
 
     requestAnimationFrame(animate);
 }
@@ -72,9 +74,11 @@ const params = {
 // 切换画布控制
 folder.add(params, 'currentCanvas', [1, 2])
     .name('当前画布')
-    .onChange((value: number) => {
+    .onChange((value: number) =>
+    {
         const numValue = Number(value);
-        if (numValue !== currentCanvasIndex) {
+        if (numValue !== currentCanvasIndex)
+        {
             currentCanvasIndex = numValue;
             const targetCanvas = numValue === 1 ? canvas1 : canvas2;
             // 直接赋值给响应式对象
@@ -85,7 +89,8 @@ folder.add(params, 'currentCanvas', [1, 2])
 // 画布2显示控制
 folder.add(params, 'showCanvas2')
     .name('显示画布2')
-    .onChange((value: boolean) => {
+    .onChange((value: boolean) =>
+    {
         canvas2.classList.toggle('hidden', !value);
     });
 
