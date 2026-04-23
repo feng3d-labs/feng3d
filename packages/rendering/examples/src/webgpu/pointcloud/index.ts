@@ -98,7 +98,7 @@ async function main()
             },
         },
         vertexCount: vertexData.length / 8,
-        rotation: 0,
+        rotation: { x: 0, y: 0, z: 0 },
         position: { x: 0, y: 0, z: 0 },
         renderMode: 'on-demand',
     };
@@ -114,8 +114,9 @@ async function main()
     const gui = new GUI();
     const folder = gui.addFolder('点云控制');
 
-    folder.add(r_input, 'rotation', 0, Math.PI * 2).name('旋转角度');
-
+    folder.add(r_input.rotation, 'x', -Math.PI, Math.PI).name('X 旋转');
+    folder.add(r_input.rotation, 'y', -Math.PI, Math.PI).name('Y 旋转');
+    folder.add(r_input.rotation, 'z', -Math.PI, Math.PI).name('Z 旋转');
     folder.add(r_input.position, 'x', -2, 2).name('X 位置');
     folder.add(r_input.position, 'y', -2, 2).name('Y 位置');
     folder.add(r_input.position, 'z', -2, 2).name('Z 位置');

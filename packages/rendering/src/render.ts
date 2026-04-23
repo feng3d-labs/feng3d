@@ -138,10 +138,17 @@ export async function render(
             mat4.translate(modelMatrix, vec3.fromValues(position.x, position.y, position.z), modelMatrix);
         }
 
+        // 欧拉角旋转（XYZ 顺序）
+        if (rotation)
+        {
+            mat4.rotateX(modelMatrix, rotation.x, modelMatrix);
+            mat4.rotateY(modelMatrix, rotation.y, modelMatrix);
+            mat4.rotateZ(modelMatrix, rotation.z, modelMatrix);
+        }
+
         // 创建视图矩阵
         const viewMatrix = mat4.identity();
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(rotation), Math.cos(rotation), 0), 1, viewMatrix);
 
         // 组合模型视图矩阵
         const modelViewMatrix = mat4.create();
@@ -232,8 +239,8 @@ export interface RenderInput
     /** 顶点数量 */
     vertexCount: number;
     position?: { x: number, y: number, z: number },
-    /** 旋转角度 */
-    rotation: number;
+    /** 旋转角度（使用角度表示） */
+    rotation: { x: number, y: number, z: number };
     /** 额外的绑定资源 */
     bindingResources?: Record<string, unknown>;
     /**
