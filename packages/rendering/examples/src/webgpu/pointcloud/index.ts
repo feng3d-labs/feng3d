@@ -108,31 +108,24 @@ async function main()
     // 使用 reactive 包装 input
     const r_input = reactive(input);
 
-    // 使用 requestAnimationFrame 更新旋转角度
-    let lastTime = performance.now();
-
-    function animate(currentTime: number): void
-    {
-        const deltaTime = (currentTime - lastTime) / 1000;
-        lastTime = currentTime;
-
-        r_input.rotation += deltaTime * 0.5;
-
-        requestAnimationFrame(animate);
-    }
-
-    requestAnimationFrame(animate);
-
     // GUI 控制
     const GUI = (window as any).dat.GUI;
     const gui = new GUI();
     const folder = gui.addFolder('点云控制');
 
     const params = {
+        rotation: 0,
         posX: 0,
         posY: 0,
         posZ: 0,
     };
+
+    folder.add(params, 'rotation', 0, Math.PI * 2)
+        .name('旋转角度')
+        .onChange((value: number) =>
+        {
+            r_input.rotation = value;
+        });
 
     folder.add(params, 'posX', -2, 2)
         .name('X 位置')
