@@ -98,6 +98,7 @@ async function main()
         },
         vertexCount: vertexData.length / 8,
         rotation: 0,
+        position: { x: 0, y: 0, z: 0 },
         renderMode: 'on-demand',
     };
 
@@ -121,6 +122,40 @@ async function main()
     }
 
     requestAnimationFrame(animate);
+
+    // GUI 控制
+    const GUI = (window as any).dat.GUI;
+    const gui = new GUI();
+    const folder = gui.addFolder('点云控制');
+
+    const params = {
+        posX: 0,
+        posY: 0,
+        posZ: 0,
+    };
+
+    folder.add(params, 'posX', -2, 2)
+        .name('X 位置')
+        .onChange((value: number) =>
+        {
+            r_input.position = { ...r_input.position, x: value };
+        });
+
+    folder.add(params, 'posY', -2, 2)
+        .name('Y 位置')
+        .onChange((value: number) =>
+        {
+            r_input.position = { ...r_input.position, y: value };
+        });
+
+    folder.add(params, 'posZ', -2, 2)
+        .name('Z 位置')
+        .onChange((value: number) =>
+        {
+            r_input.position = { ...r_input.position, z: value };
+        });
+
+    folder.open();
 }
 
 main();

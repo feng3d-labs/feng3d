@@ -15,7 +15,8 @@ export type RenderMode = 'always' | 'on-demand' | 'never';
  */
 export async function render(
     input: RenderInput,
-): Promise<() => void> {
+): Promise<() => void>
+{
     const { pipeline, vertices, vertexCount, bindingResources = {} } = input;
     const devicePixelRatio = window.devicePixelRatio || 1;
 
@@ -38,7 +39,8 @@ export async function render(
         },
     };
 
-    const canvasId = computed(() => {
+    const canvasId = computed(() =>
+    {
         r_input.canvas;
 
         // 直接访问原始值，避免重复追踪
@@ -78,11 +80,13 @@ export async function render(
     /**
      * 调度一帧渲染（如果当前没有已调度的帧）
      */
-    function scheduleFrame(): void {
+    function scheduleFrame(): void
+    {
         if (disposed || frameScheduled) return;
 
         frameScheduled = true;
-        requestAnimationFrame(() => {
+        requestAnimationFrame(() =>
+        {
             if (disposed) return;
             frameScheduled = false;
             webgpu.submit(submit);
@@ -99,7 +103,8 @@ export async function render(
     };
 
     // 监听 canvas 变化，更新 canvas 大小和 canvasId
-    effect(() => {
+    effect(() =>
+    {
         if (disposed) return;
 
         // 精准替换 canvasId
@@ -107,7 +112,8 @@ export async function render(
     });
 
     // 计算属性：依赖 canvas 宽高，自动计算投影矩阵
-    const computedProjection = computed(() => {
+    const computedProjection = computed(() =>
+    {
         // 先访问响应式对象触发追踪，然后获取原始值
         const canvas = toRaw(r_input.canvas);
         return mat4.perspective(
@@ -119,69 +125,89 @@ export async function render(
     });
 
     // 计算属性：纯函数，返回计算后的矩阵数据
-    const computedMatrix = computed(() => {
+    const computedMatrix = computed(() =>
+    {
         const rotation = r_input.rotation;
+        const position = r_input.position;
         const projection = computedProjection.value;
 
         const viewMatrix = mat4.identity();
         mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
         mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(rotation), Math.cos(rotation), 0), 1, viewMatrix);
 
-        const mvpMatrix = mat4.create();
-        mat4.multiply(projection, viewMatrix, mvpMatrix);
+        // 应用模型位移
+        const modelMatrix = mat4.create();
+        if (position)
+        {
+            mat4.translate(modelMatrix, vec3.fromValues(position.x, position.y, position.z), modelMatrix);
+        }
+        mat4.multiply(viewMatrix, modelMatrix, modelMatrix);
 
-        return mvpMatrix.slice() as Float32Array; // 返回一个新的 Float32Array 视图，确保响应式系统能正确追踪变化
+        const mvpMatrix = mat4.create();
+        mat4.multiply(projection, modelMatrix, mvpMatrix);
+
+        return mvpMatrix.slice() as Float32Array;
     });
 
     // 监听矩阵变化，更新 uniforms
-    effect(() => {
+    effect(() =>
+    {
         if (disposed) return;
 
         // 赋值触发响应式更新
         reactive(uniforms.value!).modelViewProjectionMatrix = computedMatrix.value;
 
         // on-demand 模式下才调度渲染
-        if (r_input.renderMode !== 'always') {
+        if (r_input.renderMode !== 'always')
+        {
             scheduleFrame();
         }
     });
 
     // 始终渲染模式：持续调度渲染
     let rafId: number | undefined;
-    function renderLoop(): void {
+    function renderLoop(): void
+    {
         if (disposed) return;
-        if (r_input.renderMode === 'always') {
+        if (r_input.renderMode === 'always')
+        {
             webgpu.submit(submit);
             rafId = requestAnimationFrame(renderLoop);
         }
     }
 
     // 监听渲染模式变化
-    effect(() => {
+    effect(() =>
+    {
         if (disposed) return;
         const mode = r_input.renderMode;
 
         // 停止之前的循环
-        if (rafId !== undefined) {
+        if (rafId !== undefined)
+        {
             cancelAnimationFrame(rafId);
             rafId = undefined;
         }
 
         // 始终渲染模式
-        if (mode === 'always') {
+        if (mode === 'always')
+        {
             renderLoop();
         }
         // on-demand 模式：首次渲染
-        else if (mode === undefined || mode === 'on-demand') {
+        else if (mode === undefined || mode === 'on-demand')
+        {
             scheduleFrame();
         }
         // never 模式：不渲染
     });
 
     // 返回销毁函数
-    return () => {
+    return () =>
+    {
         disposed = true;
-        if (rafId !== undefined) {
+        if (rafId !== undefined)
+        {
             cancelAnimationFrame(rafId);
         }
     };
@@ -190,7 +216,8 @@ export async function render(
 /**
  * 渲染输入
  */
-export interface RenderInput {
+export interface RenderInput
+{
     /** Canvas 元素 */
     canvas: HTMLCanvasElement;
     /** 渲染管线 */
@@ -199,6 +226,7 @@ export interface RenderInput {
     vertices: VertexAttributes;
     /** 顶点数量 */
     vertexCount: number;
+    position?: { x: number, y: number, z: number },
     /** 旋转角度 */
     rotation: number;
     /** 额外的绑定资源 */
