@@ -231,23 +231,23 @@ export async function render(
 export interface RenderInput
 {
     /** Canvas 元素 */
-    canvas: HTMLCanvasElement;
+    readonly canvas: HTMLCanvasElement;
     /** 渲染管线 */
-    pipeline: RenderPipeline;
+    readonly pipeline: RenderPipeline;
     /** 顶点属性 */
-    vertices: VertexAttributes;
+    readonly vertices: VertexAttributes;
     /** 顶点数量 */
-    vertexCount: number;
-    position?: { x: number, y: number, z: number },
-    /** 旋转角度（使用角度表示） */
-    rotation: { x: number, y: number, z: number };
+    readonly vertexCount: number;
+    readonly position?: { readonly x: number, readonly y: number, readonly z: number };
+    /** 旋转角度（使用弧度表示） */
+    readonly rotation: { readonly x: number, readonly y: number, readonly z: number };
     /** 额外的绑定资源 */
-    bindingResources?: Record<string, unknown>;
+    readonly bindingResources?: Readonly<Record<string, unknown>>;
     /**
      * 渲染模式
      * - `always`: 始终每帧渲染
      * - `on-demand`: 有变化时触发渲染（默认）
      * - `never`: 始终不渲染
      */
-    renderMode?: RenderMode;
+    readonly renderMode?: RenderMode;
 }
