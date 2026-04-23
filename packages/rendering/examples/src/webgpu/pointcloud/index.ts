@@ -1,4 +1,5 @@
 import { render, RenderInput } from '@feng3d/rendering';
+import { reactive } from '@feng3d/reactivity';
 import { pointcloudVertWGSL } from './shaders/pointcloud.vert.wgsl.js';
 import { pointcloudFragWGSL } from './shaders/pointcloud.frag.wgsl.js';
 
@@ -103,6 +104,9 @@ async function main()
     // 启动渲染
     render(input);
 
+    // 使用 reactive 包装 input
+    const r_input = reactive(input);
+
     // 使用 requestAnimationFrame 更新旋转角度
     let lastTime = performance.now();
 
@@ -111,7 +115,7 @@ async function main()
         const deltaTime = (currentTime - lastTime) / 1000;
         lastTime = currentTime;
 
-        input.rotation += deltaTime * 0.5;
+        r_input.rotation += deltaTime * 0.5;
 
         requestAnimationFrame(animate);
     }
