@@ -131,20 +131,25 @@ export async function render(
         const position = r_input.position;
         const projection = computedProjection.value;
 
-        const viewMatrix = mat4.identity();
-        mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(rotation), Math.cos(rotation), 0), 1, viewMatrix);
-
-        // 应用模型位移
-        const modelMatrix = mat4.create();
+        // 创建模型矩阵
+        const modelMatrix = mat4.identity();
         if (position)
         {
             mat4.translate(modelMatrix, vec3.fromValues(position.x, position.y, position.z), modelMatrix);
         }
-        mat4.multiply(viewMatrix, modelMatrix, modelMatrix);
 
+        // 创建视图矩阵
+        const viewMatrix = mat4.identity();
+        mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
+        mat4.rotate(viewMatrix, vec3.fromValues(Math.sin(rotation), Math.cos(rotation), 0), 1, viewMatrix);
+
+        // 组合模型视图矩阵
+        const modelViewMatrix = mat4.create();
+        mat4.multiply(viewMatrix, modelMatrix, modelViewMatrix);
+
+        // 组合 MVP 矩阵
         const mvpMatrix = mat4.create();
-        mat4.multiply(projection, modelMatrix, mvpMatrix);
+        mat4.multiply(projection, modelViewMatrix, mvpMatrix);
 
         return mvpMatrix.slice() as Float32Array;
     });
