@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./packages/serialization" },
     { "path": "./packages/math" },
     { "path": "./packages/watcher" },
     { "path": "./packages/reactivity" },

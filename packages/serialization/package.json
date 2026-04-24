@@ -1,7 +1,7 @@
 {
-  "name": "@feng3d/watcher",
-  "version": "0.8.14",
-  "description": "对象属性监听器",
+  "name": "@feng3d/serialization",
+  "version": "0.8.3",
+  "description": "序列化任意对象",
   "author": "feng",
   "license": "MIT",
   "type": "module",
@@ -26,5 +26,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@feng3d/polyfill": "*"
   }
 }

@@ -10,13 +10,13 @@
     "noImplicitAny": false,
     "strictNullChecks": false,
     "strictPropertyInitialization": false,
+    "strictFunctionTypes": false,
     "noImplicitThis": false,
 
     // 模块解析
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-
     // 输出
     "declaration": true,
     "declarationMap": true,
