@@ -36,5 +36,15 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/earcut": "^3.0.0"
+  },
+  "dependencies": {
+    "@feng3d/bezier": "^0.8.2",
+    "@feng3d/objectview": "^0.8.2",
+    "@feng3d/polyfill": "^0.8.4",
+    "@feng3d/serialization": "^0.8.3",
+    "earcut": "^3.0.1"
   }
 }

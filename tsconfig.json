@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./packages/math" },
     { "path": "./packages/watcher" },
     { "path": "./packages/reactivity" },
     { "path": "./packages/webgpu" },
