@@ -8,6 +8,29 @@ import { mat4, vec3 } from 'wgpu-matrix';
 export type RenderMode = 'always' | 'on-demand' | 'never';
 
 /**
+ * 相机内参
+ */
+export interface CameraIntrinsics
+{
+    /** X 方向焦距 */
+    readonly fx: number;
+    /** Y 方向焦距 */
+    readonly fy: number;
+    /** X 主点坐标 */
+    readonly cx: number;
+    /** Y 主点坐标 */
+    readonly cy: number;
+    /** 图像宽度 */
+    readonly width: number;
+    /** 图像高度 */
+    readonly height: number;
+    /** 近裁剪面距离（默认 0.1） */
+    readonly near?: number;
+    /** 远裁剪面距离（默认 100） */
+    readonly far?: number;
+}
+
+/**
  * 渲染入口函数
  *
  * @param input - 输入配置
@@ -114,14 +137,31 @@ export async function render(
     // 计算属性：依赖 canvas 宽高，自动计算投影矩阵
     const computedProjection = computed(() =>
     {
-        // 先访问响应式对象触发追踪，然后获取原始值
-        const canvas = toRaw(r_input.canvas);
-        return mat4.perspective(
-            (2 * Math.PI) / 5,
-            canvas.width / canvas.height,
-            1,
-            100.0,
-        );
+        const camera = r_input.camera;
+        if (camera)
+        {
+            // 使用相机内参构建投影矩阵
+            const { fx, fy, cx, cy, width, height, near = 0.1, far = 100 } = camera;
+
+            // 从相机内参计算 frustum 参数
+            const left = -cx * near / fx;
+            const right = (width - cx) * near / fx;
+            const bottom = -cy * near / fy;
+            const top = (height - cy) * near / fy;
+
+            return mat4.frustum(left, right, bottom, top, near, far);
+        }
+        else
+        {
+            // 先访问响应式对象触发追踪，然后获取原始值
+            const canvas = toRaw(r_input.canvas);
+            return mat4.perspective(
+                (2 * Math.PI) / 5,
+                canvas.width / canvas.height,
+                0.1,
+                100.0,
+            );
+        }
     });
 
     // 计算属性：纯函数，返回计算后的矩阵数据
@@ -129,6 +169,7 @@ export async function render(
     {
         const rotation = r_input.rotation;
         const position = r_input.position;
+        const camera = r_input.camera;
         const projection = computedProjection.value;
 
         // 创建模型矩阵
@@ -148,7 +189,11 @@ export async function render(
 
         // 创建视图矩阵
         const viewMatrix = mat4.identity();
-        mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
+        // 使用相机内参时，相机位于原点，不需要平移
+        if (!camera)
+        {
+            mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
+        }
 
         // 组合模型视图矩阵
         const modelViewMatrix = mat4.create();
@@ -241,6 +286,8 @@ export interface RenderInput
     readonly position?: { readonly x: number, readonly y: number, readonly z: number };
     /** 旋转角度（使用弧度表示） */
     readonly rotation: { readonly x: number, readonly y: number, readonly z: number };
+    /** 相机内参（可选） */
+    readonly camera?: CameraIntrinsics;
     /** 额外的绑定资源 */
     readonly bindingResources?: Readonly<Record<string, unknown>>;
     /**
