@@ -20,6 +20,7 @@
     "@feng3d/reactivity": "*",
     "@feng3d/rendering": "*",
     "@feng3d/webgpu": "*",
+    "@feng3d/core": "*",
     "wgpu-matrix": "^3.4.0"
   }
 }

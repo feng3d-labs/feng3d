@@ -40,12 +40,13 @@ render(input);
 let lastTime = performance.now();
 
 const r_input = reactive(input);
+const r_rotation = reactive(input.rotation);
 function animate(currentTime: number)
 {
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
-    r_input.rotation.y += deltaTime;
+    r_rotation.y += deltaTime;
 
     requestAnimationFrame(animate);
 }
