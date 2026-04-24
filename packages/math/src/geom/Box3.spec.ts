@@ -1,6 +1,6 @@
-import { Box3 } from '../../src/geom/Box3';
-import { Triangle3 } from '../../src/geom/Triangle3';
-import { Vector3 } from '../../src/geom/Vector3';
+import { Box3 } from './Box3';
+import { Triangle3 } from './Triangle3';
+import { Vector3 } from './Vector3';
 
 import { assert, describe, it } from 'vitest';
 const { ok, equal, deepEqual } = assert;

@@ -1,6 +1,6 @@
-import { Serializable } from '../src/Serializable';
-import { $deserialize, $diff, $serialize } from '../src/Serialization';
-import { SerializeProperty } from '../src/SerializeProperty';
+import { Serializable } from './Serializable';
+import { $deserialize, $diff, $serialize } from './Serialization';
+import { SerializeProperty } from './SerializeProperty';
 
 import { assert, describe, it } from 'vitest';
 

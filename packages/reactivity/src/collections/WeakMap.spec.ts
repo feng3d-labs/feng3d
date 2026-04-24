@@ -1,5 +1,5 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { effect, isReactive, reactive, toRaw } from '../../src';
+import { effect, isReactive, reactive, toRaw } from '..';
 
 describe('响应式/集合', () =>
 {

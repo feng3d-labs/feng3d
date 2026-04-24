@@ -1,8 +1,8 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { Computed, computed, effect, noTrack, reactive, ref } from '../src';
+import { Computed, computed, effect, noTrack, reactive, ref } from '.';
 
-import { ComputedReactivity } from '../src/computed';
-import { RefReactivity } from '../src/ref';
+import { ComputedReactivity } from './computed';
+import { RefReactivity } from './ref';
 
 describe('响应式/computed', () =>
 {

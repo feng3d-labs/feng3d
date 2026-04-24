@@ -1,6 +1,6 @@
 import { Computed, computed, effect, reactive } from '@feng3d/reactivity';
 import { assert, describe, it } from 'vitest';
-import { ReactiveObject } from '../src/ReactiveObject';
+import { ReactiveObject } from './ReactiveObject';
 
 describe('ReactiveObject', () =>
 {

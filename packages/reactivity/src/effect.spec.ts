@@ -1,6 +1,6 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { batchRun, Effect, effect, reactive, toRaw } from '../src';
-import { EffectReactivity } from '../src/effect';
+import { batchRun, Effect, effect, reactive, toRaw } from '.';
+import { EffectReactivity } from './effect';
 
 describe('响应式/effect', () =>
 {

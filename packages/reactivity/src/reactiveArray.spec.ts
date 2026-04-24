@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { computed, effect, isReactive, isRef, reactive, ref, toRaw } from '../src';
+import { computed, effect, isReactive, isRef, reactive, ref, toRaw } from '.';
 
 describe('响应式/reactive/数组', () =>
 {

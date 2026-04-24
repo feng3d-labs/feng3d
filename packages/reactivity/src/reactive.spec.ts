@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { computed, effect, isProxy, isReactive, isRef, reactive, ref, toRaw } from '../src';
+import { computed, effect, isProxy, isReactive, isRef, reactive, ref, toRaw } from '.';
 
 describe('响应式/reactive', () =>
 {

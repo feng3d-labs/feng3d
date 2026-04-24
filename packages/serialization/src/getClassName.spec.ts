@@ -1,5 +1,5 @@
-import { getClassName } from '../src/getClassName';
-import { Serializable } from '../src/Serializable';
+import { getClassName } from './getClassName';
+import { Serializable } from './Serializable';
 
 import { assert, describe, it } from 'vitest';
 
