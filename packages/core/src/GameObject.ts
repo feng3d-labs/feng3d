@@ -13,17 +13,20 @@ export class GameObject
         return this._transform.value;
     }
 
-    private readonly _this = reactive(this);
     private readonly _transform = computed(() =>
     {
-        const transform = this._this.getComponent(Transform);
-        return transform;
+        return this.getComponent(Transform);
     });
 
     getComponent<T extends Component>(type: Constructor<T>): T
     {
-        for (let i = 0; i < this.components.length; i++)
+        const r_this = reactive(this);
+        const length = r_this.components.length; // 监听
+
+        for (let i = 0; i < length; i++)
         {
+            r_this.components[i]; // 监听
+
             if (this.components[i] instanceof type)
             {
                 return this.components[i] as T;

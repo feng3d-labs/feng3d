@@ -17,6 +17,7 @@
     "clean": "rimraf lib dist",
     "build": "tsc",
     "watch": "tsc -w",
+    "test": "vitest",
     "types": "tsc"
   },
   "repository": {
