@@ -21,7 +21,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noEmit": false,
+    "noEmit": true,
 
     // 其他
     "skipLibCheck": true,

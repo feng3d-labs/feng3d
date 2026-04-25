@@ -10,7 +10,4 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "lib", "public", "examples"],
-  "references": [
-    { "path": "../webgpu" }
-  ]
 }
