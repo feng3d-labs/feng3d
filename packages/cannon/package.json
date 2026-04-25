@@ -2,78 +2,36 @@
   "name": "@feng3d-plugins/cannon",
   "version": "0.6.0",
   "description": "3d物理引擎",
-  "main": "lib/index.js",
-  "module": "lib/index.es.js",
-  "bundle": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "namespace": "CANNON",
   "author": "feng",
   "license": "MIT",
-  "origin": {
-    "name": "0.4.1",
-    "version": "0.6.2",
-    "description": "A lightweight 3D physics engine written in JavaScript.",
-    "homepage": "https://github.com/schteppe/cannon.js",
-    "author": "Stefan Hedman <schteppe@gmail.com> (http://steffe.se)"
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
   },
   "scripts": {
-    "start": "npm run watch",
-    "clean": "rimraf \"{lib,dist}\"",
-    "build": "rollup -c",
-    "build:prod": "cross-env NODE_ENV=production rollup -c",
-    "watch": "rollup -cw",
-    "test": "mocha",
-    "lint": "eslint --ext .js --ext .ts src test rollup.config.js --ignore-path .gitignore --max-warnings 0",
-    "lintfix": "npm run lint -- --fix",
-    "docs": "typedoc",
-    "release": "npm run clean && npm run build:prod && npm publish"
+    "clean": "rimraf lib dist public",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "vitest",
+    "types": "tsc"
   },
-  "keywords": [
-    "cannon.js",
-    "cannon",
-    "physics",
-    "engine",
-    "3d"
+  "files": [
+    "src",
+    "lib"
   ],
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/cannon.git"
+    "url": "https://gitee.com/feng3d/feng3d.git"
   },
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "dist/",
-    "lib",
-    "src"
-  ],
-  "devDependencies": {
-    "@types/mocha": "9.1.0",
-    "@types/node": "^18.6.1",
-    "@typescript-eslint/eslint-plugin": "5.17.0",
-    "@typescript-eslint/parser": "5.17.0",
-    "cross-env": "7.0.3",
-    "eslint": "8.12.0",
-    "mocha": "9.2.2",
-    "rimraf": "3.0.2",
-    "rollup": "2.70.1",
-    "rollup-plugin-buble": "0.19.8",
-    "rollup-plugin-commonjs": "10.1.0",
-    "rollup-plugin-dts": "4.2.0",
-    "rollup-plugin-json": "4.0.0",
-    "rollup-plugin-node-resolve": "5.2.0",
-    "rollup-plugin-replace": "2.2.0",
-    "rollup-plugin-sourcemaps": "0.6.3",
-    "rollup-plugin-string": "3.0.0",
-    "rollup-plugin-terser": "7.0.2",
-    "rollup-plugin-typescript": "1.0.1",
-    "ts-node": "10.7.0",
-    "tslib": "^2.4.0",
-    "typedoc": "0.21.4",
-    "typedoc-plugin-sourcefile-url": "1.0.6",
-    "typescript": "4.3.5"
-  },
   "dependencies": {
-    "feng3d": "^0.6.0"
+    "feng3d": "*"
   }
 }
