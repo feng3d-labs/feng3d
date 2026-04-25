@@ -1,8 +1,35 @@
-import earcut from 'earcut';
 import { Vector2 } from '../geom/Vector2';
+import { earcut } from '@feng3d/earcut';
 
 export class ShapeUtils
 {
+    /**
+     * 计算多边形面积
+     * @param contour 多边形轮廓，使用顶点数组表示。
+     */
+    static area(contour: Vector2[])
+    {
+        const n = contour.length;
+        let a = 0.0;
+
+        for (let p = n - 1, q = 0; q < n; p = q++)
+        {
+            a += (contour[p].x * contour[q].y) - (contour[q].x * contour[p].y);
+        }
+
+        return a * 0.5;
+    }
+
+    /**
+     * 判断多边形是否为顺时针方向
+     *
+     * @param contour 多边形轮廓，使用顶点数组表示。
+     */
+    static isClockWise(contour: Vector2[])
+    {
+        return ShapeUtils.area(contour) < 0;
+    }
+
     /**
      * 三角化多边形
      *

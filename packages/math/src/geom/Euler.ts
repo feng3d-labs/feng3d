@@ -204,7 +204,7 @@ export class Euler
                 }
                 break;
             default:
-                console.warn(`Euler: .fromRotationMatrix() encountered an unknown order: ${order}`);
+                console.warn(`THREE.Euler: .fromRotationMatrix() encountered an unknown order: ${order}`);
         }
 
         this.x = x * mathUtil.RAD2DEG;
@@ -310,5 +310,18 @@ export class Euler
         array[offset + 3] = this.order;
 
         return array;
+    }
+
+    /**
+     * 转换为存储X、Y、Z轴旋转角度的向量。
+     *
+     * @param vector3 存储X、Y、Z轴旋转角度的向量。
+     * @returns 存储X、Y、Z轴旋转角度的向量。
+     */
+    toVector3(vector3 = new Vector3())
+    {
+        vector3.set(this.x, this.y, this.z);
+
+        return vector3;
     }
 }

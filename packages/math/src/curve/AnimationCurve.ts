@@ -1,20 +1,18 @@
-import { bezier } from '@feng3d/bezier';
-import { mathUtil } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
 import { AnimationCurveKeyframe } from './AnimationCurveKeyframe';
+import { bezierCurve } from './BezierCurve';
 import { WrapMode } from './WrapMode';
-
-declare module '@feng3d/serialization' { interface SerializableMap { AnimationCurve: AnimationCurve } }
 
 /**
  * 动画曲线
  *
  * 基于时间轴的连续三阶Bézier曲线
  */
-@Serializable('AnimationCurve')
+@decoratorRegisterClass()
 export class AnimationCurve
 {
-    declare __class__: 'AnimationCurve';
+    __class__: 'AnimationCurve';
 
     /**
      * 最大tan值，超出该值后将会变成分段
@@ -26,7 +24,7 @@ export class AnimationCurve
      *
      * 在第一个关键帧之前的动画行为。
      */
-    @SerializeProperty()
+    @serialize
     preWrapMode = WrapMode.Clamp;
 
     /**
@@ -34,7 +32,7 @@ export class AnimationCurve
      *
      * 动画在最后一个关键帧之后的行为。
      */
-    @SerializeProperty()
+    @serialize
     postWrapMode = WrapMode.Clamp;
 
     /**
@@ -44,7 +42,7 @@ export class AnimationCurve
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    @SerializeProperty()
+    @serialize
     keys: AnimationCurveKeyframe[] = [{ time: 0, value: 1, inTangent: 0, outTangent: 0 }];
 
     /**
@@ -176,11 +174,11 @@ export class AnimationCurve
                 {
                     const ct = (t - prekey.time) / (key.time - prekey.time);
                     const sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
-                    const fy = bezier.getValue(ct, sys);
+                    const fy = bezierCurve.getValue(ct, sys);
 
                     isfind = true;
                     value = fy;
-                    tangent = bezier.getDerivative(ct, sys) / (xend - xstart);
+                    tangent = bezierCurve.getDerivative(ct, sys) / (xend - xstart);
                     break;
                 }
                 else

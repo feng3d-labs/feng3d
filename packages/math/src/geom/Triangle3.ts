@@ -10,6 +10,35 @@ import { Vector3 } from './Vector3';
 export class Triangle3
 {
     /**
+     * 通过3顶点定义一个三角形
+     * @param p0 点0
+     * @param p1 点1
+     * @param p2 点2
+     */
+    static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
+    {
+        return new Triangle3().fromPoints(p0, p1, p2);
+    }
+
+    /**
+     * 从顶点数据初始化三角形
+     * @param positions 顶点数据
+     */
+    static fromPositions(positions: number[])
+    {
+        return new Triangle3().fromPositions(positions);
+    }
+
+    /**
+     * 随机三角形
+     * @param size 尺寸
+     */
+    static random(size = 1)
+    {
+        return new Triangle3(Vector3.random(size), Vector3.random(size), Vector3.random(size));
+    }
+
+    /**
      * 三角形0号点
      */
     p0: Vector3;
@@ -49,7 +78,7 @@ export class Triangle3
      */
     getSegments()
     {
-        return [new Segment3().fromPoints(this.p0, this.p1), new Segment3().fromPoints(this.p1, this.p2), new Segment3().fromPoints(this.p2, this.p0)];
+        return [Segment3.fromPoints(this.p0, this.p1), Segment3.fromPoints(this.p1, this.p2), Segment3.fromPoints(this.p2, this.p0)];
     }
 
     /**
@@ -153,19 +182,6 @@ export class Triangle3
     }
 
     /**
-     * 随机三角形
-     * @param size 尺寸
-     */
-    random(size = 1)
-    {
-        this.p0.random(size);
-        this.p1.random(size);
-        this.p2.random(size);
-
-        return this;
-    }
-
-    /**
      * 获取三角形内的点
      * @param p 三点的权重（重心坐标系坐标）
      * @param pout 输出点
@@ -226,23 +242,17 @@ export class Triangle3
         }, []);
 
         if (crossSegment)
-        {
-            return crossSegment;
-        }
+        { return crossSegment; }
         if (ps.length === 0)
-        {
-            return null;
-        }
+        { return null; }
         if (ps.length === 1)
-        {
-            return ps[0];
-        }
+        { return ps[0]; }
         if (ps[0].equals(ps[1]))
         {
             return ps[0];
         }
 
-        return new Segment3().fromPoints(ps[0], ps[1]);
+        return Segment3.fromPoints(ps[0], ps[1]);
     }
 
     /**
@@ -256,9 +266,7 @@ export class Triangle3
         if (r instanceof Vector3)
         {
             if (segment.onWithPoint(r))
-            {
-                return r;
-            }
+            { return r; }
 
             return null;
         }
@@ -266,15 +274,11 @@ export class Triangle3
         const p1 = segment.clampPoint(r.p1);
 
         if (!r.onWithPoint(p0))
-        {
-            return null;
-        }
+        { return null; }
         if (p0.equals(p1))
-        {
-            return p0;
-        }
+        { return p0; }
 
-        return new Segment3().fromPoints(p0, p1);
+        return Segment3.fromPoints(p0, p1);
     }
 
     /**
@@ -292,9 +296,7 @@ export class Triangle3
         const dot = p0.subTo(p1).cross(p1.subTo(p2)).dot(p.subTo(p0));
 
         if (!mathUtil.equals(dot, 0, precision))
-        {
-            return false;
-        }
+        { return false; }
 
         // 求点的重心坐标系坐标
         const bp = this.getBarycentricCoordinates(p);
@@ -302,9 +304,7 @@ export class Triangle3
         // 当重心坐标系坐标任意分量小于0表示点在三角形外
         precision = -precision;
         if (bp.x < precision || bp.y < precision || bp.z < precision)
-        {
-            return false;
-        }
+        { return false; }
 
         return true;
     }
@@ -473,27 +473,17 @@ export class Triangle3
     decomposeWithPoint(p: Vector3)
     {
         if (!this.onWithPoint(p))
-        {
-            return [this];
-        }
+        { return [this]; }
         if (this.p0.equals(p) || this.p1.equals(p) || this.p2.equals(p))
-        {
-            return [this];
-        }
-        if (new Segment3().fromPoints(this.p0, this.p1).onWithPoint(p))
-        {
-            return [new Triangle3().fromPoints(this.p0, p, this.p2), new Triangle3().fromPoints(p, this.p1, this.p2)];
-        }
-        if (new Segment3().fromPoints(this.p1, this.p2).onWithPoint(p))
-        {
-            return [new Triangle3().fromPoints(this.p1, p, this.p0), new Triangle3().fromPoints(p, this.p2, this.p0)];
-        }
-        if (new Segment3().fromPoints(this.p2, this.p0).onWithPoint(p))
-        {
-            return [new Triangle3().fromPoints(this.p2, p, this.p1), new Triangle3().fromPoints(p, this.p0, this.p1)];
-        }
+        { return [this]; }
+        if (Segment3.fromPoints(this.p0, this.p1).onWithPoint(p))
+        { return [Triangle3.fromPoints(this.p0, p, this.p2), Triangle3.fromPoints(p, this.p1, this.p2)]; }
+        if (Segment3.fromPoints(this.p1, this.p2).onWithPoint(p))
+        { return [Triangle3.fromPoints(this.p1, p, this.p0), Triangle3.fromPoints(p, this.p2, this.p0)]; }
+        if (Segment3.fromPoints(this.p2, this.p0).onWithPoint(p))
+        { return [Triangle3.fromPoints(this.p2, p, this.p1), Triangle3.fromPoints(p, this.p0, this.p1)]; }
 
-        return [new Triangle3().fromPoints(p, this.p0, this.p1), new Triangle3().fromPoints(p, this.p1, this.p2), new Triangle3().fromPoints(p, this.p2, this.p0)];
+        return [Triangle3.fromPoints(p, this.p0, this.p1), Triangle3.fromPoints(p, this.p1, this.p2), Triangle3.fromPoints(p, this.p2, this.p0)];
     }
 
     /**
@@ -662,5 +652,18 @@ export class Triangle3
     clone()
     {
         return new Triangle3().copy(this);
+    }
+
+    /**
+     * 判断指定点是否在三角形内
+     *
+     * @param p0 三角形0号点
+     * @param p1 三角形1号点
+     * @param p2 三角形2号点
+     * @param p 指定点
+     */
+    static containsPoint(p0: Vector3, p1: Vector3, p2: Vector3, p: Vector3)
+    {
+        return new Triangle3(p0, p1, p2).onWithPoint(p);
     }
 }

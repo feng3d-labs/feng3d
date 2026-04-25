@@ -9,6 +9,24 @@ import { Vector3 } from './Vector3';
 export class Sphere
 {
     /**
+     * 从一组点初始化球
+     * @param points 点列表
+     */
+    static fromPoints(points: Vector3[])
+    {
+        return new Sphere().fromPoints(points);
+    }
+
+    /**
+     * 从一组顶点初始化球
+     * @param positions 坐标数据列表
+     */
+    static fromPositions(positions: number[])
+    {
+        return new Sphere().fromPositions(positions);
+    }
+
+    /**
      * 球心
      */
     center: Vector3;

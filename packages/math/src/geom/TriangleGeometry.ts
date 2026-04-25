@@ -13,6 +13,15 @@ import { Vector3 } from './Vector3';
  */
 export class TriangleGeometry
 {
+    /**
+     * 从盒子初始化
+     * @param box 盒子
+     */
+    static fromBox(box: Box3)
+    {
+        return new TriangleGeometry().fromBox(box);
+    }
+
     triangles: Triangle3[];
 
     constructor(triangles: Triangle3[] = [])
@@ -228,26 +237,31 @@ export class TriangleGeometry
             const p1 = segment.clampPoint(s.p1);
 
             if (!s.onWithPoint(p0))
-            {
-                return v;
-            }
+            { return v; }
             if (p0.equals(p1))
             {
                 ps.push(p0);
 
                 return v;
             }
-            v.push(new Segment3().fromPoints(p0, p1));
+            v.push(Segment3.fromPoints(p0, p1));
 
             return v;
         }, []);
 
         if (r.segments.length + r.points.length === 0)
-        {
-            return null;
-        }
+        { return null; }
 
         return r;
+    }
+
+    /**
+     * 分解三角形
+     * @param triangle 三角形
+     */
+    decomposeTriangle(_triangle: Triangle3)
+    {
+        throw `未实现`;
     }
 
     /**

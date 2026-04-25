@@ -1,30 +1,29 @@
 import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
 import type { Color4 } from './Color4';
 import { Vector3 } from './geom/Vector3';
 
-declare module '@feng3d/serialization' { interface SerializableMap { Color3: Color3 } }
+declare global
+{
+    interface MixinsColor3
+    {
+
+    }
+}
+
+export interface Color3 extends MixinsColor3 { }
 
 /**
  * 颜色
  */
-@Serializable('Color3')
+@decoratorRegisterClass()
 export class Color3
 {
-    declare __class__: 'Color3';
+    __class__: 'Color3';
 
-    static get WHITE()
-    {
-        return this._WHITE = this._WHITE || Object.freeze(new Color3(1, 1, 1));
-    }
-    private static _WHITE: Readonly<Color3>;
-
-    static get BLACK()
-    {
-        return this._BLACK = this._BLACK || Object.freeze(new Color3(0, 0, 0));
-    }
-    private static _BLACK: Readonly<Color3>;
+    static WHITE = new Color3();
+    static BLACK = new Color3(0, 0, 0);
 
     static fromUnit(color: number)
     {
@@ -40,21 +39,21 @@ export class Color3
      * 红[0,1]
      */
     @oav()
-    @SerializeProperty()
+    @serialize
     r = 1;
 
     /**
      * 绿[0,1]
      */
     @oav()
-    @SerializeProperty()
+    @serialize
     g = 1;
 
     /**
      * 蓝[0,1]
      */
     @oav()
-    @SerializeProperty()
+    @serialize
     b = 1;
 
     /**

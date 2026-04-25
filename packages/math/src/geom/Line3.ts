@@ -2,11 +2,41 @@ import { mathUtil } from '@feng3d/polyfill';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
 
+export interface Line3 extends MixinsLine3 { }
+
 /**
  * 3d直线
  */
 export class Line3
 {
+    /**
+     * 根据直线上两点初始化直线
+     * @param p0 Vector3
+     * @param p1 Vector3
+     */
+    static fromPoints(p0: Vector3, p1: Vector3)
+    {
+        return new Line3().fromPoints(p0, p1);
+    }
+
+    /**
+     * 根据直线某点与方向初始化直线
+     * @param position 直线上某点
+     * @param direction 直线的方向
+     */
+    static fromPosAndDir(position: Vector3, direction: Vector3)
+    {
+        return new Line3().fromPosAndDir(position, direction);
+    }
+
+    /**
+     * 随机直线，比如用于单元测试
+     */
+    static random()
+    {
+        return new Line3(Vector3.random(), Vector3.random());
+    }
+
     /**
      * 直线上某一点
      */
@@ -26,14 +56,6 @@ export class Line3
     {
         this.origin = origin ? origin : new Vector3();
         this.direction = (direction ? direction : new Vector3(0, 0, 1)).normalize();
-    }
-
-    /**
-     * 随机直线，比如用于单元测试
-     */
-    random()
-    {
-        return new Line3(new Vector3().random(), new Vector3().random());
     }
 
     /**
@@ -66,20 +88,20 @@ export class Line3
      * 获取直线上的一个点
      * @param length 与原点距离
      */
-    getPoint(length = 0, vOut = new Vector3())
+    getPoint(length = 0, vout = new Vector3())
     {
-        return vOut.copy(this.direction).scaleNumber(length).add(this.origin);
+        return vout.copy(this.direction).scaleNumber(length).add(this.origin);
     }
 
     /**
      * 获取指定z值的点
      * @param z z值
-     * @param vOut 目标点（输出）
+     * @param vout 目标点（输出）
      * @returns 目标点
      */
-    getPointWithZ(z: number, vOut = new Vector3())
+    getPointWithZ(z: number, vout = new Vector3())
     {
-        return this.getPoint((z - this.origin.z) / this.direction.z, vOut);
+        return this.getPoint((z - this.origin.z) / this.direction.z, vout);
     }
 
     /**
@@ -103,13 +125,13 @@ export class Line3
     /**
      * 与指定点最近的点
      * @param point 点
-     * @param vOut 输出点
+     * @param vout 输出点
      */
-    closestPointWithPoint(point: Vector3, vOut = new Vector3())
+    closestPointWithPoint(point: Vector3, vout = new Vector3())
     {
         const t = this.closestPointParameterWithPoint(point);
 
-        return this.getPoint(t, vOut);
+        return this.getPoint(t, vout);
     }
 
     /**
@@ -151,7 +173,7 @@ export class Line3
      * 应用矩阵
      * @param mat 矩阵
      */
-    applyMatrix4x4(mat: Matrix4x4)
+    applyMatri4x4(mat: Matrix4x4)
     {
         mat.transformPoint3(this.origin, this.origin);
         mat.transformVector3(this.direction, this.direction);

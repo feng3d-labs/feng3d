@@ -1,4 +1,4 @@
-import { SerializeProperty } from '@feng3d/serialization';
+import { serialize } from '@feng3d/serialization';
 import { Vector3 } from '../geom/Vector3';
 import { AnimationCurve } from './AnimationCurve';
 
@@ -10,19 +10,19 @@ export class AnimationCurveVector3
     /**
      * X 轴曲线
      */
-    @SerializeProperty()
+    @serialize
     xCurve = new AnimationCurve();
 
     /**
      * Y 轴曲线
      */
-    @SerializeProperty()
+    @serialize
     yCurve = new AnimationCurve();
 
     /**
      * Z 轴曲线
      */
-    @SerializeProperty()
+    @serialize
     zCurve = new AnimationCurve();
 
     /**

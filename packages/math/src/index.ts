@@ -4,6 +4,7 @@ export * from './Color4';
 export * from './curve/AnimationCurve';
 export * from './curve/AnimationCurveKeyframe';
 export * from './curve/AnimationCurveVector3';
+export * from './curve/BezierCurve';
 export * from './curve/MinMaxCurve';
 export * from './curve/MinMaxCurveMode';
 export * from './curve/MinMaxCurveVector3';
@@ -53,4 +54,3 @@ export * from './shape/curves/QuadraticBezierCurve2';
 export * from './shape/curves/QuadraticBezierCurve3';
 export * from './shape/curves/SplineCurve2';
 export * from './shape/ShapeUtils';
-

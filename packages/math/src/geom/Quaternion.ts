@@ -1,36 +1,59 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { SerializeProperty } from '@feng3d/serialization';
+import { serialize } from '@feng3d/serialization';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
+
+declare global
+{
+    interface MixinsQuaternion
+    {
+
+    }
+}
+
+export interface Quaternion extends MixinsQuaternion { }
 
 /**
  * 可用于表示旋转的四元数对象
  */
 export class Quaternion
 {
+    static fromArray(array: ArrayLike<number>, offset = 0)
+    {
+        return new Quaternion().fromArray(array, offset);
+    }
+
+    /**
+     * 随机四元数
+     */
+    static random()
+    {
+        return new Quaternion().fromEuler(Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random());
+    }
+
     /**
      * 虚基向量i的乘子
      */
-    @SerializeProperty()
+    @serialize
     x = 0;
 
     /**
      * 虚基向量j的乘子
      */
-    @SerializeProperty()
+    @serialize
     y = 0;
 
     /**
      * 虚基向量k的乘子
      */
-    @SerializeProperty()
+    @serialize
     z = 0;
 
     /**
      * 实部的乘数
      */
-    @SerializeProperty()
+    @serialize
     w = 1;
 
     /**
@@ -86,14 +109,6 @@ export class Quaternion
     }
 
     /**
-     * 随机四元数
-     */
-    random()
-    {
-        return this.fromEuler(Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random());
-    }
-
-    /**
      * 转换为数组
      *
      * @param array
@@ -114,6 +129,7 @@ export class Quaternion
      * 四元数乘法
      *
      * @param q
+     * @param this
      */
     mult(q: Quaternion)
     {

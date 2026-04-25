@@ -1,8 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
 
-declare module '@feng3d/polyfill'
+declare global
 {
-    interface MathUtil
+    interface MixinsMathUtil
     {
         /**
          * 引擎中使用的旋转顺序。

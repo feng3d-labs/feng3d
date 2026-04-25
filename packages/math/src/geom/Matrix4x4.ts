@@ -1,13 +1,63 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { SerializeProperty } from '@feng3d/serialization';
+import { serialize } from '@feng3d/serialization';
 import { RotationOrder } from '../enums/RotationOrder';
 import { Matrix3x3 } from './Matrix3x3';
+import { Plane } from './Plane';
 import { Quaternion } from './Quaternion';
 import { Ray3 } from './Ray3';
 import { Vector3 } from './Vector3';
 import { Vector4 } from './Vector4';
 
-type Number16 = [
+declare global
+{
+    interface MixinsQuaternion
+    {
+        toMatrix(target?: Matrix4x4): Matrix4x4
+    }
+}
+
+/**
+ * 转换为矩阵
+ *
+ * @param target
+ */
+Quaternion.prototype.toMatrix = function toMatrix(this: Quaternion, target = new Matrix4x4())
+{
+    const elements = target.elements;
+    const { x, y, z, w } = this;
+    //
+    const xy2 = 2 * x * y;
+    const xz2 = 2 * x * z;
+    const xw2 = 2 * x * w;
+    const yz2 = 2 * y * z;
+    const yw2 = 2 * y * w;
+    const zw2 = 2 * z * w;
+    const xx = x * x;
+    const yy = y * y;
+    const zz = z * z;
+    const ww = w * w;
+
+    elements[0] = xx - yy - zz + ww;
+    elements[4] = xy2 - zw2;
+    elements[8] = xz2 + yw2;
+    elements[12] = 0;
+    elements[1] = xy2 + zw2;
+    elements[5] = -xx + yy - zz + ww;
+    elements[9] = yz2 - xw2;
+    elements[13] = 0;
+    elements[2] = xz2 - yw2;
+    elements[6] = yz2 + xw2;
+    elements[10] = -xx - yy + zz + ww;
+    elements[14] = 0;
+    elements[3] = 0;
+    elements[7] = 0;
+    elements[11] = 0;
+    elements[15] = 1;
+
+    return target;
+};
+
+type NmberArray16 = [
     number, number, number, number,
     number, number, number, number,
     number, number, number, number,
@@ -41,10 +91,93 @@ type Number16 = [
 export class Matrix4x4
 {
     /**
+     * 通过位移旋转缩放重组矩阵
+     *
+     * @param position 位移
+     * @param rotation 旋转角度，按照指定旋转顺序旋转角度。
+     * @param scale 缩放。
+     * @param order 旋转顺序。
+     */
+    static fromTRS(position: Vector3, rotation: Vector3, scale: Vector3, order = mathUtil.DefaultRotationOrder)
+    {
+        return new Matrix4x4().fromTRS(position, rotation, scale, order);
+    }
+
+    /**
+     * 从轴与旋转角度创建矩阵
+     *
+     * @param axis 旋转轴
+     * @param degrees 角度
+     */
+    static fromAxisRotate(axis: Vector3, degrees: number)
+    {
+        return new Matrix4x4().fromAxisRotate(axis, degrees);
+    }
+
+    /**
+     * 从欧拉角旋转角度初始化矩阵。
+     *
+     * @param rx 用于沿 x 轴旋转对象的角度。
+     * @param ry 用于沿 y 轴旋转对象的角度。
+     * @param rz 用于沿 z 轴旋转对象的角度。
+     * @param order 绕轴旋转的顺序。
+     */
+    static fromRotation(rx: number, ry: number, rz: number, order = mathUtil.DefaultRotationOrder): Matrix4x4
+    {
+        return new Matrix4x4().fromRotation(rx, ry, rz, order);
+    }
+
+    /**
+     * 从四元素初始化矩阵。
+     *
+     * @param q 四元素
+     */
+    static fromQuaternion(q: Quaternion)
+    {
+        return new Matrix4x4().fromQuaternion(q);
+    }
+
+    /**
+     * 创建缩放矩阵
+     * @param sx 用于沿 x 轴缩放对象的乘数。
+     * @param sy 用于沿 y 轴缩放对象的乘数。
+     * @param sz 用于沿 z 轴缩放对象的乘数。
+     */
+    static fromScale(sx: number, sy: number, sz: number)
+    {
+        const rotationMat = new Matrix4x4([//
+            sx, 0.0, 0.0, 0, //
+            0.0, sy, 0.0, 0, //
+            0.0, 0.0, sz, 0, //
+            0.0, 0.0, 0.0, 1//
+        ]);
+
+        return rotationMat;
+    }
+
+    /**
+     * 创建位移矩阵
+     * @param x 沿 x 轴的增量平移。
+     * @param y 沿 y 轴的增量平移。
+     * @param z 沿 z 轴的增量平移。
+     */
+    static fromPosition(x: number, y: number, z: number)
+    {
+        const rotationMat: Matrix4x4 = new Matrix4x4([//
+            1, 0, 0, 0, //
+            0, 1, 0, 0, //
+            0, 0, 1, 0, //
+            x, y, z, 1//
+        ]);
+
+        return rotationMat;
+    }
+
+    /**
      * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
-    @SerializeProperty()
-    elements: Number16;
+    @serialize
+    elements: NmberArray16;
 
     /**
      * 获取位移
@@ -227,7 +360,7 @@ export class Matrix4x4
      * 创建 Matrix4x4 对象。
      * @param rawData 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
      */
-    constructor(rawData: Number16 = [
+    constructor(rawData: NmberArray16 = [
         1, 0, 0, 0, //
         0, 1, 0, 0, //
         0, 0, 1, 0, //
@@ -235,42 +368,6 @@ export class Matrix4x4
     ])
     {
         this.elements = rawData;
-    }
-
-    /**
-     * 创建位移矩阵
-     * @param x 沿 x 轴的增量平移。
-     * @param y 沿 y 轴的增量平移。
-     * @param z 沿 z 轴的增量平移。
-     */
-    fromPosition(x: number, y: number, z: number)
-    {
-        this.elements = [//
-            1, 0, 0, 0, //
-            0, 1, 0, 0, //
-            0, 0, 1, 0, //
-            x, y, z, 1//
-        ];
-
-        return this;
-    }
-
-    /**
-     * 创建缩放矩阵
-     * @param sx 用于沿 x 轴缩放对象的乘数。
-     * @param sy 用于沿 y 轴缩放对象的乘数。
-     * @param sz 用于沿 z 轴缩放对象的乘数。
-     */
-    fromScale(sx: number, sy: number, sz: number)
-    {
-        this.elements = [//
-            sx, 0.0, 0.0, 0, //
-            0.0, sy, 0.0, 0, //
-            0.0, 0.0, sz, 0, //
-            0.0, 0.0, 0.0, 1//
-        ];
-
-        return this;
     }
 
     /**
@@ -295,36 +392,7 @@ export class Matrix4x4
      */
     fromQuaternion(q: Quaternion)
     {
-        const elements = this.elements;
-        const { x, y, z, w } = q;
-        //
-        const xy2 = 2 * x * y;
-        const xz2 = 2 * x * z;
-        const xw2 = 2 * x * w;
-        const yz2 = 2 * y * z;
-        const yw2 = 2 * y * w;
-        const zw2 = 2 * z * w;
-        const xx = x * x;
-        const yy = y * y;
-        const zz = z * z;
-        const ww = w * w;
-
-        elements[0] = xx - yy - zz + ww;
-        elements[4] = xy2 - zw2;
-        elements[8] = xz2 + yw2;
-        elements[12] = 0;
-        elements[1] = xy2 + zw2;
-        elements[5] = -xx + yy - zz + ww;
-        elements[9] = yz2 - xw2;
-        elements[13] = 0;
-        elements[2] = xz2 - yw2;
-        elements[6] = yz2 + xw2;
-        elements[10] = -xx - yy + zz + ww;
-        elements[14] = 0;
-        elements[3] = 0;
-        elements[7] = 0;
-        elements[11] = 0;
-        elements[15] = 1;
+        q.toMatrix(this);
 
         return this;
     }
@@ -342,14 +410,14 @@ export class Matrix4x4
         n.normalize();
         const q = degrees * Math.PI / 180;
 
-        const sinQ = Math.sin(q);
-        const cosQ = Math.cos(q);
-        const lCosQ = 1 - cosQ;
+        const sinq = Math.sin(q);
+        const cosq = Math.cos(q);
+        const lcosq = 1 - cosq;
 
         const arr = [//
-            (n.x * n.x * lCosQ) + cosQ, (n.x * n.y * lCosQ) + (n.z * sinQ), (n.x * n.z * lCosQ) - (n.y * sinQ), 0, //
-            (n.x * n.y * lCosQ) - (n.z * sinQ), (n.y * n.y * lCosQ) + cosQ, (n.y * n.z * lCosQ) + (n.x * sinQ), 0, //
-            (n.x * n.z * lCosQ) + (n.y * sinQ), (n.y * n.z * lCosQ) - (n.x * sinQ), (n.z * n.z * lCosQ) + cosQ, 0, //
+            (n.x * n.x * lcosq) + cosq, (n.x * n.y * lcosq) + (n.z * sinq), (n.x * n.z * lcosq) - (n.y * sinq), 0, //
+            (n.x * n.y * lcosq) - (n.z * sinq), (n.y * n.y * lcosq) + cosq, (n.y * n.z * lcosq) + (n.x * sinq), 0, //
+            (n.x * n.z * lcosq) + (n.y * sinq), (n.y * n.z * lcosq) - (n.x * sinq), (n.z * n.z * lcosq) + cosq, 0, //
             0, 0, 0, 1//
         ];
 
@@ -364,7 +432,7 @@ export class Matrix4x4
     /**
      * 通过将另一个 Matrix4x4 对象与当前 Matrix4x4 对象相乘来后置一个矩阵。
      */
-    append(lhs: { elements: Number16 } | Number16)
+    append(lhs: Matrix4x4)
     {
         const m111 = this.elements[0];
         const m121 = this.elements[4];
@@ -383,32 +451,22 @@ export class Matrix4x4
         const m134 = this.elements[11];
         const m144 = this.elements[15];
 
-        let lhsElements: Number16;
-        if (Array.isArray(lhs))
-        {
-            lhsElements = lhs;
-        }
-        else
-        {
-            lhsElements = lhs.elements;
-        }
-
-        const m211 = lhsElements[0];
-        const m221 = lhsElements[4];
-        const m231 = lhsElements[8];
-        const m241 = lhsElements[12];
-        const m212 = lhsElements[1];
-        const m222 = lhsElements[5];
-        const m232 = lhsElements[9];
-        const m242 = lhsElements[13];
-        const m213 = lhsElements[2];
-        const m223 = lhsElements[6];
-        const m233 = lhsElements[10];
-        const m243 = lhsElements[14];
-        const m214 = lhsElements[3];
-        const m224 = lhsElements[7];
-        const m234 = lhsElements[11];
-        const m244 = lhsElements[15];
+        const m211 = lhs.elements[0];
+        const m221 = lhs.elements[4];
+        const m231 = lhs.elements[8];
+        const m241 = lhs.elements[12];
+        const m212 = lhs.elements[1];
+        const m222 = lhs.elements[5];
+        const m232 = lhs.elements[9];
+        const m242 = lhs.elements[13];
+        const m213 = lhs.elements[2];
+        const m223 = lhs.elements[6];
+        const m233 = lhs.elements[10];
+        const m243 = lhs.elements[14];
+        const m214 = lhs.elements[3];
+        const m224 = lhs.elements[7];
+        const m234 = lhs.elements[11];
+        const m244 = lhs.elements[15];
 
         this.elements[0] = (m111 * m211) + (m112 * m221) + (m113 * m231) + (m114 * m241);
         this.elements[1] = (m111 * m212) + (m112 * m222) + (m113 * m232) + (m114 * m242);
@@ -430,7 +488,8 @@ export class Matrix4x4
         this.elements[14] = (m141 * m213) + (m142 * m223) + (m143 * m233) + (m144 * m243);
         this.elements[15] = (m141 * m214) + (m142 * m224) + (m143 * m234) + (m144 * m244);
 
-        console.assert(!isNaN(this.elements[0]) && !isNaN(this.elements[4]) && !isNaN(this.elements[8]) && !isNaN(this.elements[12]));
+        // eslint-disable-next-line use-isnan
+        console.assert((this.elements[0] !== NaN) && (this.elements[4] !== NaN) && (this.elements[8] !== NaN) && (this.elements[12] !== NaN));
 
         return this;
     }
@@ -443,7 +502,7 @@ export class Matrix4x4
      */
     appendRotation(axis: Vector3, degrees: number, pivotPoint?: Vector3)
     {
-        const rotationMat = new Matrix4x4().fromAxisRotate(axis, degrees);
+        const rotationMat = Matrix4x4.fromAxisRotate(axis, degrees);
 
         if (pivotPoint)
         {
@@ -468,7 +527,7 @@ export class Matrix4x4
      */
     appendScale(sx: number, sy: number, sz: number)
     {
-        const scaleMat = new Matrix4x4().fromScale(sx, sy, sz);
+        const scaleMat = Matrix4x4.fromScale(sx, sy, sz);
 
         this.append(scaleMat);
 
@@ -582,7 +641,7 @@ export class Matrix4x4
      */
     random()
     {
-        this.fromTRS(new Vector3().random(), new Vector3().random(), new Vector3().random());
+        this.fromTRS(Vector3.random(), Vector3.random(), Vector3.random());
 
         return this;
     }
@@ -937,9 +996,12 @@ export class Matrix4x4
 
         const m = this.elements;
 
-        const m11 = m[0]; const m21 = m[4]; const m31 = m[8]; const m41 = m[12];
-        const m12 = m[1]; const m22 = m[5]; const m32 = m[9]; const m42 = m[13];
-        const m13 = m[2]; const m23 = m[6]; const m33 = m[10]; const m43 = m[14];
+        const m11 = m[0]; const m21 = m[4];
+        const m31 = m[8]; const m41 = m[12];
+        const m12 = m[1]; const m22 = m[5];
+        const m32 = m[9]; const m42 = m[13];
+        const m13 = m[2]; const m23 = m[6];
+        const m33 = m[10]; const m43 = m[14];
         const m14 = m[3]; const m24 = m[7]; const m34 = m[11]; const m44 = m[15];
 
         m[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
@@ -984,7 +1046,7 @@ export class Matrix4x4
      */
     prependRotation(axis: Vector3, degrees: number, _pivotPoint: Vector3 = new Vector3())
     {
-        const rotationMat = new Matrix4x4().fromAxisRotate(axis, degrees);
+        const rotationMat = Matrix4x4.fromAxisRotate(axis, degrees);
 
         this.prepend(rotationMat);
 
@@ -999,7 +1061,7 @@ export class Matrix4x4
      */
     prependScale(xScale: number, yScale: number, zScale: number)
     {
-        const scaleMat = new Matrix4x4().fromScale(xScale, yScale, zScale);
+        const scaleMat = Matrix4x4.fromScale(xScale, yScale, zScale);
 
         this.prepend(scaleMat);
 
@@ -1031,7 +1093,7 @@ export class Matrix4x4
      */
     prependTranslation(x: number, y: number, z: number)
     {
-        const translationMat = new Matrix4x4().fromPosition(x, y, z);
+        const translationMat = Matrix4x4.fromPosition(x, y, z);
 
         this.prepend(translationMat);
 
@@ -1083,10 +1145,10 @@ export class Matrix4x4
 
     /**
      * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
-     * @param vIn 一个容纳要转换的坐标的 Vector3 对象。
+     * @param vin 一个容纳要转换的坐标的 Vector3 对象。
      * @returns  一个包含转换后的坐标的 Vector3 对象。
      */
-    transformPoint3(vIn: Vector3, vOut = new Vector3())
+    transformPoint3(vin: Vector3, vout = new Vector3())
     {
         const m = this.elements;
         const m0 = m[0];
@@ -1102,15 +1164,15 @@ export class Matrix4x4
         const m13 = m[13];
         const m14 = m[14];
 
-        const x = vIn.x;
-        const y = vIn.y;
-        const z = vIn.z;
+        const x = vin.x;
+        const y = vin.y;
+        const z = vin.z;
 
-        vOut.x = x * m0 + y * m4 + z * m8 + m12;
-        vOut.y = x * m1 + y * m5 + z * m9 + m13;
-        vOut.z = x * m2 + y * m6 + z * m10 + m14;
+        vout.x = x * m0 + y * m4 + z * m8 + m12;
+        vout.y = x * m1 + y * m5 + z * m9 + m13;
+        vout.z = x * m2 + y * m6 + z * m10 + m14;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -1118,10 +1180,10 @@ export class Matrix4x4
      *
      * 与变换点不同，并不会受到矩阵平移分量的影响。
      *
-     * @param vIn 被变换的向量
-     * @param vOut 变换后的向量
+     * @param vin 被变换的向量
+     * @param vout 变换后的向量
      */
-    transformVector3(vIn: Vector3, vOut = new Vector3())
+    transformVector3(vin: Vector3, vout = new Vector3())
     {
         const m = this.elements;
         const m0 = m[0];
@@ -1134,24 +1196,24 @@ export class Matrix4x4
         const m9 = m[9];
         const m10 = m[10];
 
-        const x = vIn.x;
-        const y = vIn.y;
-        const z = vIn.z;
+        const x = vin.x;
+        const y = vin.y;
+        const z = vin.z;
 
-        vOut.x = x * m0 + y * m4 + z * m8;
-        vOut.y = x * m1 + y * m5 + z * m9;
-        vOut.z = x * m2 + y * m6 + z * m10;
+        vout.x = x * m0 + y * m4 + z * m8;
+        vout.y = x * m1 + y * m5 + z * m9;
+        vout.z = x * m2 + y * m6 + z * m10;
 
-        return vOut;
+        return vout;
     }
 
     /**
      * 变换Vector4向量
      *
-     * @param vIn 被变换的向量
-     * @param vOut 变换后的向量
+     * @param vin 被变换的向量
+     * @param vout 变换后的向量
      */
-    transformVector4(vIn: Vector4, vOut = new Vector4())
+    transformVector4(vin: Vector4, vout = new Vector4())
     {
         const m = this.elements;
         const m0 = m[0];
@@ -1171,26 +1233,26 @@ export class Matrix4x4
         const m14 = m[14];
         const m15 = m[15];
 
-        const x = vIn.x;
-        const y = vIn.y;
-        const z = vIn.z;
-        const w = vIn.w;
+        const x = vin.x;
+        const y = vin.y;
+        const z = vin.z;
+        const w = vin.w;
 
-        vOut.x = x * m0 + y * m4 + z * m8 + w * m12;
-        vOut.y = x * m1 + y * m5 + z * m9 + w * m13;
-        vOut.z = x * m2 + y * m6 + z * m10 + w * m14;
-        vOut.w = x * m3 + y * m7 + z * m11 + w * m15;
+        vout.x = x * m0 + y * m4 + z * m8 + w * m12;
+        vout.y = x * m1 + y * m5 + z * m9 + w * m13;
+        vout.z = x * m2 + y * m6 + z * m10 + w * m14;
+        vout.w = x * m3 + y * m7 + z * m11 + w * m15;
 
-        return vOut;
+        return vout;
     }
 
     /**
      * 变换坐标数组数据
      *
-     * @param vIn 被变换坐标数组数据
-     * @param vOut 变换后的坐标数组数据
+     * @param vin 被变换坐标数组数据
+     * @param vout 变换后的坐标数组数据
      */
-    transformPoints(vIn: number[], vOut: number[] = [])
+    transformPoints(vin: number[], vout: number[] = [])
     {
         const m = this.elements;
         const m0 = m[0];
@@ -1206,37 +1268,36 @@ export class Matrix4x4
         const m13 = m[13];
         const m14 = m[14];
 
-        for (let i = 0; i < vIn.length; i += 3)
+        for (let i = 0; i < vin.length; i += 3)
         {
-            const x = vIn[i];
-            const y = vIn[i + 1];
-            const z = vIn[i + 2];
+            const x = vin[i];
+            const y = vin[i + 1];
+            const z = vin[i + 2];
 
-            vOut[i] = x * m0 + y * m4 + z * m8 + m12;
-            vOut[i + 1] = x * m1 + y * m5 + z * m9 + m13;
-            vOut[i + 2] = x * m2 + y * m6 + z * m10 + m14;
+            vout[i] = x * m0 + y * m4 + z * m8 + m12;
+            vout[i + 1] = x * m1 + y * m5 + z * m9 + m13;
+            vout[i + 2] = x * m2 + y * m6 + z * m10 + m14;
         }
 
-        return vOut;
+        return vout;
     }
 
     /**
      * 变换旋转角度
      *
-     * @param vIn 被变换的旋转角度
-     * @param vOut 变换后的旋转角度
+     * @param vin 被变换的旋转角度
+     * @param vout 变换后的旋转角度
      */
-    transformRotation(vIn: Vector3, vOut = new Vector3())
+    transformRotation(vin: Vector3, vout = new Vector3())
     {
         // 转换旋转
-        const rotationMatrix = new Matrix4x4().fromRotation(vIn.x, vIn.y, vIn.z);
+        const rotationMatrix = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
 
         rotationMatrix.append(this);
-        const newRotation = rotationMatrix.toTRS()[1];
-        let rx = newRotation.x;
-        let ry = newRotation.y;
-        let rz = newRotation.z;
-        const v = Math.round((rx - vIn.x) / 180);
+        const newrotation = rotationMatrix.toTRS()[1];
+        let rx = newrotation.x; let ry = newrotation.y; let
+            rz = newrotation.z;
+        const v = Math.round((rx - vin.x) / 180);
 
         if (v % 2 !== 0)
         {
@@ -1248,15 +1309,15 @@ export class Matrix4x4
         const toRound = (a: number, b: number, c = 360) =>
             Math.round((b - a) / c) * c + a;
 
-        rx = toRound(rx, vIn.x);
-        ry = toRound(ry, vIn.y);
-        rz = toRound(rz, vIn.z);
+        rx = toRound(rx, vin.x);
+        ry = toRound(ry, vin.y);
+        rz = toRound(rz, vin.z);
         //
-        vOut.x = rx;
-        vOut.y = ry;
-        vOut.z = rz;
+        vout.x = rx;
+        vout.y = ry;
+        vout.z = rz;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -1426,10 +1487,10 @@ export class Matrix4x4
     {
         const m = this.elements;
 
-        const tanFov2 = Math.tan(fov * Math.PI / 360);
+        const tanfov2 = Math.tan(fov * Math.PI / 360);
 
-        m[0] = 1 / (aspect * tanFov2); m[4] = 0; /**/ m[8] = 0; /**/ m[12] = 0;//
-        m[1] = 0; /**/ m[5] = 1 / tanFov2; m[9] = 0;/**/ m[13] = 0;//
+        m[0] = 1 / (aspect * tanfov2); m[4] = 0; /**/ m[8] = 0; /**/ m[12] = 0;//
+        m[1] = 0; /**/ m[5] = 1 / tanfov2; m[9] = 0;/**/ m[13] = 0;//
         m[2] = 0; /**/ m[6] = 0; /**/ m[10] = (far + near) / (far - near); m[14] = -2 * (far * near) / (far - near);//
         m[3] = 0; /**/ m[7] = 0; /**/ m[11] = 1; /**/ m[15] = 0;//
 
@@ -1468,20 +1529,20 @@ export class Matrix4x4
      */
     toMatrix3x3(out = new Matrix3x3())
     {
-        const outData = out.elements;
-        const inData = this.elements;
+        const outdata = out.elements;
+        const indata = this.elements;
 
-        outData[0] = inData[0];
-        outData[1] = inData[1];
-        outData[2] = 0;
+        outdata[0] = indata[0];
+        outdata[1] = indata[1];
+        outdata[2] = 0;
 
-        outData[3] = inData[4];
-        outData[4] = inData[5];
-        outData[5] = 0;
+        outdata[3] = indata[4];
+        outdata[4] = indata[5];
+        outdata[5] = 0;
 
-        outData[6] = inData[12];
-        outData[7] = inData[13];
-        outData[8] = 1;
+        outdata[6] = indata[12];
+        outdata[7] = indata[13];
+        outdata[8] = 1;
 
         return out;
     }
@@ -1492,5 +1553,240 @@ export class Matrix4x4
     toString(): string
     {
         return `Matrix4x4 [${this.elements.toString()}]`;
+    }
+
+    // Get a column of the matrix.
+    GetColumn(index: number)
+    {
+        const [
+            m00, m10, m20, m30,
+            m01, m11, m21, m31,
+            m02, m12, m22, m32,
+            m03, m13, m23, m33,
+        ] = this.elements;
+        switch (index)
+        {
+            case 0: return new Vector4(m00, m10, m20, m30);
+            case 1: return new Vector4(m01, m11, m21, m31);
+            case 2: return new Vector4(m02, m12, m22, m32);
+            case 3: return new Vector4(m03, m13, m23, m33);
+            default:
+                throw 'Invalid column index!';
+        }
+    }
+
+    // Returns a row of the matrix.
+    GetRow(index: number)
+    {
+        const [
+            m00, m10, m20, m30,
+            m01, m11, m21, m31,
+            m02, m12, m22, m32,
+            m03, m13, m23, m33,
+        ] = this.elements;
+        switch (index)
+        {
+            case 0: return new Vector4(m00, m01, m02, m03);
+            case 1: return new Vector4(m10, m11, m12, m13);
+            case 2: return new Vector4(m20, m21, m22, m23);
+            case 3: return new Vector4(m30, m31, m32, m33);
+            default:
+                throw `Invalid row index!`;
+        }
+    }
+
+    // Sets a column of the matrix.
+    SetColumn(index: number, column: Vector4)
+    {
+        this.elements[0 + index * 4] = column.x;
+        this.elements[1 + index * 4] = column.y;
+        this.elements[2 + index * 4] = column.z;
+        this.elements[3 + index * 4] = column.w;
+    }
+
+    // Sets a row of the matrix.
+    SetRow(index: number, row: Vector4)
+    {
+        this.elements[index + 0 * 4] = row.x;
+        this.elements[index + 1 * 4] = row.y;
+        this.elements[index + 2 * 4] = row.z;
+        this.elements[index + 3 * 4] = row.w;
+    }
+
+    // Transforms a position by this matrix, with a perspective divide. (generic)
+    MultiplyPoint(point: Vector3, res = new Vector3())
+    {
+        let w: number;
+        const [
+            m00, m10, m20, m30,
+            m01, m11, m21, m31,
+            m02, m12, m22, m32,
+            m03, m13, m23, m33,
+        ] = this.elements;
+        res.x = m00 * point.x + m01 * point.y + m02 * point.z + m03;
+        res.y = m10 * point.x + m11 * point.y + m12 * point.z + m13;
+        res.z = m20 * point.x + m21 * point.y + m22 * point.z + m23;
+        w = m30 * point.x + m31 * point.y + m32 * point.z + m33;
+
+        w = 1 / w;
+        res.x *= w;
+        res.y *= w;
+        res.z *= w;
+
+        return res;
+    }
+
+    // Transforms a position by this matrix, without a perspective divide. (fast)
+    MultiplyPoint3x4(point: Vector3, res = new Vector3())
+    {
+        const [
+            m00, m10, m20, ,
+            m01, m11, m21, ,
+            m02, m12, m22, ,
+            m03, m13, m23, ,
+        ] = this.elements;
+        res.x = m00 * point.x + m01 * point.y + m02 * point.z + m03;
+        res.y = m10 * point.x + m11 * point.y + m12 * point.z + m13;
+        res.z = m20 * point.x + m21 * point.y + m22 * point.z + m23;
+
+        return res;
+    }
+
+    // Transforms a direction by this matrix.
+    MultiplyVector(vector: Vector3, res = new Vector3())
+    {
+        const [
+            m00, m10, m20, ,
+            m01, m11, m21, ,
+            m02, m12, m22, ,
+            , , , ,
+        ] = this.elements;
+        res.x = m00 * vector.x + m01 * vector.y + m02 * vector.z;
+        res.y = m10 * vector.x + m11 * vector.y + m12 * vector.z;
+        res.z = m20 * vector.x + m21 * vector.y + m22 * vector.z;
+
+        return res;
+    }
+
+    // Transforms a plane by this matrix.
+    TransformPlane(plane: Plane, result = new Plane())
+    {
+        const ittrans = this.clone().invert();
+        const [
+            m00, m10, m20, m30,
+            m01, m11, m21, m31,
+            m02, m12, m22, m32,
+            m03, m13, m23, m33,
+        ] = ittrans.elements;
+
+        const { a, b, c, d } = plane;
+
+        // note: a transpose is part of this transformation
+        result.a = m00 * a + m10 * b + m20 * c + m30 * d;
+        result.b = m01 * a + m11 * b + m21 * c + m31 * d;
+        result.c = m02 * a + m12 * b + m22 * c + m32 * d;
+        result.d = m03 * a + m13 * b + m23 * c + m33 * d;
+
+        return result;
+    }
+
+    // Creates a scaling matrix.
+    static Scale(vector: Vector3, m = new Matrix4x4())
+    {
+        m.elements = [
+            vector.x, 0, 0, 0,
+            0, vector.y, 0, 0,
+            0, 0, vector.z, 0,
+            0, 0, 0, 1,
+        ];
+
+        return m;
+    }
+
+    // Creates a translation matrix.
+    static Translate(vector: Vector3, m = new Matrix4x4())
+    {
+        m.elements = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            vector.x, vector.y, vector.z, 1,
+        ];
+
+        return m;
+    }
+
+    // Creates a rotation matrix. Note: Assumes unit quaternion
+    static Rotate(q: Quaternion, m = new Matrix4x4())
+    {
+        // Precalculate coordinate products
+        const x = q.x * 2.0;
+        const y = q.y * 2.0;
+        const z = q.z * 2.0;
+        const xx = q.x * x;
+        const yy = q.y * y;
+        const zz = q.z * z;
+        const xy = q.x * y;
+        const xz = q.x * z;
+        const yz = q.y * z;
+        const wx = q.w * x;
+        const wy = q.w * y;
+        const wz = q.w * z;
+
+        // Calculate 3x3 matrix from orthonormal basis
+        m.elements = [
+            1.0 - (yy + zz), xy + wz, xz - wy, 0.0,
+            xy - wz, 1.0 - (xx + zz), yz + wx, 0.0,
+            xz + wy, yz - wx, 1.0 - (xx + yy), 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ];
+
+        return m;
+    }
+
+    // Returns a matrix with all elements set to zero (RO).
+    static readonly zero = new Matrix4x4(
+        [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+        ]);
+
+    // Returns the identity matrix (RO).
+    static readonly identity = new Matrix4x4(
+        [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        ]);
+
+    get rotation()
+    {
+        const quaternion = new Quaternion().fromMatrix(this);
+
+        return quaternion;
+    }
+
+    get lossyScale()
+    {
+        return this.getScale();
+    }
+
+    get isIdentity()
+    {
+        const elements0 = this.elements;
+        const elements1 = Matrix4x4.identity.elements;
+
+        for (let i = 0; i < elements0.length; i++)
+        {
+            if (!mathUtil.equals(elements0[i], elements1[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

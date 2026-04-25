@@ -3,9 +3,9 @@ import { PlaneClassification } from '../enums/PlaneClassification';
 import { Line3 } from './Line3';
 import { Vector3 } from './Vector3';
 
-declare module './Line3'
+declare global
 {
-    interface Line3
+    interface MixinsLine3
     {
         /**
          * 获取经过该直线的平面
@@ -21,6 +21,37 @@ declare module './Line3'
  */
 export class Plane
 {
+    /**
+     * 通过3顶点定义一个平面
+     * @param p0 点0
+     * @param p1 点1
+     * @param p2 点2
+     */
+    static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
+    {
+        return new Plane().fromPoints(p0, p1, p2);
+    }
+
+    /**
+     * 根据法线与点定义平面
+     * @param normal 平面法线
+     * @param point 平面上任意一点
+     */
+    static fromNormalAndPoint(normal: Vector3, point: Vector3)
+    {
+        return new Plane().fromNormalAndPoint(normal, point);
+    }
+
+    /**
+     * 随机平面
+     */
+    static random()
+    {
+        const normal = Vector3.random().normalize();
+
+        return new Plane(normal.x, normal.y, normal.z, Math.random());
+    }
+
     /**
      * 平面A系数
      * <p>同样也是面法线x尺寸</p>
@@ -80,28 +111,28 @@ export class Plane
 
     /**
      * 原点在平面上的投影
-     * @param vOut 输出点
+     * @param vout 输出点
      */
-    getOrigin(vOut = new Vector3())
+    getOrigin(vout = new Vector3())
     {
-        return this.projectPoint(new Vector3(), vOut);
+        return this.projectPoint(new Vector3(), vout);
     }
 
     /**
      * 平面上随机点
-     * @param vOut 输出点
+     * @param vout 输出点
      */
-    randomPoint(vOut = new Vector3())
+    randomPoint(vout = new Vector3())
     {
-        return this.getOrigin(vOut).add(this.getNormal().cross(new Vector3().random()));
+        return this.getOrigin(vout).add(this.getNormal().cross(Vector3.random()));
     }
 
     /**
      * 法线
      */
-    getNormal(vOut = new Vector3())
+    getNormal(vout = new Vector3())
     {
-        return vOut.set(this.a, this.b, this.c);
+        return vout.set(this.a, this.b, this.c);
     }
 
     /**
@@ -112,26 +143,15 @@ export class Plane
      */
     fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
     {
-        const normal = p1.subTo(p0).cross(p2.subTo(p1)).normalize();
+        // p1.subTo(p0, v0);
+        // p2.subTo(p1, v1);
+        // var normal = v0.crossTo(v1).normalize();
+        const normal = p1.subTo(p0).crossTo(p2.subTo(p1)).normalize();
 
         this.a = normal.x;
         this.b = normal.y;
         this.c = normal.z;
         this.d = -normal.dot(p0);
-
-        return this;
-    }
-
-    /**
-     * 随机平面
-     */
-    random()
-    {
-        const normal = new Vector3().random().normalize();
-        this.a = normal.x;
-        this.b = normal.y;
-        this.c = normal.z;
-        this.d = Math.random();
 
         return this;
     }
@@ -182,13 +202,9 @@ export class Plane
         const len = this.distanceWithPoint(p);
 
         if (mathUtil.equals(len, 0, precision))
-        {
-            return PlaneClassification.INTERSECT;
-        }
+        { return PlaneClassification.INTERSECT; }
         if (len < 0)
-        {
-            return PlaneClassification.BACK;
-        }
+        { return PlaneClassification.BACK; }
 
         return PlaneClassification.FRONT;
     }
@@ -337,19 +353,19 @@ export class Plane
      * 点到平面的投影
      * @param point
      */
-    projectPoint(point: Vector3, vOut = new Vector3())
+    projectPoint(point: Vector3, vout = new Vector3())
     {
-        return this.getNormal(vOut).scaleNumber(-this.distanceWithPoint(point)).add(point);
+        return this.getNormal(vout).scaleNumber(-this.distanceWithPoint(point)).add(point);
     }
 
     /**
      * 与指定点最近的点
      * @param point 点
-     * @param vOut 输出点
+     * @param vout 输出点
      */
-    closestPointWithPoint(point: Vector3, vOut = new Vector3())
+    closestPointWithPoint(point: Vector3, vout = new Vector3())
     {
-        return this.projectPoint(point, vOut);
+        return this.projectPoint(point, vout);
     }
 
     /**
@@ -396,21 +412,13 @@ export class Plane
     equals(plane: Plane, precision = mathUtil.PRECISION)
     {
         if (!mathUtil.equals(this.a - plane.a, 0, precision))
-        {
-            return false;
-        }
+        { return false; }
         if (!mathUtil.equals(this.b - plane.b, 0, precision))
-        {
-            return false;
-        }
+        { return false; }
         if (!mathUtil.equals(this.c - plane.c, 0, precision))
-        {
-            return false;
-        }
+        { return false; }
         if (!mathUtil.equals(this.d - plane.d, 0, precision))
-        {
-            return false;
-        }
+        { return false; }
 
         return true;
     }
@@ -450,5 +458,5 @@ export class Plane
 
 Line3.prototype.getPlane = function getPlane(plane = new Plane())
 {
-    return plane.fromNormalAndPoint(new Vector3().random().cross(this.direction), this.origin);
+    return plane.fromNormalAndPoint(Vector3.random().cross(this.direction), this.origin);
 };

@@ -45,6 +45,11 @@ export class Matrix3x3
         this.elements = elements;
     }
 
+    set(elements: NmberArray9)
+    {
+        this.elements = elements;
+    }
+
     /**
      * 设置矩阵为单位矩阵
      */

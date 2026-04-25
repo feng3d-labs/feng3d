@@ -1,22 +1,20 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
-
-declare module '@feng3d/serialization' { interface SerializableMap { MinMaxCurve: MinMaxCurve } }
 
 /**
  * 最大最小曲线
  */
-@Serializable('MinMaxCurve')
+@decoratorRegisterClass()
 export class MinMaxCurve
 {
-    declare __class__: 'MinMaxCurve';
+    __class__: 'MinMaxCurve';
 
     /**
      * 模式
      */
-    @SerializeProperty()
+    @serialize
     mode = MinMaxCurveMode.Constant;
 
     /**
@@ -24,7 +22,7 @@ export class MinMaxCurve
      *
      * 设置常数值。
      */
-    @SerializeProperty()
+    @serialize
     constant = 0;
 
     /**
@@ -32,7 +30,7 @@ export class MinMaxCurve
      *
      * 为下界设置一个常数。
      */
-    @SerializeProperty()
+    @serialize
     constantMin = 0;
 
     /**
@@ -40,7 +38,7 @@ export class MinMaxCurve
      *
      * 为上界设置一个常数。
      */
-    @SerializeProperty()
+    @serialize
     constantMax = 0;
 
     /**
@@ -48,7 +46,7 @@ export class MinMaxCurve
      *
      * 设置曲线。
      */
-    @SerializeProperty()
+    @serialize
     curve = new AnimationCurve();
 
     /**
@@ -56,7 +54,7 @@ export class MinMaxCurve
      *
      * 为下界设置一条曲线。
      */
-    @SerializeProperty()
+    @serialize
     curveMin = new AnimationCurve();
 
     /**
@@ -64,7 +62,7 @@ export class MinMaxCurve
      *
      * 为上界设置一条曲线。
      */
-    @SerializeProperty()
+    @serialize
     curveMax = new AnimationCurve();
 
     /**
@@ -72,13 +70,13 @@ export class MinMaxCurve
      *
      * 设置一个乘数应用于曲线。
      */
-    @SerializeProperty()
+    @serialize
     curveMultiplier = 1;
 
     /**
      * 是否在编辑器中只显示Y轴 0-1 区域，例如 lifetime 为非负，需要设置为true
      */
-    @SerializeProperty()
+    @serialize
     between0And1 = false;
 
     /**

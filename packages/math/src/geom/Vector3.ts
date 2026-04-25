@@ -1,6 +1,8 @@
 import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { Mathf } from '../MathF';
+import { Time } from '../Time';
 import { Matrix3x3 } from './Matrix3x3';
 import { Matrix4x4 } from './Matrix4x4';
 import { Quaternion } from './Quaternion';
@@ -15,79 +17,92 @@ export interface Vector3Like
     z: number;
 }
 
-declare module '@feng3d/serialization' { interface SerializableMap { Vector3: Vector3 } }
-
 /**
  * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
  */
-@Serializable('Vector3')
+@decoratorRegisterClass()
 export class Vector3 implements Vector, Vector3Like
 {
-    declare __class__: 'Vector3';
+    __class__: 'Vector3';
 
     /**
     * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
     */
-    static get X_AXIS()
-    {
-        return this._X_AXIS ||= Object.freeze(new Vector3(1, 0, 0));
-    }
-    private static _X_AXIS: Readonly<Vector3>;
+    static X_AXIS = Object.freeze(new Vector3(1, 0, 0));
 
     /**
-     * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
+    * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
     */
-    static get Y_AXIS()
-    {
-        return this._Y_AXIS ||= Object.freeze(new Vector3(0, 1, 0));
-    }
-    private static _Y_AXIS: Readonly<Vector3>;
+    static Y_AXIS = Object.freeze(new Vector3(0, 1, 0));
 
     /**
-     * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
+    * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
     */
-    static get Z_AXIS()
-    {
-        return this._Z_AXIS ||= Object.freeze(new Vector3(0, 0, 1));
-    }
-    private static _Z_AXIS: Readonly<Vector3>;
+    static Z_AXIS = Object.freeze(new Vector3(0, 0, 1));
 
     /**
      * 原点 Vector3(0,0,0)
-    */
-    static get ZERO()
-    {
-        return this._ZERO ||= Object.freeze(new Vector3(0, 0, 0));
-    }
-    private static _ZERO: Readonly<Vector3>;
+     */
+    static ZERO = Object.freeze(new Vector3());
 
     /**
      * Vector3(1, 1, 1)
-    */
-    static get ONE()
+     */
+    static ONE = Object.freeze(new Vector3(1, 1, 1));
+
+    /**
+     * 从数组中初始化向量
+     * @param array 数组
+     * @param offset 偏移
+     * @returns 返回新向量
+     */
+    static fromArray(array: ArrayLike<number>, offset = 0)
     {
-        return this._ONE ||= Object.freeze(new Vector3(1, 1, 1));
+        return new Vector3().fromArray(array, offset);
     }
-    private static _ONE: Readonly<Vector3>;
+
+    /**
+     * 随机三维向量
+     *
+     * @param size 尺寸
+     * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
+     */
+    static random(size = 1, double = false)
+    {
+        const v = new Vector3(Math.random(), Math.random(), Math.random());
+
+        if (double) v.scaleNumber(2).subNumber(1);
+        v.scaleNumber(size);
+
+        return v;
+    }
+
+    /**
+     * 从Vector2初始化
+     */
+    static fromVector2(vector: Vector2, z = 0)
+    {
+        return new Vector3().fromVector2(vector, z);
+    }
 
     /**
     * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
     */
-    @SerializeProperty()
+    @serialize
     @oav()
     x = 0;
 
     /**
      * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
      */
-    @SerializeProperty()
+    @serialize
     @oav()
     y = 0;
 
     /**
      * Vector3 对象中的第三个元素，例如，三维空间中某个点的 z 坐标。默认值为 0
      */
-    @SerializeProperty()
+    @serialize
     @oav()
     z = 0;
 
@@ -152,49 +167,11 @@ export class Vector3 implements Vector, Vector3Like
         return this;
     }
 
-    /**
-     * 从Vector4初始化
-     *
-     * @param vector 4维向量
-     */
-    fromVector4(vector: Vector4)
-    {
-        this.x = vector.x;
-        this.y = vector.y;
-        this.z = vector.z;
-
-        return this;
-    }
-
-    /**
-     * 从数组中初始化向量
-     * @param array 数组
-     * @param offset 偏移
-     * @returns 返回新向量
-     */
     fromArray(array: ArrayLike<number>, offset = 0)
     {
         this.x = array[offset];
         this.y = array[offset + 1];
         this.z = array[offset + 2];
-
-        return this;
-    }
-
-    /**
-     * 随机三维向量
-     *
-     * @param size 尺寸
-     * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
-     */
-    random(size = 1, double = false)
-    {
-        this.x = Math.random();
-        this.y = Math.random();
-        this.z = Math.random();
-
-        if (double) this.scaleNumber(2).subNumber(1);
-        this.scaleNumber(size);
 
         return this;
     }
@@ -225,13 +202,13 @@ export class Vector3 implements Vector, Vector3Like
      * @param v 加向量
      * @returns 返回新向量
      */
-    addTo(v: Vector3, vOut = new Vector3())
+    addTo(v: Vector3, vout = new Vector3())
     {
-        vOut.x = this.x + v.x;
-        vOut.y = this.y + v.y;
-        vOut.z = this.z + v.z;
+        vout.x = this.x + v.x;
+        vout.y = this.y + v.y;
+        vout.z = this.z + v.z;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -253,13 +230,13 @@ export class Vector3 implements Vector, Vector3Like
      * @param v 减去的向量
      * @returns 返回的新向量
      */
-    subTo(v: Vector3, vOut = new Vector3())
+    subTo(v: Vector3, vout = new Vector3())
     {
-        vOut.x = this.x - v.x;
-        vOut.y = this.y - v.y;
-        vOut.z = this.z - v.z;
+        vout.x = this.x - v.x;
+        vout.y = this.y - v.y;
+        vout.z = this.z - v.z;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -278,15 +255,15 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 乘以向量
      * @param v 向量
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    multiplyTo(v: Vector3, vOut = new Vector3())
+    multiplyTo(v: Vector3, vout = new Vector3())
     {
-        vOut.x = this.x * v.x;
-        vOut.y = this.y * v.y;
-        vOut.z = this.z * v.z;
+        vout.x = this.x * v.x;
+        vout.y = this.y * v.y;
+        vout.z = this.z * v.z;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -305,15 +282,15 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 除以向量
      * @param a 向量
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    divideTo(a: Vector3Like, vOut = new Vector3())
+    divideTo(a: Vector3Like, vout = new Vector3())
     {
-        vOut.x = this.x / a.x;
-        vOut.y = this.y / a.y;
-        vOut.z = this.z / a.z;
+        vout.x = this.x / a.x;
+        vout.y = this.y / a.y;
+        vout.z = this.z / a.z;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -444,15 +421,15 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 叉乘向量
      * @param a 向量
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    crossTo(a: Vector3Like, vOut = new Vector3())
+    crossTo(a: Vector3Like, vout = new Vector3())
     {
-        vOut.x = (this.y * a.z) - (this.z * a.y);
-        vOut.y = (this.z * a.x) - (this.x * a.z);
-        vOut.z = (this.x * a.y) - (this.y * a.x);
+        vout.x = (this.y * a.z) - (this.z * a.y);
+        vout.y = (this.z * a.x) - (this.x * a.z);
+        vout.z = (this.x * a.y) - (this.y * a.x);
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -477,22 +454,22 @@ export class Vector3 implements Vector, Vector3Like
         if (norm > 0.0)
         {
             const n = new Vector3();
-            const iNorm = 1 / norm;
-            n.set(this.x * iNorm, this.y * iNorm, this.z * iNorm);
+            const inorm = 1 / norm;
+            n.set(this.x * inorm, this.y * inorm, this.z * inorm);
             const randVec = new Vector3();
             if (Math.abs(n.x) < 0.9)
             {
                 randVec.set(1, 0, 0);
                 n.crossTo(randVec, t1);
             }
-            else
+ else
             {
                 randVec.set(0, 1, 0);
                 n.crossTo(randVec, t1);
             }
             n.crossTo(t1, t2);
         }
-        else
+ else
         {
             // The normal length is zero, make something up
             t1.set(1, 0, 0);
@@ -549,13 +526,13 @@ export class Vector3 implements Vector, Vector3Like
      * 增加标量
      * @param n 标量
      */
-    addNumberTo(n: number, vOut = new Vector3())
+    addNumberTo(n: number, vout = new Vector3())
     {
-        vOut.x = this.x + n;
-        vOut.y = this.y + n;
-        vOut.z = this.z + n;
+        vout.x = this.x + n;
+        vout.y = this.y + n;
+        vout.z = this.z + n;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -575,13 +552,13 @@ export class Vector3 implements Vector, Vector3Like
      * 减去标量
      * @param n 标量
      */
-    subNumberTo(n: number, vOut = new Vector3())
+    subNumberTo(n: number, vout = new Vector3())
     {
-        vOut.x = this.x - n;
-        vOut.y = this.y - n;
-        vOut.z = this.z - n;
+        vout.x = this.x - n;
+        vout.y = this.y - n;
+        vout.z = this.z - n;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -600,15 +577,15 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 乘以标量
      * @param n 标量
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    multiplyNumberTo(n: number, vOut = new Vector3())
+    multiplyNumberTo(n: number, vout = new Vector3())
     {
-        vOut.x = this.x * n;
-        vOut.y = this.y * n;
-        vOut.z = this.z * n;
+        vout.x = this.x * n;
+        vout.y = this.y * n;
+        vout.z = this.z * n;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -627,15 +604,15 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 除以标量
      * @param n 标量
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    divideNumberTo(n: number, vOut = new Vector3())
+    divideNumberTo(n: number, vout = new Vector3())
     {
-        vOut.x = this.x / n;
-        vOut.y = this.y / n;
-        vOut.z = this.z / n;
+        vout.x = this.x / n;
+        vout.y = this.y / n;
+        vout.z = this.z / n;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -664,13 +641,13 @@ export class Vector3 implements Vector, Vector3Like
      * 负向量
      * (a,b,c)->(-a,-b,-c)
      */
-    negateTo(vOut = new Vector3())
+    negateTo(vout = new Vector3())
     {
-        vOut.x = -this.x;
-        vOut.y = -this.y;
-        vOut.z = -this.z;
+        vout.x = -this.x;
+        vout.y = -this.y;
+        vout.z = -this.z;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -690,13 +667,13 @@ export class Vector3 implements Vector, Vector3Like
      * 倒向量
      * (a,b,c)->(1/a,1/b,1/c)
      */
-    inverseTo(vOut = new Vector3())
+    inverseTo(vout = new Vector3())
     {
-        vOut.x = 1 / this.x;
-        vOut.y = 1 / this.y;
-        vOut.z = 1 / this.z;
+        vout.x = 1 / this.x;
+        vout.y = 1 / this.y;
+        vout.z = 1 / this.z;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -707,16 +684,16 @@ export class Vector3 implements Vector, Vector3Like
         const x = this.x;
         const y = this.y;
         const z = this.z;
-        let nInv = (x * x) + (y * y) + (z * z);
+        let ninv = (x * x) + (y * y) + (z * z);
 
-        if (nInv > 0.0)
+        if (ninv > 0.0)
         {
-            nInv = Math.sqrt(nInv);
+            ninv = Math.sqrt(ninv);
 
-            nInv = 1.0 / nInv;
-            target.x = x * nInv;
-            target.y = y * nInv;
-            target.z = z * nInv;
+            ninv = 1.0 / ninv;
+            target.x = x * ninv;
+            target.y = y * ninv;
+            target.z = z * ninv;
         }
         else
         {
@@ -743,13 +720,13 @@ export class Vector3 implements Vector, Vector3Like
     /**
      * 按标量（大小）缩放当前的 Vector3 对象。
      */
-    scaleNumberTo(s: number, vOut = new Vector3())
+    scaleNumberTo(s: number, vout = new Vector3())
     {
-        vOut.x = this.x * s;
-        vOut.y = this.y * s;
-        vOut.z = this.z * s;
+        vout.x = this.x * s;
+        vout.y = this.y * s;
+        vout.z = this.z * s;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -769,13 +746,13 @@ export class Vector3 implements Vector, Vector3Like
      * 缩放
      * @param s 缩放量
      */
-    scaleTo(s: Vector3, vOut = new Vector3())
+    scaleTo(s: Vector3, vout = new Vector3())
     {
-        vOut.x = this.x * s.x;
-        vOut.y = this.y * s.y;
-        vOut.z = this.z * s.z;
+        vout.x = this.x * s.x;
+        vout.y = this.y * s.y;
+        vout.z = this.z * s.z;
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -799,13 +776,13 @@ export class Vector3 implements Vector, Vector3Like
      * @param alpha 插值系数
      * @returns 返回自身
      */
-    lerpTo(v: Vector3, alpha: Vector3, vOut = new Vector3())
+    lerpTo(v: Vector3, alpha: Vector3, vout = new Vector3())
     {
-        vOut.x = this.x + ((v.x - this.x) * alpha.x);
-        vOut.y = this.y + ((v.y - this.y) * alpha.y);
-        vOut.z = this.z + ((v.z - this.z) * alpha.z);
+        vout.x = this.x + ((v.x - this.x) * alpha.x);
+        vout.y = this.y + ((v.y - this.y) * alpha.y);
+        vout.z = this.z + ((v.z - this.z) * alpha.z);
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -829,13 +806,13 @@ export class Vector3 implements Vector, Vector3Like
      * @param alpha 插值系数
      * @returns 返回自身
      */
-    lerpNumberTo(v: Vector3, alpha: number, vOut = new Vector3())
+    lerpNumberTo(v: Vector3, alpha: number, vout = new Vector3())
     {
-        vOut.x = this.x + ((v.x - this.x) * alpha);
-        vOut.y = this.y + ((v.y - this.y) * alpha);
-        vOut.z = this.z + ((v.z - this.z) * alpha);
+        vout.x = this.x + ((v.x - this.x) * alpha);
+        vout.y = this.y + ((v.y - this.y) * alpha);
+        vout.z = this.z + ((v.z - this.z) * alpha);
 
-        return vOut;
+        return vout;
     }
 
     /**
@@ -851,7 +828,7 @@ export class Vector3 implements Vector, Vector3Like
      * 小于等于指定点
      * @param p 点
      */
-    lessEqual(p: Vector3)
+    lessequal(p: Vector3)
     {
         return this.x <= p.x && this.y <= p.y && this.z <= p.z;
     }
@@ -869,7 +846,7 @@ export class Vector3 implements Vector, Vector3Like
      * 大于等于指定点
      * @param p 点
      */
-    greaterEqual(p: Vector3)
+    greaterequal(p: Vector3)
     {
         return this.x >= p.x && this.y >= p.y && this.z >= p.z;
     }
@@ -893,9 +870,9 @@ export class Vector3 implements Vector, Vector3Like
      * @param min 最小值
      * @param max 最大值
      */
-    clampTo(min: Vector3, max: Vector3, vOut = new Vector3())
+    clampTo(min: Vector3, max: Vector3, vout = new Vector3())
     {
-        return vOut.copy(this).clamp(min, max);
+        return vout.copy(this).clamp(min, max);
     }
 
     /**
@@ -994,11 +971,11 @@ export class Vector3 implements Vector, Vector3Like
      * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
      * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
      */
-    crossMat(this: Vector3, outMatrix: Matrix3x3)
+    crossmat(this: Vector3, outMatrix: Matrix3x3)
     {
-        outMatrix.elements = [0, -this.z, this.y,
+        outMatrix.set([0, -this.z, this.y,
             this.z, 0, -this.x,
-            -this.y, this.x, 0];
+            -this.y, this.x, 0]);
 
         return outMatrix;
     }
@@ -1066,4 +1043,357 @@ export class Vector3 implements Vector, Vector3Like
 
         return array;
     }
+
+    /**
+     * 转换为Vector4
+     */
+    toVector4(vector4: Vector4)
+    {
+        vector4.x = this.x;
+        vector4.y = this.y;
+        vector4.z = this.z;
+
+        return vector4;
+    }
+
+    // *Undocumented*
+    static readonly kEpsilon = 0.00001;
+    // *Undocumented*
+    static readonly kEpsilonNormalSqrt = 1e-15;
+
+    // Linearly interpolates between two vectors.
+    static Lerp(a: Vector3, b: Vector3, t: number)
+    {
+        t = Mathf.Clamp01(t);
+
+        return new Vector3(
+            a.x + (b.x - a.x) * t,
+            a.y + (b.y - a.y) * t,
+            a.z + (b.z - a.z) * t
+        );
+    }
+
+    // Linearly interpolates between two vectors without clamping the interpolant
+    static LerpUnclamped(a: Vector3, b: Vector3, t: number)
+    {
+        return new Vector3(
+            a.x + (b.x - a.x) * t,
+            a.y + (b.y - a.y) * t,
+            a.z + (b.z - a.z) * t
+        );
+    }
+
+    // Moves a point /current/ in a straight line towards a /target/ point.
+    static MoveTowards(current: Vector3, target: Vector3, maxDistanceDelta: number)
+    {
+        // avoid vector ops because current scripting backends are terrible at inlining
+        const toVectorX = target.x - current.x;
+        const toVectorY = target.y - current.y;
+        const toVectorZ = target.z - current.z;
+
+        const sqdist = toVectorX * toVectorX + toVectorY * toVectorY + toVectorZ * toVectorZ;
+
+        if (sqdist === 0 || (maxDistanceDelta >= 0 && sqdist <= maxDistanceDelta * maxDistanceDelta))
+        {
+            return target;
+        }
+        const dist = Math.sqrt(sqdist);
+
+        return new Vector3(current.x + toVectorX / dist * maxDistanceDelta,
+            current.y + toVectorY / dist * maxDistanceDelta,
+            current.z + toVectorZ / dist * maxDistanceDelta);
+    }
+
+    static SmoothDamp(current: Vector3, target: Vector3, currentVelocity: Vector3, smoothTime: number, maxSpeed: number)
+    {
+        const deltaTime = Time.deltaTime;
+
+        return Vector3.SmoothDamp2(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    }
+
+    static SmoothDamp1(current: Vector3, target: Vector3, currentVelocity: Vector3, smoothTime: number)
+    {
+        const deltaTime = Time.deltaTime;
+        const maxSpeed = Mathf.Infinity;
+
+        return Vector3.SmoothDamp2(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    }
+
+    // Gradually changes a vector towards a desired goal over time.
+    static SmoothDamp2(current: Vector3, target: Vector3, currentVelocity: Vector3, smoothTime: number, maxSpeed = Mathf.Infinity, deltaTime = Time.deltaTime)
+    {
+        let outputX = 0;
+        let outputY = 0;
+        let outputZ = 0;
+
+        // Based on Game Programming Gems 4 Chapter 1.10
+        smoothTime = Mathf.Max(0.0001, smoothTime);
+        const omega = 2 / smoothTime;
+
+        const x = omega * deltaTime;
+        const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+
+        let changeX = current.x - target.x;
+        let changeY = current.y - target.y;
+        let changeZ = current.z - target.z;
+        const originalTo = target;
+
+        // Clamp maximum speed
+        const maxChange = maxSpeed * smoothTime;
+
+        const maxChangeSq = maxChange * maxChange;
+        const sqrmag = changeX * changeX + changeY * changeY + changeZ * changeZ;
+        if (sqrmag > maxChangeSq)
+        {
+            const mag = Math.sqrt(sqrmag);
+            changeX = changeX / mag * maxChange;
+            changeY = changeY / mag * maxChange;
+            changeZ = changeZ / mag * maxChange;
+        }
+
+        target.x = current.x - changeX;
+        target.y = current.y - changeY;
+        target.z = current.z - changeZ;
+
+        const tempX = (currentVelocity.x + omega * changeX) * deltaTime;
+        const tempY = (currentVelocity.y + omega * changeY) * deltaTime;
+        const tempZ = (currentVelocity.z + omega * changeZ) * deltaTime;
+
+        currentVelocity.x = (currentVelocity.x - omega * tempX) * exp;
+        currentVelocity.y = (currentVelocity.y - omega * tempY) * exp;
+        currentVelocity.z = (currentVelocity.z - omega * tempZ) * exp;
+
+        outputX = target.x + (changeX + tempX) * exp;
+        outputY = target.y + (changeY + tempY) * exp;
+        outputZ = target.z + (changeZ + tempZ) * exp;
+
+        // Prevent overshooting
+        const origMinusCurrentX = originalTo.x - current.x;
+        const origMinusCurrentY = originalTo.y - current.y;
+        const origMinusCurrentZ = originalTo.z - current.z;
+        const outMinusOrigX = outputX - originalTo.x;
+        const outMinusOrigY = outputY - originalTo.y;
+        const outMinusOrigZ = outputZ - originalTo.z;
+
+        if (origMinusCurrentX * outMinusOrigX + origMinusCurrentY * outMinusOrigY + origMinusCurrentZ * outMinusOrigZ > 0)
+        {
+            outputX = originalTo.x;
+            outputY = originalTo.y;
+            outputZ = originalTo.z;
+
+            currentVelocity.x = (outputX - originalTo.x) / deltaTime;
+            currentVelocity.y = (outputY - originalTo.y) / deltaTime;
+            currentVelocity.z = (outputZ - originalTo.z) / deltaTime;
+        }
+
+        return new Vector3(outputX, outputY, outputZ);
+    }
+
+    // Multiplies two vectors component-wise.
+    static Scale(a: Vector3, b: Vector3)
+    {
+        return new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+    }
+
+    // Cross Product of two vectors.
+    static Cross(lhs: Vector3, rhs: Vector3)
+    {
+        return new Vector3(
+            lhs.y * rhs.z - lhs.z * rhs.y,
+            lhs.z * rhs.x - lhs.x * rhs.z,
+            lhs.x * rhs.y - lhs.y * rhs.x);
+    }
+
+    // Reflects a vector off the plane defined by a normal.
+    static Reflect(inDirection: Vector3, inNormal: Vector3)
+    {
+        const factor = -2 * Vector3.Dot(inNormal, inDirection);
+
+        return new Vector3(factor * inNormal.x + inDirection.x,
+            factor * inNormal.y + inDirection.y,
+            factor * inNormal.z + inDirection.z);
+    }
+
+    // *undoc* --- we have normalized property now
+    static Normalize(value: Vector3)
+    {
+        const mag = Vector3.Magnitude(value);
+        if (mag > Vector3.kEpsilon)
+        {
+            return new Vector3(value.x / mag, value.y / mag, value.z / mag);
+        }
+
+        return Vector3.zero.clone();
+    }
+
+    // Makes this vector have a ::ref::magnitude of 1.
+    Normalize()
+    {
+        const mag = Vector3.Magnitude(this);
+        if (mag > Vector3.kEpsilon)
+        {
+            this.x = this.x / mag;
+            this.y = this.y / mag;
+            this.z = this.z / mag;
+        }
+        else
+        {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+        }
+    }
+
+    // Returns this vector with a ::ref::magnitude of 1 (RO).
+    get normalized()
+    {
+        return Vector3.Normalize(this);
+    }
+
+    // Dot Product of two vectors.
+    static Dot(lhs: Vector3, rhs: Vector3)
+    {
+        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+    }
+
+    // Projects a vector onto another vector.
+    static Project(vector: Vector3, onNormal: Vector3)
+    {
+        const sqrMag = Vector3.Dot(onNormal, onNormal);
+        if (sqrMag < Mathf.Epsilon)
+        {
+            return Vector3.zero;
+        }
+        const dot = Vector3.Dot(vector, onNormal);
+
+        return new Vector3(onNormal.x * dot / sqrMag,
+            onNormal.y * dot / sqrMag,
+            onNormal.z * dot / sqrMag);
+    }
+
+    // Projects a vector onto a plane defined by a normal orthogonal to the plane.
+    static ProjectOnPlane(vector: Vector3, planeNormal: Vector3)
+    {
+        const sqrMag = Vector3.Dot(planeNormal, planeNormal);
+        if (sqrMag < Mathf.Epsilon)
+        {
+            return vector;
+        }
+        const dot = Vector3.Dot(vector, planeNormal);
+
+        return new Vector3(vector.x - planeNormal.x * dot / sqrMag,
+            vector.y - planeNormal.y * dot / sqrMag,
+            vector.z - planeNormal.z * dot / sqrMag);
+    }
+
+    // Returns the angle in degrees between /from/ and /to/. This is always the smallest
+    static Angle(from: Vector3, to: Vector3)
+    {
+        // sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers
+        const denominator = Math.sqrt(from.sqrMagnitude * to.sqrMagnitude);
+        if (denominator < Vector3.kEpsilonNormalSqrt)
+        {
+            return 0;
+        }
+
+        const dot = Mathf.Clamp(Vector3.Dot(from, to) / denominator, -1, 1);
+
+        return (Math.acos(dot)) * Mathf.Rad2Deg;
+    }
+
+    // The smaller of the two possible angles between the two vectors is returned, therefore the result will never be greater than 180 degrees or smaller than -180 degrees.
+    // If you imagine the from and to vectors as lines on a piece of paper, both originating from the same point, then the /axis/ vector would point up out of the paper.
+    // The measured angle between the two vectors would be positive in a clockwise direction and negative in an anti-clockwise direction.
+    static SignedAngle(from: Vector3, to: Vector3, axis: Vector3)
+    {
+        const unsignedAngle = Vector3.Angle(from, to);
+
+        const crossX = from.y * to.z - from.z * to.y;
+        const crossY = from.z * to.x - from.x * to.z;
+        const crossZ = from.x * to.y - from.y * to.x;
+        const sign = Mathf.Sign(axis.x * crossX + axis.y * crossY + axis.z * crossZ);
+
+        return unsignedAngle * sign;
+    }
+
+    // Returns the distance between /a/ and /b/.
+    static Distance(a: Vector3, b: Vector3)
+    {
+        const diffX = a.x - b.x;
+        const diffY = a.y - b.y;
+        const diffZ = a.z - b.z;
+
+        return Math.sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ);
+    }
+
+    // Returns a copy of /vector/ with its magnitude clamped to /maxLength/.
+    static ClampMagnitude(vector: Vector3, maxLength: number)
+    {
+        const sqrmag = vector.sqrMagnitude;
+        if (sqrmag > maxLength * maxLength)
+        {
+            const mag = Math.sqrt(sqrmag);
+            // these intermediate variables force the intermediate result to be
+            // of float precision. without this, the intermediate result can be of higher
+            // precision, which changes behavior.
+            const normalizedX = vector.x / mag;
+            const normalizedY = vector.y / mag;
+            const normalizedZ = vector.z / mag;
+
+            return new Vector3(normalizedX * maxLength, normalizedY * maxLength, normalizedZ * maxLength);
+        }
+
+        return vector;
+    }
+
+    // *undoc* --- there's a property now
+    static Magnitude(vector: Vector3)
+    {
+        return Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+    }
+
+    // Returns the length of this vector (RO).
+    get magnitude()
+    {
+        const { x, y, z } = this;
+
+        return Math.sqrt(x * x + y * y + z * z);
+    }
+
+    // *undoc* --- there's a property now
+    static SqrMagnitude(vector: Vector3)
+    {
+        return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+    }
+
+    // Returns the squared length of this vector (RO).
+    get sqrMagnitude()
+    {
+        const { x, y, z } = this;
+
+        return x * x + y * y + z * z;
+    }
+
+    // Returns a vector that is made from the smallest components of two vectors.
+    static Min(lhs: Vector3, rhs: Vector3)
+    {
+        return new Vector3(Mathf.Min(lhs.x, rhs.x), Mathf.Min(lhs.y, rhs.y), Mathf.Min(lhs.z, rhs.z));
+    }
+
+    // Returns a vector that is made from the largest components of two vectors.
+    static Max(lhs: Vector3, rhs: Vector3)
+    {
+        return new Vector3(Mathf.Max(lhs.x, rhs.x), Mathf.Max(lhs.y, rhs.y), Mathf.Max(lhs.z, rhs.z));
+    }
+
+    static readonly zero = Object.freeze(new Vector3(0, 0, 0));
+    static readonly one = Object.freeze(new Vector3(1, 1, 1));
+    static readonly up = Object.freeze(new Vector3(0, 1, 0));
+    static readonly down = Object.freeze(new Vector3(0, -1, 0));
+    static readonly left = Object.freeze(new Vector3(-1, 0, 0));
+    static readonly right = Object.freeze(new Vector3(1, 0, 0));
+    static readonly forward = Object.freeze(new Vector3(0, 0, 1));
+    static readonly back = Object.freeze(new Vector3(0, 0, -1));
+    static readonly positiveInfinity = Object.freeze(new Vector3(Infinity, Infinity, Infinity));
+    static readonly negativeInfinity = Object.freeze(new Vector3(-Infinity, -Infinity, -Infinity));
 }

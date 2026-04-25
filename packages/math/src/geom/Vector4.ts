@@ -1,44 +1,58 @@
 import { oav } from '@feng3d/objectview';
-import { mathUtil } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
+import { Mathf } from '../MathF';
 import { Matrix4x4 } from './Matrix4x4';
 import { Vector3 } from './Vector3';
-
-declare module '@feng3d/serialization' { interface SerializableMap { Vector4: Vector4 } }
 
 /**
  * 四维向量
  */
-@Serializable('Vector4')
+@decoratorRegisterClass()
 export class Vector4
 {
-    declare __class__: 'Vector4';
+    __class__: 'Vector4';
+
+    static fromArray(array: ArrayLike<number>, offset = 0)
+    {
+        return new Vector4().fromArray(array, offset);
+    }
+
+    static fromVector3(vector3: Vector3, w = 0)
+    {
+        return new Vector4().fromVector3(vector3, w);
+    }
+
+    static random()
+    {
+        return new Vector4(Math.random(), Math.random(), Math.random(), Math.random());
+    }
 
     /**
-     * Vector4 对象中的第一个元素。默认值为 0
-     */
-    @SerializeProperty()
+    * Vector4 对象中的第一个元素。默认值为 0
+    */
+    @serialize
     @oav()
     x = 0;
 
     /**
      * Vector4 对象中的第二个元素。默认值为 0
      */
-    @SerializeProperty()
+    @serialize
     @oav()
     y = 0;
 
     /**
      * Vector4 对象中的第三个元素。默认值为 0
      */
-    @SerializeProperty()
+    @serialize
     @oav()
     z = 0;
 
     /**
      * Vector4 对象的第四个元素。默认值为 0
      */
-    @SerializeProperty()
+    @serialize
     @oav()
     w = 0;
 
@@ -105,16 +119,14 @@ export class Vector4
     }
 
     /**
-     * 随机向量。
+     * 转换为三维向量
+     * @param v3 三维向量
      */
-    random()
+    toVector3(v3 = new Vector3())
     {
-        this.x = Math.random();
-        this.y = Math.random();
-        this.z = Math.random();
-        this.w = Math.random();
+        v3.set(this.x, this.y, this.z);
 
-        return this;
+        return v3;
     }
 
     /**
@@ -152,9 +164,9 @@ export class Vector4
      * @param v 加向量
      * @returns 返回新向量
      */
-    addTo(v: Vector4, vOut = new Vector4())
+    addTo(v: Vector4, vout = new Vector4())
     {
-        return vOut.copy(this).add(v);
+        return vout.copy(this).add(v);
     }
 
     /**
@@ -201,9 +213,9 @@ export class Vector4
      * @param v 减去的向量
      * @returns 返回新向量
      */
-    subTo(v: Vector4, vOut = new Vector4())
+    subTo(v: Vector4, vout = new Vector4())
     {
-        return vOut.copy(this).sub(v);
+        return vout.copy(this).sub(v);
     }
 
     /**
@@ -226,9 +238,9 @@ export class Vector4
      * @param v 乘以的向量
      * @returns 返回新向量
      */
-    multiplyTo(v: Vector4, vOut = new Vector4())
+    multiplyTo(v: Vector4, vout = new Vector4())
     {
-        return vOut.copy(this).multiply(v);
+        return vout.copy(this).multiply(v);
     }
 
     /**
@@ -251,9 +263,9 @@ export class Vector4
      * @param v 除以的向量
      * @returns 返回新向量
      */
-    divTo(v: Vector4, vOut = new Vector4())
+    divTo(v: Vector4, vout = new Vector4())
     {
-        return vOut.copy(this).div(v);
+        return vout.copy(this).div(v);
     }
 
     /**
@@ -304,7 +316,7 @@ export class Vector4
      * @param s 缩放系数
      * @returns 返回自身
      */
-    scaleNumber(s: number)
+    scale(s: number)
     {
         this.x *= s;
         this.y *= s;
@@ -319,9 +331,9 @@ export class Vector4
      * @param s 缩放系数
      * @returns 返回新向量
      */
-    scaleNumberTo(s: number, vOut = new Vector4())
+    scaleTo(s: number)
     {
-        return vOut.copy(this).scaleNumber(s);
+        return this.clone().scale(s);
     }
 
     /**
@@ -377,4 +389,170 @@ export class Vector4
     {
         return `<${this.x}, ${this.y}, ${this.z}, ${this.w}>`;
     }
+
+    // Linearly interpolates between two vectors.
+    static Lerp(a: Vector4, b: Vector4, t: number)
+    {
+        t = Mathf.Clamp01(t);
+
+        return new Vector4(
+            a.x + (b.x - a.x) * t,
+            a.y + (b.y - a.y) * t,
+            a.z + (b.z - a.z) * t,
+            a.w + (b.w - a.w) * t
+        );
+    }
+
+    // Linearly interpolates between two vectors without clamping the interpolant
+    static LerpUnclamped(a: Vector4, b: Vector4, t: number)
+    {
+        return new Vector4(
+            a.x + (b.x - a.x) * t,
+            a.y + (b.y - a.y) * t,
+            a.z + (b.z - a.z) * t,
+            a.w + (b.w - a.w) * t
+        );
+    }
+
+    // Moves a point /current/ towards /target/.
+    static MoveTowards(current: Vector4, target: Vector4, maxDistanceDelta: number)
+    {
+        const toVectorX = target.x - current.x;
+        const toVectorY = target.y - current.y;
+        const toVectorZ = target.z - current.z;
+        const toVectorW = target.w - current.w;
+
+        const sqdist = (toVectorX * toVectorX + toVectorY * toVectorY + toVectorZ * toVectorZ + toVectorW * toVectorW);
+
+        if (sqdist === 0 || (maxDistanceDelta >= 0 && sqdist <= maxDistanceDelta * maxDistanceDelta))
+        {
+            return target;
+        }
+
+        const dist = Math.sqrt(sqdist);
+
+        return new Vector4(current.x + toVectorX / dist * maxDistanceDelta,
+            current.y + toVectorY / dist * maxDistanceDelta,
+            current.z + toVectorZ / dist * maxDistanceDelta,
+            current.w + toVectorW / dist * maxDistanceDelta);
+    }
+
+    // Multiplies two vectors component-wise.
+    static Scale(a: Vector4, b: Vector4)
+    {
+        return new Vector4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+    }
+
+    // Multiplies every component of this vector by the same component of /scale/.
+    Scale(scale: Vector4)
+    {
+        this.x *= scale.x;
+        this.y *= scale.y;
+        this.z *= scale.z;
+        this.w *= scale.w;
+    }
+
+    // also required for being able to use Vector4s as keys in hash tables
+    Equals(other: Vector4)
+    {
+        return this.x === other.x && this.y === other.y && this.z === other.z && this.w === other.w;
+    }
+
+    // *undoc* --- we have normalized property now
+    static Normalize(a: Vector4)
+    {
+        const mag = Vector4.Magnitude(a);
+        if (mag > Vector4.kEpsilon)
+        {
+            return new Vector4(a.x / mag, a.y / mag, a.z / mag, a.w / mag);
+        }
+
+        return Vector4.zero.clone();
+    }
+
+    // Makes this vector have a ::ref::magnitude of 1.
+    Normalize()
+    {
+        const mag = Vector4.Magnitude(this);
+        if (mag > Vector4.kEpsilon)
+        {
+            this.x = this.x / mag;
+            this.y = this.y / mag;
+            this.z = this.z / mag;
+        }
+        else
+        {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+        }
+    }
+
+    // Returns this vector with a ::ref::magnitude of 1 (RO).
+    get normalized()
+    {
+        return Vector4.Normalize(this);
+    }
+
+    // Dot Product of two vectors.
+    static Dot(a: Vector4, b: Vector4)
+    {
+        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+    }
+
+    // Projects a vector onto another vector.
+    static Project(a: Vector4, b: Vector4)
+    {
+        const scale = (Vector4.Dot(a, b) / Vector4.Dot(b, b));
+
+        return new Vector4(b.x * scale, b.y * scale, b.z * scale, b.w * scale);
+    }
+
+    // Returns the distance between /a/ and /b/.
+    static Distance(a: Vector4, b: Vector4)
+    {
+        return Vector4.Magnitude(a.clone().sub(b));
+    }
+
+    // *undoc* --- there's a property now
+    static Magnitude(a: Vector4)
+    {
+        return Math.sqrt(Vector4.Dot(a, a));
+    }
+
+    // Returns the length of this vector (RO).
+    get magnitude()
+    {
+        return Math.sqrt(Vector4.Dot(this, this));
+    }
+
+    // Returns the squared length of this vector (RO).
+    get sqrMagnitude()
+    {
+        return Vector4.Dot(this, this);
+    }
+
+    // Returns a vector that is made from the smallest components of two vectors.
+    static Min(lhs: Vector4, rhs: Vector4)
+    {
+        return new Vector4(Mathf.Min(lhs.x, rhs.x), Mathf.Min(lhs.y, rhs.y), Mathf.Min(lhs.z, rhs.z), Mathf.Min(lhs.w, rhs.w));
+    }
+
+    // Returns a vector that is made from the largest components of two vectors.
+    public static Max(lhs: Vector4, rhs: Vector4)
+    {
+        return new Vector4(Mathf.Max(lhs.x, rhs.x), Mathf.Max(lhs.y, rhs.y), Mathf.Max(lhs.z, rhs.z), Mathf.Max(lhs.w, rhs.w));
+    }
+
+    // Shorthand for writing @@Vector4(0,0,0,0)@@
+    static readonly zero = Object.freeze(new Vector4(0, 0, 0, 0));
+    // Shorthand for writing @@Vector4(1,1,1,1)@@
+    static readonly one = Object.freeze(new Vector4(1, 1, 1, 1));
+    // Shorthand for writing @@Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity)@@
+    static readonly positiveInfinity = Object.freeze(new Vector4(Infinity, Infinity, Infinity, Infinity));
+    // Shorthand for writing @@Vector3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity)@@
+    static readonly negativeInfinity = Object.freeze(new Vector4(-Infinity, -Infinity, -Infinity, -Infinity));
+
+    // *undocumented*
+    static readonly kEpsilon = 0.00001;
 }

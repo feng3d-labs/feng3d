@@ -1,24 +1,23 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { Serializable, SerializeProperty } from '@feng3d/serialization';
+import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { serialize } from '@feng3d/serialization';
 import { Color3 } from '../Color3';
 import { Color4 } from '../Color4';
 import { GradientAlphaKey } from './GradientAlphaKey';
 import { GradientColorKey } from './GradientColorKey';
 import { GradientMode } from './GradientMode';
 
-declare module '@feng3d/serialization' { interface SerializableMap { Gradient: Gradient } }
 /**
  * 颜色渐变
  */
-@Serializable('Gradient')
+@decoratorRegisterClass()
 export class Gradient
 {
-    declare __class__: 'Gradient';
+    __class__: 'Gradient';
 
     /**
      * 渐变模式
      */
-    @SerializeProperty()
+    @serialize
     mode = GradientMode.Blend;
 
     /**
@@ -26,7 +25,7 @@ export class Gradient
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    @SerializeProperty()
+    @serialize
     alphaKeys: GradientAlphaKey[] = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
 
     /**
@@ -34,7 +33,7 @@ export class Gradient
      *
      * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
      */
-    @SerializeProperty()
+    @serialize
     colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
 
     /**

@@ -1,6 +1,6 @@
 import { Color4 } from '../../Color4';
-import { Polygon } from '../../geom/Polygon';
 import { Vector2 } from '../../geom/Vector2';
+import { ShapeUtils } from '../ShapeUtils';
 import { Path2 } from './Path2';
 import { Shape2 } from './Shape2';
 
@@ -83,6 +83,68 @@ export class ShapePath2
             return shapes;
         }
 
+        /**
+         * 判断点是否在多边形内
+         * @param inPt
+         * @param inPolygon
+         */
+        function isPointInsidePolygon(inPt: Vector2, inPolygon: Vector2[])
+        {
+            const polyLen = inPolygon.length;
+
+            // inPt on polygon contour => immediate success    or
+            // toggling of inside/outside at every single! intersection point of an edge
+            //  with the horizontal line through inPt, left of inPt
+            //  not counting lowerY endpoints of edges and whole edges on that line
+            let inside = false;
+
+            for (let p = polyLen - 1, q = 0; q < polyLen; p = q++)
+            {
+                let edgeLowPt = inPolygon[p];
+                let edgeHighPt = inPolygon[q];
+
+                let edgeDx = edgeHighPt.x - edgeLowPt.x;
+                let edgeDy = edgeHighPt.y - edgeLowPt.y;
+
+                if (Math.abs(edgeDy) > Number.EPSILON)
+                {
+                    // not parallel
+                    if (edgeDy < 0)
+                    {
+                        edgeLowPt = inPolygon[q]; edgeDx = -edgeDx;
+                        edgeHighPt = inPolygon[p]; edgeDy = -edgeDy;
+                    }
+
+                    if ((inPt.y < edgeLowPt.y) || (inPt.y > edgeHighPt.y)) continue;
+
+                    if (inPt.y === edgeLowPt.y)
+                    {
+                        if (inPt.x === edgeLowPt.x) return true; // inPt is on contour ?
+                        // continue;                // no intersection or edgeLowPt => doesn't count !!!
+                    }
+                    else
+                    {
+                        const perpEdge = (edgeDy * (inPt.x - edgeLowPt.x)) - (edgeDx * (inPt.y - edgeLowPt.y));
+
+                        if (perpEdge === 0) return true; // inPt is on contour ?
+                        if (perpEdge < 0) continue;
+                        inside = !inside; // true intersection left of inPt
+                    }
+                }
+                else
+                {
+                    // parallel or collinear
+                    if (inPt.y !== edgeLowPt.y) continue; // parallel
+                    // edge lies on the same horizontal line as inPt
+                    if (((edgeHighPt.x <= inPt.x) && (inPt.x <= edgeLowPt.x))
+                        || ((edgeLowPt.x <= inPt.x) && (inPt.x <= edgeHighPt.x))) return true; // inPt: Point on contour !
+                    // continue;
+                }
+            }
+
+            return inside;
+        }
+
         const subPaths = this.subPaths;
 
         if (subPaths.length === 0) return [];
@@ -106,12 +168,14 @@ export class ShapePath2
         }
 
         // 第一个是否为空
-        let holesFirst = !(new Polygon(subPaths[0].getPoints()).isClockWise());
+        let holesFirst = !ShapeUtils.isClockWise(subPaths[0].getPoints());
 
         if (isCCW)// 判断是否为孔
         {
             holesFirst = !holesFirst;
         }
+
+        // console.log("Holes first", holesFirst);
 
         const betterShapeHoles: { h: Path2, p: Vector2 }[][] = [];
         const newShapes: { s: Shape2, p: Vector2[] }[] = [];
@@ -126,7 +190,7 @@ export class ShapePath2
         {
             tmpPath = subPaths[i];
             tmpPoints = tmpPath.getPoints();
-            solid = new Polygon(tmpPoints).isClockWise();
+            solid = ShapeUtils.isClockWise(tmpPoints);
             if (isCCW)// 判断是否为实线
             {
                 solid = !solid;
@@ -141,10 +205,12 @@ export class ShapePath2
 
                 if (holesFirst) mainIdx++;
                 newShapeHoles[mainIdx] = [];
+                // console.log('cw', i);
             }
             else
             {
                 newShapeHoles[mainIdx].push({ h: tmpPath, p: tmpPoints[0] });
+                // console.log('ccw', i);
             }
         }
 
@@ -172,7 +238,7 @@ export class ShapePath2
 
                     for (let s2Idx = 0; s2Idx < newShapes.length; s2Idx++)
                     {
-                        if (new Polygon(newShapes[s2Idx].p).contains(ho.p))
+                        if (isPointInsidePolygon(ho.p, newShapes[s2Idx].p))
                         {
                             if (sIdx !== s2Idx) toChange.push({ froms: sIdx, tos: s2Idx, hole: hIdx });
                             if (holeUnassigned)
@@ -193,9 +259,11 @@ export class ShapePath2
                     }
                 }
             }
+            // console.log("ambiguous: ", ambiguous);
 
             if (toChange.length > 0)
             {
+                // console.log("to change: ", toChange);
                 if (!ambiguous) newShapeHoles = betterShapeHoles;
             }
         }
@@ -214,6 +282,7 @@ export class ShapePath2
             }
         }
 
+        // console.log("shape", shapes);
         return shapes;
     }
 }

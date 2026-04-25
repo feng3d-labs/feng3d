@@ -16,10 +16,10 @@ export interface Vector
     /**
      * 将另一个点的坐标添加到此点的坐标以创建一个新点。
      * @param v 要添加的点。
-     * @param vOut 用于接收计算结果。
+     * @param vout 用于接收计算结果。
      * @returns 新点。
      */
-    addTo(v: VectorLike, vOut?: Vector): Vector;
+    addTo(v: VectorLike, vout?: Vector): Vector;
 
     /**
      * 从此点的坐标中减去另一个点的坐标。
@@ -30,10 +30,10 @@ export interface Vector
     /**
      * 从此点的坐标中减去另一个点的坐标以创建一个新点。
      * @param v 要减去的点。
-     * @param vOut 用于接收计算结果。
+     * @param vout 用于接收计算结果。
      * @returns 新点。
      */
-    subTo(v: VectorLike, vOut?: Vector): Vector;
+    subTo(v: VectorLike, vout?: Vector): Vector;
 
     /**
      * 乘以向量
@@ -44,9 +44,9 @@ export interface Vector
     /**
      * 乘以向量
      * @param v 向量
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    multiplyTo(v: VectorLike, vOut?: Vector): Vector;
+    multiplyTo(v: VectorLike, vout?: Vector): Vector;
 
     /**
      * 除以向量
@@ -57,9 +57,9 @@ export interface Vector
     /**
      * 除以向量
      * @param v 向量
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    divideTo(v: VectorLike, vOut?: Vector): Vector;
+    divideTo(v: VectorLike, vout?: Vector): Vector;
 
     /**
      * 确定两个向量是否相同。如果两个向量具有相同的分量值，则它们是相同的向量。

@@ -1,8 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
 
-declare module '@feng3d/polyfill'
+declare global
 {
-    interface MathUtil
+    interface MixinsMathUtil
     {
         /**
          * 引擎中使用的坐标系统，默认左手坐标系统。

@@ -10,6 +10,35 @@ import { Vector3 } from './Vector3';
 export class Box3
 {
     /**
+     * 从一组顶点初始化包围盒
+     * @param positions 坐标数据列表
+     */
+    static formPositions(positions: number[])
+    {
+        return new Box3().formPositions(positions);
+    }
+
+    /**
+     * 从一组点初始化包围盒
+     * @param ps 点列表
+     */
+    static fromPoints(ps: Vector3[])
+    {
+        return new Box3().fromPoints(ps);
+    }
+
+    /**
+     * 随机包围盒
+     */
+    static random()
+    {
+        const min = Vector3.random();
+        const max = Vector3.random().add(min);
+
+        return new Box3(min, max);
+    }
+
+    /**
      * 最小点
      */
     min: Vector3;
@@ -20,19 +49,19 @@ export class Box3
 
     /**
      * 获取中心点
-     * @param vOut 输出向量
+     * @param vout 输出向量
      */
-    getCenter(vOut = new Vector3())
+    getCenter(vout = new Vector3())
     {
-        return vOut.copy(this.min).add(this.max).scaleNumber(0.5);
+        return vout.copy(this.min).add(this.max).scaleNumber(0.5);
     }
 
     /**
      * 尺寸
      */
-    getSize(vOut = new Vector3())
+    getSize(vout = new Vector3())
     {
-        return this.isEmpty() ? vOut.set(0, 0, 0) : this.max.subTo(this.min, vOut);
+        return this.isEmpty() ? vout.set(0, 0, 0) : this.max.subTo(this.min, vout);
     }
 
     /**
@@ -110,11 +139,11 @@ export class Box3
      * 从一组顶点初始化包围盒
      * @param positions 坐标数据列表
      */
-    formPositions(positions: ArrayLike<number>)
+    formPositions(positions: number[])
     {
-        let minX = Infinity;
-        let minY = Infinity;
-        let minZ = Infinity;
+        let minX = Number(Infinity);
+        let minY = Number(Infinity);
+        let minZ = Number(Infinity);
 
         let maxX = -Infinity;
         let maxY = -Infinity;
@@ -157,22 +186,11 @@ export class Box3
     }
 
     /**
-     * 随机包围盒
-     */
-    random()
-    {
-        this.min.random();
-        this.max.random().add(this.min);
-
-        return this;
-    }
-
-    /**
      * 包围盒内随机点
      */
     randomPoint(pout = new Vector3())
     {
-        return pout.copy(this.min).lerp(this.max, new Vector3().random());
+        return pout.copy(this.min).lerp(this.max, Vector3.random());
     }
 
     /**
@@ -227,7 +245,7 @@ export class Box3
      */
     containsPoint(p: Vector3)
     {
-        return this.min.lessEqual(p) && this.max.greaterEqual(p);
+        return this.min.lessequal(p) && this.max.greaterequal(p);
     }
 
     /**
@@ -236,7 +254,7 @@ export class Box3
      */
     contains(aabb: Box3)
     {
-        return this.min.lessEqual(aabb.min) && this.max.greaterEqual(aabb.max);
+        return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
     }
 
     /**
@@ -700,23 +718,23 @@ export class Box3
 
         triangles.push(
             // 前
-            new Triangle3().fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, min.z)),
-            new Triangle3().fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, min.y, min.z)),
+            Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, min.z)),
+            Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, min.y, min.z)),
             // 后
-            new Triangle3().fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, max.y, max.z)),
-            new Triangle3().fromPoints(new Vector3(max.x, min.y, max.z), new Vector3(max.x, max.y, max.z), new Vector3(min.x, max.y, max.z)),
+            Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, max.y, max.z)),
+            Triangle3.fromPoints(new Vector3(max.x, min.y, max.z), new Vector3(max.x, max.y, max.z), new Vector3(min.x, max.y, max.z)),
             // 右
-            new Triangle3().fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, max.y, max.z)),
-            new Triangle3().fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, min.y, max.z)),
+            Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, min.z), new Vector3(max.x, max.y, max.z)),
+            Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, min.y, max.z)),
             // 左
-            new Triangle3().fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, min.z)),
-            new Triangle3().fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, max.z), new Vector3(min.x, max.y, min.z)),
+            Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, min.z)),
+            Triangle3.fromPoints(new Vector3(min.x, min.y, max.z), new Vector3(min.x, max.y, max.z), new Vector3(min.x, max.y, min.z)),
             // 上
-            new Triangle3().fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, max.y, min.z)),
-            new Triangle3().fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(min.x, max.y, max.z), new Vector3(max.x, max.y, max.z)),
+            Triangle3.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, max.z), new Vector3(max.x, max.y, min.z)),
+            Triangle3.fromPoints(new Vector3(min.x, max.y, min.z), new Vector3(min.x, max.y, max.z), new Vector3(max.x, max.y, max.z)),
             // 下
-            new Triangle3().fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z), new Vector3(min.x, min.y, max.z)),
-            new Triangle3().fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z)),
+            Triangle3.fromPoints(new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z), new Vector3(min.x, min.y, max.z)),
+            Triangle3.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z)),
         );
 
         return triangles;
@@ -736,7 +754,7 @@ function satForAxes(axes: number[], v0: Vector3, v1: Vector3, v2: Vector3, exten
 {
     for (let i = 0, j = axes.length - 3; i <= j; i += 3)
     {
-        const testAxis = new Vector3().fromArray(axes, i);
+        const testAxis = Vector3.fromArray(axes, i);
         // 投影包围盒到指定轴的长度
         const r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
         // 投影三角形的三个点到指定轴

@@ -8,6 +8,24 @@ import { Vector3 } from './Vector3';
 export class Segment3
 {
     /**
+     * 初始化线段
+     * @param p0
+     * @param p1
+     */
+    static fromPoints(p0: Vector3, p1: Vector3)
+    {
+        return new Segment3(p0, p1);
+    }
+
+    /**
+     * 随机线段
+     */
+    static random()
+    {
+        return new Segment3(Vector3.random(), Vector3.random());
+    }
+
+    /**
      * 线段起点
      */
     p0: Vector3;
@@ -20,30 +38,6 @@ export class Segment3
     {
         this.p0 = p0;
         this.p1 = p1;
-    }
-
-    /**
-     * 初始化线段
-     * @param p0
-     * @param p1
-     */
-    fromPoints(p0: Vector3, p1: Vector3)
-    {
-        this.p0 = p0;
-        this.p1 = p1;
-
-        return this;
-    }
-
-    /**
-     * 随机线段
-     */
-    random()
-    {
-        this.p0.random();
-        this.p1.random();
-
-        return this;
     }
 
     /**
@@ -181,13 +175,9 @@ export class Segment3
 
         if (!r) return null;
         if (r instanceof Line3)
-        {
-            return this.clone();
-        }
+        { return this.clone(); }
         if (this.onWithPoint(r))
-        {
-            return r;
-        }
+        { return r; }
 
         return null;
     }
@@ -207,16 +197,12 @@ export class Segment3
                 segment.clampPoint(p));
 
             if (this.onWithPoint(ps[0]))
-            {
-                return new Segment3().fromPoints(ps[0], ps[1]);
-            }
+            { return Segment3.fromPoints(ps[0], ps[1]); }
 
             return null;
         }
         if (this.onWithPoint(r))
-        {
-            return r;
-        }
+        { return r; }
 
         return null;
     }
@@ -230,13 +216,9 @@ export class Segment3
     {
         this.getLine().closestPointWithPoint(point, vout);
         if (this.onWithPoint(vout))
-        {
-            return vout;
-        }
+        { return vout; }
         if (point.distanceSquared(this.p0) < point.distanceSquared(this.p1))
-        {
-            return vout.copy(this.p0);
-        }
+        { return vout.copy(this.p0); }
 
         return vout.copy(this.p1);
     }
