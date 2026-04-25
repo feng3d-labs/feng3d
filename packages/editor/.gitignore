@@ -1,0 +1,15 @@
+/debug
+/publish
+**/node_modules
+/out
+/dist
+lib
+/public/*
+!/public/.gitkeep
+dist-vite
+/.temp
+/.playwright-mcp
+.claude/settings.local.json
+# 测试权限确认禁用
+.claude/skills/feng3d-dev/.temp
+package-lock.json

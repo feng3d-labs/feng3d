@@ -1,4 +1,14 @@
-export class MathUtil
+declare global
+{
+    interface MixinsMathUtil
+    {
+
+    }
+}
+
+export interface MathUtil extends MixinsMathUtil { }
+
+export class MathUtil implements MixinsMathUtil
 {
     /**
      * 角度转弧度因子
@@ -55,15 +65,15 @@ export class MathUtil
      * （夹紧）计算指定值到区间[edge0 ,edge1]最近的值
      *
      * @param value 指定值
-     * @param lowerLimit 区间下界
-     * @param upperLimit 区间上界
+     * @param lowerlimit 区间下界
+     * @param upperlimit 区间上界
      */
-    clamp(value: number, lowerLimit: number, upperLimit: number)
+    clamp(value: number, lowerlimit: number, upperlimit: number)
     {
-        if ((value - lowerLimit) * (value - upperLimit) <= 0) return value;
-        if (value < lowerLimit) return lowerLimit < upperLimit ? lowerLimit : upperLimit;
+        if ((value - lowerlimit) * (value - upperlimit) <= 0) return value;
+        if (value < lowerlimit) return lowerlimit < upperlimit ? lowerlimit : upperlimit;
 
-        return lowerLimit > upperLimit ? lowerLimit : upperLimit;
+        return lowerlimit > upperlimit ? lowerlimit : upperlimit;
     }
 
     /**
@@ -73,7 +83,7 @@ export class MathUtil
      * @param m 除数
      * @see https://en.wikipedia.org/wiki/Modulo_operation
      */
-    euclideanModulo(n: number, m: number)
+    uclideanModulo(n: number, m: number)
     {
         return ((n % m) + m) % m;
     }
@@ -123,6 +133,23 @@ export class MathUtil
         x = (x - min) / (max - min);
 
         return x * x * (3 - 2 * x);
+    }
+
+    /**
+     * 计算平滑值 6x^5 - 15x^4 + 10x^3
+     *
+     * @param x
+     * @param min 最小值
+     * @param max 最大值
+     */
+    smootherstep(x: number, min: number, max: number)
+    {
+        if (x <= min) return 0;
+        if (x >= max) return 1;
+
+        x = (x - min) / (max - min);
+
+        return x * x * x * (x * (x * 6 - 15) + 10);
     }
 
     /**

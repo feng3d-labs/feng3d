@@ -1,0 +1,48 @@
+import { Matrix4x4 } from '@feng3d/math';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { Component, RegisterComponent } from '../../component/Component';
+
+declare global
+{
+    export interface MixinsComponentMap
+    {
+        SkeletonComponent: SkeletonComponent;
+    }
+}
+
+@RegisterComponent()
+@decoratorRegisterClass()
+export class SkeletonComponent extends Component
+{
+    __class__: 'SkeletonComponent';
+
+    /**
+     * 骨骼蒙皮时逆矩阵列表。
+     */
+    boneInverses: Matrix4x4[];
+
+    /**
+     * 骨骼名称列表
+     */
+    boneNames: string[];
+
+    /**
+     * 当前骨骼姿势的全局矩阵
+     * @see #globalPose
+     */
+    get globalMatrices(): Matrix4x4[]
+    {
+        for (let i = 0; i < this.boneNames.length; i++)
+        {
+            const jointGameobject = this.gameObject.find(this.boneNames[i]);
+
+            this._globalMatrices[i] = this._globalMatrices[i] || new Matrix4x4();
+            this._globalMatrices[i].copy(jointGameobject.transform.localToWorldMatrix).prepend(this.boneInverses[i]);
+        }
+
+        return this._globalMatrices;
+    }
+
+    //
+    private _globalMatrices: Matrix4x4[] = [];
+}

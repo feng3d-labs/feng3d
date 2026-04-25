@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>editoreditor</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+</head>
+
+<body>
+    <div style="position: absolute;left: 25px;top: 20px;">
+        <button id="compile">编译</button>
+        <input type="checkbox" id="watch" checked="checked">监听
+        <b>状态:</b>
+        <label id="log"></label>
+    </div>
+    <div id="container"
+        style="border: 1px solid grey; position: absolute; box-sizing: border-box; top: 50px; left: 25px; right: 25px; bottom: 25px;">
+    </div>
+
+    <script>
+        // Monaco uses a custom amd loader that overrides node's require.
+        // Keep a reference to node's require so we can restore it after executing the amd loader file.
+        var nodeRequire = window.require;
+    </script>
+    <script src="../../libs/monaco-editor/min/vs/loader.js"></script>
+    <script>
+        // Save Monaco's amd require and restore Node's require
+        var amdRequire = window.require;
+        window.require = nodeRequire;
+    </script>
+    <script src="codeeditor.js"></script>
+</body>
+
+</html>
+

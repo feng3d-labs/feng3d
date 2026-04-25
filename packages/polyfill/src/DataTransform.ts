@@ -190,15 +190,14 @@ export class DataTransform
 
     async imageToArrayBuffer(img: HTMLImageElement)
     {
-        let arraybuffer = imageBufferMap.get(img);
-        if (arraybuffer)
+        if (img.arraybuffer)
         {
-            return arraybuffer;
+            return img.arraybuffer;
         }
         const dataUrl = this.imageToDataURL(img);
-        arraybuffer = await this.dataURLToArrayBuffer(dataUrl);
-        imageBufferMap.set(img, arraybuffer);
-        bufferImageMap.set(arraybuffer, img);
+        const arraybuffer = await this.dataURLToArrayBuffer(dataUrl);
+        img.arraybuffer = arraybuffer;
+        arraybuffer.image = img;
 
         return arraybuffer;
     }
@@ -232,16 +231,15 @@ export class DataTransform
 
     async arrayBufferToImage(arrayBuffer: ArrayBuffer)
     {
-        let img = bufferImageMap.get(arrayBuffer);
-        if (img)
+        if (arrayBuffer.image)
         {
-            return img;
+            return arrayBuffer.image;
         }
 
         const dataurl = await this.arrayBufferToDataURL(arrayBuffer);
-        img = await this.dataURLToImage(dataurl);
-        bufferImageMap.set(arrayBuffer, img);
-        imageBufferMap.set(img, arrayBuffer);
+        const img = await this.dataURLToImage(dataurl);
+        img.arraybuffer = arrayBuffer;
+        arrayBuffer.image = img;
 
         return img;
     }
@@ -319,6 +317,3 @@ export class DataTransform
  * @see http://blog.csdn.net/yinwhm12/article/details/73482904
  */
 export const dataTransform = new DataTransform();
-
-const imageBufferMap = new WeakMap<HTMLImageElement, ArrayBuffer>();
-const bufferImageMap = new WeakMap<ArrayBuffer, HTMLImageElement>();

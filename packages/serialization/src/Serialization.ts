@@ -1,67 +1,22 @@
-import { ArrayUtils, ObjectUtils, gPartial } from '@feng3d/polyfill';
-import { Serializable } from './Serializable';
-import { __class__, _serialize__ } from './SerializationConst';
-import { getClassName } from './getClassName';
-import { getInstance } from './getInstance';
+import { gPartial, ObjectUtils, __class__, ArrayUtils, classUtils } from '@feng3d/polyfill';
 
 /**
- * 序列化对象
+ * 序列化装饰器
  *
- * 过程中使用 different与默认值作比较减少结果中的数据。
+ * 在属性定义前使用 @serialize 进行标记需要序列化
  *
- * @param target 被序列化的对象
- * @param omitDefault 是否忽略默认值
- *
- * @returns 序列化后简单数据对象（由Object与Array组合可 JSON.stringify 的简单结构）
+ * @param target 序列化原型
+ * @param propertyKey 序列化属性
  */
-export function $serialize<T>(target: T, omitDefault = true): gPartial<T>
+export function serialize(target: any, propertyKey: string)
 {
-    return serialization.serialize(target, omitDefault);
-}
+    if (!Object.getOwnPropertyDescriptor(target, serializeKey))
+    {
+        Object.defineProperty(target, serializeKey, { value: [] });
+    }
+    const serializePropertys: string[] = target[serializeKey];
 
-/**
- * 反序列化对象为基础对象数据（由Object与Array组合）
- *
- * @param object 换为Json的对象
- * @returns 反序列化后的数据
- */
-export function $deserialize<T>(object: gPartial<T>): T
-{
-    return serialization.deserialize(object, true);
-}
-
-/**
- * 从数据对象中提取数据给目标对象赋值（可能会经过序列化处理）
- *
- * @param target 目标对象
- * @param source 数据对象 可由Object与Array以及自定义类型组合
- */
-export function $set<T>(target: T, source: gPartial<T>)
-{
-    return serialization.setValue(target, source);
-}
-
-/**
- * 比较两个对象的不同，提取出不同的数据(可能会经过反序列化处理)
- *
- * @param target 用于检测不同的数据
- * @param source 模板（默认）数据
- *
- * @returns 比较得出的不同数据（由Object与Array组合可 JSON.stringify 的简单结构）
- */
-export function $diff<T>(target: T, source: T): gPartial<T>
-{
-    return serialization.different(target, source, true);
-}
-
-/**
- * 深度克隆
- *
- * @param target 被克隆对象
- */
-export function $clone<T>(target: T): T
-{
-    return serialization.clone(target);
+    serializePropertys.push(propertyKey);
 }
 
 /**
@@ -88,6 +43,52 @@ function propertyHandler<T extends HandlerParam>(target: any, source: any, prope
     return true;
 }
 
+// /**
+//  * 序列化属性函数
+//  *
+//  * 序列化对象时建议使用 serialization.serialize
+//  *
+//  * @param target 序列化后的对象，存放序列化后属性值的对象。
+//  * @param source 被序列化的对象，提供序列化前属性值的对象。
+//  * @param property 序列化属性名称
+//  * @param handlers 序列化属性函数列表
+//  * @param beforeHandler 在处理列表前执行
+//  * @param affterHandler 在处理列表后执行
+//  */
+// function propertyHandler(target: Object, source: Object, property: string, handlers: PropertyHandler[], serialization: Serialization)
+// {
+//     for (let i = 0; i < handlers.length; i++)
+//     {
+//         if (handlers[i](target, source, property, handlers, serialization))
+//         {
+//             return true;
+//         }
+//     }
+//     return true;
+// }
+
+// /**
+//  * 序列化属性函数
+//  *
+//  * 序列化对象时建议使用 serialization.serialize
+//  *
+//  * @param target 序列化后的对象，存放序列化后属性值的对象。
+//  * @param source 被序列化的对象，提供序列化前属性值的对象。
+//  * @param property 序列化属性名称
+//  * @param handlers 序列化属性函数列表
+//  */
+// function differentPropertyHandler(target: Object, source: Object, property: string, different: Object, handlers: DifferentPropertyHandler[], serialization: Serialization)
+// {
+//     for (let i = 0; i < handlers.length; i++)
+//     {
+//         if (handlers[i](target, source, property, different, handlers, serialization))
+//         {
+//             return true;
+//         }
+//     }
+//     return true;
+// }
+
 /**
  * 序列化属性函数项
  */
@@ -106,14 +107,29 @@ interface PropertyHandler<T extends HandlerParam>
     (target: any, source: any, property: string, param: T): boolean;
 }
 
+// /**
+//  * 序列化属性函数项
+//  */
+// interface DifferentPropertyHandler
+// {
+//     /**
+//      * 序列化属性函数项
+//      *
+//      * @param target 序列化后的对象，存放序列化后属性值的对象。
+//      * @param source 被序列化的对象，提供序列化前属性值的对象。
+//      * @param property 序列化属性名称
+//      * @param handlers 序列化属性函数列表
+//      * @param serialization 序列化工具自身
+//      *
+//      * @returns 返回true时结束该属性后续处理。
+//      */
+//     (target: any, source: any, property: string, different: Object, handlers: DifferentPropertyHandler[], serialization: Serialization): boolean;
+// }
+
 interface HandlerParam
 {
     handlers: PropertyHandler<HandlerParam>[]
     serialization: Serialization
-    /**
-     * 是否忽略默认值。
-     */
-    omitDefault: boolean
 }
 
 interface SerializeHandlerParam extends HandlerParam
@@ -157,6 +173,11 @@ interface DifferentHandlerParam extends HandlerParam
 export class Serialization
 {
     /**
+     * 是否忽略默认值
+     */
+    omitDefault = true;
+
+    /**
      * 序列化函数列表
      */
     serializeHandlers: { priority: number, handler: PropertyHandler<SerializeHandlerParam> }[] = [];
@@ -182,11 +203,10 @@ export class Serialization
      * 过程中使用 different与默认值作比较减少结果中的数据。
      *
      * @param target 被序列化的对象
-     * @param omitDefault 是否忽略默认值
      *
      * @returns 序列化后简单数据对象（由Object与Array组合可 JSON.stringify 的简单结构）
      */
-    serialize<T>(target: T, omitDefault = true): gPartial<T>
+    serialize<T>(target: T): gPartial<T>
     {
         //
         const handlers = this.serializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
@@ -195,7 +215,6 @@ export class Serialization
             handlers, serialization: this, root: target as any,
             serializedMap: new Map(),
             autoRefID: 1,
-            omitDefault
         };
 
         const result: any = {};
@@ -229,11 +248,11 @@ export class Serialization
      * @param object 换为Json的对象
      * @returns 反序列化后的数据
      */
-    deserialize<T>(object: gPartial<T>, omitDefault = true): T
+    deserialize<T>(object: gPartial<T>): T
     {
         const handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
-        const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {}, omitDefault };
+        const param: DeserializeHandlerParam = { handlers, serialization: this, refs: {} };
 
         const result: any = {};
 
@@ -247,6 +266,7 @@ export class Serialization
             const value = refs.target[refs.property];
 
             delete value[serializeIsRawKey];
+            delete value[serializeRefKey];
             refs.refs.forEach((ref) =>
             {
                 ref.target[ref.property] = value;
@@ -265,13 +285,13 @@ export class Serialization
      *
      * @returns 比较得出的不同数据（由Object与Array组合可 JSON.stringify 的简单结构）
      */
-    different<T>(target: T, source: T, omitDefault = true): gPartial<T>
+    different<T>(target: T, source: T): gPartial<T>
     {
         const handlers = this.differentHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
         const different = { __root__: {} };
 
-        const param: DifferentHandlerParam = { different, handlers, serialization: this, omitDefault };
+        const param: DifferentHandlerParam = { different, handlers, serialization: this };
 
         propertyHandler({ __root__: target }, { __root__: source }, rootKey, param);
 
@@ -284,12 +304,12 @@ export class Serialization
      * @param target 目标对象
      * @param source 数据对象 可由Object与Array以及自定义类型组合
      */
-    setValue<T>(target: T, source: gPartial<T>, omitDefault = true)
+    setValue<T>(target: T, source: gPartial<T>)
     {
         if (ObjectUtils.isBaseType(source) || target === source) return target;
         const handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map((v) => v.handler);
 
-        const param: HandlerParam = { handlers, serialization: this, omitDefault };
+        const param: HandlerParam = { handlers, serialization: this };
 
         propertyHandler({ __root__: target }, { __root__: source }, rootKey, param);
 
@@ -316,15 +336,18 @@ function getSerializableMembers(object: any, serializableMembers?: string[])
     {
         getSerializableMembers(object[protoKey], serializableMembers);
     }
-    const serializePropertys: string[] = object[_serialize__];
+    const serializePropertys = object[serializeKey];
 
-    serializePropertys?.forEach((v) =>
-    {
-        serializableMembers.push(v);
-    });
+    if (serializePropertys) ArrayUtils.concatToSelf(serializableMembers, serializePropertys);
     ArrayUtils.unique(serializableMembers);
 
     return serializableMembers;
+}
+
+export interface SerializationTempInfo
+{
+    loadingNum?: number;
+    onLoaded?: () => void;
 }
 
 /**
@@ -367,13 +390,15 @@ serialization.serializeHandlers.push(
 
                 if (!ObjectUtils.isBaseType(tpv))
                 {
-                    if (tpv[serializeIsRawKey] === undefined)
+                    if (!tpv[serializeRefKey])
                     {
-                        tpv[serializeIsRawKey] = param.autoRefID++;
+                        tpv[serializeRefKey] = param.autoRefID++;
+                        tpv[serializeIsRawKey] = true;
                     }
                     const newtpv: any = {};
 
-                    newtpv[serializeIsRefKey] = tpv[serializeIsRawKey];
+                    newtpv[serializeRefKey] = tpv[serializeRefKey];
+                    newtpv[serializeIsRefKey] = true;
                     target[property] = newtpv;
 
                     return true;
@@ -409,14 +434,14 @@ serialization.serializeHandlers.push(
             return false;
         }
     },
-    // 排除不支持序列化对象 Serializable === false 时不进行序列化
+    // 排除不支持序列化对象 serializable === false 时不进行序列化
     {
         priority: 0,
         handler(target, source, property)
         {
             const spv = source[property];
 
-            if (spv && spv.Serializable === false)
+            if (spv && spv.serializable === false)
             {
                 return true;
             }
@@ -436,7 +461,7 @@ serialization.serializeHandlers.push(
                 const object = {};
 
                 target[property] = object;
-                object[__class__] = getClassName(spv);
+                object[__class__] = classUtils.getQualifiedClassName(spv);
                 spv.serialize(object);
 
                 return true;
@@ -503,12 +528,12 @@ serialization.serializeHandlers.push(
             const tpv = target[property];
             const spv = source[property];
 
-            if (!param.omitDefault)
+            if (!param.serialization.omitDefault)
             {
                 const object = {};
 
                 target[property] = object;
-                const className = getClassName(spv);
+                const className = classUtils.getQualifiedClassName(spv);
                 const keys = getSerializableMembers(spv);
 
                 keys.forEach((key) =>
@@ -523,7 +548,7 @@ serialization.serializeHandlers.push(
             // 执行默认忽略默认值
             if (ObjectUtils.objectIsEmpty(tpv) || tpv.constructor !== spv.constructor)
             {
-                const className = getClassName(spv);
+                const className = classUtils.getQualifiedClassName(spv);
                 // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。
                 let inst = spv.constructor.inst;
 
@@ -574,17 +599,7 @@ serialization.deserializeHandlers = [
             return false;
         }
     },
-    // 处理循环引用以及多次引用，学习 node.js 优化循环引用
-    /**
-     * ```
-     * var o = {};
-        o.o = o;
-        o.o1 = o;
-        o.o2 = o;
-
-        console.log(o);
-     * ```
-     */
+    // 处理循环引用以及多次引用
     {
         priority: 0,
         handler(target, source, property, param)
@@ -593,9 +608,9 @@ serialization.deserializeHandlers = [
 
             const refs = param.refs;
 
-            if (spv[serializeIsRefKey] !== undefined || spv[serializeIsRawKey] !== undefined)
+            if (spv[serializeRefKey] !== undefined)
             {
-                const refid = spv[serializeIsRefKey] || spv[serializeIsRawKey];
+                const refid = spv[serializeRefKey];
 
                 const currentRef = refs[refid] = refs[refid] || { refs: [], target: null, property: null };
 
@@ -709,7 +724,7 @@ serialization.deserializeHandlers = [
         {
             const tpv = target[property];
             const spv = source[property];
-            let inst = getInstance(spv[__class__]);
+            let inst = classUtils.getInstanceByName(spv[__class__]);
             // 处理自定义反序列化对象
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -742,7 +757,7 @@ serialization.deserializeHandlers = [
         {
             const tpv = target[property];
             const spv = source[property];
-            let inst = getInstance(spv[__class__]);
+            let inst = classUtils.getInstanceByName(spv[__class__]);
 
             if (inst)
             {
@@ -829,7 +844,7 @@ serialization.differentHandlers = [
             {
                 const keys = Object.keys(tpv);
                 const diff = [];
-                const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization, omitDefault: param.omitDefault };
+                const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization };
 
                 keys.forEach((key) =>
                 {
@@ -879,7 +894,7 @@ serialization.differentHandlers = [
             }
 
             const diff = {};
-            const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization, omitDefault: param.omitDefault };
+            const newParam: DifferentHandlerParam = { different: diff, handlers: param.handlers, serialization: param.serialization };
 
             keys.forEach((v) =>
             {
@@ -1022,7 +1037,7 @@ serialization.setValueHandlers = [
             const tpv = target[property];
             const spv = source[property];
 
-            const targetClassName = getClassName(target[property]);
+            const targetClassName = classUtils.getQualifiedClassName(target[property]);
             // 相同对象类型
 
             if (targetClassName === spv[__class__])
@@ -1048,8 +1063,6 @@ serialization.setValueHandlers = [
 
 [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach((element) =>
 {
-    Serializable(element.name as any)(element);
-
     element.prototype['serialize'] = function (object: { value: number[] })
     {
         object.value = Array.from(this);
@@ -1063,14 +1076,9 @@ serialization.setValueHandlers = [
     };
 });
 
-/**
- * 别引用标记，最初出现。
- */
-const serializeIsRawKey = '__ref__';
-/**
- * 引用标记，多次出现时使用。
- */
-const serializeIsRefKey = '__cycle__';
-
+const serializeRefKey = '__serialize__Ref__';
+const serializeIsRefKey = '__serialize__IsRef__';
+const serializeIsRawKey = '__serialize__IsRaw__';
 const rootKey = '__root__';
 const protoKey = '__proto__';
+const serializeKey = '_serialize__';

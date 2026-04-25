@@ -1,0 +1,246 @@
+{
+    "__class__": "GameObject",
+    "name": "trident",
+    "mouseEnabled": false,
+    "children": [
+        {
+            "__class__": "GameObject",
+            "name": "xLine",
+            "components": [
+                {
+                    "__class__": "Transform"
+                },
+                null,
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "SegmentGeometry",
+                        "segments": [
+                            {
+                                "start": {
+                                    "__class__": "Vector3"
+                                },
+                                "end": {
+                                    "__class__": "Vector3",
+                                    "x": 1
+                                },
+                                "startColor": {
+                                    "__class__": "Color4",
+                                    "g": 0,
+                                    "b": 0
+                                },
+                                "endColor": {
+                                    "__class__": "Color4",
+                                    "g": 0,
+                                    "b": 0
+                                }
+                            }
+                        ]
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "shaderName": "segment",
+                        "uniforms": {
+                            "__class__": "SegmentUniforms"
+                        },
+                        "renderParams": {
+                            "renderMode": "LINES"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "yLine",
+            "components": [
+                {
+                    "__class__": "Transform"
+                },
+                null,
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "SegmentGeometry",
+                        "segments": [
+                            {
+                                "start": {
+                                    "__class__": "Vector3"
+                                },
+                                "end": {
+                                    "__class__": "Vector3",
+                                    "y": 1
+                                },
+                                "startColor": {
+                                    "__class__": "Color4",
+                                    "r": 0,
+                                    "b": 0
+                                },
+                                "endColor": {
+                                    "__class__": "Color4",
+                                    "r": 0,
+                                    "b": 0
+                                }
+                            }
+                        ]
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "shaderName": "segment",
+                        "uniforms": {
+                            "__class__": "SegmentUniforms"
+                        },
+                        "renderParams": {
+                            "renderMode": "LINES"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "zLine",
+            "components": [
+                {
+                    "__class__": "Transform"
+                },
+                null,
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "SegmentGeometry",
+                        "segments": [
+                            {
+                                "start": {
+                                    "__class__": "Vector3"
+                                },
+                                "end": {
+                                    "__class__": "Vector3",
+                                    "z": 1
+                                },
+                                "startColor": {
+                                    "__class__": "Color4",
+                                    "r": 0,
+                                    "g": 0
+                                },
+                                "endColor": {
+                                    "__class__": "Color4",
+                                    "r": 0,
+                                    "g": 0
+                                }
+                            }
+                        ]
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "shaderName": "segment",
+                        "uniforms": {
+                            "__class__": "SegmentUniforms"
+                        },
+                        "renderParams": {
+                            "renderMode": "LINES"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "xArrow",
+            "components": [
+                {
+                    "__class__": "Transform",
+                    "x": 1,
+                    "rz": -90
+                },
+                null,
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 0.05,
+                        "height": 0.18
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "shaderName": "color",
+                        "uniforms": {
+                            "__class__": "ColorUniforms",
+                            "u_diffuseInput": {
+                                "g": 0,
+                                "b": 0
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "yArrow",
+            "components": [
+                {
+                    "__class__": "Transform",
+                    "y": 1
+                },
+                null,
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 0.05,
+                        "height": 0.18
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "shaderName": "color",
+                        "uniforms": {
+                            "__class__": "ColorUniforms",
+                            "u_diffuseInput": {
+                                "r": 0,
+                                "b": 0
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "__class__": "GameObject",
+            "name": "zArrow",
+            "components": [
+                {
+                    "__class__": "Transform",
+                    "z": 1,
+                    "rx": 90
+                },
+                null,
+                {
+                    "__class__": "MeshRenderer",
+                    "geometry": {
+                        "__class__": "ConeGeometry",
+                        "bottomRadius": 0.05,
+                        "height": 0.18
+                    },
+                    "material": {
+                        "__class__": "Material",
+                        "shaderName": "color",
+                        "uniforms": {
+                            "__class__": "ColorUniforms",
+                            "u_diffuseInput": {
+                                "r": 0,
+                                "g": 0
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "components": [
+        {
+            "__class__": "Transform"
+        },
+        null
+    ]
+}

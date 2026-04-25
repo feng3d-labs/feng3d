@@ -1,28 +1,13 @@
 /**
  * 构造函数
- *
- * @example
- * ```
- * const Vector2Constructor: Constructor<Vector2> = Vector2;
- * ```
  */
-export type Constructor<T = any> = (new (...args: any[]) => T);
-
-/**
- * 映射每个属性的类定义
- *
- * @example
- * ```
- * const classmap: ConstructorOf<{ Vector2: Vector2 }> = { Vector2: Vector2 };
- * ```
- */
-export type ConstructorOf<T> = { [P in keyof T]: Constructor<T[P]>; };
+export type Constructor<T> = (new (...args: any[]) => T);
 
 /**
  * 让T中以及所有键值中的所有键都是可选的
  */
 export type gPartial<T> = {
-    [P in keyof T]?: T[P] | gPartial<T[P]>;
+    [P in keyof T]?: gPartial<T[P]>;
 };
 
 /**
@@ -111,19 +96,32 @@ export type FunctionPropertyNames<T> = TypePropertyNames<T, Function>;
  */
 export type TypePropertys<T, KT> = Pick<T, TypePropertyNames<T, KT>>;
 
-export type Lazy<T> = T | ((...args: any[]) => T);
+export type Lazy<T> = T | (() => T);
 
 export type LazyObject<T> = { [P in keyof T]: Lazy<T[P]>; };
 
 export const lazy = {
-    getValue<T>(lazyItem: Lazy<T>, ...args: any[]): T
+    getvalue<T>(lazyItem: Lazy<T>): T
     {
         if (typeof lazyItem === 'function')
-        {
-            // eslint-disable-next-line prefer-spread
-            return (lazyItem as Function).apply(undefined, args);
-        }
+        { return (lazyItem as any)(); }
 
         return lazyItem;
     }
 };
+
+/**
+ * 可销毁对象
+ */
+export interface IDisposable
+{
+    /**
+     * 是否已销毁
+     */
+    readonly disposed: boolean;
+
+    /**
+     * 销毁
+     */
+    dispose(): void;
+}
