@@ -1,5 +1,4 @@
 export * from '@feng3d/assets';
-export * from '@feng3d/bezier';
 export * from '@feng3d/core';
 export * from '@feng3d/event';
 export * from '@feng3d/filesystem';

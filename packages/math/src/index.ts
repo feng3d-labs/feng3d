@@ -1,3 +1,6 @@
+export * from './bezier/Bezier';
+export * from './bezier/EquationSolving';
+export * from './bezier/HighFunction';
 export * from './buildLineGeometry';
 export * from './Color3';
 export * from './Color4';
@@ -54,3 +57,4 @@ export * from './shape/curves/QuadraticBezierCurve2';
 export * from './shape/curves/QuadraticBezierCurve3';
 export * from './shape/curves/SplineCurve2';
 export * from './shape/ShapeUtils';
+

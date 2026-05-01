@@ -11,15 +11,15 @@ import './vue-app/pinia';
 
 // 直接将整个模块挂载到 editor 命名空间
 window.editor = editorModule;
-window.feng3d = window.feng3d || {} as any;
+window['feng3d'] = window['feng3d'] || {} as any;
 for (const key in feng3dModule)
 {
-    window.feng3d[key] = feng3dModule[key];
+    window['feng3d'][key] = feng3dModule[key];
 }
 
 for (const key in cannonPlugin)
 {
-    window.feng3d[key] = cannonPlugin[key];
+    window['feng3d'][key] = cannonPlugin[key];
 }
 
 // 扩展 Window 接口
@@ -44,18 +44,18 @@ if (typeof window !== 'undefined' && ClassUtils && ClassUtils.prototype)
         let result = originalGetDefinitionByName.call(this, name);
 
         // 如果找不到，从 feng3d 命名空间中查找
-        if (!result && window.feng3d && typeof name === 'string')
+        if (!result && window['feng3d'] && typeof name === 'string')
         {
             // 尝试直接通过类名查找
-            if (window.feng3d[name])
+            if (window['feng3d'][name])
             {
-                result = window.feng3d[name];
+                result = window['feng3d'][name];
             }
             else
             {
                 // 尝试通过命名空间路径查找（例如 'PhysicsWorld' 或 'feng3d.PhysicsWorld'）
                 const parts = name.split('.');
-                let current: any = window.feng3d;
+                let current: any = window['feng3d'];
 
                 for (const part of parts)
                 {
