@@ -15,6 +15,7 @@ export default [
       'examples/**',
       'packages/editor/lib/**',
       'packages/editor/libs/**',
+      'packages/editor/packages/typescript/**',
     ],
   },
   js.configs.recommended,
