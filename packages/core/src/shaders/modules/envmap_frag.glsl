@@ -1,1 +1,0 @@
-finalColor = envmapMethod(finalColor);
