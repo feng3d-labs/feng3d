@@ -646,7 +646,7 @@ export class ConvexPolyhedron extends Shape
         }
 
         let firstVertex = inVertices[inVertices.length - 1];
-        let lastVertex = inVertices[0];
+        let lastVertex;
 
         nDotFirst = planeNormal.dot(firstVertex) + planeConstant;
 
@@ -965,8 +965,8 @@ export class ConvexPolyhedron extends Shape
         const n = hull.vertices.length;
         // const worldVertex = project_worldVertex;
         const localAxis = projectLocalAxis;
-        let max = 0;
-        let min = 0;
+        let max;
+        let min;
         const localOrigin = projectLocalOrigin;
         const vs = hull.vertices;
 

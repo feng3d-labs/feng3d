@@ -660,7 +660,7 @@ const calcRollingFriction$vel = new Vector3();
 
 function calcRollingFriction(body0: Body, body1: Body, frictionPosWorld: Vector3, frictionDirectionWorld: Vector3, maxImpulse: number)
 {
-    let j1 = 0;
+    let j1;
     const contactPosWorld = frictionPosWorld;
 
     // let rel_pos1 = new Vector3();

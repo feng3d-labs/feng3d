@@ -65,7 +65,7 @@ export class OverlapKeeper
         let j = 0;
         for (let i = 0; i < al; i++)
         {
-            let found = false;
+            let found;
             const keyA = a[i];
             while (keyA > b[j])
             {
@@ -81,7 +81,7 @@ export class OverlapKeeper
         j = 0;
         for (let i = 0; i < bl; i++)
         {
-            let found = false;
+            let found;
             const keyB = b[i];
             while (keyB > a[j])
             {

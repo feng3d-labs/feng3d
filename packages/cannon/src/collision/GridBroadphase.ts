@@ -160,7 +160,7 @@ export class GridBroadphase extends Broadphase
 
 			switch (si.type)
 			{
-				case SPHERE:
+				case SPHERE:				{
 					// Put in bin
 					// check if overlap with other bins
 					const x = bi.position.x;
@@ -169,9 +169,9 @@ export class GridBroadphase extends Broadphase
 					const r = si.radius;
 
 					addBoxToBins(x - r, y - r, z - r, x + r, y + r, z + r, bi);
-					break;
+										break;				}
 
-				case PLANE:
+								case PLANE:				{
 					const plane = <Plane>si;
 					if (plane.worldNormalNeedsUpdate)
 					{
@@ -202,7 +202,7 @@ export class GridBroadphase extends Broadphase
 							}
 						}
 					}
-					break;
+										break;				}
 
 				default:
 					if (bi.aabbNeedsUpdate)

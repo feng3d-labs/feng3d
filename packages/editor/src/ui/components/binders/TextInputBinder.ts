@@ -3,7 +3,7 @@ import { ObjectViewEvent } from '../../../objectview/events/ObjectViewEvent';
 
 declare global
 {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
+     
     namespace eui
     {
         export interface Component

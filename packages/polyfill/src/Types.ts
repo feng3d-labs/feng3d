@@ -61,7 +61,6 @@ export type TypePropertyNames<T, KT> = { [K in keyof T]: T[K] extends KT ? K : n
 /**
  * 选取T类型中值为非函数类型的所有键
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type PropertyNames<T> = NonTypePropertyNames<T, Function>;
 
 /**
@@ -77,7 +76,6 @@ export type PropertyNames<T> = NonTypePropertyNames<T, Function>;
  *     var a: FunctionPropertyNames<A>; //var a: "f"
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type FunctionPropertyNames<T> = TypePropertyNames<T, Function>;
 
 /**

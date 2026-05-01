@@ -68,7 +68,7 @@ export class SkinnedMeshRenderer extends Renderable
     {
         const skeletonComponent = this.getComponentInParent(SkeletonComponent);
 
-        let skeletonGlobalMatriices: Matrix4x4[] = [];
+        let skeletonGlobalMatriices: Matrix4x4[];
         if (skeletonComponent)
         {
             skeletonGlobalMatriices = skeletonComponent.globalMatrices;

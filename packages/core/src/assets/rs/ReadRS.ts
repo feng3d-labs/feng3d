@@ -83,7 +83,7 @@ export class ReadRS
                 await this.createAsset(FolderAsset, this.rootPath, null, null);
             }
         }
-        catch (error)
+        catch (_error)
         {
             await this.createAsset(FolderAsset, this.rootPath, null, null);
         }

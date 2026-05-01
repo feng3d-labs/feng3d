@@ -102,9 +102,11 @@ export class Animation extends Behaviour
                     propertyHost = propertyHost.find(element[1]);
                     break;
                 case PropertyClipPathItemType.Component:
+                {
                     const componentClass = getComponentType(element[1] as any);
                     propertyHost = propertyHost.getComponent(componentClass);
                     break;
+                }
                 default:
                     console.error(`无法获取 PropertyHost ${element}`);
             }
