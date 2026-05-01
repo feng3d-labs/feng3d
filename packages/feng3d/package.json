@@ -40,7 +40,7 @@
     "@feng3d/math": "*",
     "@feng3d/objectview": "*",
     "@feng3d/particlesystem": "*",
-    "@feng3d/path": "^0.0.3",
+    "@feng3d/path": "*",
     "@feng3d/polyfill": "*",
     "@feng3d/renderer": "*",
     "@feng3d/serialization": "*",

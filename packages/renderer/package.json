@@ -32,7 +32,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@feng3d/c-preprocessor": "*",
     "@feng3d/objectview": "*",
     "@feng3d/polyfill": "*",
     "@feng3d/serialization": "*",

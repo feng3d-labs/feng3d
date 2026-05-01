@@ -1,4 +1,3 @@
-import { compile } from '@feng3d/c-preprocessor';
 import { gPartial } from '@feng3d/polyfill';
 import { GL } from '../gl/GL';
 import { ShaderMacro } from '../shader/Macro';
@@ -36,7 +35,8 @@ export class Shader
         let result = gl.cache.compileShaderResults[shaderKey];
         if (result) return result;
 
-        const { vertex, fragment } = simplifyShader({ vertex: this.vertex, fragment: this.fragment });
+        const vertex = this.vertex;
+        const fragment = this.fragment;
 
         // 渲染程序
         try
@@ -280,29 +280,4 @@ export interface AttributeInfo
      * 属性地址
      */
     location: number;
-}
-
-/**
- * 简化Shader代码
- *
- * @param param0
- */
-function simplifyShader({ vertex, fragment }: { vertex: string, fragment: string })
-{
-    let number = 0; // 用于验证顺序，保证结果无误。 compile函数此时应该是立即调用回调的。
-    compile(vertex, undefined, (msg, result) =>
-    {
-        vertex = result;
-        console.assert(number === 0);
-        number = 1;
-    });
-    console.assert(number === 1);
-    number = 2;
-    compile(fragment, undefined, (msg, result) =>
-    {
-        fragment = result;
-        console.assert(number === 2);
-    });
-
-    return { vertex, fragment };
 }

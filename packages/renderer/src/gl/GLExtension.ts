@@ -86,7 +86,7 @@ export class GLExtension
             if (!gl.extensions[name])
             {
                 // eslint-disable-next-line prefer-rest-params
-                gl.extensions[name] = oldGetExtension.apply(gl, arguments);
+                gl.extensions[name] = oldGetExtension.apply(gl, arguments as any);
             }
 
             return gl.extensions[name];

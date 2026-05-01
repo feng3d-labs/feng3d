@@ -1,25 +1,11 @@
 {
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "target": "ES2020",
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "noImplicitAny": false,
-        "sourceMap": true,
-        "declarationMap": true,
-        "declaration": true,
-        "experimentalDecorators": true,
-        "skipLibCheck": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "lib": [
-            "ES2020",
-            "DOM",
-            "DOM.Iterable"
-        ],
-        "outDir": "lib"
+        "rootDir": "src",
+        "outDir": "lib",
+        "isolatedModules": true
     },
     "include": [
-        //
         "src/**/*.ts",
         "src/**/*.vue",
         "src/vue-shims.d.ts",
@@ -29,6 +15,7 @@
         "node_modules",
         "dist",
         "lib",
-        "dist-vite"
+        "public",
+        "test"
     ]
 }

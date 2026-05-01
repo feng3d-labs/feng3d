@@ -152,7 +152,7 @@ export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3d
         { pixels = [pixels]; }
         for (let i = 0; i < pixels.length; i++)
         {
-            const element = pixels[i];
+            const element = pixels[i] as HTMLImageElement;
             if (element.width === 0 || !mathUtil.isPowerOfTwo(element.width))
             {
                 return false;
@@ -200,7 +200,7 @@ export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3d
         {
             return new Vector2(1, 1);
         }
-        const pixel = pixels[0];
+        const pixel = pixels[0] as HTMLImageElement;
 
         return new Vector2(pixel.width, pixel.height);
     }
@@ -219,7 +219,7 @@ export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3d
         if (pixels.length === 0) return false;
         for (let i = 0; i < pixels.length; i++)
         {
-            const element = pixels[i];
+            const element = pixels[i] as HTMLImageElement;
             if (!element) return false;
             if (element.width === 0)
             {
