@@ -13,6 +13,8 @@ export default [
       '*.config.js',
       'packages/webgpu/examples/**',
       'examples/**',
+      'packages/editor/lib/**',
+      'packages/editor/libs/**',
     ],
   },
   js.configs.recommended,
