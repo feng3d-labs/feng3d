@@ -13,7 +13,7 @@ const iconSets = ['mdi', 'material-symbols'];
  */
 export function configureOfflineMode() {
   // 使用 _api.setFetch 禁用所有 API 请求
-  _api.setFetch(async (url: string) => {
+  _api.setFetch(async () => {
     // 拦截所有 API 请求，返回空响应
     // 图标将从预加载的本地数据中获取
     return {

@@ -37,7 +37,7 @@ export class WebGLRenderer
                 break;
             }
             // eslint-disable-next-line no-empty
-            catch (e) { }
+            catch { }
         }
         if (!gl)
         { throw '无法初始化WEBGL'; }

@@ -42,18 +42,7 @@ class PopupViewManager {
      */
     popupObject<T>(object: T, param: PopupviewParam<T> = {}) {
         const view: any = objectview.getObjectView(object);
-        const width = param.width || 300;
-        const height = param.height || 300;
-        
-        // 创建窗口包装
-        const windowProps = {
-            title: `${(object as any).constructor?.name || 'Object'}`,
-            width,
-            height,
-            x: param.x,
-            y: param.y,
-        };
-        
+
         return this.popupViewWindow(view, param);
     }
 

@@ -19,7 +19,7 @@ export class Modules
     /**
      * 回收模块界面
      */
-    recycleModuleView(moduleView: any)
+    recycleModuleView(_moduleView: any)
     {
         console.warn('recycleModuleView 已废弃，请使用 Vue 组件');
     }

@@ -128,12 +128,10 @@ export class ClassUtils
     {
         console.assert(!!Cls);
         if (!Cls) return undefined;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error __create__ 是动态添加的属性
         if (Cls.__create__)
         {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
+            // @ts-expect-error __create__ 是动态添加的属性
             return Cls.__create__();
         }
 
@@ -143,7 +141,7 @@ export class ClassUtils
         {
             instance = new Cls();
         }
-        catch (error)
+        catch
         {
             // eslint-disable-next-line no-debugger
             debugger;

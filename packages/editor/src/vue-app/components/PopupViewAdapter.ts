@@ -1,5 +1,4 @@
 import { popupView, PopupviewParam } from './PopupView';
-import { objectview } from 'feng3d';
 
 /**
  * PopupView 适配器，兼容原有的 popupview API

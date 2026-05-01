@@ -17,7 +17,7 @@ function getRawObject<T>(obj: T): T {
     if (typeof (window as any).toRaw === 'function') {
         try {
             return (window as any).toRaw(obj);
-        } catch (e) {
+        } catch {
             // 忽略错误
         }
     }

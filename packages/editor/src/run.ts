@@ -8,8 +8,6 @@ import '@feng3d-plugins/cannon-plugin';
 
 const fstype = GetQueryString('fstype');
 
-const result = [];
-
 (async () =>
 {
     if (fstype === 'indexedDB')

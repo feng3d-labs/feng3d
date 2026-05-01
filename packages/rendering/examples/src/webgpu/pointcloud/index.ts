@@ -1,5 +1,3 @@
-import { Object3D } from '@feng3d/core';
-import { reactive } from '@feng3d/reactivity';
 import { render, RenderInput } from '@feng3d/rendering';
 import { pointcloudFragWGSL } from './shaders/pointcloud.frag.wgsl.js';
 import { pointcloudVertWGSL } from './shaders/pointcloud.vert.wgsl.js';
@@ -75,11 +73,6 @@ async function main()
     // 加载点云数据
     const vertexData = await loadPointCloud('./pointcloud.txt');
 
-    const object3d: Object3D = {
-        rotation: { x: 0, y: 0, z: 0 },
-        position: { x: 0, y: 0, z: 0 },
-    };
-
     const input: RenderInput = {
         canvas,
         pipeline: {
@@ -122,9 +115,6 @@ async function main()
 
     // 启动渲染
     render(input);
-
-    // 使用 reactive 包装 input
-    const r_input = reactive(input);
 
     // GUI 控制
     const GUI = (window as any).dat.GUI;

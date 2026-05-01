@@ -1,4 +1,4 @@
-import { Scene, ArrayUtils, globalEmitter, shortcut, GameObject, Box3, TextAsset } from 'feng3d';
+import { Scene, GameObject, Box3, TextAsset } from 'feng3d';
 import { AssetNode } from '../ui/assets/AssetNode';
 import { useEditorStore, MRSToolType } from '../vue-app/stores/editorStore';
 
