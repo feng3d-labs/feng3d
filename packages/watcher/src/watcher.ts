@@ -30,7 +30,7 @@ export class Watcher
 
             watchs[_property] = { value: object[_property], oldPropertyDescriptor, handlers: [] };
             //
-            let data = getPropertyDescriptor(object, _property);
+            let data = getPropertyDescriptor(object as object, _property);
 
             if (data && data.set && data.get)
             {
