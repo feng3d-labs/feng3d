@@ -6,7 +6,7 @@
     "composite": true,
     "noImplicitReturns": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "lib", "public", "examples"],

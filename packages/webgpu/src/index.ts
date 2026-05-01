@@ -1,3 +1,5 @@
+/// <reference types="@webgpu/types" />
+
 // 主入口
 export * from './WebGPU';
 

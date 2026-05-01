@@ -7,7 +7,6 @@
     "noImplicitReturns": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "types": ["@webgpu/types"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "lib", "public", "examples"]

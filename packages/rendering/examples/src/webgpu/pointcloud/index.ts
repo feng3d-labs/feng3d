@@ -1,3 +1,4 @@
+import { reactive } from '@feng3d/reactivity';
 import { render, RenderInput } from '@feng3d/rendering';
 import { pointcloudFragWGSL } from './shaders/pointcloud.frag.wgsl.js';
 import { pointcloudVertWGSL } from './shaders/pointcloud.vert.wgsl.js';
@@ -97,7 +98,7 @@ async function main()
             },
         },
         vertexCount: vertexData.length / 8,
-        rotation: { x: 0, y: 0, z: 0 },
+        rotation: { x: 3.14, y: 0, z: 0 },
         position: { x: 0, y: 0, z: 0 },
         // ZED 相机内参
         camera: {
@@ -116,17 +117,26 @@ async function main()
     // 启动渲染
     render(input);
 
+    // 使用 reactive 包装 input
+    const r_input = reactive(input);
+
     // GUI 控制
     const GUI = (window as any).dat.GUI;
     const gui = new GUI();
     const folder = gui.addFolder('点云控制');
 
-    folder.add(input, 'x', -Math.PI, Math.PI).name('X 旋转');
-    folder.add(input, 'y', -Math.PI, Math.PI).name('Y 旋转');
-    folder.add(input, 'z', -Math.PI, Math.PI).name('Z 旋转');
-    folder.add(input, 'x', -2, 2).name('X 位置');
-    folder.add(input, 'y', -2, 2).name('Y 位置');
-    folder.add(input, 'z', -2, 2).name('Z 位置');
+    // eslint-disable-next-line feng3d/no-reactive-argument
+    folder.add(r_input.rotation, 'x', -Math.PI, Math.PI).name('X 旋转');
+    // eslint-disable-next-line feng3d/no-reactive-argument
+    folder.add(r_input.rotation, 'y', -Math.PI, Math.PI).name('Y 旋转');
+    // eslint-disable-next-line feng3d/no-reactive-argument
+    folder.add(r_input.rotation, 'z', -Math.PI, Math.PI).name('Z 旋转');
+    // eslint-disable-next-line feng3d/no-reactive-argument
+    folder.add(r_input.position, 'x', -2, 2).name('X 位置');
+    // eslint-disable-next-line feng3d/no-reactive-argument
+    folder.add(r_input.position, 'y', -2, 2).name('Y 位置');
+    // eslint-disable-next-line feng3d/no-reactive-argument
+    folder.add(r_input.position, 'z', -2, 2).name('Z 位置');
     folder.open();
 }
 
