@@ -1,4 +1,4 @@
-import { saveAs } from '@feng3d/filesaver';
+import { saveAs } from 'file-saver';
 import { AssetType, dataTransform, FileAsset, FolderAsset, GameObjectAsset, GeometryAsset, MaterialAsset, serialize, TextureAsset, TextureCubeAsset } from 'feng3d';
 import JSZip from 'jszip';
 import { editorRS } from '../../assets/EditorRS';

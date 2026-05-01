@@ -157,11 +157,9 @@ export class Navigation extends Component
         if (geometry)
         {
             const matrix = gameobject.transform.localToWorldMatrix;
-            // eslint-disable-next-line prefer-spread
-            const positions = Array.apply(null, geometry.positions);
+            const positions = [...geometry.positions];
             matrix.transformPoints(positions, positions);
-            // eslint-disable-next-line prefer-spread
-            const indices = Array.apply(null, geometry.indices);
+            const indices = [...geometry.indices];
             //
             geometrys.push({ positions, indices });
         }

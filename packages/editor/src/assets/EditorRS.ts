@@ -1,4 +1,4 @@
-import { saveAs } from '@feng3d/filesaver';
+import { saveAs } from 'file-saver';
 import { FS, indexedDBFS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
 import JSZip from 'jszip';
 import { editorcache } from '../caches/Editorcache';

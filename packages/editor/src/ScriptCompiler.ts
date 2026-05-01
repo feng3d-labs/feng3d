@@ -124,7 +124,7 @@ export class ScriptCompiler
         }
         catch (e)
         {
-            console.log(`Error from compilation: ${e}  ${e.stack || ''}`);
+            console.log(`Error from compilation: ${e} `);
         }
 
         ElMessage({ message: '编译完成！', type: 'info' });

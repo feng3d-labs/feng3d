@@ -5,4 +5,5 @@
     // 定义控制块的左括号是否放置在新的一行。
     "js/ts.format.placeOpenBraceOnNewLineForControlBlocks": true,
     "js/ts.tsdk.path": "node_modules\\typescript\\lib",
+    "typescript.tsdk": "node_modules\\typescript\\lib",
 }

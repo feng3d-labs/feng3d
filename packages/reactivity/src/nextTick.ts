@@ -5,7 +5,7 @@ export function nextTick<T = void, R = void>(
 {
     const p = currentFlushPromise || resolvedPromise;
 
-    return fn ? p.then(this ? fn.bind(this) : fn) : p;
+    return fn ? p.then(this ? fn.bind(this) : fn) as Promise<Awaited<R>> : p;
 }
 
 const resolvedPromise = /* @__PURE__ */ Promise.resolve() as Promise<any>;
