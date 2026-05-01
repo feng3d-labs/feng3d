@@ -6,7 +6,7 @@ export class Utils
      * @param  defaults An object containing default values.
      * @return The modified options object.
      */
-    static defaults(options: Object, defaults: Object)
+    static defaults(options: object, defaults: object)
     {
         options = options || {};
         for (const key in defaults)

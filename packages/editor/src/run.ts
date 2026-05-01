@@ -1,5 +1,5 @@
-/* eslint-disable no-undef */
-// eslint-disable-next-line spaced-comment
+ 
+ 
 
 // 从 CDN 导入 feng3d 和插件
 import * as feng3d from 'feng3d';

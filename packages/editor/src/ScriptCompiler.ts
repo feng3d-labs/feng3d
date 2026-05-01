@@ -1,4 +1,4 @@
-// eslint-disable-next-line spaced-comment, @typescript-eslint/triple-slash-reference
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../libs/typescriptServices.d.ts" />
 
 import { globalEmitter, IEvent, ScriptAsset, TextAsset, ticker } from 'feng3d';

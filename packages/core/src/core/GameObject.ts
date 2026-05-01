@@ -938,7 +938,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
             if (!element.isLoaded)
             {
                 loadingNum++;
-                // eslint-disable-next-line no-loop-func
+                 
                 element.onLoadCompleted(() =>
                 {
                     loadingNum--;

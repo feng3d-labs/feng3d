@@ -28,7 +28,7 @@ export class Uuid
      *
      * @param object 对象
      */
-    getObjectUuid(object: Object)
+    getObjectUuid(object: object)
     {
         if (ObjectUtils.isBaseType(object))
         {
@@ -41,7 +41,7 @@ export class Uuid
 
         return object[__uuid__];
     }
-    objectUuid = new WeakMap<Object, string>();
+    objectUuid = new WeakMap<object, string>();
 }
 
 export const __uuid__ = '__uuid__';

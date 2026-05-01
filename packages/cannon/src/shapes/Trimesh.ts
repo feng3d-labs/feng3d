@@ -193,7 +193,7 @@ export class Trimesh extends Shape
     updateEdges()
     {
         const edges = {};
-        // eslint-disable-next-line func-style
+         
         const add = function (a: number, b: number)
         {
             const key = a < b ? `${a}_${b}` : `${b}_${a}`;

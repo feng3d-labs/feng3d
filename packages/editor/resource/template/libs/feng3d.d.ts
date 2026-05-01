@@ -6274,19 +6274,19 @@ interface ShaderMacro {
     /**
      * 是否卡通渲染
      */
-    IS_CARTOON: Boolean;
+    IS_CARTOON: boolean;
     /**
      * 是否抗锯齿
      */
-    cartoon_Anti_aliasing: Boolean;
+    cartoon_Anti_aliasing: boolean;
     /**
      * 是否启用粒子系统纹理表动画模块
      */
-    ENABLED_PARTICLE_SYSTEM_textureSheetAnimation: Boolean;
+    ENABLED_PARTICLE_SYSTEM_textureSheetAnimation: boolean;
     /**
      * 是否有颜色顶点数据
      */
-    HAS_a_color: Boolean;
+    HAS_a_color: boolean;
 }
 
 interface Attributes {
@@ -13641,7 +13641,7 @@ declare class FunctionWrap {
      * @param params 函数除callback外的参数列表
      * @param callback 完成回调函数
      */
-    wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any[]) => void): void;
+    wrapAsyncFunc(funcHost: object, func: Function, params: any[], callback: (...args: any[]) => void): void;
     private _wrapFResult;
     private _state;
 }
@@ -13783,43 +13783,43 @@ declare global {
         OAVPick: OAVPickParam;
         OAVCubeMap: {
             component: 'OAVCubeMap';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVImage: {
             component: 'OAVImage';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVObjectView: {
             component: 'OAVObjectView';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVParticleComponentList: {
             component: 'OAVParticleComponentList';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVComponentList: {
             component: 'OAVComponentList';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVGameObjectName: {
             component: 'OAVGameObjectName';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVMaterialName: {
             component: 'OAVMaterialName';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVMultiText: {
             component: 'OAVMultiText';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVFeng3dPreView: {
             component: 'OAVFeng3dPreView';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVAccordionObjectView: {
             component: 'OAVAccordionObjectView';
-            componentParam: Object;
+            componentParam: object;
         };
         OAVVector3: OAVVector3Param;
     }
@@ -13989,21 +13989,21 @@ declare class Ticker {
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    onframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+    onframe(func: (interval: number) => void, thisObject?: object, priority?: number): this;
     /**
      * 下一帧执行方法
      * @param func  执行方法
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    nextframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+    nextframe(func: (interval: number) => void, thisObject?: object, priority?: number): this;
     /**
      * 注销帧函数（只执行一次）
      * @param func  执行方法
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    offframe(func: (interval: number) => void, thisObject?: Object): this;
+    offframe(func: (interval: number) => void, thisObject?: object): this;
     /**
      * 注册周期函数
      * @param interval  执行周期，以ms为单位
@@ -14011,7 +14011,7 @@ declare class Ticker {
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+    on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: object, priority?: number): this;
     /**
      * 注册周期函数（只执行一次）
      * @param interval  执行周期，以ms为单位
@@ -14019,14 +14019,14 @@ declare class Ticker {
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+    once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: object, priority?: number): this;
     /**
      * 注销周期函数
      * @param interval  执行周期，以ms为单位
      * @param func  执行方法
      * @param thisObject    方法this指针
      */
-    off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object): this;
+    off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: object): this;
     /**
      * 重复指定次数 执行函数
      * @param interval  执行周期，以ms为单位
@@ -14035,7 +14035,7 @@ declare class Ticker {
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number): Timer;
+    repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: object, priority?: number): Timer;
 }
 /**
  * 心跳计时器
@@ -14059,7 +14059,7 @@ declare class Timer {
      * 设置的计时器运行总次数。
      */
     repeatCount: number;
-    constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number);
+    constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: object, priority?: number);
     /**
      * 如果计时器尚未运行，则启动计时器。
      */
@@ -14095,8 +14095,8 @@ declare class Uuid {
      *
      * @param object 对象
      */
-    getObjectUuid(object: Object): any;
-    objectUuid: WeakMap<Object, string>;
+    getObjectUuid(object: object): any;
+    objectUuid: WeakMap<object, string>;
 }
 declare const __uuid__ = "__uuid__";
 declare const uuid: Uuid;

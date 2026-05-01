@@ -78,7 +78,7 @@ declare global
         /**
          * 还原默认窗口布局
          */
-        'viewLayout.reset': Object;
+        'viewLayout.reset': object;
 
         /**
          * 打开脚本

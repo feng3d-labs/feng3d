@@ -23,7 +23,7 @@ export class ReadWriteFS extends ReadFS
         return this.fs.projectname;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+     
     constructor(fs?: IReadWriteFS)
     {
         super(fs);

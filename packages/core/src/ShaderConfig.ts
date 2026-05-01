@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+ 
 import mouseFragment from './shaders/mouse.fragment.glsl';
 import mouseVertex from './shaders/mouse.vertex.glsl';
 import outlineFragment from './shaders/outline.fragment.glsl';

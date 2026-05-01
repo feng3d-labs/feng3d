@@ -37,7 +37,7 @@ let currentAPP: APP;
  * @param template url模板
  * @param param 参数
  */
-function getHttpUrl(template: string, param: Object)
+function getHttpUrl(template: string, param: object)
 {
     for (const key in param)
     {

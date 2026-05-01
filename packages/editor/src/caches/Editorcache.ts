@@ -18,7 +18,7 @@ export class EditorCache
     /**
      * 界面布局数据
      */
-    viewLayout: Object;
+    viewLayout: object;
 
     /**
      * 设置最近打开的项目

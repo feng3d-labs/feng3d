@@ -187,7 +187,7 @@ namespace ts {
                     }
                     (<DefaultClause>element).statements.forEach(element => {
                         visitStatement(element);
-                    })
+                    });
                 });
                 break;
             case SyntaxKind.LabeledStatement:

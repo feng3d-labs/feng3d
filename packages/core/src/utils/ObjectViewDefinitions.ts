@@ -6,16 +6,16 @@ declare global
         OAVArray: OAVArrayParam;
         OAVPick: OAVPickParam;
 
-        OAVCubeMap: { component: 'OAVCubeMap', componentParam: Object };
-        OAVImage: { component: 'OAVImage', componentParam: Object };
-        OAVObjectView: { component: 'OAVObjectView', componentParam: Object };
-        OAVParticleComponentList: { component: 'OAVParticleComponentList', componentParam: Object };
-        OAVComponentList: { component: 'OAVComponentList', componentParam: Object };
-        OAVGameObjectName: { component: 'OAVGameObjectName', componentParam: Object };
-        OAVMaterialName: { component: 'OAVMaterialName', componentParam: Object };
-        OAVMultiText: { component: 'OAVMultiText', componentParam: Object };
-        OAVFeng3dPreView: { component: 'OAVFeng3dPreView', componentParam: Object };
-        OAVAccordionObjectView: { component: 'OAVAccordionObjectView', componentParam: Object };
+        OAVCubeMap: { component: 'OAVCubeMap', componentParam: object };
+        OAVImage: { component: 'OAVImage', componentParam: object };
+        OAVObjectView: { component: 'OAVObjectView', componentParam: object };
+        OAVParticleComponentList: { component: 'OAVParticleComponentList', componentParam: object };
+        OAVComponentList: { component: 'OAVComponentList', componentParam: object };
+        OAVGameObjectName: { component: 'OAVGameObjectName', componentParam: object };
+        OAVMaterialName: { component: 'OAVMaterialName', componentParam: object };
+        OAVMultiText: { component: 'OAVMultiText', componentParam: object };
+        OAVFeng3dPreView: { component: 'OAVFeng3dPreView', componentParam: object };
+        OAVAccordionObjectView: { component: 'OAVAccordionObjectView', componentParam: object };
         OAVVector3: OAVVector3Param;
     }
 }

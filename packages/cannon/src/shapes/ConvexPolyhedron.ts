@@ -266,7 +266,7 @@ export class ConvexPolyhedron extends Shape
         const Cross = fsaCross;
 
         let dmin = Number.MAX_VALUE;
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
+         
         const hullA = this;
         let curPlaneTests = 0;
 
@@ -416,7 +416,7 @@ export class ConvexPolyhedron extends Shape
      */
     testSepAxis(axis: Vector3, hullB: ConvexPolyhedron, posA: Vector3, quatA: Quaternion, posB: Vector3, quatB: Quaternion)
     {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
+         
         const hullA = this;
         ConvexPolyhedron.project(hullA, axis, posA, quatA, maxminA);
         ConvexPolyhedron.project(hullB, axis, posB, quatB, maxminB);
@@ -493,7 +493,7 @@ export class ConvexPolyhedron extends Shape
         const localPlaneNormal = cfahLocalPlaneNormal;
         const planeNormalWS = cfahPlaneNormalWS;
 
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
+         
         const hullA = this;
         const worldVertsB2 = [];
         const pVtxIn = worldVertsB1;

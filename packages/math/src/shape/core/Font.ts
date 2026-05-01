@@ -238,9 +238,9 @@ function createPath(char: string, scale: number, offsetX: number, offsetY: numbe
 export interface Glyph
 {
     ha: number,
-    // eslint-disable-next-line camelcase
+     
     x_min: number,
-    // eslint-disable-next-line camelcase
+     
     x_max: number,
     o: string,
     _cachedOutline?: any[]

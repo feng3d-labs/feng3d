@@ -386,7 +386,7 @@ class Win32Path implements Path
             let path: string;
             if (i >= 0)
             {
-                // eslint-disable-next-line prefer-rest-params
+                 
                 path = arguments[i];
             }
             else if (!resolvedDevice)
@@ -466,7 +466,7 @@ class Win32Path implements Path
                                 // Match 1 or more non-path separators
                                 for (; j < len; ++j)
                                 {
-                                    // eslint-disable-next-line max-depth
+                                     
                                     if (isPathSeparator(path.charCodeAt(j))) { break; }
                                 }
                                 if (j === len)
@@ -606,7 +606,7 @@ class Win32Path implements Path
                             // Match 1 or more non-path separators
                             for (; j < len; ++j)
                             {
-                                // eslint-disable-next-line max-depth
+                                 
                                 if (isPathSeparator(path.charCodeAt(j))) { break; }
                             }
                             if (j === len)
@@ -740,7 +740,7 @@ class Win32Path implements Path
         let firstPart;
         for (let i = 0; i < arguments.length; ++i)
         {
-            // eslint-disable-next-line prefer-rest-params
+             
             const arg = arguments[i];
             validateString(arg, 'path');
             if (arg.length > 0)
@@ -1042,7 +1042,7 @@ class Win32Path implements Path
                             // Match 1 or more non-path separators
                             for (; j < len; ++j)
                             {
-                                // eslint-disable-next-line max-depth
+                                 
                                 if (isPathSeparator(path.charCodeAt(j))) { break; }
                             }
                             if (j === len)
@@ -1358,7 +1358,7 @@ class Win32Path implements Path
                             // Match 1 or more non-path separators
                             for (; j < len; ++j)
                             {
-                                // eslint-disable-next-line max-depth
+                                 
                                 if (isPathSeparator(path.charCodeAt(j)))
                                 {
                                     break;
@@ -1523,7 +1523,7 @@ class PosixPath implements Path
         {
             let path;
             if (i >= 0)
-            // eslint-disable-next-line prefer-rest-params
+             
             { path = arguments[i]; }
             else
             {
@@ -1603,7 +1603,7 @@ class PosixPath implements Path
         let joined;
         for (let i = 0; i < arguments.length; ++i)
         {
-            // eslint-disable-next-line prefer-rest-params
+             
             const arg = arguments[i];
             validateString(arg, 'path');
             if (arg.length > 0)

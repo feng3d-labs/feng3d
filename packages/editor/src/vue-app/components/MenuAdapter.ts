@@ -110,7 +110,7 @@ export class MenuAdapter {
    * @param currentValue 当前枚举值
    * @param selectCallBack 选择回调
    */
-  popupEnum(enumDefinition: Object, currentValue: any, selectCallBack: (v: any) => void) {
+  popupEnum(enumDefinition: object, currentValue: any, selectCallBack: (v: any) => void) {
     const menu: MenuItem[] = [];
     for (const key in enumDefinition) {
       if (enumDefinition.hasOwnProperty(key)) {

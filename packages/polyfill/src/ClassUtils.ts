@@ -33,7 +33,7 @@ export class ClassUtils
         }
 
         const prototype: any = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-        // eslint-disable-next-line no-prototype-builtins
+         
         if (prototype.hasOwnProperty(__class__))
         {
             return prototype[__class__];
@@ -137,7 +137,7 @@ export class ClassUtils
             return Cls.__create__();
         }
 
-        // eslint-disable-next-line new-cap
+         
         let instance: any;
         try
         {
@@ -145,7 +145,7 @@ export class ClassUtils
         }
         catch (error)
         {
-            // eslint-disable-next-line no-debugger, no-restricted-syntax
+            // eslint-disable-next-line no-debugger
             debugger;
         }
 

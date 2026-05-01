@@ -85,7 +85,7 @@ export class Editor
         }
 
         this.initMainView();
-        // eslint-disable-next-line no-new
+         
         new Editorshortcut();
 
         window.addEventListener('beforeunload', () =>

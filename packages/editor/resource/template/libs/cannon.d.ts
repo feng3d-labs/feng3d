@@ -2664,7 +2664,7 @@ declare class Utils {
      * @param  defaults An object containing default values.
      * @return The modified options object.
      */
-    static defaults(options: Object, defaults: Object): Object;
+    static defaults(options: object, defaults: object): object;
 }
 
 declare class RaycastVehicle {

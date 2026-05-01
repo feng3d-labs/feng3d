@@ -139,7 +139,7 @@ export class Material extends Feng3dObject
                 if (!texture.isLoaded)
                 {
                     loadingNum++;
-                    // eslint-disable-next-line no-loop-func
+                     
                     texture.on('loadCompleted', () =>
                     {
                         loadingNum--;

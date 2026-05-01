@@ -97,7 +97,7 @@ export class FunctionWrap
             //
             object[funcName] = <any> function ()
             {
-                // eslint-disable-next-line prefer-rest-params
+                 
                 const args = arguments;
                 info.funcs.forEach((f) =>
                 {
@@ -165,7 +165,7 @@ export class FunctionWrap
      * @param params 函数除callback外的参数列表
      * @param callback 完成回调函数
      */
-    wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any[]) => void)
+    wrapAsyncFunc(funcHost: object, func: Function, params: any[], callback: (...args: any[]) => void)
     {
         // 获取唯一编号
         const cuuid = uuid.getArrayUuid([func].concat(params));
@@ -173,7 +173,7 @@ export class FunctionWrap
         const result = this._wrapFResult[cuuid];
         if (result)
         {
-            // eslint-disable-next-line prefer-spread
+             
             callback.apply(null, result);
 
             return;

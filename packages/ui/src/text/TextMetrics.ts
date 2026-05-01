@@ -624,7 +624,7 @@ return c;
      * @param _breakWords  The style attr break words
      * @return whether to break word or not
      */
-    static canBreakChars(_char: string, _nextChar: string, _token: string, _index: number, _breakWords: boolean) // eslint-disable-line no-unused-vars
+    static canBreakChars(_char: string, _nextChar: string, _token: string, _index: number, _breakWords: boolean)  
     {
         return true;
     }

@@ -15,7 +15,7 @@ declare global
 
 if (!Array.prototype.includes)
 {
-    // eslint-disable-next-line no-extend-native
+     
     Object.defineProperty(Array.prototype, 'includes', {
         configurable: true,
         enumerable: false,

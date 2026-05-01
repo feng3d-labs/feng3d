@@ -130,13 +130,13 @@ export class NumberTextInputBinder extends TextInputBinder
         if (event.data.key === 'ArrowUp')
         {
             this.space[this.attribute] += this.step * this.stepDownup;
-            // eslint-disable-next-line no-useless-call
+             
             this.textInput.text = this.toText.call(this, this.space[this.attribute]);
         }
         else if (event.data.key === 'ArrowDown')
         {
             this.space[this.attribute] -= this.step * this.stepDownup;
-            // eslint-disable-next-line no-useless-call
+             
             this.textInput.text = this.toText.call(this, this.space[this.attribute]);
         }
         this.invalidateView();

@@ -200,7 +200,7 @@ export class NativeFS implements IReadWriteFS
      * @param path 文件路径
      * @param object 文件数据
      */
-    async writeObject(path: string, object: Object)
+    async writeObject(path: string, object: object)
     {
         const str = JSON.stringify(object, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
         await this.writeString(path, str);

@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+ 
 import { GL } from './GL';
 
 /**
@@ -85,7 +85,7 @@ export class GLExtension
         {
             if (!gl.extensions[name])
             {
-                // eslint-disable-next-line prefer-rest-params
+                 
                 gl.extensions[name] = oldGetExtension.apply(gl, arguments as any);
             }
 

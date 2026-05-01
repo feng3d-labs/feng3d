@@ -15,7 +15,7 @@ export class Ticker
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    onframe(func: (interval: number) => void, thisObject?: Object, priority = 0)
+    onframe(func: (interval: number) => void, thisObject?: object, priority = 0)
     {
         this.on(() => 1000 / this.frameRate, func, thisObject, priority);
 
@@ -27,7 +27,7 @@ export class Ticker
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    nextframe(func: (interval: number) => void, thisObject?: Object, priority = 0)
+    nextframe(func: (interval: number) => void, thisObject?: object, priority = 0)
     {
         this.once(() => 1000 / this.frameRate, func, thisObject, priority);
 
@@ -39,7 +39,7 @@ export class Ticker
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    offframe(func: (interval: number) => void, thisObject?: Object)
+    offframe(func: (interval: number) => void, thisObject?: object)
     {
         this.off(() => 1000 / this.frameRate, func, thisObject);
 
@@ -52,7 +52,7 @@ export class Ticker
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority = 0)
+    on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: object, priority = 0)
     {
         addTickerFunc({ interval, func, thisObject, priority, once: false });
 
@@ -65,7 +65,7 @@ export class Ticker
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority = 0)
+    once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: object, priority = 0)
     {
         addTickerFunc({ interval, func, thisObject, priority, once: true });
 
@@ -77,7 +77,7 @@ export class Ticker
      * @param func  执行方法
      * @param thisObject    方法this指针
      */
-    off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object)
+    off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: object)
     {
         removeTickerFunc({ interval, func, thisObject });
 
@@ -91,7 +91,7 @@ export class Ticker
      * @param thisObject    方法this指针
      * @param priority      执行优先级
      */
-    repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority = 0)
+    repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: object, priority = 0)
     {
         repeatCount = ~~repeatCount;
         if (repeatCount < 1)
@@ -113,7 +113,7 @@ export class Timer
     private interval: Lazy<number>;
     private priority: number;
     private func: (interval: number) => void;
-    private thisObject: Object;
+    private thisObject: object;
 
     /**
      * 计时器从 0 开始后触发的总次数。
@@ -128,7 +128,7 @@ export class Timer
      */
     repeatCount: number;
 
-    constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority = 0)
+    constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: object, priority = 0)
     {
         this.ticker = ticker;
         this.interval = interval;
@@ -179,7 +179,7 @@ interface TickerFuncItem
 {
     interval: Lazy<number>,
     func: (interval: number) => void,
-    thisObject?: Object,
+    thisObject?: object,
     priority?: number,
     once?: boolean
     //

@@ -206,7 +206,7 @@ export class Shader
         return { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes, uniforms };
     }
 
-    private getMacroCode(variables: string[], valueObj: Object)
+    private getMacroCode(variables: string[], valueObj: object)
     {
         let macroHeader = '';
         variables.forEach((macroName) =>

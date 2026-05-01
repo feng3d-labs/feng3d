@@ -131,12 +131,12 @@ async function main()
     const gui = new GUI();
     const folder = gui.addFolder('点云控制');
 
-    folder.add(r_input.rotation, 'x', -Math.PI, Math.PI).name('X 旋转');
-    folder.add(r_input.rotation, 'y', -Math.PI, Math.PI).name('Y 旋转');
-    folder.add(r_input.rotation, 'z', -Math.PI, Math.PI).name('Z 旋转');
-    folder.add(r_input.position, 'x', -2, 2).name('X 位置');
-    folder.add(r_input.position, 'y', -2, 2).name('Y 位置');
-    folder.add(r_input.position, 'z', -2, 2).name('Z 位置');
+    folder.add(input, 'x', -Math.PI, Math.PI).name('X 旋转');
+    folder.add(input, 'y', -Math.PI, Math.PI).name('Y 旋转');
+    folder.add(input, 'z', -Math.PI, Math.PI).name('Z 旋转');
+    folder.add(input, 'x', -2, 2).name('X 位置');
+    folder.add(input, 'y', -2, 2).name('Y 位置');
+    folder.add(input, 'z', -2, 2).name('Z 位置');
     folder.open();
 }
 

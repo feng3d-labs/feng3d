@@ -1,4 +1,4 @@
-/* eslint-disable max-params */
+ 
 import { Box3, Quaternion, Triangle3, Vector3 } from 'feng3d';
 import { ContactEquation } from '../equations/ContactEquation';
 import { FrictionEquation } from '../equations/FrictionEquation';
@@ -694,7 +694,7 @@ export class Narrowphase
         let sideDot1 = 0;
         let sideDot2 = 0;
         let sideDistance = null;
-        // eslint-disable-next-line no-unmodified-loop-condition
+         
         for (let idx = 0, nsides = sides.length; idx !== nsides && found === false; idx++)
         {
             // Get the plane side normal (ns)

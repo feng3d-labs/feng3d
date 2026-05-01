@@ -3177,7 +3177,7 @@ declare namespace ts {
      */
     function unescapeLeadingUnderscores(identifier: __String): string;
     function idText(identifier: Identifier): string;
-    function symbolName(symbol: Symbol): string;
+    function symbolName(symbol: symbol): string;
     function getNameOfJSDocTypedef(declaration: JSDocTypedefTag): Identifier | undefined;
     function getNameOfDeclaration(declaration: Declaration | Expression): DeclarationName | undefined;
     /**

@@ -169,7 +169,7 @@ export class HoverController extends LookAtController
         this.update();
     }
 
-    // eslint-disable-next-line max-params
+     
     constructor(targetObject?: GameObject, lookAtObject?: GameObject, panAngle = 0, tiltAngle = 90, distance = 1000, minTiltAngle = -90, maxTiltAngle = 90, minPanAngle = NaN, maxPanAngle = NaN, steps = 8, yFactor = 2, wrapPanAngle = false)
     {
         super(targetObject, lookAtObject);

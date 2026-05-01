@@ -621,13 +621,13 @@ class NavigationData
                 {
                     return pointIndexMap.get(pointIndex);
                 }
-                // eslint-disable-next-line prefer-spread
+                 
                 positions.push.apply(positions, this.pointmap.get(pointIndex).value);
                 pointIndexMap.set(pointIndex, autoId++);
 
                 return autoId - 1;
             });
-            // eslint-disable-next-line prefer-spread
+             
             indices.push.apply(indices, points);
         });
 

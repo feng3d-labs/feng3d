@@ -639,7 +639,7 @@ serialization.deserializeHandlers = [
 
             if (spv && spv[__class__] === 'function')
             {
-                // eslint-disable-next-line no-new-func
+                 
                 target[property] = Function(`return (${spv.data})`)();
 
                 return true;

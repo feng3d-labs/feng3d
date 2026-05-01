@@ -448,7 +448,7 @@ export class EditorAsset
         if (content !== this._preProjectJsContent)
         {
             //
-            // eslint-disable-next-line no-eval
+             
             const windowEval = eval.bind(window);
             try
             {
@@ -481,7 +481,7 @@ export class EditorAsset
         {
             const filePath = assetNode.asset.assetPath;
             const extensions = path.extname(filePath);
-            // eslint-disable-next-line no-empty
+             
             switch (extensions)
             {
                 // case '.mdl': menuconfig.push({ label: '解析', click: () => mdlLoader.load(filePath) }); break;

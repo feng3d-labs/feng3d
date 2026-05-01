@@ -1,4 +1,4 @@
-/* eslint-disable no-new */
+ 
 import { lazy } from '@feng3d/polyfill';
 import { Attribute } from './data/Attribute';
 import { RenderAtomic, RenderAtomicData } from './data/RenderAtomic';
@@ -260,7 +260,7 @@ export class WebGLRenderer
             {
                 for (const attr in attributes)
                 {
-                    // eslint-disable-next-line no-prototype-builtins
+                     
                     if (attributes.hasOwnProperty(attr))
                     {
                         const attribute: Attribute = attributes[attr];

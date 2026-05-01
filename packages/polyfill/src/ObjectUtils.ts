@@ -124,7 +124,7 @@ export class ObjectUtils
             else
             {
                 // 处理中间属性
-                // eslint-disable-next-line no-loop-func
+                 
                 vks.forEach((k) =>
                 {
                     propertys.push(k);

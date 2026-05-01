@@ -411,7 +411,7 @@ export class ParticleNoiseModule extends ParticleModule
         }
         else
         {
-            // eslint-disable-next-line no-lonely-if
+             
             if (this.strength.mode === MinMaxCurveMode.Curve || this.strength.mode === MinMaxCurveMode.TwoCurves)
             {
                 strengthX = strengthY = strengthZ = this.strength.curveMultiplier;
