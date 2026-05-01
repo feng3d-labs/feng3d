@@ -1,7 +1,7 @@
+import { PropertyReactivity } from './property';
 import { toReactive } from './reactive';
 import { ITERATE_KEY, MAP_KEY_ITERATE_KEY, ReactiveFlags, TrackOpTypes, TriggerOpTypes } from './shared/constants';
 import { hasChanged, hasOwn, isMap, Target, toRaw, toRawType, warn } from './shared/general';
-import { PropertyReactivity } from './property';
 
 /**
  * 可变集合响应式处理器。
@@ -243,7 +243,7 @@ function createInstrumentations(): Instrumentations
                 key = toRaw(key);
                 hadKey = has.call(target, key);
             }
-            else if (__DEV__)
+            else 
             {
                 checkIdentityKeys(target, has, key);
             }
@@ -284,7 +284,7 @@ function createInstrumentations(): Instrumentations
                 key = toRaw(key);
                 hadKey = has.call(target, key);
             }
-            else if (__DEV__)
+            else 
             {
                 checkIdentityKeys(target, has, key);
             }
@@ -315,11 +315,9 @@ function createInstrumentations(): Instrumentations
         {
             const target = toRaw(this);
             const hadItems = target.size !== 0;
-            const oldTarget = __DEV__
-                ? isMap(target)
-                    ? new Map(target)
-                    : new Set(target)
-                : undefined;
+            const oldTarget = isMap(target)
+                ? new Map(target)
+                : new Set(target);
             // 在触发反应之前执行操作
             const result = target.clear();
 

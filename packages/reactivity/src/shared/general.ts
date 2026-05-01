@@ -1,16 +1,6 @@
  
 import { ReactiveFlags, TargetType } from './constants';
 
-export { };
-declare global
-{
-    /**
-     * 是否为开发模式。
-     */
-    var __DEV__: boolean;
-}
-globalThis.__DEV__ ??= true;
-
 export const isObject = (val: unknown): val is Record<any, any> => val !== null && typeof val === 'object';
 // 判断是否为数组
 export const isArray: typeof Array.isArray = Array.isArray;

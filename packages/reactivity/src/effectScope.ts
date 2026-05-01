@@ -156,7 +156,7 @@ export class EffectScope
                 activeEffectScope = currentEffectScope;
             }
         }
-        else if (__DEV__)
+        else 
         {
             warn(`无法运行已停用的 effect 作用域。`);
         }
@@ -284,7 +284,7 @@ export function onScopeDispose(fn: () => void, failSilently = false): void
     {
         activeEffectScope.cleanups.push(fn);
     }
-    else if (__DEV__ && !failSilently)
+    else if (!failSilently)
     {
         warn(
             `onScopeDispose() 在没有活动的 effect 作用域时被调用，无法关联。`,

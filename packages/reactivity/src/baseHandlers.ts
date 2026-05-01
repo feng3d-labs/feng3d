@@ -163,7 +163,7 @@ class MutableReactiveHandler extends BaseReactiveHandler
         );
 
         // 确保目标在原始原型链中
-        __DEV__ && console.assert(target === toRaw(receiver));
+        console.assert(target === toRaw(receiver));
 
         // 触发属性变更通知
         if (target === toRaw(receiver))

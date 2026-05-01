@@ -73,7 +73,7 @@ export function batchRun<T>(fn: () => T): T
         _isRunedDeps.forEach((dep) =>
         {
             // 此时依赖以及子依赖都已经运行过了，只需修复与子节点关系
-            __DEV__ && console.assert(dep._isDirty === false, 'dep.dirty === false');
+            console.assert(dep._isDirty === false, 'dep.dirty === false');
 
             // 修复与子节点关系
             dep._children.forEach((version, node) =>

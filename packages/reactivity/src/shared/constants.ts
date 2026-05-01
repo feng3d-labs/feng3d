@@ -36,6 +36,6 @@ export enum TriggerOpTypes
     CLEAR = 'clear', // 清空对象属性
 }
 
-export const ITERATE_KEY: unique symbol = Symbol(__DEV__ ? 'Object iterate' : '');
-export const MAP_KEY_ITERATE_KEY: unique symbol = Symbol(__DEV__ ? 'Map keys iterate' : '');
-export const ARRAY_ITERATE_KEY: unique symbol = Symbol(__DEV__ ? 'Array iterate' : '');
+export const ITERATE_KEY: unique symbol = Symbol('Object iterate');
+export const MAP_KEY_ITERATE_KEY: unique symbol = Symbol('Map keys iterate');
+export const ARRAY_ITERATE_KEY: unique symbol = Symbol('Array iterate');
