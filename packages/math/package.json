@@ -33,9 +33,9 @@
   },
   "dependencies": {
     "@feng3d/bezier": "*",
-    "@feng3d/earcut": "*",
     "@feng3d/objectview": "*",
     "@feng3d/polyfill": "*",
-    "@feng3d/serialization": "*"
+    "@feng3d/serialization": "*",
+    "earcut": "3.0.2"
   }
 }

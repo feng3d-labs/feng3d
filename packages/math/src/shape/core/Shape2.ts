@@ -1,4 +1,4 @@
-import { earcut } from '@feng3d/earcut';
+import { earcut } from 'earcut';
 import { Vector2 } from '../../geom/Vector2';
 import { Path2 } from './Path2';
 

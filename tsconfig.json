@@ -6,7 +6,6 @@
     { "path": "./packages/cannon" },
     { "path": "./packages/cannon-plugin" },
     { "path": "./packages/core" },
-    { "path": "./packages/earcut" },
     { "path": "./packages/editor" },
     { "path": "./packages/eslint-plugin-feng3d" },
     { "path": "./packages/event" },
