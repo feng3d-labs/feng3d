@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { RegisterComponent } from '../../component/Component';
 import { HideFlags } from '../../core/HideFlags';
@@ -33,17 +33,17 @@ export class SkinnedMeshRenderer extends Renderable
         this.hideFlags = HideFlags.DontTransform;
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
     {
-        super.beforeRender(renderAtomic, scene, camera);
+        super.beforeRender(renderObject, scene, camera);
 
-        renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
-        renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
+        renderObject.uniforms.u_modelMatrix = () => this.u_modelMatrix;
+        renderObject.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
         //
-        renderAtomic.uniforms.u_skeletonGlobalMatriices = this.u_skeletonGlobalMatriices;
+        renderObject.uniforms.u_skeletonGlobalMatriices = this.u_skeletonGlobalMatriices;
 
-        renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
-        renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.u_skeletonGlobalMatriices.length;
+        renderObject.shaderMacro.HAS_SKELETON_ANIMATION = true;
+        renderObject.shaderMacro.NUM_SKELETONJOINT = this.u_skeletonGlobalMatriices.length;
     }
 
     /**

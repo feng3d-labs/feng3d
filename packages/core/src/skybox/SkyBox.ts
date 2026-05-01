@@ -1,9 +1,9 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
-import { RegisterComponent, Component } from '../component/Component';
+import { Component, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { TextureCube } from '../textures/TextureCube';
@@ -36,8 +36,8 @@ export class SkyBox extends Component
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
     s_skyboxTexture = TextureCube.default;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderAtomic.uniforms.s_skyboxTexture = () => this.s_skyboxTexture;
+        renderObject.uniforms.s_skyboxTexture = () => this.s_skyboxTexture;
     }
 }

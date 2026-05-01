@@ -38,7 +38,7 @@
     "@feng3d/objectview": "*",
     "@feng3d/path": "^0.0.3",
     "@feng3d/polyfill": "*",
-    "@feng3d/renderer": "*",
+    "@feng3d/webgpu": "*",
     "@feng3d/serialization": "*",
     "@feng3d/shortcut": "*",
     "@feng3d/watcher": "*"

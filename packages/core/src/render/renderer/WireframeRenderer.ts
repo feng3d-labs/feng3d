@@ -1,6 +1,7 @@
 import { Color4 } from '@feng3d/math';
 import { lazy } from '@feng3d/polyfill';
-import { Index, RenderAtomic, RenderMode, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { Index, RenderMode, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable } from '../../core/Renderable';
@@ -8,7 +9,7 @@ import { Scene } from '../../scene/Scene';
 
 declare global
 {
-    export interface MixinsRenderAtomic
+    export interface MixinsRenderObject
     {
         /**
          * 顶点索引缓冲
@@ -21,14 +22,14 @@ declare global
 
 export class WireframeRenderer
 {
-    private renderAtomic: RenderAtomic;
+    private renderObject: RenderObject;
 
     init()
     {
-        if (!this.renderAtomic)
+        if (!this.renderObject)
         {
-            this.renderAtomic = new RenderAtomic();
-            const renderParams = this.renderAtomic.renderParams;
+            this.renderObject = new RenderObject();
+            const renderParams = this.renderObject.renderParams;
             renderParams.renderMode = RenderMode.LINES;
             // renderParams.depthMask = false;
         }
@@ -64,10 +65,10 @@ export class WireframeRenderer
      */
     drawGameObject(renderer: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
     {
-        const renderAtomic = renderable.renderAtomic;
-        renderable.beforeRender(renderAtomic, scene, camera);
+        const renderObject = renderable.renderObject;
+        renderable.beforeRender(renderObject, scene, camera);
 
-        const renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
+        const renderMode = lazy.getvalue(renderObject.renderParams.renderMode);
         if (renderMode === RenderMode.POINTS
             || renderMode === RenderMode.LINES
             || renderMode === RenderMode.LINE_LOOP
@@ -77,7 +78,7 @@ export class WireframeRenderer
 
         this.init();
 
-        const uniforms = this.renderAtomic.uniforms;
+        const uniforms = this.renderObject.uniforms;
         //
         uniforms.u_projectionMatrix = camera.lens.matrix;
         uniforms.u_viewProjection = camera.viewProjection;
@@ -88,12 +89,12 @@ export class WireframeRenderer
         uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
 
         //
-        this.renderAtomic.next = renderAtomic;
+        this.renderObject.next = renderObject;
 
         //
-        const oldIndexBuffer = renderAtomic.index;
+        const oldIndexBuffer = renderObject.index;
         if (oldIndexBuffer.count < 3) return;
-        if (!renderAtomic.wireframeindexBuffer || renderAtomic.wireframeindexBuffer.count !== 2 * oldIndexBuffer.count)
+        if (!renderObject.wireframeindexBuffer || renderObject.wireframeindexBuffer.count !== 2 * oldIndexBuffer.count)
         {
             const wireframeindices: number[] = [];
             const indices = lazy.getvalue(oldIndexBuffer.indices);
@@ -105,18 +106,18 @@ export class WireframeRenderer
                     indices[i + 1], indices[i + 2],
                 );
             }
-            renderAtomic.wireframeindexBuffer = new Index();
-            renderAtomic.wireframeindexBuffer.indices = wireframeindices;
+            renderObject.wireframeindexBuffer = new Index();
+            renderObject.wireframeindexBuffer.indices = wireframeindices;
         }
-        renderAtomic.wireframeShader = renderAtomic.wireframeShader || new Shader({ shaderName: 'wireframe' });
-        this.renderAtomic.index = renderAtomic.wireframeindexBuffer;
+        renderObject.wireframeShader = renderObject.wireframeShader || new Shader({ shaderName: 'wireframe' });
+        this.renderObject.index = renderObject.wireframeindexBuffer;
 
-        this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
+        this.renderObject.uniforms.u_wireframeColor = wireframeColor;
 
         //
-        this.renderAtomic.shader = renderAtomic.wireframeShader;
-        renderer.render(this.renderAtomic);
-        this.renderAtomic.shader = null;
+        this.renderObject.shader = renderObject.wireframeShader;
+        renderer.render(this.renderObject);
+        this.renderObject.shader = null;
         //
     }
 }

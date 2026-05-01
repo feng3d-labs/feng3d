@@ -1,7 +1,7 @@
 import { globalEmitter } from '@feng3d/event';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
-import { RenderAtomic, RenderMode, RenderParams, Shader, shaderlib } from '@feng3d/renderer';
+import { RenderMode, RenderParams, Shader, shaderlib } from '@feng3d/renderer';
 import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';
@@ -10,6 +10,7 @@ import { HideFlags } from '../core/HideFlags';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 import { StandardUniforms } from './StandardMaterial';
+import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -54,7 +55,7 @@ export class Material extends Feng3dObject
     }
 
     //
-    private renderAtomic = new RenderAtomic();
+    private renderObject = new RenderObject();
 
     @oav({ component: 'OAVFeng3dPreView' })
     private preview = '';
@@ -96,13 +97,13 @@ export class Material extends Feng3dObject
         this.renderParams = new RenderParams();
     }
 
-    beforeRender(renderAtomic: RenderAtomic)
+    beforeRender(renderObject: RenderObject)
     {
-        Object.assign(renderAtomic.uniforms, this.renderAtomic.uniforms);
+        Object.assign(renderObject.uniforms, this.renderObject.uniforms);
 
-        renderAtomic.shader = this.renderAtomic.shader;
-        renderAtomic.renderParams = this.renderAtomic.renderParams;
-        renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === RenderMode.POINTS;
+        renderObject.shader = this.renderObject.shader;
+        renderObject.renderParams = this.renderObject.renderParams;
+        renderObject.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === RenderMode.POINTS;
     }
 
     /**
@@ -170,17 +171,17 @@ export class Material extends Feng3dObject
         const renderParams = shaderlib.shaderConfig.shaders[this.shaderName].renderParams;
         renderParams && serialization.setValue(this.renderParams, renderParams);
 
-        this.renderAtomic.shader = new Shader({ shaderName: this.shaderName });
+        this.renderObject.shader = new Shader({ shaderName: this.shaderName });
     }
 
     private _onUniformsChanged()
     {
-        this.renderAtomic.uniforms = this.uniforms as any;
+        this.renderObject.uniforms = this.uniforms as any;
     }
 
     private _onRenderParamsChanged()
     {
-        this.renderAtomic.renderParams = this.renderParams;
+        this.renderObject.renderParams = this.renderParams;
     }
 
     /**

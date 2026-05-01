@@ -1,4 +1,5 @@
-import { CullFace, RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { CullFace, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';
@@ -9,18 +10,18 @@ import { Scene } from '../../scene/Scene';
  */
 export class OutlineRenderer
 {
-    renderAtomic: RenderAtomic;
+    renderObject: RenderObject;
 
     init()
     {
-        if (!this.renderAtomic)
+        if (!this.renderObject)
         {
-            this.renderAtomic = new RenderAtomic();
-            const renderParams = this.renderAtomic.renderParams;
+            this.renderObject = new RenderObject();
+            const renderParams = this.renderObject.renderParams;
             renderParams.enableBlend = false;
             renderParams.cullFace = CullFace.FRONT;
 
-            this.renderAtomic.shader = new Shader({ shaderName: 'outline' });
+            this.renderObject.shader = new Shader({ shaderName: 'outline' });
         }
     }
 
@@ -35,12 +36,12 @@ export class OutlineRenderer
             const renderable = unblenditems[i];
             if (renderable.getComponent(OutLineComponent) || renderable.getComponent(CartoonComponent))
             {
-                const renderAtomic = renderable.renderAtomic;
-                renderable.beforeRender(renderAtomic, scene, camera);
+                const renderObject = renderable.renderObject;
+                renderable.beforeRender(renderObject, scene, camera);
 
-                this.renderAtomic.next = renderAtomic;
+                this.renderObject.next = renderObject;
 
-                gl.render(this.renderAtomic);
+                gl.render(this.renderObject);
             }
         }
     }

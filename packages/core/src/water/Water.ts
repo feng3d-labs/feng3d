@@ -1,7 +1,7 @@
 import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialization } from '@feng3d/serialization';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { GameObject } from '../core/GameObject';
@@ -45,7 +45,7 @@ export class Water extends Renderable
      */
     private frameBufferObject = new FrameBufferObject();
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
     {
         const uniforms = this.material.uniforms as WaterUniforms;
         const sun = this.gameObject.scene.activeDirectionalLights[0];
@@ -61,7 +61,7 @@ export class Water extends Renderable
 
         // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
 
-        super.beforeRender(renderAtomic, scene, camera);
+        super.beforeRender(renderObject, scene, camera);
 
         // eslint-disable-next-line no-constant-condition
         if (1) return;

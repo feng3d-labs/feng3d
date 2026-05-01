@@ -1,9 +1,10 @@
 import { IEvent } from '@feng3d/event';
 import { Box3, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { CullFace, RenderAtomic } from '@feng3d/renderer';
+import { CullFace } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { Geometry, GeometryLike } from '../geometry/Geometry';
@@ -32,7 +33,7 @@ export class Renderable extends RayCastable
 {
     get single() { return true; }
 
-    readonly renderAtomic = new RenderAtomic();
+    readonly renderObject = new RenderObject();
 
     /**
      * 几何体
@@ -76,21 +77,21 @@ export class Renderable extends RayCastable
      *
      * 可用于渲染前收集渲染数据，或者更新显示效果等
      *
-     * @param renderAtomic
+     * @param renderObject
      * @param scene
      * @param camera
      */
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
     {
         //
-        this.geometry.beforeRender(renderAtomic);
-        this.material.beforeRender(renderAtomic);
-        this._lightPicker.beforeRender(renderAtomic);
+        this.geometry.beforeRender(renderObject);
+        this.material.beforeRender(renderObject);
+        this._lightPicker.beforeRender(renderObject);
 
         this.gameObject.components.forEach((element) =>
         {
             if (element !== this)
-            { element.beforeRender(renderAtomic, scene, camera); }
+            { element.beforeRender(renderObject, scene, camera); }
         });
     }
 

@@ -1,4 +1,5 @@
-import { Attribute, CullFace, Index, RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { Attribute, CullFace, Index, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';
@@ -8,13 +9,13 @@ import { SkyBox } from './SkyBox';
  */
 export class SkyBoxRenderer
 {
-    private renderAtomic: RenderAtomic;
+    private renderObject: RenderObject;
 
     init()
     {
-        if (!this.renderAtomic)
+        if (!this.renderObject)
         {
-            const renderAtomic = this.renderAtomic = new RenderAtomic();
+            const renderObject = this.renderObject = new RenderObject();
             // 八个顶点，32个number
             const vertexPositionData = [ //
                 -1, 1, -1, //
@@ -26,7 +27,7 @@ export class SkyBoxRenderer
                 1, -1, 1, //
                 -1, -1, 1 //
             ];
-            renderAtomic.attributes.a_position = new Attribute({ name: 'a_position', data: vertexPositionData, size: 3 });
+            renderObject.attributes.a_position = new Attribute({ name: 'a_position', data: vertexPositionData, size: 3 });
             // 6个面，12个三角形，36个顶点索引
             const indices = [ //
                 0, 1, 2, 2, 3, 0, //
@@ -36,14 +37,14 @@ export class SkyBoxRenderer
                 4, 0, 3, 3, 7, 4, //
                 2, 1, 5, 5, 6, 2 //
             ];
-            renderAtomic.index = new Index();
-            renderAtomic.index.indices = indices;
+            renderObject.index = new Index();
+            renderObject.index.indices = indices;
             //
-            const renderParams = renderAtomic.renderParams;
+            const renderParams = renderObject.renderParams;
             renderParams.cullFace = CullFace.NONE;
             //
 
-            renderAtomic.shader = new Shader({ shaderName: 'skybox' });
+            renderObject.shader = new Shader({ shaderName: 'skybox' });
         }
     }
 
@@ -72,16 +73,16 @@ export class SkyBoxRenderer
         this.init();
 
         //
-        skybox.beforeRender(this.renderAtomic, scene, camera);
+        skybox.beforeRender(this.renderObject, scene, camera);
 
         //
-        this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
-        this.renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
-        this.renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-        this.renderAtomic.uniforms.u_cameraPos = camera.transform.worldPosition;
-        this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+        this.renderObject.uniforms.u_viewProjection = camera.viewProjection;
+        this.renderObject.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
+        this.renderObject.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
+        this.renderObject.uniforms.u_cameraPos = camera.transform.worldPosition;
+        this.renderObject.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
-        renderer.render(this.renderAtomic);
+        renderer.render(this.renderObject);
     }
 }
 

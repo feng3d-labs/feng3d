@@ -1,12 +1,12 @@
 import { Box3, Euler, Matrix4x4, Quaternion, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
 import { Scene } from '../scene/Scene';
+import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -65,8 +65,8 @@ export class Transform extends Component
         watcher.watch(this._scale, 'y', this._scaleChanged, this);
         watcher.watch(this._scale, 'z', this._scaleChanged, this);
 
-        this._renderAtomic.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
-        this._renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
+        this._renderObject.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
+        this._renderObject.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
     }
 
     /**
@@ -575,9 +575,9 @@ export class Transform extends Component
         return localRay;
     }
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        Object.assign(renderAtomic.uniforms, this._renderAtomic.uniforms);
+        Object.assign(renderObject.uniforms, this._renderObject.uniforms);
     }
 
     private readonly _position = new Vector3();
@@ -603,7 +603,7 @@ export class Transform extends Component
     protected readonly _localToWorldRotationMatrix = new Matrix4x4();
     protected _localToWorldRotationMatrixInvalid = false;
 
-    private _renderAtomic = new RenderAtomic();
+    private _renderObject = new RenderObject();
 
     private _positionChanged(newValue: number, oldValue: number, _object: Vector3, _property: string)
     {

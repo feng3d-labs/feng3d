@@ -1,6 +1,6 @@
 import { EventEmitter } from '@feng3d/event';
 import { Rectangle } from '@feng3d/math';
-import { GL, RenderAtomic } from '@feng3d/renderer';
+import { GL } from '@feng3d/renderer';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { GameObject } from '../../core/GameObject';
 import { Renderable } from '../../core/Renderable';
@@ -55,9 +55,9 @@ export class MouseRenderer extends EventEmitter
             const uObjectID = this.objects.length;
             this.objects[uObjectID] = object;
 
-            const renderAtomic = renderable.renderAtomic;
+            const renderObject = renderable.renderObject;
 
-            renderAtomic.uniforms.u_objectID = uObjectID;
+            renderObject.uniforms.u_objectID = uObjectID;
             // super.drawRenderables(renderContext, model);
         }
     }
@@ -65,12 +65,12 @@ export class MouseRenderer extends EventEmitter
     /**
      * 绘制3D对象
      */
-    protected drawGameObject(_gl: GL, _renderAtomic: RenderAtomic)
+    protected drawGameObject(_gl: GL, _renderObject: RenderObject)
     {
         // var shader = new Shader();
         // shader.vertexCode = shaderlib.getShader("mouse").vertex;
         // shader.fragmentCode = shaderlib.getShader("mouse").fragment;
-        // super.drawGameObject(gl, renderAtomic, shader);
+        // super.drawGameObject(gl, renderObject, shader);
     }
 }
 

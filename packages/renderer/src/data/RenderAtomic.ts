@@ -9,13 +9,13 @@ import { LazyUniforms, Uniforms } from './Uniform';
 
 declare global
 {
-    interface MixinsRenderAtomic
+    interface MixinsRenderObject
     {
 
     }
 }
 
-export interface RenderAtomic extends MixinsRenderAtomic { }
+export interface RenderAtomic extends MixinsRenderObject { }
 
 /**
  * 渲染原子（该对象会收集一切渲染所需数据以及参数）

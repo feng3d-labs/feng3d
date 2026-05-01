@@ -2,7 +2,6 @@ import { IEvent } from '@feng3d/event';
 import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
@@ -11,6 +10,7 @@ import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { ticker } from '../utils/Ticker';
 import { GameObject } from './GameObject';
+import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -174,9 +174,9 @@ export class TransformLayout extends Component
     @serialize
     pivot = new Vector3(0.5, 0.5, 0.5);
 
-    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(_renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        // renderAtomic.uniforms.u_rect = this.rect;
+        // renderObject.uniforms.u_rect = this.rect;
     }
 
     private _updateLayout()

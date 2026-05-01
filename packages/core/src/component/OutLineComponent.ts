@@ -1,12 +1,12 @@
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { RegisterComponent, Component } from './Component';
+import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -52,10 +52,10 @@ export class OutLineComponent extends Component
     @serialize
     outlineMorphFactor = 0.0;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderAtomic.uniforms.u_outlineSize = this.size;
-        renderAtomic.uniforms.u_outlineColor = this.color;
-        renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
+        renderObject.uniforms.u_outlineSize = this.size;
+        renderObject.uniforms.u_outlineColor = this.color;
+        renderObject.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
     }
 }

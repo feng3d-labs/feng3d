@@ -1,6 +1,6 @@
 import { IEvent } from '@feng3d/event';
 import { Constructor, IDisposable } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { GameObject, GameObjectEventMap } from '../core/GameObject';
@@ -327,7 +327,7 @@ export class Component extends Feng3dObject<GameObjectEventMap> implements IDisp
         this._disposed = true;
     }
 
-    beforeRender(_renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(_renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
 
     }

@@ -1,12 +1,12 @@
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { AddComponentMenu } from '../Menu';
 import { Scene } from '../scene/Scene';
 import { Component, RegisterComponent } from './Component';
+import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -76,14 +76,14 @@ export class CartoonComponent extends Component
     }
     _cartoon_Anti_aliasing = false;
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
-        renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
-        renderAtomic.uniforms.u_specularSegment = this.specularSegment;
+        renderObject.uniforms.u_diffuseSegment = this.diffuseSegment;
+        renderObject.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
+        renderObject.uniforms.u_specularSegment = this.specularSegment;
         //
-        renderAtomic.uniforms.u_outlineSize = this.outlineSize;
-        renderAtomic.uniforms.u_outlineColor = this.outlineColor;
-        renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
+        renderObject.uniforms.u_outlineSize = this.outlineSize;
+        renderObject.uniforms.u_outlineColor = this.outlineColor;
+        renderObject.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
     }
 }

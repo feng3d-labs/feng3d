@@ -1,5 +1,6 @@
 import { Rectangle, Vector3 } from '@feng3d/math';
-import { RenderAtomic, Shader, WebGLRenderer } from '@feng3d/renderer';
+import { Shader, WebGLRenderer } from '@feng3d/renderer';
+import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
 import { DirectionalLight } from '../../light/DirectionalLight';
@@ -11,7 +12,7 @@ import { FrameBufferObject } from '../FrameBufferObject';
 
 declare global
 {
-    export interface MixinsRenderAtomic
+    export interface MixinsRenderObject
     {
         shadowShader: Shader;
     }
@@ -19,7 +20,7 @@ declare global
 
 export class ShadowRenderer
 {
-    private renderAtomic = new RenderAtomic();
+    private renderObject = new RenderObject();
 
     /**
      * 渲染
@@ -61,7 +62,7 @@ export class ShadowRenderer
         const shadowCamera = light.shadowCamera;
         shadowCamera.transform.localToWorldMatrix = light.transform.localToWorldMatrix;
 
-        const renderAtomic = this.renderAtomic;
+        const renderObject = this.renderObject;
 
         // 获取影响阴影图的渲染对象
         const models = scene.getModelsByCamera(shadowCamera);
@@ -69,20 +70,20 @@ export class ShadowRenderer
         const castShadowsModels = models.filter((i) => i.castShadows);
 
         //
-        renderAtomic.renderParams.useViewPort = true;
-        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        renderObject.renderParams.useViewPort = true;
+        renderObject.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
 
         //
-        renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
-        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
-        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
+        renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+        renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
+        renderObject.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+        renderObject.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+        renderObject.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
         //
-        renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = light.position;
-        renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-        renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+        renderObject.uniforms.u_lightType = light.lightType;
+        renderObject.uniforms.u_lightPosition = light.position;
+        renderObject.uniforms.u_shadowCameraNear = light.shadowCameraNear;
+        renderObject.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
         castShadowsModels.forEach((renderable) =>
         {
@@ -136,7 +137,7 @@ export class ShadowRenderer
         const shadowCamera = light.shadowCamera;
         shadowCamera.transform.position = light.transform.position;
 
-        const renderAtomic = this.renderAtomic;
+        const renderObject = this.renderObject;
 
         for (let face = 0; face < 6; face++)
         {
@@ -148,20 +149,20 @@ export class ShadowRenderer
             const castShadowsModels = models.filter((i) => i.castShadows);
 
             //
-            renderAtomic.renderParams.useViewPort = true;
-            renderAtomic.renderParams.viewPort = cube2DViewPorts[face];
+            renderObject.renderParams.useViewPort = true;
+            renderObject.renderParams.viewPort = cube2DViewPorts[face];
 
             //
-            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
-            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
+            renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+            renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
+            renderObject.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+            renderObject.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+            renderObject.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
             //
-            renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = light.position;
-            renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-            renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+            renderObject.uniforms.u_lightType = light.lightType;
+            renderObject.uniforms.u_lightPosition = light.position;
+            renderObject.uniforms.u_shadowCameraNear = light.shadowCameraNear;
+            renderObject.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
             castShadowsModels.forEach((renderable) =>
             {
@@ -191,21 +192,21 @@ export class ShadowRenderer
 
         const shadowCamera = light.shadowCamera;
 
-        const renderAtomic = this.renderAtomic;
+        const renderObject = this.renderObject;
         //
-        renderAtomic.renderParams.useViewPort = true;
-        renderAtomic.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
+        renderObject.renderParams.useViewPort = true;
+        renderObject.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         //
-        renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
-        renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
-        renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-        renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
+        renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+        renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
+        renderObject.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+        renderObject.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+        renderObject.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
         //
-        renderAtomic.uniforms.u_lightType = light.lightType;
-        renderAtomic.uniforms.u_lightPosition = shadowCamera.transform.worldPosition;
-        renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-        renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
+        renderObject.uniforms.u_lightType = light.lightType;
+        renderObject.uniforms.u_lightPosition = shadowCamera.transform.worldPosition;
+        renderObject.uniforms.u_shadowCameraNear = light.shadowCameraNear;
+        renderObject.uniforms.u_shadowCameraFar = light.shadowCameraFar;
         //
         castShadowsModels.forEach((renderable) =>
         {
@@ -220,18 +221,18 @@ export class ShadowRenderer
      */
     private drawGameObject(gl: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera)
     {
-        const renderAtomic = renderable.renderAtomic;
-        renderable.beforeRender(renderAtomic, scene, camera);
-        renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader({ shaderName: 'shadow' });
+        const renderObject = renderable.renderObject;
+        renderable.beforeRender(renderObject, scene, camera);
+        renderObject.shadowShader = renderObject.shadowShader || new Shader({ shaderName: 'shadow' });
 
         //
-        this.renderAtomic.next = renderAtomic;
-        this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
+        this.renderObject.next = renderObject;
+        this.renderObject.renderParams.cullFace = renderObject.renderParams.cullFace;
 
         // 使用shadowShader
-        this.renderAtomic.shader = renderAtomic.shadowShader;
-        gl.render(this.renderAtomic);
-        this.renderAtomic.shader = null;
+        this.renderObject.shader = renderObject.shadowShader;
+        gl.render(this.renderObject);
+        this.renderObject.shader = null;
     }
 }
 

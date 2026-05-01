@@ -1,8 +1,9 @@
 import { Box3, Matrix4x4, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Constructor, gPartial } from '@feng3d/polyfill';
-import { Attribute, Attributes, CullFace, Index, RenderAtomic } from '@feng3d/renderer';
+import { Attribute, Attributes, CullFace, Index } from '@feng3d/renderer';
 import { serialization, serialize } from '@feng3d/serialization';
+import { RenderObject } from '@feng3d/webgpu';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
@@ -424,22 +425,22 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
         }
     }
 
-    beforeRender(renderAtomic: RenderAtomic)
+    beforeRender(renderObject: RenderObject)
     {
         this.updateGrometry();
 
-        renderAtomic.index = this._indexBuffer;
+        renderObject.index = this._indexBuffer;
 
         for (const key in this._attributes)
         {
             if (this._attributes.hasOwnProperty(key))
             {
-                renderAtomic.attributes[key] = this._attributes[key];
+                renderObject.attributes[key] = this._attributes[key];
             }
         }
 
-        renderAtomic.shaderMacro.SCALEU = this.scaleU;
-        renderAtomic.shaderMacro.SCALEV = this.scaleV;
+        renderObject.shaderMacro.SCALEU = this.scaleU;
+        renderObject.shaderMacro.SCALEV = this.scaleV;
     }
 
     /**

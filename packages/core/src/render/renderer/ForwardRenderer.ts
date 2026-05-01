@@ -34,23 +34,23 @@ export class ForwardRenderer
         unblenditems.concat(blenditems).forEach((renderable) =>
         {
             // 绘制
-            const renderAtomic = renderable.renderAtomic;
+            const renderObject = renderable.renderObject;
 
             for (const key in uniforms)
             {
-                renderAtomic.uniforms[key] = uniforms[key];
+                renderObject.uniforms[key] = uniforms[key];
             }
             //
-            renderAtomic.uniforms.u_mvMatrix = () =>
-                lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderAtomic.uniforms.u_viewMatrix));
-            renderAtomic.uniforms.u_ITMVMatrix = () =>
-                lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
+            renderObject.uniforms.u_mvMatrix = () =>
+                lazy.getvalue(renderObject.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderObject.uniforms.u_viewMatrix));
+            renderObject.uniforms.u_ITMVMatrix = () =>
+                lazy.getvalue(renderObject.uniforms.u_mvMatrix).clone().invert().transpose();
 
-            renderAtomic.shaderMacro.RotationOrder = mathUtil.DefaultRotationOrder;
+            renderObject.shaderMacro.RotationOrder = mathUtil.DefaultRotationOrder;
 
-            renderable.beforeRender(renderAtomic, scene, camera);
+            renderable.beforeRender(renderObject, scene, camera);
 
-            gl.render(renderAtomic);
+            gl.render(renderObject);
         });
     }
 }
