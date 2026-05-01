@@ -2,8 +2,6 @@
   "files": [],
   "references": [
     { "path": "./packages/assets" },
-    { "path": "./packages/bezier" },
-    { "path": "./packages/cannon" },
     { "path": "./packages/cannon-plugin" },
     { "path": "./packages/core" },
     { "path": "./packages/editor" },
