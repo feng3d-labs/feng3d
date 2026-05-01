@@ -15,8 +15,7 @@ npm install @feng3d/webgpu
 
 ## 如何使用
 ```typescript
-import { Submit } from "@feng3d/render-api";
-import { WebGPU } from "@feng3d/webgpu";
+import { Submit, WebGPU } from "@feng3d/webgpu";
 
 const init = async (canvas: HTMLCanvasElement) =>
 {

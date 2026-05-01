@@ -72,7 +72,7 @@ export class WGPURenderPassColorAttachment extends ReactiveObject
         this.destroyCall(() =>
         {
             WGPURenderPassColorAttachment.map.delete([device, colorAttachment, descriptor, canvasContext]);
-        })
+        });
     }
 
     /**
@@ -140,6 +140,12 @@ export class WGPURenderPassColorAttachment extends ReactiveObject
             // 标记为颜色附件
             unreadonly(view).isUsedAsColorAttachment = true;
 
+            // 监听 canvasContext.canvasId 变化
+            if (canvasContext)
+            {
+                (reactive(canvasContext) as CanvasContext).canvasId;
+            }
+
             // 获取纹理视图实例
             const wGPUTextureView = WGPUTextureView.getInstance(device, view);
             const textureView = wGPUTextureView?.textureView;
@@ -177,6 +183,12 @@ export class WGPURenderPassColorAttachment extends ReactiveObject
             const view = colorAttachment.view || (canvasContext ? { texture: { context: canvasContext } } : undefined);
 
             if (!view?.texture) return;
+
+            // 监听 canvasContext.canvasId 变化
+            if (canvasContext)
+            {
+                (reactive(canvasContext) as CanvasContext).canvasId;
+            }
 
             const wgpuTexture = WGPUTextureLike.getInstance(device, view.texture);
             const gpuTexture = wgpuTexture.gpuTexture;

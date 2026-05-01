@@ -1,10 +1,24 @@
-import { reactive } from '@feng3d/reactivity';
-import { BufferBinding, RenderObject, Submit } from '@feng3d/webgpu';
-import { WebGPU } from '@feng3d/webgpu';
+import { effect, reactive } from '@feng3d/reactivity';
+import { BufferBinding, RenderObject, Submit, WebGPU } from '@feng3d/webgpu';
 
-const init = async (canvas: HTMLCanvasElement) =>
-{
+interface Input {
+    readonly canvas: HTMLCanvasElement;
+    readonly vertex: string;
+    readonly fragment: string;
+    readonly color: [number, number, number, number];
+}
+
+const init = async (input: Input) => {
     const devicePixelRatio = window.devicePixelRatio || 1;
+
+    let canvas = input.canvas;
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.id = 'webgpu';
+        canvas.style.width = '400px';
+        canvas.style.height = '300px';
+        document.body.appendChild(canvas);
+    }
 
     canvas.width = canvas.clientWidth * devicePixelRatio;
     canvas.height = canvas.clientHeight * devicePixelRatio;
@@ -57,23 +71,45 @@ const init = async (canvas: HTMLCanvasElement) =>
         ],
     };
 
-    function render()
-    {
+    // 使用响应式系统监听输入变化，动态更新渲染对象的着色器代码和颜色值
+    const r_input = reactive(input);
+
+    effect(() => {
+        if (r_input.vertex)
+            reactive(renderObject.pipeline.vertex).code = r_input.vertex;
+        if (r_input.fragment)
+            reactive(renderObject.pipeline.fragment).code = r_input.fragment;
+        if (r_input.color)
+            reactive(renderObject.bindingResources.color as BufferBinding).value = r_input.color;
+    });
+
+    let handle: number;
+    function render() {
         webgpu.submit(submit); // 提交GPU执行
-        requestAnimationFrame(render);
+        handle = requestAnimationFrame(render);
     }
 
     render();
 
-    window.onclick = () =>
-    {
-        // reactive(renderObject.vertices.position).stepMode = "instance";
-        // reactive(renderObject.vertices.position).stepMode = "vertex";
-        // reactive(renderObject.vertices.position).data = new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -1]);
-        // reactive(renderObject.vertices.position).format = "float32x3";
-        // reactive(renderObject.vertices.position).data = new Float32Array([1.0, 0.5, 1.0, -0.5, -0.5, 1.0, 0.5, -1, 1.0]);
-        // 修改顶点着色器代码
-        reactive(renderObject.pipeline.vertex).code = `
+    return {
+        destroy: () => {
+            cancelAnimationFrame(handle);
+        }
+    }
+};
+
+const input = {
+    canvas: document.getElementById('webgpu') as HTMLCanvasElement,
+    vertex: undefined as string,
+    fragment: undefined as string,
+    color: undefined as [number, number, number, number],
+} as const;
+
+init(input);
+
+window.onclick = () => {
+    const r_input = reactive(input);
+    r_input.vertex = `
                 @vertex
                 fn main(
                     @location(0) position: vec2<f32>,
@@ -83,9 +119,7 @@ const init = async (canvas: HTMLCanvasElement) =>
                     return vec4<f32>(pos, 0.0, 1.0);
                 }
                 `;
-
-        // 修改片段着色器代码
-        reactive(renderObject.pipeline.fragment).code = `
+    r_input.fragment = `
                 @binding(0) @group(0) var<uniform> color : vec4<f32>;
                 @fragment
                 fn main() -> @location(0) vec4f {
@@ -96,19 +130,5 @@ const init = async (canvas: HTMLCanvasElement) =>
                     return col;
                 }
                 `;
-
-        reactive(renderObject.bindingResources.color as BufferBinding).value = [0, 1, 0, 1];
-    };
+    r_input.color = [0, 1, 0, 1];
 };
-
-let webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
-
-if (!webgpuCanvas)
-{
-    webgpuCanvas = document.createElement('canvas');
-    webgpuCanvas.id = 'webgpu';
-    webgpuCanvas.style.width = '400px';
-    webgpuCanvas.style.height = '300px';
-    document.body.appendChild(webgpuCanvas);
-}
-init(webgpuCanvas);

@@ -1,0 +1,21 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "outDir": "lib",
+        "isolatedModules": true
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.vue",
+        "src/vue-shims.d.ts",
+        "src/vite-env.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "lib",
+        "public",
+        "test"
+    ]
+}

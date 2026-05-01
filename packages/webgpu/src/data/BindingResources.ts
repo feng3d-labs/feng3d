@@ -1,5 +1,6 @@
 import { BufferBinding } from './BufferBinding';
 import { Sampler } from './Sampler';
+import type { TextureLike } from './Texture';
 import { TextureView } from './TextureView';
 
 /**
@@ -56,6 +57,6 @@ export interface BindingResourceTypeMap
  */
 export interface SimpleTextureBinding
 {
-    texture?: import('./Texture').TextureLike;
+    texture?: TextureLike;
     source?: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | OffscreenCanvas | ImageBitmap | VideoFrame;
 }

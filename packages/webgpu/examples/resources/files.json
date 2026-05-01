@@ -21,6 +21,7 @@
 		"samplerParameters",
 		"timestampQuery",
 		"blending",
+		"drawIndexedIndirect",
 		""
 	],
 	"GPGPU Demos": [

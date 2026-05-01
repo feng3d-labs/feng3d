@@ -16,6 +16,9 @@
 - **TypeScript**: 使用严格的类型检查，`noEmit: true` 用于根目录
 - **ESLint**: 所有 src 目录下的代码必须通过 lint 检查（无警告）
 - **只读类型**: 库的导出类型默认使用 readonly，表示数据不可变。数据修改应通过响应式系统进行
+- **类型导入**: 避免使用 `import('./path').Type` 动态导入语法
+  - 应该在文件顶部使用常规 `import type { Type } from './path'` 导入
+  - 动态导入会使代码难以阅读，且不利于静态分析
 
 ### WebGPU API 兼容性
 - WebGPU API 要求数组必须是可变的，但库使用 readonly 数组
@@ -30,7 +33,10 @@
 ### 响应式系统
 - 库的设计原则是：默认不支持改变数据，仅支持读取数据
 - 修改数据需要使用 `@feng3d/reactivity` 提供的响应式 API
-- ReactiveObject 类用于创建响应式对象
+- **响应式对象规则**：已通过 ESLint 规则强制执行（`eslint-plugin-feng3d`）
+  - `feng3d/reactive-naming`: 强制响应式对象使用 `r_` 前缀
+  - `feng3d/no-reactive-export`: 禁止导出响应式对象
+  - `feng3d/no-reactive-argument`: 禁止将响应式对象作为函数参数传递
 
 ### 调试和测试
 - 示例位于 `packages/webgpu/examples/`

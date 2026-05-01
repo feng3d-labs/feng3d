@@ -1,3 +1,5 @@
+/// <reference types="@webgpu/types" />
+
 // 主入口
 export * from './WebGPU';
 
@@ -18,6 +20,7 @@ export * from './data/CopyBufferToBuffer';
 export * from './data/CopyTextureToTexture';
 export * from './data/DepthStencilState';
 export * from './data/DrawIndexed';
+export * from './data/DrawIndexedIndirect';
 export * from './data/DrawVertex';
 export * from './data/FragmentState';
 export * from './data/ImageCopyTexture';
@@ -67,6 +70,3 @@ export * from './utils/unreadonly';
 
 // 渲染状态
 export { renderState } from './utils/renderState';
-
-// 缓存导出（选择性导出常用缓存类）
-export { WGPUBuffer } from './caches/WGPUBuffer';

@@ -2,6 +2,10 @@ import { BindingResources } from './BindingResources';
 import { RenderPipeline } from './RenderPipeline';
 import { ScissorRect } from './ScissorRect';
 import { VertexAttribute, VertexAttributes } from './VertexAttributes';
+import { DrawIndexed } from './DrawIndexed';
+import { DrawVertex } from './DrawVertex';
+import { DrawIndexedIndirect } from './DrawIndexedIndirect';
+import type { Viewport } from './Viewport';
 
 /**
  * 渲染对象，包含一次渲染时包含的所有数据。
@@ -18,7 +22,7 @@ export interface RenderObject
      *
      * 描述渲染在画布的哪个区域，默认整个画布。
      */
-    readonly viewport?: import('./Viewport').Viewport;
+    readonly viewport?: Viewport;
 
     /**
      * 光栅化阶段中使用的剪刀矩形。
@@ -97,7 +101,7 @@ export class RenderObject
         return count;
     }
 
-    static getDraw(geometry: RenderObject): import('./DrawIndexed').DrawIndexed | import('./DrawVertex').DrawVertex
+    static getDraw(geometry: RenderObject): DrawIndexed | DrawVertex
     {
         if (geometry['_draw']) return geometry['_draw'];
 
@@ -129,4 +133,4 @@ export type IndicesDataTypes = Uint16Array | Uint32Array;
 /**
  * 绘制图形。
  */
-export type IDraw = import('./DrawVertex').DrawVertex | import('./DrawIndexed').DrawIndexed;
+export type IDraw = DrawVertex | DrawIndexed | DrawIndexedIndirect;

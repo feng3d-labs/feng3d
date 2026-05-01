@@ -69,4 +69,4 @@ export const defaultRenderPassColorAttachment: RenderPassColorAttachment = {
     loadOp: 'clear',
     storeOp: 'store',
     depthSlice: undefined,
-}
+};

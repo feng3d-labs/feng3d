@@ -1,21 +1,5 @@
 # @feng3d/watcher
-
 用于监听对象属性的变化以及同步两个对象的属性值。
-
-源码：https://gitee.com/feng3d/watcher
-
-文档：https://feng3d.com/watcher
-
-## 网站
-
-https://feng3d.com/watcher
-
-## 安装
-```
-npm install @feng3d/watcher
-```
-
-## 示例
 
 ### 监听对象属性的变化
 ```
@@ -91,47 +75,4 @@ o.a = null;
 o.a = { b: { c: 1 } };
 o.a.b.c = 5;
 console.assert(out === 'fff', out);
-```
-### 监听对象多个属性变化
-```
-// 变换
-const transform = {
-    position: { x: 0, y: 0, z: 0 },
-    angle: { x: 0, y: 0, z: 0 },
-    scale: { x: 1, y: 1, z: 1 },
-};
-
-let changeCount = 0;
-
-// 变化回调
-function onChanged(_newValue: any, _oldValue: any, _host: any, _property: string)
-{
-    changeCount++;
-}
-
-// 监听变化
-watcher.watchobject(transform, { position: { x: 0, y: 0, z: 0 }, angle: { x: 0, y: 0, z: 0 }, scale: { x: 0, y: 0, z: 0 } }, onChanged);
-//
-changeCount = 0;
-transform.position.x = Math.random();
-equal(changeCount, 1); // 触发改变一次
-
-changeCount = 0;
-transform.position.x = transform.position.x + 0;
-equal(changeCount, 0); // 赋予相同的值不会触发改变
-
-changeCount = 0;
-transform.position = { x: Math.random(), y: Math.random(), z: Math.random() };
-equal(changeCount, 3); // x、y、z均改变
-
-changeCount = 0;
-transform.position = { x: transform.position.x, y: transform.position.y, z: transform.position.z };
-equal(changeCount, 0); // x、y、z均未改变
-
-// 移除监听变化
-watcher.unwatchobject(transform, { position: { x: 0, y: 0, z: 0 }, angle: { x: 0, y: 0, z: 0 }, scale: { x: 0, y: 0, z: 0 } }, onChanged);
-
-changeCount = 0;
-transform.position = { x: Math.random(), y: Math.random(), z: Math.random() };
-equal(changeCount, 0); // 无法监听到x、y、z改变
 ```

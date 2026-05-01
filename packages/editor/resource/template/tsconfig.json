@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "DOM",
+      "ES2015",
+    ],
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "outFile": "project.js"
+  },
+  "files": [
+    "libs/feng3d.d.ts",
+    "libs/cannon.d.ts",
+    "libs/cannon-plugin.d.ts",
+  ]
+}

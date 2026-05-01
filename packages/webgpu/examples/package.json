@@ -10,8 +10,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rimraf \"{lib,dist,public}\"",
-    "types": "tsc",
-    "watch": "tsc -w"
+    "types": "tsc --build",
+    "watch": "tsc --build --watch"
   },
   "devDependencies": {
     "@types/dat.gui": "^0.7.9",

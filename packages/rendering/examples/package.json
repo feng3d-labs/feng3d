@@ -1,0 +1,26 @@
+{
+  "name": "@feng3d/rendering-examples",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "@feng3d/rendering examples",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rimraf \"{lib,dist,public}\"",
+    "types": "tsc --build",
+    "watch": "tsc --build --watch"
+  },
+  "devDependencies": {
+    "fast-glob": "^3.3.3"
+  },
+  "dependencies": {
+    "@feng3d/reactivity": "*",
+    "@feng3d/rendering": "*",
+    "@feng3d/webgpu": "*",
+    "@feng3d/core": "*",
+    "wgpu-matrix": "^3.4.0"
+  }
+}

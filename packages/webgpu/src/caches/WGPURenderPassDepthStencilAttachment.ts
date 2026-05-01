@@ -1,4 +1,5 @@
 import { computed, Computed, reactive } from '@feng3d/reactivity';
+import { CanvasContext } from '../data/CanvasContext';
 import { ChainMap } from '../utils/ChainMap';
 import { RenderPassDescriptor } from '../data/RenderPassDescriptor';
 import { Texture } from '../data/Texture';
@@ -58,19 +59,20 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
      * @param device GPU设备实例，用于创建深度模板附件
      * @param depthStencilAttachment 深度模板附件配置对象，包含视图和操作参数
      * @param descriptor 渲染通道描述符，用于获取附件尺寸等参数
+     * @param canvasContext 画布上下文，用于监听画布切换
      */
-    constructor(device: GPUDevice, descriptor: RenderPassDescriptor)
+    constructor(device: GPUDevice, descriptor: RenderPassDescriptor, canvasContext?: CanvasContext)
     {
         super();
 
         // 设置深度模板附件创建和更新逻辑
-        this._onCreate(device, descriptor);
+        this._onCreate(device, descriptor, canvasContext);
         //
-        WGPURenderPassDepthStencilAttachment.map.set([device, descriptor], this);
+        WGPURenderPassDepthStencilAttachment.map.set([device, descriptor, canvasContext], this);
         this.destroyCall(() =>
         {
-            WGPURenderPassDepthStencilAttachment.map.delete([device, descriptor]);
-        })
+            WGPURenderPassDepthStencilAttachment.map.delete([device, descriptor, canvasContext]);
+        });
     }
 
     /**
@@ -84,8 +86,9 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
      * @param device GPU设备实例
      * @param depthStencilAttachment 深度模板附件配置对象
      * @param descriptor 渲染通道描述符
+     * @param canvasContext 画布上下文，用于监听画布切换
      */
-    private _onCreate(device: GPUDevice, descriptor: RenderPassDescriptor)
+    private _onCreate(device: GPUDevice, descriptor: RenderPassDescriptor, canvasContext?: CanvasContext)
     {
         const r_descriptor = reactive(descriptor);
 
@@ -122,6 +125,12 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
                 r_descriptor.attachmentSize.width;
                 r_descriptor.attachmentSize.height;
                 r_descriptor.sampleCount;
+
+                // 监听 canvasId 变化以触发深度纹理重建
+                if (canvasContext)
+                {
+                    (reactive(canvasContext) as CanvasContext).canvasId;
+                }
 
                 // 创建自动生成的深度纹理配置
                 const autoDepthTexture: Texture = {
@@ -192,13 +201,14 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
      * @param device GPU设备实例
      * @param depthStencilAttachment 深度模板附件配置对象
      * @param descriptor 渲染通道描述符
+     * @param canvasContext 画布上下文
      * @returns 深度模板附件实例
      */
-    static getInstance(device: GPUDevice, descriptor: RenderPassDescriptor)
+    static getInstance(device: GPUDevice, descriptor: RenderPassDescriptor, canvasContext?: CanvasContext)
     {
         // 尝试从缓存中获取现有实例，如果不存在则创建新实例
-        return this.map.get([device, descriptor]) || new WGPURenderPassDepthStencilAttachment(device, descriptor);
+        return this.map.get([device, descriptor, canvasContext]) || new WGPURenderPassDepthStencilAttachment(device, descriptor, canvasContext);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor], WGPURenderPassDepthStencilAttachment>();
+    private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext], WGPURenderPassDepthStencilAttachment>();
 }

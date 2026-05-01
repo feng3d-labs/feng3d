@@ -1,0 +1,34 @@
+{
+  "name": "eslint-plugin-feng3d",
+  "version": "0.0.1",
+  "description": "ESLint plugin for Feng3D project conventions",
+  "author": "feng",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf lib dist public",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "vitest",
+    "types": "tsc"
+  },
+  "files": [
+    "src",
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/feng3d/feng3d.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

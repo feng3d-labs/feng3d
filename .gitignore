@@ -51,3 +51,4 @@ coverage/
 # Debug screenshots (root level only)
 /*.png
 /screenshot*.png
+tmp/

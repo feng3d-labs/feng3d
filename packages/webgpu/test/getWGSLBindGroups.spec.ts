@@ -5,6 +5,7 @@ describe('test', () =>
 {
     it('getWGSLBindGroups', () =>
     {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 用于测试
         const result = WGPUShaderReflect.getIGPUBindGroupLayoutEntryMap(`
         override shadowDepthTextureSize: f32 = 1024.0;
 

@@ -64,7 +64,7 @@ export class WGPUFragmentState extends ReactiveObject
 
                     if (!format)
                     {
-                        gpuColorTargetStates.push(undefined)
+                        gpuColorTargetStates.push(undefined);
                         continue;
                     }
 

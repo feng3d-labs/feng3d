@@ -56,7 +56,7 @@ self.addEventListener('message', (ev) =>
             catch (err)
             {
                 console.error(
-                    `Error while initializing WebGPU in worker process: ${err.message}`,
+                    `Error while initializing WebGPU in worker process: ${(err as Error).message}`,
                 );
             }
             break;
