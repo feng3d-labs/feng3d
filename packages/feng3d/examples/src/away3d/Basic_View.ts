@@ -12,12 +12,12 @@ var canvas = engine.canvas;
 const cubeTexture = feng3d.serialization.setValue(new feng3d.TextureCube(), {
     rawData: {
         type: "path", paths: [
-            'resources/skybox/snow_positive_x.jpg',
-            'resources/skybox/snow_positive_y.jpg',
-            'resources/skybox/snow_positive_z.jpg',
-            'resources/skybox/snow_negative_x.jpg',
-            'resources/skybox/snow_negative_y.jpg',
-            'resources/skybox/snow_negative_z.jpg',
+            '/skybox/snow_positive_x.jpg',
+            '/skybox/snow_positive_y.jpg',
+            '/skybox/snow_positive_z.jpg',
+            '/skybox/snow_negative_x.jpg',
+            '/skybox/snow_negative_y.jpg',
+            '/skybox/snow_negative_z.jpg',
         ]
     }
 });

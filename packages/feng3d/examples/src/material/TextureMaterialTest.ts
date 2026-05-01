@@ -25,7 +25,7 @@ model.material = feng3d.serialization.setValue(new feng3d.Material(), {
     shaderName: "texture",
     uniforms: {
         s_texture: {
-            __class__: "Texture2D", source: { url: 'resources/m.png' }, flipY: false
+            __class__: "Texture2D", source: { url: '/m.png' }, flipY: false
         }
     }
 });

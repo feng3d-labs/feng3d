@@ -18,12 +18,12 @@ const model = skybox.addComponent(feng3d.SkyBox);
 model.s_skyboxTexture = feng3d.serialization.setValue(new feng3d.TextureCube(), {
     rawData: {
         type: "path", paths: [
-            'resources/skybox/px.jpg',
-            'resources/skybox/py.jpg',
-            'resources/skybox/pz.jpg',
-            'resources/skybox/nx.jpg',
-            'resources/skybox/ny.jpg',
-            'resources/skybox/nz.jpg'
+            '/skybox/px.jpg',
+            '/skybox/py.jpg',
+            '/skybox/pz.jpg',
+            '/skybox/nx.jpg',
+            '/skybox/ny.jpg',
+            '/skybox/nz.jpg'
         ]
     }
 }

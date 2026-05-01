@@ -16,7 +16,7 @@ class ScriptDemo extends feng3d.Script
         const material = model.material = new feng3d.Material();
         const uniforms = material.uniforms as feng3d.StandardUniforms;
         uniforms.s_diffuse = new feng3d.Texture2D();
-        uniforms.s_diffuse.source = { url: 'resources/m.png' };
+        uniforms.s_diffuse.source = { url: '/m.png' };
 
         uniforms.u_fogMode = feng3d.FogMode.LINEAR;
         uniforms.u_fogColor = new feng3d.Color3(1, 1, 0);

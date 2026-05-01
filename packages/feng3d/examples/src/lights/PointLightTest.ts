@@ -38,9 +38,9 @@ feng3d.windowEventProxy.on("keyup", (event) => {
 function initObjects() {
     const material = feng3d.serialization.setValue(new feng3d.Material(), {
         uniforms: {
-            s_diffuse: { __class__: "Texture2D", source: { url: 'resources/head_diffuse.jpg' }, wrapS: feng3d.TextureWrap.MIRRORED_REPEAT, wrapT: feng3d.TextureWrap.MIRRORED_REPEAT },
-            s_normal: { __class__: "Texture2D", source: { url: 'resources/head_normals.jpg' }, wrapS: feng3d.TextureWrap.MIRRORED_REPEAT, wrapT: feng3d.TextureWrap.MIRRORED_REPEAT },
-            s_specular: { __class__: "Texture2D", source: { url: 'resources/head_specular.jpg' }, wrapS: feng3d.TextureWrap.MIRRORED_REPEAT, wrapT: feng3d.TextureWrap.MIRRORED_REPEAT },
+            s_diffuse: { __class__: "Texture2D", source: { url: '/head_diffuse.jpg' }, wrapS: feng3d.TextureWrap.MIRRORED_REPEAT, wrapT: feng3d.TextureWrap.MIRRORED_REPEAT },
+            s_normal: { __class__: "Texture2D", source: { url: '/head_normals.jpg' }, wrapS: feng3d.TextureWrap.MIRRORED_REPEAT, wrapT: feng3d.TextureWrap.MIRRORED_REPEAT },
+            s_specular: { __class__: "Texture2D", source: { url: '/head_specular.jpg' }, wrapS: feng3d.TextureWrap.MIRRORED_REPEAT, wrapT: feng3d.TextureWrap.MIRRORED_REPEAT },
         }
     });
 

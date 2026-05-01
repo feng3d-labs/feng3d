@@ -15,7 +15,7 @@ camera.transform.lookAt(new feng3d.Vector3());
 const plane = new feng3d.GameObject();
 const model = plane.addComponent(feng3d.Renderable);
 model.geometry = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { width: 7, height: 7 });
-const material = model.material = feng3d.serialization.setValue(new feng3d.Material(), { uniforms: { s_diffuse: { __class__: "Texture2D", source: { url: "resources/floor_diffuse.jpg" } } } });
+const material = model.material = feng3d.serialization.setValue(new feng3d.Material(), { uniforms: { s_diffuse: { __class__: "Texture2D", source: { url: "/floor_diffuse.jpg" } } } });
 scene.gameObject.addChild(plane);
 
 feng3d.ticker.onframe(() => {

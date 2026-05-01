@@ -27,5 +27,5 @@ cube.addChild(gameObject);
 //材质
 const model = gameObject.getComponent(feng3d.Renderable);
 model.geometry = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { width: 0.1, height: 0.1, segmentsW: 1, segmentsH: 1, yUp: false });
-const textureMaterial = model.material = feng3d.serialization.setValue(new feng3d.Material(), { uniforms: { s_diffuse: { __class__: "Texture2D", source: { url: 'resources/m.png' } } } });
+const textureMaterial = model.material = feng3d.serialization.setValue(new feng3d.Material(), { uniforms: { s_diffuse: { __class__: "Texture2D", source: { url: '/m.png' } } } });
 

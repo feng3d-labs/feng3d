@@ -13,7 +13,7 @@ var engine = new feng3d.View(null, scene, camera);
 camera.gameObject.addComponent(feng3d.FPSController);
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
-fetch('../../resources/fonts/simfang.ttf')
+fetch('/fonts/simfang.ttf')
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);

@@ -13,7 +13,7 @@ camera.transform.y = 80;
 camera.transform.z = 0;
 camera.gameObject.addComponent(feng3d.FPSController);
 
-const root = 'resources/terrain/';
+const root = '/terrain/';
 //
 const terrain = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "terrain" });
 const model = terrain.addComponent(feng3d.Renderable);

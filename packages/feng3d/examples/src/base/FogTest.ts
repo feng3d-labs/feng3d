@@ -21,7 +21,7 @@ const material = model.material = feng3d.serialization.setValue(new feng3d.Mater
     uniforms: {
         s_diffuse: {
             __class__: "Texture2D",
-            source: { url: 'resources/m.png' }
+            source: { url: '/m.png' }
         },
         u_fogMode: feng3d.FogMode.LINEAR,
         u_fogColor: new feng3d.Color3(1, 1, 0),

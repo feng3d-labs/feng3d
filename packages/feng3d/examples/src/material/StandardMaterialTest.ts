@@ -24,7 +24,7 @@ model.geometry = feng3d.serialization.setValue(new feng3d.CubeGeometry(), { widt
 const textureMaterial = model.material = new feng3d.Material();
 const uniforms = textureMaterial.uniforms as feng3d.StandardUniforms;
 uniforms.s_diffuse = new feng3d.Texture2D();
-uniforms.s_diffuse.source = { url: 'resources/m.png' };
+uniforms.s_diffuse.source = { url: '/m.png' };
 uniforms.s_diffuse.format = feng3d.TextureFormat.RGBA;
 uniforms.s_diffuse.anisotropy = 16;
 uniforms.u_diffuse.a = 0.2;
