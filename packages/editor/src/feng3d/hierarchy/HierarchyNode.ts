@@ -23,6 +23,7 @@ export class HierarchyNode extends TreeNode
     constructor(obj: gPartial<HierarchyNode>)
     {
         super(obj);
+        this.gameobject = obj.gameobject as any as GameObject;
 
         watcher.watch(this.gameobject, 'name', this.update, this);
 

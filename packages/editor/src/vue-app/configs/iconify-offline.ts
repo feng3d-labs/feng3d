@@ -1,21 +1,28 @@
 /**
- * Iconify 完全离线模式配置
- * 预加载项目中使用的图标集，完全禁用 API 请求
+ * Iconify 图标集配置
+ * 开发模式使用在线 API，生产模式使用本地预加载的图标集
  */
 import { addCollection, _api } from '@iconify/iconify';
 
 // 项目中使用的图标集列表
 const iconSets = ['mdi', 'material-symbols'];
 
+// 检测是否为开发模式
+const isDev = import.meta.env.DEV;
+
 /**
- * 配置完全离线模式
+ * 配置离线模式（仅在生产环境启用）
  * 禁用所有 API 请求，只使用本地预加载的图标
  */
 export function configureOfflineMode() {
-  // 使用 _api.setFetch 禁用所有 API 请求
+  // 开发模式下不禁用 API，使用在线服务
+  if (isDev) {
+    console.log('[Iconify] 开发模式：使用在线 API');
+    return;
+  }
+
+  // 生产模式禁用 API 请求，只使用本地预加载的图标
   _api.setFetch(async () => {
-    // 拦截所有 API 请求，返回空响应
-    // 图标将从预加载的本地数据中获取
     return {
       ok: false,
       status: 404,
@@ -28,19 +35,22 @@ export function configureOfflineMode() {
 }
 
 /**
- * 预加载图标集
+ * 预加载图标集（仅在生产环境）
  * 从 iconify 目录加载 JSON 文件（由 Vite 插件复制到构建目录）
- * 使用相对路径，与 index.html 处于同一层级
  */
 export async function loadIconSets() {
+  // 开发模式不预加载，使用在线 API
+  if (isDev) {
+    console.log('[Iconify] 开发模式：跳过本地图标集预加载');
+    return { loadedSets: [], failedSets: [] };
+  }
+
   const loadedSets: string[] = [];
   const failedSets: string[] = [];
 
   // 预加载图标集
   for (const iconSet of iconSets) {
     try {
-      // 使用相对路径，与 index.html 处于同一层级
-      // 构建后 iconify/*.json 与 assets/*.js 在同一目录
       const response = await fetch(`./iconify/${iconSet}.json`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
