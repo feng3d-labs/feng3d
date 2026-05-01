@@ -10,25 +10,22 @@ export { };
 
 declare global
 {
-
-    export interface MixinsUniforms
+    export interface GlobalUniforms
     {
-        /**
-         * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
-         */
-        _Time: Vector4;
-        /**
-         * 模型矩阵
-         */
-        u_modelMatrix: Matrix4x4;
-        /**
-         * （view矩阵）摄像机逆矩阵
-         */
-        u_viewMatrix: Matrix4x4;
         /**
          * 投影矩阵
          */
         u_projectionMatrix: Matrix4x4;
+
+        /**
+         * 世界投影矩阵
+         */
+        u_viewProjection: Matrix4x4;
+
+        /**
+         * （view矩阵）摄像机逆矩阵
+         */
+        u_viewMatrix: Matrix4x4;
         /**
          * 摄像机矩阵
          */
@@ -37,6 +34,32 @@ declare global
          * 摄像机位置
          */
         u_cameraPos: Vector3;
+        /**
+         * 天空盒尺寸
+         */
+        u_skyBoxSize: number;
+        /**
+         * 单位深度映射到屏幕像素值
+         */
+        u_scaleByDepth: number;
+
+        /**
+         * 场景环境光
+         */
+        u_sceneAmbientColor: Color4;
+        /**
+         * t(单位秒) 是自该初始化开始所经过的时间，4个分量分别是 (t/20, t, t*2, t*3)
+         */
+        _Time: Vector4;
+    }
+
+    export interface MixinsUniforms
+    {
+        /**
+         * 模型矩阵
+         */
+        u_modelMatrix: Matrix4x4;
+
         /**
          * 模型-摄像机 矩阵
          */
@@ -50,10 +73,6 @@ declare global
          * 模型-摄像机 逆转置矩阵，用于计算摄像机空间法线
          */
         u_ITMVMatrix: Matrix4x4;
-        /**
-         * 世界投影矩阵
-         */
-        u_viewProjection: Matrix4x4;
 
         u_diffuseInput: Color4;
         /**
@@ -84,10 +103,6 @@ declare global
          * 天空盒纹理
          */
         s_skyboxTexture: TextureCube;
-        /**
-         * 天空盒尺寸
-         */
-        u_skyBoxSize: number;
 
         /**
          * 地形混合贴图
@@ -194,10 +209,6 @@ declare global
         u_directionalShadowMaps: Texture2D[];
 
         /**
-         * 场景环境光
-         */
-        u_sceneAmbientColor: Color4;
-        /**
          * 基本颜色
          */
         u_diffuse: Color4;
@@ -278,10 +289,6 @@ declare global
          * 反射率
          */
         u_reflectivity: number;
-        /**
-         * 单位深度映射到屏幕像素值
-         */
-        u_scaleByDepth: number;
 
         /**
          * 线框颜色
