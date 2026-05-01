@@ -1,5 +1,5 @@
 import * as feng3d from 'feng3d';
-/// <reference path="../../libs/opentype.d.ts" />
+import * as opentype from 'opentype.js';
 
 var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
@@ -12,50 +12,48 @@ var engine = new feng3d.View(null, scene, camera);
 
 camera.gameObject.addComponent(feng3d.FPSController);
 
-var script = document.createElement('script');
-script.onload = (ev) =>
-{
-    // opentype.load('./resources/fonts/NotoSansCJKsc_Regular.otf', function (err, font)
-    opentype.load('./resources/fonts/simfang.ttf', function (err, font)
-    {
-        if (err)
-        {
-            alert('Font could not be loaded: ' + err);
-        } else
-        {
-            const fontData = extractFontData(font);
-            const contoursInfo = convert(fontData);
-            const font1 = new feng3d.Font(contoursInfo);
-            // font1.isCCW = !!font['isCIDFont'];
-
-            // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图', 1);
-            // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
-            const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
-
-            const geometry = new feng3d.CustomGeometry();
-
-            geometry.positions = Array.from(vertices);
-            geometry.normals = Array.from(normals);
-            geometry.uvs = Array.from(uvs);
-            geometry.indices = Array.from(indices);
-
-            var cube = new feng3d.GameObject().addComponent(feng3d.Renderable);
-            cube.transform.x = -7;
-            cube.transform.y = 7;
-            cube.transform.rx = 180;
-            scene.gameObject.addChild(cube.gameObject);
-
-            //材质
-            var material = cube.material = new feng3d.Material();
-            material.renderParams.frontFace = feng3d.FrontFace.CCW;
-            material.renderParams.cullFace = feng3d.CullFace.NONE;
-
-            cube.geometry = geometry;
+// 使用 fetch + opentype.parse 替代已弃用的 opentype.load
+fetch('../../resources/fonts/simfang.ttf')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+        return response.arrayBuffer();
+    })
+    .then(buffer => {
+        const font = opentype.parse(buffer);
+        const fontData = extractFontData(font);
+        const contoursInfo = convert(fontData);
+        const font1 = new feng3d.Font(contoursInfo);
+        // font1.isCCW = !!font['isCIDFont'];
+
+        // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图', 1);
+        // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
+        const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
+
+        const geometry = new feng3d.CustomGeometry();
+
+        geometry.positions = Array.from(vertices);
+        geometry.normals = Array.from(normals);
+        geometry.uvs = Array.from(uvs);
+        geometry.indices = Array.from(indices);
+
+        var cube = new feng3d.GameObject().addComponent(feng3d.Renderable);
+        cube.transform.x = -7;
+        cube.transform.y = 7;
+        cube.transform.rx = 180;
+        scene.gameObject.addChild(cube.gameObject);
+
+        //材质
+        var material = cube.material = new feng3d.Material();
+        material.renderParams.frontFace = feng3d.FrontFace.CCW;
+        material.renderParams.cullFace = feng3d.CullFace.NONE;
+
+        cube.geometry = geometry;
+    })
+    .catch(err => {
+        alert('Font could not be loaded: ' + err);
     });
-};
-script.src = '../../libs/opentype.min.js';
-document.head.appendChild(script);
 
 
 function extractFontData(fontAll: opentype.Font)
