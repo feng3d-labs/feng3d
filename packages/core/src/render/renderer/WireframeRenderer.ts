@@ -1,7 +1,7 @@
 import { Color4 } from '@feng3d/math';
 import { lazy } from '@feng3d/polyfill';
-import { Index, RenderMode, Shader, WebGLRenderer } from '@feng3d/renderer';
-import { RenderObject } from '@feng3d/webgpu';
+import { Index, RenderMode, Shader } from '@feng3d/renderer';
+import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable } from '../../core/Renderable';
@@ -38,7 +38,7 @@ export class WireframeRenderer
     /**
      * 渲染
      */
-    draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
+    draw(submit: Submit, scene: Scene, camera: Camera)
     {
         const unblenditems = scene.getPickCache(camera).unblenditems;
 
@@ -56,14 +56,14 @@ export class WireframeRenderer
 
         wireframes.forEach((element) =>
         {
-            this.drawGameObject(renderer, element.renderable, scene, camera, element.wireframe.color); //
+            this.drawGameObject(submit, element.renderable, scene, camera, element.wireframe.color); //
         });
     }
 
     /**
      * 绘制3D对象
      */
-    drawGameObject(renderer: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
+    drawGameObject(submit: Submit, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
     {
         const renderObject = renderable.renderObject;
         renderable.beforeRender(renderObject, scene, camera);
@@ -116,8 +116,9 @@ export class WireframeRenderer
 
         //
         this.renderObject.shader = renderObject.wireframeShader;
-        renderer.render(this.renderObject);
         this.renderObject.shader = null;
+
+        ((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(this.renderObject);
         //
     }
 }

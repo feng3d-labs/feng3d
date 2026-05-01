@@ -1,7 +1,7 @@
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
-import { WebGLRenderer } from '@feng3d/renderer';
 import { serialization } from '@feng3d/serialization';
 import { windowEventProxy } from '@feng3d/shortcut';
+import { Submit, WebGPU } from '@feng3d/webgpu';
 import { AudioListener } from '../audio/AudioListener';
 import { Camera } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';
@@ -18,14 +18,6 @@ import { GameObject } from './GameObject';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Renderable } from './Renderable';
 import { Transform } from './Transform';
-
-declare global
-{
-    interface HTMLCanvasElement
-    {
-        gl: WebGLRenderer;
-    }
-}
 
 /**
  * 视图
@@ -73,14 +65,6 @@ export class View extends Feng3dObject
     get root()
     {
         return this.scene.gameObject;
-    }
-
-    get gl()
-    {
-        if (!this.canvas.gl)
-        { this.canvas.gl = new WebGLRenderer(this.canvas, this._contextAttributes); }
-
-        return this.canvas.gl;
     }
 
     /**
@@ -211,25 +195,50 @@ export class View extends Feng3dObject
         this.scene.mouseRay3D = this.mouseRay3D;
         this.scene.camera = this.camera;
 
-        const gl = this.gl.gl;
-
-        // 默认渲染
-        gl.colorMask(true, true, true, true);
-        gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
-        gl.clearStencil(0);
-        gl.clearDepth(1);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST);
-
         // 鼠标拾取渲染
         this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
+
+        if (!webgpu) return;
+
+
+        //
+        const submit: Submit = {
+            commandEncoders: [
+                {
+                    passEncoders: [
+                        {
+                            descriptor: {
+                                colorAttachments: [
+                                    {
+                                        view: { texture: { context: { canvasId: this.canvas } } },
+                                        clearValue: [this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a],
+                                    },
+                                ],
+                                depthStencilAttachment: {
+                                    depthClearValue: 1,
+                                    depthLoadOp: 'clear',
+                                    depthStoreOp: 'store',
+                                    stencilClearValue: 0,
+                                    stencilLoadOp: 'clear',
+                                    stencilStoreOp: 'store',
+                                },
+                            }, renderPassObjects: []
+                        },
+                    ],
+                },
+            ],
+        };
+
         // 绘制阴影图
-        shadowRenderer.draw(this.gl, this.scene, this.camera);
-        skyboxRenderer.draw(this.gl, this.scene, this.camera);
+        shadowRenderer.draw(submit, this.scene, this.camera);
+        skyboxRenderer.draw(submit, this.scene, this.camera);
         // 默认渲染
-        forwardRenderer.draw(this.gl, this.scene, this.camera);
-        outlineRenderer.draw(this.gl, this.scene, this.camera);
-        wireframeRenderer.draw(this.gl, this.scene, this.camera);
+        forwardRenderer.draw(submit, this.scene, this.camera);
+        outlineRenderer.draw(submit, this.scene, this.camera);
+        wireframeRenderer.draw(submit, this.scene, this.camera);
+
+        //
+        webgpu.submit(submit);
     }
 
     /**
@@ -362,3 +371,4 @@ export class View extends Feng3dObject
 }
 
 // var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
+let webgpu = await new WebGPU().init();

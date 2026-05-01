@@ -1,5 +1,5 @@
-import { Attribute, CullFace, Index, Shader, WebGLRenderer } from '@feng3d/renderer';
-import { RenderObject } from '@feng3d/webgpu';
+import { Attribute, CullFace, Index, Shader } from '@feng3d/renderer';
+import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';
@@ -54,10 +54,10 @@ export class SkyBoxRenderer
      * @param scene 场景
      * @param camera 摄像机
      */
-    draw(renderer: WebGLRenderer, scene: Scene, camera: Camera)
+    draw(submit: Submit, scene: Scene, camera: Camera)
     {
         const skybox = scene.activeSkyBoxs[0];
-        this.drawSkyBox(renderer, skybox, scene, camera);
+        this.drawSkyBox(submit, skybox, scene, camera);
     }
 
     /**
@@ -66,7 +66,7 @@ export class SkyBoxRenderer
      * @param skybox 天空盒
      * @param camera 摄像机
      */
-    drawSkyBox(renderer: WebGLRenderer, skybox: SkyBox, scene: Scene, camera: Camera)
+    drawSkyBox(submit: Submit, skybox: SkyBox, scene: Scene, camera: Camera)
     {
         if (!skybox) return;
 
@@ -82,7 +82,7 @@ export class SkyBoxRenderer
         this.renderObject.uniforms.u_cameraPos = camera.transform.worldPosition;
         this.renderObject.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
-        renderer.render(this.renderObject);
+        (((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[])).push(this.renderObject);
     }
 }
 

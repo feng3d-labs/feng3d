@@ -1,6 +1,7 @@
 import { Vector4 } from '@feng3d/math';
 import { LazyObject, lazy, mathUtil } from '@feng3d/polyfill';
-import { WebGLRenderer, Uniforms } from '@feng3d/renderer';
+import { Uniforms } from '@feng3d/renderer';
+import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Scene } from '../../scene/Scene';
 
@@ -12,7 +13,7 @@ export class ForwardRenderer
     /**
      * 渲染
      */
-    draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
+    draw(submit: Submit, scene: Scene, camera: Camera)
     {
         const blenditems = scene.getPickCache(camera).blenditems;
         const unblenditems = scene.getPickCache(camera).unblenditems;
@@ -50,7 +51,7 @@ export class ForwardRenderer
 
             renderable.beforeRender(renderObject, scene, camera);
 
-            gl.render(renderObject);
+            (((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[])).push(renderObject);
         });
     }
 }

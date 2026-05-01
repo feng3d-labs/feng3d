@@ -1,6 +1,6 @@
 import { Rectangle, Vector3 } from '@feng3d/math';
-import { Shader, WebGLRenderer } from '@feng3d/renderer';
-import { RenderObject } from '@feng3d/webgpu';
+import { Shader } from '@feng3d/renderer';
+import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
 import { DirectionalLight } from '../../light/DirectionalLight';
@@ -8,7 +8,6 @@ import { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
 import { SpotLight } from '../../light/SpotLight';
 import { Scene } from '../../scene/Scene';
-import { FrameBufferObject } from '../FrameBufferObject';
 
 declare global
 {
@@ -25,39 +24,49 @@ export class ShadowRenderer
     /**
      * 渲染
      */
-    draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
+    draw(submit: Submit, scene: Scene, camera: Camera)
     {
         const pointLights = scene.activePointLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
         for (let i = 0; i < pointLights.length; i++)
         {
             pointLights[i].updateDebugShadowMap(scene, camera);
-            this.drawForPointLight(gl, pointLights[i], scene, camera);
+            this.drawForPointLight(submit, pointLights[i], scene, camera);
         }
 
         const spotLights = scene.activeSpotLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
         for (let i = 0; i < spotLights.length; i++)
         {
             spotLights[i].updateDebugShadowMap(scene, camera);
-            this.drawForSpotLight(gl, spotLights[i], scene, camera);
+            this.drawForSpotLight(submit, spotLights[i], scene, camera);
         }
 
         const directionalLights = scene.activeDirectionalLights.filter((i) => i.shadowType !== ShadowType.No_Shadows);
         for (let i = 0; i < directionalLights.length; i++)
         {
             directionalLights[i].updateDebugShadowMap(scene, camera);
-            this.drawForDirectionalLight(gl, directionalLights[i], scene, camera);
+            this.drawForDirectionalLight(submit, directionalLights[i], scene, camera);
         }
     }
 
-    private drawForSpotLight(renderer: WebGLRenderer, light: SpotLight, scene: Scene, camera: Camera): any
+    private drawForSpotLight(submit: Submit, light: SpotLight, scene: Scene, camera: Camera): any
     {
-        const gl = renderer.gl;
-        FrameBufferObject.active(gl, light.frameBufferObject);
+        const renderPass: RenderPass = {
+            descriptor: {
+                colorAttachments: [
+                    {
+                        view: { texture: { context: { canvasId: light.shadowMap } } },
+                        clearValue: [1.0, 1.0, 1.0, 1.0],
+                    },
+                ],
+                depthStencilAttachment: {
+                    depthClearValue: 1,
+                    depthLoadOp: 'clear',
+                    depthStoreOp: 'store',
+                },
+            }
+        };
 
-        //
-        gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
         shadowCamera.transform.localToWorldMatrix = light.transform.localToWorldMatrix;
@@ -87,22 +96,29 @@ export class ShadowRenderer
 
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawGameObject(renderer, renderable, scene, camera);
+            this.drawGameObject(renderPass, renderable, scene, camera);
         });
-
-        light.frameBufferObject.deactive(gl);
     }
 
-    private drawForPointLight(renderer: WebGLRenderer, light: PointLight, scene: Scene, camera: Camera): any
+    private drawForPointLight(submit: Submit, light: PointLight, scene: Scene, camera: Camera): any
     {
-        const gl = renderer.gl;
+        const renderPass: RenderPass = {
+            descriptor: {
+                colorAttachments: [
+                    {
+                        view: { texture: { context: { canvasId: light.shadowMap } } },
+                        clearValue: [1.0, 1.0, 1.0, 1.0],
+                    },
+                ],
+                depthStencilAttachment: {
+                    depthClearValue: 1,
+                    depthLoadOp: 'clear',
+                    depthStoreOp: 'store',
+                },
+            }
+        };
 
-        FrameBufferObject.active(gl, light.frameBufferObject);
-
-        //
-        gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const vpWidth = light.shadowMapSize.x;
         const vpHeight = light.shadowMapSize.y;
@@ -166,13 +182,12 @@ export class ShadowRenderer
 
             castShadowsModels.forEach((renderable) =>
             {
-                this.drawGameObject(renderer, renderable, scene, camera);
+                this.drawGameObject(renderPass, renderable, scene, camera);
             });
         }
-        light.frameBufferObject.deactive(gl);
     }
 
-    private drawForDirectionalLight(renderer: WebGLRenderer, light: DirectionalLight, scene: Scene, camera: Camera): any
+    private drawForDirectionalLight(submit: Submit, light: DirectionalLight, scene: Scene, camera: Camera): any
     {
         // 获取影响阴影图的渲染对象
         const models = scene.getPickByDirectionalLight(light);
@@ -181,21 +196,27 @@ export class ShadowRenderer
 
         light.updateShadowByCamera(scene, camera, models);
 
-        FrameBufferObject.active(renderer.gl, light.frameBufferObject);
+        const renderPass: RenderPass = {
+            descriptor: {
+                colorAttachments: [
+                    {
+                        view: { texture: { context: { canvasId: light.shadowMap } } },
+                        clearValue: [1.0, 1.0, 1.0, 1.0],
+                    },
+                ],
+                depthStencilAttachment: {
+                    depthClearValue: 1,
+                    depthLoadOp: 'clear',
+                    depthStoreOp: 'store',
+                },
+            }
+        };
 
-        const gl = renderer.gl;
-
-        //
-        gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
 
         const renderObject = this.renderObject;
-        //
-        renderObject.renderParams.useViewPort = true;
-        renderObject.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
         //
         renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
         renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
@@ -210,16 +231,17 @@ export class ShadowRenderer
         //
         castShadowsModels.forEach((renderable) =>
         {
-            this.drawGameObject(renderer, renderable, scene, camera);
+            this.drawGameObject(renderPass, renderable, scene, camera);
+
+            (renderPass.renderPassObjects as RenderPassObject[]).push(this.renderObject);
         });
 
-        light.frameBufferObject.deactive(gl);
     }
 
     /**
      * 绘制3D对象
      */
-    private drawGameObject(gl: WebGLRenderer, renderable: Renderable, scene: Scene, camera: Camera)
+    private drawGameObject(renderPass: RenderPass, renderable: Renderable, scene: Scene, camera: Camera)
     {
         const renderObject = renderable.renderObject;
         renderable.beforeRender(renderObject, scene, camera);
@@ -231,7 +253,7 @@ export class ShadowRenderer
 
         // 使用shadowShader
         this.renderObject.shader = renderObject.shadowShader;
-        gl.render(this.renderObject);
+        (renderPass.renderPassObjects as RenderPassObject[]).push(this.renderObject);
         this.renderObject.shader = null;
     }
 }

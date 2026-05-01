@@ -1,5 +1,5 @@
-import { CullFace, Shader, WebGLRenderer } from '@feng3d/renderer';
-import { RenderObject } from '@feng3d/webgpu';
+import { CullFace, Shader } from '@feng3d/renderer';
+import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
 import { OutLineComponent } from '../../component/OutLineComponent';
@@ -25,7 +25,7 @@ export class OutlineRenderer
         }
     }
 
-    draw(gl: WebGLRenderer, scene: Scene, camera: Camera)
+    draw(submit: Submit, scene: Scene, camera: Camera)
     {
         const unblenditems = scene.getPickCache(camera).unblenditems;
 
@@ -41,7 +41,7 @@ export class OutlineRenderer
 
                 this.renderObject.next = renderObject;
 
-                gl.render(this.renderObject);
+                ((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(this.renderObject);
             }
         }
     }
