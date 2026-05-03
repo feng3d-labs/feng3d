@@ -1,7 +1,8 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
-import { RenderObject } from '@feng3d/webgpu';
+import { RenderObject, TextureView } from '@feng3d/webgpu';
+import { reactive } from '../../../reactivity/src/reactive';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';
@@ -26,18 +27,12 @@ export class SkyBox extends Component
 {
     __class__: 'SkyBox';
 
-    // /**
-    //  * The material used by the skybox.
-    //  */
-    // @serialize
-    // material: Material;
-
     @serialize
     @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
     s_skyboxTexture = TextureCube.default;
 
     beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderObject.uniforms.s_skyboxTexture = () => this.s_skyboxTexture;
+        reactive(renderObject.bindingResources).s_skyboxTexture = { texture: this.s_skyboxTexture.texture } as TextureView;
     }
 }

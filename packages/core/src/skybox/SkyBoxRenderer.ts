@@ -1,51 +1,49 @@
-import { Attribute, CullFace, Index, Shader } from '@feng3d/renderer';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';
+
+import skyboxVert from '../shaders/skybox.vertex.glsl.js';
 
 /**
  * 天空盒渲染器
  */
 export class SkyBoxRenderer
 {
-    private renderObject: RenderObject;
+    private renderObject: RenderObject = {
+        pipeline: {
+            vertex: { code: skyboxVert, entryPoint: 'main' },
+            fragment: { code: '', entryPoint: 'main' },
+            primitive: { cullFace: 'none' },
+            depthStencil: { depthWriteEnabled: false, depthCompare: 'less-equal' }
+        },
+        vertices: {
+            a_position: {
+                data: new Float32Array([ //
+                    -1, 1, -1, //
+                    1, 1, -1, //
+                    1, 1, 1, //
+                    -1, 1, 1, //
+                    -1, -1, -1, //
+                    1, -1, -1, //
+                    1, -1, 1, //
+                    -1, -1, 1 //
+                ]),
+                format: "float32x3"
+            },
+        },
+        indices: new Uint16Array([ //
+            0, 1, 2, 2, 3, 0, //
+            6, 5, 4, 4, 7, 6, //
+            2, 6, 7, 7, 3, 2, //
+            4, 5, 1, 1, 0, 4, //
+            4, 0, 3, 3, 7, 4, //
+            2, 1, 5, 5, 6, 2 //
+        ]),
+    };
 
     init()
     {
-        if (!this.renderObject)
-        {
-            const renderObject = this.renderObject = new RenderObject();
-            // 八个顶点，32个number
-            const vertexPositionData = [ //
-                -1, 1, -1, //
-                1, 1, -1, //
-                1, 1, 1, //
-                -1, 1, 1, //
-                -1, -1, -1, //
-                1, -1, -1, //
-                1, -1, 1, //
-                -1, -1, 1 //
-            ];
-            renderObject.attributes.a_position = new Attribute({ name: 'a_position', data: vertexPositionData, size: 3 });
-            // 6个面，12个三角形，36个顶点索引
-            const indices = [ //
-                0, 1, 2, 2, 3, 0, //
-                6, 5, 4, 4, 7, 6, //
-                2, 6, 7, 7, 3, 2, //
-                4, 5, 1, 1, 0, 4, //
-                4, 0, 3, 3, 7, 4, //
-                2, 1, 5, 5, 6, 2 //
-            ];
-            renderObject.index = new Index();
-            renderObject.index.indices = indices;
-            //
-            const renderParams = renderObject.renderParams;
-            renderParams.cullFace = CullFace.NONE;
-            //
-
-            renderObject.shader = new Shader({ shaderName: 'skybox' });
-        }
     }
 
     /**
