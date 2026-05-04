@@ -1,32 +1,11 @@
 import { Box3, Euler, Matrix4x4, Quaternion, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
-import { Camera } from '../cameras/Camera';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { batchRun, computed, reactive } from '@feng3d/reactivity';
 import { Component, RegisterComponent } from '../component/Component';
-import { Scene } from '../scene/Scene';
-import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
-    export interface MixinsGameObjectEventMap
-    {
-        /**
-         * 变换矩阵变化
-         */
-        transformChanged: Transform;
-        /**
-         *
-         */
-        updateLocalToWorldMatrix: Transform;
-
-        /**
-         * 场景矩阵变化
-         */
-        scenetransformChanged: Transform;
-    }
-
     export interface MixinsComponentMap
     {
         Transform: Transform;
@@ -48,25 +27,20 @@ export class Transform extends Component
 
     get single() { return true; }
 
+    uniforms = computed(() =>
+    {
+        return {
+            u_modelMatrix: this.localToWorldMatrix.value,
+            u_ITModelMatrix: this.ITlocalToWorldMatrix.value,
+        };
+    });
+
     /**
      * 创建一个实体，该类为虚类
      */
     constructor()
     {
         super();
-
-        watcher.watch(this._position, 'x', this._positionChanged, this);
-        watcher.watch(this._position, 'y', this._positionChanged, this);
-        watcher.watch(this._position, 'z', this._positionChanged, this);
-        watcher.watch(this._rotation, 'x', this._rotationChanged, this);
-        watcher.watch(this._rotation, 'y', this._rotationChanged, this);
-        watcher.watch(this._rotation, 'z', this._rotationChanged, this);
-        watcher.watch(this._scale, 'x', this._scaleChanged, this);
-        watcher.watch(this._scale, 'y', this._scaleChanged, this);
-        watcher.watch(this._scale, 'z', this._scaleChanged, this);
-
-        this._renderObject.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
-        this._renderObject.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
     }
 
     /**
@@ -74,7 +48,7 @@ export class Transform extends Component
      */
     get worldPosition()
     {
-        return this.localToWorldMatrix.getPosition();
+        return this.localToWorldMatrix.value.getPosition();
     }
 
     get parent()
@@ -83,139 +57,109 @@ export class Transform extends Component
     }
 
     /**
-     * X轴坐标。
-     */
-    @serialize
-    get x() { return this._position.x; }
-    set x(v) { this._position.x = v; }
-
-    /**
-     * Y轴坐标。
-     */
-    @serialize
-    get y() { return this._position.y; }
-    set y(v) { this._position.y = v; }
-
-    /**
-     * Z轴坐标。
-     */
-    @serialize
-    get z() { return this._position.z; }
-    set z(v) { this._position.z = v; }
-
-    /**
-     * X轴旋转角度。
-     */
-    @serialize
-    get rx() { return this._rotation.x; }
-    set rx(v) { this._rotation.x = v; }
-
-    /**
-     * Y轴旋转角度。
-     */
-    @serialize
-    get ry() { return this._rotation.y; }
-    set ry(v) { this._rotation.y = v; }
-
-    /**
-     * Z轴旋转角度。
-     */
-    @serialize
-    get rz() { return this._rotation.z; }
-    set rz(v) { this._rotation.z = v; }
-
-    /**
-     * X轴缩放。
-     */
-    @serialize
-    get sx() { return this._scale.x; }
-    set sx(v) { this._scale.x = v; }
-
-    /**
-     * Y轴缩放。
-     */
-    @serialize
-    get sy() { return this._scale.y; }
-    set sy(v) { this._scale.y = v; }
-
-    /**
-     * Z轴缩放。
-     */
-    @serialize
-    get sz() { return this._scale.z; }
-    set sz(v) { this._scale.z = v; }
-
-    /**
      * 本地位移
      */
     @oav({ tooltip: '本地位移' })
-    get position() { return this._position; }
-    set position(v) { this._position.copy(v); }
+    readonly position: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
 
     /**
      * 本地旋转
      */
     @oav({ tooltip: '本地旋转', component: 'OAVVector3', componentParam: { step: 0.001, stepScale: 30, stepDownup: 30 } })
-    get rotation() { return this._rotation; }
-    set rotation(v) { this._rotation.copy(v); }
-
-    /**
-     * 本地四元素旋转
-     */
-    get orientation()
-    {
-        this._orientation.fromMatrix(this.matrix);
-
-        return this._orientation;
-    }
-
-    set orientation(value)
-    {
-        const angles = new Euler().fromQuaternion(value);
-        this.rotation = new Vector3(angles.x, angles.y, angles.z);
-    }
+    readonly rotation: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
 
     /**
      * 本地缩放
      */
     @oav({ tooltip: '本地缩放' })
-    get scale() { return this._scale; }
-    set scale(v) { this._scale.copy(v); }
+    readonly scale: { readonly x: number; readonly y: number; readonly z: number } = { x: 1, y: 1, z: 1 };
+
+    /**
+     * 本地四元素旋转
+     */
+    readonly orientation = computed(() =>
+    {
+        const r_rotation = reactive(this.rotation);
+        const { x, y, z } = r_rotation;
+
+        const quaternion = new Quaternion().fromEuler(x, y, z);
+
+        return quaternion;
+    });
+
+    setOrientation(quaternion: Quaternion)
+    {
+        const angles = new Euler().fromQuaternion(quaternion);
+
+        //
+        const r_rotation = reactive(this.rotation);
+
+        batchRun(() =>
+        {
+            r_rotation.x = angles.x;
+            r_rotation.y = angles.y;
+            r_rotation.z = angles.z;
+        });
+    }
 
     /**
      * 本地变换矩阵
      */
-    get matrix()
+    readonly matrix = computed(() =>
     {
-        if (this._matrixInvalid)
+        const r_position = reactive(this.position);
+        const r_rotation = reactive(this.rotation);
+        const r_scale = reactive(this.scale);
+
+        const position = new Vector3(r_position.x, r_position.y, r_position.z);
+        const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
+        const scale = new Vector3(r_scale.x, r_scale.y, r_scale.z);
+
+        const matrix = new Matrix4x4().fromTRS(position, rotation, scale);
+
+        return matrix;
+    });
+
+    setMatrix(v: Matrix4x4)
+    {
+        const position = new Vector3();
+        const rotation = new Vector3();
+        const scale = new Vector3();
+        v.toTRS(position, rotation, scale);
+
+        //
+        const r_position = reactive(this.position);
+        const r_rotation = reactive(this.rotation);
+        const r_scale = reactive(this.scale);
+
+        batchRun(() =>
         {
-            this._matrixInvalid = false;
-            this._updateMatrix();
-        }
+            r_position.x = position.x;
+            r_position.y = position.y;
+            r_position.z = position.z;
 
-        return this._matrix;
-    }
+            r_rotation.x = rotation.x;
+            r_rotation.y = rotation.y;
+            r_rotation.z = rotation.z;
 
-    set matrix(v)
-    {
-        v.toTRS(this._position, this._rotation, this._scale);
-        this._matrix.fromArray(v.elements);
-        this._matrixInvalid = false;
+            r_scale.x = scale.x;
+            r_scale.y = scale.y;
+            r_scale.z = scale.z;
+        });
     }
 
     /**
      * 本地旋转矩阵
      */
-    get rotationMatrix()
+    readonly rotationMatrix = computed(() =>
     {
-        if (this._rotationMatrixInvalid)
-        {
-            this._rotationMatrix.setRotation(this._rotation);
-            this._rotationMatrixInvalid = false;
-        }
+        const r_rotation = reactive(this.rotation);
+        const rotation = new Vector3(r_rotation.x, r_rotation.y, r_rotation.z);
 
-        return this._rotationMatrix;
-    }
+        const rotationMatrix = new Matrix4x4().setRotation(rotation);
+
+        return rotationMatrix;
+    });
 
     moveForward(distance: number)
     {
@@ -252,9 +196,14 @@ export class Transform extends Component
         const x = axis.x; const y = axis.y; const
             z = axis.z;
         const len = distance / Math.sqrt(x * x + y * y + z * z);
-        this.x += x * len;
-        this.y += y * len;
-        this.z += z * len;
+
+        const r_position = reactive(this.position);
+        batchRun(() =>
+        {
+            r_position.x += x * len;
+            r_position.y += y * len;
+            r_position.z += z * len;
+        });
     }
 
     translateLocal(axis: Vector3, distance: number)
@@ -262,13 +211,17 @@ export class Transform extends Component
         const x = axis.x; const y = axis.y; const
             z = axis.z;
         const len = distance / Math.sqrt(x * x + y * y + z * z);
-        const matrix = this.matrix.clone();
+        const matrix = this.matrix.value.clone();
         matrix.prependTranslation(x * len, y * len, z * len);
         const p = matrix.getPosition();
-        this.x = p.x;
-        this.y = p.y;
-        this.z = p.z;
-        this._invalidateSceneTransform();
+
+        const r_position = reactive(this.position);
+        batchRun(() =>
+        {
+            r_position.x = p.x;
+            r_position.y = p.y;
+            r_position.z = p.z;
+        });
     }
 
     pitch(angle: number)
@@ -288,7 +241,13 @@ export class Transform extends Component
 
     rotateTo(ax: number, ay: number, az: number)
     {
-        this._rotation.set(ax, ay, az);
+        const r_rotation = reactive(this.rotation);
+        batchRun(() =>
+        {
+            r_rotation.x = ax;
+            r_rotation.y = ay;
+            r_rotation.z = az;
+        });
     }
 
     /**
@@ -303,12 +262,17 @@ export class Transform extends Component
         // 转换位移
         const positionMatrix = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
         positionMatrix.appendRotation(axis, angle, pivotPoint);
-        this.position = positionMatrix.getPosition();
+        const position = positionMatrix.getPosition();
+
         // 转换旋转
-        const rotationMatrix = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
+        const rx = this.rotation.x;
+        const ry = this.rotation.y;
+        const rz = this.rotation.z;
+
+        const rotationMatrix = Matrix4x4.fromRotation(rx, ry, rz);
         rotationMatrix.appendRotation(axis, angle, pivotPoint);
         const newrotation = rotationMatrix.toTRS()[1];
-        const v = Math.round((newrotation.x - this.rx) / 180);
+        const v = Math.round((newrotation.x - rx) / 180);
         if (v % 2 !== 0)
         {
             newrotation.x += 180;
@@ -318,11 +282,22 @@ export class Transform extends Component
         //
         const toRound = (a: number, b: number, c = 360) =>
             Math.round((b - a) / c) * c + a;
-        newrotation.x = toRound(newrotation.x, this.rx);
-        newrotation.y = toRound(newrotation.y, this.ry);
-        newrotation.z = toRound(newrotation.z, this.rz);
-        this.rotation = newrotation;
-        this._invalidateSceneTransform();
+        newrotation.x = toRound(newrotation.x, rx);
+        newrotation.y = toRound(newrotation.y, ry);
+        newrotation.z = toRound(newrotation.z, rz);
+
+        const r_position = reactive(this.position);
+        const r_rotation = reactive(this.rotation);
+        batchRun(() =>
+        {
+            r_position.x = position.x;
+            r_position.y = position.y;
+            r_position.z = position.z;
+
+            r_rotation.x = newrotation.x;
+            r_rotation.y = newrotation.y;
+            r_rotation.z = newrotation.z;
+        });
     }
 
     /**
@@ -333,83 +308,67 @@ export class Transform extends Component
      */
     lookAt(target: Vector3, upAxis?: Vector3)
     {
-        this._updateMatrix();
-        this._matrix.lookAt(target, upAxis);
-        this._matrix.toTRS(this._position, this._rotation, this._scale);
-        this._matrixInvalid = false;
+        const matrix = this.matrix.value.clone();
+        matrix.lookAt(target, upAxis);
+
+        this.setMatrix(matrix);
     }
 
     /**
      * 将一个点从局部空间变换到世界空间的矩阵。
      */
-    get localToWorldMatrix()
+    readonly localToWorldMatrix = computed(() =>
     {
-        if (this._localToWorldMatrixInvalid)
+        const matrix = this.matrix.value.clone();
+        if (this.parent)
         {
-            this._localToWorldMatrixInvalid = false;
-            this._updateLocalToWorldMatrix();
+            matrix.append(this.parent.localToWorldMatrix.value);
         }
 
-        return this._localToWorldMatrix;
-    }
+        return matrix;
+    });
 
-    set localToWorldMatrix(value)
+    setLocalToWorldMatrix(value: Matrix4x4)
     {
         value = value.clone();
-        this.parent && value.append(this.parent.worldToLocalMatrix);
-        this.matrix = value;
+        this.parent && value.append(this.parent.worldToLocalMatrix.value);
+        this.setMatrix(value);
     }
 
     /**
      * 本地转世界逆转置矩阵
      */
-    get ITlocalToWorldMatrix()
+    readonly ITlocalToWorldMatrix = computed(() =>
     {
-        if (this._ITlocalToWorldMatrixInvalid)
-        {
-            this._ITlocalToWorldMatrixInvalid = false;
-            this._ITlocalToWorldMatrix.copy(this.localToWorldMatrix);
-            this._ITlocalToWorldMatrix.invert().transpose();
-        }
-
-        return this._ITlocalToWorldMatrix;
-    }
+        const matrix = this.localToWorldMatrix.value.clone().invert().transpose();
+        return matrix;
+    });
 
     /**
      * 将一个点从世界空间转换为局部空间的矩阵。
      */
-    get worldToLocalMatrix()
+    readonly worldToLocalMatrix = computed(() =>
     {
-        if (this._worldToLocalMatrixInvalid)
+        const matrix = this.localToWorldMatrix.value.clone().invert();
+
+        return matrix;
+    });
+
+    readonly localToWorldRotationMatrix = computed(() =>
+    {
+        const matrix = this.rotationMatrix.value.clone();
+        if (this.parent)
         {
-            this._worldToLocalMatrixInvalid = false;
-            this._worldToLocalMatrix.copy(this.localToWorldMatrix).invert();
+            matrix.append(this.parent.localToWorldRotationMatrix.value);
         }
+        return matrix;
+    });
 
-        return this._worldToLocalMatrix;
-    }
-
-    get localToWorldRotationMatrix()
+    readonly worldToLocalRotationMatrix = computed(() =>
     {
-        if (this._localToWorldRotationMatrixInvalid)
-        {
-            this._localToWorldRotationMatrix.copy(this.rotationMatrix);
-            if (this.parent)
-            { this._localToWorldRotationMatrix.append(this.parent.localToWorldRotationMatrix); }
-
-            this._localToWorldRotationMatrixInvalid = false;
-        }
-
-        return this._localToWorldRotationMatrix;
-    }
-
-    get worldToLocalRotationMatrix()
-    {
-        const mat = this.localToWorldRotationMatrix.clone();
-        mat.invert();
-
-        return mat;
-    }
+        const matrix = this.localToWorldRotationMatrix.value.clone().invert();
+        return matrix;
+    });
 
     /**
      * 将方向从局部空间转换到世界空间。
@@ -431,8 +390,10 @@ export class Transform extends Component
     localToWolrdDirection(direction: Vector3)
     {
         if (!this.parent)
-        { return direction.clone(); }
-        const matrix = this.parent.localToWorldRotationMatrix;
+        {
+            return direction.clone();
+        }
+        const matrix = this.parent.localToWorldRotationMatrix.value;
         direction = matrix.transformPoint3(direction);
 
         return direction;
@@ -449,8 +410,10 @@ export class Transform extends Component
     localToWolrdBox(box: Box3, out = new Box3())
     {
         if (!this.parent)
-        { return out.copy(box); }
-        const matrix = this.parent.localToWorldMatrix;
+        {
+            return out.copy(box);
+        }
+        const matrix = this.parent.localToWorldMatrix.value;
         box.applyMatrixTo(matrix, out);
 
         return out;
@@ -476,8 +439,10 @@ export class Transform extends Component
     localToWorldPoint(position: Vector3)
     {
         if (!this.parent)
-        { return position.clone(); }
-        position = this.parent.localToWorldMatrix.transformPoint3(position);
+        {
+            return position.clone();
+        }
+        position = this.parent.localToWorldMatrix.value.transformPoint3(position);
 
         return position;
     }
@@ -502,8 +467,10 @@ export class Transform extends Component
     localToWorldVector(vector: Vector3)
     {
         if (!this.parent)
-        { return vector.clone(); }
-        const matrix = this.parent.localToWorldMatrix;
+        {
+            return vector.clone();
+        }
+        const matrix = this.parent.localToWorldMatrix.value;
         vector = matrix.transformVector3(vector);
 
         return vector;
@@ -527,8 +494,10 @@ export class Transform extends Component
     worldToLocalDirection(direction: Vector3)
     {
         if (!this.parent)
-        { return direction.clone(); }
-        const matrix = this.parent.localToWorldRotationMatrix.clone().invert();
+        {
+            return direction.clone();
+        }
+        const matrix = this.parent.localToWorldRotationMatrix.value.clone().invert();
         direction = matrix.transformPoint3(direction);
 
         return direction;
@@ -542,8 +511,10 @@ export class Transform extends Component
     worldToLocalPoint(position: Vector3, out = new Vector3())
     {
         if (!this.parent)
-        { return out.copy(position); }
-        position = this.parent.worldToLocalMatrix.transformPoint3(position, out);
+        {
+            return out.copy(position);
+        }
+        position = this.parent.worldToLocalMatrix.value.transformPoint3(position, out);
 
         return position;
     }
@@ -556,8 +527,10 @@ export class Transform extends Component
     worldToLocalVector(vector: Vector3)
     {
         if (!this.parent)
-        { return vector.clone(); }
-        vector = this.parent.worldToLocalMatrix.transformVector3(vector);
+        {
+            return vector.clone();
+        }
+        vector = this.parent.worldToLocalMatrix.value.transformVector3(vector);
 
         return vector;
     }
@@ -570,102 +543,8 @@ export class Transform extends Component
      */
     rayWorldToLocal(worldRay: Ray3, localRay = new Ray3())
     {
-        this.worldToLocalMatrix.transformRay(worldRay, localRay);
+        this.worldToLocalMatrix.value.transformRay(worldRay, localRay);
 
         return localRay;
-    }
-
-    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
-    {
-        Object.assign(renderObject.uniforms, this._renderObject.uniforms);
-    }
-
-    private readonly _position = new Vector3();
-    private readonly _rotation = new Vector3();
-    private readonly _orientation = new Quaternion();
-    private readonly _scale = new Vector3(1, 1, 1);
-
-    protected readonly _matrix = new Matrix4x4();
-    protected _matrixInvalid = false;
-
-    protected readonly _rotationMatrix = new Matrix4x4();
-    protected _rotationMatrixInvalid = false;
-
-    protected readonly _localToWorldMatrix = new Matrix4x4();
-    protected _localToWorldMatrixInvalid = false;
-
-    protected readonly _ITlocalToWorldMatrix = new Matrix4x4();
-    protected _ITlocalToWorldMatrixInvalid = false;
-
-    protected readonly _worldToLocalMatrix = new Matrix4x4();
-    protected _worldToLocalMatrixInvalid = false;
-
-    protected readonly _localToWorldRotationMatrix = new Matrix4x4();
-    protected _localToWorldRotationMatrixInvalid = false;
-
-    private _renderObject = new RenderObject();
-
-    private _positionChanged(newValue: number, oldValue: number, _object: Vector3, _property: string)
-    {
-        if (!mathUtil.equals(newValue, oldValue))
-        { this._invalidateTransform(); }
-    }
-
-    private _rotationChanged(newValue: number, oldValue: number, _object: Vector3, _property: string)
-    {
-        if (!mathUtil.equals(newValue, oldValue))
-        {
-            this._invalidateTransform();
-            this._rotationMatrixInvalid = true;
-        }
-    }
-
-    private _scaleChanged(newValue: number, oldValue: number, _object: Vector3, _property: string)
-    {
-        if (!mathUtil.equals(newValue, oldValue))
-        { this._invalidateTransform(); }
-    }
-
-    private _invalidateTransform()
-    {
-        if (this._matrixInvalid) return;
-        this._matrixInvalid = true;
-
-        this.emit('transformChanged', this);
-        this._invalidateSceneTransform();
-    }
-
-    private _invalidateSceneTransform()
-    {
-        if (this._localToWorldMatrixInvalid) return;
-
-        this._localToWorldMatrixInvalid = true;
-        this._worldToLocalMatrixInvalid = true;
-        this._ITlocalToWorldMatrixInvalid = true;
-        this._localToWorldRotationMatrixInvalid = true;
-
-        this.emit('scenetransformChanged', this);
-        //
-        if (this.gameObject)
-        {
-            for (let i = 0, n = this.gameObject.numChildren; i < n; i++)
-            {
-                this.gameObject.getChildAt(i).transform._invalidateSceneTransform();
-            }
-        }
-    }
-
-    private _updateMatrix()
-    {
-        this._matrix.fromTRS(this._position, this._rotation, this._scale);
-    }
-
-    private _updateLocalToWorldMatrix()
-    {
-        this._localToWorldMatrix.copy(this.matrix);
-        if (this.parent)
-        { this._localToWorldMatrix.append(this.parent.localToWorldMatrix); }
-        this.emit('updateLocalToWorldMatrix', this);
-        console.assert(!isNaN(this._localToWorldMatrix.elements[0]));
     }
 }

@@ -1,4 +1,4 @@
-import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
+import { BindingResource, RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';
@@ -73,13 +73,12 @@ export class SkyBoxRenderer
         //
         skybox.beforeRender(this.renderObject, scene, camera);
 
-        //
-        this.renderObject.uniforms.u_viewProjection = camera.viewProjection;
-        this.renderObject.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
-        this.renderObject.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-        this.renderObject.uniforms.u_cameraPos = camera.transform.worldPosition;
-        this.renderObject.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+        const cameraUniforms = camera.getUniforms();
+        const bindingResources = this.renderObject.bindingResources as { [key: string]: BindingResource };
 
+        bindingResources.cameraUniforms = { value: cameraUniforms };
+
+        //
         (((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[])).push(this.renderObject);
     }
 }

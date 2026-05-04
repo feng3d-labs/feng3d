@@ -37,6 +37,10 @@ export class SkinnedMeshRenderer extends Renderable
     {
         super.beforeRender(renderObject, scene, camera);
 
+        this.transform.uniforms.value;
+
+        renderObject.bindingResources.transformUniforms.value = this.transform.uniforms.value;
+
         renderObject.uniforms.u_modelMatrix = () => this.u_modelMatrix;
         renderObject.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
         //
@@ -52,16 +56,6 @@ export class SkinnedMeshRenderer extends Renderable
     dispose()
     {
         super.dispose();
-    }
-
-    private get u_modelMatrix()
-    {
-        return this.transform.localToWorldMatrix;
-    }
-
-    private get u_ITModelMatrix()
-    {
-        return this.transform.ITlocalToWorldMatrix;
     }
 
     private get u_skeletonGlobalMatriices()

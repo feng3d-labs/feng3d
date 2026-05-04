@@ -17,19 +17,12 @@ export class ForwardRenderer
         const blenditems = scene.getPickCache(camera).blenditems;
         const unblenditems = scene.getPickCache(camera).unblenditems;
 
+        const cameraUniforms = camera.getUniforms();
         const ctime = (Date.now() / 1000) % 3600;
         const globalUniforms: GlobalUniforms = {
-            u_projectionMatrix: camera.lens.matrix,
-            u_viewProjection: camera.viewProjection,
-            u_viewMatrix: camera.transform.worldToLocalMatrix,
-            u_cameraMatrix: camera.transform.localToWorldMatrix,
-            u_cameraPos: camera.transform.worldPosition,
-            u_skyBoxSize: camera.lens.far / Math.sqrt(3),
-            u_scaleByDepth: camera.getScaleByDepth(1),
             u_sceneAmbientColor: scene.ambientColor,
             _Time: new Vector4(ctime / 20, ctime, ctime * 2, ctime * 3)
         };
-        //
 
         unblenditems.concat(blenditems).forEach((renderable) =>
         {
@@ -38,11 +31,12 @@ export class ForwardRenderer
 
             const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
 
+            bindingResources.cameraUniforms = { value: cameraUniforms };
             bindingResources.globalUniforms = { value: globalUniforms };
 
             //
-            const u_mvMatrix = lazy.getvalue(renderObject.uniforms.u_modelMatrix).clone().append(lazy.getvalue(globalUniforms.u_viewMatrix));
-            const u_ITMVMatrix = lazy.getvalue(renderObject.uniforms.u_mvMatrix).clone().invert().transpose();
+            const u_mvMatrix = lazy.getvalue(renderObject.uniforms.u_modelMatrix).clone().append(lazy.getvalue(cameraUniforms.u_viewMatrix));
+            const u_ITMVMatrix = u_mvMatrix.clone().invert().transpose();
 
             bindingResources.modelUniforms = {
                 value: {

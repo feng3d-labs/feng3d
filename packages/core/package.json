@@ -32,6 +32,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@feng3d/reactivity": "*",
     "@feng3d/event": "*",
     "@feng3d/filesystem": "*",
     "@feng3d/math": "*",

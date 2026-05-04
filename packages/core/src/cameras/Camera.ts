@@ -205,6 +205,20 @@ export class Camera extends Component
         return scale;
     }
 
+    getUniforms()
+    {
+        const cameraUniforms: CameraUniforms = {
+            u_projectionMatrix: this.lens.matrix,
+            u_viewProjection: this.viewProjection,
+            u_viewMatrix: this.transform.worldToLocalMatrix,
+            u_cameraMatrix: this.transform.localToWorldMatrix,
+            u_cameraPos: this.transform.worldPosition,
+            u_skyBoxSize: this.lens.far / Math.sqrt(3),
+            u_scaleByDepth: this.getScaleByDepth(1),
+        };
+        return cameraUniforms;
+    }
+
     /**
      * 处理场景变换改变事件
      */

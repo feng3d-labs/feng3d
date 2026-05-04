@@ -10,11 +10,11 @@ export { };
 
 declare global
 {
-    export interface GlobalUniforms
+    export interface CameraUniforms
     {
         /**
-         * 投影矩阵
-         */
+        * 投影矩阵
+        */
         u_projectionMatrix: Matrix4x4;
 
         /**
@@ -42,7 +42,10 @@ declare global
          * 单位深度映射到屏幕像素值
          */
         u_scaleByDepth: number;
+    }
 
+    export interface GlobalUniforms
+    {
         /**
          * 场景环境光
          */
