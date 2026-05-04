@@ -1,9 +1,8 @@
-import { IEvent } from '@feng3d/event';
-import { Box3, Ray3, Vector3 } from '@feng3d/math';
+import { Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
+import { computed, reactive } from '@feng3d/reactivity';
 import { CullFace } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
@@ -40,7 +39,7 @@ export class Renderable extends RayCastable
      */
     @oav({ component: 'OAVPick', tooltip: '几何体，提供模型以形状', componentParam: { accepttype: 'geometry', datatype: 'geometry' } })
     @serialize
-    geometry: GeometryLike = Geometry.getDefault('Cube');
+    readonly geometry: GeometryLike = Geometry.getDefault('Cube');
 
     /**
      * 材质
@@ -60,16 +59,20 @@ export class Renderable extends RayCastable
     constructor()
     {
         super();
-        watcher.watch(this as Renderable, 'geometry', this._onGeometryChanged, this);
+
+        const r_this = reactive(this as Renderable);
+
+        r_this.selfLocalBounds = computed(() =>
+        {
+            r_this.geometry;
+
+            //
+            const geometry = this.geometry || Geometry.getDefault('Cube');
+
+            return geometry.bounding;
+        });
+
         this._lightPicker = new LightPicker(this);
-    }
-
-    init()
-    {
-        super.init();
-        this.on('scenetransformChanged', this._onScenetransformChanged, this);
-
-        this.on('getSelfBounds', this._onGetSelfBounds, this);
     }
 
     /**
@@ -122,7 +125,7 @@ export class Renderable extends RayCastable
         const localNormal = new Vector3();
 
         // 检测射线与边界的碰撞
-        const rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.origin, localRay.direction, localNormal);
+        const rayEntryDistance = this.selfLocalBounds.value.rayIntersection(localRay.origin, localRay.direction, localNormal);
         if (rayEntryDistance === Number.MAX_VALUE)
         { return null; }
 
@@ -163,35 +166,13 @@ export class Renderable extends RayCastable
      */
     dispose()
     {
-        this.geometry = <any>null;
-        this.material = <any>null;
+        const r_this = reactive(this as Renderable);
+
+        r_this.geometry = <any>null;
+        r_this.material = <any>null;
         super.dispose();
     }
 
     //
     private _lightPicker: LightPicker;
-
-    private _onGeometryChanged(value: GeometryLike, oldValue: GeometryLike)
-    {
-        if (oldValue)
-        {
-            oldValue.off('boundsInvalid', this._onBoundsInvalid, this);
-        }
-        if (value)
-        {
-            value.on('boundsInvalid', this._onBoundsInvalid, this);
-        }
-        this.geometry = this.geometry || Geometry.getDefault('Cube');
-        this._onBoundsInvalid();
-    }
-
-    protected _updateBounds()
-    {
-        this._selfLocalBounds = this.geometry.bounding;
-    }
-
-    protected _onGetSelfBounds(event: IEvent<{ bounds: Box3[]; }>)
-    {
-        event.data.bounds.push(this.geometry.bounding);
-    }
 }
