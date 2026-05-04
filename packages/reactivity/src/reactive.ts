@@ -129,8 +129,22 @@ export function isProxy(value: any): boolean
  * 响应式类型。
  *
  * 表示一个对象的所有属性都是响应式的。
+ * Ref 和 Computed 属性都不解包，保持原类型。
  */
-export type Reactive<T> = UnReadonly<UnwrapRefSimple<T>>;
+export type Reactive<T> = UnReadonly<{
+    [K in keyof T]: UnwrapRefSimpleNoRef<T[K]>
+}>;
+
+/**
+ * 解包类型（不解包 Ref 和 Computed）。
+ *
+ * 递归地解包响应式对象的类型，但不解包 Ref 和 Computed。
+ */
+type UnwrapRefSimpleNoRef<T> =
+    T extends Builtin | Ref | Computed | RefUnwrapBailTypes[keyof RefUnwrapBailTypes]
+        ? T :
+        T extends object ? { [K in keyof T]: UnwrapRefSimpleNoRef<T[K]> } :
+        T;
 
 /**
  * 原始类型。

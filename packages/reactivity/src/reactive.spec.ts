@@ -1,8 +1,44 @@
 import { describe, expect, test } from 'vitest';
 import { computed, effect, isProxy, isReactive, isRef, reactive, ref, toRaw } from '.';
+import { ComputedReactivity } from './computed';
 
 describe('响应式/reactive', () =>
 {
+    test('对象', () =>
+    {
+        class A
+        {
+            readonly a = computed(() => 1);
+
+            readonly c = ref(1);
+
+            readonly b = computed(() =>
+            {
+                const r_this = reactive(this);
+                r_this.a;
+
+                return this.a.value + 1;
+            });
+        }
+
+        const a = new A();
+        expect(a.a instanceof ComputedReactivity).toBe(true);
+
+        expect(a.a.value).toBe(1);
+        expect(a.b.value).toBe(2);
+
+        const r_a = reactive(a);
+        // Computed 属性不解包，返回 Computed 对象
+        expect(r_a.a.value).toBe(1);
+        expect(r_a.c.value).toBe(1);
+
+        // 赋值 Computed 对象
+        r_a.a = computed(() => 2);
+        expect(a.a.value).toBe(2);
+
+        expect(a.b.value).toBe(3);
+    });
+
     test('对象', () =>
     {
         const original = { foo: 1 };
@@ -257,11 +293,11 @@ describe('响应式/reactive', () =>
         const b = computed(() => 1);
         const obj = reactive({ a, b });
 
-        // 检查类型
-        obj.a + 1;
-        obj.b + 1;
-        expect(typeof obj.a).toBe(`number`);
-        expect(typeof obj.b).toBe(`number`);
+        // Computed 属性不解包，需要通过 .value 访问
+        obj.a.value + 1;
+        obj.b.value + 1;
+        expect(typeof obj.a.value).toBe(`number`);
+        expect(typeof obj.b.value).toBe(`number`);
     });
 
     test('应允许将属性从一个 ref 设置为另一个 ref', () =>
@@ -269,7 +305,7 @@ describe('响应式/reactive', () =>
         const foo = ref(0);
         const bar = ref(1);
         const observed = reactive({ a: foo });
-        const dummy = computed(() => observed.a);
+        const dummy = computed(() => observed.a.value);
 
         expect(dummy.value).toBe(0);
 

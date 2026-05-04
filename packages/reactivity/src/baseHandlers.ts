@@ -87,11 +87,6 @@ class BaseReactiveHandler implements ProxyHandler<Target>
         // 追踪属性访问
         PropertyReactivity.track(target, TrackOpTypes.GET, key as any);
 
-        // 自动解包 ref 值
-        if (isRef(res))
-        {
-            return targetIsArray && isIntegerKey(key) ? res : res.value;
-        }
 
         // 自动转换对象为响应式
         if (isObject(res))
