@@ -23,8 +23,7 @@
     "lint": "eslint \"packages/**/*.ts\"",
     "lintfix": "eslint \"packages/**/*.ts\" --fix",
     "docs": "typedoc",
-    "release": "npm run clean && npm run lint && npm run test && npm run build && npm run docs",
-    "prepare": "husky"
+    "release": "npm run clean && npm run lint && npm run test && npm run build && npm run docs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -33,18 +32,11 @@
     "@webgpu/types": "0.1.60",
     "eslint": "10.2.1",
     "globals": "17.5.0",
-    "husky": "9.1.7",
-    "lint-staged": "16.4.0",
     "rimraf": "6.1.3",
     "typedoc": "0.28.19",
     "typescript": "6.0.3",
     "vite": "5.4.21",
     "vitest": "3.1.3"
-  },
-  "lint-staged": {
-    "*.{js,ts}": [
-      "eslint --fix --max-warnings 0"
-    ]
   },
   "repository": {
     "type": "git",
