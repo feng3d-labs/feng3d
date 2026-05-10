@@ -79,7 +79,7 @@ export class HoldSizeComponent extends Component
 
     private _getDepthScale(camera: Camera)
     {
-        const cameraTranform = camera.transform.localToWorldMatrix;
+        const cameraTranform = camera.transform.localToWorldMatrix.value;
         const distance = this.transform.worldPosition.subTo(cameraTranform.getPosition());
         if (distance.length === 0)
         {

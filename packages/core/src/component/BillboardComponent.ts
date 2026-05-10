@@ -58,7 +58,7 @@ export class BillboardComponent extends Component
         {
             const camera = this.camera;
             const cameraPos = camera.transform.worldPosition;
-            const yAxis = camera.transform.localToWorldMatrix.getAxisY();
+            const yAxis = camera.transform.localToWorldMatrix.value.getAxisY();
             _localToWorldMatrix.lookAt(cameraPos, yAxis);
         }
     }

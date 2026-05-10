@@ -120,7 +120,7 @@ export class Camera extends Component
         if (this._viewProjectionInvalid)
         {
             // 场景空间转摄像机空间
-            this._viewProjection.copy(this.transform.worldToLocalMatrix);
+            this._viewProjection.copy(this.transform.worldToLocalMatrix.value);
             // +摄像机空间转投影空间 = 场景空间转投影空间
             this._viewProjection.append(this.lens.matrix);
             this._viewProjectionInvalid = false;
@@ -163,7 +163,7 @@ export class Camera extends Component
      */
     getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
     {
-        return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
+        return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix.value);
     }
 
     /**
@@ -173,7 +173,7 @@ export class Camera extends Component
      */
     project(point3d: Vector3): Vector3
     {
-        const v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformPoint3(point3d));
+        const v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.value.transformPoint3(point3d));
 
         return v;
     }
@@ -188,7 +188,7 @@ export class Camera extends Component
      */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        return this.transform.localToWorldMatrix.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
+        return this.transform.localToWorldMatrix.value.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
     }
 
     /**
@@ -210,8 +210,8 @@ export class Camera extends Component
         const cameraUniforms: CameraUniforms = {
             u_projectionMatrix: this.lens.matrix,
             u_viewProjection: this.viewProjection,
-            u_viewMatrix: this.transform.worldToLocalMatrix,
-            u_cameraMatrix: this.transform.localToWorldMatrix,
+            u_viewMatrix: this.transform.worldToLocalMatrix.value,
+            u_cameraMatrix: this.transform.localToWorldMatrix.value,
             u_cameraPos: this.transform.worldPosition,
             u_skyBoxSize: this.lens.far / Math.sqrt(3),
             u_scaleByDepth: this.getScaleByDepth(1),

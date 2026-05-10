@@ -112,7 +112,7 @@ export class BoundingBox
      */
     protected _updateSelfWorldBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix);
+        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix.value);
     }
 
     /**

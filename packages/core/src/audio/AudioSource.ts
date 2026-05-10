@@ -292,7 +292,7 @@ export class AudioSource extends Behaviour
 
     private _onScenetransformChanged()
     {
-        const localToWorldMatrix = this.transform.localToWorldMatrix;
+        const localToWorldMatrix = this.transform.localToWorldMatrix.value;
         const scenePosition = localToWorldMatrix.getPosition();
 
         //

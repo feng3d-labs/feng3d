@@ -146,7 +146,7 @@ export class FPSController extends Behaviour
             // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
             // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
-            const matrix = this.transform.localToWorldMatrix;
+            const matrix = this.transform.localToWorldMatrix.value;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -154,7 +154,7 @@ export class FPSController extends Behaviour
                 up.scaleNumber(-1);
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-            this.transform.localToWorldMatrix = matrix;
+            this.transform.setLocalToWorldMatrix(matrix);
             //
             this.preMousePoint = this.mousePoint;
             this.mousePoint = null;
@@ -173,9 +173,9 @@ export class FPSController extends Behaviour
         accelerationVec.scaleNumber(this.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = this.transform.matrix.getAxisX();
-        const up = this.transform.matrix.getAxisY();
-        const forward = this.transform.matrix.getAxisZ();
+        const right = this.transform.localToWorldMatrix.value.getAxisX();
+        const up = this.transform.localToWorldMatrix.value.getAxisY();
+        const forward = this.transform.localToWorldMatrix.value.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);

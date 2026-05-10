@@ -241,7 +241,7 @@ export class HoverController extends LookAtController
                     this._pos.x = this._lookAtObject.transform.worldPosition.x;
                     this._pos.y = this._lookAtObject.transform.worldPosition.y;
                     this._pos.z = this._lookAtObject.transform.worldPosition.z;
-                    this._targetObject.transform.parent.worldToLocalMatrix.transformPoint3(this._pos, this._pos);
+                    this._targetObject.transform.parent.worldToLocalMatrix.value.transformPoint3(this._pos, this._pos);
                 }
                 else
                 {
