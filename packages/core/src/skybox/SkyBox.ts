@@ -1,8 +1,8 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
 import { RenderObject, TextureView } from '@feng3d/webgpu';
-import { reactive } from '../../../reactivity/src/reactive';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
 import { AddComponentMenu } from '../Menu';

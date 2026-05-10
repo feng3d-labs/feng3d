@@ -34,7 +34,7 @@ export class WebGPU
      */
     async init(options?: GPURequestAdapterOptions, descriptor?: GPUDeviceDescriptor)
     {
-        const r_this = reactive(this);
+        const r_this = reactive(this as WebGPU);
 
         r_this.device = await getGPUDevice(options, descriptor);
         //
