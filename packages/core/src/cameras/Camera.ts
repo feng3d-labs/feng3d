@@ -10,6 +10,7 @@ import { LensBase } from './lenses/LensBase';
 import { OrthographicLens } from './lenses/OrthographicLens';
 import { PerspectiveLens } from './lenses/PerspectiveLens';
 import { Projection } from './Projection';
+import { BufferBinding } from '@feng3d/webgpu';
 
 declare global
 {
@@ -28,6 +29,15 @@ declare global
         Camera: GameObject;
     }
 }
+
+declare module '@feng3d/webgpu'
+{
+    export interface BindingResources
+    {
+        cameraUniforms: BufferBinding<TransformUniforms>;
+    }
+}
+
 
 /**
  * 摄像机

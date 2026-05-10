@@ -1,0 +1,32 @@
+{
+  "name": "tsl-examples",
+  "version": "0.0.1",
+  "description": "feng3d实现tsl示例",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "clean": "rimraf \"{lib,dist,public}\"",
+    "types": "tsc",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.9",
+    "@types/stats.js": "^0.17.0",
+    "fast-glob": "^3.3.3",
+    "fs-extra": "^11.3.0",
+    "rimraf": "6.0.1",
+    "stats.js": "^0.17.0",
+    "typescript": "5.8.3",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@feng3d/tsl": "*",
+    "@feng3d/reactivity": "^1.0.7",
+    "@feng3d/render-api": "^0.1.0",
+    "@feng3d/webgpu": "^0.1.0",
+    "dat.gui": "^0.7.9",
+    "gl-matrix": "^3.4.3"
+  }
+}

@@ -1,0 +1,68 @@
+{
+	"test": [
+		"test/sky"
+	],
+	"webgpu - Basic Graphics": [
+		"webgpu/helloTriangle",
+		"webgpu/fractalCube"
+	],
+	"webgl - examples": [
+		"webgl-examples/sample1",
+		"webgl-examples/sample2",
+		"webgl-examples/sample3",
+		"webgl-examples/sample4",
+		"webgl-examples/sample5",
+		"webgl-examples/sample6",
+		"webgl-examples/sample7",
+		"webgl-examples/sample8"
+	],
+	"regl - examples": [
+		"regl-examples/basic",
+		"regl-examples/batch",
+		"regl-examples/cube",
+		"regl-examples/bunny",
+		"regl-examples/camera",
+		"regl-examples/cloth"
+	],
+	"WebGL2Samples": [
+		"WebGL2Samples/draw_image_space",
+		"WebGL2Samples/draw_instanced",
+		"WebGL2Samples/draw_primitive_restart",
+		"WebGL2Samples/draw_range_arrays",
+		"WebGL2Samples/fbo_blit",
+		"WebGL2Samples/fbo_multisample",
+		"WebGL2Samples/fbo_new_blend_equation",
+		"WebGL2Samples/fbo_rtt_draw_buffers",
+		"WebGL2Samples/fbo_rtt_texture_array",
+		"WebGL2Samples/fbo_rtt_depth_texture",
+		"WebGL2Samples/fbo_read_pixels",
+		"WebGL2Samples/sampler_object",
+		"WebGL2Samples/sampler_filter",
+		"WebGL2Samples/sampler_wrap",
+		"WebGL2Samples/glsl_centroid",
+		"WebGL2Samples/glsl_flat_smooth_interpolators",
+		"WebGL2Samples/glsl_non_square_matrix",
+		"WebGL2Samples/query_occlusion",
+		"WebGL2Samples/draw_instanced_ubo",
+		"WebGL2Samples/buffer_copy",
+		"WebGL2Samples/buffer_uniform",
+		"WebGL2Samples/texture_2d_array",
+		"WebGL2Samples/texture_3d",
+		"WebGL2Samples/texture_derivative",
+		"WebGL2Samples/texture_fetch",
+		"WebGL2Samples/texture_format",
+		"WebGL2Samples/texture_grad",
+		"WebGL2Samples/texture_immutable",
+		"WebGL2Samples/texture_integer",
+		"WebGL2Samples/texture_lod",
+		"WebGL2Samples/texture_offset",
+		"WebGL2Samples/texture_pixel_store",
+		"WebGL2Samples/texture_srgb",
+		"WebGL2Samples/geo_vertex_format",
+		"WebGL2Samples/transform_feedback_interleaved",
+		"WebGL2Samples/transform_feedback_separated",
+		"WebGL2Samples/transform_feedback_separated_2",
+		"WebGL2Samples/transform_feedback_instanced",
+		"WebGL2Samples/texture_vertex"
+	]
+}

@@ -1,7 +1,6 @@
 import { Color4 } from '@feng3d/math';
-import { lazy } from '@feng3d/polyfill';
-import { Index, RenderMode, Shader } from '@feng3d/renderer';
-import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
+import { Index, Shader } from '@feng3d/renderer';
+import { BindingResource, RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable } from '../../core/Renderable';
@@ -22,19 +21,6 @@ declare global
 
 export class WireframeRenderer
 {
-    private renderObject: RenderObject;
-
-    init()
-    {
-        if (!this.renderObject)
-        {
-            this.renderObject = new RenderObject();
-            const renderParams = this.renderObject.renderParams;
-            renderParams.renderMode = RenderMode.LINES;
-            // renderParams.depthMask = false;
-        }
-    }
-
     /**
      * 渲染
      */
@@ -67,57 +53,53 @@ export class WireframeRenderer
     {
         const renderObject = renderable.renderObject.value;
 
-        const renderMode = lazy.getvalue(renderObject.renderParams.renderMode);
-        if (renderMode === RenderMode.POINTS
-            || renderMode === RenderMode.LINES
-            || renderMode === RenderMode.LINE_LOOP
-            || renderMode === RenderMode.LINE_STRIP
+        const renderMode = renderObject.pipeline.primitive.topology;
+        if (renderMode === 'point-list'
+            || renderMode === 'line-list'
+            || renderMode === 'line-strip'
         )
         { return; }
 
-        this.init();
+        const cameraUniforms = camera.getUniforms();
 
-        const uniforms = this.renderObject.uniforms;
-        //
-        uniforms.u_projectionMatrix = camera.lens.matrix;
-        uniforms.u_viewProjection = camera.viewProjection;
-        uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
-        uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-        uniforms.u_cameraPos = camera.transform.worldPosition;
-        uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-        uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
+        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
+
+        bindingResources.cameraUniforms = { value: cameraUniforms };
 
         //
-        this.renderObject.next = renderObject;
+        const indices = renderObject.indices;
+        if (indices.length < 3) return;
 
-        //
-        const oldIndexBuffer = renderObject.index;
-        if (oldIndexBuffer.count < 3) return;
-        if (!renderObject.wireframeindexBuffer || renderObject.wireframeindexBuffer.count !== 2 * oldIndexBuffer.count)
+        const wireframeindices = new Uint16Array(indices.length * 2);
+        for (let i = 0; i < indices.length; i += 3)
         {
-            const wireframeindices: number[] = [];
-            const indices = lazy.getvalue(oldIndexBuffer.indices);
-            for (let i = 0; i < indices.length; i += 3)
-            {
-                wireframeindices.push(
-                    indices[i], indices[i + 1],
-                    indices[i], indices[i + 2],
-                    indices[i + 1], indices[i + 2],
-                );
-            }
-            renderObject.wireframeindexBuffer = new Index();
-            renderObject.wireframeindexBuffer.indices = wireframeindices;
+            wireframeindices[i * 2] = indices[i];
+            wireframeindices[i * 2 + 1] = indices[i + 1];
+            wireframeindices[i * 2 + 2] = indices[i];
+            wireframeindices[i * 2 + 3] = indices[i + 2];
+            wireframeindices[i * 2 + 4] = indices[i + 1];
+            wireframeindices[i * 2 + 5] = indices[i + 2];
         }
+
         renderObject.wireframeShader = renderObject.wireframeShader || new Shader({ shaderName: 'wireframe' });
-        this.renderObject.index = renderObject.wireframeindexBuffer;
 
-        this.renderObject.uniforms.u_wireframeColor = wireframeColor;
+        const newRenderObject: RenderObject = {
+            ...renderObject,
+            indices: wireframeindices,
+            bindingResources: {
+                ...renderObject.bindingResources,
+                wireframe: { value: { u_wireframeColor: wireframeColor } }
+            },
+            pipeline: {
+                ...renderObject.pipeline,
+                fragment: {
+                    ...renderObject.pipeline.fragment,
+                    code: getWireframeShaderCode(),
+                }
+            },
+        };
 
-        //
-        this.renderObject.shader = renderObject.wireframeShader;
-        this.renderObject.shader = null;
-
-        ((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(this.renderObject);
+        ((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(newRenderObject);
         //
     }
 }
