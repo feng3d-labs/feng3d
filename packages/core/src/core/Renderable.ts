@@ -32,8 +32,6 @@ export class Renderable extends RayCastable
 {
     get single() { return true; }
 
-    readonly renderObject = new RenderObject();
-
     /**
      * 几何体
      */
@@ -74,6 +72,19 @@ export class Renderable extends RayCastable
 
         this._lightPicker = new LightPicker(this);
     }
+
+    readonly renderObject = computed<RenderObject>(() =>
+    {
+        const ro = this._renderObject ||= new RenderObject();
+
+        this.gameObject.components.forEach((element) =>
+        {
+            element.beforeRender(ro, null, null);
+        });
+
+        return this._renderObject;
+    });
+    private _renderObject = new RenderObject();
 
     /**
      * 渲染前执行函数

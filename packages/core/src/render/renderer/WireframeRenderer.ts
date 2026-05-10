@@ -65,8 +65,7 @@ export class WireframeRenderer
      */
     drawGameObject(submit: Submit, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
     {
-        const renderObject = renderable.renderObject;
-        renderable.beforeRender(renderObject, scene, camera);
+        const renderObject = renderable.renderObject.value;
 
         const renderMode = lazy.getvalue(renderObject.renderParams.renderMode);
         if (renderMode === RenderMode.POINTS

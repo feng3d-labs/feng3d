@@ -55,7 +55,7 @@ export class MouseRenderer extends EventEmitter
             const uObjectID = this.objects.length;
             this.objects[uObjectID] = object;
 
-            const renderObject = renderable.renderObject;
+            const renderObject = renderable.renderObject.value;
 
             renderObject.uniforms.u_objectID = uObjectID;
             // super.drawRenderables(renderContext, model);

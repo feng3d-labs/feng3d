@@ -2,13 +2,24 @@ import { Box3, Euler, Matrix4x4, Quaternion, Ray3, Vector3 } from '@feng3d/math'
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { batchRun, computed, reactive } from '@feng3d/reactivity';
+import { BufferBinding, RenderObject } from '@feng3d/webgpu';
+import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
+import { Scene } from '../scene/Scene';
 
 declare global
 {
     export interface MixinsComponentMap
     {
         Transform: Transform;
+    }
+}
+
+declare module '@feng3d/webgpu'
+{
+    export interface BindingResources
+    {
+        transform: BufferBinding<TransformUniforms>;
     }
 }
 
@@ -27,13 +38,13 @@ export class Transform extends Component
 
     get single() { return true; }
 
-    uniforms = computed(() =>
+    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        return {
-            u_modelMatrix: this.localToWorldMatrix.value,
-            u_ITModelMatrix: this.ITlocalToWorldMatrix.value,
-        };
-    });
+        const transformUniforms = (renderObject.bindingResources.transform ||= { value: {} as TransformUniforms }).value;
+        //
+        transformUniforms.u_modelMatrix = this.matrix.value;
+        transformUniforms.u_ITModelMatrix = this.ITlocalToWorldMatrix.value;
+    }
 
     /**
      * 创建一个实体，该类为虚类

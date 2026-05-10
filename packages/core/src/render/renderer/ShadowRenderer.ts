@@ -243,8 +243,7 @@ export class ShadowRenderer
      */
     private drawGameObject(renderPass: RenderPass, renderable: Renderable, scene: Scene, camera: Camera)
     {
-        const renderObject = renderable.renderObject;
-        renderable.beforeRender(renderObject, scene, camera);
+        const renderObject = renderable.renderObject.value;
         renderObject.shadowShader = renderObject.shadowShader || new Shader({ shaderName: 'shadow' });
 
         //

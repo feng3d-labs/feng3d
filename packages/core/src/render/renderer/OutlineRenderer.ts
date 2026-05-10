@@ -36,7 +36,7 @@ export class OutlineRenderer
             const renderable = unblenditems[i];
             if (renderable.getComponent(OutLineComponent) || renderable.getComponent(CartoonComponent))
             {
-                const renderObject = renderable.renderObject;
+                const renderObject = renderable.renderObject.value;
                 renderable.beforeRender(renderObject, scene, camera);
 
                 this.renderObject.next = renderObject;

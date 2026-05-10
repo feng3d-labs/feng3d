@@ -1,6 +1,6 @@
 import { Matrix4x4 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderObject } from '@feng3d/webgpu';
+import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { RegisterComponent } from '../../component/Component';
 import { HideFlags } from '../../core/HideFlags';
@@ -13,6 +13,14 @@ declare global
     export interface MixinsComponentMap
     {
         SkinnedMeshRenderer: SkinnedMeshRenderer
+    }
+}
+
+declare module '@feng3d/webgpu'
+{
+    export interface BindingResources
+    {
+        skinned: BufferBinding<SkinnedUniforms>;
     }
 }
 
@@ -37,14 +45,9 @@ export class SkinnedMeshRenderer extends Renderable
     {
         super.beforeRender(renderObject, scene, camera);
 
-        this.transform.uniforms.value;
+        const skinnedUniforms = (renderObject.bindingResources.skinned ||= { value: {} as SkinnedUniforms }).value;
 
-        renderObject.bindingResources.transformUniforms.value = this.transform.uniforms.value;
-
-        renderObject.uniforms.u_modelMatrix = () => this.u_modelMatrix;
-        renderObject.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
-        //
-        renderObject.uniforms.u_skeletonGlobalMatriices = this.u_skeletonGlobalMatriices;
+        skinnedUniforms.u_skeletonGlobalMatriices = this.u_skeletonGlobalMatriices;
 
         renderObject.shaderMacro.HAS_SKELETON_ANIMATION = true;
         renderObject.shaderMacro.NUM_SKELETONJOINT = this.u_skeletonGlobalMatriices.length;

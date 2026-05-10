@@ -27,7 +27,7 @@ export class ForwardRenderer
         unblenditems.concat(blenditems).forEach((renderable) =>
         {
             // 绘制
-            const renderObject = renderable.renderObject;
+            const renderObject = renderable.renderObject.value;
 
             const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
 

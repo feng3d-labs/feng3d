@@ -56,7 +56,7 @@ declare global
         _Time: Vector4;
     }
 
-    export interface MixinsUniforms
+    export interface TransformUniforms
     {
         /**
          * 模型矩阵
@@ -64,14 +64,28 @@ declare global
         u_modelMatrix: Matrix4x4;
 
         /**
-         * 模型-摄像机 矩阵
-         */
-        u_mvMatrix: Matrix4x4;
-        /**
          * 模型逆转置矩阵,用于计算全局法线
          * 参考：http://blog.csdn.net/christina123y/article/details/5963679
          */
         u_ITModelMatrix: Matrix4x4;
+    }
+
+    export interface SkinnedUniforms
+    {
+        /**
+         * 骨骼全局矩阵
+         */
+        u_skeletonGlobalMatriices: Matrix4x4[];
+    }
+
+    export interface MixinsUniforms
+    {
+
+
+        /**
+         * 模型-摄像机 矩阵
+         */
+        u_mvMatrix: Matrix4x4;
         /**
          * 模型-摄像机 逆转置矩阵，用于计算摄像机空间法线
          */
@@ -252,11 +266,6 @@ declare global
          * 点大小
          */
         u_PointSize: number;
-
-        /**
-         * 骨骼全局矩阵
-         */
-        u_skeletonGlobalMatriices: Matrix4x4[];
 
         /**
          * 3D对象编号
