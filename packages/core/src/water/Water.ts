@@ -1,3 +1,4 @@
+import { batchRun, reactive } from '@feng3d/reactivity';
 import { Matrix4x4, Plane, Vector3, Vector4 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization } from '@feng3d/serialization';
@@ -52,7 +53,7 @@ export class Water extends Renderable
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
-            uniforms.u_sunDirection = sun.transform.localToWorldMatrix.getAxisZ().negate();
+            uniforms.u_sunDirection = sun.transform.localToWorldMatrix.value.getAxisZ().negate();
         }
 
         const clipBias = 0;
@@ -69,7 +70,7 @@ export class Water extends Renderable
         const mirrorWorldPosition = this.transform.worldPosition;
         const cameraWorldPosition = camera.transform.worldPosition;
 
-        let rotationMatrix = this.transform.rotationMatrix;
+        let rotationMatrix = this.transform.rotationMatrix.value;
 
         const normal = rotationMatrix.getAxisZ();
 
@@ -79,7 +80,7 @@ export class Water extends Renderable
         view.reflect(normal).negate();
         view.add(mirrorWorldPosition);
 
-        rotationMatrix = camera.transform.rotationMatrix;
+        rotationMatrix = camera.transform.rotationMatrix.value;
 
         const lookAtPosition = new Vector3(0, 0, -1);
         lookAtPosition.applyMatrix4x4(rotationMatrix);
@@ -90,7 +91,13 @@ export class Water extends Renderable
         target.add(mirrorWorldPosition);
 
         const mirrorCamera = serialization.setValue(new GameObject(), { name: 'waterMirrorCamera' }).addComponent(Camera);
-        mirrorCamera.transform.position = view;
+        const r_position = reactive(mirrorCamera.transform.position);
+        batchRun(() =>
+        {
+            r_position.x = view.x;
+            r_position.y = view.y;
+            r_position.z = view.z;
+        });
         mirrorCamera.transform.lookAt(target, rotationMatrix.getAxisY());
 
         mirrorCamera.lens = camera.lens.clone();
@@ -105,7 +112,7 @@ export class Water extends Renderable
         );
         textureMatrix.append(mirrorCamera.viewProjection);
 
-        const mirrorPlane = Plane.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.transformVector3(normal), mirrorCamera.transform.worldToLocalMatrix.transformPoint3(mirrorWorldPosition));
+        const mirrorPlane = Plane.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.value.transformVector3(normal), mirrorCamera.transform.worldToLocalMatrix.value.transformPoint3(mirrorWorldPosition));
         const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
         const projectionMatrix = mirrorCamera.lens.matrix;
