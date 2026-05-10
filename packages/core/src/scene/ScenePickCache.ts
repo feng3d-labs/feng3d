@@ -52,7 +52,7 @@ export class ScenePickCache
             {
                 if (model.selfWorldBounds)
                 {
-                    if (frustum.intersectsBox(model.selfWorldBounds))
+                    if (frustum.intersectsBox(model.selfWorldBounds.value))
                         { models.push(model); }
                 }
             }

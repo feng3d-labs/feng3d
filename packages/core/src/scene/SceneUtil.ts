@@ -49,7 +49,7 @@ export class SceneUtil
             {
                 if (renderer.selfWorldBounds)
                 {
-                    if (frustum.intersectsBox(renderer.selfWorldBounds))
+                    if (frustum.intersectsBox(renderer.selfWorldBounds.value))
                     { renderers.push(renderer); }
                 }
             }

@@ -304,7 +304,7 @@ export class Scene extends Component
             const model = i.getComponent(Renderable);
             if (model.selfWorldBounds)
             {
-                if (frustum.intersectsBox(model.selfWorldBounds))
+                if (frustum.intersectsBox(model.selfWorldBounds.value))
                 { return true; }
             }
 
