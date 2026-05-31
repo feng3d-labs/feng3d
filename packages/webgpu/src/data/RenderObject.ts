@@ -5,6 +5,7 @@ import { VertexAttribute, VertexAttributes } from './VertexAttributes';
 import { DrawIndexed } from './DrawIndexed';
 import { DrawVertex } from './DrawVertex';
 import { DrawIndexedIndirect } from './DrawIndexedIndirect';
+import { DrawIndirect } from './DrawIndirect';
 import type { Viewport } from './Viewport';
 
 /**
@@ -133,4 +134,4 @@ export type IndicesDataTypes = Uint16Array | Uint32Array;
 /**
  * 绘制图形。
  */
-export type IDraw = DrawVertex | DrawIndexed | DrawIndexedIndirect;
+export type IDraw = DrawVertex | DrawIndexed | DrawIndexedIndirect | DrawIndirect;

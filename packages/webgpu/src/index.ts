@@ -21,6 +21,7 @@ export * from './data/CopyTextureToTexture';
 export * from './data/DepthStencilState';
 export * from './data/DrawIndexed';
 export * from './data/DrawIndexedIndirect';
+export * from './data/DrawIndirect';
 export * from './data/DrawVertex';
 export * from './data/FragmentState';
 export * from './data/ImageCopyTexture';

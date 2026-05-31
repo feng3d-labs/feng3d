@@ -6,6 +6,7 @@ import { WGPUBuffer } from '../../caches/WGPUBuffer';
 import type { DrawVertex } from '../../data/DrawVertex';
 import type { DrawIndexed } from '../../data/DrawIndexed';
 import type { DrawIndexedIndirect } from '../../data/DrawIndexedIndirect';
+import type { DrawIndirect } from '../../data/DrawIndirect';
 
 export function runDraw(renderObject: RenderObject, passEncoder: WGPURenderPassEncoder)
 {
@@ -30,5 +31,11 @@ export function runDraw(renderObject: RenderObject, passEncoder: WGPURenderPassE
         const dii = renderObject.draw as DrawIndexedIndirect;
         const gpuBuffer = WGPUBuffer.getInstance(passEncoder.device, dii.buffer as Buffer).gpuBuffer;
         passEncoder.drawIndexedIndirect(gpuBuffer, dii.offset || 0);
+    }
+    else if (draw.__type__ === 'DrawIndirect')
+    {
+        const di = renderObject.draw as DrawIndirect;
+        const gpuBuffer = WGPUBuffer.getInstance(passEncoder.device, di.buffer as Buffer).gpuBuffer;
+        passEncoder.drawIndirect(gpuBuffer, di.offset || 0);
     }
 }

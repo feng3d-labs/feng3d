@@ -11,6 +11,7 @@ export type CommandType =
     | [func: 'draw', args: [vertexCount: GPUSize32, instanceCount?: GPUSize32, firstVertex?: GPUSize32, firstInstance?: GPUSize32]]
     | [func: 'drawIndexed', args: [indexCount: GPUSize32, instanceCount?: GPUSize32, firstIndex?: GPUSize32, baseVertex?: GPUSignedOffset32, firstInstance?: GPUSize32]]
     | [func: 'drawIndexedIndirect', args: [indirectBuffer: GPUBuffer, indirectOffset: GPUSize64]]
+    | [func: 'drawIndirect', args: [indirectBuffer: GPUBuffer, indirectOffset: GPUSize64]]
     | [func: 'setBlendConstant', args: [color: GPUColor]]
     | [func: 'setStencilReference', args: [reference: GPUStencilValue]]
     | [func: 'executeBundles', args: [bundles: GPURenderBundle[]]]
@@ -185,9 +186,9 @@ export class WGPURenderPassEncoder implements GPURenderPassEncoder
         throw new Error('Method not implemented.');
     }
 
-    drawIndirect(_indirectBuffer: GPUBuffer, _indirectOffset: GPUSize64): undefined
+    drawIndirect(indirectBuffer: GPUBuffer, indirectOffset?: GPUSize64): undefined
     {
-        throw new Error('Method not implemented.');
+        this._commands.push(['drawIndirect', [indirectBuffer, indirectOffset ?? 0]]);
     }
 }
 
