@@ -2,7 +2,7 @@ import { Material, Texture2D } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderConfig } from '@feng3d/renderer';
+import { shaderConfig } from '@feng3d/core';
 import { serialize } from '@feng3d/serialization';
 
 declare global

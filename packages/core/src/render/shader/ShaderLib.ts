@@ -1,5 +1,5 @@
 import { globalEmitter } from '@feng3d/event';
-import { shaderlib } from '@feng3d/renderer';
+import { shaderlib } from '../data/ShaderLib';
 
 globalEmitter.on('asset.shaderChanged', () =>
 {

@@ -1,7 +1,7 @@
 import { loader } from '@feng3d/filesystem';
 import { Color4, ColorKeywords } from '@feng3d/math';
 import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
-import { TextureFormat, TextureType } from '@feng3d/renderer';
+import { TextureFormat, TextureType } from '../render/data/enums';
 import { serialization, serialize } from '@feng3d/serialization';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';

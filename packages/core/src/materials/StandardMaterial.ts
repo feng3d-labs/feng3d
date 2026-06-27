@@ -1,13 +1,11 @@
 import { Color3, Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
+import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
 
-import standardFragment from '../shaders/standard.fragment.glsl';
-import standardVertex from '../shaders/standard.vertex.glsl';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 
 declare global
@@ -158,5 +156,5 @@ export class StandardUniforms
     u_fogMode = FogMode.NONE;
 }
 
-shaderlib.shaderConfig.shaders.standard = { fragment: standardFragment, vertex: standardVertex, cls: StandardUniforms };
+shaderlib.shaderConfig.shaders.standard = { cls: StandardUniforms };
 

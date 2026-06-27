@@ -1,7 +1,7 @@
 import { Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { computed, reactive } from '@feng3d/reactivity';
-import { CullFace } from '@feng3d/renderer';
+import { CullFace } from '../render/data/enums';
 import { serialize } from '@feng3d/serialization';
 import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';

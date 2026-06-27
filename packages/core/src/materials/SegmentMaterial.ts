@@ -1,10 +1,9 @@
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderMode, shaderlib } from '@feng3d/renderer';
+import { RenderMode } from '../render/data/enums';
+import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
-import segmentFragment from '../shaders/segment.fragment.glsl';
-import segmentVertex from '../shaders/segment.vertex.glsl';
 import { Material } from './Material';
 
 declare global
@@ -38,7 +37,7 @@ export class SegmentUniforms
 }
 
 shaderlib.shaderConfig.shaders.segment = {
-    fragment: segmentFragment, vertex: segmentVertex, cls: SegmentUniforms,
+    cls: SegmentUniforms,
     renderParams: { renderMode: RenderMode.LINES, enableBlend: true }
 };
 

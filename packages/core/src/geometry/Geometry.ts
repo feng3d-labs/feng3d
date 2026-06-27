@@ -1,7 +1,10 @@
 import { Box3, Matrix4x4, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Constructor, gPartial } from '@feng3d/polyfill';
-import { Attribute, Attributes, CullFace, Index } from '@feng3d/renderer';
+import { Attribute } from '../render/data/Attribute';
+import { Attributes } from '../render/data/Attributes';
+import { CullFace } from '../render/data/enums';
+import { Index } from '../render/data/Index';
 import { serialization, serialize } from '@feng3d/serialization';
 import { RenderObject } from '@feng3d/webgpu';
 import { AssetType } from '../assets/AssetType';

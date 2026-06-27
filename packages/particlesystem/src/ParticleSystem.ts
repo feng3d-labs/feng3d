@@ -2,7 +2,7 @@ import { AddComponentMenu, Camera, createNodeMenu, GameObject, Geometry, Materia
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
-import { Attribute } from '@feng3d/renderer';
+import { Attribute } from '@feng3d/core';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { RenderObject } from '@feng3d/webgpu';

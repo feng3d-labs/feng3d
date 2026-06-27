@@ -1,4 +1,5 @@
-import { CullFace, Shader } from '@feng3d/renderer';
+import { CullFace } from '../data/enums';
+import { Shader } from '../data/Shader';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';

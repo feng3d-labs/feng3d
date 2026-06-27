@@ -1,7 +1,10 @@
 import { globalEmitter } from '@feng3d/event';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
-import { RenderMode, RenderParams, Shader, shaderlib } from '@feng3d/renderer';
+import { RenderMode } from '../render/data/enums';
+import { RenderParams } from '../render/data/RenderParams';
+import { Shader } from '../render/data/Shader';
+import { shaderlib } from '../render/data/ShaderLib';
 import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';

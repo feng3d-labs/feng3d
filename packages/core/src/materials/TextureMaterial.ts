@@ -1,10 +1,8 @@
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderlib } from '@feng3d/renderer';
+import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
-import textureFragment from '../shaders/texture.fragment.glsl';
-import textureVertex from '../shaders/texture.vertex.glsl';
 import { Texture2D } from '../textures/Texture2D';
 
 declare global
@@ -34,4 +32,4 @@ export class TextureUniforms
     s_texture = Texture2D.default;
 }
 
-shaderlib.shaderConfig.shaders.texture = { fragment: textureFragment, vertex: textureVertex, cls: TextureUniforms };
+shaderlib.shaderConfig.shaders.texture = { cls: TextureUniforms };

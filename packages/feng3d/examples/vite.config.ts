@@ -23,7 +23,6 @@ export default defineConfig({
             '@feng3d/particlesystem',
             '@feng3d/path',
             '@feng3d/polyfill',
-            '@feng3d/renderer',
             '@feng3d/serialization',
             '@feng3d/shortcut',
             '@feng3d/terrain',

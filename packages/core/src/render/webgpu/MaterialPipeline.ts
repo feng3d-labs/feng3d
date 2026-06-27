@@ -1,4 +1,6 @@
-import { Attribute, CullFace as RendererCullFace, RenderParams } from '@feng3d/renderer';
+import { Attribute } from '../data/Attribute';
+import { CullFace as RendererCullFace } from '../data/enums';
+import { RenderParams } from '../data/RenderParams';
 import {
     BlendComponent,
     BlendState,

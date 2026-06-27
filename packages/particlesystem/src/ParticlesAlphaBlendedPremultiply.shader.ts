@@ -2,7 +2,7 @@ import { Texture2D } from '@feng3d/core';
 import { Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderConfig, BlendFactor, ColorMask, CullFace } from '@feng3d/renderer';
+import { shaderConfig, BlendFactor, ColorMask, CullFace } from '@feng3d/core';
 import { serialize } from '@feng3d/serialization';
 
 /**
@@ -35,6 +35,7 @@ export class ParticlesAlphaBlendedPremultiplyUniforms
     u_softParticlesFactor = 1.0;
 }
 
+shaderConfig.shaders['Particles_AlphaBlendedPremultiply'] ||= {};
 shaderConfig.shaders['Particles_AlphaBlendedPremultiply'].cls = ParticlesAlphaBlendedPremultiplyUniforms;
 shaderConfig.shaders['Particles_AlphaBlendedPremultiply'].renderParams = {
     enableBlend: true,

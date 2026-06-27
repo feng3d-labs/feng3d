@@ -37,7 +37,6 @@
     "@feng3d/math": "*",
     "@feng3d/objectview": "*",
     "@feng3d/polyfill": "*",
-    "@feng3d/renderer": "*",
     "@feng3d/serialization": "*",
     "@feng3d/watcher": "*"
   }

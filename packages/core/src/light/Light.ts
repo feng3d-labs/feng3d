@@ -1,6 +1,6 @@
 import { Color3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { BlendFactor } from '@feng3d/renderer';
+import { BlendFactor } from '../render/data/enums';
 import { serialize, serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';

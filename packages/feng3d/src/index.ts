@@ -7,7 +7,6 @@ export * from '@feng3d/objectview';
 export * from '@feng3d/particlesystem';
 export * from '@feng3d/path';
 export * from '@feng3d/polyfill';
-export * from '@feng3d/renderer';
 export * from '@feng3d/serialization';
 export * from '@feng3d/shortcut';
 export * from '@feng3d/terrain';

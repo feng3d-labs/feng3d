@@ -1,5 +1,6 @@
 import { Color4 } from '@feng3d/math';
-import { Index, Shader } from '@feng3d/renderer';
+import { Index } from '../data/Index';
+import { Shader } from '../data/Shader';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';

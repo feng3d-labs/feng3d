@@ -1,5 +1,5 @@
 import { Rectangle, Vector3 } from '@feng3d/math';
-import { Shader } from '@feng3d/renderer';
+import { Shader } from '../data/Shader';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';

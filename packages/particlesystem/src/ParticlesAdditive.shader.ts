@@ -2,7 +2,7 @@ import { Texture2D, Material } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderConfig, BlendFactor, ColorMask, CullFace } from '@feng3d/renderer';
+import { shaderConfig, BlendFactor, ColorMask, CullFace } from '@feng3d/core';
 import { serialize } from '@feng3d/serialization';
 
 declare global
@@ -52,6 +52,7 @@ export class ParticlesAdditiveUniforms
     _InvFade = 1.0;
 }
 
+shaderConfig.shaders['Particles_Additive'] ||= {};
 shaderConfig.shaders['Particles_Additive'].cls = ParticlesAdditiveUniforms;
 shaderConfig.shaders['Particles_Additive'].renderParams = {
     enableBlend: true,

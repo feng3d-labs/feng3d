@@ -2,7 +2,7 @@ import { AddComponentMenu, Geometry, Material, RegisterComponent, Renderable, Tr
 import { Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { CullFace, RenderAtomic } from '@feng3d/renderer';
+import { CullFace } from '@feng3d/core';
 import { RenderObject } from '@feng3d/webgpu';
 import { Canvas } from './Canvas';
 
@@ -22,7 +22,7 @@ declare global
 @decoratorRegisterClass()
 export class CanvasRenderer extends Renderable
 {
-    readonly renderAtomic = new RenderAtomic();
+    readonly renderAtomic = new RenderObject();
 
     geometry = Geometry.getDefault('Default-UIGeometry');
 

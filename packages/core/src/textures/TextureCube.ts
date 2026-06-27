@@ -1,6 +1,6 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { TextureType } from '@feng3d/renderer';
+import { TextureType } from '../render/data/enums';
 import { serialization } from '@feng3d/serialization';
 import { Texture, TextureImageSource } from '@feng3d/webgpu';
 import { AssetType } from '../assets/AssetType';

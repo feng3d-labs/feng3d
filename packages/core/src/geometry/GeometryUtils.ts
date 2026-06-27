@@ -1,5 +1,5 @@
 import { Box3, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
-import { CullFace } from '@feng3d/renderer';
+import { CullFace } from '../render/data/enums';
 
 export class GeometryUtils
 {

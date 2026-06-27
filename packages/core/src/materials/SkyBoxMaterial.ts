@@ -1,9 +1,7 @@
 import { oav } from '@feng3d/objectview';
-import { shaderlib } from '@feng3d/renderer';
+import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
 import { TextureCube } from '../textures/TextureCube';
-import skyboxVertex from '../shaders/skybox.vertex.glsl';
-import skyboxFragment from '../shaders/skybox.fragment.glsl';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 
 declare global
@@ -21,4 +19,4 @@ export class SkyBoxUniforms
     s_skyboxTexture = TextureCube.default;
 }
 
-shaderlib.shaderConfig.shaders.skybox = { fragment: skyboxFragment, vertex: skyboxVertex, cls: SkyBoxUniforms };
+shaderlib.shaderConfig.shaders.skybox = { cls: SkyBoxUniforms };

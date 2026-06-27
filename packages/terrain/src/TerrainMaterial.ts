@@ -2,7 +2,7 @@ import { Material, StandardUniforms, Texture2D } from '@feng3d/core';
 import { Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderConfig } from '@feng3d/renderer';
+import { shaderConfig } from '@feng3d/core';
 import { serialize } from '@feng3d/serialization';
 
 declare global
@@ -44,6 +44,7 @@ export class TerrainUniforms extends StandardUniforms
     u_splatRepeats = new Vector4(1, 1, 1, 1);
 }
 
+shaderConfig.shaders['terrain'] ||= {};
 shaderConfig.shaders['terrain'].cls = TerrainUniforms;
 
 Material.setDefault('Terrain-Material', { shaderName: 'terrain' });
