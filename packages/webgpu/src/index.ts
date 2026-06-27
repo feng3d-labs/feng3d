@@ -6,9 +6,6 @@ export * from './WebGPU';
 // 常量
 export * from './consts/vertexFormatMap';
 
-// 兼容层
-export * from './compat';
-
 // 核心数据类型 - 从 render-api 迁移
 export * from './data/BindingResources';
 export * from './data/BlendComponent';
