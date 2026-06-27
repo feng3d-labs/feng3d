@@ -201,11 +201,11 @@ export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
         {
             if (this.space === ParticleSystemSimulationSpace.World)
             {
-                mat.copy(this.particleSystem.transform.localToWorldMatrix);
+                mat.copy(this.particleSystem.transform.localToWorldMatrix.value);
             }
             else
             {
-                mat.copy(this.particleSystem.transform.worldToLocalMatrix);
+                mat.copy(this.particleSystem.transform.worldToLocalMatrix.value);
             }
         }
         // 变换到现在空间进行限速

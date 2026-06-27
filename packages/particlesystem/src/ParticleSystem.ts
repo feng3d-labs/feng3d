@@ -2,9 +2,10 @@ import { AddComponentMenu, Camera, createNodeMenu, GameObject, Geometry, Materia
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
-import { Attribute, RenderAtomic } from '@feng3d/renderer';
+import { Attribute } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+import { RenderObject } from '@feng3d/webgpu';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
@@ -489,9 +490,9 @@ export class ParticleSystem extends Renderable
         }
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
     {
-        super.beforeRender(renderAtomic, scene, camera);
+        super.beforeRender(renderObject, scene, camera);
 
         if (Boolean(scene.runEnvironment & RunEnvironment.feng3d) && !this._awaked)
         {
@@ -502,24 +503,23 @@ export class ParticleSystem extends Renderable
             this._awaked = true;
         }
 
-        renderAtomic.instanceCount = this._activeParticles.length;
-        //
-        renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
+        renderObject.shaderMacro.HAS_PARTICLE_SYSTEM = true;
+        renderObject.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
 
-        renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
+        renderObject.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
 
         // 计算公告牌矩阵
         const isbillboard = !this.shape.alignToDirection && this.geometry === Geometry.getDefault('Billboard-Geometry');
         const billboardMatrix = new Matrix3x3();
         if (isbillboard)
         {
-            const cameraMatrix = camera.transform.localToWorldMatrix.clone();
+            const cameraMatrix = camera.transform.localToWorldMatrix.value.clone();
             let localCameraForward = cameraMatrix.getAxisZ();
             let localCameraUp = cameraMatrix.getAxisY();
             if (this.main.simulationSpace === ParticleSystemSimulationSpace.Local)
             {
-                localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformPoint3(localCameraForward);
-                localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformPoint3(localCameraUp);
+                localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.value.transformPoint3(localCameraForward);
+                localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.value.transformPoint3(localCameraUp);
             }
             const matrix4x4 = new Matrix4x4();
             matrix4x4.lookAt(localCameraForward, localCameraUp);
@@ -561,17 +561,17 @@ export class ParticleSystem extends Renderable
         this._attributes.a_particle_flipUV.data = flipUVs;
 
         //
-        renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
+        renderObject.uniforms.u_particle_billboardMatrix = billboardMatrix;
 
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
         {
-            renderAtomic.uniforms.u_modelMatrix = () => new Matrix4x4();
-            renderAtomic.uniforms.u_ITModelMatrix = () => new Matrix4x4();
+            renderObject.uniforms.u_modelMatrix = () => new Matrix4x4();
+            renderObject.uniforms.u_ITModelMatrix = () => new Matrix4x4();
         }
 
         for (const key in this._attributes)
         {
-            renderAtomic.attributes[key] = this._attributes[key];
+            renderObject.attributes[key] = this._attributes[key];
         }
     }
 
@@ -846,7 +846,7 @@ export class ParticleSystem extends Renderable
 
         if (this._main.simulationSpace === ParticleSystemSimulationSpace.Local)
         {
-            const worldToLocalMatrix = this.transform.worldToLocalMatrix;
+            const worldToLocalMatrix = this.transform.worldToLocalMatrix.value;
             this._activeParticles.forEach((p) =>
             {
                 worldToLocalMatrix.transformPoint3(p.position, p.position);
@@ -856,7 +856,7 @@ export class ParticleSystem extends Renderable
         }
         else
         {
-            const localToWorldMatrix = this.transform.localToWorldMatrix;
+            const localToWorldMatrix = this.transform.localToWorldMatrix.value;
             this._activeParticles.forEach((p) =>
             {
                 localToWorldMatrix.transformPoint3(p.position, p.position);
@@ -886,11 +886,11 @@ export class ParticleSystem extends Renderable
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                this.transform.worldToLocalMatrix.transformPoint3(position, position);
+                this.transform.worldToLocalMatrix.value.transformPoint3(position, position);
             }
             else
             {
-                this.transform.localToWorldMatrix.transformPoint3(position, position);
+                this.transform.localToWorldMatrix.value.transformPoint3(position, position);
             }
         }
         //
@@ -916,11 +916,11 @@ export class ParticleSystem extends Renderable
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    this.transform.worldToLocalMatrix.transformPoint3(value, value);
+                    this.transform.worldToLocalMatrix.value.transformPoint3(value, value);
                 }
                 else
                 {
-                    this.transform.localToWorldMatrix.transformPoint3(value, value);
+                    this.transform.localToWorldMatrix.value.transformPoint3(value, value);
                 }
             }
             //
@@ -948,11 +948,11 @@ export class ParticleSystem extends Renderable
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                this.transform.worldToLocalMatrix.transformVector3(velocity, velocity);
+                this.transform.worldToLocalMatrix.value.transformVector3(velocity, velocity);
             }
             else
             {
-                this.transform.localToWorldMatrix.transformVector3(velocity, velocity);
+                this.transform.localToWorldMatrix.value.transformVector3(velocity, velocity);
             }
         }
         //
@@ -978,11 +978,11 @@ export class ParticleSystem extends Renderable
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    this.transform.worldToLocalMatrix.transformVector3(value, value);
+                    this.transform.worldToLocalMatrix.value.transformVector3(value, value);
                 }
                 else
                 {
-                    this.transform.localToWorldMatrix.transformVector3(value, value);
+                    this.transform.localToWorldMatrix.value.transformVector3(value, value);
                 }
             }
             //
@@ -1010,11 +1010,11 @@ export class ParticleSystem extends Renderable
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                this.transform.worldToLocalMatrix.transformVector3(acceleration, acceleration);
+                this.transform.worldToLocalMatrix.value.transformVector3(acceleration, acceleration);
             }
             else
             {
-                this.transform.localToWorldMatrix.transformVector3(acceleration, acceleration);
+                this.transform.localToWorldMatrix.value.transformVector3(acceleration, acceleration);
             }
         }
         //
@@ -1040,11 +1040,11 @@ export class ParticleSystem extends Renderable
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    this.transform.worldToLocalMatrix.transformVector3(value, value);
+                    this.transform.worldToLocalMatrix.value.transformVector3(value, value);
                 }
                 else
                 {
-                    this.transform.localToWorldMatrix.transformVector3(value, value);
+                    this.transform.localToWorldMatrix.value.transformVector3(value, value);
                 }
             }
             //
@@ -1084,9 +1084,9 @@ export class ParticleSystem extends Renderable
             if (Math.random() > probability) return;
 
             // 粒子所在世界坐标
-            const particleWoldPos = this.transform.localToWorldMatrix.transformPoint3(particle.position);
+            const particleWoldPos = this.transform.localToWorldMatrix.value.transformPoint3(particle.position);
             // 粒子在子粒子系统的坐标
-            const subEmitPos = subEmitter.transform.worldToLocalMatrix.transformPoint3(particleWoldPos);
+            const subEmitPos = subEmitter.transform.worldToLocalMatrix.value.transformPoint3(particleWoldPos);
             if (!particle.subEmitInfo)
             {
                 const startDelay = this.main.startDelay.getValue(Math.random());

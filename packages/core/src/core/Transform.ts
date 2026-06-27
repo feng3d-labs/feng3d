@@ -71,7 +71,15 @@ export class Transform extends Component
      * 本地位移
      */
     @oav({ tooltip: '本地位移' })
-    readonly position: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
+    get position(): { readonly x: number; readonly y: number; readonly z: number }
+    {
+        return this._position;
+    }
+    set position(v: Vector3 | { x: number; y: number; z: number })
+    {
+        this.setPosition(v);
+    }
+    private _position: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
 
     /**
      * 位置 x 坐标
@@ -153,6 +161,24 @@ export class Transform extends Component
             r_scale.z = v.z;
         });
     }
+
+    /**
+     * 缩放 x 分量
+     */
+    get sx() { return this.scale.x; }
+    set sx(v: number) { reactive(this.scale).x = v; }
+
+    /**
+     * 缩放 y 分量
+     */
+    get sy() { return this.scale.y; }
+    set sy(v: number) { reactive(this.scale).y = v; }
+
+    /**
+     * 缩放 z 分量
+     */
+    get sz() { return this.scale.z; }
+    set sz(v: number) { reactive(this.scale).z = v; }
 
     /**
      * 本地四元素旋转

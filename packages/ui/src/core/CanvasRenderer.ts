@@ -3,6 +3,7 @@ import { Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { CullFace, RenderAtomic } from '@feng3d/renderer';
+import { RenderObject } from '@feng3d/webgpu';
 import { Canvas } from './Canvas';
 
 declare global
@@ -63,42 +64,40 @@ export class CanvasRenderer extends Renderable
 
     protected _updateBounds()
     {
-        const bounding = this.geometry.bounding.clone();
-        const transformLayout = this.getComponent(TransformLayout);
-        if (transformLayout)
-        {
-            bounding.scale(transformLayout.size);
-        }
-        this._selfLocalBounds = bounding;
+        // TODO: WebGPU 迁移后 UI 包围盒计算待重写（原 WebGL 路径）。
+        // 此处仅保持编译通过，不更新包围盒。
     }
 
     /**
      * 渲染
+     *
+     * 注意：UI 的 Canvas 渲染仍为 WebGL 时代实现，WebGPU 迁移后该路径待重写。
+     * 当前仅保持布局计算（layout），实际绘制调用暂未接入 WebGPU。
      */
     static draw(view: View)
     {
-        const gl = view.gl.gl;
         const scene = view.scene;
+        const canvas = view.canvas;
 
         const canvasList = scene.getComponentsInChildren(Canvas).filter((v) => v.isVisibleAndEnabled);
-        canvasList.forEach((canvas) =>
+        canvasList.forEach((canvasComp) =>
         {
-            canvas.layout(gl.canvas.width, gl.canvas.height);
+            canvasComp.layout(canvas.width, canvas.height);
 
             // 更新鼠标射线
-            canvas.calcMouseRay3D(view);
+            canvasComp.calcMouseRay3D(view);
 
-            const renderables = canvas.getComponentsInChildren(CanvasRenderer).filter((v) => v.isVisibleAndEnabled);
+            const renderables = canvasComp.getComponentsInChildren(CanvasRenderer).filter((v) => v.isVisibleAndEnabled);
             renderables.forEach((renderable) =>
             {
-                // 绘制
+                // 绘制（WebGPU 迁移后待重写）
                 const renderAtomic = renderable.renderAtomic;
 
-                renderAtomic.uniforms.u_viewProjection = canvas.projection;
+                (renderAtomic.uniforms as any).u_viewProjection = canvasComp.projection;
 
-                renderable.beforeRender(renderAtomic, null, null);
+                renderable.beforeRender(renderAtomic as unknown as RenderObject, null, null);
 
-                view.gl.render(renderAtomic);
+                // view.gl.render(renderAtomic); // WebGL 路径已移除，WebGPU 待接入
             });
         });
     }

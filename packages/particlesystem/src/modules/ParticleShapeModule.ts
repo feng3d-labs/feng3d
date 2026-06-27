@@ -312,7 +312,7 @@ export class ParticleShapeModule extends ParticleModule
         dir.scaleNumber(startSpeed);
         if (this.particleSystem.main.simulationSpace === ParticleSystemSimulationSpace.World)
         {
-            const localToWorldMatrix = this.particleSystem.transform.localToWorldMatrix;
+            const localToWorldMatrix = this.particleSystem.transform.localToWorldMatrix.value;
 
             localToWorldMatrix.transformPoint3(position, position);
             localToWorldMatrix.transformVector3(dir, dir);

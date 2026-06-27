@@ -3,9 +3,9 @@ import { IEvent } from '@feng3d/event';
 import { Vector2, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -222,9 +222,9 @@ export class Transform2D extends Component
         }
     }
 
-    beforeRender(renderAtomic: RenderAtomic, _scene: Scene, _camera: Camera)
+    beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderAtomic.uniforms.u_rect = this.rect;
+        renderObject.uniforms.u_rect = this.rect;
     }
 }
 

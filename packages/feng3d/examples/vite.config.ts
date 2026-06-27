@@ -15,7 +15,6 @@ export default defineConfig({
         include: [
             'feng3d',
             '@feng3d/assets',
-            '@feng3d/bezier',
             '@feng3d/core',
             '@feng3d/event',
             '@feng3d/filesystem',

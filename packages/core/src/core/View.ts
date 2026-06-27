@@ -371,4 +371,7 @@ export class View extends Feng3dObject
 }
 
 // var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };
-let webgpu = await new WebGPU().init();
+// WebGPU 设备异步初始化；未就绪时 render() 会跳过提交。
+// 使用非顶层 await（顶层 await 在部分构建目标如 es2020 下不可用）。
+let webgpu: WebGPU;
+void new WebGPU().init().then((gpu) => { webgpu = gpu; });

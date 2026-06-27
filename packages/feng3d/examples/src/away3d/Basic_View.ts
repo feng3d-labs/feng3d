@@ -10,16 +10,14 @@ const engine = new feng3d.View(null, scene, camera);
 var canvas = engine.canvas;
 
 const cubeTexture = feng3d.serialization.setValue(new feng3d.TextureCube(), {
-    rawData: {
-        type: "path", paths: [
-            '/skybox/snow_positive_x.jpg',
-            '/skybox/snow_positive_y.jpg',
-            '/skybox/snow_positive_z.jpg',
-            '/skybox/snow_negative_x.jpg',
-            '/skybox/snow_negative_y.jpg',
-            '/skybox/snow_negative_z.jpg',
-        ]
-    }
+    urls: [
+        '/skybox/snow_positive_x.jpg',
+        '/skybox/snow_positive_y.jpg',
+        '/skybox/snow_positive_z.jpg',
+        '/skybox/snow_negative_x.jpg',
+        '/skybox/snow_negative_y.jpg',
+        '/skybox/snow_negative_z.jpg',
+    ]
 });
 
 const skybox = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "skybox" });

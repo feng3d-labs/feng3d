@@ -16,16 +16,14 @@ camera.gameObject.addComponent(feng3d.FPSController);
 const skybox = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "skybox" });
 const model = skybox.addComponent(feng3d.SkyBox);
 model.s_skyboxTexture = feng3d.serialization.setValue(new feng3d.TextureCube(), {
-    rawData: {
-        type: "path", paths: [
-            '/skybox/px.jpg',
-            '/skybox/py.jpg',
-            '/skybox/pz.jpg',
-            '/skybox/nx.jpg',
-            '/skybox/ny.jpg',
-            '/skybox/nz.jpg'
-        ]
-    }
+    urls: [
+        '/skybox/px.jpg',
+        '/skybox/py.jpg',
+        '/skybox/pz.jpg',
+        '/skybox/nx.jpg',
+        '/skybox/ny.jpg',
+        '/skybox/nz.jpg'
+    ]
 }
 );
 scene.gameObject.addChild(skybox);

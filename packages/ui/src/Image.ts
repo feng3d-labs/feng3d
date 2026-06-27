@@ -2,8 +2,8 @@ import { AddComponentMenu, Camera, Component, createNodeMenu, GameObject, Regist
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
+import { RenderObject } from '@feng3d/webgpu';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';
 
@@ -59,12 +59,12 @@ export class Image extends Component
         this.transform2D.size.y = imagesize.y;
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
     {
-        super.beforeRender(renderAtomic, scene, camera);
+        super.beforeRender(renderObject, scene, camera);
 
-        renderAtomic.uniforms.s_texture = this.image;
-        renderAtomic.uniforms.u_color = this.color;
+        renderObject.uniforms.s_texture = this.image;
+        renderObject.uniforms.u_color = this.color;
     }
 }
 

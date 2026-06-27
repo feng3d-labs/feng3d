@@ -2,9 +2,9 @@ import { AddComponentMenu, Camera, Component, createNodeMenu, GameObject, Regist
 import { Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderAtomic } from '@feng3d/renderer';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
+import { RenderObject } from '@feng3d/webgpu';
 import { CanvasRenderer } from './core/CanvasRenderer';
 import { Transform2D } from './core/Transform2D';
 import { drawText } from './text/drawText';
@@ -67,9 +67,9 @@ export class Text extends Component
         watcher.watch(this as Text, 'style', this._styleChanged, this);
     }
 
-    beforeRender(renderAtomic: RenderAtomic, scene: Scene, camera: Camera)
+    beforeRender(renderObject: RenderObject, scene: Scene, camera: Camera)
     {
-        super.beforeRender(renderAtomic, scene, camera);
+        super.beforeRender(renderObject, scene, camera);
 
         let canvas = this._canvas;
 
@@ -92,8 +92,8 @@ export class Text extends Component
         this._uvRect.w = this.transform2D.size.y / canvas.height;
 
         //
-        renderAtomic.uniforms.s_texture = this._image;
-        renderAtomic.uniforms.u_uvRect = this._uvRect;
+        renderObject.uniforms.s_texture = this._image;
+        renderObject.uniforms.u_uvRect = this._uvRect;
     }
 
     invalidate()
