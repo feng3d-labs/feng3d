@@ -1,7 +1,6 @@
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
 import { Texture2D } from '../textures/Texture2D';
 
@@ -32,4 +31,3 @@ export class TextureUniforms
     s_texture = Texture2D.default;
 }
 
-shaderlib.shaderConfig.shaders.texture = { cls: TextureUniforms };

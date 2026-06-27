@@ -3,16 +3,14 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
 import { RenderMode } from '../render/data/enums';
 import { RenderParams } from '../render/data/RenderParams';
-import { shaderlib } from '../render/data/ShaderLib';
 import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';
-import { applyMaterialRenderData } from '../render/webgpu/MaterialPipeline';
+import { applyMaterialRenderData, getRenderState, getUniformsFactory } from '../render/webgpu/MaterialPipeline';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
-import { StandardUniforms } from './StandardMaterial';
 import { RenderObject } from '@feng3d/webgpu';
 
 declare global
@@ -96,8 +94,9 @@ export class Material extends Feng3dObject
         watcher.watch(this as Material, 'uniforms', this._onUniformsChanged, this);
         watcher.watch(this as Material, 'renderParams', this._onRenderParamsChanged, this);
         this.shaderName = 'standard';
-        this.uniforms = new StandardUniforms();
         this.renderParams = new RenderParams();
+        // 触发 shader 变化，初始化 uniforms
+        this._onShaderChanged();
     }
 
     beforeRender(renderObject: RenderObject)
@@ -162,23 +161,18 @@ export class Material extends Feng3dObject
 
     private _onShaderChanged()
     {
-        const Cls = shaderlib.shaderConfig.shaders[this.shaderName].cls;
-        if (Cls)
+        // 通过 ShaderRegistry 获取 uniforms 工厂，创建该 shader 的默认 uniform 对象
+        const factory = getUniformsFactory(this.shaderName);
+        if (factory)
         {
-            if (!this.uniforms || this.uniforms.constructor !== Cls)
-            {
-                const newuniforms = new Cls();
-                this.uniforms = newuniforms;
-            }
+            this.uniforms = factory() as any;
         }
         else
         {
             this.uniforms = <any>{};
         }
 
-        const renderParams = shaderlib.shaderConfig.shaders[this.shaderName].renderParams;
-        renderParams && serialization.setValue(this.renderParams, renderParams);
-
+        // shader 源码由 ShaderRegistry 按 shaderName 查找
         this.renderObject.shader = this.shaderName;
     }
 

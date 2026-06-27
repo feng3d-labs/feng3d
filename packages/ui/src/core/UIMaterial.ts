@@ -2,7 +2,6 @@ import { Material, Texture2D } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { shaderConfig } from '@feng3d/core';
 import { serialize } from '@feng3d/serialization';
 
 declare global
@@ -52,45 +51,5 @@ export class UIUniforms
     u_uvRect = new Vector4(0, 0, 1, 1);
 }
 
-shaderConfig.shaders['ui'] = {
-    vertex: `
-    attribute vec2 a_position;
-    attribute vec2 a_uv;
-    
-    uniform vec4 u_uvRect;
-    uniform vec4 u_rect;
-    uniform mat4 u_modelMatrix;
-    uniform mat4 u_viewProjection;
-    
-    varying vec2 v_uv;
-    varying vec2 v_position;
-
-    void main() 
-    {
-        vec2 position = u_rect.xy + a_position * u_rect.zw;
-        gl_Position = u_viewProjection * u_modelMatrix * vec4(position, 0.0, 1.0);
-        v_uv = u_uvRect.xy + a_uv * u_uvRect.zw;
-        v_position = position.xy;
-    }
-    `,
-    fragment: `
-    precision mediump float;
-
-    uniform sampler2D s_texture;
-    varying vec2 v_uv;
-    varying vec2 v_position;
-    
-    uniform vec4 u_color;
-    
-    void main() 
-    {
-        vec4 color = texture2D(s_texture, v_uv);
-        gl_FragColor = color * u_color;
-    }
-    
-    `,
-    cls: UIUniforms,
-    renderParams: { enableBlend: true, depthtest: false },
-};
-
+// shader 注册（WGSL + uniforms 工厂 + 渲染状态）由 core 的 ShaderRegistry 集中管理。
 Material.setDefault('Default-UIMaterial', { shaderName: 'ui' });

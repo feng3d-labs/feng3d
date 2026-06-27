@@ -1,8 +1,6 @@
 import { Color4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderMode } from '../render/data/enums';
-import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
 import { Material } from './Material';
 
@@ -20,8 +18,7 @@ declare global
 }
 
 /**
- * 线段材质
- * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+ * 线段材质 uniforms
  */
 @decoratorRegisterClass()
 export class SegmentUniforms
@@ -36,9 +33,5 @@ export class SegmentUniforms
     u_segmentColor = new Color4();
 }
 
-shaderlib.shaderConfig.shaders.segment = {
-    cls: SegmentUniforms,
-    renderParams: { renderMode: RenderMode.LINES, enableBlend: true }
-};
-
+// shader 注册（WGSL + uniforms 工厂 + 渲染状态）由 ShaderRegistry 集中管理。
 Material.setDefault('Segment-Material', { shaderName: 'segment' });

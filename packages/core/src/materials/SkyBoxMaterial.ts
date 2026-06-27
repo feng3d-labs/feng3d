@@ -1,5 +1,4 @@
 import { oav } from '@feng3d/objectview';
-import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
 import { TextureCube } from '../textures/TextureCube';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
@@ -19,4 +18,3 @@ export class SkyBoxUniforms
     s_skyboxTexture = TextureCube.default;
 }
 
-shaderlib.shaderConfig.shaders.skybox = { cls: SkyBoxUniforms };

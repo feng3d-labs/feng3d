@@ -1,6 +1,5 @@
 import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { shaderlib } from '../render/data/ShaderLib';
 import { serialize } from '@feng3d/serialization';
 import { Material } from '../materials/Material';
 import { Texture2D } from '../textures/Texture2D';
@@ -61,6 +60,5 @@ export class WaterUniforms
     u_sunDirection = new Vector3(0.70707, 0.70707, 0);
 }
 
-shaderlib.shaderConfig.shaders.water = { cls: WaterUniforms };
 
 Material.setDefault('Water-Material', { shaderName: 'water' });
