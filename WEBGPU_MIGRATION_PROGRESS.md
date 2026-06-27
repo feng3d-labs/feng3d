@@ -246,6 +246,89 @@ ForwardRenderer.draw    → applyGeometryRenderData
 
 ---
 
+## 八、材质系统重构进度（2026-06-27 更新）
+
+### 阶段 A：删除 WebGL 残留（✅ 已完成）
+
+**删除的文件**：
+- `Shader.ts` - 纯 WebGL 残留
+- `ShaderMacro.ts` - 纯 WebGL 残留
+- `Texture.ts` - 纯 WebGL 残留
+
+**改造**：
+- 所有 `new Shader({shaderName})` 改为直接用字符串
+- `MaterialPipeline` 扩展 `WGSLShaderAsset`，增加 `uniformsFactory` + `renderState`
+- 新增 `RenderState` 接口（为后续铺路）
+
+**验证**：✅ 编译 0 错误，3000 端口渲染正常
+
+### 阶段 B：Uniforms 内联到材质（待完成）
+
+**目标**：从"shaderName 查表加载 Uniforms 类"转向"材质自带 uniforms 和渲染状态"
+
+**改造内容**：
+- `XxxUniforms` 内联到材质注册（如 `ColorUniforms` → `ColorMaterial` 模式）
+- 各材质的 `uniformsFactory` 和 `renderState` 注册到 `ShaderRegistry`
+
+**影响文件**：
+- 7 个材质文件（ColorMaterial、TextureMaterial、StandardMaterial 等）
+- ShaderRegistry.ts
+- Material.ts
+
+### 阶段 C：渲染参数精简（待完成）
+
+**改造内容**：
+- `RenderParams` → `RenderState` 精简
+- 删除 `ShaderLib`（cls 映射合并到 ShaderRegistry）
+
+**影响文件**：
+- RenderParams.ts
+- ShaderLib.ts
+- Material.ts
+
+### 阶段 D：全量验证（待完成）
+
+**改造内容**：
+- 更新所有引用
+- 编译验证
+- 3000 端口渲染验证
+
+### 重构暂停原因
+
+这个重构涉及材质系统的核心设计变更，需要改动约 15 个文件的相互关联逻辑。当前会话上下文已经非常长，继续推进大重构有累积错误的风险。
+
+**建议**：在新的会话中继续阶段 B/C/D，以阶段 A 的提交作为稳定起点。
+
+---
+
+## 九、后续会话指引
+
+### 继续材质重构
+
+在新会话中，告诉 AI"继续材质重构"，AI 会从 `XxxUniforms → XxxMaterial` 内联开始。
+
+### 继续着色器迁移
+
+在新会话中，告诉 AI"继续着色器迁移"，AI 会翻译剩余的 GLSL 着色器。
+
+### 继续阴影渲染重构
+
+在新会话中，告诉 AI"继续阴影渲染重构"，AI 会设计 WebGPU 离屏渲染方案。
+
+---
+
+## 十、Git 提交历史（最近）
+
+```
+d6dd7981 clean(webgpu): 清理未使用的 WebGL 兼容层
+dd307198 fix(core): 修复 WebGPU 迁移编译错误（54 → 0）
+808bcca3 feat(webgpu): WebGL 兼容层与 WGSL 着色器基础框架
+9dc80850 feat(draw): 新增 DrawIndirect 渲染路径
+...
+```
+
+---
+
 ## 七、快速开始
 
 ```bash
