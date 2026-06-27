@@ -174,6 +174,38 @@ export class Texture
 
         return bytesPerPixel;
     }
+
+    /**
+     * 创建纹理描述符
+     *
+     * @param options 纹理描述选项
+     */
+    static createDescriptor(options: {
+        label?: string;
+        size: TextureSize;
+        dimension?: TextureDimension;
+        format?: TextureFormat;
+        mipLevelCount?: number;
+        sampleCount?: 4;
+        usage?: GPUTextureUsageFlags;
+    }): TextureDescriptor
+    {
+        return {
+            label: options.label,
+            size: options.size,
+            dimension: options.dimension || '2d',
+            format: options.format || 'rgba8unorm',
+            mipLevelCount: options.mipLevelCount || 1,
+            sampleCount: options.sampleCount,
+        };
+    }
+
+    /**
+     * 纹理用途标志
+     *
+     * WebGPU 纹理用途，用于指定纹理可以被用于哪些操作。
+     */
+    usage?: GPUTextureUsageFlags;
 }
 
 /**

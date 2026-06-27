@@ -56,6 +56,38 @@ export interface RenderObject
      * 与着色器中名称对应的绑定资源（纹理、采样器、统一数据、存储数据等）。
      */
     readonly bindingResources?: BindingResources;
+
+    // WebGL 兼容属性
+
+    /**
+     * 着色器宏定义 (WebGL 兼容)
+     */
+    shaderMacro?: { [key: string]: boolean | number | string };
+
+    /**
+     * Uniform 数据 (WebGL 兼容)
+     */
+    uniforms?: { [key: string]: any };
+
+    /**
+     * 渲染参数 (WebGL 兼容)
+     */
+    renderParams?: any;
+
+    /**
+     * 顶点属性 (WebGL 兼容)
+     */
+    attributes?: any;
+
+    /**
+     * 着色器 (WebGL 兼容)
+     */
+    shader?: any;
+
+    /**
+     * 下一个渲染对象 (用于链式渲染)
+     */
+    next?: RenderObject;
 }
 
 export class RenderObject

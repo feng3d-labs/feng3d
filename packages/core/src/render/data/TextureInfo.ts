@@ -242,6 +242,68 @@ export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3d
         this.invalid = true;
     }
 
+    /**
+     * 获取宽度
+     */
+    getWidth(): number
+    {
+        return this.getSize().x;
+    }
+
+    /**
+     * 获取高度
+     */
+    getHeight(): number
+    {
+        return this.getSize().y;
+    }
+
+    /**
+     * 销毁纹理
+     */
+    destroy(): void
+    {
+        if (this._gpuTexture)
+        {
+            this._gpuTexture.destroy();
+            this._gpuTexture = undefined;
+        }
+        this._gpuTextureView = undefined;
+        this._gpuSampler = undefined;
+        this.invalid = true;
+    }
+
+    /**
+     * GPU 纹理
+     */
+    _gpuTexture?: GPUTexture;
+
+    /**
+     * GPU 纹理视图
+     */
+    _gpuTextureView?: GPUTextureView;
+
+    /**
+     * GPU 采样器
+     */
+    _gpuSampler?: GPUSampler;
+
+    /**
+     * 创建采样器
+     */
+    createSampler(_device: GPUDevice): GPUSampler | undefined
+    {
+        return this._gpuSampler;
+    }
+
+    /**
+     * 激活纹理单元（静态方法）
+     */
+    static active(_gl: any, _texture: TextureInfo<any> | null): void
+    {
+        // WebGPU 中纹理绑定通过 bindGroup 处理
+    }
+
     get activePixels()
     {
         this.updateActivePixels();

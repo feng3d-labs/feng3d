@@ -103,3 +103,81 @@ export interface TextureView
      */
     readonly mipLevelCount?: GPUIntegerCoordinate;
 }
+
+/**
+ * TextureView 命名空间 - 提供纹理视图相关工具方法
+ */
+export namespace TextureView
+{
+    /**
+     * 创建纹理视图
+     *
+     * @param texture 纹理
+     * @param options 视图选项
+     */
+    export function create(texture: TextureLike, options?: {
+        label?: string;
+        format?: GPUTextureFormat;
+        dimension?: GPUTextureViewDimension;
+        baseMipLevel?: number;
+        mipLevelCount?: number;
+        baseArrayLayer?: number;
+        arrayLayerCount?: number;
+        aspect?: GPUTextureAspect;
+        usage?: GPUTextureUsageFlags;
+    }): TextureView
+    {
+        return {
+            texture,
+            label: options?.label,
+            format: options?.format,
+            dimension: options?.dimension,
+            baseMipLevel: options?.baseMipLevel || 0,
+            mipLevelCount: options?.mipLevelCount,
+            baseArrayLayer: options?.baseArrayLayer || 0,
+            arrayLayerCount: options?.arrayLayerCount,
+            aspect: options?.aspect || 'all',
+            usage: options?.usage,
+        };
+    }
+
+    /**
+     * 创建 2D 纹理视图
+     */
+    export function create2D(texture: TextureLike, label?: string): TextureView
+    {
+        return create(texture, { label, dimension: '2d' });
+    }
+
+    /**
+     * 创建立方体纹理视图
+     */
+    export function createCube(texture: TextureLike, label?: string): TextureView
+    {
+        return create(texture, { label, dimension: 'cube', arrayLayerCount: 6 });
+    }
+
+    /**
+     * 创建 2D 数组纹理视图
+     */
+    export function create2DArray(texture: TextureLike, arrayLayerCount: number, label?: string): TextureView
+    {
+        return create(texture, { label, dimension: '2d-array', arrayLayerCount });
+    }
+
+    /**
+     * 创建深度纹理视图
+     */
+    export function createDepth(texture: TextureLike, label?: string): TextureView
+    {
+        return create(texture, { label, aspect: 'depth-only' });
+    }
+
+    /**
+     * 创建模板纹理视图
+     */
+    export function createStencil(texture: TextureLike, label?: string): TextureView
+    {
+        return create(texture, { label, aspect: 'stencil-only' });
+    }
+}

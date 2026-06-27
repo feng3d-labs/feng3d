@@ -9,6 +9,32 @@ import { ShadowType } from '../../light/shadow/ShadowType';
 import { SpotLight } from '../../light/SpotLight';
 import { Scene } from '../../scene/Scene';
 
+/**
+ * 阴影渲染器架构设计文档
+ *
+ * ## 概述
+ * ShadowRenderer 负责渲染场景中所有灯光的阴影贴图。
+ * 它支持三种类型的灯光阴影：
+ * 1. **点光源阴影** - 使用 6 个面的立方体阴影贴图
+ * 2. **聚光灯阴影** - 使用单个 2D 阴影贴图
+ * 3. **方向光阴影** - 使用单个 2D 阴影贴图，支持级联阴影
+ *
+ * ## WebGPU 迁移说明
+ * 该类正在进行从 WebGL 到 WebGPU 的迁移：
+ * - 使用 WebGPU RenderPass 和 RenderObject
+ * - 阴影贴图存储在 GPUTexture 中
+ * - 渲染参数使用 WebGPU 的 PrimitiveState、DepthStencilState 等
+ *
+ * ## 性能优化
+ * - 只渲染投射阴影的物体
+ * - 使用视口裁剪优化
+ * - 支持级联阴影贴图（CSM）优化大场景阴影质量
+ *
+ * ## 扩展点
+ * - shadowShader: 自定义阴影着色器
+ * - renderParams: 可配置的渲染参数（背面剔除、深度测试等）
+ */
+
 declare global
 {
     export interface MixinsRenderObject

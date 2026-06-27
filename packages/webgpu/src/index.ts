@@ -6,6 +6,9 @@ export * from './WebGPU';
 // 常量
 export * from './consts/vertexFormatMap';
 
+// 兼容层
+export * from './compat';
+
 // 核心数据类型 - 从 render-api 迁移
 export * from './data/BindingResources';
 export * from './data/BlendComponent';
@@ -50,6 +53,10 @@ export * from './data/VertexState';
 export * from './data/Viewport';
 export * from './data/WriteBuffer';
 
+// 新增数据类型
+export * from './data/RenderTarget';
+export * from './data/ShadowMap';
+
 // 计算相关
 export * from './data/ComputeObject';
 export * from './data/ComputePass';
@@ -57,6 +64,15 @@ export * from './data/ComputePipeline';
 
 // 时间戳查询
 export * from './data/TimestampQuery';
+
+// WGSL 着色器
+export * from './shaders/common.wgsl';
+export * from './shaders/texture.vertex.wgsl';
+export * from './shaders/texture.fragment.wgsl';
+export * from './shaders/color.vertex.wgsl';
+export * from './shaders/color.fragment.wgsl';
+export * from './shaders/standard.vertex.wgsl';
+export * from './shaders/standard.fragment.wgsl';
 
 // 内部类型
 export * from './internal/BufferBindingInfo';
