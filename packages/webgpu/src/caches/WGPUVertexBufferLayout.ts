@@ -135,8 +135,7 @@ export class WGPUVertexBufferLayout extends ReactiveObject
                 // 获取对应的顶点属性配置
                 const vertexAttribute = vertices[attributeName];
 
-                // 如果顶点属性不存在，跳过处理（由 buildVertices 提供默认值）
-                if (!vertexAttribute) continue;
+                console.assert(!!vertexAttribute, `在提供的顶点属性数据中未找到 ${attributeName} 。`);
 
                 // 监听每个顶点属性数据的变化
                 const r_vertexAttribute = reactive(vertexAttribute);
