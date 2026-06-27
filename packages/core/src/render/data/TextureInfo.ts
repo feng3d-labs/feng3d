@@ -2,16 +2,18 @@ import { Vector2 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { dataTransform, mathUtil } from '@feng3d/polyfill';
 import { TextureDataType, TextureFormat, TextureMagFilter, TextureMinFilter, TextureType, TextureWrap } from './enums';
-import { Texture } from './Texture';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Feng3dObject, Feng3dObjectEventMap } from '../../core/Feng3dObject';
 import { imageDatas } from '../../textures/Texture2D';
 
 /**
- * 纹理信息
+ * 纹理信息基类。
+ *
+ * 提供 CPU 端纹理元数据（格式/过滤/包装等）+ 序列化/OAV 编辑 + GPU 资源缓存。
+ * 子类：Texture2D / TextureCube / RenderTargetTexture2D。
  */
-export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3dObject<T> implements Texture
+export abstract class TextureInfo<T extends Feng3dObjectEventMap> extends Feng3dObject<T>
 {
     /**
      * 纹理类型

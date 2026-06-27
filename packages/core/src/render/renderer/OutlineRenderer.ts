@@ -1,6 +1,5 @@
 import { CullFace } from '../data/enums';
 import { RenderParams } from '../data/RenderParams';
-import { Shader } from '../data/Shader';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { CartoonComponent } from '../../component/CartoonComponent';
@@ -25,7 +24,8 @@ export class OutlineRenderer
             this.renderParams.cullFace = CullFace.FRONT;
             (this.renderObject as any).renderParams = this.renderParams;
 
-            this.renderObject.shader = new Shader({ shaderName: 'outline' });
+            // shader 源码由 ShaderRegistry 按 shaderName 查找
+            this.renderObject.shader = 'outline';
         }
     }
 

@@ -74,16 +74,13 @@ export * from './primitives/PlaneGeometry';
 export * from './primitives/QuadGeometry';
 export * from './primitives/SphereGeometry';
 export * from './primitives/TorusGeometry';
-// 渲染数据层（原 @feng3d/renderer 的纯数据类型，已迁移到 core 内部）
+// 渲染数据层（core 的渲染数据描述）
 export * from './render/data/Attribute';
 export * from './render/data/Attributes';
 export * from './render/data/enums';
 export * from './render/data/Index';
 export * from './render/data/RenderParams';
-export * from './render/data/Shader';
 export * from './render/data/ShaderLib';
-export * from './render/data/ShaderMacro';
-export * from './render/data/Texture';
 export * from './render/data/TextureInfo';
 export * from './render/data/Uniform';
 export * from './render/FrameBufferObject';

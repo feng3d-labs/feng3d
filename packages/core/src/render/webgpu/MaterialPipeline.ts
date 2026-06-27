@@ -46,11 +46,13 @@ const vertexAttributeMap: { [coreName: string]: string } = {
 };
 
 /**
- * WGSL 着色器与顶点属性格式描述。
+ * WGSL 着色器与材质配置描述。
  *
  * 描述一个 core 材质 shader 对应的 WebGPU 渲染数据：
  * - 顶点着色器 WGSL 源码
  * - 片段着色器 WGSL 源码
+ * - uniforms 工厂（创建该 shader 的默认 uniform 对象）
+ * - 渲染状态（cullFace/blend/topology 等，隐含于材质中）
  */
 export interface WGSLShaderAsset
 {
@@ -63,6 +65,49 @@ export interface WGSLShaderAsset
      * 片段着色器 WGSL 源码。
      */
     fragment: string;
+
+    /**
+     * uniforms 工厂函数，创建该 shader 的默认 uniform 对象。
+     *
+     * Material 按 shaderName 查询此工厂来实例化 uniforms。
+     */
+    uniformsFactory?: () => Record<string, unknown>;
+
+    /**
+     * 渲染状态（渲染参数隐含于材质）。
+     *
+     * 使用 webgpu 小写值，由 buildRenderPipeline 直接使用，无需 GL→webgpu 映射。
+     */
+    renderState?: RenderState;
+}
+
+/**
+ * 渲染状态（材质的渲染管线配置）。
+ *
+ * 值使用 webgpu 小写形式（与 webgpu 包的 PrimitiveState/DepthStencilState/BlendState 一致），
+ * 由 {@link buildRenderPipeline} 直接使用。
+ * 仅包含活跃字段（原 RenderParams 的 15 个无引用字段如 stencil 已移除）。
+ */
+export interface RenderState
+{
+    /** 图元拓扑。 */
+    topology?: 'point-list' | 'line-list' | 'line-strip' | 'triangle-list' | 'triangle-strip';
+    /** 剔除面。 */
+    cullFace?: 'none' | 'front' | 'back';
+    /** 正面方向。 */
+    frontFace?: 'ccw' | 'cw';
+    /** 是否开启混合。 */
+    enableBlend?: boolean;
+    /** 源混合因子。 */
+    blendSrc?: BlendComponent['srcFactor'];
+    /** 目标混合因子。 */
+    blendDst?: BlendComponent['dstFactor'];
+    /** 混合操作。 */
+    blendOperation?: BlendComponent['operation'];
+    /** 是否写入深度。 */
+    depthWriteEnabled?: boolean;
+    /** 深度比较函数。 */
+    depthCompare?: DepthStencilState['depthCompare'];
 }
 
 /**
@@ -199,6 +244,22 @@ export function registerShader(shaderName: string, asset: WGSLShaderAsset): void
 export function getShaderAsset(shaderName: string): WGSLShaderAsset | undefined
 {
     return shaderRegistry.get(shaderName);
+}
+
+/**
+ * 获取已注册 shader 的 uniforms 工厂。
+ */
+export function getUniformsFactory(shaderName: string): (() => Record<string, unknown>) | undefined
+{
+    return shaderRegistry.get(shaderName)?.uniformsFactory;
+}
+
+/**
+ * 获取已注册 shader 的渲染状态。
+ */
+export function getRenderState(shaderName: string): RenderState | undefined
+{
+    return shaderRegistry.get(shaderName)?.renderState;
 }
 
 /**

@@ -3,7 +3,6 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
 import { RenderMode } from '../render/data/enums';
 import { RenderParams } from '../render/data/RenderParams';
-import { Shader } from '../render/data/Shader';
 import { shaderlib } from '../render/data/ShaderLib';
 import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
@@ -180,7 +179,7 @@ export class Material extends Feng3dObject
         const renderParams = shaderlib.shaderConfig.shaders[this.shaderName].renderParams;
         renderParams && serialization.setValue(this.renderParams, renderParams);
 
-        this.renderObject.shader = new Shader({ shaderName: this.shaderName });
+        this.renderObject.shader = this.shaderName;
     }
 
     private _onUniformsChanged()

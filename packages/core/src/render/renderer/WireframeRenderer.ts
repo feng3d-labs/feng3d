@@ -1,6 +1,4 @@
 import { Color4 } from '@feng3d/math';
-import { Index } from '../data/Index';
-import { Shader } from '../data/Shader';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
@@ -14,9 +12,9 @@ declare global
         /**
          * 顶点索引缓冲
          */
-        wireframeindexBuffer?: Index;
+        wireframeindexBuffer?: Uint16Array | Uint32Array;
 
-        wireframeShader?: Shader;
+        wireframeShader?: string;
     }
 }
 
@@ -28,7 +26,7 @@ export class WireframeRenderer
     {
         if (!this.renderObject.shader)
         {
-            this.renderObject.shader = new Shader({ shaderName: 'wireframe' });
+            this.renderObject.shader = 'wireframe';
         }
     }
 
@@ -87,7 +85,7 @@ export class WireframeRenderer
             wireframeindices[i * 2 + 5] = indices[i + 2];
         }
 
-        renderObject.wireframeShader = renderObject.wireframeShader || new Shader({ shaderName: 'wireframe' });
+        renderObject.wireframeShader = renderObject.wireframeShader || 'wireframe';
 
         const newRenderObject = Object.assign({}, renderObject, {
             indices: wireframeindices,

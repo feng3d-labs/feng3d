@@ -1,5 +1,4 @@
 import { Rectangle, Vector3 } from '@feng3d/math';
-import { Shader } from '../data/Shader';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
@@ -39,7 +38,7 @@ declare global
 {
     export interface MixinsRenderObject
     {
-        shadowShader?: Shader;
+        shadowShader?: string;
     }
 }
 
@@ -270,7 +269,7 @@ export class ShadowRenderer
     private drawGameObject(renderPass: RenderPass, renderable: Renderable, scene: Scene, camera: Camera)
     {
         const renderObject = renderable.renderObject.value;
-        renderObject.shadowShader = renderObject.shadowShader || new Shader({ shaderName: 'shadow' });
+        renderObject.shadowShader = renderObject.shadowShader || 'shadow';
 
         //
         this.renderObject.next = renderObject;
