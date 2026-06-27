@@ -62,15 +62,6 @@ export * from './data/ComputePipeline';
 // 时间戳查询
 export * from './data/TimestampQuery';
 
-// WGSL 着色器
-export * from './shaders/common.wgsl';
-export * from './shaders/texture.vertex.wgsl';
-export * from './shaders/texture.fragment.wgsl';
-export * from './shaders/color.vertex.wgsl';
-export * from './shaders/color.fragment.wgsl';
-export * from './shaders/standard.vertex.wgsl';
-export * from './shaders/standard.fragment.wgsl';
-
 // 内部类型
 export * from './internal/BufferBindingInfo';
 

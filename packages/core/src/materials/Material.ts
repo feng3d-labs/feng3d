@@ -7,6 +7,7 @@ import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';
+import { applyMaterialRenderData } from '../render/webgpu/MaterialPipeline';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 import { StandardUniforms } from './StandardMaterial';
@@ -104,6 +105,11 @@ export class Material extends Feng3dObject
         renderObject.shader = this.renderObject.shader;
         renderObject.renderParams = this.renderObject.renderParams;
         renderObject.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === RenderMode.POINTS;
+
+        // ---- WebGPU 原生路径填充 ----
+        // pipeline（WGSL 着色器源码 + 渲染状态）+ 材质相关绑定资源（uniform 数据 + 纹理）。
+        // 相机、全局、模型 uniform 由 ForwardRenderer 单独注入。
+        applyMaterialRenderData(renderObject, this.shaderName, this.renderParams, this.uniforms);
     }
 
     /**
