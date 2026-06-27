@@ -377,10 +377,34 @@ function extractUniformData(uniforms: UniformsLike): Record<string, unknown>
         const value = record[key];
         if (value instanceof Texture2D || value instanceof TextureCube) continue;
 
-        data[key] = value;
+        data[key] = extractValue(value);
     }
 
     return data;
+}
+
+function extractValue(value: unknown): unknown
+{
+    if (value === null || value === undefined || typeof value !== 'object')
+    {
+        return value;
+    }
+
+    if (Array.isArray(value))
+    {
+        return value.map(v => extractValue(v));
+    }
+
+    const obj = value as Record<string, unknown>;
+    const result: Record<string, unknown> = {};
+    for (const key in obj)
+    {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+        if (key === '__class__') continue;
+
+        result[key] = extractValue(obj[key]);
+    }
+    return result;
 }
 
 /**
