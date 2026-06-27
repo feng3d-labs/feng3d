@@ -77,6 +77,15 @@ export class Renderable extends RayCastable
     {
         const ro = this._renderObject ||= new RenderObject();
 
+        // 初始化 WebGL 兼容字段（RenderObject 接口声明为可选 readonly，
+        // 但 core 的 Geometry/Material/Transform/ParticleSystem 等 beforeRender 假设它们已存在）。
+        const roAny = ro as any;
+        if (!roAny.shaderMacro) roAny.shaderMacro = {};
+        if (!roAny.uniforms) roAny.uniforms = {};
+        if (!roAny.attributes) roAny.attributes = {};
+        if (!roAny.renderParams) roAny.renderParams = {};
+        if (!roAny.bindingResources) roAny.bindingResources = {};
+
         this.gameObject.components.forEach((element) =>
         {
             element.beforeRender(ro, null, null);

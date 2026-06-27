@@ -1,7 +1,7 @@
 import { Box3, Euler, Matrix4x4, Quaternion, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { batchRun, computed, reactive } from '@feng3d/reactivity';
+import { batchRun, computed, effect, reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Component, RegisterComponent } from '../component/Component';
@@ -40,7 +40,8 @@ export class Transform extends Component
 
     beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        const transformUniforms = (renderObject.bindingResources.transform ||= { value: {} as TransformUniforms }).value;
+        const bindingResources = renderObject.bindingResources as Record<string, any>;
+        const transformUniforms = (bindingResources.transform ||= { value: {} as TransformUniforms }).value as TransformUniforms;
         //
         transformUniforms.u_modelMatrix = this.matrix.value;
         transformUniforms.u_ITModelMatrix = this.ITlocalToWorldMatrix.value;
@@ -52,6 +53,40 @@ export class Transform extends Component
     constructor()
     {
         super();
+
+        // 监听世界变换矩阵变化，自动派发 scenetransformChanged 事件并向下传播。
+        // 响应式系统已自动处理矩阵重算（localToWorldMatrix 为 computed），
+        // 此 effect 仅负责事件通知，供 Camera / AudioListener / Billboard 等组件响应。
+        effect(() =>
+        {
+            // 读取 .value 建立响应式依赖，矩阵变化时本 effect 会重新执行
+            this.localToWorldMatrix.value;
+            this._invalidateSceneTransform();
+        });
+    }
+
+    /**
+     * 使场景变换失效。
+     *
+     * 派发 `scenetransformChanged` 事件并递归传播到所有子物体（父级变换改变会影响所有后代的世界变换）。
+     *
+     * 响应式系统已自动处理矩阵缓存失效（computed 自动重算），
+     * 此方法保留是为了兼容旧代码（GameObject/Billboard/HoldSize 等通过 `transform['_invalidateSceneTransform']()` 调用），
+     * 并提供事件通知。
+     */
+    _invalidateSceneTransform()
+    {
+        this.emit('scenetransformChanged');
+
+        // 向子物体传播（父级世界变换改变会影响所有后代）
+        const gameObject = this._gameObject;
+        if (gameObject)
+        {
+            for (let i = 0, n = gameObject.numChildren; i < n; i++)
+            {
+                gameObject.getChildAt(i).transform._invalidateSceneTransform();
+            }
+        }
     }
 
     /**
@@ -64,7 +99,9 @@ export class Transform extends Component
 
     get parent()
     {
-        return this.gameObject.parent && this.gameObject.parent.transform;
+        const gameObject = this._gameObject;
+
+        return gameObject && gameObject.parent && gameObject.parent.transform;
     }
 
     /**

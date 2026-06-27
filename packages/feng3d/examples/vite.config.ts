@@ -5,7 +5,7 @@ export default defineConfig({
     publicDir: 'resources',
     server: {
         port: 3000,
-        open: true
+        open: false
     },
     build: {
         outDir: 'dist',

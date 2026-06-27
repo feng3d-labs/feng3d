@@ -112,10 +112,6 @@ export class TextureCube<T extends TextureCubeEventMap = TextureCubeEventMap> ex
     }
 }
 
-TextureCube.default = serialization.setValue(new TextureCube(), { name: 'Default-TextureCube', hideFlags: HideFlags.NotEditable });
-
-AssetData.addAssetData('Default-TextureCube', TextureCube.default);
-
 const defaultCubeTexture: Texture = {
     descriptor: {
         size: [1, 1, 6],
@@ -132,3 +128,7 @@ const defaultCubeTexture: Texture = {
         return item;
     }),
 };
+
+TextureCube.default = serialization.setValue(new TextureCube(), { name: 'Default-TextureCube', hideFlags: HideFlags.NotEditable });
+
+AssetData.addAssetData('Default-TextureCube', TextureCube.default);
