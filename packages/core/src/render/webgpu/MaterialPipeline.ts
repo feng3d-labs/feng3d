@@ -310,6 +310,31 @@ export function buildVertices(geometry: Geometry): VertexAttributes
         vertices[wgslName] = buildVertexAttribute(attr);
     }
 
+    // 为着色器提供默认的 color 属性（如果 Geometry 没有）
+    // WGSL 着色器声明 @location(4) color: vec4<f32>，必须提供
+    if (!vertices.color)
+    {
+        // 从 position 属性计算顶点数量（position 是 vec3，每个顶点 3 个 float）
+        const positionAttr = attributes.a_position || attributes.position;
+        if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
+        {
+            const vertexCount = positionAttr.data.length / positionAttr.size;
+            const colorData = new Float32Array(vertexCount * 4);
+            // 填充白色 (1, 1, 1, 1)
+            for (let i = 0; i < vertexCount; i++)
+            {
+                colorData[i * 4] = 1;
+                colorData[i * 4 + 1] = 1;
+                colorData[i * 4 + 2] = 1;
+                colorData[i * 4 + 3] = 1;
+            }
+            vertices.color = {
+                data: colorData,
+                format: 'float32x4',
+            };
+        }
+    }
+
     return vertices;
 }
 
