@@ -1,4 +1,5 @@
 import { CullFace } from '../data/enums';
+import { RenderParams } from '../data/RenderParams';
 import { Shader } from '../data/Shader';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
@@ -12,15 +13,17 @@ import { Scene } from '../../scene/Scene';
 export class OutlineRenderer
 {
     renderObject: RenderObject;
+    private renderParams: RenderParams;
 
     init()
     {
         if (!this.renderObject)
         {
             this.renderObject = new RenderObject();
-            const renderParams = this.renderObject.renderParams;
-            renderParams.enableBlend = false;
-            renderParams.cullFace = CullFace.FRONT;
+            this.renderParams = new RenderParams();
+            this.renderParams.enableBlend = false;
+            this.renderParams.cullFace = CullFace.FRONT;
+            (this.renderObject as any).renderParams = this.renderParams;
 
             this.renderObject.shader = new Shader({ shaderName: 'outline' });
         }
