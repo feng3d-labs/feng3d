@@ -39,7 +39,7 @@ declare global
 {
     export interface MixinsRenderObject
     {
-        shadowShader: Shader;
+        shadowShader?: Shader;
     }
 }
 
@@ -80,7 +80,7 @@ export class ShadowRenderer
             descriptor: {
                 colorAttachments: [
                     {
-                        view: { texture: { context: { canvasId: light.shadowMap } } },
+                        view: { texture: { context: { canvasId: light.shadowMap as any } } },
                         clearValue: [1.0, 1.0, 1.0, 1.0],
                     },
                 ],
@@ -95,7 +95,7 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
-        shadowCamera.transform.localToWorldMatrix = light.transform.localToWorldMatrix;
+        shadowCamera.transform.setLocalToWorldMatrix(light.transform.localToWorldMatrix.value);
 
         const renderObject = this.renderObject;
 
@@ -132,7 +132,7 @@ export class ShadowRenderer
             descriptor: {
                 colorAttachments: [
                     {
-                        view: { texture: { context: { canvasId: light.shadowMap } } },
+                        view: { texture: { context: { canvasId: light.shadowMap as any } } },
                         clearValue: [1.0, 1.0, 1.0, 1.0],
                     },
                 ],
@@ -177,7 +177,7 @@ export class ShadowRenderer
         cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
 
         const shadowCamera = light.shadowCamera;
-        shadowCamera.transform.position = light.transform.position;
+        shadowCamera.transform.setPosition(light.transform.position);
 
         const renderObject = this.renderObject;
 
@@ -226,7 +226,7 @@ export class ShadowRenderer
             descriptor: {
                 colorAttachments: [
                     {
-                        view: { texture: { context: { canvasId: light.shadowMap } } },
+                        view: { texture: { context: { canvasId: light.shadowMap as any } } },
                         clearValue: [1.0, 1.0, 1.0, 1.0],
                     },
                 ],

@@ -74,16 +74,85 @@ export class Transform extends Component
     readonly position: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
 
     /**
+     * 位置 x 坐标
+     */
+    get x() { return this.position.x; }
+    set x(v: number) { reactive(this.position).x = v; }
+
+    /**
+     * 位置 y 坐标
+     */
+    get y() { return this.position.y; }
+    set y(v: number) { reactive(this.position).y = v; }
+
+    /**
+     * 位置 z 坐标
+     */
+    get z() { return this.position.z; }
+    set z(v: number) { reactive(this.position).z = v; }
+
+    setPosition(v: Vector3 | { x: number; y: number; z: number })
+    {
+        const r_position = reactive(this.position);
+        batchRun(() =>
+        {
+            r_position.x = v.x;
+            r_position.y = v.y;
+            r_position.z = v.z;
+        });
+    }
+
+    /**
      * 本地旋转
      */
     @oav({ tooltip: '本地旋转', component: 'OAVVector3', componentParam: { step: 0.001, stepScale: 30, stepDownup: 30 } })
     readonly rotation: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
 
     /**
+     * 旋转 x 角度
+     */
+    get rx() { return this.rotation.x; }
+    set rx(v: number) { reactive(this.rotation).x = v; }
+
+    /**
+     * 旋转 y 角度
+     */
+    get ry() { return this.rotation.y; }
+    set ry(v: number) { reactive(this.rotation).y = v; }
+
+    /**
+     * 旋转 z 角度
+     */
+    get rz() { return this.rotation.z; }
+    set rz(v: number) { reactive(this.rotation).z = v; }
+
+    setRotation(v: Vector3 | { x: number; y: number; z: number })
+    {
+        const r_rotation = reactive(this.rotation);
+        batchRun(() =>
+        {
+            r_rotation.x = v.x;
+            r_rotation.y = v.y;
+            r_rotation.z = v.z;
+        });
+    }
+
+    /**
      * 本地缩放
      */
     @oav({ tooltip: '本地缩放' })
     readonly scale: { readonly x: number; readonly y: number; readonly z: number } = { x: 1, y: 1, z: 1 };
+
+    setScale(v: Vector3 | { x: number; y: number; z: number })
+    {
+        const r_scale = reactive(this.scale);
+        batchRun(() =>
+        {
+            r_scale.x = v.x;
+            r_scale.y = v.y;
+            r_scale.z = v.z;
+        });
+    }
 
     /**
      * 本地四元素旋转

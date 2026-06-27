@@ -14,6 +14,10 @@ declare global
 {
     interface MixinsDefaultGeometry { }
     interface MixinsGeometryTypes { }
+    interface MixinsRenderObject
+    {
+        index?: Index;
+    }
 }
 
 export interface GeometryTypes extends MixinsGeometryTypes { }

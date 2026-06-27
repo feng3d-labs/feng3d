@@ -8,10 +8,15 @@ import { DrawIndexedIndirect } from './DrawIndexedIndirect';
 import { DrawIndirect } from './DrawIndirect';
 import type { Viewport } from './Viewport';
 
+declare global
+{
+    interface MixinsRenderObject { }
+}
+
 /**
  * 渲染对象，包含一次渲染时包含的所有数据。
  */
-export interface RenderObject
+export interface RenderObject extends MixinsRenderObject
 {
     /**
      * 数据类型。

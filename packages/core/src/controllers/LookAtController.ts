@@ -65,7 +65,8 @@ export class LookAtController extends ControllerBase
             }
             else if (this._lookAtObject)
             {
-                this._pos = this._lookAtObject.transform.position;
+                const pos = this._lookAtObject.transform.position;
+                this._pos.set(pos.x, pos.y, pos.z);
                 this._targetObject.transform.lookAt(this._pos, this._upAxis);
             }
         }

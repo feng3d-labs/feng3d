@@ -146,7 +146,7 @@ export class Light extends Behaviour
         }
 
         const depth = viewCamera.lens.near * 2;
-        gameObject.transform.position = viewCamera.transform.worldPosition.addTo(viewCamera.transform.localToWorldMatrix.value.getAxisZ().scaleNumberTo(depth));
+        gameObject.transform.setPosition(viewCamera.transform.worldPosition.addTo(viewCamera.transform.localToWorldMatrix.value.getAxisZ().scaleNumberTo(depth)));
         const billboardComponent = gameObject.getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 

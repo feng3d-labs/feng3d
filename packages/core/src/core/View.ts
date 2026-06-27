@@ -329,7 +329,7 @@ export class View extends Feng3dObject
             const m = t.getComponent(Renderable);
             if (m)
             {
-                const include = m.selfWorldBounds.toPoints().every((pos) =>
+                const include = m.selfWorldBounds.value.toPoints().every((pos) =>
                 {
                     const p = this.project(pos);
 
@@ -356,7 +356,7 @@ export class View extends Feng3dObject
 
         const camera = GameObject.createPrimitive('Camera', { name: 'Main Camera' });
         camera.addComponent(AudioListener);
-        camera.transform.position = new Vector3(0, 1, -10);
+        camera.transform.setPosition(new Vector3(0, 1, -10));
         scene.gameObject.addChild(camera);
 
         const directionalLight = serialization.setValue(new GameObject(), { name: 'DirectionalLight' });

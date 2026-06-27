@@ -1,6 +1,6 @@
 import { Color4 } from '@feng3d/math';
 import { Index, Shader } from '@feng3d/renderer';
-import { BindingResource, RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
+import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable } from '../../core/Renderable';
@@ -13,14 +13,24 @@ declare global
         /**
          * 顶点索引缓冲
          */
-        wireframeindexBuffer: Index;
+        wireframeindexBuffer?: Index;
 
-        wireframeShader: Shader;
+        wireframeShader?: Shader;
     }
 }
 
 export class WireframeRenderer
 {
+    private renderObject = new RenderObject();
+
+    init()
+    {
+        if (!this.renderObject.shader)
+        {
+            this.renderObject.shader = new Shader({ shaderName: 'wireframe' });
+        }
+    }
+
     /**
      * 渲染
      */
@@ -40,16 +50,18 @@ export class WireframeRenderer
             return;
         }
 
+        this.init();
+
         wireframes.forEach((element) =>
         {
-            this.drawGameObject(submit, element.renderable, scene, camera, element.wireframe.color); //
+            this.drawGameObject(submit, element.renderable, scene, camera, element.wireframe.color);
         });
     }
 
     /**
      * 绘制3D对象
      */
-    drawGameObject(submit: Submit, renderable: Renderable, scene: Scene, camera: Camera, wireframeColor = new Color4())
+    drawGameObject(_submit: Submit, renderable: Renderable, _scene: Scene, _camera: Camera, wireframeColor = new Color4())
     {
         const renderObject = renderable.renderObject.value;
 
@@ -60,15 +72,8 @@ export class WireframeRenderer
         )
         { return; }
 
-        const cameraUniforms = camera.getUniforms();
-
-        const bindingResources = renderObject.bindingResources as { [key: string]: BindingResource };
-
-        bindingResources.cameraUniforms = { value: cameraUniforms };
-
-        //
         const indices = renderObject.indices;
-        if (indices.length < 3) return;
+        if (!indices || indices.length < 3) return;
 
         const wireframeindices = new Uint16Array(indices.length * 2);
         for (let i = 0; i < indices.length; i += 3)
@@ -83,24 +88,13 @@ export class WireframeRenderer
 
         renderObject.wireframeShader = renderObject.wireframeShader || new Shader({ shaderName: 'wireframe' });
 
-        const newRenderObject: RenderObject = {
-            ...renderObject,
+        const newRenderObject = Object.assign({}, renderObject, {
             indices: wireframeindices,
-            bindingResources: {
-                ...renderObject.bindingResources,
-                wireframe: { value: { u_wireframeColor: wireframeColor } }
-            },
-            pipeline: {
-                ...renderObject.pipeline,
-                fragment: {
-                    ...renderObject.pipeline.fragment,
-                    code: getWireframeShaderCode(),
-                }
-            },
-        };
+            shader: renderObject.wireframeShader,
+            uniforms: { ...renderObject.uniforms, u_wireframeColor: wireframeColor }
+        }) as RenderObject;
 
-        ((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(newRenderObject);
-        //
+        ((_submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(newRenderObject);
     }
 }
 

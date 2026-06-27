@@ -70,6 +70,16 @@ export interface GameObjectEventMap extends MixinsGameObjectEventMap, MouseEvent
      * 刷新界面
      */
     refreshView: any;
+
+    /**
+     * 场景变换改变事件
+     */
+    scenetransformChanged: void;
+
+    /**
+     * 本地转世界矩阵更新事件
+     */
+    updateLocalToWorldMatrix: void;
 }
 
 export interface GameObject extends MixinsGameObject { }

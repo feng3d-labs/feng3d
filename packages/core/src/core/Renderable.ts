@@ -37,7 +37,7 @@ export class Renderable extends RayCastable
      */
     @oav({ component: 'OAVPick', tooltip: '几何体，提供模型以形状', componentParam: { accepttype: 'geometry', datatype: 'geometry' } })
     @serialize
-    readonly geometry: GeometryLike = Geometry.getDefault('Cube');
+    geometry: GeometryLike = Geometry.getDefault('Cube');
 
     /**
      * 材质

@@ -248,9 +248,11 @@ export class TransformLayout extends Component
         }
 
         //
-        this.transform.position.x = anchorLeftTop.x + position.x;
-        this.transform.position.y = anchorLeftTop.y + position.y;
-        this.transform.position.z = anchorLeftTop.z + position.z;
+        this.transform.setPosition({
+            x: anchorLeftTop.x + position.x,
+            y: anchorLeftTop.y + position.y,
+            z: anchorLeftTop.z + position.z
+        });
         //
         this._layoutInvalid = false;
         ticker.offframe(this._updateLayout, this);
