@@ -1,7 +1,8 @@
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
+import { UnReadonly } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { windowEventProxy } from '@feng3d/shortcut';
-import { Submit, WebGPU } from '@feng3d/webgpu';
+import { RenderPass, RenderPassColorAttachment, RenderPassObject, Submit, WebGPU } from '@feng3d/webgpu';
 import { AudioListener } from '../audio/AudioListener';
 import { Camera } from '../cameras/Camera';
 import { DirectionalLight } from '../light/DirectionalLight';
@@ -55,6 +56,17 @@ export class View extends Feng3dObject
         this._camera = v;
     }
     private _camera: Camera;
+
+    /**
+     * 复用的渲染提交对象。
+     *
+     * 每帧渲染复用同一个 Submit/RenderPass/descriptor 对象引用。
+     * webgpu 包以对象引用为键缓存 WGPURenderPass/WGPURenderPassDescriptor/
+     * WGPURenderPassDepthStencilAttachment，若每帧新建 descriptor 会导致缓存未命中，
+     * 每帧新建一份自动生成的深度纹理且永不销毁，造成 GPU 内存泄漏。
+     */
+    private _submit: Submit;
+
     /**
      * 3d场景
      */
@@ -201,33 +213,17 @@ export class View extends Feng3dObject
         if (!webgpu) return;
 
 
-        //
-        const submit: Submit = {
-            commandEncoders: [
-                {
-                    passEncoders: [
-                        {
-                            descriptor: {
-                                colorAttachments: [
-                                    {
-                                        view: { texture: { context: { canvasId: this.canvas } } },
-                                        clearValue: [this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a],
-                                    },
-                                ],
-                                depthStencilAttachment: {
-                                    depthClearValue: 1,
-                                    depthLoadOp: 'clear',
-                                    depthStoreOp: 'store',
-                                    stencilClearValue: 0,
-                                    stencilLoadOp: 'clear',
-                                    stencilStoreOp: 'store',
-                                },
-                            }, renderPassObjects: []
-                        },
-                    ],
-                },
-            ],
-        };
+        // 复用 submit/RenderPass/descriptor 对象引用（见 _submit 注释）。
+        const submit = this.getSubmit();
+        const renderPass = submit.commandEncoders[0].passEncoders[0] as RenderPass;
+
+        // 每帧更新背景色：整体替换 clearValue 数组引用以触发响应式更新。
+        const bg = this.scene.background;
+        (renderPass.descriptor.colorAttachments[0] as UnReadonly<RenderPassColorAttachment>).clearValue = [bg.r, bg.g, bg.b, bg.a];
+
+        // 每帧清空渲染对象列表：length=0 经响应式 set 拦截器触发数组迭代键，
+        // 使 WGPURenderPass.commands computed 失效重算（仅 push 不会触发）。
+        (renderPass.renderPassObjects as RenderPassObject[]).length = 0;
 
         // 绘制阴影图
         shadowRenderer.draw(submit, this.scene, this.camera);
@@ -239,6 +235,45 @@ export class View extends Feng3dObject
 
         //
         webgpu.submit(submit);
+    }
+
+    /**
+     * 获取复用的渲染提交对象。
+     *
+     * 首次调用时创建，后续每帧复用同一个 Submit/RenderPass/descriptor 对象引用。
+     * 复用引用使 webgpu 包的对象引用缓存持续命中，避免每帧重建深度纹理导致内存泄漏。
+     * 每帧变化的字段（背景色、渲染对象列表）由 {@link render} 每帧更新。
+     */
+    private getSubmit(): Submit
+    {
+        if (!this._submit)
+        {
+            this._submit = {
+                commandEncoders: [
+                    {
+                        passEncoders: [
+                            {
+                                descriptor: {
+                                    colorAttachments: [
+                                        {
+                                            view: { texture: { context: { canvasId: this.canvas } } },
+                                            clearValue: [0, 0, 0, 1],
+                                        },
+                                    ],
+                                    depthStencilAttachment: {
+                                        depthClearValue: 1,
+                                        depthLoadOp: 'clear',
+                                        depthStoreOp: 'store',
+                                    },
+                                }, renderPassObjects: [],
+                            },
+                        ],
+                    },
+                ],
+            };
+        }
+
+        return this._submit;
     }
 
     /**
