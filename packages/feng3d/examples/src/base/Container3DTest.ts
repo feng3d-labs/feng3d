@@ -16,7 +16,7 @@ const colorMaterial = cube.getComponent(feng3d.Renderable).material = feng3d.ser
 
 const cylinder = feng3d.GameObject.createPrimitive("Cylinder");
 cylinder.transform.x = 2;
-cube.addChild(cylinder);
+// cube.addChild(cylinder);
 
 let num = 0;
 feng3d.ticker.onframe(() => {

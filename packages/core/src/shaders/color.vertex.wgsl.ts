@@ -47,8 +47,8 @@ struct CameraUniforms {
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.position, 1.0);
-    output.position = cameraUniforms.u_viewProjection * worldPosition;
+    // [DEBUG] 临时：跳过矩阵，直接用模型空间坐标作为裁剪空间坐标
+    output.position = vec4<f32>(input.position.xy, 0.0, 1.0);
     output.color = input.color;
     return output;
 }
