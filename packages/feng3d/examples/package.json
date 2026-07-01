@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.html",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run build --workspace @feng3d/error-logger && vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "start": "npm run dev",

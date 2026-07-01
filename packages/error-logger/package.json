@@ -5,16 +5,12 @@
   "author": "feng",
   "license": "MIT",
   "type": "module",
-  "main": "./src/vite/index.mjs",
-  "types": "./src/vite/index.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/vite/index.ts",
-      "import": "./src/vite/index.mjs"
-    },
-    "./vite": {
-      "types": "./src/vite/index.ts",
-      "import": "./src/vite/index.mjs"
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
     }
   },
   "scripts": {
@@ -22,10 +18,10 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "vitest",
-    "types": "tsc"
+    "types": "tsc --noEmit"
   },
   "files": [
-    "src"
+    "lib"
   ],
   "repository": {
     "type": "git",

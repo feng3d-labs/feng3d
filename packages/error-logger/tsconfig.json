@@ -3,8 +3,13 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "module": "ESNext",
+    "moduleResolution": "bundler"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "lib", "public", "test"]
+  "exclude": ["node_modules", "dist", "lib"]
 }
