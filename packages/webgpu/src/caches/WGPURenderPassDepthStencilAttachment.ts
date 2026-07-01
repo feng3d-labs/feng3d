@@ -10,6 +10,22 @@ import { WGPUTextureView } from './WGPUTextureView';
 import '../data/RenderPassDepthStencilAttachment';
 
 /**
+ * 判断深度模板纹理格式是否包含模板（stencil）aspect。
+ *
+ * WebGPU 规范要求：当纹理格式不包含 stencil aspect 时，不得设置
+ * `stencilLoadOp` / `stencilStoreOp`，否则 `BeginRenderPass` 校验失败。
+ * 仅有名称中包含 "stencil" 的格式（如 `stencil8`、`depth24plus-stencil8`、
+ * `depth32float-stencil8`）才具有 stencil aspect。
+ *
+ * @param format 深度模板纹理格式
+ * @returns 是否包含 stencil aspect
+ */
+function formatHasStencilAspect(format: string | undefined): boolean
+{
+    return !!format && format.includes('stencil');
+}
+
+/**
  * WebGPU渲染通道深度模板附件缓存管理器
  *
  * 负责管理WebGPU渲染通道深度模板附件的完整生命周期，包括：
@@ -110,6 +126,10 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
 
             let textureView: GPUTextureView;
 
+            // 深度模板纹理的实际格式，用于判断是否包含 stencil aspect。
+            // 自动生成纹理使用 'depth24plus'（无 stencil），外部纹理取自其 descriptor.format。
+            let depthStencilFormat: string | undefined;
+
             // 如果提供了深度纹理视图，使用现有的纹理视图
             if (r_depthStencilAttachment.view)
             {
@@ -117,6 +137,12 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
                 const wGPUTextureView = WGPUTextureView.getInstance(device, descriptor.depthStencilAttachment.view);
 
                 textureView = wGPUTextureView.textureView;
+
+                // 记录外部纹理的格式，用于判断是否支持 stencil 操作。
+                // TextureLike 是 Texture | CanvasTexture 联合类型，仅 Texture 拥有 descriptor；
+                // 深度附件不会是 CanvasTexture，这里安全取用。
+                const viewTexture = descriptor.depthStencilAttachment.view?.texture as Texture | undefined;
+                depthStencilFormat = viewTexture?.descriptor?.format;
             }
             // 如果没有提供深度纹理视图，自动生成一个
             else
@@ -131,6 +157,9 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
                 {
                     (reactive(canvasContext) as CanvasContext).canvasId;
                 }
+
+                // 自动生成纹理使用 depth24plus 格式（仅深度，无 stencil aspect）
+                depthStencilFormat = 'depth24plus';
 
                 // 创建自动生成的深度纹理配置
                 const autoDepthTexture: Texture = {
@@ -160,24 +189,30 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
             gpuRenderPassDepthStencilAttachment.depthStoreOp = r_depthStencilAttachment.depthStoreOp ?? 'store';
             gpuRenderPassDepthStencilAttachment.depthReadOnly = r_depthStencilAttachment.depthReadOnly ?? false;
 
-            if (r_depthStencilAttachment.stencilClearValue)
+            // 仅当纹理格式包含 stencil aspect 时才设置 stencil 操作。
+            // WebGPU 规范要求：不包含 stencil aspect 的纹理（如 depth24plus、depth32float）
+            // 不得设置 stencilLoadOp/stencilStoreOp，否则 BeginRenderPass 校验失败。
+            if (formatHasStencilAspect(depthStencilFormat))
             {
-                gpuRenderPassDepthStencilAttachment.stencilClearValue = depthStencilAttachment.stencilClearValue;
-            }
+                if (r_depthStencilAttachment.stencilClearValue)
+                {
+                    gpuRenderPassDepthStencilAttachment.stencilClearValue = depthStencilAttachment.stencilClearValue;
+                }
 
-            if (r_depthStencilAttachment.stencilLoadOp)
-            {
-                gpuRenderPassDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
-            }
+                if (r_depthStencilAttachment.stencilLoadOp)
+                {
+                    gpuRenderPassDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
+                }
 
-            if (r_depthStencilAttachment.stencilStoreOp)
-            {
-                gpuRenderPassDepthStencilAttachment.stencilStoreOp = depthStencilAttachment.stencilStoreOp;
-            }
+                if (r_depthStencilAttachment.stencilStoreOp)
+                {
+                    gpuRenderPassDepthStencilAttachment.stencilStoreOp = depthStencilAttachment.stencilStoreOp;
+                }
 
-            if (r_depthStencilAttachment.stencilReadOnly)
-            {
-                gpuRenderPassDepthStencilAttachment.stencilReadOnly = depthStencilAttachment.stencilReadOnly;
+                if (r_depthStencilAttachment.stencilReadOnly)
+                {
+                    gpuRenderPassDepthStencilAttachment.stencilReadOnly = depthStencilAttachment.stencilReadOnly;
+                }
             }
 
             // 更新深度模板附件引用
