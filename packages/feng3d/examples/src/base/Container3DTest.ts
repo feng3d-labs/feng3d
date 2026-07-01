@@ -20,8 +20,6 @@ cylinder.transform.x = 2;
 
 let num = 0;
 feng3d.ticker.onframe(() => {
-    console.log("update");
-
     //变化旋转与颜色
     cube.transform.ry += 1;
 

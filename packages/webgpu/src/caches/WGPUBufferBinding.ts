@@ -124,7 +124,17 @@ export class WGPUBufferBinding extends ReactiveObject
                 }
                 else if (value.constructor.name !== Cls.name)
                 {
-                    data = new Cls(value as ArrayLike<number>);
+                    // Color4 / Vector3 / Matrix4x4 等数值容器既无数字索引也无 length，
+                    // `new Cls(value)` 会得到长度 0 的空数组（uniform 读到全 0）。
+                    // 用 toArray() 取扁平数值（UniformDataItem 类型契约支持的形式）。
+                    if (typeof (value as { toArray?: unknown }).toArray === 'function')
+                    {
+                        data = new Cls((value as { toArray: () => ArrayLike<number> }).toArray());
+                    }
+                    else
+                    {
+                        data = new Cls(value as ArrayLike<number>);
+                    }
                 }
                 else
                 {

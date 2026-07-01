@@ -395,6 +395,14 @@ function extractValue(value: unknown): unknown
         return value.map(v => extractValue(v));
     }
 
+    // 叶子数值容器（Color4 / Color3 / Vector3 / Matrix4x4 / Quaternion 等）：
+    // 保留原对象引用（不递归拆解），交给 WGPUBufferBinding 处理。
+    // 若拆解成 { r, g, b, a } 纯对象会破坏响应式引用，导致 uniform 不更新。
+    if (typeof (value as { toArray?: unknown }).toArray === 'function')
+    {
+        return value;
+    }
+
     const obj = value as Record<string, unknown>;
     const result: Record<string, unknown> = {};
     for (const key in obj)
