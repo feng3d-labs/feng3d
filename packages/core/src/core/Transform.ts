@@ -43,8 +43,9 @@ export class Transform extends Component
         const bindingResources = renderObject.bindingResources as Record<string, any>;
         const transformUniforms = (bindingResources.transform ||= { value: {} as TransformUniforms }).value as TransformUniforms;
         //
-        transformUniforms.u_modelMatrix = this.matrix.value;
-        transformUniforms.u_ITModelMatrix = this.ITlocalToWorldMatrix.value;
+        const r_transformUniforms = reactive(transformUniforms);
+        r_transformUniforms.u_modelMatrix = this.matrix.value;
+        r_transformUniforms.u_ITModelMatrix = this.ITlocalToWorldMatrix.value;
     }
 
     /**

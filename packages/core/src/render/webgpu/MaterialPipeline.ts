@@ -1,5 +1,6 @@
 import { Attribute } from '../data/Attribute';
 import { CullFace as RendererCullFace } from '../data/enums';
+import { reactive } from '@feng3d/reactivity';
 import { RenderParams } from '../data/RenderParams';
 import {
     BlendComponent,
@@ -567,7 +568,9 @@ export function applyMaterialRenderData(
     }
 
     const materialResources = buildMaterialBindingResources(uniforms as UniformsLike);
-    Object.assign(ro.bindingResources, materialResources);
+    // 通过 reactive 代理赋值，使 WGPUBufferBinding 的 effect 能监听到 uniform 变化并更新 GPU buffer。
+    // 直接在原始对象上 Object.assign 不经过响应式 set 拦截，effect 无法感知变化。
+    Object.assign(reactive(ro.bindingResources), materialResources);
 
     return true;
 }
