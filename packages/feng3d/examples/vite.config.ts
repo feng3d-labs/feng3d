@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { errorLoggerPlugin } from '@feng3d/error-logger/vite';
 
 export default defineConfig({
     root: '.',
@@ -10,5 +11,6 @@ export default defineConfig({
     build: {
         outDir: 'dist',
         emptyOutDir: true
-    }
+    },
+    plugins: [errorLoggerPlugin()]
 });

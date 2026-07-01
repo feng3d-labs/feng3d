@@ -2,6 +2,7 @@
   "name": "feng3d-examples",
   "version": "0.6.0",
   "description": "feng3d引擎示例",
+  "type": "module",
   "main": "index.html",
   "scripts": {
     "dev": "vite",
@@ -48,6 +49,7 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "@feng3d/error-logger": "*",
     "feng3d": "*"
   }
 }
