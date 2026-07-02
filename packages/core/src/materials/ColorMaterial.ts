@@ -6,7 +6,7 @@ import { serialize } from '@feng3d/serialization';
 import { colorFragmentWGSL } from '../shaders/color.fragment.wgsl';
 import { colorVertexWGSL } from '../shaders/color.vertex.wgsl';
 import { Material } from './Material';
-import { RenderObject } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, RenderObject } from '@feng3d/webgpu';
 
 /**
  * 颜色材质。
@@ -31,13 +31,13 @@ export class ColorMaterial extends Material
     constructor()
     {
         super();
-        // color 着色器配置
-        this.renderPipeline.vertex.wgsl = colorVertexWGSL;
-        this.renderPipeline.fragment.wgsl = colorFragmentWGSL;
-        this.renderPipeline.primitive.cullFace = 'back';
-        this.renderPipeline.primitive.frontFace = 'cw';
-        this.renderPipeline.depthStencil.depthWriteEnabled = true;
-        this.renderPipeline.depthStencil.depthCompare = 'less';
+        // color 着色器配置：通过 reactive 代理一层替换各子状态（renderPipeline 字段在接口中为
+        // readonly，属编译期约束；reactive 返回的代理顶层可写，故一层替换合法且能触发响应式更新）。
+        const r_pipeline = reactive(this.renderPipeline);
+        r_pipeline.vertex = { wgsl: colorVertexWGSL };
+        r_pipeline.fragment = { wgsl: colorFragmentWGSL, targets: [{}] };
+        r_pipeline.primitive = { cullFace: 'back', frontFace: 'cw' };
+        r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
     }
 
     /**
@@ -51,11 +51,22 @@ export class ColorMaterial extends Material
     {
         super.beforeRender(renderObject);
 
-        const ro = renderObject as any;
-        const bindingResources = ro.bindingResources ||= {};
+        const r_ro = reactive(renderObject);
+        if (!renderObject.bindingResources)
+        {
+            r_ro.bindingResources = {} as BindingResources;
+        }
+
+        const bindingResources = renderObject.bindingResources;
         const r_bindingResources = reactive(bindingResources);
 
-        // u_diffuseInput → material_uniforms（WGSL var<uniform> material_uniforms）
-        r_bindingResources.material_uniforms = { value: { u_diffuseInput: this.u_diffuseInput } };
+        if (!bindingResources.material_uniforms)
+        {
+            r_bindingResources.material_uniforms = { value: {} };
+        }
+
+        const r_material_uniforms = reactive((bindingResources.material_uniforms as BufferBinding<{ u_diffuseInput: Color4 }>).value);
+
+        r_material_uniforms.u_diffuseInput = this.u_diffuseInput;
     }
 }

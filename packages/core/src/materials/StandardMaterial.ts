@@ -110,15 +110,13 @@ export class StandardMaterial extends Material
     constructor()
     {
         super();
-        // standard 着色器配置
-        this.renderPipeline.vertex.wgsl = standardVertexWGSL;
-        this.renderPipeline.fragment.wgsl = standardFragmentWGSL;
-        this.renderPipeline.fragment.targets = [{}];
-        this.renderPipeline.primitive.topology = 'triangle-list';
-        this.renderPipeline.primitive.cullFace = 'back';
-        this.renderPipeline.primitive.frontFace = 'cw';
-        this.renderPipeline.depthStencil.depthWriteEnabled = true;
-        this.renderPipeline.depthStencil.depthCompare = 'less';
+        // standard 着色器配置：通过 reactive 代理一层替换各子状态（renderPipeline 字段在接口中为
+        // readonly，属编译期约束；reactive 返回的代理顶层可写，故一层替换合法且能触发响应式更新）。
+        const r_pipeline = reactive(this.renderPipeline);
+        r_pipeline.vertex = { wgsl: standardVertexWGSL };
+        r_pipeline.fragment = { wgsl: standardFragmentWGSL, targets: [{}] };
+        r_pipeline.primitive = { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' };
+        r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
     }
 
     beforeRender(renderObject: RenderObject)
