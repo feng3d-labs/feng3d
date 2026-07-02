@@ -3,7 +3,6 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { RenderObject } from '@feng3d/webgpu';
 import { segmentFragmentWGSL } from '../shaders/segment.fragment.wgsl';
 import { segmentVertexWGSL } from '../shaders/segment.vertex.wgsl';
 import { Material } from './Material';
@@ -57,19 +56,6 @@ export class SegmentMaterial extends Material
                 alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
             },
         }];
-    }
-
-    beforeRender(renderObject: RenderObject)
-    {
-        super.beforeRender(renderObject);
-
-        const ro = renderObject as any;
-        const bindingResources = ro.bindingResources ||= {};
-        reactive(bindingResources).material_uniforms = {
-            value: {
-                u_segmentColor: this.uniforms.u_segmentColor,
-            },
-        };
     }
 }
 

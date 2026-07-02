@@ -5,7 +5,7 @@ import { serialization, serialize } from '@feng3d/serialization';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';
-import { BindingResources, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, RenderObject, RenderPipeline, Sampler, TextureView } from '@feng3d/webgpu';
 
 declare global
 {
@@ -74,12 +74,36 @@ export class Material extends Feng3dObject
     }
 
     /**
-     * uniform 数据（兼容字段）。
+     * uniform 数据。
      *
-     * 仅用于尚未重构为子类的材质（通过工厂创建 uniforms）。
-     * 新材质应直接声明强类型字段并在 beforeRender 中写入 bindingResources。
+     * 子类以强类型对象声明本材质的 uniform 字段，基类 {@link beforeRender} 会自动
+     * 将其写入 `bindingResources.material_uniforms`（对应 WGSL `var<uniform> material_uniforms`）。
      */
     readonly uniforms = {};
+
+    /**
+     * 采样器绑定。
+     *
+     * 键为 WGSL 中 `sampler` 变量名，值为 webgpu `Sampler`。
+     * 基类 {@link beforeRender} 会自动将其合并到 `bindingResources`。
+     */
+    readonly samplers: { [key: string]: Sampler } = {};
+
+    /**
+     * 纹理视图绑定。
+     *
+     * 键为 WGSL 中 `texture_*` 变量名，值为 webgpu `TextureView`。
+     * 基类 {@link beforeRender} 会自动将其合并到 `bindingResources`。
+     */
+    readonly textureViews: { [key: string]: TextureView } = {};
+
+    /**
+     * 外部纹理绑定（用于视频纹理）。
+     *
+     * 键为 WGSL 变量名，值为 `GPUExternalTexture`。
+     * 基类 {@link beforeRender} 会自动将其合并到 `bindingResources`。
+     */
+    readonly externalTextures: { [key: string]: GPUExternalTexture } = {};
 
     beforeRender(renderObject: RenderObject)
     {
@@ -99,14 +123,16 @@ export class Material extends Feng3dObject
         const bindingResources = renderObject.bindingResources;
         const r_bindingResources = reactive(bindingResources);
 
+        // uniforms → material_uniforms（WGSL var<uniform> material_uniforms）
         if (!bindingResources.material_uniforms)
         {
             r_bindingResources.material_uniforms = { value: {} };
         }
-
         reactive(renderObject.bindingResources.material_uniforms as BufferBinding).value = this.uniforms;
 
-        // 材质相关绑定资源由子类负责（写入 bindingResources，支持响应式更新）。
+        // samplers / textureViews / externalTextures → 合并到 bindingResources（键与 WGSL 变量名一致）
+        Object.assign(r_bindingResources, this.samplers, this.textureViews, this.externalTextures);
+
         // WebGL 兼容字段
         Object.assign(renderObject.uniforms ||= {}, this.renderObject.uniforms);
     }

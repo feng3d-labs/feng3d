@@ -5,11 +5,10 @@ import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
 import { standardFragmentWGSL } from '../shaders/standard.fragment.wgsl';
 import { standardVertexWGSL } from '../shaders/standard.vertex.wgsl';
-import { buildTextureSampler } from '../render/webgpu/MaterialPipeline';
+import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
 import { Texture2D } from '../textures/Texture2D';
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
-import { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -33,79 +32,122 @@ export enum FogMode
 /**
  * 标准材质。
  *
- * 使用 standard 着色器（漫反射纹理 + 环境光）。uniform/纹理字段直接作为实例属性，
- * beforeRender 写入 bindingResources（material_uniforms + 纹理绑定）。
+ * 使用 standard 着色器（漫反射纹理 + 环境光）。uniform 数据通过 {@link Material.uniforms}
+ * 自动传递，纹理通过 {@link Material.textureViews} 与 {@link Material.samplers} 自动传递，
+ * 子类无需重写 beforeRender。
  */
 @decoratorRegisterClass()
 export class StandardMaterial extends Material
 {
+    /**
+     * 材质 uniform 数据。
+     *
+     * 各字段同时作为本类的实例属性（getter/setter 代理到此对象），便于外部直接访问。
+     */
+    readonly uniforms = {
+        u_PointSize: 1,
+        u_diffuse: new Color4(1, 1, 1, 1),
+        u_alphaThreshold: 0,
+        u_specular: new Color3(),
+        u_glossiness: 50,
+        u_ambient: new Color4(),
+        u_reflectivity: 1,
+        u_fogMinDistance: 0,
+        u_fogMaxDistance: 100,
+        u_fogColor: new Color3(),
+        u_fogDensity: 0.1,
+        u_fogMode: FogMode.NONE,
+    };
+
     /** 点绘制时点的尺寸 */
     @serialize @oav()
-    u_PointSize = 1;
+    get u_PointSize() { return this.uniforms.u_PointSize; }
+    set u_PointSize(v) { this.uniforms.u_PointSize = v; }
 
     /** 漫反射纹理 */
     @serialize @oav({ block: 'diffuse' })
-    s_diffuse = Texture2D.default;
+    get s_diffuse() { return this._s_diffuse; }
+    set s_diffuse(v) { this._s_diffuse = v; this._updateTexture('s_diffuse', v); }
+    private _s_diffuse = Texture2D.default;
 
     /** 基本颜色 */
     @serialize @oav({ block: 'diffuse' })
-    u_diffuse = new Color4(1, 1, 1, 1);
+    get u_diffuse() { return this.uniforms.u_diffuse; }
+    set u_diffuse(v) { this.uniforms.u_diffuse = v; }
 
     /** 透明阈值，透明度小于该值的像素被片段着色器丢弃 */
     @serialize @oav({ block: 'diffuse' })
-    u_alphaThreshold = 0;
+    get u_alphaThreshold() { return this.uniforms.u_alphaThreshold; }
+    set u_alphaThreshold(v) { this.uniforms.u_alphaThreshold = v; }
 
     /** 法线纹理 */
     @serialize @oav({ block: 'normalMethod' })
-    s_normal = Texture2D.defaultNormal;
+    get s_normal() { return this._s_normal; }
+    set s_normal(v) { this._s_normal = v; this._updateTexture('s_normal', v); }
+    private _s_normal = Texture2D.defaultNormal;
 
     /** 镜面反射光泽图 */
     @serialize @oav({ block: 'specular' })
-    s_specular = Texture2D.default;
+    get s_specular() { return this._s_specular; }
+    set s_specular(v) { this._s_specular = v; this._updateTexture('s_specular', v); }
+    private _s_specular = Texture2D.default;
 
     /** 镜面反射颜色 */
     @serialize @oav({ block: 'specular' })
-    u_specular = new Color3();
+    get u_specular() { return this.uniforms.u_specular; }
+    set u_specular(v) { this.uniforms.u_specular = v; }
 
     /** 高光系数 */
     @serialize @oav({ block: 'specular' })
-    u_glossiness = 50;
+    get u_glossiness() { return this.uniforms.u_glossiness; }
+    set u_glossiness(v) { this.uniforms.u_glossiness = v; }
 
     /** 环境纹理 */
     @serialize @oav({ block: 'ambient' })
-    s_ambient = Texture2D.default;
+    get s_ambient() { return this._s_ambient; }
+    set s_ambient(v) { this._s_ambient = v; this._updateTexture('s_ambient', v); }
+    private _s_ambient = Texture2D.default;
 
     /** 环境光颜色 */
     @serialize @oav({ block: 'ambient' })
-    u_ambient = new Color4();
+    get u_ambient() { return this.uniforms.u_ambient; }
+    set u_ambient(v) { this.uniforms.u_ambient = v; }
 
     /** 环境映射贴图 */
     @serialize @oav({ component: 'OAVPick', block: 'envMap', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
-    s_envMap = TextureCube.default;
+    get s_envMap() { return this._s_envMap; }
+    set s_envMap(v) { this._s_envMap = v; this._updateTexture('s_envMap', v); }
+    private _s_envMap = TextureCube.default;
 
     /** 反射率 */
     @serialize @oav({ block: 'envMap' })
-    u_reflectivity = 1;
+    get u_reflectivity() { return this.uniforms.u_reflectivity; }
+    set u_reflectivity(v) { this.uniforms.u_reflectivity = v; }
 
     /** 出现雾效果的最近距离 */
     @serialize @oav({ block: 'fog' })
-    u_fogMinDistance = 0;
+    get u_fogMinDistance() { return this.uniforms.u_fogMinDistance; }
+    set u_fogMinDistance(v) { this.uniforms.u_fogMinDistance = v; }
 
     /** 最远距离 */
     @serialize @oav({ block: 'fog' })
-    u_fogMaxDistance = 100;
+    get u_fogMaxDistance() { return this.uniforms.u_fogMaxDistance; }
+    set u_fogMaxDistance(v) { this.uniforms.u_fogMaxDistance = v; }
 
     /** 雾的颜色 */
     @serialize @oav({ block: 'fog' })
-    u_fogColor = new Color3();
+    get u_fogColor() { return this.uniforms.u_fogColor; }
+    set u_fogColor(v) { this.uniforms.u_fogColor = v; }
 
     /** 雾的密度 */
     @serialize @oav({ block: 'fog' })
-    u_fogDensity = 0.1;
+    get u_fogDensity() { return this.uniforms.u_fogDensity; }
+    set u_fogDensity(v) { this.uniforms.u_fogDensity = v; }
 
     /** 雾模式 */
     @serialize @oav({ block: 'fog', component: 'OAVEnum', componentParam: { enumClass: FogMode } })
-    u_fogMode = FogMode.NONE;
+    get u_fogMode() { return this.uniforms.u_fogMode; }
+    set u_fogMode(v) { this.uniforms.u_fogMode = v; }
 
     constructor()
     {
@@ -117,40 +159,24 @@ export class StandardMaterial extends Material
         r_pipeline.fragment = { wgsl: standardFragmentWGSL, targets: [{}] };
         r_pipeline.primitive = { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' };
         r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
+
+        // 初始化纹理绑定（textureViews / samplers）
+        this._updateTexture('s_diffuse', this._s_diffuse);
+        this._updateTexture('s_normal', this._s_normal);
+        this._updateTexture('s_specular', this._s_specular);
+        this._updateTexture('s_ambient', this._s_ambient);
+        this._updateTexture('s_envMap', this._s_envMap);
     }
 
-    beforeRender(renderObject: RenderObject)
+    /**
+     * 更新单个纹理的绑定（textureView + sampler）。
+     *
+     * WGSL 约定：`var <key>: texture_*` + `var <key>Sampler: sampler`。
+     */
+    private _updateTexture(key: string, texture: Texture2D | TextureCube)
     {
-        super.beforeRender(renderObject);
-
-        const ro = renderObject as any;
-        const bindingResources = ro.bindingResources ||= {};
-        const r_bindingResources = reactive(bindingResources);
-
-        // 数据 uniform → material_uniforms（WGSL var<uniform> material_uniforms）
-        r_bindingResources.material_uniforms = {
-            value: {
-                u_PointSize: this.u_PointSize,
-                u_diffuse: this.u_diffuse,
-                u_alphaThreshold: this.u_alphaThreshold,
-                u_specular: this.u_specular,
-                u_glossiness: this.u_glossiness,
-                u_ambient: this.u_ambient,
-                u_reflectivity: this.u_reflectivity,
-                u_fogMinDistance: this.u_fogMinDistance,
-                u_fogMaxDistance: this.u_fogMaxDistance,
-                u_fogColor: this.u_fogColor,
-                u_fogDensity: this.u_fogDensity,
-                u_fogMode: this.u_fogMode,
-            },
-        };
-
-        // 纹理 → bindingResources[key] = { texture, sampler }（key 与 WGSL 变量名一致）
-        r_bindingResources.s_diffuse = buildTextureSampler(this.s_diffuse);
-        r_bindingResources.s_normal = buildTextureSampler(this.s_normal);
-        r_bindingResources.s_specular = buildTextureSampler(this.s_specular);
-        r_bindingResources.s_ambient = buildTextureSampler(this.s_ambient);
-        r_bindingResources.s_envMap = buildTextureSampler(this.s_envMap);
+        this.textureViews[key] = buildTextureView(texture);
+        this.samplers[`${key}Sampler`] = buildSampler(texture);
     }
 
     /**
@@ -158,8 +184,8 @@ export class StandardMaterial extends Material
      */
     override get isLoaded()
     {
-        return this.s_diffuse.isLoaded && this.s_normal.isLoaded && this.s_specular.isLoaded
-            && this.s_ambient.isLoaded && this.s_envMap.isLoaded;
+        return this._s_diffuse.isLoaded && this._s_normal.isLoaded && this._s_specular.isLoaded
+            && this._s_ambient.isLoaded && this._s_envMap.isLoaded;
     }
 
     /**
@@ -167,7 +193,7 @@ export class StandardMaterial extends Material
      */
     override onLoadCompleted(callback: () => void)
     {
-        const textures = [this.s_diffuse, this.s_normal, this.s_specular, this.s_ambient, this.s_envMap];
+        const textures = [this._s_diffuse, this._s_normal, this._s_specular, this._s_ambient, this._s_envMap];
         let loadingNum = 0;
         for (const texture of textures)
         {

@@ -2,10 +2,9 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { RenderObject } from '@feng3d/webgpu';
-import { buildTextureSampler } from '../render/webgpu/MaterialPipeline';
 import { skyboxFragmentWGSL } from '../shaders/skybox.fragment.wgsl';
 import { skyboxVertexWGSL } from '../shaders/skybox.vertex.wgsl';
+import { buildSampler, buildTextureView } from '../render/webgpu/MaterialPipeline';
 import { TextureCube } from '../textures/TextureCube';
 import { Material } from './Material';
 
@@ -26,7 +25,8 @@ export class SkyBoxUniforms
  * 天空盒材质。
  *
  * 使用 skybox 着色器（按方向采样立方体纹理），关闭深度写入、深度比较为 less-equal，
- * 在最远处绘制。shader 与渲染状态在构造时填充到 {@link Material.renderPipeline}。
+ * 在最远处绘制。shader 与渲染状态在构造时填充到 {@link Material.renderPipeline}，
+ * 纹理通过 {@link Material.textureViews} 与 {@link Material.samplers} 提供给 webgpu。
  *
  * 注意：实际场景天空盒目前由 {@link SkyBoxRenderer} 直接使用内联 RenderObject 渲染，
  * 本材质提供等价的 Material 形式，便于作为普通材质使用或后续统一渲染路径。
@@ -34,7 +34,12 @@ export class SkyBoxUniforms
 @decoratorRegisterClass()
 export class SkyBoxMaterial extends Material
 {
-    readonly uniforms: SkyBoxUniforms = new SkyBoxUniforms();
+    /** 立方体纹理 */
+    @oav({ component: 'OAVPick', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
+    @serialize
+    get s_skyboxTexture() { return this._s_skyboxTexture; }
+    set s_skyboxTexture(v) { this._s_skyboxTexture = v; this._updateTextureBindings(); }
+    private _s_skyboxTexture = TextureCube.default;
 
     constructor()
     {
@@ -44,15 +49,17 @@ export class SkyBoxMaterial extends Material
         reactive(this.renderPipeline.primitive).cullFace = 'none';
         reactive(this.renderPipeline.depthStencil).depthWriteEnabled = false;
         reactive(this.renderPipeline.depthStencil).depthCompare = 'less-equal';
+
+        this._updateTextureBindings();
     }
 
-    beforeRender(renderObject: RenderObject)
+    /**
+     * 更新纹理相关的绑定（textureViews / samplers）。
+     */
+    private _updateTextureBindings()
     {
-        super.beforeRender(renderObject);
-
-        const ro = renderObject as any;
-        const bindingResources = ro.bindingResources ||= {};
-        reactive(bindingResources).s_skyboxTexture = buildTextureSampler(this.uniforms.s_skyboxTexture);
+        this.textureViews.s_skyboxTexture = buildTextureView(this._s_skyboxTexture);
+        this.samplers.s_skyboxTextureSampler = buildSampler(this._s_skyboxTexture);
     }
 
     /**
@@ -60,7 +67,7 @@ export class SkyBoxMaterial extends Material
      */
     override get isLoaded()
     {
-        return this.uniforms.s_skyboxTexture.isLoaded;
+        return this._s_skyboxTexture.isLoaded;
     }
 
     /**
@@ -74,6 +81,6 @@ export class SkyBoxMaterial extends Material
 
             return;
         }
-        this.uniforms.s_skyboxTexture.on('loadCompleted', callback);
+        this._s_skyboxTexture.on('loadCompleted', callback);
     }
 }

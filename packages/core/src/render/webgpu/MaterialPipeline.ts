@@ -4,6 +4,7 @@ import {
     RenderObject,
     RenderPipeline,
     Sampler,
+    TextureView,
     VertexAttribute,
     VertexAttributes,
     VertexFormat,
@@ -272,6 +273,30 @@ export function buildTextureSampler(texture: Texture2D | TextureCube): { texture
         texture,
         sampler: buildSamplerFromTextureInfo(texture as TextureInfo<unknown>),
     };
+}
+
+/**
+ * 从 core 纹理构建 webgpu `Sampler`（采样配置取自纹理的 TextureInfo）。
+ *
+ * @param texture core 纹理（Texture2D / TextureCube）
+ */
+export function buildSampler(texture: Texture2D | TextureCube): Sampler
+{
+    return buildSamplerFromTextureInfo(texture as TextureInfo<unknown>);
+}
+
+/**
+ * 从 core 纹理构建 webgpu `TextureView`。
+ *
+ * 立方体纹理自动使用 cube 视图，其余按默认 2D 视图。
+ *
+ * @param texture core 纹理（Texture2D / TextureCube）
+ */
+export function buildTextureView(texture: Texture2D | TextureCube): TextureView
+{
+    return texture instanceof TextureCube
+        ? TextureView.createCube(texture as unknown as TextureView['texture'])
+        : TextureView.create2D(texture as unknown as TextureView['texture']);
 }
 
 export function buildMaterialBindingResources(uniforms: UniformsLike): Record<string, unknown>

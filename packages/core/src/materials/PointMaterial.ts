@@ -3,7 +3,6 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
-import { RenderObject } from '@feng3d/webgpu';
 import { pointFragmentWGSL } from '../shaders/point.fragment.wgsl';
 import { pointVertexWGSL } from '../shaders/point.vertex.wgsl';
 import { Material } from './Material';
@@ -21,13 +20,6 @@ export class PointUniforms
     @serialize
     @oav()
     u_color = new Color4();
-
-    /**
-     * 点绘制时点的尺寸
-     */
-    @serialize
-    @oav()
-    u_PointSize = 1;
 }
 
 /**
@@ -48,19 +40,5 @@ export class PointMaterial extends Material
         reactive(this.renderPipeline.fragment).wgsl = pointFragmentWGSL;
         reactive(this.renderPipeline.primitive).topology = 'point-list';
         reactive(this.renderPipeline.primitive).cullFace = 'none';
-    }
-
-    beforeRender(renderObject: RenderObject)
-    {
-        super.beforeRender(renderObject);
-
-        const ro = renderObject as any;
-        const bindingResources = ro.bindingResources ||= {};
-        reactive(bindingResources).material_uniforms = {
-            value: {
-                u_color: this.uniforms.u_color,
-                u_PointSize: this.uniforms.u_PointSize,
-            },
-        };
     }
 }

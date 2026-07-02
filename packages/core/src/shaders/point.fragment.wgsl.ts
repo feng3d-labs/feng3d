@@ -4,7 +4,7 @@
  * 用材质 u_color 与顶点颜色相乘输出。
  *
  * 绑定约定：
- * - @group(0) @binding(3) var<uniform> material_uniforms - { u_color: vec4, u_PointSize: f32 }（PointUniforms）
+ * - @group(0) @binding(3) var<uniform> material_uniforms - { u_color: vec4 }（PointUniforms）
  */
 
 /**
@@ -21,7 +21,6 @@ struct FragmentOutput {
 
 struct PointUniforms {
     u_color: vec4<f32>,
-    u_PointSize: f32,
 }
 
 @group(0) @binding(3) var<uniform> material_uniforms: PointUniforms;
