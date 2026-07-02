@@ -1,4 +1,3 @@
-import { Attribute } from '../data/Attribute';
 import {
     BufferBinding,
     RenderObject,
@@ -7,7 +6,6 @@ import {
     TextureView,
     VertexAttribute,
     VertexAttributes,
-    VertexFormat,
 } from '@feng3d/webgpu';
 import { Geometry } from '../../geometry/Geometry';
 import { TextureInfo } from '../data/TextureInfo';
@@ -41,44 +39,10 @@ const vertexAttributeMap: { [coreName: string]: string } = {
 };
 
 /**
- * 顶点属性 size → WebGPU VertexFormat 映射。
- *
- * core 的 `Attribute` 仅记录 `size`（每个顶点的分量数，1~4），类型默认 FLOAT，
- * 这里将其转换为 WebGPU 的顶点格式。
- */
-function sizeToVertexFormat(size: number): VertexFormat
-{
-    switch (size)
-    {
-        case 1: return 'float32';
-        case 2: return 'float32x2';
-        case 3: return 'float32x3';
-        case 4: return 'float32x4';
-        default: return 'float32';
-    }
-}
-
-/**
- * 根据 core `Attribute` 构建 webgpu `VertexAttribute`。
- *
- * - data（`number[]`）转换为 `Float32Array`
- * - size 映射为 VertexFormat
- *
- * @param attribute core 顶点属性
- */
-export function buildVertexAttribute(attribute: Attribute): VertexAttribute
-{
-    return {
-        data: new Float32Array(attribute.data),
-        format: sizeToVertexFormat(attribute.size),
-    };
-}
-
-/**
  * 根据 core `Geometry` 构建 webgpu `VertexAttributes`。
  *
- * 使用统一的 {@link vertexAttributeMap} 做属性名映射（`a_position` → `position`），
- * 映射后键名需与 WGSL `@location(N)` 形参名一致。
+ * Geometry 的 `_attributes` 已是 webgpu `VertexAttribute` 格式（data 为 Float32Array），
+ * 这里仅做属性名映射（`a_position` → `position`）并跳过空数据。
  *
  * 注意：WebGPU 顶点缓冲布局根据着色器反射按名匹配（见 `WGPUVertexBufferLayout`），
  * 因此此处可以安全地提供全部属性，未被 shader 引用的属性会自动忽略。
@@ -90,7 +54,7 @@ export function buildVertices(geometry: Geometry): VertexAttributes
     // 触发几何体构建，确保 _attributes 中的数据已填充
     geometry.updateGrometry();
 
-    const attributes = (geometry as unknown as { _attributes: Record<string, Attribute> })._attributes;
+    const attributes = (geometry as unknown as { _attributes: Record<string, VertexAttribute> })._attributes;
     const vertices: VertexAttributes = {};
 
     for (const coreName in attributes)
@@ -103,18 +67,18 @@ export function buildVertices(geometry: Geometry): VertexAttributes
         const attr = attributes[coreName];
         if (!attr.data || attr.data.length === 0) continue;
 
-        vertices[wgslName] = buildVertexAttribute(attr);
+        vertices[wgslName] = attr;
     }
 
     // 为着色器提供默认的 color 属性（如果 Geometry 没有）
-    // WGSL 着色器声明 @location(4) color: vec4<f32>，必须提供
+    // WGSL 着色器声明 @location color: vec4<f32>，必须提供
     if (!vertices.color)
     {
         // 从 position 属性计算顶点数量（position 是 vec3，每个顶点 3 个 float）
-        const positionAttr = attributes.a_position || attributes.position;
+        const positionAttr = attributes.a_position;
         if (positionAttr && positionAttr.data && positionAttr.data.length > 0)
         {
-            const vertexCount = positionAttr.data.length / positionAttr.size;
+            const vertexCount = positionAttr.data.length / 3;
             const colorData = new Float32Array(vertexCount * 4);
             // 填充白色 (1, 1, 1, 1)
             for (let i = 0; i < vertexCount; i++)

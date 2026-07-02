@@ -1,8 +1,7 @@
-import { AddComponentMenu, Geometry, Material, RegisterComponent, Renderable, TransformLayout, View } from '@feng3d/core';
+import { AddComponentMenu, CullFace, Geometry, Material, RegisterComponent, Renderable, View } from '@feng3d/core';
 import { Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { CullFace } from '@feng3d/core';
 import { RenderObject } from '@feng3d/webgpu';
 import { Canvas } from './Canvas';
 

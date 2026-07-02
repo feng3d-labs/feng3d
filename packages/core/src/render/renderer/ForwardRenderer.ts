@@ -1,5 +1,4 @@
 import { Vector4 } from '@feng3d/math';
-import { applyGeometryRenderData } from '../webgpu/MaterialPipeline';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Scene } from '../../scene/Scene';
@@ -37,10 +36,6 @@ export class ForwardRenderer
             bindingResources.globalUniforms = { value: globalUniforms };
 
             renderable.beforeRender(renderObject, scene, camera);
-
-            // ---- 注入 geometry 相关 WebGPU 原生数据（vertices / indices / draw） ----
-            // 在 beforeRender 之后执行，确保 geometry 的 attributes 已构建。
-            applyGeometryRenderData(renderObject, renderable.geometry);
 
             (((submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[])).push(renderObject);
         });

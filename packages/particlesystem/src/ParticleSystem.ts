@@ -2,7 +2,6 @@ import { AddComponentMenu, Camera, createNodeMenu, GameObject, Geometry, Materia
 import { Matrix3x3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
-import { Attribute } from '@feng3d/core';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { RenderObject } from '@feng3d/webgpu';
@@ -548,12 +547,12 @@ export class ParticleSystem extends Renderable
         }
 
         //
-        this._attributes.a_particle_position.data = positions;
-        this._attributes.a_particle_scale.data = scales;
-        this._attributes.a_particle_rotation.data = rotations;
-        this._attributes.a_particle_color.data = colors;
-        this._attributes.a_particle_tilingOffset.data = tilingOffsets;
-        this._attributes.a_particle_flipUV.data = flipUVs;
+        this._attributes.a_particle_position.data = new Float32Array(positions);
+        this._attributes.a_particle_scale.data = new Float32Array(scales);
+        this._attributes.a_particle_rotation.data = new Float32Array(rotations);
+        this._attributes.a_particle_color.data = new Float32Array(colors);
+        this._attributes.a_particle_tilingOffset.data = new Float32Array(tilingOffsets);
+        this._attributes.a_particle_flipUV.data = new Float32Array(flipUVs);
 
         //
         (renderObject as any).uniforms.u_particle_billboardMatrix = billboardMatrix;
@@ -562,11 +561,6 @@ export class ParticleSystem extends Renderable
         {
             (renderObject as any).uniforms.u_modelMatrix = () => new Matrix4x4();
             (renderObject as any).uniforms.u_ITModelMatrix = () => new Matrix4x4();
-        }
-
-        for (const key in this._attributes)
-        {
-            renderObject.attributes[key] = this._attributes[key];
         }
     }
 
@@ -582,15 +576,15 @@ export class ParticleSystem extends Renderable
     private _activeParticles: Particle[] = [];
 
     /**
-     * 属性数据列表
+     * 属性数据列表（直接使用 webgpu VertexAttribute，data 为 Float32Array）。
      */
-    private _attributes = {
-        a_particle_position: new Attribute({ name: 'a_particle_position', data: [], size: 3, divisor: 1 }),
-        a_particle_scale: new Attribute({ name: 'a_particle_scale', data: [], size: 3, divisor: 1 }),
-        a_particle_rotation: new Attribute({ name: 'a_particle_rotation', data: [], size: 3, divisor: 1 }),
-        a_particle_color: new Attribute({ name: 'a_particle_color', data: [], size: 4, divisor: 1 }),
-        a_particle_tilingOffset: new Attribute({ name: 'a_particle_tilingOffset', data: [], size: 4, divisor: 1 }),
-        a_particle_flipUV: new Attribute({ name: 'a_particle_flipUV', data: [], size: 2, divisor: 1 }),
+    private _attributes: Record<string, import('@feng3d/webgpu').VertexAttribute> = {
+        a_particle_position: { data: new Float32Array([]), format: 'float32x3', stepMode: 'instance' },
+        a_particle_scale: { data: new Float32Array([]), format: 'float32x3', stepMode: 'instance' },
+        a_particle_rotation: { data: new Float32Array([]), format: 'float32x3', stepMode: 'instance' },
+        a_particle_color: { data: new Float32Array([]), format: 'float32x4', stepMode: 'instance' },
+        a_particle_tilingOffset: { data: new Float32Array([]), format: 'float32x4', stepMode: 'instance' },
+        a_particle_flipUV: { data: new Float32Array([]), format: 'float32x2', stepMode: 'instance' },
     };
 
     private readonly _modules: ParticleModule[] = [];

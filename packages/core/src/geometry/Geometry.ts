@@ -1,12 +1,11 @@
 import { Box3, Matrix4x4, Ray3, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { Constructor, gPartial } from '@feng3d/polyfill';
-import { Attribute } from '../render/data/Attribute';
-import { Attributes } from '../render/data/Attributes';
 import { CullFace } from '../render/data/enums';
 import { Index } from '../render/data/Index';
 import { serialization, serialize } from '@feng3d/serialization';
-import { RenderObject } from '@feng3d/webgpu';
+import { RenderObject, VertexAttribute } from '@feng3d/webgpu';
+import { applyGeometryRenderData } from '../render/webgpu/MaterialPipeline';
 import { AssetType } from '../assets/AssetType';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
@@ -92,12 +91,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get positions()
     {
-        return this._attributes.a_position.data;
+        return this._attributes.a_position.data as unknown as number[];
     }
 
     set positions(value)
     {
-        this._attributes.a_position.data = value;
+        this._attributes.a_position.data = new Float32Array(value);
     }
 
     /**
@@ -105,12 +104,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get colors()
     {
-        return this._attributes.a_color.data;
+        return this._attributes.a_color.data as unknown as number[];
     }
 
     set colors(value)
     {
-        this._attributes.a_color.data = value;
+        this._attributes.a_color.data = new Float32Array(value);
     }
 
     /**
@@ -118,12 +117,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get uvs()
     {
-        return this._attributes.a_uv.data;
+        return this._attributes.a_uv.data as unknown as number[];
     }
 
     set uvs(value)
     {
-        this._attributes.a_uv.data = value;
+        this._attributes.a_uv.data = new Float32Array(value);
     }
 
     /**
@@ -131,12 +130,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get normals()
     {
-        return this._attributes.a_normal.data;
+        return this._attributes.a_normal.data as unknown as number[];
     }
 
     set normals(value)
     {
-        this._attributes.a_normal.data = value;
+        this._attributes.a_normal.data = new Float32Array(value);
     }
 
     /**
@@ -144,12 +143,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get tangents()
     {
-        return this._attributes.a_tangent.data;
+        return this._attributes.a_tangent.data as unknown as number[];
     }
 
     set tangents(value)
     {
-        this._attributes.a_tangent.data = value;
+        this._attributes.a_tangent.data = new Float32Array(value);
     }
 
     /**
@@ -157,12 +156,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get skinIndices()
     {
-        return this._attributes.a_skinIndices.data;
+        return this._attributes.a_skinIndices.data as unknown as number[];
     }
 
     set skinIndices(value)
     {
-        this._attributes.a_skinIndices.data = value;
+        this._attributes.a_skinIndices.data = new Float32Array(value);
     }
 
     /**
@@ -170,12 +169,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get skinWeights()
     {
-        return this._attributes.a_skinWeights.data;
+        return this._attributes.a_skinWeights.data as unknown as number[];
     }
 
     set skinWeights(value)
     {
-        this._attributes.a_skinWeights.data = value;
+        this._attributes.a_skinWeights.data = new Float32Array(value);
     }
 
     /**
@@ -183,12 +182,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get skinIndices1()
     {
-        return this._attributes.a_skinIndices1.data;
+        return this._attributes.a_skinIndices1.data as unknown as number[];
     }
 
     set skinIndices1(value)
     {
-        this._attributes.a_skinIndices1.data = value;
+        this._attributes.a_skinIndices1.data = new Float32Array(value);
     }
 
     /**
@@ -196,12 +195,12 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
      */
     get skinWeights1()
     {
-        return this._attributes.a_skinWeights1.data;
+        return this._attributes.a_skinWeights1.data as unknown as number[];
     }
 
     set skinWeights1(value)
     {
-        this._attributes.a_skinWeights1.data = value;
+        this._attributes.a_skinWeights1.data = new Float32Array(value);
     }
 
     /**
@@ -301,10 +300,10 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
         // 合并属性数据
         for (const attributeName in attributes)
         {
-            const attribute: Attribute = attributes[attributeName];
-            const addAttribute: Attribute = addAttributes[attributeName];
+            const attribute = attributes[attributeName];
+            const addAttribute = addAttributes[attributeName];
             //
-            attribute.data = attribute.data.concat(addAttribute.data);
+            attribute.data = new Float32Array(Array.from(attribute.data as Float32Array).concat(Array.from(addAttribute.data as Float32Array)));
         }
     }
 
@@ -425,10 +424,10 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
         this.indices = geometry.indices.concat();
         for (const attributeName in geometry._attributes)
         {
-            const attribute: Attribute = this._attributes[attributeName];
-            const addAttribute: Attribute = geometry._attributes[attributeName];
+            const attribute = this._attributes[attributeName];
+            const sourceAttribute = geometry._attributes[attributeName];
 
-            attribute.data = addAttribute.data.concat();
+            attribute.data = new Float32Array(sourceAttribute.data as Float32Array);
         }
     }
 
@@ -436,15 +435,8 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
     {
         this.updateGrometry();
 
-        renderObject.index = this._indexBuffer;
-
-        for (const key in this._attributes)
-        {
-            if (this._attributes.hasOwnProperty(key))
-            {
-                renderObject.attributes[key] = this._attributes[key];
-            }
-        }
+        // 直接构建 WebGPU 原生顶点数据（vertices / indices / draw）
+        applyGeometryRenderData(renderObject, this);
     }
 
     /**
@@ -453,18 +445,18 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
     private _indexBuffer = new Index();
 
     /**
-     * 属性数据列表
+     * 属性数据列表（直接使用 webgpu VertexAttribute，data 为 Float32Array）。
      */
-    protected _attributes: Attributes = {
-        a_position: new Attribute({ name: 'a_position', data: [], size: 3 }),
-        a_color: new Attribute({ name: 'a_color', data: [], size: 4 }),
-        a_uv: new Attribute({ name: 'a_uv', data: [], size: 2 }),
-        a_normal: new Attribute({ name: 'a_normal', data: [], size: 3 }),
-        a_tangent: new Attribute({ name: 'a_tangent', data: [], size: 3 }),
-        a_skinIndices: new Attribute({ name: 'a_skinIndices', data: [], size: 4 }),
-        a_skinWeights: new Attribute({ name: 'a_skinWeights', data: [], size: 4 }),
-        a_skinIndices1: new Attribute({ name: 'a_skinIndices1', data: [], size: 4 }),
-        a_skinWeights1: new Attribute({ name: 'a_skinWeights1', data: [], size: 4 }),
+    protected _attributes: Record<string, VertexAttribute> = {
+        a_position: { data: new Float32Array([]), format: 'float32x3' },
+        a_color: { data: new Float32Array([]), format: 'float32x4' },
+        a_uv: { data: new Float32Array([]), format: 'float32x2' },
+        a_normal: { data: new Float32Array([]), format: 'float32x3' },
+        a_tangent: { data: new Float32Array([]), format: 'float32x3' },
+        a_skinIndices: { data: new Float32Array([]), format: 'float32x4' },
+        a_skinWeights: { data: new Float32Array([]), format: 'float32x4' },
+        a_skinIndices1: { data: new Float32Array([]), format: 'float32x4' },
+        a_skinWeights1: { data: new Float32Array([]), format: 'float32x4' },
     };
 
     /**
@@ -474,8 +466,8 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
     {
         for (const key in this._attributes)
         {
-            const element: Attribute = this._attributes[key];
-            element.data = [];
+            const element = this._attributes[key];
+            element.data = new Float32Array([]);
         }
     }
 

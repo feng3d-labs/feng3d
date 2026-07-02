@@ -76,8 +76,6 @@ export * from './primitives/QuadGeometry';
 export * from './primitives/SphereGeometry';
 export * from './primitives/TorusGeometry';
 // 渲染数据层（core 的渲染数据描述）
-export * from './render/data/Attribute';
-export * from './render/data/Attributes';
 export * from './render/data/enums';
 export * from './render/data/Index';
 export * from './render/data/TextureInfo';
