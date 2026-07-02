@@ -1,4 +1,4 @@
-import { Rectangle, Vector3 } from '@feng3d/math';
+import { Vector3 } from '@feng3d/math';
 import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
@@ -31,7 +31,6 @@ import { Scene } from '../../scene/Scene';
  *
  * ## 扩展点
  * - shadowShader: 自定义阴影着色器
- * - renderParams: 可配置的渲染参数（背面剔除、深度测试等）
  */
 
 declare global
@@ -104,10 +103,6 @@ export class ShadowRenderer
         const castShadowsModels = models.filter((i) => i.castShadows);
 
         //
-        renderObject.renderParams.useViewPort = true;
-        renderObject.renderParams.viewPort = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
-
-        //
         renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
         renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
         renderObject.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
@@ -145,36 +140,6 @@ export class ShadowRenderer
 
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
-        const vpWidth = light.shadowMapSize.x;
-        const vpHeight = light.shadowMapSize.y;
-
-        // These viewports map a cube-map onto a 2D texture with the
-        // following orientation:
-        //
-        //  xzXZ
-        //   y Y
-        //
-        // X - Positive x direction
-        // x - Negative x direction
-        // Y - Positive y direction
-        // y - Negative y direction
-        // Z - Positive z direction
-        // z - Negative z direction
-
-        // positive X
-        cube2DViewPorts[0].init(vpWidth * 2, vpHeight, vpWidth, vpHeight);
-        // negative X
-
-        cube2DViewPorts[1].init(0, vpHeight, vpWidth, vpHeight);
-        // positive Z
-        cube2DViewPorts[2].init(vpWidth * 3, vpHeight, vpWidth, vpHeight);
-        // negative Z
-        cube2DViewPorts[3].init(vpWidth, vpHeight, vpWidth, vpHeight);
-        // positive Y
-        cube2DViewPorts[4].init(vpWidth * 3, 0, vpWidth, vpHeight);
-        // negative Y
-        cube2DViewPorts[5].init(vpWidth, 0, vpWidth, vpHeight);
-
         const shadowCamera = light.shadowCamera;
         shadowCamera.transform.setPosition(light.transform.position);
 
@@ -188,10 +153,6 @@ export class ShadowRenderer
             const models = scene.getModelsByCamera(shadowCamera);
             // 筛选投射阴影的渲染对象
             const castShadowsModels = models.filter((i) => i.castShadows);
-
-            //
-            renderObject.renderParams.useViewPort = true;
-            renderObject.renderParams.viewPort = cube2DViewPorts[face];
 
             //
             renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
@@ -273,7 +234,6 @@ export class ShadowRenderer
 
         //
         this.renderObject.next = renderObject;
-        this.renderObject.renderParams.cullFace = renderObject.renderParams.cullFace;
 
         // 使用shadowShader
         this.renderObject.shader = renderObject.shadowShader;
@@ -287,10 +247,6 @@ export class ShadowRenderer
  */
 export const shadowRenderer = new ShadowRenderer();
 
-const cube2DViewPorts = [
-    new Rectangle(), new Rectangle(), new Rectangle(),
-    new Rectangle(), new Rectangle(), new Rectangle()
-];
 const cubeUps = [
     new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0),
     new Vector3(0, 1, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)

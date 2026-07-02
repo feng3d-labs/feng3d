@@ -1,6 +1,6 @@
 import { Color3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { BlendFactor } from '../render/data/enums';
+import { reactive } from '@feng3d/reactivity';
 import { serialize, serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
@@ -140,9 +140,13 @@ export class Light extends Behaviour
             //
             // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
             // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
-            textureMaterial.renderParams.enableBlend = true;
-            textureMaterial.renderParams.sfactor = BlendFactor.ONE;
-            textureMaterial.renderParams.dfactor = BlendFactor.ZERO;
+            // 开启混合：src=ONE, dst=ZERO
+            reactive(textureMaterial.renderPipeline.fragment).targets = [{
+                blend: {
+                    color: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
+                    alpha: { srcFactor: 'one', dstFactor: 'zero', operation: 'add' },
+                },
+            }];
         }
 
         const depth = viewCamera.lens.near * 2;

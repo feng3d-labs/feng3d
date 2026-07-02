@@ -1,6 +1,7 @@
 import { RegisterComponent, DirectionalLight, Camera, watcher, GameObject, BillboardComponent, MeshRenderer, PlaneGeometry, Material, TextureUniforms, Texture2D, TextureFormat, Segment, Vector3, HideFlags, HoldSizeComponent, SegmentUniforms, Color4, RenderMode, SegmentGeometry, shortcut, ticker } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
+import { setBlendEnabled, setTopology } from '../utils/materialRenderState';
 
 declare global
 {
@@ -51,7 +52,7 @@ export class DirectionLightIcon extends EditorScript
             texture.source = { url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/sun.png') };
             texture.format = TextureFormat.RGBA;
             texture.premulAlpha = true;
-            material.renderParams.enableBlend = true;
+            setBlendEnabled(material, true);
             this._textureMaterial = material;
             this.gameObject.addChild(lightIcon);
         }
@@ -96,7 +97,7 @@ export class DirectionLightIcon extends EditorScript
             material.shaderName = 'segment';
             const uniforms = material.uniforms as SegmentUniforms;
             uniforms.u_segmentColor = new Color4(163 / 255, 162 / 255, 107 / 255);
-            material.renderParams.renderMode = RenderMode.LINES;
+            setTopology(material, 'line-list');
             const geometry = meshRenderer.geometry = new SegmentGeometry();
             geometry.segments = segments;
             this.gameObject.addChild(lightLines);

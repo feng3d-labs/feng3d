@@ -79,7 +79,6 @@ export * from './render/data/Attribute';
 export * from './render/data/Attributes';
 export * from './render/data/enums';
 export * from './render/data/Index';
-export * from './render/data/RenderParams';
 export * from './render/data/TextureInfo';
 export * from './render/data/Uniform';
 export * from './render/FrameBufferObject';
@@ -89,9 +88,7 @@ export * from './render/renderer/OutlineRenderer';
 export * from './render/renderer/ShadowRenderer';
 export * from './render/renderer/WireframeRenderer';
 // WebGPU 适配层：把 core 数据模型转换为 webgpu 原生 RenderObject 数据。
-// ShaderRegistry 模块导入时自动注册 color/texture/standard WGSL 着色器。
 export * from './render/webgpu/MaterialPipeline';
-import './render/webgpu/ShaderRegistry';
 export * from './scene/Scene';
 export * from './scene/ScenePickCache';
 export * from './scene/SceneUtil';

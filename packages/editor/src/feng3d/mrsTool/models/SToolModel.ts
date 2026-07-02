@@ -1,5 +1,6 @@
 import { Color4, Component, CylinderGeometry, GameObject, Material, RegisterComponent, Renderable, RenderMode, SegmentGeometry, serialization, Vector3, watcher } from 'feng3d';
 import { CoordinateCube } from './MToolModel';
+import { setBlendEnabled } from '../../../utils/materialRenderState';
 
 declare global
 {
@@ -74,10 +75,10 @@ export class CoordinateScaleCube extends Component
         const xLine = new GameObject();
         let model = xLine.addComponent(Renderable);
         const material = model.material = serialization.setValue(new Material(), {
-            shaderName: 'segment', renderParams: { renderMode: RenderMode.LINES },
+            shaderName: 'segment',
             uniforms: { u_segmentColor: new Color4(1, 1, 1, 0.99) },
         });
-        material.renderParams.enableBlend = true;
+        setBlendEnabled(material, true);
         this.segmentGeometry = model.geometry = new SegmentGeometry();
         this.gameObject.addChild(xLine);
         this.coordinateCube = serialization.setValue(new GameObject(), { name: 'coordinateCube' }).addComponent(CoordinateCube);

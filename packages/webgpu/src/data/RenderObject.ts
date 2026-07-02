@@ -75,11 +75,6 @@ export interface RenderObject extends MixinsRenderObject
     uniforms?: { [key: string]: any };
 
     /**
-     * 渲染参数 (WebGL 兼容)
-     */
-    renderParams?: any;
-
-    /**
      * 顶点属性 (WebGL 兼容)
      */
     attributes?: any;
@@ -165,7 +160,7 @@ export class RenderObject
     /**
      * 构造函数。
      *
-     * 初始化 WebGL 兼容字段（shaderMacro/uniforms/renderParams/attributes）为空对象，
+     * 初始化 WebGL 兼容字段（shaderMacro/uniforms/attributes）为空对象，
      * 供 core 的 Geometry/Material/Transform/OutlineRenderer 等 beforeRender/init 直接赋值，
      * 避免访问 undefined 字段。
      */
@@ -173,7 +168,6 @@ export class RenderObject
     {
         (this as any).shaderMacro = {};
         (this as any).uniforms = {};
-        (this as any).renderParams = {};
         (this as any).attributes = {};
     }
 }

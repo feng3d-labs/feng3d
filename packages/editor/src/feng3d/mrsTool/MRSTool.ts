@@ -5,6 +5,7 @@ import { MRSToolTarget } from './MRSToolTarget';
 import { MTool } from './MTool';
 import { RTool } from './RTool';
 import { STool } from './STool';
+import { setDepthTest } from '../../utils/materialRenderState';
 
 declare global
 {
@@ -24,7 +25,7 @@ function setAwaysVisible(component: Component)
     {
         if (element.material)
         {
-            element.material.renderParams.depthtest = false;
+            setDepthTest(element.material, false);
         }
     });
 }

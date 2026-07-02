@@ -1,6 +1,7 @@
 import { BillboardComponent, Camera, Color4, GameObject, HideFlags, Material, mathUtil, MeshRenderer, PlaneGeometry, PointGeometry, PointInfo, RegisterComponent, Renderable, RenderMode, Segment, SegmentGeometry, SegmentUniforms, serialization, shortcut, SpotLight, Texture2D, TextureFormat, TextureUniforms, ticker, Vector3, watcher } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
+import { setBlendEnabled, setTopology } from '../utils/materialRenderState';
 
 declare global
 {
@@ -45,7 +46,7 @@ export class SpotLightIcon extends EditorScript
             texture.source = { url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/spot.png') };
             texture.format = TextureFormat.RGBA;
             texture.premulAlpha = true;
-            material.renderParams.enableBlend = true;
+            setBlendEnabled(material, true);
             const geometry = meshRenderer.geometry = new PlaneGeometry();
             geometry.width = 1;
             geometry.height = 1;
@@ -67,8 +68,8 @@ export class SpotLightIcon extends EditorScript
             material.shaderName = 'segment';
             const uniforms = material.uniforms as SegmentUniforms;
             uniforms.u_segmentColor = new Color4(1, 1, 1, 0.5);
-            material.renderParams.enableBlend = true;
-            material.renderParams.renderMode = RenderMode.LINES;
+            setBlendEnabled(material, true);
+            setTopology(material, 'line-list');
             const geometry = meshRenderer.geometry = new SegmentGeometry();
             this._segmentGeometry = geometry;
             this.gameObject.addChild(lightLines);
@@ -78,7 +79,7 @@ export class SpotLightIcon extends EditorScript
             name: 'points', mouseEnabled: false, hideFlags: HideFlags.Hide, components: [
                 {
                     __class__: 'MeshRenderer',
-                    material: { __class__: 'Material', shaderName: 'point', uniforms: { u_PointSize: 5 }, renderParams: { enableBlend: true, renderMode: RenderMode.POINTS } },
+                    material: { __class__: 'Material', shaderName: 'point', uniforms: { u_PointSize: 5 } },
                     geometry: { __class__: 'PointGeometry' },
                 },
             ]

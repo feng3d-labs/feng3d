@@ -678,7 +678,7 @@ function createSegment()
         // 初始化材质
         const model = debugSegment.addComponent(Renderable);
         model.material = serialization.setValue(new Material(), {
-            shaderName: 'segment', renderParams: { renderMode: RenderMode.LINES },
+            shaderName: 'segment',
             uniforms: { u_segmentColor: new Color4(1.0, 0, 0) },
         });
         segmentGeometry = model.geometry = new SegmentGeometry();
@@ -692,7 +692,7 @@ function createSegment()
         const model = debugPoint.addComponent(Renderable);
         pointGeometry = model.geometry = new PointGeometry();
         model.material = serialization.setValue(new Material(), {
-            shaderName: 'point', renderParams: { renderMode: RenderMode.POINTS },
+            shaderName: 'point',
             uniforms: { u_PointSize: 5, u_color: new Color4() },
         });
     }

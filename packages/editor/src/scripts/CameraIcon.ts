@@ -1,6 +1,7 @@
 import { RegisterComponent, Camera, watcher, GameObject, BillboardComponent, MeshRenderer, Material, TextureUniforms, Texture2D, TextureFormat, PlaneGeometry, HideFlags, SegmentUniforms, Color4, RenderMode, SegmentGeometry, PointUniforms, PointGeometry, PointInfo, Segment, PerspectiveLens, OrthographicLens, Vector3, shortcut, ticker } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
+import { setBlendEnabled, setDepthWrite, setTopology } from '../utils/materialRenderState';
 
 declare global
 {
@@ -41,8 +42,8 @@ export class CameraIcon extends EditorScript
             uniforms.s_texture = new Texture2D();
             uniforms.s_texture.source = { url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/camera.png') };
             uniforms.s_texture.format = TextureFormat.RGBA;
-            material.renderParams.enableBlend = true;
-            material.renderParams.depthMask = false;
+            setBlendEnabled(material, true);
+            setDepthWrite(material, false);
             const geometry = meshRenderer.geometry = new PlaneGeometry();
             geometry.width = 1;
             geometry.height = 1;
@@ -63,8 +64,8 @@ export class CameraIcon extends EditorScript
             material.shaderName = 'segment';
             const uniforms = material.uniforms as SegmentUniforms;
             uniforms.u_segmentColor = new Color4(1, 1, 1, 0.5);
-            material.renderParams.enableBlend = true;
-            material.renderParams.renderMode = RenderMode.LINES;
+            setBlendEnabled(material, true);
+            setTopology(material, 'line-list');
             meshRenderer.geometry = new SegmentGeometry();
             this._segmentGeometry = meshRenderer.geometry;
             this.gameObject.addChild(lightLines);
@@ -81,8 +82,8 @@ export class CameraIcon extends EditorScript
             material.shaderName = 'point';
             const uniforms = material.uniforms as PointUniforms;
             uniforms.u_PointSize = 5;
-            material.renderParams.enableBlend = true;
-            material.renderParams.renderMode = RenderMode.POINTS;
+            setBlendEnabled(material, true);
+            setTopology(material, 'point-list');
             meshRenderer.geometry = new PointGeometry();
             this._pointGeometry = meshRenderer.geometry;
             this.gameObject.addChild(lightpoints);

@@ -1,7 +1,6 @@
 import { Color4, Ray3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { RenderMode } from '../render/data/enums';
 import { serialize } from '@feng3d/serialization';
 import { Animation } from '../animation/Animation';
 import { Camera } from '../cameras/Camera';
@@ -276,8 +275,10 @@ export class Scene extends Component
             if (!item.activeSelf) continue;
             const model = item.getComponent(Renderable);
             if (model && (model.castShadows || model.receiveShadows)
-                && !model.material.renderParams.enableBlend
-                && model.material.renderParams.renderMode === RenderMode.TRIANGLES
+                && !model.material.renderPipeline.fragment?.targets?.[0]?.blend
+                && model.material.renderPipeline.primitive?.topology !== 'point-list'
+                && model.material.renderPipeline.primitive?.topology !== 'line-list'
+                && model.material.renderPipeline.primitive?.topology !== 'line-strip'
             )
             {
                 targets.push(model);

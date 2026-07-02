@@ -1,13 +1,6 @@
 import { Attribute } from '../data/Attribute';
-import { CullFace as RendererCullFace } from '../data/enums';
-import { reactive } from '@feng3d/reactivity';
-import { RenderParams } from '../data/RenderParams';
 import {
-    BlendComponent,
-    BlendState,
     BufferBinding,
-    DepthStencilState,
-    PrimitiveState,
     RenderObject,
     RenderPipeline,
     Sampler,
@@ -53,7 +46,6 @@ const vertexAttributeMap: { [coreName: string]: string } = {
  * - 顶点着色器 WGSL 源码
  * - 片段着色器 WGSL 源码
  * - uniforms 工厂（创建该 shader 的默认 uniform 对象）
- * - 渲染状态（cullFace/blend/topology 等，隐含于材质中）
  */
 export interface WGSLShaderAsset
 {
@@ -73,42 +65,6 @@ export interface WGSLShaderAsset
      * Material 按 shaderName 查询此工厂来实例化 uniforms。
      */
     uniformsFactory?: () => Record<string, unknown>;
-
-    /**
-     * 渲染状态（渲染参数隐含于材质）。
-     *
-     * 使用 webgpu 小写值，由 buildRenderPipeline 直接使用，无需 GL→webgpu 映射。
-     */
-    renderState?: RenderState;
-}
-
-/**
- * 渲染状态（材质的渲染管线配置）。
- *
- * 值使用 webgpu 小写形式（与 webgpu 包的 PrimitiveState/DepthStencilState/BlendState 一致），
- * 由 {@link buildRenderPipeline} 直接使用。
- * 仅包含活跃字段（原 RenderParams 的 15 个无引用字段如 stencil 已移除）。
- */
-export interface RenderState
-{
-    /** 图元拓扑。 */
-    topology?: 'point-list' | 'line-list' | 'line-strip' | 'triangle-list' | 'triangle-strip';
-    /** 剔除面。 */
-    cullFace?: 'none' | 'front' | 'back';
-    /** 正面方向。 */
-    frontFace?: 'ccw' | 'cw';
-    /** 是否开启混合。 */
-    enableBlend?: boolean;
-    /** 源混合因子。 */
-    blendSrc?: BlendComponent['srcFactor'];
-    /** 目标混合因子。 */
-    blendDst?: BlendComponent['dstFactor'];
-    /** 混合操作。 */
-    blendOperation?: BlendComponent['operation'];
-    /** 是否写入深度。 */
-    depthWriteEnabled?: boolean;
-    /** 深度比较函数。 */
-    depthCompare?: DepthStencilState['depthCompare'];
 }
 
 /**
@@ -127,97 +83,6 @@ function sizeToVertexFormat(size: number): VertexFormat
         case 4: return 'float32x4';
         default: return 'float32';
     }
-}
-
-/**
- * core `CullFace`（大写枚举）→ webgpu `CullFace`（小写枚举）。
- */
-function mapCullFace(cullFace: string): PrimitiveState['cullFace']
-{
-    switch (cullFace as RendererCullFace)
-    {
-        case 'FRONT': return 'front';
-        case 'BACK': return 'back';
-        case 'FRONT_AND_BACK': return 'front'; // WebGPU 不支持 FRONT_AND_BACK，退化剔除正面
-        case 'NONE':
-        default: return 'none';
-    }
-}
-
-/**
- * 把 core `RenderParams.renderMode` 映射为 WebGPU 图元拓扑。
- *
- * 注意：WebGPU 不支持 `LINE_LOOP` 与 `TRIANGLE_FAN`，遇到时退化到 `line-list` / `triangle-list`。
- */
-function mapPrimitiveTopology(renderMode: string): PrimitiveState['topology']
-{
-    switch (renderMode)
-    {
-        case 'POINTS': return 'point-list';
-        case 'LINES':
-        case 'LINE_LOOP': return 'line-list';
-        case 'LINE_STRIP': return 'line-strip';
-        case 'TRIANGLES':
-        case 'TRIANGLE_FAN': return 'triangle-list';
-        case 'TRIANGLE_STRIP': return 'triangle-strip';
-        default: return 'triangle-list';
-    }
-}
-
-/**
- * 把 core `RenderParams` 转换为 webgpu `PrimitiveState`。
- */
-export function renderParamsToPrimitiveState(renderParams: RenderParams): PrimitiveState
-{
-    return {
-        topology: mapPrimitiveTopology(renderParams.renderMode),
-        cullFace: mapCullFace(renderParams.cullFace),
-        // core 默认 CW（顺时针为正面），与 webgpu 默认 ccw 不同，这里显式传递保持一致。
-        frontFace: renderParams.frontFace === 'CCW' ? 'ccw' : 'cw',
-    };
-}
-
-/**
- * 把 core `RenderParams` 转换为 webgpu `DepthStencilState`。
- */
-export function renderParamsToDepthStencilState(renderParams: RenderParams): DepthStencilState
-{
-    // core 的 depthFunc 是大写枚举（如 'LESS'），webgpu 是小写（如 'less'）。
-    const depthCompare = renderParams.depthtest
-        ? renderParams.depthFunc.toLowerCase() as DepthStencilState['depthCompare']
-        : 'always';
-
-    return {
-        depthWriteEnabled: renderParams.depthMask,
-        depthCompare,
-    };
-}
-
-/**
- * 把 core `RenderParams` 的混合配置转换为 webgpu `BlendState`。
- *
- * 仅当 `enableBlend` 为 true 时返回有效 BlendState，否则返回 undefined（关闭混合）。
- */
-export function renderParamsToBlendState(renderParams: RenderParams): BlendState | undefined
-{
-    if (!renderParams.enableBlend) return undefined;
-
-    // core 的 BlendFactor 大写（如 'SRC_ALPHA'）→ webgpu 小写连字符（如 'src-alpha'）。
-    const toBlendFactor = (f: string): BlendComponent['srcFactor'] =>
-        f.toLowerCase().replace(/_/g, '-') as BlendComponent['srcFactor'];
-
-    const component: BlendComponent = {
-        srcFactor: toBlendFactor(renderParams.sfactor),
-        dstFactor: toBlendFactor(renderParams.dfactor),
-        operation: renderParams.blendEquation === 'FUNC_ADD' ? 'add'
-            : renderParams.blendEquation === 'FUNC_SUBTRACT' ? 'subtract'
-                : 'reverse-subtract',
-    };
-
-    return {
-        color: component,
-        alpha: component,
-    };
 }
 
 /**
@@ -253,14 +118,6 @@ export function getShaderAsset(shaderName: string): WGSLShaderAsset | undefined
 export function getUniformsFactory(shaderName: string): (() => Record<string, unknown>) | undefined
 {
     return shaderRegistry.get(shaderName)?.uniformsFactory;
-}
-
-/**
- * 获取已注册 shader 的渲染状态。
- */
-export function getRenderState(shaderName: string): RenderState | undefined
-{
-    return shaderRegistry.get(shaderName)?.renderState;
 }
 
 /**
@@ -502,36 +359,6 @@ export function buildMaterialBindingResources(uniforms: UniformsLike): Record<st
 }
 
 /**
- * 根据 shader 名称与渲染参数构建 webgpu `RenderPipeline`。
- *
- * @param shaderName shader 名称
- * @param renderParams core 渲染参数
- */
-export function buildRenderPipeline(shaderName: string, renderParams: RenderParams): RenderPipeline | undefined
-{
-    const asset = shaderRegistry.get(shaderName);
-    if (!asset) return undefined;
-
-    const primitive = renderParamsToPrimitiveState(renderParams);
-    const depthStencil = renderParamsToDepthStencilState(renderParams);
-    const blend = renderParamsToBlendState(renderParams);
-
-    const pipeline: RenderPipeline = {
-        vertex: {
-            wgsl: asset.vertex,
-        },
-        fragment: {
-            wgsl: asset.fragment,
-            targets: blend ? [{ blend }] : [{}],
-        },
-        primitive,
-        depthStencil,
-    };
-
-    return pipeline;
-}
-
-/**
  * 可变的 RenderObject 视图。
  *
  * `RenderObject` 接口将 `pipeline`/`vertices`/`indices`/`draw`/`bindingResources` 声明为 `readonly`，
@@ -544,48 +371,6 @@ type MutableRenderObject = {
     draw?: { __type__: 'DrawIndexed' | 'DrawVertex' } & Record<string, unknown>;
     bindingResources: Record<string, unknown>;
 };
-
-/**
- * 把材质相关的 WebGPU 原生数据写入 RenderObject。
- *
- * - 设置 `pipeline`（WGSL 着色器 + 渲染状态）
- * - 初始化 `bindingResources` 并合并材质相关绑定（uniform 数据 + 纹理）
- *
- * 相机、全局、模型等 uniform 由 `ForwardRenderer` 单独注入到 `bindingResources`。
- * 顶点 / 索引 / draw 数据由 geometry 相关流程注入（见 {@link applyGeometryRenderData}）。
- *
- * @param renderObject 渲染对象
- * @param shaderName shader 名称
- * @param renderParams core 渲染参数
- * @param uniforms core 材质 uniform 对象
- * @returns 是否成功写入（shader 未注册时返回 false）
- */
-export function applyMaterialRenderData(
-    renderObject: RenderObject,
-    shaderName: string,
-    renderParams: RenderParams,
-    uniforms: unknown,
-): boolean
-{
-    const pipeline = buildRenderPipeline(shaderName, renderParams);
-    if (!pipeline) return false;
-
-    const ro = renderObject as unknown as MutableRenderObject;
-    ro.pipeline = pipeline;
-
-    // 确保 bindingResources 已初始化
-    if (!ro.bindingResources)
-    {
-        ro.bindingResources = {};
-    }
-
-    const materialResources = buildMaterialBindingResources(uniforms as UniformsLike);
-    // 通过 reactive 代理赋值，使 WGPUBufferBinding 的 effect 能监听到 uniform 变化并更新 GPU buffer。
-    // 直接在原始对象上 Object.assign 不经过响应式 set 拦截，effect 无法感知变化。
-    Object.assign(reactive(ro.bindingResources), materialResources);
-
-    return true;
-}
 
 /**
  * 把 geometry 相关的 WebGPU 原生数据写入 RenderObject。

@@ -1,4 +1,5 @@
 import * as feng3d from 'feng3d';
+import { reactive } from '../../../../reactivity/src/reactive';
 import * as opentype from 'opentype.js';
 
 var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
@@ -46,8 +47,8 @@ fetch('/fonts/simfang.ttf')
 
         //材质
         var material = cube.material = new feng3d.StandardMaterial();
-        material.renderParams.frontFace = feng3d.FrontFace.CCW;
-        material.renderParams.cullFace = feng3d.CullFace.NONE;
+        reactive(material.renderPipeline.primitive).frontFace = 'ccw';
+        reactive(material.renderPipeline.primitive).cullFace = 'none';
 
         cube.geometry = geometry;
     })

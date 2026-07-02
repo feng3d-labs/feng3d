@@ -1,4 +1,5 @@
 import { Color4, Component, CullFace, CustomGeometry, GameObject, Geometry, Material, mathUtil, RegisterComponent, Renderable, RenderMode, Segment, SegmentGeometry, serialization, TorusGeometry, Vector3, watcher } from 'feng3d';
+import { setBlendEnabled, setCullFace } from '../../../utils/materialRenderState';
 
 declare global
 {
@@ -104,10 +105,10 @@ export class CoordinateRotationAxis extends Component
         const border = new GameObject();
         let model = border.addComponent(Renderable);
         const material = model.material = serialization.setValue(new Material(), {
-            shaderName: 'segment', renderParams: { renderMode: RenderMode.LINES },
+            shaderName: 'segment',
             uniforms: { u_segmentColor: new Color4(1, 1, 1, 0.99) },
         });
-        material.renderParams.enableBlend = true;
+        setBlendEnabled(material, true);
         this.segmentGeometry = model.geometry = new SegmentGeometry();
         this.gameObject.addChild(border);
         this.sector = serialization.setValue(new GameObject(), { name: 'sector' }).addComponent(SectorGameObject);
@@ -218,16 +219,16 @@ export class SectorGameObject extends Component
         let model = this.gameObject.addComponent(Renderable);
         this.geometry = model.geometry = new CustomGeometry();
         model.material = serialization.setValue(new Material(), { shaderName: 'color', uniforms: { u_diffuseInput: new Color4(0.5, 0.5, 0.5, 0.2) } });
-        model.material.renderParams.enableBlend = true;
-        model.material.renderParams.cullFace = CullFace.NONE;
+        setBlendEnabled(model.material, true);
+        setCullFace(model.material, 'none');
 
         const border = serialization.setValue(new GameObject(), { name: 'border' });
         model = border.addComponent(Renderable);
         const material = model.material = serialization.setValue(new Material(), {
-            shaderName: 'segment', renderParams: { renderMode: RenderMode.LINES },
+            shaderName: 'segment',
             uniforms: { u_segmentColor: new Color4(1, 1, 1, 0.99) },
         });
-        material.renderParams.enableBlend = true;
+        setBlendEnabled(material, true);
         this.segmentGeometry = model.geometry = new SegmentGeometry();
         this.gameObject.addChild(border);
 
@@ -304,10 +305,10 @@ export class CoordinateRotationFreeAxis extends Component
         const border = serialization.setValue(new GameObject(), { name: 'border' });
         const model = border.addComponent(Renderable);
         const material = model.material = serialization.setValue(new Material(), {
-            shaderName: 'segment', renderParams: { renderMode: RenderMode.LINES },
+            shaderName: 'segment',
             uniforms: { u_segmentColor: new Color4(1, 1, 1, 0.99) }
         });
-        material.renderParams.enableBlend = true;
+        setBlendEnabled(material, true);
         this.segmentGeometry = model.geometry = new SegmentGeometry();
         this.gameObject.addChild(border);
 

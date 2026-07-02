@@ -74,7 +74,7 @@ return models;
         const camerapos = this.camera.transform.worldPosition;
 
         const blenditems = this._blenditems = models.filter((item) =>
-        item.material.renderParams.enableBlend).sort((b, a) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+        item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
@@ -91,7 +91,7 @@ return models;
         const camerapos = this.camera.transform.worldPosition;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-        !item.material.renderParams.enableBlend).sort((a, b) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+        !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

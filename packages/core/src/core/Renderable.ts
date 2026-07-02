@@ -83,7 +83,6 @@ export class Renderable extends RayCastable
         if (!roAny.shaderMacro) roAny.shaderMacro = {};
         if (!roAny.uniforms) roAny.uniforms = {};
         if (!roAny.attributes) roAny.attributes = {};
-        if (!roAny.renderParams) roAny.renderParams = {};
         if (!roAny.bindingResources) roAny.bindingResources = {};
 
         this.gameObject.components.forEach((element) =>
@@ -149,6 +148,12 @@ export class Renderable extends RayCastable
         if (rayEntryDistance === Number.MAX_VALUE)
         { return null; }
 
+        // webgpu cullFace（小写）→ core CullFace 枚举（大写），供射线检测使用
+        const pipelineCullFace = this.material.renderPipeline.primitive?.cullFace;
+        const cullFace = pipelineCullFace === 'front' ? CullFace.FRONT
+            : pipelineCullFace === 'back' ? CullFace.BACK
+                : CullFace.NONE;
+
         // 保存碰撞数据
         const pickingCollisionVO: PickingCollisionVO = {
             gameObject: this.gameObject,
@@ -157,7 +162,7 @@ export class Renderable extends RayCastable
             rayEntryDistance,
             rayOriginIsInsideBounds: rayEntryDistance === 0,
             geometry: this.geometry,
-            cullFace: this.material.renderParams.cullFace as CullFace,
+            cullFace,
         };
 
         return pickingCollisionVO;

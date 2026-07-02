@@ -1,6 +1,7 @@
 import { RegisterComponent, PointLight, Camera, watcher, GameObject, BillboardComponent, MeshRenderer, PlaneGeometry, Material, TextureUniforms, Texture2D, TextureFormat, serialization, HideFlags, RenderMode, Renderable, Vector3, Segment, Color4, SegmentGeometry, PointGeometry, shortcut, ticker } from 'feng3d';
 import { EditorData } from '../global/EditorData';
 import { EditorScript } from './EditorScript';
+import { setBlendEnabled } from '../utils/materialRenderState';
 
 declare global
 {
@@ -46,7 +47,7 @@ export class PointLightIcon extends EditorScript
         texture.source = { url: EditorData.editorData.getEditorAssetPath('assets/3d/icons/light.png') };
         texture.format = TextureFormat.RGBA;
         texture.premulAlpha = true;
-        material.renderParams.enableBlend = true;
+        setBlendEnabled(material, true);
         this._textureMaterial = material;
         this.gameObject.addChild(lightIcon);
 
@@ -59,7 +60,7 @@ export class PointLightIcon extends EditorScript
                     shaderName: 'segment',
                     uniforms: {
                         u_segmentColor: { __class__: 'Color4', r: 1, g: 1, b: 1, a: 0.5 },
-                    }, renderParams: { renderMode: RenderMode.LINES, enableBlend: true }
+                    }
                 },
                 geometry: { __class__: 'SegmentGeometry' },
             }]
@@ -82,7 +83,7 @@ export class PointLightIcon extends EditorScript
                         { position: { __class__: 'Vector3', z: -1 }, color: { __class__: 'Color4', b: 1 } }],
                 },
                 material: {
-                    __class__: 'Material', shaderName: 'point', uniforms: { u_PointSize: 5 }, renderParams: { renderMode: RenderMode.POINTS, enableBlend: true },
+                    __class__: 'Material', shaderName: 'point', uniforms: { u_PointSize: 5 },
                 },
             }],
         });

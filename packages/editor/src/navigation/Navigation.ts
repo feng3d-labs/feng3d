@@ -1,5 +1,6 @@
 import { oav, AddComponentMenu, RegisterComponent, Component, GameObject, PointGeometry, HideFlags, serialization, MeshRenderer, Material, PointUniforms, Color4, RenderMode, Vector3, geometryUtils, Renderable } from 'feng3d';
 import { Recastnavigation, VoxelFlag } from '../recastnavigation/Recastnavigation';
+import { setTopology } from '../utils/materialRenderState';
 
 declare global
 {
@@ -67,7 +68,7 @@ export class Navigation extends Component
             const uniforms = material.uniforms as PointUniforms;
             uniforms.u_color = new Color4(0, 1, 0);
             uniforms.u_PointSize = 2;
-            material.renderParams.renderMode = RenderMode.POINTS;
+            setTopology(material, 'point-list');
             meshRenderer.geometry = this._allowedVoxelsPointGeometry = new PointGeometry();
             this._navobject.addChild(pointsObject);
         }
@@ -80,7 +81,7 @@ export class Navigation extends Component
             const uniforms = material.uniforms as PointUniforms;
             uniforms.u_color = new Color4(1, 0, 0);
             uniforms.u_PointSize = 2;
-            material.renderParams.renderMode = RenderMode.POINTS;
+            setTopology(material, 'point-list');
             meshRenderer.geometry = this._rejectivedVoxelsPointGeometry = new PointGeometry();
             this._navobject.addChild(pointsObject);
         }
@@ -93,7 +94,7 @@ export class Navigation extends Component
             const uniforms = material.uniforms as PointUniforms;
             uniforms.u_color = new Color4(0, 0, 1);
             uniforms.u_PointSize = 2;
-            material.renderParams.renderMode = RenderMode.POINTS;
+            setTopology(material, 'point-list');
             meshRenderer.geometry = this._debugVoxelsPointGeometry = new PointGeometry();
             this._navobject.addChild(pointsObject);
         }

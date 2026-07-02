@@ -1,4 +1,5 @@
 import * as feng3d from 'feng3d';
+import { reactive } from '../../../../reactivity/src/reactive';
 const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
 
@@ -28,5 +29,10 @@ textureMaterial.s_diffuse.format = feng3d.TextureFormat.RGBA;
 textureMaterial.s_diffuse.anisotropy = 16;
 textureMaterial.u_diffuse.a = 0.2;
 
-textureMaterial.renderParams.enableBlend = true;
+reactive(textureMaterial.renderPipeline.fragment).targets = [{
+    blend: {
+        color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+        alpha: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+    },
+}];
 

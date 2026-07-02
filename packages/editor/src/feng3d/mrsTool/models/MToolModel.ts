@@ -1,4 +1,5 @@
 import { Color4, ColorUniforms, Component, ConeGeometry, CubeGeometry, CullFace, CylinderGeometry, GameObject, Material, PlaneGeometry, RegisterComponent, Renderable, SegmentGeometry, SegmentUniforms, serialization, Vector3, watcher } from 'feng3d';
+import { setBlendEnabled, setCullFace } from '../../../utils/materialRenderState';
 
 declare global
 {
@@ -113,7 +114,7 @@ export class CoordinateAxis extends Component
         model = this.xArrow.addComponent(Renderable);
         model.geometry = serialization.setValue(new ConeGeometry(), { bottomRadius: 5, height: 18 });
         this.material = model.material = serialization.setValue(new Material(), { shaderName: 'color' });
-        this.material.renderParams.enableBlend = true;
+        setBlendEnabled(this.material, true);
         this.xArrow.transform.y = this.length;
         this.gameObject.addChild(this.xArrow);
 
@@ -163,7 +164,7 @@ export class CoordinateCube extends Component
         const model = this.oCube.addComponent(Renderable);
         model.geometry = serialization.setValue(new CubeGeometry(), { width: 8, height: 8, depth: 8 });
         this.colorMaterial = model.material = Material.create('color');
-        this.colorMaterial.renderParams.enableBlend = true;
+        setBlendEnabled(this.colorMaterial, true);
         this.oCube.mouseEnabled = true;
         this.gameObject.addChild(this.oCube);
 
@@ -207,8 +208,8 @@ export class CoordinatePlane extends Component
         plane.transform.x = plane.transform.z = this._width / 2;
         model.geometry = serialization.setValue(new PlaneGeometry(), { width: this._width, height: this._width });
         this.colorMaterial = model.material = Material.create('color');
-        this.colorMaterial.renderParams.cullFace = CullFace.NONE;
-        this.colorMaterial.renderParams.enableBlend = true;
+        setCullFace(this.colorMaterial, 'none');
+        setBlendEnabled(this.colorMaterial, true);
         plane.mouseEnabled = true;
         this.gameObject.addChild(plane);
 

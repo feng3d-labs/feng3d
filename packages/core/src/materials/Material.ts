@@ -1,8 +1,6 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
-import { RenderMode } from '../render/data/enums';
-import { RenderParams } from '../render/data/RenderParams';
 import { serialization, serialize } from '@feng3d/serialization';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
@@ -43,24 +41,22 @@ export class Material extends Feng3dObject
      * 直接使用 `@feng3d/webgpu` 的 {@link RenderPipeline}（字段在接口中为 `readonly`，
      * 属编译期约束，运行时可写）。子类在构造时填充 vertex/fragment/primitive/depthStencil
      * 等字段（对应 WGSL 着色器源码与渲染状态）。
+     *
+     * 需要修改渲染参数（剔除、混合、深度等）时，直接在本对象上修改：
+     * - `renderPipeline.primitive.{topology, cullFace, frontFace}`
+     * - `renderPipeline.depthStencil.{depthWriteEnabled, depthCompare}`
+     * - `renderPipeline.fragment.targets[0].blend`（开启混合）/ `writeMask`（颜色写入掩码）
      */
     readonly renderPipeline: RenderPipeline = {
         vertex: {},
         fragment: { targets: [{}] },
-        primitive: { cullFace: 'back', frontFace: 'cw' },
+        primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     };
 
     @oav()
     @serialize
     name = '';
-
-    /**
-     * 渲染参数
-     */
-    @serialize
-    @oav({ block: '渲染参数', component: 'OAVObjectView' })
-    renderParams: RenderParams;
 
     /**
      * 构造函数。
@@ -75,7 +71,6 @@ export class Material extends Feng3dObject
         {
             throw new Error('Material 为虚类，不能直接实例化，请使用具体子类（如 ColorMaterial / StandardMaterial）');
         }
-        this.renderParams = new RenderParams();
     }
 
     /**
@@ -114,9 +109,8 @@ export class Material extends Feng3dObject
         // 材质相关绑定资源由子类负责（写入 bindingResources，支持响应式更新）。
         // WebGL 兼容字段
         Object.assign(renderObject.uniforms ||= {}, this.renderObject.uniforms);
-        renderObject.renderParams = this.renderParams;
         renderObject.shaderMacro ||= {};
-        renderObject.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === RenderMode.POINTS;
+        renderObject.shaderMacro.IS_POINTS_MODE = this.renderPipeline.primitive?.topology === 'point-list';
     }
 
     /**
