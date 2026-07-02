@@ -3,6 +3,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { Material } from './Material';
+import { StandardMaterial } from './StandardMaterial';
 
 declare global
 {
@@ -33,5 +34,5 @@ export class SegmentUniforms
     u_segmentColor = new Color4();
 }
 
-// shader 注册（WGSL + uniforms 工厂 + 渲染状态）由 ShaderRegistry 集中管理。
-Material.setDefault('Segment-Material', { shaderName: 'segment' });
+// TODO: SegmentMaterial 尚未重构为 Material 子类，暂用 StandardMaterial 占位注册
+Material.setDefault('Segment-Material', new StandardMaterial());

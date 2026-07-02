@@ -1,4 +1,5 @@
 import * as feng3d from 'feng3d';
+import { reactive } from '../../../../reactivity/src/reactive';
 const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
 
@@ -12,7 +13,7 @@ const engine = new feng3d.View(null, scene, camera);
 const cube = feng3d.GameObject.createPrimitive("Cube");
 scene.gameObject.addChild(cube);
 
-const colorMaterial = cube.getComponent(feng3d.Renderable).material = feng3d.serialization.setValue(new feng3d.Material(), { shaderName: "color" });
+const colorMaterial = cube.getComponent(feng3d.Renderable).material = new feng3d.ColorMaterial();
 
 const cylinder = feng3d.GameObject.createPrimitive("Cylinder");
 cylinder.transform.x = 2;
@@ -26,6 +27,6 @@ feng3d.ticker.onframe(() => {
     num++;
 
     if (num % 60 == 0) {
-        (colorMaterial.uniforms as feng3d.ColorUniforms).u_diffuseInput.fromUnit(Math.random() * (1 << 32 - 1));
+        reactive(colorMaterial).u_diffuseInput = new feng3d.Color4().fromUnit(Math.random() * (1 << 32 - 1));
     }
 });

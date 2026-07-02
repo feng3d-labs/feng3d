@@ -5,7 +5,7 @@
  * - @group(0) @binding(0) var<uniform> transform   - { u_modelMatrix, u_ITModelMatrix }（Transform 注入）
  * - @group(0) @binding(1) var<uniform> cameraUniforms - { u_viewProjection, u_cameraPos, ... }（Camera 注入）
  * - @group(0) @binding(2) var<uniform> globalUniforms - { u_sceneAmbientColor, _Time }（Scene 注入）
- * - @group(0) @binding(3) var<uniform> uniforms     - 材质参数（Material 注入）
+ * - @group(0) @binding(3) var<uniform> material_uniforms     - 材质参数（Material 注入）
  *
  * 顶点输入（与 core Geometry 的 a_* 属性经 MaterialPipeline 名称映射后一致）：
  * - @location(0) position

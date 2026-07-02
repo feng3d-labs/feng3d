@@ -4,7 +4,7 @@
  * 采样纹理颜色，与材质 u_color 相乘输出。
  *
  * 绑定约定：
- * - @group(0) @binding(3) var<uniform> uniforms        - { u_color: vec4 }（TextureUniforms）
+ * - @group(0) @binding(3) var<uniform> material_uniforms        - { u_color: vec4 }（TextureUniforms）
  * - @group(1) @binding(0) var s_textureSampler: sampler
  * - @group(1) @binding(1) var s_texture: texture_2d<f32>
  *
@@ -28,7 +28,7 @@ struct TextureUniforms {
     u_color: vec4<f32>,
 }
 
-@group(0) @binding(3) var<uniform> uniforms: TextureUniforms;
+@group(0) @binding(3) var<uniform> material_uniforms: TextureUniforms;
 
 @group(1) @binding(0) var s_textureSampler: sampler;
 @group(1) @binding(1) var s_texture: texture_2d<f32>;
@@ -37,7 +37,7 @@ struct TextureUniforms {
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
     let texColor = textureSample(s_texture, s_textureSampler, input.uv);
-    output.color = texColor * uniforms.u_color;
+    output.color = texColor * material_uniforms.u_color;
     return output;
 }
 `;

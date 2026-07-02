@@ -1,16 +1,11 @@
-import { globalEmitter } from '@feng3d/event';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
 import { RenderMode } from '../render/data/enums';
 import { RenderParams } from '../render/data/RenderParams';
 import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';
-import { applyMaterialRenderData, getRenderState, getUniformsFactory } from '../render/webgpu/MaterialPipeline';
-import { Texture2D } from '../textures/Texture2D';
-import { TextureCube } from '../textures/TextureCube';
 import { RenderObject } from '@feng3d/webgpu';
 
 declare global
@@ -19,65 +14,53 @@ declare global
     {
 
     }
-    interface MixinsUniformsTypes
-    {
-
-    }
 }
 
-export interface UniformsTypes extends MixinsUniformsTypes { }
-export type ShaderNames = keyof UniformsTypes;
-export type UniformsLike = UniformsTypes[keyof UniformsTypes];
+/**
+ * 可变的 RenderPipeline 视图。
+ *
+ * `RenderPipeline` 接口的子状态字段声明为 `readonly`，但运行时是普通对象可改。
+ * 材质需要在构造时填充/修改这些字段（如 `renderPipeline.vertex.wgsl = ...`），
+ * 这里去掉 readonly 供材质直接操作。传给 WebGPU 渲染时仍符合 `RenderPipeline` 结构。
+ */
+type MutableRenderPipeline = {
+    vertex: { wgsl?: string; code?: string; entryPoint?: string };
+    fragment: { wgsl?: string; code?: string; entryPoint?: string; targets?: unknown[] };
+    primitive: { topology?: string; cullFace?: string; frontFace?: string };
+    depthStencil: { depthWriteEnabled?: boolean; depthCompare?: string };
+};
 
 /**
- * 材质
+ * 材质（虚类）。
+ *
+ * 不允许直接 `new Material()`（构造为 protected）。具体材质继承本类，在构造时
+ * 填充 {@link renderPipeline}（WGSL 着色器源码 + 渲染状态），并在 `beforeRender`
+ * 中把自身 uniform/纹理字段写入 `renderObject.bindingResources`（支持响应式更新）。
+ *
+ * shader 在构造时固定，不支持运行时切换。
  */
 @decoratorRegisterClass()
 export class Material extends Feng3dObject
 {
     __class__: 'Material';
 
-    static create<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
-    {
-        const material = new Material();
-        material.init(shaderName, uniforms, renderParams);
-
-        return material;
-    }
-
-    init<K extends keyof UniformsTypes>(shaderName: K, uniforms?: gPartial<UniformsTypes[K]>, renderParams?: gPartial<RenderParams>)
-    {
-        this.shaderName = shaderName;
-        //
-        uniforms && serialization.setValue(this.uniforms, <any>uniforms);
-        renderParams && serialization.setValue(this.renderParams, renderParams);
-
-        return this;
-    }
-
     //
-    private renderObject = new RenderObject();
+    protected renderObject = new RenderObject();
 
     @oav({ component: 'OAVFeng3dPreView' })
-    private preview = '';
+    protected preview = '';
 
     /**
-     * shader名称
+     * 渲染管线。
+     *
+     * 子类在构造时填充 vertex/fragment/primitive/depthStencil 等字段
+     * （对应 WGSL 着色器源码与渲染状态）。
      */
-    @oav({ component: 'OAVMaterialName' })
-    @serialize
-    shaderName: ShaderNames;
+    readonly renderPipeline: MutableRenderPipeline;
 
     @oav()
     @serialize
     name = '';
-
-    /**
-     * Uniform数据
-     */
-    @serialize
-    @oav({ component: 'OAVObjectView' })
-    uniforms: UniformsLike;
 
     /**
      * 渲染参数
@@ -86,48 +69,57 @@ export class Material extends Feng3dObject
     @oav({ block: '渲染参数', component: 'OAVObjectView' })
     renderParams: RenderParams;
 
+    /**
+     * 构造函数。
+     *
+     * Material 为虚类，不允许直接实例化（`new Material()` 会抛错）。
+     * 具体材质继承本类并在构造时填充 {@link renderPipeline}（shader 与渲染状态）。
+     */
     constructor()
     {
         super();
-        globalEmitter.on('asset.shaderChanged', this._onShaderChanged, this);
-        watcher.watch(this as Material, 'shaderName', this._onShaderChanged, this);
-        watcher.watch(this as Material, 'uniforms', this._onUniformsChanged, this);
-        watcher.watch(this as Material, 'renderParams', this._onRenderParamsChanged, this);
-        this.shaderName = 'standard';
+        if (new.target === Material)
+        {
+            throw new Error('Material 为虚类，不能直接实例化，请使用具体子类（如 ColorMaterial / StandardMaterial）');
+        }
+        // 初始化完整的子对象结构（空值），子类构造时填充具体 shader 与渲染状态
+        this.renderPipeline = {
+            vertex: {},
+            fragment: { targets: [{}] },
+            primitive: {},
+            depthStencil: {},
+        };
         this.renderParams = new RenderParams();
-        // 触发 shader 变化，初始化 uniforms
-        this._onShaderChanged();
-    }
-
-    beforeRender(renderObject: RenderObject)
-    {
-        Object.assign(renderObject.uniforms, this.renderObject.uniforms);
-
-        renderObject.shader = this.renderObject.shader;
-        renderObject.renderParams = this.renderObject.renderParams;
-        renderObject.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === RenderMode.POINTS;
-
-        // ---- WebGPU 原生路径填充 ----
-        // pipeline（WGSL 着色器源码 + 渲染状态）+ 材质相关绑定资源（uniform 数据 + 纹理）。
-        // 相机、全局、模型 uniform 由 ForwardRenderer 单独注入。
-        applyMaterialRenderData(renderObject, this.shaderName, this.renderParams, this.uniforms);
     }
 
     /**
-     * 是否加载完成
+     * uniform 数据（兼容字段）。
+     *
+     * 仅用于尚未重构为子类的材质（通过工厂创建 uniforms）。
+     * 新材质应直接声明强类型字段并在 beforeRender 中写入 bindingResources。
+     */
+    uniforms: { [key: string]: any } = {};
+
+    beforeRender(renderObject: RenderObject)
+    {
+        const ro = renderObject as any;
+
+        // 渲染管线（shader + 渲染状态，子类在构造时填充）
+        ro.pipeline = this.renderPipeline;
+
+        // 材质相关绑定资源由子类负责（写入 bindingResources，支持响应式更新）。
+        // WebGL 兼容字段
+        Object.assign(ro.uniforms ||= {}, this.renderObject.uniforms);
+        ro.renderParams = this.renderParams;
+        ro.shaderMacro ||= {};
+        ro.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode === RenderMode.POINTS;
+    }
+
+    /**
+     * 是否加载完成（子类按需覆盖，检查自身纹理字段）
      */
     get isLoaded()
     {
-        const uniforms = this.uniforms;
-        for (const key in uniforms)
-        {
-            const texture = uniforms[key];
-            if (texture instanceof Texture2D || texture instanceof TextureCube)
-            {
-                if (!texture.isLoaded) return false;
-            }
-        }
-
         return true;
     }
 
@@ -137,69 +129,20 @@ export class Material extends Feng3dObject
      */
     onLoadCompleted(callback: () => void)
     {
-        let loadingNum = 0;
-        const uniforms = this.uniforms;
-        for (const key in uniforms)
-        {
-            const texture = uniforms[key];
-            if (texture instanceof Texture2D || texture instanceof TextureCube)
-            {
-                if (!texture.isLoaded)
-                {
-                    loadingNum++;
-                     
-                    texture.on('loadCompleted', () =>
-                    {
-                        loadingNum--;
-                        if (loadingNum === 0) callback();
-                    });
-                }
-            }
-        }
-        if (loadingNum === 0) callback();
-    }
-
-    private _onShaderChanged()
-    {
-        // 通过 ShaderRegistry 获取 uniforms 工厂，创建该 shader 的默认 uniform 对象
-        const factory = getUniformsFactory(this.shaderName);
-        if (factory)
-        {
-            this.uniforms = factory() as any;
-        }
-        else
-        {
-            this.uniforms = <any>{};
-        }
-
-        // shader 源码由 ShaderRegistry 按 shaderName 查找
-        this.renderObject.shader = this.shaderName;
-    }
-
-    private _onUniformsChanged()
-    {
-        this.renderObject.uniforms = this.uniforms as any;
-    }
-
-    private _onRenderParamsChanged()
-    {
-        this.renderObject.renderParams = this.renderParams;
+        callback();
     }
 
     /**
      * 设置默认材质
      *
-     * 资源名称与材质名称相同，且无法在检查器界面中编辑。
-     *
      * @param name 材质名称
-     * @param material 材质数据
+     * @param material 材质实例
      */
-    static setDefault<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>)
+    static setDefault<K extends keyof DefaultMaterial>(name: K, material: Material)
     {
-        const newMaterial = this._defaultMaterials[<any>name] = new Material();
-        serialization.setValue(newMaterial, material);
-        serialization.setValue(newMaterial, { name, hideFlags: HideFlags.NotEditable });
-        AssetData.addAssetData(name, newMaterial);
+        serialization.setValue(material, { name, hideFlags: HideFlags.NotEditable });
+        this._defaultMaterials[<any>name] = material;
+        AssetData.addAssetData(name, material);
     }
 
     /**
@@ -219,6 +162,5 @@ export class Material extends Feng3dObject
  */
 export interface DefaultMaterial extends MixinsDefaultMaterial
 {
-}
 
-Material.setDefault('Default-Material', { shaderName: 'standard' });
+}

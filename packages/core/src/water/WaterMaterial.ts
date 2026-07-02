@@ -2,6 +2,7 @@ import { Color3, Matrix4x4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { serialize } from '@feng3d/serialization';
 import { Material } from '../materials/Material';
+import { StandardMaterial } from '../materials/StandardMaterial';
 import { Texture2D } from '../textures/Texture2D';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 
@@ -61,4 +62,5 @@ export class WaterUniforms
 }
 
 
-Material.setDefault('Water-Material', { shaderName: 'water' });
+// TODO: WaterMaterial 尚未重构为 Material 子类，暂用 StandardMaterial 占位注册
+Material.setDefault('Water-Material', new StandardMaterial());

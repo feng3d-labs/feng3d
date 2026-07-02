@@ -4,7 +4,7 @@
  * 从顶点着色器接收顶点颜色，与材质 u_diffuseInput 相乘输出。
  *
  * 绑定约定：
- * - @group(0) @binding(3) var<uniform> uniforms - { u_diffuseInput: vec4 }（ColorUniforms）
+ * - @group(0) @binding(3) var<uniform> material_uniforms - { u_diffuseInput: vec4 }（ColorUniforms）
  */
 
 /**
@@ -23,13 +23,13 @@ struct ColorUniforms {
     u_diffuseInput: vec4<f32>,
 }
 
-@group(0) @binding(3) var<uniform> uniforms: ColorUniforms;
+@group(0) @binding(3) var<uniform> material_uniforms: ColorUniforms;
 
 @fragment
 fn main(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
     // 顶点颜色与材质颜色相乘
-    output.color = input.color * uniforms.u_diffuseInput;
+    output.color = input.color * material_uniforms.u_diffuseInput;
     return output;
 }
 `;

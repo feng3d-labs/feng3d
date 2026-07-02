@@ -465,6 +465,21 @@ export function buildSamplerFromTextureInfo(textureInfo: TextureInfo<unknown>): 
  *
  * @param uniforms core 材质 uniform 对象
  */
+/**
+ * 把单个纹理封装为 webgpu 绑定所需的 `{ texture, sampler }` 对象。
+ *
+ * sampler 由 core `TextureInfo` 的采样配置构建。
+ *
+ * @param texture 纹理（Texture2D / TextureCube）
+ */
+export function buildTextureSampler(texture: Texture2D | TextureCube): { texture: Texture2D | TextureCube, sampler: Sampler }
+{
+    return {
+        texture,
+        sampler: buildSamplerFromTextureInfo(texture as TextureInfo<unknown>),
+    };
+}
+
 export function buildMaterialBindingResources(uniforms: UniformsLike): Record<string, unknown>
 {
     const bindingResources: Record<string, unknown> = {};
@@ -480,10 +495,7 @@ export function buildMaterialBindingResources(uniforms: UniformsLike): Record<st
     const textures = extractTextures(uniforms);
     for (const { key, texture } of textures)
     {
-        bindingResources[key] = {
-            texture,
-            sampler: buildSamplerFromTextureInfo(texture as TextureInfo<unknown>),
-        };
+        bindingResources[key] = buildTextureSampler(texture);
     }
 
     return bindingResources;

@@ -6,7 +6,7 @@
  *
  * 绑定约定：
  * - @group(0) @binding(2) var<uniform> globalUniforms - { u_sceneAmbientColor: vec4, _Time: vec4 }
- * - @group(0) @binding(3) var<uniform> uniforms        - StandardUniforms（材质参数，见下）
+ * - @group(0) @binding(3) var<uniform> material_uniforms        - StandardUniforms（材质参数，见下）
  * - @group(1) @binding(0) var s_diffuseSampler: sampler
  * - @group(1) @binding(1) var s_diffuse: texture_2d<f32>
  *
@@ -63,7 +63,7 @@ struct StandardUniforms {
 
 @group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
 @group(0) @binding(2) var<uniform> globalUniforms: GlobalUniforms;
-@group(0) @binding(3) var<uniform> uniforms: StandardUniforms;
+@group(0) @binding(3) var<uniform> material_uniforms: StandardUniforms;
 
 @group(1) @binding(0) var s_diffuseSampler: sampler;
 @group(1) @binding(1) var s_diffuse: texture_2d<f32>;
@@ -74,15 +74,15 @@ fn main(input: FragmentInput) -> FragmentOutput {
 
     // 1. 基础颜色 = 漫反射纹理 * 材质 u_diffuse
     let texColor = textureSample(s_diffuse, s_diffuseSampler, input.uv);
-    var baseColor = texColor * uniforms.u_diffuse * input.color;
+    var baseColor = texColor * material_uniforms.u_diffuse * input.color;
 
     // 2. 透明度测试
-    if (uniforms.u_alphaThreshold > 0.0 && baseColor.a < uniforms.u_alphaThreshold) {
+    if (material_uniforms.u_alphaThreshold > 0.0 && baseColor.a < material_uniforms.u_alphaThreshold) {
         discard;
     }
 
     // 3. 环境光（来自场景）
-    let ambient = globalUniforms.u_sceneAmbientColor.rgb * uniforms.u_ambient.rgb;
+    let ambient = globalUniforms.u_sceneAmbientColor.rgb * material_uniforms.u_ambient.rgb;
 
     // 4. 最终颜色（暂只用环境光，光照数组待补全）
     var finalColor = baseColor.rgb * (vec3<f32>(1.0, 1.0, 1.0) + ambient);
