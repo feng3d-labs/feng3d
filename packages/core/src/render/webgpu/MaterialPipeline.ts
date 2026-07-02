@@ -40,34 +40,6 @@ const vertexAttributeMap: { [coreName: string]: string } = {
 };
 
 /**
- * WGSL 着色器与材质配置描述。
- *
- * 描述一个 core 材质 shader 对应的 WebGPU 渲染数据：
- * - 顶点着色器 WGSL 源码
- * - 片段着色器 WGSL 源码
- * - uniforms 工厂（创建该 shader 的默认 uniform 对象）
- */
-export interface WGSLShaderAsset
-{
-    /**
-     * 顶点着色器 WGSL 源码。
-     */
-    vertex: string;
-
-    /**
-     * 片段着色器 WGSL 源码。
-     */
-    fragment: string;
-
-    /**
-     * uniforms 工厂函数，创建该 shader 的默认 uniform 对象。
-     *
-     * Material 按 shaderName 查询此工厂来实例化 uniforms。
-     */
-    uniformsFactory?: () => Record<string, unknown>;
-}
-
-/**
  * 顶点属性 size → WebGPU VertexFormat 映射。
  *
  * core 的 `Attribute` 仅记录 `size`（每个顶点的分量数，1~4），类型默认 FLOAT，
@@ -83,41 +55,6 @@ function sizeToVertexFormat(size: number): VertexFormat
         case 4: return 'float32x4';
         default: return 'float32';
     }
-}
-
-/**
- * WGSL 着色器注册表。
- *
- * 把 shaderName（与 core `Material.shaderName` 对应）映射到 WGSL 着色器资源。
- * 各材质模块在加载时调用 {@link registerShader} 注册自己。
- */
-const shaderRegistry: Map<string, WGSLShaderAsset> = new Map();
-
-/**
- * 注册 WGSL 着色器。
- *
- * @param shaderName shader 名称（与 core `Material.shaderName` 对应）
- * @param asset WGSL 着色器资源
- */
-export function registerShader(shaderName: string, asset: WGSLShaderAsset): void
-{
-    shaderRegistry.set(shaderName, asset);
-}
-
-/**
- * 获取已注册的 WGSL 着色器资源。
- */
-export function getShaderAsset(shaderName: string): WGSLShaderAsset | undefined
-{
-    return shaderRegistry.get(shaderName);
-}
-
-/**
- * 获取已注册 shader 的 uniforms 工厂。
- */
-export function getUniformsFactory(shaderName: string): (() => Record<string, unknown>) | undefined
-{
-    return shaderRegistry.get(shaderName)?.uniformsFactory;
 }
 
 /**

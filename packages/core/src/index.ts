@@ -59,6 +59,7 @@ export * from './materials/ColorMaterial';
 export * from './materials/Material';
 export * from './materials/PointMaterial';
 export * from './materials/SegmentMaterial';
+export * from './materials/SkyBoxMaterial';
 export * from './materials/StandardMaterial';
 export * from './materials/TextureMaterial';
 export * from './Menu';

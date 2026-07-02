@@ -1,78 +1,9 @@
 import { BindingResource, RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
+import { skyboxVertexWGSL } from '../shaders/skybox.vertex.wgsl';
+import { skyboxFragmentWGSL } from '../shaders/skybox.fragment.wgsl';
 import { Scene } from '../scene/Scene';
 import { SkyBox } from './SkyBox';
-
-/**
- * 天空盒顶点着色器 WGSL（最小桩）。
- *
- * 把立方体顶点直接投影到裁剪空间（取 xyww 让最远处绘制），采样立方体纹理。
- * TODO: 后续完善为完整天空盒着色器。
- */
-const skyboxVert = `
-struct VertexInput {
-    @location(0) a_position: vec3<f32>,
-}
-
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) dir: vec3<f32>,
-}
-
-struct CameraUniforms {
-    u_projectionMatrix: mat4x4<f32>,
-    u_viewProjection: mat4x4<f32>,
-    u_viewMatrix: mat4x4<f32>,
-    u_cameraMatrix: mat4x4<f32>,
-    u_cameraPos: vec3<f32>,
-    u_skyBoxSize: f32,
-    u_scaleByDepth: f32,
-}
-
-@group(0) @binding(1) var<uniform> cameraUniforms: CameraUniforms;
-
-@vertex
-fn main(input: VertexInput) -> VertexOutput {
-    var output: VertexOutput;
-    // 去掉视图矩阵的平移分量，让天空盒跟随相机
-    let viewNoTrans = mat4x4<f32>(
-        vec4<f32>(cameraUniforms.u_viewMatrix[0].xyz, 0.0),
-        vec4<f32>(cameraUniforms.u_viewMatrix[1].xyz, 0.0),
-        vec4<f32>(cameraUniforms.u_viewMatrix[2].xyz, 0.0),
-        vec4<f32>(0.0, 0.0, 0.0, 1.0),
-    );
-    let viewProjectionNoTrans = cameraUniforms.u_projectionMatrix * viewNoTrans;
-    let pos = viewProjectionNoTrans * vec4<f32>(input.a_position, 1.0);
-    output.position = pos.xyww;
-    output.dir = input.a_position;
-    return output;
-}
-`;
-
-/**
- * 天空盒片段着色器 WGSL（最小桩）。
- */
-const skyboxFrag = `
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) dir: vec3<f32>,
-}
-
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-
-@group(1) @binding(0) var s_skyboxTextureSampler: sampler;
-@group(1) @binding(1) var s_skyboxTexture: texture_cube<f32>;
-
-@fragment
-fn main(input: VertexOutput) -> FragmentOutput {
-    var output: FragmentOutput;
-    output.color = textureSample(s_skyboxTexture, s_skyboxTextureSampler, input.dir);
-    return output;
-}
-`;
-
 
 /**
  * 天空盒渲染器
@@ -81,8 +12,8 @@ export class SkyBoxRenderer
 {
     private renderObject: RenderObject = {
         pipeline: {
-            vertex: { wgsl: skyboxVert, entryPoint: 'main' },
-            fragment: { wgsl: skyboxFrag, entryPoint: 'main' },
+            vertex: { wgsl: skyboxVertexWGSL, entryPoint: 'main' },
+            fragment: { wgsl: skyboxFragmentWGSL, entryPoint: 'main' },
             primitive: { cullFace: 'none' },
             depthStencil: { depthWriteEnabled: false, depthCompare: 'less-equal' }
         },
