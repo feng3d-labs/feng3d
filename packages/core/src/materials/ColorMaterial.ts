@@ -31,12 +31,7 @@ export class ColorMaterial extends Material
     constructor()
     {
         super();
-        // color 着色器配置：通过 reactive 代理一层替换各子状态（renderPipeline 字段在接口中为
-        // readonly，属编译期约束；reactive 返回的代理顶层可写，故一层替换合法且能触发响应式更新）。
-        const r_pipeline = reactive(this.renderPipeline);
-        r_pipeline.vertex = { wgsl: colorVertexWGSL };
-        r_pipeline.fragment = { wgsl: colorFragmentWGSL, targets: [{}] };
-        r_pipeline.primitive = { cullFace: 'back', frontFace: 'cw' };
-        r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
+        reactive(this.renderPipeline.vertex).wgsl = colorVertexWGSL;
+        reactive(this.renderPipeline.fragment).wgsl = colorFragmentWGSL;
     }
 }

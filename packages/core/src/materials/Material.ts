@@ -1,5 +1,5 @@
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, gPartial } from '@feng3d/polyfill';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
 import { RenderMode } from '../render/data/enums';
 import { RenderParams } from '../render/data/RenderParams';
@@ -75,8 +75,8 @@ export class Material extends Feng3dObject
         this.renderPipeline = {
             vertex: {},
             fragment: { targets: [{}] },
-            primitive: {},
-            depthStencil: {},
+            primitive: { cullFace: 'back', frontFace: 'cw' },
+            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         } as RenderPipeline;
         this.renderParams = new RenderParams();
     }
