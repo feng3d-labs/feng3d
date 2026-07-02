@@ -7,7 +7,7 @@ import { serialization, serialize } from '@feng3d/serialization';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';
-import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { BindingResources, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 
 declare global
 {
@@ -97,6 +97,20 @@ export class Material extends Feng3dObject
 
         // 渲染管线（shader + 渲染状态，子类在构造时填充）
         r_renderObject.pipeline = this.renderPipeline;
+
+        const r_ro = reactive(renderObject);
+        if (!renderObject.bindingResources)
+        {
+            r_ro.bindingResources = {} as BindingResources;
+        }
+
+        const bindingResources = renderObject.bindingResources;
+        const r_bindingResources = reactive(bindingResources);
+
+        if (!bindingResources.material_uniforms)
+        {
+            r_bindingResources.material_uniforms = { value: {} };
+        }
 
         // 材质相关绑定资源由子类负责（写入 bindingResources，支持响应式更新）。
         // WebGL 兼容字段

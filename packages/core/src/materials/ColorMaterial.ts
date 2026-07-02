@@ -51,21 +51,7 @@ export class ColorMaterial extends Material
     {
         super.beforeRender(renderObject);
 
-        const r_ro = reactive(renderObject);
-        if (!renderObject.bindingResources)
-        {
-            r_ro.bindingResources = {} as BindingResources;
-        }
-
-        const bindingResources = renderObject.bindingResources;
-        const r_bindingResources = reactive(bindingResources);
-
-        if (!bindingResources.material_uniforms)
-        {
-            r_bindingResources.material_uniforms = { value: {} };
-        }
-
-        const r_material_uniforms = reactive((bindingResources.material_uniforms as BufferBinding<{ u_diffuseInput: Color4 }>).value);
+        const r_material_uniforms = reactive((renderObject.bindingResources.material_uniforms as BufferBinding<{ u_diffuseInput: Color4 }>).value);
 
         r_material_uniforms.u_diffuseInput = this.u_diffuseInput;
     }
