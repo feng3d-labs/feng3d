@@ -224,7 +224,7 @@ export class Transform2D extends Component
 
     beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderObject.uniforms.u_rect = this.rect;
+        (renderObject as any).uniforms.u_rect = this.rect;
     }
 }
 

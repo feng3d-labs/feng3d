@@ -95,24 +95,10 @@ export class ShadowRenderer
         const shadowCamera = light.shadowCamera;
         shadowCamera.transform.setLocalToWorldMatrix(light.transform.localToWorldMatrix.value);
 
-        const renderObject = this.renderObject;
-
         // 获取影响阴影图的渲染对象
         const models = scene.getModelsByCamera(shadowCamera);
         // 筛选投射阴影的渲染对象
         const castShadowsModels = models.filter((i) => i.castShadows);
-
-        //
-        renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
-        renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderObject.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
-        renderObject.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-        renderObject.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
-        //
-        renderObject.uniforms.u_lightType = light.lightType;
-        renderObject.uniforms.u_lightPosition = light.position;
-        renderObject.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-        renderObject.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
         castShadowsModels.forEach((renderable) =>
         {
@@ -143,8 +129,6 @@ export class ShadowRenderer
         const shadowCamera = light.shadowCamera;
         shadowCamera.transform.setPosition(light.transform.position);
 
-        const renderObject = this.renderObject;
-
         for (let face = 0; face < 6; face++)
         {
             shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
@@ -153,18 +137,6 @@ export class ShadowRenderer
             const models = scene.getModelsByCamera(shadowCamera);
             // 筛选投射阴影的渲染对象
             const castShadowsModels = models.filter((i) => i.castShadows);
-
-            //
-            renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
-            renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
-            renderObject.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
-            renderObject.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-            renderObject.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
-            //
-            renderObject.uniforms.u_lightType = light.lightType;
-            renderObject.uniforms.u_lightPosition = light.position;
-            renderObject.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-            renderObject.uniforms.u_shadowCameraFar = light.shadowCameraFar;
 
             castShadowsModels.forEach((renderable) =>
             {
@@ -202,18 +174,6 @@ export class ShadowRenderer
 
         const shadowCamera = light.shadowCamera;
 
-        const renderObject = this.renderObject;
-        //
-        renderObject.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
-        renderObject.uniforms.u_viewProjection = shadowCamera.viewProjection;
-        renderObject.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
-        renderObject.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-        renderObject.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
-        //
-        renderObject.uniforms.u_lightType = light.lightType;
-        renderObject.uniforms.u_lightPosition = shadowCamera.transform.worldPosition;
-        renderObject.uniforms.u_shadowCameraNear = light.shadowCameraNear;
-        renderObject.uniforms.u_shadowCameraFar = light.shadowCameraFar;
         //
         castShadowsModels.forEach((renderable) =>
         {

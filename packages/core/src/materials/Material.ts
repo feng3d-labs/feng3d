@@ -29,9 +29,6 @@ export class Material extends Feng3dObject
 {
     __class__: 'Material';
 
-    //
-    protected renderObject = new RenderObject();
-
     @oav({ component: 'OAVFeng3dPreView' })
     protected preview = '';
 
@@ -132,9 +129,6 @@ export class Material extends Feng3dObject
 
         // samplers / textureViews / externalTextures → 合并到 bindingResources（键与 WGSL 变量名一致）
         Object.assign(r_bindingResources, this.samplers, this.textureViews, this.externalTextures);
-
-        // WebGL 兼容字段
-        Object.assign(renderObject.uniforms ||= {}, this.renderObject.uniforms);
     }
 
     /**

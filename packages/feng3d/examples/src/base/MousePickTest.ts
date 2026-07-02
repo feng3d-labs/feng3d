@@ -42,7 +42,7 @@ scene.on("click", (event) => {
     const gameObject = event.target as feng3d.GameObject;
     if (gameObject.getComponent(feng3d.Renderable)) {
         const material = gameObject.getComponent(feng3d.Renderable).material as feng3d.StandardMaterial;
-        material.u_diffuse.fromUnit(Math.random() * (1 << 24));
+        material.uniforms.u_diffuse.fromUnit(Math.random() * (1 << 24));
     }
 });
 

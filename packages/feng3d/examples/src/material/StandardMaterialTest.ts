@@ -27,7 +27,7 @@ textureMaterial.s_diffuse = new feng3d.Texture2D();
 textureMaterial.s_diffuse.source = { url: '/m.png' };
 textureMaterial.s_diffuse.format = feng3d.TextureFormat.RGBA;
 textureMaterial.s_diffuse.anisotropy = 16;
-textureMaterial.u_diffuse.a = 0.2;
+textureMaterial.uniforms.u_diffuse.a = 0.2;
 
 reactive(textureMaterial.renderPipeline.fragment).targets = [{
     blend: {

@@ -87,10 +87,15 @@ export class WireframeRenderer
 
         renderObject.wireframeShader = renderObject.wireframeShader || 'wireframe';
 
+        // 复制原渲染对象并替换索引与材质颜色（通过 bindingResources.material_uniforms 传递）
+        const sourceBindingResources = (renderObject.bindingResources || {}) as Record<string, any>;
         const newRenderObject = Object.assign({}, renderObject, {
             indices: wireframeindices,
             shader: renderObject.wireframeShader,
-            uniforms: { ...renderObject.uniforms, u_wireframeColor: wireframeColor }
+            bindingResources: {
+                ...sourceBindingResources,
+                material_uniforms: { value: { ...sourceBindingResources.material_uniforms?.value, u_wireframeColor: wireframeColor } },
+            },
         }) as RenderObject;
 
         ((_submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(newRenderObject);

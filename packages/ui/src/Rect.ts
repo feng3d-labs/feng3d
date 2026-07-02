@@ -41,7 +41,7 @@ export class Rect extends Component
     {
         super.beforeRender(renderObject, scene, camera);
 
-        renderObject.uniforms.u_color = this.color;
+        (renderObject as any).uniforms.u_color = this.color;
     }
 }
 

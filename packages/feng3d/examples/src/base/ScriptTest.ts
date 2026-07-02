@@ -18,10 +18,10 @@ class ScriptDemo extends feng3d.Script
         stdMaterial.s_diffuse = new feng3d.Texture2D();
         stdMaterial.s_diffuse.source = { url: '/m.png' };
 
-        stdMaterial.u_fogMode = feng3d.FogMode.LINEAR;
-        stdMaterial.u_fogColor = new feng3d.Color3(1, 1, 0);
-        stdMaterial.u_fogMinDistance = 2;
-        stdMaterial.u_fogMaxDistance = 3;
+        stdMaterial.uniforms.u_fogMode = feng3d.FogMode.LINEAR;
+        stdMaterial.uniforms.u_fogColor = new feng3d.Color3(1, 1, 0);
+        stdMaterial.uniforms.u_fogMinDistance = 2;
+        stdMaterial.uniforms.u_fogMaxDistance = 3;
     }
 
     update()

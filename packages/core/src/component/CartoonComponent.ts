@@ -78,12 +78,5 @@ export class CartoonComponent extends Component
 
     beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderObject.uniforms.u_diffuseSegment = this.diffuseSegment;
-        renderObject.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
-        renderObject.uniforms.u_specularSegment = this.specularSegment;
-        //
-        renderObject.uniforms.u_outlineSize = this.outlineSize;
-        renderObject.uniforms.u_outlineColor = this.outlineColor;
-        renderObject.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
     }
 }

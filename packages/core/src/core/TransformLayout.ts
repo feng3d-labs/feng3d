@@ -176,7 +176,7 @@ export class TransformLayout extends Component
 
     beforeRender(_renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        // renderObject.uniforms.u_rect = this.rect;
+        // u_rect uniform 待通过 bindingResources 注入
     }
 
     private _updateLayout()

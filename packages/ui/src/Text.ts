@@ -92,8 +92,8 @@ export class Text extends Component
         this._uvRect.w = this.transform2D.size.y / canvas.height;
 
         //
-        renderObject.uniforms.s_texture = this._image;
-        renderObject.uniforms.u_uvRect = this._uvRect;
+        (renderObject as any).uniforms.s_texture = this._image;
+        (renderObject as any).uniforms.u_uvRect = this._uvRect;
     }
 
     invalidate()

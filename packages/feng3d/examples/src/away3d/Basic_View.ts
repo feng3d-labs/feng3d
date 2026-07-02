@@ -31,8 +31,8 @@ camera.lens = new feng3d.PerspectiveLens(90);
 
 const torusMaterial = new feng3d.StandardMaterial();
 torusMaterial.s_envMap = cubeTexture;
-torusMaterial.u_ambient.fromUnit(0x111111);
-torusMaterial.u_ambient.a = 0.25;
+torusMaterial.uniforms.u_ambient.fromUnit(0x111111);
+torusMaterial.uniforms.u_ambient.a = 0.25;
 
 const torus = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "torus" });
 const model = torus.addComponent(feng3d.Renderable);

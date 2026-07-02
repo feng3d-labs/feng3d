@@ -30,20 +30,20 @@ export class TerrainMergeMethod extends EventEmitter
 
     beforeRender(renderObject: RenderObject)
     {
-        renderObject.uniforms.s_blendTexture = this.blendTexture;
-        renderObject.uniforms.s_splatMergeTexture = this.splatMergeTexture;
-        renderObject.uniforms.u_splatMergeTextureSize = this.splatMergeTexture.getSize();
-        renderObject.uniforms.u_splatRepeats = this.splatRepeats;
+        (renderObject as any).uniforms.s_blendTexture = this.blendTexture;
+        (renderObject as any).uniforms.s_splatMergeTexture = this.splatMergeTexture;
+        (renderObject as any).uniforms.u_splatMergeTextureSize = this.splatMergeTexture.getSize();
+        (renderObject as any).uniforms.u_splatRepeats = this.splatRepeats;
         //
-        renderObject.uniforms.u_imageSize = new Vector2(2048.0, 1024.0);
-        renderObject.uniforms.u_tileSize = new Vector2(512.0, 512.0);
-        renderObject.uniforms.u_maxLod = 7;
-        renderObject.uniforms.u_uvPositionScale = 0.001;
-        renderObject.uniforms.u_tileOffset = [
+        (renderObject as any).uniforms.u_imageSize = new Vector2(2048.0, 1024.0);
+        (renderObject as any).uniforms.u_tileSize = new Vector2(512.0, 512.0);
+        (renderObject as any).uniforms.u_maxLod = 7;
+        (renderObject as any).uniforms.u_uvPositionScale = 0.001;
+        (renderObject as any).uniforms.u_tileOffset = [
             new Vector4(0.5, 0.5, 0.0, 0.0),
             new Vector4(0.5, 0.5, 0.5, 0.0),
             new Vector4(0.5, 0.5, 0.0, 0.5),
         ];
-        renderObject.uniforms.u_lod0vec = new Vector4(0.5, 1, 0, 0);
+        (renderObject as any).uniforms.u_lod0vec = new Vector4(0.5, 1, 0, 0);
     }
 }

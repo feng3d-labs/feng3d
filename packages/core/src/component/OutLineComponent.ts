@@ -54,8 +54,5 @@ export class OutLineComponent extends Component
 
     beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
-        renderObject.uniforms.u_outlineSize = this.size;
-        renderObject.uniforms.u_outlineColor = this.color;
-        renderObject.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
     }
 }

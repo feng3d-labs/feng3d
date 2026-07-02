@@ -35,17 +35,18 @@ export enum FogMode
  * 使用 standard 着色器（漫反射纹理 + 环境光）。uniform 数据通过 {@link Material.uniforms}
  * 自动传递，纹理通过 {@link Material.textureViews} 与 {@link Material.samplers} 自动传递，
  * 子类无需重写 beforeRender。
+ *
+ * uniform 字段直接声明在 {@link uniforms} 对象上（如 `material.uniforms.u_diffuse`）。
  */
 @decoratorRegisterClass()
 export class StandardMaterial extends Material
 {
     /**
      * 材质 uniform 数据。
-     *
-     * 各字段同时作为本类的实例属性（getter/setter 代理到此对象），便于外部直接访问。
      */
+    @serialize
+    @oav({ block: '参数' })
     readonly uniforms = {
-        u_PointSize: 1,
         u_diffuse: new Color4(1, 1, 1, 1),
         u_alphaThreshold: 0,
         u_specular: new Color3(),
@@ -59,26 +60,11 @@ export class StandardMaterial extends Material
         u_fogMode: FogMode.NONE,
     };
 
-    /** 点绘制时点的尺寸 */
-    @serialize @oav()
-    get u_PointSize() { return this.uniforms.u_PointSize; }
-    set u_PointSize(v) { this.uniforms.u_PointSize = v; }
-
     /** 漫反射纹理 */
     @serialize @oav({ block: 'diffuse' })
     get s_diffuse() { return this._s_diffuse; }
     set s_diffuse(v) { this._s_diffuse = v; this._updateTexture('s_diffuse', v); }
     private _s_diffuse = Texture2D.default;
-
-    /** 基本颜色 */
-    @serialize @oav({ block: 'diffuse' })
-    get u_diffuse() { return this.uniforms.u_diffuse; }
-    set u_diffuse(v) { this.uniforms.u_diffuse = v; }
-
-    /** 透明阈值，透明度小于该值的像素被片段着色器丢弃 */
-    @serialize @oav({ block: 'diffuse' })
-    get u_alphaThreshold() { return this.uniforms.u_alphaThreshold; }
-    set u_alphaThreshold(v) { this.uniforms.u_alphaThreshold = v; }
 
     /** 法线纹理 */
     @serialize @oav({ block: 'normalMethod' })
@@ -92,62 +78,17 @@ export class StandardMaterial extends Material
     set s_specular(v) { this._s_specular = v; this._updateTexture('s_specular', v); }
     private _s_specular = Texture2D.default;
 
-    /** 镜面反射颜色 */
-    @serialize @oav({ block: 'specular' })
-    get u_specular() { return this.uniforms.u_specular; }
-    set u_specular(v) { this.uniforms.u_specular = v; }
-
-    /** 高光系数 */
-    @serialize @oav({ block: 'specular' })
-    get u_glossiness() { return this.uniforms.u_glossiness; }
-    set u_glossiness(v) { this.uniforms.u_glossiness = v; }
-
     /** 环境纹理 */
     @serialize @oav({ block: 'ambient' })
     get s_ambient() { return this._s_ambient; }
     set s_ambient(v) { this._s_ambient = v; this._updateTexture('s_ambient', v); }
     private _s_ambient = Texture2D.default;
 
-    /** 环境光颜色 */
-    @serialize @oav({ block: 'ambient' })
-    get u_ambient() { return this.uniforms.u_ambient; }
-    set u_ambient(v) { this.uniforms.u_ambient = v; }
-
     /** 环境映射贴图 */
     @serialize @oav({ component: 'OAVPick', block: 'envMap', componentParam: { accepttype: 'texturecube', datatype: 'texturecube' } })
     get s_envMap() { return this._s_envMap; }
     set s_envMap(v) { this._s_envMap = v; this._updateTexture('s_envMap', v); }
     private _s_envMap = TextureCube.default;
-
-    /** 反射率 */
-    @serialize @oav({ block: 'envMap' })
-    get u_reflectivity() { return this.uniforms.u_reflectivity; }
-    set u_reflectivity(v) { this.uniforms.u_reflectivity = v; }
-
-    /** 出现雾效果的最近距离 */
-    @serialize @oav({ block: 'fog' })
-    get u_fogMinDistance() { return this.uniforms.u_fogMinDistance; }
-    set u_fogMinDistance(v) { this.uniforms.u_fogMinDistance = v; }
-
-    /** 最远距离 */
-    @serialize @oav({ block: 'fog' })
-    get u_fogMaxDistance() { return this.uniforms.u_fogMaxDistance; }
-    set u_fogMaxDistance(v) { this.uniforms.u_fogMaxDistance = v; }
-
-    /** 雾的颜色 */
-    @serialize @oav({ block: 'fog' })
-    get u_fogColor() { return this.uniforms.u_fogColor; }
-    set u_fogColor(v) { this.uniforms.u_fogColor = v; }
-
-    /** 雾的密度 */
-    @serialize @oav({ block: 'fog' })
-    get u_fogDensity() { return this.uniforms.u_fogDensity; }
-    set u_fogDensity(v) { this.uniforms.u_fogDensity = v; }
-
-    /** 雾模式 */
-    @serialize @oav({ block: 'fog', component: 'OAVEnum', componentParam: { enumClass: FogMode } })
-    get u_fogMode() { return this.uniforms.u_fogMode; }
-    set u_fogMode(v) { this.uniforms.u_fogMode = v; }
 
     constructor()
     {

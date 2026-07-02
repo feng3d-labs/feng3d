@@ -556,12 +556,12 @@ export class ParticleSystem extends Renderable
         this._attributes.a_particle_flipUV.data = flipUVs;
 
         //
-        renderObject.uniforms.u_particle_billboardMatrix = billboardMatrix;
+        (renderObject as any).uniforms.u_particle_billboardMatrix = billboardMatrix;
 
         if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
         {
-            renderObject.uniforms.u_modelMatrix = () => new Matrix4x4();
-            renderObject.uniforms.u_ITModelMatrix = () => new Matrix4x4();
+            (renderObject as any).uniforms.u_modelMatrix = () => new Matrix4x4();
+            (renderObject as any).uniforms.u_ITModelMatrix = () => new Matrix4x4();
         }
 
         for (const key in this._attributes)

@@ -47,7 +47,6 @@ struct CameraUniforms {
 
 // 仅标量/向量字段；纹理字段单独绑定
 struct StandardUniforms {
-    u_PointSize: f32,
     u_diffuse: vec4<f32>,
     u_alphaThreshold: f32,
     u_specular: vec4<f32>,

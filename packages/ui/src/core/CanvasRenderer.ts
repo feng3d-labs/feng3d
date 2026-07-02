@@ -93,7 +93,7 @@ export class CanvasRenderer extends Renderable
                 // 绘制（WebGPU 迁移后待重写）
                 const renderAtomic = renderable.renderAtomic;
 
-                (renderAtomic.uniforms as any).u_viewProjection = canvasComp.projection;
+                ((renderAtomic as any).uniforms ||= {}).u_viewProjection = canvasComp.projection;
 
                 renderable.beforeRender(renderAtomic as unknown as RenderObject, null, null);
 

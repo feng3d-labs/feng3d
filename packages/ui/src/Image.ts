@@ -63,8 +63,8 @@ export class Image extends Component
     {
         super.beforeRender(renderObject, scene, camera);
 
-        renderObject.uniforms.s_texture = this.image;
-        renderObject.uniforms.u_color = this.color;
+        (renderObject as any).uniforms.s_texture = this.image;
+        (renderObject as any).uniforms.u_color = this.color;
     }
 }
 
