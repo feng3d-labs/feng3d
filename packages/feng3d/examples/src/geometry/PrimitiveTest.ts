@@ -39,6 +39,6 @@ setInterval(() => {
     gameobject.transform.ry += 1;
 }, 15);
 setInterval(() => {
-    colorUniforms.u_diffuseInput.fromUnit(Math.random() * (1 << 32 - 1));
+    colorUniforms.uniforms.u_diffuseInput.fromUnit(Math.random() * (1 << 32 - 1));
 }, 1000);
 

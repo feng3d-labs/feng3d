@@ -7,7 +7,7 @@ import { serialization, serialize } from '@feng3d/serialization';
 import { AssetData } from '../core/AssetData';
 import { Feng3dObject } from '../core/Feng3dObject';
 import { HideFlags } from '../core/HideFlags';
-import { BindingResources, RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { BindingResources, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 
 declare global
 {
@@ -87,7 +87,7 @@ export class Material extends Feng3dObject
      * 仅用于尚未重构为子类的材质（通过工厂创建 uniforms）。
      * 新材质应直接声明强类型字段并在 beforeRender 中写入 bindingResources。
      */
-    uniforms: { [key: string]: any } = {};
+    readonly uniforms = {};
 
     beforeRender(renderObject: RenderObject)
     {
@@ -111,6 +111,8 @@ export class Material extends Feng3dObject
         {
             r_bindingResources.material_uniforms = { value: {} };
         }
+
+        reactive(renderObject.bindingResources.material_uniforms as BufferBinding).value = this.uniforms;
 
         // 材质相关绑定资源由子类负责（写入 bindingResources，支持响应式更新）。
         // WebGL 兼容字段

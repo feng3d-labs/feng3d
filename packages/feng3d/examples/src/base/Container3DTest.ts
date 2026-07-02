@@ -27,6 +27,6 @@ feng3d.ticker.onframe(() => {
     num++;
 
     if (num % 60 == 0) {
-        reactive(colorMaterial).u_diffuseInput = new feng3d.Color4().fromUnit(Math.random() * (1 << 32 - 1));
+        reactive(colorMaterial.uniforms).u_diffuseInput = new feng3d.Color4().fromUnit(Math.random() * (1 << 32 - 1));
     }
 });

@@ -1,12 +1,20 @@
 import { Color4 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { reactive } from '@feng3d/reactivity';
-import { serialize } from '@feng3d/serialization';
 import { colorFragmentWGSL } from '../shaders/color.fragment.wgsl';
 import { colorVertexWGSL } from '../shaders/color.vertex.wgsl';
 import { Material } from './Material';
-import { BindingResources, BufferBinding, RenderObject } from '@feng3d/webgpu';
+
+interface ColorUniforms
+{
+    /**
+     * 漫反射颜色。
+     *
+     * 修改该字段（如 `reactive(mat).u_diffuseInput = new Color4().fromUnit(...)`）
+     * 会被响应式系统捕获，实时更新到 GPU。
+     */
+    readonly u_diffuseInput: Color4
+}
 
 /**
  * 颜色材质。
@@ -18,15 +26,7 @@ import { BindingResources, BufferBinding, RenderObject } from '@feng3d/webgpu';
 @decoratorRegisterClass()
 export class ColorMaterial extends Material
 {
-    /**
-     * 漫反射颜色。
-     *
-     * 修改该字段（如 `reactive(mat).u_diffuseInput = new Color4().fromUnit(...)`）
-     * 会被响应式系统捕获，实时更新到 GPU。
-     */
-    @oav()
-    @serialize
-    u_diffuseInput = new Color4();
+    readonly uniforms: ColorUniforms = { u_diffuseInput: new Color4() };
 
     constructor()
     {
@@ -38,21 +38,5 @@ export class ColorMaterial extends Material
         r_pipeline.fragment = { wgsl: colorFragmentWGSL, targets: [{}] };
         r_pipeline.primitive = { cullFace: 'back', frontFace: 'cw' };
         r_pipeline.depthStencil = { depthWriteEnabled: true, depthCompare: 'less' };
-    }
-
-    /**
-     * 重写 beforeRender：直接对 bindingResources 赋值，支持响应式更新。
-     *
-     * u_diffuseInput 写入 `bindingResources.material_uniforms.value`（对应 WGSL
-     * `@group(0) @binding(3) var<uniform> material_uniforms`）。通过 reactive 代理赋值，
-     * 使后续 `reactive(material).u_diffuseInput = ...` 的变化能被 WGPUBufferBinding 捕获。
-     */
-    beforeRender(renderObject: RenderObject)
-    {
-        super.beforeRender(renderObject);
-
-        const r_material_uniforms = reactive((renderObject.bindingResources.material_uniforms as BufferBinding<{ u_diffuseInput: Color4 }>).value);
-
-        r_material_uniforms.u_diffuseInput = this.u_diffuseInput;
     }
 }

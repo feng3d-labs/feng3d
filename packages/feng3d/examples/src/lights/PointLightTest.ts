@@ -78,7 +78,7 @@ function initLights() {
     const pointLight0 = light0.addComponent(feng3d.PointLight);
     pointLight0.shadowType = feng3d.ShadowType.PCF_Shadows;
     pointLight0.color = lightColor0.toColor3();
-    model.material = feng3d.serialization.setValue(new feng3d.ColorMaterial(), { u_diffuseInput: lightColor0 } as any);
+    model.material = feng3d.serialization.setValue(new feng3d.ColorMaterial(), { uniforms: { u_diffuseInput: lightColor0 } } as any);
     scene.gameObject.addChild(light0);
 
     //
@@ -89,7 +89,7 @@ function initLights() {
     const pointLight1 = light1.addComponent(feng3d.DirectionalLight);
     pointLight1.shadowType = feng3d.ShadowType.PCF_Shadows;
     pointLight1.color = lightColor1.toColor3();
-    model.material = feng3d.serialization.setValue(new feng3d.ColorMaterial(), { u_diffuseInput: lightColor1 } as any);
+    model.material = feng3d.serialization.setValue(new feng3d.ColorMaterial(), { uniforms: { u_diffuseInput: lightColor1 } } as any);
     scene.gameObject.addChild(light1);
 }
 
