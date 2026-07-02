@@ -44,7 +44,12 @@ export class Material extends Feng3dObject
      * 属编译期约束，运行时可写）。子类在构造时填充 vertex/fragment/primitive/depthStencil
      * 等字段（对应 WGSL 着色器源码与渲染状态）。
      */
-    readonly renderPipeline: RenderPipeline;
+    readonly renderPipeline: RenderPipeline = {
+        vertex: {},
+        fragment: { targets: [{}] },
+        primitive: { cullFace: 'back', frontFace: 'cw' },
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
+    };
 
     @oav()
     @serialize
@@ -70,14 +75,6 @@ export class Material extends Feng3dObject
         {
             throw new Error('Material 为虚类，不能直接实例化，请使用具体子类（如 ColorMaterial / StandardMaterial）');
         }
-        // 初始化完整的子对象结构（空值），子类构造时填充具体 shader 与渲染状态。
-        // RenderPipeline 接口字段为 readonly（编译期约束），这里用字面量初始化需断言。
-        this.renderPipeline = {
-            vertex: {},
-            fragment: { targets: [{}] },
-            primitive: { cullFace: 'back', frontFace: 'cw' },
-            depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
-        } as RenderPipeline;
         this.renderParams = new RenderParams();
     }
 
