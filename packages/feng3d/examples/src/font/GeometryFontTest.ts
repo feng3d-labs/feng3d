@@ -45,7 +45,7 @@ fetch('/fonts/simfang.ttf')
         scene.gameObject.addChild(cube.gameObject);
 
         //材质
-        var material = cube.material = new feng3d.Material();
+        var material = cube.material = new feng3d.StandardMaterial();
         material.renderParams.frontFace = feng3d.FrontFace.CCW;
         material.renderParams.cullFace = feng3d.CullFace.NONE;
 

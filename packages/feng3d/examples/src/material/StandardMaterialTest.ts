@@ -21,13 +21,12 @@ setInterval(() => {
 const model = cube.addComponent(feng3d.Renderable);
 model.geometry = feng3d.serialization.setValue(new feng3d.CubeGeometry(), { width: 1, height: 1, depth: 1, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
 //材质
-const textureMaterial = model.material = new feng3d.Material();
-const uniforms = textureMaterial.uniforms as feng3d.StandardUniforms;
-uniforms.s_diffuse = new feng3d.Texture2D();
-uniforms.s_diffuse.source = { url: '/m.png' };
-uniforms.s_diffuse.format = feng3d.TextureFormat.RGBA;
-uniforms.s_diffuse.anisotropy = 16;
-uniforms.u_diffuse.a = 0.2;
+const textureMaterial = model.material = new feng3d.StandardMaterial();
+textureMaterial.s_diffuse = new feng3d.Texture2D();
+textureMaterial.s_diffuse.source = { url: '/m.png' };
+textureMaterial.s_diffuse.format = feng3d.TextureFormat.RGBA;
+textureMaterial.s_diffuse.anisotropy = 16;
+textureMaterial.u_diffuse.a = 0.2;
 
 textureMaterial.renderParams.enableBlend = true;
 

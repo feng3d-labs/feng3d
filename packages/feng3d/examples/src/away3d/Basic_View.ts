@@ -29,11 +29,10 @@ camera.transform.z = -6;
 camera.transform.lookAt(new feng3d.Vector3());
 camera.lens = new feng3d.PerspectiveLens(90);
 
-const torusMaterial = new feng3d.Material();
-const uniforms = torusMaterial.uniforms as feng3d.StandardUniforms;
-uniforms.s_envMap = cubeTexture;
-uniforms.u_ambient.fromUnit(0x111111);
-uniforms.u_ambient.a = 0.25;
+const torusMaterial = new feng3d.StandardMaterial();
+torusMaterial.s_envMap = cubeTexture;
+torusMaterial.u_ambient.fromUnit(0x111111);
+torusMaterial.u_ambient.a = 0.25;
 
 const torus = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "torus" });
 const model = torus.addComponent(feng3d.Renderable);

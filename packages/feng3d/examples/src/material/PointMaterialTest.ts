@@ -9,7 +9,7 @@ scene.gameObject.addChild(camera.gameObject);
 const engine = new feng3d.View(null, scene, camera);
 
 const pointGeometry = new feng3d.PointGeometry();
-const pointMaterial = feng3d.serialization.setValue(new feng3d.Material(), { shaderName: "point", renderParams: { renderMode: feng3d.RenderMode.POINTS } });
+const pointMaterial = feng3d.serialization.setValue(new feng3d.StandardMaterial(), { renderParams: { renderMode: feng3d.RenderMode.POINTS } } as any);
 const gameObject = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "plane" });
 const model = gameObject.addComponent(feng3d.Renderable);
 model.geometry = pointGeometry;
@@ -28,6 +28,6 @@ for (let x = -length; x <= length; x = x + 4) {
 //变化旋转
 setInterval(() => {
     gameObject.transform.ry += 1;
-    (pointMaterial.uniforms as feng3d.PointUniforms).u_PointSize = 1 + 5 * Math.sin(gameObject.transform.ry / 30);
+    (pointMaterial as any).u_PointSize = 1 + 5 * Math.sin(gameObject.transform.ry / 30);
 }, 15);
 

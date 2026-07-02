@@ -17,18 +17,16 @@ scene.gameObject.addChild(cube);
 const model = cube.addComponent(feng3d.Renderable);
 model.geometry = feng3d.serialization.setValue(new feng3d.CubeGeometry(), { width: 1, height: 1, depth: 1, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
 //材质
-const material = model.material = feng3d.serialization.setValue(new feng3d.Material(), {
-    uniforms: {
-        s_diffuse: {
-            __class__: "Texture2D",
-            source: { url: '/m.png' }
-        },
-        u_fogMode: feng3d.FogMode.LINEAR,
-        u_fogColor: new feng3d.Color3(1, 1, 0),
-        u_fogMinDistance: 2,
-        u_fogMaxDistance: 3,
-    }
-});
+const material = model.material = feng3d.serialization.setValue(new feng3d.StandardMaterial(), {
+    s_diffuse: {
+        __class__: "Texture2D",
+        source: { url: '/m.png' }
+    },
+    u_fogMode: feng3d.FogMode.LINEAR,
+    u_fogColor: new feng3d.Color3(1, 1, 0),
+    u_fogMinDistance: 2,
+    u_fogMaxDistance: 3,
+} as any);
 
 
 feng3d.ticker.onframe(() => {

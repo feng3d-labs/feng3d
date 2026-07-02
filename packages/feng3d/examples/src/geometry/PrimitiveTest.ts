@@ -31,8 +31,8 @@ gameobject.transform.y = -1;
 scene.gameObject.addChild(gameobject);
 
 //初始化颜色材质
-model.material = feng3d.serialization.setValue(new feng3d.Material(), { shaderName: "color" });
-const colorUniforms = model.material.uniforms as feng3d.ColorUniforms;
+model.material = feng3d.serialization.setValue(new feng3d.ColorMaterial(), {} as any);
+const colorUniforms = model.material as feng3d.ColorMaterial;
 
 //变化旋转与颜色
 setInterval(() => {

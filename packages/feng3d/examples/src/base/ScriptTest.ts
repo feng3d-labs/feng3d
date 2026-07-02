@@ -13,15 +13,15 @@ class ScriptDemo extends feng3d.Script
         const model = cube.addComponent(feng3d.Renderable);
         model.geometry = feng3d.serialization.setValue(new feng3d.CubeGeometry(), { width: 1, height: 1, depth: 1, segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false });
         // 材质
-        const material = model.material = new feng3d.Material();
-        const uniforms = material.uniforms as feng3d.StandardUniforms;
-        uniforms.s_diffuse = new feng3d.Texture2D();
-        uniforms.s_diffuse.source = { url: '/m.png' };
+        const material = model.material = new feng3d.StandardMaterial();
+        const stdMaterial = material as feng3d.StandardMaterial;
+        stdMaterial.s_diffuse = new feng3d.Texture2D();
+        stdMaterial.s_diffuse.source = { url: '/m.png' };
 
-        uniforms.u_fogMode = feng3d.FogMode.LINEAR;
-        uniforms.u_fogColor = new feng3d.Color3(1, 1, 0);
-        uniforms.u_fogMinDistance = 2;
-        uniforms.u_fogMaxDistance = 3;
+        stdMaterial.u_fogMode = feng3d.FogMode.LINEAR;
+        stdMaterial.u_fogColor = new feng3d.Color3(1, 1, 0);
+        stdMaterial.u_fogMinDistance = 2;
+        stdMaterial.u_fogMaxDistance = 3;
     }
 
     update()

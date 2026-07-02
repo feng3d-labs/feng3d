@@ -23,18 +23,16 @@ model.geometry = new feng3d.TerrainGeometry({
     segmentsW: 100,
     segmentsH: 100,
 });
-const material = feng3d.serialization.setValue(new feng3d.Material(), {
-    shaderName: "terrain", uniforms: {
-        s_diffuse: { __class__: "Texture2D", source: { url: root + 'terrain_diffuse.jpg' } },
-        s_normal: { __class__: "Texture2D", source: { url: root + 'terrain_normals.jpg' } },
-        //
-        s_blendTexture: { __class__: "Texture2D", source: { url: root + 'terrain_splats.png' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-        s_splatTexture1: { __class__: "Texture2D", source: { url: root + 'beach.jpg' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-        s_splatTexture2: { __class__: "Texture2D", source: { url: root + 'grass.jpg' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-        s_splatTexture3: { __class__: "Texture2D", source: { url: root + 'rock.jpg' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
-        u_splatRepeats: new feng3d.Vector4(1, 50, 50, 50),
-    }
-});
+const material = feng3d.serialization.setValue(new feng3d.StandardMaterial(), {
+    s_diffuse: { __class__: "Texture2D", source: { url: root + 'terrain_diffuse.jpg' } },
+    s_normal: { __class__: "Texture2D", source: { url: root + 'terrain_normals.jpg' } },
+    //
+    s_blendTexture: { __class__: "Texture2D", source: { url: root + 'terrain_splats.png' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
+    s_splatTexture1: { __class__: "Texture2D", source: { url: root + 'beach.jpg' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
+    s_splatTexture2: { __class__: "Texture2D", source: { url: root + 'grass.jpg' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
+    s_splatTexture3: { __class__: "Texture2D", source: { url: root + 'rock.jpg' }, generateMipmap: true, minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR },
+    u_splatRepeats: new feng3d.Vector4(1, 50, 50, 50),
+} as any);
 
 model.material = material;
 scene.gameObject.addChild(terrain);

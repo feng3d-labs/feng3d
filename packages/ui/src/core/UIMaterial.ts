@@ -1,4 +1,4 @@
-import { Material, Texture2D } from '@feng3d/core';
+import { Material, StandardMaterial, Texture2D } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
@@ -51,5 +51,5 @@ export class UIUniforms
     u_uvRect = new Vector4(0, 0, 1, 1);
 }
 
-// shader 注册（WGSL + uniforms 工厂 + 渲染状态）由 core 的 ShaderRegistry 集中管理。
-Material.setDefault('Default-UIMaterial', { shaderName: 'ui' });
+// TODO: UI 材质尚未重构为 Material 子类，暂用 StandardMaterial 占位注册
+Material.setDefault('Default-UIMaterial', new StandardMaterial());

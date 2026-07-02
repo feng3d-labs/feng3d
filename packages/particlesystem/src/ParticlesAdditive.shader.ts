@@ -1,4 +1,4 @@
-import { Texture2D, Material } from '@feng3d/core';
+import { Texture2D, Material, StandardMaterial } from '@feng3d/core';
 import { Color4, Vector4 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
@@ -51,5 +51,5 @@ export class ParticlesAdditiveUniforms
     _InvFade = 1.0;
 }
 
-// shader 注册（WGSL + uniforms 工厂 + 渲染状态）由 core 的 ShaderRegistry 集中管理。
-Material.setDefault('Particle-Material', { shaderName: 'Particles_Additive' });
+// TODO: 粒子材质尚未重构为 Material 子类，暂用 StandardMaterial 占位注册
+Material.setDefault('Particle-Material', new StandardMaterial());
