@@ -503,11 +503,6 @@ export class ParticleSystem extends Renderable
             this._awaked = true;
         }
 
-        renderObject.shaderMacro.HAS_PARTICLE_SYSTEM = true;
-        renderObject.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
-
-        renderObject.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
-
         // 计算公告牌矩阵
         const isbillboard = !this.shape.alignToDirection && this.geometry === Geometry.getDefault('Billboard-Geometry');
         const billboardMatrix = new Matrix3x3();

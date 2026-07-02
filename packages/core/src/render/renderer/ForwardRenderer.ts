@@ -1,5 +1,4 @@
 import { Vector4 } from '@feng3d/math';
-import { mathUtil } from '@feng3d/polyfill';
 import { applyGeometryRenderData } from '../webgpu/MaterialPipeline';
 import { BindingResource, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
@@ -36,9 +35,6 @@ export class ForwardRenderer
             // transform / model 矩阵由 Transform.beforeRender 写入 bindingResources.transform。
             bindingResources.cameraUniforms = { value: cameraUniforms };
             bindingResources.globalUniforms = { value: globalUniforms };
-
-            //
-            renderObject.shaderMacro.RotationOrder = mathUtil.DefaultRotationOrder;
 
             renderable.beforeRender(renderObject, scene, camera);
 

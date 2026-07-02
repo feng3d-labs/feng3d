@@ -109,8 +109,6 @@ export class Material extends Feng3dObject
         // 材质相关绑定资源由子类负责（写入 bindingResources，支持响应式更新）。
         // WebGL 兼容字段
         Object.assign(renderObject.uniforms ||= {}, this.renderObject.uniforms);
-        renderObject.shaderMacro ||= {};
-        renderObject.shaderMacro.IS_POINTS_MODE = this.renderPipeline.primitive?.topology === 'point-list';
     }
 
     /**

@@ -445,9 +445,6 @@ export class Geometry<T extends GeometryEventMap = GeometryEventMap> extends Fen
                 renderObject.attributes[key] = this._attributes[key];
             }
         }
-
-        renderObject.shaderMacro.SCALEU = this.scaleU;
-        renderObject.shaderMacro.SCALEV = this.scaleV;
     }
 
     /**

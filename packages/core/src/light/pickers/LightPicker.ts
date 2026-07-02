@@ -30,8 +30,6 @@ export class LightPicker
             spotLights = scene.activeSpotLights;
         }
 
-        renderObject.shaderMacro.NUM_LIGHT = pointLights.length + directionalLights.length + spotLights.length;
-
         // 设置点光源数据
         const castShadowPointLights: PointLight[] = [];
         const unCastShadowPointLights: PointLight[] = [];
@@ -49,8 +47,6 @@ export class LightPicker
                 unCastShadowPointLights.push(element);
             }
         });
-        renderObject.shaderMacro.NUM_POINTLIGHT = unCastShadowPointLights.length;
-        renderObject.shaderMacro.NUM_POINTLIGHT_CASTSHADOW = castShadowPointLights.length;
         //
         renderObject.uniforms.u_pointLights = unCastShadowPointLights;
         renderObject.uniforms.u_castShadowPointLights = castShadowPointLights;
@@ -75,8 +71,6 @@ export class LightPicker
                 unCastShadowSpotLights.push(element);
             }
         });
-        renderObject.shaderMacro.NUM_SPOT_LIGHTS = unCastShadowSpotLights.length;
-        renderObject.shaderMacro.NUM_SPOT_LIGHTS_CASTSHADOW = castShadowSpotLights.length;
         //
         renderObject.uniforms.u_spotLights = unCastShadowSpotLights;
         renderObject.uniforms.u_castShadowSpotLights = castShadowSpotLights;
@@ -103,8 +97,6 @@ export class LightPicker
             }
         });
 
-        renderObject.shaderMacro.NUM_DIRECTIONALLIGHT = unCastShadowDirectionalLights.length;
-        renderObject.shaderMacro.NUM_DIRECTIONALLIGHT_CASTSHADOW = castShadowDirectionalLights.length;
         //
         renderObject.uniforms.u_directionalLights = unCastShadowDirectionalLights;
         renderObject.uniforms.u_castShadowDirectionalLights = castShadowDirectionalLights;

@@ -48,9 +48,6 @@ export class SkinnedMeshRenderer extends Renderable
         const skinnedUniforms = (renderObject.bindingResources.skinned ||= { value: {} as SkinnedUniforms }).value;
 
         skinnedUniforms.u_skeletonGlobalMatriices = this.u_skeletonGlobalMatriices;
-
-        renderObject.shaderMacro.HAS_SKELETON_ANIMATION = true;
-        renderObject.shaderMacro.NUM_SKELETONJOINT = this.u_skeletonGlobalMatriices.length;
     }
 
     /**
