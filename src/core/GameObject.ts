@@ -1,5 +1,6 @@
 import { oav } from '@feng3d/objectview';
 import { Constructor, decoratorRegisterClass, gPartial, IDisposable } from '@feng3d/polyfill';
+import { reactive } from '@feng3d/reactivity';
 import { serialization, serialize } from '@feng3d/serialization';
 import { AssetType } from '../assets/AssetType';
 import { Component, Components } from '../component/Component';
@@ -1002,6 +1003,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     {
         this._parent = value;
         this.updateScene();
+        reactive(this.transform).parent = value ? value.transform : null;
         this.transform['_invalidateSceneTransform']();
     }
 

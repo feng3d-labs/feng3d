@@ -38,6 +38,19 @@ export class Transform extends Component
 
     get single() { return true; }
 
+    /**
+     * 父级 Transform（只读）。
+     *
+     * 使用 reactive(this).parent = value 进行修改，使 computed（如 localToWorldMatrix）
+     * 能自动建立依赖，parent 变化时自动触发重算。
+     */
+    readonly parent: Transform | null = null;
+
+    /**
+     * 自身的响应式代理，供 computed 内通过 r_this.parent 读取以建立依赖。
+     */
+    private readonly r_this: Transform = reactive(this) as Transform;
+
     beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
         const bindingResources = renderObject.bindingResources as Record<string, any>;
@@ -79,7 +92,7 @@ export class Transform extends Component
     {
         this.emit('scenetransformChanged');
 
-        // 向子物体传播（父级世界变换改变会影响所有后代）
+        // 向子物体传播（父级变换改变会影响所有后代）
         const gameObject = this._gameObject;
         if (gameObject)
         {
@@ -96,13 +109,6 @@ export class Transform extends Component
     get worldPosition()
     {
         return this.localToWorldMatrix.value.getPosition();
-    }
-
-    get parent()
-    {
-        const gameObject = this._gameObject;
-
-        return gameObject && gameObject.parent && gameObject.parent.transform;
     }
 
     /**
@@ -463,11 +469,10 @@ export class Transform extends Component
      */
     readonly localToWorldMatrix = computed(() =>
     {
-        if (this.parent)
+        const parent = this.r_this.parent;
+        if (parent)
         {
-            // append(lhs) 计算 this = lhs * this（前置乘法）
-            // 需要 parentWorld * localMatrix，所以用 localMatrix.clone().append(parentWorld)
-            return this.matrix.value.clone().append(this.parent.localToWorldMatrix.value);
+            return this.matrix.value.clone().append(parent.localToWorldMatrix.value);
         }
 
         return this.matrix.value.clone();
@@ -476,7 +481,8 @@ export class Transform extends Component
     setLocalToWorldMatrix(value: Matrix4x4)
     {
         value = value.clone();
-        this.parent && value.append(this.parent.worldToLocalMatrix.value);
+        const parent = this.r_this.parent;
+        parent && value.append(parent.worldToLocalMatrix.value);
         this.setMatrix(value);
     }
 
@@ -502,9 +508,10 @@ export class Transform extends Component
     readonly localToWorldRotationMatrix = computed(() =>
     {
         const matrix = this.rotationMatrix.value.clone();
-        if (this.parent)
+        const parent = this.r_this.parent;
+        if (parent)
         {
-            matrix.append(this.parent.localToWorldRotationMatrix.value);
+            matrix.append(parent.localToWorldRotationMatrix.value);
         }
         return matrix;
     });
