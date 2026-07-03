@@ -46,11 +46,6 @@ export class Transform extends Component
      */
     readonly parent: Transform | null = null;
 
-    /**
-     * 自身的响应式代理，供 computed 内通过 r_this.parent 读取以建立依赖。
-     */
-    private readonly r_this: Transform = reactive(this) as Transform;
-
     beforeRender(renderObject: RenderObject, _scene: Scene, _camera: Camera)
     {
         const bindingResources = renderObject.bindingResources as Record<string, any>;
@@ -469,7 +464,7 @@ export class Transform extends Component
      */
     readonly localToWorldMatrix = computed(() =>
     {
-        const parent = this.r_this.parent;
+        const parent = (reactive(this) as Transform).parent;
         if (parent)
         {
             return this.matrix.value.clone().append(parent.localToWorldMatrix.value);
@@ -481,7 +476,7 @@ export class Transform extends Component
     setLocalToWorldMatrix(value: Matrix4x4)
     {
         value = value.clone();
-        const parent = this.r_this.parent;
+        const parent = (reactive(this) as Transform).parent;
         parent && value.append(parent.worldToLocalMatrix.value);
         this.setMatrix(value);
     }
@@ -508,7 +503,7 @@ export class Transform extends Component
     readonly localToWorldRotationMatrix = computed(() =>
     {
         const matrix = this.rotationMatrix.value.clone();
-        const parent = this.r_this.parent;
+        const parent = (reactive(this) as Transform).parent;
         if (parent)
         {
             matrix.append(parent.localToWorldRotationMatrix.value);
