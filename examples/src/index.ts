@@ -35,7 +35,7 @@ const button = document.createElement('div');
 button.id = 'button';
 button.textContent = 'View source';
 button.addEventListener('click', () => {
-    window.open(`https://gitlab.com/feng3d/feng3d-examples/tree/master/src/${selected}.ts`);
+    window.open(`https://gitee.com/feng3d/examples/tree/master/src/${selected}.ts`);
 }, false);
 button.style.display = 'none';
 document.body.appendChild(button);

@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/feng3d/examples.git"
+    "url": "https://gitee.com/feng3d/examples.git"
   },
   "publishConfig": {
     "access": "public"
@@ -45,7 +45,6 @@
   },
   "dependencies": {
     "@feng3d/error-logger": "*",
-    "@feng3d/reactivity": "*",
     "feng3d": "*"
   }
 }
