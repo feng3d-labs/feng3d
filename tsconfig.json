@@ -1,29 +1,33 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./packages/assets" },
-    { "path": "./packages/cannon" },
-    { "path": "./packages/cannon-plugin" },
-    { "path": "./packages/core" },
-    { "path": "./packages/editor" },
-    { "path": "./packages/error-logger" },
-    { "path": "./packages/eslint-plugin-feng3d" },
-    { "path": "./packages/event" },
-    { "path": "./packages/filesystem" },
-    { "path": "./packages/math" },
-    { "path": "./packages/objectview" },
-    { "path": "./packages/particlesystem" },
-    { "path": "./packages/path" },
-    { "path": "./packages/polyfill" },
-    { "path": "./packages/reactivity" },
-    { "path": "./packages/rendering" },
-    { "path": "./packages/serialization" },
-    { "path": "./packages/shortcut" },
-    { "path": "./packages/terrain" },
-    { "path": "./packages/tsl" },
-    { "path": "./packages/ui" },
-    { "path": "./packages/watcher" },
-    { "path": "./packages/webgpu" },
-    { "path": "./packages/webgpu/examples" },
-  ]
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "strictPropertyInitialization": false,
+        "strictFunctionTypes": false,
+        "noImplicitThis": false,
+
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "noEmit": true,
+
+        "skipLibCheck": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+
+        "rootDir": "src",
+        "outDir": "lib"
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
 }
