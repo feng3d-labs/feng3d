@@ -1,5 +1,5 @@
 import { Vector3 } from '@feng3d/math';
-import { RenderObject, RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
+import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
 import { DirectionalLight } from '../../light/DirectionalLight';
@@ -30,21 +30,10 @@ import { Scene } from '../../scene/Scene';
  * - 支持级联阴影贴图（CSM）优化大场景阴影质量
  *
  * ## 扩展点
- * - shadowShader: 自定义阴影着色器
  */
-
-declare global
-{
-    export interface MixinsRenderObject
-    {
-        shadowShader?: string;
-    }
-}
 
 export class ShadowRenderer
 {
-    private renderObject = new RenderObject();
-
     /**
      * 渲染
      */
@@ -178,8 +167,6 @@ export class ShadowRenderer
         castShadowsModels.forEach((renderable) =>
         {
             this.drawGameObject(renderPass, renderable, scene, camera);
-
-            (renderPass.renderPassObjects as RenderPassObject[]).push(this.renderObject);
         });
 
     }
@@ -190,15 +177,9 @@ export class ShadowRenderer
     private drawGameObject(renderPass: RenderPass, renderable: Renderable, scene: Scene, camera: Camera)
     {
         const renderObject = renderable.renderObject.value;
-        renderObject.shadowShader = renderObject.shadowShader || 'shadow';
 
-        //
-        this.renderObject.next = renderObject;
-
-        // 使用shadowShader
-        this.renderObject.shader = renderObject.shadowShader;
-        (renderPass.renderPassObjects as RenderPassObject[]).push(this.renderObject);
-        this.renderObject.shader = null;
+        // TODO: 使用阴影材质/着色器重新绘制（原依赖已移除的 shader/next 机制）
+        (renderPass.renderPassObjects as RenderPassObject[]).push(renderObject);
     }
 }
 

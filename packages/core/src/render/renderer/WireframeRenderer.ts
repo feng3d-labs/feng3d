@@ -5,35 +5,17 @@ import { WireframeComponent } from '../../component/WireframeComponent';
 import { Renderable } from '../../core/Renderable';
 import { Scene } from '../../scene/Scene';
 
-declare global
-{
-    export interface MixinsRenderObject
-    {
-        /**
-         * 顶点索引缓冲
-         */
-        wireframeindexBuffer?: Uint16Array | Uint32Array;
-
-        wireframeShader?: string;
-    }
-}
-
+/**
+ * 线框渲染器
+ *
+ * TODO: 待接入 WebGPU 渲染路径（原依赖已移除的 shader WebGL 兼容机制）。
+ */
 export class WireframeRenderer
 {
-    private renderObject = new RenderObject();
-
-    init()
-    {
-        if (!this.renderObject.shader)
-        {
-            this.renderObject.shader = 'wireframe';
-        }
-    }
-
     /**
      * 渲染
      */
-    draw(submit: Submit, scene: Scene, camera: Camera)
+    draw(_submit: Submit, scene: Scene, camera: Camera)
     {
         const unblenditems = scene.getPickCache(camera).unblenditems;
 
@@ -49,18 +31,16 @@ export class WireframeRenderer
             return;
         }
 
-        this.init();
-
         wireframes.forEach((element) =>
         {
-            this.drawGameObject(submit, element.renderable, scene, camera, element.wireframe.color);
+            this.drawGameObject(element.renderable, element.wireframe.color);
         });
     }
 
     /**
      * 绘制3D对象
      */
-    drawGameObject(_submit: Submit, renderable: Renderable, _scene: Scene, _camera: Camera, wireframeColor = new Color4())
+    drawGameObject(renderable: Renderable, wireframeColor = new Color4())
     {
         const renderObject = renderable.renderObject.value;
 
@@ -74,31 +54,8 @@ export class WireframeRenderer
         const indices = renderObject.indices;
         if (!indices || indices.length < 3) return;
 
-        const wireframeindices = new Uint16Array(indices.length * 2);
-        for (let i = 0; i < indices.length; i += 3)
-        {
-            wireframeindices[i * 2] = indices[i];
-            wireframeindices[i * 2 + 1] = indices[i + 1];
-            wireframeindices[i * 2 + 2] = indices[i];
-            wireframeindices[i * 2 + 3] = indices[i + 2];
-            wireframeindices[i * 2 + 4] = indices[i + 1];
-            wireframeindices[i * 2 + 5] = indices[i + 2];
-        }
-
-        renderObject.wireframeShader = renderObject.wireframeShader || 'wireframe';
-
-        // 复制原渲染对象并替换索引与材质颜色（通过 bindingResources.material_uniforms 传递）
-        const sourceBindingResources = (renderObject.bindingResources || {}) as Record<string, any>;
-        const newRenderObject = Object.assign({}, renderObject, {
-            indices: wireframeindices,
-            shader: renderObject.wireframeShader,
-            bindingResources: {
-                ...sourceBindingResources,
-                material_uniforms: { value: { ...sourceBindingResources.material_uniforms?.value, u_wireframeColor: wireframeColor } },
-            },
-        }) as RenderObject;
-
-        ((_submit.commandEncoders[0].passEncoders[0] as RenderPass).renderPassObjects as RenderPassObject[]).push(newRenderObject);
+        // TODO: 使用线框材质重新绘制（原依赖已移除的 shader 机制）
+        void wireframeColor;
     }
 }
 

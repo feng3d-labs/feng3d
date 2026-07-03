@@ -61,18 +61,6 @@ export interface RenderObject extends MixinsRenderObject
      * 与着色器中名称对应的绑定资源（纹理、采样器、统一数据、存储数据等）。
      */
     readonly bindingResources?: BindingResources;
-
-    // WebGL 兼容属性
-
-    /**
-     * 着色器 (WebGL 兼容)
-     */
-    shader?: any;
-
-    /**
-     * 下一个渲染对象 (用于链式渲染)
-     */
-    next?: RenderObject;
 }
 
 export class RenderObject
