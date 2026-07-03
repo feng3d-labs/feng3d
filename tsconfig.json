@@ -9,7 +9,6 @@
     { "path": "./packages/error-logger" },
     { "path": "./packages/eslint-plugin-feng3d" },
     { "path": "./packages/event" },
-    { "path": "./packages/feng3d" },
     { "path": "./packages/filesystem" },
     { "path": "./packages/math" },
     { "path": "./packages/objectview" },

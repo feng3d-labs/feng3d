@@ -13,7 +13,6 @@ export default [
       '*.config.js',
       'packages/webgpu/examples/**',
       'examples/**',
-      'packages/feng3d/examples/**',
       'packages/editor/lib/**',
       'packages/editor/libs/**',
       'packages/editor/packages/typescript/**',

@@ -16,4 +16,4 @@ export * from '@feng3d/watcher';
 /**
  * 版本号
  */
-export const version = '0.1.3';
+export const version = '0.6.0';
