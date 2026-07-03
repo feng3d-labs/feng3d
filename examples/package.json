@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@feng3d/error-logger": "*",
+    "@feng3d/reactivity": "*",
     "feng3d": "*"
   }
 }

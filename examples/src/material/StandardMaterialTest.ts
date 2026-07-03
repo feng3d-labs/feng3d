@@ -1,5 +1,5 @@
 import * as feng3d from 'feng3d';
-import { reactive } from '../../../../reactivity/src/reactive';
+import { reactive } from '@feng3d/reactivity';
 const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
 
