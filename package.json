@@ -54,7 +54,6 @@
   },
   "dependencies": {
     "@feng3d/assets": "*",
-    "@feng3d/core": "*",
     "@feng3d/event": "*",
     "@feng3d/filesystem": "*",
     "@feng3d/math": "*",
@@ -62,11 +61,13 @@
     "@feng3d/particlesystem": "*",
     "@feng3d/path": "*",
     "@feng3d/polyfill": "*",
+    "@feng3d/reactivity": "*",
     "@feng3d/serialization": "*",
     "@feng3d/shortcut": "*",
     "@feng3d/terrain": "*",
     "@feng3d/ui": "*",
-    "@feng3d/watcher": "*"
+    "@feng3d/watcher": "*",
+    "@feng3d/webgpu": "*"
   },
   "repository": {
     "type": "git",

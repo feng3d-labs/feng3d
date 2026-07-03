@@ -13,9 +13,6 @@
 [submodule "packages/cannon-plugin"]
 	path = packages/cannon-plugin
 	url = https://gitee.com/feng3d/cannon-plugin.git
-[submodule "packages/core"]
-	path = packages/core
-	url = https://gitee.com/feng3d/core.git
 [submodule "packages/editor"]
 	path = packages/editor
 	url = https://gitee.com/feng3d/editor.git
