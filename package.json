@@ -9,7 +9,7 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "packages/*/examples"
+    "packages/feng3d/examples"
   ],
   "scripts": {
     "clean": "npm run clean --workspaces --if-present",
