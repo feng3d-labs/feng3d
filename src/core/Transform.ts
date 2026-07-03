@@ -465,7 +465,9 @@ export class Transform extends Component
     {
         if (this.parent)
         {
-            return this.parent.localToWorldMatrix.value.clone().append(this.matrix.value);
+            // append(lhs) 计算 this = lhs * this（前置乘法）
+            // 需要 parentWorld * localMatrix，所以用 localMatrix.clone().append(parentWorld)
+            return this.matrix.value.clone().append(this.parent.localToWorldMatrix.value);
         }
 
         return this.matrix.value.clone();
