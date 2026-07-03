@@ -50,10 +50,6 @@ export * from './data/VertexState';
 export * from './data/Viewport';
 export * from './data/WriteBuffer';
 
-// 新增数据类型
-export * from './data/RenderTarget';
-export * from './data/ShadowMap';
-
 // 计算相关
 export * from './data/ComputeObject';
 export * from './data/ComputePass';
