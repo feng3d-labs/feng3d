@@ -463,13 +463,12 @@ export class Transform extends Component
      */
     readonly localToWorldMatrix = computed(() =>
     {
-        const matrix = this.matrix.value.clone();
         if (this.parent)
         {
-            matrix.append(this.parent.localToWorldMatrix.value);
+            return this.parent.localToWorldMatrix.value.clone().append(this.matrix.value);
         }
 
-        return matrix;
+        return this.matrix.value.clone();
     });
 
     setLocalToWorldMatrix(value: Matrix4x4)
