@@ -173,6 +173,9 @@ export function createPrimitive<K extends string>(type: K, param?: gPartial<Obje
     const g = new Object3D();
     reactive(g).name = type as string;
 
+    // 触发 object3DLogic，注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）的 effect
+    object3DLogic(g);
+
     const handler = _registerPrimitives[type as string];
     if (handler) handler(g);
 

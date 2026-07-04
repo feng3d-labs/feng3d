@@ -1,5 +1,5 @@
 import { Matrix4x4, Quaternion, Vector3 } from '@feng3d/math';
-import { computed, Computed, reactive } from '@feng3d/reactivity';
+import { computed, Computed, reactive, toRaw } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Scene } from '../scene/Scene';
@@ -100,9 +100,11 @@ function createTransformLogic(transform: Object3D): TransformLogic
 
     const local2world = computed<Matrix4x4>(() =>
     {
-        const parent = r_transform.parent as Object3D;
-        if (parent)
+        const r_parent = r_transform.parent;
+        if (r_parent)
         {
+            const parent = toRaw(r_parent) as Object3D;
+
             return matrix.value.clone().append(transformLogic(parent).local2world.value);
         }
 
@@ -118,9 +120,10 @@ function createTransformLogic(transform: Object3D): TransformLogic
     const local2worldRotation = computed<Matrix4x4>(() =>
     {
         const m = rotationMatrix.value.clone();
-        const parent = r_transform.parent as Object3D;
-        if (parent)
+        const r_parent = r_transform.parent;
+        if (r_parent)
         {
+            const parent = toRaw(r_parent) as Object3D;
             m.append(transformLogic(parent).local2worldRotation.value);
         }
 
