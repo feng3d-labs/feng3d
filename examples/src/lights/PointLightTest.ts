@@ -15,7 +15,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-object3DLogic(scene.object3D).addChild(camera.object3D);
+reactive(scene.object3D).children.push(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
@@ -40,8 +40,8 @@ windowEventProxy.on("keyup", (event) => {
             break;
         case "b":
             initObjects();
-            object3DLogic(scene.object3D).addChild(light0);
-            object3DLogic(scene.object3D).addChild(light1);
+            reactive(scene.object3D).children.push(light0);
+            reactive(scene.object3D).children.push(light1);
             break;
     }
 });
@@ -62,7 +62,7 @@ function initObjects() {
     geometry.scaleU = 2;
     geometry.scaleV = 2;
     model.material = material;
-    object3DLogic(scene.object3D).addChild(plane);
+    reactive(scene.object3D).children.push(plane);
 
     const cube = new Object3D();
     const cubemodel = new Renderable(); reactive(cube).components.push(cubemodel);
@@ -71,12 +71,12 @@ function initObjects() {
     cubemodel.geometry = cubeGeo;
     cubemodel.geometry.scaleU = 2;
     cubemodel.geometry.scaleV = 2;
-    object3DLogic(scene.object3D).addChild(cube);
+    reactive(scene.object3D).children.push(cube);
 }
 
 function clearObjects() {
-    for (let i = object3DLogic(scene.object3D).numChildren - 1; i >= 0; i--) {
-        object3DLogic(scene.object3D).removeChildAt(i);
+    for (let i = reactive(scene.object3D).children.length - 1; i >= 0; i--) {
+        reactive(scene.object3D).children.splice(i, 1);
     }
 }
 
@@ -94,7 +94,7 @@ function initLights() {
     pointLight0.color = lightColor0.toColor3();
     const colorMat0 = new ColorMaterial(); colorMat0.uniforms.u_diffuseInput.copy(lightColor0);
     model.material = colorMat0;
-    object3DLogic(scene.object3D).addChild(light0);
+    reactive(scene.object3D).children.push(light0);
 
     //
     const lightColor1 = new Color4(0, 1, 0, 1);
@@ -107,7 +107,7 @@ function initLights() {
     pointLight1.color = lightColor1.toColor3();
     const colorMat1 = new ColorMaterial(); colorMat1.uniforms.u_diffuseInput.copy(lightColor1);
     model.material = colorMat1;
-    object3DLogic(scene.object3D).addChild(light1);
+    reactive(scene.object3D).children.push(light1);
 }
 
 function setPointLightPosition() {

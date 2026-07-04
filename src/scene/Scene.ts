@@ -227,7 +227,7 @@ export class Scene extends Component
         if (this._mouseCheckObjects)
         { return this._mouseCheckObjects; }
 
-        let checkList = object3DLogic(this.object3D).getChildren();
+        let checkList = reactive(this.object3D).children.slice() as Object3D[];
         this._mouseCheckObjects = [];
         let i = 0;
         // 获取所有需要拾取的对象并分层存储
@@ -240,7 +240,7 @@ export class Scene extends Component
                 {
                     this._mouseCheckObjects.push(checkObject);
                 }
-                checkList = checkList.concat(object3DLogic(checkObject).getChildren());
+                checkList = checkList.concat(reactive(checkObject).children.slice() as Object3D[]);
             }
         }
 

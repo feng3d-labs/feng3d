@@ -8,7 +8,7 @@ class ScriptDemo extends Script
     {
         const cube = this.cube = new Object3D();
         reactive(cube.position).z = -7;
-        object3DLogic(this.object3D).addChild(cube);
+        reactive(this.object3D).children.push(cube);
 
         const model = new Renderable(); reactive(cube).components.push(model);
         const cubeGeo = new CubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;
@@ -47,7 +47,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = 'Main Camera';
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-object3DLogic(scene.object3D).addChild(camera.object3D);
+reactive(scene.object3D).children.push(camera.object3D);
 
 const engine = new View(null, scene, camera);
 

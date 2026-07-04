@@ -6,7 +6,7 @@ import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
 import { BillboardComponent } from '../component/BillboardComponent';
 import { Object3D } from '../core/Object3D';
-import { createPrimitive, object3DLogic } from '../core/object3DLogic';
+import { createPrimitive } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
 import { Material } from '../materials/Material';
@@ -167,11 +167,16 @@ export class Light extends Behaviour
 
         if (this.debugShadowMap)
         {
-            object3DLogic(scene.object3D).addChild(object3D);
+            reactive(scene.object3D).children.push(object3D);
         }
         else
         {
-            object3DLogic(object3D).remove();
+            const parent = object3D.parent as Object3D;
+            if (parent)
+            {
+                const idx = reactive(parent).children.indexOf(object3D);
+                if (idx !== -1) reactive(parent).children.splice(idx, 1);
+            }
         }
     }
 }

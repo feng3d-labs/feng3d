@@ -16,7 +16,7 @@ import { skyboxRenderer } from '../skybox/SkyBoxRenderer';
 import { ticker } from '../utils/Ticker';
 import { Feng3dObject } from './Feng3dObject';
 import { Object3D } from './Object3D';
-import { createPrimitive, object3DLogic } from './object3DLogic';
+import { createPrimitive } from './object3DLogic';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Renderable } from './Renderable';
 import { transformLogic } from './transformLogic';
@@ -44,7 +44,7 @@ export class View extends Feng3dObject
                 const defaultCamObj = serialization.setValue(new Object3D(), { name: 'defaultCamera' });
                 const cam = new Camera(); reactive(defaultCamObj).components.push(cam); cam.setObject3D(defaultCamObj); cam.init();
                 this._camera = cam;
-                object3DLogic(this.scene.object3D).addChild(this._camera.object3D);
+                reactive(this.scene.object3D).children.push(this._camera.object3D);
             }
             else
             {
@@ -419,7 +419,7 @@ export class View extends Feng3dObject
             const _r_pos = reactive(camera.position);
             batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
         }
-        object3DLogic(scene.object3D).addChild(camera);
+        reactive(scene.object3D).children.push(camera);
 
         const directionalLight = serialization.setValue(new Object3D(), { name: 'DirectionalLight' });
         const dl = new DirectionalLight(); reactive(directionalLight).components.push(dl); dl.setObject3D(directionalLight); dl.init(); dl.shadowType = ShadowType.Hard_Shadows;
@@ -428,7 +428,7 @@ export class View extends Feng3dObject
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
         }
         reactive(directionalLight.position).y = 3;
-        object3DLogic(scene.object3D).addChild(directionalLight);
+        reactive(scene.object3D).children.push(directionalLight);
 
         return scene;
     }

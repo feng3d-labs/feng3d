@@ -14,19 +14,19 @@ reactive(cameraObject3D).components.push(camera);
     const _r_pos = reactive(camera.object3D.position);
     _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10;
 }
-object3DLogic(scene.object3D).addChild(camera.object3D);
+reactive(scene.object3D).children.push(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
 //初始化颜色材质
 const cube = createPrimitive("Cube");
-object3DLogic(scene.object3D).addChild(cube);
+reactive(scene.object3D).children.push(cube);
 
 const colorMaterial = (cube.components.find(c => c instanceof Renderable) as Renderable).material = new ColorMaterial();
 
 const cylinder = createPrimitive("Cylinder");
 reactive(cylinder.position).x = 2;
-object3DLogic(cube).addChild(cylinder);
+reactive(cube).children.push(cylinder);
 
 let num = 0;
 ticker.onframe(() =>

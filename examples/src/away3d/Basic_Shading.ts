@@ -15,7 +15,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-object3DLogic(scene.object3D).addChild(camera.object3D);
+reactive(scene.object3D).children.push(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
@@ -69,14 +69,14 @@ function initLights() {
     const directionalLight = new DirectionalLight(); reactive(light1).components.push(directionalLight);
     directionalLight.intensity = 0.7;
     reactive(light1.rotation).x = 90;
-    object3DLogic(scene.object3D).addChild(light1);
+    reactive(scene.object3D).children.push(light1);
 
     light2 = new Object3D();
     const directionalLight2 = new DirectionalLight(); reactive(light2).components.push(directionalLight2);
     directionalLight2.color.fromUnit(0x00FFFF);
     directionalLight2.intensity = 0.7;
     reactive(light2.rotation).x = 90;
-    object3DLogic(scene.object3D).addChild(light2);
+    reactive(scene.object3D).children.push(light2);
 }
 
 function initObjects() {
@@ -89,7 +89,7 @@ function initObjects() {
     planeGeometry.scaleU = 2;
     planeGeometry.scaleV = 2;
     reactive(plane.position).y = -0.20;
-    object3DLogic(scene.object3D).addChild(plane);
+    reactive(scene.object3D).children.push(plane);
 
     sphere = new Object3D();
     const sphereModel = new Renderable(); reactive(sphere).components.push(sphereModel);
@@ -98,7 +98,7 @@ function initObjects() {
     reactive(sphere.position).x = 3;
     reactive(sphere.position).y = 1.60;
     reactive(sphere.position).z = 3.00;
-    object3DLogic(scene.object3D).addChild(sphere);
+    reactive(scene.object3D).children.push(sphere);
 
     cube = new Object3D();
     const cubeModel = new Renderable(); reactive(cube).components.push(cubeModel);
@@ -107,7 +107,7 @@ function initObjects() {
     reactive(cube.position).x = 3.00;
     reactive(cube.position).y = 1.60;
     reactive(cube.position).z = -2.50;
-    object3DLogic(scene.object3D).addChild(cube);
+    reactive(scene.object3D).children.push(cube);
 
     torus = new Object3D();
     const torusModel = new Renderable(); reactive(torus).components.push(torusModel);
@@ -118,7 +118,7 @@ function initObjects() {
     reactive(torus.position).x = -2.50;
     reactive(torus.position).y = 1.60;
     reactive(torus.position).z = -2.50;
-    object3DLogic(scene.object3D).addChild(torus);
+    reactive(scene.object3D).children.push(torus);
 }
 
 function initListeners() {

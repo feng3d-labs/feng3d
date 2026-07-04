@@ -6,7 +6,7 @@ scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
-object3DLogic(scene.object3D).addChild(camera.object3D);
+reactive(scene.object3D).children.push(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
@@ -31,7 +31,7 @@ geometry.addGeometry(addGeometry, matrix);
 
 reactive(object3D.position).z = 3;
 reactive(object3D.position).y = -1;
-object3DLogic(scene.object3D).addChild(object3D);
+reactive(scene.object3D).children.push(object3D);
 
 //初始化颜色材质
 model.material = new ColorMaterial();
