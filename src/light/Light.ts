@@ -121,7 +121,9 @@ export class Light extends Behaviour
     constructor()
     {
         super();
-        this.shadowCamera = object3DLogic(serialization.setValue(new Object3D(), { name: 'LightShadowCamera' })).addComponent(Camera);
+        const shadowCamObj = serialization.setValue(new Object3D(), { name: 'LightShadowCamera' });
+        const cam = new Camera(); reactive(shadowCamObj).components.push(cam); cam.setObject3D(shadowCamObj); cam.init();
+        this.shadowCamera = cam;
     }
 
     updateDebugShadowMap(scene: Scene, viewCamera: Camera)
@@ -133,10 +135,10 @@ export class Light extends Behaviour
             // TODO: hideFlags removed from pure data Object3D
             // object3D.hideFlags = HideFlags.Hide | HideFlags.DontSave; (HideFlags import removed)
             reactive(object3D).mouseEnabled = false;
-            object3DLogic(object3D).addComponent(BillboardComponent);
+            const bb = new BillboardComponent(); reactive(object3D).components.push(bb); bb.setObject3D(object3D); bb.init();
 
             // 材质
-            const model = object3DLogic(object3D).getComponent(Renderable);
+            const model = object3D.components.find(c => c instanceof Renderable) as Renderable;
             model.geometry = serialization.setValue(new PlaneGeometry(), { width: this.lightType === LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
             const textureMaterial = model.material = serialization.setValue(new Material(), { shaderName: 'texture', uniforms: { s_texture: this.frameBufferObject.texture as any } } as any);
             //
@@ -160,7 +162,7 @@ export class Light extends Behaviour
             _r_pos.y = _pos.y;
             _r_pos.z = _pos.z;
         });
-        const billboardComponent = object3DLogic(object3D).getComponent(BillboardComponent);
+        const billboardComponent = object3D.components.find(c => c instanceof BillboardComponent) as BillboardComponent;
         billboardComponent.camera = viewCamera;
 
         if (this.debugShadowMap)

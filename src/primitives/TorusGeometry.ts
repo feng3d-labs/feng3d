@@ -1,10 +1,11 @@
 import { oav } from '@feng3d/objectview';
+import { reactive } from '@feng3d/reactivity';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
+import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { Geometry } from '../geometry/Geometry';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 
@@ -262,7 +263,7 @@ Geometry.setDefault('Torus', new TorusGeometry());
 
 registerPrimitive('Torus', (g) =>
 {
-	object3DLogic(g).addComponent(MeshRenderer).geometry = Geometry.getDefault('Torus');
+	const r = new MeshRenderer(); reactive(g).components.push(r); r.setObject3D(g); r.init(); r.geometry = Geometry.getDefault('Torus');
 });
 
 // 在 Hierarchy 界面新增右键菜单项

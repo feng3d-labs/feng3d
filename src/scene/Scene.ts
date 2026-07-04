@@ -236,7 +236,7 @@ export class Scene extends Component
             const checkObject = checkList[i++];
             if (checkObject.mouseEnabled)
             {
-                if (object3DLogic(checkObject).getComponents(Renderable))
+                if (checkObject.components.some(c => c instanceof Renderable))
                 {
                     this._mouseCheckObjects.push(checkObject);
                 }
@@ -273,7 +273,7 @@ export class Scene extends Component
         {
             const item = openlist.shift();
             if (!item.activeSelf) continue;
-            const model = object3DLogic(item).getComponent(Renderable);
+            const model = item.components.find(c => c instanceof Renderable) as Renderable;
             if (model && (model.castShadows || model.receiveShadows)
                 && !model.material.renderPipeline.fragment?.targets?.[0]?.blend
                 && model.material.renderPipeline.primitive?.topology !== 'point-list'

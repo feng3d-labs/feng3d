@@ -111,7 +111,7 @@ export class DirectionalLight extends Light
 
 registerPrimitive('Directional light', (g) =>
 {
-    object3DLogic(g).addComponent(DirectionalLight);
+    const c = new DirectionalLight(); reactive(g).components.push(c); c.setObject3D(g); c.init();
 });
 
 // 在 Hierarchy 界面新增右键菜单项

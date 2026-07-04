@@ -105,7 +105,7 @@ export class Animation extends Behaviour
                 case PropertyClipPathItemType.Component:
                 {
                     const componentClass = getComponentType(element[1] as any);
-                    propertyHost = object3DLogic(propertyHost).getComponent(componentClass);
+                    propertyHost = propertyHost.components.find(c => c instanceof componentClass);
                     break;
                 }
                 default:

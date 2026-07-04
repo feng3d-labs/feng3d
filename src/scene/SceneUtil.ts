@@ -46,7 +46,7 @@ export class SceneUtil
 
             if (!object3D.activeSelf)
             { continue; }
-            const renderer = object3DLogic(object3D).getComponent(Renderable);
+            const renderer = object3D.components.find(c => c instanceof Renderable) as Renderable;
             if (renderer && renderer.enabled)
             {
                 if (renderer.selfWorldBounds)

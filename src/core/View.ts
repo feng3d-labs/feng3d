@@ -41,7 +41,9 @@ export class View extends Feng3dObject
             const cameras = this.scene.getComponentsInChildren(Camera);
             if (cameras.length === 0)
             {
-                this._camera = object3DLogic(serialization.setValue(new Object3D(), { name: 'defaultCamera' })).addComponent(Camera);
+                const defaultCamObj = serialization.setValue(new Object3D(), { name: 'defaultCamera' });
+                const cam = new Camera(); reactive(defaultCamObj).components.push(cam); cam.setObject3D(defaultCamObj); cam.init();
+                this._camera = cam;
                 object3DLogic(this.scene.object3D).addChild(this._camera.object3D);
             }
             else
@@ -139,7 +141,13 @@ export class View extends Feng3dObject
             // #endif
         }, false);
 
-        this.scene = scene || object3DLogic(serialization.setValue(new Object3D(), { name: 'scene' })).addComponent(Scene);
+        if (!scene)
+        {
+            const sceneObj = serialization.setValue(new Object3D(), { name: 'scene' });
+            const sceneComp = new Scene(); reactive(sceneObj).components.push(sceneComp); sceneComp.setObject3D(sceneObj); sceneComp.init();
+            scene = sceneComp;
+        }
+        this.scene = scene;
         this.camera = camera;
 
         this.start();
@@ -368,7 +376,7 @@ export class View extends Feng3dObject
             else
             {
                 const transform = object3D;
-                const m = object3DLogic(object3D).getComponent(Renderable);
+                const m = object3D.components.find(c => c instanceof Renderable) as Renderable;
                 let include: boolean;
                 if (m)
                 {
@@ -400,12 +408,13 @@ export class View extends Feng3dObject
 
     static createNewScene()
     {
-        const scene = object3DLogic(serialization.setValue(new Object3D(), { name: 'Untitled' })).addComponent(Scene);
+        const sceneObj = serialization.setValue(new Object3D(), { name: 'Untitled' });
+        const scene = new Scene(); reactive(sceneObj).components.push(scene); scene.setObject3D(sceneObj); scene.init();
         scene.background.setTo(0.2784, 0.2784, 0.2784);
         scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
         const camera = createPrimitive('Camera', { name: 'Main Camera' });
-        object3DLogic(camera).addComponent(AudioListener);
+        const audioListener = new AudioListener(); reactive(camera).components.push(audioListener); audioListener.setObject3D(camera); audioListener.init();
         {
             const _r_pos = reactive(camera.position);
             batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
@@ -413,7 +422,7 @@ export class View extends Feng3dObject
         object3DLogic(scene.object3D).addChild(camera);
 
         const directionalLight = serialization.setValue(new Object3D(), { name: 'DirectionalLight' });
-        object3DLogic(directionalLight).addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
+        const dl = new DirectionalLight(); reactive(directionalLight).components.push(dl); dl.setObject3D(directionalLight); dl.init(); dl.shadowType = ShadowType.Hard_Shadows;
         {
             const _r_rot = reactive(directionalLight.rotation);
             batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });

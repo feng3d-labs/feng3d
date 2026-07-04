@@ -12,11 +12,11 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
  */
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = object3DLogic(sceneObject3D).addComponent(Scene);
+const scene = new Scene(); reactive(sceneObject3D).components.push(scene); scene.setObject3D(sceneObject3D); scene.init();
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
-const camera = object3DLogic(cameraObject3D).addComponent(Camera);
+const camera = new Camera(); reactive(cameraObject3D).components.push(camera); camera.setObject3D(cameraObject3D); camera.init();
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
@@ -24,35 +24,35 @@ const engine = new View(null, scene, camera);
 
 reactive(camera.object3D.position).z = -5;
 lookAtTransform(camera.transform, new Vector3());
-object3DLogic(camera.object3D).addComponent(FPSController);
+{ const c = new FPSController(); reactive(camera.object3D).components.push(c); c.setObject3D(camera.object3D); c.init(); }
 
 const cube = createPrimitive("Cube");
 reactive(cube).mouseEnabled = true;
-object3DLogic(cube).getComponent(Renderable).material = new StandardMaterial();
+(cube.components.find(c => c instanceof Renderable) as Renderable).material = new StandardMaterial();
 object3DLogic(scene.object3D).addChild(cube);
 
 const sphere = createPrimitive("Sphere");
 { const _r = reactive(sphere.position); _r.x = -1.50; _r.y = 0; _r.z = 0; }
 reactive(sphere).mouseEnabled = true;
-object3DLogic(sphere).getComponent(Renderable).material = new StandardMaterial();
+(sphere.components.find(c => c instanceof Renderable) as Renderable).material = new StandardMaterial();
 object3DLogic(scene.object3D).addChild(sphere);
 
 const capsule = createPrimitive("Capsule");
 { const _r = reactive(capsule.position); _r.x = 3; _r.y = 0; _r.z = 0; }
 reactive(capsule).mouseEnabled = true;
-object3DLogic(capsule).getComponent(Renderable).material = new StandardMaterial();
+(capsule.components.find(c => c instanceof Renderable) as Renderable).material = new StandardMaterial();
 object3DLogic(scene.object3D).addChild(capsule);
 
 const cylinder = createPrimitive("Cylinder");
 { const _r = reactive(cylinder.position); _r.x = -3; _r.y = 0; _r.z = 0; }
 reactive(cylinder).mouseEnabled = true;
-object3DLogic(cylinder).getComponent(Renderable).material = new StandardMaterial();
+(cylinder.components.find(c => c instanceof Renderable) as Renderable).material = new StandardMaterial();
 object3DLogic(scene.object3D).addChild(cylinder);
 
 (scene as any).on("click", (event) => {
     const object3D = event.target as Object3D;
-    if (object3DLogic(object3D).getComponent(Renderable)) {
-        const material = object3DLogic(object3D).getComponent(Renderable).material as StandardMaterial;
+    if (object3D.components.find(c => c instanceof Renderable)) {
+        const material = (object3D.components.find(c => c instanceof Renderable) as Renderable).material as StandardMaterial;
         material.uniforms.u_diffuse.fromUnit(Math.random() * (1 << 24));
     }
 });

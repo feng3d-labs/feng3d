@@ -1,10 +1,10 @@
 import { Camera, Color4, ColorMaterial, Object3D, reactive, Renderable, Scene, ticker, View, object3DLogic, createPrimitive } from 'feng3d';
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = object3DLogic(sceneObject3D).addComponent(Scene);
+const scene = new Scene(); reactive(sceneObject3D).components.push(scene); scene.setObject3D(sceneObject3D); scene.init();
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
-const camera = object3DLogic(cameraObject3D).addComponent(Camera);
+const camera = new Camera(); reactive(cameraObject3D).components.push(camera); camera.setObject3D(cameraObject3D); camera.init();
 {
     const _r_pos = reactive(camera.object3D.position);
     _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10;
@@ -17,7 +17,7 @@ const engine = new View(null, scene, camera);
 const cube = createPrimitive("Cube");
 object3DLogic(scene.object3D).addChild(cube);
 
-const colorMaterial = object3DLogic(cube).getComponent(Renderable).material = new ColorMaterial();
+const colorMaterial = (cube.components.find(c => c instanceof Renderable) as Renderable).material = new ColorMaterial();
 
 const cylinder = createPrimitive("Cylinder");
 reactive(cylinder.position).x = 2;

@@ -1,11 +1,12 @@
 import { oav } from '@feng3d/objectview';
+import { reactive } from '@feng3d/reactivity';
 import { mathUtil } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { PerspectiveLens } from '../cameras/lenses/PerspectiveLens';
 import { RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
-import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
+import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Light } from './Light';
 import { LightType } from './LightType';
@@ -94,7 +95,7 @@ export class SpotLight extends Light
 
 registerPrimitive('Spot Light', (g) =>
 {
-    object3DLogic(g).addComponent(SpotLight);
+    const c = new SpotLight(); reactive(g).components.push(c); c.setObject3D(g); c.init();
 });
 
 // 在 Hierarchy 界面新增右键菜单项

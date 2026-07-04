@@ -1,11 +1,11 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { effect } from '@feng3d/reactivity';
+import { effect, reactive } from '@feng3d/reactivity';
 import { serialization, serialize } from '@feng3d/serialization';
 import { Component, RegisterComponent } from '../component/Component';
 import { Object3D } from '../core/Object3D';
-import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
+import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
@@ -254,7 +254,7 @@ export class Camera extends Component
 
 registerPrimitive('Camera', (g) =>
 {
-    object3DLogic(g).addComponent(Camera);
+    const c = new Camera(); reactive(g).components.push(c); c.setObject3D(g); c.init();
 });
 
 // 在 Hierarchy 界面新增右键菜单项

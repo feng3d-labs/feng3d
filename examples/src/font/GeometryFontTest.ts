@@ -2,17 +2,17 @@ import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive
 import * as opentype from 'opentype.js';
 
 var sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
-var scene = object3DLogic(sceneObject3D).addComponent(Scene);
+var scene = new Scene(); reactive(sceneObject3D).components.push(scene); scene.setObject3D(sceneObject3D); scene.init();
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 var cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
-var camera = object3DLogic(cameraObject3D).addComponent(Camera);
+var camera = new Camera(); reactive(cameraObject3D).components.push(camera); camera.setObject3D(cameraObject3D); camera.init();
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 var engine = new View(null, scene, camera);
 
-object3DLogic(camera.object3D).addComponent(FPSController);
+{ const c = new FPSController(); reactive(camera.object3D).components.push(c); c.setObject3D(camera.object3D); c.init(); }
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
 fetch('/fonts/simfang.ttf')
@@ -40,7 +40,7 @@ fetch('/fonts/simfang.ttf')
         geometry.uvs = Array.from(uvs);
         geometry.indices = Array.from(indices);
 
-        var cube = object3DLogic(new Object3D()).addComponent(Renderable);
+        var cube = (() => { const _o = new Object3D(); const _c = new Renderable(); reactive(_o).components.push(_c); _c.setObject3D(_o); _c.init(); return _c; })();
         reactive(cube.object3D.position).x = -7;
         reactive(cube.object3D.position).y = 7;
         reactive(cube.object3D.rotation).x = 180;

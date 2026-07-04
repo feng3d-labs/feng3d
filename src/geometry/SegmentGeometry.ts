@@ -1,11 +1,12 @@
 import { Color4, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
+import { reactive } from '@feng3d/reactivity';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Object3D } from '../core/Object3D';
 import { MeshRenderer } from '../core/MeshRenderer';
-import { createPrimitive, object3DLogic, registerPrimitive } from '../core/object3DLogic';
+import { createPrimitive, registerPrimitive } from '../core/object3DLogic';
 import { Material } from '../materials/Material';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Geometry } from './Geometry';
@@ -125,7 +126,7 @@ export class Segment
 
 registerPrimitive('Segment', (g) =>
 {
-    const model = object3DLogic(g).addComponent(MeshRenderer);
+    const model = new MeshRenderer(); reactive(g).components.push(model); model.setObject3D(g); model.init();
     model.geometry = new SegmentGeometry();
     model.material = Material.getDefault('Segment-Material');
 });

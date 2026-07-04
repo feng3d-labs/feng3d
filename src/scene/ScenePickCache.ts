@@ -50,7 +50,7 @@ export class ScenePickCache
 
             if (!object3D.activeSelf)
                 { continue; }
-            const model = object3DLogic(object3D).getComponent(Renderable);
+            const model = object3D.components.find(c => c instanceof Renderable) as Renderable;
             if (model && model.enabled)
             {
                 if (model.selfWorldBounds)
