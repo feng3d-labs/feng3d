@@ -1,17 +1,17 @@
 import { Camera, Color4, ColorMaterial, CubeGeometry, CustomGeometry, Object3D, Matrix4x4, PlaneGeometry, reactive, Renderable, Scene, SphereGeometry, Vector3, View, object3DLogic } from 'feng3d';
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = new Scene(); reactive(sceneObject3D).components.push(scene); scene.setObject3D(sceneObject3D); scene.init();
+const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
-const camera = new Camera(); reactive(cameraObject3D).components.push(camera); camera.setObject3D(cameraObject3D); camera.init();
+const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
 const engine = new View(null, scene, camera);
 
 const object3D = new Object3D();
-const model = new Renderable(); reactive(object3D).components.push(model); model.setObject3D(object3D); model.init();
+const model = new Renderable(); reactive(object3D).components.push(model);
 
 const geometry = model.geometry = new CustomGeometry();
 geometry.addGeometry(new PlaneGeometry());

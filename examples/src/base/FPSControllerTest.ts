@@ -9,11 +9,11 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
 }
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
-const scene = new Scene(); reactive(sceneObject3D).components.push(scene); scene.setObject3D(sceneObject3D); scene.init();
+const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
 const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
-const camera = new Camera(); reactive(cameraObject3D).components.push(camera); camera.setObject3D(cameraObject3D); camera.init();
+const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(camera.object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 object3DLogic(scene.object3D).addChild(camera.object3D);
 
@@ -37,4 +37,4 @@ object3DLogic(scene.object3D).addChild(cylinder);
 reactive(camera.object3D.position).z = -5;
 lookAtTransform(camera.transform, new Vector3());
 //
-{ const c = new FPSController(); reactive(camera.object3D).components.push(c); c.setObject3D(camera.object3D); c.init(); }
+{ const c = new FPSController(); reactive(camera.object3D).components.push(c); }
