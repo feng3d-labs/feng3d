@@ -1,11 +1,11 @@
-import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
+import { Camera, Color4, CustomGeometry, FPSController, Font, Object3D, reactive, Renderable, Scene, StandardMaterial, View, object3DLogic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
 import * as opentype from 'opentype.js';
 
-var sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
+var sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 var scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-var cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
+var cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 var camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D);
@@ -40,7 +40,7 @@ fetch('/fonts/simfang.ttf')
         geometry.uvs = Array.from(uvs);
         geometry.indices = Array.from(indices);
 
-        const _o = new Object3D();
+        const _o = createObject3D();
         object3DLogic(_o);
         const cube = new Renderable();
         reactive(_o).components.push(cube);

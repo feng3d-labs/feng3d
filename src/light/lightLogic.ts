@@ -6,6 +6,7 @@ import { cameraLogic } from '../cameras/cameraLogic';
 import { BehaviourLogic, behaviourLogic } from '../component/behaviourLogic';
 import { BillboardComponent } from '../component/BillboardComponent';
 import { Object3D } from '../core/Object3D';
+import { createObject3D } from '../core/createObject3D';
 import { object3DLogic, createPrimitive } from '../core/object3DLogic';
 import { Renderable } from '../core/Renderable';
 import { transformLogic } from '../core/transformLogic';
@@ -92,7 +93,7 @@ function createLightLogic(light: Light): LightLogic
             base.init();
 
             // 创建阴影相机
-            const shadowCamObj = serialization.setValue(new Object3D(), { name: 'LightShadowCamera' });
+            const shadowCamObj = Object.assign(createObject3D(), { name: 'LightShadowCamera' });
             const cam = new Camera();
             reactive(shadowCamObj).components.push(cam);
             // 触发 object3DLogic（注册 entityLogic 等效应），确保 Camera 自动 init

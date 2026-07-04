@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -8,12 +8,12 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
     batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
 }
-const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
+const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 object3DLogic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
+const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 object3DLogic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
@@ -32,7 +32,7 @@ cubeTexture.urls = [
     '/skybox/snow_negative_z.jpg',
 ];
 
-const skybox = new Object3D(); reactive(skybox).name = "skybox";
+const skybox = createObject3D(); reactive(skybox).name = "skybox";
 const skyboxComponent = new SkyBox(); reactive(skybox).components.push(skyboxComponent);
 skyboxComponent.s_skyboxTexture = cubeTexture;
 reactive(sceneLogic(scene).object3D).children.push(skybox);
@@ -46,7 +46,7 @@ torusMaterial.s_envMap = cubeTexture;
 torusMaterial.uniforms.u_ambient.fromUnit(0x111111);
 torusMaterial.uniforms.u_ambient.a = 0.25;
 
-const torus = new Object3D(); reactive(torus).name = "torus";
+const torus = createObject3D(); reactive(torus).name = "torus";
 const model = new Renderable(); reactive(torus).components.push(model);
 model.geometry = (() => { const g = new TorusGeometry(); g.radius = 1.50; g.tubeRadius = 0.60; g.segmentsR = 40; g.segmentsT = 20; return g; })();
 model.material = torusMaterial;

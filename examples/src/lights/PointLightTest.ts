@@ -1,4 +1,4 @@
-import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
+import { Object3D, batchRun, Camera, Color4, CubeGeometry, ColorMaterial, DirectionalLight, FPSController, PlaneGeometry, PointLight, reactive, Renderable, Scene, ShadowType, SphereGeometry, StandardMaterial, Texture2D, TextureWrap, ticker, transformLogic, Vector3, View, windowEventProxy, object3DLogic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
 
 function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const m = transformLogic(t).matrix.value.clone();
@@ -8,12 +8,12 @@ function lookAtTransform(t: Object3D, target: Vector3, upAxis?: Vector3) {
     const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
     batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
 }
-const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
+const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 object3DLogic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
+const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 object3DLogic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
@@ -21,8 +21,8 @@ reactive(sceneLogic(scene).object3D).children.push(cameraLogic(camera).object3D)
 
 const engine = new View(null, scene, camera);
 
-const light0 = new Object3D(); reactive(light0).name = "pointLight";
-const light1 = new Object3D(); reactive(light1).name = "pointLight";
+const light0 = createObject3D(); reactive(light0).name = "pointLight";
+const light1 = createObject3D(); reactive(light1).name = "pointLight";
 
 initObjects();
 initLights();
@@ -56,7 +56,7 @@ function initObjects() {
     tex = new Texture2D(); tex.source = { url: '/head_specular.jpg' }; tex.wrapS = TextureWrap.MIRRORED_REPEAT; tex.wrapT = TextureWrap.MIRRORED_REPEAT; material.s_specular = tex;
 
     //初始化立方体
-    const plane = new Object3D();
+    const plane = createObject3D();
     reactive(plane.position).y = -1;
     const model = new Renderable(); reactive(plane).components.push(model);
     const planeGeo = new PlaneGeometry(); planeGeo.width = 10; planeGeo.height = 10;
@@ -66,7 +66,7 @@ function initObjects() {
     model.material = material;
     reactive(sceneLogic(scene).object3D).children.push(plane);
 
-    const cube = new Object3D();
+    const cube = createObject3D();
     const cubemodel = new Renderable(); reactive(cube).components.push(cubemodel);
     cubemodel.material = material;
     const cubeGeo = new CubeGeometry(); cubeGeo.width = 1; cubeGeo.height = 1; cubeGeo.depth = 1; cubeGeo.segmentsW = 1; cubeGeo.segmentsH = 1; cubeGeo.segmentsD = 1; cubeGeo.tile6 = false;

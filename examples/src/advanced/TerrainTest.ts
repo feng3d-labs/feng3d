@@ -1,10 +1,10 @@
-import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, object3DLogic, cameraLogic, sceneLogic} from 'feng3d';
-const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
+import { Camera, Color3, Color4, FPSController, Object3D, PointLight, reactive, Renderable, Scene, StandardMaterial, TerrainGeometry, Texture2D, TextureMinFilter, ticker, transformLogic, Vector3, Vector4, View, object3DLogic, cameraLogic, sceneLogic, createObject3D} from 'feng3d';
+const sceneObject3D = createObject3D(); reactive(sceneObject3D).name = "Untitled";
 object3DLogic(sceneObject3D);
 const scene = new Scene(); reactive(sceneObject3D).components.push(scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const cameraObject3D = new Object3D(); reactive(cameraObject3D).name = "Main Camera";
+const cameraObject3D = createObject3D(); reactive(cameraObject3D).name = "Main Camera";
 object3DLogic(cameraObject3D);
 const camera = new Camera(); reactive(cameraObject3D).components.push(camera);
 { const _r = reactive(cameraLogic(camera).object3D.position); _r.x = 0; _r.y = 1; _r.z = -10; }
@@ -19,7 +19,7 @@ reactive(cameraLogic(camera).object3D.position).z = 0;
 
 const root = '/terrain/';
 //
-const terrain = new Object3D(); reactive(terrain).name = "terrain";
+const terrain = createObject3D(); reactive(terrain).name = "terrain";
 const model = new Renderable(); reactive(terrain).components.push(model);
 const heightMap = new Texture2D(); heightMap.source = { url: root + 'terrain_heights.jpg' };
 const terrainGeo = new TerrainGeometry();
@@ -45,7 +45,7 @@ reactive(sceneLogic(scene).object3D).children.push(terrain);
 scene.ambientColor.setTo(0.2, 0.2, 0.2, 1.0);
 
 //初始化光源
-const light1 = new Object3D();
+const light1 = createObject3D();
 const pointLight1 = new PointLight(); reactive(light1).components.push(pointLight1);
 pointLight1.range = 5000;
 pointLight1.color = new Color3(1, 1, 1);

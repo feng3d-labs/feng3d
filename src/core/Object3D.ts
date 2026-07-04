@@ -1,10 +1,9 @@
-import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { AssetType } from '../assets/AssetType';
 import type { Component } from '../component/Component';
 import type { Geometry } from '../geometry/Geometry';
 import { Container } from './Container';
 import type { Feng3dObjectEventMap } from './Feng3dObject';
-import { Scene } from '../scene/Scene';
+import type { Scene } from '../scene/Scene';
 
 declare global
 {
@@ -75,78 +74,73 @@ export interface Object3DEventMap extends MixinsObject3DEventMap, Feng3dObjectEv
     updateLocalToWorldMatrix: void;
 }
 
-export interface Object3D extends MixinsObject3D { }
-
 /**
  * 游戏对象，场景唯一存在的对象类型
  *
- * 纯数据结构体：仅包含 readonly 基础属性，可 JSON 序列化。
+ * 纯数据接口：仅声明 readonly 属性，由 {@link createObject3D} 工厂创建实例。
  * 所有行为逻辑（组件管理、层级管理、激活状态、包围盒等）由 {@link object3DLogic} 提供。
  *
  * 原始游戏对象创建等工厂方法以独立函数形式提供：
- * {@link createPrimitive}、{@link registerPrimitive}、{@link findObject3D}。
+ * {@link createPrimitive}、{@link registerPrimitive}、{@link findObject3DChild}。
  */
-@decoratorRegisterClass()
-export class Object3D extends Container
+export interface Object3D extends Container, MixinsObject3D
 {
-    __class__ = 'Object3D';
-
     /**
      * 名称
      */
-    readonly name: string = 'Object3D';
+    readonly name: string;
 
     /**
      * The tag of this game object.
      */
-    readonly tag: string = '';
+    readonly tag: string;
 
     /**
      * 自身以及子对象是否支持鼠标拾取
      */
-    readonly mouseEnabled: boolean = true;
+    readonly mouseEnabled: boolean;
 
     /**
      * The local active state of this Object3D.
      *
-     * 通过 object3DLogic(object3D).setActive(value) 修改。
+     * 通过 reactive(this).activeSelf = value 修改。
      */
-    readonly activeSelf: boolean = true;
+    readonly activeSelf: boolean;
 
     /**
      * 资源类型
      */
-    readonly assetType: string = AssetType.object3D;
+    readonly assetType: string;
 
     /**
      * 资源编号
      */
-    readonly assetId: string = '';
+    readonly assetId: string;
 
     /**
      * 预设资源编号
      */
-    readonly prefabId: string = '';
+    readonly prefabId: string;
 
     /**
      * 本地位移
      */
-    readonly position: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
+    readonly position: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
      * 本地旋转
      */
-    readonly rotation: { readonly x: number; readonly y: number; readonly z: number } = { x: 0, y: 0, z: 0 };
+    readonly rotation: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
      * 本地缩放
      */
-    readonly scale: { readonly x: number; readonly y: number; readonly z: number } = { x: 1, y: 1, z: 1 };
+    readonly scale: { readonly x: number; readonly y: number; readonly z: number };
 
     /**
      * 所在场景（只读，响应式）。
      *
      * 由层级关系自动维护，无需手动设置。
      */
-    readonly scene: Scene | null = null;
+    readonly scene: Scene | null;
 }

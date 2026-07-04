@@ -7,8 +7,8 @@ import { Renderable } from './Renderable';
 import { renderableLogic } from './renderableLogic';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { BoundingBox } from './BoundingBox';
-import { Feng3dObject } from './Feng3dObject';
 import { Object3D } from './Object3D';
+import { createObject3D } from './createObject3D';
 import { containerLogic } from './containerLogic';
 import { entityLogic } from './entityLogic';
 
@@ -160,7 +160,7 @@ const _registerPrimitives: Record<string, (object3D: Object3D) => void> = {};
 
 export function createPrimitive<K extends string>(type: K, param?: gPartial<Object3D>): Object3D
 {
-    const g = new Object3D();
+    const g = createObject3D();
     reactive(g).name = type as string;
 
     // 触发 object3DLogic，注册 entityLogic（组件自动初始化）与 containerLogic（子级自动同步 parent）的 effect
@@ -181,14 +181,6 @@ export function registerPrimitive<K extends string>(type: K, handler: (object3D:
         console.warn(`重复注册原始对象 ${type} ！`);
     }
     _registerPrimitives[type as string] = handler;
-}
-
-export function findObject3D(name: string): Object3D | undefined
-{
-    const objects = Feng3dObject.getObjects(Object3D as any);
-    const result = objects.filter((v) => !v.disposed && (v.name === name));
-
-    return result[0] as unknown as Object3D | undefined;
 }
 
 /**
@@ -218,6 +210,6 @@ createNodeMenu.push(
     {
         path: 'Create Empty',
         click: () =>
-            new Object3D()
+            createObject3D()
     },
 );
