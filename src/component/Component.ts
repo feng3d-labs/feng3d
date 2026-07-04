@@ -1,5 +1,6 @@
 import { IEvent } from '@feng3d/event';
 import { Constructor, IDisposable } from '@feng3d/polyfill';
+import { reactive } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Feng3dObject } from '../core/Feng3dObject';
@@ -186,136 +187,120 @@ export class Component extends Feng3dObject<Object3DEventMap> implements IDispos
      */
     addComponent<T extends Component>(type: Constructor<T>): T
     {
-        return _object3DLogic(this._object3D).addComponent(type);
+        const c = new type();
+        reactive(this._object3D).components.push(c);
+        c.setObject3D(this._object3D);
+        c.init();
+
+        return c;
     }
 
-    /**
-     * Returns the component of Type type if the game object has one attached, null if it doesn't.
-     *
-     * Using object3D.GetComponent will return the first component that is found. If you expect there to be more than one component of the
-     * same type, use object3D.GetComponents instead, and cycle through the returned components testing for some unique property.
-     *
-     * @param type The type of Component to retrieve.
-     * @returns The component to retrieve.
-     */
-    /**
-     * 返回游戏对象附加的一个指定类型的组件，如果没有，则返回 null。
-     *
-     * 使用 object3D.GetComponent 将返回找到的第一个组件。如果您希望有多个相同类型的组件，请改用 object3D.GetComponents，并循环通过返回的组件测试某些唯一属性。
-     *
-     * @param type 要检索的组件类型。
-     * @returns 要检索的组件。
-     */
     getComponent<T extends Component>(type: Constructor<T>): T
     {
-        return _object3DLogic(this._object3D).getComponent(type);
+        return this._object3D.components.find(c => c instanceof type) as T;
     }
 
-    /**
-     * Returns the component of Type type in the Object3D or any of its children using depth first search.
-     *
-     * @param type The type of Component to retrieve.
-     * @param includeInactive Should Components on inactive Object3Ds be included in the found set?
-     * @returns A component of the matching type, if found.
-     */
-    /**
-     * 使用深度优先搜索返回 Object3D 或其任何子项中的 Type 组件。
-     *
-     * @param type 要检索的组件类型。
-     * @param includeInactive 是否包含不活跃组件。
-     * @returns 匹配类型的组件（如果找到）。
-     */
     getComponentInChildren<T extends Component>(type: Constructor<T>, includeInactive = false): T
     {
-        return _object3DLogic(this._object3D).getComponentInChildren(type, includeInactive);
+        const component = this.getComponent(type);
+        if (component) return component;
+
+        const children = this._object3D.children as Object3D[];
+        for (const child of children)
+        {
+            if (!includeInactive && !child.activeSelf) continue;
+            const found = child.components.find(c => c instanceof type) as T;
+            if (found) return found;
+            for (const grandchild of child.children as Object3D[])
+            {
+                const sub = grandchild.components.find(c => c instanceof type) as T;
+                if (sub) return sub;
+            }
+        }
+
+        return null;
     }
 
-    /**
-     * Retrieves the component of Type type in the Object3D or any of its parents.
-     *
-     * This method recurses upwards until it finds a Object3D with a matching component. Only components on active Object3Ds are matched.
-     *
-     * @param type Type of component to find.
-     * @param includeInactive Should Components on inactive Object3Ds be included in the found set?
-     * @returns Returns a component if a component matching the type is found. Returns null otherwise.
-     */
-    /**
-     * 检索Object3D或其任何父项type中的 Type 组件。
-     *
-     * 此方法向上递归，直到找到具有匹配组件的 Object3D。仅匹配活动游戏对象上的组件。
-     *
-     * @param type 要查找的组件类型。
-     * @param includeInactive 是否包含不活跃组件。
-     * @returns 如果找到与类型匹配的组件，则返回一个组件。否则返回 null。
-     */
     getComponentInParent<T extends Component>(type: Constructor<T>, includeInactive = false): T
     {
-        return _object3DLogic(this._object3D).getComponentInParent(type, includeInactive);
+        if (includeInactive || this._object3D.activeSelf)
+        {
+            const component = this.getComponent(type);
+            if (component) return component;
+        }
+        const parent = this._object3D.parent as Object3D;
+        if (parent)
+        {
+            const component = parent.components.find(c => c instanceof type) as T;
+            if (component) return component;
+            // 继续向上
+            let p = parent.parent as Object3D;
+            while (p)
+            {
+                const c = p.components.find(c => c instanceof type) as T;
+                if (c) return c;
+                p = p.parent as Object3D;
+            }
+        }
+
+        return null;
     }
 
-    /**
-     * Returns all components of Type `type` in the Object3D.
-     *
-     * @param type The type of component to retrieve.
-     * @param results List to receive the results.
-     * @returns all components of Type type in the Object3D.
-     */
-    /**
-     * 返回Object3D中指定类型的所有组件。
-     *
-     * @param type 要检索的组件类型。
-     * @param results 列出接收找到的组件。
-     * @returns Object3D中指定类型的所有组件。
-     */
     getComponents<T extends Component>(type: Constructor<T>, results: T[] = []): T[]
     {
-        return _object3DLogic(this._object3D).getComponents(type, results);
+        for (const c of this._object3D.components)
+        {
+            if (!type || c instanceof type) results.push(c as T);
+        }
+
+        return results;
     }
 
-    /**
-     * Returns all components of Type type in the Object3D or any of its children children using depth first search. Works recursively.
-     *
-     * Unity searches for components recursively on child Object3Ds. This means that it also includes all the child Object3Ds of the target Object3D, and all subsequent child Object3Ds.
-     *
-     * @param type The type of Component to retrieve.
-     * @param includeInactive Should Components on inactive Object3Ds be included in the found set?
-     * @param results List to receive found Components.
-     * @returns All found Components.
-     */
-    /**
-     * 使用深度优先搜索返回 Object3D 或其任何子子项中 Type 的所有组件。递归工作。
-     *
-     * Unity 在子游戏对象上递归搜索组件。这意味着它还包括目标 Object3D 的所有子 Object3D，以及所有后续子 Object3D。
-     *
-     * @param type 要检索的组件类型。
-     * @param includeInactive 非活动游戏对象上的组件是否应该包含在搜索结果中？
-     * @param results 列出接收找到的组件。
-     * @returns 所有找到的组件。
-     */
     getComponentsInChildren<T extends Component>(type: Constructor<T>, includeInactive = false, results: T[] = []): T[]
     {
-        return _object3DLogic(this._object3D).getComponentsInChildren(type, includeInactive, results);
+        this.getComponents(type, results);
+
+        const children = this._object3D.children as Object3D[];
+        for (const child of children)
+        {
+            if (!includeInactive && !child.activeSelf) continue;
+            for (const c of child.components)
+            {
+                if (!type || c instanceof type) results.push(c as T);
+            }
+            // 递归孙级
+            for (const grandchild of child.children as Object3D[])
+            {
+                for (const c of grandchild.components)
+                {
+                    if (!type || c instanceof type) results.push(c as T);
+                }
+            }
+        }
+
+        return results;
     }
 
-    /**
-     * Returns all components of Type type in the Object3D or any of its parents.
-     *
-     * @param type The type of Component to retrieve.
-     * @param includeInactive Should inactive Components be included in the found set?
-     * @param results List holding the found Components.
-     * @returns All components of Type type in the Object3D or any of its parents.
-     */
-    /**
-     * 返回Object3D或其任何父级中指定的所有组件。
-     *
-     * @param type 要检索的组件类型。
-     * @param includeInactive 非活动组件是否应该包含在搜索结果中？
-     * @param results 列出找到的组件。
-     * @returns Object3D或其任何父级中指定的所有组件。
-     */
     getComponentsInParent<T extends Component>(type: Constructor<T>, includeInactive = false, results: T[] = []): T[]
     {
-        return _object3DLogic(this._object3D).getComponentsInParent(type, includeInactive, results);
+        if (includeInactive || this._object3D.activeSelf)
+        {
+            this.getComponents(type, results);
+        }
+        let parent = this._object3D.parent as Object3D;
+        while (parent)
+        {
+            if (includeInactive || parent.activeSelf)
+            {
+                for (const c of parent.components)
+                {
+                    if (!type || c instanceof type) results.push(c as T);
+                }
+            }
+            parent = parent.parent as Object3D;
+        }
+
+        return results;
     }
 
     /**
