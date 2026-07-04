@@ -1,5 +1,5 @@
 import { gPartial } from '@feng3d/polyfill';
-import { effect, reactive, toRaw } from '@feng3d/reactivity';
+import { computed, Computed, effect, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { Component, _setObject3DLogic } from '../component/Component';
 import { Renderable } from './Renderable';
@@ -13,9 +13,10 @@ import { entityLogic } from './entityLogic';
 /**
  * Object3D 逻辑处理输出。
  *
- * 包含激活状态、包围盒、加载状态、生命周期等行为函数。
+ * 包含激活状态、包围盒、加载状态等 computed 属性与 dispose 行为。
  * 组件操作直接使用 reactive(object3D).components。
  * 子级操作直接使用 reactive(object3D).children。
+ * activeSelf 修改直接使用 reactive(object3D).activeSelf = value。
  *
  * 响应式使用规则：
  * 1. 监听 — 读取 reactive(object3D) 的属性建立响应式依赖
@@ -24,22 +25,17 @@ import { entityLogic } from './entityLogic';
  */
 export interface Object3DLogic
 {
-    // ---- active state ----
-    setActive(value: boolean): void;
-    readonly activeInHierarchy: boolean;
-
-    // ---- bounding box ----
+    /** 层级激活状态 */
+    readonly activeInHierarchy: Computed<boolean>;
+    /** 自身是否加载完成 */
+    readonly isSelfLoaded: Computed<boolean>;
+    /** 包含子级是否全部加载完成 */
+    readonly isLoaded: Computed<boolean>;
+    /** 轴对称包围盒 */
     readonly boundingBox: BoundingBox;
 
-    // ---- load state ----
-    readonly isSelfLoaded: boolean;
-    onSelfLoadCompleted(callback: () => void): void;
-    readonly isLoaded: boolean;
-    onLoadCompleted(callback: () => void): void;
-
-    // ---- lifecycle ----
+    /** 销毁 */
     dispose(): void;
-    disposeWithChildren(): void;
 }
 
 const logicMap = new WeakMap<Object3D, Object3DLogic>();
@@ -47,7 +43,7 @@ const logicMap = new WeakMap<Object3D, Object3DLogic>();
 /**
  * 获取 Object3D 的逻辑处理输出。
  *
- * 使用 WeakMap 缓存，同一 Object3D 始终返回同一组行为函数。
+ * 使用 WeakMap 缓存，同一 Object3D 始终返回同一组输出。
  */
 export function object3DLogic(object3D: Object3D): Object3DLogic
 {
@@ -67,60 +63,40 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
     // 触发 containerLogic（注册子级自动同步 parent effect）
     containerLogic(object3D);
 
-    let boundingBox: BoundingBox | null = null;
-
-    function parentOf(): Object3D | null
-    {
-        return reactive(object3D).parent as unknown as Object3D | null;
-    }
-
-    function childrenOf(): Object3D[]
-    {
-        return reactive(object3D).children as unknown as Object3D[];
-    }
-
     // ---- 响应式同步：parent 变化时联动 scene ----
     effect(() =>
     {
-        const parent = parentOf();
+        const parent = reactive(object3D).parent as unknown as Object3D | null;
         const newScene = parent ? parent.scene : null;
         reactive(object3D).scene = newScene;
     });
 
-    // ---- active state ----
+    // ---- computed ----
 
-    function setActive(value: boolean): void
+    const activeInHierarchy = computed<boolean>(() =>
     {
-        reactive(object3D).activeSelf = value;
-    }
-
-    function getActiveInHierarchy(): boolean
-    {
-        let activeSelf = object3D.activeSelf;
-        const parent = parentOf();
+        let active = reactive(object3D).activeSelf;
+        const parent = reactive(object3D).parent as unknown as Object3D | null;
         if (parent)
         {
-            activeSelf = activeSelf && object3DLogic(parent).activeInHierarchy;
+            active = active && object3DLogic(parent).activeInHierarchy.value;
         }
 
-        return activeSelf;
-    }
+        return active;
+    });
 
-    // ---- bounding box ----
-
+    let _boundingBox: BoundingBox | null = null;
     function getBoundingBox(): BoundingBox
     {
-        if (!boundingBox)
+        if (!_boundingBox)
         {
-            boundingBox = new BoundingBox(object3D);
+            _boundingBox = new BoundingBox(object3D);
         }
 
-        return boundingBox;
+        return _boundingBox;
     }
 
-    // ---- load state ----
-
-    function getIsSelfLoaded(): boolean
+    const isSelfLoaded = computed<boolean>(() =>
     {
         const components = object3D.components;
         for (let i = 0; i < components.length; i++)
@@ -132,69 +108,19 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
         }
 
         return true;
-    }
+    });
 
-    function onSelfLoadCompleted(callback: () => void): void
+    const isLoaded = computed<boolean>(() =>
     {
-        if (getIsSelfLoaded())
-        {
-            callback();
-
-            return;
-        }
-        const components = object3D.components;
-        for (let i = 0; i < components.length; i++)
-        {
-            if (components[i] instanceof Renderable)
-            {
-                (components[i] as any).onLoadCompleted(callback);
-
-                return;
-            }
-        }
-        callback();
-    }
-
-    function getIsLoaded(): boolean
-    {
-        if (!getIsSelfLoaded()) return false;
-        const children = childrenOf();
+        if (!isSelfLoaded.value) return false;
+        const children = reactive(object3D).children as unknown as Object3D[];
         for (let i = 0; i < children.length; i++)
         {
-            if (!object3DLogic(children[i]).isLoaded) return false;
+            if (!object3DLogic(children[i]).isLoaded.value) return false;
         }
 
         return true;
-    }
-
-    function onLoadCompleted(callback: () => void): void
-    {
-        let loadingNum = 0;
-        if (!getIsSelfLoaded())
-        {
-            loadingNum++;
-            onSelfLoadCompleted(() =>
-            {
-                loadingNum--;
-                if (loadingNum === 0) callback();
-            });
-        }
-        const children = childrenOf();
-        for (let i = 0; i < children.length; i++)
-        {
-            const child = children[i];
-            if (!object3DLogic(child).isLoaded)
-            {
-                loadingNum++;
-                object3DLogic(child).onLoadCompleted(() =>
-                {
-                    loadingNum--;
-                    if (loadingNum === 0) callback();
-                });
-            }
-        }
-        if (loadingNum === 0) callback();
-    }
+    });
 
     // ---- lifecycle ----
 
@@ -207,7 +133,7 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
             reactive(parent).children.splice(reactive(parent).children.indexOf(object3D), 1);
         }
         // 移除所有子对象
-        const children = childrenOf();
+        const children = reactive(object3D).children as unknown as Object3D[];
         for (let i = children.length - 1; i >= 0; i--)
         {
             object3DLogic(children[i]).dispose();
@@ -223,24 +149,13 @@ function createObject3DLogic(object3D: Object3D): Object3DLogic
         logicMap.delete(object3D);
     }
 
-    function disposeWithChildren(): void
-    {
-        dispose();
-    }
-
     return {
-        setActive,
-        get activeInHierarchy() { return getActiveInHierarchy(); },
-
+        activeInHierarchy,
+        isSelfLoaded,
+        isLoaded,
         get boundingBox() { return getBoundingBox(); },
 
-        get isSelfLoaded() { return getIsSelfLoaded(); },
-        onSelfLoadCompleted,
-        get isLoaded() { return getIsLoaded(); },
-        onLoadCompleted,
-
         dispose,
-        disposeWithChildren,
     };
 }
 
