@@ -84,7 +84,21 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
-        transformLogic(shadowCamera.transform).setLocal2world(transformLogic(light.transform).local2world.value);
+        {
+            const t = shadowCamera.transform;
+            let localMatrix = transformLogic(light.transform).local2world.value.clone();
+            const parent = reactive(t).parent;
+            if (parent) localMatrix.append(transformLogic(parent).world2local.value);
+            const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+            localMatrix.toTRS(pos, rot, scl);
+            const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+            batchRun(() =>
+            {
+                r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
+                r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
+                r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+            });
+        }
 
         // 获取影响阴影图的渲染对象
         const models = scene.getModelsByCamera(shadowCamera);
@@ -128,7 +142,21 @@ export class ShadowRenderer
 
         for (let face = 0; face < 6; face++)
         {
-            transformLogic(shadowCamera.transform).lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
+            {
+                const t = shadowCamera.transform;
+                const target = light.position.addTo(cubeDirections[face]);
+                const m = transformLogic(t).matrix.value.clone();
+                m.lookAt(target, cubeUps[face]);
+                const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+                m.toTRS(pos, rot, scl);
+                const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+                batchRun(() =>
+                {
+                    r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
+                    r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
+                    r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+                });
+            }
 
             // 获取影响阴影图的渲染对象
             const models = scene.getModelsByCamera(shadowCamera);

@@ -130,7 +130,8 @@ export class Renderable extends RayCastable
      */
     worldRayIntersection(worldRay: Ray3)
     {
-        const localRay = transformLogic(this.transform).rayWorld2local(worldRay);
+        const localRay = new Ray3();
+        transformLogic(this.transform).world2local.value.transformRay(worldRay, localRay);
         const pickingCollisionVO = this.localRayIntersection(localRay);
 
         return pickingCollisionVO;

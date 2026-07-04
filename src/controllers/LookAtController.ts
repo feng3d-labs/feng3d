@@ -1,4 +1,5 @@
 import { Vector3 } from '@feng3d/math';
+import { batchRun, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { transformLogic } from '../core/transformLogic';
 import { ControllerBase } from './ControllerBase';
@@ -62,14 +63,29 @@ export class LookAtController extends ControllerBase
         {
             if (this._lookAtPosition)
             {
-                transformLogic(this._targetObject.transform).lookAt(this.lookAtPosition, this._upAxis);
+                this._lookAtTransform(this._targetObject.transform, this.lookAtPosition, this._upAxis);
             }
             else if (this._lookAtObject)
             {
                 const pos = this._lookAtObject.transform.position;
                 this._pos.set(pos.x, pos.y, pos.z);
-                transformLogic(this._targetObject.transform).lookAt(this._pos, this._upAxis);
+                this._lookAtTransform(this._targetObject.transform, this._pos, this._upAxis);
             }
         }
+    }
+
+    private _lookAtTransform(t: any, target: Vector3, upAxis: Vector3)
+    {
+        const m = transformLogic(t).matrix.value.clone();
+        m.lookAt(target, upAxis);
+        const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+        m.toTRS(pos, rot, scl);
+        const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+        batchRun(() =>
+        {
+            r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
+            r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
+            r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+        });
     }
 }

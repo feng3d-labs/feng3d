@@ -1,4 +1,13 @@
-import { Camera, Color4, Object3D, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic } from 'feng3d';
+import { batchRun, Camera, Color4, Object3D, PerspectiveLens, reactive, Renderable, Scene, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, Transform, TorusGeometry, Vector3, View, windowEventProxy, object3DLogic } from 'feng3d';
+
+function lookAtTransform(t: Transform, target: Vector3, upAxis?: Vector3) {
+    const m = transformLogic(t).matrix.value.clone();
+    m.lookAt(target, upAxis);
+    const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+    m.toTRS(pos, rot, scl);
+    const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+    batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
+}
 const sceneObject3D = new Object3D(); reactive(sceneObject3D).name = "Untitled";
 const scene = object3DLogic(sceneObject3D).addComponent(Scene);
 scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
@@ -27,7 +36,7 @@ skyboxComponent.s_skyboxTexture = cubeTexture;
 object3DLogic(scene.object3D).addChild(skybox);
 
 reactive(camera.transform.position).z = -6;
-transformLogic(camera.transform).lookAt(new Vector3());
+lookAtTransform(camera.transform, new Vector3());
 camera.lens = new PerspectiveLens(90);
 
 const torusMaterial = new StandardMaterial();
@@ -46,5 +55,9 @@ ticker.onframe(() => {
     reactive(torus.transform.rotation).y += 1;
     { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 0; _r.z = 0; }
     reactive(camera.transform.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
-    transformLogic(camera.transform).moveBackward(6);
+    // moveBackward: translate along local -Z by distance
+    const _m = transformLogic(camera.transform).matrix.value;
+    const _back = _m.getAxisZ().scaleNumber(-6);
+    const _r_pos = reactive(camera.transform.position);
+    _r_pos.x += _back.x; _r_pos.y += _back.y; _r_pos.z += _back.z;
 });

@@ -1,4 +1,13 @@
-import { Camera, Color4, FPSController, Object3D, reactive, Renderable, Scene, StandardMaterial, transformLogic, Vector3, View, object3DLogic, createPrimitive } from 'feng3d';
+import { batchRun, Camera, Color4, FPSController, Object3D, reactive, Renderable, Scene, StandardMaterial, transformLogic, Transform, Vector3, View, object3DLogic, createPrimitive } from 'feng3d';
+
+function lookAtTransform(t: Transform, target: Vector3, upAxis?: Vector3) {
+    const m = transformLogic(t).matrix.value.clone();
+    m.lookAt(target, upAxis);
+    const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+    m.toTRS(pos, rot, scl);
+    const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+    batchRun(() => { r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z; r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z; r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z; });
+}
 /**
  * 操作方式:鼠标按下后可以使用移动鼠标改变旋转，wasdqe平移
  */
@@ -14,7 +23,7 @@ object3DLogic(scene.object3D).addChild(camera.object3D);
 const engine = new View(null, scene, camera);
 
 reactive(camera.transform.position).z = -5;
-transformLogic(camera.transform).lookAt(new Vector3());
+lookAtTransform(camera.transform, new Vector3());
 object3DLogic(camera.object3D).addComponent(FPSController);
 
 const cube = createPrimitive("Cube");

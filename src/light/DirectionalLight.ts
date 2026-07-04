@@ -83,7 +83,20 @@ export class DirectionalLight extends Light
             _r_pos.y = _pos.y;
             _r_pos.z = _pos.z;
         });
-        transformLogic(this.shadowCamera.transform).lookAt(center, transformLogic(this.shadowCamera.transform).rotationMatrix.value.getAxisY());
+        {
+            const t = this.shadowCamera.transform;
+            const m = transformLogic(t).matrix.value.clone();
+            m.lookAt(center, transformLogic(t).rotationMatrix.value.getAxisY());
+            const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+            m.toTRS(pos, rot, scl);
+            const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+            batchRun(() =>
+            {
+                r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
+                r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
+                r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+            });
+        }
         //
         if (!this.orthographicLens)
         {

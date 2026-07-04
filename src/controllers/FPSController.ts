@@ -2,7 +2,7 @@ import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { reactive } from '@feng3d/reactivity';
+import { batchRun, reactive } from '@feng3d/reactivity';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
@@ -156,7 +156,21 @@ export class FPSController extends Behaviour
                 up.scaleNumber(-1);
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-            transformLogic(this.transform).setLocal2world(matrix);
+            {
+                const t = this.transform;
+                let localMatrix = matrix.clone();
+                const parent = reactive(t).parent;
+                if (parent) localMatrix.append(transformLogic(parent).world2local.value);
+                const pos = new Vector3(); const rot = new Vector3(); const scl = new Vector3();
+                localMatrix.toTRS(pos, rot, scl);
+                const r_pos = reactive(t.position); const r_rot = reactive(t.rotation); const r_scl = reactive(t.scale);
+                batchRun(() =>
+                {
+                    r_pos.x = pos.x; r_pos.y = pos.y; r_pos.z = pos.z;
+                    r_rot.x = rot.x; r_rot.y = rot.y; r_rot.z = rot.z;
+                    r_scl.x = scl.x; r_scl.y = scl.y; r_scl.z = scl.z;
+                });
+            }
             //
             this.preMousePoint = this.mousePoint;
             this.mousePoint = null;
