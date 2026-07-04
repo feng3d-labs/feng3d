@@ -38,10 +38,10 @@ function createEntityLogic(entity: Entity): EntityLogic
     effect(() =>
     {
         const r_components = reactive(entity).components as Component[];
-        for (const component of r_components)
+        for (const r_component of r_components)
         {
             // 用 toRaw 获取原始组件，确保 EventEmitter 内部映射正确
-            const rawComponent = toRaw(component);
+            const rawComponent = toRaw(r_component);
             if (!initialized.has(rawComponent))
             {
                 initialized.add(rawComponent);
