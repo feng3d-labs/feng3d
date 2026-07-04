@@ -1,4 +1,4 @@
-import { effect, reactive } from '@feng3d/reactivity';
+import { reactive, toRaw } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
 import { Entity } from './Entity';
 
@@ -34,8 +34,10 @@ export function entityLogic(entity: Entity): EntityLogic
 function createEntityLogic(entity: Entity): EntityLogic
 {
     // 拦截 components 数组的 push：新组件自动 setObject3D + init
-    const r_components = reactive(entity).components as any;
-    const origPush = r_components.push.bind(r_components);
+    // 注意：必须用 toRaw 获取原始数组，否则 origPush 会再次触发响应式代理的 push 导致无限递归
+    const r_components = reactive(entity).components;
+    const rawComponents = toRaw(r_components);
+    const origPush = rawComponents.push.bind(rawComponents);
     r_components.push = function (...items: Component[])
     {
         for (const component of items)
