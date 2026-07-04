@@ -1,24 +1,49 @@
-import * as feng3d from 'feng3d';
-const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
-scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
+import { Camera, Color4, GameObject, PerspectiveLens, reactive, Renderable, Scene, serialization, SkyBox, StandardMaterial, TextureCube, ticker, transformLogic, TorusGeometry, Vector3, View, windowEventProxy } from 'feng3d';
+const scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-const camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Main Camera" }).addComponent(feng3d.Camera);
-{ const _r = feng3d.reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+const camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
-const engine = new feng3d.View(null, scene, camera);
+const engine = new View(null, scene, camera);
+var canvas = engine.canvas;
 
-feng3d.reactive(camera.transform.position).z = -6;
-feng3d.reactive(camera.transform.position).y = 5;
-feng3d.transformLogic(camera.transform).lookAt(new feng3d.Vector3());
-
-const plane = new feng3d.GameObject();
-const model = plane.addComponent(feng3d.Renderable);
-model.geometry = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { width: 7, height: 7 });
-const material = model.material = feng3d.serialization.setValue(new feng3d.StandardMaterial(), { s_diffuse: { __class__: "Texture2D", source: { url: "/floor_diffuse.jpg" } } } as any);
-scene.gameObject.addChild(plane);
-
-feng3d.ticker.onframe(() => {
-    feng3d.reactive(plane.transform.rotation).y += 1;
+const cubeTexture = serialization.setValue(new TextureCube(), {
+    urls: [
+        '/skybox/snow_positive_x.jpg',
+        '/skybox/snow_positive_y.jpg',
+        '/skybox/snow_positive_z.jpg',
+        '/skybox/snow_negative_x.jpg',
+        '/skybox/snow_negative_y.jpg',
+        '/skybox/snow_negative_z.jpg',
+    ]
 });
 
+const skybox = serialization.setValue(new GameObject(), { name: "skybox" });
+const skyboxComponent = skybox.addComponent(SkyBox);
+skyboxComponent.s_skyboxTexture = cubeTexture;
+scene.gameObject.addChild(skybox);
+
+reactive(camera.transform.position).z = -6;
+transformLogic(camera.transform).lookAt(new Vector3());
+camera.lens = new PerspectiveLens(90);
+
+const torusMaterial = new StandardMaterial();
+torusMaterial.s_envMap = cubeTexture;
+torusMaterial.uniforms.u_ambient.fromUnit(0x111111);
+torusMaterial.uniforms.u_ambient.a = 0.25;
+
+const torus = serialization.setValue(new GameObject(), { name: "torus" });
+const model = torus.addComponent(Renderable);
+model.geometry = serialization.setValue(new TorusGeometry(), { radius: 1.50, tubeRadius: 0.60, segmentsR: 40, segmentsT: 20 });
+model.material = torusMaterial;
+scene.gameObject.addChild(torus);
+
+ticker.onframe(() => {
+    reactive(torus.transform.rotation).x += 2;
+    reactive(torus.transform.rotation).y += 1;
+    { const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 0; _r.z = 0; }
+    reactive(camera.transform.rotation).y += 0.5 * (windowEventProxy.clientX - canvas.clientLeft - canvas.clientWidth / 2) / 800;
+    transformLogic(camera.transform).moveBackward(6);
+});

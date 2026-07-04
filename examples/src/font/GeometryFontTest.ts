@@ -1,17 +1,16 @@
-import * as feng3d from 'feng3d';
-import { reactive } from '@feng3d/reactivity';
+import { Camera, Color4, CustomGeometry, FPSController, Font, GameObject, reactive, Renderable, Scene, serialization, StandardMaterial, View } from 'feng3d';
 import * as opentype from 'opentype.js';
 
-var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
-scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
+var scene = serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(Scene);
+scene.background = new Color4(0.408, 0.38, 0.357, 1.0);
 
-var camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Main Camera" }).addComponent(feng3d.Camera);
-{ const _r = feng3d.reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
+var camera = serialization.setValue(new GameObject(), { name: "Main Camera" }).addComponent(Camera);
+{ const _r = reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
-var engine = new feng3d.View(null, scene, camera);
+var engine = new View(null, scene, camera);
 
-camera.gameObject.addComponent(feng3d.FPSController);
+camera.gameObject.addComponent(FPSController);
 
 // 使用 fetch + opentype.parse 替代已弃用的 opentype.load
 fetch('/fonts/simfang.ttf')
@@ -25,28 +24,28 @@ fetch('/fonts/simfang.ttf')
         const font = opentype.parse(buffer);
         const fontData = extractFontData(font);
         const contoursInfo = convert(fontData);
-        const font1 = new feng3d.Font(contoursInfo);
+        const font1 = new Font(contoursInfo);
         // font1.isCCW = !!font['isCIDFont'];
 
         // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图', 1);
         // const { vertices, normals, uvs, indices } = font1.calculateGeometry('图纸!', 1);
         const { vertices, normals, uvs, indices } = font1.calculateGeometry(text1, 1);
 
-        const geometry = new feng3d.CustomGeometry();
+        const geometry = new CustomGeometry();
 
         geometry.positions = Array.from(vertices);
         geometry.normals = Array.from(normals);
         geometry.uvs = Array.from(uvs);
         geometry.indices = Array.from(indices);
 
-        var cube = new feng3d.GameObject().addComponent(feng3d.Renderable);
-        feng3d.reactive(cube.transform.position).x = -7;
-        feng3d.reactive(cube.transform.position).y = 7;
-        feng3d.reactive(cube.transform.rotation).x = 180;
+        var cube = new GameObject().addComponent(Renderable);
+        reactive(cube.transform.position).x = -7;
+        reactive(cube.transform.position).y = 7;
+        reactive(cube.transform.rotation).x = 180;
         scene.gameObject.addChild(cube.gameObject);
 
         //材质
-        var material = cube.material = new feng3d.StandardMaterial();
+        var material = cube.material = new StandardMaterial();
         reactive(material.renderPipeline.primitive).frontFace = 'ccw';
         reactive(material.renderPipeline.primitive).cullFace = 'none';
 
