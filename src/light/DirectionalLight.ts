@@ -1,11 +1,13 @@
 import { Box3, Vector3 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { batchRun, reactive } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { OrthographicLens } from '../cameras/lenses/OrthographicLens';
 import { RegisterComponent } from '../component/Component';
 import { GameObject } from '../core/GameObject';
 import { Renderable } from '../core/Renderable';
+import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { Scene } from '../scene/Scene';
@@ -44,7 +46,7 @@ export class DirectionalLight extends Light
      */
     get position()
     {
-        return this.shadowCamera.transform.worldPosition;
+        return transformLogic(this.shadowCamera.transform).worldPosition.value;
     }
 
     constructor()
@@ -72,8 +74,15 @@ export class DirectionalLight extends Light
         const center = worldBounds.getCenter();
         const radius = worldBounds.getSize().length / 2;
         //
-        this.shadowCamera.transform.setPosition(center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate()));
-        this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.rotationMatrix.value.getAxisY());
+        const _pos = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
+        const _r_pos = reactive(this.shadowCamera.transform.position);
+        batchRun(() =>
+        {
+            _r_pos.x = _pos.x;
+            _r_pos.y = _pos.y;
+            _r_pos.z = _pos.z;
+        });
+        transformLogic(this.shadowCamera.transform).lookAt(center, transformLogic(this.shadowCamera.transform).rotationMatrix.value.getAxisY());
         //
         if (!this.orthographicLens)
         {

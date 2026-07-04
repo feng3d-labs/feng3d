@@ -1,6 +1,6 @@
 import { Color3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { reactive } from '@feng3d/reactivity';
+import { batchRun, reactive } from '@feng3d/reactivity';
 import { serialize, serialization } from '@feng3d/serialization';
 import { Camera } from '../cameras/Camera';
 import { Behaviour } from '../component/Behaviour';
@@ -8,6 +8,7 @@ import { BillboardComponent } from '../component/BillboardComponent';
 import { GameObject } from '../core/GameObject';
 import { HideFlags } from '../core/HideFlags';
 import { Renderable } from '../core/Renderable';
+import { transformLogic } from '../core/transformLogic';
 import { Material } from '../materials/Material';
 import { PlaneGeometry } from '../primitives/PlaneGeometry';
 import { FrameBufferObject } from '../render/FrameBufferObject';
@@ -52,7 +53,7 @@ export class Light extends Behaviour
      */
     get position()
     {
-        return this.transform.worldPosition;
+        return transformLogic(this.transform).worldPosition.value;
     }
 
     /**
@@ -60,7 +61,7 @@ export class Light extends Behaviour
      */
     get direction()
     {
-        return this.transform.localToWorldMatrix.value.getAxisZ();
+        return transformLogic(this.transform).local2world.value.getAxisZ();
     }
 
     /**
@@ -150,7 +151,14 @@ export class Light extends Behaviour
         }
 
         const depth = viewCamera.lens.near * 2;
-        gameObject.transform.setPosition(viewCamera.transform.worldPosition.addTo(viewCamera.transform.localToWorldMatrix.value.getAxisZ().scaleNumberTo(depth)));
+        const _pos = transformLogic(viewCamera.transform).worldPosition.value.addTo(transformLogic(viewCamera.transform).local2world.value.getAxisZ().scaleNumberTo(depth));
+        const _r_pos = reactive(gameObject.transform.position);
+        batchRun(() =>
+        {
+            _r_pos.x = _pos.x;
+            _r_pos.y = _pos.y;
+            _r_pos.z = _pos.z;
+        });
         const billboardComponent = gameObject.getComponent(BillboardComponent);
         billboardComponent.camera = viewCamera;
 

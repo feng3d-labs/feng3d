@@ -198,12 +198,7 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     /**
      * The Transform attached to this GameObject.
      */
-    get transform()
-    {
-        const transform = this.getComponent(Transform);
-
-        return transform;
-    }
+    readonly transform = new Transform();
 
     /**
      * 轴对称包围盒
@@ -269,7 +264,6 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
     {
         super();
         this.name = 'GameObject';
-        this.addComponent(Transform);
     }
 
     /**
@@ -1004,7 +998,6 @@ export class GameObject extends Feng3dObject<GameObjectEventMap> implements IDis
         this._parent = value;
         this.updateScene();
         reactive(this.transform).parent = value ? value.transform : null;
-        this.transform['_invalidateSceneTransform']();
     }
 
     private updateScene()

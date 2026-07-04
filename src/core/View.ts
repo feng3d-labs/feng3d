@@ -1,5 +1,5 @@
 import { Ray3, Rectangle, Vector2, Vector3 } from '@feng3d/math';
-import { UnReadonly } from '@feng3d/reactivity';
+import { batchRun, reactive, UnReadonly } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { RenderPass, RenderPassColorAttachment, RenderPassObject, Submit, WebGPU } from '@feng3d/webgpu';
@@ -18,7 +18,7 @@ import { Feng3dObject } from './Feng3dObject';
 import { GameObject } from './GameObject';
 import { Mouse3DManager, WindowMouseInput } from './Mouse3DManager';
 import { Renderable } from './Renderable';
-import { Transform } from './Transform';
+import { transformLogic } from './transformLogic';
 
 /**
  * 视图
@@ -358,25 +358,39 @@ export class View extends Feng3dObject
         const max = s.clone().max(e);
         const rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
         //
-        const gs = this.scene.getComponentsInChildren(Transform).filter((t) =>
+        const gs: GameObject[] = [];
+        const _gameObjects: GameObject[] = [this.scene.gameObject];
+        while (_gameObjects.length > 0)
         {
-            if (t === this.scene.transform) return false;
-            const m = t.getComponent(Renderable);
-            if (m)
+            const gameObject = _gameObjects.pop();
+            if (gameObject === this.scene.gameObject) { /* skip scene root */ }
+            else
             {
-                const include = m.selfWorldBounds.value.toPoints().every((pos) =>
+                const transform = gameObject.transform;
+                const m = gameObject.getComponent(Renderable);
+                let include: boolean;
+                if (m)
                 {
-                    const p = this.project(pos);
+                    include = m.selfWorldBounds.value.toPoints().every((pos) =>
+                    {
+                        const p = this.project(pos);
 
-                    return rect.contains(p.x, p.y);
-                });
+                        return rect.contains(p.x, p.y);
+                    });
+                }
+                else
+                {
+                    const p = this.project(transformLogic(transform).worldPosition.value);
 
-                return include;
+                    include = rect.contains(p.x, p.y);
+                }
+                if (include)
+                {
+                    gs.push(gameObject);
+                }
             }
-            const p = this.project(t.worldPosition);
-
-            return rect.contains(p.x, p.y);
-        }).map((t) => t.gameObject);
+            _gameObjects.push(...gameObject.children);
+        }
 
         return gs;
     }
@@ -391,14 +405,19 @@ export class View extends Feng3dObject
 
         const camera = GameObject.createPrimitive('Camera', { name: 'Main Camera' });
         camera.addComponent(AudioListener);
-        camera.transform.setPosition(new Vector3(0, 1, -10));
+        {
+            const _r_pos = reactive(camera.transform.position);
+            batchRun(() => { _r_pos.x = 0; _r_pos.y = 1; _r_pos.z = -10; });
+        }
         scene.gameObject.addChild(camera);
 
         const directionalLight = serialization.setValue(new GameObject(), { name: 'DirectionalLight' });
         directionalLight.addComponent(DirectionalLight).shadowType = ShadowType.Hard_Shadows;
-        directionalLight.transform.rx = 50;
-        directionalLight.transform.ry = -30;
-        directionalLight.transform.y = 3;
+        {
+            const _r_rot = reactive(directionalLight.transform.rotation);
+            batchRun(() => { _r_rot.x = 50; _r_rot.y = -30; });
+        }
+        reactive(directionalLight.transform.position).y = 3;
         scene.gameObject.addChild(directionalLight);
 
         return scene;

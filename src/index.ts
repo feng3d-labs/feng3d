@@ -42,6 +42,7 @@ export * from './core/Script';
 export * from './core/ScriptComponent';
 export * from './core/Transform';
 export * from './core/TransformLayout';
+export * from './core/transformLogic';
 export * from './core/View';
 export * from './geometry/CustomGeometry';
 export * from './geometry/Geometry';

@@ -2,10 +2,12 @@ import { IEvent } from '@feng3d/event';
 import { Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { reactive } from '@feng3d/reactivity';
 import { windowEventProxy } from '@feng3d/shortcut';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
 import { RunEnvironment } from '../core/RunEnvironment';
+import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 
 declare global
@@ -146,7 +148,7 @@ export class FPSController extends Behaviour
             // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
             // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
-            const matrix = this.transform.localToWorldMatrix.value;
+            const matrix = transformLogic(this.transform).local2world.value;
             matrix.appendRotation(matrix.getAxisX(), offsetPoint.y, matrix.getPosition());
             const up = Vector3.Y_AXIS.clone();
             if (matrix.getAxisY().dot(up) < 0)
@@ -154,7 +156,7 @@ export class FPSController extends Behaviour
                 up.scaleNumber(-1);
             }
             matrix.appendRotation(up, offsetPoint.x, matrix.getPosition());
-            this.transform.setLocalToWorldMatrix(matrix);
+            transformLogic(this.transform).setLocal2world(matrix);
             //
             this.preMousePoint = this.mousePoint;
             this.mousePoint = null;
@@ -173,9 +175,9 @@ export class FPSController extends Behaviour
         accelerationVec.scaleNumber(this.acceleration);
         // 计算速度
         this.velocity.add(accelerationVec);
-        const right = this.transform.localToWorldMatrix.value.getAxisX();
-        const up = this.transform.localToWorldMatrix.value.getAxisY();
-        const forward = this.transform.localToWorldMatrix.value.getAxisZ();
+        const right = transformLogic(this.transform).local2world.value.getAxisX();
+        const up = transformLogic(this.transform).local2world.value.getAxisY();
+        const forward = transformLogic(this.transform).local2world.value.getAxisZ();
         right.scaleNumber(this.velocity.x);
         up.scaleNumber(this.velocity.y);
         forward.scaleNumber(this.velocity.z);
@@ -183,9 +185,10 @@ export class FPSController extends Behaviour
         const displacement = right.clone();
         displacement.add(up);
         displacement.add(forward);
-        this.transform.x += displacement.x;
-        this.transform.y += displacement.y;
-        this.transform.z += displacement.z;
+        const r_pos = reactive(this.transform.position);
+        r_pos.x += displacement.x;
+        r_pos.y += displacement.y;
+        r_pos.z += displacement.z;
     }
     private mousePoint: Vector2 | null;
     /**

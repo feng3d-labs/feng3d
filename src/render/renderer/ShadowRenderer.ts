@@ -1,7 +1,9 @@
 import { Vector3 } from '@feng3d/math';
+import { batchRun, reactive } from '@feng3d/reactivity';
 import { RenderPass, RenderPassObject, Submit } from '@feng3d/webgpu';
 import { Camera } from '../../cameras/Camera';
 import { Renderable } from '../../core/Renderable';
+import { transformLogic } from '../../core/transformLogic';
 import { DirectionalLight } from '../../light/DirectionalLight';
 import { PointLight } from '../../light/PointLight';
 import { ShadowType } from '../../light/shadow/ShadowType';
@@ -82,7 +84,7 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
-        shadowCamera.transform.setLocalToWorldMatrix(light.transform.localToWorldMatrix.value);
+        transformLogic(shadowCamera.transform).setLocal2world(transformLogic(light.transform).local2world.value);
 
         // 获取影响阴影图的渲染对象
         const models = scene.getModelsByCamera(shadowCamera);
@@ -116,11 +118,17 @@ export class ShadowRenderer
         submit.commandEncoders[0].passEncoders.push(renderPass);
 
         const shadowCamera = light.shadowCamera;
-        shadowCamera.transform.setPosition(light.transform.position);
+        const _r_pos = reactive(shadowCamera.transform.position);
+        batchRun(() =>
+        {
+            _r_pos.x = light.transform.position.x;
+            _r_pos.y = light.transform.position.y;
+            _r_pos.z = light.transform.position.z;
+        });
 
         for (let face = 0; face < 6; face++)
         {
-            shadowCamera.transform.lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
+            transformLogic(shadowCamera.transform).lookAt(light.position.addTo(cubeDirections[face]), cubeUps[face]);
 
             // 获取影响阴影图的渲染对象
             const models = scene.getModelsByCamera(shadowCamera);

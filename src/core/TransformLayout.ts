@@ -2,6 +2,7 @@ import { IEvent } from '@feng3d/event';
 import { Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { batchRun, reactive } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
@@ -248,11 +249,15 @@ export class TransformLayout extends Component
         }
 
         //
-        this.transform.setPosition({
-            x: anchorLeftTop.x + position.x,
-            y: anchorLeftTop.y + position.y,
-            z: anchorLeftTop.z + position.z
-        });
+        {
+            const _r_pos = reactive(this.transform.position);
+            batchRun(() =>
+            {
+                _r_pos.x = anchorLeftTop.x + position.x;
+                _r_pos.y = anchorLeftTop.y + position.y;
+                _r_pos.z = anchorLeftTop.z + position.z;
+            });
+        }
         //
         this._layoutInvalid = false;
         ticker.offframe(this._updateLayout, this);

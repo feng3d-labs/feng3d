@@ -1,9 +1,11 @@
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { effect } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
+import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 
 export let audioCtx: AudioContext;
@@ -56,16 +58,19 @@ export class AudioListener extends Behaviour
     init()
     {
         super.init();
-        this.on('scenetransformChanged', this._onScenetransformChanged, this);
-        this._onScenetransformChanged();
+        effect(() =>
+        {
+            transformLogic(this.transform).local2world.value;
+            this._onScenetransformChanged();
+        });
     }
 
     private _onScenetransformChanged()
     {
-        const localToWorldMatrix = this.transform.localToWorldMatrix.value;
-        const position = localToWorldMatrix.getPosition();
-        const forward = localToWorldMatrix.getAxisZ();
-        const up = localToWorldMatrix.getAxisY();
+        const local2world = transformLogic(this.transform).local2world.value;
+        const position = local2world.getPosition();
+        const forward = local2world.getAxisZ();
+        const up = local2world.getAxisY();
         //
         const listener = audioCtx.listener;
         // feng3d中为左手坐标系，listener中使用的为右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/AudioListener
@@ -103,7 +108,6 @@ export class AudioListener extends Behaviour
 
     dispose()
     {
-        this.off('scenetransformChanged', this._onScenetransformChanged, this);
         super.dispose();
     }
 }

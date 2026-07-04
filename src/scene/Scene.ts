@@ -77,8 +77,7 @@ export class Scene extends Component
     init()
     {
         super.init();
-        this.transform.hideFlags = this.transform.hideFlags | HideFlags.Hide;
-        this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.DontTransform;
+        this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.Hide | HideFlags.DontTransform;
 
         //
         this._gameObject['_scene'] = this;

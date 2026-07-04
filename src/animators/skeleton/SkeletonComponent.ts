@@ -1,6 +1,7 @@
 import { Matrix4x4 } from '@feng3d/math';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { Component, RegisterComponent } from '../../component/Component';
+import { transformLogic } from '../../core/transformLogic';
 
 declare global
 {
@@ -37,7 +38,7 @@ export class SkeletonComponent extends Component
             const jointGameobject = this.gameObject.find(this.boneNames[i]);
 
             this._globalMatrices[i] = this._globalMatrices[i] || new Matrix4x4();
-            this._globalMatrices[i].copy(jointGameobject.transform.localToWorldMatrix.value).prepend(this.boneInverses[i]);
+            this._globalMatrices[i].copy(transformLogic(jointGameobject.transform).local2world.value).prepend(this.boneInverses[i]);
         }
 
         return this._globalMatrices;

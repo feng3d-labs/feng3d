@@ -2,6 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
+import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { Component, RegisterComponent } from './Component';
 
@@ -41,46 +42,45 @@ export class HoldSizeComponent extends Component
 
     init()
     {
-        this.transform.on('updateLocalToWorldMatrix', this._onUpdateLocalToWorldMatrix, this);
+        // TODO: use reactive effect to watch local2world
     }
 
     dispose()
     {
         this.camera = null;
-        this.transform.off('updateLocalToWorldMatrix', this._onUpdateLocalToWorldMatrix, this);
+        // TODO: use reactive effect to watch local2world
         super.dispose();
     }
 
-    private _onCameraChanged(value: Camera, oldValue: Camera)
+    private _onCameraChanged(_value: Camera, _oldValue: Camera)
     {
-        if (oldValue) oldValue.off('scenetransformChanged', this._invalidateSceneTransform, this);
-        if (value) value.on('scenetransformChanged', this._invalidateSceneTransform, this);
+        // TODO: use reactive effect to watch local2world
         this._invalidateSceneTransform();
     }
 
     private _invalidateSceneTransform()
     {
-        if (this._gameObject) this.transform['_invalidateSceneTransform']();
+        // TODO: use reactive effect to watch local2world
     }
 
     private _onUpdateLocalToWorldMatrix()
     {
-        const _localToWorldMatrix = this.transform['_localToWorldMatrix'];
-        if (this.holdSize && this.camera && _localToWorldMatrix)
+        const _local2world = this.transform['_local2world'];
+        if (this.holdSize && this.camera && _local2world)
         {
             const depthScale = this._getDepthScale(this.camera);
-            const vec = _localToWorldMatrix.toTRS();
+            const vec = _local2world.toTRS();
             vec[2].scaleNumber(depthScale * this.holdSize);
-            _localToWorldMatrix.fromTRS(vec[0], vec[1], vec[2]);
+            _local2world.fromTRS(vec[0], vec[1], vec[2]);
 
-            console.assert(!isNaN(_localToWorldMatrix.elements[0]));
+            console.assert(!isNaN(_local2world.elements[0]));
         }
     }
 
     private _getDepthScale(camera: Camera)
     {
-        const cameraTranform = camera.transform.localToWorldMatrix.value;
-        const distance = this.transform.worldPosition.subTo(cameraTranform.getPosition());
+        const cameraTranform = transformLogic(camera.transform).local2world.value;
+        const distance = transformLogic(this.transform).worldPosition.value.subTo(cameraTranform.getPosition());
         if (distance.length === 0)
         {
             distance.x = 1;

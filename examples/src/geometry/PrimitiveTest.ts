@@ -1,9 +1,9 @@
-import * as feng3d from 'feng3d';
-const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
+import {} from 'feng3d';
+const scene = feng3d.serialization.setValue(new GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene);
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
 
 const camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Main Camera" }).addComponent(feng3d.Camera);
-camera.transform.position = new feng3d.Vector3(0, 1, -10);
+{ const _r = feng3d.reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
 const engine = new feng3d.View(null, scene, camera);
@@ -26,8 +26,8 @@ matrix.appendTranslation(0, 0.50, 0);
 matrix.appendRotation(feng3d.Vector3.Z_AXIS, 45);
 geometry.addGeometry(addGeometry, matrix);
 
-gameobject.transform.z = 3;
-gameobject.transform.y = -1;
+feng3d.reactive(gameobject.transform.position).z = 3;
+feng3d.reactive(gameobject.transform.position).y = -1;
 scene.gameObject.addChild(gameobject);
 
 //初始化颜色材质
@@ -36,7 +36,7 @@ const colorUniforms = model.material as feng3d.ColorMaterial;
 
 //变化旋转与颜色
 setInterval(() => {
-    gameobject.transform.ry += 1;
+    feng3d.reactive(gameobject.transform.rotation).y += 1;
 }, 15);
 setInterval(() => {
     colorUniforms.uniforms.u_diffuseInput.fromUnit(Math.random() * (1 << 32 - 1));

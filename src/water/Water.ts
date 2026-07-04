@@ -7,6 +7,7 @@ import { Camera } from '../cameras/Camera';
 import { RegisterComponent } from '../component/Component';
 import { GameObject } from '../core/GameObject';
 import { Renderable } from '../core/Renderable';
+import { transformLogic } from '../core/transformLogic';
 import { Geometry } from '../geometry/Geometry';
 import { Material } from '../materials/Material';
 import { AddComponentMenu } from '../Menu';
@@ -53,7 +54,7 @@ export class Water extends Renderable
         if (sun)
         {
             uniforms.u_sunColor = sun.color;
-            uniforms.u_sunDirection = sun.transform.localToWorldMatrix.value.getAxisZ().negate();
+            uniforms.u_sunDirection = transformLogic(sun.transform).local2world.value.getAxisZ().negate();
         }
 
         const clipBias = 0;
@@ -67,10 +68,10 @@ export class Water extends Renderable
         // eslint-disable-next-line no-constant-condition
         if (1) return;
         //
-        const mirrorWorldPosition = this.transform.worldPosition;
-        const cameraWorldPosition = camera.transform.worldPosition;
+        const mirrorWorldPosition = transformLogic(this.transform).worldPosition.value;
+        const cameraWorldPosition = transformLogic(camera.transform).worldPosition.value;
 
-        let rotationMatrix = this.transform.rotationMatrix.value;
+        let rotationMatrix = transformLogic(this.transform).rotationMatrix.value;
 
         const normal = rotationMatrix.getAxisZ();
 
@@ -80,7 +81,7 @@ export class Water extends Renderable
         view.reflect(normal).negate();
         view.add(mirrorWorldPosition);
 
-        rotationMatrix = camera.transform.rotationMatrix.value;
+        rotationMatrix = transformLogic(camera.transform).rotationMatrix.value;
 
         const lookAtPosition = new Vector3(0, 0, -1);
         lookAtPosition.applyMatrix4x4(rotationMatrix);
@@ -98,7 +99,7 @@ export class Water extends Renderable
             r_position.y = view.y;
             r_position.z = view.z;
         });
-        mirrorCamera.transform.lookAt(target, rotationMatrix.getAxisY());
+        transformLogic(mirrorCamera.transform).lookAt(target, rotationMatrix.getAxisY());
 
         mirrorCamera.lens = camera.lens.clone();
 
@@ -112,7 +113,7 @@ export class Water extends Renderable
         );
         textureMatrix.append(mirrorCamera.viewProjection);
 
-        const mirrorPlane = Plane.fromNormalAndPoint(mirrorCamera.transform.worldToLocalMatrix.value.transformVector3(normal), mirrorCamera.transform.worldToLocalMatrix.value.transformPoint3(mirrorWorldPosition));
+        const mirrorPlane = Plane.fromNormalAndPoint(transformLogic(mirrorCamera.transform).world2local.value.transformVector3(normal), transformLogic(mirrorCamera.transform).world2local.value.transformPoint3(mirrorWorldPosition));
         const clipPlane = new Vector4(mirrorPlane.a, mirrorPlane.b, mirrorPlane.c, mirrorPlane.d);
 
         const projectionMatrix = mirrorCamera.lens.matrix;
@@ -131,7 +132,7 @@ export class Water extends Renderable
         projectionMatrix.elements[14] = clipPlane.w;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const eye = camera.transform.worldPosition;
+        const eye = transformLogic(camera.transform).worldPosition.value;
 
         // 不支持直接操作gl，下面代码暂时注释掉！
         // //

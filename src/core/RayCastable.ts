@@ -3,6 +3,7 @@ import { computed, reactive } from '@feng3d/reactivity';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
 import { PickingCollisionVO } from '../pick/Raycaster';
+import { transformLogic } from './transformLogic';
 
 declare global
 {
@@ -32,7 +33,7 @@ export class RayCastable extends Behaviour
         r_this.selfLocalBounds;
 
         //
-        const selfWorldBounds = this.selfLocalBounds.value.clone().applyMatrixTo(this.transform.localToWorldMatrix.value);
+        const selfWorldBounds = this.selfLocalBounds.value.clone().applyMatrixTo(transformLogic(this.transform).local2world.value);
 
         return selfWorldBounds;
     });

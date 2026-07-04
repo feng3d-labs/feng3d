@@ -1,5 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
+import { reactive } from '@feng3d/reactivity';
 import { GameObject } from '../core/GameObject';
+import { transformLogic } from '../core/transformLogic';
 import { LookAtController } from './LookAtController';
 
 export class HoverController extends LookAtController
@@ -238,10 +240,10 @@ export class HoverController extends LookAtController
             {
                 if (this._targetObject.transform.parent !== this._lookAtObject.transform.parent)
                 {
-                    this._pos.x = this._lookAtObject.transform.worldPosition.x;
-                    this._pos.y = this._lookAtObject.transform.worldPosition.y;
-                    this._pos.z = this._lookAtObject.transform.worldPosition.z;
-                    this._targetObject.transform.parent.worldToLocalMatrix.value.transformPoint3(this._pos, this._pos);
+                    this._pos.x = transformLogic(this._lookAtObject.transform).worldPosition.value.x;
+                    this._pos.y = transformLogic(this._lookAtObject.transform).worldPosition.value.y;
+                    this._pos.z = transformLogic(this._lookAtObject.transform).worldPosition.value.z;
+                    transformLogic(this._targetObject.transform.parent).world2local.value.transformPoint3(this._pos, this._pos);
                 }
                 else
                 {
@@ -250,9 +252,9 @@ export class HoverController extends LookAtController
             }
             else if (this._lookAtObject.scene)
             {
-                this._pos.x = this._lookAtObject.transform.worldPosition.x;
-                this._pos.y = this._lookAtObject.transform.worldPosition.y;
-                this._pos.z = this._lookAtObject.transform.worldPosition.z;
+                this._pos.x = transformLogic(this._lookAtObject.transform).worldPosition.value.x;
+                this._pos.y = transformLogic(this._lookAtObject.transform).worldPosition.value.y;
+                this._pos.z = transformLogic(this._lookAtObject.transform).worldPosition.value.z;
             }
             else
             {
@@ -265,9 +267,10 @@ export class HoverController extends LookAtController
             this._pos.y = this._origin.y;
             this._pos.z = this._origin.z;
         }
-        this._targetObject.transform.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
-        this._targetObject.transform.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
-        this._targetObject.transform.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * mathUtil.DEG2RAD) * this._yFactor;
+        const r_pos = reactive(this._targetObject.transform.position);
+        r_pos.x = this._pos.x + this._distance * Math.sin(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
+        r_pos.z = this._pos.z + this._distance * Math.cos(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD);
+        r_pos.y = this._pos.y + this._distance * Math.sin(this._currentTiltAngle * mathUtil.DEG2RAD) * this._yFactor;
         super.update();
     }
 }

@@ -1,9 +1,11 @@
 import { Frustum, Matrix4x4, Ray3, Vector2, Vector3 } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { effect } from '@feng3d/reactivity';
 import { serialization, serialize } from '@feng3d/serialization';
 import { Component, RegisterComponent } from '../component/Component';
 import { GameObject } from '../core/GameObject';
+import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { createNodeMenu } from '../menu/CreateNodeMenu';
 import { LensBase } from './lenses/LensBase';
@@ -130,7 +132,7 @@ export class Camera extends Component
         if (this._viewProjectionInvalid)
         {
             // 场景空间转摄像机空间
-            this._viewProjection.copy(this.transform.worldToLocalMatrix.value);
+            this._viewProjection.copy(transformLogic(this.transform).world2local.value);
             // +摄像机空间转投影空间 = 场景空间转投影空间
             this._viewProjection.append(this.lens.matrix);
             this._viewProjectionInvalid = false;
@@ -160,9 +162,12 @@ export class Camera extends Component
     {
         super.init();
         this.lens = this.lens || new PerspectiveLens();
-        //
-        this.on('scenetransformChanged', this.invalidateViewProjection, this);
-        this.invalidateViewProjection();
+        // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
+        effect(() =>
+        {
+            transformLogic(this.transform).local2world.value;
+            this.invalidateViewProjection();
+        });
     }
 
     /**
@@ -173,7 +178,7 @@ export class Camera extends Component
      */
     getRay3D(x: number, y: number, ray3D = new Ray3()): Ray3
     {
-        return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix.value);
+        return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(transformLogic(this.transform).local2world.value);
     }
 
     /**
@@ -183,7 +188,7 @@ export class Camera extends Component
      */
     project(point3d: Vector3): Vector3
     {
-        const v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.value.transformPoint3(point3d));
+        const v: Vector3 = this.lens.project(transformLogic(this.transform).world2local.value.transformPoint3(point3d));
 
         return v;
     }
@@ -198,7 +203,7 @@ export class Camera extends Component
      */
     unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
     {
-        return this.transform.localToWorldMatrix.value.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
+        return transformLogic(this.transform).local2world.value.transformPoint3(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
     }
 
     /**
@@ -220,9 +225,9 @@ export class Camera extends Component
         const cameraUniforms: CameraUniforms = {
             u_projectionMatrix: this.lens.matrix,
             u_viewProjection: this.viewProjection,
-            u_viewMatrix: this.transform.worldToLocalMatrix.value,
-            u_cameraMatrix: this.transform.localToWorldMatrix.value,
-            u_cameraPos: this.transform.worldPosition,
+            u_viewMatrix: transformLogic(this.transform).world2local.value,
+            u_cameraMatrix: transformLogic(this.transform).local2world.value,
+            u_cameraPos: transformLogic(this.transform).worldPosition.value,
             u_skyBoxSize: this.lens.far / Math.sqrt(3),
             u_scaleByDepth: this.getScaleByDepth(1),
         };

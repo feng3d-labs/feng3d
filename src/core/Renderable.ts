@@ -12,6 +12,7 @@ import { Material } from '../materials/Material';
 import { PickingCollisionVO } from '../pick/Raycaster';
 import { Scene } from '../scene/Scene';
 import { RayCastable } from './RayCastable';
+import { transformLogic } from './transformLogic';
 
 declare global
 {
@@ -82,6 +83,9 @@ export class Renderable extends RayCastable
         const roAny = ro as any;
         if (!roAny.bindingResources) roAny.bindingResources = {};
 
+        // Transform 不再是 Component，显式调用其 beforeRender 写入 transform uniform
+        transformLogic(this.gameObject.transform).beforeRender(ro, null, null);
+
         this.gameObject.components.forEach((element) =>
         {
             element.beforeRender(ro, null, null);
@@ -107,6 +111,9 @@ export class Renderable extends RayCastable
         this.material.beforeRender(renderObject);
         this._lightPicker.beforeRender(renderObject);
 
+        // Transform 不再是 Component，显式调用其 beforeRender 写入 transform uniform
+        transformLogic(this.gameObject.transform).beforeRender(renderObject, scene, camera);
+
         this.gameObject.components.forEach((element) =>
         {
             if (element !== this)
@@ -123,7 +130,7 @@ export class Renderable extends RayCastable
      */
     worldRayIntersection(worldRay: Ray3)
     {
-        const localRay = this.transform.rayWorldToLocal(worldRay);
+        const localRay = transformLogic(this.transform).rayWorld2local(worldRay);
         const pickingCollisionVO = this.localRayIntersection(localRay);
 
         return pickingCollisionVO;

@@ -1,5 +1,6 @@
 import { Vector3 } from '@feng3d/math';
 import { GameObject } from '../core/GameObject';
+import { transformLogic } from '../core/transformLogic';
 import { ControllerBase } from './ControllerBase';
 
 export class LookAtController extends ControllerBase
@@ -61,13 +62,13 @@ export class LookAtController extends ControllerBase
         {
             if (this._lookAtPosition)
             {
-                this._targetObject.transform.lookAt(this.lookAtPosition, this._upAxis);
+                transformLogic(this._targetObject.transform).lookAt(this.lookAtPosition, this._upAxis);
             }
             else if (this._lookAtObject)
             {
                 const pos = this._lookAtObject.transform.position;
                 this._pos.set(pos.x, pos.y, pos.z);
-                this._targetObject.transform.lookAt(this._pos, this._upAxis);
+                transformLogic(this._targetObject.transform).lookAt(this._pos, this._upAxis);
             }
         }
     }

@@ -1,6 +1,8 @@
 import { Box3, Vector3 } from '@feng3d/math';
+import { effect } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
 import { GameObject } from './GameObject';
+import { transformLogic } from './transformLogic';
 
 declare global
 {
@@ -39,7 +41,12 @@ export class BoundingBox
     {
         this._gameObject = gameObject;
         gameObject.on('selfBoundsChanged', this._invalidateSelfLocalBounds, this);
-        gameObject.on('scenetransformChanged', this._invalidateSelfWorldBounds, this);
+        // 通过响应式 effect 监听 local2world 变化，替代旧的 scenetransformChanged 事件
+        effect(() =>
+        {
+            transformLogic(gameObject.transform).local2world.value;
+            this._invalidateSelfWorldBounds();
+        });
     }
 
     /**
@@ -112,7 +119,7 @@ export class BoundingBox
      */
     protected _updateSelfWorldBounds()
     {
-        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(this._gameObject.transform.localToWorldMatrix.value);
+        this._selfWorldBounds.copy(this.selfLocalBounds).applyMatrix(transformLogic(this._gameObject.transform).local2world.value);
     }
 
     /**

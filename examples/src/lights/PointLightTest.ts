@@ -3,7 +3,7 @@ const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Un
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
 
 const camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Main Camera" }).addComponent(feng3d.Camera);
-camera.transform.position = new feng3d.Vector3(0, 1, -10);
+{ const _r = feng3d.reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
 const engine = new feng3d.View(null, scene, camera);
@@ -16,9 +16,9 @@ initLights();
 
 feng3d.ticker.onframe(setPointLightPosition);
 
-camera.transform.z = -5;
-camera.transform.y = 2;
-camera.transform.lookAt(new feng3d.Vector3());
+feng3d.reactive(camera.transform.position).z = -5;
+feng3d.reactive(camera.transform.position).y = 2;
+feng3d.transformLogic(camera.transform).lookAt(new feng3d.Vector3());
 camera.gameObject.addComponent(feng3d.FPSController);
 //
 feng3d.windowEventProxy.on("keyup", (event) => {
@@ -44,7 +44,7 @@ function initObjects() {
 
     //初始化立方体
     const plane = new feng3d.GameObject();
-    plane.transform.y = -1;
+    feng3d.reactive(plane.transform.position).y = -1;
     const model = plane.addComponent(feng3d.Renderable);
     const geometry = model.geometry = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { width: 10, height: 10 });
     geometry.scaleU = 2;
@@ -97,14 +97,14 @@ function setPointLightPosition() {
     const time = new Date().getTime();
     //
     let angle = time / 1000;
-    light0.transform.y = 3;
-    light0.transform.x = Math.sin(angle) * 3;
-    light0.transform.z = Math.cos(angle) * 3;
+    feng3d.reactive(light0.transform.position).y = 3;
+    feng3d.reactive(light0.transform.position).x = Math.sin(angle) * 3;
+    feng3d.reactive(light0.transform.position).z = Math.cos(angle) * 3;
     //
     angle = angle + Math.PI / 2;
-    light1.transform.y = 3;
-    light1.transform.x = Math.sin(angle) * 3;
-    light1.transform.z = Math.cos(angle) * 3;
-    light1.transform.lookAt(new feng3d.Vector3());
+    feng3d.reactive(light1.transform.position).y = 3;
+    feng3d.reactive(light1.transform.position).x = Math.sin(angle) * 3;
+    feng3d.reactive(light1.transform.position).z = Math.cos(angle) * 3;
+    feng3d.transformLogic(light1.transform).lookAt(new feng3d.Vector3());
 }
 

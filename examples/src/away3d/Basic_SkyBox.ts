@@ -3,14 +3,14 @@ const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Un
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
 
 const camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Main Camera" }).addComponent(feng3d.Camera);
-camera.transform.position = new feng3d.Vector3(0, 1, -10);
+{ const _r = feng3d.reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
 const engine = new feng3d.View(null, scene, camera);
 
-camera.transform.z = -6;
-camera.transform.y = 5;
-camera.transform.lookAt(new feng3d.Vector3());
+feng3d.reactive(camera.transform.position).z = -6;
+feng3d.reactive(camera.transform.position).y = 5;
+feng3d.transformLogic(camera.transform).lookAt(new feng3d.Vector3());
 
 const plane = new feng3d.GameObject();
 const model = plane.addComponent(feng3d.Renderable);
@@ -19,6 +19,6 @@ const material = model.material = feng3d.serialization.setValue(new feng3d.Stand
 scene.gameObject.addChild(plane);
 
 feng3d.ticker.onframe(() => {
-    plane.transform.ry += 1;
+    feng3d.reactive(plane.transform.rotation).y += 1;
 });
 

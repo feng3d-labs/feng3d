@@ -1,10 +1,12 @@
 import { FS } from '@feng3d/filesystem';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
+import { effect } from '@feng3d/reactivity';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { Behaviour } from '../component/Behaviour';
 import { RegisterComponent } from '../component/Component';
+import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { audioCtx, globalGain } from './AudioListener';
 
@@ -262,7 +264,11 @@ export class AudioSource extends Behaviour
     init()
     {
         super.init();
-        this.on('scenetransformChanged', this._onScenetransformChanged, this);
+        effect(() =>
+        {
+            transformLogic(this.transform).local2world.value;
+            this._onScenetransformChanged();
+        });
     }
 
     @oav()
@@ -292,8 +298,8 @@ export class AudioSource extends Behaviour
 
     private _onScenetransformChanged()
     {
-        const localToWorldMatrix = this.transform.localToWorldMatrix.value;
-        const scenePosition = localToWorldMatrix.getPosition();
+        const local2world = transformLogic(this.transform).local2world.value;
+        const scenePosition = local2world.getPosition();
 
         //
         const panner = this.panner;
@@ -380,7 +386,6 @@ export class AudioSource extends Behaviour
 
     dispose()
     {
-        this.off('scenetransformChanged', this._onScenetransformChanged, this);
         this._disconnect();
         super.dispose();
     }

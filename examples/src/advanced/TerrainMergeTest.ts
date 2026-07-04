@@ -3,15 +3,15 @@ const scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Un
 scene.background = new feng3d.Color4(0.408, 0.38, 0.357, 1.0);
 
 const camera = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Main Camera" }).addComponent(feng3d.Camera);
-camera.transform.position = new feng3d.Vector3(0, 1, -10);
+{ const _r = feng3d.reactive(camera.transform.position); _r.x = 0; _r.y = 1; _r.z = -10; }
 scene.gameObject.addChild(camera.gameObject);
 
 const engine = new feng3d.View(null, scene, camera);
 
 //
-camera.transform.z = -5;
-camera.transform.y = 2;
-camera.transform.lookAt(new feng3d.Vector3());
+feng3d.reactive(camera.transform.position).z = -5;
+feng3d.reactive(camera.transform.position).y = 2;
+feng3d.transformLogic(camera.transform).lookAt(new feng3d.Vector3());
 camera.gameObject.addComponent(feng3d.FPSController);
 
 const root = '/terrain/';
@@ -31,13 +31,13 @@ scene.gameObject.addChild(terrain);
 const light1 = new feng3d.GameObject();
 const pointLight1 = light1.addComponent(feng3d.PointLight);
 pointLight1.color = new feng3d.Color3(1, 1, 0);
-light1.transform.y = 3;
+feng3d.reactive(light1.transform.position).y = 3;
 
 //
 feng3d.ticker.onframe(() => {
     const time = new Date().getTime();
     const angle = time / 1000;
-    light1.transform.x = Math.sin(angle) * 3;
-    light1.transform.z = Math.cos(angle) * 3;
+    feng3d.reactive(light1.transform.position).x = Math.sin(angle) * 3;
+    feng3d.reactive(light1.transform.position).z = Math.cos(angle) * 3;
 });
 

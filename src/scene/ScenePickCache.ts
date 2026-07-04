@@ -1,5 +1,6 @@
 import { Camera } from '../cameras/Camera';
 import { Renderable } from '../core/Renderable';
+import { transformLogic } from '../core/transformLogic';
 import { Scene } from './Scene';
 
 /**
@@ -71,10 +72,10 @@ return models;
             { return this._blenditems; }
 
         const models = this.activeModels;
-        const camerapos = this.camera.transform.worldPosition;
+        const camerapos = transformLogic(this.camera.transform).worldPosition.value;
 
         const blenditems = this._blenditems = models.filter((item) =>
-        item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+        item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((b, a) => transformLogic(a.transform).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.transform).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return blenditems;
     }
@@ -88,10 +89,10 @@ return models;
             { return this._unblenditems; }
 
         const models = this.activeModels;
-        const camerapos = this.camera.transform.worldPosition;
+        const camerapos = transformLogic(this.camera.transform).worldPosition.value;
 
         const unblenditems = this._unblenditems = models.filter((item) =>
-        !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
+        !item.material.renderPipeline.fragment?.targets?.[0]?.blend).sort((a, b) => transformLogic(a.transform).worldPosition.value.subTo(camerapos).lengthSquared - transformLogic(b.transform).worldPosition.value.subTo(camerapos).lengthSquared);
 
         return unblenditems;
     }

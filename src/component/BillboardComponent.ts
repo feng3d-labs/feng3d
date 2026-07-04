@@ -2,6 +2,7 @@ import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { watcher } from '@feng3d/watcher';
 import { Camera } from '../cameras/Camera';
+import { transformLogic } from '../core/transformLogic';
 import { AddComponentMenu } from '../Menu';
 import { Component, RegisterComponent } from './Component';
 
@@ -35,38 +36,37 @@ export class BillboardComponent extends Component
     init()
     {
         super.init();
-        this.transform.on('updateLocalToWorldMatrix', this._onUpdateLocalToWorldMatrix, this);
+        // TODO: use reactive effect to watch local2world
         this._invalidHoldSizeMatrix();
     }
 
-    private _onCameraChanged(value: Camera, oldValue: Camera)
+    private _onCameraChanged(value: Camera, _oldValue: Camera)
     {
-        if (oldValue) oldValue.off('scenetransformChanged', this._invalidHoldSizeMatrix, this);
-        if (value) value.on('scenetransformChanged', this._invalidHoldSizeMatrix, this);
+        // TODO: use reactive effect to watch local2world
         this._invalidHoldSizeMatrix();
     }
 
     private _invalidHoldSizeMatrix()
     {
-        if (this._gameObject) this.transform['_invalidateSceneTransform']();
+        // TODO: use reactive effect to watch local2world
     }
 
     private _onUpdateLocalToWorldMatrix()
     {
-        const _localToWorldMatrix = this.transform['_localToWorldMatrix'];
-        if (_localToWorldMatrix && this.camera)
+        const _local2world = this.transform['_local2world'];
+        if (_local2world && this.camera)
         {
             const camera = this.camera;
-            const cameraPos = camera.transform.worldPosition;
-            const yAxis = camera.transform.localToWorldMatrix.value.getAxisY();
-            _localToWorldMatrix.lookAt(cameraPos, yAxis);
+            const cameraPos = transformLogic(camera.transform).worldPosition.value;
+            const yAxis = transformLogic(camera.transform).local2world.value.getAxisY();
+            _local2world.lookAt(cameraPos, yAxis);
         }
     }
 
     dispose()
     {
         this.camera = null;
-        this.transform.off('updateLocalToWorldMatrix', this._onUpdateLocalToWorldMatrix, this);
+        // TODO: use reactive effect to watch local2world
         super.dispose();
     }
 }
