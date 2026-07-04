@@ -3,7 +3,6 @@ import { AssetType } from '../assets/AssetType';
 import type { Component } from '../component/Component';
 import type { Geometry } from '../geometry/Geometry';
 import { Container } from './Container';
-import { entityLogic } from './entityLogic';
 import type { Feng3dObjectEventMap } from './Feng3dObject';
 import { Scene } from '../scene/Scene';
 
@@ -91,13 +90,6 @@ export interface Object3D extends MixinsObject3D { }
 export class Object3D extends Container
 {
     __class__ = 'Object3D';
-
-    constructor()
-    {
-        super();
-        // 触发 entityLogic，注册 components.push 拦截器（自动 setObject3D + init）
-        entityLogic(this);
-    }
 
     /**
      * 名称
