@@ -1,4 +1,4 @@
-import { effect, reactive } from '@feng3d/reactivity';
+import { effect, reactive, toRaw } from '@feng3d/reactivity';
 import { Component } from '../component/Component';
 import { Entity } from './Entity';
 
@@ -40,11 +40,13 @@ function createEntityLogic(entity: Entity): EntityLogic
         const components = reactive(entity).components as Component[];
         for (const component of components)
         {
-            if (!initialized.has(component))
+            // 用 toRaw 获取原始组件，确保 EventEmitter 内部映射正确
+            const rawComponent = toRaw(component);
+            if (!initialized.has(rawComponent))
             {
-                initialized.add(component);
-                component.setObject3D(entity as any);
-                component.init();
+                initialized.add(rawComponent);
+                rawComponent.setObject3D(entity as any);
+                rawComponent.init();
             }
         }
     });
