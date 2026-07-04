@@ -37,8 +37,8 @@ function createEntityLogic(entity: Entity): EntityLogic
     // effect 在首次执行时同步运行，后续 components 变化时由响应式系统同步触发重算。
     effect(() =>
     {
-        const components = reactive(entity).components as Component[];
-        for (const component of components)
+        const r_components = reactive(entity).components as Component[];
+        for (const component of r_components)
         {
             // 用 toRaw 获取原始组件，确保 EventEmitter 内部映射正确
             const rawComponent = toRaw(component);
